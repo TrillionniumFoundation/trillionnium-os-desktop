@@ -1,0 +1,84 @@
+name: promote-d0c03-evidence-once
+
+on:
+  push:
+    branches:
+      - codex/d0c03-codec-v2
+    paths:
+      - ".github/workflows/promote-d0c03-evidence-once.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: promote-d0c03-evidence-once
+  cancel-in-progress: false
+
+jobs:
+  evidence:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out validated source branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/d0c03-codec-v2
+          fetch-depth: 0
+
+      - name: Install exact Rust 1.93.0 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+
+      - name: Promote host evidence and regenerate audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/promote_d0c03_evidence_once.py
+          python3 tools/validate_rust_browser_codec.py \
+            --write-result docs/evidence/generated/d0c03-rust-source-audit-result.json \
+            >/tmp/d0c03-final-audit.json
+          rm -rf /tmp/d0c03-golden
+          mkdir -p /tmp/d0c03-golden
+          python3 tools/browser_codec_reference.py \
+            --self-test \
+            --contract contracts/browser-codec.v1.json \
+            --write-result /tmp/d0c03-reference.json \
+            --write-golden-dir /tmp/d0c03-golden \
+            >/tmp/d0c03-reference.stdout.json
+          cmp /tmp/d0c03-reference.json docs/evidence/generated/d0c03-browser-codec-reference-result.json
+          for fixture in contracts/golden/golden-*.wire.json; do
+            cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
+          done
+
+      - name: Validate final evidence tree without changing tested source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" != "4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb" || true
+          python3 tools/validate_repository.py
+          python3 tools/validate_rust_browser_codec.py \
+            --write-result /tmp/d0c03-final-audit-check.json \
+            >/tmp/d0c03-final-audit-check.stdout.json
+          cmp /tmp/d0c03-final-audit-check.json docs/evidence/generated/d0c03-rust-source-audit-result.json
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          test ! -S /run/hepta/browserd/agent.sock
+          test ! -e /etc/hepta/enable-agent-port
+
+      - name: Commit evidence and remove one-shot machinery
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f tools/promote_d0c03_evidence_once.py
+          rm -f .github/workflows/promote-d0c03-evidence-once.yml
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "evidence: record D0C-03 Rust 1.93 host validation"
+          git push --force-with-lease origin HEAD:codex/d0c03-codec-v2
