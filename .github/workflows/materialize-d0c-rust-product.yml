@@ -54,13 +54,32 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          path = Path("crates/hepta-browser-codec/src/lib.rs")
-          text = path.read_text()
+
+          codec = Path("crates/hepta-browser-codec/src/lib.rs")
+          text = codec.read_text()
           old = """    if let Some(port) = port {\n        if port == 0 {\n            return Err(CodecError::InvalidUrl);\n        }\n    }\n"""
           new = """    if port == Some(0) {\n        return Err(CodecError::InvalidUrl);\n    }\n"""
           if old not in text:
               raise SystemExit("reviewed zero-port block was not found exactly")
-          path.write_text(text.replace(old, new, 1))
+          codec.write_text(text.replace(old, new, 1))
+
+          browserd = Path("apps/hepta-browserd/src/lib.rs")
+          text = browserd.read_text()
+          old_stage = "D0R_D0C04_RUST_SOURCE_UNEXECUTED"
+          if old_stage not in text:
+              raise SystemExit("expected browserd source-stage marker was not found exactly")
+          browserd.write_text(text.replace(old_stage, "D0R_D0C04_RUST_HOST_VALIDATED", 1))
+
+          for path in Path(".").rglob("*"):
+              if not path.is_file() or ".git" in path.parts:
+                  continue
+              if path.suffix not in {".md", ".json", ".toml", ".rs", ".py", ".yml", ".yaml"}:
+                  continue
+              value = path.read_text()
+              normalized = "\n".join(line.rstrip() for line in value.splitlines())
+              if value.endswith("\n") or normalized:
+                  normalized += "\n"
+              path.write_text(normalized)
           PY
 
       - name: Install exact Rust 1.93.0 toolchain
@@ -74,6 +93,7 @@ jobs:
 
       - name: Resolve lock and format exact source
         run: |
+          set -euo pipefail
           cargo generate-lockfile
           cargo fmt --all
           cargo fmt --all --check
@@ -108,7 +128,10 @@ jobs:
           python3 - <<'PY'
           import hashlib, json, os, platform
           from pathlib import Path
-          def sha(path): return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+          def sha(path):
+              return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
           candidate = json.loads(Path("manifests/cargo-external-allowlist.d0c-candidate.json").read_text())
           overlay = json.loads(Path("/tmp/d0c-overlay-application.json").read_text())
           value = {
@@ -148,10 +171,11 @@ jobs:
           )
           PY
 
-      - name: Remove temporary payload and workflow
+      - name: Remove temporary payload and workflows
         run: |
           rm -rf .bootstrap-d0c .bootstrap-d0c-v2
-          rm .github/workflows/materialize-d0c-rust-product.yml
+          rm -f .github/workflows/materialize-d0c-rust-product.yml
+          rm -f .github/workflows/materialize-d0c-rust-product-v2.yml
 
       - name: Commit tested product candidate
         shell: bash
