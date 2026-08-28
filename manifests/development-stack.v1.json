@@ -1,0 +1,81 @@
+{
+  "schema": "trillionnium.desktop.development-stack.v1",
+  "recorded_at": "2026-08-28",
+  "canonical_repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "canonical_base": {
+    "branch": "main",
+    "d5_foundation_merge_commit": "de113c32827a32c334cc77a61a761976c7174d04"
+  },
+  "active_stack": [
+    {
+      "order": 1,
+      "pull_request": 7,
+      "branch": "codex/d0c02-transport-v2",
+      "work_package": "TOS-D0C-02",
+      "status": "DRAFT_NOT_MERGE_READY",
+      "rust_source": "IMPLEMENTED_UNEXECUTED",
+      "independent_reference": "PASS_15_OF_15",
+      "listener_created": false
+    },
+    {
+      "order": 2,
+      "pull_request": 8,
+      "branch": "codex/d0c03-codec-v2",
+      "base_branch": "codex/d0c02-transport-v2",
+      "work_package": "TOS-D0C-03",
+      "status": "DRAFT_NOT_MERGE_READY",
+      "rust_source": "UNIMPLEMENTED",
+      "independent_reference": "PASS_26_OF_26",
+      "browser_dispatched": false
+    },
+    {
+      "order": 3,
+      "pull_request": 9,
+      "branch": "codex/d0c04-agent-port-reference",
+      "base_branch": "codex/d0c03-codec-v2",
+      "work_package": "TOS-D0C-04",
+      "status": "DRAFT_NOT_MERGE_READY",
+      "rust_source": "UNIMPLEMENTED",
+      "independent_reference": "PASS_13_OF_13",
+      "listener_created": false,
+      "browser_actor_called": false,
+      "servo_called": false,
+      "external_effect_authorized": false
+    }
+  ],
+  "parallel_track": {
+    "pull_request": 4,
+    "branch": "codex/d0a01-servo-compatibility",
+    "work_package": "TOS-D0A-01",
+    "status": "BLOCKED_NO_RUNNER",
+    "runner_id": 0,
+    "steps_executed": 0,
+    "compile_pass_claimed": false
+  },
+  "superseded_pull_requests": [2, 3, 5, 6],
+  "required_rust_gate": [
+    "cargo fmt --all --check",
+    "cargo clippy --workspace --all-targets --locked -- -D warnings",
+    "cargo test --workspace --all-targets --locked",
+    "cargo run --locked -p hepta-browserd -- --self-check"
+  ],
+  "next_work": [
+    "restore_trusted_rust_1_93_execution_lane",
+    "execute_and_repair_d0c02_exact_head",
+    "implement_rust_d0c03_codec_from_current_contract",
+    "implement_rust_d0c04_exactly_once_bridge",
+    "rebuild_default_disabled_d0c05_socket_custody",
+    "complete_d0a01_servo_compile_qualification",
+    "implement_d0a02_product_owned_headed_servo_wrapper"
+  ],
+  "claims": {
+    "product_listener": false,
+    "browser_actor": false,
+    "servo_runtime": false,
+    "visible_window": false,
+    "external_navigation": false,
+    "external_effect": false,
+    "debian_image": false,
+    "release_ready": false
+  }
+}
