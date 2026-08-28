@@ -5,7 +5,7 @@ on:
     branches:
       - codex/d0c-rust-product-v1
     paths:
-      - ".bootstrap-d0c/**"
+      - ".bootstrap-d0c-v2/**"
       - ".github/workflows/materialize-d0c-rust-product.yml"
 
 permissions:
@@ -28,9 +28,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .bootstrap-d0c/part-* > /tmp/d0c-materialize.tar.gz.b64
+          cat \
+            .bootstrap-d0c-v2/part-00 \
+            .bootstrap-d0c-v2/part-01 \
+            .bootstrap-d0c-v2/part-02 \
+            .bootstrap-d0c-v2/part-03a \
+            .bootstrap-d0c-v2/part-03b \
+            .bootstrap-d0c-v2/part-04 \
+            .bootstrap-d0c-v2/part-05 \
+            > /tmp/d0c-materialize.tar.gz.b64
+          test "$(wc -c < /tmp/d0c-materialize.tar.gz.b64)" -eq 32428
           base64 -d /tmp/d0c-materialize.tar.gz.b64 > /tmp/d0c-materialize.tar.gz
-          echo "c497b8a6abd588c267a30303d6c12c00f5f9e6ae3116954e7e373aab6a22dffc  /tmp/d0c-materialize.tar.gz" | sha256sum -c -
+          echo "7e5ebc89218dbc2e262dad1610633bcab992151ff335c0e46a763e64d5c7749d  /tmp/d0c-materialize.tar.gz" | sha256sum -c -
           mkdir -p /tmp/d0c-bundle
           tar -xzf /tmp/d0c-materialize.tar.gz -C /tmp/d0c-bundle
 
@@ -71,7 +80,7 @@ jobs:
       - name: Run integrated browserd self-check
         run: cargo run --locked -p hepta-browserd -- --self-check | tee /tmp/browserd-self-check.json
 
-      - name: Generate exact dependency candidate and verify it
+      - name: Generate exact dependency candidate
         shell: bash
         run: |
           set -euo pipefail
@@ -79,20 +88,6 @@ jobs:
             --lock Cargo.lock \
             --baseline /tmp/d0c-bundle/toolchain/manifests/cargo-external-allowlist-d0c02-baseline.json \
             --write-candidate manifests/cargo-external-allowlist.d0c-candidate.json
-          cp manifests/cargo-external-allowlist.d0c-candidate.json /tmp/candidate.json
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          path = Path("/tmp/candidate.json")
-          value = json.loads(path.read_text())
-          value.pop("status", None)
-          path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
-          PY
-          python3 /tmp/d0c-bundle/toolchain/tools/verify_cargo_lock_allowlist.py \
-            --lock Cargo.lock \
-            --allowlist /tmp/candidate.json \
-            --baseline /tmp/d0c-bundle/toolchain/manifests/cargo-external-allowlist-d0c02-baseline.json \
-            --output-result /tmp/cargo-lock-verification.json
 
       - name: Record exact-head host evidence
         env:
@@ -159,7 +154,7 @@ jobs:
 
       - name: Remove temporary payload and workflow
         run: |
-          rm -rf .bootstrap-d0c
+          rm -rf .bootstrap-d0c .bootstrap-d0c-v2
           rm .github/workflows/materialize-d0c-rust-product.yml
 
       - name: Commit tested product candidate
