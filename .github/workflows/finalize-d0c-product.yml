@@ -1,0 +1,139 @@
+name: finalize-d0c-product
+
+on:
+  push:
+    branches:
+      - codex/d0c02-transport-v2
+    paths:
+      - "docs/evidence/generated/d0c-promotion-result.json"
+      - "docs/evidence/generated/d0c-rust-exact-gate-result.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: finalize-d0c-product
+  cancel-in-progress: false
+
+jobs:
+  final-gate-and-squash-merge:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0c02-transport-v2
+          fetch-depth: 0
+
+      - name: Require promoted D0C evidence
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          exact = json.load(open('docs/evidence/generated/d0c-rust-exact-gate-result.json'))
+          promotion = json.load(open('docs/evidence/generated/d0c-promotion-result.json'))
+          assert exact['status'] == 'PASS_EXACT_RUST_AND_SUPPLY_CHAIN', exact
+          assert exact['merge_ready'] is True, exact
+          assert promotion['status'] == 'HOST_TESTED_EXACT_RUST_1_93', promotion
+          assert promotion['completed'] == ['D0C-02', 'D0C-03', 'D0C-04'], promotion
+          for key in ['listener_enabled', 'browser_actor_connected', 'servo_connected', 'external_effect_authorized']:
+              assert promotion[key] is False, (key, promotion[key])
+          PY
+
+      - name: Install exact Rust 1.93.0
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Final independent product gate
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo test --locked -p hepta-browser-codec --all-targets
+          cargo test --locked -p hepta-agent-port --all-targets
+          cargo run --locked -p hepta-browserd -- --self-check
+          git diff --check
+
+      - name: Record finalization and remove one-shot gate
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+          result = {
+            'schema': 'trillionnium.desktop.d0c-finalization.v1',
+            'status': 'PASS_READY_FOR_SQUASH_MERGE',
+            'qualified_head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+            'rust_version': '1.93.0',
+            'completed': ['D0C-02', 'D0C-03', 'D0C-04'],
+            'listener_enabled': False,
+            'browser_actor_connected': False,
+            'servo_connected': False,
+            'external_effect_authorized': False,
+            'next': ['D0C-05', 'D0A-01'],
+          }
+          pathlib.Path('docs/evidence/generated/d0c-finalization-result.json').write_text(
+            json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          rm -f .github/workflows/finalize-d0c-product.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "test: finalize host-tested D0C product stack"
+          git push origin HEAD:codex/d0c02-transport-v2
+          echo "FINAL_HEAD=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Recheck exact committed final head
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          test -z "$(git status --porcelain)"
+
+      - name: Update pull request scope and mark ready
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh pr edit 7 \
+            --title "feat: implement and qualify D0C-02..04 AgentPort product core" \
+            --body-file - <<'EOF'
+          ## Qualified scope
+
+          Implements and host-qualifies the D0C product core under exact Rust 1.93.0:
+
+          - D0C-02 authenticated bounded AF_UNIX connected-stream transport;
+          - D0C-03 strict canonical Browser API codec;
+          - D0C-04 exactly-once request-bound AgentPort bridge;
+          - deterministic cross-implementation transport/codec/bridge vectors;
+          - exact Cargo lock, crates.io-only checksum allowlist and advisory audit;
+          - repository validation, rustfmt, Clippy `-D warnings`, workspace/all-target tests and browserd self-check.
+
+          The candidate exposes no listener, BrowserActor, Servo runtime or external effect authority. D0C-05 socket custody and D0A-01 Servo exact-pin qualification remain next.
+          EOF
+          gh pr ready 7
+
+      - name: Squash merge exact qualified head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/pulls/7/merge" \
+            -f merge_method=squash \
+            -f sha="${FINAL_HEAD}" \
+            -f commit_title="feat: implement and qualify D0C AgentPort product core" \
+            -f commit_message="Implement D0C-02 authenticated bounded transport, D0C-03 canonical Browser API codec and D0C-04 exactly-once AgentPort bridge under exact Rust 1.93.0. Preserve fail-closed listener, BrowserActor, Servo and external-effect boundaries."
