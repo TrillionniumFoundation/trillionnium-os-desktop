@@ -1,0 +1,14 @@
+{
+  "schema": "trillionnium.desktop.d0c04-rust-execution-required.v1",
+  "rust_version": "1.93.0",
+  "commands": [
+    "cargo fmt --all --check",
+    "cargo clippy --workspace --all-targets --locked -- -D warnings",
+    "cargo test --workspace --all-targets --locked",
+    "cargo test --locked -p hepta-browser-codec",
+    "cargo test --locked -p hepta-agent-port",
+    "cargo run --locked -p hepta-browserd -- --self-check"
+  ],
+  "status": "UNEXECUTED",
+  "merge_ready": false
+}
