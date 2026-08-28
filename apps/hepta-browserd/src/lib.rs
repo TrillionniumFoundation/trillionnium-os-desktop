@@ -1,8 +1,8 @@
 #![forbid(unsafe_code)]
 
-//! D0 browser daemon scaffold. This is a deterministic contract and session
-//! self-check only: it does not start Servo, a UDS listener, or any external
-//! network operation.
+//! D0 browser daemon scaffold. This is a deterministic contract, transport,
+//! and session self-check only: it does not start Servo, bind a listener, or
+//! perform an external network operation.
 
 use hepta_browser_contracts::BROWSER_API_PROTOCOL;
 use hepta_session_core::{
@@ -12,7 +12,7 @@ use hepta_session_core::{
 use trillionnium_contract_core::LeaseId;
 
 pub const ACTIVE_PLAN_REVISION: &str = "2026-08-28-d5";
-pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C_FOUNDATION";
+pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C02_SOURCE";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SelfCheckReport {
@@ -31,12 +31,12 @@ impl SelfCheckReport {
     pub fn to_json(&self) -> String {
         format!(
             concat!(
-                "{{\"schema\":\"trillionnium.desktop.browserd-self-check.v1\",",
+                "{\"schema\":\"trillionnium.desktop.browserd-self-check.v1\",",
                 "\"ok\":{},\"protocol\":\"{}\",\"plan_revision\":\"{}\",",
                 "\"implementation_stage\":\"{}\",\"checks_run\":{},",
-                "\"final_revisions\":{{\"session_generation\":{},",
+                "\"final_revisions\":{\"session_generation\":{},",
                 "\"document_generation\":{},\"semantic_snapshot_revision\":{},",
-                "\"mutation_epoch\":{}}}}}"
+                "\"mutation_epoch\":{}}}}"
             ),
             self.ok,
             self.protocol,
@@ -53,6 +53,10 @@ impl SelfCheckReport {
 
 pub fn run_self_check() -> Result<SelfCheckReport, String> {
     let mut checks_run = 0_u32;
+
+    hepta_agent_transport::self_check().map_err(|error| error.to_string())?;
+    checks_run += 1;
+
     let mut machine = SessionMachine::new();
 
     machine
@@ -106,10 +110,7 @@ pub fn run_self_check() -> Result<SelfCheckReport, String> {
         )
         .map_err(|error| error.to_string())?;
     machine
-        .apply(
-            SessionEvent::HumanFocusReleased { lease_id },
-            15,
-        )
+        .apply(SessionEvent::HumanFocusReleased { lease_id }, 15)
         .map_err(|error| error.to_string())?;
     checks_run += 1;
 
@@ -159,10 +160,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn self_check_exercises_preemption_revision_and_recovery() {
+    fn self_check_exercises_transport_preemption_revision_and_recovery() {
         let report = run_self_check().expect("self-check must pass");
         assert!(report.ok);
-        assert!(report.checks_run >= 7);
+        assert!(report.checks_run >= 8);
         assert_eq!(report.final_session_generation, 2);
         assert!(report.final_document_generation >= 3);
         assert!(report.to_json().contains(ACTIVE_PLAN_REVISION));

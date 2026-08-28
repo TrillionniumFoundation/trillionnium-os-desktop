@@ -3,63 +3,73 @@
 **Updated:** 2026-08-28
 **Canonical plan:** `2026-08-28-d5`
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`
-**Implementation stage:** `D0R_D0C_FOUNDATION`
+**Implementation stage:** `D0R_D0C02_SOURCE`
 
-## What is implemented
+## What is implemented in source
 
-The repository now contains the initial product implementation rather than only
-planning documents:
+1. The canonical Rust 2024 product workspace and D0 contract/session foundation.
+2. Layered session, document, semantic-snapshot, and mutation revisions.
+3. Deterministic Agent/human arbitration with bounded FIFO admission.
+4. Synthetic HTTPS trusted-app origins and an explicit trusted-shell/content
+   trust split.
+5. Browser, receipt, permit, app-manifest, and error contracts.
+6. `hepta-agent-transport`, a connected-stream AF_UNIX carrier source
+   implementation with:
+   - kernel `SO_PEERCRED` PID/UID/GID extraction;
+   - explicit peer policy;
+   - fresh 256-bit server nonce;
+   - an 88-byte versioned frame header;
+   - a 256 KiB pre-allocation payload bound;
+   - SHA-256 payload binding;
+   - strictly increasing request sequences;
+   - one monotonic absolute deadline across each complete frame.
+7. An exact Cargo registry dependency allowlist and checksum-bound lock closure.
+8. Browserd self-check source that includes the local transport round trip.
+9. Fail-closed repository validation for the desktop/mobile graph, transport
+   contract/source alignment, dependency closure, claim ceiling, and absence of
+   a product listener.
 
-1. A Rust 2024 workspace with `rust-version = 1.93` and four initial packages:
-   `trillionnium-contract-core`, `hepta-browser-contracts`,
-   `hepta-session-core`, and `hepta-browserd`.
-2. Layered revision identity:
-   `session_generation`, `document_generation`,
-   `semantic_snapshot_revision`, and `mutation_epoch`.
-3. A deterministic Agent/human state machine covering Agent observation and
-   mutation, human focus leases, IME composition, navigation, modal state,
-   capability waits, cancellation, browser crash, recovery, and closure.
-4. A bounded FIFO arbiter queue that fails closed on overflow.
-5. A trusted-origin decision using distinct synthetic HTTPS hosts under
-   `*.apps.hepta.invalid`; path-only custom-scheme origins are not used.
-6. Machine-readable schemas for browser requests, operation receipts,
-   capability permits, and signed app manifests, plus error codes and golden
-   vectors.
-7. Product-boundary checks that prevent Android/mobile direct shell, ADB,
-   Root-Linux, and privilege-broker packages from entering the desktop default
-   graph.
-8. A `hepta-browserd --self-check` scaffold that exercises preemption,
-   revisions, navigation, crash, and recovery without opening a listener or
-   network connection.
-9. CI and repository validation definitions.
+## Validation ceiling
+
+Static JSON/TOML/source consistency checks for this D0C-02 candidate were
+performed while constructing the branch. A trusted Rust 1.93 execution
+environment was not available, and GitHub hosted jobs previously failed before
+runner assignment. Therefore the following remain **UNEXECUTED** for this exact
+head:
+
+- `cargo fmt --all --check`;
+- `cargo clippy --workspace --all-targets --locked -- -D warnings`;
+- `cargo test --workspace --all-targets --locked`;
+- `cargo run --locked -p hepta-browserd -- --self-check`.
+
+The D0C-02 candidate is not merge-ready until those checks execute on the exact
+head in a trusted environment.
 
 ## What is not implemented or claimed
 
-- No Servo source is linked or built by this repository yet.
-- No `WebView`, rendering context, Wayland surface, keyboard/pointer path, or
-  IME adapter exists yet.
-- No Unix-domain Agent API listener exists; therefore peer-credential and
-  channel-binding authentication are not yet product facts.
-- No Debian snapshot has been fully resolved to `InRelease` and package-set
-  digests, and no bootable QEMU image exists.
-- No trusted shell bundle is signed or loaded.
-- No network egress proxy, file portal, secret service, update daemon, Secure
-  Boot chain, or A/B rollback image exists.
-- No external webpage interaction or external effect is authorized.
-- No public release, beta image, or hardware-qualification claim exists.
+- No filesystem or abstract Unix socket is bound.
+- No systemd socket activation or product Agent listener is enabled.
+- No Browser API codec is dispatched over the carrier yet.
+- No Servo source is linked by the product workspace.
+- No `WebView`, rendering context, visible first frame, Wayland surface, or
+  native input path exists.
+- No resolved Debian package snapshot or bootable QEMU image exists.
+- No external interaction, capability, credential use, or web effect is
+  authorized.
+- No signed app runtime, update chain, Secure Boot chain, beta, or release
+  claim exists.
 
-## Active next work packages
+## Active next work
 
-1. `D0A-01`: build a pinned Servo compatibility spike at commit
+1. Obtain exact-head Rust validation for `D0C-02`; only then promote it from
+   source candidate to host-validated carrier core.
+2. Complete `D0A-01` against pinned Servo commit
    `670ae8a70801b162e186f81cbb5bdd2d59c39108`.
-2. `D0A-02`: prove one visible workspace containing a trusted shell surface and
-   exactly one untrusted content WebView, without a hidden second Agent page.
-3. `D0C-02`: bind JSON contracts to a bounded authenticated UDS carrier with
-   peer credentials, session nonce, deadlines, cancellation, and strict frame
-   handling.
-4. `D1-01`: resolve the Debian snapshot and build the first reproducible QEMU
-   image only after its signed package inputs are locked.
+3. Implement `D0A-02`, the product-owned headed wrapper with one trusted shell
+   surface and exactly one untrusted content WebView.
+4. Integrate `D0C-03` canonical Browser API decoding and `D0C-04` exactly-one
+   request dispatch before any listener activation.
+5. Resolve signed Debian inputs before `D1-01`.
 
-A source file, schema, self-check, or CI definition is not evidence that Servo
-or Debian bring-up has completed. Stage promotion requires the exit evidence in
-the canonical plan.
+A source file, schema, static validator, or failed-before-start CI run is not
+runtime evidence.
