@@ -1,0 +1,158 @@
+name: materialize-d0a01-servo-exact-pin-v3
+
+on:
+  push:
+    branches:
+      - codex/d0a01-servo-exact-pin-v3
+    paths:
+      - ".github/workflows/materialize-d0a01-servo-v3.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0a01-servo-exact-pin-v3
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Servo Linux build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf automake build-essential ccache clang cmake curl git gperf \
+            libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev \
+            libavformat-dev libavutil-dev libdbus-1-dev libegl1-mesa-dev \
+            libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev \
+            libgles2-mesa-dev libgstreamer-plugins-base1.0-dev \
+            libgstreamer1.0-dev libharfbuzz-dev libpulse-dev libssl-dev \
+            libudev-dev libunwind-dev libwayland-dev libx11-dev \
+            libx11-xcb-dev libxcb-render0-dev libxcb-shape0-dev \
+            libxcb-xfixes0-dev libxi-dev libxkbcommon-dev libxrandr-dev \
+            llvm-dev mold nasm ninja-build pkg-config python3 python3-dev \
+            python3-pip xorg-dev
+
+      - name: Fetch exact clean Servo pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init /tmp/servo
+          git -C /tmp/servo remote add origin https://github.com/servo/servo.git
+          git -C /tmp/servo fetch --depth=1 origin 670ae8a70801b162e186f81cbb5bdd2d59c39108
+          git -C /tmp/servo checkout --detach FETCH_HEAD
+          test "$(git -C /tmp/servo rev-parse HEAD)" = \
+            "670ae8a70801b162e186f81cbb5bdd2d59c39108"
+          test -z "$(git -C /tmp/servo status --porcelain=v1)"
+
+      - name: Install Servo-declared Rust toolchain exactly
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > /tmp/servo-toolchain.env
+          import shlex, tomllib
+          data = tomllib.load(open('/tmp/servo/rust-toolchain.toml', 'rb'))['toolchain']
+          print('CHANNEL=' + shlex.quote(data['channel']))
+          print('COMPONENTS=' + shlex.quote(' '.join(data.get('components', []))))
+          print('TARGETS=' + shlex.quote(' '.join(data.get('targets', []))))
+          PY
+          source /tmp/servo-toolchain.env
+          args=(toolchain install "$CHANNEL" --profile minimal --no-self-update)
+          for component in $COMPONENTS; do args+=(--component "$component"); done
+          for target in $TARGETS; do args+=(--target "$target"); done
+          rustup "${args[@]}"
+          rustup override set "$CHANNEL" --path /tmp/servo
+          (cd /tmp/servo && rustc --version --verbose && cargo --version --verbose)
+
+      - name: Compile official headed shell and external embedder probes
+        env:
+          CARGO_TERM_COLOR: always
+          CARGO_INCREMENTAL: "0"
+          RUST_BACKTRACE: "1"
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence/generated/servo-exact-pin-logs
+          python3 tools/qualify_servo_exact_pin.py \
+            --servo-root /tmp/servo \
+            --output-manifest manifests/servo-embedder-compat.json \
+            --output-result docs/evidence/generated/servo-probe-result.json \
+            --output-probe experiments/servo-embedder-probe/src/main.rs \
+            --logs docs/evidence/generated/servo-exact-pin-logs
+
+      - name: Record exact workflow evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          path = Path('docs/evidence/generated/servo-probe-result.json')
+          result = json.loads(path.read_text())
+          result['workflow_run_id'] = int(os.environ['GITHUB_RUN_ID'])
+          result['workflow_job'] = 'qualify'
+          result['repository_candidate_head_before_evidence'] = os.environ['GITHUB_SHA']
+          path.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          PY
+          cat > docs/evidence/2026-08-29-d0a01-servo-exact-pin.md <<EOF
+          # D0A-01 exact Servo pin compile compatibility
+
+          **Date:** 2026-08-29  
+          **Servo commit:** \`670ae8a70801b162e186f81cbb5bdd2d59c39108\`  
+          **Workflow run:** \`${GITHUB_RUN_ID}\`  
+          **Status:** \`PASS_COMPILE_COMPATIBILITY_ONLY\`
+
+          The exact clean Servo checkout, Servo-declared toolchain, official
+          headed servoshell package, individual public API probes, and aggregate
+          external embedder sentinel compiled with locked dependencies.
+
+          Machine evidence:
+          \`docs/evidence/generated/servo-probe-result.json\` and
+          \`manifests/servo-embedder-compat.json\`.
+
+          This gate did not start Servo, create a window, render a frame,
+          forward pointer/keyboard/IME, navigate a network origin, or start a
+          WebDriver listener. Those are D0A-02/D2 runtime gates.
+          EOF
+          sed -i 's/^          //' docs/evidence/2026-08-29-d0a01-servo-exact-pin.md
+
+      - name: Validate generated evidence and product claim ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('manifests/servo-embedder-compat.json').read_text())
+          result = json.loads(Path('docs/evidence/generated/servo-probe-result.json').read_text())
+          assert manifest['status'] == 'PASS_COMPILE_COMPATIBILITY_ONLY'
+          assert result['status'] == 'PASS_COMPILE_COMPATIBILITY_ONLY'
+          assert result['merge_ready'] is True
+          assert manifest['servo_commit'] == '670ae8a70801b162e186f81cbb5bdd2d59c39108'
+          assert manifest['patch_ledger'] == []
+          assert all(value == 'PASS' for value in manifest['checks'].values())
+          assert not any(manifest['claims'].values())
+          assert not any(result['claims'].values())
+          PY
+          python3 tools/validate_repository.py
+          git diff --check
+
+      - name: Commit generated exact-pin qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/materialize-d0a01-servo-v3.yml
+          rm -rf docs/evidence/generated/servo-exact-pin-logs
+          git add -A
+          git diff --cached --check
+          git commit -m "test: materialize D0A-01 exact Servo compile evidence"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
