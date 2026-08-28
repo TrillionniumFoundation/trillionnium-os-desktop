@@ -39,6 +39,7 @@ def self_test():
     rejects("bound-no-session", lambda: decode_request(canonical({"protocol": PROTOCOL, "request_id": "x", "operation": navigate["operation"]})))
     rejects("partial-session", lambda: decode_request(canonical({key: value for key, value in navigate.items() if key != "session_generation"})))
     rejects("bool-integer", lambda: decode_request(canonical(navigate | {"session_generation": True})))
+    rejects("integer-domain", lambda: canonical({"value": 2**63}))
     stale = json.loads(json.dumps(click)); stale["operation"]["target"]["semantic_snapshot_revision"] = 0
     rejects("snapshot-zero", lambda: decode_request(canonical(stale)))
     bad = json.loads(json.dumps(navigate)); bad["operation"]["target"]["url"] = "http://example.test/"

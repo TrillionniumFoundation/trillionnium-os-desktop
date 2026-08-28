@@ -65,6 +65,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "hepta-browser-codec"
+version = "0.1.0"
+dependencies = [
+ "sha2",
+]
+
+[[package]]
 name = "hepta-browser-contracts"
 version = "0.1.0"
 dependencies = [
@@ -76,6 +83,7 @@ name = "hepta-browserd"
 version = "0.1.0"
 dependencies = [
  "hepta-agent-transport",
+ "hepta-browser-codec",
  "hepta-browser-contracts",
  "hepta-session-core",
  "trillionnium-contract-core",

@@ -1,8 +1,12 @@
-name: browser-codec-reference
+name: browser-codec-reference-and-rust-gate
 
 on:
   pull_request:
     paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "apps/hepta-browserd/**"
+      - "crates/hepta-browser-codec/**"
       - "contracts/browser-api.v1.schema.json"
       - "contracts/browser-codec.v1.json"
       - "contracts/browser-wire.v1.schema.json"
@@ -11,38 +15,42 @@ on:
       - "contracts/golden/*.wire.json"
       - "tools/browser_codec_reference.py"
       - "tools/browser_codec_reference/**"
-      - "docs/evidence/generated/d0c03-browser-codec-reference-result.json"
+      - "tools/validate_rust_browser_codec.py"
+      - "docs/evidence/generated/d0c03-*.json"
       - ".github/workflows/browser-codec-reference.yml"
   push:
     branches: [main]
     paths:
-      - "contracts/browser-api.v1.schema.json"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "apps/hepta-browserd/**"
+      - "crates/hepta-browser-codec/**"
       - "contracts/browser-codec.v1.json"
-      - "contracts/browser-wire.v1.schema.json"
-      - "contracts/browser-response.v1.schema.json"
       - "contracts/error-codes.v1.json"
       - "contracts/golden/*.wire.json"
       - "tools/browser_codec_reference.py"
       - "tools/browser_codec_reference/**"
-      - "docs/evidence/generated/d0c03-browser-codec-reference-result.json"
+      - "tools/validate_rust_browser_codec.py"
+      - "docs/evidence/generated/d0c03-*.json"
       - ".github/workflows/browser-codec-reference.yml"
 
 permissions:
   contents: read
 
 jobs:
-  executable-reference:
+  reference-and-static-audit:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Compile standard-library reference
+      - name: Compile standard-library references and audits
         run: >-
           python3 -m py_compile
           tools/browser_codec_reference.py
           tools/browser_codec_reference/*.py
+          tools/validate_rust_browser_codec.py
 
-      - name: Execute negative corpus and regenerate evidence
+      - name: Regenerate reference, audit and golden vectors
         run: |
           set -euo pipefail
           mkdir -p /tmp/d0c03-golden
@@ -52,8 +60,13 @@ jobs:
             --write-result /tmp/d0c03-browser-codec-reference-result.json \
             --write-golden-dir /tmp/d0c03-golden \
             >/tmp/d0c03-browser-codec.stdout.json
+          python3 tools/validate_rust_browser_codec.py \
+            --write-result /tmp/d0c03-rust-source-audit-result.json \
+            >/tmp/d0c03-rust-source-audit.stdout.json
           cmp /tmp/d0c03-browser-codec-reference-result.json \
             docs/evidence/generated/d0c03-browser-codec-reference-result.json
+          cmp /tmp/d0c03-rust-source-audit-result.json \
+            docs/evidence/generated/d0c03-rust-source-audit-result.json
           for fixture in contracts/golden/golden-*.wire.json; do
             cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
           done
@@ -63,20 +76,30 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-
           contract = json.loads(Path("contracts/browser-codec.v1.json").read_text())
-          result = json.loads(
-              Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json").read_text()
-          )
-          assert contract["validation"]["python_reference"] == "PASS_26_OF_26"
-          assert contract["validation"]["rust_codec"] == "UNIMPLEMENTED"
+          reference = json.loads(Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json").read_text())
+          audit = json.loads(Path("docs/evidence/generated/d0c03-rust-source-audit-result.json").read_text())
+          assert contract["validation"]["python_reference"] == "PASS_27_OF_27"
+          assert contract["validation"]["rust_source_audit"] == "PASS"
+          assert contract["validation"]["rust_fmt"] == "UNEXECUTED"
+          assert contract["validation"]["rust_tests"] == "UNEXECUTED"
           assert contract["validation"]["merge_ready"] is False
-          assert contract["listener"] == {"enabled": False, "public_network": False}
-          assert result["status"] == "PASS" and result["test_count"] == 26
-          assert result["product_listener_created"] is False
-          assert result["browser_dispatched"] is False
-          assert result["external_effect_authorized"] is False
-          effects = {item["request_id"]: item["effect_class"] for item in result["requests"]}
-          assert effects["golden:navigate:1"] == "potential_external_effect"
-          assert effects["golden:click:1"] == "potential_external_effect"
+          assert reference["status"] == "PASS" and reference["test_count"] == 27
+          assert audit["status"] == "PASS" and audit["check_count"] >= 90
+          assert reference["product_listener_created"] is False
+          assert audit["product_listener_created"] is False
+          assert reference["external_effect_authorized"] is False
           PY
+
+  rust-exact-head:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --all-targets --locked
+      - run: cargo run --locked -p hepta-browserd -- --self-check

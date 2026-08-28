@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 
 PROTOCOL = "trillionnium.desktop.browser-api.v1"
 MAX_BYTES, MAX_DEPTH, MAX_ITEMS = 262_144, 32, 20_000
+MIN_INTEGER, MAX_INTEGER = -(2**63), 2**63 - 1
 ID_RE = re.compile(r"^[A-Za-z0-9._:-]{1,128}$", re.ASCII)
 DNS_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", re.ASCII)
 SHA_RE = re.compile(r"^[0-9a-f]{64}$", re.ASCII)
@@ -23,6 +24,8 @@ def _pairs(pairs):
 def measure(value, depth=0):
     if depth > MAX_DEPTH: raise CodecError("JSON nesting exceeds maximum")
     if isinstance(value, float): raise CodecError("floating-point numbers are forbidden")
+    if type(value) is int and not MIN_INTEGER <= value <= MAX_INTEGER:
+        raise CodecError("integer exceeds signed 64-bit domain")
     if isinstance(value, dict):
         count, high = len(value), depth
         for key, child in value.items():

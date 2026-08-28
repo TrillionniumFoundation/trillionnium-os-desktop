@@ -1,6 +1,6 @@
 {
   "schema": "trillionnium.desktop.browser-codec.v1",
-  "status": "EXECUTABLE_REFERENCE_IMPLEMENTED_RUST_PENDING",
+  "status": "RUST_SOURCE_IMPLEMENTED_EXECUTION_PENDING",
   "protocol": "trillionnium.desktop.browser-api.v1",
   "operation_schema": {
     "path": "contracts/browser-api.v1.schema.json",
@@ -18,7 +18,7 @@
     "object_key_order": "unicode_codepoint_ascending",
     "whitespace": "none_outside_strings",
     "trailing_newline": false,
-    "numbers": "integers_only_no_bool_coercion",
+    "numbers": "signed_64_bit_integers_only_no_bool_coercion",
     "non_finite_numbers": "reject",
     "input_must_equal_canonical_reencoding": true
   },
@@ -44,14 +44,26 @@
     "wait_text_utf8_bytes_maximum": 65536,
     "url_utf8_bytes_maximum": 8192
   },
+  "rust_product": {
+    "crate": "crates/hepta-browser-codec",
+    "parser": "bounded_custom_integer_only_json",
+    "external_dependencies": ["sha2=0.10.9"],
+    "listener_created": false,
+    "browser_dispatched": false,
+    "external_effect_authorized": false
+  },
   "error_codes_source": "contracts/error-codes.v1.json",
   "listener": {"enabled": false, "public_network": false},
   "validation": {
-    "python_reference": "PASS_26_OF_26",
+    "python_reference": "PASS_27_OF_27",
     "python_py_compile": "PASS",
-    "rust_codec": "UNIMPLEMENTED",
+    "rust_source_audit": "PASS",
+    "rust_fmt": "UNEXECUTED",
+    "rust_clippy": "UNEXECUTED",
+    "rust_tests": "UNEXECUTED",
+    "browserd_self_check": "UNEXECUTED",
     "merge_ready": false,
-    "reason": "Executable canonical JSON and semantic reference passed; Rust 1.93 codec implementation and exact-head checks remain open."
+    "reason": "Rust product source and independent executable reference exist, but no trusted Rust 1.93 exact-head execution path is available."
   },
   "independent_reference": {
     "implementation": "tools/browser_codec_reference.py",
@@ -59,7 +71,7 @@
     "golden_directory": "contracts/golden",
     "runtime": "python_standard_library_only",
     "status": "PASS",
-    "test_count": 26,
+    "test_count": 27,
     "product_listener_created": false,
     "browser_dispatched": false,
     "external_effect_authorized": false
