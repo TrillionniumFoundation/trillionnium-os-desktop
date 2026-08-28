@@ -2,7 +2,7 @@
 """Resolve and verify the signed Debian input closure for D0R-02.
 
 The resolver uses an isolated empty dpkg status database, verifies every
-InRelease signature with Debian's archive keyring, resolves the complete
+InRelease against an archive-specific accepted signer set, resolves the complete
 --no-install-recommends dependency closure, downloads every selected .deb and
 checks its size and SHA-256 against apt metadata. It never creates an image.
 """
@@ -19,6 +19,9 @@ import subprocess
 import sys
 import time
 from typing import Any
+
+HEX_FINGERPRINT = re.compile(r"^[0-9A-F]{40,64}$")
+HEX_KEY_ID = re.compile(r"^[0-9A-F]{16,64}$")
 
 
 def sha256(path: Path) -> str:
@@ -148,6 +151,116 @@ def apt_options(work: Path, sources: Path, architecture: str) -> list[str]:
     ]
 
 
+def verify_gpgv_signatures(
+    *,
+    archive_id: str,
+    accepted_primary_fingerprints: list[str],
+    keyring: Path,
+    destination: Path,
+    work: Path,
+    log: Path,
+) -> dict[str, Any]:
+    accepted = {value.upper() for value in accepted_primary_fingerprints}
+    if not accepted or any(HEX_FINGERPRINT.fullmatch(value) is None for value in accepted):
+        raise RuntimeError(f"{archive_id} has an invalid or empty accepted signer set")
+
+    command = [
+        "gpgv",
+        "--status-fd=1",
+        "--keyring",
+        str(keyring),
+        str(destination),
+    ]
+    started = time.monotonic()
+    completed = subprocess.run(
+        command,
+        cwd=work,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    output = completed.stdout or ""
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text(
+        f"$ {' '.join(command)}\n"
+        f"exit={completed.returncode} elapsed_ms={round((time.monotonic() - started) * 1000)}\n\n"
+        f"{output}",
+        encoding="utf-8",
+    )
+
+    signing: set[str] = set()
+    primary: set[str] = set()
+    for line in output.splitlines():
+        marker = "[GNUPG:] VALIDSIG "
+        if marker not in line:
+            continue
+        fields = line.split(marker, 1)[1].split()
+        if not fields:
+            continue
+        signer = fields[0].upper()
+        if HEX_FINGERPRINT.fullmatch(signer):
+            signing.add(signer)
+        candidate = fields[-1].upper()
+        primary.add(candidate if HEX_FINGERPRINT.fullmatch(candidate) else signer)
+
+    unknown = {
+        match.group(1).upper()
+        for match in re.finditer(
+            r"^\[GNUPG:\] NO_PUBKEY ([0-9A-F]{16,64})$",
+            output,
+            flags=re.MULTILINE,
+        )
+    }
+    error_signers = {
+        match.group(1).upper()
+        for match in re.finditer(
+            r"^\[GNUPG:\] ERRSIG ([0-9A-F]{16,64}) ",
+            output,
+            flags=re.MULTILINE,
+        )
+    }
+    forbidden_statuses = [
+        "BADSIG",
+        "EXPSIG",
+        "EXPKEYSIG",
+        "REVKEYSIG",
+        "KEYEXPIRED",
+        "SIGEXPIRED",
+        "NODATA",
+        "FAILURE",
+    ]
+    observed_forbidden = [
+        status
+        for status in forbidden_statuses
+        if f"[GNUPG:] {status}" in output
+    ]
+    if observed_forbidden:
+        raise RuntimeError(
+            f"{archive_id} gpgv reported forbidden signature states "
+            f"{observed_forbidden}; see {log}"
+        )
+    if not signing or not primary or not accepted.intersection(primary):
+        raise RuntimeError(
+            f"{archive_id} has no valid signature from accepted primary keys "
+            f"{sorted(accepted)}; observed={sorted(primary)}; see {log}"
+        )
+    if completed.returncode != 0:
+        if not unknown or not error_signers or not error_signers.issubset(unknown):
+            raise RuntimeError(
+                f"{archive_id} gpgv failed for a reason other than additional unknown "
+                f"co-signers (exit={completed.returncode}); see {log}"
+            )
+
+    return {
+        "gpgv_exit_code": completed.returncode,
+        "valid_signature_fingerprints": sorted(signing),
+        "valid_primary_fingerprints": sorted(primary),
+        "accepted_primary_fingerprints": sorted(accepted),
+        "unknown_signature_key_ids": sorted(unknown),
+    }
+
+
 def verify_inrelease(
     archive: dict[str, Any],
     keyring: Path,
@@ -168,7 +281,7 @@ def verify_inrelease(
             "5",
             "--retry-all-errors",
             "--user-agent",
-            "TrillionniumOS-D0R02/1",
+            "TrillionniumOS-D0R02/4",
             "--output",
             str(destination),
             "--write-out",
@@ -179,29 +292,14 @@ def verify_inrelease(
         log=logs / f"curl-{archive_id}.log",
     )
     effective_url = curl.stdout.strip()
-    gpg = run(
-        [
-            "gpgv",
-            "--status-fd=1",
-            "--keyring",
-            str(keyring),
-            str(destination),
-        ],
-        cwd=work,
+    signature = verify_gpgv_signatures(
+        archive_id=archive_id,
+        accepted_primary_fingerprints=archive["accepted_primary_fingerprints"],
+        keyring=keyring,
+        destination=destination,
+        work=work,
         log=logs / f"gpgv-{archive_id}.log",
     )
-    fingerprints = sorted(
-        {
-            match.group(1)
-            for match in re.finditer(
-                r"^\[GNUPG:\] VALIDSIG ([0-9A-F]{40,64}) ",
-                gpg.stdout,
-                flags=re.MULTILINE,
-            )
-        }
-    )
-    if not fingerprints:
-        raise RuntimeError(f"no valid signature fingerprint for {archive_id}")
     text = destination.read_text(encoding="utf-8")
     paragraphs = parse_control(inrelease_payload(text))
     if not paragraphs:
@@ -223,7 +321,7 @@ def verify_inrelease(
         "valid_until": fields.get("Valid-Until"),
         "sha256": sha256(destination),
         "bytes": destination.stat().st_size,
-        "valid_signature_fingerprints": fingerprints,
+        **signature,
     }
 
 
