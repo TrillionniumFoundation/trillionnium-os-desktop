@@ -31,12 +31,12 @@ impl SelfCheckReport {
     pub fn to_json(&self) -> String {
         format!(
             concat!(
-                "{\"schema\":\"trillionnium.desktop.browserd-self-check.v1\",",
+                "{{\"schema\":\"trillionnium.desktop.browserd-self-check.v1\",",
                 "\"ok\":{},\"protocol\":\"{}\",\"plan_revision\":\"{}\",",
                 "\"implementation_stage\":\"{}\",\"checks_run\":{},",
-                "\"final_revisions\":{\"session_generation\":{},",
+                "\"final_revisions\":{{\"session_generation\":{},",
                 "\"document_generation\":{},\"semantic_snapshot_revision\":{},",
-                "\"mutation_epoch\":{}}}}"
+                "\"mutation_epoch\":{}}}}}"
             ),
             self.ok,
             self.protocol,
