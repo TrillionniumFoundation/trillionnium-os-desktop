@@ -1,0 +1,106 @@
+name: materialize-d0c05-systemd-custody-v2
+
+on:
+  push:
+    branches:
+      - codex/d0c05-systemd-custody-v2
+    paths:
+      - ".github/workflows/materialize-d0c05-v2.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0c05-systemd-custody-v2
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Update permanent repository graph assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('tools/validate_repository.py')
+          text = path.read_text(encoding='utf-8')
+          start = text.index('EXPECTED_WORKSPACE_MEMBERS = [')
+          end = text.index('\n\nREQUIRED_PATHS = [', start)
+          members = '''EXPECTED_WORKSPACE_MEMBERS = [
+              "apps/hepta-browserd",
+              "apps/hepta-agent-portd",
+              "crates/hepta-agent-transport",
+              "crates/hepta-browser-codec",
+              "crates/hepta-agent-port",
+              "crates/hepta-peer-attestation",
+              "crates/trillionnium-contract-core",
+              "crates/hepta-browser-contracts",
+              "crates/hepta-session-core",
+          ]'''
+          text = text[:start] + members + text[end:]
+
+          additions = [
+              '.github/workflows/agent-port-custody.yml',
+              'apps/hepta-agent-portd/Cargo.toml',
+              'apps/hepta-agent-portd/src/main.rs',
+              'contracts/agent-port-custody.v1.json',
+              'crates/hepta-peer-attestation/Cargo.toml',
+              'crates/hepta-peer-attestation/src/lib.rs',
+              'docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md',
+              'docs/evidence/2026-08-29-d0c05-systemd-socket-custody.md',
+              'packaging/debian/hepta-agent-portd.install',
+              'packaging/debian/systemd/hepta-browserd-agent.socket',
+              'packaging/debian/systemd/hepta-browserd-agent@.service',
+              'packaging/debian/sysusers.d/trillionnium-desktop.conf',
+              'packaging/debian/tmpfiles.d/trillionnium-desktop.conf',
+              'packaging/debian/systemd-preset/90-trillionnium-desktop.preset',
+              'tools/verify_systemd_socket_custody.py',
+          ]
+          required_start = text.index('REQUIRED_PATHS = [')
+          required_end = text.index('\n]\n\n\ndef fail', required_start)
+          block = text[required_start:required_end]
+          for item in additions:
+              if f'"{item}"' not in block:
+                  block += f'\n    "{item}",'
+          text = text[:required_start] + block + text[required_end:]
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Normalize lock and formatting
+        run: |
+          cargo generate-lockfile
+          cargo fmt --all
+
+      - name: Validate candidate before committing
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/verify_systemd_socket_custody.py
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          cargo run --locked -p hepta-agent-portd -- --self-check
+
+      - name: Commit normalized exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/materialize-d0c05-v2.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: materialize D0C-05 default-disabled socket custody"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
