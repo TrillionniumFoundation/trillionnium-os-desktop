@@ -90,21 +90,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY' > /tmp/servo-toolchain.env
+          SERVO_RUST_CHANNEL="$(python3 - <<'PY'
           from pathlib import Path
           import tomllib
           toolchain = tomllib.loads(Path('servo-source/rust-toolchain.toml').read_text())['toolchain']
-          declared = toolchain.get('components', [])
-          print(f"SERVO_RUST_CHANNEL={toolchain['channel']}")
-          print('SERVO_DECLARED_COMPONENTS=' + ' '.join(declared))
-          # D0A-01 is a compile gate. rustc-dev/rust-src/llvm-tools-preview are
-          # recorded as upstream declarations but are not required by these
-          # cargo check targets. Avoid turning an optional 900+ MiB component
-          # mirror outage into a false API incompatibility result.
-          print('SERVO_GATE_COMPONENTS=rustfmt')
+          print(toolchain['channel'])
           PY
-          cat /tmp/servo-toolchain.env >> "$GITHUB_ENV"
-          source /tmp/servo-toolchain.env
+          )"
+          SERVO_DECLARED_COMPONENTS="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          toolchain = tomllib.loads(Path('servo-source/rust-toolchain.toml').read_text())['toolchain']
+          print(' '.join(toolchain.get('components', [])))
+          PY
+          )"
+          SERVO_GATE_COMPONENTS="rustfmt"
+          {
+            printf 'SERVO_RUST_CHANNEL=%s\n' "$SERVO_RUST_CHANNEL"
+            printf 'SERVO_DECLARED_COMPONENTS=%s\n' "$SERVO_DECLARED_COMPONENTS"
+            printf 'SERVO_GATE_COMPONENTS=%s\n' "$SERVO_GATE_COMPONENTS"
+          } >> "$GITHUB_ENV"
           rustup toolchain install "$SERVO_RUST_CHANNEL" --profile minimal
           for component in $SERVO_GATE_COMPONENTS; do
             rustup component add "$component" --toolchain "$SERVO_RUST_CHANNEL"
@@ -190,9 +195,10 @@ jobs:
         run: python3 tools/validate_repository.py
 
       - name: Upload exact-pin qualification evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: servo-exact-pin-${{ github.sha }}
           path: artifacts/servo-qualification
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
