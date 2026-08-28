@@ -1,0 +1,56 @@
+{
+  "schema": "trillionnium.desktop.debian-d1-selection.v1",
+  "status": "PREFERRED_TIMESTAMP_REQUIRES_SIGNED_RESOLUTION",
+  "suite": "trixie",
+  "architecture": "amd64",
+  "preferred_snapshot_timestamp": "20260827T000000Z",
+  "repositories": [
+    {
+      "name": "debian",
+      "base_url": "https://snapshot.debian.org/archive/debian/20260827T000000Z/",
+      "suites": [
+        "trixie",
+        "trixie-updates"
+      ],
+      "components": [
+        "main"
+      ]
+    },
+    {
+      "name": "debian-security",
+      "base_url": "https://snapshot.debian.org/archive/debian-security/20260827T000000Z/",
+      "suites": [
+        "trixie-security"
+      ],
+      "components": [
+        "main"
+      ]
+    }
+  ],
+  "signature_keyring": "/usr/share/keyrings/debian-archive-keyring.gpg",
+  "network_during_qemu_acceptance": false,
+  "root_filesystem": {
+    "format": "ext4",
+    "size_mib": 2048,
+    "label": "TOSD1",
+    "uuid": "7f453284-a1e5-4f17-9c30-7c5bde910001"
+  },
+  "qemu": {
+    "machine": "q35",
+    "acceleration": "tcg",
+    "memory_mib": 2048,
+    "vcpus": 2,
+    "firmware": "direct_kernel_initramfs_for_D1",
+    "network": "none"
+  },
+  "promotion_requires": [
+    "signed_InRelease_verification",
+    "exact_package_versions",
+    "two_build_image_digest_match",
+    "systemd_boot",
+    "headless_Wayland_socket",
+    "wayland_info_client",
+    "clean_poweroff",
+    "serial_and_persistent_acceptance_evidence"
+  ]
+}
