@@ -1,0 +1,72 @@
+{
+  "schema": "trillionnium.desktop.agent-port-custody.v1",
+  "status": "D0C_05_UNIT_AND_IDENTITY_FOUNDATION_DEFAULT_DISABLED",
+  "socket": {
+    "unit": "hepta-browserd-agent.socket",
+    "address_family": "AF_UNIX",
+    "path": "/run/hepta/browserd/agent.sock",
+    "owner": "hepta-browserd",
+    "group": "hepta-agent",
+    "mode": "0660",
+    "directory_mode": "0750",
+    "accept_per_connection": true,
+    "backlog": 8,
+    "max_connections": 8,
+    "max_connections_per_source": 2,
+    "remove_on_stop": true,
+    "remote_network": false
+  },
+  "activation": {
+    "preset": "disable",
+    "condition_path": "/etc/hepta/enable-agent-port",
+    "condition_path_shipped": false,
+    "enabled_by_default": false,
+    "manual_enable_before_D2": false
+  },
+  "service": {
+    "unit": "hepta-browserd-agent@.service",
+    "binary": "/usr/libexec/hepta-agent-portd",
+    "user": "hepta-browserd",
+    "group": "hepta-browserd",
+    "standard_input": "socket",
+    "restart": false,
+    "runtime_max_seconds": 25,
+    "network_namespace": "private",
+    "allowed_address_families": [
+      "AF_UNIX"
+    ],
+    "capability_bounding_set": [],
+    "ambient_capabilities": [],
+    "no_new_privileges": true,
+    "read_write_filesystem_paths": []
+  },
+  "client_identity": {
+    "user": "hepta-agent",
+    "group": "hepta-agent",
+    "systemd_unit": "hepta-agent.service",
+    "cgroup_v2_path": "/system.slice/hepta-agent.service",
+    "evidence": [
+      "SO_PEERCRED_pid_uid_gid",
+      "pidfd_liveness",
+      "uniform_proc_status_real_effective_saved_filesystem_uid_gid",
+      "stable_proc_stat_start_time",
+      "exact_unified_cgroup_v2_path",
+      "exact_systemd_unit"
+    ]
+  },
+  "request_model": {
+    "connections": "one_short_lived_service_instance_per_accepted_connection",
+    "requests_per_connection": 1,
+    "browser_runtime_handler": "typed_runtime_unavailable_until_D0A_02_D2",
+    "external_effect_authority": false
+  },
+  "remaining_gates": [
+    "actual_systemd_activation_smoke_in_Debian_QEMU",
+    "BrowserActor_command_bridge",
+    "bounded_multi_request_session_or_explicit_one_request_product_lock",
+    "durable_receipt_persistence",
+    "cancellation_and_crash_reconnect",
+    "Servo_runtime_lifecycle",
+    "explicit_enable_marker_creation_after_D2"
+  ]
+}
