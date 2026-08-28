@@ -1,0 +1,118 @@
+name: materialize-d0c05-current-main
+
+on:
+  push:
+    branches:
+      - codex/d0c05-host-validated-v3
+    paths:
+      - .github/workflows/materialize-d0c05-current-main.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0c05-current-main
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out current-main candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0c05-host-validated-v3
+
+      - name: Restore only reviewed D0C-05 custody source surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            codex/d0c05-systemd-socket-custody:refs/remotes/origin/d0c05-reviewed-source
+          git checkout refs/remotes/origin/d0c05-reviewed-source -- \
+            .github/workflows/agent-port-custody.yml \
+            apps/hepta-agent-portd \
+            crates/hepta-peer-attestation \
+            contracts/agent-port-custody.v1.json \
+            docs/architecture/AGENT_PORT_SYSTEMD_CUSTODY.md \
+            docs/evidence/2026-08-28-d0c05-systemd-agent-port-custody.md \
+            packaging/debian/systemd/hepta-browserd-agent.socket \
+            packaging/debian/systemd/hepta-browserd-agent@.service \
+            packaging/debian/sysusers.d/trillionnium-desktop.conf \
+            packaging/debian/tmpfiles.d/trillionnium-desktop.conf \
+            packaging/debian/systemd-preset/90-trillionnium-desktop.preset \
+            packaging/debian/hepta-agent-portd.install \
+            tools/verify_systemd_socket_custody.py
+
+      - name: Adapt reviewed source to current D0C-04 product API
+        run: python3 tools/materialize_d0c05_current_main.py
+
+      - name: Install exact Rust 1.93.0 toolchain
+        run: |
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version
+          cargo --version
+
+      - name: Resolve only the locked product graph and format
+        run: |
+          cargo generate-lockfile
+          cargo fmt --all
+
+      - name: Audit repository and default-disabled custody contract
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/verify_systemd_socket_custody.py
+
+      - name: Run Clippy with warnings denied
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run complete workspace tests
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Run custody and browserd self-checks
+        run: |
+          cargo run --locked -p hepta-agent-portd -- --self-check
+          cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Verify authority ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(grep -c '^disable hepta-browserd-agent.socket$' packaging/debian/systemd-preset/90-trillionnium-desktop.preset)" -eq 1
+          test ! -e etc/hepta/enable-agent-port
+          test ! -e /etc/hepta/enable-agent-port
+          ! find . -type f -path '*enable-agent-port' -print -quit | grep -q .
+          ! grep -R --line-number --fixed-strings 'hepta-browser-agent-port' \
+            Cargo.toml Cargo.lock apps crates .github tools contracts packaging
+          ! grep -R --line-number --fixed-strings 'UnixListener' \
+            apps/hepta-agent-portd crates/hepta-peer-attestation
+          ! grep -R --line-number --fixed-strings 'TcpListener' \
+            apps/hepta-agent-portd crates/hepta-peer-attestation
+          ! grep -R --line-number --fixed-strings 'WebDriver' \
+            apps/hepta-agent-portd crates/hepta-peer-attestation
+
+      - name: Commit current-main candidate and remove one-shot materializer
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/materialize-d0c05-current-main.yml \
+            tools/materialize_d0c05_current_main.py
+          git add Cargo.toml Cargo.lock .github/workflows/agent-port-custody.yml \
+            apps/hepta-agent-portd crates/hepta-peer-attestation \
+            contracts/agent-port-custody.v1.json \
+            docs/architecture/AGENT_PORT_SYSTEMD_CUSTODY.md \
+            docs/evidence/2026-08-28-d0c05-systemd-agent-port-custody.md \
+            packaging/debian/systemd/hepta-browserd-agent.socket \
+            packaging/debian/systemd/hepta-browserd-agent@.service \
+            packaging/debian/sysusers.d/trillionnium-desktop.conf \
+            packaging/debian/tmpfiles.d/trillionnium-desktop.conf \
+            packaging/debian/systemd-preset/90-trillionnium-desktop.preset \
+            packaging/debian/hepta-agent-portd.install \
+            tools/verify_systemd_socket_custody.py tools/validate_repository.py
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat: integrate default-disabled D0C-05 socket custody"
+          git push origin HEAD:codex/d0c05-host-validated-v3
