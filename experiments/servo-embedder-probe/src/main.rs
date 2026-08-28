@@ -12,10 +12,10 @@ use std::rc::Rc;
 use accesskit::TreeUpdate;
 use dpi::PhysicalSize;
 use servo::{
-    ClipboardDelegate, CompositionEvent, CreateNewWebViewRequest, EmbedderControl,
-    EventLoopWaker, InputEvent, InputMethodControl, LoadStatus, NavigationRequest,
-    RenderingContext, Servo, ServoBuilder, ServoDelegate, WebResourceLoad, WebView,
-    WebViewBuilder, WebViewDelegate, WebViewRect, WindowRenderingContext,
+    ClipboardDelegate, CompositionEvent, CreateNewWebViewRequest, EmbedderControl, EventLoopWaker,
+    InputEvent, InputMethodControl, LoadStatus, NavigationRequest, RenderingContext, Servo,
+    ServoBuilder, ServoDelegate, WebResourceLoad, WebView, WebViewBuilder, WebViewDelegate,
+    WebViewRect, WindowRenderingContext,
 };
 use url::Url;
 
@@ -42,13 +42,7 @@ impl WebViewDelegate for ProbeWebViewDelegate {
 
     fn notify_new_frame_ready(&self, _webview: WebView) {}
 
-    fn notify_crashed(
-        &self,
-        _webview: WebView,
-        _reason: String,
-        _backtrace: Option<String>,
-    ) {
-    }
+    fn notify_crashed(&self, _webview: WebView, _reason: String, _backtrace: Option<String>) {}
 
     fn request_navigation(&self, _webview: WebView, request: NavigationRequest) {
         request.deny();
