@@ -306,7 +306,9 @@ impl fmt::Display for CompositionError {
             Self::EventSequenceExhausted => formatter.write_str("event sequence exhausted"),
             Self::FrameRevisionExhausted => formatter.write_str("frame revision exhausted"),
             Self::PopupCounterExhausted => formatter.write_str("popup counter exhausted"),
-            Self::InvariantViolation(reason) => write!(formatter, "workspace invariant failed: {reason}"),
+            Self::InvariantViolation(reason) => {
+                write!(formatter, "workspace invariant failed: {reason}")
+            }
         }
     }
 }
@@ -562,11 +564,8 @@ impl WorkspaceState {
                 viewport,
                 chrome_height,
             } => {
-                self.config = WorkspaceConfig::new(
-                    viewport,
-                    chrome_height,
-                    self.config.content_surface_id,
-                )?;
+                self.config =
+                    WorkspaceConfig::new(viewport, chrome_height, self.config.content_surface_id)?;
                 self.advance_frame()?;
                 effects.push(WorkspaceEffect::Compose(self.composition_frame()));
             }

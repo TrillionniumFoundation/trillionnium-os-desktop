@@ -44,7 +44,10 @@ fn trusted_chrome_is_always_visible_and_has_a_fixed_origin() {
     let snapshot = state.snapshot();
     assert!(snapshot.trusted_chrome_visible);
     assert_eq!(snapshot.trusted_chrome_origin, TRUSTED_CHROME_ORIGIN);
-    assert_eq!(snapshot.config.trusted_chrome_rect(), Rect::new(0, 0, 1280, 64));
+    assert_eq!(
+        snapshot.config.trusted_chrome_rect(),
+        Rect::new(0, 0, 1280, 64)
+    );
     assert_eq!(snapshot.config.content_rect(), Rect::new(0, 64, 1280, 656));
 }
 
@@ -91,7 +94,11 @@ fn committed_content_frame_becomes_presentable_without_replacing_chrome() {
             frame_sha256: digest('a'),
         })
         .unwrap();
-    assert!(effects.iter().any(|effect| matches!(effect, WorkspaceEffect::Compose(_))));
+    assert!(
+        effects
+            .iter()
+            .any(|effect| matches!(effect, WorkspaceEffect::Compose(_)))
+    );
     let frame = state.composition_frame();
     assert!(frame.content_presentable);
     assert!(!frame.crash_placeholder_visible);
@@ -119,15 +126,21 @@ fn zero_document_generation_is_refused_atomically() {
 #[test]
 fn pointer_routing_respects_the_trusted_chrome_boundary() {
     let mut state = state();
-    let chrome = state.apply(WorkspaceEvent::PointerMoved { x: 10, y: 10 }).unwrap();
+    let chrome = state
+        .apply(WorkspaceEvent::PointerMoved { x: 10, y: 10 })
+        .unwrap();
     assert_eq!(chrome, vec![WorkspaceEffect::RoutePointerToTrustedChrome]);
     assert_eq!(state.snapshot().pointer_owner, InputOwner::TrustedChrome);
 
-    let content = state.apply(WorkspaceEvent::PointerMoved { x: 10, y: 100 }).unwrap();
+    let content = state
+        .apply(WorkspaceEvent::PointerMoved { x: 10, y: 100 })
+        .unwrap();
     assert_eq!(content, vec![WorkspaceEffect::RoutePointerToContent]);
     assert_eq!(state.snapshot().pointer_owner, InputOwner::Content);
 
-    let outside = state.apply(WorkspaceEvent::PointerMoved { x: -1, y: 0 }).unwrap();
+    let outside = state
+        .apply(WorkspaceEvent::PointerMoved { x: -1, y: 0 })
+        .unwrap();
     assert_eq!(outside, vec![WorkspaceEffect::DropPointerOutsideWorkspace]);
     assert_eq!(state.snapshot().pointer_owner, InputOwner::None);
 }
@@ -318,7 +331,10 @@ fn recovery_requires_a_crash_and_matching_session_generation() {
         })
         .unwrap();
     assert!(effects.contains(&WorkspaceEffect::AwaitContentFrame));
-    assert!(matches!(state.snapshot().content, ContentLifecycle::Attached));
+    assert!(matches!(
+        state.snapshot().content,
+        ContentLifecycle::Attached
+    ));
 }
 
 #[test]
@@ -361,7 +377,11 @@ fn resize_preserves_single_surface_and_recomputes_both_rectangles() {
             chrome_height: 72,
         })
         .unwrap();
-    assert!(effects.iter().any(|effect| matches!(effect, WorkspaceEffect::Compose(_))));
+    assert!(
+        effects
+            .iter()
+            .any(|effect| matches!(effect, WorkspaceEffect::Compose(_)))
+    );
     let frame = state.composition_frame();
     assert_eq!(frame.content_surface_id, surface());
     assert_eq!(frame.trusted_chrome_rect, Rect::new(0, 0, 1920, 72));
@@ -372,12 +392,14 @@ fn resize_preserves_single_surface_and_recomputes_both_rectangles() {
 fn invalid_resize_rolls_back_the_old_geometry() {
     let mut state = state();
     let before = state.snapshot();
-    assert!(state
-        .apply(WorkspaceEvent::Resize {
-            viewport: PixelSize::new(640, 480).unwrap(),
-            chrome_height: 480,
-        })
-        .is_err());
+    assert!(
+        state
+            .apply(WorkspaceEvent::Resize {
+                viewport: PixelSize::new(640, 480).unwrap(),
+                chrome_height: 480,
+            })
+            .is_err()
+    );
     assert_eq!(state.snapshot(), before);
 }
 
@@ -385,7 +407,9 @@ fn invalid_resize_rolls_back_the_old_geometry() {
 fn frame_revision_advances_only_for_composition_changes() {
     let mut state = state();
     let initial = state.snapshot().frame_revision;
-    state.apply(WorkspaceEvent::PointerMoved { x: 1, y: 1 }).unwrap();
+    state
+        .apply(WorkspaceEvent::PointerMoved { x: 1, y: 1 })
+        .unwrap();
     assert_eq!(state.snapshot().frame_revision, initial);
     attach(&mut state);
     assert_eq!(state.snapshot().frame_revision, initial + 1);
@@ -403,7 +427,9 @@ fn frame_revision_advances_only_for_composition_changes() {
 fn event_sequence_is_monotonic_for_committed_events() {
     let mut state = state();
     assert_eq!(state.snapshot().event_sequence, 0);
-    state.apply(WorkspaceEvent::PointerMoved { x: 1, y: 1 }).unwrap();
+    state
+        .apply(WorkspaceEvent::PointerMoved { x: 1, y: 1 })
+        .unwrap();
     assert_eq!(state.snapshot().event_sequence, 1);
     state.apply(WorkspaceEvent::PopupRequested).unwrap();
     assert_eq!(state.snapshot().event_sequence, 2);

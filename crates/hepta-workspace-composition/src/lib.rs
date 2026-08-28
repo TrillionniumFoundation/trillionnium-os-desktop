@@ -9,9 +9,9 @@
 mod model;
 
 pub use model::{
-    CompositionError, CompositionFrame, ContentLifecycle, ContentSurfaceId, InputOwner,
-    PixelSize, Rect, SurfaceTarget, WorkspaceConfig, WorkspaceEffect, WorkspaceEvent,
-    WorkspaceSnapshot, WorkspaceState, TRUSTED_CHROME_ORIGIN,
+    CompositionError, CompositionFrame, ContentLifecycle, ContentSurfaceId, InputOwner, PixelSize,
+    Rect, SurfaceTarget, TRUSTED_CHROME_ORIGIN, WorkspaceConfig, WorkspaceEffect, WorkspaceEvent,
+    WorkspaceSnapshot, WorkspaceState,
 };
 
 #[cfg(test)]
