@@ -1,0 +1,33 @@
+name: d0c04-repository-v2
+
+on:
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "apps/hepta-browserd/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/hepta-agent-transport/**"
+      - "crates/hepta-browser-codec/**"
+      - "crates/hepta-browser-contracts/**"
+      - "contracts/**"
+      - "manifests/**"
+      - "tools/validate_repository_v2.py"
+      - "tools/validate_d0c04_rust_product.py"
+      - ".github/workflows/d0c04-repository-v2.yml"
+  push:
+    branches:
+      - codex/d0c04-rust-product-v3
+
+permissions:
+  contents: read
+
+jobs:
+  repository:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile validators
+        run: python3 -m py_compile tools/validate_repository_v2.py tools/validate_d0c04_rust_product.py
+      - name: Validate repository
+        run: python3 tools/validate_repository_v2.py
