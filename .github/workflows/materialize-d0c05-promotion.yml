@@ -1,0 +1,115 @@
+name: materialize-d0c05-promotion
+
+on:
+  push:
+    branches:
+      - codex/d0c05-systemd-custody-v2
+    paths:
+      - ".github/workflows/materialize-d0c05-promotion.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0c05-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote-validator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Replace obsolete listener and historical-text assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('tools/validate_repository.py')
+          text = path.read_text(encoding='utf-8')
+
+          old_listener = '''    if docs_manifest.get("authenticated_agent_listener_implemented") is not False:
+              fail("D0C-02 must not claim an authenticated product listener")
+          if docs_manifest.get("transport_core_source_present") is not True:
+              fail("docs manifest does not record the D0C-02 transport source")
+          '''
+          new_listener = '''    if docs_manifest.get("authenticated_agent_listener_implemented") is not True:
+              fail("docs manifest does not record the D0C-05 custody implementation")
+          if docs_manifest.get("authenticated_agent_listener_enabled") is not False:
+              fail("the product Agent listener must remain disabled before the D1/D3 gate")
+          if docs_manifest.get("agent_port_enable_marker_shipped") is not False:
+              fail("the product must not ship the AgentPort enable marker")
+          custody = load_json(ROOT / "contracts/agent-port-custody.v1.json")
+          if custody.get("status") != "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER":
+              fail("D0C-05 custody contract is not host validated")
+          activation = custody.get("activation", {})
+          if activation.get("enabled_by_default") is not False:
+              fail("D0C-05 custody enables the socket by default")
+          if activation.get("marker_shipped") is not False:
+              fail("D0C-05 custody ships the enable marker")
+          if activation.get("tcp_listener") is not False:
+              fail("D0C-05 custody exposes TCP")
+          if docs_manifest.get("transport_core_source_present") is not True:
+              fail("docs manifest does not record the D0C-02 transport source")
+          '''
+          if old_listener not in text:
+              raise SystemExit('obsolete listener assertion block not found')
+          text = text.replace(old_listener, new_listener, 1)
+
+          old_evidence = '''    evidence = (
+              ROOT / "docs/evidence/2026-08-28-d0c02-authenticated-uds.md"
+          ).read_text(encoding="utf-8")
+          if "UNEXECUTED" not in evidence or "not merge-ready" not in evidence:
+              fail("D0C-02 evidence must record the unexecuted Rust validation ceiling")
+          '''
+          new_evidence = '''    transport_evidence = load_json(
+              ROOT / "docs/evidence/generated/d0c02-rust193-host-result.json"
+          )
+          if transport_evidence.get("status") != "PASS":
+              fail("D0C-02 machine evidence is not host validated")
+          if transport_evidence.get("product_listener_created") is not False:
+              fail("D0C-02 machine evidence claims a product listener")
+          if transport_evidence.get("browser_actor_dispatched") is not False:
+              fail("D0C-02 machine evidence claims BrowserActor dispatch")
+          if transport_evidence.get("servo_called") is not False:
+              fail("D0C-02 machine evidence claims Servo execution")
+          if transport_evidence.get("external_effect_authorized") is not False:
+              fail("D0C-02 machine evidence claims effect authority")
+          '''
+          if old_evidence not in text:
+              raise SystemExit('obsolete D0C-02 evidence assertion block not found')
+          text = text.replace(old_evidence, new_evidence, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Validate migrated exact candidate
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/verify_systemd_socket_custody.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          cargo run --locked -p hepta-agent-portd -- --self-check
+
+      - name: Commit validator promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/materialize-d0c05-promotion.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "fix: align repository validation with D0C-05 default-closed custody"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
