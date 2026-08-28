@@ -1,0 +1,19 @@
+[package]
+name = "hepta-agent-portd"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+hepta-agent-port = { path = "../../crates/hepta-agent-port" }
+hepta-agent-transport = { path = "../../crates/hepta-agent-transport" }
+hepta-browser-codec = { path = "../../crates/hepta-browser-codec" }
+hepta-peer-attestation = { path = "../../crates/hepta-peer-attestation" }
+libc = "=0.2.186"
+
+[[bin]]
+name = "hepta-agent-portd"
+path = "src/main.rs"

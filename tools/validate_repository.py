@@ -14,9 +14,11 @@ ERRORS: list[str] = []
 
 EXPECTED_WORKSPACE_MEMBERS = [
     "apps/hepta-browserd",
+    "apps/hepta-agent-portd",
     "crates/hepta-agent-transport",
     "crates/hepta-browser-codec",
     "crates/hepta-agent-port",
+    "crates/hepta-peer-attestation",
     "crates/trillionnium-contract-core",
     "crates/hepta-browser-contracts",
     "crates/hepta-session-core",
@@ -55,6 +57,21 @@ REQUIRED_PATHS = [
     "tools/validate_rust_browser_codec.py",
     "manifests/cargo-external-allowlist.json",
     "manifests/README.md",
+    ".github/workflows/agent-port-custody.yml",
+    "apps/hepta-agent-portd/Cargo.toml",
+    "apps/hepta-agent-portd/src/main.rs",
+    "contracts/agent-port-custody.v1.json",
+    "crates/hepta-peer-attestation/Cargo.toml",
+    "crates/hepta-peer-attestation/src/lib.rs",
+    "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
+    "docs/evidence/2026-08-29-d0c05-systemd-socket-custody.md",
+    "packaging/debian/hepta-agent-portd.install",
+    "packaging/debian/systemd/hepta-browserd-agent.socket",
+    "packaging/debian/systemd/hepta-browserd-agent@.service",
+    "packaging/debian/sysusers.d/trillionnium-desktop.conf",
+    "packaging/debian/tmpfiles.d/trillionnium-desktop.conf",
+    "packaging/debian/systemd-preset/90-trillionnium-desktop.preset",
+    "tools/verify_systemd_socket_custody.py",
 ]
 
 
@@ -119,8 +136,22 @@ def check_plan_and_manifests() -> None:
         fail("repository-state revision disagrees with docs manifest")
     if docs_manifest.get("repository_mode") != "FULL_PRODUCT_REPOSITORY":
         fail("repository mode is not FULL_PRODUCT_REPOSITORY")
-    if docs_manifest.get("authenticated_agent_listener_implemented") is not False:
-        fail("D0C-02 must not claim an authenticated product listener")
+    if docs_manifest.get("authenticated_agent_listener_implemented") is not True:
+        fail("docs manifest does not record the D0C-05 custody implementation")
+    if docs_manifest.get("authenticated_agent_listener_enabled") is not False:
+        fail("the product Agent listener must remain disabled before the D1/D3 gate")
+    if docs_manifest.get("agent_port_enable_marker_shipped") is not False:
+        fail("the product must not ship the AgentPort enable marker")
+    custody = load_json(ROOT / "contracts/agent-port-custody.v1.json")
+    if custody.get("status") != "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER":
+        fail("D0C-05 custody contract is not host validated")
+    activation = custody.get("activation", {})
+    if activation.get("enabled_by_default") is not False:
+        fail("D0C-05 custody enables the socket by default")
+    if activation.get("marker_shipped") is not False:
+        fail("D0C-05 custody ships the enable marker")
+    if activation.get("tcp_listener") is not False:
+        fail("D0C-05 custody exposes TCP")
     if docs_manifest.get("transport_core_source_present") is not True:
         fail("docs manifest does not record the D0C-02 transport source")
     for path in [
@@ -362,11 +393,20 @@ def check_contract_alignment() -> None:
         fail("transport source does not implement kernel peer-credential extraction")
     if "// SAFETY:" not in transport_source:
         fail("transport unsafe FFI lacks an adjacent safety explanation")
-    evidence = (
-        ROOT / "docs/evidence/2026-08-28-d0c02-authenticated-uds.md"
-    ).read_text(encoding="utf-8")
-    if "UNEXECUTED" not in evidence or "not merge-ready" not in evidence:
-        fail("D0C-02 evidence must record the unexecuted Rust validation ceiling")
+    transport_evidence = load_json(
+        ROOT / "docs/evidence/generated/d0c02-rust193-host-result.json"
+    )
+    if transport_evidence.get("status") != "PASS_HOST_VALIDATED_NO_LISTENER":
+        fail("D0C-02 machine evidence is not host validated")
+    authority = transport_evidence.get("authority", {})
+    if authority.get("listener_created") is not False:
+        fail("D0C-02 machine evidence claims a product listener")
+    if authority.get("browser_actor_called") is not False:
+        fail("D0C-02 machine evidence claims BrowserActor dispatch")
+    if authority.get("servo_called") is not False:
+        fail("D0C-02 machine evidence claims Servo execution")
+    if authority.get("external_effect_authorized") is not False:
+        fail("D0C-02 machine evidence claims effect authority")
 
 
 def check_filesystem_shape() -> None:

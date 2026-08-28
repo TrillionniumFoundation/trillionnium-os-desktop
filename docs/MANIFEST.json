@@ -3,7 +3,11 @@
   "active_plan_revision": "2026-08-28-d5",
   "agent_port_connected_bridge_product": true,
   "agent_port_exact_head_rust_validation": true,
-  "authenticated_agent_listener_implemented": false,
+  "agent_port_systemd_custody_product": true,
+  "agent_port_systemd_custody_host_validation": true,
+  "authenticated_agent_listener_implemented": true,
+  "authenticated_agent_listener_enabled": false,
+  "agent_port_enable_marker_shipped": false,
   "browser_codec_exact_head_rust_validation": true,
   "browser_runtime": "servo",
   "canonical_browser_codec_product": true,
@@ -35,9 +39,21 @@
       "status": "HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR",
       "validated_head": "5abd71db79b75e400c1c1d7cb0eac85a68041cae",
       "workflow_run_id": 33179346462
+    },
+    {
+      "evidence": "evidence/2026-08-29-d0c05-systemd-socket-custody.md",
+      "id": "TOS-D0C-05",
+      "machine_evidence": "evidence/generated/d0c05-rust193-host-result.json",
+      "status": "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER",
+      "validated_head": "7be7121b1d2593a0e708ec9ade189ef84ab245da",
+      "workflow_run_ids": [
+        33190387511,
+        33190387553,
+        33190387564
+      ]
     }
   ],
-  "implementation_stage": "D0R_D0C04_HOST_VALIDATED",
+  "implementation_stage": "D0R_D0C05_HOST_VALIDATED",
   "product": "TrillionniumOS Desktop",
   "product_boundary": "../manifests/product-boundary.json",
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",

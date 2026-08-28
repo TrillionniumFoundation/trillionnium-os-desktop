@@ -9,7 +9,8 @@
     "D0C-02",
     "D0A-00",
     "D0C-03",
-    "D0C-04"
+    "D0C-04",
+    "D0C-05"
   ],
   "host_validated_work_packages": [
     {
@@ -32,14 +33,26 @@
       "status": "HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR",
       "validated_head": "5abd71db79b75e400c1c1d7cb0eac85a68041cae",
       "workflow_run_id": 33179346462
+    },
+    {
+      "evidence": "docs/evidence/generated/d0c05-rust193-host-result.json",
+      "id": "D0C-05",
+      "status": "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER",
+      "validated_head": "7be7121b1d2593a0e708ec9ade189ef84ab245da",
+      "workflow_run_ids": [
+        33190387511,
+        33190387553,
+        33190387564
+      ]
     }
   ],
-  "implementation_stage": "D0R_D0C04_HOST_VALIDATED",
+  "implementation_stage": "D0R_D0C05_HOST_VALIDATED",
   "not_claimed": [
     "servo_integrated",
     "debian_image_built",
     "wayland_session_booted",
-    "authenticated_uds_listener",
+    "product_agent_listener_enabled",
+    "qemu_pid1_socket_activation",
     "browser_actor_dispatch",
     "external_web_effects",
     "signed_app_runtime",

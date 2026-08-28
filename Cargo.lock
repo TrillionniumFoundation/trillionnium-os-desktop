@@ -67,6 +67,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "hepta-agent-portd"
+version = "0.1.0"
+dependencies = [
+ "hepta-agent-port",
+ "hepta-agent-transport",
+ "hepta-browser-codec",
+ "hepta-peer-attestation",
+ "libc",
+]
+
+[[package]]
 name = "hepta-agent-transport"
 version = "0.1.0"
 dependencies = [
@@ -98,6 +109,14 @@ dependencies = [
  "hepta-browser-contracts",
  "hepta-session-core",
  "trillionnium-contract-core",
+]
+
+[[package]]
+name = "hepta-peer-attestation"
+version = "0.1.0"
+dependencies = [
+ "hepta-agent-transport",
+ "libc",
 ]
 
 [[package]]
