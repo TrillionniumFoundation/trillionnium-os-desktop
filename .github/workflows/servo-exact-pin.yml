@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/servo-exact-pin.yml"
       - "tools/qualify_servo_exact_pin.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
       - "experiments/servo-embedder-probe/**"
       - "manifests/servo.lock.json"
       - "manifests/servo-api-requirements.v2.json"
@@ -18,6 +19,7 @@ on:
     paths:
       - ".github/workflows/servo-exact-pin.yml"
       - "tools/qualify_servo_exact_pin.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
       - "experiments/servo-embedder-probe/**"
       - "manifests/servo.lock.json"
       - "manifests/servo-api-requirements.v2.json"
@@ -143,7 +145,7 @@ jobs:
           set -euo pipefail
           export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
           mkdir -p artifacts/servo-qualification/logs
-          python3 tools/qualify_servo_exact_pin.py \
+          python3 tools/qualify_servo_exact_pin_v3.py \
             --servo-root servo-source \
             --requirements manifests/servo-api-requirements.v2.json \
             --patch-ledger manifests/servo-patch-ledger.v1.json \
