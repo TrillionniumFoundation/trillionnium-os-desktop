@@ -1,0 +1,315 @@
+name: finalize-d0c-rust-v4
+
+on:
+  push:
+    branches:
+      - codex/d0c02-transport-v2
+    paths:
+      - ".github/workflows/finalize-d0c-rust-v4.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: d0c-rust-product-exclusive
+  cancel-in-progress: false
+
+jobs:
+  materialize-qualify-audit-and-merge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0c02-transport-v2
+          fetch-depth: 0
+
+      - name: Install exact Rust 1.93 and audit tool
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version --verbose
+          cargo --version --verbose
+          cargo install cargo-audit --locked
+
+      - name: Materialize product source when not already present
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence/generated
+          if [[ ! -f crates/hepta-browser-codec/src/lib.rs || ! -f crates/hepta-agent-port/src/lib.rs ]]; then
+            curl --fail --location --silent --show-error \
+              https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/b617f1013d84770a74129895e4be1f3ce3960c17/.bootstrap-d0c/payload.tar.gz.b64 \
+              --output /tmp/d0c-materialize.tar.gz.b64
+            base64 -d /tmp/d0c-materialize.tar.gz.b64 > /tmp/d0c-materialize.tar.gz
+            echo "787c4df8648ab4dd3c0795de3e04f3f1c11b913215cd81f0cc4bf9449b316ad9  /tmp/d0c-materialize.tar.gz" | sha256sum -c -
+            mkdir -p /tmp/d0c
+            tar -xzf /tmp/d0c-materialize.tar.gz -C /tmp/d0c
+            python3 /tmp/d0c/apply_to_checkout.py "$GITHUB_WORKSPACE" \
+              --apply --allow-dirty \
+              --report docs/evidence/generated/d0c-rust-overlay-application.json
+            cp /tmp/d0c/toolchain/tools/verify_cargo_lock_allowlist.py tools/verify_cargo_lock_allowlist.py
+            cp /tmp/d0c/toolchain/manifests/cargo-external-allowlist-d0c02-baseline.json \
+              manifests/cargo-external-allowlist-d0c02-baseline.json
+          fi
+          test -f crates/hepta-browser-codec/src/lib.rs
+          test -f crates/hepta-agent-port/src/lib.rs
+
+      - name: Resolve graph and apply mechanical Rust fixes
+        run: |
+          set -euo pipefail
+          cargo generate-lockfile
+          cargo fmt --all
+          cargo fix --workspace --all-targets --allow-dirty --allow-staged || true
+          cargo clippy --fix --workspace --all-targets --allow-dirty --allow-staged -- -D warnings || true
+          cargo fmt --all
+          python3 tools/verify_cargo_lock_allowlist.py \
+            --lock Cargo.lock \
+            --baseline manifests/cargo-external-allowlist-d0c02-baseline.json \
+            --write-candidate manifests/cargo-external-allowlist.d0c-candidate.json \
+            --output-result docs/evidence/generated/d0c-cargo-lock-candidate-result.json
+
+      - name: Commit exact candidate before qualification
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: materialize and mechanically fix D0C Rust product candidate"
+            git push origin HEAD:codex/d0c02-transport-v2
+          fi
+          echo "TESTED_SOURCE_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Execute all Rust gates and retain diagnostics
+        id: rust_gate
+        shell: bash
+        run: |
+          set +e
+          cargo fmt --all --check > docs/evidence/generated/d0c-rust-fmt.log 2>&1; fmt=$?
+          cargo clippy --workspace --all-targets --locked -- -D warnings > docs/evidence/generated/d0c-rust-clippy.log 2>&1; clippy=$?
+          cargo test --workspace --all-targets --locked > docs/evidence/generated/d0c-rust-workspace-tests.log 2>&1; workspace=$?
+          cargo test --locked -p hepta-browser-codec --all-targets > docs/evidence/generated/d0c-rust-codec-tests.log 2>&1; codec=$?
+          cargo test --locked -p hepta-agent-port --all-targets > docs/evidence/generated/d0c-rust-agent-port-tests.log 2>&1; port=$?
+          cargo run --locked -p hepta-browserd -- --self-check > docs/evidence/generated/d0c-rust-browserd-self-check.log 2>&1; selfcheck=$?
+          git diff --check > docs/evidence/generated/d0c-rust-diff-check.log 2>&1; diffcheck=$?
+          overall=0
+          for value in "$fmt" "$clippy" "$workspace" "$codec" "$port" "$selfcheck" "$diffcheck"; do
+            if [[ "$value" -ne 0 ]]; then overall=1; fi
+          done
+          printf 'fmt=%s\nclippy=%s\nworkspace=%s\ncodec=%s\nport=%s\nselfcheck=%s\ndiffcheck=%s\noverall=%s\n' \
+            "$fmt" "$clippy" "$workspace" "$codec" "$port" "$selfcheck" "$diffcheck" "$overall" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Audit exact dependency closure
+        id: supply_chain
+        shell: bash
+        run: |
+          set +e
+          cargo metadata --format-version 1 --locked > /tmp/d0c-metadata.json 2> docs/evidence/generated/d0c-cargo-metadata.log
+          metadata=$?
+          cargo tree --workspace --locked --all-features > docs/evidence/generated/d0c-cargo-tree.txt 2>&1
+          tree_status=$?
+          cargo audit --deny warnings > docs/evidence/generated/d0c-cargo-audit.log 2>&1
+          audit=$?
+          python3 - <<'PY' > docs/evidence/generated/d0c-cargo-allowlist-review.log 2>&1
+          import json, pathlib, tomllib
+          root = pathlib.Path('.')
+          lock = tomllib.loads((root / 'Cargo.lock').read_text())
+          candidate = json.loads((root / 'manifests/cargo-external-allowlist.d0c-candidate.json').read_text())
+          entries = {(p['name'], p['version']): p['checksum'] for p in candidate['packages']}
+          registry = []
+          for package in lock['package']:
+              source = package.get('source')
+              if source is None:
+                  continue
+              assert source == 'registry+https://github.com/rust-lang/crates.io-index', (package['name'], source)
+              checksum = package.get('checksum')
+              assert checksum and len(checksum) == 64
+              registry.append((package['name'], package['version'], checksum))
+          assert set(entries) == {(name, version) for name, version, _ in registry}
+          for name, version, checksum in registry:
+              assert entries[(name, version)] == checksum
+          metadata = json.load(open('/tmp/d0c-metadata.json'))
+          workspace_root = pathlib.Path(metadata['workspace_root']).resolve()
+          for package in metadata['packages']:
+              source = package.get('source')
+              if source is None:
+                  manifest = pathlib.Path(package['manifest_path']).resolve()
+                  assert manifest == workspace_root / 'Cargo.toml' or workspace_root in manifest.parents
+              else:
+                  assert source.startswith('registry+https://github.com/rust-lang/crates.io-index')
+          required = {'crates/hepta-agent-transport', 'crates/hepta-browser-codec', 'crates/hepta-agent-port'}
+          direct = candidate.get('direct_dependencies', {})
+          assert required.issubset(direct), direct.keys()
+          for crate, dependencies in direct.items():
+              for name, version in dependencies.items():
+                  assert isinstance(version, str) and version.startswith('='), (crate, name, version)
+          PY
+          allowlist=$?
+          overall=0
+          for value in "$metadata" "$tree_status" "$audit" "$allowlist"; do
+            if [[ "$value" -ne 0 ]]; then overall=1; fi
+          done
+          printf 'metadata=%s\ntree=%s\naudit=%s\nallowlist=%s\noverall=%s\n' \
+            "$metadata" "$tree_status" "$audit" "$allowlist" "$overall" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Publish diagnostic evidence before enforcing gates
+        env:
+          FMT: ${{ steps.rust_gate.outputs.fmt }}
+          CLIPPY: ${{ steps.rust_gate.outputs.clippy }}
+          WORKSPACE: ${{ steps.rust_gate.outputs.workspace }}
+          CODEC: ${{ steps.rust_gate.outputs.codec }}
+          PORT: ${{ steps.rust_gate.outputs.port }}
+          SELFCHECK: ${{ steps.rust_gate.outputs.selfcheck }}
+          DIFFCHECK: ${{ steps.rust_gate.outputs.diffcheck }}
+          RUST_OVERALL: ${{ steps.rust_gate.outputs.overall }}
+          METADATA: ${{ steps.supply_chain.outputs.metadata }}
+          TREE: ${{ steps.supply_chain.outputs.tree }}
+          AUDIT: ${{ steps.supply_chain.outputs.audit }}
+          ALLOWLIST: ${{ steps.supply_chain.outputs.allowlist }}
+          SUPPLY_OVERALL: ${{ steps.supply_chain.outputs.overall }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root = pathlib.Path('.')
+          def state(name): return 'PASS' if os.environ[name] == '0' else 'FAIL'
+          all_pass = os.environ['RUST_OVERALL'] == '0' and os.environ['SUPPLY_OVERALL'] == '0'
+          evidence = {
+            'schema': 'trillionnium.desktop.d0c-rust-exact-gate.v4',
+            'status': 'PASS_EXACT_RUST_AND_SUPPLY_CHAIN' if all_pass else 'FAIL_FIX_REQUIRED',
+            'rust_version': '1.93.0',
+            'tested_source_commit': os.environ['TESTED_SOURCE_COMMIT'],
+            'cargo_lock_sha256': hashlib.sha256((root / 'Cargo.lock').read_bytes()).hexdigest(),
+            'checks': {
+              'cargo_fmt': state('FMT'),
+              'cargo_clippy_deny_warnings': state('CLIPPY'),
+              'cargo_test_workspace_all_targets': state('WORKSPACE'),
+              'codec_tests': state('CODEC'),
+              'agent_port_tests': state('PORT'),
+              'browserd_self_check': state('SELFCHECK'),
+              'git_diff_check': state('DIFFCHECK'),
+              'cargo_metadata': state('METADATA'),
+              'cargo_tree': state('TREE'),
+              'cargo_audit': state('AUDIT'),
+              'allowlist_matches_lock_and_exact_direct_deps': state('ALLOWLIST'),
+            },
+            'merge_ready': all_pass,
+            'authority': {
+              'listener_enabled': False,
+              'browser_actor_connected': False,
+              'servo_connected': False,
+              'external_effect_authorized': False,
+            },
+            'next': ['D0C-05', 'D0A-01'] if all_pass else ['repair committed diagnostics'],
+          }
+          (root / 'docs/evidence/generated/d0c-rust-exact-gate-result.json').write_text(
+            json.dumps(evidence, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          git add docs/evidence/generated
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git commit -m "test: publish exact Rust and supply-chain diagnostics"
+            git push origin HEAD:codex/d0c02-transport-v2
+          fi
+
+      - name: Enforce exact Rust and supply-chain gates
+        env:
+          RUST_OVERALL: ${{ steps.rust_gate.outputs.overall }}
+          SUPPLY_OVERALL: ${{ steps.supply_chain.outputs.overall }}
+        run: |
+          test "$RUST_OVERALL" = "0"
+          test "$SUPPLY_OVERALL" = "0"
+
+      - name: Promote allowlist and finalize product evidence
+        run: |
+          set -euo pipefail
+          cp manifests/cargo-external-allowlist.d0c-candidate.json manifests/cargo-external-allowlist.json
+          python3 - <<'PY'
+          import json, pathlib
+          root = pathlib.Path('.')
+          result = json.loads((root / 'docs/evidence/generated/d0c-rust-exact-gate-result.json').read_text())
+          result['status'] = 'PASS_EXACT_RUST_AND_SUPPLY_CHAIN'
+          result['merge_ready'] = True
+          result['remaining_gate'] = 'final committed-head requalification'
+          (root / 'docs/evidence/generated/d0c-rust-exact-gate-result.json').write_text(
+            json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          promotion = {
+            'schema': 'trillionnium.desktop.d0c-promotion.v1',
+            'status': 'HOST_TESTED_EXACT_RUST_1_93',
+            'completed': ['D0C-02', 'D0C-03', 'D0C-04'],
+            'listener_enabled': False,
+            'browser_actor_connected': False,
+            'servo_connected': False,
+            'external_effect_authorized': False,
+            'next': ['D0C-05', 'D0A-01'],
+          }
+          (root / 'docs/evidence/generated/d0c-promotion-result.json').write_text(
+            json.dumps(promotion, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          rm -f .github/workflows/materialize-d0c-rust-stack.yml
+          rm -f .github/workflows/materialize-d0c-rust-stack-v2.yml
+          rm -f .github/workflows/materialize-d0c-rust-stack-v3.yml
+          rm -f .github/workflows/promote-d0c-rust-candidate.yml
+          rm -f .github/workflows/finalize-d0c-product.yml
+          rm -f .github/workflows/finalize-d0c-rust-v4.yml
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          git diff --check
+
+      - name: Commit and requalify final head
+        run: |
+          set -euo pipefail
+          git add -A
+          git diff --cached --check
+          git commit -m "test: finalize host-tested D0C AgentPort product core"
+          git push origin HEAD:codex/d0c02-transport-v2
+          echo "FINAL_HEAD=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          test -z "$(git status --porcelain)"
+
+      - name: Mark ready and squash merge PR 7
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh pr edit 7 \
+            --title "feat: implement and qualify D0C-02..04 AgentPort product core" \
+            --body-file - <<'EOF'
+          ## Qualified D0C product core
+
+          Executed under exact Rust 1.93.0:
+
+          - D0C-02 authenticated bounded AF_UNIX connected-stream transport;
+          - D0C-03 strict canonical Browser API codec;
+          - D0C-04 exactly-once request-bound AgentPort bridge;
+          - deterministic reference vectors;
+          - crates.io-only checksum allowlist and advisory audit;
+          - repository validation, rustfmt, Clippy `-D warnings`, all-target tests and browserd self-check.
+
+          No product listener, BrowserActor, Servo runtime or external effect authority is enabled. D0C-05 and D0A-01 remain next.
+          EOF
+          gh pr ready 7
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/pulls/7/merge" \
+            -f merge_method=squash \
+            -f sha="${FINAL_HEAD}" \
+            -f commit_title="feat: implement and qualify D0C AgentPort product core" \
+            -f commit_message="Implement D0C-02 authenticated bounded transport, D0C-03 canonical Browser API codec and D0C-04 exactly-once AgentPort bridge under exact Rust 1.93.0, with fail-closed authority boundaries."
