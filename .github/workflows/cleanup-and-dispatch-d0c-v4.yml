@@ -1,0 +1,66 @@
+name: cleanup-and-dispatch-d0c-v4
+
+on:
+  push:
+    branches:
+      - codex/d0c02-transport-v2
+    paths:
+      - ".github/workflows/cleanup-and-dispatch-d0c-v4.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  remove-obsolete-gates-and-dispatch-v4:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0c02-transport-v2
+          fetch-depth: 0
+
+      - name: Cancel obsolete queued or running branch workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/actions/runs?branch=codex%2Fd0c02-transport-v2&per_page=100" \
+            --jq '.workflow_runs[] | select((.status == "queued" or .status == "in_progress") and .id != env.GITHUB_RUN_ID and .name != "finalize-d0c-rust-v4") | .id' \
+            | while read -r run_id; do
+                [[ -n "$run_id" ]] || continue
+                gh api --method POST "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" || true
+              done
+
+      - name: Remove obsolete one-shot workflow definitions
+        run: |
+          set -euo pipefail
+          rm -f \
+            .github/workflows/materialize-d0c-rust-stack.yml \
+            .github/workflows/materialize-d0c-rust-stack-v2.yml \
+            .github/workflows/materialize-d0c-rust-stack-v3.yml \
+            .github/workflows/promote-d0c-rust-candidate.yml \
+            .github/workflows/finalize-d0c-product.yml \
+            .github/workflows/cleanup-and-dispatch-d0c-v4.yml
+          test -f .github/workflows/finalize-d0c-rust-v4.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git commit -m "ci: retire obsolete D0C qualification chains"
+            git push origin HEAD:codex/d0c02-transport-v2
+          fi
+
+      - name: Explicitly dispatch the single transactional D0C gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/actions/workflows/finalize-d0c-rust-v4.yml/dispatches" \
+            -f ref=codex/d0c02-transport-v2
