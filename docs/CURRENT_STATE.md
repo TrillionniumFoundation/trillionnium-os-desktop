@@ -1,65 +1,52 @@
 # TrillionniumOS Desktop — current state
 
-**Updated:** 2026-08-28
-**Canonical plan:** `2026-08-28-d5`
-**Repository mode:** `FULL_PRODUCT_REPOSITORY`
-**Implementation stage:** `D0R_D0C_FOUNDATION`
+**Updated:** 2026-08-28  
+**Canonical plan:** `2026-08-28-d5`  
+**Repository mode:** `FULL_PRODUCT_REPOSITORY`  
+**Implementation stage:** `D0R_D0C02_HOST_VALIDATED`
 
-## What is implemented
+## Implemented and demonstrated
 
-The repository now contains the initial product implementation rather than only
-planning documents:
+The D0 foundation includes the Rust workspace, layered revisions, deterministic
+Agent/human arbitration, synthetic trusted origins, browser contracts, exact
+Cargo dependency closure, and `hepta-agent-transport`.
 
-1. A Rust 2024 workspace with `rust-version = 1.93` and four initial packages:
-   `trillionnium-contract-core`, `hepta-browser-contracts`,
-   `hepta-session-core`, and `hepta-browserd`.
-2. Layered revision identity:
-   `session_generation`, `document_generation`,
-   `semantic_snapshot_revision`, and `mutation_epoch`.
-3. A deterministic Agent/human state machine covering Agent observation and
-   mutation, human focus leases, IME composition, navigation, modal state,
-   capability waits, cancellation, browser crash, recovery, and closure.
-4. A bounded FIFO arbiter queue that fails closed on overflow.
-5. A trusted-origin decision using distinct synthetic HTTPS hosts under
-   `*.apps.hepta.invalid`; path-only custom-scheme origins are not used.
-6. Machine-readable schemas for browser requests, operation receipts,
-   capability permits, and signed app manifests, plus error codes and golden
-   vectors.
-7. Product-boundary checks that prevent Android/mobile direct shell, ADB,
-   Root-Linux, and privilege-broker packages from entering the desktop default
-   graph.
-8. A `hepta-browserd --self-check` scaffold that exercises preemption,
-   revisions, navigation, crash, and recovery without opening a listener or
-   network connection.
-9. CI and repository validation definitions.
+D0C-02 provides a connected-stream AF_UNIX carrier with kernel `SO_PEERCRED`,
+explicit peer policy, a fresh 256-bit nonce, 88-byte versioned framing, a
+256 KiB pre-allocation bound, SHA-256 binding, strict request sequences, and
+one monotonic deadline across each complete frame. It starts no listener.
 
-## What is not implemented or claimed
+## Exact-head host validation
 
-- No Servo source is linked or built by this repository yet.
-- No `WebView`, rendering context, Wayland surface, keyboard/pointer path, or
-  IME adapter exists yet.
-- No Unix-domain Agent API listener exists; therefore peer-credential and
-  channel-binding authentication are not yet product facts.
-- No Debian snapshot has been fully resolved to `InRelease` and package-set
-  digests, and no bootable QEMU image exists.
-- No trusted shell bundle is signed or loaded.
-- No network egress proxy, file portal, secret service, update daemon, Secure
-  Boot chain, or A/B rollback image exists.
-- No external webpage interaction or external effect is authorized.
-- No public release, beta image, or hardware-qualification claim exists.
+Candidate `786debc12aa8d790b231397c1a3341fbf89de080` passed GitHub Actions run
+`33167838644` on Ubuntu 24.04 with Rust 1.93.0:
 
-## Active next work packages
+- repository contracts and product-boundary validation;
+- `cargo fmt --all --check`;
+- `cargo clippy --workspace --all-targets -- -D warnings`;
+- `cargo test --workspace`: 25 passed, 0 failed;
+- `cargo run -p hepta-browserd -- --self-check`: PASS.
 
-1. `D0A-01`: build a pinned Servo compatibility spike at commit
-   `670ae8a70801b162e186f81cbb5bdd2d59c39108`.
-2. `D0A-02`: prove one visible workspace containing a trusted shell surface and
-   exactly one untrusted content WebView, without a hidden second Agent page.
-3. `D0C-02`: bind JSON contracts to a bounded authenticated UDS carrier with
-   peer credentials, session nonce, deadlines, cancellation, and strict frame
-   handling.
-4. `D1-01`: resolve the Debian snapshot and build the first reproducible QEMU
-   image only after its signed package inputs are locked.
+Machine evidence is `docs/evidence/generated/d0c02-rust193-host-result.json`.
+D0C-02 is now a host-validated carrier core, not a listener claim.
 
-A source file, schema, self-check, or CI definition is not evidence that Servo
-or Debian bring-up has completed. Stage promotion requires the exit evidence in
-the canonical plan.
+## Not implemented or claimed
+
+- No filesystem or abstract Unix socket is bound.
+- No systemd socket activation or product Agent listener is enabled.
+- No canonical Browser API codec or exactly-one BrowserActor bridge is merged.
+- No Servo source, WebView, visible first frame, Wayland input, or Debian image
+  exists in the demonstrated product.
+- No external interaction, capability, credential use, or web effect is
+  authorized.
+- No signed app runtime, Secure Boot, beta, or release claim exists.
+
+## Active next work
+
+1. Merge the host-validated D0C-02 carrier core.
+2. Complete Rust D0C-03 canonical Browser API decoding.
+3. Complete Rust D0C-04 exactly-one connected AgentPort dispatch.
+4. Complete D0A-01 against Servo pin
+   `670ae8a70801b162e186f81cbb5bdd2d59c39108`, then D0A-02.
+5. Resolve signed Debian inputs before D1-01.
+6. Keep D0C-05 listener custody disabled until all preceding gates pass.

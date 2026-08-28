@@ -4,8 +4,8 @@ use hepta_browser_contracts::{BrowserErrorCode, ElementRef, error_for_freshness}
 use trillionnium_contract_core::{LeaseId, RevisionClock};
 
 use crate::types::{
-    ControlState, HumanLease, MAX_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent,
-    SessionPhase, TransitionError,
+    ControlState, HumanLease, MAX_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent, SessionPhase,
+    TransitionError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -93,8 +93,10 @@ impl SessionMachine {
                 if ttl_ms == 0 || ttl_ms > MAX_HUMAN_LEASE_TTL_MS {
                     return Err(TransitionError::InvalidLeaseTtl);
                 }
-                if matches!(self.control, ControlState::AgentObserving | ControlState::AgentMutating)
-                {
+                if matches!(
+                    self.control,
+                    ControlState::AgentObserving | ControlState::AgentMutating
+                ) {
                     effects.push(SessionEffect::InterruptAgentWork);
                 }
                 self.control = ControlState::HumanActive;

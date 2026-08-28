@@ -5,24 +5,22 @@
   "repository_mode": "full_product_repository",
   "active_plan": "docs/DESKTOP_PLAN-2026-08-28-d5.md",
   "active_plan_revision": "2026-08-28-d5",
-  "baseline_commit": "9914dd9bcce3c9ed42b7999ced433fb89c6eaafd",
-  "implementation_stage": "D0R_D0C_FOUNDATION",
-  "completed_work_packages": [
-    "D0R-01",
-    "D0R-03",
-    "D0C-01",
-    "D0A-00"
-  ],
+  "baseline_commit": "de113c32827a32c334cc77a61a761976c7174d04",
+  "implementation_stage": "D0R_D0C02_HOST_VALIDATED",
+  "completed_work_packages": ["D0R-01", "D0R-03", "D0C-01", "D0C-02", "D0A-00"],
+  "host_validated_work_packages": [{
+    "id": "D0C-02",
+    "status": "HOST_VALIDATED_NO_LISTENER",
+    "validated_head": "786debc12aa8d790b231397c1a3341fbf89de080",
+    "workflow_run_id": 33167838644,
+    "evidence": "docs/evidence/generated/d0c02-rust193-host-result.json"
+  }],
+  "source_candidate_work_packages": [],
   "not_claimed": [
-    "servo_integrated",
-    "debian_image_built",
-    "wayland_session_booted",
-    "authenticated_uds_listener",
-    "external_web_effects",
-    "signed_app_runtime",
+    "servo_integrated", "debian_image_built", "wayland_session_booted",
+    "authenticated_uds_listener", "canonical_browser_codec_product",
+    "browser_actor_dispatch", "external_web_effects", "signed_app_runtime",
     "production_release"
   ],
-  "partial_work_packages": [
-    "D0R-02"
-  ]
+  "partial_work_packages": ["D0R-02", "D0A-01", "D0C-03", "D0C-04"]
 }

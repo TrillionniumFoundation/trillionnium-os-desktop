@@ -1,0 +1,84 @@
+name: agent-transport-reference
+
+on:
+  pull_request:
+    paths:
+      - "contracts/agent-transport.v1.json"
+      - "contracts/golden/agent-transport-request.v1.json"
+      - "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+      - "tools/agent_transport_reference.py"
+      - "tests/transport/test_agent_transport_reference.py"
+      - ".github/workflows/agent-transport-reference.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "contracts/agent-transport.v1.json"
+      - "contracts/golden/agent-transport-request.v1.json"
+      - "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+      - "tools/agent_transport_reference.py"
+      - "tests/transport/test_agent_transport_reference.py"
+      - ".github/workflows/agent-transport-reference.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  reference-conformance:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@v4
+
+      - name: Compile Python sources
+        run: >-
+          python3 -m py_compile
+          tools/agent_transport_reference.py
+          tests/transport/test_agent_transport_reference.py
+
+      - name: Run independent fault vectors
+        run: >-
+          python3 -m unittest discover
+          -s tests/transport
+          -p 'test_*.py'
+          -v
+
+      - name: Regenerate deterministic evidence
+        run: |
+          set -euo pipefail
+          python3 tools/agent_transport_reference.py \
+            --contract contracts/agent-transport.v1.json \
+            --write-vector /tmp/agent-transport-request.v1.json \
+            --write-result /tmp/d0c02-agent-transport-reference-result.json \
+            >/tmp/agent-transport-reference.stdout.json
+          cmp /tmp/agent-transport-request.v1.json \
+            contracts/golden/agent-transport-request.v1.json
+          cmp /tmp/d0c02-agent-transport-reference-result.json \
+            docs/evidence/generated/d0c02-agent-transport-reference-result.json
+
+      - name: Confirm listener and semantic ceilings
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          contract = json.loads(Path("contracts/agent-transport.v1.json").read_text())
+          result = json.loads(
+              Path(
+                  "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+              ).read_text()
+          )
+          assert contract["status"] == "HOST_VALIDATED_NO_LISTENER"
+          assert contract["listener"] == {
+              "enabled": False,
+              "socket_path": None,
+              "public_network": False,
+          }
+          assert result["status"] == "PASS"
+          assert result["product_listener_created"] is False
+          assert result["browser_payload_interpreted"] is False
+          assert contract["validation"]["cargo_fmt"] == "PASS"
+          assert contract["validation"]["cargo_test"] == "PASS_25_RUST_TESTS"
+          assert contract["validation"]["browserd_self_check"] == "PASS"
+          PY
