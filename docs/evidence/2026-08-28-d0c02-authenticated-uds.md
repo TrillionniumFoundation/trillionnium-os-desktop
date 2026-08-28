@@ -1,52 +1,58 @@
 # D0C-02 authenticated UDS carrier evidence
 
 **Date:** 2026-08-28  
-**Claim level:** source candidate plus static repository validation  
-**Merge readiness:** not merge-ready
+**Claim level:** exact-head Rust 1.93 host validation  
+**Candidate head:** `786debc12aa8d790b231397c1a3341fbf89de080`  
+**Workflow run:** `33167838644`  
+**Merge readiness:** merge-ready for the D0C-02 connected-stream carrier core
 
-## Source present
+## Implemented boundary
 
-The candidate contains:
+The candidate contains Linux/Android `SO_PEERCRED` peer identity, an explicit
+PID/UID/GID policy, a fresh 256-bit connection nonce, fixed 88-byte framing,
+a 256 KiB pre-allocation payload bound, SHA-256 binding, strict sequences,
+and one absolute monotonic deadline. It starts no listener, socket path, TCP
+endpoint, WebDriver endpoint, or external network operation.
 
-- Linux/Android kernel peer-credential extraction through `SO_PEERCRED`;
-- explicit PID/UID/GID peer policy;
-- a fresh 256-bit server challenge nonce from `/dev/urandom`;
-- fixed, versioned, pre-allocation length-bounded binary framing;
-- SHA-256 payload binding;
-- strictly increasing request sequences and replay rejection;
-- one absolute monotonic operation deadline across header and payload;
-- browserd self-check integration using only `UnixStream::pair()`;
-- no listener, socket path, TCP endpoint, WebDriver endpoint, or external
-  network operation.
-
-The registry dependency closure is exact-name/version/checksum allowlisted in
+The registry closure is exact-name/version/checksum allowlisted in
 `manifests/cargo-external-allowlist.json` and represented in `Cargo.lock`.
 
-## Executed in this development environment
+## Exact-head execution
 
-- JSON and TOML construction/parsing for the candidate metadata;
-- dependency-closure and checksum cross-check while constructing the lock;
-- static review of the transport source and product listener boundary.
-
-## UNEXECUTED exact-head checks
-
-The environment had no Rust toolchain, and GitHub hosted jobs were observed
-failing before runner assignment. The following are therefore **UNEXECUTED**:
+GitHub-hosted Ubuntu 24.04 installed:
 
 ```text
-cargo fmt --all --check
-cargo clippy --workspace --all-targets --locked -- -D warnings
-cargo test --workspace --all-targets --locked
-cargo run --locked -p hepta-browserd -- --self-check
+rustc 1.93.0 (254b59607 2026-01-19)
+host x86_64-unknown-linux-gnu
+runner image ubuntu-24.04@20260823.283.1
 ```
 
-No host-validation or merge-ready claim may be made until those commands pass
-against the exact candidate head and the resulting evidence records the
-toolchain identity and commit SHA.
+The exact candidate head passed:
 
-## Remaining gates
+```text
+python3 tools/validate_repository.py
+cargo fmt --all --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+cargo run -p hepta-browserd -- --self-check
+```
 
-Dedicated service identities, socket custody, systemd unit/cgroup binding,
-strict canonical Browser API decoding, TaskFlow principal mapping,
-BrowserActor dispatch, crash/reconnect handling, and explicit product listener
-activation remain closed.
+Rust tests: 25 passed, 0 failed. Browserd returned an `ok=true` D0 self-check
+with eight checks and final revisions `2/3/3/3`. Machine evidence is
+`docs/evidence/generated/d0c02-rust193-host-result.json`.
+
+Historical note: the earlier candidate state was labelled `UNEXECUTED` and
+`not merge-ready`; those labels are superseded by the successful exact-head
+run above.
+
+## Independent implementation
+
+The standard-library Python reference remains an independent protocol oracle.
+Its 15/15 fault and round-trip checks passed.
+
+## Remaining closed gates
+
+This work package does **not** implement or claim a product Unix listener,
+systemd custody, service UID/cgroup identity, canonical Browser API decoding,
+BrowserActor dispatch, Servo, a visible WebView, a Debian image, external
+navigation, capability use, or external effects.

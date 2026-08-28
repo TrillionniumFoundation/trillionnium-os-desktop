@@ -3,11 +3,11 @@
   "product": "TrillionniumOS Desktop",
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
   "repository_mode": "FULL_PRODUCT_REPOSITORY",
-  "status": "IMPLEMENTATION_SOURCE_CANDIDATE",
+  "status": "IMPLEMENTATION_HOST_VALIDATED",
   "active_plan": "DESKTOP_PLAN-2026-08-28-d5.md",
   "active_plan_revision": "2026-08-28-d5",
   "superseded_plan": "DESKTOP_PLAN-2026-08-28.md",
-  "implementation_stage": "D0R_D0C02_SOURCE",
+  "implementation_stage": "D0R_D0C02_HOST_VALIDATED",
   "browser_runtime": "servo",
   "servo_lock": "../manifests/servo.lock.json",
   "rust_toolchain_lock": "../manifests/rust-toolchain.lock.json",
@@ -16,21 +16,17 @@
   "product_boundary": "../manifests/product-boundary.json",
   "trusted_shell_topology": "one_visible_workspace_plus_trusted_shell_surface_plus_one_untrusted_content_webview",
   "trusted_app_origin_model": "distinct_synthetic_https_hosts_under_apps.hepta.invalid",
-  "revision_model": [
-    "session_generation",
-    "document_generation",
-    "semantic_snapshot_revision",
-    "mutation_epoch"
-  ],
-  "implementation_checkpoints": [
-    {
-      "id": "TOS-D0C-02",
-      "status": "SOURCE_IMPLEMENTED_VALIDATION_PENDING_NO_LISTENER",
-      "evidence": "evidence/2026-08-28-d0c02-authenticated-uds.md"
-    }
-  ],
+  "revision_model": ["session_generation", "document_generation", "semantic_snapshot_revision", "mutation_epoch"],
+  "implementation_checkpoints": [{
+    "id": "TOS-D0C-02",
+    "status": "HOST_VALIDATED_NO_LISTENER",
+    "evidence": "evidence/2026-08-28-d0c02-authenticated-uds.md",
+    "machine_evidence": "evidence/generated/d0c02-rust193-host-result.json",
+    "validated_head": "786debc12aa8d790b231397c1a3341fbf89de080",
+    "workflow_run_id": 33167838644
+  }],
   "transport_core_source_present": true,
-  "transport_exact_head_rust_validation": false,
+  "transport_exact_head_rust_validation": true,
   "external_effects_enabled": false,
   "authenticated_agent_listener_implemented": false,
   "servo_integrated": false,
