@@ -1,0 +1,65 @@
+name: d0c04-rust-product
+
+on:
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "apps/hepta-browserd/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/hepta-agent-transport/**"
+      - "crates/hepta-browser-codec/**"
+      - "contracts/agent-port-bridge.v1.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "tools/validate_d0c04_rust_product.py"
+      - ".github/workflows/d0c04-rust-product.yml"
+  push:
+    branches:
+      - codex/d0c04-rust-product-v2
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile static validator
+        run: python3 -m py_compile tools/validate_d0c04_rust_product.py
+      - name: Validate D0C-04 product boundary
+        run: python3 tools/validate_d0c04_rust_product.py
+      - name: Parse machine-readable contracts and lock files
+        run: |
+          python3 - <<'PY'
+          import json
+          import tomllib
+          from pathlib import Path
+          for path in Path("contracts").rglob("*.json"):
+              json.loads(path.read_text(encoding="utf-8"))
+          json.loads(Path("manifests/cargo-external-allowlist.json").read_text(encoding="utf-8"))
+          with Path("Cargo.toml").open("rb") as handle:
+              tomllib.load(handle)
+          with Path("Cargo.lock").open("rb") as handle:
+              tomllib.load(handle)
+          PY
+
+  rust-exact-head:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+      - name: Check formatting
+        run: cargo fmt --all --check
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Run workspace tests
+        run: cargo test --workspace --all-targets --locked
+      - name: Run AgentPort tests explicitly
+        run: cargo test --locked -p hepta-agent-port
+      - name: Run browserd D0 self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
