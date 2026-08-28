@@ -83,6 +83,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sed -i 's/[[:space:]]\+$//' docs/evidence/2026-08-28-d0c03-rust-product-codec-source.md
           rm -f tools/promote_d0c03_evidence_once.py
           rm -f .github/workflows/promote-d0c03-evidence-once.yml
           git diff --check
