@@ -34,16 +34,18 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path('tools/validate_repository.py')
           text = path.read_text(encoding='utf-8')
 
-          old_listener = '''    if docs_manifest.get("authenticated_agent_listener_implemented") is not False:
-              fail("D0C-02 must not claim an authenticated product listener")
-          if docs_manifest.get("transport_core_source_present") is not True:
-              fail("docs manifest does not record the D0C-02 transport source")
-          '''
-          new_listener = '''    if docs_manifest.get("authenticated_agent_listener_implemented") is not True:
+          listener_pattern = re.compile(
+              r'    if docs_manifest\.get\("authenticated_agent_listener_implemented"\) is not False:\n'
+              r'        fail\("D0C-02 must not claim an authenticated product listener"\)\n'
+              r'    if docs_manifest\.get\("transport_core_source_present"\) is not True:\n'
+              r'        fail\("docs manifest does not record the D0C-02 transport source"\)\n'
+          )
+          listener_replacement = '''    if docs_manifest.get("authenticated_agent_listener_implemented") is not True:
               fail("docs manifest does not record the D0C-05 custody implementation")
           if docs_manifest.get("authenticated_agent_listener_enabled") is not False:
               fail("the product Agent listener must remain disabled before the D1/D3 gate")
@@ -62,17 +64,18 @@ jobs:
           if docs_manifest.get("transport_core_source_present") is not True:
               fail("docs manifest does not record the D0C-02 transport source")
           '''
-          if old_listener not in text:
-              raise SystemExit('obsolete listener assertion block not found')
-          text = text.replace(old_listener, new_listener, 1)
+          text, count = listener_pattern.subn(listener_replacement, text, count=1)
+          if count != 1:
+              raise SystemExit(f'obsolete listener assertion replacement count={count}')
 
-          old_evidence = '''    evidence = (
-              ROOT / "docs/evidence/2026-08-28-d0c02-authenticated-uds.md"
-          ).read_text(encoding="utf-8")
-          if "UNEXECUTED" not in evidence or "not merge-ready" not in evidence:
-              fail("D0C-02 evidence must record the unexecuted Rust validation ceiling")
-          '''
-          new_evidence = '''    transport_evidence = load_json(
+          evidence_pattern = re.compile(
+              r'    evidence = \(\n'
+              r'        ROOT / "docs/evidence/2026-08-28-d0c02-authenticated-uds\.md"\n'
+              r'    \)\.read_text\(encoding="utf-8"\)\n'
+              r'    if "UNEXECUTED" not in evidence or "not merge-ready" not in evidence:\n'
+              r'        fail\("D0C-02 evidence must record the unexecuted Rust validation ceiling"\)\n'
+          )
+          evidence_replacement = '''    transport_evidence = load_json(
               ROOT / "docs/evidence/generated/d0c02-rust193-host-result.json"
           )
           if transport_evidence.get("status") != "PASS":
@@ -86,9 +89,10 @@ jobs:
           if transport_evidence.get("external_effect_authorized") is not False:
               fail("D0C-02 machine evidence claims effect authority")
           '''
-          if old_evidence not in text:
-              raise SystemExit('obsolete D0C-02 evidence assertion block not found')
-          text = text.replace(old_evidence, new_evidence, 1)
+          text, count = evidence_pattern.subn(evidence_replacement, text, count=1)
+          if count != 1:
+              raise SystemExit(f'obsolete D0C-02 evidence replacement count={count}')
+
           path.write_text(text, encoding='utf-8')
           PY
 
