@@ -55,13 +55,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sudo mkdir -p /usr/libexec
+          sudo mkdir -p /usr/libexec /usr/lib/sysusers.d
           sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-portd
-          sudo systemd-sysusers packaging/debian/sysusers.d/trillionnium-desktop.conf
+          sudo install -m 0644 \
+            packaging/debian/sysusers.d/trillionnium-desktop.conf \
+            /usr/lib/sysusers.d/trillionnium-desktop.conf
+          sudo systemd-sysusers /usr/lib/sysusers.d/trillionnium-desktop.conf
           systemd-analyze verify \
             packaging/debian/systemd/hepta-browserd-agent.socket \
             packaging/debian/systemd/hepta-browserd-agent@.service
-          sudo rm -f /usr/libexec/hepta-agent-portd
+          sudo rm -f \
+            /usr/libexec/hepta-agent-portd \
+            /usr/lib/sysusers.d/trillionnium-desktop.conf
 
       - name: Check Rust formatting and warnings
         run: |
