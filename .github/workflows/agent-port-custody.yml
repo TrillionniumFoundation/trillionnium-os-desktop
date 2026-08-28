@@ -1,0 +1,56 @@
+name: agent-port-custody
+
+on:
+  pull_request:
+    paths:
+      - "apps/hepta-agent-portd/**"
+      - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-browser-agent-port/**"
+      - "packaging/debian/systemd/**"
+      - "packaging/debian/sysusers.d/**"
+      - "packaging/debian/tmpfiles.d/**"
+      - "packaging/debian/systemd-preset/**"
+      - "packaging/debian/hepta-agent-portd.install"
+      - "contracts/agent-port-custody.v1.json"
+      - "tools/verify_systemd_socket_custody.py"
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/hepta-agent-portd/**"
+      - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-browser-agent-port/**"
+      - "packaging/debian/systemd/**"
+      - "packaging/debian/sysusers.d/**"
+      - "packaging/debian/tmpfiles.d/**"
+      - "packaging/debian/systemd-preset/**"
+      - "packaging/debian/hepta-agent-portd.install"
+      - "contracts/agent-port-custody.v1.json"
+      - "tools/verify_systemd_socket_custody.py"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Audit default-disabled socket custody
+        run: python3 tools/verify_systemd_socket_custody.py
+
+      - name: Check formatting and warnings
+        run: |
+          cargo fmt --all --check
+          cargo clippy -p hepta-peer-attestation -p hepta-agent-portd --all-targets --locked -- -D warnings
+
+      - name: Test identity and inherited-stream services
+        run: |
+          cargo test -p hepta-peer-attestation -p hepta-agent-portd --all-targets --locked
+          cargo run --locked -p hepta-agent-portd -- --self-check
