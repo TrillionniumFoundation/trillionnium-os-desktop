@@ -6,7 +6,7 @@
   "active_plan": "docs/DESKTOP_PLAN-2026-08-28-d5.md",
   "active_plan_revision": "2026-08-28-d5",
   "baseline_commit": "de113c32827a32c334cc77a61a761976c7174d04",
-  "implementation_stage": "D0R_D0C02_SOURCE",
+  "implementation_stage": "D0R_D0C04_SOURCE",
   "completed_work_packages": [
     "D0R-01",
     "D0R-03",
@@ -16,16 +16,40 @@
   "source_candidate_work_packages": [
     {
       "id": "D0C-02",
-      "status": "SOURCE_IMPLEMENTED_EXACT_HEAD_RUST_VALIDATION_REQUIRED",
+      "status": "SOURCE_IMPLEMENTED_REFERENCE_PASS_EXACT_HEAD_RUST_VALIDATION_REQUIRED",
       "evidence": "docs/evidence/2026-08-28-d0c02-authenticated-uds.md"
+    },
+    {
+      "id": "D0C-03",
+      "status": "SOURCE_IMPLEMENTED_REFERENCE_PASS_EXACT_HEAD_RUST_VALIDATION_REQUIRED",
+      "evidence": "docs/evidence/2026-08-28-d0c03-browser-codec-reference.md"
+    },
+    {
+      "id": "D0C-04",
+      "status": "SOURCE_IMPLEMENTED_REFERENCE_PASS_EXACT_HEAD_RUST_VALIDATION_REQUIRED",
+      "evidence": "docs/evidence/2026-08-28-d0c04-rust-agent-port-source.md"
     }
   ],
+  "executed_reference_checks": {
+    "d0c02_transport": 15,
+    "d0c03_codec": 27,
+    "d0c04_connected_agent_port": 13,
+    "total": 55
+  },
+  "executed_static_checks": {
+    "d0c03_rust_codec": 96,
+    "d0c04_rust_agent_port": 172
+  },
   "not_claimed": [
     "d0c02_host_validated",
+    "d0c03_host_validated",
+    "d0c04_host_validated",
+    "authenticated_uds_listener",
+    "taskflow_principal_mapping",
+    "browser_actor_dispatch",
     "servo_integrated",
     "debian_image_built",
     "wayland_session_booted",
-    "authenticated_uds_listener",
     "external_web_effects",
     "signed_app_runtime",
     "production_release"
