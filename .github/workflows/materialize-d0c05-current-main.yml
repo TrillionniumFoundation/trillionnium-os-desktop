@@ -59,9 +59,9 @@ jobs:
           rustc --version
           cargo --version
 
-      - name: Resolve only the locked product graph and format
+      - name: Resolve local workspace additions without upgrading the locked registry closure
         run: |
-          cargo generate-lockfile
+          cargo check --workspace --all-targets
           cargo fmt --all
 
       - name: Audit repository and default-disabled custody contract
