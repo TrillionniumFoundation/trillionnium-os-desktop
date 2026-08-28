@@ -1,0 +1,202 @@
+name: qualify-servo-exact-pin-v4
+
+on:
+  push:
+    branches:
+      - codex/d0a01-servo-exact-pin-v2
+    paths:
+      - ".github/workflows/qualify-servo-exact-pin-v4.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: qualify-servo-exact-pin-v4
+  cancel-in-progress: false
+
+jobs:
+  capture-exact-pin-qualification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0a01-servo-exact-pin-v2
+          fetch-depth: 0
+
+      - name: Install available Servo Linux build dependencies
+        id: deps
+        shell: bash
+        run: |
+          set +e
+          mkdir -p docs/evidence/generated/servo-exact-pin-logs
+          sudo apt-get update > docs/evidence/generated/servo-exact-pin-logs/apt-update.log 2>&1
+          update_status=$?
+          packages=(
+            autoconf automake build-essential ccache clang cmake curl git gperf
+            libasound2-dev libavcodec-dev libavformat-dev libavutil-dev
+            libdbus-1-dev libegl1-mesa-dev libfontconfig1-dev libfreetype6-dev
+            libgl1-mesa-dev libgles2-mesa-dev libgstreamer-plugins-base1.0-dev
+            libgstreamer1.0-dev libharfbuzz-dev libpulse-dev libssl-dev
+            libudev-dev libunwind-dev libwayland-dev libx11-dev libx11-xcb-dev
+            libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+            libxkbcommon-dev libxrandr-dev libxi-dev llvm-dev mold nasm
+            ninja-build pkg-config python3 python3-dev python3-pip xorg-dev
+          )
+          available=()
+          missing=()
+          for package in "${packages[@]}"; do
+            if apt-cache show "$package" >/dev/null 2>&1; then
+              available+=("$package")
+            else
+              missing+=("$package")
+            fi
+          done
+          printf '%s\n' "${missing[@]}" > docs/evidence/generated/servo-exact-pin-logs/unavailable-apt-packages.txt
+          sudo apt-get install -y --no-install-recommends "${available[@]}" \
+            > docs/evidence/generated/servo-exact-pin-logs/apt-install.log 2>&1
+          install_status=$?
+          echo "update_status=$update_status" >> "$GITHUB_OUTPUT"
+          echo "install_status=$install_status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Fetch exact Servo source pin
+        id: checkout
+        shell: bash
+        run: |
+          set +e
+          git init /tmp/servo > docs/evidence/generated/servo-exact-pin-logs/git-checkout.log 2>&1
+          git -C /tmp/servo remote add origin https://github.com/servo/servo.git >> docs/evidence/generated/servo-exact-pin-logs/git-checkout.log 2>&1
+          git -C /tmp/servo fetch --depth=1 origin 670ae8a70801b162e186f81cbb5bdd2d59c39108 >> docs/evidence/generated/servo-exact-pin-logs/git-checkout.log 2>&1
+          fetch_status=$?
+          if [[ "$fetch_status" -eq 0 ]]; then
+            git -C /tmp/servo checkout --detach FETCH_HEAD >> docs/evidence/generated/servo-exact-pin-logs/git-checkout.log 2>&1
+          fi
+          checkout_status=$?
+          head=""
+          dirty="unknown"
+          if [[ "$checkout_status" -eq 0 ]]; then
+            head=$(git -C /tmp/servo rev-parse HEAD 2>/dev/null)
+            dirty=$(git -C /tmp/servo status --porcelain=v1 2>/dev/null)
+          fi
+          exact_status=1
+          if [[ "$head" == "670ae8a70801b162e186f81cbb5bdd2d59c39108" && -z "$dirty" ]]; then exact_status=0; fi
+          echo "status=$exact_status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Install Servo-declared Rust toolchain
+        id: toolchain
+        shell: bash
+        run: |
+          set +e
+          status=1
+          if [[ -f /tmp/servo/rust-toolchain.toml ]]; then
+            python3 - <<'PY' > /tmp/servo-toolchain.env
+          import shlex, tomllib
+          data = tomllib.load(open('/tmp/servo/rust-toolchain.toml', 'rb'))['toolchain']
+          print('CHANNEL=' + shlex.quote(data['channel']))
+          print('COMPONENTS=' + shlex.quote(','.join(data.get('components', []))))
+          print('TARGETS=' + shlex.quote(','.join(data.get('targets', []))))
+          PY
+            source /tmp/servo-toolchain.env
+            args=(toolchain install "$CHANNEL" --profile minimal)
+            if [[ -n "$COMPONENTS" ]]; then args+=(--component "$COMPONENTS"); fi
+            if [[ -n "$TARGETS" ]]; then args+=(--target "$TARGETS"); fi
+            rustup "${args[@]}" > docs/evidence/generated/servo-exact-pin-logs/rust-toolchain.log 2>&1
+            status=$?
+            if [[ "$status" -eq 0 ]]; then
+              rustup override set "$CHANNEL" --path /tmp/servo >> docs/evidence/generated/servo-exact-pin-logs/rust-toolchain.log 2>&1
+              status=$?
+            fi
+            if [[ "$status" -eq 0 ]]; then
+              (cd /tmp/servo && rustc --version --verbose && cargo --version --verbose) >> docs/evidence/generated/servo-exact-pin-logs/rust-toolchain.log 2>&1
+              status=$?
+            fi
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Compile official shell and external probe
+        id: compile
+        shell: bash
+        env:
+          CARGO_TERM_COLOR: always
+          CARGO_INCREMENTAL: "0"
+          RUST_BACKTRACE: "1"
+        run: |
+          set +e
+          status=1
+          if [[ "${{ steps.checkout.outputs.status }}" == "0" && "${{ steps.toolchain.outputs.status }}" == "0" ]]; then
+            python3 tools/qualify_servo_exact_pin_v2.py \
+              --servo-root /tmp/servo \
+              --output-manifest manifests/servo-embedder-compat.json \
+              --output-probe experiments/servo-embedder-probe/src/main.rs \
+              --logs docs/evidence/generated/servo-exact-pin-logs \
+              > docs/evidence/generated/servo-exact-pin-logs/qualifier.log 2>&1
+            status=$?
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Publish deterministic result even on failure
+        env:
+          APT_UPDATE: ${{ steps.deps.outputs.update_status }}
+          APT_INSTALL: ${{ steps.deps.outputs.install_status }}
+          CHECKOUT: ${{ steps.checkout.outputs.status }}
+          TOOLCHAIN: ${{ steps.toolchain.outputs.status }}
+          COMPILE: ${{ steps.compile.outputs.status }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          root = pathlib.Path('.')
+          def state(name): return 'PASS' if os.environ[name] == '0' else 'FAIL'
+          checks = {
+            'apt_update': state('APT_UPDATE'),
+            'apt_install_available_dependencies': state('APT_INSTALL'),
+            'exact_clean_checkout': state('CHECKOUT'),
+            'servo_declared_toolchain': state('TOOLCHAIN'),
+            'official_shell_and_external_api_probe': state('COMPILE'),
+          }
+          ok = all(value == 'PASS' for value in checks.values())
+          result = {
+            'schema': 'trillionnium.desktop.servo-probe-result.v3',
+            'status': 'PASS_COMPILE_COMPATIBILITY_ONLY' if ok else 'FAIL_FIX_REQUIRED',
+            'servo_commit': '670ae8a70801b162e186f81cbb5bdd2d59c39108',
+            'repository_parent': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+            'checks': checks,
+            'claims': {
+              'servo_started': False,
+              'window_created': False,
+              'frame_rendered': False,
+              'native_input_forwarded': False,
+              'ime_forwarded': False,
+              'network_navigation_performed': False,
+              'web_driver_listener_started': False,
+            },
+            'merge_ready': ok,
+            'next_gate': 'D0A-02' if ok else 'repair using committed exact-pin logs',
+          }
+          manifest = root / 'manifests/servo-embedder-compat.json'
+          probe = root / 'experiments/servo-embedder-probe/src/main.rs'
+          if manifest.exists(): result['manifest_sha256'] = hashlib.sha256(manifest.read_bytes()).hexdigest()
+          if probe.exists(): result['probe_sha256'] = hashlib.sha256(probe.read_bytes()).hexdigest()
+          (root / 'docs/evidence/generated/servo-probe-result.json').write_text(
+            json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifests experiments docs/evidence/generated 2>/dev/null || true
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git commit -m "test: publish exact Servo qualification evidence"
+            git push origin HEAD:codex/d0a01-servo-exact-pin-v2
+          fi
+
+      - name: Enforce result
+        env:
+          COMPILE: ${{ steps.compile.outputs.status }}
+        run: test "$COMPILE" = "0"
