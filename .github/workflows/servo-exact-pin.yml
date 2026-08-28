@@ -1,0 +1,161 @@
+name: servo-exact-pin
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/servo-exact-pin.yml"
+      - "tools/qualify_servo_exact_pin.py"
+      - "experiments/servo-embedder-probe/**"
+      - "manifests/servo.lock.json"
+      - "manifests/servo-api-requirements.v2.json"
+      - "manifests/servo-patch-ledger.v1.json"
+      - "docs/architecture/SERVO_EMBEDDER_COMPATIBILITY.md"
+      - "docs/evidence/2026-08-29-d0a01-servo-exact-pin.md"
+  push:
+    branches:
+      - main
+      - codex/d0a01-servo-exact-pin-v2-clean
+    paths:
+      - ".github/workflows/servo-exact-pin.yml"
+      - "tools/qualify_servo_exact_pin.py"
+      - "experiments/servo-embedder-probe/**"
+      - "manifests/servo.lock.json"
+      - "manifests/servo-api-requirements.v2.json"
+      - "manifests/servo-patch-ledger.v1.json"
+      - "docs/architecture/SERVO_EMBEDDER_COMPATIBILITY.md"
+      - "docs/evidence/2026-08-29-d0a01-servo-exact-pin.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: servo-exact-pin-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - name: Check out TrillionniumOS Desktop candidate
+        uses: actions/checkout@v4
+
+      - name: Check out exact Servo source pin
+        uses: actions/checkout@v4
+        with:
+          repository: servo/servo
+          ref: ${{ env.SERVO_COMMIT }}
+          path: servo-source
+          fetch-depth: 1
+          submodules: false
+
+      - name: Verify exact immutable Servo checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo-source rev-parse HEAD)" = "$SERVO_COMMIT"
+          test -z "$(git -C servo-source status --porcelain=v1)"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          lock = json.loads(Path('manifests/servo.lock.json').read_text())
+          requirements = json.loads(Path('manifests/servo-api-requirements.v2.json').read_text())
+          ledger = json.loads(Path('manifests/servo-patch-ledger.v1.json').read_text())
+          expected = '670ae8a70801b162e186f81cbb5bdd2d59c39108'
+          assert lock['commit'] == expected
+          assert requirements['servo_commit'] == expected
+          assert ledger['servo_commit'] == expected
+          assert ledger['patch_count'] == 0 and ledger['patches'] == []
+          PY
+
+      - name: Install Servo Linux build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' \
+            servo-source/python/servo/platform/linux_packages/apt/apt_common.txt \
+            servo-source/python/servo/platform/linux_packages/apt/apt_ubuntu_only.txt \
+            | sort -u > /tmp/servo-packages.txt
+          sudo apt-get update
+          xargs -r sudo apt-get install -y --no-install-recommends < /tmp/servo-packages.txt
+          sudo apt-get purge -y fonts-droid-fallback || true
+
+      - name: Install Servo-declared Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > /tmp/servo-toolchain.env
+          from pathlib import Path
+          import tomllib
+          toolchain = tomllib.loads(Path('servo-source/rust-toolchain.toml').read_text())['toolchain']
+          print(f"SERVO_RUST_CHANNEL={toolchain['channel']}")
+          print('SERVO_RUST_COMPONENTS=' + ' '.join(toolchain.get('components', [])))
+          PY
+          cat /tmp/servo-toolchain.env >> "$GITHUB_ENV"
+          source /tmp/servo-toolchain.env
+          rustup toolchain install "$SERVO_RUST_CHANNEL" --profile minimal
+          for component in $SERVO_RUST_COMPONENTS; do
+            rustup component add "$component" --toolchain "$SERVO_RUST_CHANNEL"
+          done
+          rustup run "$SERVO_RUST_CHANNEL" rustc --version --verbose
+          rustup run "$SERVO_RUST_CHANNEL" cargo --version --verbose
+
+      - name: Restore exact-pin Cargo and target cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            servo-source/target
+          key: servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('servo-source/Cargo.lock', 'servo-source/rust-toolchain.toml') }}
+          restore-keys: |
+            servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
+
+      - name: Compile official shell and public embedder probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/servo-qualification/logs
+          python3 tools/qualify_servo_exact_pin.py \
+            --servo-root servo-source \
+            --requirements manifests/servo-api-requirements.v2.json \
+            --patch-ledger manifests/servo-patch-ledger.v1.json \
+            --probe-source experiments/servo-embedder-probe/src/main.rs \
+            --output artifacts/servo-qualification/servo-qualification-result.json \
+            --logs artifacts/servo-qualification/logs \
+            | tee artifacts/servo-qualification/report.stdout.json
+
+      - name: Enforce qualification claim ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          report = json.loads(Path('artifacts/servo-qualification/servo-qualification-result.json').read_text())
+          assert report['status'] == 'PASS_COMPILE_COMPATIBILITY_ONLY'
+          assert report['servo']['commit'] == '670ae8a70801b162e186f81cbb5bdd2d59c39108'
+          assert report['servo']['clean_checkout'] is True
+          assert report['servo']['patch_count'] == 0
+          assert all(item['status'] == 'PASS' for item in report['compile_results'].values())
+          assert all(value is False for value in report['claims'].values())
+          assert report['next_gate'].startswith('D0A-02')
+          PY
+          test -z "$(git -C servo-source status --porcelain=v1)"
+
+      - name: Validate desktop repository contracts
+        run: python3 tools/validate_repository.py
+
+      - name: Upload exact-pin qualification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: servo-exact-pin-${{ github.sha }}
+          path: artifacts/servo-qualification
+          if-no-files-found: error
+          retention-days: 30
