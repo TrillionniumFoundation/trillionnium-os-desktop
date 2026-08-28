@@ -127,9 +127,10 @@ fn validate_dns_label(field: &'static str, value: &str) -> Result<(), CodecError
     {
         return Err(CodecError::InvalidIdentifier(field));
     }
-    if bytes.iter().all(|byte| {
-        byte.is_ascii_lowercase() || byte.is_ascii_digit() || *byte == b'-'
-    }) {
+    if bytes
+        .iter()
+        .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || *byte == b'-')
+    {
         Ok(())
     } else {
         Err(CodecError::InvalidIdentifier(field))
@@ -224,7 +225,7 @@ fn validate_url(value: &str, policy: UrlPolicy) -> Result<(), CodecError> {
         _ => "fixture URL must use http",
     }))?;
     let authority_end = remainder
-        .find(|character: char| matches!(character, '/' | '?' | '#'))
+        .find(['/', '?', '#'])
         .unwrap_or(remainder.len());
     let authority = &remainder[..authority_end];
     if authority.is_empty() || authority.contains('@') || authority.contains('\\') {
