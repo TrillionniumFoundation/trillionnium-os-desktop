@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use trillionnium_contract_core::{LeaseId, RevisionClock};
+use trillionnium_contract_core::LeaseId;
 
 pub const DEFAULT_HUMAN_LEASE_TTL_MS: u64 = 5_000;
 pub const MAX_HUMAN_LEASE_TTL_MS: u64 = 30_000;
