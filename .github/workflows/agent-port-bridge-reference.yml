@@ -1,0 +1,80 @@
+name: agent-port-bridge-reference
+
+on:
+  pull_request:
+    paths:
+      - "contracts/agent-transport.v1.json"
+      - "contracts/browser-codec.v1.json"
+      - "contracts/agent-port-bridge.v1.json"
+      - "tools/agent_transport_reference.py"
+      - "tools/browser_codec_reference.py"
+      - "tools/browser_codec_reference/**"
+      - "tools/agent_port_bridge_reference.py"
+      - "tools/agent_port_bridge_reference/**"
+      - "docs/evidence/generated/d0c04-agent-port-bridge-reference-result.json"
+      - ".github/workflows/agent-port-bridge-reference.yml"
+  push:
+    branches: [main]
+    paths:
+      - "contracts/agent-transport.v1.json"
+      - "contracts/browser-codec.v1.json"
+      - "contracts/agent-port-bridge.v1.json"
+      - "tools/agent_transport_reference.py"
+      - "tools/browser_codec_reference.py"
+      - "tools/browser_codec_reference/**"
+      - "tools/agent_port_bridge_reference.py"
+      - "tools/agent_port_bridge_reference/**"
+      - "docs/evidence/generated/d0c04-agent-port-bridge-reference-result.json"
+      - ".github/workflows/agent-port-bridge-reference.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  connected-reference:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile standard-library reference stack
+        run: >-
+          python3 -m py_compile
+          tools/agent_transport_reference.py
+          tools/browser_codec_reference.py
+          tools/browser_codec_reference/*.py
+          tools/agent_port_bridge_reference.py
+          tools/agent_port_bridge_reference/*.py
+
+      - name: Execute connected transport-codec-handler corpus
+        run: |
+          set -euo pipefail
+          python3 tools/agent_port_bridge_reference.py \
+            --contract contracts/agent-port-bridge.v1.json \
+            --write-result /tmp/d0c04-agent-port-bridge-reference-result.json \
+            >/tmp/d0c04-agent-port-bridge.stdout.json
+          cmp /tmp/d0c04-agent-port-bridge-reference-result.json \
+            docs/evidence/generated/d0c04-agent-port-bridge-reference-result.json
+
+      - name: Verify exactly-one and fail-closed ceiling
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          contract = json.loads(Path("contracts/agent-port-bridge.v1.json").read_text())
+          result = json.loads(
+              Path("docs/evidence/generated/d0c04-agent-port-bridge-reference-result.json").read_text()
+          )
+          assert contract["request_frames_per_connection"] == 1
+          assert contract["dispatch"]["maximum_handler_invocations"] == 1
+          assert contract["listener_created"] is False
+          assert contract["validation"]["rust_bridge"] == "UNIMPLEMENTED"
+          assert contract["validation"]["merge_ready"] is False
+          assert result["status"] == "PASS" and result["test_count"] == 13
+          assert result["product_listener_created"] is False
+          assert result["browser_actor_called"] is False
+          assert result["servo_called"] is False
+          assert result["external_effect_authorized"] is False
+          assert "late-result-not-committed" in result["tests"]
+          assert "duplicate-rejected-before-handler" in result["tests"]
+          PY
