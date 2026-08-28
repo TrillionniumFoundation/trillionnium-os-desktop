@@ -75,6 +75,7 @@ or unrestricted update authority.
 The repository is host-validated through `D0C-05`:
 
 - Rust 1.93 workspace, exact dependency closure, CI, and claim validation;
+- signed Debian snapshot `20260828T000000Z`, three exact `InRelease` digests, and a 319-package closure with canonical package-set digest;
 - neutral contract primitives and layered revision model;
 - deterministic Agent/human arbitration and bounded queue;
 - authenticated, bounded, nonce/sequence/digest-bound connected AF_UNIX carrier;
@@ -122,7 +123,7 @@ implementation detail; they are not optional commentary.
 
 | Stage | Current state | Promotion gate |
 | --- | --- | --- |
-| `D0R` repository/reproducibility | foundation implemented; signed Debian input closure partial | resolve signed snapshot, archive keys, package closure, and deterministic builder for D1 |
+| `D0R` repository/reproducibility | signed snapshot and exact package closure input validated | consume the committed lock in a deterministic D1 builder |
 | `D0C` contracts/control core | D0C-01 through D0C-05 host validated | D0C-06 durable receipt journal; D1 live PID 1 socket corpus before enablement |
 | `D0A` Servo compatibility | D0A-00 state machine implemented | D0A-01 exact-pin compile gate, then D0A-02 headed workspace/runtime evidence |
 | `D1` Debian QEMU substrate | not demonstrated | reproducible boot into supervised Wayland placeholder plus test-only D0C-05 activation corpus |
@@ -148,10 +149,10 @@ The next implementation sequence is fixed:
    `670ae8a70801b162e186f81cbb5bdd2d59c39108` using Servo's own toolchain,
    official headed shell, and external embedder API probes. Treat this as
    compile compatibility only.
-3. `D0R-02` / `D1-01`: resolve signed Debian inputs, build two deterministic
-   image candidates, boot QEMU into systemd/Wayland, and run the D0C-05 PID 1
-   activation corpus in a test-only image while keeping the product image
-   default-disabled.
+3. `D1-01`: consume the committed D0R-02 signed Debian lock, build two
+   deterministic image candidates, boot QEMU into systemd/Wayland, and run
+   the D0C-05 PID 1 activation corpus in a test-only image while keeping the
+   product image default-disabled.
 4. `D0A-02` / D2: prove trusted workspace composition, one Servo content
    surface, local fixture first frame, pointer/keyboard/IME, popup refusal,
    process topology, and crash recovery.

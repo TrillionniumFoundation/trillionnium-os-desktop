@@ -22,16 +22,22 @@ wins until the plan and annex are updated together.
 **Acceptance:** repository validator confirms one active plan and one product
 root.
 
-#### `D0R-02` Toolchain and input selections — IMPLEMENTED/PARTIAL
+#### `D0R-02` Toolchain and input selections — INPUT VALIDATED
 
 - lock Rust 1.93.0;
 - select Debian 13/trixie amd64;
 - select Servo commit `670ae8a70801b162e186f81cbb5bdd2d59c39108`;
-- record mobile reference commit and dependency exclusions.
+- record mobile reference commit and dependency exclusions;
+- lock snapshot `20260828T000000Z`, three signed `InRelease` objects, pinned
+  Debian 13 primary trust roots, and the complete exact package closure.
 
-**Remaining gate:** Debian snapshot timestamp, signed `InRelease` digests,
-archive-key fingerprints, exact package closure, and package-set digest must be
-resolved before D1 promotion. A point-release label alone is not an input lock.
+**Demonstrated exit:** source head
+`6825f9bd4bd012212559d187315bca285a6ae3d2` passed workflow run
+`33196743127`; `manifests/debian-snapshot.lock.v1.json` records 319 downloaded
+and metadata-verified packages with package-set SHA-256
+`89918a968afafdbabe03e43794565cb1dc936f3f24a09ec81030be4a4085333a`.
+The lock explicitly claims no rootfs, image, QEMU, Wayland, Secure Boot or
+product readiness. D1-01 remains the next gate.
 
 #### `D0R-03` Graph and claim checks — IMPLEMENTED
 
@@ -325,8 +331,8 @@ release gate; source files alone do not prove branch protection is enabled.
 1. Keep D0C-02 through D0C-05 exact-head regressions green and merge the
    default-disabled custody implementation without an enable marker.
 2. Complete `D0A-01` exact Servo compile compatibility from the current main.
-3. Resolve `D0R-02` signed Debian inputs and execute `D1-01`, including the
-   D0C-05 PID 1 activation corpus in a test-only image.
+3. Execute `D1-01` from the committed D0R-02 signed Debian lock, including
+   the D0C-05 PID 1 activation corpus in a test-only image.
 4. Complete `D0A-02`/D2 local first frame, input/IME, popup refusal, process
    topology, and crash recovery.
 5. Implement `D0C-06` durable receipts before BrowserActor operation claims.
