@@ -1,0 +1,85 @@
+{
+  "schema": "trillionnium.desktop.agent-transport.v1",
+  "status": "D0C_02_CORE_IMPLEMENTED_NO_LISTENER",
+  "carrier": "AF_UNIX_STREAM",
+  "protocol_magic_ascii": "HEPTA001",
+  "protocol_version": 1,
+  "header_bytes": 88,
+  "max_payload_bytes": 262144,
+  "frame_kinds": {
+    "challenge": 1,
+    "request": 2,
+    "response": 3,
+    "event": 4,
+    "close": 5
+  },
+  "header_layout": [
+    {
+      "field": "magic",
+      "offset": 0,
+      "bytes": 8
+    },
+    {
+      "field": "version_be",
+      "offset": 8,
+      "bytes": 2
+    },
+    {
+      "field": "kind",
+      "offset": 10,
+      "bytes": 1
+    },
+    {
+      "field": "reserved_flags_zero",
+      "offset": 11,
+      "bytes": 1
+    },
+    {
+      "field": "sequence_be",
+      "offset": 12,
+      "bytes": 8
+    },
+    {
+      "field": "payload_length_be",
+      "offset": 20,
+      "bytes": 4
+    },
+    {
+      "field": "session_nonce",
+      "offset": 24,
+      "bytes": 32
+    },
+    {
+      "field": "payload_sha256",
+      "offset": 56,
+      "bytes": 32
+    }
+  ],
+  "authentication": {
+    "peer_credentials": [
+      "pid",
+      "uid",
+      "gid"
+    ],
+    "peer_policy": "expected_uid_required_expected_gid_and_pid_optional",
+    "session_nonce_bytes": 32,
+    "nonce_source": "/dev/urandom",
+    "request_sequence": "strictly_increasing_from_1_per_connection",
+    "payload_binding": "sha256"
+  },
+  "deadline": "one_absolute_monotonic_deadline_per_complete_frame",
+  "payload_semantics": "opaque_bytes_protocol_codec_must_validate_canonical_message_schema",
+  "listener": {
+    "enabled": false,
+    "socket_path": null,
+    "public_network": false
+  },
+  "remaining_gates": [
+    "dedicated_agent_and_browserd_service_uids",
+    "systemd_socket_unit_and_path_ownership",
+    "cgroup_or_unit_identity_binding",
+    "canonical_json_codec_and_duplicate_key_rejection",
+    "TaskFlow_principal_to_peer_mapping",
+    "listener_lifecycle_and_crash_recovery"
+  ]
+}
