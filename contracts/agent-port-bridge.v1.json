@@ -1,0 +1,72 @@
+{
+  "schema": "trillionnium.desktop.agent-port-bridge.v1",
+  "status": "SOURCE_IMPLEMENTED_EXACT_HEAD_RUST_VALIDATION_REQUIRED",
+  "input": {
+    "carrier": "already_connected_AF_UNIX_STREAM",
+    "maximum_requests_per_connection": 1,
+    "transport_contract": "agent-transport.v1.json",
+    "message_contract": "browser-codec.v1.json"
+  },
+  "dispatch": {
+    "handler_invocations_per_connection": "at_most_one",
+    "malformed_request_reaches_handler": false,
+    "context_fields": [
+      "peer_pid_uid_gid",
+      "transport_sequence",
+      "canonical_request_sha256",
+      "effect_class",
+      "accepted_monotonic_time",
+      "effective_monotonic_deadline"
+    ],
+    "handler_may_author": [
+      "object_result",
+      "typed_browser_error"
+    ],
+    "handler_may_not_author": [
+      "protocol",
+      "request_id",
+      "session_id",
+      "session_generation",
+      "transport_sequence",
+      "connection_nonce"
+    ]
+  },
+  "deadline": {
+    "effective_value": "min(server_ceiling, request_deadline_converted_once_at_acceptance)",
+    "late_handler_result": "discard_without_response_commit",
+    "automatic_retry": false
+  },
+  "response": {
+    "identity_source": "validated_request",
+    "canonical_encoding_required": true,
+    "canonical_sha256_recorded": true,
+    "maximum_responses_per_connection": 1
+  },
+  "effect_ceiling": {
+    "potential_external_effect_default": "policy_denied",
+    "external_effect_authorized": false,
+    "browser_actor_connected": false,
+    "servo_called": false
+  },
+  "listener": {
+    "enabled": false,
+    "socket_path": null,
+    "public_network": false
+  },
+  "validation": {
+    "rust_source_audit": "PASS",
+    "python_reference": "PASS_13_OF_13",
+    "cargo_fmt": "UNEXECUTED",
+    "cargo_clippy": "UNEXECUTED",
+    "cargo_test": "UNEXECUTED",
+    "browserd_self_check": "UNEXECUTED",
+    "merge_ready": false
+  },
+  "remaining_gates": [
+    "exact_head_Rust_1_93_format_clippy_tests_and_self_check",
+    "TaskFlow_principal_mapping",
+    "BrowserActor_dispatch",
+    "systemd_socket_custody",
+    "explicit_listener_enable_decision"
+  ]
+}
