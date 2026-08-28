@@ -31,7 +31,7 @@ jobs:
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup default 1.93.0
 
-      - name: Promote host evidence and regenerate audit
+      - name: Promote host evidence and regenerate deterministic outputs
         shell: bash
         run: |
           set -euo pipefail
@@ -44,24 +44,34 @@ jobs:
           python3 tools/browser_codec_reference.py \
             --self-test \
             --contract contracts/browser-codec.v1.json \
-            --write-result /tmp/d0c03-reference.json \
+            --write-result docs/evidence/generated/d0c03-browser-codec-reference-result.json \
             --write-golden-dir /tmp/d0c03-golden \
             >/tmp/d0c03-reference.stdout.json
-          cmp /tmp/d0c03-reference.json docs/evidence/generated/d0c03-browser-codec-reference-result.json
           for fixture in contracts/golden/golden-*.wire.json; do
             cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
           done
 
-      - name: Validate final evidence tree without changing tested source
+      - name: Validate final evidence tree without changing tested Rust source
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" != "4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb" || true
           python3 tools/validate_repository.py
           python3 tools/validate_rust_browser_codec.py \
             --write-result /tmp/d0c03-final-audit-check.json \
             >/tmp/d0c03-final-audit-check.stdout.json
           cmp /tmp/d0c03-final-audit-check.json docs/evidence/generated/d0c03-rust-source-audit-result.json
+          rm -rf /tmp/d0c03-final-golden
+          mkdir -p /tmp/d0c03-final-golden
+          python3 tools/browser_codec_reference.py \
+            --self-test \
+            --contract contracts/browser-codec.v1.json \
+            --write-result /tmp/d0c03-final-reference-check.json \
+            --write-golden-dir /tmp/d0c03-final-golden \
+            >/tmp/d0c03-final-reference-check.stdout.json
+          cmp /tmp/d0c03-final-reference-check.json docs/evidence/generated/d0c03-browser-codec-reference-result.json
+          for fixture in contracts/golden/golden-*.wire.json; do
+            cmp "$fixture" "/tmp/d0c03-final-golden/$(basename "$fixture")"
+          done
           cargo fmt --all --check
           cargo clippy --workspace --all-targets --locked -- -D warnings
           cargo test --workspace --all-targets --locked
