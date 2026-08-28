@@ -1,0 +1,13 @@
+[package]
+name = "hepta-browser-agent-port"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+hepta-agent-transport = { path = "../hepta-agent-transport" }
+hepta-browser-codec = { path = "../hepta-browser-codec" }
+serde_json = "1"
+sha2 = "0.10.9"
