@@ -1,0 +1,316 @@
+name: qualify-d1-debian-qemu-v1
+
+on:
+  push:
+    branches:
+      - codex/d1-01-debian-qemu-v1
+    paths:
+      - "manifests/debian-d1.selection.json"
+      - "packaging/debian/image/**"
+      - "tools/resolve_debian_d1_lock.py"
+      - "tools/compare_d1_builds.py"
+      - "tests/qemu/**"
+      - "contracts/d1-qemu-acceptance.v1.schema.json"
+      - ".github/workflows/qualify-d1-debian-qemu-v1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: qualify-d1-debian-qemu-v1
+  cancel-in-progress: false
+
+jobs:
+  signed-snapshot-reproducible-image-and-qemu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d1-01-debian-qemu-v1
+          fetch-depth: 0
+
+      - name: Install D1 build and qualification tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            curl debian-archive-keyring e2fsprogs gnupg jq mmdebstrap \
+            qemu-system-x86 qemu-utils rsync shellcheck systemd-container \
+            xz-utils zstd
+          python3 --version
+          mmdebstrap --version
+          qemu-system-x86_64 --version
+          mke2fs -V
+
+      - name: Validate source scripts, contracts and units
+        run: |
+          set -euo pipefail
+          chmod 0755 \
+            packaging/debian/image/build-d1-image.sh \
+            packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-acceptance \
+            tests/qemu/run-d1-boot-test.sh \
+            tests/qemu/run-d1-pipeline.sh
+          python3 -m py_compile \
+            tools/resolve_debian_d1_lock.py \
+            tools/compare_d1_builds.py
+          python3 -m json.tool manifests/debian-d1.selection.json >/dev/null
+          python3 -m json.tool contracts/d1-qemu-acceptance.v1.schema.json >/dev/null
+          shellcheck \
+            packaging/debian/image/build-d1-image.sh \
+            packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-acceptance \
+            tests/qemu/run-d1-boot-test.sh \
+            tests/qemu/run-d1-pipeline.sh
+          systemd-analyze verify \
+            packaging/debian/image/rootfs-overlay/etc/systemd/system/trillionnium-d1-wayland.service \
+            packaging/debian/image/rootfs-overlay/etc/systemd/system/trillionnium-d1-acceptance.service \
+            packaging/debian/image/rootfs-overlay/etc/systemd/system/trillionnium-d1-acceptance.target
+          python3 tools/validate_repository.py
+          git diff --check
+
+      - name: Run complete D1 pipeline without losing failure evidence
+        id: pipeline
+        continue-on-error: true
+        run: |
+          set +e
+          tests/qemu/run-d1-pipeline.sh \
+            --workspace "$GITHUB_WORKSPACE" \
+            --output-dir /tmp/trillionnium-d1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      - name: Stage deterministic evidence and failure diagnostics
+        if: always()
+        env:
+          PIPELINE_STATUS: ${{ steps.pipeline.outputs.status }}
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence/generated/d1-logs
+          if [[ -f /tmp/trillionnium-d1/pipeline-result.json ]]; then
+            cp /tmp/trillionnium-d1/pipeline-result.json \
+              docs/evidence/generated/d1-pipeline-result.json
+          else
+            cat > docs/evidence/generated/d1-pipeline-result.json <<EOF
+          {
+            "schema": "trillionnium.desktop.d1-pipeline-result.v1",
+            "status": "FAIL",
+            "failed_stage": "workflow_or_pipeline_initialization",
+            "stages": {},
+            "authority": {
+              "qemu_network_enabled": false,
+              "servo_started": false,
+              "visible_window_created": false,
+              "secure_boot_qualified": false
+            }
+          }
+          EOF
+          fi
+          if [[ -d /tmp/trillionnium-d1/logs ]]; then
+            cp -a /tmp/trillionnium-d1/logs/. docs/evidence/generated/d1-logs/
+          fi
+          if [[ -d /tmp/trillionnium-d1/resolved/logs ]]; then
+            mkdir -p docs/evidence/generated/d1-logs/resolved
+            cp -a /tmp/trillionnium-d1/resolved/logs/. \
+              docs/evidence/generated/d1-logs/resolved/
+          fi
+          for build in build-a build-b; do
+            if [[ -d "/tmp/trillionnium-d1/$build/candidate/logs" ]]; then
+              mkdir -p "docs/evidence/generated/d1-logs/$build"
+              cp -a "/tmp/trillionnium-d1/$build/candidate/logs/." \
+                "docs/evidence/generated/d1-logs/$build/"
+            fi
+          done
+          if [[ -d /tmp/trillionnium-d1/qemu ]]; then
+            mkdir -p docs/evidence/generated/d1-logs/qemu
+            find /tmp/trillionnium-d1/qemu -maxdepth 1 -type f \
+              ! -name 'trillionnium-d1-qemu.ext4' \
+              -exec cp {} docs/evidence/generated/d1-logs/qemu/ \;
+          fi
+          find docs/evidence/generated/d1-logs -type f -size +2M -exec sh -c '
+            for file do
+              tail -c 2097152 "$file" > "$file.tail"
+              mv "$file.tail" "$file"
+            done
+          ' sh {} +
+
+      - name: Promote successful D1 build and boot evidence
+        if: steps.pipeline.outputs.status == '0'
+        run: |
+          set -euo pipefail
+          cp /tmp/trillionnium-d1/debian-d1.resolved.json \
+            manifests/debian-d1.resolved.json
+          cp /tmp/trillionnium-d1/reproducibility-result.json \
+            docs/evidence/generated/d1-reproducibility-result.json
+          cp /tmp/trillionnium-d1/qemu/boot-result.json \
+            docs/evidence/generated/d1-qemu-boot-result.json
+          cp /tmp/trillionnium-d1/qemu/acceptance.json \
+            docs/evidence/generated/d1-guest-acceptance.json
+          cp /tmp/trillionnium-d1/qemu/wayland-info.txt \
+            docs/evidence/generated/d1-wayland-info.txt
+          cp /tmp/trillionnium-d1/qemu/serial.log \
+            docs/evidence/generated/d1-serial.log
+          cp /tmp/trillionnium-d1/build-a/candidate/artifacts/package-lock.tsv \
+            manifests/debian-d1.package-lock.tsv
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+          root = pathlib.Path('.')
+          boot = json.loads((root / 'docs/evidence/generated/d1-qemu-boot-result.json').read_text())
+          resolved = json.loads((root / 'manifests/debian-d1.resolved.json').read_text())
+          assert boot['status'] == 'PASS_QEMU_BOOT_AND_HEADLESS_WAYLAND'
+          assert resolved['status'] == 'PASS_SIGNED_SNAPSHOT_AND_REPRODUCIBLE_BUILD'
+          resolved['status'] = 'PASS_D1_QEMU_SUBSTRATE'
+          resolved['qemu_acceptance'] = {
+              'status': 'PASS',
+              'result_sha256': __import__('hashlib').sha256(
+                  (root / 'docs/evidence/generated/d1-qemu-boot-result.json').read_bytes()
+              ).hexdigest(),
+              'network': 'none',
+          }
+          (root / 'manifests/debian-d1.resolved.json').write_text(
+              json.dumps(resolved, indent=2, sort_keys=True) + '\n'
+          )
+          manifest_path = root / 'docs/MANIFEST.json'
+          manifest = json.loads(manifest_path.read_text())
+          manifest['d1_qemu_substrate'] = {
+              'status': 'PASS_SIGNED_REPRODUCIBLE_QEMU',
+              'resolved_manifest': 'manifests/debian-d1.resolved.json',
+              'acceptance_result': 'docs/evidence/generated/d1-qemu-boot-result.json',
+              'network_during_acceptance': False,
+              'servo_started': False,
+          }
+          manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n')
+          repository_state_path = root / 'manifests/repository-state.json'
+          repository_state = json.loads(repository_state_path.read_text())
+          repository_state['d1_qemu_substrate'] = {
+              'highest_evidence': 'QEMU_BOOT',
+              'status': 'PASS',
+              'qualified_source_commit': subprocess.check_output(
+                  ['git', 'rev-parse', 'HEAD'], text=True
+              ).strip(),
+              'signed_snapshot': True,
+              'two_build_reproducibility': True,
+              'headless_wayland': True,
+              'network': 'none',
+          }
+          repository_state_path.write_text(
+              json.dumps(repository_state, indent=2, sort_keys=True) + '\n'
+          )
+          current_path = root / 'docs/CURRENT_STATE.md'
+          current = current_path.read_text()
+          marker = '## D1 QEMU substrate checkpoint (2026-08-28)'
+          if marker not in current:
+              current += f'''\n\n{marker}\n\nThe signed Debian snapshot, exact package closure and two independent ext4\nimage builds are reproducible. A Q35/TCG guest booted with no network device,\nreached systemd, udev, D-Bus and logind, started the supervised headless\nWayland compositor, completed `wayland-info`, wrote persistent guest evidence\nand powered off cleanly. See `manifests/debian-d1.resolved.json` and\n`docs/evidence/generated/d1-qemu-boot-result.json`.\n\nThis is D1 QEMU substrate evidence only. It does not prove Servo, a visible\nwindow, native input/IME, Secure Boot, bare-metal hardware or release readiness.\n'''
+              current_path.write_text(current)
+          PY
+          cat > docs/evidence/2026-08-28-d1-signed-reproducible-qemu.md <<'EOF'
+          # D1 signed, reproducible Debian QEMU substrate
+
+          The selected Debian snapshot metadata passed `gpgv` verification with
+          the Debian archive keyring. Two independent `mmdebstrap` rootfs builds
+          produced byte-identical package locks, normalized rootfs archives,
+          ext4 images, kernels and initrds.
+
+          The first image then booted under Q35/TCG with `-nic none`. The guest
+          reached systemd, udev, D-Bus and logind, started the supervised
+          headless Weston service, exposed one Wayland socket, completed
+          `wayland-info`, persisted an acceptance receipt and powered off.
+
+          This is D1/QEMU evidence. No Servo runtime, visible window, input,
+          Secure Boot, update or bare-metal claim is made.
+          EOF
+
+      - name: Commit evidence on both pass and fail
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [[ "${{ steps.pipeline.outputs.status }}" == "0" ]]; then
+            rm -f .github/workflows/qualify-d1-debian-qemu-v1.yml
+          fi
+          git add -A
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            if [[ "${{ steps.pipeline.outputs.status }}" == "0" ]]; then
+              git commit -m "test: qualify signed reproducible D1 QEMU substrate"
+            else
+              git commit -m "test: publish D1 pipeline failure diagnostics"
+            fi
+            git push origin HEAD:codex/d1-01-debian-qemu-v1
+          fi
+          echo "EVIDENCE_HEAD=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Package successful D1 image artifacts
+        if: steps.pipeline.outputs.status == '0'
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d1-artifact
+          cp /tmp/trillionnium-d1/build-a/candidate/artifacts/trillionnium-d1.ext4 /tmp/d1-artifact/
+          cp /tmp/trillionnium-d1/build-a/candidate/artifacts/vmlinuz /tmp/d1-artifact/
+          cp /tmp/trillionnium-d1/build-a/candidate/artifacts/initrd.img /tmp/d1-artifact/
+          cp /tmp/trillionnium-d1/build-a/candidate/artifacts/package-lock.tsv /tmp/d1-artifact/
+          cp manifests/debian-d1.resolved.json /tmp/d1-artifact/
+          cp docs/evidence/generated/d1-qemu-boot-result.json /tmp/d1-artifact/
+          tar --sparse --zstd -cf /tmp/trillionnium-desktop-d1-qemu.tar.zst -C /tmp/d1-artifact .
+          sha256sum /tmp/trillionnium-desktop-d1-qemu.tar.zst \
+            > /tmp/trillionnium-desktop-d1-qemu.tar.zst.sha256
+
+      - uses: actions/upload-artifact@v4
+        if: steps.pipeline.outputs.status == '0'
+        with:
+          name: trillionnium-desktop-d1-qemu
+          path: |
+            /tmp/trillionnium-desktop-d1-qemu.tar.zst
+            /tmp/trillionnium-desktop-d1-qemu.tar.zst.sha256
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Recheck committed successful evidence and merge PR 14
+        if: steps.pipeline.outputs.status == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 -m json.tool manifests/debian-d1.resolved.json >/dev/null
+          python3 -m json.tool docs/evidence/generated/d1-qemu-boot-result.json >/dev/null
+          grep -q '^TRILLIONNIUM_D1_ACCEPTANCE_PASS$' docs/evidence/generated/d1-serial.log
+          test -z "$(git status --porcelain)"
+          gh pr edit 14 \
+            --title "test: qualify signed reproducible Debian QEMU substrate (D1-01)" \
+            --body-file - <<'EOF'
+          ## Qualified D1-01 substrate
+
+          Executed evidence:
+
+          - timestamped Debian `trixie` snapshot `InRelease` signatures verified;
+          - complete exact package closure recorded;
+          - two independent rootfs and ext4 builds byte-identical;
+          - kernel and initrd byte-identical;
+          - Q35/TCG boot with `-nic none`;
+          - systemd, udev, D-Bus and logind active;
+          - supervised headless Weston and `wayland-info` successful;
+          - serial and persistent disk evidence agree;
+          - clean guest poweroff.
+
+          This is D1 QEMU substrate evidence only. No Servo, visible-window, input, Secure Boot, bare-metal or release claim is made.
+          EOF
+          gh pr ready 14
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/pulls/14/merge" \
+            -f merge_method=squash \
+            -f sha="${EVIDENCE_HEAD}" \
+            -f commit_title="test: qualify signed reproducible Debian QEMU substrate" \
+            -f commit_message="Verify signed Debian snapshot metadata, exact package closure, two-build image reproducibility and a no-network Q35/TCG systemd plus headless Wayland boot. Preserve all Servo, visible-input, Secure Boot and release gates."
+
+      - name: Enforce pipeline result after evidence publication
+        if: always()
+        env:
+          PIPELINE_STATUS: ${{ steps.pipeline.outputs.status }}
+        run: test "$PIPELINE_STATUS" = "0"
