@@ -1,0 +1,62 @@
+name: patch-and-redispatch-d1-v3
+
+on:
+  push:
+    branches:
+      - codex/d1-01-debian-qemu-v1
+    paths:
+      - ".github/workflows/patch-and-redispatch-d1-v3.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  include-offline-d1-unit-corpus:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d1-01-debian-qemu-v1
+          fetch-depth: 0
+
+      - name: Add offline D1 unit tests to the qualification transaction
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          workflow = Path('.github/workflows/qualify-d1-debian-qemu-v1.yml')
+          text = workflow.read_text()
+          anchor = '''          python3 -m py_compile \\\n            tools/resolve_debian_d1_lock.py \\\n            tools/compare_d1_builds.py\n'''
+          addition = anchor + "          python3 -m unittest discover -s tests/d1 -p 'test_*.py'\n"
+          if "python3 -m unittest discover -s tests/d1" not in text:
+              if anchor not in text:
+                  raise SystemExit('D1 py_compile anchor was not found')
+              text = text.replace(anchor, addition, 1)
+          text = text.replace('          shellcheck \\\n', '          shellcheck --severity=error \\\n', 1)
+          host_verify = '''          systemd-analyze verify \\\n            packaging/debian/image/rootfs-overlay/etc/systemd/system/trillionnium-d1-wayland.service \\\n            packaging/debian/image/rootfs-overlay/etc/systemd/system/trillionnium-d1-acceptance.service \\\n            packaging/debian/image/rootfs-overlay/etc/systemd/system/trillionnium-d1-acceptance.target\n'''
+          text = text.replace(host_verify, '')
+          workflow.write_text(text)
+          PY
+          rm -f .github/workflows/patch-and-dispatch-d1-v1.yml
+          rm -f .github/workflows/patch-and-redispatch-d1-v2.yml
+          rm -f .github/workflows/patch-and-redispatch-d1-v3.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git commit -m "test: include offline D1 resolver and reproducibility corpus"
+            git push origin HEAD:codex/d1-01-debian-qemu-v1
+          fi
+
+      - name: Explicitly dispatch the corrected D1 workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/actions/workflows/qualify-d1-debian-qemu-v1.yml/dispatches" \
+            -f ref=codex/d1-01-debian-qemu-v1
