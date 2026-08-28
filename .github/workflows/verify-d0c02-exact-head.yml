@@ -1,0 +1,67 @@
+name: verify-d0c02-exact-head
+
+on:
+  push:
+    branches:
+      - codex/d0c02-transport-v2
+    paths:
+      - ".github/workflows/verify-d0c02-exact-head.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-d0c02-exact-head
+  cancel-in-progress: true
+
+jobs:
+  exact-head:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: codex/d0c02-transport-v2
+          fetch-depth: 0
+
+      - name: Assert exact pushed head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          git status --short
+
+      - name: Install exact Rust 1.93.0 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version --verbose
+          cargo --version --verbose
+          rustfmt --version
+          cargo clippy --version
+
+      - name: Validate repository and contracts
+        run: python3 tools/validate_repository.py
+
+      - name: Check formatting
+        run: cargo fmt --all --check
+
+      - name: Run Clippy with warnings denied
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run full workspace tests
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Run browserd self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Confirm clean tree and no listener artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          git diff --cached --exit-code
+          test ! -S /run/hepta/browserd/agent.sock
+          test ! -e /etc/hepta/enable-agent-port
