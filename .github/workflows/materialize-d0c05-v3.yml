@@ -1,0 +1,129 @@
+name: materialize-d0c05-systemd-socket-custody-v3
+
+on:
+  push:
+    branches:
+      - codex/d0c05-systemd-socket-custody
+    paths:
+      - "tools/materialize_d0c05.py"
+      - ".github/workflows/materialize-d0c05-v3.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0c05-systemd-socket-custody
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - name: Check out staged D0C-05 branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0c05-systemd-socket-custody
+
+      - name: Wait for prerequisite evidence on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=false
+          for attempt in $(seq 1 140); do
+            git fetch -q origin main
+            if python3 - <<'PY'
+          import json
+          import subprocess
+
+          def load(path):
+              raw = subprocess.check_output(
+                  ['git', 'show', f'origin/main:{path}'],
+                  text=True,
+                  stderr=subprocess.DEVNULL,
+              )
+              return json.loads(raw)
+
+          servo = load('manifests/servo-embedder-compat.json')
+          state = load('manifests/repository-state.json')
+          checkpoints = {
+              item['id']: item
+              for item in state.get('implementation_checkpoints', [])
+              if isinstance(item, dict) and 'id' in item
+          }
+          assert servo['status'] == 'PASS'
+          assert servo['source']['actual_commit'] == '670ae8a70801b162e186f81cbb5bdd2d59c39108'
+          assert checkpoints['TOS-D0A-01']['status'] == 'PASS_COMPILE_ONLY_NO_RUNTIME'
+          assert checkpoints['TOS-D0C-04']['status'] == 'IMPLEMENTED_HOST_VALIDATED_NO_LISTENER'
+          PY
+            then
+              ready=true
+              break
+            fi
+            sleep 60
+          done
+          test "$ready" = true
+
+      - name: Save only D0C-05 source and verification files
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -czf /tmp/d0c05-files.tar.gz \
+            apps/hepta-agent-portd \
+            crates/hepta-peer-attestation \
+            packaging/debian/systemd/hepta-browserd-agent.socket \
+            packaging/debian/systemd/hepta-browserd-agent@.service \
+            packaging/debian/sysusers.d/trillionnium-desktop.conf \
+            packaging/debian/tmpfiles.d/trillionnium-desktop.conf \
+            packaging/debian/systemd-preset/90-trillionnium-desktop.preset \
+            packaging/debian/hepta-agent-portd.install \
+            contracts/agent-port-custody.v1.json \
+            docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md \
+            docs/evidence/2026-08-28-d0c05-systemd-socket-custody.md \
+            tools/verify_systemd_socket_custody.py \
+            tools/materialize_d0c05.py \
+            .github/workflows/agent-port-custody.yml \
+            .github/workflows/verify-and-merge-d0c05.yml
+
+      - name: Restore D0C-05 files onto current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard origin/main
+          git clean -fdx
+          tar -xzf /tmp/d0c05-files.tar.gz
+          python3 -m py_compile \
+            tools/materialize_d0c05.py \
+            tools/verify_systemd_socket_custody.py
+          python3 tools/materialize_d0c05.py
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Validate complete D0C-05 product graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo generate-lockfile
+          cargo fmt --all
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_repository.py
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          cargo run --locked -p hepta-agent-portd -- --self-check
+
+      - name: Commit validated D0C-05 checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: establish default-disabled AgentPort socket custody"
+          git push --force-with-lease origin HEAD:codex/d0c05-systemd-socket-custody
