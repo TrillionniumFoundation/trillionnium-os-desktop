@@ -1,0 +1,158 @@
+name: materialize-d0c04-current-main
+
+on:
+  push:
+    branches:
+      - codex/d0c04-host-validated-v4
+    paths:
+      - .github/workflows/materialize-d0c04-current-main.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0c04-current-main
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out candidate branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0c04-host-validated-v4
+
+      - name: Install exact Rust 1.93.0 toolchain
+        run: |
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version
+          cargo --version
+
+      - name: Integrate AgentPort into the current main-derived product graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              if new in text:
+                  return text
+              if text.count(old) != 1:
+                  raise SystemExit(f"{label}: expected one marker, found {text.count(old)}")
+              return text.replace(old, new, 1)
+
+          cargo_path = Path("apps/hepta-browserd/Cargo.toml")
+          cargo = cargo_path.read_text(encoding="utf-8")
+          cargo = replace_once(
+              cargo,
+              'hepta-browser-codec = { path = "../../crates/hepta-browser-codec" }\n',
+              'hepta-browser-codec = { path = "../../crates/hepta-browser-codec" }\n'
+              'hepta-agent-port = { path = "../../crates/hepta-agent-port" }\n',
+              "browserd Cargo dependency",
+          )
+          cargo_path.write_text(cargo, encoding="utf-8")
+
+          lib_path = Path("apps/hepta-browserd/src/lib.rs")
+          lib = lib_path.read_text(encoding="utf-8")
+          lib = replace_once(
+              lib,
+              '//! codec, and session self-check only: it does not start Servo, bind a\n',
+              '//! codec, connected AgentPort, and session self-check only: it does not\n'
+              '//! start Servo, bind a\n',
+              "browserd module claim",
+          )
+          lib = replace_once(
+              lib,
+              'pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C03_SOURCE";',
+              'pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C04_SOURCE";',
+              "browserd implementation stage",
+          )
+          marker = (
+              '    hepta_browser_codec::self_check().map_err(|error| error.to_string())?;\n'
+              '    checks_run += 1;\n'
+          )
+          insertion = marker + (
+              '\n    hepta_agent_port::self_check().map_err(|error| error.to_string())?;\n'
+              '    checks_run += 1;\n'
+          )
+          lib = replace_once(lib, marker, insertion, "browserd AgentPort self-check")
+          lib = lib.replace(
+              "self_check_exercises_transport_codec_preemption_revision_and_recovery",
+              "self_check_exercises_transport_codec_agent_port_preemption_revision_and_recovery",
+          )
+          lib = lib.replace("assert!(report.checks_run >= 9);", "assert!(report.checks_run >= 10);")
+          lib_path.write_text(lib, encoding="utf-8")
+
+          validator_path = Path("tools/validate_repository.py")
+          validator = validator_path.read_text(encoding="utf-8")
+          validator = replace_once(
+              validator,
+              '    "crates/hepta-browser-codec",\n',
+              '    "crates/hepta-browser-codec",\n    "crates/hepta-agent-port",\n',
+              "repository workspace member",
+          )
+          validator = replace_once(
+              validator,
+              '    "crates/hepta-browser-codec/src/lib.rs",\n',
+              '    "crates/hepta-browser-codec/src/lib.rs",\n'
+              '    "crates/hepta-agent-port/Cargo.toml",\n'
+              '    "crates/hepta-agent-port/README.md",\n'
+              '    "crates/hepta-agent-port/src/lib.rs",\n'
+              '    "contracts/agent-port-bridge.v1.json",\n'
+              '    "docs/architecture/CONNECTED_AGENT_PORT_BRIDGE.md",\n'
+              '    "docs/evidence/2026-08-28-d0c04-rust-agent-port.md",\n'
+              '    "docs/plan/D0C04_EXECUTION_CHECKPOINT-2026-08-28.md",\n'
+              '    "manifests/d0c04-candidate.json",\n'
+              '    "tools/validate_d0c04_rust_product.py",\n',
+              "repository D0C-04 required paths",
+          )
+          validator_path.write_text(validator, encoding="utf-8")
+          PY
+
+      - name: Format candidate
+        run: cargo fmt --all
+
+      - name: Validate stable repository and D0C-04 contracts
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/validate_d0c04_rust_product.py
+
+      - name: Run Clippy with warnings denied
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run complete workspace tests
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Run integrated browserd self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Verify authority ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R --line-number --fixed-strings "UnixListener" crates/hepta-agent-port apps/hepta-browserd
+          ! grep -R --line-number --fixed-strings "TcpListener" crates/hepta-agent-port apps/hepta-browserd
+          ! grep -R --line-number --fixed-strings "WebDriver" crates/hepta-agent-port apps/hepta-browserd
+          test ! -e /etc/hepta/enable-agent-port
+
+      - name: Commit validated integration and remove one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/materialize-d0c04-current-main.yml
+          git add Cargo.toml Cargo.lock apps/hepta-browserd tools/validate_repository.py \
+            crates/hepta-agent-port contracts/agent-port-bridge.v1.json \
+            docs/architecture/CONNECTED_AGENT_PORT_BRIDGE.md \
+            docs/evidence/2026-08-28-d0c04-rust-agent-port.md \
+            docs/plan/D0C04_EXECUTION_CHECKPOINT-2026-08-28.md \
+            manifests/cargo-external-allowlist.json manifests/d0c04-candidate.json \
+            tools/validate_d0c04_rust_product.py
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat: integrate D0C-04 connected AgentPort on current main"
+          git push origin HEAD:codex/d0c04-host-validated-v4
