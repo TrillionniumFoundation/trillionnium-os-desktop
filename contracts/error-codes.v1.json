@@ -1,0 +1,90 @@
+{
+  "schema": "trillionnium.desktop.error-codes.v1",
+  "codes": [
+    {
+      "code": "invalid_request",
+      "retry": "never",
+      "meaning": "The frame or typed request violates the contract."
+    },
+    {
+      "code": "unsupported",
+      "retry": "after_upgrade",
+      "meaning": "The pinned Servo/product revision cannot perform the requested operation."
+    },
+    {
+      "code": "policy_denied",
+      "retry": "after_explicit_policy_change",
+      "meaning": "A product policy or capability boundary refused the operation."
+    },
+    {
+      "code": "stale_session",
+      "retry": "recreate_session",
+      "meaning": "The browser process/session generation changed."
+    },
+    {
+      "code": "stale_document",
+      "retry": "observe_again",
+      "meaning": "Top-level document identity changed."
+    },
+    {
+      "code": "stale_snapshot",
+      "retry": "observe_again",
+      "meaning": "The semantic snapshot revision changed."
+    },
+    {
+      "code": "queue_full",
+      "retry": "bounded_backoff",
+      "meaning": "The bounded arbiter queue refused admission."
+    },
+    {
+      "code": "human_control_active",
+      "retry": "after_human_release",
+      "meaning": "Human focus lease blocks an Agent mutation."
+    },
+    {
+      "code": "ime_composition_active",
+      "retry": "after_ime_end",
+      "meaning": "IME composition owns text input."
+    },
+    {
+      "code": "modal_blocked",
+      "retry": "after_modal_resolution",
+      "meaning": "A browser or system modal blocks progress."
+    },
+    {
+      "code": "navigation_in_progress",
+      "retry": "after_navigation",
+      "meaning": "The current document is transitioning."
+    },
+    {
+      "code": "capability_pending",
+      "retry": "after_capability_resolution",
+      "meaning": "A typed system capability request is unresolved."
+    },
+    {
+      "code": "cancelled",
+      "retry": "caller_decides",
+      "meaning": "The request was cancelled before a final effect was established."
+    },
+    {
+      "code": "deadline_exceeded",
+      "retry": "caller_decides",
+      "meaning": "The absolute request deadline elapsed."
+    },
+    {
+      "code": "browser_crashed",
+      "retry": "after_recovery",
+      "meaning": "The browser process crashed and old references are invalid."
+    },
+    {
+      "code": "indeterminate",
+      "retry": "never_automatic",
+      "meaning": "Dispatch occurred but the final external effect is unknown."
+    },
+    {
+      "code": "internal",
+      "retry": "after_diagnosis",
+      "meaning": "An invariant or unexpected implementation failure occurred."
+    }
+  ]
+}

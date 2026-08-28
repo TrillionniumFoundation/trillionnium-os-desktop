@@ -1,69 +1,65 @@
 # TrillionniumOS Desktop — current state
 
-**Updated:** 2026-08-28  
-**Status:** `DESIGN_BASELINE` / `PLANNING_ONLY`  
-**Implementation:** not started  
-**Canonical plan:** [`DESKTOP_PLAN-2026-08-28.md`](DESKTOP_PLAN-2026-08-28.md) (revision d4)
+**Updated:** 2026-08-28
+**Canonical plan:** `2026-08-28-d5`
+**Repository mode:** `FULL_PRODUCT_REPOSITORY`
+**Implementation stage:** `D0R_D0C_FOUNDATION`
 
-## Verified starting point
+## What is implemented
 
-The desktop is being added as a sibling documentation/product lane. The
-migrated project currently contains an Android/Lineage checkout and a
-separate Rust Agent-native/release checkout; neither is a Servo desktop.
-The control-workspace mobile documentation is at `../trillionnium-os/`.
+The repository now contains the initial product implementation rather than only
+planning documents:
 
-The exact inputs are:
+1. A Rust 2024 workspace with `rust-version = 1.93` and four initial packages:
+   `trillionnium-contract-core`, `hepta-browser-contracts`,
+   `hepta-session-core`, and `hepta-browserd`.
+2. Layered revision identity:
+   `session_generation`, `document_generation`,
+   `semantic_snapshot_revision`, and `mutation_epoch`.
+3. A deterministic Agent/human state machine covering Agent observation and
+   mutation, human focus leases, IME composition, navigation, modal state,
+   capability waits, cancellation, browser crash, recovery, and closure.
+4. A bounded FIFO arbiter queue that fails closed on overflow.
+5. A trusted-origin decision using distinct synthetic HTTPS hosts under
+   `*.apps.hepta.invalid`; path-only custom-scheme origins are not used.
+6. Machine-readable schemas for browser requests, operation receipts,
+   capability permits, and signed app manifests, plus error codes and golden
+   vectors.
+7. Product-boundary checks that prevent Android/mobile direct shell, ADB,
+   Root-Linux, and privilege-broker packages from entering the desktop default
+   graph.
+8. A `hepta-browserd --self-check` scaffold that exercises preemption,
+   revisions, navigation, crash, and recovery without opening a listener or
+   network connection.
+9. CI and repository validation definitions.
 
-```text
-Android/Lineage source:
-/data/toshiba-dev/TrillionniumOS/rootfs/home/qian-qi/android/lineage-fogos
+## What is not implemented or claimed
 
-Rust Agent-native/release source:
-/data/toshiba-dev/TrillionniumOS/rootfs/home/qian-qi/trillionnium-release-sources/p0-agent-native-integration-20260731/trillionnium-os
+- No Servo source is linked or built by this repository yet.
+- No `WebView`, rendering context, Wayland surface, keyboard/pointer path, or
+  IME adapter exists yet.
+- No Unix-domain Agent API listener exists; therefore peer-credential and
+  channel-binding authentication are not yet product facts.
+- No Debian snapshot has been fully resolved to `InRelease` and package-set
+  digests, and no bootable QEMU image exists.
+- No trusted shell bundle is signed or loaded.
+- No network egress proxy, file portal, secret service, update daemon, Secure
+  Boot chain, or A/B rollback image exists.
+- No external webpage interaction or external effect is authorized.
+- No public release, beta image, or hardware-qualification claim exists.
 
-Mobile documentation:
-/data/toshiba-dev/TrillionniumOS/rootfs/home/qian-qi/.openclaw/workspace/docs/trillionnium-os
+## Active next work packages
 
-Desktop documentation (this directory):
-/data/toshiba-dev/TrillionniumOS/rootfs/home/qian-qi/.openclaw/workspace/docs/trillionnium-os-desktop
-```
+1. `D0A-01`: build a pinned Servo compatibility spike at commit
+   `670ae8a70801b162e186f81cbb5bdd2d59c39108`.
+2. `D0A-02`: prove one visible workspace containing a trusted shell surface and
+   exactly one untrusted content WebView, without a hidden second Agent page.
+3. `D0C-02`: bind JSON contracts to a bounded authenticated UDS carrier with
+   peer credentials, session nonce, deadlines, cancellation, and strict frame
+   handling.
+4. `D1-01`: resolve the Debian snapshot and build the first reproducible QEMU
+   image only after its signed package inputs are locked.
 
-The old top-level `/data/toshiba-dev/TrillionniumOS-desktop/` location is
-staging/provenance only and is not an implementation checkout.
-
-## Active decisions
-
-1. Start from a pinned Debian stable userland and bootable image, using a
-   stock/near-upstream LTS kernel, initramfs, firmware and drivers.
-2. Use one headed Servo WebView as the only desktop browser runtime.
-3. Give each session one `BrowserActor`/`PageOwner` and one event loop. Agent
-   API calls and human native input are two serialized inputs to that same
-   live page; there is no engine switching or page migration. v1 has one local
-   seat, one visible window and one top-level browsing context; same-page
-   iframes are allowed, while popup/new-window/tab requests are denied or
-   navigated in the existing WebView.
-4. Keep `hepta-browserd` in user space. `systemd`, Wayland and typed capability
-   services retain lifecycle, display and machine-authority responsibilities.
-5. Reuse Obscura only as a semantic-contract/fixture reference if useful; do
-   not link Obscura engine crates into the Servo runtime.
-6. Keep external search, credentials and web side effects behind later gates;
-   the current plan has no production listener, persistent secret or
-   CAPTCHA/anti-bot bypass authority.
-
-Agent and human mutations use a short lease and one queue. `PageOwner`, not
-the observer, increments `page_revision` on every mutation, navigation and
-committed DOM change; stale references fail closed.
-
-## First acceptance slice
-
-```text
-Debian boots
-  -> full-screen Servo shell starts
-  -> Agent navigates through the local authenticated API
-  -> human sees and edits the same page
-  -> Agent observes/extracts the resulting state
-  -> a capability request is explicitly allowed or refused
-```
-
-No item in this file is evidence that the slice has already been implemented;
-it is the baseline and gate definition for the next development stage.
+A source file, schema, self-check, or CI definition is not evidence that Servo
+or Debian bring-up has completed. Stage promotion requires the exit evidence in
+the canonical plan.

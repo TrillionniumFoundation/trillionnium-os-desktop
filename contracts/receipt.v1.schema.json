@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trillionnium.org/desktop/receipt.v1.schema.json",
+  "title": "TrillionniumOS Desktop operation receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "receipt_id",
+    "plan_revision",
+    "image_id",
+    "servo_commit",
+    "browserd_version",
+    "session_id",
+    "session_generation",
+    "document_generation",
+    "semantic_snapshot_revision",
+    "source",
+    "operation",
+    "status",
+    "started_monotonic_ms",
+    "finished_monotonic_ms"
+  ],
+  "properties": {
+    "schema": {
+      "const": "trillionnium.desktop.receipt.v1"
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+    },
+    "plan_revision": {
+      "type": "string",
+      "pattern": "^2026-08-28-d[0-9]+$"
+    },
+    "image_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+    },
+    "package_lock_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "servo_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "browserd_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "session_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+    },
+    "session_generation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "document_generation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "semantic_snapshot_revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "mutation_epoch": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source": {
+      "enum": [
+        "agent",
+        "human",
+        "system"
+      ]
+    },
+    "operation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "normalized_target_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "final_url": {
+      "type": "string",
+      "maxLength": 8192
+    },
+    "redirect_chain": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "maxLength": 8192
+      }
+    },
+    "status": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "refused",
+        "cancelled",
+        "interrupted",
+        "indeterminate"
+      ]
+    },
+    "error_code": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]{1,64}$"
+    },
+    "challenge_class": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]{1,64}$"
+    },
+    "snapshot_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "started_monotonic_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "finished_monotonic_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "wall_clock_unix_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "previous_receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "signing_key_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "succeeded"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": [
+            "error_code"
+          ]
+        }
+      },
+      "else": {
+        "required": [
+          "error_code"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "trillionnium.desktop.product-boundary.v1",
+  "desktop_default_graph": {
+    "forbidden_dependency_names": [
+      "trillionnium-agent-direct-tools",
+      "trillionnium-shell-exec",
+      "trillionnium-agent-privilege-broker",
+      "trillionnium-privilege-broker-protocol"
+    ],
+    "forbidden_path_fragments": [
+      "android-integration",
+      "root-linux",
+      "lineage-fogos"
+    ],
+    "allowed_neutral_contract_scope": [
+      "bounded_identifiers",
+      "digests",
+      "framing",
+      "deadlines",
+      "portable_error_envelopes",
+      "receipt_primitives"
+    ]
+  },
+  "mobile_reference": {
+    "repository": "TrillionniumFoundation/trillionnium-os",
+    "commit": "bfa331fda97fac740ac1145b57784af273c8a777",
+    "relationship": "company_sibling_reference_not_build_dependency"
+  }
+}
