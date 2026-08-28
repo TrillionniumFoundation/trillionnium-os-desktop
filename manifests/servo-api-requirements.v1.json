@@ -1,0 +1,85 @@
+{
+  "schema": "trillionnium.desktop.servo-api-requirements.v1",
+  "servo_repository": "https://github.com/servo/servo",
+  "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+  "component_manifest": "components/servo/Cargo.toml",
+  "headed_reference_package_preference": [
+    "servoshell",
+    "servo-shell"
+  ],
+  "required_public_symbols": [
+    {
+      "name": "Servo",
+      "kind": "type"
+    },
+    {
+      "name": "WebView",
+      "kind": "type"
+    },
+    {
+      "name": "WebViewBuilder",
+      "kind": "type"
+    },
+    {
+      "name": "RenderingContext",
+      "kind": "type_or_trait"
+    },
+    {
+      "name": "EventLoopWaker",
+      "kind": "trait"
+    },
+    {
+      "name": "ServoDelegate",
+      "kind": "trait"
+    },
+    {
+      "name": "WebViewDelegate",
+      "kind": "trait"
+    }
+  ],
+  "required_method_groups": [
+    {
+      "label": "webview_builder_constructor",
+      "owner": "WebViewBuilder",
+      "any_of": [
+        "new"
+      ]
+    },
+    {
+      "label": "servo_event_loop_entry",
+      "owner": "Servo",
+      "any_of": [
+        "spin_event_loop",
+        "spin_event_loop_until_stable",
+        "pump_event_loop",
+        "perform_updates"
+      ]
+    }
+  ],
+  "informational_method_groups": [
+    {
+      "label": "webview_builder_finalizer",
+      "owner": "WebViewBuilder",
+      "any_of": [
+        "build"
+      ]
+    },
+    {
+      "label": "webview_navigation_entry",
+      "owner": "WebView",
+      "any_of": [
+        "load",
+        "load_url",
+        "navigate",
+        "reload"
+      ]
+    }
+  ],
+  "required_checks": {
+    "external_public_api_sentinel": true,
+    "official_headed_reference_package_cargo_check": true,
+    "exact_git_commit": true,
+    "clean_servo_source_before_check": true,
+    "production_webdriver_listener": false
+  }
+}
