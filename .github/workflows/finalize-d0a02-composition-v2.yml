@@ -1,0 +1,203 @@
+name: finalize-d0a02-composition-v2
+
+on:
+  push:
+    branches:
+      - codex/d0a02-workspace-composition-v2
+    paths:
+      - ".github/workflows/finalize-d0a02-composition-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: d0a02-composition-exclusive
+  cancel-in-progress: false
+
+jobs:
+  integrate-test-capture-and-stage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0a02-workspace-composition-v2
+          fetch-depth: 0
+
+      - name: Install exact Rust 1.93.0
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Integrate and mechanically normalize composition source
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('Cargo.toml')
+          text = path.read_text()
+          member = '  "crates/hepta-workspace-composition",\n'
+          if member not in text:
+              text = text.replace('members = [\n', 'members = [\n' + member, 1)
+          if text.count(member) < 2:
+              text = text.replace('default-members = [\n', 'default-members = [\n' + member, 1)
+          path.write_text(text)
+          PY
+          cargo generate-lockfile
+          cargo fmt --all
+          cargo fix --workspace --all-targets --allow-dirty --allow-staged || true
+          cargo clippy --fix --workspace --all-targets --allow-dirty --allow-staged -- -D warnings || true
+          cargo fmt --all
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml Cargo.lock crates/hepta-workspace-composition contracts/workspace-composition.v1.json docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: integrate D0A-02 trusted workspace composition core"
+            git push origin HEAD:codex/d0a02-workspace-composition-v2
+          fi
+          echo "TESTED_SOURCE_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Execute all source gates and retain diagnostics
+        id: gate
+        shell: bash
+        run: |
+          set +e
+          mkdir -p docs/evidence/generated/d0a02-composition-logs
+          python3 -m json.tool contracts/workspace-composition.v1.json > docs/evidence/generated/d0a02-composition-logs/contract.log 2>&1; contract=$?
+          python3 tools/validate_repository.py > docs/evidence/generated/d0a02-composition-logs/repository.log 2>&1; repository=$?
+          cargo fmt --all --check > docs/evidence/generated/d0a02-composition-logs/rustfmt.log 2>&1; fmt=$?
+          cargo clippy --workspace --all-targets --locked -- -D warnings > docs/evidence/generated/d0a02-composition-logs/clippy.log 2>&1; clippy=$?
+          cargo test --workspace --all-targets --locked > docs/evidence/generated/d0a02-composition-logs/workspace-tests.log 2>&1; workspace=$?
+          cargo test --locked -p hepta-workspace-composition --all-targets > docs/evidence/generated/d0a02-composition-logs/composition-tests.log 2>&1; composition=$?
+          git diff --check > docs/evidence/generated/d0a02-composition-logs/diff-check.log 2>&1; diffcheck=$?
+          overall=0
+          for value in "$contract" "$repository" "$fmt" "$clippy" "$workspace" "$composition" "$diffcheck"; do
+            if [[ "$value" -ne 0 ]]; then overall=1; fi
+          done
+          printf 'contract=%s\nrepository=%s\nfmt=%s\nclippy=%s\nworkspace=%s\ncomposition=%s\ndiffcheck=%s\noverall=%s\n' \
+            "$contract" "$repository" "$fmt" "$clippy" "$workspace" "$composition" "$diffcheck" "$overall" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Publish exact source evidence before enforcement
+        env:
+          CONTRACT: ${{ steps.gate.outputs.contract }}
+          REPOSITORY: ${{ steps.gate.outputs.repository }}
+          FMT: ${{ steps.gate.outputs.fmt }}
+          CLIPPY: ${{ steps.gate.outputs.clippy }}
+          WORKSPACE: ${{ steps.gate.outputs.workspace }}
+          COMPOSITION: ${{ steps.gate.outputs.composition }}
+          DIFFCHECK: ${{ steps.gate.outputs.diffcheck }}
+          OVERALL: ${{ steps.gate.outputs.overall }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root = pathlib.Path('.')
+          def state(name): return 'PASS' if os.environ[name] == '0' else 'FAIL'
+          ok = os.environ['OVERALL'] == '0'
+          result = {
+            'schema': 'trillionnium.desktop.d0a02-composition-source-result.v2',
+            'status': 'HOST_TESTED_ENGINE_NEUTRAL_CORE' if ok else 'FAIL_SOURCE_FIX_REQUIRED',
+            'rust_version': '1.93.0',
+            'tested_source_commit': os.environ['TESTED_SOURCE_COMMIT'],
+            'source_sha256': hashlib.sha256((root / 'crates/hepta-workspace-composition/src/model.rs').read_bytes()).hexdigest(),
+            'tests_sha256': hashlib.sha256((root / 'crates/hepta-workspace-composition/src/tests.rs').read_bytes()).hexdigest(),
+            'checks': {
+              'contract_json': state('CONTRACT'),
+              'repository_validation': state('REPOSITORY'),
+              'rustfmt': state('FMT'),
+              'clippy_deny_warnings': state('CLIPPY'),
+              'workspace_tests': state('WORKSPACE'),
+              'composition_tests': state('COMPOSITION'),
+              'git_diff_check': state('DIFFCHECK'),
+            },
+            'claims': {
+              'servo_started': False,
+              'native_window_created': False,
+              'trusted_chrome_rendered': False,
+              'content_frame_rendered': False,
+              'native_input_forwarded': False,
+              'ime_forwarded': False,
+            },
+            'merge_ready': ok,
+            'remaining_runtime_gate': [
+              'one native window',
+              'trusted chrome visible',
+              'exactly one Servo content surface',
+              'local fixture first frame',
+              'pointer keyboard IME forwarding',
+              'popup denial',
+              'content crash preserves chrome',
+            ],
+          }
+          (root / 'docs/evidence/generated/d0a02-composition-source-result.json').write_text(
+            json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          git add docs/evidence/generated
+          git diff --cached --check
+          git commit -m "test: publish exact D0A-02 composition source evidence"
+          git push origin HEAD:codex/d0a02-workspace-composition-v2
+          echo "EVIDENCE_HEAD=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Enforce source gate after evidence publication
+        env:
+          OVERALL: ${{ steps.gate.outputs.overall }}
+        run: test "$OVERALL" = "0"
+
+      - name: Finalize committed branch and update stacked PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cat > docs/evidence/2026-08-28-d0a02-workspace-composition-source.md <<'EOF'
+          # D0A-02 workspace composition source qualification
+
+          The engine-neutral trusted-chrome/single-content-surface model passed
+          exact Rust 1.93 formatting, Clippy and all-target tests. Tests cover
+          geometry, one-surface enforcement, pointer/keyboard/IME ownership,
+          navigation reuse, popup denial, atomic rollback, content crash,
+          trusted placeholder and generation-bound recovery.
+
+          No Servo runtime or native window was started. This evidence does not
+          satisfy the D0A-02 first-frame/runtime exit gate.
+          EOF
+          rm -f .github/workflows/qualify-d0a02-workspace-composition.yml
+          rm -f .github/workflows/finalize-d0a02-composition-v2.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "test: finalize host-tested D0A-02 composition core"
+          git push origin HEAD:codex/d0a02-workspace-composition-v2
+          final_head=$(git rev-parse HEAD)
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          test -z "$(git status --porcelain)"
+          gh pr edit 13 \
+            --title "feat: add host-tested trusted workspace composition core (D0A-02)" \
+            --body-file - <<'EOF'
+          ## Host-tested D0A-02 composition core
+
+          Exact Rust 1.93 source qualification covers permanent trusted chrome identity, exactly one content surface, pointer/keyboard/IME ownership, navigation reuse, popup denial, atomic rollback and generation-bound crash recovery.
+
+          This remains engine-neutral source evidence. No Servo runtime, native window or rendered frame is claimed. Runtime D0A-02 remains open.
+          EOF
+          merged=$(gh pr view 11 --json mergedAt --jq '.mergedAt != null')
+          if [[ "$merged" == "true" ]]; then
+            gh pr edit 13 --base main
+            gh pr ready 13
+            gh api \
+              --method PUT \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/${GITHUB_REPOSITORY}/pulls/13/merge" \
+              -f merge_method=squash \
+              -f sha="$final_head" \
+              -f commit_title="feat: add trusted workspace composition core" \
+              -f commit_message="Add the exact Rust host-tested D0A-02 trust, input, popup and crash-recovery state model. Preserve the native-window and Servo first-frame runtime gate."
+          fi
