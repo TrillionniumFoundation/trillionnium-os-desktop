@@ -1,0 +1,256 @@
+name: materialize-d0c05-socket-custody-v2
+
+on:
+  push:
+    branches:
+      - codex/d0c05-socket-custody-v2
+    paths:
+      - ".github/workflows/materialize-d0c05-socket-custody-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: d0c05-socket-custody-v2
+  cancel-in-progress: false
+
+jobs:
+  materialize-qualify-and-stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0c05-socket-custody-v2
+          fetch-depth: 0
+
+      - name: Install exact Rust and systemd validation tools
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends systemd python3
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Restore only reviewed D0C-05 source surfaces from the superseded branch
+        run: |
+          set -euo pipefail
+          git fetch origin codex/d0c05-systemd-socket-custody:refs/remotes/origin/d0c05-old
+          python3 - <<'PY'
+          import pathlib, subprocess
+          patterns = (
+              'apps/hepta-agent-portd/',
+              'crates/hepta-peer-attestation/',
+              'contracts/agent-port-custody',
+              'docs/architecture/AGENT_PORT_CUSTODY',
+              'docs/evidence/2026-08-28-d0c05',
+              'packaging/debian/systemd/',
+              'packaging/debian/sysusers.d/',
+              'packaging/debian/tmpfiles.d/',
+              'packaging/debian/systemd-preset/',
+              'packaging/debian/hepta-agent-portd.install',
+              'tools/verify_agent_port_custody.py',
+          )
+          names = subprocess.check_output(
+              ['git', 'diff', '--name-only', 'main...origin/d0c05-old'],
+              text=True,
+          ).splitlines()
+          selected = [name for name in names if any(name.startswith(p) for p in patterns)]
+          required_prefixes = [
+              'apps/hepta-agent-portd/',
+              'crates/hepta-peer-attestation/',
+              'packaging/debian/systemd/',
+          ]
+          for prefix in required_prefixes:
+              assert any(name.startswith(prefix) for name in selected), (prefix, selected)
+          pathlib.Path('/tmp/d0c05-selected-files.txt').write_text('\n'.join(selected) + '\n')
+          subprocess.run(['git', 'checkout', 'origin/d0c05-old', '--', *selected], check=True)
+          PY
+          cat /tmp/d0c05-selected-files.txt
+
+      - name: Integrate product packages into the current workspace
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('Cargo.toml')
+          text = path.read_text()
+          for member in ['apps/hepta-agent-portd', 'crates/hepta-peer-attestation']:
+              quoted = f'  "{member}",\n'
+              if quoted not in text:
+                  marker = 'members = [\n'
+                  text = text.replace(marker, marker + quoted, 1)
+              default_marker = 'default-members = [\n'
+              if text.count(quoted) < 2:
+                  text = text.replace(default_marker, default_marker + quoted, 1)
+          path.write_text(text)
+          PY
+          cargo generate-lockfile
+          cargo fmt --all
+          cargo fix --workspace --all-targets --allow-dirty --allow-staged || true
+          cargo clippy --fix --workspace --all-targets --allow-dirty --allow-staged -- -D warnings || true
+          cargo fmt --all
+
+      - name: Audit fail-closed systemd and Debian custody contract
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence/generated
+          python3 - <<'PY'
+          import json, pathlib, re
+          root = pathlib.Path('.')
+          socket = root / 'packaging/debian/systemd/hepta-browserd-agent.socket'
+          service = root / 'packaging/debian/systemd/hepta-browserd-agent@.service'
+          preset = root / 'packaging/debian/systemd-preset/90-trillionnium-desktop.preset'
+          sysusers = root / 'packaging/debian/sysusers.d/trillionnium-desktop.conf'
+          tmpfiles = root / 'packaging/debian/tmpfiles.d/trillionnium-desktop.conf'
+          install = root / 'packaging/debian/hepta-agent-portd.install'
+          for path in [socket, service, preset, sysusers, tmpfiles, install]:
+              assert path.is_file(), path
+          socket_text = socket.read_text()
+          service_text = service.read_text()
+          preset_text = preset.read_text()
+          install_text = install.read_text()
+          exact_socket_rules = [
+              'ListenStream=/run/hepta/browserd/agent.sock',
+              'SocketUser=hepta-browserd',
+              'SocketGroup=hepta-agent',
+              'SocketMode=0660',
+              'DirectoryMode=0750',
+              'Accept=yes',
+          ]
+          exact_service_rules = [
+              'StandardInput=socket',
+              'NoNewPrivileges=yes',
+              'PrivateNetwork=yes',
+              'RestrictAddressFamilies=AF_UNIX',
+              'CapabilityBoundingSet=',
+              'AmbientCapabilities=',
+              'Restart=no',
+              'ConditionPathExists=/etc/hepta/enable-agent-port',
+          ]
+          for rule in exact_socket_rules: assert rule in socket_text, rule
+          for rule in exact_service_rules: assert rule in service_text, rule
+          assert 'disable hepta-browserd-agent.socket' in preset_text
+          assert 'ListenDatagram=' not in socket_text
+          assert not re.search(r'ListenStream=.*:[0-9]+', socket_text)
+          assert '/etc/hepta/enable-agent-port' not in install_text
+          assert not (root / 'etc/hepta/enable-agent-port').exists()
+          assert 'hepta-browserd' in sysusers.read_text()
+          assert 'hepta-agent' in sysusers.read_text()
+          assert '/run/hepta/browserd' in tmpfiles.read_text()
+          result = {
+              'schema': 'trillionnium.desktop.agent-port-custody-audit.v2',
+              'status': 'PASS_SOURCE_AND_UNIT_CONTRACT',
+              'socket_path': '/run/hepta/browserd/agent.sock',
+              'socket_mode': '0660',
+              'directory_mode': '0750',
+              'accept_per_connection': True,
+              'preset_enabled': False,
+              'enable_marker_shipped': False,
+              'address_families': ['AF_UNIX'],
+              'listener_started': False,
+              'next_gate': 'D1 QEMU systemd activation and negative/positive marker tests',
+          }
+          (root / 'docs/evidence/generated/d0c05-custody-audit-result.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          systemd-analyze verify \
+            packaging/debian/systemd/hepta-browserd-agent.socket \
+            packaging/debian/systemd/hepta-browserd-agent@.service \
+            > docs/evidence/generated/d0c05-systemd-analyze.log 2>&1
+
+      - name: Execute exact Rust and repository gates
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo test --locked -p hepta-peer-attestation --all-targets
+          cargo run --locked -p hepta-agent-portd -- --self-check
+          cargo run --locked -p hepta-browserd -- --self-check
+          git diff --check
+
+      - name: Record D0C-05 source qualification and remove one-shot workflow
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+          result = {
+              'schema': 'trillionnium.desktop.d0c05-source-qualification.v2',
+              'status': 'HOST_TESTED_SOURCE_DEFAULT_DISABLED',
+              'rust_version': '1.93.0',
+              'qualified_parent': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+              'checks': {
+                  'repository_validation': 'PASS',
+                  'rustfmt': 'PASS',
+                  'clippy_deny_warnings': 'PASS',
+                  'workspace_tests': 'PASS',
+                  'peer_attestation_tests': 'PASS',
+                  'agent_portd_self_check': 'PASS',
+                  'browserd_self_check': 'PASS',
+                  'systemd_analyze_verify': 'PASS',
+                  'static_custody_audit': 'PASS',
+              },
+              'authority': {
+                  'socket_unit_installed_by_source': True,
+                  'preset_enabled': False,
+                  'enable_marker_shipped': False,
+                  'listener_started': False,
+                  'browser_actor_connected': False,
+                  'servo_connected': False,
+                  'external_effect_authorized': False,
+              },
+              'merge_ready': False,
+              'remaining_gate': 'retarget to main after PR 7 merges, then final exact-head requalification',
+          }
+          pathlib.Path('docs/evidence/generated/d0c05-source-qualification-result.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          rm .github/workflows/materialize-d0c05-socket-custody-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: rebuild default-disabled D0C-05 AgentPort custody"
+          git push origin HEAD:codex/d0c05-socket-custody-v2
+          echo "QUALIFIED_HEAD=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Re-run exact committed-head checks
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-agent-portd -- --self-check
+          test -z "$(git status --porcelain)"
+
+      - name: Update stacked pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh pr edit 12 \
+            --title "feat: rebuild default-disabled AgentPort socket custody (D0C-05)" \
+            --body-file - <<'EOF'
+          ## D0C-05 source qualification
+
+          Rebuilds the local AgentPort listener custody on top of the active D0C product branch:
+
+          - dedicated `hepta-browserd` and `hepta-agent` identities;
+          - Linux peer attestation and pid/cgroup/unit checks;
+          - `/run/hepta/browserd/agent.sock` only, AF_UNIX, mode 0660;
+          - one hardened short-lived service per accepted connection;
+          - preset disabled and `/etc/hepta/enable-agent-port` not shipped;
+          - exact Rust 1.93 format, Clippy, tests and daemon self-checks;
+          - systemd unit verification and static custody audit.
+
+          No listener has been started. Actual negative/positive activation belongs to D1 QEMU. This PR remains stacked on PR #7 until that product core reaches `main`.
+          EOF
