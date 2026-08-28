@@ -1,0 +1,76 @@
+{
+  "browser_dispatched": false,
+  "contract_sha256": "b6f4b8318925775f8e2fe053b714a5563f7610286e8da471a91bf21d9d827c37",
+  "external_effect_authorized": false,
+  "implementation": "python-standard-library-browser-codec-reference",
+  "product_listener_created": false,
+  "requests": [
+    {
+      "canonical_sha256": "2315fbbe2e6ff4aff43ab9ccd7a9dbed5dd0f0b531dc11270157a1a81386ac46",
+      "canonical_utf8": "{\"operation\":{\"type\":\"health\"},\"protocol\":\"trillionnium.desktop.browser-api.v1\",\"request_id\":\"golden:health:1\"}",
+      "effect_class": "observation",
+      "request_id": "golden:health:1"
+    },
+    {
+      "canonical_sha256": "3d5e3db8d918030df3f1fb840462d56a6fde96a99013e61ba1bb55f2d502c4fb",
+      "canonical_utf8": "{\"operation\":{\"profile\":{\"persistence\":\"ephemeral\",\"profile_id\":\"ephemeral-default\"},\"type\":\"session_create\",\"ui_mode\":\"headed\"},\"protocol\":\"trillionnium.desktop.browser-api.v1\",\"request_id\":\"golden:create:1\"}",
+      "effect_class": "local_interaction",
+      "request_id": "golden:create:1"
+    },
+    {
+      "canonical_sha256": "51d86fbbd56906e3127bd134fd101404cda78eaf55f36fe5d7a3dddd1fe18e59",
+      "canonical_utf8": "{\"operation\":{\"expected_document_generation\":7,\"target\":{\"type\":\"external_https\",\"url\":\"https://example.test/path\"},\"type\":\"page_navigate\"},\"protocol\":\"trillionnium.desktop.browser-api.v1\",\"request_id\":\"golden:navigate:1\",\"session_generation\":3,\"session_id\":\"session-1\"}",
+      "effect_class": "potential_external_effect",
+      "request_id": "golden:navigate:1"
+    },
+    {
+      "canonical_sha256": "527d781b55dca3c9b274f27f5a021ae50ad4500cfd065167b3909fd994b717af",
+      "canonical_utf8": "{\"operation\":{\"action\":{\"type\":\"click\"},\"target\":{\"accessible_name_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"document_generation\":7,\"frame_id\":\"main\",\"role\":\"button\",\"semantic_snapshot_revision\":11,\"session_generation\":3,\"structural_fingerprint\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"},\"type\":\"page_act\"},\"protocol\":\"trillionnium.desktop.browser-api.v1\",\"request_id\":\"golden:click:1\",\"session_generation\":3,\"session_id\":\"session-1\"}",
+      "effect_class": "potential_external_effect",
+      "request_id": "golden:click:1"
+    }
+  ],
+  "responses": [
+    {
+      "canonical_sha256": "1a003c1e7b381d17cb3109361b32087aa6b50e398bcaa0b26201ee8f5def85e4",
+      "canonical_utf8": "{\"ok\":true,\"protocol\":\"trillionnium.desktop.browser-api.v1\",\"request_id\":\"golden:response:ok:1\",\"result\":{\"accepted\":true},\"session_generation\":3,\"session_id\":\"session-1\"}",
+      "request_id": "golden:response:ok:1"
+    },
+    {
+      "canonical_sha256": "c17a6e750d6d09c832bbf24e91bd36559145331cfd7126fde51a4c405c0c0337",
+      "canonical_utf8": "{\"error\":{\"code\":\"policy_denied\",\"message\":\"external mutation is disabled\",\"retry\":\"after_explicit_policy_change\"},\"ok\":false,\"protocol\":\"trillionnium.desktop.browser-api.v1\",\"request_id\":\"golden:response:error:1\"}",
+      "request_id": "golden:response:error:1"
+    }
+  ],
+  "schema": "trillionnium.desktop.browser-codec.reference-result.v1",
+  "status": "PASS",
+  "test_count": 26,
+  "tests": [
+    "canonical-roundtrip",
+    "whitespace",
+    "duplicate-top",
+    "duplicate-nested",
+    "unknown-top",
+    "unknown-op-member",
+    "unbound-has-session",
+    "bound-no-session",
+    "partial-session",
+    "bool-integer",
+    "snapshot-zero",
+    "external-http",
+    "external-userinfo",
+    "fixture-private-lan",
+    "navigate-effect",
+    "click-effect",
+    "scroll-local",
+    "utf8-byte-bound",
+    "oversize-before-parse",
+    "nesting",
+    "float",
+    "success-response",
+    "success-result-not-object",
+    "error-response",
+    "retry-mismatch",
+    "response-session-partial"
+  ]
+}
