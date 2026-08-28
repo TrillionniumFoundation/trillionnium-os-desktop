@@ -1,0 +1,109 @@
+name: verify-and-merge-d0c05-systemd-socket-custody
+
+on:
+  push:
+    branches:
+      - codex/d0c05-systemd-socket-custody
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "manifests/repository-state.json"
+      - "apps/hepta-agent-portd/**"
+      - "crates/hepta-peer-attestation/**"
+      - "packaging/debian/systemd/**"
+      - "contracts/agent-port-custody.v1.json"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: verify-and-merge-d0c05-systemd-socket-custody
+  cancel-in-progress: false
+
+jobs:
+  verify-and-merge:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out materialized candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0c05-systemd-socket-custody
+
+      - name: Assert checkpoint order and disabled-listener contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -f .github/workflows/materialize-d0c05.yml
+          test ! -f .github/workflows/materialize-d0c05-v2.yml
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          servo = json.loads(Path('manifests/servo-embedder-compat.json').read_text())
+          state = json.loads(Path('manifests/repository-state.json').read_text())
+          custody = json.loads(Path('contracts/agent-port-custody.v1.json').read_text())
+          checkpoints = {
+              item['id']: item
+              for item in state.get('implementation_checkpoints', [])
+              if isinstance(item, dict) and 'id' in item
+          }
+          assert servo['status'] == 'PASS'
+          assert checkpoints['TOS-D0A-01']['status'] == 'PASS_COMPILE_ONLY_NO_RUNTIME'
+          assert checkpoints['TOS-D0C-04']['status'] == 'IMPLEMENTED_HOST_VALIDATED_NO_LISTENER'
+          assert checkpoints['TOS-D0C-05']['status'] == 'IMPLEMENTED_HOST_VALIDATED_DEFAULT_DISABLED'
+          assert checkpoints['TOS-D0C-05']['listener_enabled'] is False
+          assert custody['activation']['preset'] == 'disable'
+          assert custody['activation']['enabled_by_default'] is False
+          assert custody['activation']['condition_path_shipped'] is False
+          assert custody['socket']['remote_network'] is False
+          assert custody['service']['allowed_address_families'] == ['AF_UNIX']
+          assert custody['service']['capability_bounding_set'] == []
+          assert custody['service']['ambient_capabilities'] == []
+          assert custody['request_model']['external_effect_authority'] is False
+          assert not Path('etc/hepta/enable-agent-port').exists()
+          PY
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Re-run custody and product validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_repository.py
+          git diff --check main...HEAD
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          cargo run --locked -p hepta-agent-portd -- --self-check
+
+      - name: Remove temporary verification gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/verify-and-merge-d0c05.yml
+          git commit -m "chore: remove temporary D0C-05 verification gate"
+          git push origin HEAD:codex/d0c05-systemd-socket-custody
+          echo "candidate_sha=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Squash merge verified D0C-05 checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/pulls/6/merge" \
+            -f merge_method=squash \
+            -f sha="${candidate_sha}"
