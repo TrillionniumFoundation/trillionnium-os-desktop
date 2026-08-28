@@ -1,0 +1,86 @@
+name: verify-and-merge-d0c03
+
+on:
+  push:
+    branches:
+      - codex/d0c03-strict-browser-codec
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: verify-and-merge-d0c03
+  cancel-in-progress: false
+
+jobs:
+  verify-and-merge:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0c03-strict-browser-codec
+
+      - name: Assert materialized product integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq '"crates/hepta-browser-codec"' Cargo.toml
+          grep -Fq 'hepta-browser-codec' apps/hepta-browserd/Cargo.toml
+          grep -Fq 'hepta_browser_codec::self_check' apps/hepta-browserd/src/main.rs
+          grep -Fq 'TOS-D0C-03' docs/CURRENT_STATE.md
+          grep -Fq 'TOS-D0C-03' manifests/repository-state.json
+          grep -Fq 'contracts/browser-wire.v1.schema.json' tools/validate_repository.py
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Validate repository and contracts
+        run: python3 tools/validate_repository.py
+
+      - name: Check patch hygiene
+        run: git diff --check main...HEAD
+
+      - name: Check Rust formatting
+        run: cargo fmt --all --check
+
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run workspace tests
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Run integrated browserd self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Remove temporary merge gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/verify-and-merge-d0c03.yml
+          if test -f .github/workflows/materialize-d0c03.yml; then
+            git rm .github/workflows/materialize-d0c03.yml
+          fi
+          git commit -m "chore: remove temporary D0C-03 merge gates"
+          git push origin HEAD:codex/d0c03-strict-browser-codec
+          echo "candidate_sha=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Squash merge verified D0C-03 checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/pulls/3/merge" \
+            -f merge_method=squash \
+            -f sha="${candidate_sha}"
