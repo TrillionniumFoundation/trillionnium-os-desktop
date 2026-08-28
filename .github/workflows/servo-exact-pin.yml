@@ -86,7 +86,7 @@ jobs:
           xargs -r sudo apt-get install -y --no-install-recommends < /tmp/servo-packages.txt
           sudo apt-get purge -y fonts-droid-fallback || true
 
-      - name: Install Servo-declared Rust toolchain
+      - name: Install exact Servo Rust channel and compile-required components
         shell: bash
         run: |
           set -euo pipefail
@@ -94,17 +94,25 @@ jobs:
           from pathlib import Path
           import tomllib
           toolchain = tomllib.loads(Path('servo-source/rust-toolchain.toml').read_text())['toolchain']
+          declared = toolchain.get('components', [])
           print(f"SERVO_RUST_CHANNEL={toolchain['channel']}")
-          print('SERVO_RUST_COMPONENTS=' + ' '.join(toolchain.get('components', [])))
+          print('SERVO_DECLARED_COMPONENTS=' + ' '.join(declared))
+          # D0A-01 is a compile gate. rustc-dev/rust-src/llvm-tools-preview are
+          # recorded as upstream declarations but are not required by these
+          # cargo check targets. Avoid turning an optional 900+ MiB component
+          # mirror outage into a false API incompatibility result.
+          print('SERVO_GATE_COMPONENTS=rustfmt')
           PY
           cat /tmp/servo-toolchain.env >> "$GITHUB_ENV"
           source /tmp/servo-toolchain.env
           rustup toolchain install "$SERVO_RUST_CHANNEL" --profile minimal
-          for component in $SERVO_RUST_COMPONENTS; do
+          for component in $SERVO_GATE_COMPONENTS; do
             rustup component add "$component" --toolchain "$SERVO_RUST_CHANNEL"
           done
-          rustup run "$SERVO_RUST_CHANNEL" rustc --version --verbose
-          rustup run "$SERVO_RUST_CHANNEL" cargo --version --verbose
+          export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
+          rustc --version --verbose
+          cargo --version --verbose
+          rustfmt --version
 
       - name: Restore exact-pin Cargo and target cache
         uses: actions/cache@v4
@@ -117,10 +125,18 @@ jobs:
           restore-keys: |
             servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
 
+      - name: Check Trillionnium probe formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
+          rustfmt --check experiments/servo-embedder-probe/src/main.rs
+
       - name: Compile official shell and public embedder probes
         shell: bash
         run: |
           set -euo pipefail
+          export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
           mkdir -p artifacts/servo-qualification/logs
           python3 tools/qualify_servo_exact_pin.py \
             --servo-root servo-source \
@@ -143,6 +159,8 @@ jobs:
           assert report['servo']['commit'] == '670ae8a70801b162e186f81cbb5bdd2d59c39108'
           assert report['servo']['clean_checkout'] is True
           assert report['servo']['patch_count'] == 0
+          assert report['toolchain']['gate_installed_components'] == ['rustfmt']
+          assert 'rustc-dev' in report['toolchain']['declared_components_not_required_by_gate']
           assert all(item['status'] == 'PASS' for item in report['compile_results'].values())
           assert all(value is False for value in report['claims'].values())
           assert report['next_gate'].startswith('D0A-02')
