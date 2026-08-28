@@ -42,13 +42,25 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            ca-certificates curl gnupg
+            ca-certificates curl debian-archive-keyring gnupg
 
       - name: Resolve signed snapshot and full package closure
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts/debian-snapshot/logs /tmp/trillionnium-debian-lock /tmp/trillionnium-curl
+          collect_diagnostics() {
+            mkdir -p artifacts/debian-snapshot/trust-roots artifacts/debian-snapshot/inrelease
+            cp -f /tmp/trillionnium-debian-lock/debian-13-archive-keyring.gpg \
+              artifacts/debian-snapshot/ 2>/dev/null || true
+            cp -f /tmp/trillionnium-debian-lock/trust-roots/* \
+              artifacts/debian-snapshot/trust-roots/ 2>/dev/null || true
+            cp -f /tmp/trillionnium-debian-lock/inrelease/* \
+              artifacts/debian-snapshot/inrelease/ 2>/dev/null || true
+            cp -f /tmp/trillionnium-debian-lock/requirements.with-keyring.json \
+              artifacts/debian-snapshot/ 2>/dev/null || true
+          }
+          trap collect_diagnostics EXIT
           cat > /tmp/trillionnium-curl/curl <<'SH'
           #!/usr/bin/env bash
           exec /usr/bin/curl --silent "$@"
@@ -92,9 +104,10 @@ jobs:
         run: python3 tools/validate_repository.py
 
       - name: Upload signed input evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: debian-snapshot-lock-${{ github.sha }}
           path: artifacts/debian-snapshot
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
