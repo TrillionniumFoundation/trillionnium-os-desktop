@@ -1,0 +1,67 @@
+{
+  "schema": "trillionnium.desktop.browser-codec.v1",
+  "status": "EXECUTABLE_REFERENCE_IMPLEMENTED_RUST_PENDING",
+  "protocol": "trillionnium.desktop.browser-api.v1",
+  "operation_schema": {
+    "path": "contracts/browser-api.v1.schema.json",
+    "git_blob_sha1": "92e630584b9ca37fa60f2757b617cacd37921443"
+  },
+  "request_wire_schema": "contracts/browser-wire.v1.schema.json",
+  "response_wire_schema": "contracts/browser-response.v1.schema.json",
+  "max_message_bytes": 262144,
+  "max_nesting_depth": 32,
+  "max_container_items": 20000,
+  "canonical_json": {
+    "encoding": "UTF-8",
+    "bom_allowed": false,
+    "duplicate_members": "reject_recursively",
+    "object_key_order": "unicode_codepoint_ascending",
+    "whitespace": "none_outside_strings",
+    "trailing_newline": false,
+    "numbers": "integers_only_no_bool_coercion",
+    "non_finite_numbers": "reject",
+    "input_must_equal_canonical_reencoding": true
+  },
+  "session_binding": {
+    "unbound_operations": ["health", "session_create"],
+    "bound_operations": ["session_snapshot", "session_close", "page_navigate", "page_observe", "page_act", "page_wait", "page_extract"],
+    "pair": ["session_id", "session_generation"],
+    "session_generation_minimum": 1
+  },
+  "effect_classes": {
+    "observation": ["health", "session_snapshot", "page_observe", "page_wait", "page_extract"],
+    "local_interaction": ["session_create", "session_close", "page_act.scroll"],
+    "potential_external_effect": ["page_navigate", "page_act.click", "page_act.type", "page_act.press", "page_act.select"]
+  },
+  "semantic_tightening": {
+    "element_ref.semantic_snapshot_revision_minimum": 1,
+    "external_https.userinfo": "forbidden",
+    "external_https.control_characters": "forbidden",
+    "local_http_fixture.hosts": ["127.0.0.1", "localhost", "::1"],
+    "local_http_fixture.userinfo": "forbidden",
+    "text_utf8_bytes_maximum": 131072,
+    "select_utf8_bytes_maximum": 65536,
+    "wait_text_utf8_bytes_maximum": 65536,
+    "url_utf8_bytes_maximum": 8192
+  },
+  "error_codes_source": "contracts/error-codes.v1.json",
+  "listener": {"enabled": false, "public_network": false},
+  "validation": {
+    "python_reference": "PASS_26_OF_26",
+    "python_py_compile": "PASS",
+    "rust_codec": "UNIMPLEMENTED",
+    "merge_ready": false,
+    "reason": "Executable canonical JSON and semantic reference passed; Rust 1.93 codec implementation and exact-head checks remain open."
+  },
+  "independent_reference": {
+    "implementation": "tools/browser_codec_reference.py",
+    "result": "docs/evidence/generated/d0c03-browser-codec-reference-result.json",
+    "golden_directory": "contracts/golden",
+    "runtime": "python_standard_library_only",
+    "status": "PASS",
+    "test_count": 26,
+    "product_listener_created": false,
+    "browser_dispatched": false,
+    "external_effect_authorized": false
+  }
+}
