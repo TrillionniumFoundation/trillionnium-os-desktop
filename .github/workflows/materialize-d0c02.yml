@@ -1,0 +1,202 @@
+name: materialize-d0c02
+
+on:
+  push:
+    branches:
+      - codex/d0c02-authenticated-uds
+    paths:
+      - "crates/hepta-agent-transport/**"
+      - "contracts/agent-transport.v1.json"
+      - "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md"
+      - "docs/evidence/2026-08-28-d0c02-authenticated-uds.md"
+      - ".github/workflows/materialize-d0c02.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0c02
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Integrate transport core into the product graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import re
+
+          root = Path.cwd()
+
+          workspace = root / "Cargo.toml"
+          text = workspace.read_text(encoding="utf-8")
+          if '"crates/hepta-agent-transport"' not in text:
+              marker = "members = [\n"
+              assert marker in text
+              text = text.replace(
+                  marker,
+                  marker + '  "crates/hepta-agent-transport",\n',
+                  1,
+              )
+          workspace.write_text(text, encoding="utf-8")
+
+          browser_cargo = root / "apps/hepta-browserd/Cargo.toml"
+          text = browser_cargo.read_text(encoding="utf-8")
+          if "hepta-agent-transport" not in text:
+              marker = "[dependencies]\n"
+              assert marker in text
+              text = text.replace(
+                  marker,
+                  marker
+                  + 'hepta-agent-transport = { path = "../../crates/hepta-agent-transport" }\n',
+                  1,
+              )
+          browser_cargo.write_text(text, encoding="utf-8")
+
+          main = root / "apps/hepta-browserd/src/main.rs"
+          text = main.read_text(encoding="utf-8")
+          if "hepta_agent_transport::self_check" not in text:
+              match = re.search(
+                  r"fn\s+main\s*\([^)]*\)(?:\s*->\s*[^\{]+)?\s*\{",
+                  text,
+              )
+              assert match, "main function not found"
+              insertion = '''
+              if std::env::args().any(|argument| argument == "--self-check") {
+                  if let Err(error) = hepta_agent_transport::self_check() {
+                      eprintln!("authenticated Agent transport self-check failed: {error}");
+                      std::process::exit(1);
+                  }
+              }
+          '''
+              text = text[: match.end()] + insertion + text[match.end() :]
+          main.write_text(text, encoding="utf-8")
+
+          def append_once(path: Path, marker: str, block: str) -> None:
+              current = path.read_text(encoding="utf-8")
+              if marker not in current:
+                  path.write_text(
+                      current.rstrip() + "\n\n" + block.strip() + "\n",
+                      encoding="utf-8",
+                  )
+
+          append_once(
+              root / "README.md",
+              "## D0C-02 authenticated local carrier",
+              '''
+          ## D0C-02 authenticated local carrier
+
+          The workspace now includes `hepta-agent-transport`, a tested bounded AF_UNIX
+          carrier with peer PID/UID/GID checks, a fresh connection nonce, strict request
+          sequences, SHA-256 payload binding and absolute deadlines. It deliberately
+          accepts an already-connected stream and does not enable a production listener.
+          ''',
+          )
+          append_once(
+              root / "docs/CURRENT_STATE.md",
+              "## 2026-08-28 D0C-02 checkpoint",
+              '''
+          ## 2026-08-28 D0C-02 checkpoint
+
+          The authenticated local carrier core is implemented and host-tested. It is
+          integrated into `hepta-browserd --self-check`, but no socket path or product
+          listener exists. `D0C-03` still owns systemd socket activation, dedicated
+          service identities, cgroup/unit binding and the strict Browser API message
+          codec. Servo embedding and Debian boot remain unimplemented.
+          ''',
+          )
+          append_once(
+              root / "docs/DESKTOP_PLAN-2026-08-28-d5.md",
+              "### D0C-02 implementation checkpoint",
+              '''
+          ### D0C-02 implementation checkpoint
+
+          `hepta-agent-transport` now implements the connected-stream carrier described
+          by the contract: peer credentials, fresh nonce, bounded framing, strict request
+          sequence, payload digest and absolute deadlines. This closes the transport-core
+          portion of D0C without opening a listener. The next contract slice is `D0C-03`:
+          systemd socket custody, dedicated service identities, unit/cgroup binding,
+          strict canonical message decoding and BrowserActor dispatch integration.
+          ''',
+          )
+
+          for relative in ["manifests/repository-state.json", "docs/MANIFEST.json"]:
+              path = root / relative
+              data = json.loads(path.read_text(encoding="utf-8"))
+              checkpoints = data.setdefault("implementation_checkpoints", [])
+              item = {
+                  "id": "TOS-D0C-02",
+                  "status": "IMPLEMENTED_HOST_VALIDATED_NO_LISTENER",
+                  "evidence": "docs/evidence/2026-08-28-d0c02-authenticated-uds.md",
+              }
+              if not any(
+                  isinstance(entry, dict) and entry.get("id") == item["id"]
+                  for entry in checkpoints
+              ):
+                  checkpoints.append(item)
+              path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+          validator = root / "tools/validate_repository.py"
+          text = validator.read_text(encoding="utf-8")
+          for required in [
+              "crates/hepta-agent-transport/Cargo.toml",
+              "crates/hepta-agent-transport/src/lib.rs",
+              "contracts/agent-transport.v1.json",
+              "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md",
+          ]:
+              if required not in text:
+                  match = re.search(
+                      r"(REQUIRED_PATHS\s*=\s*\[)(.*?)(\n\])",
+                      text,
+                      flags=re.S,
+                  )
+                  assert match, "REQUIRED_PATHS list not found"
+                  body = match.group(2) + f'\n    "{required}",'
+                  text = text[: match.start(2)] + body + text[match.end(2) :]
+          validator.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Generate lock and format
+        run: |
+          cargo generate-lockfile
+          cargo fmt --all
+
+      - name: Validate repository and contracts
+        run: python3 tools/validate_repository.py
+
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run workspace tests
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Run integrated browserd self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Commit validated checkpoint and remove bootstrap workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/materialize-d0c02.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: implement authenticated bounded Agent transport"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
