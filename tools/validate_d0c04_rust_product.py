@@ -156,8 +156,8 @@ def check_source(checks: list[str]) -> None:
     commit_at = source.index("connection.send_response(request_frame.sequence")
     require(decode_at < handle_at < commit_at, "decode/dispatch/commit order drifted")
     require(source.count("handler.handle(&context, &request)?") == 1, "handler call is not exactly one")
-    require("NavigationTarget::ExternalHttps(" in source, "navigation fixture does not use active tuple variant")
-    require("NavigationTarget::ExternalHttps {" not in source, "stale struct-style navigation variant returned")
+    require("NavigationTarget::ExternalHttps {" in source, "navigation fixture does not use active struct variant")
+    require("NavigationTarget::ExternalHttps(" not in source, "stale tuple-style navigation variant returned")
     checks.extend(["source:order", "source:exactly-one", "source:navigation-variant"])
 
 

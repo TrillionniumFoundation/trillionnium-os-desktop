@@ -16,10 +16,9 @@ use hepta_agent_transport::{
     NonceSource, OsNonceSource, PeerIdentity, PeerPolicy, ServerConnection, TransportError,
 };
 use hepta_browser_codec::{
-    BrowserRequest, BrowserResponse, BrowserWireError, CodecError, EffectClass, JsonObject,
-    JsonValue, decode_request, encode_response,
+    BrowserErrorCode, BrowserOperation, BrowserRequest, BrowserResponse, BrowserWireError,
+    CodecError, EffectClass, JsonObject, JsonValue, decode_request, encode_response,
 };
-use hepta_browser_contracts::{BrowserErrorCode, BrowserOperation};
 use sha2::{Digest, Sha256};
 use std::fmt;
 use std::os::unix::net::UnixStream;
@@ -82,13 +81,7 @@ pub fn serve_one<H: BrowserRequestHandler>(
     server_ceiling: Duration,
     handler: &mut H,
 ) -> Result<ServiceEvidence, AgentPortError> {
-    serve_one_with_nonce_source(
-        stream,
-        peer_policy,
-        OsNonceSource,
-        server_ceiling,
-        handler,
-    )
+    serve_one_with_nonce_source(stream, peer_policy, OsNonceSource, server_ceiling, handler)
 }
 
 pub fn serve_one_with_nonce_source<S, H>(
@@ -129,12 +122,8 @@ where
     let decoded = decode_request(&request_frame.payload)?;
     let request_sha256 = sha256_hex(&request_frame.payload);
     let request = decoded.value;
-    let effective_deadline = request_effective_deadline(
-        accepted_at,
-        accepted_unix_ms,
-        server_deadline,
-        &request,
-    )?;
+    let effective_deadline =
+        request_effective_deadline(accepted_at, accepted_unix_ms, server_deadline, &request)?;
     let context = DispatchContext {
         peer,
         transport_sequence: request_frame.sequence,
@@ -473,8 +462,7 @@ pub fn self_check() -> Result<(), AgentPortError> {
 mod tests {
     use super::*;
     use hepta_agent_transport::{ClientConnection, FixedNonceSource, NONCE_BYTES};
-    use hepta_browser_codec::{decode_response, encode_request};
-    use hepta_browser_contracts::NavigationTarget;
+    use hepta_browser_codec::{NavigationTarget, decode_response, encode_request};
     use std::sync::Arc;
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::thread;
@@ -522,7 +510,9 @@ mod tests {
             session_generation: Some(1),
             deadline_unix_ms: None,
             operation: BrowserOperation::PageNavigate {
-                target: NavigationTarget::ExternalHttps("https://example.com/".to_owned()),
+                target: NavigationTarget::ExternalHttps {
+                    url: "https://example.com/".to_owned(),
+                },
                 expected_document_generation: 1,
             },
         };
@@ -642,10 +632,7 @@ mod tests {
     fn handler_result_depth_is_bounded() {
         let mut value = JsonValue::Null;
         for index in 0..=MAX_HANDLER_JSON_DEPTH {
-            value = JsonValue::Object(JsonObject::from([(
-                format!("level-{index}"),
-                value,
-            )]));
+            value = JsonValue::Object(JsonObject::from([(format!("level-{index}"), value)]));
         }
         let object = match value {
             JsonValue::Object(object) => object,
