@@ -1,0 +1,90 @@
+name: publish-d0c05-via-git-api-v2
+
+on:
+  push:
+    branches:
+      - codex/d0c05-host-validated-v3
+    paths:
+      - .github/workflows/publish-d0c05-via-git-api-v2.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-d0c05-via-git-api-v2
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0c05-host-validated-v3
+
+      - name: Restore and adapt reviewed custody sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            codex/d0c05-systemd-socket-custody:refs/remotes/origin/d0c05-reviewed-source
+          git checkout refs/remotes/origin/d0c05-reviewed-source -- \
+            apps/hepta-agent-portd \
+            crates/hepta-peer-attestation \
+            contracts/agent-port-custody.v1.json \
+            docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md \
+            docs/evidence/2026-08-28-d0c05-systemd-socket-custody.md \
+            packaging/debian/systemd/hepta-browserd-agent.socket \
+            packaging/debian/systemd/hepta-browserd-agent@.service \
+            packaging/debian/sysusers.d/trillionnium-desktop.conf \
+            packaging/debian/tmpfiles.d/trillionnium-desktop.conf \
+            packaging/debian/systemd-preset/90-trillionnium-desktop.preset \
+            packaging/debian/hepta-agent-portd.install \
+            tools/verify_systemd_socket_custody.py
+          git mv docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md \
+            docs/architecture/AGENT_PORT_SYSTEMD_CUSTODY.md
+          git mv docs/evidence/2026-08-28-d0c05-systemd-socket-custody.md \
+            docs/evidence/2026-08-28-d0c05-systemd-agent-port-custody.md
+          python3 tools/materialize_d0c05_current_main.py
+          python3 tools/fix_d0c05_peer_attestation_clippy.py
+
+      - name: Install exact Rust 1.93.0
+        run: |
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version
+          cargo --version
+
+      - name: Validate exact default-disabled product tree
+        run: |
+          cargo check --workspace --all-targets
+          cargo fmt --all
+          python3 tools/validate_repository.py
+          python3 tools/verify_systemd_socket_custody.py
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-agent-portd -- --self-check
+          cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Verify authority ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(grep -c '^disable hepta-browserd-agent.socket$' packaging/debian/systemd-preset/90-trillionnium-desktop.preset)" -eq 1
+          test ! -e /etc/hepta/enable-agent-port
+          ! find . -type f -path '*enable-agent-port' -print -quit | grep -q .
+          ! grep -R --line-number --fixed-strings 'hepta-browser-agent-port' \
+            Cargo.toml Cargo.lock apps crates tools contracts packaging
+          ! grep -R --line-number --fixed-strings 'UnixListener' \
+            apps/hepta-agent-portd crates/hepta-peer-attestation
+          ! grep -R --line-number --fixed-strings 'TcpListener' \
+            apps/hepta-agent-portd crates/hepta-peer-attestation
+          ! grep -R --line-number --fixed-strings 'WebDriver' \
+            apps/hepta-agent-portd crates/hepta-peer-attestation
+
+      - name: Atomically publish only non-workflow product files
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 tools/publish_validated_tree_to_branch_v2.py
