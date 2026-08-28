@@ -1,0 +1,82 @@
+name: browser-codec-reference
+
+on:
+  pull_request:
+    paths:
+      - "contracts/browser-api.v1.schema.json"
+      - "contracts/browser-codec.v1.json"
+      - "contracts/browser-wire.v1.schema.json"
+      - "contracts/browser-response.v1.schema.json"
+      - "contracts/error-codes.v1.json"
+      - "contracts/golden/*.wire.json"
+      - "tools/browser_codec_reference.py"
+      - "tools/browser_codec_reference/**"
+      - "docs/evidence/generated/d0c03-browser-codec-reference-result.json"
+      - ".github/workflows/browser-codec-reference.yml"
+  push:
+    branches: [main]
+    paths:
+      - "contracts/browser-api.v1.schema.json"
+      - "contracts/browser-codec.v1.json"
+      - "contracts/browser-wire.v1.schema.json"
+      - "contracts/browser-response.v1.schema.json"
+      - "contracts/error-codes.v1.json"
+      - "contracts/golden/*.wire.json"
+      - "tools/browser_codec_reference.py"
+      - "tools/browser_codec_reference/**"
+      - "docs/evidence/generated/d0c03-browser-codec-reference-result.json"
+      - ".github/workflows/browser-codec-reference.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  executable-reference:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile standard-library reference
+        run: >-
+          python3 -m py_compile
+          tools/browser_codec_reference.py
+          tools/browser_codec_reference/*.py
+
+      - name: Execute negative corpus and regenerate evidence
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d0c03-golden
+          python3 tools/browser_codec_reference.py \
+            --self-test \
+            --contract contracts/browser-codec.v1.json \
+            --write-result /tmp/d0c03-browser-codec-reference-result.json \
+            --write-golden-dir /tmp/d0c03-golden \
+            >/tmp/d0c03-browser-codec.stdout.json
+          cmp /tmp/d0c03-browser-codec-reference-result.json \
+            docs/evidence/generated/d0c03-browser-codec-reference-result.json
+          for fixture in contracts/golden/golden-*.wire.json; do
+            cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
+          done
+
+      - name: Verify fail-closed claim ceiling
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          contract = json.loads(Path("contracts/browser-codec.v1.json").read_text())
+          result = json.loads(
+              Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json").read_text()
+          )
+          assert contract["validation"]["python_reference"] == "PASS_26_OF_26"
+          assert contract["validation"]["rust_codec"] == "UNIMPLEMENTED"
+          assert contract["validation"]["merge_ready"] is False
+          assert contract["listener"] == {"enabled": False, "public_network": False}
+          assert result["status"] == "PASS" and result["test_count"] == 26
+          assert result["product_listener_created"] is False
+          assert result["browser_dispatched"] is False
+          assert result["external_effect_authorized"] is False
+          effects = {item["request_id"]: item["effect_class"] for item in result["requests"]}
+          assert effects["golden:navigate:1"] == "potential_external_effect"
+          assert effects["golden:click:1"] == "potential_external_effect"
+          PY
