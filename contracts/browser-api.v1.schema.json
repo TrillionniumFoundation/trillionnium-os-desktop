@@ -1,0 +1,548 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trillionnium.org/desktop/browser-api.v1.schema.json",
+  "title": "TrillionniumOS Desktop Browser API v1 request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol",
+    "request_id",
+    "operation"
+  ],
+  "properties": {
+    "protocol": {
+      "const": "trillionnium.desktop.browser-api.v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$",
+      "maxLength": 128
+    },
+    "session_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$",
+      "maxLength": 128
+    },
+    "deadline_unix_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "operation": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/health"
+        },
+        {
+          "$ref": "#/$defs/session_create"
+        },
+        {
+          "$ref": "#/$defs/session_snapshot"
+        },
+        {
+          "$ref": "#/$defs/session_close"
+        },
+        {
+          "$ref": "#/$defs/page_navigate"
+        },
+        {
+          "$ref": "#/$defs/page_observe"
+        },
+        {
+          "$ref": "#/$defs/page_act"
+        },
+        {
+          "$ref": "#/$defs/page_wait"
+        },
+        {
+          "$ref": "#/$defs/page_extract"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "bounded_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$",
+      "maxLength": 128
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "dns_label": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$",
+      "maxLength": 63
+    },
+    "element_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_generation",
+        "document_generation",
+        "semantic_snapshot_revision",
+        "frame_id",
+        "structural_fingerprint"
+      ],
+      "properties": {
+        "session_generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "document_generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "semantic_snapshot_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "frame_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,128}$",
+          "maxLength": 64
+        },
+        "backend_node_key": {
+          "$ref": "#/$defs/bounded_id"
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "accessible_name_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "structural_fingerprint": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "navigation_target": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "trusted_shell"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "publisher",
+            "app_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "trusted_app"
+            },
+            "publisher": {
+              "$ref": "#/$defs/dns_label"
+            },
+            "app_id": {
+              "$ref": "#/$defs/dns_label"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "url"
+          ],
+          "properties": {
+            "type": {
+              "const": "external_https"
+            },
+            "url": {
+              "type": "string",
+              "pattern": "^https://",
+              "maxLength": 8192
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "url"
+          ],
+          "properties": {
+            "type": {
+              "const": "local_http_fixture"
+            },
+            "url": {
+              "type": "string",
+              "pattern": "^http://(?:127\\.0\\.0\\.1|localhost|\\[::1\\])(?::[0-9]{1,5})?/",
+              "maxLength": 8192
+            }
+          }
+        }
+      ]
+    },
+    "page_action": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "click"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "text"
+          ],
+          "properties": {
+            "type": {
+              "const": "type"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 1048576
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "key"
+          ],
+          "properties": {
+            "type": {
+              "const": "press"
+            },
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "delta_x",
+            "delta_y"
+          ],
+          "properties": {
+            "type": {
+              "const": "scroll"
+            },
+            "delta_x": {
+              "type": "integer",
+              "minimum": -1000000,
+              "maximum": 1000000
+            },
+            "delta_y": {
+              "type": "integer",
+              "minimum": -1000000,
+              "maximum": 1000000
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "const": "select"
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 65536
+            }
+          }
+        }
+      ]
+    },
+    "wait_condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "document_ready"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "url"
+          ],
+          "properties": {
+            "type": {
+              "const": "url_equals"
+            },
+            "url": {
+              "type": "string",
+              "maxLength": 8192
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "target"
+          ],
+          "properties": {
+            "type": {
+              "const": "element_present"
+            },
+            "target": {
+              "$ref": "#/$defs/element_ref"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "text"
+          ],
+          "properties": {
+            "type": {
+              "const": "text_present"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 65536
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "quiet_window_ms"
+          ],
+          "properties": {
+            "type": {
+              "const": "network_idle"
+            },
+            "quiet_window_ms": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60000
+            }
+          }
+        }
+      ]
+    },
+    "health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "health"
+        }
+      }
+    },
+    "session_create": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "profile",
+        "ui_mode"
+      ],
+      "properties": {
+        "type": {
+          "const": "session_create"
+        },
+        "profile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profile_id",
+            "persistence"
+          ],
+          "properties": {
+            "profile_id": {
+              "$ref": "#/$defs/bounded_id"
+            },
+            "persistence": {
+              "enum": [
+                "ephemeral",
+                "persistent"
+              ]
+            }
+          }
+        },
+        "ui_mode": {
+          "const": "headed"
+        }
+      }
+    },
+    "session_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "session_snapshot"
+        }
+      }
+    },
+    "session_close": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "session_close"
+        }
+      }
+    },
+    "page_navigate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "target",
+        "expected_document_generation"
+      ],
+      "properties": {
+        "type": {
+          "const": "page_navigate"
+        },
+        "target": {
+          "$ref": "#/$defs/navigation_target"
+        },
+        "expected_document_generation": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "page_observe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "fields"
+      ],
+      "properties": {
+        "type": {
+          "const": "page_observe"
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "role",
+              "name",
+              "text",
+              "href",
+              "bounds"
+            ]
+          }
+        }
+      }
+    },
+    "page_act": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "target",
+        "action"
+      ],
+      "properties": {
+        "type": {
+          "const": "page_act"
+        },
+        "target": {
+          "$ref": "#/$defs/element_ref"
+        },
+        "action": {
+          "$ref": "#/$defs/page_action"
+        }
+      }
+    },
+    "page_wait": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "condition",
+        "timeout_ms"
+      ],
+      "properties": {
+        "type": {
+          "const": "page_wait"
+        },
+        "condition": {
+          "$ref": "#/$defs/wait_condition"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300000
+        }
+      }
+    },
+    "page_extract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "schema_id"
+      ],
+      "properties": {
+        "type": {
+          "const": "page_extract"
+        },
+        "schema_id": {
+          "$ref": "#/$defs/bounded_id"
+        }
+      }
+    }
+  }
+}

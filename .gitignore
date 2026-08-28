@@ -1,20 +1,19 @@
-# Local/editor state
-.DS_Store
-*~
+/target/
+/.cache/
+/.pytest_cache/
+__pycache__/
+*.py[cod]
 *.swp
-.vscode/
+*.swo
+.DS_Store
 .idea/
-
-# Build and generated output (the current snapshot is documentation-only)
-out/
-target/
-build/
-.cache/
-
-# Local secrets and environment files
-.env
-.env.*
-*.pem
-*.key
-*.p12
-*.pfx
+.vscode/
+*.qcow2
+*.raw
+*.img
+*.iso
+*.efi
+/build/
+/dist/
+/out/
+/evidence/local/

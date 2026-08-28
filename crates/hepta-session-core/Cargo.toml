@@ -1,0 +1,14 @@
+[package]
+name = "hepta-session-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+hepta-browser-contracts = { path = "../hepta-browser-contracts" }
+trillionnium-contract-core = { path = "../trillionnium-contract-core" }
+
+[lib]
+path = "src/lib.rs"

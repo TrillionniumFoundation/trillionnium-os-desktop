@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trillionnium.org/desktop/app-manifest.v1.schema.json",
+  "title": "TrillionniumOS Desktop signed app manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "publisher",
+    "app_id",
+    "version",
+    "entrypoint",
+    "origin_host",
+    "content_root_sha256",
+    "capabilities",
+    "csp",
+    "minimum_shell_version",
+    "signature"
+  ],
+  "properties": {
+    "schema": {
+      "const": "trillionnium.desktop.app-manifest.v1"
+    },
+    "publisher": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$",
+      "maxLength": 63
+    },
+    "app_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$",
+      "maxLength": 63
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "entrypoint": {
+      "type": "string",
+      "pattern": "^[^/].*\\.html$",
+      "maxLength": 512
+    },
+    "origin_host": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+\\.[a-z0-9-]+\\.apps\\.hepta\\.invalid$"
+    },
+    "content_root_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 64,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_.:-]{1,128}$"
+      }
+    },
+    "csp": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8192
+    },
+    "minimum_shell_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "data_schema_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "key_id",
+        "value"
+      ],
+      "properties": {
+        "algorithm": {
+          "enum": [
+            "ed25519"
+          ]
+        },
+        "key_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 256
+        }
+      }
+    }
+  }
+}

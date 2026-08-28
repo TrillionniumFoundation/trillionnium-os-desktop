@@ -1,0 +1,30 @@
+[workspace]
+members = [
+  "apps/hepta-browserd",
+  "crates/trillionnium-contract-core",
+  "crates/hepta-browser-contracts",
+  "crates/hepta-session-core",
+]
+default-members = [
+  "apps/hepta-browserd",
+  "crates/trillionnium-contract-core",
+  "crates/hepta-browser-contracts",
+  "crates/hepta-session-core",
+]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.93"
+license = "MIT"
+authors = ["Trillionnium Foundation contributors"]
+repository = "https://github.com/TrillionniumFoundation/trillionnium-os-desktop"
+
+[profile.release]
+opt-level = 3
+debug = 0
+debug-assertions = false
+incremental = false
+lto = "thin"
+strip = "symbols"
