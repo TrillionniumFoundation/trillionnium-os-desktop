@@ -1,6 +1,6 @@
 {
   "schema": "trillionnium.desktop.cargo-external-allowlist.v1",
-  "generated_for": "TOS-D0C-02",
+  "generated_for": "TOS-D0C-02_TO_D0C-04",
   "policy": "exact_name_version_checksum_no_git_dependencies",
   "packages": [
     {
@@ -57,6 +57,12 @@
   "direct_dependencies": {
     "crates/hepta-agent-transport": {
       "libc": "=0.2.186",
+      "sha2": "=0.10.9"
+    },
+    "crates/hepta-browser-codec": {
+      "sha2": "=0.10.9"
+    },
+    "crates/hepta-agent-port": {
       "sha2": "=0.10.9"
     }
   }
