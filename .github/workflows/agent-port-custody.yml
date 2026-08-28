@@ -1,0 +1,95 @@
+name: agent-port-custody
+
+on:
+  pull_request:
+    paths:
+      - "apps/hepta-agent-portd/**"
+      - "crates/hepta-peer-attestation/**"
+      - "packaging/debian/systemd/**"
+      - "packaging/debian/sysusers.d/**"
+      - "packaging/debian/tmpfiles.d/**"
+      - "packaging/debian/systemd-preset/**"
+      - "packaging/debian/hepta-agent-portd.install"
+      - "contracts/agent-port-custody.v1.json"
+      - "tools/verify_systemd_socket_custody.py"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  push:
+    branches:
+      - main
+      - codex/d0c05-systemd-custody-v2
+    paths:
+      - "apps/hepta-agent-portd/**"
+      - "crates/hepta-peer-attestation/**"
+      - "packaging/debian/systemd/**"
+      - "packaging/debian/sysusers.d/**"
+      - "packaging/debian/tmpfiles.d/**"
+      - "packaging/debian/systemd-preset/**"
+      - "packaging/debian/hepta-agent-portd.install"
+      - "contracts/agent-port-custody.v1.json"
+      - "tools/verify_systemd_socket_custody.py"
+      - "Cargo.toml"
+      - "Cargo.lock"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-custody:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Audit repository and custody contract
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/verify_systemd_socket_custody.py
+
+      - name: Verify systemd unit syntax and account mappings
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo mkdir -p /usr/libexec
+          sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-portd
+          sudo systemd-sysusers packaging/debian/sysusers.d/trillionnium-desktop.conf
+          systemd-analyze verify \
+            packaging/debian/systemd/hepta-browserd-agent.socket \
+            packaging/debian/systemd/hepta-browserd-agent@.service
+          sudo rm -f /usr/libexec/hepta-agent-portd
+
+      - name: Check Rust formatting and warnings
+        run: |
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run complete Rust regression
+        run: |
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          cargo run --locked -p hepta-agent-portd -- --self-check
+
+      - name: Reconfirm claim ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e enable-agent-port
+          test ! -e /etc/hepta/enable-agent-port
+          ! grep -R -n -E 'TcpListener|UnixListener|WebDriver' \
+            apps/hepta-agent-portd crates/hepta-peer-attestation
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          contract = json.loads(Path('contracts/agent-port-custody.v1.json').read_text())
+          assert contract['activation']['enabled_by_default'] is False
+          assert contract['activation']['marker_shipped'] is False
+          assert contract['activation']['tcp_listener'] is False
+          assert contract['dispatch']['browser_actor'] is False
+          assert contract['dispatch']['servo_runtime'] is False
+          assert contract['dispatch']['external_effect_authority'] is False
+          PY
