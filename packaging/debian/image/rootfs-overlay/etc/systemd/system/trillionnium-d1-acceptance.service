@@ -1,0 +1,13 @@
+[Unit]
+Description=TrillionniumOS D1 acceptance probe and poweroff
+Requires=trillionnium-d1-wayland.service
+After=trillionnium-d1-wayland.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/trillionnium-d1-acceptance
+TimeoutStartSec=90s
+RemainAfterExit=yes
+
+[Install]
+WantedBy=trillionnium-d1-acceptance.target
