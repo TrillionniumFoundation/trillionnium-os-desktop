@@ -42,6 +42,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Compile standard-library references and audits
         run: >-
@@ -71,25 +73,46 @@ jobs:
             cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
           done
 
-      - name: Verify fail-closed claim ceiling
+      - name: Verify host-validation evidence and immutable tested source
+        shell: bash
         run: |
+          set -euo pipefail
           python3 - <<'PY'
           import json
           from pathlib import Path
+
+          source_sha = "4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb"
           contract = json.loads(Path("contracts/browser-codec.v1.json").read_text())
           reference = json.loads(Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json").read_text())
           audit = json.loads(Path("docs/evidence/generated/d0c03-rust-source-audit-result.json").read_text())
+          host = json.loads(Path(contract["rust_host_result"]).read_text())
+
           assert contract["validation"]["python_reference"] == "PASS_27_OF_27"
           assert contract["validation"]["rust_source_audit"] == "PASS"
-          assert contract["validation"]["rust_fmt"] == "UNEXECUTED"
-          assert contract["validation"]["rust_tests"] == "UNEXECUTED"
-          assert contract["validation"]["merge_ready"] is False
+          assert contract["validation"]["rust_fmt"] == "PASS"
+          assert contract["validation"]["rust_clippy"] == "PASS"
+          assert contract["validation"]["rust_tests"] == "PASS"
+          assert contract["validation"]["browserd_self_check"] == "PASS"
+          assert contract["validation"]["merge_ready"] is True
+          assert host["status"] == "PASS"
+          assert host["validated_source_sha"] == source_sha
           assert reference["status"] == "PASS" and reference["test_count"] == 27
-          assert audit["status"] == "PASS" and audit["check_count"] >= 90
+          assert audit["status"] == "PASS" and audit["check_count"] >= 99
           assert reference["product_listener_created"] is False
           assert audit["product_listener_created"] is False
           assert reference["external_effect_authorized"] is False
+          assert host["product_listener_created"] is False
+          assert host["browser_actor_dispatched"] is False
+          assert host["servo_called"] is False
+          assert host["external_effect_authorized"] is False
           PY
+          git merge-base --is-ancestor 4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb HEAD
+          git diff --exit-code \
+            4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb..HEAD -- \
+            Cargo.toml Cargo.lock apps/hepta-browserd \
+            crates/hepta-agent-transport crates/hepta-browser-codec \
+            crates/hepta-browser-contracts crates/hepta-session-core \
+            crates/trillionnium-contract-core
 
   rust-exact-head:
     runs-on: ubuntu-24.04
@@ -99,7 +122,14 @@ jobs:
         with:
           toolchain: 1.93.0
           components: rustfmt, clippy
+      - run: python3 tools/validate_repository.py
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --all-targets --locked
       - run: cargo run --locked -p hepta-browserd -- --self-check
+      - name: Confirm no listener or activation marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -S /run/hepta/browserd/agent.sock
+          test ! -e /etc/hepta/enable-agent-port
