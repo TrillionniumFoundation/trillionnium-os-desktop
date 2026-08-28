@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/debian-snapshot-lock.yml"
       - "tools/resolve_debian_snapshot.py"
+      - "tools/resolve_debian_snapshot_with_pinned_keys.py"
       - "manifests/debian-base.selection.json"
       - "manifests/debian-snapshot.requirements.v1.json"
       - "docs/architecture/DEBIAN_SNAPSHOT_LOCK.md"
@@ -16,6 +17,7 @@ on:
     paths:
       - ".github/workflows/debian-snapshot-lock.yml"
       - "tools/resolve_debian_snapshot.py"
+      - "tools/resolve_debian_snapshot_with_pinned_keys.py"
       - "manifests/debian-base.selection.json"
       - "manifests/debian-snapshot.requirements.v1.json"
       - "docs/architecture/DEBIAN_SNAPSHOT_LOCK.md"
@@ -40,14 +42,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            ca-certificates curl debian-archive-keyring gnupg
+            ca-certificates curl gnupg
 
       - name: Resolve signed snapshot and full package closure
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts/debian-snapshot/logs /tmp/trillionnium-debian-lock
-          python3 tools/resolve_debian_snapshot.py \
+          python3 tools/resolve_debian_snapshot_with_pinned_keys.py \
             --requirements manifests/debian-snapshot.requirements.v1.json \
             --output artifacts/debian-snapshot/debian-snapshot-lock.json \
             --work-dir /tmp/trillionnium-debian-lock \
@@ -67,7 +69,15 @@ jobs:
           assert report['resolved_package_count'] == len(report['packages'])
           assert report['resolved_package_count'] > len(report['seed_packages'])
           assert len(report['package_set_sha256']) == 64
-          assert report['archive_keyring']['valid_signature_fingerprints']
+          keyring = report['archive_keyring']
+          assert keyring['bootstrap'] == 'official_debian_https_plus_pinned_primary_fingerprints'
+          assert len(keyring['trust_roots']) == 3
+          assert all(len(item['primary_fingerprint']) == 40 for item in keyring['trust_roots'])
+          assert all(item['primary_key_fingerprints'] for item in report['inrelease'])
+          assert all(
+              set(item['primary_key_fingerprints']).intersection(item['accepted_primary_fingerprints'])
+              for item in report['inrelease']
+          )
           assert all(value is False for value in report['claims'].values())
           assert report['next_gate'].startswith('D1-01')
           PY
