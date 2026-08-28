@@ -1,0 +1,62 @@
+{
+  "schema": "trillionnium.desktop.d0c05-rust193-host-result.v1",
+  "status": "PASS_HOST_VALIDATED_DEFAULT_DISABLED_NO_LISTENER",
+  "validated_source_head": "7be7121b1d2593a0e708ec9ade189ef84ab245da",
+  "runner": "ubuntu-24.04",
+  "rustc": {
+    "version": "1.93.0",
+    "host": "x86_64-unknown-linux-gnu"
+  },
+  "workflows": {
+    "agent_port_custody": {
+      "run_id": 33190387511,
+      "job_id": 98914075761,
+      "conclusion": "success"
+    },
+    "desktop_ci": {
+      "run_id": 33190387553,
+      "conclusion": "success"
+    },
+    "browser_codec_and_rust_regression": {
+      "run_id": 33190387564,
+      "conclusion": "success"
+    }
+  },
+  "commands": {
+    "repository_validation": "PASS",
+    "agent_port_custody_static_audit": "PASS",
+    "systemd_sysusers_mapping": "PASS",
+    "systemd_analyze_verify": "PASS",
+    "cargo_fmt_all_check": "PASS",
+    "cargo_clippy_workspace_all_targets_locked_deny_warnings": "PASS",
+    "cargo_test_workspace_all_targets_locked": "PASS",
+    "browserd_self_check_locked": "PASS",
+    "agent_portd_self_check_locked": "PASS",
+    "claim_ceiling_recheck": "PASS"
+  },
+  "mechanism": {
+    "socket_path_defined": "/run/hepta/browserd/agent.sock",
+    "socket_activation_unit_validated": true,
+    "accepted_socket_processes_one_request": true,
+    "peer_runtime_attestation": [
+      "SO_PEERCRED",
+      "pidfd_liveness",
+      "uniform_procfs_uid_gid",
+      "process_start_time",
+      "exact_unified_cgroup_v2_path",
+      "exact_systemd_service_unit"
+    ]
+  },
+  "claim_ceiling": {
+    "enable_marker_shipped": false,
+    "enabled_by_default": false,
+    "product_listener_started": false,
+    "tcp_listener": false,
+    "web_driver_listener": false,
+    "browser_actor_dispatched": false,
+    "servo_called": false,
+    "external_effect_authorized": false,
+    "qemu_pid1_activation_demonstrated": false
+  },
+  "remaining_gate": "D1 QEMU PID 1 activation, authorized and unauthorized peer tests, teardown and recovery before any product enable decision"
+}
