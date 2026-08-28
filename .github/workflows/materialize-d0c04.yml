@@ -1,0 +1,219 @@
+name: materialize-d0c04-connected-agent-port
+
+on:
+  push:
+    branches:
+      - codex/d0c04-connected-agent-port
+    paths:
+      - "crates/hepta-browser-agent-port/**"
+      - "contracts/agent-port-dispatch.v1.json"
+      - "docs/architecture/CONNECTED_AGENT_PORT_BRIDGE.md"
+      - "docs/evidence/2026-08-28-d0c04-connected-agent-port.md"
+      - ".github/workflows/materialize-d0c04.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0c04-connected-agent-port
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out candidate with history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebase onto the latest qualified product main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git rebase origin/main
+          test -f manifests/servo-embedder-compat.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          report = json.loads(Path('manifests/servo-embedder-compat.json').read_text())
+          assert report['status'] == 'PASS'
+          assert report['source']['actual_commit'] == '670ae8a70801b162e186f81cbb5bdd2d59c39108'
+          PY
+
+      - name: Install pinned desktop Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Integrate the connected AgentPort into the product graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import re
+
+          root = Path.cwd()
+
+          workspace = root / 'Cargo.toml'
+          text = workspace.read_text(encoding='utf-8')
+          if '"crates/hepta-browser-agent-port"' not in text:
+              text = text.replace(
+                  'members = [\n',
+                  'members = [\n  "crates/hepta-browser-agent-port",\n',
+                  1,
+              )
+          workspace.write_text(text, encoding='utf-8')
+
+          browser_cargo = root / 'apps/hepta-browserd/Cargo.toml'
+          text = browser_cargo.read_text(encoding='utf-8')
+          if 'hepta-browser-agent-port' not in text:
+              marker = '[dependencies]\n'
+              assert marker in text
+              text = text.replace(
+                  marker,
+                  marker
+                  + 'hepta-browser-agent-port = { path = "../../crates/hepta-browser-agent-port" }\n',
+                  1,
+              )
+          browser_cargo.write_text(text, encoding='utf-8')
+
+          browser_main = root / 'apps/hepta-browserd/src/main.rs'
+          text = browser_main.read_text(encoding='utf-8')
+          if 'hepta_browser_agent_port::self_check' not in text:
+              match = re.search(
+                  r'fn\s+main\s*\([^)]*\)(?:\s*->\s*[^\{]+)?\s*\{',
+                  text,
+              )
+              assert match, 'browserd main function not found'
+              block = '''
+              if std::env::args().any(|argument| argument == "--self-check") {
+                  if let Err(error) = hepta_browser_agent_port::self_check() {
+                      eprintln!("connected AgentPort self-check failed: {error}");
+                      std::process::exit(1);
+                  }
+              }
+          '''
+              text = text[: match.end()] + block + text[match.end() :]
+          browser_main.write_text(text, encoding='utf-8')
+
+          def append_once(path: Path, marker: str, block: str) -> None:
+              current = path.read_text(encoding='utf-8')
+              if marker not in current:
+                  path.write_text(
+                      current.rstrip() + '\n\n' + block.strip() + '\n',
+                      encoding='utf-8',
+                  )
+
+          append_once(
+              root / 'README.md',
+              '## D0C-04 connected AgentPort bridge',
+              '''
+          ## D0C-04 connected AgentPort bridge
+
+          The authenticated carrier and strict Browser API codec now form a tested
+          one-request connected-stream bridge. The bridge authors response bindings from
+          the validated request, exposes effect classification and deadline context to a
+          typed handler, and remains listener-free.
+          ''',
+          )
+          append_once(
+              root / 'docs/CURRENT_STATE.md',
+              '## 2026-08-28 D0C-04 checkpoint',
+              '''
+          ## 2026-08-28 D0C-04 checkpoint
+
+          A connected AF_UNIX stream can now carry one authenticated canonical Browser API
+          request through a typed handler and one request-bound response. Host tests cover
+          exact binding, digest evidence, external-effect refusal, malformed-message
+          fail-closed behavior and deadline expiry. There is still no filesystem socket,
+          systemd activation, multi-request loop, BrowserActor conversion or Servo dispatch.
+          ''',
+          )
+          append_once(
+              root / 'docs/DESKTOP_PLAN-2026-08-28-d5.md',
+              '### D0C-04 implementation checkpoint',
+              '''
+          ### D0C-04 implementation checkpoint
+
+          The transport and canonical codec now compose into a single-request AgentPort
+          bridge over an already-connected stream. The handler cannot forge wire protocol,
+          request or session bindings; late results are not committed. D0C-05 owns the
+          dedicated systemd socket/service identities, unit/cgroup binding, bounded
+          multi-request loop, cancellation and BrowserActor command bridge.
+          ''',
+          )
+
+          checkpoint = {
+              'id': 'TOS-D0C-04',
+              'status': 'IMPLEMENTED_HOST_VALIDATED_NO_LISTENER',
+              'evidence': 'docs/evidence/2026-08-28-d0c04-connected-agent-port.md',
+              'contract': 'contracts/agent-port-dispatch.v1.json',
+          }
+          for relative in ['manifests/repository-state.json', 'docs/MANIFEST.json']:
+              path = root / relative
+              data = json.loads(path.read_text(encoding='utf-8'))
+              checkpoints = data.setdefault('implementation_checkpoints', [])
+              existing = next(
+                  (
+                      item
+                      for item in checkpoints
+                      if isinstance(item, dict) and item.get('id') == checkpoint['id']
+                  ),
+                  None,
+              )
+              if existing is None:
+                  checkpoints.append(checkpoint)
+              else:
+                  existing.clear()
+                  existing.update(checkpoint)
+              path.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+
+          validator = root / 'tools/validate_repository.py'
+          text = validator.read_text(encoding='utf-8')
+          for required in [
+              'crates/hepta-browser-agent-port/Cargo.toml',
+              'crates/hepta-browser-agent-port/src/lib.rs',
+              'crates/hepta-browser-agent-port/tests/connected_bridge.rs',
+              'contracts/agent-port-dispatch.v1.json',
+              'docs/architecture/CONNECTED_AGENT_PORT_BRIDGE.md',
+          ]:
+              if required in text:
+                  continue
+              match = re.search(
+                  r'(REQUIRED_PATHS\s*=\s*\[)(.*?)(\n\])',
+                  text,
+                  flags=re.S,
+              )
+              assert match, 'REQUIRED_PATHS list not found'
+              body = match.group(2) + f'\n    "{required}",'
+              text = text[: match.start(2)] + body + text[match.end(2) :]
+          validator.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Regenerate lock and validate full D0 graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo generate-lockfile
+          cargo fmt --all
+          python3 tools/validate_repository.py
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Commit the validated checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/materialize-d0c04.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: connect authenticated AgentPort dispatch bridge"
+          git push --force-with-lease origin "HEAD:${GITHUB_REF_NAME}"
