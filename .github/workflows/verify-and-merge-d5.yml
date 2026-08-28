@@ -1,0 +1,72 @@
+name: verify-and-merge-d5
+
+on:
+  push:
+    branches:
+      - codex/d5-product-foundation
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: verify-and-merge-d5
+  cancel-in-progress: false
+
+jobs:
+  verify-and-merge:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d5-product-foundation
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Validate repository and contracts
+        run: python3 tools/validate_repository.py
+
+      - name: Check patch hygiene
+        run: git diff --check main...HEAD
+
+      - name: Check Rust formatting
+        run: cargo fmt --all --check
+
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run workspace tests
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Run browserd D0 self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Remove temporary merge gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/verify-and-merge-d5.yml
+          git commit -m "chore: remove temporary d5 merge gate"
+          git push origin HEAD:codex/d5-product-foundation
+          echo "candidate_sha=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Squash merge verified product foundation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/pulls/1/merge" \
+            -f merge_method=squash \
+            -f sha="${candidate_sha}"
