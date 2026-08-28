@@ -2,8 +2,7 @@ name: materialize-d0c-rust-product
 
 on:
   push:
-    branches:
-      - codex/d0c-rust-product-v1
+    branches: [codex/d0c-rust-product-v1]
     paths:
       - ".bootstrap-d0c-v2/**"
       - ".github/workflows/materialize-d0c-rust-product.yml"
@@ -46,9 +45,23 @@ jobs:
       - name: Apply fail-closed product overlay
         run: |
           python3 /tmp/d0c-bundle/apply_to_checkout.py "$GITHUB_WORKSPACE" \
-            --apply \
-            --allow-dirty \
+            --apply --allow-dirty \
             --report /tmp/d0c-overlay-application.json
+
+      - name: Apply reviewed Rust 1.93 source fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("crates/hepta-browser-codec/src/lib.rs")
+          text = path.read_text()
+          old = """    if let Some(port) = port {\n        if port == 0 {\n            return Err(CodecError::InvalidUrl);\n        }\n    }\n"""
+          new = """    if port == Some(0) {\n        return Err(CodecError::InvalidUrl);\n    }\n"""
+          if old not in text:
+              raise SystemExit("reviewed zero-port block was not found exactly")
+          path.write_text(text.replace(old, new, 1))
+          PY
 
       - name: Install exact Rust 1.93.0 toolchain
         shell: bash
@@ -61,7 +74,6 @@ jobs:
 
       - name: Resolve lock and format exact source
         run: |
-          set -euo pipefail
           cargo generate-lockfile
           cargo fmt --all
           cargo fmt --all --check
@@ -81,9 +93,7 @@ jobs:
         run: cargo run --locked -p hepta-browserd -- --self-check | tee /tmp/browserd-self-check.json
 
       - name: Generate exact dependency candidate
-        shell: bash
         run: |
-          set -euo pipefail
           python3 /tmp/d0c-bundle/toolchain/tools/verify_cargo_lock_allowlist.py \
             --lock Cargo.lock \
             --baseline /tmp/d0c-bundle/toolchain/manifests/cargo-external-allowlist-d0c02-baseline.json \
@@ -94,61 +104,47 @@ jobs:
           CANDIDATE_HEAD: ${{ github.sha }}
         shell: bash
         run: |
-          set -euo pipefail
           mkdir -p docs/evidence/generated
           python3 - <<'PY'
-          import hashlib
-          import json
-          import os
-          import platform
+          import hashlib, json, os, platform
           from pathlib import Path
-
-          def sha(path: str) -> str:
-              return hashlib.sha256(Path(path).read_bytes()).hexdigest()
-
+          def sha(path): return hashlib.sha256(Path(path).read_bytes()).hexdigest()
           candidate = json.loads(Path("manifests/cargo-external-allowlist.d0c-candidate.json").read_text())
           overlay = json.loads(Path("/tmp/d0c-overlay-application.json").read_text())
           value = {
-              "schema": "trillionnium.desktop.d0c-rust-host-evidence.v1",
-              "status": "PASS_HOST_RUST_1_93_EXACT_HEAD",
-              "candidate_head_before_materialization": os.environ["CANDIDATE_HEAD"],
-              "runner": {
-                  "os": platform.platform(),
-                  "machine": platform.machine(),
-                  "python": platform.python_version(),
-                  "rustc": Path("/tmp/rustc-version.txt").read_text().strip(),
-                  "cargo": Path("/tmp/cargo-version.txt").read_text().strip(),
-              },
-              "checks": {
-                  "cargo_fmt": "PASS",
-                  "cargo_clippy_workspace_all_targets_D_warnings": "PASS",
-                  "cargo_test_workspace_all_targets": "PASS",
-                  "hepta_browser_codec_tests": "PASS",
-                  "hepta_agent_port_tests": "PASS",
-                  "browserd_self_check": "PASS",
-              },
-              "hashes": {
-                  "cargo_lock_sha256": sha("Cargo.lock"),
-                  "dependency_candidate_sha256": sha("manifests/cargo-external-allowlist.d0c-candidate.json"),
-                  "browserd_self_check_sha256": sha("/tmp/browserd-self-check.json"),
-              },
-              "external_package_count": len(candidate["packages"]),
-              "new_packages_requiring_review": candidate["new_packages_requiring_review"],
-              "overlay_application": overlay,
-              "authority": {
-                  "listener_created": False,
-                  "browser_actor_created": False,
-                  "servo_called": False,
-                  "external_effect_authorized": False,
-              },
-              "promotion": {
-                  "rust_host_gate": "PASS",
-                  "dependency_review": "REVIEW_REQUIRED",
-                  "merge_ready": False,
-              },
+            "schema": "trillionnium.desktop.d0c-rust-host-evidence.v1",
+            "status": "PASS_HOST_RUST_1_93_EXACT_HEAD",
+            "candidate_head_before_materialization": os.environ["CANDIDATE_HEAD"],
+            "runner": {
+              "os": platform.platform(), "machine": platform.machine(),
+              "python": platform.python_version(),
+              "rustc": Path("/tmp/rustc-version.txt").read_text().strip(),
+              "cargo": Path("/tmp/cargo-version.txt").read_text().strip()
+            },
+            "checks": {
+              "cargo_fmt": "PASS", "cargo_clippy_workspace_all_targets_D_warnings": "PASS",
+              "cargo_test_workspace_all_targets": "PASS", "hepta_browser_codec_tests": "PASS",
+              "hepta_agent_port_tests": "PASS", "browserd_self_check": "PASS"
+            },
+            "hashes": {
+              "cargo_lock_sha256": sha("Cargo.lock"),
+              "dependency_candidate_sha256": sha("manifests/cargo-external-allowlist.d0c-candidate.json"),
+              "browserd_self_check_sha256": sha("/tmp/browserd-self-check.json")
+            },
+            "external_package_count": len(candidate["packages"]),
+            "new_packages_requiring_review": candidate["new_packages_requiring_review"],
+            "overlay_application": overlay,
+            "authority": {
+              "listener_created": False, "browser_actor_created": False,
+              "servo_called": False, "external_effect_authorized": False
+            },
+            "promotion": {
+              "rust_host_gate": "PASS", "dependency_review": "REVIEW_REQUIRED",
+              "merge_ready": False
+            }
           }
           Path("docs/evidence/generated/d0c-rust-host-evidence.json").write_text(
-              json.dumps(value, indent=2, sort_keys=True) + "\n"
+            json.dumps(value, indent=2, sort_keys=True) + "\n"
           )
           PY
 
