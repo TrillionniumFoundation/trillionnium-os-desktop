@@ -87,7 +87,9 @@
     "cargo_test": "UNEXECUTED",
     "browserd_self_check": "UNEXECUTED",
     "merge_ready": false,
-    "reason": "no trusted Rust execution environment or hosted runner was available"
+    "reason": "independent wire reference passed; exact Rust 1.93 fmt/clippy/test/self-check remains unexecuted",
+    "python_reference_unit_tests": "PASS_15_OF_15",
+    "python_reference_self_check": "PASS"
   },
   "remaining_gates": [
     "trusted_Rust_1_93_compile_and_test_evidence",
@@ -97,5 +99,16 @@
     "canonical_json_codec_and_duplicate_key_rejection",
     "TaskFlow_principal_to_peer_mapping",
     "listener_lifecycle_and_crash_recovery"
-  ]
+  ],
+  "independent_reference": {
+    "implementation": "tools/agent_transport_reference.py",
+    "tests": "tests/transport/test_agent_transport_reference.py",
+    "golden_vector": "contracts/golden/agent-transport-request.v1.json",
+    "result": "docs/evidence/generated/d0c02-agent-transport-reference-result.json",
+    "runtime": "python_standard_library_only",
+    "status": "PASS",
+    "test_count": 15,
+    "product_listener_created": false,
+    "browser_payload_interpreted": false
+  }
 }
