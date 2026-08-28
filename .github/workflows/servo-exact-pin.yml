@@ -150,7 +150,7 @@ jobs:
             --probe-source experiments/servo-embedder-probe/src/main.rs \
             --output artifacts/servo-qualification/servo-qualification-result.json \
             --logs artifacts/servo-qualification/logs \
-            | tee artifacts/servo-qualification/report.stdout.json
+            2>&1 | tee artifacts/servo-qualification/report.stdout.json
 
       - name: Bind declared and gate-installed toolchain components
         shell: bash
