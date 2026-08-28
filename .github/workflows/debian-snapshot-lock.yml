@@ -41,7 +41,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: debian-snapshot-lock-${{ github.ref }}
@@ -115,22 +115,6 @@ jobs:
           assert all(value is False for value in report['claims'].values())
           assert report['next_gate'].startswith('D1-01')
           PY
-
-      - name: Promote canonical lock and repository state on the dedicated branch
-        if: >-
-          github.event_name == 'push' &&
-          github.ref == 'refs/heads/codex/d0r02-debian-snapshot-lock'
-        run: |
-          set -euo pipefail
-          python3 tools/promote_debian_snapshot_lock.py \
-            --generated-lock artifacts/debian-snapshot/debian-snapshot-lock.json
-          if ! git diff --quiet; then
-            git config user.name github-actions[bot]
-            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-            git add manifests docs
-            git commit -m "build: promote canonical signed Debian snapshot lock"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
 
       - name: Verify committed canonical lock is reproducible
         run: |
