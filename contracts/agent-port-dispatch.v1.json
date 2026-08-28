@@ -1,0 +1,57 @@
+{
+  "schema": "trillionnium.desktop.agent-port-dispatch.v1",
+  "status": "D0C_04_CONNECTED_STREAM_SINGLE_REQUEST",
+  "listener": {
+    "enabled": false,
+    "socket_path": null,
+    "systemd_socket_unit": null
+  },
+  "composition": [
+    "hepta-agent-transport",
+    "hepta-browser-codec",
+    "BrowserRequestHandler"
+  ],
+  "request_flow": [
+    "verify_kernel_peer_credentials",
+    "issue_fresh_connection_nonce",
+    "receive_one_bounded_digest_bound_sequence_bound_frame",
+    "reject_duplicate_keys_unknown_fields_and_noncanonical_message_bytes",
+    "bind_request_to_session_generation_and_timeout",
+    "classify_effect_without_authorizing_it",
+    "dispatch_to_typed_handler",
+    "author_response_envelope_from_the_original_request_binding",
+    "send_one_canonical_response_before_the_effective_deadline",
+    "return_and_relinquish_the_connected_stream"
+  ],
+  "response_binding": {
+    "protocol_authored_by_bridge": true,
+    "request_id_copied_from_validated_request": true,
+    "session_id_copied_from_validated_request": true,
+    "session_generation_copied_from_validated_request": true,
+    "handler_can_forge_wire_binding": false,
+    "handler_result_must_be_json_object": true,
+    "handler_failure_must_be_typed_error": true
+  },
+  "deadline": {
+    "server_ceiling": true,
+    "request_timeout_ms": true,
+    "effective_deadline": "minimum_of_server_ceiling_and_request_window_from_accept_start",
+    "preemptive_handler_cancellation": false,
+    "expired_handler_result_committed": false
+  },
+  "effect_policy": {
+    "classification_available_to_handler": true,
+    "bridge_authorizes_external_effect": false,
+    "D0_external_mutation_default": "refuse"
+  },
+  "remaining_gates": [
+    "dedicated_browserd_and_agent_service_identities",
+    "systemd_socket_activation_and_path_custody",
+    "unit_or_cgroup_identity_binding",
+    "multi_request_connection_loop_and_backpressure",
+    "BrowserActor_command_conversion",
+    "cancellation_and_crash_reconnect",
+    "receipt_persistence",
+    "Servo_runtime_dispatch"
+  ]
+}
