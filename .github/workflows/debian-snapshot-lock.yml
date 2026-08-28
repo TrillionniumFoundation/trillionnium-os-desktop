@@ -1,0 +1,84 @@
+name: debian-snapshot-lock
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/debian-snapshot-lock.yml"
+      - "tools/resolve_debian_snapshot.py"
+      - "manifests/debian-base.selection.json"
+      - "manifests/debian-snapshot.requirements.v1.json"
+      - "docs/architecture/DEBIAN_SNAPSHOT_LOCK.md"
+      - "docs/evidence/2026-08-29-d0r02-debian-snapshot.md"
+  push:
+    branches:
+      - main
+      - codex/d0r02-debian-snapshot-lock
+    paths:
+      - ".github/workflows/debian-snapshot-lock.yml"
+      - "tools/resolve_debian_snapshot.py"
+      - "manifests/debian-base.selection.json"
+      - "manifests/debian-snapshot.requirements.v1.json"
+      - "docs/architecture/DEBIAN_SNAPSHOT_LOCK.md"
+      - "docs/evidence/2026-08-29-d0r02-debian-snapshot.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: debian-snapshot-lock-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Debian signature and repository tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ca-certificates curl debian-archive-keyring gnupg
+
+      - name: Resolve signed snapshot and full package closure
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/debian-snapshot/logs /tmp/trillionnium-debian-lock
+          python3 tools/resolve_debian_snapshot.py \
+            --requirements manifests/debian-snapshot.requirements.v1.json \
+            --output artifacts/debian-snapshot/debian-snapshot-lock.json \
+            --work-dir /tmp/trillionnium-debian-lock \
+            --logs artifacts/debian-snapshot/logs \
+            | tee artifacts/debian-snapshot/report.stdout.json
+
+      - name: Enforce snapshot claim ceiling
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          report = json.loads(Path('artifacts/debian-snapshot/debian-snapshot-lock.json').read_text())
+          assert report['status'] == 'PASS_SIGNED_INPUT_AND_PACKAGE_CLOSURE_ONLY'
+          assert report['snapshot_timestamp'] == '20260828T000000Z'
+          assert report['architecture'] == 'amd64'
+          assert len(report['inrelease']) == 3
+          assert report['resolved_package_count'] == len(report['packages'])
+          assert report['resolved_package_count'] > len(report['seed_packages'])
+          assert len(report['package_set_sha256']) == 64
+          assert report['archive_keyring']['valid_signature_fingerprints']
+          assert all(value is False for value in report['claims'].values())
+          assert report['next_gate'].startswith('D1-01')
+          PY
+
+      - name: Validate desktop repository contracts
+        run: python3 tools/validate_repository.py
+
+      - name: Upload signed input evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-snapshot-lock-${{ github.sha }}
+          path: artifacts/debian-snapshot
+          if-no-files-found: error
+          retention-days: 30
