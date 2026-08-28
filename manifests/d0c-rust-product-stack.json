@@ -1,0 +1,58 @@
+{
+  "schema": "trillionnium.desktop.d0c-rust-product-stack.v1",
+  "plan_revision": "2026-08-28-d5",
+  "stage": "D0R_D0C04_SOURCE",
+  "stack": [
+    {
+      "id": "D0C-02",
+      "crate": "crates/hepta-agent-transport",
+      "contract": "contracts/agent-transport.v1.json",
+      "source": "implemented",
+      "independent_reference": "PASS_15_OF_15",
+      "exact_head_rust": "UNEXECUTED"
+    },
+    {
+      "id": "D0C-03",
+      "crate": "crates/hepta-browser-codec",
+      "contract": "contracts/browser-codec.v1.json",
+      "source": "implemented",
+      "independent_reference": "PASS_27_OF_27",
+      "source_static_audit": "PASS_96_CHECKS",
+      "exact_head_rust": "UNEXECUTED"
+    },
+    {
+      "id": "D0C-04",
+      "crate": "crates/hepta-agent-port",
+      "contract": "contracts/agent-port-rust.v1.json",
+      "source": "implemented",
+      "independent_reference": "PASS_13_OF_13",
+      "source_static_audit": "PASS_172_CHECKS",
+      "exact_head_rust": "UNEXECUTED"
+    }
+  ],
+  "dependency_order": [
+    "hepta-agent-transport",
+    "hepta-browser-codec",
+    "hepta-agent-port",
+    "hepta-browserd-self-check"
+  ],
+  "cargo_registry_packages_added_by_d0c04": [],
+  "product_authority": {
+    "listener": false,
+    "taskflow_principal_mapping": false,
+    "browser_actor": false,
+    "servo": false,
+    "capability_grant": false,
+    "external_effect": false,
+    "automatic_retry": false
+  },
+  "promotion_commands": [
+    "cargo fmt --all --check",
+    "cargo clippy --workspace --all-targets --locked -- -D warnings",
+    "cargo test --workspace --all-targets --locked",
+    "cargo test --locked -p hepta-browser-codec",
+    "cargo test --locked -p hepta-agent-port",
+    "cargo run --locked -p hepta-browserd -- --self-check"
+  ],
+  "merge_ready": false
+}
