@@ -23,6 +23,8 @@ jobs:
           python-version: "3.13"
       - name: Validate repository contracts and product boundary
         run: python3 tools/validate_repository.py
+      - name: Validate committed signed Debian snapshot lock
+        run: python3 tools/validate_debian_snapshot_lock.py
 
   rust:
     runs-on: ubuntu-latest
