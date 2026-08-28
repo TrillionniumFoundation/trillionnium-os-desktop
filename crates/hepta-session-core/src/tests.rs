@@ -8,9 +8,7 @@ fn lease() -> LeaseId {
 #[test]
 fn human_focus_preempts_agent_work_and_blocks_new_mutation() {
     let mut machine = SessionMachine::new();
-    machine
-        .apply(SessionEvent::BeginAgentMutation, 0)
-        .unwrap();
+    machine.apply(SessionEvent::BeginAgentMutation, 0).unwrap();
     let effects = machine
         .apply(
             SessionEvent::HumanFocusGained {
@@ -22,11 +20,7 @@ fn human_focus_preempts_agent_work_and_blocks_new_mutation() {
         .unwrap();
     assert!(effects.contains(&SessionEffect::InterruptAgentWork));
     assert_eq!(machine.snapshot().control, ControlState::HumanActive);
-    assert!(
-        machine
-            .apply(SessionEvent::BeginAgentMutation, 11)
-            .is_err()
-    );
+    assert!(machine.apply(SessionEvent::BeginAgentMutation, 11).is_err());
 }
 
 #[test]
@@ -44,15 +38,8 @@ fn ime_composition_is_an_explicit_control_state() {
     machine
         .apply(SessionEvent::ImeStarted { lease_id: lease() }, 1)
         .unwrap();
-    assert_eq!(
-        machine.snapshot().control,
-        ControlState::HumanImeComposing
-    );
-    assert!(
-        machine
-            .apply(SessionEvent::BeginAgentMutation, 2)
-            .is_err()
-    );
+    assert_eq!(machine.snapshot().control, ControlState::HumanImeComposing);
+    assert!(machine.apply(SessionEvent::BeginAgentMutation, 2).is_err());
     machine
         .apply(SessionEvent::ImeEnded { lease_id: lease() }, 3)
         .unwrap();
@@ -91,9 +78,7 @@ fn navigation_and_crash_invalidate_different_revision_layers() {
             1,
         )
         .unwrap();
-    machine
-        .apply(SessionEvent::NavigationCommitted, 2)
-        .unwrap();
+    machine.apply(SessionEvent::NavigationCommitted, 2).unwrap();
     let navigated = machine.snapshot().revisions;
     assert_eq!(navigated.session_generation, original.session_generation);
     assert!(navigated.document_generation > original.document_generation);

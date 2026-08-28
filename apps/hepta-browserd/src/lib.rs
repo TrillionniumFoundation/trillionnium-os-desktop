@@ -1,7 +1,8 @@
 #![forbid(unsafe_code)]
 
 //! D0 browser daemon scaffold. This is a deterministic contract, transport,
-//! and session self-check only: it does not start Servo, bind a listener, or
+//! canonical codec, connected AgentPort, and session self-check only. It does
+//! not start Servo, bind a listener, or
 //! perform an external network operation.
 
 use hepta_browser_contracts::BROWSER_API_PROTOCOL;
@@ -12,7 +13,7 @@ use hepta_session_core::{
 use trillionnium_contract_core::LeaseId;
 
 pub const ACTIVE_PLAN_REVISION: &str = "2026-08-28-d5";
-pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C02_SOURCE";
+pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C04_RUST_HOST_VALIDATED";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SelfCheckReport {
@@ -57,6 +58,12 @@ pub fn run_self_check() -> Result<SelfCheckReport, String> {
     hepta_agent_transport::self_check().map_err(|error| error.to_string())?;
     checks_run += 1;
 
+    hepta_browser_codec::self_check().map_err(|error| error.to_string())?;
+    checks_run += 1;
+
+    hepta_agent_port::self_check().map_err(|error| error.to_string())?;
+    checks_run += 1;
+
     let mut machine = SessionMachine::new();
 
     machine
@@ -64,8 +71,8 @@ pub fn run_self_check() -> Result<SelfCheckReport, String> {
         .map_err(|error| error.to_string())?;
     checks_run += 1;
 
-    let lease_id = LeaseId::parse("lease_id", "self-check-human")
-        .map_err(|error| error.to_string())?;
+    let lease_id =
+        LeaseId::parse("lease_id", "self-check-human").map_err(|error| error.to_string())?;
     let effects = machine
         .apply(
             SessionEvent::HumanFocusGained {
@@ -163,7 +170,7 @@ mod tests {
     fn self_check_exercises_transport_preemption_revision_and_recovery() {
         let report = run_self_check().expect("self-check must pass");
         assert!(report.ok);
-        assert!(report.checks_run >= 8);
+        assert!(report.checks_run >= 10);
         assert_eq!(report.final_session_generation, 2);
         assert!(report.final_document_generation >= 3);
         assert!(report.to_json().contains(ACTIVE_PLAN_REVISION));

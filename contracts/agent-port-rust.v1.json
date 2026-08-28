@@ -1,0 +1,54 @@
+{
+  "authority": {
+    "browser_actor": false,
+    "external_effect_authorized": false,
+    "listener": false,
+    "servo": false,
+    "socket_path": null
+  },
+  "d0_effect_policy": "deny_potential_external_effect",
+  "d0_fixture": {
+    "health": "mechanism_only_success_browser_runtime_false",
+    "other_browser_dependent_operations": "unsupported",
+    "potential_external_effect": "policy_denied"
+  },
+  "deadline_anchor": "wall_and_monotonic_sampled_once_at_connection_acceptance",
+  "dispatch_context": [
+    "peer_pid",
+    "peer_uid",
+    "peer_gid",
+    "transport_sequence",
+    "canonical_request_sha256",
+    "effect_class",
+    "accepted_monotonic",
+    "effective_deadline_monotonic"
+  ],
+  "handler_input": "DecodedRequest_with_domain_operation",
+  "handler_invocation_limit": 1,
+  "handler_may_author": [
+    "object_result",
+    "typed_error"
+  ],
+  "handler_may_not_author": [
+    "protocol",
+    "request_id",
+    "session_id",
+    "session_generation",
+    "transport_sequence",
+    "session_nonce"
+  ],
+  "input": "already_connected_unix_stream",
+  "late_result_policy": "discard_without_response_commit",
+  "request_count_per_connection": 1,
+  "schema": "trillionnium.desktop.agent-port-rust.v1",
+  "status": "SOURCE_IMPLEMENTED_EXECUTION_PENDING",
+  "validation": {
+    "bundle_static_and_reference_checks": 74,
+    "connected_self_check_source": true,
+    "merge_ready": false,
+    "reference_bridge_checks": 13,
+    "rust_clippy": "UNEXECUTED",
+    "rust_format": "UNEXECUTED",
+    "rust_tests": "UNEXECUTED"
+  }
+}

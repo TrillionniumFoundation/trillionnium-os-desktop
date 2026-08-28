@@ -1,0 +1,78 @@
+{
+  "authority": {
+    "browser_dispatch": false,
+    "external_effect_authorized": false,
+    "listener": false,
+    "servo_dispatch": false
+  },
+  "canonical_json": {
+    "bom": false,
+    "duplicate_members": "reject_recursively",
+    "floating_point": "forbidden",
+    "input_must_equal_typed_reencoding": true,
+    "insignificant_whitespace": "forbidden",
+    "key_order": "lexicographic",
+    "utf8": true
+  },
+  "domain_conversion": {
+    "performed_before_handler": true,
+    "target": "hepta-browser-contracts::BrowserOperation",
+    "wire_reinterpretation_by_browser_actor": false
+  },
+  "effect_classes": {
+    "local_interaction": [
+      "session_create",
+      "session_close",
+      "page_act.scroll"
+    ],
+    "observation": [
+      "health",
+      "session_snapshot",
+      "page_observe",
+      "page_wait",
+      "page_extract"
+    ],
+    "potential_external_effect": [
+      "page_navigate",
+      "page_act.click",
+      "page_act.type",
+      "page_act.press",
+      "page_act.select"
+    ]
+  },
+  "max_container_items": 20000,
+  "max_json_depth": 32,
+  "max_message_bytes": 262144,
+  "protocol": "trillionnium.desktop.browser-api.v1",
+  "schema": "trillionnium.desktop.browser-codec-rust.v1",
+  "session_binding": {
+    "bound_operations": [
+      "session_snapshot",
+      "session_close",
+      "page_navigate",
+      "page_observe",
+      "page_act",
+      "page_wait",
+      "page_extract"
+    ],
+    "minimum_generation": 1,
+    "paired_fields": [
+      "session_id",
+      "session_generation"
+    ],
+    "unbound_operations": [
+      "health",
+      "session_create"
+    ]
+  },
+  "status": "SOURCE_IMPLEMENTED_EXECUTION_PENDING",
+  "validation": {
+    "bundle_static_and_reference_checks": 74,
+    "cross_implementation_vectors": "REFERENCE_EXECUTED",
+    "merge_ready": false,
+    "rust_clippy": "UNEXECUTED",
+    "rust_format": "UNEXECUTED",
+    "rust_golden_vectors": 6,
+    "rust_tests": "UNEXECUTED"
+  }
+}

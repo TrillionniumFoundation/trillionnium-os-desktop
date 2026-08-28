@@ -13,13 +13,17 @@ pub const MAX_LEASE_ID_BYTES: usize = 128;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ContractViolation {
-    Empty { field: &'static str },
+    Empty {
+        field: &'static str,
+    },
     TooLong {
         field: &'static str,
         max_bytes: usize,
         actual_bytes: usize,
     },
-    InvalidCharacter { field: &'static str },
+    InvalidCharacter {
+        field: &'static str,
+    },
     InvalidSha256,
     InvalidDnsLabel,
 }
@@ -40,7 +44,9 @@ impl fmt::Display for ContractViolation {
                 write!(formatter, "{field} contains a forbidden character")
             }
             Self::InvalidSha256 => formatter.write_str("value is not lowercase sha256 hex"),
-            Self::InvalidDnsLabel => formatter.write_str("value is not a valid lowercase DNS label"),
+            Self::InvalidDnsLabel => {
+                formatter.write_str("value is not a valid lowercase DNS label")
+            }
         }
     }
 }
@@ -63,9 +69,10 @@ impl<const MAX: usize> BoundedId<MAX> {
                 actual_bytes: value.len(),
             });
         }
-        if !value.bytes().all(|byte| {
-            byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b':')
-        }) {
+        if !value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b':'))
+        {
             return Err(ContractViolation::InvalidCharacter { field });
         }
         Ok(Self(value))
@@ -283,7 +290,10 @@ mod tests {
         let before = clock;
         clock.on_dom_commit();
         assert_eq!(clock.document_generation, before.document_generation);
-        assert_eq!(clock.semantic_snapshot_revision, before.semantic_snapshot_revision);
+        assert_eq!(
+            clock.semantic_snapshot_revision,
+            before.semantic_snapshot_revision
+        );
         assert_eq!(clock.mutation_epoch, before.mutation_epoch + 1);
     }
 

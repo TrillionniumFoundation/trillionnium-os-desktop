@@ -1,0 +1,42 @@
+{
+  "base_stack": [
+    "PR-7:D0C-02-transport-v2",
+    "PR-8:D0C-03-reference",
+    "PR-9:D0C-04-reference"
+  ],
+  "bundle_validation": {
+    "checks": 74,
+    "status": "PASS"
+  },
+  "date": "2026-08-28",
+  "new_capabilities": [
+    "canonical_wire_to_domain_conversion",
+    "exactly_one_connected_handler_dispatch",
+    "acceptance_anchored_deadline",
+    "browserd_integrated_self_check_source",
+    "offline_toolchain_verification_and_isolated_installation"
+  ],
+  "new_crates": [
+    "crates/hepta-browser-codec",
+    "crates/hepta-agent-port"
+  ],
+  "non_claims": [
+    "Rust compilation",
+    "Rust Clippy",
+    "Rust tests",
+    "product listener",
+    "BrowserActor dispatch",
+    "Servo dispatch",
+    "external effect"
+  ],
+  "reference_evidence": {
+    "bridge": 13,
+    "codec": 26,
+    "total": 54,
+    "transport": 15
+  },
+  "required_existing_crate": "crates/hepta-agent-transport",
+  "schema": "trillionnium.desktop.d0c-rust-product-stack.v1",
+  "toolchain_available_in_execution_environment": false,
+  "toolchain_requested": "1.93.0"
+}
