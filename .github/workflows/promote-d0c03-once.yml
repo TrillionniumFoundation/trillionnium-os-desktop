@@ -1,0 +1,301 @@
+name: promote-d0c03-once
+
+on:
+  push:
+    branches:
+      - codex/d0c03-codec-v2
+    paths:
+      - ".github/workflows/promote-d0c03-once.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: promote-d0c03-once
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/d0c03-codec-v2
+          fetch-depth: 0
+
+      - name: Install exact Rust 1.93.0 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Align repository validator with D0C-03
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("tools/validate_repository.py")
+          text = path.read_text(encoding="utf-8")
+
+          def replace_once(old: str, new: str) -> None:
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"expected one validator marker, found {count}: {old!r}")
+              text = text.replace(old, new, 1)
+
+          replace_once(
+              '    "crates/hepta-agent-transport",\n    "crates/trillionnium-contract-core",',
+              '    "crates/hepta-agent-transport",\n    "crates/hepta-browser-codec",\n    "crates/trillionnium-contract-core",',
+          )
+          replace_once(
+              '    "contracts/agent-transport.v1.json",\n',
+              '    "contracts/agent-transport.v1.json",\n'
+              '    "contracts/browser-codec.v1.json",\n'
+              '    "contracts/browser-wire.v1.schema.json",\n'
+              '    "contracts/browser-response.v1.schema.json",\n',
+          )
+          replace_once(
+              '    "crates/hepta-agent-transport/src/lib.rs",\n',
+              '    "crates/hepta-agent-transport/src/lib.rs",\n'
+              '    "crates/hepta-browser-codec/Cargo.toml",\n'
+              '    "crates/hepta-browser-codec/src/lib.rs",\n',
+          )
+          replace_once(
+              '    "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md",\n',
+              '    "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md",\n'
+              '    "docs/architecture/CANONICAL_BROWSER_CODEC.md",\n'
+              '    "docs/architecture/RUST_BROWSER_CODEC.md",\n',
+          )
+          replace_once(
+              '    "docs/evidence/2026-08-28-d0c02-authenticated-uds.md",\n',
+              '    "docs/evidence/2026-08-28-d0c02-authenticated-uds.md",\n'
+              '    "docs/evidence/2026-08-28-d0c03-rust-product-codec-source.md",\n'
+              '    "tools/validate_rust_browser_codec.py",\n',
+          )
+          replace_once(
+              '    if len(schema_ids) != 4:\n        fail(f"expected 4 JSON schemas, found {len(schema_ids)}")',
+              '    if len(schema_ids) != 6:\n        fail(f"expected 6 JSON schemas, found {len(schema_ids)}")',
+          )
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Apply Rust 1.93 formatting and create tested-source commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all
+          python3 tools/validate_repository.py
+          python3 tools/validate_rust_browser_codec.py >/tmp/d0c03-prevalidation-audit.json
+          mkdir -p /tmp/d0c03-golden
+          python3 tools/browser_codec_reference.py \
+            --self-test \
+            --contract contracts/browser-codec.v1.json \
+            --write-result /tmp/d0c03-reference.json \
+            --write-golden-dir /tmp/d0c03-golden \
+            >/tmp/d0c03-reference.stdout.json
+          cmp /tmp/d0c03-reference.json docs/evidence/generated/d0c03-browser-codec-reference-result.json
+          for fixture in contracts/golden/golden-*.wire.json; do
+            cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
+          done
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: align and format D0C-03 codec candidate"
+          echo "SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Validate exact tested-source commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          git diff --exit-code
+          git diff --cached --exit-code
+          test ! -S /run/hepta/browserd/agent.sock
+          test ! -e /etc/hepta/enable-agent-port
+
+      - name: Record host-validation evidence and promotion state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import platform
+          import subprocess
+          from pathlib import Path
+
+          source_sha = os.environ["SOURCE_SHA"]
+          run_id = int(os.environ["GITHUB_RUN_ID"])
+
+          def write_json(path: str, value: object) -> None:
+              Path(path).write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+          contract_path = Path("contracts/browser-codec.v1.json")
+          contract = json.loads(contract_path.read_text(encoding="utf-8"))
+          contract["status"] = "HOST_VALIDATED_RUST_1_93_NO_DISPATCH"
+          contract["validation"].update({
+              "rust_fmt": "PASS",
+              "rust_clippy": "PASS",
+              "rust_tests": "PASS",
+              "browserd_self_check": "PASS",
+              "merge_ready": True,
+              "reason": "The exact tested-source commit passed Rust 1.93.0 formatting, Clippy with warnings denied, all workspace tests, browserd self-check, repository validation and the independent reference corpus.",
+          })
+          contract["rust_host_result"] = "docs/evidence/generated/d0c03-rust193-host-result.json"
+          write_json(str(contract_path), contract)
+
+          evidence = {
+              "schema": "trillionnium.desktop.d0c03-rust193-host-result.v1",
+              "status": "PASS",
+              "validated_source_sha": source_sha,
+              "workflow_run_id": run_id,
+              "runner": "ubuntu-24.04",
+              "kernel": platform.release(),
+              "rustc": subprocess.check_output(["rustc", "--version", "--verbose"], text=True).strip(),
+              "cargo": subprocess.check_output(["cargo", "--version", "--verbose"], text=True).strip(),
+              "commands": {
+                  "repository_validation": "PASS",
+                  "cargo_fmt_all_check": "PASS",
+                  "cargo_clippy_workspace_all_targets_locked_deny_warnings": "PASS",
+                  "cargo_test_workspace_all_targets_locked": "PASS",
+                  "browserd_self_check_locked": "PASS",
+                  "independent_python_reference_27_of_27": "PASS",
+                  "rust_source_contract_audit": "PASS",
+              },
+              "product_listener_created": False,
+              "browser_actor_dispatched": False,
+              "servo_called": False,
+              "external_effect_authorized": False,
+          }
+          write_json("docs/evidence/generated/d0c03-rust193-host-result.json", evidence)
+
+          docs_manifest_path = Path("docs/MANIFEST.json")
+          docs_manifest = json.loads(docs_manifest_path.read_text(encoding="utf-8"))
+          docs_manifest["status"] = "IMPLEMENTATION_HOST_VALIDATED"
+          docs_manifest["implementation_stage"] = "D0R_D0C03_HOST_VALIDATED"
+          checkpoints = docs_manifest.setdefault("implementation_checkpoints", [])
+          checkpoints = [item for item in checkpoints if item.get("id") != "TOS-D0C-03"]
+          checkpoints.append({
+              "id": "TOS-D0C-03",
+              "status": "HOST_VALIDATED_NO_LISTENER_NO_DISPATCH",
+              "evidence": "evidence/2026-08-28-d0c03-rust-product-codec-source.md",
+              "machine_evidence": "evidence/generated/d0c03-rust193-host-result.json",
+              "validated_head": source_sha,
+              "workflow_run_id": run_id,
+          })
+          docs_manifest["implementation_checkpoints"] = checkpoints
+          docs_manifest["canonical_browser_codec_product"] = True
+          docs_manifest["browser_codec_exact_head_rust_validation"] = True
+          write_json(str(docs_manifest_path), docs_manifest)
+
+          state_path = Path("manifests/repository-state.json")
+          state = json.loads(state_path.read_text(encoding="utf-8"))
+          state["implementation_stage"] = "D0R_D0C03_HOST_VALIDATED"
+          completed = state.setdefault("completed_work_packages", [])
+          if "D0C-03" not in completed:
+              completed.append("D0C-03")
+          validated = [item for item in state.setdefault("host_validated_work_packages", []) if item.get("id") != "D0C-03"]
+          validated.append({
+              "id": "D0C-03",
+              "status": "HOST_VALIDATED_NO_LISTENER_NO_DISPATCH",
+              "validated_head": source_sha,
+              "workflow_run_id": run_id,
+              "evidence": "docs/evidence/generated/d0c03-rust193-host-result.json",
+          })
+          state["host_validated_work_packages"] = validated
+          state["not_claimed"] = [item for item in state.get("not_claimed", []) if item != "canonical_browser_codec_product"]
+          state["partial_work_packages"] = [item for item in state.get("partial_work_packages", []) if item != "D0C-03"]
+          write_json(str(state_path), state)
+
+          marker = "## 2026-08-28 D0C-03 Rust 1.93 host-validation checkpoint"
+          current_path = Path("docs/CURRENT_STATE.md")
+          current = current_path.read_text(encoding="utf-8")
+          if marker not in current:
+              current += f"\n\n{marker}\n\nThe canonical Browser API codec at `{source_sha}` passed repository validation, Rust 1.93.0 formatting, Clippy with warnings denied, all workspace tests, the browserd self-check, the 27-case independent reference corpus and the static source/contract audit in workflow run `{run_id}`. It creates no listener, dispatches no BrowserActor, invokes no Servo runtime and authorizes no external effect.\n"
+          current_path.write_text(current, encoding="utf-8")
+
+          evidence_path = Path("docs/evidence/2026-08-28-d0c03-rust-product-codec-source.md")
+          evidence_text = evidence_path.read_text(encoding="utf-8")
+          validation_marker = "## Exact-head Rust 1.93 host validation"
+          if validation_marker not in evidence_text:
+              evidence_text += f"\n\n{validation_marker}\n\nValidated source commit: `{source_sha}`  \nWorkflow run: `{run_id}`  \nResult: repository validation, rustfmt, Clippy `-D warnings`, full workspace tests and `hepta-browserd --self-check` all passed. Machine evidence: `generated/d0c03-rust193-host-result.json`. This remains a no-listener, no-BrowserActor, no-Servo and no-effect checkpoint.\n"
+          evidence_path.write_text(evidence_text, encoding="utf-8")
+          PY
+
+      - name: Update permanent audit for host-validated state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          audit_path = Path("tools/validate_rust_browser_codec.py")
+          audit = audit_path.read_text(encoding="utf-8")
+          old = '''    for field in ["rust_fmt", "rust_clippy", "rust_tests", "browserd_self_check"]:
+        require(validation[field] == "UNEXECUTED", f"claim ceiling keeps {field} UNEXECUTED", checks)
+    require(validation["merge_ready"] is False, "contract remains non-merge-ready", checks)
+'''
+          new = '''    for field in ["rust_fmt", "rust_clippy", "rust_tests", "browserd_self_check"]:
+        require(validation[field] == "PASS", f"host validation records {field} PASS", checks)
+    require(validation["merge_ready"] is True, "contract is merge-ready after exact-head validation", checks)
+    host_result = ROOT / contract["rust_host_result"]
+    require(host_result.is_file(), "exact-head Rust host result exists", checks)
+    host = json.loads(host_result.read_text())
+    require(host["status"] == "PASS", "exact-head Rust host result is PASS", checks)
+'''
+          if audit.count(old) != 1:
+              raise SystemExit("static audit claim-ceiling block changed unexpectedly")
+          audit_path.write_text(audit.replace(old, new, 1), encoding="utf-8")
+
+          workflow_path = Path(".github/workflows/browser-codec-reference.yml")
+          workflow = workflow_path.read_text(encoding="utf-8")
+          workflow = workflow.replace('assert contract["validation"]["rust_fmt"] == "UNEXECUTED"', 'assert contract["validation"]["rust_fmt"] == "PASS"')
+          workflow = workflow.replace('assert contract["validation"]["rust_tests"] == "UNEXECUTED"', 'assert contract["validation"]["rust_tests"] == "PASS"')
+          workflow = workflow.replace('assert contract["validation"]["merge_ready"] is False', 'assert contract["validation"]["rust_clippy"] == "PASS"\n          assert contract["validation"]["browserd_self_check"] == "PASS"\n          assert contract["validation"]["merge_ready"] is True')
+          workflow_path.write_text(workflow, encoding="utf-8")
+          PY
+
+          python3 tools/validate_rust_browser_codec.py \
+            --write-result docs/evidence/generated/d0c03-rust-source-audit-result.json \
+            >/tmp/d0c03-final-audit.json
+          rm -rf /tmp/d0c03-final-golden
+          mkdir -p /tmp/d0c03-final-golden
+          python3 tools/browser_codec_reference.py \
+            --self-test \
+            --contract contracts/browser-codec.v1.json \
+            --write-result /tmp/d0c03-final-reference.json \
+            --write-golden-dir /tmp/d0c03-final-golden \
+            >/tmp/d0c03-final-reference.stdout.json
+          cmp /tmp/d0c03-final-reference.json docs/evidence/generated/d0c03-browser-codec-reference-result.json
+          for fixture in contracts/golden/golden-*.wire.json; do
+            cmp "$fixture" "/tmp/d0c03-final-golden/$(basename "$fixture")"
+          done
+
+      - name: Validate final evidence tree and push two commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_rust_browser_codec.py \
+            --write-result /tmp/d0c03-final-audit-check.json \
+            >/tmp/d0c03-final-audit-check.stdout.json
+          cmp /tmp/d0c03-final-audit-check.json docs/evidence/generated/d0c03-rust-source-audit-result.json
+          cargo fmt --all --check
+          git diff --check
+          rm -f .github/workflows/promote-d0c03-once.yml
+          git add -A
+          git commit -m "evidence: promote D0C-03 after Rust 1.93 host validation"
+          git push --force-with-lease origin HEAD:codex/d0c03-codec-v2
