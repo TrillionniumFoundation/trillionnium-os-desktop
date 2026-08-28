@@ -1,0 +1,201 @@
+name: qualify-servo-exact-pin-v2
+
+on:
+  push:
+    branches:
+      - codex/d0a01-servo-exact-pin-v2
+    paths:
+      - "tools/qualify_servo_exact_pin.py"
+      - ".github/workflows/qualify-servo-exact-pin-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: qualify-servo-exact-pin-v2
+  cancel-in-progress: false
+
+jobs:
+  exact-pin-compile-qualification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0a01-servo-exact-pin-v2
+          fetch-depth: 0
+
+      - name: Install Servo Linux build dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf automake build-essential ccache clang cmake curl git \
+            gperf libasound2-dev libavcodec-dev libavformat-dev libavutil-dev \
+            libdbus-1-dev libegl1-mesa-dev libfontconfig1-dev libfreetype6-dev \
+            libgl1-mesa-dev libgles2-mesa-dev libgstreamer-plugins-base1.0-dev \
+            libgstreamer1.0-dev libharfbuzz-dev libpulse-dev libssl-dev \
+            libudev-dev libunwind-dev libwayland-dev libx11-dev libx11-xcb-dev \
+            libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev \
+            libxrandr-dev libxi-dev llvm-dev mold nasm ninja-build pkg-config \
+            python3 python3-dev python3-pip xorg-dev
+
+      - name: Fetch exact Servo source pin
+        run: |
+          set -euo pipefail
+          git init /tmp/servo
+          git -C /tmp/servo remote add origin https://github.com/servo/servo.git
+          git -C /tmp/servo fetch --depth=1 origin 670ae8a70801b162e186f81cbb5bdd2d59c39108
+          git -C /tmp/servo checkout --detach FETCH_HEAD
+          test "$(git -C /tmp/servo rev-parse HEAD)" = "670ae8a70801b162e186f81cbb5bdd2d59c39108"
+          test -z "$(git -C /tmp/servo status --porcelain=v1)"
+
+      - name: Install Servo-declared Rust toolchain
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > /tmp/servo-toolchain.env
+          import shlex, tomllib
+          data = tomllib.load(open('/tmp/servo/rust-toolchain.toml', 'rb'))['toolchain']
+          print('CHANNEL=' + shlex.quote(data['channel']))
+          print('COMPONENTS=' + shlex.quote(','.join(data.get('components', []))))
+          print('TARGETS=' + shlex.quote(','.join(data.get('targets', []))))
+          PY
+          source /tmp/servo-toolchain.env
+          args=(toolchain install "$CHANNEL" --profile minimal)
+          if [[ -n "$COMPONENTS" ]]; then args+=(--component "$COMPONENTS"); fi
+          if [[ -n "$TARGETS" ]]; then args+=(--target "$TARGETS"); fi
+          rustup "${args[@]}"
+          rustup override set "$CHANNEL" --path /tmp/servo
+          rustup run "$CHANNEL" rustc --version --verbose
+          rustup run "$CHANNEL" cargo --version --verbose
+
+      - name: Compile official headed shell and external API probes
+        env:
+          CARGO_TERM_COLOR: always
+          CARGO_INCREMENTAL: "0"
+          RUST_BACKTRACE: "1"
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence/generated/servo-exact-pin-logs
+          python3 tools/qualify_servo_exact_pin.py \
+            --servo-root /tmp/servo \
+            --output-manifest manifests/servo-embedder-compat.json \
+            --output-probe experiments/servo-embedder-probe/src/main.rs \
+            --logs docs/evidence/generated/servo-exact-pin-logs
+
+      - name: Record qualification checkpoint
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, pathlib, subprocess
+          root = pathlib.Path('.')
+          manifest = json.loads((root / 'manifests/servo-embedder-compat.json').read_text())
+          result = {
+            'schema': 'trillionnium.desktop.servo-probe-result.v2',
+            'status': 'PASS_COMPILE_COMPATIBILITY_ONLY',
+            'servo_commit': manifest['servo_commit'],
+            'servo_toolchain_channel': manifest['servo_toolchain_channel'],
+            'repository_parent': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+            'manifest_sha256': hashlib.sha256((root / 'manifests/servo-embedder-compat.json').read_bytes()).hexdigest(),
+            'probe_sha256': hashlib.sha256((root / 'experiments/servo-embedder-probe/src/main.rs').read_bytes()).hexdigest(),
+            'checks': manifest['checks'],
+            'claims': manifest['claims'],
+            'merge_ready': True,
+            'next_gate': manifest['next_gate'],
+          }
+          (root / 'docs/evidence/generated/servo-probe-result.json').write_text(
+            json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          cat > docs/evidence/2026-08-28-d0a01-servo-exact-pin-v2.md <<'EOF'
+          # D0A-01 exact Servo pin compile qualification
+
+          The exact Servo commit `670ae8a70801b162e186f81cbb5bdd2d59c39108`
+          was checked out cleanly on Ubuntu 24.04 using Servo's declared Rust
+          toolchain. The official headed `servoshell` package passed
+          `cargo check --locked`. Individual and aggregate external crates
+          compiled the public embedder symbol and method paths recorded in
+          `manifests/servo-embedder-compat.json`.
+
+          This is compile-compatibility evidence only. Servo was not started;
+          no window, rendered frame, input, IME, WebDriver listener or network
+          navigation is claimed. D0A-02 remains the runtime/first-frame gate.
+          EOF
+
+      - name: Validate repository and exact generated evidence
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 -m py_compile tools/qualify_servo_exact_pin.py
+          python3 - <<'PY'
+          import json
+          manifest = json.load(open('manifests/servo-embedder-compat.json'))
+          result = json.load(open('docs/evidence/generated/servo-probe-result.json'))
+          assert manifest['status'] == 'PASS_COMPILE_COMPATIBILITY_ONLY'
+          assert result['status'] == 'PASS_COMPILE_COMPATIBILITY_ONLY'
+          assert manifest['servo_commit'] == '670ae8a70801b162e186f81cbb5bdd2d59c39108'
+          assert all(value == 'PASS' for value in manifest['checks'].values())
+          assert all(value is False for value in manifest['claims'].values())
+          PY
+          git diff --check
+
+      - name: Remove one-shot gate and commit evidence
+        run: |
+          set -euo pipefail
+          rm .github/workflows/qualify-servo-exact-pin-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "test: qualify exact Servo embedder compile boundary"
+          git push origin HEAD:codex/d0a01-servo-exact-pin-v2
+          echo "QUALIFIED_HEAD=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Re-run deterministic evidence checks on committed head
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 -m py_compile tools/qualify_servo_exact_pin.py
+          test -z "$(git status --porcelain)"
+
+      - name: Update PR and mark ready
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh pr edit 11 \
+            --title "test: qualify exact Servo embedder compile boundary (D0A-01)" \
+            --body-file - <<'EOF'
+          ## D0A-01 qualification
+
+          Qualifies exact Servo commit `670ae8a70801b162e186f81cbb5bdd2d59c39108` against its declared Rust toolchain and Ubuntu 24.04 dependencies.
+
+          Proven by execution:
+
+          - clean exact checkout and source hashes;
+          - official headed `servoshell` `cargo check --locked`;
+          - individual public API path probes;
+          - `WebViewBuilder` constructor probe;
+          - Servo event-loop entry probe;
+          - aggregate external embedder API sentinel;
+          - deterministic generated manifest and source probe.
+
+          This is compile compatibility only. Servo was not started and no window, first frame, native input, IME, WebDriver endpoint or network navigation is claimed. D0A-02 is the next gate.
+          EOF
+          gh pr ready 11
+
+      - name: Squash merge exact qualified candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/pulls/11/merge" \
+            -f merge_method=squash \
+            -f sha="${QUALIFIED_HEAD}" \
+            -f commit_title="test: qualify exact Servo embedder compile boundary" \
+            -f commit_message="Compile the exact Servo pin, official headed servoshell and external public embedder API sentinel. Preserve the runtime, first-frame, input and network non-claims for D0A-02."
