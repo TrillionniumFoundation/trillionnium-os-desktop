@@ -1,0 +1,312 @@
+name: materialize-d0a01-servo-compatibility
+
+on:
+  push:
+    branches:
+      - codex/d0a01-servo-compatibility
+    paths:
+      - "tools/verify_servo_compatibility.py"
+      - "manifests/servo-api-requirements.v1.json"
+      - "manifests/servo-patch-ledger.v1.json"
+      - "experiments/servo-embedder-probe/**"
+      - "docs/architecture/SERVO_EMBEDDER_COMPATIBILITY.md"
+      - "docs/evidence/2026-08-28-d0a01-servo-compatibility.md"
+      - ".github/workflows/materialize-d0a01.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0a01-servo-compatibility
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    steps:
+      - name: Check out desktop candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Repair and syntax-check the verifier source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("tools/verify_servo_compatibility.py")
+          text = path.read_text(encoding="utf-8")
+          text = text.replace('        "//!"," ,\n', '        "//!",\n')
+          text = text.replace('        "//!", " ,\n', '        "//!",\n')
+          path.write_text(text, encoding="utf-8")
+          compile(text, str(path), "exec")
+          PY
+
+      - name: Install Servo host dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            build-essential \
+            clang \
+            cmake \
+            curl \
+            git \
+            libclang-dev \
+            libdbus-1-dev \
+            libegl1-mesa-dev \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libgl1-mesa-dev \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
+            libssl-dev \
+            libudev-dev \
+            libunwind-dev \
+            libwayland-dev \
+            libx11-dev \
+            libx11-xcb-dev \
+            libxcb1-dev \
+            libxkbcommon-dev \
+            ninja-build \
+            pkg-config \
+            python3 \
+            python3-pip
+
+      - name: Check out exact Servo source pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .servo-source
+          git clone --filter=blob:none --no-checkout https://github.com/servo/servo .servo-source
+          git -C .servo-source checkout --detach 670ae8a70801b162e186f81cbb5bdd2d59c39108
+          test "$(git -C .servo-source rev-parse HEAD)" = \
+            "670ae8a70801b162e186f81cbb5bdd2d59c39108"
+          test -z "$(git -C .servo-source status --porcelain=v1 --untracked-files=no)"
+
+      - name: Cache Cargo and Servo build state
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            .servo-source/target
+            target/servo-probe-cargo
+          key: servo-d0a01-${{ runner.os }}-670ae8a70801b162e186f81cbb5bdd2d59c39108-${{ hashFiles('.servo-source/Cargo.lock', 'manifests/servo-api-requirements.v1.json') }}
+
+      - name: Qualify public embedder API and headed reference
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target/servo-probe-cargo
+          CARGO_TERM_COLOR: never
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf target/servo-compatibility
+          python3 tools/verify_servo_compatibility.py \
+            --servo-root .servo-source \
+            --requirements manifests/servo-api-requirements.v1.json \
+            --output target/servo-compatibility \
+            --probe-manifest target/servo-compatibility/probe-result.json \
+            --timeout-seconds 14400
+
+      - name: Materialize exact compatibility evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p experiments/servo-embedder-probe/src
+          cp target/servo-compatibility/servo_api_sentinel.rs \
+            experiments/servo-embedder-probe/src/main.rs
+          cp target/servo-compatibility/servo-embedder-compat.json \
+            manifests/servo-embedder-compat.json
+          cp target/servo-compatibility/probe-result.json \
+            manifests/servo-probe-result.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          root = Path.cwd()
+          replacements = {
+              str((root / ".servo-source").resolve()): ".servo-source",
+              str(root.resolve()): ".",
+          }
+
+          def normalize(value):
+              if isinstance(value, dict):
+                  return {key: normalize(item) for key, item in value.items() if key != "log"}
+              if isinstance(value, list):
+                  return [normalize(item) for item in value]
+              if isinstance(value, str):
+                  for source, target in replacements.items():
+                      value = value.replace(source, target)
+                  if "trillionnium-servo-probe-" in value:
+                      parts = value.split()
+                      value = " ".join(
+                          "<temporary-probe>" if "trillionnium-servo-probe-" in part else part
+                          for part in parts
+                      )
+                  return value
+              return value
+
+          for relative in [
+              "manifests/servo-embedder-compat.json",
+              "manifests/servo-probe-result.json",
+          ]:
+              path = root / relative
+              data = normalize(json.loads(path.read_text(encoding="utf-8")))
+              path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+          PY
+
+      - name: Recheck checked-in sentinel from its product location
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target/servo-probe-cargo
+          CARGO_TERM_COLOR: never
+        run: cargo check --manifest-path experiments/servo-embedder-probe/Cargo.toml
+
+      - name: Update d5 status, plan and repository contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import re
+
+          root = Path.cwd()
+
+          def append_once(path: Path, marker: str, block: str) -> None:
+              text = path.read_text(encoding="utf-8")
+              if marker not in text:
+                  path.write_text(text.rstrip() + "\n\n" + block.strip() + "\n", encoding="utf-8")
+
+          append_once(
+              root / "README.md",
+              "## D0A-01 pinned Servo compile compatibility",
+              '''
+          ## D0A-01 pinned Servo compile compatibility
+
+          The exact Servo commit now has a machine-reproducible compile gate. The gate
+          resolves and compiles the required public embedder API, compiles one aggregate
+          sentinel, and runs `cargo check --locked` for Servo's own headed reference
+          shell. This is compile evidence only; the product wrapper, first frame and
+          native input remain later checkpoints.
+          ''',
+          )
+          append_once(
+              root / "docs/CURRENT_STATE.md",
+              "## 2026-08-28 D0A-01 checkpoint",
+              '''
+          ## 2026-08-28 D0A-01 checkpoint
+
+          The pinned Servo public embedder boundary and upstream headed reference package
+          pass the D0A-01 compile gate. `manifests/servo-embedder-compat.json` records the
+          exact public paths, source locations, Cargo.lock digest, selected event-loop
+          entry and check commands. No Servo runtime, window, frame, input or network was
+          exercised. D0A-02 now owns the product wrapper and headed lifecycle spike.
+          ''',
+          )
+          append_once(
+              root / "docs/DESKTOP_PLAN-2026-08-28-d5.md",
+              "### D0A-01 implementation checkpoint",
+              '''
+          ### D0A-01 implementation checkpoint
+
+          The exact Servo source lock now passes an executable compatibility gate: public
+          `Servo`, `WebView`, builder, rendering-context, waker and delegate boundaries are
+          compiled from an external sentinel, and Servo's headed reference shell passes
+          `cargo check --locked`. The local patch ledger is zero-delta. This closes only
+          compile compatibility. D0A-02 must instantiate the product-owned headed wrapper,
+          prove lifecycle and produce first-frame evidence without WebDriver.
+          ''',
+          )
+
+          checkpoint = {
+              "id": "TOS-D0A-01",
+              "status": "PASS_COMPILE_ONLY_NO_RUNTIME",
+              "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+              "evidence": "docs/evidence/2026-08-28-d0a01-servo-compatibility.md",
+              "compatibility_manifest": "manifests/servo-embedder-compat.json",
+          }
+          for relative in ["manifests/repository-state.json", "docs/MANIFEST.json"]:
+              path = root / relative
+              data = json.loads(path.read_text(encoding="utf-8"))
+              checkpoints = data.setdefault("implementation_checkpoints", [])
+              existing = next(
+                  (
+                      item
+                      for item in checkpoints
+                      if isinstance(item, dict) and item.get("id") == checkpoint["id"]
+                  ),
+                  None,
+              )
+              if existing is None:
+                  checkpoints.append(checkpoint)
+              else:
+                  existing.clear()
+                  existing.update(checkpoint)
+              path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+          gitignore = root / ".gitignore"
+          text = gitignore.read_text(encoding="utf-8")
+          additions = [
+              ".servo-source/",
+              "experiments/servo-embedder-probe/Cargo.lock",
+              "experiments/servo-embedder-probe/target/",
+          ]
+          for item in additions:
+              if item not in text.splitlines():
+                  text = text.rstrip() + "\n" + item + "\n"
+          gitignore.write_text(text, encoding="utf-8")
+
+          validator = root / "tools/validate_repository.py"
+          text = validator.read_text(encoding="utf-8")
+          required_paths = [
+              "tools/verify_servo_compatibility.py",
+              "manifests/servo-api-requirements.v1.json",
+              "manifests/servo-patch-ledger.v1.json",
+              "manifests/servo-embedder-compat.json",
+              "manifests/servo-probe-result.json",
+              "experiments/servo-embedder-probe/Cargo.toml",
+              "experiments/servo-embedder-probe/src/main.rs",
+              "docs/architecture/SERVO_EMBEDDER_COMPATIBILITY.md",
+          ]
+          for required in required_paths:
+              if required in text:
+                  continue
+              match = re.search(r"(REQUIRED_PATHS\s*=\s*\[)(.*?)(\n\])", text, flags=re.S)
+              assert match, "REQUIRED_PATHS list not found"
+              body = match.group(2) + f'\n    "{required}",'
+              text = text[: match.start(2)] + body + text[match.end(2) :]
+          validator.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Install desktop Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Validate desktop repository and fast workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Remove qualification checkout and temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .servo-source target/servo-compatibility target/servo-probe-cargo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/materialize-d0a01.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: qualify pinned Servo embedder API boundary"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
