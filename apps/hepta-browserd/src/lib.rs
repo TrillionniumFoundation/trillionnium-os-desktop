@@ -64,8 +64,8 @@ pub fn run_self_check() -> Result<SelfCheckReport, String> {
         .map_err(|error| error.to_string())?;
     checks_run += 1;
 
-    let lease_id = LeaseId::parse("lease_id", "self-check-human")
-        .map_err(|error| error.to_string())?;
+    let lease_id =
+        LeaseId::parse("lease_id", "self-check-human").map_err(|error| error.to_string())?;
     let effects = machine
         .apply(
             SessionEvent::HumanFocusGained {

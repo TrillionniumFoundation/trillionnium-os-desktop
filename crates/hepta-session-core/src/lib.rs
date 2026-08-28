@@ -12,8 +12,8 @@ mod types;
 pub use machine::{SessionMachine, SessionSnapshot};
 pub use queue::{ArbiterQueue, QueueError};
 pub use types::{
-    ControlSource, ControlState, DEFAULT_HUMAN_LEASE_TTL_MS, HumanLease,
-    MAX_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent, SessionPhase, TransitionError,
+    ControlSource, ControlState, DEFAULT_HUMAN_LEASE_TTL_MS, HumanLease, MAX_HUMAN_LEASE_TTL_MS,
+    SessionEffect, SessionEvent, SessionPhase, TransitionError,
 };
 
 #[cfg(test)]

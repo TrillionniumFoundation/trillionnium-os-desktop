@@ -6,10 +6,7 @@
 //! absolute deadline per operation. The systemd socket unit, path ownership,
 //! service UID, cgroup binding, and production listener remain later gates.
 
-#![cfg_attr(
-    not(any(target_os = "linux", target_os = "android")),
-    allow(dead_code)
-)]
+#![cfg_attr(not(any(target_os = "linux", target_os = "android")), allow(dead_code))]
 #![deny(unsafe_op_in_unsafe_fn)]
 
 use sha2::{Digest, Sha256};
@@ -213,12 +210,7 @@ impl ServerConnection {
         let binding = SessionNonce::new(nonce_source.next_nonce()?)?;
         let mut framed = FramedUnixStream::new(stream);
         framed.write_frame(
-            &Frame::new(
-                FrameKind::Challenge,
-                0,
-                binding,
-                CHALLENGE_PAYLOAD.to_vec(),
-            )?,
+            &Frame::new(FrameKind::Challenge, 0, binding, CHALLENGE_PAYLOAD.to_vec())?,
             timeout,
         )?;
         Ok(Self {
@@ -237,7 +229,10 @@ impl ServerConnection {
         self.binding
     }
 
-    pub fn receive_request(&mut self, timeout: Duration) -> Result<ReceivedRequest, TransportError> {
+    pub fn receive_request(
+        &mut self,
+        timeout: Duration,
+    ) -> Result<ReceivedRequest, TransportError> {
         let frame = self.framed.read_frame(timeout)?;
         require_kind(frame.kind, FrameKind::Request)?;
         require_nonce(frame.session_nonce, self.binding)?;
@@ -264,12 +259,7 @@ impl ServerConnection {
         timeout: Duration,
     ) -> Result<(), TransportError> {
         self.framed.write_frame(
-            &Frame::new(
-                FrameKind::Response,
-                request_sequence,
-                self.binding,
-                payload,
-            )?,
+            &Frame::new(FrameKind::Response, request_sequence, self.binding, payload)?,
             timeout,
         )
     }
@@ -367,12 +357,11 @@ impl FramedUnixStream {
                 maximum: MAX_PAYLOAD_BYTES,
             });
         }
-        let payload_length = u32::try_from(frame.payload.len()).map_err(|_| {
-            TransportError::FrameTooLarge {
+        let payload_length =
+            u32::try_from(frame.payload.len()).map_err(|_| TransportError::FrameTooLarge {
                 length: frame.payload.len(),
                 maximum: MAX_PAYLOAD_BYTES,
-            }
-        })?;
+            })?;
         let mut header = [0_u8; HEADER_BYTES];
         header[0..8].copy_from_slice(&PROTOCOL_MAGIC);
         header[8..10].copy_from_slice(&PROTOCOL_VERSION.to_be_bytes());
@@ -609,9 +598,8 @@ impl fmt::Display for TransportError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Io(error) => write!(formatter, "Agent transport I/O failed: {error}"),
-            Self::UnsupportedPlatform => formatter.write_str(
-                "Agent transport peer credentials are unsupported on this platform",
-            ),
+            Self::UnsupportedPlatform => formatter
+                .write_str("Agent transport peer credentials are unsupported on this platform"),
             Self::InvalidPeerCredentials => {
                 formatter.write_str("Agent transport returned malformed peer credentials")
             }
@@ -621,13 +609,19 @@ impl fmt::Display for TransportError {
             ),
             Self::InvalidMagic => formatter.write_str("Agent transport frame magic is invalid"),
             Self::UnsupportedVersion(version) => {
-                write!(formatter, "Agent transport version {version} is unsupported")
+                write!(
+                    formatter,
+                    "Agent transport version {version} is unsupported"
+                )
             }
             Self::UnknownFrameKind(kind) => {
                 write!(formatter, "Agent transport frame kind {kind} is unknown")
             }
             Self::ReservedFlags(flags) => {
-                write!(formatter, "Agent transport reserved flags are non-zero: {flags}")
+                write!(
+                    formatter,
+                    "Agent transport reserved flags are non-zero: {flags}"
+                )
             }
             Self::InvalidSessionNonce => {
                 formatter.write_str("Agent transport session nonce is all zero")
@@ -645,9 +639,7 @@ impl fmt::Display for TransportError {
             Self::UnexpectedEof => {
                 formatter.write_str("Agent transport stream closed before the frame completed")
             }
-            Self::InvalidChallenge => {
-                formatter.write_str("Agent transport challenge is invalid")
-            }
+            Self::InvalidChallenge => formatter.write_str("Agent transport challenge is invalid"),
             Self::UnexpectedFrameKind { expected, actual } => write!(
                 formatter,
                 "Agent transport expected {expected:?} frame, received {actual:?}",

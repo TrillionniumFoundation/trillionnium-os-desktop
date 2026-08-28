@@ -275,21 +275,47 @@ mod tests {
 
     #[test]
     fn external_navigation_requires_https_and_http_is_fixture_only() {
-        assert!(NavigationTarget::ExternalHttps("https://example.com/".into()).validate().is_ok());
-        assert!(NavigationTarget::ExternalHttps("http://example.com/".into()).validate().is_err());
-        assert!(NavigationTarget::LocalHttpFixture("http://127.0.0.1:8080/".into()).validate().is_ok());
-        assert!(NavigationTarget::LocalHttpFixture("http://192.168.1.10/".into()).validate().is_err());
+        assert!(
+            NavigationTarget::ExternalHttps("https://example.com/".into())
+                .validate()
+                .is_ok()
+        );
+        assert!(
+            NavigationTarget::ExternalHttps("http://example.com/".into())
+                .validate()
+                .is_err()
+        );
+        assert!(
+            NavigationTarget::LocalHttpFixture("http://127.0.0.1:8080/".into())
+                .validate()
+                .is_ok()
+        );
+        assert!(
+            NavigationTarget::LocalHttpFixture("http://192.168.1.10/".into())
+                .validate()
+                .is_err()
+        );
     }
 
     #[test]
     fn mutating_ui_actions_are_not_mislabelled_read_only() {
-        assert_eq!(PageAction::Click.interaction_risk(), InteractionRisk::PotentialExternalEffect);
         assert_eq!(
-            PageAction::Type { text: "hello".into() }.interaction_risk(),
+            PageAction::Click.interaction_risk(),
             InteractionRisk::PotentialExternalEffect
         );
         assert_eq!(
-            PageAction::Scroll { delta_x: 0, delta_y: 10 }.interaction_risk(),
+            PageAction::Type {
+                text: "hello".into()
+            }
+            .interaction_risk(),
+            InteractionRisk::PotentialExternalEffect
+        );
+        assert_eq!(
+            PageAction::Scroll {
+                delta_x: 0,
+                delta_y: 10
+            }
+            .interaction_risk(),
             InteractionRisk::LocalOnly
         );
     }

@@ -48,14 +48,28 @@ pub enum SessionEvent {
     EndAgentObservation,
     BeginAgentMutation,
     EndAgentMutation,
-    HumanFocusGained { lease_id: LeaseId, ttl_ms: u64 },
-    HumanInput { lease_id: LeaseId, extend_by_ms: u64 },
-    HumanFocusReleased { lease_id: LeaseId },
-    ImeStarted { lease_id: LeaseId },
-    ImeEnded { lease_id: LeaseId },
+    HumanFocusGained {
+        lease_id: LeaseId,
+        ttl_ms: u64,
+    },
+    HumanInput {
+        lease_id: LeaseId,
+        extend_by_ms: u64,
+    },
+    HumanFocusReleased {
+        lease_id: LeaseId,
+    },
+    ImeStarted {
+        lease_id: LeaseId,
+    },
+    ImeEnded {
+        lease_id: LeaseId,
+    },
     DomCommitted,
     SemanticSnapshotPublished,
-    NavigationStarted { source: ControlSource },
+    NavigationStarted {
+        source: ControlSource,
+    },
     NavigationCommitted,
     NavigationFailed,
     ModalOpened,
