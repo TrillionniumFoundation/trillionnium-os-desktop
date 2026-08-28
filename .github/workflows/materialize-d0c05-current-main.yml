@@ -52,6 +52,29 @@ jobs:
       - name: Adapt reviewed source to current D0C-04 product API
         run: python3 tools/materialize_d0c05_current_main.py
 
+      - name: Apply current Rust 1.93 lint compatibility correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('crates/hepta-peer-attestation/src/lib.rs')
+          text = path.read_text(encoding='utf-8')
+          old = '''        write!(
+            stat,
+            "{pid} (fixture process) S 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 {start_time} 21 22\\n"
+        )
+'''
+          new = '''        writeln!(
+            stat,
+            "{pid} (fixture process) S 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 {start_time} 21 22"
+        )
+'''
+          if text.count(old) != 1:
+              raise SystemExit(f'peer-attestation write marker count is {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
       - name: Install exact Rust 1.93.0 toolchain
         run: |
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
