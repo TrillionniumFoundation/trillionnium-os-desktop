@@ -1,0 +1,72 @@
+name: d0c04-rust-product
+
+on:
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "apps/hepta-browserd/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/hepta-agent-transport/**"
+      - "crates/hepta-browser-codec/**"
+      - "contracts/agent-port-*.json"
+      - "contracts/agent-transport.v1.json"
+      - "contracts/browser-codec.v1.json"
+      - "docs/architecture/RUST_AGENT_PORT.md"
+      - "docs/evidence/**d0c04*"
+      - "manifests/d0c-rust-product-stack.json"
+      - "tools/agent_port_bridge_reference.py"
+      - "tools/validate_rust_agent_port.py"
+      - "tools/validate_rust_browser_codec.py"
+      - "tools/validate_repository.py"
+      - ".github/workflows/d0c04-rust-product.yml"
+  push:
+    branches:
+      - codex/d0c04-rust-product
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile Python validators and reference
+        run: |
+          python3 -m py_compile \
+            tools/agent_port_bridge_reference.py \
+            tools/validate_rust_agent_port.py \
+            tools/validate_rust_browser_codec.py \
+            tools/validate_repository.py
+      - name: Execute connected AgentPort reference
+        run: python3 tools/agent_port_bridge_reference.py
+      - name: Validate repository and D0C source boundaries
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/validate_rust_browser_codec.py
+          python3 tools/validate_rust_agent_port.py
+
+  exact-rust-1-93:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+      - name: Confirm exact compiler
+        run: rustc --version --verbose
+      - name: Check formatting
+        run: cargo fmt --all --check
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Run workspace tests
+        run: cargo test --workspace --all-targets --locked
+      - name: Run codec tests explicitly
+        run: cargo test --locked -p hepta-browser-codec
+      - name: Run AgentPort tests explicitly
+        run: cargo test --locked -p hepta-agent-port
+      - name: Run browserd D0 self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
