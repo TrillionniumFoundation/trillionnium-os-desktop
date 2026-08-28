@@ -44,11 +44,8 @@ fn serve_inherited_connection() -> Result<ServiceEvidence, ServiceError> {
     let expected_uid = resolve_user_id(EXPECTED_PEER_USER)?;
     let expected_gid = resolve_group_id(EXPECTED_PEER_GROUP)?;
     let peer = PeerIdentity::from_stream(&stream)?;
-    let runtime_policy = PeerRuntimePolicy::for_system_service(
-        expected_uid,
-        expected_gid,
-        EXPECTED_PEER_UNIT,
-    )?;
+    let runtime_policy =
+        PeerRuntimePolicy::for_system_service(expected_uid, expected_gid, EXPECTED_PEER_UNIT)?;
     let attested = ProcfsPeerAttestor::default().attest(peer, &runtime_policy)?;
 
     let transport_policy = PeerPolicy {
@@ -184,10 +181,7 @@ fn self_check() -> Result<String, ServiceError> {
             "\"expected_product_socket\":\"{}\",",
             "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{}}}"
         ),
-        AGENT_SOCKET_PATH,
-        snapshot.pid,
-        snapshot.uid,
-        snapshot.gid,
+        AGENT_SOCKET_PATH, snapshot.pid, snapshot.uid, snapshot.gid,
     ))
 }
 

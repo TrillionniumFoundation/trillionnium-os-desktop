@@ -206,9 +206,9 @@ fn resolve_user_id_c(name: &CStr) -> Result<u32, AttestationError> {
         )
     };
     if status != 0 {
-        return Err(AttestationError::AccountLookup(io::Error::from_raw_os_error(
-            status,
-        )));
+        return Err(AttestationError::AccountLookup(
+            io::Error::from_raw_os_error(status),
+        ));
     }
     if result.is_null() {
         return Err(AttestationError::AccountNotFound(
@@ -234,9 +234,9 @@ fn resolve_group_id_c(name: &CStr) -> Result<u32, AttestationError> {
         )
     };
     if status != 0 {
-        return Err(AttestationError::AccountLookup(io::Error::from_raw_os_error(
-            status,
-        )));
+        return Err(AttestationError::AccountLookup(
+            io::Error::from_raw_os_error(status),
+        ));
     }
     if result.is_null() {
         return Err(AttestationError::AccountNotFound(
@@ -506,10 +506,16 @@ impl fmt::Display for AttestationError {
             Self::MalformedCgroup(reason) => write!(formatter, "malformed proc cgroup: {reason}"),
             Self::InvalidSystemdUnit(unit) => write!(formatter, "invalid systemd unit {unit:?}"),
             Self::UidMismatch { expected, actual } => {
-                write!(formatter, "peer UID {actual} does not equal expected {expected}")
+                write!(
+                    formatter,
+                    "peer UID {actual} does not equal expected {expected}"
+                )
             }
             Self::GidMismatch { expected, actual } => {
-                write!(formatter, "peer GID {actual} does not equal expected {expected}")
+                write!(
+                    formatter,
+                    "peer GID {actual} does not equal expected {expected}"
+                )
             }
             Self::CgroupMismatch { expected, actual } => write!(
                 formatter,
@@ -534,7 +540,9 @@ impl fmt::Display for AttestationError {
             Self::PeerProcessExited => formatter.write_str("peer process exited"),
             Self::Pidfd(source) => write!(formatter, "pidfd operation failed: {source}"),
             Self::InvalidPidfd => formatter.write_str("pidfd value cannot be represented as an fd"),
-            Self::InvalidAccountName => formatter.write_str("account name contains an interior NUL"),
+            Self::InvalidAccountName => {
+                formatter.write_str("account name contains an interior NUL")
+            }
             Self::AccountLookup(source) => write!(formatter, "account lookup failed: {source}"),
             Self::AccountNotFound(name) => write!(formatter, "account {name:?} does not exist"),
         }
@@ -585,8 +593,14 @@ mod tests {
     fn system_service_policy_is_exact() {
         let policy = PeerRuntimePolicy::for_system_service(101, 102, "hepta-agent.service")
             .expect("valid unit");
-        assert_eq!(policy.expected_cgroup_v2_path, "/system.slice/hepta-agent.service");
-        assert_eq!(policy.expected_systemd_unit.as_deref(), Some("hepta-agent.service"));
+        assert_eq!(
+            policy.expected_cgroup_v2_path,
+            "/system.slice/hepta-agent.service"
+        );
+        assert_eq!(
+            policy.expected_systemd_unit.as_deref(),
+            Some("hepta-agent.service")
+        );
         assert!(PeerRuntimePolicy::for_system_service(1, 1, "../bad.service").is_err());
     }
 
@@ -623,7 +637,10 @@ mod tests {
         assert_eq!(snapshot.uid, 1000);
         assert_eq!(snapshot.gid, 1001);
         assert_eq!(snapshot.start_time_ticks, 987654);
-        assert_eq!(snapshot.systemd_unit.as_deref(), Some("hepta-agent.service"));
+        assert_eq!(
+            snapshot.systemd_unit.as_deref(),
+            Some("hepta-agent.service")
+        );
         fs::remove_dir_all(root).expect("remove fixture");
     }
 

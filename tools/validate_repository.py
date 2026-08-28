@@ -14,9 +14,11 @@ ERRORS: list[str] = []
 
 EXPECTED_WORKSPACE_MEMBERS = [
     "apps/hepta-browserd",
+    "apps/hepta-agent-portd",
     "crates/hepta-agent-transport",
     "crates/hepta-browser-codec",
     "crates/hepta-agent-port",
+    "crates/hepta-peer-attestation",
     "crates/trillionnium-contract-core",
     "crates/hepta-browser-contracts",
     "crates/hepta-session-core",
@@ -55,6 +57,21 @@ REQUIRED_PATHS = [
     "tools/validate_rust_browser_codec.py",
     "manifests/cargo-external-allowlist.json",
     "manifests/README.md",
+    ".github/workflows/agent-port-custody.yml",
+    "apps/hepta-agent-portd/Cargo.toml",
+    "apps/hepta-agent-portd/src/main.rs",
+    "contracts/agent-port-custody.v1.json",
+    "crates/hepta-peer-attestation/Cargo.toml",
+    "crates/hepta-peer-attestation/src/lib.rs",
+    "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
+    "docs/evidence/2026-08-29-d0c05-systemd-socket-custody.md",
+    "packaging/debian/hepta-agent-portd.install",
+    "packaging/debian/systemd/hepta-browserd-agent.socket",
+    "packaging/debian/systemd/hepta-browserd-agent@.service",
+    "packaging/debian/sysusers.d/trillionnium-desktop.conf",
+    "packaging/debian/tmpfiles.d/trillionnium-desktop.conf",
+    "packaging/debian/systemd-preset/90-trillionnium-desktop.preset",
+    "tools/verify_systemd_socket_custody.py",
 ]
 
 
