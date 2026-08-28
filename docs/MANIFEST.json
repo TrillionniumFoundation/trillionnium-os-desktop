@@ -7,13 +7,14 @@
   "active_plan": "DESKTOP_PLAN-2026-08-28-d5.md",
   "active_plan_revision": "2026-08-28-d5",
   "superseded_plan": "DESKTOP_PLAN-2026-08-28.md",
-  "implementation_stage": "D0R_D0C02_SOURCE",
+  "implementation_stage": "D0R_D0C04_SOURCE",
   "browser_runtime": "servo",
   "servo_lock": "../manifests/servo.lock.json",
   "rust_toolchain_lock": "../manifests/rust-toolchain.lock.json",
   "cargo_external_allowlist": "../manifests/cargo-external-allowlist.json",
   "debian_selection": "../manifests/debian-base.selection.json",
   "product_boundary": "../manifests/product-boundary.json",
+  "d0c_stack_manifest": "../manifests/d0c-rust-product-stack.json",
   "trusted_shell_topology": "one_visible_workspace_plus_trusted_shell_surface_plus_one_untrusted_content_webview",
   "trusted_app_origin_model": "distinct_synthetic_https_hosts_under_apps.hepta.invalid",
   "revision_model": [
@@ -25,14 +26,30 @@
   "implementation_checkpoints": [
     {
       "id": "TOS-D0C-02",
-      "status": "SOURCE_IMPLEMENTED_VALIDATION_PENDING_NO_LISTENER",
+      "status": "SOURCE_IMPLEMENTED_REFERENCE_PASS_EXACT_HEAD_RUST_PENDING_NO_LISTENER",
       "evidence": "evidence/2026-08-28-d0c02-authenticated-uds.md"
+    },
+    {
+      "id": "TOS-D0C-03",
+      "status": "SOURCE_IMPLEMENTED_REFERENCE_PASS_EXACT_HEAD_RUST_PENDING",
+      "evidence": "evidence/2026-08-28-d0c03-browser-codec-reference.md"
+    },
+    {
+      "id": "TOS-D0C-04",
+      "status": "SOURCE_IMPLEMENTED_REFERENCE_PASS_EXACT_HEAD_RUST_PENDING_NO_LISTENER",
+      "evidence": "evidence/2026-08-28-d0c04-rust-agent-port-source.md"
     }
   ],
   "transport_core_source_present": true,
+  "browser_codec_source_present": true,
+  "connected_agent_port_source_present": true,
   "transport_exact_head_rust_validation": false,
+  "browser_codec_exact_head_rust_validation": false,
+  "agent_port_exact_head_rust_validation": false,
+  "d0c_exact_head_rust_validation": false,
   "external_effects_enabled": false,
   "authenticated_agent_listener_implemented": false,
+  "browser_actor_implemented": false,
   "servo_integrated": false,
   "debian_image_built": false
 }
