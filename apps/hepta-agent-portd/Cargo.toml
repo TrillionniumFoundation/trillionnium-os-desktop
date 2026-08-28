@@ -1,0 +1,14 @@
+[package]
+name = "hepta-agent-portd"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+hepta-agent-transport = { path = "../../crates/hepta-agent-transport" }
+hepta-browser-agent-port = { path = "../../crates/hepta-browser-agent-port" }
+hepta-browser-codec = { path = "../../crates/hepta-browser-codec" }
+hepta-peer-attestation = { path = "../../crates/hepta-peer-attestation" }
+serde_json = "1"
