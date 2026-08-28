@@ -1,0 +1,47 @@
+[Unit]
+Description=TrillionniumOS Desktop AgentPort connection %I
+Documentation=file:/usr/share/doc/trillionnium-os-desktop/CONNECTED_AGENT_PORT_BRIDGE.md
+Requires=hepta-browserd-agent.socket
+After=hepta-browserd-agent.socket
+
+[Service]
+Type=exec
+User=hepta-browserd
+Group=hepta-browserd
+ExecStart=/usr/libexec/hepta-agent-portd --serve-stdio --socket-path /run/hepta/browserd/agent.sock --agent-user hepta-agent --agent-group hepta-agent --agent-unit hepta-agent.service --timeout-ms 20000
+StandardInput=socket
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hepta-agent-portd
+TimeoutStartSec=25s
+RuntimeMaxSec=25s
+UMask=0077
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateDevices=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+PrivateMounts=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RemoveIPC=yes
+DevicePolicy=closed
+SystemCallArchitectures=native
+SystemCallFilter=~@clock @cpu-emulation @debug @module @mount @obsolete @privileged @raw-io @reboot @resources @swap
+SystemCallErrorNumber=EPERM
+
+Restart=no
