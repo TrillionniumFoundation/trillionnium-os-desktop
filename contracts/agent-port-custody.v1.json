@@ -1,6 +1,6 @@
 {
   "schema": "trillionnium.desktop.agent-port-custody.v1",
-  "status": "SOURCE_CANDIDATE_VALIDATION_PENDING",
+  "status": "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER",
   "work_package": "D0C-05",
   "socket": {
     "address_family": "AF_UNIX",
@@ -67,6 +67,26 @@
     "servo_runtime": false,
     "external_effect_authority": false
   },
+  "host_validation": {
+    "validated_source_head": "7be7121b1d2593a0e708ec9ade189ef84ab245da",
+    "runner": "ubuntu-24.04",
+    "rust_version": "1.93.0",
+    "custody_workflow_run_id": 33190387511,
+    "custody_workflow_job_id": 98914075761,
+    "desktop_ci_run_id": 33190387553,
+    "codec_and_rust_regression_run_id": 33190387564,
+    "repository_validator": "PASS",
+    "custody_static_audit": "PASS",
+    "systemd_analyze_verify": "PASS",
+    "sysusers_mapping": "PASS",
+    "cargo_fmt": "PASS",
+    "cargo_clippy_deny_warnings": "PASS",
+    "cargo_workspace_tests": "PASS",
+    "browserd_self_check": "PASS",
+    "agent_portd_self_check": "PASS",
+    "claim_ceiling_recheck": "PASS",
+    "machine_evidence": "docs/evidence/generated/d0c05-rust193-host-result.json"
+  },
   "promotion_requires": [
     "repository_validator_pass",
     "systemd_unit_static_audit_pass",
@@ -74,7 +94,7 @@
     "rust_1_93_fmt_pass",
     "rust_1_93_clippy_pass",
     "rust_1_93_workspace_tests_pass",
-    "hepta_agent_portd_self_check_pass",
-    "qemu_pid1_activation_evidence_before_product_enable"
-  ]
+    "hepta_agent_portd_self_check_pass"
+  ],
+  "remaining_activation_gate": "qemu_pid1_activation_evidence_before_product_enable"
 }
