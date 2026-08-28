@@ -1,0 +1,77 @@
+{
+  "schema": "trillionnium.desktop.agent-port-rust.v1",
+  "status": "SOURCE_IMPLEMENTED_EXACT_HEAD_RUST_VALIDATION_PENDING",
+  "stage": "TOS-D0C-04",
+  "input": "one_already_connected_AF_UNIX_stream",
+  "request_count_per_connection": 1,
+  "handler_invocation_limit": 1,
+  "transport": "trillionnium.desktop.agent-transport.v1",
+  "codec": "trillionnium.desktop.browser-codec.v1",
+  "dispatch_context": [
+    "peer_pid",
+    "peer_uid",
+    "peer_gid",
+    "transport_sequence",
+    "canonical_request_sha256",
+    "effect_class",
+    "accepted_monotonic",
+    "effective_deadline_monotonic"
+  ],
+  "response_binding": {
+    "protocol": "validated_request",
+    "request_id": "validated_request",
+    "session_id": "validated_request",
+    "session_generation": "validated_request",
+    "transport_sequence": "authenticated_request_frame",
+    "session_nonce": "authenticated_connection"
+  },
+  "deadline": {
+    "effective": "minimum_of_server_ceiling_and_request_deadline_converted_once_at_acceptance",
+    "late_handler_result": "discard_without_response_commit"
+  },
+  "handler_output_bounds": {
+    "object_members": 1024,
+    "aggregate_container_items": 4096,
+    "value_depth": 16,
+    "key_bytes": 128,
+    "string_bytes": 131072
+  },
+  "d0_fixture": {
+    "health": "success_browser_runtime_unavailable",
+    "potential_external_effect": "typed_policy_denied",
+    "browser_dependent_observation_or_local_interaction": "typed_unsupported"
+  },
+  "authority": {
+    "listener": false,
+    "browser_actor": false,
+    "servo": false,
+    "capability_grant": false,
+    "external_effect_authorized": false,
+    "automatic_retry": false
+  },
+  "dependencies": {
+    "local": [
+      "hepta-agent-transport",
+      "hepta-browser-codec"
+    ],
+    "registry": {
+      "sha2": "=0.10.9"
+    },
+    "new_registry_packages": []
+  },
+  "validation": {
+    "source_static_checks": 172,
+    "independent_transport_reference": 15,
+    "independent_codec_reference": 27,
+    "independent_connected_bridge_reference": 13,
+    "rust_fmt": "UNEXECUTED",
+    "rust_clippy": "UNEXECUTED",
+    "rust_tests": "UNEXECUTED",
+    "browserd_self_check": "UNEXECUTED",
+    "merge_ready": false
+  },
+  "evidence": {
+    "static_audit": "docs/evidence/generated/d0c04-rust-static-validation.json",
+    "independent_reference": "docs/evidence/generated/d0c04-agent-port-bridge-reference-result.json"
+  }
+}
