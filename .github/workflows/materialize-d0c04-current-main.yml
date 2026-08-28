@@ -67,6 +67,14 @@ jobs:
               '    use hepta_browser_codec::{NavigationTarget, decode_response, encode_request};\n',
               "AgentPort test navigation type",
           )
+          agent_port = replace_once(
+              agent_port,
+              '                target: NavigationTarget::ExternalHttps("https://example.com/".to_owned()),\n',
+              '                target: NavigationTarget::ExternalHttps {\n'
+              '                    url: "https://example.com/".to_owned(),\n'
+              '                },\n',
+              "AgentPort current navigation variant",
+          )
           agent_port_path.write_text(agent_port, encoding="utf-8")
 
           cargo_path = Path("apps/hepta-browserd/Cargo.toml")
@@ -135,6 +143,18 @@ jobs:
               "repository D0C-04 required paths",
           )
           validator_path.write_text(validator, encoding="utf-8")
+
+          d0c04_validator_path = Path("tools/validate_d0c04_rust_product.py")
+          d0c04_validator = d0c04_validator_path.read_text(encoding="utf-8")
+          d0c04_validator = replace_once(
+              d0c04_validator,
+              '    require("NavigationTarget::ExternalHttps(" in source, "navigation fixture does not use active tuple variant")\n'
+              '    require("NavigationTarget::ExternalHttps {" not in source, "stale struct-style navigation variant returned")\n',
+              '    require("NavigationTarget::ExternalHttps {" in source, "navigation fixture does not use active struct variant")\n'
+              '    require("NavigationTarget::ExternalHttps(" not in source, "stale tuple-style navigation variant returned")\n',
+              "D0C-04 navigation-shape validator",
+          )
+          d0c04_validator_path.write_text(d0c04_validator, encoding="utf-8")
           PY
 
       - name: Format candidate
