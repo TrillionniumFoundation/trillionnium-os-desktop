@@ -147,6 +147,25 @@ jobs:
             --logs artifacts/servo-qualification/logs \
             | tee artifacts/servo-qualification/report.stdout.json
 
+      - name: Bind declared and gate-installed toolchain components
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os
+          path = Path('artifacts/servo-qualification/servo-qualification-result.json')
+          report = json.loads(path.read_text())
+          declared = os.environ['SERVO_DECLARED_COMPONENTS'].split()
+          installed = os.environ['SERVO_GATE_COMPONENTS'].split()
+          report['toolchain']['gate_installed_components'] = sorted(installed)
+          report['toolchain']['declared_components_not_required_by_gate'] = sorted(
+              set(declared) - set(installed)
+          )
+          path.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(report['toolchain'], indent=2, sort_keys=True))
+          PY
+
       - name: Enforce qualification claim ceiling
         shell: bash
         run: |
