@@ -1,0 +1,21 @@
+[Unit]
+Description=TrillionniumOS Desktop local AgentPort socket
+Documentation=file:/usr/share/doc/trillionnium-os-desktop/CONNECTED_AGENT_PORT_BRIDGE.md
+ConditionPathExists=/etc/hepta/enable-agent-port
+
+[Socket]
+ListenStream=/run/hepta/browserd/agent.sock
+SocketUser=hepta-browserd
+SocketGroup=hepta-agent
+SocketMode=0660
+DirectoryMode=0750
+Accept=yes
+Service=hepta-browserd-agent@.service
+Backlog=8
+MaxConnections=8
+MaxConnectionsPerSource=2
+RemoveOnStop=yes
+FlushPending=yes
+
+[Install]
+WantedBy=sockets.target
