@@ -1,0 +1,200 @@
+name: materialize-d0c03
+
+on:
+  push:
+    branches:
+      - codex/d0c03-strict-browser-codec
+    paths:
+      - "crates/hepta-browser-codec/**"
+      - "contracts/browser-wire.v1.schema.json"
+      - "docs/architecture/STRICT_BROWSER_API_CODEC.md"
+      - "docs/evidence/2026-08-28-d0c03-strict-browser-codec.md"
+      - ".github/workflows/materialize-d0c03.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0c03
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Integrate strict codec into the product graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import re
+
+          root = Path.cwd()
+
+          workspace = root / "Cargo.toml"
+          text = workspace.read_text(encoding="utf-8")
+          if '"crates/hepta-browser-codec"' not in text:
+              text = text.replace(
+                  "members = [\n",
+                  'members = [\n  "crates/hepta-browser-codec",\n',
+                  1,
+              )
+          workspace.write_text(text, encoding="utf-8")
+
+          browser_cargo = root / "apps/hepta-browserd/Cargo.toml"
+          text = browser_cargo.read_text(encoding="utf-8")
+          if "hepta-browser-codec" not in text:
+              marker = "[dependencies]\n"
+              assert marker in text
+              text = text.replace(
+                  marker,
+                  marker
+                  + 'hepta-browser-codec = { path = "../../crates/hepta-browser-codec" }\n',
+                  1,
+              )
+          browser_cargo.write_text(text, encoding="utf-8")
+
+          main = root / "apps/hepta-browserd/src/main.rs"
+          text = main.read_text(encoding="utf-8")
+          if "hepta_browser_codec::self_check" not in text:
+              match = re.search(
+                  r"fn\s+main\s*\([^)]*\)(?:\s*->\s*[^\{]+)?\s*\{",
+                  text,
+              )
+              assert match, "main function not found"
+              insertion = '''
+              if std::env::args().any(|argument| argument == "--self-check") {
+                  if let Err(error) = hepta_browser_codec::self_check() {
+                      eprintln!("strict Browser API codec self-check failed: {error}");
+                      std::process::exit(1);
+                  }
+              }
+          '''
+              text = text[: match.end()] + insertion + text[match.end() :]
+          main.write_text(text, encoding="utf-8")
+
+          def append_once(path: Path, marker: str, block: str) -> None:
+              current = path.read_text(encoding="utf-8")
+              if marker not in current:
+                  path.write_text(
+                      current.rstrip() + "\n\n" + block.strip() + "\n",
+                      encoding="utf-8",
+                  )
+
+          append_once(
+              root / "README.md",
+              "## D0C-03 strict Browser API codec",
+              '''
+          ## D0C-03 strict Browser API codec
+
+          `hepta-browser-codec` now converts bounded transport payloads into typed,
+          canonical Browser API messages. Duplicate JSON keys, unknown fields,
+          noncanonical bytes, invalid session bindings, unsafe URL schemes and malformed
+          result/error envelopes fail before BrowserActor dispatch.
+          ''',
+          )
+          append_once(
+              root / "docs/CURRENT_STATE.md",
+              "## 2026-08-28 D0C-03 checkpoint",
+              '''
+          ## 2026-08-28 D0C-03 checkpoint
+
+          The strict canonical Browser API codec is implemented and host-tested. It is
+          included in `hepta-browserd --self-check`; the browser daemon still has no
+          product listener and does not dispatch these operations to Servo. The remaining
+          D0C integration work is the dedicated service/socket identity, unit/cgroup
+          binding and BrowserActor command bridge.
+          ''',
+          )
+          append_once(
+              root / "docs/DESKTOP_PLAN-2026-08-28-d5.md",
+              "### D0C-03 implementation checkpoint",
+              '''
+          ### D0C-03 implementation checkpoint
+
+          The Browser API payload boundary now rejects duplicate JSON members recursively,
+          unknown fields, noncanonical encodings, unsafe navigation schemes, invalid
+          session/revision bindings and ambiguous response shapes. Canonical message
+          bytes and SHA-256 are available for receipts. BrowserActor conversion and
+          product socket activation remain closed; this checkpoint does not enable Servo
+          or external effects.
+          ''',
+          )
+
+          for relative in ["manifests/repository-state.json", "docs/MANIFEST.json"]:
+              path = root / relative
+              data = json.loads(path.read_text(encoding="utf-8"))
+              checkpoints = data.setdefault("implementation_checkpoints", [])
+              item = {
+                  "id": "TOS-D0C-03",
+                  "status": "IMPLEMENTED_HOST_VALIDATED_NO_DISPATCH",
+                  "evidence": "docs/evidence/2026-08-28-d0c03-strict-browser-codec.md",
+              }
+              if not any(
+                  isinstance(entry, dict) and entry.get("id") == item["id"]
+                  for entry in checkpoints
+              ):
+                  checkpoints.append(item)
+              path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+          validator = root / "tools/validate_repository.py"
+          text = validator.read_text(encoding="utf-8")
+          for required in [
+              "crates/hepta-browser-codec/Cargo.toml",
+              "crates/hepta-browser-codec/src/lib.rs",
+              "contracts/browser-wire.v1.schema.json",
+              "docs/architecture/STRICT_BROWSER_API_CODEC.md",
+          ]:
+              if required not in text:
+                  match = re.search(
+                      r"(REQUIRED_PATHS\s*=\s*\[)(.*?)(\n\])",
+                      text,
+                      flags=re.S,
+                  )
+                  assert match, "REQUIRED_PATHS list not found"
+                  body = match.group(2) + f'\n    "{required}",'
+                  text = text[: match.start(2)] + body + text[match.end(2) :]
+          validator.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Generate lock and format
+        run: |
+          cargo generate-lockfile
+          cargo fmt --all
+
+      - name: Validate repository and contracts
+        run: python3 tools/validate_repository.py
+
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run workspace tests
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Run integrated browserd self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Commit validated checkpoint and remove bootstrap workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/materialize-d0c03.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: implement strict canonical Browser API codec"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
