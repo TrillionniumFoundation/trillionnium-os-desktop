@@ -45,6 +45,30 @@ jobs:
                   raise SystemExit(f"{label}: expected one marker, found {text.count(old)}")
               return text.replace(old, new, 1)
 
+          agent_port_path = Path("crates/hepta-agent-port/src/lib.rs")
+          agent_port = agent_port_path.read_text(encoding="utf-8")
+          agent_port = replace_once(
+              agent_port,
+              'use hepta_browser_codec::{\n'
+              '    BrowserRequest, BrowserResponse, BrowserWireError, CodecError, EffectClass, JsonObject,\n'
+              '    JsonValue, decode_request, encode_response,\n'
+              '};\n'
+              'use hepta_browser_contracts::{BrowserErrorCode, BrowserOperation};\n',
+              'use hepta_browser_codec::{\n'
+              '    BrowserErrorCode, BrowserOperation, BrowserRequest, BrowserResponse, BrowserWireError,\n'
+              '    CodecError, EffectClass, JsonObject, JsonValue, decode_request, encode_response,\n'
+              '};\n',
+              "AgentPort codec-owned operation and error types",
+          )
+          agent_port = replace_once(
+              agent_port,
+              '    use hepta_browser_codec::{decode_response, encode_request};\n'
+              '    use hepta_browser_contracts::NavigationTarget;\n',
+              '    use hepta_browser_codec::{NavigationTarget, decode_response, encode_request};\n',
+              "AgentPort test navigation type",
+          )
+          agent_port_path.write_text(agent_port, encoding="utf-8")
+
           cargo_path = Path("apps/hepta-browserd/Cargo.toml")
           cargo = cargo_path.read_text(encoding="utf-8")
           cargo = replace_once(
