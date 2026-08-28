@@ -3,8 +3,9 @@
 
 The Ubuntu runner's debian-archive-keyring can predate trixie. This wrapper
 downloads Debian's official release-13 keys over HTTPS, verifies each primary
-fingerprint against the repository contract, builds an isolated keyring, runs
-the package resolver, and then binds every InRelease signature to an accepted
+fingerprint against the repository contract, imports the keys into an isolated
+GNUPG home, exports a deterministic OpenPGP public-key ring for gpgv/apt, runs
+the package resolver, and binds every InRelease signature to an accepted
 primary fingerprint. No unauthenticated apt mode is used.
 """
 
@@ -68,6 +69,35 @@ def primary_fingerprints(colons: str) -> list[str]:
     return fingerprints
 
 
+def export_public_keyring(
+    *,
+    keyring: Path,
+    fingerprints: list[str],
+    cwd: Path,
+    env: dict[str, str],
+) -> None:
+    """Export a classic OpenPGP packet stream that gpgv and apt both accept."""
+    keyring.unlink(missing_ok=True)
+    command = ["gpg", "--batch", "--export", *fingerprints]
+    with keyring.open("wb") as output:
+        completed = subprocess.run(
+            command,
+            cwd=cwd,
+            env=env,
+            stdout=output,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    if completed.returncode != 0:
+        stderr = completed.stderr.decode("utf-8", errors="replace")
+        raise RuntimeError(
+            f"command failed ({completed.returncode}): {' '.join(command)}\n{stderr}"
+        )
+    if not keyring.is_file() or keyring.is_symlink() or keyring.stat().st_size == 0:
+        raise RuntimeError("exported Debian archive keyring is missing, empty, or unsafe")
+    os.chmod(keyring, 0o644)
+
+
 def build_keyring(
     requirements: dict[str, Any], work: Path
 ) -> tuple[Path, list[dict[str, Any]], dict[str, str]]:
@@ -101,7 +131,7 @@ def build_keyring(
                 "5",
                 "--retry-all-errors",
                 "--user-agent",
-                "TrillionniumOS-D0R02/2",
+                "TrillionniumOS-D0R02/3",
                 "--output",
                 str(destination),
                 "--write-out",
@@ -132,15 +162,7 @@ def build_keyring(
                 f"trust-root fingerprint mismatch for {identifier}: {actual} != {[expected]}"
             )
         run(
-            [
-                "gpg",
-                "--batch",
-                "--no-default-keyring",
-                "--keyring",
-                str(keyring),
-                "--import",
-                str(destination),
-            ],
+            ["gpg", "--batch", "--import", str(destination)],
             cwd=work,
             env=env,
         )
@@ -160,9 +182,6 @@ def build_keyring(
         [
             "gpg",
             "--batch",
-            "--no-default-keyring",
-            "--keyring",
-            str(keyring),
             "--with-colons",
             "--fingerprint",
             "--list-keys",
@@ -173,7 +192,33 @@ def build_keyring(
     imported = sorted(primary_fingerprints(listed))
     expected = sorted(expected_by_id.values())
     if imported != expected:
-        raise RuntimeError(f"built keyring mismatch: {imported} != {expected}")
+        raise RuntimeError(f"isolated GNUPG key set mismatch: {imported} != {expected}")
+
+    export_public_keyring(
+        keyring=keyring,
+        fingerprints=expected,
+        cwd=work,
+        env=env,
+    )
+    exported = run(
+        [
+            "gpg",
+            "--batch",
+            "--no-default-keyring",
+            "--keyring",
+            str(keyring),
+            "--with-colons",
+            "--fingerprint",
+            "--list-keys",
+        ],
+        cwd=work,
+        env=env,
+    )
+    exported_fingerprints = sorted(primary_fingerprints(exported))
+    if exported_fingerprints != expected:
+        raise RuntimeError(
+            f"exported gpgv keyring mismatch: {exported_fingerprints} != {expected}"
+        )
     return keyring, records, expected_by_id
 
 
