@@ -69,12 +69,16 @@ jobs:
                   "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
               ).read_text()
           )
+          assert contract["status"] == "HOST_VALIDATED_NO_LISTENER"
           assert contract["listener"] == {
               "enabled": False,
               "socket_path": None,
               "public_network": False,
           }
+          assert result["status"] == "PASS"
           assert result["product_listener_created"] is False
           assert result["browser_payload_interpreted"] is False
-          assert contract["validation"]["merge_ready"] is False
+          assert contract["validation"]["cargo_fmt"] == "PASS"
+          assert contract["validation"]["cargo_test"] == "PASS_25_RUST_TESTS"
+          assert contract["validation"]["browserd_self_check"] == "PASS"
           PY
