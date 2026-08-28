@@ -34,9 +34,35 @@ def validate_source_surface(
         encoding="utf-8"
     )
 
-    for export in requirements["required_public_exports"]:
+    explicit_exports = {
+        "Servo",
+        "ServoBuilder",
+        "ServoDelegate",
+        "WebView",
+        "WebViewBuilder",
+        "WebViewDelegate",
+        "RenderingContext",
+        "WindowRenderingContext",
+        "CompositionEvent",
+        "ClipboardDelegate",
+        "CreateNewWebViewRequest",
+        "NavigationRequest",
+        "InputMethodControl",
+        "EmbedderControl",
+        "WebResourceLoad",
+    }
+    wildcard_exports = {"EventLoopWaker", "InputEvent"}
+    required_exports = set(requirements["required_public_exports"])
+    if required_exports != explicit_exports | wildcard_exports:
+        raise RuntimeError("Servo public export requirement classification is stale")
+    for export in sorted(explicit_exports):
         if export not in lib:
             raise RuntimeError(f"Servo public export source does not mention {export}")
+    require(
+        lib,
+        r"pub\s+use\s+embedder_traits::\{\s*submit_resource_reader\s*,\s*\*\s*\}\s*;",
+        "embedder_traits wildcard public re-export",
+    )
 
     for method in requirements["required_webview_methods"]:
         qualifier.require_regex(
@@ -65,6 +91,7 @@ def validate_source_surface(
         require(minimal, pattern, label)
 
     return {
+        "public_exports": sorted(required_exports),
         "webview_methods": list(requirements["required_webview_methods"]),
         "delegate_callbacks": list(requirements["required_delegate_callbacks"]),
         "official_minimal_flow": list(official_flow),
