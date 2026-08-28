@@ -1,0 +1,181 @@
+name: materialize-d0a01-servo-compatibility-v3
+
+on:
+  push:
+    branches:
+      - codex/d0a01-servo-compatibility
+    paths:
+      - ".github/workflows/materialize-d0a01-v3.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0a01-servo-compatibility-v2
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    steps:
+      - name: Check out latest candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0a01-servo-compatibility
+
+      - name: Detect an already materialized PASS
+        id: existing
+        shell: bash
+        run: |
+          set -euo pipefail
+          passed=false
+          if test -f manifests/servo-embedder-compat.json; then
+            passed=$(python3 - <<'PY'
+          from pathlib import Path
+          import json
+          value = json.loads(Path('manifests/servo-embedder-compat.json').read_text())
+          print('true' if value.get('status') == 'PASS' else 'false')
+          PY
+            )
+          fi
+          echo "passed=$passed" >> "$GITHUB_OUTPUT"
+
+      - name: Remove redundant v3 gate after an earlier PASS
+        if: steps.existing.outputs.passed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/materialize-d0a01-v3.yml
+          git commit -m "chore: remove redundant Servo qualification gate"
+          git push origin HEAD:codex/d0a01-servo-compatibility
+
+      - name: Promote syntax-hardened verifier
+        if: steps.existing.outputs.passed != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test -f tools/verify_servo_compatibility_v2.py; then
+            rm -f tools/verify_servo_compatibility.py
+            mv tools/verify_servo_compatibility_v2.py tools/verify_servo_compatibility.py
+          fi
+          python3 -m py_compile \
+            tools/verify_servo_compatibility.py \
+            tools/apply_d0a01_checkpoint.py
+
+      - name: Install complete Linux build dependency set
+        if: steps.existing.outputs.passed != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            autoconf automake build-essential clang cmake curl g++ gperf git \
+            libasound2-dev libclang-dev libdbus-1-dev libegl1-mesa-dev \
+            libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev \
+            libgles2-mesa-dev libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev libpulse-dev libssl-dev \
+            libtool libudev-dev libunwind-dev libwayland-dev libx11-dev \
+            libx11-xcb-dev libxcb1-dev libxcursor-dev libxi-dev \
+            libxinerama-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libxrandr-dev m4 mesa-common-dev ninja-build pkg-config python3 \
+            yasm
+
+      - name: Check out exact Servo pin and complete toolchain
+        if: steps.existing.outputs.passed != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .servo-source
+          git clone --filter=blob:none --no-checkout https://github.com/servo/servo .servo-source
+          git -C .servo-source checkout --detach 670ae8a70801b162e186f81cbb5bdd2d59c39108
+          test "$(git -C .servo-source rev-parse HEAD)" = \
+            "670ae8a70801b162e186f81cbb5bdd2d59c39108"
+          test -z "$(git -C .servo-source status --porcelain=v1 --untracked-files=no)"
+          python3 - <<'PY' > /tmp/servo-rustup-install.sh
+          from pathlib import Path
+          import shlex
+          import tomllib
+          value = tomllib.loads(Path('.servo-source/rust-toolchain.toml').read_text())['toolchain']
+          channel = value['channel']
+          components = value.get('components', [])
+          targets = value.get('targets', [])
+          command = ['rustup', 'toolchain', 'install', channel, '--profile', value.get('profile', 'minimal')]
+          for component in components:
+              command.extend(['--component', component])
+          for target in targets:
+              command.extend(['--target', target])
+          print(' '.join(shlex.quote(item) for item in command))
+          print(f"echo RUSTUP_TOOLCHAIN={shlex.quote(channel)} >> $GITHUB_ENV")
+          PY
+          bash /tmp/servo-rustup-install.sh
+
+      - name: Cache Cargo qualification state
+        if: steps.existing.outputs.passed != 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/servo-probe-cargo
+          key: d0a01-v3-${{ runner.os }}-670ae8a70801b162e186f81cbb5bdd2d59c39108-${{ hashFiles('.servo-source/Cargo.lock', 'manifests/servo-api-requirements.v1.json') }}
+
+      - name: Run compile-only compatibility qualification
+        if: steps.existing.outputs.passed != 'true'
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target/servo-probe-cargo
+          CARGO_TERM_COLOR: never
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf target/servo-compatibility
+          python3 tools/verify_servo_compatibility.py \
+            --servo-root .servo-source \
+            --requirements manifests/servo-api-requirements.v1.json \
+            --output target/servo-compatibility \
+            --probe-manifest target/servo-compatibility/probe-result.json \
+            --timeout-seconds 14400
+          python3 tools/apply_d0a01_checkpoint.py \
+            --repository-root . \
+            --result-root target/servo-compatibility \
+            --servo-root .servo-source
+          cargo check --manifest-path experiments/servo-embedder-probe/Cargo.toml
+
+      - name: Install desktop control-plane toolchain
+        if: steps.existing.outputs.passed != 'true'
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Revalidate desktop product graph
+        if: steps.existing.outputs.passed != 'true'
+        env:
+          RUSTUP_TOOLCHAIN: "1.93.0"
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Commit passing qualification and remove all materializers
+        if: steps.existing.outputs.passed != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .servo-source target/servo-compatibility target/servo-probe-cargo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/materialize-d0a01.yml \
+            .github/workflows/materialize-d0a01-v2.yml
+          git rm .github/workflows/materialize-d0a01-v3.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: qualify pinned Servo embedder API boundary"
+          git push --force-with-lease origin HEAD:codex/d0a01-servo-compatibility
