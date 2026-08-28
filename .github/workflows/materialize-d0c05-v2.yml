@@ -79,9 +79,9 @@ jobs:
           path.write_text(text, encoding='utf-8')
           PY
 
-      - name: Normalize lock and formatting
+      - name: Validate audited lock and normalize formatting
         run: |
-          cargo generate-lockfile
+          cargo metadata --locked --format-version 1 > /dev/null
           cargo fmt --all
 
       - name: Validate candidate before committing
