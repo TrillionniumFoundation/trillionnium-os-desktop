@@ -1,0 +1,43 @@
+{
+  "schema": "trillionnium.desktop.d0c04-candidate.v1",
+  "plan_revision": "2026-08-28-d5",
+  "work_package": "TOS-D0C-04",
+  "branch": "codex/d0c04-rust-product-v2",
+  "base_work_package": "TOS-D0C-03",
+  "status": "SOURCE_IMPLEMENTED_EXACT_HEAD_RUST_VALIDATION_REQUIRED",
+  "components": [
+    "crates/hepta-agent-port",
+    "crates/hepta-agent-transport",
+    "crates/hepta-browser-codec",
+    "apps/hepta-browserd"
+  ],
+  "source_properties": {
+    "connected_stream_only": true,
+    "requests_per_connection": 1,
+    "handler_invocations_per_connection": 1,
+    "responses_per_connection": 1,
+    "canonical_request_required": true,
+    "response_identity_owned_by_bridge": true,
+    "late_result_committed": false,
+    "potential_external_effect_default_denied": true,
+    "listener_created": false,
+    "browser_actor_connected": false,
+    "servo_called": false,
+    "external_effect_authorized": false
+  },
+  "validation": {
+    "source_validator": "tools/validate_d0c04_rust_product.py",
+    "workflow": ".github/workflows/d0c04-rust-product.yml",
+    "cargo_fmt": "UNEXECUTED",
+    "cargo_clippy": "UNEXECUTED",
+    "cargo_test": "UNEXECUTED",
+    "browserd_self_check": "UNEXECUTED",
+    "merge_ready": false
+  },
+  "promotion_requires": [
+    "exact_head_Rust_1_93_format_clippy_tests_and_self_check",
+    "atomic_update_of_CURRENT_STATE_and_repository_state",
+    "review_of_generated_lockfile_and_dependency_allowlist",
+    "no_listener_no_Servo_no_effect_claim_recheck"
+  ]
+}
