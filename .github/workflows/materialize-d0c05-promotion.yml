@@ -45,25 +45,27 @@ jobs:
               r'    if docs_manifest\.get\("transport_core_source_present"\) is not True:\n'
               r'        fail\("docs manifest does not record the D0C-02 transport source"\)\n'
           )
-          listener_replacement = '''    if docs_manifest.get("authenticated_agent_listener_implemented") is not True:
-              fail("docs manifest does not record the D0C-05 custody implementation")
-          if docs_manifest.get("authenticated_agent_listener_enabled") is not False:
-              fail("the product Agent listener must remain disabled before the D1/D3 gate")
-          if docs_manifest.get("agent_port_enable_marker_shipped") is not False:
-              fail("the product must not ship the AgentPort enable marker")
-          custody = load_json(ROOT / "contracts/agent-port-custody.v1.json")
-          if custody.get("status") != "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER":
-              fail("D0C-05 custody contract is not host validated")
-          activation = custody.get("activation", {})
-          if activation.get("enabled_by_default") is not False:
-              fail("D0C-05 custody enables the socket by default")
-          if activation.get("marker_shipped") is not False:
-              fail("D0C-05 custody ships the enable marker")
-          if activation.get("tcp_listener") is not False:
-              fail("D0C-05 custody exposes TCP")
-          if docs_manifest.get("transport_core_source_present") is not True:
-              fail("docs manifest does not record the D0C-02 transport source")
-          '''
+          listener_replacement = "\n".join([
+              '    if docs_manifest.get("authenticated_agent_listener_implemented") is not True:',
+              '        fail("docs manifest does not record the D0C-05 custody implementation")',
+              '    if docs_manifest.get("authenticated_agent_listener_enabled") is not False:',
+              '        fail("the product Agent listener must remain disabled before the D1/D3 gate")',
+              '    if docs_manifest.get("agent_port_enable_marker_shipped") is not False:',
+              '        fail("the product must not ship the AgentPort enable marker")',
+              '    custody = load_json(ROOT / "contracts/agent-port-custody.v1.json")',
+              '    if custody.get("status") != "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER":',
+              '        fail("D0C-05 custody contract is not host validated")',
+              '    activation = custody.get("activation", {})',
+              '    if activation.get("enabled_by_default") is not False:',
+              '        fail("D0C-05 custody enables the socket by default")',
+              '    if activation.get("marker_shipped") is not False:',
+              '        fail("D0C-05 custody ships the enable marker")',
+              '    if activation.get("tcp_listener") is not False:',
+              '        fail("D0C-05 custody exposes TCP")',
+              '    if docs_manifest.get("transport_core_source_present") is not True:',
+              '        fail("docs manifest does not record the D0C-02 transport source")',
+              '',
+          ])
           text, count = listener_pattern.subn(listener_replacement, text, count=1)
           if count != 1:
               raise SystemExit(f'obsolete listener assertion replacement count={count}')
@@ -75,24 +77,27 @@ jobs:
               r'    if "UNEXECUTED" not in evidence or "not merge-ready" not in evidence:\n'
               r'        fail\("D0C-02 evidence must record the unexecuted Rust validation ceiling"\)\n'
           )
-          evidence_replacement = '''    transport_evidence = load_json(
-              ROOT / "docs/evidence/generated/d0c02-rust193-host-result.json"
-          )
-          if transport_evidence.get("status") != "PASS":
-              fail("D0C-02 machine evidence is not host validated")
-          if transport_evidence.get("product_listener_created") is not False:
-              fail("D0C-02 machine evidence claims a product listener")
-          if transport_evidence.get("browser_actor_dispatched") is not False:
-              fail("D0C-02 machine evidence claims BrowserActor dispatch")
-          if transport_evidence.get("servo_called") is not False:
-              fail("D0C-02 machine evidence claims Servo execution")
-          if transport_evidence.get("external_effect_authorized") is not False:
-              fail("D0C-02 machine evidence claims effect authority")
-          '''
+          evidence_replacement = "\n".join([
+              '    transport_evidence = load_json(',
+              '        ROOT / "docs/evidence/generated/d0c02-rust193-host-result.json"',
+              '    )',
+              '    if transport_evidence.get("status") != "PASS":',
+              '        fail("D0C-02 machine evidence is not host validated")',
+              '    if transport_evidence.get("product_listener_created") is not False:',
+              '        fail("D0C-02 machine evidence claims a product listener")',
+              '    if transport_evidence.get("browser_actor_dispatched") is not False:',
+              '        fail("D0C-02 machine evidence claims BrowserActor dispatch")',
+              '    if transport_evidence.get("servo_called") is not False:',
+              '        fail("D0C-02 machine evidence claims Servo execution")',
+              '    if transport_evidence.get("external_effect_authorized") is not False:',
+              '        fail("D0C-02 machine evidence claims effect authority")',
+              '',
+          ])
           text, count = evidence_pattern.subn(evidence_replacement, text, count=1)
           if count != 1:
               raise SystemExit(f'obsolete D0C-02 evidence replacement count={count}')
 
+          compile(text, str(path), 'exec')
           path.write_text(text, encoding='utf-8')
           PY
 
