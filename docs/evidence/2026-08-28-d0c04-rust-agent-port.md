@@ -32,3 +32,16 @@ cargo run --locked -p hepta-browserd -- --self-check
 There is no product listener, TaskFlow mapping, BrowserActor, Servo call,
 visible frame, external navigation authority, external effect, Debian image or
 release claim.
+
+
+## Host-validation promotion
+
+Product tree `5abd71db79b75e400c1c1d7cb0eac85a68041cae` passed exact Rust 1.93.0 formatting, Clippy with
+warnings denied, all 45 workspace tests, and the integrated 10-check browserd
+self-check in workflow run `33179346462`. The five AgentPort tests
+cover exactly-once request binding, pre-dispatch canonical rejection, default
+denial of external navigation, late-result suppression, and handler depth
+bounds. No listener, BrowserActor, Servo call, or external-effect authority was
+introduced.
+
+Machine evidence: `docs/evidence/generated/d0c04-rust193-host-result.json`.

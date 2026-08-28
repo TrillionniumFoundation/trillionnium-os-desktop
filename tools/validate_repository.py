@@ -43,6 +43,7 @@ REQUIRED_PATHS = [
     "contracts/agent-port-bridge.v1.json",
     "docs/architecture/CONNECTED_AGENT_PORT_BRIDGE.md",
     "docs/evidence/2026-08-28-d0c04-rust-agent-port.md",
+    "docs/evidence/generated/d0c04-rust193-host-result.json",
     "docs/plan/D0C04_EXECUTION_CHECKPOINT-2026-08-28.md",
     "manifests/d0c04-candidate.json",
     "tools/validate_d0c04_rust_product.py",

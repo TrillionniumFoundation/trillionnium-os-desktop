@@ -172,7 +172,27 @@ def check_contract_and_browserd(checks: list[str]) -> None:
     require(ceiling.get("external_effect_authorized") is False, "effect authority opened")
     require(ceiling.get("browser_actor_connected") is False, "BrowserActor claim opened")
     require(ceiling.get("servo_called") is False, "Servo claim opened")
-    require(contract.get("validation", {}).get("merge_ready") is False, "candidate prematurely merge-ready")
+    validation = contract.get("validation", {})
+    status = contract.get("status")
+    require(
+        status in {
+            "SOURCE_IMPLEMENTED_EXACT_HEAD_RUST_VALIDATION_REQUIRED",
+            "HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR",
+        },
+        "unknown AgentPort contract status",
+    )
+    if status == "HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR":
+        require(validation.get("merge_ready") is True, "host-validated contract must be merge-ready")
+        require(validation.get("cargo_fmt") == "PASS", "host validation must record cargo fmt")
+        require(validation.get("cargo_clippy") == "PASS_WARNINGS_DENIED", "host validation must record Clippy")
+        require(validation.get("cargo_test") == "PASS_45", "host validation must record workspace tests")
+        require(validation.get("agent_port_tests") == "PASS_5", "host validation must record AgentPort tests")
+        require(validation.get("browserd_self_check") == "PASS_10", "host validation must record self-check")
+        machine = validation.get("machine_evidence")
+        require(isinstance(machine, str) and (ROOT / machine).is_file(), "machine evidence is missing")
+        checks.append("contract:host-validation")
+    else:
+        require(validation.get("merge_ready") is False, "source-only candidate must not be merge-ready")
     browserd_manifest = parse_toml("apps/hepta-browserd/Cargo.toml")
     require(browserd_manifest.get("dependencies", {}).get("hepta-agent-port", {}).get("path") == "../../crates/hepta-agent-port", "browserd AgentPort dependency missing")
     browserd = read("apps/hepta-browserd/src/lib.rs")
@@ -189,9 +209,10 @@ def validate() -> dict:
     check_manifest(checks)
     check_source(checks)
     check_contract_and_browserd(checks)
+    promotion = parse_json("contracts/agent-port-bridge.v1.json").get("validation", {})
     return {
         "schema": "trillionnium.desktop.d0c04-rust-source-audit.v1",
-        "status": "PASS_SOURCE_STATIC_ONLY",
+        "status": "PASS_HOST_VALIDATED_STATIC_RECHECK" if promotion.get("merge_ready") else "PASS_SOURCE_STATIC_ONLY",
         "checks_passed": len(checks),
         "checks": checks,
         "source_sha256": {
@@ -199,11 +220,11 @@ def validate() -> dict:
             "contract": sha256("contracts/agent-port-bridge.v1.json"),
             "cargo_lock": sha256("Cargo.lock"),
         },
-        "cargo_fmt": "UNEXECUTED",
-        "cargo_clippy": "UNEXECUTED",
-        "cargo_test": "UNEXECUTED",
-        "browserd_self_check": "UNEXECUTED",
-        "merge_ready": False,
+        "cargo_fmt": promotion.get("cargo_fmt", "UNEXECUTED"),
+        "cargo_clippy": promotion.get("cargo_clippy", "UNEXECUTED"),
+        "cargo_test": promotion.get("cargo_test", "UNEXECUTED"),
+        "browserd_self_check": promotion.get("browserd_self_check", "UNEXECUTED"),
+        "merge_ready": promotion.get("merge_ready", False),
         "listener_created": False,
         "browser_actor_called": False,
         "servo_called": False,

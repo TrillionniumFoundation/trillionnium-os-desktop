@@ -1,9 +1,5 @@
 {
-  "schema": "trillionnium.desktop.d0c04-candidate.v1",
-  "plan_revision": "2026-08-28-d5",
-  "work_package": "TOS-D0C-04",
-  "branch": "codex/d0c04-rust-product-v3",
-  "status": "SOURCE_IMPLEMENTED_EXACT_HEAD_RUST_VALIDATION_REQUIRED",
+  "branch": "codex/d0c04-host-validated-v4",
   "components": [
     "crates/hepta-agent-port",
     "crates/hepta-agent-transport",
@@ -11,27 +7,36 @@
     "crates/hepta-browser-contracts",
     "apps/hepta-browserd"
   ],
+  "plan_revision": "2026-08-28-d5",
   "properties": {
-    "connected_stream_only": true,
-    "maximum_requests_per_connection": 1,
-    "maximum_handler_invocations_per_connection": 1,
-    "maximum_responses_per_connection": 1,
-    "canonical_request_required": true,
-    "response_identity_owned_by_bridge": true,
-    "late_result_committed": false,
-    "potential_external_effect_default_denied": true,
-    "listener_created": false,
     "browser_actor_connected": false,
-    "servo_called": false,
-    "external_effect_authorized": false
+    "canonical_request_required": true,
+    "connected_stream_only": true,
+    "external_effect_authorized": false,
+    "late_result_committed": false,
+    "listener_created": false,
+    "maximum_handler_invocations_per_connection": 1,
+    "maximum_requests_per_connection": 1,
+    "maximum_responses_per_connection": 1,
+    "potential_external_effect_default_denied": true,
+    "response_identity_owned_by_bridge": true,
+    "servo_called": false
   },
+  "schema": "trillionnium.desktop.d0c04-candidate.v1",
+  "status": "HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR",
   "validation": {
+    "agent_port_tests": "PASS_5",
+    "browserd_self_check": "PASS_10",
+    "cargo_clippy": "PASS_WARNINGS_DENIED",
+    "cargo_fmt": "PASS",
+    "cargo_test": "PASS_45",
+    "machine_evidence": "../docs/evidence/generated/d0c04-rust193-host-result.json",
+    "materialization_workflow_job_id": 98876202259,
+    "materialization_workflow_run_id": 33179346462,
+    "merge_ready": true,
     "source_validator": "tools/validate_d0c04_rust_product.py",
-    "workflow": ".github/workflows/d0c04-rust-product.yml",
-    "cargo_fmt": "UNEXECUTED",
-    "cargo_clippy": "UNEXECUTED",
-    "cargo_test": "UNEXECUTED",
-    "browserd_self_check": "UNEXECUTED",
-    "merge_ready": false
-  }
+    "standard_workflow": ".github/workflows/ci.yml",
+    "validated_source_commit": "5abd71db79b75e400c1c1d7cb0eac85a68041cae"
+  },
+  "work_package": "TOS-D0C-04"
 }
