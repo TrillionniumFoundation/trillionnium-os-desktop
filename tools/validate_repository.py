@@ -15,6 +15,7 @@ ERRORS: list[str] = []
 EXPECTED_WORKSPACE_MEMBERS = [
     "apps/hepta-browserd",
     "crates/hepta-agent-transport",
+    "crates/hepta-browser-codec",
     "crates/trillionnium-contract-core",
     "crates/hepta-browser-contracts",
     "crates/hepta-session-core",
@@ -28,10 +29,19 @@ REQUIRED_PATHS = [
     "LICENSE",
     "contracts/README.md",
     "contracts/agent-transport.v1.json",
+    "contracts/browser-codec.v1.json",
+    "contracts/browser-wire.v1.schema.json",
+    "contracts/browser-response.v1.schema.json",
     "crates/hepta-agent-transport/Cargo.toml",
     "crates/hepta-agent-transport/src/lib.rs",
+    "crates/hepta-browser-codec/Cargo.toml",
+    "crates/hepta-browser-codec/src/lib.rs",
     "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md",
+    "docs/architecture/CANONICAL_BROWSER_CODEC.md",
+    "docs/architecture/RUST_BROWSER_CODEC.md",
     "docs/evidence/2026-08-28-d0c02-authenticated-uds.md",
+    "docs/evidence/2026-08-28-d0c03-rust-product-codec-source.md",
+    "tools/validate_rust_browser_codec.py",
     "manifests/cargo-external-allowlist.json",
     "manifests/README.md",
 ]
@@ -72,8 +82,8 @@ def check_json_files() -> None:
                 )
             else:
                 schema_ids[schema_id] = path
-    if len(schema_ids) != 4:
-        fail(f"expected 4 JSON schemas, found {len(schema_ids)}")
+    if len(schema_ids) != 6:
+        fail(f"expected 6 JSON schemas, found {len(schema_ids)}")
 
 
 def check_plan_and_manifests() -> None:

@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use sha2::{Digest, Sha256};
 
-use crate::json::{decode_unique, JsonError, JsonObject, JsonValue};
+use crate::json::{JsonError, JsonObject, JsonValue, decode_unique};
 use crate::{BROWSER_API_PROTOCOL, MAX_MESSAGE_BYTES};
 
 const MAX_IDENTIFIER_BYTES: usize = 128;

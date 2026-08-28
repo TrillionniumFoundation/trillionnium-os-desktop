@@ -404,7 +404,10 @@ impl fmt::Display for JsonError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::MessageSize { length, maximum } => {
-                write!(formatter, "JSON message length {length} exceeds bound {maximum}")
+                write!(
+                    formatter,
+                    "JSON message length {length} exceeds bound {maximum}"
+                )
             }
             Self::Utf8Bom => formatter.write_str("UTF-8 BOM is forbidden"),
             Self::InvalidUtf8 => formatter.write_str("JSON message is not valid UTF-8"),
@@ -427,7 +430,10 @@ impl fmt::Display for JsonError {
                 write!(formatter, "invalid JSON integer at byte {position}")
             }
             Self::FloatingPointForbidden(position) => {
-                write!(formatter, "floating-point JSON number at byte {position} is forbidden")
+                write!(
+                    formatter,
+                    "floating-point JSON number at byte {position} is forbidden"
+                )
             }
             Self::IntegerOutOfRange(position) => {
                 write!(formatter, "JSON integer at byte {position} is out of range")
@@ -449,7 +455,10 @@ impl fmt::Display for JsonError {
                 write!(formatter, "JSON nesting exceeds maximum {maximum}")
             }
             Self::ContainerItems { maximum } => {
-                write!(formatter, "JSON container item count exceeds maximum {maximum}")
+                write!(
+                    formatter,
+                    "JSON container item count exceeds maximum {maximum}"
+                )
             }
         }
     }

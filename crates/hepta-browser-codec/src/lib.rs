@@ -14,8 +14,8 @@ mod model;
 pub use json::{JsonError, JsonObject, JsonValue};
 pub use model::{
     BrowserErrorCode, BrowserOperation, BrowserRequest, BrowserResponse, BrowserWireError,
-    CodecError, DecodedMessage, EffectClass, ElementReference, NavigationTarget,
-    ObservationField, PageAction, ProfilePersistence, ProfileSpec, WaitCondition,
+    CodecError, DecodedMessage, EffectClass, ElementReference, NavigationTarget, ObservationField,
+    PageAction, ProfilePersistence, ProfileSpec, WaitCondition,
 };
 
 pub const BROWSER_API_PROTOCOL: &str = "trillionnium.desktop.browser-api.v1";

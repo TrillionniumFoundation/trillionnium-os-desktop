@@ -2,14 +2,11 @@ use std::collections::BTreeMap;
 
 use super::*;
 
-const GOLDEN_HEALTH: &[u8] =
-    include_bytes!("../../../contracts/golden/golden-health-1.wire.json");
-const GOLDEN_CREATE: &[u8] =
-    include_bytes!("../../../contracts/golden/golden-create-1.wire.json");
+const GOLDEN_HEALTH: &[u8] = include_bytes!("../../../contracts/golden/golden-health-1.wire.json");
+const GOLDEN_CREATE: &[u8] = include_bytes!("../../../contracts/golden/golden-create-1.wire.json");
 const GOLDEN_NAVIGATE: &[u8] =
     include_bytes!("../../../contracts/golden/golden-navigate-1.wire.json");
-const GOLDEN_CLICK: &[u8] =
-    include_bytes!("../../../contracts/golden/golden-click-1.wire.json");
+const GOLDEN_CLICK: &[u8] = include_bytes!("../../../contracts/golden/golden-click-1.wire.json");
 const GOLDEN_RESPONSE_OK: &[u8] =
     include_bytes!("../../../contracts/golden/golden-response-ok-1.wire.json");
 const GOLDEN_RESPONSE_ERROR: &[u8] =
@@ -36,7 +33,10 @@ fn canonical_golden_responses_round_trip_byte_exactly() {
 #[test]
 fn navigation_and_click_are_potential_external_effects() {
     assert_eq!(
-        decode_request(GOLDEN_NAVIGATE).unwrap().value.effect_class(),
+        decode_request(GOLDEN_NAVIGATE)
+            .unwrap()
+            .value
+            .effect_class(),
         EffectClass::PotentialExternalEffect
     );
     assert_eq!(
