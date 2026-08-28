@@ -1,0 +1,99 @@
+name: verify-and-merge-d0c04-connected-agent-port
+
+on:
+  push:
+    branches:
+      - codex/d0c04-connected-agent-port
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/src/main.rs"
+      - "manifests/repository-state.json"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: verify-and-merge-d0c04-connected-agent-port
+  cancel-in-progress: false
+
+jobs:
+  verify-and-merge:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out materialized candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0c04-connected-agent-port
+
+      - name: Assert product graph and checkpoint ordering
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -f .github/workflows/materialize-d0c04.yml
+          grep -Fq '"crates/hepta-browser-agent-port"' Cargo.toml
+          grep -Fq 'hepta-browser-agent-port' apps/hepta-browserd/Cargo.toml
+          grep -Fq 'hepta_browser_agent_port::self_check' apps/hepta-browserd/src/main.rs
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          servo = json.loads(Path('manifests/servo-embedder-compat.json').read_text())
+          state = json.loads(Path('manifests/repository-state.json').read_text())
+          contract = json.loads(Path('contracts/agent-port-dispatch.v1.json').read_text())
+          assert servo['status'] == 'PASS'
+          assert servo['source']['actual_commit'] == '670ae8a70801b162e186f81cbb5bdd2d59c39108'
+          checkpoints = {
+              item['id']: item
+              for item in state['implementation_checkpoints']
+              if isinstance(item, dict) and 'id' in item
+          }
+          assert checkpoints['TOS-D0A-01']['status'] == 'PASS_COMPILE_ONLY_NO_RUNTIME'
+          assert checkpoints['TOS-D0C-04']['status'] == 'IMPLEMENTED_HOST_VALIDATED_NO_LISTENER'
+          assert contract['listener']['enabled'] is False
+          assert contract['response_binding']['handler_can_forge_wire_binding'] is False
+          assert contract['effect_policy']['bridge_authorizes_external_effect'] is False
+          PY
+
+      - name: Install pinned desktop Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Revalidate full product workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          git diff --check main...HEAD
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Remove temporary verification gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/verify-and-merge-d0c04.yml
+          git commit -m "chore: remove temporary D0C-04 verification gate"
+          git push origin HEAD:codex/d0c04-connected-agent-port
+          echo "candidate_sha=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Squash merge verified D0C-04 checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/pulls/5/merge" \
+            -f merge_method=squash \
+            -f sha="${candidate_sha}"
