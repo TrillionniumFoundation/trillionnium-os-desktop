@@ -63,28 +63,35 @@ or unrestricted update authority.
 | `TOS-D-007` | Trusted apps use distinct synthetic HTTPS tuple origins. | No `hepta://app/<publisher>/<id>` path-only same-origin ambiguity. |
 | `TOS-D-008` | Revisions are layered. | Ordinary DOM commits advance `mutation_epoch`, not global document identity. |
 | `TOS-D-009` | Human/Agent arbitration is a formal state machine with monotonic leases. | Focus, IME, modal, navigation, capability, cancellation, and recovery transitions are testable. |
-| `TOS-D-010` | UI gestures are not classified as read-only. | Click/type/press/select on external origins are potential external effects. |
+| `TOS-D-010` | UI gestures and navigation are not classified as read-only. | Navigation/click/type/press/select on external origins are potential external effects. |
 | `TOS-D-011` | Browser traffic uses a controlled egress architecture before external interaction is enabled. | DNS, redirects, service workers, WebSocket, QUIC, and actual peer IP are policy inputs. |
 | `TOS-D-012` | WebDriver is development/conformance tooling only unless replaced by an in-process or authenticated UDS adapter. | No production TCP WebDriver listener. |
 | `TOS-D-013` | Desktop and mobile authority models are separate. | Android direct shell/ADB and owner-open crates cannot enter the desktop default graph. |
 | `TOS-D-014` | Evidence and product claims are separate. | Source, schema, host test, or screenshot never proves a booted or releasable product. |
+| `TOS-D-015` | The local AgentPort is packageable but default-disabled. | Unit presence is not an enabled-listener claim; the enable marker is absent until an explicit D1/D3 decision. |
 
 ### 0.2 Current implementation checkpoint
 
-This repository revision implements the D0 foundation:
+The repository is host-validated through `D0C-05`:
 
-- Rust workspace and toolchain lock;
-- neutral contract primitives;
-- browser-domain types and error taxonomy;
-- layered revisions and deterministic arbitration state machine;
-- bounded queue;
-- contract schemas and golden vectors;
-- Servo, Debian, repository-state, and product-boundary manifests;
-- non-networked browserd self-check;
-- CI and repository validation.
+- Rust 1.93 workspace, exact dependency closure, CI, and claim validation;
+- neutral contract primitives and layered revision model;
+- deterministic Agent/human arbitration and bounded queue;
+- authenticated, bounded, nonce/sequence/digest-bound connected AF_UNIX carrier;
+- canonical Browser API codec with recursive duplicate-member rejection;
+- exactly-one connected AgentPort bridge and request-bound response;
+- systemd socket custody, package-created service identities, pidfd/procfs/
+  cgroup/unit peer attestation, and a hardened one-request connection service;
+- default-disabled preset and an enable marker that is intentionally not
+  shipped;
+- contract schemas, golden vectors, independent references, static audits, and
+  exact-head Rust regression evidence.
 
-It does not implement Servo, a listener, a Debian image, external effects,
-signed apps, capabilities, or release signing.
+The host checkpoint proves source behavior, package mappings, unit syntax, and
+default-closed custody. It does **not** prove a booted or enabled listener.
+Servo, a Debian product image, BrowserActor, external effects, signed apps,
+capabilities, update authority, and release signing remain unimplemented or
+unclaimed.
 
 ## 1. Normative plan assembly
 
@@ -115,46 +122,58 @@ implementation detail; they are not optional commentary.
 
 | Stage | Current state | Promotion gate |
 | --- | --- | --- |
-| `D0R` repository/reproducibility | foundation implemented | resolved Debian snapshot and automated graph/claim checks remain required for D1 |
-| `D0C` contracts/control core | `D0C-01` implemented | `D0C-02` authenticated bounded UDS and `D0C-03` receipt journal |
-| `D0A` Servo compatibility | pure state machine implemented | `D0A-01` pinned Servo embedder spike, then `D0A-02` trusted-shell/content composition |
-| `D1` Debian QEMU substrate | not started | reproducible boot into supervised Wayland placeholder session |
-| `D2` headed Servo surface | not started | one visible content WebView, native input, crash/restart evidence |
-| `D3` PageOwner/AgentPort | not started | authenticated semantic operations and receipts on local fixtures |
+| `D0R` repository/reproducibility | foundation implemented; signed Debian input closure partial | resolve signed snapshot, archive keys, package closure, and deterministic builder for D1 |
+| `D0C` contracts/control core | D0C-01 through D0C-05 host validated | D0C-06 durable receipt journal; D1 live PID 1 socket corpus before enablement |
+| `D0A` Servo compatibility | D0A-00 state machine implemented | D0A-01 exact-pin compile gate, then D0A-02 headed workspace/runtime evidence |
+| `D1` Debian QEMU substrate | not demonstrated | reproducible boot into supervised Wayland placeholder plus test-only D0C-05 activation corpus |
+| `D2` headed Servo surface | not demonstrated | one visible content surface, native input/IME, popup refusal, crash/restart evidence |
+| `D3` PageOwner/BrowserActor | not started | authorized semantic operations, durable receipts, explicit development-profile AgentPort activation |
 | `D4` human/Agent collaboration | not started | same live page, formal focus/IME/preemption/recovery corpus |
-| `D5` signed trusted apps | not started | isolated synthetic origins and fail-closed signature/capability checks |
+| `D5` signed trusted apps | not started | isolated synthetic origins and fail-closed signature/revocation/capability checks |
 | `D6` capabilities/egress/workers | not started | permit-bound services and complete browser egress mediation |
 | `D7` recovery/update/effects | not started | signed rollback plus honest indeterminate-effect reconciliation |
 | `D8` fixed-hardware beta | not started | reproducible hardware, security, accessibility, performance, and recovery qualification |
 
-No later stage may be used to waive an earlier trust, contract, reproducibility,
-or evidence gate. A source file is not completion; only the observable exit in
+No later stage may waive an earlier trust, contract, reproducibility, or
+evidence gate. A source file is not completion; only the observable exit in
 `plan/WORK_PACKAGES_AND_GATES.md` advances a work package.
 
 ## 3. Immediate execution lock
 
 The next implementation sequence is fixed:
 
-1. `D0A-01`: compile the pinned Servo commit and prove one headed content
-   WebView, event-loop pumping, native input, navigation callbacks, and process
-   topology on the development host.
-2. `D0A-02`: compose trusted native/system chrome and the single untrusted
-   content WebView in one visible workspace without shared DOM authority.
-3. `D0C-02`: implement local authenticated UDS transport with peer identity,
-   per-session nonce binding, bounded strict frames, absolute deadlines,
-   cancellation, and response binding; expose no TCP/WebDriver product port.
-4. `D1-01`: resolve and verify the Debian repository snapshot, then build the
-   first deterministic QEMU image and supervised Wayland placeholder session.
+1. Preserve the D0C-02 through D0C-05 exact-head regression suite and merge the
+   default-disabled socket-custody product without an enable marker.
+2. `D0A-01`: compile exact Servo commit
+   `670ae8a70801b162e186f81cbb5bdd2d59c39108` using Servo's own toolchain,
+   official headed shell, and external embedder API probes. Treat this as
+   compile compatibility only.
+3. `D0R-02` / `D1-01`: resolve signed Debian inputs, build two deterministic
+   image candidates, boot QEMU into systemd/Wayland, and run the D0C-05 PID 1
+   activation corpus in a test-only image while keeping the product image
+   default-disabled.
+4. `D0A-02` / D2: prove trusted workspace composition, one Servo content
+   surface, local fixture first frame, pointer/keyboard/IME, popup refusal,
+   process topology, and crash recovery.
+5. `D0C-06`: implement the durable receipt journal before BrowserActor
+   operation claims.
+6. D3: bind BrowserActor/PageOwner, receipts, intended local Agent principal,
+   and explicitly selected development-profile AgentPort activation on local
+   fixtures.
 
-`D0A-01` and contract-only parts of `D0C-02` may proceed in parallel. External
-interactive browsing, persistent credentials, signed app installation, and
-external effects remain closed until their explicit gates are satisfied.
+Servo compile work and signed Debian input resolution may proceed in parallel.
+External interactive browsing, persistent credentials, signed app installation,
+capabilities, update authority, and external effects remain closed until their
+explicit D5–D8 gates are satisfied.
 
 ## 4. Claim boundary
 
-The current repository proves only the checked-in D0 foundation and whatever
-its local/CI checks directly execute. It does not prove Servo integration, a
-bootable image, hardware support, AgentPort authentication, network mediation,
-signed applications, capability enforcement, Secure Boot, rollback, or beta
-readiness. Every promotion must update `CURRENT_STATE.md`, repository-state,
-contracts/manifests, tests, and evidence references atomically.
+The current repository proves the checked-in D0 foundation and D0C-02 through
+D0C-05 host behavior. It does not prove Servo integration, a visible frame, a
+bootable image, live PID 1 socket activation, hardware support, BrowserActor,
+network mediation, signed applications, capability enforcement, Secure Boot,
+rollback, or beta readiness. Compile compatibility does not imply runtime;
+QEMU does not imply bare metal; source signing code does not prove key custody;
+and a lower evidence tier never implies a higher product claim. Every
+promotion must update `CURRENT_STATE.md`, repository-state, contracts/manifests,
+tests, and evidence references atomically.
