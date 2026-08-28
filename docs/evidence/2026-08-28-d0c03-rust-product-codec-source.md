@@ -1,7 +1,7 @@
 # D0C-03 Rust product codec source checkpoint
 
-**Date:** 2026-08-28  
-**Evidence level:** source/static plus independent executable reference  
+**Date:** 2026-08-28
+**Evidence level:** source/static plus independent executable reference
 **Merge-ready:** no
 
 ## Implemented
@@ -56,3 +56,10 @@ cargo run --locked -p hepta-browserd -- --self-check
 
 The source checkpoint does not claim a listener, BrowserActor dispatch, Servo,
 navigation, rendering or external-effect authority.
+
+
+## Exact-head Rust 1.93 host validation
+
+Validated source commit: `4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb`
+Workflow run: `33176689873`
+Result: repository validation, rustfmt, Clippy `-D warnings`, full workspace tests and `hepta-browserd --self-check` all passed. Machine evidence: `generated/d0c03-rust193-host-result.json`. This remains a no-listener, no-BrowserActor, no-Servo and no-effect checkpoint.

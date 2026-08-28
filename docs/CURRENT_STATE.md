@@ -50,3 +50,8 @@ D0C-02 is now a host-validated carrier core, not a listener claim.
    `670ae8a70801b162e186f81cbb5bdd2d59c39108`, then D0A-02.
 5. Resolve signed Debian inputs before D1-01.
 6. Keep D0C-05 listener custody disabled until all preceding gates pass.
+
+
+## 2026-08-28 D0C-03 Rust 1.93 host-validation checkpoint
+
+The canonical Browser API codec at `4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb` passed repository validation, Rust 1.93.0 formatting, Clippy with warnings denied, all workspace tests, the browserd self-check, the 27-case independent reference corpus and the static source/contract audit in workflow run `33176689873`. It creates no listener, dispatches no BrowserActor, invokes no Servo runtime and authorizes no external effect.

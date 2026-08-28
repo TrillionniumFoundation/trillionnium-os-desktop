@@ -153,8 +153,14 @@ def main() -> int:
     require(validation["rust_source_audit"] == "PASS",
             "contract records Rust source audit PASS", checks)
     for field in ["rust_fmt", "rust_clippy", "rust_tests", "browserd_self_check"]:
-        require(validation[field] == "UNEXECUTED", f"claim ceiling keeps {field} UNEXECUTED", checks)
-    require(validation["merge_ready"] is False, "contract remains non-merge-ready", checks)
+        require(validation[field] == "PASS", f"host validation records {field} PASS", checks)
+    require(validation["merge_ready"] is True, "contract is merge-ready after exact-head validation", checks)
+    host_result = ROOT / contract["rust_host_result"]
+    require(host_result.is_file(), "exact-head Rust host result exists", checks)
+    host = json.loads(host_result.read_text())
+    require(host["status"] == "PASS", "exact-head Rust host result is PASS", checks)
+    require(host["validated_source_sha"] == "4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb",
+            "host result binds the tested source commit", checks)
     require(contract["listener"] == {"enabled": False, "public_network": False},
             "codec contract creates no listener", checks)
 
@@ -174,10 +180,10 @@ def main() -> int:
         "executed": {
             "static_contract_source_audit": True,
             "golden_vector_canonicality": True,
-            "cargo_fmt": False,
-            "cargo_clippy": False,
-            "cargo_test": False,
-            "browserd_self_check": False,
+            "cargo_fmt": True,
+            "cargo_clippy": True,
+            "cargo_test": True,
+            "browserd_self_check": True,
         },
         "product_listener_created": False,
         "browser_dispatched": False,
