@@ -103,7 +103,6 @@ for package in "${required_packages[@]}"; do
     package_names+=("$package")
   fi
 done
-IFS=, read -r -a _unused <<< ""
 include=$(IFS=,; echo "${package_names[*]}")
 mapfile -t mirrors < <(sed -e '/^[[:space:]]*$/d' "$sources_list")
 if (( ${#mirrors[@]} == 0 )); then
@@ -242,6 +241,7 @@ image="$artifacts/trillionnium-d1.ext4"
 truncate -s "${image_size_mib}M" "$image"
 export E2FSPROGS_FAKE_TIME="$source_epoch"
 mke2fs \
+  -F \
   -q \
   -t ext4 \
   -b 4096 \
