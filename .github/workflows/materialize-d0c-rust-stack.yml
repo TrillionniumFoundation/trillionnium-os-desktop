@@ -1,0 +1,137 @@
+name: materialize-d0c-rust-stack
+
+on:
+  push:
+    branches:
+      - codex/d0c02-transport-v2
+    paths:
+      - ".github/workflows/materialize-d0c-rust-stack.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0c-rust-stack
+  cancel-in-progress: false
+
+jobs:
+  materialize-and-qualify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0c02-transport-v2
+          fetch-depth: 0
+
+      - name: Install exact Rust 1.93.0
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Fetch and verify reviewed D0C product payload
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/b617f1013d84770a74129895e4be1f3ce3960c17/.bootstrap-d0c/payload.tar.gz.b64 \
+            --output /tmp/d0c-materialize.tar.gz.b64
+          base64 -d /tmp/d0c-materialize.tar.gz.b64 > /tmp/d0c-materialize.tar.gz
+          echo "787c4df8648ab4dd3c0795de3e04f3f1c11b913215cd81f0cc4bf9449b316ad9  /tmp/d0c-materialize.tar.gz" | sha256sum -c -
+          mkdir -p /tmp/d0c
+          tar -xzf /tmp/d0c-materialize.tar.gz -C /tmp/d0c
+
+      - name: Apply D0C-03 and D0C-04 Rust product overlay
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence/generated
+          python3 /tmp/d0c/apply_to_checkout.py "$GITHUB_WORKSPACE" \
+            --apply --allow-dirty \
+            --report docs/evidence/generated/d0c-rust-overlay-application.json
+          cp /tmp/d0c/toolchain/tools/verify_cargo_lock_allowlist.py tools/verify_cargo_lock_allowlist.py
+          cp /tmp/d0c/toolchain/manifests/cargo-external-allowlist-d0c02-baseline.json \
+            manifests/cargo-external-allowlist-d0c02-baseline.json
+
+      - name: Resolve and freeze candidate dependency graph
+        run: |
+          set -euo pipefail
+          cargo generate-lockfile
+          cargo metadata --format-version 1 --locked > /tmp/cargo-metadata.json
+          python3 tools/verify_cargo_lock_allowlist.py \
+            --lock Cargo.lock \
+            --baseline manifests/cargo-external-allowlist-d0c02-baseline.json \
+            --write-candidate manifests/cargo-external-allowlist.d0c-candidate.json \
+            --output-result docs/evidence/generated/d0c-cargo-lock-candidate-result.json
+
+      - name: Format and run preliminary exact-toolchain gate
+        run: |
+          set -euo pipefail
+          cargo fmt --all
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo test --locked -p hepta-browser-codec --all-targets
+          cargo test --locked -p hepta-agent-port --all-targets
+          cargo run --locked -p hepta-browserd -- --self-check | tee /tmp/browserd-self-check.json
+          git diff --check
+
+      - name: Record candidate evidence
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, pathlib, subprocess
+          root = pathlib.Path('.')
+          def sha(path):
+              return hashlib.sha256((root / path).read_bytes()).hexdigest()
+          evidence = {
+              "schema": "trillionnium.desktop.d0c-rust-candidate-gate.v1",
+              "status": "PASS_RUST_1_93_CANDIDATE_ALLOWLIST_REVIEW_REQUIRED",
+              "rust_version": "1.93.0",
+              "source_parent": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+              "cargo_lock_sha256": sha("Cargo.lock"),
+              "codec_source_sha256": sha("crates/hepta-browser-codec/src/lib.rs"),
+              "agent_port_source_sha256": sha("crates/hepta-agent-port/src/lib.rs"),
+              "checks": {
+                  "cargo_fmt": "PASS",
+                  "cargo_clippy_deny_warnings": "PASS",
+                  "cargo_test_workspace_all_targets": "PASS",
+                  "codec_tests": "PASS",
+                  "agent_port_tests": "PASS",
+                  "browserd_self_check": "PASS",
+                  "git_diff_check": "PASS"
+              },
+              "merge_ready": False,
+              "remaining_gate": "review and promote exact Cargo external allowlist, then rerun repository validation and exact-head CI",
+              "authority": {
+                  "listener_enabled": False,
+                  "browser_actor_connected": False,
+                  "servo_connected": False,
+                  "external_effect_authorized": False
+              }
+          }
+          path = root / "docs/evidence/generated/d0c-rust-candidate-gate-result.json"
+          path.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n")
+          PY
+          rm .github/workflows/materialize-d0c-rust-stack.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: materialize D0C-03 and D0C-04 Rust product candidate"
+
+      - name: Re-run full gate against exact committed candidate
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo test --locked -p hepta-browser-codec --all-targets
+          cargo test --locked -p hepta-agent-port --all-targets
+          cargo run --locked -p hepta-browserd -- --self-check
+          git diff --check
+          test -z "$(git status --porcelain)"
+
+      - name: Push exact tested candidate
+        run: git push origin HEAD:codex/d0c02-transport-v2
