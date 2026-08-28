@@ -1,0 +1,142 @@
+name: materialize-d0a01-servo-compatibility-v2
+
+on:
+  push:
+    branches:
+      - codex/d0a01-servo-compatibility
+    paths:
+      - "tools/verify_servo_compatibility_v2.py"
+      - "tools/apply_d0a01_checkpoint.py"
+      - ".github/workflows/materialize-d0a01-v2.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-d0a01-servo-compatibility-v2
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    steps:
+      - name: Check out desktop candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Promote syntax-hardened verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f tools/verify_servo_compatibility.py
+          mv tools/verify_servo_compatibility_v2.py tools/verify_servo_compatibility.py
+          python3 -m py_compile \
+            tools/verify_servo_compatibility.py \
+            tools/apply_d0a01_checkpoint.py
+
+      - name: Install Servo host dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            build-essential clang cmake curl git libclang-dev libdbus-1-dev \
+            libegl1-mesa-dev libfontconfig1-dev libfreetype6-dev \
+            libgl1-mesa-dev libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev libssl-dev libudev-dev \
+            libunwind-dev libwayland-dev libx11-dev libx11-xcb-dev \
+            libxcb1-dev libxkbcommon-dev ninja-build pkg-config python3
+
+      - name: Check out exact Servo pin and toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .servo-source
+          git clone --filter=blob:none --no-checkout https://github.com/servo/servo .servo-source
+          git -C .servo-source checkout --detach 670ae8a70801b162e186f81cbb5bdd2d59c39108
+          test "$(git -C .servo-source rev-parse HEAD)" = \
+            "670ae8a70801b162e186f81cbb5bdd2d59c39108"
+          test -z "$(git -C .servo-source status --porcelain=v1 --untracked-files=no)"
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          value = tomllib.loads(Path('.servo-source/rust-toolchain.toml').read_text())
+          print(value['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal
+          echo "RUSTUP_TOOLCHAIN=$channel" >> "$GITHUB_ENV"
+          echo "SERVO_RUST_CHANNEL=$channel" >> "$GITHUB_ENV"
+
+      - name: Cache Cargo and Servo check state
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/servo-probe-cargo
+          key: d0a01-v2-${{ runner.os }}-670ae8a70801b162e186f81cbb5bdd2d59c39108-${{ hashFiles('.servo-source/Cargo.lock', 'manifests/servo-api-requirements.v1.json') }}
+
+      - name: Run compile-only Servo compatibility gate
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target/servo-probe-cargo
+          CARGO_TERM_COLOR: never
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf target/servo-compatibility
+          python3 tools/verify_servo_compatibility.py \
+            --servo-root .servo-source \
+            --requirements manifests/servo-api-requirements.v1.json \
+            --output target/servo-compatibility \
+            --probe-manifest target/servo-compatibility/probe-result.json \
+            --timeout-seconds 14400
+
+      - name: Materialize passing report and sentinel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/apply_d0a01_checkpoint.py \
+            --repository-root . \
+            --result-root target/servo-compatibility \
+            --servo-root .servo-source
+
+      - name: Recheck sentinel from product path
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target/servo-probe-cargo
+          CARGO_TERM_COLOR: never
+        run: cargo check --manifest-path experiments/servo-embedder-probe/Cargo.toml
+
+      - name: Install desktop control-plane toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Validate desktop product tree
+        env:
+          RUSTUP_TOOLCHAIN: "1.93.0"
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Remove transient source and workflows, then commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .servo-source target/servo-compatibility target/servo-probe-cargo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/materialize-d0a01.yml
+          git rm .github/workflows/materialize-d0a01-v2.yml
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: qualify pinned Servo embedder API boundary"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
