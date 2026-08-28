@@ -1,0 +1,334 @@
+#!/usr/bin/env python3
+"""Compile-qualify the exact Servo embedder source pin.
+
+The qualifier proves only source/toolchain/dependency and public embedder API
+compatibility. It deliberately does not start Servo, create a window, render a
+frame, forward input, navigate the network, or expose WebDriver.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import tempfile
+import tomllib
+
+PIN = "670ae8a70801b162e186f81cbb5bdd2d59c39108"
+
+SYMBOL_CANDIDATES: dict[str, list[str]] = {
+    "Servo": ["servo::Servo"],
+    "WebView": ["servo::WebView", "servo::webview::WebView"],
+    "WebViewBuilder": ["servo::WebViewBuilder", "servo::webview::WebViewBuilder"],
+    "RenderingContext": [
+        "servo::RenderingContext",
+        "servo::rendering_context::RenderingContext",
+    ],
+    "EventLoopWaker": [
+        "servo::EventLoopWaker",
+        "servo::embedder_traits::EventLoopWaker",
+    ],
+    "ServoDelegate": ["servo::ServoDelegate"],
+    "WebViewDelegate": ["servo::WebViewDelegate", "servo::webview::WebViewDelegate"],
+}
+
+METHOD_CANDIDATES: dict[str, list[str]] = {
+    "webview_builder_constructor": [
+        "servo::WebViewBuilder::new",
+        "servo::webview::WebViewBuilder::new",
+    ],
+    "servo_event_loop_entry": [
+        "servo::Servo::spin_event_loop",
+        "servo::Servo::pump_event_loop",
+        "servo::Servo::perform_updates",
+        "servo::Servo::run_event_loop",
+        "servo::Servo::handle_events",
+    ],
+}
+
+
+def run(
+    command: list[str],
+    *,
+    cwd: Path,
+    env: dict[str, str],
+    log: Path,
+    check: bool = True,
+) -> subprocess.CompletedProcess[str]:
+    completed = subprocess.run(
+        command,
+        cwd=cwd,
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text(completed.stdout, encoding="utf-8")
+    if check and completed.returncode != 0:
+        raise RuntimeError(
+            f"command failed ({completed.returncode}): {' '.join(command)}; see {log}"
+        )
+    return completed
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def write_probe(probe: Path, servo_root: Path, source: str) -> None:
+    if probe.exists():
+        shutil.rmtree(probe)
+    (probe / "src").mkdir(parents=True)
+    (probe / "Cargo.toml").write_text(
+        f'''[package]
+name = "trillionnium-servo-api-probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+servo = {{ path = "{(servo_root / 'components/servo').as_posix()}" }}
+''',
+        encoding="utf-8",
+    )
+    shutil.copy2(servo_root / "Cargo.lock", probe / "Cargo.lock")
+    (probe / "src/main.rs").write_text(source, encoding="utf-8")
+
+
+def compile_source(
+    *,
+    source: str,
+    name: str,
+    servo_root: Path,
+    work_root: Path,
+    env: dict[str, str],
+    logs: Path,
+) -> bool:
+    probe = work_root / name
+    write_probe(probe, servo_root, source)
+    completed = run(
+        ["cargo", "check", "--locked", "--quiet"],
+        cwd=probe,
+        env=env,
+        log=logs / f"{name}.log",
+        check=False,
+    )
+    return completed.returncode == 0
+
+
+def select_symbol_paths(
+    servo_root: Path,
+    work_root: Path,
+    env: dict[str, str],
+    logs: Path,
+) -> dict[str, str]:
+    selected: dict[str, str] = {}
+    for symbol, candidates in SYMBOL_CANDIDATES.items():
+        for index, candidate in enumerate(candidates):
+            source = (
+                "#![allow(unused_imports)]\n"
+                f"use {candidate} as Selected;\n"
+                "fn main() {}\n"
+            )
+            if compile_source(
+                source=source,
+                name=f"symbol-{symbol.lower()}-{index}",
+                servo_root=servo_root,
+                work_root=work_root,
+                env=env,
+                logs=logs,
+            ):
+                selected[symbol] = candidate
+                break
+        if symbol not in selected:
+            raise RuntimeError(f"no public compile path found for {symbol}")
+    return selected
+
+
+def select_method_paths(
+    servo_root: Path,
+    work_root: Path,
+    env: dict[str, str],
+    logs: Path,
+) -> dict[str, str]:
+    selected: dict[str, str] = {}
+    for purpose, candidates in METHOD_CANDIDATES.items():
+        for index, candidate in enumerate(candidates):
+            source = f"fn main() {{ let _selected = {candidate}; }}\n"
+            if compile_source(
+                source=source,
+                name=f"method-{purpose}-{index}",
+                servo_root=servo_root,
+                work_root=work_root,
+                env=env,
+                logs=logs,
+            ):
+                selected[purpose] = candidate
+                break
+        if purpose not in selected:
+            raise RuntimeError(f"no public compile path found for {purpose}")
+    return selected
+
+
+def aggregate_source(symbols: dict[str, str], methods: dict[str, str]) -> str:
+    imports = "\n".join(
+        f"use {path} as {name};" for name, path in sorted(symbols.items())
+    )
+    method_checks = "\n    ".join(
+        f"let _{name} = {path};" for name, path in sorted(methods.items())
+    )
+    return f'''// Generated by tools/qualify_servo_exact_pin.py for Servo {PIN}.
+#![allow(unused_imports)]
+{imports}
+
+fn main() {{
+    {method_checks}
+}}
+'''
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--servo-root", required=True, type=Path)
+    parser.add_argument("--output-manifest", required=True, type=Path)
+    parser.add_argument("--output-result", required=True, type=Path)
+    parser.add_argument("--output-probe", required=True, type=Path)
+    parser.add_argument("--logs", required=True, type=Path)
+    args = parser.parse_args()
+
+    servo_root = args.servo_root.resolve()
+    logs = args.logs.resolve()
+    logs.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+
+    head = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=servo_root, text=True
+    ).strip()
+    if head != PIN:
+        raise RuntimeError(f"Servo checkout is {head}, expected {PIN}")
+    if subprocess.check_output(
+        ["git", "status", "--porcelain=v1"], cwd=servo_root, text=True
+    ):
+        raise RuntimeError("Servo checkout is not clean")
+
+    required = [
+        servo_root / "Cargo.lock",
+        servo_root / "Cargo.toml",
+        servo_root / "components/servo/Cargo.toml",
+        servo_root / "components/servo/lib.rs",
+        servo_root / "ports/servoshell/Cargo.toml",
+        servo_root / "rust-toolchain.toml",
+    ]
+    for path in required:
+        if not path.is_file():
+            raise RuntimeError(f"required Servo input missing: {path}")
+
+    toolchain = tomllib.loads(
+        (servo_root / "rust-toolchain.toml").read_text(encoding="utf-8")
+    )
+    channel = toolchain["toolchain"]["channel"]
+    components = toolchain["toolchain"].get("components", [])
+    targets = toolchain["toolchain"].get("targets", [])
+    env["RUSTUP_TOOLCHAIN"] = channel
+    env["CARGO_INCREMENTAL"] = "0"
+
+    run(
+        [
+            "cargo",
+            "check",
+            "--manifest-path",
+            str(servo_root / "ports/servoshell/Cargo.toml"),
+            "--locked",
+        ],
+        cwd=servo_root,
+        env=env,
+        log=logs / "servoshell-cargo-check.log",
+    )
+
+    with tempfile.TemporaryDirectory(prefix="trillionnium-servo-probe-") as temp:
+        work_root = Path(temp)
+        symbols = select_symbol_paths(servo_root, work_root, env, logs)
+        methods = select_method_paths(servo_root, work_root, env, logs)
+        source = aggregate_source(symbols, methods)
+        if not compile_source(
+            source=source,
+            name="aggregate",
+            servo_root=servo_root,
+            work_root=work_root,
+            env=env,
+            logs=logs,
+        ):
+            raise RuntimeError("aggregate external Servo API probe did not compile")
+
+    args.output_probe.parent.mkdir(parents=True, exist_ok=True)
+    args.output_probe.write_text(source, encoding="utf-8")
+    source_hashes = {
+        str(path.relative_to(servo_root)): sha256(path) for path in required
+    }
+    manifest = {
+        "schema": "trillionnium.desktop.servo-embedder-compat.v3",
+        "status": "PASS_COMPILE_COMPATIBILITY_ONLY",
+        "servo_repository": "https://github.com/servo/servo",
+        "servo_commit": PIN,
+        "servo_toolchain": {
+            "channel": channel,
+            "components": components,
+            "targets": targets,
+        },
+        "source_hashes": source_hashes,
+        "public_symbol_paths": symbols,
+        "public_method_paths": methods,
+        "patch_ledger": [],
+        "checks": {
+            "exact_clean_checkout": "PASS",
+            "official_headed_servoshell_cargo_check_locked": "PASS",
+            "individual_external_api_probes": "PASS",
+            "aggregate_external_api_probe": "PASS",
+        },
+        "claims": {
+            "servo_started": False,
+            "window_created": False,
+            "frame_rendered": False,
+            "native_input_forwarded": False,
+            "ime_forwarded": False,
+            "network_navigation_performed": False,
+            "web_driver_listener_started": False,
+        },
+        "next_gate": "D0A-02 trusted workspace and local first frame",
+    }
+    args.output_manifest.parent.mkdir(parents=True, exist_ok=True)
+    args.output_manifest.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    result = {
+        "schema": "trillionnium.desktop.servo-probe-result.v4",
+        "status": "PASS_COMPILE_COMPATIBILITY_ONLY",
+        "servo_commit": PIN,
+        "servo_toolchain_channel": channel,
+        "checks": manifest["checks"],
+        "manifest_sha256": sha256(args.output_manifest),
+        "probe_sha256": sha256(args.output_probe),
+        "claims": manifest["claims"],
+        "merge_ready": True,
+    }
+    args.output_result.parent.mkdir(parents=True, exist_ok=True)
+    args.output_result.write_text(
+        json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
