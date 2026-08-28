@@ -1,0 +1,107 @@
+name: arm-d0c05-materializer-after-prerequisites
+
+on:
+  push:
+    branches:
+      - codex/d0c05-systemd-socket-custody
+    paths:
+      - ".github/workflows/materialize-d0c05-v2.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: arm-d0c05-materializer-after-prerequisites
+  cancel-in-progress: false
+
+jobs:
+  arm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 125
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0c05-systemd-socket-custody
+
+      - name: Wait for D0A-01 and D0C-04 mainline evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=false
+          for attempt in $(seq 1 120); do
+            git fetch -q origin main
+            if python3 - <<'PY'
+          import json
+          import subprocess
+          import sys
+
+          def load(path):
+              try:
+                  raw = subprocess.check_output(
+                      ['git', 'show', f'origin/main:{path}'],
+                      text=True,
+                      stderr=subprocess.DEVNULL,
+                  )
+              except subprocess.CalledProcessError:
+                  raise SystemExit(1)
+              return json.loads(raw)
+
+          try:
+              servo = load('manifests/servo-embedder-compat.json')
+              state = load('manifests/repository-state.json')
+              checkpoints = {
+                  item['id']: item
+                  for item in state.get('implementation_checkpoints', [])
+                  if isinstance(item, dict) and 'id' in item
+              }
+              assert servo['status'] == 'PASS'
+              assert servo['source']['actual_commit'] == '670ae8a70801b162e186f81cbb5bdd2d59c39108'
+              assert checkpoints['TOS-D0A-01']['status'] == 'PASS_COMPILE_ONLY_NO_RUNTIME'
+              assert checkpoints['TOS-D0C-04']['status'] == 'IMPLEMENTED_HOST_VALIDATED_NO_LISTENER'
+          except (AssertionError, KeyError, json.JSONDecodeError):
+              raise SystemExit(1)
+          PY
+            then
+              ready=true
+              break
+            fi
+            sleep 60
+          done
+          test "$ready" = true
+
+      - name: Preserve the independent merge gate in the materialized tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/materialize-d0c05.yml')
+          text = path.read_text(encoding='utf-8')
+          old = '            .github/workflows/materialize-d0c05.yml\n'
+          new = (
+              '            .github/workflows/materialize-d0c05.yml \\\n'
+              '            .github/workflows/verify-and-merge-d0c05.yml\n'
+          )
+          if '.github/workflows/verify-and-merge-d0c05.yml' not in text.split(
+              'Rebase by restoring only D0C-05 files onto current main', 1
+          )[1].split('Correct staged source', 1)[0]:
+              assert old in text
+              text = text.replace(old, new, 1)
+          old_cleanup = '          git rm .github/workflows/materialize-d0c05.yml\n'
+          new_cleanup = (
+              '          rm -f .github/workflows/materialize-d0c05-v2.yml\n'
+              '          git rm .github/workflows/materialize-d0c05.yml\n'
+          )
+          if 'rm -f .github/workflows/materialize-d0c05-v2.yml' not in text:
+              assert old_cleanup in text
+              text = text.replace(old_cleanup, new_cleanup, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/materialize-d0c05.yml
+          git diff --cached --check
+          git commit -m "ci: arm D0C-05 materialization after prerequisite evidence"
+          git push origin HEAD:codex/d0c05-systemd-socket-custody
