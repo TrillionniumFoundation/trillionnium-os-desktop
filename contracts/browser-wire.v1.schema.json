@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trillionnium.org/desktop/browser-wire.v1.schema.json",
+  "title": "TrillionniumOS Desktop canonical Browser API request envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "request_id", "operation"],
+  "properties": {
+    "protocol": {"const": "trillionnium.desktop.browser-api.v1"},
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$",
+      "maxLength": 128
+    },
+    "session_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$",
+      "maxLength": 128
+    },
+    "session_generation": {"type": "integer", "minimum": 1},
+    "deadline_unix_ms": {"type": "integer", "minimum": 0},
+    "operation": {
+      "$ref": "browser-api.v1.schema.json#/properties/operation"
+    }
+  },
+  "dependentRequired": {
+    "session_id": ["session_generation"],
+    "session_generation": ["session_id"]
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "properties": {
+              "type": {"enum": ["health", "session_create"]}
+            },
+            "required": ["type"]
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {"required": ["session_id"]},
+            {"required": ["session_generation"]}
+          ]
+        }
+      },
+      "else": {
+        "required": ["session_id", "session_generation"]
+      }
+    }
+  ]
+}
