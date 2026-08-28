@@ -1,0 +1,150 @@
+name: review-d0c-dependencies
+
+on:
+  push:
+    branches:
+      - codex/d0c-rust-product-v1
+    paths:
+      - .github/workflows/review-d0c-dependencies.yml
+
+permissions:
+  contents: write
+
+jobs:
+  pin-audit-test-and-commit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0c-rust-product-v1
+          fetch-depth: 0
+
+      - name: Install exact Rust toolchain
+        run: |
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+
+      - name: Preserve the D0C-02 typenum pin
+        run: cargo update -p typenum --precise 1.20.0
+
+      - name: Run complete Rust gate after lock adjustment
+        run: |
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check > /tmp/browserd-self-check.json
+
+      - name: Generate dependency metadata and reverse-edge review
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo metadata --locked --format-version 1 > /tmp/cargo-metadata.json
+          cargo tree --locked --workspace --all-targets --edges normal,build,dev > /tmp/cargo-tree.txt
+          mkdir -p manifests
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          metadata = json.loads(Path('/tmp/cargo-metadata.json').read_text())
+          baseline = json.loads(Path('manifests/cargo-external-allowlist.json').read_text())
+          baseline_keys = {(p['name'], p['version'], p['checksum']) for p in baseline['packages']}
+
+          packages = {p['id']: p for p in metadata['packages']}
+          reverse = {package_id: [] for package_id in packages}
+          for node in metadata['resolve']['nodes']:
+              owner = packages[node['id']]
+              for dependency in node['deps']:
+                  reverse.setdefault(dependency['pkg'], []).append({
+                      'name': owner['name'],
+                      'version': owner['version'],
+                      'dependency_name': dependency['name'],
+                      'kinds': sorted({entry['kind'] or 'normal' for entry in dependency['dep_kinds']}),
+                  })
+
+          reviewed = []
+          for package in metadata['packages']:
+              source = package.get('source')
+              if not source:
+                  continue
+              checksum = package.get('checksum')
+              key = (package['name'], package['version'], checksum)
+              targets = package.get('targets', [])
+              reviewed.append({
+                  'name': package['name'],
+                  'version': package['version'],
+                  'checksum': checksum,
+                  'source': source,
+                  'license': package.get('license'),
+                  'license_file': package.get('license_file'),
+                  'repository': package.get('repository'),
+                  'homepage': package.get('homepage'),
+                  'documentation': package.get('documentation'),
+                  'rust_version': package.get('rust_version'),
+                  'manifest_path_suffix': '/'.join(Path(package['manifest_path']).parts[-3:]),
+                  'has_build_script': any('custom-build' in target.get('kind', []) for target in targets),
+                  'is_proc_macro': any('proc-macro' in target.get('kind', []) for target in targets),
+                  'target_kinds': sorted({kind for target in targets for kind in target.get('kind', [])}),
+                  'baseline_package': key in baseline_keys,
+                  'reverse_dependencies': sorted(reverse.get(package['id'], []), key=lambda item: (item['name'], item['dependency_name'])),
+              })
+
+          reviewed.sort(key=lambda item: (item['name'], item['version']))
+          new_packages = [item for item in reviewed if not item['baseline_package']]
+          value = {
+              'schema': 'trillionnium.desktop.cargo-dependency-review.v1',
+              'generated_for': 'TOS-D0C-03-D0C-04',
+              'status': 'METADATA_GENERATED_REVIEW_REQUIRED',
+              'policy': 'exact crates.io source, version, checksum and explicit license/build/proc-macro review',
+              'cargo_lock_sha256': hashlib.sha256(Path('Cargo.lock').read_bytes()).hexdigest(),
+              'cargo_tree_sha256': hashlib.sha256(Path('/tmp/cargo-tree.txt').read_bytes()).hexdigest(),
+              'baseline_package_count': len(baseline_keys),
+              'external_package_count': len(reviewed),
+              'new_package_count': len(new_packages),
+              'baseline_preserved': all(any((item['name'], item['version'], item['checksum']) == key for item in reviewed) for key in baseline_keys),
+              'new_packages': new_packages,
+              'all_external_packages': reviewed,
+              'authority': {
+                  'git_dependencies': any(not item['source'].startswith('registry+https://github.com/rust-lang/crates.io-index') for item in reviewed),
+                  'listener_enabled': False,
+                  'external_effect_authorized': False,
+              },
+          }
+          Path('manifests/cargo-dependency-review.d0c.json').write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+          Path('docs/evidence/generated/d0c-cargo-tree.txt').write_text(Path('/tmp/cargo-tree.txt').read_text())
+          PY
+
+      - name: Refresh exact candidate allowlist
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          review = json.loads(Path('manifests/cargo-dependency-review.d0c.json').read_text())
+          value = {
+              'schema': 'trillionnium.desktop.cargo-external-allowlist.v1',
+              'generated_for': 'TOS-D0C-03-D0C-04',
+              'status': 'REVIEW_REQUIRED_NOT_YET_TRUSTED',
+              'policy': 'exact_name_version_checksum_no_git_dependencies',
+              'baseline_preserved': review['baseline_preserved'],
+              'new_packages_requiring_review': [
+                  {'name': p['name'], 'version': p['version'], 'checksum': p['checksum']}
+                  for p in review['new_packages']
+              ],
+              'packages': [
+                  {'name': p['name'], 'version': p['version'], 'checksum': p['checksum']}
+                  for p in review['all_external_packages']
+              ],
+          }
+          Path('manifests/cargo-external-allowlist.d0c-candidate.json').write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Remove one-shot workflow and commit review candidate
+        run: |
+          rm .github/workflows/review-d0c-dependencies.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "audit: generate D0C dependency review candidate"
+          git push origin HEAD:codex/d0c-rust-product-v1
