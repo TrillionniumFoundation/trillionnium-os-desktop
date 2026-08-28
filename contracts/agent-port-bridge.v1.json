@@ -1,0 +1,77 @@
+{
+  "schema": "trillionnium.desktop.agent-port-bridge.v1",
+  "status": "RUST_SOURCE_IMPLEMENTED_EXACT_HEAD_EXECUTION_PENDING",
+  "transport_contract": "contracts/agent-transport.v1.json",
+  "codec_contract": "contracts/browser-codec.v1.json",
+  "rust_contract": "contracts/agent-port-rust.v1.json",
+  "input": "one_authenticated_connected_AF_UNIX_stream",
+  "request_frames_per_connection": 1,
+  "listener_created": false,
+  "dispatch": {
+    "maximum_handler_invocations": 1,
+    "context_fields": [
+      "peer_pid",
+      "peer_uid",
+      "peer_gid",
+      "transport_sequence",
+      "canonical_request_sha256",
+      "effect_class",
+      "accepted_monotonic",
+      "effective_deadline_monotonic"
+    ],
+    "handler_may_author": [
+      "bounded_result_object",
+      "typed_error"
+    ],
+    "handler_may_not_author": [
+      "protocol",
+      "request_id",
+      "session_id",
+      "session_generation",
+      "transport_sequence",
+      "session_nonce"
+    ]
+  },
+  "deadline": {
+    "effective": "minimum_of_server_ceiling_and_request_deadline_converted_once_at_acceptance",
+    "late_handler_result": "discard_without_commit"
+  },
+  "effect_policy": {
+    "potential_external_effect_fixture": "typed_policy_denied",
+    "automatic_retry": false,
+    "authority_granted": false
+  },
+  "response": {
+    "binding_source": "validated_request",
+    "canonical_codec_required": true,
+    "sha256_recorded_before_transport_commit": true
+  },
+  "rust_product": {
+    "crate": "crates/hepta-agent-port",
+    "external_registry_dependencies_added": [],
+    "listener_created": false,
+    "browser_actor_called": false,
+    "servo_called": false,
+    "external_effect_authorized": false
+  },
+  "validation": {
+    "python_reference": "PASS_13_OF_13",
+    "python_py_compile": "PASS",
+    "rust_source_static_audit": "PASS_172_CHECKS",
+    "rust_fmt": "UNEXECUTED",
+    "rust_clippy": "UNEXECUTED",
+    "rust_tests": "UNEXECUTED",
+    "browserd_self_check": "UNEXECUTED",
+    "merge_ready": false
+  },
+  "independent_reference": {
+    "implementation": "tools/agent_port_bridge_reference.py",
+    "result": "docs/evidence/generated/d0c04-agent-port-bridge-reference-result.json",
+    "status": "PASS",
+    "test_count": 13,
+    "product_listener_created": false,
+    "browser_actor_called": false,
+    "servo_called": false,
+    "external_effect_authorized": false
+  }
+}
