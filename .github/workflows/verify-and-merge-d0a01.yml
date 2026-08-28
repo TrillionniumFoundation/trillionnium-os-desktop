@@ -1,0 +1,191 @@
+name: verify-and-merge-d0a01-servo-compatibility
+
+on:
+  push:
+    branches:
+      - codex/d0a01-servo-compatibility
+    paths:
+      - "manifests/servo-embedder-compat.json"
+      - "manifests/servo-probe-result.json"
+      - "experiments/servo-embedder-probe/src/main.rs"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: verify-and-merge-d0a01-servo-compatibility
+  cancel-in-progress: false
+
+jobs:
+  verify-and-merge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    steps:
+      - name: Check out materialized candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0a01-servo-compatibility
+
+      - name: Assert generated checkpoint shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -f .github/workflows/materialize-d0a01.yml
+          test ! -f .github/workflows/materialize-d0a01-v2.yml
+          test -f manifests/servo-embedder-compat.json
+          test -f manifests/servo-probe-result.json
+          test -f experiments/servo-embedder-probe/src/main.rs
+          python3 -m py_compile \
+            tools/verify_servo_compatibility.py \
+            tools/apply_d0a01_checkpoint.py
+
+      - name: Install Servo host dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            build-essential clang cmake curl git libclang-dev libdbus-1-dev \
+            libegl1-mesa-dev libfontconfig1-dev libfreetype6-dev \
+            libgl1-mesa-dev libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev libssl-dev libudev-dev \
+            libunwind-dev libwayland-dev libx11-dev libx11-xcb-dev \
+            libxcb1-dev libxkbcommon-dev ninja-build pkg-config python3
+
+      - name: Check out exact Servo source and toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/servo/servo .servo-source
+          git -C .servo-source checkout --detach 670ae8a70801b162e186f81cbb5bdd2d59c39108
+          test "$(git -C .servo-source rev-parse HEAD)" = \
+            "670ae8a70801b162e186f81cbb5bdd2d59c39108"
+          test -z "$(git -C .servo-source status --porcelain=v1 --untracked-files=no)"
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          value = tomllib.loads(Path('.servo-source/rust-toolchain.toml').read_text())
+          print(value['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal
+          echo "RUSTUP_TOOLCHAIN=$channel" >> "$GITHUB_ENV"
+
+      - name: Cache independent Servo verification build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/servo-verify-cargo
+          key: d0a01-verify-${{ runner.os }}-670ae8a70801b162e186f81cbb5bdd2d59c39108-${{ hashFiles('.servo-source/Cargo.lock', 'experiments/servo-embedder-probe/src/main.rs') }}
+
+      - name: Verify machine-readable compatibility evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+
+          def digest(path: Path) -> str:
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+
+          report = json.loads(Path('manifests/servo-embedder-compat.json').read_text())
+          probe = json.loads(Path('manifests/servo-probe-result.json').read_text())
+          patch = json.loads(Path('manifests/servo-patch-ledger.v1.json').read_text())
+          requirements = json.loads(Path('manifests/servo-api-requirements.v1.json').read_text())
+          expected = '670ae8a70801b162e186f81cbb5bdd2d59c39108'
+
+          assert report['schema'] == 'trillionnium.desktop.servo-embedder-compatibility.v1'
+          assert report['status'] == 'PASS'
+          assert report['source']['actual_commit'] == expected
+          assert report['source']['expected_commit'] == expected
+          assert report['source']['tracked_source_clean'] is True
+          assert report['source']['cargo_lock_sha256'] == digest(Path('.servo-source/Cargo.lock'))
+          assert report['source']['component_manifest_sha256'] == digest(Path('.servo-source/components/servo/Cargo.toml'))
+          assert report['requirements_sha256'] == digest(Path('manifests/servo-api-requirements.v1.json'))
+          assert report['final_public_api_sentinel']['passed'] is True
+          assert report['final_public_api_sentinel']['source_sha256'] == digest(Path('experiments/servo-embedder-probe/src/main.rs'))
+          assert report['headed_reference']['passed'] is True
+          assert not report['missing_required_symbols']
+          assert not report['missing_required_method_groups']
+          assert all(item['passed'] and item['public_path'] for item in report['public_symbols'])
+          assert all(item['passed'] for item in report['method_groups'] if item['required'])
+          assert probe['status'] == 'PASS'
+          assert probe['servo_commit'] == expected
+          assert probe['headed_reference_passed'] is True
+          assert patch['servo_commit'] == expected
+          assert patch['local_patch_count'] == 0
+          assert patch['patches'] == []
+          assert requirements['servo_commit'] == expected
+          PY
+
+      - name: Recompile checked-in public API sentinel
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target/servo-verify-cargo
+          CARGO_TERM_COLOR: never
+        run: cargo check --manifest-path experiments/servo-embedder-probe/Cargo.toml
+
+      - name: Recompile Servo headed reference package under lock
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target/servo-verify-cargo
+          CARGO_TERM_COLOR: never
+        shell: bash
+        run: |
+          set -euo pipefail
+          package=$(python3 - <<'PY'
+          from pathlib import Path
+          import json
+          report = json.loads(Path('manifests/servo-embedder-compat.json').read_text())
+          print(report['headed_reference']['package'])
+          PY
+          )
+          cargo check --manifest-path .servo-source/Cargo.toml -p "$package" --locked
+
+      - name: Install desktop control-plane toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Revalidate product repository
+        env:
+          RUSTUP_TOOLCHAIN: "1.93.0"
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          git diff --check main...HEAD
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Remove temporary verification gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .servo-source target/servo-verify-cargo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/verify-and-merge-d0a01.yml
+          git commit -m "chore: remove temporary D0A-01 verification gate"
+          git push origin HEAD:codex/d0a01-servo-compatibility
+          echo "candidate_sha=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Squash merge verified D0A-01 checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/pulls/4/merge" \
+            -f merge_method=squash \
+            -f sha="${candidate_sha}"
