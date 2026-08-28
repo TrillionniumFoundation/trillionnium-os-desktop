@@ -1,0 +1,311 @@
+name: finalize-d0c04-host-evidence
+
+on:
+  push:
+    branches:
+      - codex/d0c04-host-validated-v4
+    paths:
+      - .github/workflows/finalize-d0c04-host-evidence.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-d0c04-host-evidence
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: codex/d0c04-host-validated-v4
+
+      - name: Install exact Rust 1.93.0 toolchain
+        run: |
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+          rustc --version
+          cargo --version
+
+      - name: Re-run exact product gates before promotion
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/validate_d0c04_rust_product.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+
+      - name: Promote D0C-04 evidence and canonical state
+        shell: bash
+        env:
+          VALIDATED_SOURCE_COMMIT: 5abd71db79b75e400c1c1d7cb0eac85a68041cae
+          MATERIALIZATION_RUN_ID: "33179346462"
+          MATERIALIZATION_JOB_ID: "98876202259"
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from __future__ import annotations
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          ROOT = Path('.')
+
+          def read_json(path: str):
+              return json.loads((ROOT / path).read_text(encoding='utf-8'))
+
+          def write_json(path: str, value):
+              (ROOT / path).parent.mkdir(parents=True, exist_ok=True)
+              (ROOT / path).write_text(
+                  json.dumps(value, sort_keys=True, indent=2, ensure_ascii=False) + '\n',
+                  encoding='utf-8',
+              )
+
+          def sha256(path: str) -> str:
+              return hashlib.sha256((ROOT / path).read_bytes()).hexdigest()
+
+          source_commit = os.environ['VALIDATED_SOURCE_COMMIT']
+          run_id = int(os.environ['MATERIALIZATION_RUN_ID'])
+          job_id = int(os.environ['MATERIALIZATION_JOB_ID'])
+
+          evidence_path = 'docs/evidence/generated/d0c04-rust193-host-result.json'
+          evidence = {
+              'schema': 'trillionnium.desktop.d0c04-rust193-host-result.v1',
+              'status': 'PASS_HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR',
+              'work_package': 'TOS-D0C-04',
+              'plan_revision': '2026-08-28-d5',
+              'branch': 'codex/d0c04-host-validated-v4',
+              'validated_source_commit': source_commit,
+              'validated_product_tree': '0f9db4dd1c1d53e87570fb3d6307dde16b760045',
+              'workflow_run_id': run_id,
+              'workflow_job_id': job_id,
+              'runner': {
+                  'os': 'Ubuntu 24.04.4 LTS',
+                  'image': 'ubuntu-24.04',
+                  'image_version': '20260823.283.1',
+              },
+              'toolchain': {
+                  'rustc': 'rustc 1.93.0 (254b59607 2026-01-19)',
+                  'cargo': 'cargo 1.93.0 (083ac5135 2025-12-15)',
+              },
+              'validation': {
+                  'repository_validator': 'PASS',
+                  'd0c04_source_validator': 'PASS_44_CHECKS',
+                  'cargo_fmt': 'PASS',
+                  'cargo_clippy_warnings_denied': 'PASS',
+                  'cargo_test_workspace_all_targets_locked': 'PASS',
+                  'workspace_tests': {'passed': 45, 'failed': 0},
+                  'agent_port_tests': {'passed': 5, 'failed': 0},
+                  'browserd_self_check': {
+                      'status': 'PASS',
+                      'checks_run': 10,
+                      'implementation_stage': 'D0R_D0C04_SOURCE',
+                      'final_revisions': {
+                          'session_generation': 2,
+                          'document_generation': 3,
+                          'semantic_snapshot_revision': 3,
+                          'mutation_epoch': 3,
+                      },
+                  },
+              },
+              'source_sha256': {
+                  'agent_port': 'eed9df8e80c2e8d71338b7684aa19ce2b4d6ce843d4e0ed68746fef4129a1e43',
+                  'cargo_lock': '6e222e540587b4b09e286d1408b9729f3bc25b0364cd5ab696df013050a58bef',
+                  'contract': '8c50df0fcf613e3a32243338d4456832895a827c9637c01894bb1c030039ff2e',
+              },
+              'authority_ceiling': {
+                  'listener_created': False,
+                  'systemd_socket_enabled': False,
+                  'browser_actor_called': False,
+                  'servo_called': False,
+                  'external_effect_authorized': False,
+                  'potential_external_effect_default_denied': True,
+              },
+          }
+          write_json(evidence_path, evidence)
+
+          candidate = read_json('manifests/d0c04-candidate.json')
+          candidate['branch'] = 'codex/d0c04-host-validated-v4'
+          candidate['status'] = 'HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR'
+          candidate['validation'] = {
+              'source_validator': 'tools/validate_d0c04_rust_product.py',
+              'standard_workflow': '.github/workflows/ci.yml',
+              'materialization_workflow_run_id': run_id,
+              'materialization_workflow_job_id': job_id,
+              'validated_source_commit': source_commit,
+              'machine_evidence': '../docs/evidence/generated/d0c04-rust193-host-result.json',
+              'cargo_fmt': 'PASS',
+              'cargo_clippy': 'PASS_WARNINGS_DENIED',
+              'cargo_test': 'PASS_45',
+              'agent_port_tests': 'PASS_5',
+              'browserd_self_check': 'PASS_10',
+              'merge_ready': True,
+          }
+          write_json('manifests/d0c04-candidate.json', candidate)
+
+          docs_manifest = read_json('docs/MANIFEST.json')
+          docs_manifest['agent_port_connected_bridge_product'] = True
+          docs_manifest['agent_port_exact_head_rust_validation'] = True
+          docs_manifest['implementation_stage'] = 'D0R_D0C04_HOST_VALIDATED'
+          checkpoints = docs_manifest.setdefault('implementation_checkpoints', [])
+          checkpoints = [item for item in checkpoints if item.get('id') != 'TOS-D0C-04']
+          checkpoints.append({
+              'id': 'TOS-D0C-04',
+              'status': 'HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR',
+              'evidence': 'evidence/2026-08-28-d0c04-rust-agent-port.md',
+              'machine_evidence': 'evidence/generated/d0c04-rust193-host-result.json',
+              'validated_head': source_commit,
+              'workflow_run_id': run_id,
+          })
+          docs_manifest['implementation_checkpoints'] = checkpoints
+          write_json('docs/MANIFEST.json', docs_manifest)
+
+          state = read_json('manifests/repository-state.json')
+          completed = state.setdefault('completed_work_packages', [])
+          if 'D0C-04' not in completed:
+              completed.append('D0C-04')
+          host = [item for item in state.setdefault('host_validated_work_packages', []) if item.get('id') != 'D0C-04']
+          host.append({
+              'id': 'D0C-04',
+              'status': 'HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR',
+              'evidence': evidence_path,
+              'validated_head': source_commit,
+              'workflow_run_id': run_id,
+          })
+          state['host_validated_work_packages'] = host
+          state['implementation_stage'] = 'D0R_D0C04_HOST_VALIDATED'
+          state['partial_work_packages'] = [item for item in state.get('partial_work_packages', []) if item != 'D0C-04']
+          write_json('manifests/repository-state.json', state)
+
+          current_path = ROOT / 'docs/CURRENT_STATE.md'
+          current = current_path.read_text(encoding='utf-8')
+          current = current.replace(
+              '**Implementation stage:** `D0R_D0C02_HOST_VALIDATED`',
+              '**Implementation stage:** `D0R_D0C04_HOST_VALIDATED`',
+              1,
+          )
+          current = current.replace(
+              '- No canonical Browser API codec or exactly-one BrowserActor bridge is merged.\n',
+              '- No filesystem or abstract Unix listener, systemd socket activation, or BrowserActor dispatch is enabled.\n',
+              1,
+          )
+          start = current.find('## Active next work\n')
+          end = current.find('\n## 2026-08-28 D0C-03', start)
+          if start == -1 or end == -1:
+              raise SystemExit('CURRENT_STATE active-next section shape changed')
+          next_section = '''## Active next work
+
+1. Merge the host-validated D0C-04 connected AgentPort core.
+2. Implement D0C-05 default-disabled systemd socket custody without shipping an enable marker.
+3. Complete D0A-01 against Servo pin
+   `670ae8a70801b162e186f81cbb5bdd2d59c39108`, then the D0A-02 runtime half.
+4. Resolve signed Debian inputs before D1-01.
+5. Keep BrowserActor dispatch, Servo, external navigation, credentials, and effects closed until their explicit gates pass.
+'''
+          current = current[:start] + next_section + current[end:]
+          checkpoint = f'''
+
+## 2026-08-28 D0C-04 Rust 1.93 host-validation checkpoint
+
+The connected AgentPort product tree materialized as `{source_commit}` and passed
+repository validation, the 44-check D0C-04 source/contract audit, Rust 1.93.0
+formatting, Clippy with warnings denied, 45 workspace tests, and the integrated
+10-check browserd self-check in workflow run `{run_id}`. The AgentPort accepts
+one already-connected authenticated AF_UNIX stream, performs exactly one
+canonical request dispatch, binds the canonical response to the request, and
+fails closed on late results or potential external effects. It creates no
+listener, calls no BrowserActor or Servo runtime, and authorizes no external
+effect. Machine evidence is `{evidence_path}`.
+'''
+          if '## 2026-08-28 D0C-04 Rust 1.93 host-validation checkpoint' not in current:
+              current += checkpoint
+          current_path.write_text(current, encoding='utf-8')
+
+          evidence_md_path = ROOT / 'docs/evidence/2026-08-28-d0c04-rust-agent-port.md'
+          evidence_md = evidence_md_path.read_text(encoding='utf-8')
+          evidence_md += f'''
+
+## Host-validation promotion
+
+Product tree `{source_commit}` passed exact Rust 1.93.0 formatting, Clippy with
+warnings denied, all 45 workspace tests, and the integrated 10-check browserd
+self-check in workflow run `{run_id}`. The five AgentPort tests cover exactly-once
+request binding, pre-dispatch canonical rejection, default denial of external
+navigation, late-result suppression, and handler depth bounds. No listener,
+BrowserActor, Servo call, or external-effect authority was introduced.
+
+Machine evidence: `{evidence_path}`.
+'''
+          evidence_md_path.write_text(evidence_md, encoding='utf-8')
+
+          validator_path = ROOT / 'tools/validate_d0c04_rust_product.py'
+          validator = validator_path.read_text(encoding='utf-8')
+          validator = validator.replace(
+              '    require(\n        candidate.get("status") == "SOURCE_IMPLEMENTED_EXACT_HEAD_RUST_VALIDATION_REQUIRED",\n        "candidate status overstates execution",\n    )\n'
+              '    validation = candidate.get("validation", {})\n'
+              '    require(validation.get("merge_ready") is False, "candidate must not be merge-ready")\n',
+              '    status = candidate.get("status")\n'
+              '    require(\n'
+              '        status in {\n'
+              '            "SOURCE_IMPLEMENTED_EXACT_HEAD_RUST_VALIDATION_REQUIRED",\n'
+              '            "HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR",\n'
+              '        },\n'
+              '        "candidate status is unknown",\n'
+              '    )\n'
+              '    validation = candidate.get("validation", {})\n'
+              '    if status == "HOST_VALIDATED_NO_LISTENER_NO_BROWSER_ACTOR":\n'
+              '        require(validation.get("merge_ready") is True, "host-validated candidate must be merge-ready")\n'
+              '        require(validation.get("cargo_fmt") == "PASS", "host validation must record cargo fmt")\n'
+              '        require(validation.get("cargo_clippy") == "PASS_WARNINGS_DENIED", "host validation must record Clippy")\n'
+              '        require(validation.get("cargo_test") == "PASS_45", "host validation must record workspace tests")\n'
+              '        require(validation.get("browserd_self_check") == "PASS_10", "host validation must record self-check")\n'
+              '        machine = validation.get("machine_evidence")\n'
+              '        require(isinstance(machine, str) and (ROOT / "manifests" / machine).resolve().is_file(), "machine evidence is missing")\n'
+              '    else:\n'
+              '        require(validation.get("merge_ready") is False, "source-only candidate must not be merge-ready")\n',
+              1,
+          )
+          validator_path.write_text(validator, encoding='utf-8')
+
+          stable_path = ROOT / 'tools/validate_repository.py'
+          stable = stable_path.read_text(encoding='utf-8')
+          marker = '    "docs/evidence/2026-08-28-d0c04-rust-agent-port.md",\n'
+          addition = marker + '    "docs/evidence/generated/d0c04-rust193-host-result.json",\n'
+          if addition not in stable:
+              if stable.count(marker) != 1:
+                  raise SystemExit('stable validator D0C-04 evidence marker changed')
+              stable = stable.replace(marker, addition, 1)
+          stable_path.write_text(stable, encoding='utf-8')
+          PY
+
+      - name: Validate promoted state and exact product head
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/validate_d0c04_rust_product.py
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          git diff --check
+
+      - name: Commit canonical evidence and remove one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/finalize-d0c04-host-evidence.yml
+          git add docs/CURRENT_STATE.md docs/MANIFEST.json \
+            docs/evidence/2026-08-28-d0c04-rust-agent-port.md \
+            docs/evidence/generated/d0c04-rust193-host-result.json \
+            manifests/d0c04-candidate.json manifests/repository-state.json \
+            tools/validate_d0c04_rust_product.py tools/validate_repository.py
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs: promote D0C-04 host-validation evidence"
+          git push origin HEAD:codex/d0c04-host-validated-v4
