@@ -1,0 +1,74 @@
+name: independent-review-gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, review_requested]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: independent-review-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head-independent-approval:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require current-head non-author approval and no active rejection
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          reviews="$(mktemp)"
+          page=1
+          printf '[]' > "$reviews"
+          while :; do
+            response="$(mktemp)"
+            curl --fail --silent --show-error \
+              --retry 3 --retry-all-errors \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/$REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100&page=$page" \
+              > "$response"
+            jq -e 'type == "array"' "$response" >/dev/null
+            count="$(jq 'length' "$response")"
+            jq -s '.[0] + .[1]' "$reviews" "$response" > "$reviews.next"
+            mv "$reviews.next" "$reviews"
+            rm -f "$response"
+            [ "$count" -eq 100 ] || break
+            page=$((page + 1))
+            [ "$page" -le 20 ] || { echo 'review pagination bound exceeded' >&2; exit 1; }
+          done
+
+          jq --arg author "$AUTHOR" --arg head "$HEAD_SHA" '
+            map(select(.user.login != $author))
+            | map(select((.user.type // "") != "Bot"))
+            | map(select((.user.login | endswith("[bot]")) | not))
+            | sort_by(.submitted_at // .created_at // "")
+            | group_by(.user.login)
+            | map(last)
+            | {
+                current_head_approvals: [
+                  .[] | select(.state == "APPROVED" and .commit_id == $head) | .user.login
+                ],
+                active_changes_requested: [
+                  .[] | select(.state == "CHANGES_REQUESTED") | .user.login
+                ],
+                effective_reviews: map({user: .user.login, state, commit_id, submitted_at})
+              }
+          ' "$reviews" | tee review-gate.json
+
+          jq -e '.active_changes_requested | length == 0' review-gate.json >/dev/null
+          jq -e '.current_head_approvals | length >= 1' review-gate.json >/dev/null
