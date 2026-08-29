@@ -1091,12 +1091,12 @@ impl WebViewDelegate for RuntimeDelegate {
     }
 
     fn show_embedder_control(&self, _webview: WebView, control: EmbedderControl) {
-        if let Some(state) = self.state.upgrade()
-            && matches!(control, EmbedderControl::InputMethod(_))
-        {
-            state
-                .input_method_controls
-                .set(state.input_method_controls.get() + 1);
+        if let Some(state) = self.state.upgrade() {
+            if matches!(control, EmbedderControl::InputMethod(_)) {
+                state
+                    .input_method_controls
+                    .set(state.input_method_controls.get() + 1);
+            }
         }
     }
 }
