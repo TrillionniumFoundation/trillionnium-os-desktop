@@ -184,7 +184,8 @@ build_a="$build_a_root/candidate/artifacts"
 build_b="$build_b_root/candidate/artifacts"
 repro_result="$output_dir/reproducibility-result.json"
 qemu_result="$output_dir/qemu"
-agent_portd="$workspace/target/release/hepta-agent-portd"
+# D1 is a qualification image: inject only the explicit feature-gated handler.
+agent_portd="$workspace/target/release/hepta-agent-port-qualificationd"
 agent_fixture="$workspace/target/release/hepta-agent-d1-fixture"
 mke2fs_binary=$(readlink -f "$(command -v mke2fs)")
 e2fsck_binary=$(readlink -f "$(command -v e2fsck)")

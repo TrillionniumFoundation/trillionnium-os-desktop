@@ -8,8 +8,12 @@ repository.workspace = true
 publish = false
 default-run = "hepta-agent-portd"
 
+[features]
+default = []
+fixture = ["dep:hepta-agent-port"]
+
 [dependencies]
-hepta-agent-port = { path = "../../crates/hepta-agent-port" }
+hepta-agent-port = { path = "../../crates/hepta-agent-port", optional = true }
 hepta-agent-transport = { path = "../../crates/hepta-agent-transport" }
 hepta-browser-codec = { path = "../../crates/hepta-browser-codec" }
 hepta-peer-attestation = { path = "../../crates/hepta-peer-attestation" }
@@ -20,5 +24,16 @@ name = "hepta-agent-portd"
 path = "src/main.rs"
 
 [[bin]]
+name = "hepta-agent-port-fixture"
+path = "src/bin/hepta-agent-port-fixture.rs"
+required-features = ["fixture"]
+
+[[bin]]
+name = "hepta-agent-port-qualificationd"
+path = "src/bin/hepta-agent-port-qualificationd.rs"
+required-features = ["fixture"]
+
+[[bin]]
 name = "hepta-agent-d1-fixture"
 path = "src/bin/hepta-agent-d1-fixture.rs"
+required-features = ["fixture"]
