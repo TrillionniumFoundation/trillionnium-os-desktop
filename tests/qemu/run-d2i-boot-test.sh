@@ -41,6 +41,42 @@ image=$(readlink -f "$image")
 preparation=$(readlink -f "$preparation")
 mkdir -p "$output_dir"
 output_dir=$(readlink -f "$output_dir")
+shared_evidence="$(dirname "$output_dir")/evidence/qemu"
+
+capture_d2i_diagnostics() {
+  local code=$?
+  trap - EXIT
+  set +e
+  mkdir -p "$shared_evidence"
+  if [[ -d "$output_dir" ]]; then
+    while IFS= read -r -d '' file; do
+      local name size
+      name=$(basename "$file")
+      [[ "$name" == "trillionnium-d2i-qemu.ext4" ]] && continue
+      size=$(stat -c %s "$file" 2>/dev/null || echo 0)
+      case "$name" in
+        *.json|*.txt|*.log)
+          if (( size > 4194304 )); then
+            tail -c 4194304 "$file" > "$shared_evidence/$name"
+          else
+            cp "$file" "$shared_evidence/$name"
+          fi
+          ;;
+        *.png)
+          if (( size <= 8388608 )); then
+            cp "$file" "$shared_evidence/$name"
+          fi
+          ;;
+      esac
+    done < <(find "$output_dir" -maxdepth 1 -type f -print0)
+  fi
+  cp "$preparation" "$shared_evidence/preparation.json" 2>/dev/null || true
+  cp "$selection" "$shared_evidence/selection.json" 2>/dev/null || true
+  printf 'script_exit_status=%s\n' "$code" > "$shared_evidence/script-exit-status.txt"
+  exit "$code"
+}
+trap capture_d2i_diagnostics EXIT
+
 for path in "$selection" "$image" "$preparation" \
   "$artifacts/vmlinuz" "$artifacts/initrd.img" "$artifacts/package-lock.tsv"; do
   [[ -f $path && ! -L $path ]] || { echo "missing or unsafe D2I input: $path" >&2; exit 1; }
