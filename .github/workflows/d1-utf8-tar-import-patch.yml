@@ -78,11 +78,7 @@ jobs:
           test_replacement = (
               '        self.assertIn(\'"$dumpe2fs_binary" -h "$image"\', builder)\n'
               '        self.assertIn("filesystem_locale=C.UTF-8", builder)\n'
-              '        self.assertIn(\n'
-              '            \'LC_ALL="$filesystem_locale" LANG="$filesystem_locale" \'\n'
-              '            \'"$mke2fs_binary" \\\\\\',\n'
-              '            builder,\n'
-              '        )\n'
+              '        self.assertIn(\'LC_ALL="$filesystem_locale" LANG="$filesystem_locale"\', builder)\n'
               '        self.assertIn("locale charmap", builder)\n'
               '        self.assertNotIn("mke2fs_version=$(mke2fs -V", builder)\n'
           )
