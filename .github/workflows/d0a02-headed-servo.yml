@@ -8,10 +8,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply-repair:
+  build-repaired-tree:
     runs-on: ubuntu-24.04
     steps:
       - name: Check out package branch
@@ -34,33 +34,38 @@ jobs:
         run: |
           set -euo pipefail
           python3 .github/scripts/apply_d0a02_teardown_fix.py
-          git diff --check
-
-      - name: Format repaired standalone sources
-        shell: bash
-        run: |
-          set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt
           rustfmt +1.93.0 --edition 2024 \
             experiments/servo-headed-runtime/src/main.rs \
             runtime/servo/hepta_workspace_runtime.rs
           git diff --check
 
-      - name: Commit repaired permanent tree
+      - name: Stage exact repaired tree payload
         shell: bash
         run: |
           set -euo pipefail
-          git rm --ignore-unmatch \
-            .github/scripts/apply_d0a02_teardown_fix.py \
-            .github/workflows/apply-d0a02-teardown-fix.yml
-          git config user.name "trillionnium-d0a02-repair"
-          git config user.email "d0a02-repair@users.noreply.github.com"
-          git add \
-            .github/workflows/ci.yml \
-            .github/workflows/d0a02-headed-servo.yml \
-            .github/workflows/servo-headed-runtime.yml \
-            experiments/servo-headed-runtime/src/main.rs \
-            runtime/servo/hepta_workspace_runtime.rs
-          git diff --cached --check
-          git commit -m "fix(servo): shut down headed proof before closing event loop"
-          git push origin HEAD:codex/d0a02-headed-runtime-v3
+          payload="$RUNNER_TEMP/d0a02-repaired-tree"
+          mkdir -p \
+            "$payload/.github/workflows" \
+            "$payload/experiments/servo-headed-runtime/src" \
+            "$payload/runtime/servo"
+          cp .github/workflows/ci.yml "$payload/.github/workflows/ci.yml"
+          cp .github/workflows/d0a02-headed-servo.yml \
+            "$payload/.github/workflows/d0a02-headed-servo.yml"
+          cp .github/workflows/servo-headed-runtime.yml \
+            "$payload/.github/workflows/servo-headed-runtime.yml"
+          cp experiments/servo-headed-runtime/src/main.rs \
+            "$payload/experiments/servo-headed-runtime/src/main.rs"
+          cp runtime/servo/hepta_workspace_runtime.rs \
+            "$payload/runtime/servo/hepta_workspace_runtime.rs"
+          find "$payload" -type f -print0 | sort -z | xargs -0 sha256sum \
+            > "$payload/SHA256SUMS"
+
+      - name: Upload exact repaired tree payload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d0a02-repaired-tree-${{ github.sha }}
+          path: ${{ runner.temp }}/d0a02-repaired-tree
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 6
