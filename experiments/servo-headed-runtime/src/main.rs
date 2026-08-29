@@ -23,8 +23,8 @@ use euclid::default::{Point2D, Rect, Size2D};
 use glow::HasContext as _;
 use servo::{
     CompositionEvent, CompositionState, CreateNewWebViewRequest, DeviceIntPoint, DeviceIntRect,
-    DeviceIntSize, DevicePoint, EmbedderControl, EventLoopWaker, ImeEvent, InputEvent,
-    InputEventId, InputEventResult, JSValue, Key, KeyState, KeyboardEvent, LoadStatus,
+    DevicePoint, EmbedderControl, EventLoopWaker, ImeEvent, InputEvent, InputEventId,
+    InputEventResult, JSValue, Key, KeyState, KeyboardEvent, LoadStatus,
     MouseButton as ServoMouseButton, MouseButtonAction, MouseButtonEvent, MouseMoveEvent, NamedKey,
     NavigationRequest, OffscreenRenderingContext, Opts, Preferences, RenderingContext, Servo,
     ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WheelDelta, WheelEvent, WheelMode,
@@ -391,12 +391,21 @@ impl RuntimeState {
             .with_visible(true);
         let window = event_loop.create_window(attributes)?;
         let window_handle = window.window_handle()?;
-        let parent_context = Rc::new(WindowRenderingContext::new(
-            display_handle,
-            window_handle,
-            PhysicalSize::new(WINDOW_WIDTH, WINDOW_HEIGHT),
-        )?);
-        parent_context.make_current()?;
+        let parent_context = Rc::new(
+            WindowRenderingContext::new(
+                display_handle,
+                window_handle,
+                PhysicalSize::new(WINDOW_WIDTH, WINDOW_HEIGHT),
+            )
+            .map_err(|error| {
+                std::io::Error::other(format!("WindowRenderingContext::new failed: {error:?}"))
+            })?,
+        );
+        parent_context.make_current().map_err(|error| {
+            std::io::Error::other(format!(
+                "WindowRenderingContext::make_current failed: {error:?}"
+            ))
+        })?;
         let content_context = Rc::new(
             parent_context.offscreen_context(PhysicalSize::new(WINDOW_WIDTH, CONTENT_HEIGHT)),
         );
@@ -802,7 +811,7 @@ impl RuntimeState {
     fn save_workspace_image(&self, name: &str) -> Result<bool, String> {
         let rect = DeviceIntRect::new(
             DeviceIntPoint::new(0, 0),
-            DeviceIntSize::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32),
+            DeviceIntPoint::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32),
         );
         let image = self
             .parent_context
@@ -900,7 +909,7 @@ impl RuntimeState {
 
     fn forward_native_ime(&self, event: Ime) {
         self.native_ime_events.set(self.native_ime_events.get() + 1);
-        let Some(webview) = self.webview.borrow().as_ref() else {
+        let Some(webview) = self.webview.borrow().as_ref().cloned() else {
             return;
         };
         let input = match event {
