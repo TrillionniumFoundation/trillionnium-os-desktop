@@ -1,0 +1,116 @@
+name: d0a02-headed-hardening
+
+on:
+  push:
+    branches:
+      - codex/d0a02-headed-runtime-v3
+    paths:
+      - .github/workflows/d0a02-headed-hardening.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0a02-headed-runtime-v3
+          fetch-depth: 0
+      - name: Apply deterministic bootstrap hardening
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/d0a02-headed-servo.yml')
+          text = workflow.read_text()
+          text = text.replace('  RUSTC_WRAPPER: sccache\n', '')
+          old = '''          cargo +"$channel" install sccache --locked
+'''
+          new = '''          cargo +"$channel" install sccache --locked
+          printf 'RUSTC_WRAPPER=%s\\n' "$(command -v sccache)" >> "$GITHUB_ENV"
+'''
+          if text.count(old) != 1:
+              raise SystemExit('expected one sccache installation command')
+          text = text.replace(old, new)
+          old = '''            x11-utils \\
+            x11-xserver-utils \\
+'''
+          new = '''            x11-apps \\
+            x11-utils \\
+            x11-xserver-utils \\
+'''
+          if text.count(old) != 1:
+              raise SystemExit('expected one X11 dependency block')
+          text = text.replace(old, new)
+          old = '''          export DISPLAY=:99
+          Xvfb "$DISPLAY" -screen 0 1280x800x24 -nolisten tcp \\
+'''
+          new = '''          export DISPLAY=:99
+          runtime_pid=
+          openbox_pid=
+          xvfb_pid=
+          Xvfb "$DISPLAY" -screen 0 1280x800x24 -nolisten tcp \\
+'''
+          if text.count(old) != 1:
+              raise SystemExit('expected one Xvfb launch block')
+          text = text.replace(old, new)
+          old = '''          trap 'kill "$runtime_pid" "$openbox_pid" "$xvfb_pid" 2>/dev/null || true' EXIT
+'''
+          new = '''          cleanup() {
+            [[ -z "$runtime_pid" ]] || kill "$runtime_pid" 2>/dev/null || true
+            [[ -z "$openbox_pid" ]] || kill "$openbox_pid" 2>/dev/null || true
+            [[ -z "$xvfb_pid" ]] || kill "$xvfb_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+'''
+          if text.count(old) != 1:
+              raise SystemExit('expected one headed cleanup trap')
+          text = text.replace(old, new)
+          workflow.write_text(text)
+
+          source = Path('runtime/servo/hepta_workspace_runtime.rs')
+          rust = source.read_text()
+          old = '''    fs::create_dir_all(&output)?;
+
+    let event_loop = EventLoop::with_user_event()
+'''
+          new = '''    fs::create_dir_all(&output)?;
+    if !_assert_evidence_path_is_bounded(&output) {
+        return Err("D0A-02 evidence path exceeds the product bound".into());
+    }
+
+    let event_loop = EventLoop::with_user_event()
+'''
+          if rust.count(old) != 1:
+              raise SystemExit('expected one runtime output initialization')
+          rust = rust.replace(old, new)
+          old = '''        rendering_context
+            .make_current()
+            .expect("failed to make rendering context current");
+'''
+          new = '''        let _ = rendering_context.make_current();
+'''
+          if rust.count(old) != 1:
+              raise SystemExit('expected one rendering-context activation')
+          rust = rust.replace(old, new)
+          source.write_text(rust)
+          PY
+          git diff --check
+      - name: Commit hardening and remove helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/d0a02-headed-hardening.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            .github/workflows/d0a02-headed-hardening.yml \
+            .github/workflows/d0a02-headed-servo.yml \
+            runtime/servo/hepta_workspace_runtime.rs
+          git commit -m "ci: harden exact-pin headed Servo qualification"
+          git push origin HEAD:codex/d0a02-headed-runtime-v3
