@@ -1,0 +1,148 @@
+name: stabilize-full-gap-candidate
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/stabilize-full-gap-candidate.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stabilize-full-gap-candidate
+  cancel-in-progress: false
+
+jobs:
+  stabilize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out exact integration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+
+      - name: Merge bounded D3 implementation and remove transient triggers
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "trillionnium-full-gap-stabilizer"
+          git config user.email "full-gap-stabilizer@users.noreply.github.com"
+          base_sha=$(git rev-parse HEAD)
+          git fetch --no-tags origin codex/d3-pageowner-browseractor-v1
+          d3_sha=$(git rev-parse FETCH_HEAD)
+          printf 'base=%s\nd3=%s\n' "$base_sha" "$d3_sha" | tee /tmp/stabilization-identities.txt
+
+          if git merge-base --is-ancestor "$d3_sha" "$base_sha"; then
+            echo 'D3 source candidate already integrated.'
+          else
+            set +e
+            GIT_MERGE_AUTOEDIT=no git merge --no-commit --no-ff "$d3_sha"
+            merge_status=$?
+            set -e
+            if [ "$merge_status" -ne 0 ]; then
+              conflicts=$(git diff --name-only --diff-filter=U)
+              printf '%s\n' "$conflicts" | tee /tmp/stabilization-conflicts.txt
+              # Only truth/workflow/doc conflicts may be resolved to the current
+              # integration branch. Product source conflicts require explicit review.
+              unresolved=
+              while IFS= read -r path; do
+                [ -n "$path" ] || continue
+                case "$path" in
+                  .github/workflows/*|docs/DESKTOP_PLAN.md|docs/DESKTOP_PLAN-2026-08-29-d6.md|docs/CURRENT_STATE.md|docs/MANIFEST.json|manifests/project-state.v1.json|manifests/gates.v1.json|manifests/repository-state.json|README.md)
+                    git checkout --ours -- "$path"
+                    git add "$path"
+                    ;;
+                  *) unresolved="$unresolved $path" ;;
+                esac
+              done <<EOF
+          $conflicts
+          EOF
+              [ -z "$unresolved" ] || { echo "unresolved product-source conflicts:$unresolved" >&2; exit 1; }
+            fi
+          fi
+
+          # Candidate source cannot self-promote plan/machine truth or replace the
+          # permanent qualification workflows.
+          git restore --source="$base_sha" --staged --worktree -- \
+            .github/workflows \
+            docs/DESKTOP_PLAN.md \
+            docs/DESKTOP_PLAN-2026-08-29-d6.md \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            manifests/project-state.v1.json \
+            manifests/gates.v1.json \
+            manifests/repository-state.json \
+            README.md
+
+          find .github -maxdepth 1 -type f -name '*.trigger' -delete
+          rm -f docs/.keep
+          for path in \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof \
+            tests/qemu/extract-d2i-content-crash-proof.sh \
+            tools/verify_d2i_content_crash_proof.py; do
+            [ ! -e "$path" ] || chmod 0755 "$path"
+          done
+
+          # Fail closed on hidden browser or ambient production authority.
+          ! git grep -nE 'TcpListener::bind|WebDriver|webdriver.*listen|0\.0\.0\.0:[0-9]+' -- \
+            apps crates runtime packaging tests ':!docs/**' ':!**/target/**'
+          test ! -e packaging/debian/image/rootfs-overlay/etc/hepta/enable-agent-port
+          test ! -e packaging/debian/systemd/etc/hepta/enable-agent-port
+          ! git diff --cached -U0 | grep -E '^\+.*(production_authority[^f]*true|release_ready[^f]*true|external_effects_enabled[^f]*true)'
+
+          git add -A
+          git diff --cached --check
+
+      - name: Install exact Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Run complete source gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Commit exact stabilized source candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --cached --quiet; then
+            echo 'No stabilization delta required.'
+            exit 0
+          fi
+          git commit -m "feat: stabilize full-gap source candidate through D3"
+          git push origin HEAD:codex/full-gap-closure-v2
+
+      - name: Upload bounded diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: full-gap-stabilization-diagnostics-${{ github.sha }}
+          path: |
+            /tmp/stabilization-identities.txt
+            /tmp/stabilization-conflicts.txt
+          if-no-files-found: warn
+          retention-days: 14
