@@ -26,7 +26,7 @@ use servo::{
     DevicePoint, EmbedderControl, EventLoopWaker, ImeEvent, InputEvent, InputEventId,
     InputEventResult, JSValue, Key, KeyState, KeyboardEvent, LoadStatus,
     MouseButton as ServoMouseButton, MouseButtonAction, MouseButtonEvent, MouseMoveEvent, NamedKey,
-    NavigationRequest, OffscreenRenderingContext, Opts, Preferences, RenderingContext, Servo,
+    NavigationRequest, OffscreenRenderingContext, Opts, RenderingContext, Servo,
     ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WheelDelta, WheelEvent, WheelMode,
     WindowRenderingContext, run_content_process,
 };
@@ -418,12 +418,8 @@ impl RuntimeState {
         opts.sandbox = false;
         opts.temporary_storage = true;
         opts.config_dir = Some(profile);
-        let mut preferences = Preferences::default();
-        preferences.dom_servo_helpers_enabled = true;
-
         let servo = ServoBuilder::default()
             .opts(opts)
-            .preferences(preferences)
             .event_loop_waker(Box::new(waker))
             .build();
         servo.setup_logging();
@@ -690,11 +686,11 @@ impl RuntimeState {
 
     fn trigger_content_crash(self: &Rc<Self>) {
         self.crash_triggered.set(true);
-        let Some(webview) = self.webview.borrow().as_ref().cloned() else {
-            self.fail("missing WebView while triggering test-only content panic");
-            return;
-        };
-        webview.evaluate_javascript("ServoTestUtils.panic()", |_result| {});
+        if let Err(error) = fs::write(self.output_dir.join("content-crash-ready"), "ready\n") {
+            self.fail(&format!(
+                "could not publish exact content-process crash marker: {error}"
+            ));
+        }
     }
 
     fn start_recovery(self: &Rc<Self>) {
