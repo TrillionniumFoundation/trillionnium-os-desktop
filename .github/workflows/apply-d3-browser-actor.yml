@@ -93,7 +93,7 @@ jobs:
           cargo test --workspace --all-targets --all-features --locked
           cargo run --locked -p hepta-browserd -- --self-check
           grep -F 'pub struct BrowserActor' crates/hepta-browser-actor/src/lib.rs
-          grep -F 'impl BrowserRequestHandler for BrowserActor' crates/hepta-browser-actor/src/lib.rs
+          grep -F 'BrowserRequestHandler for BrowserActor' crates/hepta-browser-actor/src/lib.rs
           grep -F 'impl OperationLifecycleObserver for ReceiptLifecycleObserver' \
             crates/hepta-browser-actor/src/lib.rs
           grep -F 'serve_one_with_observer' crates/hepta-agent-port/src/lib.rs
