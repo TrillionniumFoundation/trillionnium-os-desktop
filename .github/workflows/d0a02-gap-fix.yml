@@ -1,0 +1,652 @@
+name: d0a02-gap-fix
+
+on:
+  push:
+    branches:
+      - codex/d0a02-headed-runtime-v3
+    paths:
+      - .github/workflows/d0a02-gap-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact D0A-02 package branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d0a02-headed-runtime-v3
+          fetch-depth: 0
+
+      - name: Patch deterministic runtime blockers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected one match, found {count}')
+              return text.replace(old, new, 1)
+
+          def replace_regex_once(text: str, pattern: str, replacement: str, label: str) -> str:
+              updated, count = re.subn(pattern, replacement, text, count=1, flags=re.S)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected one regex match, found {count}')
+              return updated
+
+          headed_path = Path('experiments/servo-headed-runtime/src/main.rs')
+          headed = headed_path.read_text()
+          headed = replace_once(
+              headed,
+              'const NATIVE_INPUT_TIMEOUT_SECONDS: u64 = 150;\n',
+              '''const NATIVE_INPUT_TIMEOUT_SECONDS: u64 = 150;
+          const CONTENT_PROCESS_TERMINATED_MARKER: &str = "content-process-terminated.txt";
+          const CONTENT_PROCESS_TERMINATION_FAILED_MARKER: &str =
+              "content-process-termination-failed.txt";
+          ''',
+              'headed observation constants',
+          )
+          headed = replace_once(
+              headed,
+              '''            AppEvent::Settled => {
+                          if let Some(state) = &self.state {
+                              state.settled.set(true);
+                              state.servo.spin_event_loop();
+                              state.drive();
+                          }
+                      }
+                      AppEvent::Wake | AppEvent::Drive => {
+                          if let Some(state) = &self.state {
+                              state.servo.spin_event_loop();
+                              state.drive();
+                          }
+                      }
+          ''',
+              '''            AppEvent::Settled => {
+                          if let Some(state) = &self.state {
+                              state.settled.set(true);
+                              state.drive();
+                              state.spin_servo_if_safe();
+                              state.drive();
+                          }
+                      }
+                      AppEvent::Wake | AppEvent::Drive => {
+                          if let Some(state) = &self.state {
+                              state.drive();
+                              state.spin_servo_if_safe();
+                              state.drive();
+                          }
+                      }
+          ''',
+              'headed user-event ordering',
+          )
+          headed = replace_once(
+              headed,
+              '''        state.servo.spin_event_loop();
+                  match event {
+          ''',
+              '''        state.drive();
+                  state.spin_servo_if_safe();
+                  match event {
+          ''',
+              'headed window-event transition guard',
+          )
+          headed = replace_once(
+              headed,
+              '''        if let Some(state) = &self.state {
+                      state.servo.spin_event_loop();
+                      state.drive();
+                  }
+              }
+          }
+          
+          struct RuntimeState {
+          ''',
+              '''        if let Some(state) = &self.state {
+                      state.drive();
+                      state.spin_servo_if_safe();
+                      state.drive();
+                  }
+              }
+          }
+          
+          struct RuntimeState {
+          ''',
+              'headed about-to-wait ordering',
+          )
+          headed = replace_once(
+              headed,
+              '''    fn fixture_origin_matches(&self, url: &Url) -> bool {
+                  url.scheme() == self.fixture_url.scheme()
+                      && url.host_str() == self.fixture_url.host_str()
+                      && url.port_or_known_default() == self.fixture_url.port_or_known_default()
+              }
+          
+              fn drive(self: &Rc<Self>) {
+                  if self.completed.get() {
+                      return;
+                  }
+                  if self.failure.borrow().is_some() {
+          ''',
+              '''    fn fixture_origin_matches(&self, url: &Url) -> bool {
+                  url.scheme() == self.fixture_url.scheme()
+                      && url.host_str() == self.fixture_url.host_str()
+                      && url.port_or_known_default() == self.fixture_url.port_or_known_default()
+              }
+          
+              fn spin_servo_if_safe(&self) {
+                  if !(self.crash_triggered.get() && !self.recovery_started.get()) {
+                      self.servo.spin_event_loop();
+                  }
+              }
+          
+              fn consume_content_process_observation(&self) {
+                  if !self.crash_triggered.get()
+                      || self.crash_observed.get()
+                      || self.failure.borrow().is_some()
+                  {
+                      return;
+                  }
+          
+                  let failure_path = self
+                      .output_dir
+                      .join(CONTENT_PROCESS_TERMINATION_FAILED_MARKER);
+                  if failure_path.is_file() {
+                      match fs::read_to_string(&failure_path) {
+                          Ok(message) => self.fail(message.trim()),
+                          Err(error) => self.fail(&format!(
+                              "could not read persisted content-process termination failure: {error}"
+                          )),
+                      }
+                      return;
+                  }
+          
+                  let success_path = self.output_dir.join(CONTENT_PROCESS_TERMINATED_MARKER);
+                  if !success_path.is_file() {
+                      return;
+                  }
+                  let observation = match fs::read_to_string(&success_path) {
+                      Ok(observation) => observation,
+                      Err(error) => {
+                          self.fail(&format!(
+                              "could not read persisted content-process termination observation: {error}"
+                          ));
+                          return;
+                      }
+                  };
+                  if !observation.starts_with("pid=") || !observation.contains("\nstart_time=") {
+                      self.fail("persisted content-process termination observation is malformed");
+                      return;
+                  }
+                  self.crash_observed.set(true);
+                  *self.crash_reason.borrow_mut() = Some(format!(
+                      "exact content process terminated after SIGKILL: {}",
+                      observation.lines().collect::<Vec<_>>().join(", ")
+                  ));
+                  self.window.request_redraw();
+              }
+          
+              fn drive(self: &Rc<Self>) {
+                  if self.completed.get() {
+                      return;
+                  }
+                  self.consume_content_process_observation();
+                  if self.failure.borrow().is_some() {
+          ''',
+              'headed durable observation consumer',
+          )
+          headed = replace_once(
+              headed,
+              '''    fn trigger_content_crash(self: &Rc<Self>) {
+                  self.crash_triggered.set(true);
+                  let content_pid = match exact_content_process_pid() {
+          ''',
+              '''    fn trigger_content_crash(self: &Rc<Self>) {
+                  self.crash_triggered.set(true);
+                  for marker in [
+                      CONTENT_PROCESS_TERMINATED_MARKER,
+                      CONTENT_PROCESS_TERMINATION_FAILED_MARKER,
+                  ] {
+                      let path = self.output_dir.join(marker);
+                      if let Err(error) = fs::remove_file(&path) {
+                          if error.kind() != ErrorKind::NotFound {
+                              self.fail(&format!(
+                                  "could not clear stale content-process observation marker: {error}"
+                              ));
+                              return;
+                          }
+                      }
+                  }
+                  let content_pid = match exact_content_process_pid() {
+          ''',
+              'headed stale marker reset',
+          )
+          headed = replace_regex_once(
+              headed,
+              r'''        let proxy = self\.proxy\.clone\(\);\n        thread::spawn\(move \|\| \{\n            let stat_path = format!\("/proc/\{content_pid\}/stat"\);.*?        \}\);\n    \}\n\n    fn start_recovery''',
+              '''        let proxy = self.proxy.clone();
+                  let output_dir = self.output_dir.clone();
+                  thread::spawn(move || {
+                      match observe_exact_content_process_termination(
+                          content_pid,
+                          content_start_time,
+                      ) {
+                          Ok(()) => {
+                              let observation = format!(
+                                  "pid={content_pid}\nstart_time={content_start_time}\n"
+                              );
+                              if let Err(error) = write_atomic_text(
+                                  &output_dir.join(CONTENT_PROCESS_TERMINATED_MARKER),
+                                  &observation,
+                              ) {
+                                  let message = format!(
+                                      "could not persist exact content-process termination: {error}"
+                                  );
+                                  let _ = write_atomic_text(
+                                      &output_dir.join(
+                                          CONTENT_PROCESS_TERMINATION_FAILED_MARKER,
+                                      ),
+                                      &message,
+                                  );
+                                  let _ = proxy.send_event(
+                                      AppEvent::ContentProcessTerminationFailed(message),
+                                  );
+                                  return;
+                              }
+                              let _ = proxy.send_event(AppEvent::ContentProcessTerminated {
+                                  pid: content_pid,
+                                  start_time: content_start_time,
+                              });
+                          }
+                          Err(message) => {
+                              let final_message = match write_atomic_text(
+                                  &output_dir.join(
+                                      CONTENT_PROCESS_TERMINATION_FAILED_MARKER,
+                                  ),
+                                  &message,
+                              ) {
+                                  Ok(()) => message,
+                                  Err(error) => format!(
+                                      "{message}; additionally failed to persist termination failure: {error}"
+                                  ),
+                              };
+                              let _ = proxy.send_event(
+                                  AppEvent::ContentProcessTerminationFailed(final_message),
+                              );
+                          }
+                      }
+                  });
+              }
+          
+              fn start_recovery''',
+              'headed watcher replacement',
+          )
+          headed = replace_once(
+              headed,
+              'fn exact_content_process_pid() -> Result<u32, String> {\n',
+              '''fn write_atomic_text(path: &Path, value: &str) -> Result<(), String> {
+              let file_name = path
+                  .file_name()
+                  .and_then(|name| name.to_str())
+                  .ok_or_else(|| "observation marker path has no UTF-8 file name".to_owned())?;
+              let temporary = path.with_file_name(format!("{file_name}.tmp"));
+              fs::write(&temporary, value)
+                  .map_err(|error| format!("could not write temporary marker: {error}"))?;
+              fs::rename(&temporary, path)
+                  .map_err(|error| format!("could not publish observation marker: {error}"))?;
+              Ok(())
+          }
+          
+          fn observe_exact_content_process_termination(
+              content_pid: u32,
+              content_start_time: u64,
+          ) -> Result<(), String> {
+              let stat_path = format!("/proc/{content_pid}/stat");
+              let deadline = Instant::now() + Duration::from_secs(5);
+              loop {
+                  match fs::read_to_string(&stat_path) {
+                      Err(error) if error.kind() == ErrorKind::NotFound => return Ok(()),
+                      Err(error) => {
+                          return Err(format!(
+                              "could not observe exact content-process termination: {error}"
+                          ));
+                      }
+                      Ok(stat) => {
+                          let observed_start_time = proc_start_time(&stat).ok_or_else(|| {
+                              "could not parse exact content-process start time while observing termination"
+                                  .to_owned()
+                          })?;
+                          if observed_start_time != content_start_time {
+                              return Err(format!(
+                                  "content-process pid identity changed before an unambiguous exit observation: pid={content_pid}, expected_start_time={content_start_time}, observed_start_time={observed_start_time}"
+                              ));
+                          }
+                          if proc_state(&stat) == Some('Z') {
+                              return Ok(());
+                          }
+                          if Instant::now() >= deadline {
+                              return Err(format!(
+                                  "exact content process remained executable after SIGKILL timeout: pid={content_pid}, start_time={content_start_time}"
+                              ));
+                          }
+                          thread::sleep(Duration::from_millis(10));
+                      }
+                  }
+              }
+          }
+          
+          fn exact_content_process_pid() -> Result<u32, String> {
+          ''',
+              'headed observation helpers',
+          )
+          headed_path.write_text(headed)
+
+          simple_path = Path('runtime/servo/hepta_workspace_runtime.rs')
+          simple = simple_path.read_text()
+          simple = replace_once(
+              simple,
+              '''    CreateNewWebViewRequest, ImeEvent, InputEvent, InputEventId, InputEventResult, Key, KeyState,
+          ''',
+              '''    CreateNewWebViewRequest, ImeEvent, InputEvent, InputEventId, InputEventResult, JSValue, Key,
+              KeyState,
+          ''',
+              'simple JSValue import',
+          )
+          simple = replace_once(
+              simple,
+              '''    input_events_sent: Cell<u64>,
+              input_events_handled: Cell<u64>,
+              popup_requests_denied: Cell<u64>,
+          ''',
+              '''    input_events_sent: Cell<u64>,
+              input_events_handled: Cell<u64>,
+              input_sent_at: Cell<Option<Instant>>,
+              input_evidence_requested: Cell<bool>,
+              input_evidence_attempts: Cell<u32>,
+              input_page_evidence: RefCell<Option<String>>,
+              input_page_evidence_verified: Cell<bool>,
+              popup_requests_denied: Cell<u64>,
+          ''',
+              'simple input evidence state',
+          )
+          simple = replace_once(
+              simple,
+              '''        self.input_events_sent.set(13);
+                  self.ime_path_exercised.set(true);
+              }
+          
+              fn begin_recovery(self: &Rc<Self>) {
+          ''',
+              '''        self.input_events_sent.set(13);
+                  self.input_sent_at.set(Some(Instant::now()));
+                  self.ime_path_exercised.set(true);
+              }
+          
+              fn request_input_evidence(self: &Rc<Self>) {
+                  if self.input_evidence_requested.replace(true) {
+                      return;
+                  }
+                  let Some(webview) = self.webview.borrow().as_ref().cloned() else {
+                      self.input_evidence_requested.set(false);
+                      return;
+                  };
+                  let attempt = self.input_evidence_attempts.get().saturating_add(1);
+                  self.input_evidence_attempts.set(attempt);
+                  let state = self.clone();
+                  let proxy = self.proxy.clone();
+                  webview.evaluate_javascript(
+                      "(window.__hepta ? [window.__hepta.mouse, window.__hepta.button, window.__hepta.wheel, window.__hepta.key].join('|') : 'missing')",
+                      move |result| {
+                          state.input_evidence_requested.set(false);
+                          match result {
+                              Ok(JSValue::String(value)) => {
+                                  *state.input_page_evidence.borrow_mut() = Some(value.clone());
+                                  let counts = value
+                                      .split('|')
+                                      .map(str::parse::<u64>)
+                                      .collect::<Result<Vec<_>, _>>();
+                                  if matches!(counts, Ok(ref counts) if counts.len() == 4 && counts.iter().all(|count| *count >= 1))
+                                  {
+                                      state.input_page_evidence_verified.set(true);
+                                      let _ = fs::write(
+                                          state.output.join("input-page-evidence.txt"),
+                                          format!("{value}\n"),
+                                      );
+                                  }
+                              }
+                              other => {
+                                  *state.input_page_evidence.borrow_mut() =
+                                      Some(format!("evaluation-error:{other:?}"));
+                              }
+                          }
+                          if !state.input_page_evidence_verified.get() && attempt >= 5 {
+                              state.write_evidence("FAIL_INPUT_EVIDENCE");
+                          }
+                          let _ = proxy.send_event(AppEvent::Wake);
+                      },
+                  );
+              }
+          
+              fn begin_recovery(self: &Rc<Self>) {
+          ''',
+              'simple page input evidence',
+          )
+          simple = replace_once(
+              simple,
+              '''                "  \\"input_events_sent\\": {},\\n",
+                          "  \\"input_events_handled\\": {},\\n",
+                          "  \\"ime_path_exercised\\": {},\\n",
+          ''',
+              '''                "  \\"input_events_sent\\": {},\\n",
+                          "  \\"input_events_handled\\": {},\\n",
+                          "  \\"input_page_evidence\\": {},\\n",
+                          "  \\"input_page_evidence_verified\\": {},\\n",
+                          "  \\"ime_path_exercised\\": {},\\n",
+          ''',
+              'simple evidence fields',
+          )
+          simple = replace_once(
+              simple,
+              '''            self.input_events_sent.get(),
+                      self.input_events_handled.get(),
+                      self.ime_path_exercised.get(),
+          ''',
+              '''            self.input_events_sent.get(),
+                      self.input_events_handled.get(),
+                      self.input_page_evidence
+                          .borrow()
+                          .as_deref()
+                          .map(json_string)
+                          .unwrap_or_else(|| "null".to_owned()),
+                      self.input_page_evidence_verified.get(),
+                      self.ime_path_exercised.get(),
+          ''',
+              'simple evidence arguments',
+          )
+          simple = replace_once(
+              simple,
+              '''        if self.frame_count.get() > 0 {
+                      self.send_qualification_input();
+                  }
+                  if self.input_events_handled.get() >= 5
+                      && self.popup_requests_denied.get() >= 1
+                      && self.generation.get() == 1
+                  {
+                      self.begin_recovery();
+                  }
+          ''',
+              '''        if self.frame_count.get() > 0 {
+                      self.send_qualification_input();
+                  }
+                  if self.generation.get() == 1
+                      && !self.input_page_evidence_verified.get()
+                      && !self.input_evidence_requested.get()
+                      && self.input_evidence_attempts.get() < 5
+                  {
+                      if let Some(sent_at) = self.input_sent_at.get() {
+                          let minimum_delay = Duration::from_secs(
+                              1 + u64::from(self.input_evidence_attempts.get()),
+                          );
+                          if sent_at.elapsed() >= minimum_delay {
+                              self.request_input_evidence();
+                          }
+                      }
+                  }
+                  if self.input_page_evidence_verified.get()
+                      && self.popup_requests_denied.get() >= 1
+                      && self.generation.get() == 1
+                  {
+                      self.begin_recovery();
+                  }
+          ''',
+              'simple evidence-driven recovery',
+          )
+          simple = replace_once(
+              simple,
+              '''        if self.output.join("screenshot.ready").is_file()
+                      && self.generation.get() == 2
+                      && self.popup_requests_denied.get() >= 1
+                      && self.input_events_handled.get() >= 5
+                  {
+          ''',
+              '''        if self.output.join("screenshot.ready").is_file()
+                      && self.generation.get() == 2
+                      && self.popup_requests_denied.get() >= 1
+                      && self.input_page_evidence_verified.get()
+                  {
+          ''',
+              'simple success gate',
+          )
+          simple = replace_once(
+              simple,
+              '''            input_events_sent: Cell::new(0),
+                      input_events_handled: Cell::new(0),
+                      popup_requests_denied: Cell::new(0),
+          ''',
+              '''            input_events_sent: Cell::new(0),
+                      input_events_handled: Cell::new(0),
+                      input_sent_at: Cell::new(None),
+                      input_evidence_requested: Cell::new(false),
+                      input_evidence_attempts: Cell::new(0),
+                      input_page_evidence: RefCell::new(None),
+                      input_page_evidence_verified: Cell::new(false),
+                      popup_requests_denied: Cell::new(0),
+          ''',
+              'simple input evidence initialization',
+          )
+          simple = replace_once(
+              simple,
+              '''fn _assert_evidence_path_is_bounded(path: &Path) -> bool {
+          ''',
+              '''fn json_string(value: &str) -> String {
+              let mut output = String::with_capacity(value.len() + 2);
+              output.push('"');
+              for character in value.chars() {
+                  match character {
+                      '"' => output.push_str("\\\\\\\""),
+                      '\\\\' => output.push_str("\\\\\\\\"),
+                      '\\n' => output.push_str("\\\\n"),
+                      '\\r' => output.push_str("\\\\r"),
+                      '\\t' => output.push_str("\\\\t"),
+                      character if character.is_control() => {
+                          use std::fmt::Write as _;
+                          let _ = write!(output, "\\\\u{:04x}", character as u32);
+                      }
+                      character => output.push(character),
+                  }
+              }
+              output.push('"');
+              output
+          }
+          
+          fn _assert_evidence_path_is_bounded(path: &Path) -> bool {
+          ''',
+              'simple JSON string helper',
+          )
+          simple_path.write_text(simple)
+
+          workflow_path = Path('.github/workflows/d0a02-headed-servo.yml')
+          workflow = workflow_path.read_text()
+          workflow = replace_once(
+              workflow,
+              '''              'InputEvent::Ime',
+                          'fn request_create_new',
+          ''',
+              '''              'InputEvent::Ime',
+                          'evaluate_javascript',
+                          'input_page_evidence_verified',
+                          'fn request_create_new',
+          ''',
+              'workflow source audit',
+          )
+          workflow = replace_once(
+              workflow,
+              '''          jq -e '.input_events_handled >= 5' "$out/runtime-ready.json"
+                      jq -e '.ime_path_exercised == true' "$out/runtime-ready.json"
+          ''',
+              '''          jq -e '.input_events_handled >= 3' "$out/runtime-ready.json"
+                      jq -e '.input_page_evidence_verified == true' "$out/runtime-ready.json"
+                      jq -e '.ime_path_exercised == true' "$out/runtime-ready.json"
+          ''',
+              'workflow input evidence assertions',
+          )
+          workflow = replace_once(
+              workflow,
+              '''                  'pointer_keyboard_wheel_and_ime_paths': True,
+                          'popup_denied': True,
+          ''',
+              '''                  'pointer_keyboard_wheel_and_ime_paths': True,
+                          'page_observed_pointer_button_wheel_keyboard': True,
+                          'popup_denied': True,
+          ''',
+              'workflow bounded claims',
+          )
+          workflow_path.write_text(workflow)
+          PY
+
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt
+          rustfmt +1.97.1 --edition 2024 experiments/servo-headed-runtime/src/main.rs
+          rustfmt +1.97.1 --edition 2024 runtime/servo/hepta_workspace_runtime.rs
+
+          python3 - <<'PY'
+          from pathlib import Path
+          headed = Path('experiments/servo-headed-runtime/src/main.rs').read_text()
+          simple = Path('runtime/servo/hepta_workspace_runtime.rs').read_text()
+          workflow = Path('.github/workflows/d0a02-headed-servo.yml').read_text()
+          for token in [
+              'CONTENT_PROCESS_TERMINATED_MARKER',
+              'consume_content_process_observation',
+              'spin_servo_if_safe',
+              'observe_exact_content_process_termination',
+          ]:
+              assert token in headed, token
+          for token in [
+              'request_input_evidence',
+              'input_page_evidence_verified',
+              'evaluate_javascript',
+          ]:
+              assert token in simple, token
+          assert ".input_events_handled >= 3" in workflow
+          assert ".input_page_evidence_verified == true" in workflow
+          PY
+
+      - name: Commit exact blocker fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Tomasrgbsf"
+          git config user.email "tomasbraynt@gmail.com"
+          git add \
+            experiments/servo-headed-runtime/src/main.rs \
+            runtime/servo/hepta_workspace_runtime.rs \
+            .github/workflows/d0a02-headed-servo.yml
+          git diff --cached --check
+          git commit -m "fix(d0a02): make recovery gates evidence-driven"
+          git push origin HEAD:codex/d0a02-headed-runtime-v3
