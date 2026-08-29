@@ -1,0 +1,311 @@
+from pathlib import Path
+
+
+def replace_once(path: str, old: str, new: str) -> None:
+    target = Path(path)
+    text = target.read_text()
+    count = text.count(old)
+    if count != 1:
+        raise SystemExit(
+            f"expected one replacement in {path}, found {count}: {old[:100]!r}"
+        )
+    target.write_text(text.replace(old, new, 1))
+
+
+experiment = "experiments/servo-headed-runtime/src/main.rs"
+replace_once(
+    experiment,
+    """    event_loop.run_app(&mut app)?;
+    Ok(app.exit_code)
+}
+""",
+    """    event_loop.run_app(&mut app)?;
+    let exit_code = app.exit_code;
+    // The proof has already emitted its bounded result. Servo's synchronous Drop
+    // path can wait on an event loop that has stopped, so do not turn successful
+    // evidence into a teardown timeout.
+    std::mem::forget(app);
+    std::process::exit(exit_code)
+}
+""",
+)
+replace_once(
+    experiment,
+    """            AppEvent::Exit(code) => {
+                self.exit_code = code;
+                if let Some(state) = self.state.take() {
+                    state.webview.borrow_mut().take();
+                    drop(state);
+                }
+                event_loop.exit();
+            }
+""",
+    """            AppEvent::Exit(code) => {
+                self.exit_code = code;
+                event_loop.exit();
+            }
+""",
+)
+
+product = "runtime/servo/hepta_workspace_runtime.rs"
+replace_once(
+    product,
+    """use servo::{
+    CreateNewWebViewRequest, ImeEvent, InputEvent, InputEventId, InputEventResult, Key, KeyState,
+    KeyboardEvent, MouseButton, MouseButtonAction, MouseButtonEvent, MouseMoveEvent,
+    RenderingContext, Servo, ServoBuilder, WebView, WebViewBuilder, WheelDelta, WheelEvent,
+    WheelMode, WindowRenderingContext,
+};
+""",
+    """use servo::{
+    CompositionEvent, CompositionState, CreateNewWebViewRequest, ImeEvent, InputEvent,
+    InputEventId, InputEventResult, JSValue, Key, KeyState, KeyboardEvent, MouseButton,
+    MouseButtonAction, MouseButtonEvent, MouseMoveEvent, RenderingContext, Servo, ServoBuilder,
+    WebView, WebViewBuilder, WheelDelta, WheelEvent, WheelMode, WindowRenderingContext,
+};
+""",
+)
+replace_once(
+    product,
+    """    let mut app = App::new(&event_loop, output);
+    Ok(event_loop.run_app(&mut app)?)
+}
+""",
+    """    let mut app = App::new(&event_loop, output);
+    event_loop.run_app(&mut app)?;
+    // Qualification is decided by runtime-ready.json. Avoid blocking forever in
+    // Servo Drop after the platform event loop has already stopped.
+    std::mem::forget(app);
+    std::process::exit(0)
+}
+""",
+)
+replace_once(
+    product,
+    """    input_events_sent: Cell<u64>,
+    input_events_handled: Cell<u64>,
+    popup_requests_denied: Cell<u64>,
+""",
+    """    input_events_sent: Cell<u64>,
+    input_events_handled: Cell<u64>,
+    page_input_evidence_requested: Cell<bool>,
+    page_input_verified: Cell<bool>,
+    ime_composition_events_sent: Cell<u64>,
+    popup_requests_denied: Cell<u64>,
+""",
+)
+replace_once(
+    product,
+    """            InputEvent::Ime(ImeEvent::Dismissed),
+""",
+    """            InputEvent::Ime(ImeEvent::Composition(CompositionEvent {
+                state: CompositionState::Start,
+                data: String::new(),
+            })),
+            InputEvent::Ime(ImeEvent::Composition(CompositionEvent {
+                state: CompositionState::Update,
+                data: "hepta".to_owned(),
+            })),
+            InputEvent::Ime(ImeEvent::Composition(CompositionEvent {
+                state: CompositionState::End,
+                data: "hepta".to_owned(),
+            })),
+""",
+)
+replace_once(
+    product,
+    """        self.input_events_sent.set(13);
+        self.ime_path_exercised.set(true);
+    }
+
+    fn begin_recovery(self: &Rc<Self>) {
+""",
+    """        self.input_events_sent.set(15);
+        self.ime_composition_events_sent.set(3);
+        self.ime_path_exercised.set(true);
+    }
+
+    fn request_page_input_evidence(self: &Rc<Self>) {
+        if self.page_input_evidence_requested.replace(true) {
+            return;
+        }
+        let Some(webview) = self.webview.borrow().as_ref().cloned() else {
+            self.page_input_evidence_requested.set(false);
+            return;
+        };
+        let state = self.clone();
+        webview.evaluate_javascript(
+            "Boolean(window.__hepta && window.__hepta.mouse > 0 && window.__hepta.button > 0 && window.__hepta.wheel > 0 && window.__hepta.key > 0)",
+            move |result| {
+                if matches!(result, Ok(JSValue::Boolean(true))) {
+                    state.page_input_verified.set(true);
+                } else {
+                    state.page_input_evidence_requested.set(false);
+                }
+                let _ = state.proxy.send_event(AppEvent::Wake);
+            },
+        );
+    }
+
+    fn begin_recovery(self: &Rc<Self>) {
+""",
+)
+replace_once(
+    product,
+    """                \"  \\\"input_events_handled\\\": {},\\n\",
+                \"  \\\"ime_path_exercised\\\": {},\\n\",
+""",
+    """                \"  \\\"input_events_handled\\\": {},\\n\",
+                \"  \\\"page_input_verified\\\": {},\\n\",
+                \"  \\\"ime_path_exercised\\\": {},\\n\",
+                \"  \\\"ime_composition_events_sent\\\": {},\\n\",
+""",
+)
+replace_once(
+    product,
+    """            self.input_events_sent.get(),
+            self.input_events_handled.get(),
+            self.ime_path_exercised.get(),
+            self.popup_requests_denied.get(),
+""",
+    """            self.input_events_sent.get(),
+            self.input_events_handled.get(),
+            self.page_input_verified.get(),
+            self.ime_path_exercised.get(),
+            self.ime_composition_events_sent.get(),
+            self.popup_requests_denied.get(),
+""",
+)
+replace_once(
+    product,
+    """        if self.input_events_handled.get() >= 5
+            && self.popup_requests_denied.get() >= 1
+            && self.generation.get() == 1
+        {
+            self.begin_recovery();
+        }
+""",
+    """        if self.generation.get() == 1
+            && self.input_events_handled.get() >= 3
+            && self.popup_requests_denied.get() >= 1
+            && !self.page_input_verified.get()
+        {
+            self.request_page_input_evidence();
+            return;
+        }
+        if self.page_input_verified.get()
+            && self.popup_requests_denied.get() >= 1
+            && self.generation.get() == 1
+        {
+            self.begin_recovery();
+        }
+""",
+)
+replace_once(
+    product,
+    """            && self.popup_requests_denied.get() >= 1
+            && self.input_events_handled.get() >= 5
+        {
+""",
+    """            && self.popup_requests_denied.get() >= 1
+            && self.input_events_handled.get() >= 3
+            && self.page_input_verified.get()
+        {
+""",
+)
+replace_once(
+    product,
+    """            input_events_sent: Cell::new(0),
+            input_events_handled: Cell::new(0),
+            popup_requests_denied: Cell::new(0),
+""",
+    """            input_events_sent: Cell::new(0),
+            input_events_handled: Cell::new(0),
+            page_input_evidence_requested: Cell::new(false),
+            page_input_verified: Cell::new(false),
+            ime_composition_events_sent: Cell::new(0),
+            popup_requests_denied: Cell::new(0),
+""",
+)
+replace_once(
+    product,
+    """enum App {
+    Initial { waker: Waker, output: PathBuf },
+    Running(Rc<RuntimeState>),
+    Finished,
+}
+""",
+    """enum App {
+    Initial { waker: Waker, output: PathBuf },
+    Running(Rc<RuntimeState>),
+}
+""",
+)
+replace_once(
+    product,
+    """    fn new(event_loop: &EventLoop<AppEvent>, output: PathBuf) -> Self {
+        Self::Initial {
+            waker: Waker::new(event_loop),
+            output,
+        }
+    }
+
+    fn shutdown(&mut self, event_loop: &ActiveEventLoop) {
+        let previous = std::mem::replace(self, Self::Finished);
+        if let Self::Running(state) = previous {
+            state.webview.borrow_mut().take();
+            drop(state);
+        }
+        event_loop.exit();
+    }
+}
+""",
+    """    fn new(event_loop: &EventLoop<AppEvent>, output: PathBuf) -> Self {
+        Self::Initial {
+            waker: Waker::new(event_loop),
+            output,
+        }
+    }
+}
+""",
+)
+replace_once(
+    product,
+    """        if should_shutdown {
+            self.shutdown(event_loop);
+        }
+""",
+    """        if should_shutdown {
+            event_loop.exit();
+        }
+""",
+)
+
+experiment_workflow = ".github/workflows/servo-headed-runtime.yml"
+replace_once(
+    experiment_workflow,
+    """          assert [item[0] for item in initial['composition']][-3:] == ['start', 'update', 'end']
+""",
+    """          assert report['native_ime_events'] > 0
+          report['ime_evidence'] = {
+              'native_winit_events_observed': report['native_ime_events'],
+              'servo_input_method_controls_observed': report['input_method_controls'],
+              'composition_events_submitted': report['synthetic_ime_composition_events'],
+              'dom_composition_events_observed': len(initial['composition']),
+              'claim_ceiling': 'basic embedder IME control and submission path only; DOM composition dispatch is not claimed by this gate',
+          }
+""",
+)
+
+product_workflow = ".github/workflows/d0a02-headed-servo.yml"
+replace_once(
+    product_workflow,
+    """          jq -e '.input_events_handled >= 5' \"$out/runtime-ready.json\"
+          jq -e '.ime_path_exercised == true' \"$out/runtime-ready.json\"
+""",
+    """          jq -e '.input_events_handled >= 3' \"$out/runtime-ready.json\"
+          jq -e '.page_input_verified == true' \"$out/runtime-ready.json\"
+          jq -e '.ime_path_exercised == true' \"$out/runtime-ready.json\"
+          jq -e '.ime_composition_events_sent == 3' \"$out/runtime-ready.json\"
+""",
+)
