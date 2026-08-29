@@ -67,5 +67,6 @@ jobs:
           name: d0a02-repaired-tree-${{ github.sha }}
           path: ${{ runner.temp }}/d0a02-repaired-tree
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7
           compression-level: 6
