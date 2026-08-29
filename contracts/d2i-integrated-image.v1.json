@@ -1,0 +1,67 @@
+{
+  "schema": "trillionnium.desktop.d2i-integrated-image.v1",
+  "status": "IMPLEMENTED_CANDIDATE_REQUIRES_MACHINE_EVIDENCE",
+  "work_package": "D2I-01",
+  "dependencies": [
+    "D0A-02",
+    "D1-01",
+    "D2-01"
+  ],
+  "image": {
+    "base": "exact reproducible D1 ext4 image",
+    "runtime_injection": "deterministic exact headed runtime binary plus bounded systemd qualification overlay",
+    "independent_preparations": 2,
+    "byte_for_byte_equality_required": true,
+    "package_lock_must_remain_unchanged": true
+  },
+  "boot": {
+    "machine": "q35",
+    "acceleration": "tcg",
+    "network": "none",
+    "pid1": "systemd",
+    "display_server": "Weston headless Wayland",
+    "runtime_user": "hepta-desktop",
+    "product_agent_port_default_disabled": true
+  },
+  "runtime": {
+    "engine": "exact pinned Servo",
+    "trusted_chrome": "native window decorations",
+    "logical_content_surface_limit": 1,
+    "page_input_result_required": true,
+    "ime_composition_sequence_required": [
+      "start",
+      "update",
+      "end"
+    ],
+    "recovery_generation_required": 2,
+    "recovery_screenshot_required": true,
+    "external_network_allowed": false
+  },
+  "claim_ceiling": {
+    "candidate_can_prove_same_image_d1_plus_headed_servo": true,
+    "actual_content_process_crash_currently_proven": false,
+    "external_browsing_or_effects": false,
+    "product_agent_port_enabled": false,
+    "secure_boot": false,
+    "hardware_readiness": false,
+    "release_readiness": false
+  },
+  "promotion_requires": [
+    "two_deterministic_integrated_images_byte_equal",
+    "exact_head_d1_pipeline_pass",
+    "exact_head_d2i_qemu_pass",
+    "systemd_udev_dbus_logind_active",
+    "headless_wayland_active",
+    "headed_servo_window_created",
+    "trusted_chrome_survives_recovery",
+    "one_logical_content_surface",
+    "page_input_verified",
+    "ime_start_update_end_verified",
+    "product_agent_port_default_disabled",
+    "qemu_network_none",
+    "actual_content_process_crash_callback_observed",
+    "digest_bound_machine_evidence_committed",
+    "independent_review",
+    "exact_main_rerun_after_merge"
+  ]
+}

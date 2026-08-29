@@ -1,0 +1,99 @@
+#!/bin/bash
+set -euo pipefail
+
+out=/var/lib/trillionnium-d2i
+result="$out/guest-acceptance.json"
+mkdir -p "$out"
+
+poweroff_guest() {
+  sync
+  systemctl poweroff --no-block || systemctl poweroff --force --no-block || true
+}
+
+fail() {
+  local reason=$1
+  printf 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:%s\n' "$reason" >&2
+  cat > "$result" <<EOF
+{
+  "schema": "trillionnium.desktop.d2i-guest-acceptance.v1",
+  "status": "FAIL",
+  "reason": "${reason//\"/\\\"}",
+  "network_enabled": false,
+  "product_agent_port_enabled": false
+}
+EOF
+  poweroff_guest
+  exit 1
+}
+
+systemctl is-active --quiet systemd-udevd.service || fail udev_inactive
+systemctl is-active --quiet dbus.service || fail dbus_inactive
+systemctl is-active --quiet systemd-logind.service || fail logind_inactive
+systemctl is-active --quiet trillionnium-d1-wayland.service || fail wayland_inactive
+systemctl is-active --quiet trillionnium-d2i-runtime.service || fail headed_runtime_inactive
+
+runtime="$out/runtime-ready.json"
+screenshot="$out/servo-content-recovered.png"
+test -s "$runtime" || fail runtime_evidence_missing
+test -s "$screenshot" || fail recovery_screenshot_missing
+
+grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY"' "$runtime" \
+  || fail runtime_status_not_pass
+grep -Eq '"content_surface_limit"[[:space:]]*:[[:space:]]*1' "$runtime" \
+  || fail content_surface_limit_changed
+grep -Eq '"content_generation"[[:space:]]*:[[:space:]]*2' "$runtime" \
+  || fail recovery_generation_missing
+grep -Eq '"frame_count"[[:space:]]*:[[:space:]]*[2-9][0-9]*' "$runtime" \
+  || fail recovered_frame_missing
+grep -Eq '"page_input_verified"[[:space:]]*:[[:space:]]*true' "$runtime" \
+  || fail page_input_not_verified
+grep -Eq '"ime_path_exercised"[[:space:]]*:[[:space:]]*true' "$runtime" \
+  || fail ime_path_not_exercised
+grep -Eq '"ime_composition_events_sent"[[:space:]]*:[[:space:]]*3' "$runtime" \
+  || fail ime_composition_not_complete
+grep -Eq '"external_network_used"[[:space:]]*:[[:space:]]*false' "$runtime" \
+  || fail runtime_network_claim_changed
+
+[[ ! -e /etc/hepta/enable-agent-port ]] || fail release_marker_present
+[[ ! -S /run/hepta/browserd/agent.sock ]] || fail product_agent_socket_present
+if systemctl is-active --quiet hepta-browserd-agent.socket; then
+  fail product_agent_socket_active
+fi
+non_loopback=$(find /sys/class/net -mindepth 1 -maxdepth 1 ! -name lo -printf '%f\n')
+[[ -z "$non_loopback" ]] || fail non_loopback_network_device_present
+
+journalctl --no-pager -u trillionnium-d2i-runtime.service > "$out/runtime-journal.txt" || true
+runtime_sha=$(sha256sum "$runtime" | awk '{print $1}')
+screenshot_sha=$(sha256sum "$screenshot" | awk '{print $1}')
+wayland_sha=$(sha256sum /run/hepta-desktop/weston.log | awk '{print $1}')
+actual_crash_callbacks=$(sed -n 's/.*"actual_crash_callbacks": \([0-9][0-9]*\).*/\1/p' "$runtime" | head -n1)
+actual_crash_callbacks=${actual_crash_callbacks:-0}
+
+cat > "$result" <<EOF
+{
+  "schema": "trillionnium.desktop.d2i-guest-acceptance.v1",
+  "status": "PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE",
+  "pid1": "systemd",
+  "udev_active": true,
+  "dbus_active": true,
+  "logind_active": true,
+  "headless_wayland_active": true,
+  "headed_servo_runtime_completed": true,
+  "trusted_chrome_survived_recovery": true,
+  "content_surface_limit": 1,
+  "page_input_verified": true,
+  "ime_path_exercised": true,
+  "product_agent_port_default_disabled": true,
+  "product_agent_port_socket_absent": true,
+  "network_enabled": false,
+  "runtime_ready_sha256": "$runtime_sha",
+  "recovery_screenshot_sha256": "$screenshot_sha",
+  "wayland_log_sha256": "$wayland_sha",
+  "actual_crash_callbacks": $actual_crash_callbacks,
+  "actual_content_process_crash_proven": false,
+  "release_ready": false
+}
+EOF
+
+printf 'TRILLIONNIUM_D2I_ACCEPTANCE_PASS\n'
+poweroff_guest
