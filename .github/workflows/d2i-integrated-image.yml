@@ -328,7 +328,12 @@ jobs:
           assert acceptance['product_agent_port_default_disabled'] is True
           assert runtime['page_input_verified'] is True
           assert runtime['ime_composition_events_sent'] == 3
-          assert boot['claims']['actual_content_process_crash_proven'] is False
+          assert boot['claims']['actual_content_process_crash_proven'] is True
+          assert acceptance['actual_content_process_crash_proven'] is True
+          assert acceptance['actual_crash_callbacks'] >= 1
+          assert runtime['actual_content_process_crash_proven'] is True
+          assert runtime['actual_crash_callbacks'] >= 1
+          assert runtime['content_process_termination_observed'] is True
           evidence = root / 'evidence'
           evidence.mkdir(parents=True, exist_ok=True)
           workflow = Path('.github/workflows/d2i-integrated-image.yml')
@@ -343,7 +348,7 @@ jobs:
           ]
           summary = {
               'schema': 'trillionnium.desktop.d2i-integrated-qualification.v1',
-              'status': 'PASS_CANDIDATE_BLOCKED_ACTUAL_CONTENT_PROCESS_CRASH',
+              'status': 'PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE',
               'repository': os.environ['GITHUB_REPOSITORY'],
               'base_sha': os.environ['BASE_SHA'],
               'candidate_head_sha': os.environ['CANDIDATE_HEAD_SHA'],
@@ -363,7 +368,6 @@ jobs:
               'guest_acceptance': acceptance,
               'runtime': runtime,
               'promotion_blockers': [
-                  'actual_content_process_crash_callback_observed',
                   'digest_bound_evidence_committed',
                   'independent_review',
                   'exact_main_rerun_after_merge',
