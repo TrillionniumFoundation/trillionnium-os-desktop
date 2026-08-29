@@ -1,1 +1,1 @@
-integrate and validate D3 BrowserActor core v3
+integrate and validate D3 BrowserActor core v4
