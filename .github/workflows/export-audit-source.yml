@@ -1,0 +1,48 @@
+name: export-audit-source
+
+on:
+  push:
+    branches: ["codex/audit-export-1a791da"]
+    paths:
+      - ".github/audit-export.trigger"
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact integration source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 1a791da4c9207da5261346c5842a3f37f75298d2
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Create bounded source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "1a791da4c9207da5261346c5842a3f37f75298d2"
+          test -z "$(git status --porcelain=v1)"
+          mkdir -p /tmp/audit-source
+          git archive --format=tar.gz \
+            --prefix=trillionnium-os-desktop/ \
+            -o /tmp/audit-source/trillionnium-os-desktop-1a791da.tar.gz \
+            HEAD
+          sha256sum /tmp/audit-source/trillionnium-os-desktop-1a791da.tar.gz \
+            > /tmp/audit-source/SHA256SUMS
+          printf 'commit=%s\ntree=%s\n' \
+            "$(git rev-parse HEAD)" "$(git rev-parse HEAD^{tree})" \
+            > /tmp/audit-source/IDENTITY
+
+      - name: Upload exact source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: audit-source-1a791da
+          path: /tmp/audit-source
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
