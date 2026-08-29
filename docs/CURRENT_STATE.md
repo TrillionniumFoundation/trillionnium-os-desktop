@@ -3,7 +3,7 @@
 **Updated:** 2026-08-29  
 **Canonical plan:** `2026-08-28-d5`  
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`  
-**Implementation stage:** `D0R_D0C05_HOST_VALIDATED`
+**Implementation stage:** `D0R_D0C05_D0A01_COMPILE_VALIDATED`
 
 ## Implemented and demonstrated
 
@@ -11,7 +11,14 @@ The D0 foundation includes the Rust workspace, layered revisions, deterministic
 Agent/human arbitration, synthetic trusted origins, browser contracts, an exact
 Cargo dependency closure, and fail-closed product/evidence validation.
 
-The local Agent control path is now host-validated through D0C-05:
+The signed Debian input gate is complete at snapshot `20260828T000000Z` for
+`amd64`: the committed D0R-02 lock contains 319 exact packages and package-set
+digest
+`89918a968afafdbabe03e43794565cb1dc936f3f24a09ec81030be4a4085333a`.
+This remains input/closure evidence only; no rootfs, disk image, or boot claim is
+inferred from it.
+
+The local Agent control path is host-validated through D0C-05:
 
 ```text
 already-connected AF_UNIX stream
@@ -35,7 +42,27 @@ The socket definition remains closed by default:
 - marker shipped by the repository/image inputs: **no**;
 - product listener demonstrated: **no**.
 
-## Exact-head host validation
+## Exact-head qualification
+
+### D0A-01 Servo compile compatibility
+
+Candidate `01d02d692c573ccde7a99d990f2a63235d9bc69f` passed workflow run
+`33230713426`, job `99042937091`, against exact upstream Servo commit
+`670ae8a70801b162e186f81cbb5bdd2d59c39108`.
+
+Using Servo's Rust `1.97.1` toolchain and locked Cargo graph, the gate passed:
+
+- locked Cargo metadata;
+- the official `winit_minimal` embedder;
+- the Trillionnium public embedder API probe;
+- the official `servoshell`;
+- exact source hashes, a clean checkout, and a zero-patch ledger;
+- a tracked-only repository consistency validation.
+
+The promoted status is strictly `PASS_COMPILE_COMPATIBILITY_ONLY`. Machine
+evidence is
+`docs/evidence/generated/d0a01-servo-qualification-result.json`; the review
+record is `docs/evidence/2026-08-29-d0a01-servo-exact-pin.md`.
 
 ### D0C-02
 
@@ -74,13 +101,16 @@ Evidence: `docs/evidence/generated/d0c05-rust193-host-result.json`.
 
 ## Not implemented or claimed
 
+- Servo is compile-compatible at the exact pin but is not integrated or started
+  by a product-owned headed runtime.
+- No window, visible first frame, native pointer/keyboard/wheel/IME delivery,
+  popup refusal, or content crash recovery has been demonstrated.
 - The systemd socket is not enabled and no product listener has been started.
 - QEMU PID 1 activation, authorized/unauthorized live socket tests, teardown,
   and recovery have not yet been demonstrated.
 - No TaskFlow semantic principal is mapped to the local mechanism identity.
-- No BrowserActor dispatch or Servo runtime exists in the demonstrated product.
-- No visible first frame, Wayland native input/IME, or bootable Debian product
-  image is currently claimed.
+- No BrowserActor dispatch or durable receipt journal exists in the
+  demonstrated product.
 - No external navigation, capability, credential use, or web effect is
   authorized.
 - No signed app runtime, Secure Boot, update/rollback, beta, or release claim
@@ -88,14 +118,16 @@ Evidence: `docs/evidence/generated/d0c05-rust193-host-result.json`.
 
 ## Active next work
 
-1. Merge the host-validated D0C-05 source while preserving the absent enable
-   marker and no-listener claim.
-2. Complete D0A-01 against Servo pin
-   `670ae8a70801b162e186f81cbb5bdd2d59c39108` and Servo's own toolchain.
-3. Complete D1-01 signed Debian snapshot, deterministic image, QEMU boot, and
-   the D0C-05 PID 1 activation corpus in an explicitly test-enabled image.
-4. Implement D0A-02/D2 trusted workspace composition, one Servo content
-   surface, local fixture first frame, native pointer/keyboard/IME, popup
-   refusal, and crash recovery.
-5. Keep BrowserActor, external credentials, capabilities, navigation effects,
-   update authority, and release claims closed until their explicit gates pass.
+1. Complete D1-01 using the signed Debian snapshot: resolve the full D1 package
+   closure, build two deterministic candidates, boot QEMU into systemd/Wayland,
+   and execute the D0C-05 PID 1 activation corpus in a test-only transaction
+   while the immutable product candidate remains default-disabled.
+2. Complete D0A-02/D2 trusted workspace composition, one Servo content surface,
+   local fixture first frame, native pointer/keyboard/IME, popup refusal, and
+   crash recovery.
+3. Implement D0C-06 durable, hash-chained, crash-consistent receipts before any
+   BrowserActor operation claim.
+4. Bind BrowserActor/PageOwner and an explicitly selected development-profile
+   AgentPort only after the preceding runtime and receipt gates pass.
+5. Keep external credentials, capabilities, navigation effects, update
+   authority, and release claims closed until their explicit D5-D8 gates pass.

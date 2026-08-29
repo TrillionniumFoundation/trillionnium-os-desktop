@@ -4,10 +4,12 @@
   "baseline_commit": "de113c32827a32c334cc77a61a761976c7174d04",
   "completed_work_packages": [
     "D0R-01",
+    "D0R-02",
     "D0R-03",
     "D0C-01",
     "D0C-02",
     "D0A-00",
+    "D0A-01",
     "D0C-03",
     "D0C-04",
     "D0C-05"
@@ -46,7 +48,7 @@
       ]
     }
   ],
-  "implementation_stage": "D0R_D0C05_HOST_VALIDATED",
+  "implementation_stage": "D0R_D0C05_D0A01_COMPILE_VALIDATED",
   "not_claimed": [
     "servo_integrated",
     "debian_image_built",
@@ -58,11 +60,21 @@
     "signed_app_runtime",
     "production_release"
   ],
-  "partial_work_packages": [
-    "D0R-02",
-    "D0A-01"
-  ],
+  "partial_work_packages": [],
   "product": "TrillionniumOS Desktop",
+  "qualification_work_packages": [
+    {
+      "artifact_digest": "sha256:aad3c47a4151b0ecaf96c4e0dd16680cc498667e155391c53b4a6e489a57501b",
+      "artifact_id": 9708505752,
+      "evidence": "docs/evidence/generated/d0a01-servo-qualification-result.json",
+      "id": "D0A-01",
+      "job_id": 99042937091,
+      "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+      "status": "PASS_COMPILE_COMPATIBILITY_ONLY",
+      "validated_head": "01d02d692c573ccde7a99d990f2a63235d9bc69f",
+      "workflow_run_id": 33230713426
+    }
+  ],
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
   "repository_mode": "full_product_repository",
   "schema": "trillionnium.desktop.repository-state.v1",

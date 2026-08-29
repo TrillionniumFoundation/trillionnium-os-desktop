@@ -51,9 +51,21 @@
         33190387553,
         33190387564
       ]
+    },
+    {
+      "artifact_digest": "sha256:aad3c47a4151b0ecaf96c4e0dd16680cc498667e155391c53b4a6e489a57501b",
+      "artifact_id": 9708505752,
+      "evidence": "evidence/2026-08-29-d0a01-servo-exact-pin.md",
+      "id": "TOS-D0A-01",
+      "job_id": 99042937091,
+      "machine_evidence": "evidence/generated/d0a01-servo-qualification-result.json",
+      "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+      "status": "PASS_COMPILE_COMPATIBILITY_ONLY",
+      "validated_head": "01d02d692c573ccde7a99d990f2a63235d9bc69f",
+      "workflow_run_id": 33230713426
     }
   ],
-  "implementation_stage": "D0R_D0C05_HOST_VALIDATED",
+  "implementation_stage": "D0R_D0C05_D0A01_COMPILE_VALIDATED",
   "product": "TrillionniumOS Desktop",
   "product_boundary": "../manifests/product-boundary.json",
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
@@ -66,9 +78,11 @@
   ],
   "rust_toolchain_lock": "../manifests/rust-toolchain.lock.json",
   "schema": "trillionnium.desktop.docs.manifest.v2",
+  "servo_compile_qualified": true,
   "servo_integrated": false,
   "servo_lock": "../manifests/servo.lock.json",
-  "status": "IMPLEMENTATION_HOST_VALIDATED",
+  "servo_qualification_evidence": "evidence/generated/d0a01-servo-qualification-result.json",
+  "status": "IMPLEMENTATION_COMPILE_VALIDATED",
   "superseded_plan": "DESKTOP_PLAN-2026-08-28.md",
   "transport_core_source_present": true,
   "transport_exact_head_rust_validation": true,

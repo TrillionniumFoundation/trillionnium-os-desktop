@@ -72,7 +72,8 @@ or unrestricted update authority.
 
 ### 0.2 Current implementation checkpoint
 
-The repository is host-validated through `D0C-05`:
+The repository is host-validated through `D0C-05`, has a committed signed
+D0R-02 Debian input closure, and is compile-qualified through `D0A-01`:
 
 - Rust 1.93 workspace, exact dependency closure, CI, and claim validation;
 - neutral contract primitives and layered revision model;
@@ -84,12 +85,18 @@ The repository is host-validated through `D0C-05`:
   cgroup/unit peer attestation, and a hardened one-request connection service;
 - default-disabled preset and an enable marker that is intentionally not
   shipped;
+- a signed Debian 13 snapshot lock with the exact amd64 package closure needed
+  as the immutable D1 input baseline;
+- exact Servo commit `670ae8a70801b162e186f81cbb5bdd2d59c39108`, Servo Rust
+  `1.97.1`, official `winit_minimal`, public embedder API probe, and official
+  `servoshell` compile success with a zero-patch clean checkout;
 - contract schemas, golden vectors, independent references, static audits, and
-  exact-head Rust regression evidence.
+  exact-head Rust/Servo regression evidence.
 
-The host checkpoint proves source behavior, package mappings, unit syntax, and
-default-closed custody. It does **not** prove a booted or enabled listener.
-Servo, a Debian product image, BrowserActor, external effects, signed apps,
+The checkpoint proves source behavior, package mappings, signed input closure,
+unit syntax, default-closed custody, and Servo compile compatibility. It does
+**not** prove a booted image, enabled product listener, Servo startup, a visible
+frame, or native input delivery. BrowserActor, external effects, signed apps,
 capabilities, update authority, and release signing remain unimplemented or
 unclaimed.
 
@@ -122,9 +129,9 @@ implementation detail; they are not optional commentary.
 
 | Stage | Current state | Promotion gate |
 | --- | --- | --- |
-| `D0R` repository/reproducibility | foundation implemented; signed Debian input closure partial | resolve signed snapshot, archive keys, package closure, and deterministic builder for D1 |
+| `D0R` repository/reproducibility | foundation and signed Debian input closure implemented | deterministic two-build image and QEMU evidence for D1 |
 | `D0C` contracts/control core | D0C-01 through D0C-05 host validated | D0C-06 durable receipt journal; D1 live PID 1 socket corpus before enablement |
-| `D0A` Servo compatibility | D0A-00 state machine implemented | D0A-01 exact-pin compile gate, then D0A-02 headed workspace/runtime evidence |
+| `D0A` Servo compatibility | D0A-00 state machine and D0A-01 exact-pin compile gate complete | D0A-02 headed workspace/runtime evidence |
 | `D1` Debian QEMU substrate | not demonstrated | reproducible boot into supervised Wayland placeholder plus test-only D0C-05 activation corpus |
 | `D2` headed Servo surface | not demonstrated | one visible content surface, native input/IME, popup refusal, crash/restart evidence |
 | `D3` PageOwner/BrowserActor | not started | authorized semantic operations, durable receipts, explicit development-profile AgentPort activation |
@@ -140,40 +147,37 @@ evidence gate. A source file is not completion; only the observable exit in
 
 ## 3. Immediate execution lock
 
-The next implementation sequence is fixed:
+The D0C-02 through D0C-05 preservation/merge and D0A-01 exact-pin compile items
+are complete. The remaining implementation sequence is fixed:
 
-1. Preserve the D0C-02 through D0C-05 exact-head regression suite and merge the
-   default-disabled socket-custody product without an enable marker.
-2. `D0A-01`: compile exact Servo commit
-   `670ae8a70801b162e186f81cbb5bdd2d59c39108` using Servo's own toolchain,
-   official headed shell, and external embedder API probes. Treat this as
-   compile compatibility only.
-3. `D0R-02` / `D1-01`: resolve signed Debian inputs, build two deterministic
-   image candidates, boot QEMU into systemd/Wayland, and run the D0C-05 PID 1
-   activation corpus in a test-only image while keeping the product image
-   default-disabled.
-4. `D0A-02` / D2: prove trusted workspace composition, one Servo content
+1. `D1-01`: from the committed signed Debian baseline, resolve the complete D1
+   closure, build two deterministic image candidates, boot QEMU into
+   systemd/Wayland, and run the D0C-05 PID 1 activation corpus in a test-only
+   transaction while keeping the immutable product candidate default-disabled.
+2. `D0A-02` / D2: prove trusted workspace composition, one Servo content
    surface, local fixture first frame, pointer/keyboard/IME, popup refusal,
    process topology, and crash recovery.
-5. `D0C-06`: implement the durable receipt journal before BrowserActor
+3. `D0C-06`: implement the durable receipt journal before BrowserActor
    operation claims.
-6. D3: bind BrowserActor/PageOwner, receipts, intended local Agent principal,
+4. D3: bind BrowserActor/PageOwner, receipts, intended local Agent principal,
    and explicitly selected development-profile AgentPort activation on local
    fixtures.
 
-Servo compile work and signed Debian input resolution may proceed in parallel.
-External interactive browsing, persistent credentials, signed app installation,
-capabilities, update authority, and external effects remain closed until their
-explicit D5–D8 gates are satisfied.
+D1 package resolution and preparation for the D0A-02 headed runtime may proceed
+in parallel where they do not promote runtime claims. External interactive
+browsing, persistent credentials, signed app installation, capabilities, update
+authority, and external effects remain closed until their explicit D5-D8 gates
+are satisfied.
 
 ## 4. Claim boundary
 
-The current repository proves the checked-in D0 foundation and D0C-02 through
-D0C-05 host behavior. It does not prove Servo integration, a visible frame, a
-bootable image, live PID 1 socket activation, hardware support, BrowserActor,
-network mediation, signed applications, capability enforcement, Secure Boot,
-rollback, or beta readiness. Compile compatibility does not imply runtime;
-QEMU does not imply bare metal; source signing code does not prove key custody;
-and a lower evidence tier never implies a higher product claim. Every
-promotion must update `CURRENT_STATE.md`, repository-state, contracts/manifests,
-tests, and evidence references atomically.
+The current repository proves the checked-in D0 foundation, the signed D0R-02
+input closure, D0C-02 through D0C-05 host behavior, and D0A-01 exact-pin compile
+compatibility. It does not prove Servo integration, a visible frame, a bootable
+image, live PID 1 socket activation, hardware support, BrowserActor, network
+mediation, signed applications, capability enforcement, Secure Boot, rollback,
+or beta readiness. Compile compatibility does not imply runtime; QEMU does not
+imply bare metal; source signing code does not prove key custody; and a lower
+evidence tier never implies a higher product claim. Every promotion must update
+`CURRENT_STATE.md`, repository-state, contracts/manifests, tests, and evidence
+references atomically.
