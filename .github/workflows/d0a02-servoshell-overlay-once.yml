@@ -28,20 +28,14 @@ jobs:
 
           source = Path('experiments/servo-headed-runtime/src/main.rs')
           text = source.read_text()
+          if text.count('use tracing::warn;\n') != 1:
+              raise SystemExit('expected one tracing warn import')
           text = text.replace('use tracing::warn;\n', '')
-          old = '''        if let Err(error) = self.0.send_event(AppEvent::Wake) {
-              warn!(?error, "failed to wake D0A-02 event loop");
-          }
-          '''
-          old = '\n'.join(line[10:] if line.startswith('          ') else line for line in old.splitlines()) + '\n'
-          new = '''        if let Err(error) = self.0.send_event(AppEvent::Wake) {
-              eprintln!("failed to wake D0A-02 event loop: {error}");
-          }
-          '''
-          new = '\n'.join(line[10:] if line.startswith('          ') else line for line in new.splitlines()) + '\n'
-          if text.count(old) != 1:
-              raise SystemExit(f'expected one waker warning block, got {text.count(old)}')
-          source.write_text(text.replace(old, new))
+          old_warning = 'warn!(?error, "failed to wake D0A-02 event loop");'
+          new_warning = 'eprintln!("failed to wake D0A-02 event loop: {error}");'
+          if text.count(old_warning) != 1:
+              raise SystemExit(f'expected one waker warning macro, got {text.count(old_warning)}')
+          source.write_text(text.replace(old_warning, new_warning))
 
           workflow = Path('.github/workflows/servo-headed-runtime.yml')
           text = workflow.read_text()
@@ -57,11 +51,9 @@ jobs:
           }
           for old, new in replacements.items():
               count = text.count(old)
-              if old.startswith('-p servo'):
-                  if count != 2:
-                      raise SystemExit(f'expected two Servo cargo target anchors, got {count}')
-              elif count < 1:
-                  raise SystemExit(f'missing workflow anchor: {old!r}')
+              expected = 2 if old.startswith('-p servo') else 1
+              if count != expected:
+                  raise SystemExit(f'workflow anchor count {count}, expected {expected}: {old!r}')
               text = text.replace(old, new)
           workflow.write_text(text)
           PY
