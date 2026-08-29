@@ -61,7 +61,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 for command in mmdebstrap python3 jq mke2fs tar chroot rsync sha256sum \
-  systemd-sysusers systemd-tmpfiles cmp diff readlink; do
+  systemd-sysusers systemd-tmpfiles cmp diff readlink stat awk; do
   command -v "$command" >/dev/null || {
     echo "required command is missing: $command" >&2
     exit 1
@@ -193,7 +193,7 @@ APT::Install-Recommends "false";
 APT::Install-Suggests "false";
 EOF
 
-rsync -aHAX --numeric-ids "$overlay/" "$rootfs/"
+rsync -aHAX --numeric-ids --chown=0:0 "$overlay/" "$rootfs/"
 install -D -m 0755 "$agent_portd_binary" "$rootfs/usr/libexec/hepta-agent-portd"
 install -D -m 0755 "$agent_fixture_binary" \
   "$rootfs/usr/libexec/hepta-agent-d1-fixture"
@@ -219,7 +219,61 @@ chmod 0755 \
 find "$rootfs/etc/systemd/system" -type f \( -name '*.service' -o -name '*.socket' -o -name '*.target' \) \
   -exec chmod 0644 {} +
 
+# A sudo-hosted mmdebstrap build may map rootfs metadata to the invoking
+# runner UID/GID. Target systemd-tmpfiles correctly rejects trusted path
+# parents that are not guest root. Overlay files are explicitly installed
+# as 0:0 above; here we normalize only directory and symlink metadata left
+# at the builder identity. Regular or special nodes fail closed so package
+# ownership, setuid bits, and file capabilities are never silently rewritten.
+builder_uid=${SUDO_UID:-0}
+builder_gid=${SUDO_GID:-0}
+if ! [[ "$builder_uid" =~ ^[0-9]+$ && "$builder_gid" =~ ^[0-9]+$ ]]; then
+  echo "invalid sudo builder identity: uid=$builder_uid gid=$builder_gid" >&2
+  exit 1
+fi
+if (( builder_uid != 0 )); then
+  if awk -F: -v id="$builder_uid" '$3 == id { found = 1 } END { exit found ? 0 : 1 }' \
+      "$rootfs/etc/passwd"; then
+    echo "builder UID $builder_uid collides with a guest account" >&2
+    exit 1
+  fi
+  unexpected_uid_node=$(find "$rootfs" -xdev -uid "$builder_uid" \
+    ! -type d ! -type l -print -quit)
+  if [[ -n "$unexpected_uid_node" ]]; then
+    echo "refusing to rewrite builder-owned non-metadata node: $unexpected_uid_node" >&2
+    exit 1
+  fi
+  find "$rootfs" -xdev -uid "$builder_uid" \( -type d -o -type l \) \
+    -exec chown --no-dereference 0 {} +
+fi
+if (( builder_gid != 0 )); then
+  if awk -F: -v id="$builder_gid" '$3 == id { found = 1 } END { exit found ? 0 : 1 }' \
+      "$rootfs/etc/group"; then
+    echo "builder GID $builder_gid collides with a guest group" >&2
+    exit 1
+  fi
+  unexpected_gid_node=$(find "$rootfs" -xdev -gid "$builder_gid" \
+    ! -type d ! -type l -print -quit)
+  if [[ -n "$unexpected_gid_node" ]]; then
+    echo "refusing to rewrite builder-group-owned non-metadata node: $unexpected_gid_node" >&2
+    exit 1
+  fi
+  find "$rootfs" -xdev -gid "$builder_gid" \( -type d -o -type l \) \
+    -exec chgrp --no-dereference 0 {} +
+fi
+for trusted_path in "$rootfs" "$rootfs/etc" "$rootfs/run" "$rootfs/usr" "$rootfs/var"; do
+  [[ -d "$trusted_path" && ! -L "$trusted_path" ]] || {
+    echo "required trusted rootfs directory is missing or unsafe: $trusted_path" >&2
+    exit 1
+  }
+  [[ $(stat -c '%u:%g' "$trusted_path") == 0:0 ]] || {
+    echo "trusted rootfs directory is not guest-root-owned: $trusted_path" >&2
+    exit 1
+  }
+done
+
 chroot "$rootfs" /usr/bin/systemd-sysusers
+
 if ! chroot "$rootfs" getent passwd hepta-desktop >/dev/null; then
   chroot "$rootfs" /usr/sbin/useradd \
     --uid 1000 \
