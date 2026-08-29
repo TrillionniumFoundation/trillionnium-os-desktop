@@ -13,4 +13,9 @@ claim a visible desktop frame.
 
 The current exact-head run additionally verifies that target Debian `tmpfiles`
 executes with an explicitly mounted and subsequently unmounted procfs, avoiding
-host/target systemd version coupling during rootfs construction.
+host/target systemd version coupling during rootfs construction. A sudo-hosted
+`mmdebstrap` build may map rootfs directory and symlink metadata to the invoking
+runner identity; the builder now normalizes only that unambiguous metadata back
+to guest `0:0`, installs the repository overlay explicitly as `0:0`, refuses to
+rewrite regular or special nodes, rejects guest UID/GID collisions, and asserts
+trusted rootfs path ownership before target `sysusers` and `tmpfiles` execute.
