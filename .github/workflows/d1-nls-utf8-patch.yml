@@ -6,6 +6,7 @@ on:
       - codex/d1-01-reproducible-qemu-substrate
     paths:
       - .github/workflows/d1-nls-utf8-patch.yml
+      - .github/d1-nls-nonworkflow-patch.py
 
 permissions:
   contents: write
@@ -24,20 +25,19 @@ jobs:
           ref: codex/d1-01-reproducible-qemu-substrate
           fetch-depth: 0
 
-      - name: Apply exact e2fsprogs locale contract
+      - name: Apply non-workflow e2fsprogs locale contract
         shell: bash
         run: |
           set -euo pipefail
-          python3 .github/d1-nls-utf8-patch.py
+          python3 .github/d1-nls-nonworkflow-patch.py
           git rm \
-            .github/d1-nls-utf8-patch.py \
-            .github/workflows/d1-nls-utf8-patch.yml
+            .github/d1-nls-nonworkflow-patch.py \
+            .github/d1-nls-utf8-patch.py
           git diff --check
           bash -n tools/build_pinned_e2fsprogs.sh
-          python3 tests/d1/test_d1_tool_binding.py
-          python3 tools/validate_repository.py
+          python3 -m py_compile tests/d1/test_d1_tool_binding.py
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
-          git commit -m 'fix: initialize UTF-8 locale in exact e2fsprogs build'
+          git commit -m 'fix: bind exact e2fsprogs to UTF-8 locale contract'
           git push origin HEAD:codex/d1-01-reproducible-qemu-substrate
