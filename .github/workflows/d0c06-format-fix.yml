@@ -1,0 +1,54 @@
+name: d0c06-format-fix
+
+on:
+  push:
+    branches:
+      - codex/d0c06-durable-receipt-journal
+    paths:
+      - ".github/workflows/d0c06-format-fix.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0c06-durable-receipt-journal
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt
+
+      - name: Format and correct disk-exhaustion matching
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('crates/hepta-session-core/src/receipt_journal.rs')
+          text = path.read_text(encoding='utf-8')
+          old = 'matches!(error.raw_os_error(), Some(28 | 122))'
+          new = 'matches!(error.raw_os_error(), Some(28) | Some(122))'
+          if text.count(old) != 1:
+              raise SystemExit(f'expected exactly one disk-exhaustion pattern, found {text.count(old)}')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+          cargo fmt --all
+          cargo fmt --all --check
+          git diff --check
+
+      - name: Commit deterministic formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add crates/hepta-session-core/src/lib.rs crates/hepta-session-core/src/receipt_journal.rs
+          git commit -m "style: format durable receipt journal with Rust 1.93"
+          git push origin HEAD:codex/d0c06-durable-receipt-journal
