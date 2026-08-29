@@ -1066,6 +1066,7 @@ impl WebViewDelegate for RuntimeDelegate {
             state
                 .input_handled_callbacks
                 .set(state.input_handled_callbacks.get() + 1);
+            let _ = state.proxy.send_event(AppEvent::Drive);
         }
     }
 
@@ -1074,6 +1075,7 @@ impl WebViewDelegate for RuntimeDelegate {
             state.crash_observed.set(true);
             *state.crash_reason.borrow_mut() = Some(reason);
             state.window.request_redraw();
+            let _ = state.proxy.send_event(AppEvent::Drive);
         }
     }
 
@@ -1087,6 +1089,7 @@ impl WebViewDelegate for RuntimeDelegate {
                     .set(state.navigation_denied.get() + 1);
                 request.deny();
             }
+            let _ = state.proxy.send_event(AppEvent::Drive);
         } else {
             request.deny();
         }
@@ -1095,6 +1098,7 @@ impl WebViewDelegate for RuntimeDelegate {
     fn request_create_new(&self, _parent: WebView, _request: CreateNewWebViewRequest) {
         if let Some(state) = self.state.upgrade() {
             state.popup_denied.set(state.popup_denied.get() + 1);
+            let _ = state.proxy.send_event(AppEvent::Drive);
         }
         // Dropping the request returns no auxiliary WebView.
     }
@@ -1106,6 +1110,7 @@ impl WebViewDelegate for RuntimeDelegate {
                     .input_method_controls
                     .set(state.input_method_controls.get() + 1);
             }
+            let _ = state.proxy.send_event(AppEvent::Drive);
         }
     }
 }
