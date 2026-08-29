@@ -1,0 +1,147 @@
+name: stabilize-full-gap-candidate-v2
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/stabilize-full-gap-candidate-v2.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stabilize-full-gap-candidate-v2
+  cancel-in-progress: false
+
+jobs:
+  stabilize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - name: Check out exact integration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+
+      - name: Merge bounded D3 implementation and clean transient state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "trillionnium-full-gap-stabilizer"
+          git config user.email "full-gap-stabilizer@users.noreply.github.com"
+          base_sha=$(git rev-parse HEAD)
+          printf '%s\n' "$base_sha" > /tmp/stabilization-base-sha.txt
+          git fetch --no-tags origin codex/d3-pageowner-browseractor-v1
+          d3_sha=$(git rev-parse FETCH_HEAD)
+          printf '%s\n' "$d3_sha" > /tmp/stabilization-d3-sha.txt
+
+          if ! git merge-base --is-ancestor "$d3_sha" "$base_sha"; then
+            set +e
+            GIT_MERGE_AUTOEDIT=no git merge --no-commit --no-ff "$d3_sha"
+            status=$?
+            set -e
+            if [ "$status" -ne 0 ]; then
+              conflicts=$(git diff --name-only --diff-filter=U)
+              printf '%s\n' "$conflicts" > /tmp/stabilization-conflicts.txt
+              unresolved=
+              while IFS= read -r path; do
+                [ -n "$path" ] || continue
+                case "$path" in
+                  .github/workflows/*|docs/DESKTOP_PLAN.md|docs/DESKTOP_PLAN-2026-08-29-d6.md|docs/CURRENT_STATE.md|docs/MANIFEST.json|manifests/project-state.v1.json|manifests/gates.v1.json|manifests/repository-state.json|README.md)
+                    git checkout --ours -- "$path"
+                    git add "$path"
+                    ;;
+                  *) unresolved="$unresolved $path" ;;
+                esac
+              done <<EOF
+          $conflicts
+          EOF
+              [ -z "$unresolved" ] || { echo "unresolved product-source conflicts:$unresolved" >&2; exit 1; }
+            fi
+          fi
+
+          git restore --source="$base_sha" --staged --worktree -- \
+            .github/workflows \
+            docs/DESKTOP_PLAN.md \
+            docs/DESKTOP_PLAN-2026-08-29-d6.md \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            manifests/project-state.v1.json \
+            manifests/gates.v1.json \
+            manifests/repository-state.json \
+            README.md
+
+          find .github -maxdepth 1 -type f -name '*.trigger' -delete
+          rm -f docs/.keep docs/.branch-protection-attempt
+          for path in \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof \
+            tests/qemu/extract-d2i-content-crash-proof.sh \
+            tools/verify_d2i_content_crash_proof.py; do
+            [ ! -e "$path" ] || chmod 0755 "$path"
+          done
+
+          ! git grep -nE 'TcpListener::bind|WebDriver|webdriver.*listen|0\.0\.0\.0:[0-9]+' -- \
+            apps crates runtime packaging tests ':!docs/**' ':!**/target/**'
+          test ! -e packaging/debian/image/rootfs-overlay/etc/hepta/enable-agent-port
+          test ! -e packaging/debian/systemd/etc/hepta/enable-agent-port
+          git add -A
+          git diff --cached --check
+
+      - name: Install exact Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Run complete source gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Commit only on unchanged remote base
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_sha=$(cat /tmp/stabilization-base-sha.txt)
+          git fetch --no-tags origin codex/full-gap-closure-v2
+          test "$(git rev-parse origin/codex/full-gap-closure-v2)" = "$base_sha" || {
+            echo 'BASE_DRIFT: integration branch moved while stabilization was running' >&2
+            exit 1
+          }
+          if git diff --cached --quiet; then
+            echo 'No stabilization delta required.'
+            exit 0
+          fi
+          git commit -m "feat: stabilize full-gap source candidate through D3"
+          git push origin HEAD:codex/full-gap-closure-v2
+
+      - name: Upload bounded diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: full-gap-stabilization-v2-diagnostics-${{ github.sha }}
+          path: |
+            /tmp/stabilization-base-sha.txt
+            /tmp/stabilization-d3-sha.txt
+            /tmp/stabilization-conflicts.txt
+          if-no-files-found: warn
+          retention-days: 14
