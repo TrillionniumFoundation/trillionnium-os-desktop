@@ -40,7 +40,7 @@ for value in base_image runtime_binary overlay source_epoch servo_revision outpu
 done
 [[ $source_epoch =~ ^[0-9]+$ ]] || { echo "invalid source epoch" >&2; exit 2; }
 [[ $servo_revision =~ ^[0-9a-f]{40}$ ]] || { echo "invalid Servo revision" >&2; exit 2; }
-for command in cp debugfs e2fsck sha256sum python3 readlink stat; do
+for command in cp debugfs dumpe2fs e2fsck sha256sum python3 readlink stat; do
   command -v "$command" >/dev/null || { echo "missing command: $command" >&2; exit 1; }
 done
 
@@ -94,6 +94,10 @@ pathlib.Path(sys.argv[1]).write_text(json.dumps({
 }, indent=2, sort_keys=True) + "\n")
 PY
 
+# Every e2fsprogs mutation in this qualification-only image is pinned to the
+# committed source epoch.  File contents alone are insufficient for byte-for-
+# byte reproducibility: debugfs also changes parent-directory timestamps,
+# inode generations and superblock accounting fields.
 export E2FSPROGS_FAKE_TIME="$source_epoch"
 run_debugfs() {
   debugfs -w -R "$1" "$output_image" >/dev/null
@@ -118,19 +122,36 @@ write_file "$manifest" /usr/lib/trillionnium-d1/d2i-image-manifest.json
 
 run_debugfs "set_inode_field /usr/libexec/hepta-workspace-runtime mode 0100755"
 run_debugfs "set_inode_field /usr/local/libexec/trillionnium-d2i-acceptance mode 0100755"
-for path in \
-  /usr/libexec/hepta-workspace-runtime \
-  /etc/systemd/system/trillionnium-d2i-runtime.service \
-  /etc/systemd/system/trillionnium-d2i-acceptance.service \
-  /etc/systemd/system/trillionnium-d2i-acceptance.target \
-  /usr/local/libexec/trillionnium-d2i-acceptance \
-  /usr/lib/trillionnium-d1/d2i-image-manifest.json; do
+injected_paths=(
+  /usr/libexec/hepta-workspace-runtime
+  /etc/systemd/system/trillionnium-d2i-runtime.service
+  /etc/systemd/system/trillionnium-d2i-acceptance.service
+  /etc/systemd/system/trillionnium-d2i-acceptance.target
+  /usr/local/libexec/trillionnium-d2i-acceptance
+  /usr/lib/trillionnium-d1/d2i-image-manifest.json
+)
+for index in "${!injected_paths[@]}"; do
+  path=${injected_paths[$index]}
   run_debugfs "set_inode_field $path uid 0"
   run_debugfs "set_inode_field $path gid 0"
   run_debugfs "set_inode_field $path atime $source_epoch"
   run_debugfs "set_inode_field $path ctime $source_epoch"
   run_debugfs "set_inode_field $path mtime $source_epoch"
   run_debugfs "set_inode_field $path crtime $source_epoch"
+  run_debugfs "set_inode_field $path generation $((4096 + index))"
+done
+
+# Removing and recreating the injected files mutates their parent directories.
+# Normalize those pre-existing inodes as well so independent preparations do
+# not retain host-clock values.
+for path in \
+  /usr/libexec \
+  /etc/systemd/system \
+  /usr/local/libexec \
+  /usr/lib/trillionnium-d1; do
+  run_debugfs "set_inode_field $path atime $source_epoch"
+  run_debugfs "set_inode_field $path ctime $source_epoch"
+  run_debugfs "set_inode_field $path mtime $source_epoch"
 done
 
 set +e
@@ -141,12 +162,23 @@ if (( e2fsck_status > 1 )); then
   cat "$work/e2fsck-write.log" >&2
   exit "$e2fsck_status"
 fi
+
+# e2fsck/debugfs may update superblock write/check accounting even when all
+# logical content is identical.  Pin those non-semantic fields after repair.
+run_debugfs "set_super_value mtime $source_epoch"
+run_debugfs "set_super_value wtime $source_epoch"
+run_debugfs "set_super_value lastcheck $source_epoch"
+run_debugfs "set_super_value mkfs_time $source_epoch"
+run_debugfs "set_super_value kbytes_written 0"
+
 e2fsck -fn "$output_image" >"$work/e2fsck-read-only.log" 2>&1
+unset E2FSPROGS_FAKE_TIME
 
 image_sha=$(sha256sum "$output_image" | awk '{print $1}')
 image_bytes=$(stat -c %s "$output_image")
 debugfs -R 'stat /usr/libexec/hepta-workspace-runtime' "$output_image" \
   >"$work/runtime-stat.txt" 2>&1
+dumpe2fs -h "$output_image" >"$work/dumpe2fs-header.txt" 2>&1
 python3 - "$evidence" "$base_sha" "$runtime_sha" "$image_sha" "$image_bytes" \
   "$source_epoch" "$servo_revision" <<'PY'
 import json
@@ -161,6 +193,13 @@ pathlib.Path(sys.argv[1]).write_text(json.dumps({
     "integrated_image_bytes": int(sys.argv[5]),
     "source_date_epoch": int(sys.argv[6]),
     "servo_revision": sys.argv[7],
+    "metadata_normalization": {
+        "injected_inode_times": True,
+        "injected_inode_generations": True,
+        "parent_directory_times": True,
+        "superblock_times": True,
+        "superblock_kbytes_written": 0,
+    },
     "injected_paths": [
         "/usr/libexec/hepta-workspace-runtime",
         "/etc/systemd/system/trillionnium-d2i-runtime.service",
