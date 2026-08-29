@@ -26,6 +26,13 @@ bounded diagnostics. An unpacked directory is not accepted as the ext4
 population input because host directory enumeration can perturb inode allocation
 despite identical file content.
 
+The tar may contain valid UTF-8 pathnames supplied by the exact Debian package
+closure. The root builder verifies the host `C.UTF-8` charmap and launches only
+the tar-populating `mke2fs` process with that locale. Sorting remains bytewise
+`LC_ALL=C`; timestamps, numeric ownership, UUID, hash seed and all other image
+inputs remain fixed. An unavailable or non-UTF-8 charmap is a hard failure, not a
+fallback to locale-dependent decoding.
+
 The host filesystem tools are not taken from the mutable runner image. D1 pins
 upstream e2fsprogs `v1.47.2` to commit
 `c3cce4a07efefc62bc7fc57a678cb870af27d0f2`, builds it once into an isolated
