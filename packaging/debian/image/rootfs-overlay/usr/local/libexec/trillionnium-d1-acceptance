@@ -123,9 +123,12 @@ socket_identity=$(stat -c '%U:%G:%a' "$agent_socket")
 [[ "$socket_identity" == hepta-browserd:hepta-agent:660 ]] \
   || fail "agent_socket_identity:$socket_identity"
 
-# A peer outside hepta-agent cannot reach the filesystem socket.
+# A peer outside hepta-agent cannot reach the filesystem socket. Capture the
+# fixture stream directly; otherwise systemd-run's own success would leave an
+# empty evidence file while the denial result remained only in the journal.
 systemd-run \
   --wait \
+  --pipe \
   --quiet \
   --collect \
   --unit=trillionnium-d1-unauthorized-agent \
