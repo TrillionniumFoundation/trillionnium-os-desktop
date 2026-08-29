@@ -1,0 +1,67 @@
+name: d1-pinned-e2fs-tool-once
+
+on:
+  push:
+    branches:
+      - codex/d1-01-reproducible-qemu-substrate
+    paths:
+      - .github/workflows/d1-pinned-e2fs-tool-once.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d1-01-reproducible-qemu-substrate
+          fetch-depth: 0
+      - name: Integrate isolated pinned filesystem tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('packaging/debian/image/build-d1-image.sh')
+          lines = path.read_text().splitlines()
+          anchor = 'mkdir -p "$rootfs" "$logs" "$artifacts"'
+          if lines.count(anchor) != 1:
+              raise SystemExit(f'unexpected D1 build-directory anchor count: {lines.count(anchor)}')
+          index = lines.index(anchor) + 1
+          block = [
+              '',
+              '# Use one content-addressed upstream e2fsprogs build for both D1 candidates.',
+              '# The runner system package remains untouched and is never selected afterward.',
+              'e2fs_tool_work="$output_dir/.host-tools/e2fsprogs-1.47.2"',
+              'e2fs_tool_evidence="$logs/e2fsprogs-host-tool.json"',
+              'e2fs_tool_bin=$(bash "$repo_root/tools/build_pinned_e2fsprogs.sh" \\',
+              '  --manifest "$repo_root/manifests/e2fsprogs-host-toolchain.v1.json" \\',
+              '  --work-dir "$e2fs_tool_work" \\',
+              '  --evidence "$e2fs_tool_evidence")',
+              'export PATH="$e2fs_tool_bin:$PATH"',
+              'test "$(command -v mke2fs)" = "$e2fs_tool_bin/mke2fs"',
+              'test "$(command -v e2fsck)" = "$e2fs_tool_bin/e2fsck"',
+              'test "$(command -v dumpe2fs)" = "$e2fs_tool_bin/dumpe2fs"',
+          ]
+          lines[index:index] = block
+          path.write_text('\n'.join(lines) + '\n')
+          PY
+          bash -n packaging/debian/image/build-d1-image.sh
+          shellcheck -e SC2016,SC2054 \
+            packaging/debian/image/build-d1-image.sh \
+            tools/build_pinned_e2fsprogs.sh
+          python3 -m json.tool manifests/e2fsprogs-host-toolchain.v1.json >/dev/null
+          grep -F 'build_pinned_e2fsprogs.sh' packaging/debian/image/build-d1-image.sh
+          git diff --check
+      - name: Commit pinned host-tool integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packaging/debian/image/build-d1-image.sh
+          git commit -m "build: use pinned e2fsprogs 1.47.2 for D1 images"
+          git push origin HEAD:codex/d1-01-reproducible-qemu-substrate
