@@ -1,0 +1,48 @@
+{
+  "schema": "trillionnium.desktop.downstream-blockers.v1",
+  "recorded_at": "2026-08-29",
+  "claim_ceiling": "planning and dependency truth only",
+  "packages": [
+    {
+      "id": "D3-03",
+      "outcome": "RESUME_REQUIRED",
+      "resume_when": [
+        "D3-02 receipt lifecycle is qualified",
+        "a reviewed concrete hepta-receipt-journal adapter exists",
+        "crash, torn-write and disk-full corpus passes"
+      ]
+    },
+    {
+      "id": "D3-04",
+      "outcome": "BLOCKED_UPSTREAM",
+      "resume_when": [
+        "D0A-02 headed Servo candidate is qualified",
+        "D2I same-image QEMU qualification passes on the exact integration head"
+      ]
+    },
+    {
+      "id": "D3-05",
+      "outcome": "BLOCKED_UPSTREAM",
+      "resume_when": [
+        "D0T-03 fixture/product separation is qualified",
+        "D3-03 and D3-04 are qualified",
+        "exact Agent principal binding and PID 1 image evidence pass"
+      ]
+    },
+    {"id": "D4", "outcome": "BLOCKED_UPSTREAM", "resume_when": ["complete D3 local-fixture operation corpus with durable receipts and no hidden page"]},
+    {"id": "D5", "outcome": "BLOCKED_UPSTREAM", "resume_when": ["D4", "reviewed origin, signature, storage-isolation and revocation contracts"]},
+    {"id": "D6", "outcome": "BLOCKED_UPSTREAM", "resume_when": ["D5", "network namespace and complete resolver/egress coverage"]},
+    {"id": "D7", "outcome": "BLOCKED_UPSTREAM", "resume_when": ["D6", "independent signing/update custody", "rollback and power-loss qualification"]},
+    {"id": "D8", "outcome": "BLOCKED_UPSTREAM", "resume_when": ["D7", "immutable hardware BOM", "hardware lab and qualification method"]},
+    {"id": "D9", "outcome": "REPOSITORY_SETTING_REQUIRED", "resume_when": ["independent review teams", "protected main", "signing custody", "all exact-main and release gates"]}
+  ],
+  "forbidden_shortcuts": [
+    "hidden fallback engine",
+    "public WebDriver or TCP listener",
+    "default-enabled AgentPort",
+    "ambient browser network or filesystem authority",
+    "automatic replay of potential external effects",
+    "development keys in a release path",
+    "higher-tier claims inferred from lower-tier evidence"
+  ]
+}
