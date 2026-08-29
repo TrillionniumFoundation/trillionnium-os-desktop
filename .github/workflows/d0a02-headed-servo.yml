@@ -28,7 +28,9 @@ env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   SCCACHE_GHA_ENABLED: "true"
-  RUSTC_WRAPPER: sccache
+  CANDIDATE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
+  TESTED_SHA: ${{ github.sha }}
 
 jobs:
   headed-runtime:
@@ -36,7 +38,15 @@ jobs:
     timeout-minutes: 240
     steps:
       - name: Check out product candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Record exact source identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'TESTED_TREE_SHA=%s\n' "$(git rev-parse HEAD^{tree})" >> "$GITHUB_ENV"
+          printf 'candidate_head=%s\nbase=%s\ntested=%s\ntree=%s\n' \
+            "$CANDIDATE_HEAD_SHA" "$BASE_SHA" "$TESTED_SHA" "$(git rev-parse HEAD^{tree})"
 
       - name: Audit the product-owned runtime source
         shell: bash
@@ -159,7 +169,7 @@ jobs:
           cp runtime/servo/hepta_workspace_runtime.rs \
             /tmp/servo/components/servo/examples/hepta_workspace_runtime.rs
 
-      - name: Install the Servo-pinned Rust toolchain and sccache
+      - name: Install the Servo-pinned Rust toolchain and bootstrap sccache
         shell: bash
         run: |
           set -euo pipefail
@@ -169,21 +179,14 @@ jobs:
           print(tomllib.loads(Path('/tmp/servo/rust-toolchain.toml').read_text())['toolchain']['channel'])
           PY
           )"
-          components="$(python3 - <<'PY'
-          from pathlib import Path
-          import tomllib
-          print(' '.join(tomllib.loads(Path('/tmp/servo/rust-toolchain.toml').read_text())['toolchain'].get('components', [])))
-          PY
-          )"
           printf 'SERVO_RUST_CHANNEL=%s\n' "$channel" >> "$GITHUB_ENV"
-          rustup toolchain install "$channel" --profile minimal
-          for component in $components; do
-            rustup component add "$component" --toolchain "$channel"
-          done
-          cargo +"$channel" install sccache --locked
+          rustup toolchain install "$channel" --profile minimal --component rustfmt
+          RUSTC_WRAPPER= cargo +"$channel" install sccache --locked
+          sccache --version
+          printf 'RUSTC_WRAPPER=sccache\n' >> "$GITHUB_ENV"
 
       - name: Restore exact-pin Servo build cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             ~/.cargo/registry
@@ -216,7 +219,14 @@ jobs:
           Xvfb "$DISPLAY" -screen 0 1280x800x24 -nolisten tcp \
             >"$out/xvfb.log" 2>&1 &
           xvfb_pid=$!
-          trap 'kill "$runtime_pid" "$openbox_pid" "$xvfb_pid" 2>/dev/null || true' EXIT
+          openbox_pid=
+          runtime_pid=
+          cleanup() {
+            [[ -n "${runtime_pid:-}" ]] && kill "$runtime_pid" 2>/dev/null || true
+            [[ -n "${openbox_pid:-}" ]] && kill "$openbox_pid" 2>/dev/null || true
+            kill "$xvfb_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
           for _ in $(seq 1 100); do
             xdpyinfo >/dev/null 2>&1 && break
             sleep 0.1
@@ -262,8 +272,9 @@ jobs:
             > "$out/frame-sha256.txt"
           touch "$out/capture.done"
           wait "$runtime_pid"
+          runtime_pid=
           trap - EXIT
-          kill "$openbox_pid" "$xvfb_pid" 2>/dev/null || true
+          cleanup
 
       - name: Build bounded headed-runtime evidence
         shell: bash
@@ -280,11 +291,23 @@ jobs:
           runtime = json.loads((out / 'runtime-ready.json').read_text())
           content = out / 'servo-content-recovered.png'
           workspace = out / 'workspace-root.png'
+          workflow = Path('.github/workflows/d0a02-headed-servo.yml')
+          runtime_source = Path('runtime/servo/hepta_workspace_runtime.rs')
+          servo_lock = Path('manifests/servo.lock.json')
           evidence = {
               'schema': 'trillionnium.desktop.d0a02-headed-servo-evidence.v1',
               'status': 'PASS',
-              'product_source_sha': os.environ['GITHUB_SHA'],
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'base_sha': os.environ['BASE_SHA'],
+              'candidate_head_sha': os.environ['CANDIDATE_HEAD_SHA'],
+              'tested_sha': os.environ['TESTED_SHA'],
+              'tree_sha': os.environ['TESTED_TREE_SHA'],
+              'workflow_sha256': hashlib.sha256(workflow.read_bytes()).hexdigest(),
               'servo_revision': '${{ steps.servo-pin.outputs.revision }}',
+              'input_digests': {
+                  'runtime_source_sha256': hashlib.sha256(runtime_source.read_bytes()).hexdigest(),
+                  'servo_lock_sha256': hashlib.sha256(servo_lock.read_bytes()).hexdigest(),
+              },
               'recorded_at': datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
               'runtime': runtime,
               'frames': {
@@ -309,7 +332,7 @@ jobs:
 
       - name: Upload headed Servo machine evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: d0a02-headed-servo-${{ github.sha }}
           path: /tmp/d0a02-headed
