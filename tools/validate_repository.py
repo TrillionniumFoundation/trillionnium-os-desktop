@@ -22,6 +22,7 @@ EXPECTED_WORKSPACE_MEMBERS = [
     "crates/trillionnium-contract-core",
     "crates/hepta-browser-contracts",
     "crates/hepta-session-core",
+    "crates/hepta-workspace-composition",
 ]
 
 REQUIRED_PATHS = [
@@ -72,6 +73,12 @@ REQUIRED_PATHS = [
     "packaging/debian/tmpfiles.d/trillionnium-desktop.conf",
     "packaging/debian/systemd-preset/90-trillionnium-desktop.preset",
     "tools/verify_systemd_socket_custody.py",
+    "contracts/workspace-composition.v1.json",
+    "crates/hepta-workspace-composition/Cargo.toml",
+    "crates/hepta-workspace-composition/src/lib.rs",
+    "crates/hepta-workspace-composition/src/model.rs",
+    "crates/hepta-workspace-composition/src/tests.rs",
+    "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md",
 ]
 
 
