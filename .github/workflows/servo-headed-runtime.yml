@@ -182,14 +182,22 @@ jobs:
           test -n "$window_id"
           xwininfo -id "$window_id" >"$output/xwininfo.txt"
           xdotool windowfocus --sync "$window_id"
-          xdotool mousemove --window "$window_id" 200 132
-          xdotool click --window "$window_id" 1
-          xdotool key --window "$window_id" k
-          xdotool mousemove --window "$window_id" 400 132
-          xdotool click --window "$window_id" 1
-          xdotool click --window "$window_id" 5
-          xdotool mousemove --window "$window_id" 200 132
-          xdotool click --window "$window_id" 1
+          test "$(xdotool getwindowfocus)" = "$window_id"
+
+          # Pointer warps target exact window-relative coordinates. Button, wheel,
+          # and keyboard input intentionally omit --window so xdotool uses XTEST
+          # rather than XSendEvent; winit then observes native X11 input events.
+          xdotool mousemove --sync --window "$window_id" 200 132
+          xdotool mousedown 1
+          xdotool mouseup 1
+          xdotool key k
+          xdotool mousemove --sync --window "$window_id" 400 132
+          xdotool mousedown 1
+          xdotool mouseup 1
+          xdotool click 5
+          xdotool mousemove --sync --window "$window_id" 200 132
+          xdotool mousedown 1
+          xdotool mouseup 1
 
           ps -eo pid,ppid,stat,args >"$output/process-topology.txt"
           timeout 180 tail --pid="$app_pid" -f /dev/null
