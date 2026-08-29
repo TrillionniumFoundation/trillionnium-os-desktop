@@ -1,0 +1,184 @@
+name: qualify-exact-main-after-promotion
+
+on:
+  push:
+    branches: ["codex/d5-product-foundation"]
+    paths:
+      - ".github/workflows/qualify-exact-main-after-promotion.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: qualify-exact-main-after-promotion
+  cancel-in-progress: false
+
+jobs:
+  exact-main:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Bind promotion merge and protected main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/$REPOSITORY"
+          out=/tmp/post-promotion-main
+          mkdir -p "$out"
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' "$api/branches/main" > "$out/main.json"
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api/pulls?state=closed&head=TrillionniumFoundation:codex/pr31-exact-main-promotion-v1&base=main" > "$out/promotion-prs.json"
+          test "$(jq 'length' "$out/promotion-prs.json")" -ge 1
+          jq 'map(select(.merged_at != null)) | sort_by(.merged_at) | last' "$out/promotion-prs.json" > "$out/promotion-pr.json"
+          main_sha=$(jq -er '.commit.sha' "$out/main.json")
+          merge_sha=$(jq -er '.merge_commit_sha' "$out/promotion-pr.json")
+          test "$main_sha" = "$merge_sha"
+          test "$(jq -r '.protected' "$out/main.json")" = true
+          printf 'MAIN_SHA=%s\n' "$main_sha" >> "$GITHUB_ENV"
+          printf '%s\n' "$main_sha" > "$out/main-sha.txt"
+
+      - name: Dispatch integrated D2I and D3 on exact promoted main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for workflow in d2i-integrated-image.yml d3-browseractor.yml; do
+            code=$(curl --silent --show-error --output "/tmp/post-promotion-main/dispatch-$workflow.json" \
+              --write-out '%{http_code}' -X POST \
+              -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/$REPOSITORY/actions/workflows/$workflow/dispatches" \
+              -d '{"ref":"main"}')
+            test "$code" = 204 || { cat "/tmp/post-promotion-main/dispatch-$workflow.json" >&2 || true; exit 1; }
+          done
+
+      - name: Wait for and enforce all permanent exact-main runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=/tmp/post-promotion-main
+          api="https://api.github.com/repos/$REPOSITORY"
+          deadline=$(( $(date +%s) + 21000 ))
+          required='desktop-ci d2i-integrated-image d3-browseractor'
+          while :; do
+            curl --fail --silent --show-error --retry 3 --retry-all-errors \
+              -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "$api/actions/runs?head_sha=$MAIN_SHA&per_page=100" > "$out/actions.json"
+            missing=
+            for name in $required; do
+              jq -e --arg name "$name" '[.workflow_runs[] | select(.name == $name)] | length > 0' "$out/actions.json" >/dev/null || missing="$missing $name"
+            done
+            pending=$(jq '[.workflow_runs[] | select(.status != "completed")] | length' "$out/actions.json")
+            if [ -z "$missing" ] && [ "$pending" -eq 0 ]; then break; fi
+            if [ "$(date +%s)" -ge "$deadline" ]; then echo "timeout missing:$missing pending:$pending" >&2; break; fi
+            sleep 30
+          done
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/post-promotion-main'); runs=json.loads((root/'actions.json').read_text()).get('workflow_runs',[])
+          excluded=('qualify-exact-main-after-promotion','create-pr31-exact-main-promotion','qualify-exact-main-after-pr31','merge-pr31-after-independent-approval','merge-exact-main-promotion','stabilize-','integrate-','repair-','harden-','finalize-','request-independent-review','publish-closure-snapshot','final-candidate-qualification')
+          latest={}
+          for run in sorted(runs,key=lambda x:x.get('created_at') or ''):
+              name=run.get('name') or ''; path=run.get('path') or ''
+              if any(e in name or e in path for e in excluded): continue
+              latest[name]={'id':run.get('id'),'path':path,'event':run.get('event'),'status':run.get('status'),'conclusion':run.get('conclusion'),'head_sha':run.get('head_sha'),'html_url':run.get('html_url')}
+          required=('desktop-ci','d2i-integrated-image','d3-browseractor')
+          missing=[n for n in required if n not in latest]
+          bad=[{'name':n,**r} for n,r in latest.items() if r['status']!='completed' or r['conclusion'] not in ('success','skipped','neutral')]
+          required_bad=[n for n in required if n in latest and not (latest[n]['status']=='completed' and latest[n]['conclusion']=='success')]
+          result={'main_sha':(root/'main-sha.txt').read_text().strip(),'required':list(required),'missing':missing,'bad':bad,'required_bad':required_bad,'latest_runs':latest,'status':'PASS_PROMOTED_EXACT_MAIN' if not missing and not bad and not required_bad else 'FAIL_PROMOTED_EXACT_MAIN'}
+          (root/'workflow-summary.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          if result['status']!='PASS_PROMOTED_EXACT_MAIN': raise SystemExit(json.dumps(result,sort_keys=True))
+          PY
+
+      - name: Run local full validation on promoted exact main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --no-tags --filter=blob:none https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git /tmp/post-promotion-main/repository
+          git -C /tmp/post-promotion-main/repository checkout --detach "$MAIN_SHA"
+          cd /tmp/post-promotion-main/repository
+          test "$(git rev-parse HEAD)" = "$MAIN_SHA"
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          printf '%s\n' PASS_PROMOTED_EXACT_MAIN_LOCAL > /tmp/post-promotion-main/local-validation.status
+
+      - name: Build and publish promoted exact-main evidence
+        env:
+          REPOSITORY: ${{ github.repository }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_RUN_ATTEMPT: ${{ github.run_attempt }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os
+          from datetime import datetime,timezone
+          from pathlib import Path
+          root=Path('/tmp/post-promotion-main'); workflows=json.loads((root/'workflow-summary.json').read_text()); pr=json.loads((root/'promotion-pr.json').read_text()); sha=(root/'main-sha.txt').read_text().strip()
+          tree=os.popen(f'git -C {root}/repository rev-parse {sha}^{{tree}}').read().strip()
+          report={'schema':'trillionnium.desktop.promoted-exact-main-qualification.v1','captured_at':datetime.now(timezone.utc).isoformat(),'repository':os.environ['REPOSITORY'],'main_sha':sha,'main_tree_sha':tree,'promotion_pr':pr.get('number'),'promotion_merge_sha':pr.get('merge_commit_sha'),'local_validation':(root/'local-validation.status').read_text().strip(),'permanent_workflows':workflows,'workflow_run_id':os.environ['WORKFLOW_RUN_ID'],'workflow_run_attempt':int(os.environ['WORKFLOW_RUN_ATTEMPT']),'status':'PASS_PROMOTED_INTEGRATED_EXACT_MAIN','claim_ceiling':{'external_effects':False,'production_agent_port_activation':False,'fixed_hardware_beta':False,'signed_release':False}}
+          (root/'promoted-exact-main-qualification.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          (root/'promoted-exact-main-qualification.md').write_text(f"# Promoted exact-main qualification\n\n- Main: `{sha}`\n- Tree: `{tree}`\n- Promotion PR: `#{pr.get('number')}`\n- Local validation: `PASS`\n- Permanent workflows: `PASS`\n- Status: `PASS_PROMOTED_INTEGRATED_EXACT_MAIN`\n\nD3 integrated-image activation/receipt evidence and D4-D9 remain closed.\n")
+          PY
+          cd /tmp/post-promotion-main/repository
+          git config user.name "trillionnium-promoted-main-evidence"
+          git config user.email "promoted-main-evidence@users.noreply.github.com"
+          git checkout --orphan promoted-main-evidence-work
+          git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/post-promotion-main/promoted-exact-main-qualification.json .
+          cp /tmp/post-promotion-main/promoted-exact-main-qualification.md .
+          cp /tmp/post-promotion-main/workflow-summary.json .
+          cp /tmp/post-promotion-main/local-validation.status .
+          git add promoted-exact-main-qualification.json promoted-exact-main-qualification.md workflow-summary.json local-validation.status
+          git commit -m "evidence: publish promoted exact-main qualification for $MAIN_SHA"
+          git push --force origin HEAD:codex/promoted-exact-main-evidence-live
+
+      - name: Upload promoted exact-main evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: promoted-exact-main-qualification-${{ env.MAIN_SHA }}
+          path: |
+            /tmp/post-promotion-main/promoted-exact-main-qualification.json
+            /tmp/post-promotion-main/promoted-exact-main-qualification.md
+            /tmp/post-promotion-main/workflow-summary.json
+            /tmp/post-promotion-main/local-validation.status
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 6
