@@ -60,7 +60,7 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-for command in mmdebstrap python3 jq mke2fs tar chroot rsync sha256sum \
+for command in mmdebstrap python3 jq mke2fs e2fsck dumpe2fs tar chroot rsync sha256sum \
   systemd-sysusers systemd-tmpfiles cmp diff readlink stat awk; do
   command -v "$command" >/dev/null || {
     echo "required command is missing: $command" >&2
@@ -131,11 +131,10 @@ fi
 
 build_dir="$output_dir/$build_name"
 rootfs="$build_dir/rootfs"
-normalized_rootfs="$build_dir/normalized-rootfs"
 logs="$build_dir/logs"
 artifacts="$build_dir/artifacts"
 rm -rf "$build_dir"
-mkdir -p "$rootfs" "$normalized_rootfs" "$logs" "$artifacts"
+mkdir -p "$rootfs" "$logs" "$artifacts"
 
 mapfile -t package_specs < <(
   sed -e '/^[[:space:]]*$/d' "$exact_packages" | LC_ALL=C sort -u
@@ -379,11 +378,11 @@ tar \
   -cf "$artifacts/rootfs.tar" .
 rootfs_tar_sha256=$(sha256sum "$artifacts/rootfs.tar" | awk '{print $1}')
 
-tar --numeric-owner --xattrs --acls --selinux \
-  -xf "$artifacts/rootfs.tar" -C "$normalized_rootfs"
-find "$normalized_rootfs" -xdev -print0 \
-  | LC_ALL=C sort -z \
-  | xargs -0r touch --no-dereference --date="@$source_epoch"
+mke2fs_version=$(mke2fs -V 2>&1 | awk 'NR == 1 { print $2 }')
+python3 -c 'import re,sys; m=re.fullmatch(r"(\d+)\.(\d+)\.(\d+)",sys.argv[1]); raise SystemExit(0 if m and tuple(map(int,m.groups())) >= (1,47,1) else 1)' "$mke2fs_version" || {
+  echo "D1 reproducible tar input requires e2fsprogs >= 1.47.1; got $mke2fs_version" >&2
+  exit 1
+}
 
 image="$artifacts/trillionnium-d1.ext4"
 truncate -s "${image_size_mib}M" "$image"
@@ -398,9 +397,19 @@ mke2fs \
   -L "$image_label" \
   -U "$image_uuid" \
   -E "root_owner=0:0,lazy_itable_init=0,lazy_journal_init=0,hash_seed=$image_uuid" \
-  -d "$normalized_rootfs" \
+  -d "$artifacts/rootfs.tar" \
   "$image" >"$logs/mke2fs.log" 2>&1
 unset E2FSPROGS_FAKE_TIME
+set +e
+e2fsck -fn "$image" >"$logs/e2fsck-read-only.log" 2>&1
+e2fsck_status=$?
+set -e
+if (( e2fsck_status != 0 )); then
+  echo "generated ext4 image failed read-only e2fsck: status=$e2fsck_status" >&2
+  cat "$logs/e2fsck-read-only.log" >&2
+  exit "$e2fsck_status"
+fi
+dumpe2fs -h "$image" >"$logs/dumpe2fs-header.log" 2>&1
 
 image_sha256=$(sha256sum "$image" | awk '{print $1}')
 kernel_sha256=$(sha256sum "$artifacts/vmlinuz" | awk '{print $1}')
@@ -453,5 +462,5 @@ pathlib.Path("$artifacts/build-result.json").write_text(
 )
 PY
 
-rm -rf "$rootfs" "$normalized_rootfs"
+rm -rf "$rootfs"
 printf '%s\n' "$artifacts"
