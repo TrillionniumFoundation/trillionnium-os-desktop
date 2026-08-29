@@ -11,9 +11,7 @@ use hepta_agent_port::D0FixtureHandler;
 
 fn main() {
     if !std::env::args().any(|argument| argument == "--self-check") {
-        eprintln!(
-            "hepta-agent-port-fixture: qualification fixture accepts only --self-check"
-        );
+        eprintln!("hepta-agent-port-fixture: qualification fixture accepts only --self-check");
         std::process::exit(64);
     }
     match self_check() {
