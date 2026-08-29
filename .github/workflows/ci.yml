@@ -57,5 +57,6 @@ jobs:
           name: d0a02-patched-files-${{ github.sha }}
           path: ${{ runner.temp }}/d0a02-patched
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7
           compression-level: 6
