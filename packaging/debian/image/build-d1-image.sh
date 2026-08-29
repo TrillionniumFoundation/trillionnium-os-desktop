@@ -219,7 +219,7 @@ chmod 0755 \
 find "$rootfs/etc/systemd/system" -type f \( -name '*.service' -o -name '*.socket' -o -name '*.target' \) \
   -exec chmod 0644 {} +
 
-systemd-sysusers --root="$rootfs"
+chroot "$rootfs" /usr/bin/systemd-sysusers
 if ! chroot "$rootfs" getent passwd hepta-desktop >/dev/null; then
   chroot "$rootfs" /usr/sbin/useradd \
     --uid 1000 \
@@ -230,7 +230,7 @@ if ! chroot "$rootfs" getent passwd hepta-desktop >/dev/null; then
     hepta-desktop
 fi
 chroot "$rootfs" /usr/sbin/usermod --lock root
-systemd-tmpfiles --root="$rootfs" --create
+chroot "$rootfs" /usr/bin/systemd-tmpfiles --create
 install -d -o 1000 -g 1000 -m 0700 "$rootfs/run/hepta-desktop"
 rm -f "$rootfs/etc/hepta/enable-agent-port"
 rm -f "$rootfs/run/hepta/browserd/agent.sock"
