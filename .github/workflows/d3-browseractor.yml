@@ -1,0 +1,165 @@
+name: d3-browseractor
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/d3-browseractor.yml"
+      - "apps/**"
+      - "crates/**"
+      - "contracts/**"
+      - "packaging/debian/systemd/**"
+      - "packaging/debian/image/**"
+      - "tests/d3/**"
+      - "tools/verify_d3_browseractor.py"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/workflows/d3-browseractor.yml"
+      - "apps/**"
+      - "crates/**"
+      - "contracts/**"
+      - "packaging/debian/systemd/**"
+      - "packaging/debian/image/**"
+      - "tests/d3/**"
+      - "tools/verify_d3_browseractor.py"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d3-browseractor-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  CANDIDATE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
+  TESTED_SHA: ${{ github.sha }}
+
+jobs:
+  source-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Install exact Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Validate repository and D3 authority boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          test ! -e packaging/debian/image/rootfs-overlay/etc/hepta/enable-agent-port
+          test ! -e packaging/debian/systemd/etc/hepta/enable-agent-port
+          ! git grep -nE 'TcpListener::bind|WebDriver|webdriver.*listen|0\.0\.0\.0:[0-9]+' -- \
+            apps crates runtime packaging tests ':!docs/**'
+
+          # D3 is not satisfied by generic naming or the old D0 fixture. Require
+          # concrete ownership, dispatch, principal, receipt and cancellation
+          # vocabulary in product code and tests.
+          git grep -nE 'struct (PageOwner|BrowserActor)|enum BrowserActorMessage|trait BrowserActor' -- apps crates
+          git grep -nE 'SemanticPrincipal|TaskFlowPrincipal|PrincipalBinding|mechanism.*principal|principal.*mechanism' -- apps crates contracts tests
+          git grep -nE 'Requested|Dispatched|Indeterminate|Interrupted|ReceiptJournal|ReceiptEvent' -- apps crates tests
+          git grep -nE 'effective_deadline|DeadlineExceeded|CancelRequested|CancelCompleted|cancel' -- apps crates tests
+          git grep -nE 'single.*WebView|content_surface|PageOwner' -- apps crates tests
+
+      - name: Run default and all-feature Rust gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Generate bounded D3 source evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d3-evidence
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          workflow = Path('.github/workflows/d3-browseractor.yml')
+          inputs = [
+              Path('Cargo.toml'),
+              Path('Cargo.lock'),
+              Path('contracts/browser-api.v1.schema.json'),
+              Path('contracts/agent-port-custody.v1.json'),
+              Path('manifests/project-state.v1.json'),
+              Path('manifests/gates.v1.json'),
+          ]
+          existing = [path for path in inputs if path.is_file()]
+          evidence = {
+              'schema': 'trillionnium.desktop.d3-source-qualification.v1',
+              'status': 'PASS_D3_SOURCE_CANDIDATE_AWAITING_D2I_AND_INTEGRATED_IMAGE',
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'base_sha': os.environ['BASE_SHA'],
+              'candidate_head_sha': os.environ['CANDIDATE_HEAD_SHA'],
+              'tested_sha': os.environ['TESTED_SHA'],
+              'tree_sha': os.popen('git rev-parse HEAD^{tree}').read().strip(),
+              'workflow_run_id': os.environ['GITHUB_RUN_ID'],
+              'workflow_run_attempt': int(os.environ['GITHUB_RUN_ATTEMPT']),
+              'workflow_sha256': hashlib.sha256(workflow.read_bytes()).hexdigest(),
+              'input_digests': {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in existing},
+              'prerequisites_not_promoted_by_this_gate': ['D2I-01'],
+              'promotion_blockers': [
+                  'D2I-01 integrated image pass',
+                  'development-profile PID1 AgentPort activation corpus',
+                  'digest-bound D3 integrated-image evidence',
+                  'independent security review',
+                  'exact-main rerun after merge',
+              ],
+              'claim_ceiling': {
+                  'local_fixtures_only': True,
+                  'external_navigation_or_effects': False,
+                  'production_agent_port_enabled': False,
+                  'production_credentials': False,
+                  'release_ready': False,
+              },
+          }
+          Path('/tmp/d3-evidence/d3-source-qualification.json').write_text(
+              json.dumps(evidence, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+
+      - name: Upload bounded D3 evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d3-browseractor-${{ github.sha }}
+          path: /tmp/d3-evidence
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
