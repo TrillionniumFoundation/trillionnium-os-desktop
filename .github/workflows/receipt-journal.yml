@@ -1,0 +1,72 @@
+name: receipt-journal
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/receipt-journal.yml"
+      - "Cargo.lock"
+      - "crates/hepta-session-core/**"
+      - "contracts/receipt-journal.v1.json"
+      - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
+      - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
+      - "manifests/cargo-external-allowlist.json"
+      - "tools/verify_receipt_journal.py"
+  push:
+    branches:
+      - main
+      - codex/d0c06-durable-receipt-journal
+    paths:
+      - ".github/workflows/receipt-journal.yml"
+      - "Cargo.lock"
+      - "crates/hepta-session-core/**"
+      - "contracts/receipt-journal.v1.json"
+      - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
+      - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
+      - "manifests/cargo-external-allowlist.json"
+      - "tools/verify_receipt_journal.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: receipt-journal-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.0
+          components: rustfmt, clippy
+
+      - name: Audit contract and repository
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/verify_receipt_journal.py
+
+      - name: Enforce formatting and warnings
+        run: |
+          cargo fmt --all --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run durable journal fault corpus and complete regression
+        run: |
+          cargo test --locked -p hepta-session-core receipt_journal::tests:: -- --nocapture
+          cargo test --workspace --all-targets --locked
+
+      - name: Reconfirm closed authority boundary
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          contract = json.loads(Path('contracts/receipt-journal.v1.json').read_text())
+          assert all(value is False for value in contract['claim_ceiling'].values())
+          assert contract['effect_recovery']['potential_external_effect'] == 'never_automatic'
+          assert contract['effect_recovery']['journal_executes_or_replays_operations'] is False
+          PY
