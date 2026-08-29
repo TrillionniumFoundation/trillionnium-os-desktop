@@ -1,0 +1,55 @@
+name: d1-target-systemd-patch
+
+on:
+  push:
+    branches:
+      - codex/d1-01-reproducible-qemu-substrate
+    paths:
+      - ".github/workflows/d1-target-systemd-patch.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d1-01-reproducible-qemu-substrate
+          fetch-depth: 0
+
+      - name: Use target Debian systemd tools inside the rootfs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('packaging/debian/image/build-d1-image.sh')
+          text = path.read_text(encoding='utf-8')
+          replacements = {
+              'systemd-sysusers --root="$rootfs"':
+                  'chroot "$rootfs" /usr/bin/systemd-sysusers',
+              'systemd-tmpfiles --root="$rootfs" --create':
+                  'chroot "$rootfs" /usr/bin/systemd-tmpfiles --create',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'expected exactly one occurrence of {old!r}')
+              text = text.replace(old, new)
+          path.write_text(text, encoding='utf-8')
+          PY
+          bash -n packaging/debian/image/build-d1-image.sh
+          git diff --check
+
+      - name: Commit the rootfs tool-version fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packaging/debian/image/build-d1-image.sh
+          git commit -m "build: run sysusers and tmpfiles with target Debian systemd"
+          git push origin HEAD:codex/d1-01-reproducible-qemu-substrate
