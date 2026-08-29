@@ -61,6 +61,56 @@ pub trait BrowserRequestHandler {
     ) -> Result<HandlerOutcome, AgentPortError>;
 }
 
+/// Durable lifecycle hook around one admitted BrowserActor operation.
+///
+/// `requested` and `dispatched` run before the handler. `completed` runs only
+/// after a bounded canonical response has been constructed and hashed, but
+/// before transport commit. Any observer failure is fail-closed. If execution
+/// may have started and no terminal record can be written, recovery sees the
+/// last durable `dispatched` event and must not automatically replay a
+/// potential external effect.
+pub trait OperationLifecycleObserver {
+    fn requested(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+
+    fn dispatched(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+
+    fn completed(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+        _response: &BrowserResponse,
+        _canonical_response_sha256: &str,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+
+    fn interrupted(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+        _error: &AgentPortError,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct NoopOperationLifecycleObserver;
+
+impl OperationLifecycleObserver for NoopOperationLifecycleObserver {}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServiceEvidence {
     pub peer: PeerIdentity,
@@ -81,7 +131,36 @@ pub fn serve_one<H: BrowserRequestHandler>(
     server_ceiling: Duration,
     handler: &mut H,
 ) -> Result<ServiceEvidence, AgentPortError> {
-    serve_one_with_nonce_source(stream, peer_policy, OsNonceSource, server_ceiling, handler)
+    let mut observer = NoopOperationLifecycleObserver;
+    serve_one_with_nonce_source_and_observer(
+        stream,
+        peer_policy,
+        OsNonceSource,
+        server_ceiling,
+        handler,
+        &mut observer,
+    )
+}
+
+pub fn serve_one_with_observer<H, O>(
+    stream: UnixStream,
+    peer_policy: PeerPolicy,
+    server_ceiling: Duration,
+    handler: &mut H,
+    observer: &mut O,
+) -> Result<ServiceEvidence, AgentPortError>
+where
+    H: BrowserRequestHandler,
+    O: OperationLifecycleObserver,
+{
+    serve_one_with_nonce_source_and_observer(
+        stream,
+        peer_policy,
+        OsNonceSource,
+        server_ceiling,
+        handler,
+        observer,
+    )
 }
 
 pub fn serve_one_with_nonce_source<S, H>(
@@ -94,6 +173,30 @@ pub fn serve_one_with_nonce_source<S, H>(
 where
     S: NonceSource,
     H: BrowserRequestHandler,
+{
+    let mut observer = NoopOperationLifecycleObserver;
+    serve_one_with_nonce_source_and_observer(
+        stream,
+        peer_policy,
+        nonce_source,
+        server_ceiling,
+        handler,
+        &mut observer,
+    )
+}
+
+pub fn serve_one_with_nonce_source_and_observer<S, H, O>(
+    stream: UnixStream,
+    peer_policy: PeerPolicy,
+    nonce_source: S,
+    server_ceiling: Duration,
+    handler: &mut H,
+    observer: &mut O,
+) -> Result<ServiceEvidence, AgentPortError>
+where
+    S: NonceSource,
+    H: BrowserRequestHandler,
+    O: OperationLifecycleObserver,
 {
     if server_ceiling.is_zero() {
         return Err(AgentPortError::DeadlineExceeded);
@@ -134,15 +237,43 @@ where
     };
 
     context.remaining()?;
-    let outcome = handler.handle(&context, &request)?;
+    observer.requested(&context, &request)?;
+    context.remaining()?;
+    observer.dispatched(&context, &request)?;
+    context.remaining()?;
+
+    let outcome = match handler.handle(&context, &request) {
+        Ok(outcome) => outcome,
+        Err(error) => {
+            observer.interrupted(&context, &request, &error)?;
+            return Err(error);
+        }
+    };
 
     // A synchronous handler may return after its budget. Such a result is
     // discarded and no response frame is committed.
-    context.remaining()?;
-    let response = bind_response(&request, outcome)?;
+    if let Err(error) = context.remaining() {
+        observer.interrupted(&context, &request, &error)?;
+        return Err(error);
+    }
+    let response = match bind_response(&request, outcome) {
+        Ok(response) => response,
+        Err(error) => {
+            observer.interrupted(&context, &request, &error)?;
+            return Err(error);
+        }
+    };
     let response_ok = response.outcome.is_ok();
-    let encoded = encode_response(&response)?;
+    let encoded = match encode_response(&response) {
+        Ok(encoded) => encoded,
+        Err(error) => {
+            let error = AgentPortError::Codec(error);
+            observer.interrupted(&context, &request, &error)?;
+            return Err(error);
+        }
+    };
     let response_sha256 = sha256_hex(&encoded);
+    observer.completed(&context, &request, &response, &response_sha256)?;
     connection.send_response(request_frame.sequence, encoded, context.remaining()?)?;
 
     Ok(ServiceEvidence {

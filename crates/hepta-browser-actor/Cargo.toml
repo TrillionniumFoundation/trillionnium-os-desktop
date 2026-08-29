@@ -1,0 +1,16 @@
+[package]
+name = "hepta-browser-actor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+hepta-agent-port = { path = "../hepta-agent-port" }
+hepta-agent-transport = { path = "../hepta-agent-transport" }
+hepta-browser-codec = { path = "../hepta-browser-codec" }
+hepta-session-core = { path = "../hepta-session-core" }
+trillionnium-contract-core = { path = "../trillionnium-contract-core" }
+sha2 = "=0.10.9"

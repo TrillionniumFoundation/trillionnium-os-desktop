@@ -23,6 +23,7 @@ EXPECTED_WORKSPACE_MEMBERS = [
     "crates/hepta-browser-contracts",
     "crates/hepta-session-core",
     "crates/hepta-workspace-composition",
+    "crates/hepta-browser-actor",
 ]
 
 REQUIRED_PATHS = [
@@ -79,6 +80,10 @@ REQUIRED_PATHS = [
     "crates/hepta-workspace-composition/src/model.rs",
     "crates/hepta-workspace-composition/src/tests.rs",
     "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md",
+    "crates/hepta-browser-actor/Cargo.toml",
+    "crates/hepta-browser-actor/src/lib.rs",
+    "contracts/browser-actor.v1.json",
+    "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
 ]
 
 

@@ -1,0 +1,58 @@
+{
+  "schema": "trillionnium.desktop.browser-actor.v1",
+  "work_package": "D3-01",
+  "status": "SOURCE_CANDIDATE",
+  "principal_binding": {
+    "semantic_principal": "TaskFlowPrincipal",
+    "mechanism_identity_fields": [
+      "pid",
+      "uid",
+      "gid",
+      "systemd_unit",
+      "unified_cgroup_v2_path",
+      "executable_sha256"
+    ],
+    "exact_match_required": true,
+    "peer_drift": "fail_closed_before_dispatch"
+  },
+  "page_owner": {
+    "logical_webview_limit": 1,
+    "session_binding_required": true,
+    "session_generation_required": true,
+    "stale_reference_policy": "fail_closed",
+    "human_and_agent_state_machine": "hepta-session-core"
+  },
+  "browser_actor": {
+    "typed_operations": [
+      "health",
+      "session_create",
+      "session_snapshot",
+      "session_close",
+      "page_navigate",
+      "page_observe",
+      "page_act",
+      "page_wait",
+      "page_extract"
+    ],
+    "deadline_propagation": true,
+    "cancellation_checked_before_runtime_dispatch": true,
+    "deterministic_local_fixture_only": true,
+    "external_https_enabled": false,
+    "trusted_app_runtime_enabled": false,
+    "external_effect_authority": false
+  },
+  "receipts": {
+    "journal": "contracts/receipt-journal.v1.json",
+    "requested_before_dispatch": true,
+    "dispatched_before_runtime_call": true,
+    "terminal_response_digest_bound": true,
+    "potential_external_effect_interruption": "indeterminate_never_automatic_replay",
+    "observer_failure": "fail_closed"
+  },
+  "activation": {
+    "product_agent_port_enabled": false,
+    "development_profile_requires_explicit_selection": true,
+    "listener_created_by_actor_crate": false,
+    "production_release_authorized": false
+  }
+}
