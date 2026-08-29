@@ -1925,8 +1925,11 @@ mod tests {
         let path = directory.join("journal.bin");
         let mut journal =
             ReceiptJournal::create(&path, JournalId([8; 16]), 1).expect("create journal");
+        let mut completed = event("receipt-1", LifecycleState::Completed);
+        completed.outcome = Some(ReceiptOutcome::Succeeded);
+        completed.response_sha256 = Some(digest(2));
         let error = journal
-            .append(event("receipt-1", LifecycleState::Completed))
+            .append(completed)
             .expect_err("completion before request must fail");
         assert!(matches!(error, JournalError::InvalidTransition { .. }));
         fs::remove_dir_all(directory).expect("cleanup");
