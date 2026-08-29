@@ -46,19 +46,21 @@ jobs:
           from pathlib import Path
           path = Path('crates/hepta-browser-actor/src/lib.rs')
           text = path.read_text()
-          old = '''        if !matches!(&request.operation, BrowserOperation::Health | BrowserOperation::SessionCreate { .. })
-        {
-            if let Err(outcome) = self.verify_bound_request(request) {
-                return Ok(outcome);
-            }
-        }
-'''
-          new = '''        if !matches!(&request.operation, BrowserOperation::Health | BrowserOperation::SessionCreate { .. })
-            && let Err(outcome) = self.verify_bound_request(request)
-        {
-            return Ok(outcome);
-        }
-'''
+          old = (
+              "        if !matches!(&request.operation, BrowserOperation::Health | BrowserOperation::SessionCreate { .. })\n"
+              "        {\n"
+              "            if let Err(outcome) = self.verify_bound_request(request) {\n"
+              "                return Ok(outcome);\n"
+              "            }\n"
+              "        }\n"
+          )
+          new = (
+              "        if !matches!(&request.operation, BrowserOperation::Health | BrowserOperation::SessionCreate { .. })\n"
+              "            && let Err(outcome) = self.verify_bound_request(request)\n"
+              "        {\n"
+              "            return Ok(outcome);\n"
+              "        }\n"
+          )
           if text.count(old) != 1:
               raise SystemExit('D3 Rust 1.93 lint repair marker drifted')
           path.write_text(text.replace(old, new, 1))
