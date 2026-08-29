@@ -21,11 +21,11 @@ const TIMEOUT: Duration = Duration::from_secs(10);
 fn main() {
     match run() {
         Ok(result) => {
-            if let Some(path) = result.output {
-                if let Err(error) = write_result(&path, &result.json) {
-                    eprintln!("hepta-agent-d1-fixture: failed to write result: {error}");
-                    std::process::exit(1);
-                }
+            if let Some(path) = result.output
+                && let Err(error) = write_result(&path, &result.json)
+            {
+                eprintln!("hepta-agent-d1-fixture: failed to write result: {error}");
+                std::process::exit(1);
             }
             println!("{}", result.json);
         }
