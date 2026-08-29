@@ -1,0 +1,109 @@
+name: d1-rootfs-owner-normalize
+
+on:
+  push:
+    branches:
+      - codex/d1-01-reproducible-qemu-substrate
+    paths:
+      - .github/workflows/d1-rootfs-owner-normalize.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d1-01-reproducible-qemu-substrate
+          fetch-depth: 0
+      - name: Normalize only mapped root ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("packaging/debian/image/build-d1-image.sh")
+          text = path.read_text(encoding="utf-8")
+
+          command_old = '''for command in mmdebstrap python3 jq mke2fs tar chroot rsync sha256sum \\
+            systemd-sysusers systemd-tmpfiles cmp diff readlink; do
+          '''
+          command_new = '''for command in mmdebstrap python3 jq mke2fs tar chroot rsync sha256sum \\
+            systemd-sysusers systemd-tmpfiles cmp diff readlink mount umount stat chown chgrp find; do
+          '''
+          if text.count(command_old) != 1:
+              raise SystemExit("expected exactly one D1 host-command gate")
+          text = text.replace(command_old, command_new)
+
+          anchor = 'chroot "$rootfs" /usr/bin/systemd-sysusers\n'
+          insertion = r'''# mmdebstrap can materialize root-owned paths through a user namespace, in
+# which case numeric root is represented on the host by one non-zero UID/GID.
+# Remap only that synthetic root identity. Never recursively chown the tree:
+# package-owned system accounts and the product desktop account must survive.
+root_identity_paths=(
+  "$rootfs"
+  "$rootfs/etc"
+  "$rootfs/run"
+  "$rootfs/usr"
+  "$rootfs/var"
+)
+mapfile -t mapped_root_uids < <(
+  for path in "${root_identity_paths[@]}"; do
+    [[ -e "$path" ]] && stat -c '%u' "$path"
+  done | awk '$1 != 0' | LC_ALL=C sort -un
+)
+mapfile -t mapped_root_gids < <(
+  for path in "${root_identity_paths[@]}"; do
+    [[ -e "$path" ]] && stat -c '%g' "$path"
+  done | awk '$1 != 0' | LC_ALL=C sort -un
+)
+if (( ${#mapped_root_uids[@]} > 1 )); then
+  printf 'ambiguous mapped root UIDs: %s\n' "${mapped_root_uids[*]}" >&2
+  exit 1
+fi
+if (( ${#mapped_root_gids[@]} > 1 )); then
+  printf 'ambiguous mapped root GIDs: %s\n' "${mapped_root_gids[*]}" >&2
+  exit 1
+fi
+if (( ${#mapped_root_uids[@]} == 1 )); then
+  mapped_root_uid=${mapped_root_uids[0]}
+  find "$rootfs" -xdev -uid "$mapped_root_uid" -exec chown 0 {} +
+fi
+if (( ${#mapped_root_gids[@]} == 1 )); then
+  mapped_root_gid=${mapped_root_gids[0]}
+  find "$rootfs" -xdev -gid "$mapped_root_gid" -exec chgrp 0 {} +
+fi
+for path in "${root_identity_paths[@]}"; do
+  [[ -e "$path" ]] || continue
+  owner=$(stat -c '%u:%g' "$path")
+  if [[ "$owner" != 0:0 ]]; then
+    echo "D1 root identity path is not owned by numeric root: $path ($owner)" >&2
+    exit 1
+  fi
+done
+
+chroot "$rootfs" /usr/bin/systemd-sysusers
+'''
+          if text.count(anchor) != 1:
+              raise SystemExit("expected exactly one target systemd-sysusers command")
+          text = text.replace(anchor, insertion)
+          path.write_text(text, encoding="utf-8")
+          PY
+          bash -n packaging/debian/image/build-d1-image.sh
+          shellcheck -e SC2016,SC2054 packaging/debian/image/build-d1-image.sh
+          git diff --check
+      - name: Commit reviewed ownership normalization and remove helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/d1-rootfs-owner-normalize.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packaging/debian/image/build-d1-image.sh .github/workflows/d1-rootfs-owner-normalize.yml
+          git commit -m "build: normalize mapped root ownership before target tmpfiles"
+          git push origin HEAD:codex/d1-01-reproducible-qemu-substrate
