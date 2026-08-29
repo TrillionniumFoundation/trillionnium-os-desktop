@@ -116,7 +116,8 @@ jobs:
             --prefix="$prefix" \
             --disable-nls
           make -j2
-          make install
+          make -C e2fsck install
+          make -C misc install
           test -x "$prefix/sbin/mke2fs"
           test -x "$prefix/sbin/e2fsck"
           test -x "$prefix/sbin/dumpe2fs"
