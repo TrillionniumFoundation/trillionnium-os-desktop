@@ -7,32 +7,14 @@
   "architecture": "amd64",
   "selection_date": "2026-08-28",
   "snapshot_lock": {
-    "resolved": true,
-    "lock_file": "manifests/debian-snapshot.lock.v1.json",
-    "canonical_lock_file_sha256": "cd7118481f0b6875d16352b682a8880da923b44893cab884483b307abb64deae",
-    "snapshot_timestamp": "20260828T000000Z",
-    "resolved_package_count": 319,
-    "package_set_sha256": "89918a968afafdbabe03e43794565cb1dc936f3f24a09ec81030be4a4085333a",
-    "archive_keyring_sha256": "dbc72305245c79a3087dd1cffb35e9fdf56ee0df7cc0a8637a5662a9110305db",
-    "inrelease_sha256": {
-      "debian": "98b25b5cd185c59d34aa6e4c3e9b5b8f01bbe9d104fe2dcfbcd30dc0a14a59ed",
-      "debian-updates": "e7e983b7c9f67a4c3f007e6a0ca808fbe855dededdac9e94d6e4b0cc84fe21a0",
-      "debian-security": "324858a9652243a987a7bbbe812fc41aabfc2a9cd86c65bd9a9c17bbe4fd8ee4"
-    },
-    "accepted_primary_fingerprints": [
-      "04B54C3CDCA79751B16BC6B5225629DF75B188BD",
-      "41587F7DB8C774BCCF131416762F67A0B2C39DE4",
-      "5E04A1E3223A19A20706E20F9904613D4CCE68C6"
-    ],
-    "resolution_provenance": {
-      "source_head": "6825f9bd4bd012212559d187315bca285a6ae3d2",
-      "pull_request_merge_ref": "2c019cb8f42423af42f518cdf5d434789991b0aa",
-      "workflow_run_id": 33196743127,
-      "workflow_artifact_id": 9696135492,
-      "workflow_artifact_name": "debian-snapshot-lock-2c019cb8f42423af42f518cdf5d434789991b0aa",
-      "workflow_artifact_sha256": "a55b04bb56b94fe5fa4dd055fc38e71e535be1d45bcfb4071176c0cdc6f3e9f8"
-    },
-    "claim_ceiling": "signed_input_and_package_closure_only_no_rootfs_no_image_no_boot"
+    "resolved": false,
+    "required_before_stage": "D1",
+    "required_fields": [
+      "snapshot_timestamp",
+      "inrelease_sha256",
+      "signing_key_fingerprints",
+      "package_set_sha256"
+    ]
   },
-  "status": "signed_snapshot_and_exact_package_closure_resolved_no_image_claim"
+  "status": "base_selected_snapshot_not_yet_resolved_no_image_claim"
 }

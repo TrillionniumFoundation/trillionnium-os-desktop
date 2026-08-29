@@ -17,17 +17,6 @@
   "external_effects_enabled": false,
   "implementation_checkpoints": [
     {
-      "evidence": "evidence/2026-08-29-d0r02-debian-snapshot.md",
-      "id": "TOS-D0R-02",
-      "machine_evidence": "../manifests/debian-snapshot.lock.v1.json",
-      "package_count": 319,
-      "package_set_sha256": "89918a968afafdbabe03e43794565cb1dc936f3f24a09ec81030be4a4085333a",
-      "snapshot_timestamp": "20260828T000000Z",
-      "status": "INPUT_VALIDATED_SIGNED_SNAPSHOT_AND_FULL_PACKAGE_CLOSURE_NO_IMAGE",
-      "validated_source_head": "6825f9bd4bd012212559d187315bca285a6ae3d2",
-      "workflow_run_id": 33196743127
-    },
-    {
       "evidence": "evidence/2026-08-28-d0c02-authenticated-uds.md",
       "id": "TOS-D0C-02",
       "machine_evidence": "evidence/generated/d0c02-rust193-host-result.json",
@@ -62,9 +51,21 @@
         33190387553,
         33190387564
       ]
+    },
+    {
+      "artifact_digest": "sha256:aad3c47a4151b0ecaf96c4e0dd16680cc498667e155391c53b4a6e489a57501b",
+      "artifact_id": 9708505752,
+      "evidence": "evidence/2026-08-29-d0a01-servo-exact-pin.md",
+      "id": "TOS-D0A-01",
+      "job_id": 99042937091,
+      "machine_evidence": "evidence/generated/d0a01-servo-qualification-result.json",
+      "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+      "status": "PASS_COMPILE_COMPATIBILITY_ONLY",
+      "validated_head": "01d02d692c573ccde7a99d990f2a63235d9bc69f",
+      "workflow_run_id": 33230713426
     }
   ],
-  "implementation_stage": "D0R02_INPUT_VALIDATED_D0C05_HOST_VALIDATED",
+  "implementation_stage": "D0R_D0C05_D0A01_COMPILE_VALIDATED",
   "product": "TrillionniumOS Desktop",
   "product_boundary": "../manifests/product-boundary.json",
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
@@ -77,15 +78,14 @@
   ],
   "rust_toolchain_lock": "../manifests/rust-toolchain.lock.json",
   "schema": "trillionnium.desktop.docs.manifest.v2",
+  "servo_compile_qualified": true,
   "servo_integrated": false,
   "servo_lock": "../manifests/servo.lock.json",
-  "status": "INPUT_VALIDATED_AND_IMPLEMENTATION_HOST_VALIDATED",
+  "servo_qualification_evidence": "evidence/generated/d0a01-servo-qualification-result.json",
+  "status": "IMPLEMENTATION_COMPILE_VALIDATED",
   "superseded_plan": "DESKTOP_PLAN-2026-08-28.md",
   "transport_core_source_present": true,
   "transport_exact_head_rust_validation": true,
   "trusted_app_origin_model": "distinct_synthetic_https_hosts_under_apps.hepta.invalid",
-  "trusted_shell_topology": "one_visible_workspace_plus_trusted_shell_surface_plus_one_untrusted_content_webview",
-  "debian_signed_snapshot_resolved": true,
-  "debian_snapshot_lock": "../manifests/debian-snapshot.lock.v1.json",
-  "debian_snapshot_requirements": "../manifests/debian-snapshot.requirements.v1.json"
+  "trusted_shell_topology": "one_visible_workspace_plus_trusted_shell_surface_plus_one_untrusted_content_webview"
 }

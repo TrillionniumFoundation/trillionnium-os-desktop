@@ -9,6 +9,7 @@
     "D0C-01",
     "D0C-02",
     "D0A-00",
+    "D0A-01",
     "D0C-03",
     "D0C-04",
     "D0C-05"
@@ -47,7 +48,7 @@
       ]
     }
   ],
-  "implementation_stage": "D0R02_INPUT_VALIDATED_D0C05_HOST_VALIDATED",
+  "implementation_stage": "D0R_D0C05_D0A01_COMPILE_VALIDATED",
   "not_claimed": [
     "servo_integrated",
     "debian_image_built",
@@ -59,28 +60,23 @@
     "signed_app_runtime",
     "production_release"
   ],
-  "partial_work_packages": [
-    "D0A-01"
-  ],
+  "partial_work_packages": [],
   "product": "TrillionniumOS Desktop",
+  "qualification_work_packages": [
+    {
+      "artifact_digest": "sha256:aad3c47a4151b0ecaf96c4e0dd16680cc498667e155391c53b4a6e489a57501b",
+      "artifact_id": 9708505752,
+      "evidence": "docs/evidence/generated/d0a01-servo-qualification-result.json",
+      "id": "D0A-01",
+      "job_id": 99042937091,
+      "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+      "status": "PASS_COMPILE_COMPATIBILITY_ONLY",
+      "validated_head": "01d02d692c573ccde7a99d990f2a63235d9bc69f",
+      "workflow_run_id": 33230713426
+    }
+  ],
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
   "repository_mode": "full_product_repository",
   "schema": "trillionnium.desktop.repository-state.v1",
-  "source_candidate_work_packages": [],
-  "input_validated_work_packages": [
-    {
-      "evidence": "docs/evidence/2026-08-29-d0r02-debian-snapshot.md",
-      "id": "D0R-02",
-      "lock": "manifests/debian-snapshot.lock.v1.json",
-      "lock_file_sha256": "cd7118481f0b6875d16352b682a8880da923b44893cab884483b307abb64deae",
-      "package_count": 319,
-      "package_set_sha256": "89918a968afafdbabe03e43794565cb1dc936f3f24a09ec81030be4a4085333a",
-      "snapshot_timestamp": "20260828T000000Z",
-      "status": "INPUT_VALIDATED_SIGNED_SNAPSHOT_AND_FULL_PACKAGE_CLOSURE_NO_IMAGE",
-      "validated_source_head": "6825f9bd4bd012212559d187315bca285a6ae3d2",
-      "workflow_artifact_id": 9696135492,
-      "workflow_artifact_sha256": "a55b04bb56b94fe5fa4dd055fc38e71e535be1d45bcfb4071176c0cdc6f3e9f8",
-      "workflow_run_id": 33196743127
-    }
-  ]
+  "source_candidate_work_packages": []
 }
