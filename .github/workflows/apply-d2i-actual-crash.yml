@@ -1,4 +1,4 @@
-name: apply-d2i-actual-crash
+name: stage-d2i-gate-promotion
 
 on:
   push:
@@ -10,47 +10,62 @@ permissions:
   contents: write
 
 concurrency:
-  group: apply-d2i-actual-crash
+  group: stage-d2i-gate-promotion
   cancel-in-progress: false
 
 jobs:
-  compose:
+  stage:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - name: Check out exact integration branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: codex/full-gap-closure-v2
           fetch-depth: 0
-      - name: Apply actual crash proof
+      - name: Build promoted permanent D2I workflow blob
         shell: bash
         run: |
           set -euo pipefail
-          python3 tools/apply_d2i_actual_crash.py
-          rustfmt --edition 2024 runtime/servo/hepta_workspace_runtime.rs
-          shellcheck -e SC2054 \
-            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
-            tests/qemu/run-d2i-boot-test.sh
-          python3 tools/validate_repository.py
-          python3 tools/validate_project_truth.py
-          grep -F 'opts.multiprocess = true' runtime/servo/hepta_workspace_runtime.rs
-          grep -F 'run_content_process(token)' runtime/servo/hepta_workspace_runtime.rs
-          grep -F 'ContentProcessTerminated' runtime/servo/hepta_workspace_runtime.rs
-          grep -F 'actual_content_process_crash_proven": true' \
-            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('.github/workflows/d2i-integrated-image.yml').read_text()
+          replacements = {
+              "          assert boot['claims']['actual_content_process_crash_proven'] is False\n": (
+                  "          assert boot['claims']['actual_content_process_crash_proven'] is True\n"
+                  "          assert acceptance['actual_content_process_crash_proven'] is True\n"
+                  "          assert acceptance['actual_crash_callbacks'] >= 1\n"
+                  "          assert runtime['actual_content_process_crash_proven'] is True\n"
+                  "          assert runtime['actual_crash_callbacks'] >= 1\n"
+                  "          assert runtime['content_process_termination_observed'] is True\n"
+              ),
+              "              'status': 'PASS_CANDIDATE_BLOCKED_ACTUAL_CONTENT_PROCESS_CRASH',\n": (
+                  "              'status': 'PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE',\n"
+              ),
+              "                  'actual_content_process_crash_callback_observed',\n": "",
+          }
+          for old, new in replacements.items():
+              if source.count(old) != 1:
+                  raise SystemExit(f'D2I workflow promotion marker drifted: {old!r}')
+              source = source.replace(old, new, 1)
+          target = Path('staging/d2i-integrated-image.yml')
+          target.parent.mkdir(parents=True, exist_ok=True)
+          target.write_text(source)
+          PY
+          grep -F "assert runtime['actual_content_process_crash_proven'] is True" \
+            staging/d2i-integrated-image.yml
+          grep -F "'status': 'PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE'" \
+            staging/d2i-integrated-image.yml
+          ! grep -F 'actual_content_process_crash_callback_observed' \
+            staging/d2i-integrated-image.yml
           git diff --check
-      - name: Commit product and QEMU crash proof
+      - name: Commit staging blob only
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "trillionnium-d2i-crash"
-          git config user.email "d2i-crash@users.noreply.github.com"
-          git rm tools/apply_d2i_actual_crash.py
-          git add \
-            runtime/servo/hepta_workspace_runtime.rs \
-            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
-            tests/qemu/run-d2i-boot-test.sh
+          git config user.name "trillionnium-d2i-promotion"
+          git config user.email "d2i-promotion@users.noreply.github.com"
+          git add staging/d2i-integrated-image.yml
           git diff --cached --check
-          git commit -m "feat(d2i): prove exact Servo content-process crash and recovery"
+          git commit -m "ci: stage promoted D2I permanent gate blob"
           git push origin HEAD:codex/full-gap-closure-v2
