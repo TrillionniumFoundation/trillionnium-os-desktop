@@ -17,3 +17,9 @@ pointer/button/wheel/keyboard forwarding, Servo IME composition, process
 topology, a test-only multiprocess content panic, trusted-window survival, and
 one replacement content generation. It does not start WebDriver, BrowserActor,
 AgentPort, external browsing, persistent credentials, or product authority.
+
+The exact-pin adapter converts Surfman construction/current-context failures at
+the application boundary, uses Servo's min/max `DeviceIntRect` convention, and
+clones the current WebView handle before native IME dispatch so no temporary
+`RefCell` borrow escapes its statement. These are compile-boundary adaptations;
+they do not change the runtime trust topology or relax any navigation policy.
