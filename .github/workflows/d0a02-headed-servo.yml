@@ -4,532 +4,55 @@ on:
   pull_request:
     paths:
       - .github/workflows/d0a02-headed-servo.yml
-      - runtime/servo/**
-      - manifests/servo.lock.json
-      - crates/hepta-workspace-composition/**
-  push:
-    branches:
-      - codex/d0a02-headed-runtime-v3
-    paths:
-      - .github/workflows/d0a02-headed-servo.yml
-      - runtime/servo/**
-      - manifests/servo.lock.json
-      - crates/hepta-workspace-composition/**
+      - .github/scripts/apply_d0a02_teardown_fix.py
   workflow_dispatch:
 
 permissions:
   contents: write
 
-concurrency:
-  group: d0a02-headed-servo-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  CARGO_TERM_COLOR: always
-  CARGO_INCREMENTAL: "0"
-  CANDIDATE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-  BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
-  TESTED_SHA: ${{ github.sha }}
-
 jobs:
-  headed-runtime:
+  apply-repair:
     runs-on: ubuntu-24.04
-    timeout-minutes: 240
     steps:
-      - name: Check out product candidate
+      - name: Check out package branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: codex/d0a02-headed-runtime-v3
           fetch-depth: 0
 
-      - name: Apply bounded headed-runtime source repair
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          def replace_once(path: str, old: str, new: str) -> None:
-              target = Path(path)
-              text = target.read_text()
-              count = text.count(old)
-              if count != 1:
-                  raise SystemExit(
-                      f"expected one replacement in {path}, found {count}: {old[:80]!r}"
-                  )
-              target.write_text(text.replace(old, new, 1))
-
-          headed = "experiments/servo-headed-runtime/src/main.rs"
-          replace_once(
-              headed,
-              """            AppEvent::Exit(code) => {
-                self.exit_code = code;
-                event_loop.exit();
-            }
-""",
-              """            AppEvent::Exit(code) => {
-                self.exit_code = code;
-                if let Some(state) = self.state.take() {
-                    state.webview.borrow_mut().take();
-                    drop(state);
-                }
-                event_loop.exit();
-            }
-""",
-          )
-          replace_once(
-              headed,
-              """struct RuntimeState {
-    window: Window,
-    servo: Servo,
-    parent_context: Rc<WindowRenderingContext>,
-    content_context: Rc<OffscreenRenderingContext>,
-    webview: RefCell<Option<WebView>>,
-""",
-              """struct RuntimeState {
-    webview: RefCell<Option<WebView>>,
-    servo: Servo,
-    content_context: Rc<OffscreenRenderingContext>,
-    parent_context: Rc<WindowRenderingContext>,
-    // The native window must outlive both rendering contexts.
-    window: Window,
-""",
-          )
-          replace_once(
-              headed,
-              """            WindowEvent::CloseRequested => {
-                state.fail("window closed before qualification completed");
-                event_loop.exit();
-            }
-""",
-              """            WindowEvent::CloseRequested => {
-                state.fail("window closed before qualification completed");
-            }
-""",
-          )
-          replace_once(
-              headed,
-              """        event_loop: &ActiveEventLoop,
-        _window_id: winit::window::WindowId,
-        event: WindowEvent,
-""",
-              """        _event_loop: &ActiveEventLoop,
-        _window_id: winit::window::WindowId,
-        event: WindowEvent,
-""",
-          )
-
-          product = "runtime/servo/hepta_workspace_runtime.rs"
-          replace_once(
-              product,
-              """struct RuntimeState {
-    window: Window,
-    servo: Servo,
-    rendering_context: Rc<WindowRenderingContext>,
-    webview: RefCell<Option<WebView>>,
-""",
-              """struct RuntimeState {
-    webview: RefCell<Option<WebView>>,
-    servo: Servo,
-    rendering_context: Rc<WindowRenderingContext>,
-    // Keep the native window alive until after Servo and its rendering context.
-    window: Window,
-""",
-          )
-          replace_once(
-              product,
-              """enum App {
-    Initial { waker: Waker, output: PathBuf },
-    Running(Rc<RuntimeState>),
-}
-""",
-              """enum App {
-    Initial { waker: Waker, output: PathBuf },
-    Running(Rc<RuntimeState>),
-    Finished,
-}
-""",
-          )
-          replace_once(
-              product,
-              """    fn new(event_loop: &EventLoop<AppEvent>, output: PathBuf) -> Self {
-        Self::Initial {
-            waker: Waker::new(event_loop),
-            output,
-        }
-    }
-}
-""",
-              """    fn new(event_loop: &EventLoop<AppEvent>, output: PathBuf) -> Self {
-        Self::Initial {
-            waker: Waker::new(event_loop),
-            output,
-        }
-    }
-
-    fn shutdown(&mut self, event_loop: &ActiveEventLoop) {
-        let previous = std::mem::replace(self, Self::Finished);
-        if let Self::Running(state) = previous {
-            state.webview.borrow_mut().take();
-            drop(state);
-        }
-        event_loop.exit();
-    }
-}
-""",
-          )
-          replace_once(
-              product,
-              """    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
-        let Self::Running(state) = self else {
-            return;
-        };
-        state.drive();
-        state.window.request_redraw();
-        if state.evidence_written.get()
-            && (state.output.join("capture.done").is_file()
-                || state.started_at.elapsed() > Duration::from_secs(100))
-        {
-            event_loop.exit();
-        }
-    }
-""",
-              """    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
-        let should_shutdown = {
-            let Self::Running(state) = self else {
-                return;
-            };
-            state.drive();
-            state.window.request_redraw();
-            state.evidence_written.get()
-                && (state.output.join("capture.done").is_file()
-                    || state.started_at.elapsed() > Duration::from_secs(100))
-        };
-        if should_shutdown {
-            self.shutdown(event_loop);
-        }
-    }
-""",
-          )
-          PY
-          git diff --check
-
-      - name: Record exact source identities
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf 'TESTED_TREE_SHA=%s\n' "$(git rev-parse HEAD^{tree})" >> "$GITHUB_ENV"
-          printf 'candidate_head=%s\nbase=%s\ntested=%s\ntree=%s\n' \
-            "$CANDIDATE_HEAD_SHA" "$BASE_SHA" "$TESTED_SHA" "$(git rev-parse HEAD^{tree})"
-
-      - name: Audit the product-owned runtime source
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          source = Path('runtime/servo/hepta_workspace_runtime.rs').read_text()
-          required = [
-              'Window::default_attributes()',
-              '.with_decorations(true)',
-              'WebViewBuilder::new',
-              'InputEvent::MouseMove',
-              'InputEvent::MouseButton',
-              'InputEvent::Wheel',
-              'InputEvent::Keyboard',
-              'InputEvent::Ime',
-              'fn request_create_new',
-              'drop(request)',
-              'self.webview.borrow_mut().take()',
-              'content_surface_limit',
-              'take_screenshot',
-          ]
-          missing = [token for token in required if token not in source]
-          if missing:
-              raise SystemExit(f'missing headed runtime invariants: {missing}')
-          if 'Vec<WebView>' in source:
-              raise SystemExit('runtime must not retain multiple content WebViews')
-          PY
-
-      - name: Resolve the exact Servo pin
-        id: servo-pin
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json
-          from pathlib import Path
-          lock = json.loads(Path('manifests/servo.lock.json').read_text())
-          def first(*names):
-              for name in names:
-                  value = lock.get(name)
-                  if isinstance(value, str) and value:
-                      return value
-              nested = lock.get('servo')
-              if isinstance(nested, dict):
-                  for name in names:
-                      value = nested.get(name)
-                      if isinstance(value, str) and value:
-                          return value
-              raise SystemExit(f'missing Servo lock field from {names}')
-          repository = first('repository', 'repo', 'url')
-          revision = first('commit', 'revision', 'rev', 'git_revision')
-          print(f'repository={repository}')
-          print(f'revision={revision}')
-          PY
-
-      - name: Install headed Servo host dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            autoconf \
-            automake \
-            build-essential \
-            ca-certificates \
-            clang \
-            cmake \
-            curl \
-            git \
-            gperf \
-            imagemagick \
-            jq \
-            libdbus-1-dev \
-            libegl1-mesa-dev \
-            libfontconfig1-dev \
-            libfreetype-dev \
-            libgl1-mesa-dev \
-            libgles2-mesa-dev \
-            libgstreamer-plugins-base1.0-dev \
-            libgstreamer1.0-dev \
-            libharfbuzz-dev \
-            liblzma-dev \
-            libssl-dev \
-            libunwind-dev \
-            libwayland-dev \
-            libx11-dev \
-            libx11-xcb-dev \
-            libxcb-render0-dev \
-            libxcb-shape0-dev \
-            libxcb-xfixes0-dev \
-            libxkbcommon-dev \
-            libxkbcommon-x11-dev \
-            mesa-utils \
-            nasm \
-            ninja-build \
-            openbox \
-            pkg-config \
-            python3 \
-            python3-pip \
-            x11-utils \
-            x11-xserver-utils \
-            xauth \
-            xserver-xorg-dev \
-            xvfb
-          sudo rm -rf /var/lib/apt/lists/*
-
-      - name: Check out the exact Servo source
-        shell: bash
-        run: |
-          set -euo pipefail
-          git clone --filter=blob:none --no-checkout \
-            "${{ steps.servo-pin.outputs.repository }}" /tmp/servo
-          git -C /tmp/servo fetch --depth=1 origin \
-            "${{ steps.servo-pin.outputs.revision }}"
-          git -C /tmp/servo checkout --detach FETCH_HEAD
-          test "$(git -C /tmp/servo rev-parse HEAD)" = \
-            "${{ steps.servo-pin.outputs.revision }}"
-          cp runtime/servo/hepta_workspace_runtime.rs \
-            /tmp/servo/components/servo/examples/hepta_workspace_runtime.rs
-
-      - name: Install the Servo-pinned Rust toolchain and bootstrap sccache
-        shell: bash
-        run: |
-          set -euo pipefail
-          channel="$(python3 - <<'PY'
-          from pathlib import Path
-          import tomllib
-          print(tomllib.loads(Path('/tmp/servo/rust-toolchain.toml').read_text())['toolchain']['channel'])
-          PY
-          )"
-          printf 'SERVO_RUST_CHANNEL=%s\n' "$channel" >> "$GITHUB_ENV"
-          rustup toolchain install "$channel" --profile minimal --component rustfmt
-          RUSTC_WRAPPER= cargo +"$channel" install sccache --locked
-          sccache --version
-          mkdir -p "$HOME/.cache/sccache"
-          printf 'RUSTC_WRAPPER=sccache\n' >> "$GITHUB_ENV"
-
-      - name: Restore exact-pin Servo build cache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ~/.cache/sccache
-            /tmp/servo/target
-          key: d0a02-servo-${{ runner.os }}-${{ steps.servo-pin.outputs.revision }}-${{ hashFiles('runtime/servo/hepta_workspace_runtime.rs') }}
-          restore-keys: |
-            d0a02-servo-${{ runner.os }}-${{ steps.servo-pin.outputs.revision }}-
-
-      - name: Build the product runtime inside the locked Servo workspace
-        working-directory: /tmp/servo
-        shell: bash
-        run: |
-          set -euo pipefail
-          export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
-          mkdir -p /tmp/d0a02-headed
-          rustfmt --edition 2024 components/servo/examples/hepta_workspace_runtime.rs
-          cargo build --release --locked \
-            -p servo --example hepta_workspace_runtime \
-            2>&1 | tee /tmp/d0a02-headed/cargo-build.log
-          test -x target/release/examples/hepta_workspace_runtime
-
-      - name: Run headed workspace under an X11 compositor
-        shell: bash
-        run: |
-          set -euo pipefail
-          out=/tmp/d0a02-headed
-          mkdir -p "$out"
-          export DISPLAY=:99
-          Xvfb "$DISPLAY" -screen 0 1280x800x24 -nolisten tcp \
-            >"$out/xvfb.log" 2>&1 &
-          xvfb_pid=$!
-          openbox_pid=
-          runtime_pid=
-          cleanup() {
-            [[ -n "${runtime_pid:-}" ]] && kill "$runtime_pid" 2>/dev/null || true
-            [[ -n "${openbox_pid:-}" ]] && kill "$openbox_pid" 2>/dev/null || true
-            kill "$xvfb_pid" 2>/dev/null || true
-          }
-          trap cleanup EXIT
-          for _ in $(seq 1 100); do
-            xdpyinfo >/dev/null 2>&1 && break
-            sleep 0.1
-          done
-          openbox --sm-disable >"$out/openbox.log" 2>&1 &
-          openbox_pid=$!
-          sleep 1
-
-          HEPTA_D0A02_OUTPUT="$out" \
-            /tmp/servo/target/release/examples/hepta_workspace_runtime \
-            >"$out/runtime.log" 2>&1 &
-          runtime_pid=$!
-
-          for _ in $(seq 1 240); do
-            [[ -f "$out/runtime-ready.json" ]] && break
-            if ! kill -0 "$runtime_pid" 2>/dev/null; then
-              cat "$out/runtime.log" >&2
-              exit 1
-            fi
-            sleep 0.5
-          done
-          test -f "$out/runtime-ready.json"
-          jq -e '.status == "PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY"' \
-            "$out/runtime-ready.json"
-          jq -e '.content_surface_limit == 1' "$out/runtime-ready.json"
-          jq -e '.content_generation == 2' "$out/runtime-ready.json"
-          jq -e '.frame_count >= 2' "$out/runtime-ready.json"
-          jq -e '.input_events_handled >= 5' "$out/runtime-ready.json"
-          jq -e '.ime_path_exercised == true' "$out/runtime-ready.json"
-          jq -e '.popup_requests_denied >= 1' "$out/runtime-ready.json"
-          jq -e '.trusted_chrome_survived_recovery == true' "$out/runtime-ready.json"
-          jq -e '.external_network_used == false' "$out/runtime-ready.json"
-          test -s "$out/servo-content-recovered.png"
-
-          xwininfo -root -tree > "$out/x11-window-tree.txt"
-          grep -F 'TrillionniumOS Trusted Workspace' "$out/x11-window-tree.txt"
-          xwd -root -silent -out "$out/workspace-root.xwd"
-          convert "$out/workspace-root.xwd" "$out/workspace-root.png"
-          test -s "$out/workspace-root.png"
-          sha256sum \
-            "$out/servo-content-recovered.png" \
-            "$out/workspace-root.png" \
-            > "$out/frame-sha256.txt"
-          touch "$out/capture.done"
-          wait "$runtime_pid"
-          runtime_pid=
-          trap - EXIT
-          cleanup
-
-      - name: Build bounded headed-runtime evidence
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from datetime import datetime, timezone
-          from pathlib import Path
-          import hashlib
-          import json
-          import os
-
-          out = Path('/tmp/d0a02-headed')
-          runtime = json.loads((out / 'runtime-ready.json').read_text())
-          content = out / 'servo-content-recovered.png'
-          workspace = out / 'workspace-root.png'
-          workflow = Path('.github/workflows/d0a02-headed-servo.yml')
-          runtime_source = Path('runtime/servo/hepta_workspace_runtime.rs')
-          servo_lock = Path('manifests/servo.lock.json')
-          evidence = {
-              'schema': 'trillionnium.desktop.d0a02-headed-servo-evidence.v1',
-              'status': 'PASS',
-              'repository': os.environ['GITHUB_REPOSITORY'],
-              'base_sha': os.environ['BASE_SHA'],
-              'candidate_head_sha': os.environ['CANDIDATE_HEAD_SHA'],
-              'tested_sha': os.environ['TESTED_SHA'],
-              'tree_sha': os.environ['TESTED_TREE_SHA'],
-              'workflow_sha256': hashlib.sha256(workflow.read_bytes()).hexdigest(),
-              'servo_revision': '${{ steps.servo-pin.outputs.revision }}',
-              'input_digests': {
-                  'runtime_source_sha256': hashlib.sha256(runtime_source.read_bytes()).hexdigest(),
-                  'servo_lock_sha256': hashlib.sha256(servo_lock.read_bytes()).hexdigest(),
-              },
-              'recorded_at': datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
-              'runtime': runtime,
-              'frames': {
-                  'servo_content_recovered_png_sha256': hashlib.sha256(content.read_bytes()).hexdigest(),
-                  'native_workspace_root_png_sha256': hashlib.sha256(workspace.read_bytes()).hexdigest(),
-              },
-              'claims': {
-                  'native_trusted_chrome': True,
-                  'one_untrusted_content_surface': True,
-                  'real_servo_frame': True,
-                  'pointer_keyboard_wheel_and_ime_paths': True,
-                  'popup_denied': True,
-                  'trusted_chrome_survived_content_recreation': True,
-                  'external_network_used': False,
-                  'actual_servo_pipeline_crash_injected': False,
-                  'product_release_authorized': False,
-              },
-          }
-          (out / 'evidence.json').write_text(json.dumps(evidence, indent=2, sort_keys=True) + '\n')
-          PY
-          jq -e '.status == "PASS"' /tmp/d0a02-headed/evidence.json
-
-      - name: Commit qualified source repair and restore permanent workflows
+      - name: Restore permanent workflow definitions
         shell: bash
         run: |
           set -euo pipefail
           original=acb6e6d4628373a8d91d17d642a43cfe034f6417
-          git show "$original:.github/workflows/ci.yml" > .github/workflows/ci.yml
-          git show "$original:.github/workflows/d0a02-headed-servo.yml" \
-            > .github/workflows/d0a02-headed-servo.yml
-          git show "$original:.github/workflows/servo-headed-runtime.yml" \
-            > .github/workflows/servo-headed-runtime.yml
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('.github/workflows/servo-headed-runtime.yml')
-          text = path.read_text()
-          old = 'xdotool mousemove --sync --window "$window_id" 400 132'
-          new = 'xdotool mousemove --sync --window "$window_id" 400 164'
-          if text.count(old) != 1:
-              raise SystemExit('expected one permanent button-coordinate replacement')
-          path.write_text(text.replace(old, new, 1))
-          PY
-          git rm --ignore-unmatch .github/workflows/apply-d0a02-teardown-fix.yml
-          RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL" rustfmt --edition 2024 \
+          git show "${original}:.github/workflows/ci.yml" > .github/workflows/ci.yml
+          git show "${original}:.github/workflows/d0a02-headed-servo.yml" > .github/workflows/d0a02-headed-servo.yml
+          git show "${original}:.github/workflows/servo-headed-runtime.yml" > .github/workflows/servo-headed-runtime.yml
+
+      - name: Apply bounded source repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/apply_d0a02_teardown_fix.py
+          git diff --check
+
+      - name: Format repaired standalone sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt
+          rustfmt +1.93.0 --edition 2024 \
             experiments/servo-headed-runtime/src/main.rs \
             runtime/servo/hepta_workspace_runtime.rs
+          git diff --check
+
+      - name: Commit repaired permanent tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm --ignore-unmatch \
+            .github/scripts/apply_d0a02_teardown_fix.py \
+            .github/workflows/apply-d0a02-teardown-fix.yml
           git config user.name "trillionnium-d0a02-repair"
           git config user.email "d0a02-repair@users.noreply.github.com"
           git add \
@@ -541,13 +64,3 @@ jobs:
           git diff --cached --check
           git commit -m "fix(servo): shut down headed proof before closing event loop"
           git push origin HEAD:codex/d0a02-headed-runtime-v3
-
-      - name: Upload headed Servo machine evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: d0a02-headed-servo-${{ github.sha }}
-          path: /tmp/d0a02-headed
-          if-no-files-found: warn
-          retention-days: 30
-          compression-level: 6
