@@ -65,6 +65,19 @@
     "bridge": "contracts/agent-port-bridge.v1.json",
     "browser_actor": false,
     "servo_runtime": false,
+    "external_effect_authority": false,
+    "fixture_substitution": false,
+    "activation_without_browser_actor": "fail_closed_before_request_decode"
+  },
+  "fixture_separation": {
+    "status": "SOURCE_CANDIDATE",
+    "binary": "hepta-agent-port-fixture",
+    "cargo_feature": "fixture",
+    "feature_enabled_by_default": false,
+    "production_binary_references_fixture_handler": false,
+    "debian_package_installs_fixture_binary": false,
+    "listener_created": false,
+    "browser_actor_connected": false,
     "external_effect_authority": false
   },
   "host_validation": {
@@ -89,12 +102,15 @@
   },
   "promotion_requires": [
     "repository_validator_pass",
+    "project_truth_validator_pass",
     "systemd_unit_static_audit_pass",
     "systemd_analyze_verify_pass",
     "rust_1_93_fmt_pass",
     "rust_1_93_clippy_pass",
     "rust_1_93_workspace_tests_pass",
-    "hepta_agent_portd_self_check_pass"
+    "product_binary_self_check_pass",
+    "fixture_feature_self_check_pass",
+    "production_install_graph_excludes_fixture"
   ],
   "remaining_activation_gate": "qemu_pid1_activation_evidence_before_product_enable"
 }
