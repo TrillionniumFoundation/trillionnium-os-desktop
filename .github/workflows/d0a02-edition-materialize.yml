@@ -1,0 +1,80 @@
+name: d0a02-edition-materialize
+
+on:
+  push:
+    branches:
+      - codex/d0a02-headed-runtime-v3
+    paths:
+      - .github/workflows/d0a02-edition-materialize.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: d0a02-edition-materialize
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0a02-headed-runtime-v3
+          fetch-depth: 0
+
+      - name: Replace Rust 2024 let-chain with edition-neutral control flow
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('experiments/servo-headed-runtime/src/main.rs')
+          source = path.read_text()
+          old = '''    fn show_embedder_control(&self, _webview: WebView, control: EmbedderControl) {
+        if let Some(state) = self.state.upgrade()
+            && matches!(control, EmbedderControl::InputMethod(_))
+        {
+            state
+                .input_method_controls
+                .set(state.input_method_controls.get() + 1);
+        }
+    }
+'''
+          new = '''    fn show_embedder_control(&self, _webview: WebView, control: EmbedderControl) {
+        if let Some(state) = self.state.upgrade() {
+            if matches!(control, EmbedderControl::InputMethod(_)) {
+                state
+                    .input_method_controls
+                    .set(state.input_method_controls.get() + 1);
+            }
+        }
+    }
+'''
+          if old not in source:
+              raise SystemExit('expected D0A-02 let-chain not found; refusing broad rewrite')
+          if source.count(old) != 1:
+              raise SystemExit('D0A-02 let-chain was not unique; refusing ambiguous rewrite')
+          path.write_text(source.replace(old, new))
+          PY
+          rm .github/workflows/d0a02-edition-materialize.yml
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add experiments/servo-headed-runtime/src/main.rs .github/workflows/d0a02-edition-materialize.yml
+          git commit -m 'fix: make headed runtime overlay Rust 2021 compatible'
+          git push origin HEAD:codex/d0a02-headed-runtime-v3
+
+      - name: Dispatch permanent headed-runtime qualification at repaired head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST \
+            repos/${{ github.repository }}/actions/workflows/servo-headed-runtime.yml/dispatches \
+            -f ref=codex/d0a02-headed-runtime-v3
