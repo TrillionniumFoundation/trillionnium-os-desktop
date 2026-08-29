@@ -15,28 +15,51 @@ concurrency:
 
 jobs:
   repository-contracts:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-      - name: Validate repository contracts and product boundary
-        run: python3 tools/validate_repository.py
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Record runner and source identity
+        run: |
+          set -euo pipefail
+          python3 --version
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+
+      - name: Validate repository, project truth, and product boundary
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
 
   rust:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
       - name: Install locked Rust toolchain
         run: |
+          set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
-          rustup default 1.93.0
+          rustup override set 1.93.0
+          rustc --version --verbose
+          cargo --version --verbose
+
       - name: Format
         run: cargo fmt --all --check
+
+      - name: Check all targets
+        run: cargo check --workspace --all-targets --locked
+
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
-      - name: Unit tests
-        run: cargo test --workspace
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Unit and integration tests
+        run: cargo test --workspace --all-targets --locked
+
       - name: D0 browserd self-check
-        run: cargo run -p hepta-browserd -- --self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
