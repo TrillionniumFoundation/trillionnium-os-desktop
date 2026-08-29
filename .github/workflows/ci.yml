@@ -1,62 +1,42 @@
-name: export-d0a02-runtime-fix
+name: desktop-ci
 
 on:
   push:
-    branches: ["codex/d0a02-headed-runtime-v3"]
-    paths:
-      - ".github/workflows/ci.yml"
-      - "tools/d0a02_patch_v2.py"
+    branches: [main, "codex/**"]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: export-d0a02-runtime-fix
-  cancel-in-progress: false
+  group: desktop-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  export:
-    runs-on: ubuntu-24.04
+  repository-contracts:
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out exact package branch
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          ref: codex/d0a02-headed-runtime-v3
-          fetch-depth: 0
+          python-version: "3.13"
+      - name: Validate repository contracts and product boundary
+        run: python3 tools/validate_repository.py
 
-      - name: Generate and verify patched files
-        shell: bash
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install locked Rust toolchain
         run: |
-          set -euo pipefail
-          python3 tools/d0a02_patch_v2.py
-          rustfmt --edition 2024 \
-            experiments/servo-headed-runtime/src/main.rs \
-            runtime/servo/hepta_workspace_runtime.rs
-          git diff --check
-          git show 0178cd5eae7aca091f2e58332a238cd48dc71cd3:.github/workflows/ci.yml \
-            > .github/workflows/ci.yml
-          out="$RUNNER_TEMP/d0a02-patched"
-          mkdir -p \
-            "$out/.github/workflows" \
-            "$out/experiments/servo-headed-runtime/src" \
-            "$out/runtime/servo"
-          cp .github/workflows/ci.yml "$out/.github/workflows/ci.yml"
-          cp .github/workflows/d0a02-headed-servo.yml \
-            "$out/.github/workflows/d0a02-headed-servo.yml"
-          cp .github/workflows/servo-headed-runtime.yml \
-            "$out/.github/workflows/servo-headed-runtime.yml"
-          cp experiments/servo-headed-runtime/src/main.rs \
-            "$out/experiments/servo-headed-runtime/src/main.rs"
-          cp runtime/servo/hepta_workspace_runtime.rs \
-            "$out/runtime/servo/hepta_workspace_runtime.rs"
-          find "$out" -type f -print0 | sort -z | xargs -0 sha256sum > "$out/SHA256SUMS"
-
-      - name: Upload complete patched files
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: d0a02-patched-files-${{ github.sha }}
-          path: ${{ runner.temp }}/d0a02-patched
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 7
-          compression-level: 6
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Unit tests
+        run: cargo test --workspace
+      - name: D0 browserd self-check
+        run: cargo run -p hepta-browserd -- --self-check

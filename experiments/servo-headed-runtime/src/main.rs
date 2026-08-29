@@ -88,7 +88,12 @@ fn run_embedder() -> Result<i32, Box<dyn Error>> {
     let event_loop = EventLoop::with_user_event().build()?;
     let mut app = App::new(&event_loop, fixture.url(), output_dir, fixture);
     event_loop.run_app(&mut app)?;
-    Ok(app.exit_code)
+    let exit_code = app.exit_code;
+    // The proof has already emitted its bounded result. Servo's synchronous Drop
+    // path can wait on an event loop that has stopped, so do not turn successful
+    // evidence into a teardown timeout.
+    std::mem::forget(app);
+    std::process::exit(exit_code)
 }
 
 struct FixtureServer {
@@ -259,10 +264,6 @@ impl ApplicationHandler<AppEvent> for App {
         match event {
             AppEvent::Exit(code) => {
                 self.exit_code = code;
-                if let Some(state) = self.state.take() {
-                    state.webview.borrow_mut().take();
-                    drop(state);
-                }
                 event_loop.exit();
             }
             AppEvent::Timeout => {

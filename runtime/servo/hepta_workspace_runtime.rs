@@ -10,10 +10,10 @@ use std::time::{Duration, Instant};
 
 use euclid::Scale;
 use servo::{
-    CreateNewWebViewRequest, ImeEvent, InputEvent, InputEventId, InputEventResult, Key, KeyState,
-    KeyboardEvent, MouseButton, MouseButtonAction, MouseButtonEvent, MouseMoveEvent,
-    RenderingContext, Servo, ServoBuilder, WebView, WebViewBuilder, WheelDelta, WheelEvent,
-    WheelMode, WindowRenderingContext,
+    CompositionEvent, CompositionState, CreateNewWebViewRequest, ImeEvent, InputEvent,
+    InputEventId, InputEventResult, JSValue, Key, KeyState, KeyboardEvent, MouseButton,
+    MouseButtonAction, MouseButtonEvent, MouseMoveEvent, RenderingContext, Servo, ServoBuilder,
+    WebView, WebViewBuilder, WheelDelta, WheelEvent, WheelMode, WindowRenderingContext,
 };
 use tracing::warn;
 use url::Url;
@@ -56,7 +56,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         .expect("failed to create event loop");
     event_loop.set_control_flow(ControlFlow::Poll);
     let mut app = App::new(&event_loop, output);
-    Ok(event_loop.run_app(&mut app)?)
+    event_loop.run_app(&mut app)?;
+    // Qualification is decided by runtime-ready.json. Avoid blocking forever in
+    // Servo Drop after the platform event loop has already stopped.
+    std::mem::forget(app);
+    std::process::exit(0)
 }
 
 struct RuntimeState {
@@ -71,6 +75,9 @@ struct RuntimeState {
     frame_count: Cell<u64>,
     input_events_sent: Cell<u64>,
     input_events_handled: Cell<u64>,
+    page_input_evidence_requested: Cell<bool>,
+    page_input_verified: Cell<bool>,
+    ime_composition_events_sent: Cell<u64>,
     popup_requests_denied: Cell<u64>,
     actual_crash_callbacks: Cell<u64>,
     generation: Cell<u64>,
@@ -129,7 +136,18 @@ impl RuntimeState {
                 KeyState::Up,
                 Key::Character("h".into()),
             )),
-            InputEvent::Ime(ImeEvent::Dismissed),
+            InputEvent::Ime(ImeEvent::Composition(CompositionEvent {
+                state: CompositionState::Start,
+                data: String::new(),
+            })),
+            InputEvent::Ime(ImeEvent::Composition(CompositionEvent {
+                state: CompositionState::Update,
+                data: "hepta".to_owned(),
+            })),
+            InputEvent::Ime(ImeEvent::Composition(CompositionEvent {
+                state: CompositionState::End,
+                data: "hepta".to_owned(),
+            })),
         ];
         for event in events {
             webview.notify_input_event(event);
@@ -151,8 +169,31 @@ impl RuntimeState {
                 point,
             )));
         }
-        self.input_events_sent.set(13);
+        self.input_events_sent.set(15);
+        self.ime_composition_events_sent.set(3);
         self.ime_path_exercised.set(true);
+    }
+
+    fn request_page_input_evidence(self: &Rc<Self>) {
+        if self.page_input_evidence_requested.replace(true) {
+            return;
+        }
+        let Some(webview) = self.webview.borrow().as_ref().cloned() else {
+            self.page_input_evidence_requested.set(false);
+            return;
+        };
+        let state = self.clone();
+        webview.evaluate_javascript(
+            "Boolean(window.__hepta && window.__hepta.mouse > 0 && window.__hepta.button > 0 && window.__hepta.wheel > 0 && window.__hepta.key > 0)",
+            move |result| {
+                if matches!(result, Ok(JSValue::Boolean(true))) {
+                    state.page_input_verified.set(true);
+                } else {
+                    state.page_input_evidence_requested.set(false);
+                }
+                let _ = state.proxy.send_event(AppEvent::Wake);
+            },
+        );
     }
 
     fn begin_recovery(self: &Rc<Self>) {
@@ -221,7 +262,9 @@ impl RuntimeState {
                 "  \"frame_count\": {},\n",
                 "  \"input_events_sent\": {},\n",
                 "  \"input_events_handled\": {},\n",
+                "  \"page_input_verified\": {},\n",
                 "  \"ime_path_exercised\": {},\n",
+                "  \"ime_composition_events_sent\": {},\n",
                 "  \"popup_requests_denied\": {},\n",
                 "  \"actual_crash_callbacks\": {},\n",
                 "  \"simulated_content_process_recovery\": {},\n",
@@ -235,7 +278,9 @@ impl RuntimeState {
             self.frame_count.get(),
             self.input_events_sent.get(),
             self.input_events_handled.get(),
+            self.page_input_verified.get(),
             self.ime_path_exercised.get(),
+            self.ime_composition_events_sent.get(),
             self.popup_requests_denied.get(),
             self.actual_crash_callbacks.get(),
             self.recovery_started.get(),
@@ -249,7 +294,15 @@ impl RuntimeState {
         if self.frame_count.get() > 0 {
             self.send_qualification_input();
         }
-        if self.input_events_handled.get() >= 5
+        if self.generation.get() == 1
+            && self.input_events_handled.get() >= 3
+            && self.popup_requests_denied.get() >= 1
+            && !self.page_input_verified.get()
+        {
+            self.request_page_input_evidence();
+            return;
+        }
+        if self.page_input_verified.get()
             && self.popup_requests_denied.get() >= 1
             && self.generation.get() == 1
         {
@@ -262,7 +315,8 @@ impl RuntimeState {
         if self.output.join("screenshot.ready").is_file()
             && self.generation.get() == 2
             && self.popup_requests_denied.get() >= 1
-            && self.input_events_handled.get() >= 5
+            && self.input_events_handled.get() >= 3
+            && self.page_input_verified.get()
         {
             self.write_evidence("PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY");
         }
@@ -308,7 +362,6 @@ impl servo::WebViewDelegate for RuntimeState {
 enum App {
     Initial { waker: Waker, output: PathBuf },
     Running(Rc<RuntimeState>),
-    Finished,
 }
 
 impl App {
@@ -317,15 +370,6 @@ impl App {
             waker: Waker::new(event_loop),
             output,
         }
-    }
-
-    fn shutdown(&mut self, event_loop: &ActiveEventLoop) {
-        let previous = std::mem::replace(self, Self::Finished);
-        if let Self::Running(state) = previous {
-            state.webview.borrow_mut().take();
-            drop(state);
-        }
-        event_loop.exit();
     }
 }
 
@@ -371,6 +415,9 @@ impl ApplicationHandler<AppEvent> for App {
             frame_count: Cell::new(0),
             input_events_sent: Cell::new(0),
             input_events_handled: Cell::new(0),
+            page_input_evidence_requested: Cell::new(false),
+            page_input_verified: Cell::new(false),
+            ime_composition_events_sent: Cell::new(0),
             popup_requests_denied: Cell::new(0),
             actual_crash_callbacks: Cell::new(0),
             generation: Cell::new(1),
@@ -431,7 +478,7 @@ impl ApplicationHandler<AppEvent> for App {
                     || state.started_at.elapsed() > Duration::from_secs(100))
         };
         if should_shutdown {
-            self.shutdown(event_loop);
+            event_loop.exit();
         }
     }
 }
