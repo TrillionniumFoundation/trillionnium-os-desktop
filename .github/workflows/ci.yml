@@ -1,92 +1,65 @@
-name: apply-full-gap-d3-separation
+name: desktop-ci
 
 on:
   push:
-    branches: ["codex/full-gap-closure-v2"]
-    paths:
-      - ".github/workflows/ci.yml"
+    branches: [main, "codex/**"]
+  pull_request:
+    branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: apply-full-gap-d3-separation
-  cancel-in-progress: false
+  group: desktop-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  compose:
+  repository-contracts:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
-      - name: Check out exact integration branch
+      - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: codex/full-gap-closure-v2
-          fetch-depth: 0
 
-      - name: Fetch exact package sources
-        shell: bash
+      - name: Record runner and source identity
         run: |
           set -euo pipefail
-          git fetch --no-tags origin \
-            bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1 \
-            95fe921c833dea9560d4b1492781795c589d6140
-          test "$(git cat-file -t bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1)" = commit
-          test "$(git cat-file -t 95fe921c833dea9560d4b1492781795c589d6140)" = commit
+          python3 --version
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
 
-      - name: Apply semantic D1 and D3 composition
-        shell: bash
+      - name: Validate repository, project truth, and product boundary
         run: |
           set -euo pipefail
-          sed -i 's/"qualification-only"/"Qualification-only"/' \
-            tools/apply_full_gap_d3_separation.py
-          python3 tools/apply_full_gap_d3_separation.py
-          rustfmt --edition 2024 \
-            apps/hepta-agent-portd/src/main.rs \
-            apps/hepta-agent-portd/src/bin/hepta-agent-port-fixture.rs \
-            apps/hepta-agent-portd/src/bin/hepta-agent-port-qualificationd.rs \
-            apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs
-          git diff --check
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
 
-      - name: Validate canonical and feature-gated source boundaries
-        shell: bash
+  rust:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Install locked Rust toolchain
         run: |
           set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends shellcheck
-          python3 tools/validate_repository.py
-          python3 tools/validate_project_truth.py
-          python3 tools/verify_systemd_socket_custody.py
-          python3 -m unittest discover -s tests/d1 -p 'test_*.py'
-          shellcheck -e SC2016,SC2054 \
-            packaging/debian/image/build-d1-image.sh \
-            tests/qemu/run-d1-pipeline.sh
-          cargo fmt --all --check
-          cargo check --workspace --all-targets --locked
-          cargo clippy --workspace --all-targets --locked -- -D warnings
-          cargo test --workspace --all-targets --locked
-          cargo run --locked -p hepta-browserd -- --self-check
-          cargo check --workspace --all-targets --all-features --locked
-          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
-          cargo test --workspace --all-targets --all-features --locked
-          cargo build --release --locked -p hepta-agent-portd --bin hepta-agent-portd
-          test -x target/release/hepta-agent-portd
-          ! strings target/release/hepta-agent-portd | grep -F D0FixtureHandler
+          rustc --version --verbose
+          cargo --version --verbose
 
-      - name: Commit composed source without workflow mutation
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "trillionnium-integration"
-          git config user.email "integration@users.noreply.github.com"
-          git add \
-            apps/hepta-agent-portd \
-            contracts/agent-port-custody.v1.json \
-            docs/architecture/AGENT_PORT_PRODUCT_QUALIFICATION_SEPARATION.md \
-            tests/qemu/run-d1-pipeline.sh \
-            tools/verify_systemd_socket_custody.py
-          git diff --cached --check
-          git commit -m "security(d3): separate product and qualification AgentPort handlers"
-          git push origin HEAD:codex/full-gap-closure-v2
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Check all targets
+        run: cargo check --workspace --all-targets --locked
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Unit and integration tests
+        run: cargo test --workspace --all-targets --locked
+
+      - name: D0 browserd self-check
+        run: cargo run --locked -p hepta-browserd -- --self-check
