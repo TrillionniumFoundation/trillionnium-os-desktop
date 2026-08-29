@@ -3,6 +3,7 @@ name: agent-port-custody
 on:
   pull_request:
     paths:
+      - ".github/workflows/agent-port-custody.yml"
       - "apps/hepta-agent-portd/**"
       - "crates/hepta-peer-attestation/**"
       - "packaging/debian/systemd/**"
@@ -12,6 +13,9 @@ on:
       - "packaging/debian/hepta-agent-portd.install"
       - "contracts/agent-port-custody.v1.json"
       - "tools/verify_systemd_socket_custody.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
   push:
@@ -19,6 +23,7 @@ on:
       - main
       - codex/d0c05-systemd-custody-v2
     paths:
+      - ".github/workflows/agent-port-custody.yml"
       - "apps/hepta-agent-portd/**"
       - "crates/hepta-peer-attestation/**"
       - "packaging/debian/systemd/**"
@@ -28,6 +33,9 @@ on:
       - "packaging/debian/hepta-agent-portd.install"
       - "contracts/agent-port-custody.v1.json"
       - "tools/verify_systemd_socket_custody.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
 
@@ -37,18 +45,21 @@ permissions:
 jobs:
   validate-custody:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.93.0
-          components: rustfmt, clippy
+      - name: Install exact Rust toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
 
       - name: Audit repository and custody contract
         run: |
           python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
           python3 tools/verify_systemd_socket_custody.py
 
       - name: Verify systemd unit syntax and account mappings
@@ -68,9 +79,10 @@ jobs:
             /usr/libexec/hepta-agent-portd \
             /usr/lib/sysusers.d/trillionnium-desktop.conf
 
-      - name: Check Rust formatting and warnings
+      - name: Check Rust formatting, all targets, and warnings
         run: |
           cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings
 
       - name: Run complete Rust regression
