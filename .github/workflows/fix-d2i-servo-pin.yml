@@ -1,0 +1,70 @@
+name: fix-d2i-servo-pin
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/d2i-servo-pin-fix.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fix-d2i-servo-pin
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact integration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+
+      - name: Repair same-step Servo pin consumption
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/d2i-integrated-image.yml')
+          text = path.read_text()
+          start_marker = '      - name: Resolve and check out exact Servo source\n'
+          end_marker = '      - name: Install Servo toolchain and restore exact-pin cache\n'
+          start = text.index(start_marker)
+          end = text.index(end_marker, start)
+          block = text[start:end]
+          expression = '$' + '{{ steps.servo-pin.outputs.revision }}'
+          if block.count(expression) != 2:
+              raise SystemExit(f'expected two same-step output references, found {block.count(expression)}')
+          insertion = "          PY\n          revision=\"$(jq -er '.commit // .revision // .servo.commit // .servo.revision' manifests/servo.lock.json)\"\n          test -n \"$revision\"\n"
+          needle = '          PY\n          git clone --filter=blob:none --no-checkout \\\n'
+          if block.count(needle) != 1:
+              raise SystemExit('Servo checkout insertion point drifted')
+          block = block.replace(needle, insertion + '          git clone --filter=blob:none --no-checkout \\\n', 1)
+          block = block.replace(expression, '$revision')
+          path.write_text(text[:start] + block + text[end:])
+          PY
+          git rm .github/workflows/fix-d2i-servo-pin.yml
+          rm .github/d2i-servo-pin-fix.trigger
+          git diff --check
+          grep -F 'revision="$(jq -er' .github/workflows/d2i-integrated-image.yml
+          grep -F 'git -C /tmp/servo fetch --depth=1 origin' .github/workflows/d2i-integrated-image.yml
+          grep -F '"$revision"' .github/workflows/d2i-integrated-image.yml
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+
+      - name: Commit permanent workflow repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "trillionnium-d2i-repair"
+          git config user.email "d2i-repair@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(ci): consume exact Servo pin within D2I checkout step"
+          git push origin HEAD:codex/full-gap-closure-v2
