@@ -83,8 +83,12 @@ for _ in $(seq 1 80); do
 done
 [[ -S "$runtime_dir/wayland-0" ]] || fail wayland_socket_missing
 
+# systemd-run sends transient service output to the journal unless --pipe is
+# explicit. Capture the child process stream itself so a successful but empty
+# wrapper invocation cannot masquerade as compositor protocol evidence.
 systemd-run \
   --wait \
+  --pipe \
   --quiet \
   --collect \
   --unit=trillionnium-d1-wayland-info \
