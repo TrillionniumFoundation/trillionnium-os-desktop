@@ -6,6 +6,12 @@ on:
       - codex/d0a02-headed-runtime-v3
     paths:
       - .github/workflows/apply-d0a02-teardown-fix.yml
+  pull_request:
+    branches:
+      - main
+      - codex/d6-plan-truth-ci-closure-v1
+    paths:
+      - .github/workflows/apply-d0a02-teardown-fix.yml
 
 permissions:
   contents: write
