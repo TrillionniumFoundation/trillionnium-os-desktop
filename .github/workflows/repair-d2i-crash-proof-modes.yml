@@ -1,0 +1,57 @@
+name: repair-d2i-crash-proof-modes
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/d2i-proof-mode-repair.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repair-d2i-crash-proof-modes
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+
+      - name: Normalize executable modes and validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod 0755 \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof \
+            tests/qemu/extract-d2i-content-crash-proof.sh \
+            tools/verify_d2i_content_crash_proof.py
+          rm -f .github/d2i-proof-mode-repair.trigger
+          shellcheck -e SC2046,SC2086 \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof \
+            tests/qemu/extract-d2i-content-crash-proof.sh
+          python3 -m unittest discover -s tests/d1 -p 'test_*.py'
+          python3 -m py_compile tools/verify_d2i_content_crash_proof.py
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git add -A
+          git diff --cached --check
+
+      - name: Commit mode repair when needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --cached --quiet; then
+            echo 'No source-mode repair required.'
+            exit 0
+          fi
+          git config user.name "trillionnium-d2i-proof"
+          git config user.email "d2i-proof@users.noreply.github.com"
+          git commit -m "fix(d2i): preserve executable crash-proof tooling"
+          git push origin HEAD:codex/full-gap-closure-v2
