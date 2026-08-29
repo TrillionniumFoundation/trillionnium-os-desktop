@@ -13,11 +13,13 @@
   ],
   "build": {
     "configure_flags": [
-      "--disable-nls"
+      "--enable-nls"
     ],
     "network_after_checkout": false,
     "install_system_wide": false,
-    "isolated_prefix_required": true
+    "isolated_prefix_required": true,
+    "runtime_locale": "C.UTF-8",
+    "utf8_tar_import_probe_required": true
   },
   "claim_ceiling": "host_image_construction_tool_only"
 }

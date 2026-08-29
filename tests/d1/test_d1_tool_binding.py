@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import unittest
 
@@ -8,6 +9,33 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
 class D1FilesystemToolBindingTests(unittest.TestCase):
+    def test_exact_e2fsprogs_build_initializes_utf8_ctype_before_tar_import(self) -> None:
+        manifest = json.loads(
+            (REPOSITORY_ROOT / "manifests/e2fsprogs-host-toolchain.v1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(manifest["build"]["configure_flags"], ["--enable-nls"])
+        self.assertEqual(manifest["build"]["runtime_locale"], "C.UTF-8")
+        self.assertTrue(manifest["build"]["utf8_tar_import_probe_required"])
+
+        workflow = (
+            REPOSITORY_ROOT / ".github/workflows/d1-final-qualification.yml"
+        ).read_text(encoding="utf-8")
+        helper = (REPOSITORY_ROOT / "tools/build_pinned_e2fsprogs.sh").read_text(
+            encoding="utf-8"
+        )
+        for source in (workflow, helper):
+            self.assertIn("--enable-nls", source)
+            self.assertNotIn("--disable-nls", source)
+            self.assertIn("路径.txt", source)
+        self.assertIn("gettext", workflow)
+        self.assertIn("e2fsprogs-utf8-probe.json", workflow)
+        self.assertIn("LC_ALL=C.UTF-8 LANG=C.UTF-8", workflow)
+        self.assertIn("build_fingerprint", helper)
+        self.assertIn("msgfmt", helper)
+        self.assertIn("runtime_locale", helper)
+
     def test_pipeline_passes_canonical_exact_tool_bindings_to_root_builder(self) -> None:
         pipeline = (REPOSITORY_ROOT / "tests/qemu/run-d1-pipeline.sh").read_text(
             encoding="utf-8"
