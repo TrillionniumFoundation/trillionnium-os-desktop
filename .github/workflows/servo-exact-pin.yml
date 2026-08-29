@@ -193,8 +193,15 @@ jobs:
           PY
           test -z "$(git -C servo-source status --porcelain=v1)"
 
-      - name: Validate desktop repository contracts
-        run: python3 tools/validate_repository.py
+      - name: Validate desktop repository contracts in a tracked-only tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          validation_root="$RUNNER_TEMP/trillionnium-repository-validation"
+          rm -rf "$validation_root"
+          mkdir -p "$validation_root"
+          git archive --format=tar HEAD | tar -xf - -C "$validation_root"
+          python3 "$validation_root/tools/validate_repository.py"
 
       - name: Upload exact-pin qualification evidence
         if: always()
