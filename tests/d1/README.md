@@ -27,11 +27,20 @@ population input because host directory enumeration can perturb inode allocation
 despite identical file content.
 
 The tar may contain valid UTF-8 pathnames supplied by the exact Debian package
-closure. The root builder verifies the host `C.UTF-8` charmap and launches only
-the tar-populating `mke2fs` process with that locale. Sorting remains bytewise
-`LC_ALL=C`; timestamps, numeric ownership, UUID, hash seed and all other image
-inputs remain fixed. An unavailable or non-UTF-8 charmap is a hard failure, not a
-fallback to locale-dependent decoding.
+closure. At the pinned e2fsprogs commit, upstream `mke2fs` compiles its
+`setlocale(LC_CTYPE, "")` call only when configured with NLS support. D1 therefore
+builds that unchanged exact source with the reviewed `--enable-nls` flag and
+launches tar-populating `mke2fs` under `C.UTF-8`; this is a build-mode correction,
+not a source patch or a relaxation of any image input. A small deterministic tar
+containing `路径.txt` must import into ext4 and pass read-only `e2fsck` before the
+full Debian builds begin. The probe records the exact commit, configure flag,
+runtime locale, zero source-patch count, and `mke2fs` digest in machine evidence.
+
+Sorting remains bytewise `LC_ALL=C`; timestamps, numeric ownership, UUID, hash
+seed and all other image inputs remain fixed. An unavailable or non-UTF-8
+charmap is a hard failure, not a fallback to locale-dependent decoding. The
+standalone pinned-tool builder fingerprints the commit, configure mode, and
+runtime locale together, so it cannot reuse an earlier `--disable-nls` prefix.
 
 The host filesystem tools are not taken from the mutable runner image. D1 pins
 upstream e2fsprogs `v1.47.2` to commit
