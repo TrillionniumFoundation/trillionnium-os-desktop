@@ -3,22 +3,28 @@ name: agent-transport-reference
 on:
   pull_request:
     paths:
+      - ".github/workflows/agent-transport-reference.yml"
       - "contracts/agent-transport.v1.json"
       - "contracts/golden/agent-transport-request.v1.json"
       - "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
       - "tools/agent_transport_reference.py"
       - "tests/transport/test_agent_transport_reference.py"
-      - ".github/workflows/agent-transport-reference.yml"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
   push:
     branches:
       - main
     paths:
+      - ".github/workflows/agent-transport-reference.yml"
       - "contracts/agent-transport.v1.json"
       - "contracts/golden/agent-transport-request.v1.json"
       - "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
       - "tools/agent_transport_reference.py"
       - "tests/transport/test_agent_transport_reference.py"
-      - ".github/workflows/agent-transport-reference.yml"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
 
 permissions:
   contents: read
@@ -26,9 +32,16 @@ permissions:
 jobs:
   reference-conformance:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - name: Check out exact candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Validate project truth
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
 
       - name: Compile Python sources
         run: >-
