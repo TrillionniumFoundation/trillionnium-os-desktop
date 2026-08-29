@@ -186,6 +186,16 @@ repro_result="$output_dir/reproducibility-result.json"
 qemu_result="$output_dir/qemu"
 agent_portd="$workspace/target/release/hepta-agent-portd"
 agent_fixture="$workspace/target/release/hepta-agent-d1-fixture"
+mke2fs_binary=$(readlink -f "$(command -v mke2fs)")
+e2fsck_binary=$(readlink -f "$(command -v e2fsck)")
+dumpe2fs_binary=$(readlink -f "$(command -v dumpe2fs)")
+e2fsprogs_dir=$(dirname "$mke2fs_binary")
+if [[ $(dirname "$e2fsck_binary") != "$e2fsprogs_dir" \
+   || $(dirname "$dumpe2fs_binary") != "$e2fsprogs_dir" ]]; then
+  echo "D1 filesystem tools do not share one exact reviewed prefix" >&2
+  exit 1
+fi
+d1_root_path="$e2fsprogs_dir:/usr/sbin:/usr/bin:/sbin:/bin"
 
 selection_status=$(python3 -c \
   'import json,sys; print(json.load(open(sys.argv[1]))["status"])' \
@@ -220,7 +230,12 @@ run_stage prepare_exact_inputs \
 rm -rf "$resolution_work/apt-cache" "$resolution_work/apt-state" 2>/dev/null || true
 
 run_stage build_first \
-  sudo "$workspace/packaging/debian/image/build-d1-image.sh" \
+  sudo env \
+    PATH="$d1_root_path" \
+    D1_MKE2FS_BINARY="$mke2fs_binary" \
+    D1_E2FSCK_BINARY="$e2fsck_binary" \
+    D1_DUMPE2FS_BINARY="$dumpe2fs_binary" \
+    "$workspace/packaging/debian/image/build-d1-image.sh" \
     --selection "$selection" \
     --prepared-manifest "$prepared_dir/prepared-inputs.json" \
     --sources-list "$prepared_dir/sources.list" \
@@ -235,7 +250,12 @@ run_stage build_first \
 sudo chown -R "$(id -u):$(id -g)" "$build_a_root"
 
 run_stage build_second \
-  sudo "$workspace/packaging/debian/image/build-d1-image.sh" \
+  sudo env \
+    PATH="$d1_root_path" \
+    D1_MKE2FS_BINARY="$mke2fs_binary" \
+    D1_E2FSCK_BINARY="$e2fsck_binary" \
+    D1_DUMPE2FS_BINARY="$dumpe2fs_binary" \
+    "$workspace/packaging/debian/image/build-d1-image.sh" \
     --selection "$selection" \
     --prepared-manifest "$prepared_dir/prepared-inputs.json" \
     --sources-list "$prepared_dir/sources.list" \

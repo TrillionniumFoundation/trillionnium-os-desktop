@@ -60,13 +60,44 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-for command in mmdebstrap python3 jq mke2fs e2fsck dumpe2fs tar chroot rsync sha256sum \
+for command in mmdebstrap python3 jq tar chroot rsync sha256sum \
   systemd-sysusers systemd-tmpfiles cmp diff readlink stat awk; do
   command -v "$command" >/dev/null || {
     echo "required command is missing: $command" >&2
     exit 1
   }
 done
+
+mke2fs_binary=${D1_MKE2FS_BINARY:-}
+e2fsck_binary=${D1_E2FSCK_BINARY:-}
+dumpe2fs_binary=${D1_DUMPE2FS_BINARY:-}
+for binding in mke2fs_binary e2fsck_binary dumpe2fs_binary; do
+  if [[ -z "${!binding}" ]]; then
+    echo "missing explicit D1 filesystem-tool binding: $binding" >&2
+    exit 1
+  fi
+done
+mke2fs_binary=$(readlink -f "$mke2fs_binary")
+e2fsck_binary=$(readlink -f "$e2fsck_binary")
+dumpe2fs_binary=$(readlink -f "$dumpe2fs_binary")
+for binary in "$mke2fs_binary" "$e2fsck_binary" "$dumpe2fs_binary"; do
+  [[ -f "$binary" && -x "$binary" && ! -L "$binary" ]] || {
+    echo "explicit D1 filesystem tool is missing or unsafe: $binary" >&2
+    exit 1
+  }
+done
+e2fsprogs_dir=$(dirname "$mke2fs_binary")
+if [[ $(dirname "$e2fsck_binary") != "$e2fsprogs_dir" \
+   || $(dirname "$dumpe2fs_binary") != "$e2fsprogs_dir" ]]; then
+  echo "D1 filesystem tools do not share one exact reviewed prefix" >&2
+  exit 1
+fi
+if [[ $(readlink -f "$(command -v mke2fs)") != "$mke2fs_binary" \
+   || $(readlink -f "$(command -v e2fsck)") != "$e2fsck_binary" \
+   || $(readlink -f "$(command -v dumpe2fs)") != "$dumpe2fs_binary" ]]; then
+  echo "D1 filesystem tool PATH does not resolve to the explicit reviewed bindings" >&2
+  exit 1
+fi
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(readlink -f "$script_dir/../../..")
@@ -378,7 +409,7 @@ tar \
   -cf "$artifacts/rootfs.tar" .
 rootfs_tar_sha256=$(sha256sum "$artifacts/rootfs.tar" | awk '{print $1}')
 
-mke2fs_version=$(mke2fs -V 2>&1 | awk 'NR == 1 { print $2 }')
+mke2fs_version=$("$mke2fs_binary" -V 2>&1 | awk 'NR == 1 { print $2 }')
 python3 -c 'import re,sys; m=re.fullmatch(r"(\d+)\.(\d+)\.(\d+)",sys.argv[1]); raise SystemExit(0 if m and tuple(map(int,m.groups())) >= (1,47,1) else 1)' "$mke2fs_version" || {
   echo "D1 reproducible tar input requires e2fsprogs >= 1.47.1; got $mke2fs_version" >&2
   exit 1
@@ -387,7 +418,7 @@ python3 -c 'import re,sys; m=re.fullmatch(r"(\d+)\.(\d+)\.(\d+)",sys.argv[1]); r
 image="$artifacts/trillionnium-d1.ext4"
 truncate -s "${image_size_mib}M" "$image"
 export E2FSPROGS_FAKE_TIME="$source_epoch"
-mke2fs \
+"$mke2fs_binary" \
   -F \
   -q \
   -t ext4 \
@@ -401,7 +432,7 @@ mke2fs \
   "$image" >"$logs/mke2fs.log" 2>&1
 unset E2FSPROGS_FAKE_TIME
 set +e
-e2fsck -fn "$image" >"$logs/e2fsck-read-only.log" 2>&1
+"$e2fsck_binary" -fn "$image" >"$logs/e2fsck-read-only.log" 2>&1
 e2fsck_status=$?
 set -e
 if (( e2fsck_status != 0 )); then
@@ -409,7 +440,7 @@ if (( e2fsck_status != 0 )); then
   cat "$logs/e2fsck-read-only.log" >&2
   exit "$e2fsck_status"
 fi
-dumpe2fs -h "$image" >"$logs/dumpe2fs-header.log" 2>&1
+"$dumpe2fs_binary" -h "$image" >"$logs/dumpe2fs-header.log" 2>&1
 
 image_sha256=$(sha256sum "$image" | awk '{print $1}')
 kernel_sha256=$(sha256sum "$artifacts/vmlinuz" | awk '{print $1}')
