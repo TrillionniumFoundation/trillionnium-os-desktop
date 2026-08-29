@@ -1,0 +1,253 @@
+name: d3-browser-actor
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/d3-browser-actor.yml"
+      - "apps/hepta-browserd/**"
+      - "apps/hepta-agent-portd/**"
+      - "crates/hepta-browser-actor/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/hepta-agent-transport/**"
+      - "crates/hepta-browser-codec/**"
+      - "crates/hepta-session-core/**"
+      - "contracts/browser-actor.v1.json"
+      - "contracts/receipt-journal.v1.json"
+      - "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+  push:
+    branches: [main, "codex/full-gap-closure-v2"]
+    paths:
+      - ".github/workflows/d3-browser-actor.yml"
+      - "apps/hepta-browserd/**"
+      - "apps/hepta-agent-portd/**"
+      - "crates/hepta-browser-actor/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/hepta-agent-transport/**"
+      - "crates/hepta-browser-codec/**"
+      - "crates/hepta-session-core/**"
+      - "contracts/browser-actor.v1.json"
+      - "contracts/receipt-journal.v1.json"
+      - "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d3-browser-actor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  host-qualification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Install exact repository Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Validate source, contracts, and focused Rust graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          cargo fmt --all --check
+          cargo check --locked --all-targets \
+            -p hepta-browser-actor \
+            -p hepta-agent-port \
+            -p hepta-browserd
+          cargo clippy --locked --all-targets \
+            -p hepta-browser-actor \
+            -p hepta-agent-port \
+            -p hepta-browserd -- -D warnings
+          cargo test --locked --all-targets \
+            -p hepta-browser-actor \
+            -p hepta-agent-port \
+            -p hepta-browserd
+
+      - name: Enforce D3 source exits and claim ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/d3-browser-actor"
+          mkdir -p "$out"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          actor_path = Path('crates/hepta-browser-actor/src/lib.rs')
+          port_path = Path('crates/hepta-agent-port/src/lib.rs')
+          product_path = Path('apps/hepta-agent-portd/src/main.rs')
+          actor = actor_path.read_text()
+          port = port_path.read_text()
+          product = product_path.read_text()
+          contract = json.loads(Path('contracts/browser-actor.v1.json').read_text())
+
+          required_actor_tests = [
+              'principal_binding_rejects_unit_drift',
+              'browser_actor_enforces_single_owner_local_fixture_and_freshness',
+              'cancellation_is_fail_closed_before_runtime_dispatch',
+              'lifecycle_observer_commits_requested_dispatched_and_terminal_receipts',
+          ]
+          required_actor_symbols = [
+              'pub struct TaskFlowPrincipal',
+              'pub struct MechanismIdentity',
+              'pub struct PrincipalBinding',
+              'pub struct PageOwner',
+              'pub enum BrowserActorMessage',
+              'pub struct BrowserActor',
+              'pub struct ReceiptLifecycleObserver',
+          ]
+          required_port_symbols = [
+              'serve_one_with_nonce_source_and_observer',
+              'observer.requested',
+              'observer.dispatched',
+              'observer.completed',
+              'observer.interrupted',
+          ]
+          for token in required_actor_tests + required_actor_symbols:
+              assert token in actor, token
+          for token in required_port_symbols:
+              assert token in port, token
+
+          assert contract['work_package'] == 'D3-01', contract
+          assert contract['status'] == 'SOURCE_CANDIDATE', contract
+          assert contract['principal_binding']['exact_match_required'] is True, contract
+          assert contract['page_owner']['logical_webview_limit'] == 1, contract
+          assert contract['browser_actor']['deadline_propagation'] is True, contract
+          assert contract['browser_actor']['cancellation_checked_before_runtime_dispatch'] is True, contract
+          assert contract['browser_actor']['deterministic_local_fixture_only'] is True, contract
+          assert contract['browser_actor']['external_https_enabled'] is False, contract
+          assert contract['browser_actor']['external_effect_authority'] is False, contract
+          assert contract['receipts']['requested_before_dispatch'] is True, contract
+          assert contract['receipts']['dispatched_before_runtime_call'] is True, contract
+          assert contract['receipts']['terminal_response_digest_bound'] is True, contract
+          assert contract['receipts']['potential_external_effect_interruption'] == 'indeterminate_never_automatic_replay', contract
+          assert contract['activation']['product_agent_port_enabled'] is False, contract
+          assert contract['activation']['development_profile_requires_explicit_selection'] is True, contract
+          assert 'ProductHandlerUnavailable' in product
+          assert 'fixture substitution is forbidden' in product
+          for forbidden in ['TcpListener', '0.0.0.0:', 'WebDriver', 'webdriver']:
+              assert forbidden not in actor, forbidden
+
+          result = {
+              'schema': 'trillionnium.desktop.d3-host-qualification.v1',
+              'status': 'PASS_D3_HOST_SOURCE_CANDIDATE',
+              'principal_binding': True,
+              'single_page_owner': True,
+              'typed_browser_actor_messages': True,
+              'deadline_propagation': True,
+              'cancellation_fail_closed': True,
+              'durable_receipt_lifecycle': True,
+              'local_fixture_only': True,
+              'product_agent_port_enabled': False,
+              'live_servo_adapter_proven': False,
+              'integrated_d2i_activation_proven': False,
+              'external_navigation_or_effects': False,
+              'release_ready': False,
+          }
+          target = Path(os.environ['RUNNER_TEMP']) / 'd3-browser-actor/qualification.json'
+          target.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          PY
+          jq -e '.status == "PASS_D3_HOST_SOURCE_CANDIDATE"' "$out/qualification.json"
+          jq -e '.product_agent_port_enabled == false' "$out/qualification.json"
+          jq -e '.live_servo_adapter_proven == false' "$out/qualification.json"
+          jq -e '.integrated_d2i_activation_proven == false' "$out/qualification.json"
+
+      - name: Bind bounded evidence to exact source and inputs
+        shell: bash
+        env:
+          CANDIDATE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
+          TESTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/d3-browser-actor"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import subprocess
+
+          inputs = [
+              Path('Cargo.toml'),
+              Path('Cargo.lock'),
+              Path('rust-toolchain.toml'),
+              Path('crates/hepta-browser-actor/src/lib.rs'),
+              Path('crates/hepta-agent-port/src/lib.rs'),
+              Path('crates/hepta-session-core/src/receipt_journal.rs'),
+              Path('apps/hepta-agent-portd/src/main.rs'),
+              Path('contracts/browser-actor.v1.json'),
+              Path('contracts/receipt-journal.v1.json'),
+              Path('docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md'),
+          ]
+          workflow = Path('.github/workflows/d3-browser-actor.yml')
+          output = Path(os.environ['RUNNER_TEMP']) / 'd3-browser-actor'
+          qualification = json.loads((output / 'qualification.json').read_text())
+          evidence = {
+              'schema': 'trillionnium.desktop.d3-host-evidence.v1',
+              'status': 'PASS_D3_HOST_SOURCE_CANDIDATE',
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'candidate_head_sha': os.environ['CANDIDATE_HEAD_SHA'],
+              'base_sha': os.environ['BASE_SHA'],
+              'tested_sha': os.environ['TESTED_SHA'],
+              'tree_sha': subprocess.check_output(
+                  ['git', 'rev-parse', 'HEAD^{tree}'], text=True
+              ).strip(),
+              'workflow_run_id': os.environ['GITHUB_RUN_ID'],
+              'workflow_run_attempt': int(os.environ['GITHUB_RUN_ATTEMPT']),
+              'workflow_sha256': hashlib.sha256(workflow.read_bytes()).hexdigest(),
+              'input_digests': {
+                  str(path): hashlib.sha256(path.read_bytes()).hexdigest()
+                  for path in inputs
+              },
+              'qualification': qualification,
+              'evidence_tier': 'host',
+              'promotion_blockers': [
+                  'live_servo_page_runtime_adapter',
+                  'explicit_development_profile_activation',
+                  'integrated_d2i_agentport_corpus',
+                  'independent_security_review',
+                  'exact_main_rerun_after_merge',
+              ],
+              'claim_ceiling': {
+                  'product_agent_port_enabled': False,
+                  'live_servo_dispatch_proven': False,
+                  'external_navigation_or_effects': False,
+                  'production_release': False,
+              },
+          }
+          (output / 'd3-host-evidence.json').write_text(
+              json.dumps(evidence, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          find "$out" -maxdepth 1 -type f -print0 | sort -z | xargs -0 sha256sum \
+            > "$out/SHA256SUMS"
+
+      - name: Upload bounded D3 host evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d3-browser-actor-${{ github.sha }}
+          path: ${{ runner.temp }}/d3-browser-actor
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
