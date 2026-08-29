@@ -38,6 +38,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sed -i 's/"qualification-only"/"Qualification-only"/' \
+            tools/apply_full_gap_d3_separation.py
           python3 tools/apply_full_gap_d3_separation.py
           rustfmt --edition 2024 \
             apps/hepta-agent-portd/src/main.rs \
