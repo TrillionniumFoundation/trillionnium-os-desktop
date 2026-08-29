@@ -1,0 +1,260 @@
+name: qualify-exact-main-after-pr31
+
+on:
+  push:
+    branches: ["codex/d5-product-foundation"]
+    paths:
+      - ".github/workflows/qualify-exact-main-after-pr31.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: qualify-exact-main-after-pr31
+  cancel-in-progress: false
+
+jobs:
+  exact-main:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Bind exact integrated main and PR merge identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: "31"
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/$REPOSITORY"
+          out=/tmp/exact-main
+          mkdir -p "$out"
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api/pulls/$PR_NUMBER" > "$out/pr31.json"
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api/branches/main" > "$out/main.json"
+          test "$(jq -r '.merged' "$out/pr31.json")" = true
+          merge_sha=$(jq -er '.merge_commit_sha' "$out/pr31.json")
+          main_sha=$(jq -er '.commit.sha' "$out/main.json")
+          test "$main_sha" = "$merge_sha"
+          test "$(jq -r '.protected' "$out/main.json")" = true
+          printf 'MAIN_SHA=%s\n' "$main_sha" >> "$GITHUB_ENV"
+          printf '%s\n' "$main_sha" > "$out/main-sha.txt"
+
+      - name: Dispatch exact-main integrated D2I and D3 gates
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/$REPOSITORY/actions/workflows"
+          for workflow in d2i-integrated-image.yml d3-browseractor.yml; do
+            code=$(curl --silent --show-error --output "/tmp/exact-main/dispatch-$workflow.json" \
+              --write-out '%{http_code}' -X POST \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "$api/$workflow/dispatches" \
+              -d '{"ref":"main"}')
+            test "$code" = 204 || {
+              echo "workflow dispatch failed for $workflow with HTTP $code" >&2
+              cat "/tmp/exact-main/dispatch-$workflow.json" >&2 || true
+              exit 1
+            }
+          done
+
+      - name: Wait for exact-main runs and reject every permanent failure
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=/tmp/exact-main
+          api="https://api.github.com/repos/$REPOSITORY"
+          deadline=$(( $(date +%s) + 21000 ))
+          required='desktop-ci d2i-integrated-image d3-browseractor'
+          while :; do
+            curl --fail --silent --show-error --retry 3 --retry-all-errors \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "$api/actions/runs?head_sha=$MAIN_SHA&per_page=100" > "$out/actions.json"
+            missing=
+            for name in $required; do
+              jq -e --arg name "$name" '[.workflow_runs[] | select(.name == $name)] | length > 0' "$out/actions.json" >/dev/null \
+                || missing="$missing $name"
+            done
+            pending=$(jq '[
+              .workflow_runs[]
+              | select(.name != "qualify-exact-main-after-pr31")
+              | select(.path | test("/(stabilize-|integrate-|repair-|harden-|finalize-|request-independent-review|publish-closure-snapshot|merge-pr31-after-independent-approval|final-candidate-qualification)" ) | not)
+              | select(.status != "completed")
+            ] | length' "$out/actions.json")
+            if [ -z "$missing" ] && [ "$pending" -eq 0 ]; then break; fi
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "exact-main qualification timeout; missing:$missing pending:$pending" >&2
+              break
+            fi
+            sleep 30
+          done
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/exact-main')
+          runs=json.loads((root/'actions.json').read_text()).get('workflow_runs',[])
+          excluded=('qualify-exact-main-after-pr31','stabilize-','integrate-','repair-','harden-','finalize-','request-independent-review','publish-closure-snapshot','merge-pr31-after-independent-approval','final-candidate-qualification')
+          latest={}
+          for run in sorted(runs,key=lambda r:r.get('created_at') or ''):
+              name=run.get('name') or ''; path=run.get('path') or ''
+              if any(fragment in name or fragment in path for fragment in excluded): continue
+              latest[name]={
+                  'id':run.get('id'),'name':name,'path':path,'event':run.get('event'),
+                  'status':run.get('status'),'conclusion':run.get('conclusion'),
+                  'head_sha':run.get('head_sha'),'created_at':run.get('created_at'),
+                  'updated_at':run.get('updated_at'),'html_url':run.get('html_url')}
+          required=('desktop-ci','d2i-integrated-image','d3-browseractor')
+          missing=[name for name in required if name not in latest]
+          nonterminal=[name for name,run in latest.items() if run['status']!='completed']
+          failed=[{'name':name,'id':run['id'],'conclusion':run['conclusion']} for name,run in latest.items() if run['status']=='completed' and run['conclusion'] not in ('success','skipped','neutral')]
+          required_failed=[name for name in required if name in latest and not (latest[name]['status']=='completed' and latest[name]['conclusion']=='success')]
+          result={'main_sha':(root/'main-sha.txt').read_text().strip(),'required':list(required),'missing':missing,
+                  'nonterminal':nonterminal,'failed':failed,'required_failed':required_failed,
+                  'latest_runs':latest,'status':'PASS_EXACT_MAIN' if not missing and not nonterminal and not failed and not required_failed else 'FAIL_EXACT_MAIN'}
+          (root/'exact-main-workflows.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          if result['status']!='PASS_EXACT_MAIN':
+              raise SystemExit(json.dumps(result,sort_keys=True))
+          PY
+
+      - name: Run local exact-main validators against the merged tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --no-tags --filter=blob:none \
+            https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git \
+            /tmp/exact-main/repository
+          git -C /tmp/exact-main/repository checkout --detach "$MAIN_SHA"
+          test "$(git -C /tmp/exact-main/repository rev-parse HEAD)" = "$MAIN_SHA"
+          cd /tmp/exact-main/repository
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          printf '%s\n' PASS_EXACT_MAIN_LOCAL > /tmp/exact-main/local-validation.status
+
+      - name: Build exact-main evidence report
+        env:
+          REPOSITORY: ${{ github.repository }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_RUN_ATTEMPT: ${{ github.run_attempt }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os
+          from datetime import datetime,timezone
+          root=Path('/tmp/exact-main')
+          workflows=json.loads((root/'exact-main-workflows.json').read_text())
+          pr=json.loads((root/'pr31.json').read_text())
+          main=json.loads((root/'main.json').read_text())
+          sha=(root/'main-sha.txt').read_text().strip()
+          report={
+              'schema':'trillionnium.desktop.exact-main-qualification.v1',
+              'captured_at':datetime.now(timezone.utc).isoformat(),
+              'repository':os.environ['REPOSITORY'],
+              'main_sha':sha,
+              'main_tree_sha':os.popen(f'git -C /tmp/exact-main/repository rev-parse {sha}^{{tree}}').read().strip(),
+              'pr31_merge_commit_sha':pr.get('merge_commit_sha'),
+              'pr31_head_sha':pr.get('head',{}).get('sha'),
+              'branch_protected':main.get('protected') is True,
+              'local_validation':(root/'local-validation.status').read_text().strip(),
+              'permanent_workflows':workflows,
+              'workflow_run_id':os.environ['WORKFLOW_RUN_ID'],
+              'workflow_run_attempt':int(os.environ['WORKFLOW_RUN_ATTEMPT']),
+              'status':'PASS_INTEGRATED_EXACT_MAIN',
+              'claim_ceiling':{
+                  'external_effects':False,
+                  'production_agent_port_activation':False,
+                  'fixed_hardware_beta':False,
+                  'signed_release':False,
+              },
+          }
+          (root/'exact-main-qualification.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          lines=['# Exact-main qualification','',f"- Main: `{sha}`",f"- Tree: `{report['main_tree_sha']}`",f"- PR #31 head: `{report['pr31_head_sha']}`",'- Local full validation: `PASS`','- Permanent exact-main workflows: `PASS`','- Status: `PASS_INTEGRATED_EXACT_MAIN`','','No external-effect, production activation, fixed-hardware, signing-key, or release claim is promoted.']
+          (root/'exact-main-qualification.md').write_text('\n'.join(lines)+'\n')
+          PY
+
+      - name: Publish exact-main report to dedicated evidence branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/exact-main/repository
+          git config user.name "trillionnium-exact-main-evidence"
+          git config user.email "exact-main-evidence@users.noreply.github.com"
+          git checkout --orphan exact-main-evidence-work
+          git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/exact-main/exact-main-qualification.json .
+          cp /tmp/exact-main/exact-main-qualification.md .
+          cp /tmp/exact-main/exact-main-workflows.json .
+          cp /tmp/exact-main/local-validation.status .
+          git add exact-main-qualification.json exact-main-qualification.md exact-main-workflows.json local-validation.status
+          git commit -m "evidence: publish exact-main qualification for $MAIN_SHA"
+          git push --force origin HEAD:codex/exact-main-evidence-live
+
+      - name: Comment exact-main result on PR 31
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: "31"
+        shell: bash
+        run: |
+          set -euo pipefail
+          body=$(jq -Rs '{body:.}' /tmp/exact-main/exact-main-qualification.md)
+          curl --fail --silent --show-error -X POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+            -d "$body" >/dev/null
+
+      - name: Upload exact-main evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: exact-main-qualification-${{ env.MAIN_SHA }}
+          path: |
+            /tmp/exact-main/exact-main-qualification.json
+            /tmp/exact-main/exact-main-qualification.md
+            /tmp/exact-main/exact-main-workflows.json
+            /tmp/exact-main/local-validation.status
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 6
