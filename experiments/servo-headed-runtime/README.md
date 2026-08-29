@@ -18,6 +18,12 @@ topology, a test-only multiprocess content panic, trusted-window survival, and
 one replacement content generation. It does not start WebDriver, BrowserActor,
 AgentPort, external browsing, persistent credentials, or product authority.
 
+Every asynchronous `WebViewDelegate` transition that can satisfy or advance a
+qualification predicate explicitly posts `AppEvent::Drive`. This includes input
+completion, crash notification, navigation denial, popup denial, and input-method
+control delivery, so the event loop cannot sleep after the final prerequisite
+without advancing into crash and replacement-generation recovery.
+
 The exact-pin adapter converts Surfman construction/current-context failures at
 the application boundary, uses Servo's min/max `DeviceIntRect` convention, and
 clones the current WebView handle before native IME dispatch so no temporary
