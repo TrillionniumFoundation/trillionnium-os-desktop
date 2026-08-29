@@ -259,6 +259,10 @@ impl ApplicationHandler<AppEvent> for App {
         match event {
             AppEvent::Exit(code) => {
                 self.exit_code = code;
+                if let Some(state) = self.state.take() {
+                    state.webview.borrow_mut().take();
+                    drop(state);
+                }
                 event_loop.exit();
             }
             AppEvent::Timeout => {
@@ -301,7 +305,7 @@ impl ApplicationHandler<AppEvent> for App {
 
     fn window_event(
         &mut self,
-        event_loop: &ActiveEventLoop,
+        _event_loop: &ActiveEventLoop,
         _window_id: winit::window::WindowId,
         event: WindowEvent,
     ) {
@@ -312,7 +316,6 @@ impl ApplicationHandler<AppEvent> for App {
         match event {
             WindowEvent::CloseRequested => {
                 state.fail("window closed before qualification completed");
-                event_loop.exit();
             }
             WindowEvent::RedrawRequested => state.compose(),
             WindowEvent::CursorMoved { position, .. } => state.forward_pointer_move(position),
@@ -347,11 +350,12 @@ impl ApplicationHandler<AppEvent> for App {
 }
 
 struct RuntimeState {
-    window: Window,
-    servo: Servo,
-    parent_context: Rc<WindowRenderingContext>,
-    content_context: Rc<OffscreenRenderingContext>,
     webview: RefCell<Option<WebView>>,
+    servo: Servo,
+    content_context: Rc<OffscreenRenderingContext>,
+    parent_context: Rc<WindowRenderingContext>,
+    // The native window must outlive both rendering contexts.
+    window: Window,
     proxy: EventLoopProxy<AppEvent>,
     fixture_url: Url,
     output_dir: PathBuf,

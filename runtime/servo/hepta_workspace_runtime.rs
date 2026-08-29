@@ -60,10 +60,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 struct RuntimeState {
-    window: Window,
+    webview: RefCell<Option<WebView>>,
     servo: Servo,
     rendering_context: Rc<WindowRenderingContext>,
-    webview: RefCell<Option<WebView>>,
+    // Keep the native window alive until after Servo and its rendering context.
+    window: Window,
     proxy: EventLoopProxy<AppEvent>,
     output: PathBuf,
     started_at: Instant,
@@ -307,6 +308,7 @@ impl servo::WebViewDelegate for RuntimeState {
 enum App {
     Initial { waker: Waker, output: PathBuf },
     Running(Rc<RuntimeState>),
+    Finished,
 }
 
 impl App {
@@ -315,6 +317,15 @@ impl App {
             waker: Waker::new(event_loop),
             output,
         }
+    }
+
+    fn shutdown(&mut self, event_loop: &ActiveEventLoop) {
+        let previous = std::mem::replace(self, Self::Finished);
+        if let Self::Running(state) = previous {
+            state.webview.borrow_mut().take();
+            drop(state);
+        }
+        event_loop.exit();
     }
 }
 
@@ -409,16 +420,18 @@ impl ApplicationHandler<AppEvent> for App {
     }
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
-        let Self::Running(state) = self else {
-            return;
+        let should_shutdown = {
+            let Self::Running(state) = self else {
+                return;
+            };
+            state.drive();
+            state.window.request_redraw();
+            state.evidence_written.get()
+                && (state.output.join("capture.done").is_file()
+                    || state.started_at.elapsed() > Duration::from_secs(100))
         };
-        state.drive();
-        state.window.request_redraw();
-        if state.evidence_written.get()
-            && (state.output.join("capture.done").is_file()
-                || state.started_at.elapsed() > Duration::from_secs(100))
-        {
-            event_loop.exit();
+        if should_shutdown {
+            self.shutdown(event_loop);
         }
     }
 }
