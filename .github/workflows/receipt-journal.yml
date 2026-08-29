@@ -5,26 +5,34 @@ on:
   pull_request:
     paths:
       - ".github/workflows/receipt-journal.yml"
+      - "Cargo.toml"
       - "Cargo.lock"
       - "crates/hepta-session-core/**"
       - "contracts/receipt-journal.v1.json"
       - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
       - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
       - "manifests/cargo-external-allowlist.json"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
       - "tools/verify_receipt_journal.py"
+      - "tools/validate_project_truth.py"
   push:
     branches:
       - main
       - codex/d0c06-durable-receipt-journal
     paths:
       - ".github/workflows/receipt-journal.yml"
+      - "Cargo.toml"
       - "Cargo.lock"
       - "crates/hepta-session-core/**"
       - "contracts/receipt-journal.v1.json"
       - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
       - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
       - "manifests/cargo-external-allowlist.json"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
       - "tools/verify_receipt_journal.py"
+      - "tools/validate_project_truth.py"
   workflow_dispatch:
 
 permissions:
@@ -39,21 +47,25 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.93.0
-          components: rustfmt, clippy
+      - name: Install exact Rust toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
 
       - name: Audit contract and repository
         run: |
           python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
           python3 tools/verify_receipt_journal.py
 
-      - name: Enforce formatting and warnings
+      - name: Enforce formatting, all targets, and warnings
         run: |
           cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings
 
       - name: Run durable journal fault corpus and complete regression
