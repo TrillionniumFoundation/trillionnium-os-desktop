@@ -42,15 +42,10 @@ find "$normalized_rootfs" -xdev -print0 \\
 
 ''':
                   '''mke2fs_version=$(mke2fs -V 2>&1 | awk 'NR == 1 { print $2 }')
-python3 - "$mke2fs_version" <<'PY_VERSION'
-import re
-import sys
-match = re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)", sys.argv[1])
-if match is None or tuple(map(int, match.groups())) < (1, 47, 1):
-    raise SystemExit(
-        f"D1 reproducible tar input requires e2fsprogs >= 1.47.1; got {sys.argv[1]!r}"
-    )
-PY_VERSION
+python3 -c 'import re,sys; m=re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)",sys.argv[1]); raise SystemExit(0 if m and tuple(map(int,m.groups())) >= (1,47,1) else 1)' "$mke2fs_version" || {
+  echo "D1 reproducible tar input requires e2fsprogs >= 1.47.1; got $mke2fs_version" >&2
+  exit 1
+}
 
 ''',
               '-d "$normalized_rootfs" \\\n': '-d "$artifacts/rootfs.tar" \\\n',
@@ -58,11 +53,14 @@ PY_VERSION
 
 image_sha256=''':
                   '''unset E2FSPROGS_FAKE_TIME
-if ! e2fsck -fn "$image" >"$logs/e2fsck-read-only.log" 2>&1; then
-  status=$?
-  echo "generated ext4 image failed read-only e2fsck: status=$status" >&2
+set +e
+e2fsck -fn "$image" >"$logs/e2fsck-read-only.log" 2>&1
+e2fsck_status=$?
+set -e
+if (( e2fsck_status != 0 )); then
+  echo "generated ext4 image failed read-only e2fsck: status=$e2fsck_status" >&2
   cat "$logs/e2fsck-read-only.log" >&2
-  exit "$status"
+  exit "$e2fsck_status"
 fi
 dumpe2fs -h "$image" >"$logs/dumpe2fs-header.log" 2>&1
 
