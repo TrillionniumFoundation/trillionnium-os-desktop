@@ -1,0 +1,115 @@
+name: integrate-d3-source-candidate
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/d3-source-integration.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: integrate-d3-source-candidate
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out exact integration candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+
+      - name: Merge D3 implementation without promoting machine truth
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "trillionnium-d3-integration"
+          git config user.email "d3-integration@users.noreply.github.com"
+          base_sha="$(git rev-parse HEAD)"
+          git fetch --no-tags origin codex/d3-pageowner-browseractor-v1
+          d3_sha="$(git rev-parse FETCH_HEAD)"
+          printf 'base_sha=%s\nd3_sha=%s\n' "$base_sha" "$d3_sha" | tee /tmp/d3-identities.txt
+          GIT_MERGE_AUTOEDIT=no git merge --no-commit --no-ff "$d3_sha"
+
+          # This step integrates implementation/tests only. Candidate source may not
+          # self-promote gates, rewrite canonical truth, or introduce a mutable
+          # qualification workflow through the Actions token.
+          git restore --source="$base_sha" --staged --worktree -- \
+            .github/workflows \
+            manifests/project-state.v1.json \
+            manifests/gates.v1.json \
+            docs/DESKTOP_PLAN.md \
+            docs/DESKTOP_PLAN-2026-08-29-d6.md \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            manifests/repository-state.json \
+            README.md
+
+          # Keep the temporary trigger out of the permanent candidate commit.
+          rm -f .github/d3-source-integration.trigger
+
+          # Fail closed on authority widening. Local deterministic fixture URLs and
+          # inherited AF_UNIX streams remain the only admissible candidate paths.
+          ! git diff --cached -U0 | grep -E '^\+.*(TcpListener|0\.0\.0\.0|WebDriver|webdriver|enable-agent-port.*ship|production_authority[^f]*true)'
+          ! git grep -nE 'TcpListener::bind|WebDriver|webdriver.*listen' -- \
+            apps crates runtime packaging tests ':!docs/**' ':!**/target/**'
+          test ! -e packaging/debian/image/rootfs-overlay/etc/hepta/enable-agent-port
+          test ! -e packaging/debian/systemd/etc/hepta/enable-agent-port
+
+          git add -A
+          git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          printf '%s\n' "$base_sha" > /tmp/d3-base-sha.txt
+          printf '%s\n' "$d3_sha" > /tmp/d3-source-sha.txt
+
+      - name: Install exact Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Validate D3 source candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Commit and push bounded D3 source candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git commit -m "feat(d3): integrate PageOwner BrowserActor source candidate"
+          git push origin HEAD:codex/full-gap-closure-v2
+
+      - name: Upload bounded failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d3-source-integration-diagnostics-${{ github.sha }}
+          path: |
+            /tmp/d3-identities.txt
+            /tmp/d3-base-sha.txt
+            /tmp/d3-source-sha.txt
+          if-no-files-found: warn
+          retention-days: 7
