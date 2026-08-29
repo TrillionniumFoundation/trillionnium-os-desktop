@@ -282,9 +282,7 @@ impl ReceiptEvent {
             }
             LifecycleState::Completed => {
                 let outcome = self.outcome.ok_or_else(|| {
-                    JournalError::InvalidInput(
-                        "completed event requires a terminal outcome".into(),
-                    )
+                    JournalError::InvalidInput("completed event requires a terminal outcome".into())
                 })?;
                 if outcome == ReceiptOutcome::Succeeded && self.error_code.is_some() {
                     return Err(JournalError::InvalidInput(
@@ -428,8 +426,13 @@ pub enum JournalError {
     InsecurePath(String),
     InvalidInput(String),
     InvalidRecord(&'static str),
-    Corruption { offset: u64, reason: String },
-    TornTailNeedsRepair { offset: u64 },
+    Corruption {
+        offset: u64,
+        reason: String,
+    },
+    TornTailNeedsRepair {
+        offset: u64,
+    },
     InvalidTransition {
         receipt_id: String,
         from: Option<LifecycleState>,
@@ -455,7 +458,10 @@ impl fmt::Display for JournalError {
                 write!(formatter, "journal corruption at byte {offset}: {reason}")
             }
             Self::TornTailNeedsRepair { offset } => {
-                write!(formatter, "journal torn tail at byte {offset} requires explicit repair")
+                write!(
+                    formatter,
+                    "journal torn tail at byte {offset} requires explicit repair"
+                )
             }
             Self::InvalidTransition {
                 receipt_id,
@@ -554,11 +560,8 @@ impl ProcessIdentity {
     fn current() -> Result<Self, JournalError> {
         let pid = process::id();
         let start_time_ticks = process_start_time(pid)?;
-        let boot_id = read_bounded_text(
-            Path::new("/proc/sys/kernel/random/boot_id"),
-            128,
-            "boot_id",
-        )?;
+        let boot_id =
+            read_bounded_text(Path::new("/proc/sys/kernel/random/boot_id"), 128, "boot_id")?;
         Ok(Self {
             pid,
             start_time_ticks,
@@ -589,21 +592,15 @@ impl ProcessIdentity {
         }
         Ok(Self {
             pid: pid.ok_or(JournalError::InvalidRecord("writer lease lacks pid"))?,
-            start_time_ticks: start_time_ticks.ok_or(JournalError::InvalidRecord(
-                "writer lease lacks start time",
-            ))?,
-            boot_id: boot_id.ok_or(JournalError::InvalidRecord(
-                "writer lease lacks boot id",
-            ))?,
+            start_time_ticks: start_time_ticks
+                .ok_or(JournalError::InvalidRecord("writer lease lacks start time"))?,
+            boot_id: boot_id.ok_or(JournalError::InvalidRecord("writer lease lacks boot id"))?,
         })
     }
 
     fn is_active(&self) -> Result<bool, JournalError> {
-        let current_boot = read_bounded_text(
-            Path::new("/proc/sys/kernel/random/boot_id"),
-            128,
-            "boot_id",
-        )?;
+        let current_boot =
+            read_bounded_text(Path::new("/proc/sys/kernel/random/boot_id"), 128, "boot_id")?;
         if current_boot.trim() != self.boot_id {
             return Ok(false);
         }
@@ -730,11 +727,8 @@ impl ReceiptJournal {
                 "effect class cannot change within one receipt lifecycle".into(),
             ));
         }
-        let (bytes, digest) = encode_record(
-            self.next_sequence,
-            self.previous_record_sha256,
-            &event,
-        )?;
+        let (bytes, digest) =
+            encode_record(self.next_sequence, self.previous_record_sha256, &event)?;
         let new_size = self
             .end_offset
             .checked_add(bytes.len() as u64)
@@ -810,22 +804,21 @@ impl ReceiptJournal {
             ));
         }
         let seal = self.seal()?;
-        let next = Self::create_segment(
-            next_path.as_ref(),
-            SegmentHeader {
-                journal_id: self.header.journal_id,
-                segment_number: self
-                    .header
-                    .segment_number
-                    .checked_add(1)
-                    .ok_or_else(|| JournalError::InvalidInput("segment number overflow".into()))?,
-                first_sequence: self.next_sequence,
-                previous_segment_sha256: seal.segment_sha256,
-                previous_record_sha256: self.previous_record_sha256,
-                created_wall_clock_unix_ms,
-            },
-            false,
-        )?;
+        let next =
+            Self::create_segment(
+                next_path.as_ref(),
+                SegmentHeader {
+                    journal_id: self.header.journal_id,
+                    segment_number: self.header.segment_number.checked_add(1).ok_or_else(|| {
+                        JournalError::InvalidInput("segment number overflow".into())
+                    })?,
+                    first_sequence: self.next_sequence,
+                    previous_segment_sha256: seal.segment_sha256,
+                    previous_record_sha256: self.previous_record_sha256,
+                    created_wall_clock_unix_ms,
+                },
+                false,
+            )?;
         Ok((seal, next))
     }
 
@@ -937,11 +930,7 @@ fn progress_from_records(
         let previous = progress
             .get(&record.event.receipt_id)
             .map(|item: &ReceiptProgress| item.last_state);
-        validate_transition(
-            &record.event.receipt_id,
-            previous,
-            record.event.lifecycle,
-        )?;
+        validate_transition(&record.event.receipt_id, previous, record.event.lifecycle)?;
         if let Some(item) = progress.get(&record.event.receipt_id)
             && item.effect_class != record.event.effect_class
         {
@@ -971,8 +960,14 @@ fn validate_transition(
             | (Some(LifecycleState::Requested), LifecycleState::Dispatched)
             | (Some(LifecycleState::Requested), LifecycleState::Interrupted)
             | (Some(LifecycleState::Dispatched), LifecycleState::Completed)
-            | (Some(LifecycleState::Dispatched), LifecycleState::Indeterminate)
-            | (Some(LifecycleState::Dispatched), LifecycleState::Interrupted)
+            | (
+                Some(LifecycleState::Dispatched),
+                LifecycleState::Indeterminate
+            )
+            | (
+                Some(LifecycleState::Dispatched),
+                LifecycleState::Interrupted
+            )
     );
     if valid {
         Ok(())
@@ -1017,7 +1012,9 @@ fn decode_segment_header(bytes: &[u8]) -> Result<SegmentHeader, JournalError> {
         return Err(JournalError::InvalidRecord("segment version mismatch"));
     }
     if cursor.u16()? as usize != SEGMENT_HEADER_LEN {
-        return Err(JournalError::InvalidRecord("segment header length mismatch"));
+        return Err(JournalError::InvalidRecord(
+            "segment header length mismatch",
+        ));
     }
     let journal_id = JournalId(cursor.array::<16>()?);
     let segment_number = cursor.u64()?;
@@ -1180,9 +1177,7 @@ fn decode_record(
     if sequence != expected_sequence {
         return Err(JournalError::Corruption {
             offset: offset as u64,
-            reason: format!(
-                "sequence mismatch: expected {expected_sequence}, found {sequence}"
-            ),
+            reason: format!("sequence mismatch: expected {expected_sequence}, found {sequence}"),
         });
     }
     let monotonic_ms = cursor.u64()?;
@@ -1442,12 +1437,13 @@ fn recover_bytes(bytes: &[u8]) -> Result<RecoveryReport, JournalError> {
                 effect_class: record.event.effect_class,
             },
         );
-        expected_sequence = expected_sequence
-            .checked_add(1)
-            .ok_or_else(|| JournalError::Corruption {
-                offset: offset as u64,
-                reason: "sequence overflow".into(),
-            })?;
+        expected_sequence =
+            expected_sequence
+                .checked_add(1)
+                .ok_or_else(|| JournalError::Corruption {
+                    offset: offset as u64,
+                    reason: "sequence overflow".into(),
+                })?;
         expected_previous = record.record_sha256;
         records.push(record);
         offset += total;
@@ -1529,9 +1525,9 @@ fn validate_new_path(path: &Path) -> Result<(), JournalError> {
             "destination already exists".into(),
         ));
     }
-    let parent = path.parent().ok_or_else(|| {
-        JournalError::InsecurePath("journal path has no parent directory".into())
-    })?;
+    let parent = path
+        .parent()
+        .ok_or_else(|| JournalError::InsecurePath("journal path has no parent directory".into()))?;
     let metadata = fs::symlink_metadata(parent).map_err(map_io_error)?;
     if metadata.file_type().is_symlink() || !metadata.is_dir() {
         return Err(JournalError::InsecurePath(
@@ -1557,9 +1553,9 @@ fn validate_existing_path(path: &Path) -> Result<(), JournalError> {
 }
 
 fn writer_lock_path(journal_path: &Path) -> Result<PathBuf, JournalError> {
-    let file_name = journal_path.file_name().ok_or_else(|| {
-        JournalError::InsecurePath("journal path has no file name".into())
-    })?;
+    let file_name = journal_path
+        .file_name()
+        .ok_or_else(|| JournalError::InsecurePath("journal path has no file name".into()))?;
     let mut lock_name = file_name.to_os_string();
     lock_name.push(".");
     lock_name.push(WRITER_LOCK_SUFFIX);
@@ -1567,9 +1563,9 @@ fn writer_lock_path(journal_path: &Path) -> Result<PathBuf, JournalError> {
 }
 
 fn sync_parent(path: &Path) -> Result<(), JournalError> {
-    let parent = path.parent().ok_or_else(|| {
-        JournalError::InsecurePath("path has no parent directory".into())
-    })?;
+    let parent = path
+        .parent()
+        .ok_or_else(|| JournalError::InsecurePath("path has no parent directory".into()))?;
     File::open(parent)
         .and_then(|directory| directory.sync_all())
         .map_err(map_io_error)
@@ -1582,9 +1578,9 @@ fn process_start_time(pid: u32) -> Result<u64, JournalError> {
         "process stat lacks command terminator",
     ))?;
     let fields: Vec<&str> = stat[end + 1..].split_whitespace().collect();
-    let value = fields.get(19).ok_or(JournalError::InvalidRecord(
-        "process stat lacks start time",
-    ))?;
+    let value = fields
+        .get(19)
+        .ok_or(JournalError::InvalidRecord("process stat lacks start time"))?;
     value
         .parse::<u64>()
         .map_err(|_| JournalError::InvalidRecord("process start time is invalid"))
@@ -1601,9 +1597,7 @@ fn read_bounded_text(
         .read_to_end(&mut bytes)
         .map_err(map_io_error)?;
     if bytes.len() > max_bytes {
-        return Err(JournalError::InvalidInput(format!(
-            "{label} exceeds bound"
-        )));
+        return Err(JournalError::InvalidInput(format!("{label} exceeds bound")));
     }
     String::from_utf8(bytes)
         .map_err(|_| JournalError::InvalidInput(format!("{label} is not UTF-8")))
@@ -1621,9 +1615,10 @@ fn validate_token(
             "{name} length is outside {minimum}..={maximum}"
         )));
     }
-    if !value.bytes().all(|byte| {
-        byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b':' | b'-')
-    }) {
+    if !value
+        .bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b':' | b'-'))
+    {
         return Err(JournalError::InvalidInput(format!(
             "{name} contains a forbidden character"
         )));
@@ -1737,7 +1732,7 @@ fn sha256(bytes: &[u8]) -> Digest {
 }
 
 fn map_io_error(error: io::Error) -> JournalError {
-    if matches!(error.raw_os_error(), Some(28 | 122)) {
+    if matches!(error.raw_os_error(), Some(28) | Some(122)) {
         JournalError::StorageFull
     } else {
         JournalError::Io(error)
@@ -1899,8 +1894,8 @@ mod tests {
     fn append_recover_and_chain_three_lifecycle_records() {
         let directory = temp_dir("roundtrip");
         let path = directory.join("journal.bin");
-        let mut journal = ReceiptJournal::create(&path, JournalId([7; 16]), 1)
-            .expect("create journal");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([7; 16]), 1).expect("create journal");
         journal
             .append(event("receipt-1", LifecycleState::Requested))
             .expect("append requested");
@@ -1928,8 +1923,8 @@ mod tests {
     fn invalid_lifecycle_transition_is_rejected() {
         let directory = temp_dir("transition");
         let path = directory.join("journal.bin");
-        let mut journal = ReceiptJournal::create(&path, JournalId([8; 16]), 1)
-            .expect("create journal");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([8; 16]), 1).expect("create journal");
         let error = journal
             .append(event("receipt-1", LifecycleState::Completed))
             .expect_err("completion before request must fail");
@@ -1941,8 +1936,8 @@ mod tests {
     fn torn_tail_requires_explicit_repair_and_preserves_last_complete_record() {
         let directory = temp_dir("torn-tail");
         let path = directory.join("journal.bin");
-        let mut journal = ReceiptJournal::create(&path, JournalId([9; 16]), 1)
-            .expect("create journal");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([9; 16]), 1).expect("create journal");
         journal
             .append(event("receipt-1", LifecycleState::Requested))
             .expect("append");
@@ -1960,8 +1955,8 @@ mod tests {
             ReceiptJournal::open(&path, OpenPolicy::STRICT),
             Err(JournalError::TornTailNeedsRepair { .. })
         ));
-        let mut repaired = ReceiptJournal::open(&path, OpenPolicy::RECOVER_CRASH)
-            .expect("repair torn tail");
+        let mut repaired =
+            ReceiptJournal::open(&path, OpenPolicy::RECOVER_CRASH).expect("repair torn tail");
         assert_eq!(repaired.inspect().expect("inspect").tail, TailStatus::Clean);
         fs::remove_dir_all(directory).expect("cleanup");
     }
@@ -1970,15 +1965,21 @@ mod tests {
     fn complete_record_tampering_is_hard_corruption() {
         let directory = temp_dir("corruption");
         let path = directory.join("journal.bin");
-        let mut journal = ReceiptJournal::create(&path, JournalId([10; 16]), 1)
-            .expect("create journal");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([10; 16]), 1).expect("create journal");
         journal
             .append(event("receipt-1", LifecycleState::Requested))
             .expect("append");
         drop(journal);
-        let mut file = OpenOptions::new().read(true).write(true).open(&path).expect("open");
-        file.seek(SeekFrom::Start((SEGMENT_HEADER_LEN + RECORD_PREFIX_LEN + 4) as u64))
-            .expect("seek");
+        let mut file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(&path)
+            .expect("open");
+        file.seek(SeekFrom::Start(
+            (SEGMENT_HEADER_LEN + RECORD_PREFIX_LEN + 4) as u64,
+        ))
+        .expect("seek");
         file.write_all(&[0xff]).expect("tamper");
         file.sync_data().expect("sync");
         drop(file);
@@ -1993,8 +1994,8 @@ mod tests {
     fn dispatched_external_effect_recovers_never_automatic() {
         let directory = temp_dir("external-effect");
         let path = directory.join("journal.bin");
-        let mut journal = ReceiptJournal::create(&path, JournalId([11; 16]), 1)
-            .expect("create journal");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([11; 16]), 1).expect("create journal");
         let mut requested = event("effect-1", LifecycleState::Requested);
         requested.operation = "page.navigate".to_owned();
         requested.effect_class = EffectClass::PotentialExternalEffect;
@@ -2013,8 +2014,8 @@ mod tests {
         let directory = temp_dir("export");
         let path = directory.join("journal.bin");
         let export = directory.join("export.jsonl");
-        let mut journal = ReceiptJournal::create(&path, JournalId([12; 16]), 1)
-            .expect("create journal");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([12; 16]), 1).expect("create journal");
         let mut requested = event("receipt-1", LifecycleState::Requested);
         requested.privacy_class = PrivacyClass::Sensitive;
         requested.detail = Some("must-not-export".to_owned());
@@ -2033,8 +2034,8 @@ mod tests {
         let directory = temp_dir("rotation");
         let first = directory.join("segment-1.bin");
         let second = directory.join("segment-2.bin");
-        let mut journal = ReceiptJournal::create(&first, JournalId([13; 16]), 1)
-            .expect("create journal");
+        let mut journal =
+            ReceiptJournal::create(&first, JournalId([13; 16]), 1).expect("create journal");
         journal
             .append(event("receipt-1", LifecycleState::Requested))
             .expect("append request");
@@ -2052,7 +2053,10 @@ mod tests {
         assert_eq!(committed.sequence, 4);
         let report = next.inspect().expect("inspect");
         assert_eq!(report.header.previous_segment_sha256, seal.segment_sha256);
-        assert_eq!(report.header.previous_record_sha256, seal.last_record_sha256);
+        assert_eq!(
+            report.header.previous_record_sha256,
+            seal.last_record_sha256
+        );
         fs::remove_dir_all(directory).expect("cleanup");
     }
 
@@ -2133,8 +2137,8 @@ mod tests {
     fn a_concurrent_reader_reports_partial_append_as_torn_not_corrupt() {
         let directory = temp_dir("reader");
         let path = directory.join("journal.bin");
-        let mut journal = ReceiptJournal::create(&path, JournalId([14; 16]), 1)
-            .expect("create journal");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([14; 16]), 1).expect("create journal");
         journal
             .append(event("receipt-1", LifecycleState::Requested))
             .expect("append");
@@ -2159,6 +2163,9 @@ mod tests {
         let mut value = event("receipt-1", LifecycleState::Requested);
         value.privacy_class = PrivacyClass::SecretRedacted;
         value.detail = Some("secret".to_owned());
-        assert!(matches!(value.validate(), Err(JournalError::InvalidInput(_))));
+        assert!(matches!(
+            value.validate(),
+            Err(JournalError::InvalidInput(_))
+        ));
     }
 }
