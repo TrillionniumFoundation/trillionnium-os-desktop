@@ -130,11 +130,11 @@ jobs:
           mkdir -p artifacts/servo-headed-runtime
           cargo check --locked --manifest-path servo-source/Cargo.toml \
             -p servoshell --example trillionnium_headed_runtime \
-            --no-default-features --features bundled,js_jit,max_log_level \
+            --no-default-features --features bundled,gamepad,js_jit,max_log_level \
             2>&1 | tee artifacts/servo-headed-runtime/cargo-check.log
           cargo build --locked --manifest-path servo-source/Cargo.toml \
             -p servoshell --example trillionnium_headed_runtime \
-            --no-default-features --features bundled,js_jit,max_log_level \
+            --no-default-features --features bundled,gamepad,js_jit,max_log_level \
             2>&1 | tee artifacts/servo-headed-runtime/cargo-build.log
 
       - name: Run one-window local-fixture crash-and-recovery corpus
