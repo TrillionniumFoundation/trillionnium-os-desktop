@@ -1,0 +1,48 @@
+name: d1-exact-head-dispatch
+
+on:
+  push:
+    branches:
+      - codex/d1-01-reproducible-qemu-substrate
+    paths:
+      - .github/workflows/d1-exact-head-dispatch.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: d1-exact-head-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d1-01-reproducible-qemu-substrate
+          fetch-depth: 0
+
+      - name: Remove one-shot dispatcher and publish exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/d1-exact-head-dispatch.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/workflows/d1-exact-head-dispatch.yml
+          git commit -m 'ci: remove completed D1 exact-head dispatcher'
+          git push origin HEAD:codex/d1-01-reproducible-qemu-substrate
+
+      - name: Dispatch permanent D1 gate at published head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST \
+            repos/${{ github.repository }}/actions/workflows/d1-qemu.yml/dispatches \
+            -f ref=codex/d1-01-reproducible-qemu-substrate
