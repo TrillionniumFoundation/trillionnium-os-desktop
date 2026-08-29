@@ -68,7 +68,7 @@ Integrated main demonstrates:
 
 - D0R repository, toolchain, dependency, product-boundary, and signed Debian
   input locks;
-- D0C-01 through D0C-06 contract/control foundations;
+- D0C-01, D0C-02, D0C-03, D0C-04, D0C-05, and D0C-06 contract/control foundations;
 - authenticated bounded AF_UNIX connected-stream transport;
 - strict canonical Browser API parsing and encoding;
 - exactly-one request-bound connected AgentPort bridge;
