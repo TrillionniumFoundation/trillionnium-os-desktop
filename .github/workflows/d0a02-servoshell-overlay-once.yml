@@ -51,7 +51,10 @@ jobs:
           }
           for old, new in replacements.items():
               count = text.count(old)
-              expected = 2 if old.startswith('-p servo') else 1
+              expected = 2 if (
+                  old.startswith('-p servo')
+                  or old.startswith('servo-source/components/servo/examples')
+              ) else 1
               if count != expected:
                   raise SystemExit(f'workflow anchor count {count}, expected {expected}: {old!r}')
               text = text.replace(old, new)
