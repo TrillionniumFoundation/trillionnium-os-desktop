@@ -1,0 +1,99 @@
+name: d1-utf8-tar-import-patch
+
+on:
+  push:
+    branches:
+      - codex/d1-01-reproducible-qemu-substrate
+    paths:
+      - .github/workflows/d1-utf8-tar-import-patch.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: d1-utf8-tar-import-patch
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d1-01-reproducible-qemu-substrate
+          fetch-depth: 0
+
+      - name: Pin UTF-8 pathname decoding for exact tar population
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(source: str, old: str, new: str, label: str) -> str:
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected one anchor, found {count}')
+              return source.replace(old, new)
+
+          builder_path = Path('packaging/debian/image/build-d1-image.sh')
+          builder = builder_path.read_text()
+          builder = replace_once(
+              builder,
+              '  systemd-sysusers systemd-tmpfiles cmp diff readlink stat awk; do\n',
+              '  systemd-sysusers systemd-tmpfiles cmp diff readlink stat awk locale; do\n',
+              'locale dependency',
+          )
+          anchor = (
+              'rootfs_tar_sha256=$(sha256sum "$artifacts/rootfs.tar" | awk \'{print $1}\')\n\n'
+              'mke2fs_version=$("$mke2fs_binary" -V 2>&1 | awk \'NR == 1 { print $2 }\')\n'
+          )
+          replacement = (
+              'rootfs_tar_sha256=$(sha256sum "$artifacts/rootfs.tar" | awk \'{print $1}\')\n\n'
+              'filesystem_locale=C.UTF-8\n'
+              'filesystem_charmap=$(LC_ALL="$filesystem_locale" LANG="$filesystem_locale" locale charmap)\n'
+              'if [[ $filesystem_charmap != UTF-8 ]]; then\n'
+              '  echo "D1 tar import requires the exact C.UTF-8 charmap; got $filesystem_charmap" >&2\n'
+              '  exit 1\n'
+              'fi\n\n'
+              'mke2fs_version=$("$mke2fs_binary" -V 2>&1 | awk \'NR == 1 { print $2 }\')\n'
+          )
+          builder = replace_once(builder, anchor, replacement, 'UTF-8 preflight')
+          builder = replace_once(
+              builder,
+              '"$mke2fs_binary" \\\n',
+              'LC_ALL="$filesystem_locale" LANG="$filesystem_locale" "$mke2fs_binary" \\\n',
+              'mke2fs locale binding',
+          )
+          builder_path.write_text(builder)
+
+          test_path = Path('tests/d1/test_d1_tool_binding.py')
+          test = test_path.read_text()
+          test_anchor = (
+              '        self.assertIn(\'"$dumpe2fs_binary" -h "$image"\', builder)\n'
+              '        self.assertNotIn("mke2fs_version=$(mke2fs -V", builder)\n'
+          )
+          test_replacement = (
+              '        self.assertIn(\'"$dumpe2fs_binary" -h "$image"\', builder)\n'
+              '        self.assertIn("filesystem_locale=C.UTF-8", builder)\n'
+              '        self.assertIn(\n'
+              '            \'LC_ALL="$filesystem_locale" LANG="$filesystem_locale" \'\n'
+              '            \'"$mke2fs_binary" \\\\\\',\n'
+              '            builder,\n'
+              '        )\n'
+              '        self.assertIn("locale charmap", builder)\n'
+              '        self.assertNotIn("mke2fs_version=$(mke2fs -V", builder)\n'
+          )
+          test = replace_once(test, test_anchor, test_replacement, 'locale regression test')
+          test_path.write_text(test)
+          PY
+          git diff --check
+          shellcheck -e SC2016,SC2054 packaging/debian/image/build-d1-image.sh
+          python3 -m unittest tests.d1.test_d1_tool_binding
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add packaging/debian/image/build-d1-image.sh tests/d1/test_d1_tool_binding.py
+          git commit -m 'fix: pin UTF-8 locale for D1 tar population'
+          git push origin HEAD:codex/d1-01-reproducible-qemu-substrate
