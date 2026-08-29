@@ -65,6 +65,20 @@ jobs:
               raise SystemExit(f'payload missing required files: {missing}')
           PY
           tar --extract --gzip --file /tmp/d0c06-payload.tar.gz --directory .
+          python3 - <<'PY'
+          from pathlib import Path
+
+          for relative in [
+              'docs/architecture/DURABLE_RECEIPT_JOURNAL.md',
+              'docs/evidence/2026-08-29-d0c06-durable-receipts.md',
+          ]:
+              path = Path(relative)
+              lines = path.read_text(encoding='utf-8').splitlines()
+              path.write_text(
+                  '\n'.join(line.rstrip() for line in lines) + '\n',
+                  encoding='utf-8',
+              )
+          PY
           rm -rf tools/.d0c06-payload .github/workflows/d0c06-materialize.yml
           python3 -m py_compile tools/verify_receipt_journal.py
           python3 tools/verify_receipt_journal.py
