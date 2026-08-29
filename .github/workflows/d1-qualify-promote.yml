@@ -1,0 +1,290 @@
+name: d1-qualify-promote
+
+on:
+  push:
+    branches:
+      - codex/d1-01-reproducible-qemu-substrate
+    paths:
+      - .github/workflows/d1-qualify-promote.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+concurrency:
+  group: d1-qualify-promote
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  qualify-and-promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - name: Check out exact D1 candidate
+        uses: actions/checkout@v4
+        with:
+          ref: codex/d1-01-reproducible-qemu-substrate
+          fetch-depth: 0
+
+      - name: Record qualified source head
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'QUALIFIED_SOURCE_SHA=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Install D1 host dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            curl \
+            debian-archive-keyring \
+            e2fsprogs \
+            gnupg \
+            jq \
+            mmdebstrap \
+            qemu-system-x86 \
+            rsync \
+            shellcheck \
+            systemd
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Install exact repository Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          components="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(' '.join(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['components']))
+          PY
+          )"
+          printf 'RUST_CHANNEL=%s\n' "$channel" >> "$GITHUB_ENV"
+          rustup toolchain install "$channel" --profile minimal
+          for component in $components; do
+            rustup component add "$component" --toolchain "$channel"
+          done
+
+      - name: Validate source and build qualification binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          export RUSTUP_TOOLCHAIN="$RUST_CHANNEL"
+          python3 tools/validate_repository.py
+          python3 -m unittest discover -s tests/d1 -p 'test_*.py'
+          python3 -m py_compile \
+            tools/compare_d1_builds.py \
+            tools/prepare_d1_inputs.py \
+            tools/resolve_debian_snapshot.py \
+            tools/resolve_debian_snapshot_with_pinned_keys.py
+          shellcheck -e SC2016,SC2054 \
+            packaging/debian/image/build-d1-image.sh \
+            packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-acceptance \
+            packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-agent-fixture-launcher \
+            tests/qemu/run-d1-boot-test.sh \
+            tests/qemu/run-d1-pipeline.sh
+          cargo fmt --all -- --check
+          cargo clippy --workspace --all-targets --all-features -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo build --release --locked -p hepta-agent-portd \
+            --bin hepta-agent-portd --bin hepta-agent-d1-fixture
+
+      - name: Resolve signed closure, build twice, and qualify under QEMU
+        shell: bash
+        run: |
+          set -euo pipefail
+          export RUSTUP_TOOLCHAIN="$RUST_CHANNEL"
+          tests/qemu/run-d1-pipeline.sh \
+            --workspace "$GITHUB_WORKSPACE" \
+            --output-dir /tmp/trillionnium-d1
+
+      - name: Enforce complete D1 claim set
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          root = Path('/tmp/trillionnium-d1')
+          pipeline = json.loads((root / 'pipeline-result.json').read_text())
+          repro = json.loads((root / 'reproducibility-result.json').read_text())
+          boot = json.loads((root / 'qemu/boot-result.json').read_text())
+          acceptance = json.loads((root / 'qemu/acceptance.json').read_text())
+          assert pipeline['status'] == 'PASS', pipeline
+          assert repro['status'] == 'PASS_TWO_INDEPENDENT_BUILDS', repro
+          assert repro['reproducible'] is True, repro
+          assert boot['status'] == 'PASS_QEMU_PID1_WAYLAND_AND_AGENT_PORT', boot
+          assert acceptance['status'] == 'PASS', acceptance
+          claims = boot['claims']
+          required_true = [
+              'systemd_booted',
+              'udev_active',
+              'dbus_active',
+              'logind_active',
+              'headless_wayland_active',
+              'agent_port_default_disabled',
+              'agent_port_pid1_activation_validated',
+              'unauthorized_peer_denied',
+              'authorized_fixture_request',
+              'per_connection_teardown',
+              'connection_kill_recovered',
+          ]
+          for key in required_true:
+              assert claims[key] is True, (key, claims.get(key))
+          assert claims['network_enabled'] is False
+          assert claims['servo_started'] is False
+          assert claims['visible_window_created'] is False
+          assert claims['secure_boot_qualified'] is False
+          assert boot['release_marker_absent'] is True
+          assert boot['clean_poweroff'] is True
+          PY
+
+      - name: Materialize bounded D1 repository evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from __future__ import annotations
+          from datetime import datetime, timezone
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+
+          repo = Path('.')
+          root = Path('/tmp/trillionnium-d1')
+          generated = repo / 'docs/evidence/generated'
+          generated.mkdir(parents=True, exist_ok=True)
+
+          def read(name: str):
+              return json.loads((root / name).read_text())
+
+          pipeline = read('pipeline-result.json')
+          repro = read('reproducibility-result.json')
+          boot = read('qemu/boot-result.json')
+          acceptance = read('qemu/acceptance.json')
+          qualified = os.environ['QUALIFIED_SOURCE_SHA']
+          run_id = os.environ['GITHUB_RUN_ID']
+          run_attempt = int(os.environ['GITHUB_RUN_ATTEMPT'])
+          now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+          result = {
+              'schema': 'trillionnium.desktop.d1-promotion-evidence.v1',
+              'status': 'PASS',
+              'qualified_source_sha': qualified,
+              'workflow_run_id': run_id,
+              'workflow_run_attempt': run_attempt,
+              'recorded_at': now,
+              'pipeline': pipeline,
+              'reproducibility': repro,
+              'boot': boot,
+              'acceptance': acceptance,
+              'claim_ceiling': {
+                  'servo_started': False,
+                  'visible_window_created': False,
+                  'network_enabled_during_acceptance': False,
+                  'secure_boot_qualified': False,
+                  'product_release_authorized': False,
+              },
+          }
+          evidence_json = generated / 'd1-qemu-substrate-result.json'
+          evidence_json.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          digest = hashlib.sha256(evidence_json.read_bytes()).hexdigest()
+
+          md = repo / 'docs/evidence/2026-08-29-d1-reproducible-qemu-substrate.md'
+          md.write_text(f'''# D1 reproducible Debian/QEMU substrate evidence\n\n- Status: `PASS`\n- Qualified source SHA: `{qualified}`\n- GitHub Actions run: `{run_id}` attempt `{run_attempt}`\n- Evidence JSON SHA-256: `{digest}`\n\nThe exact candidate restored the signed Debian 13 package closure, produced two independent byte-reproducible root filesystems and ext4 images, and booted the result under QEMU with no network device. Machine acceptance proved systemd PID 1, udev, D-Bus, logind, a headless Wayland socket, default-disabled AgentPort custody, authorized and unauthorized peer behavior, per-connection teardown, connection-kill recovery, absence of the test-only enable marker, and clean poweroff.\n\nThis gate does not start Servo, create a visible workspace, enable network access during acceptance, qualify Secure Boot, or authorize product release.\n''')
+
+          manifest_path = repo / 'docs/MANIFEST.json'
+          manifest = json.loads(manifest_path.read_text())
+          manifest['d1_reproducible_qemu_substrate'] = True
+          manifest['d1_qualified_source_sha'] = qualified
+          manifest['d1_evidence'] = str(md)
+          manifest['d1_release_marker_shipped'] = False
+          manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n')
+
+          state_path = repo / 'manifests/repository-state.json'
+          state = json.loads(state_path.read_text())
+          state['d1_status'] = 'PASS_REPRODUCIBLE_QEMU_PID1_WAYLAND_AGENT_PORT'
+          state['d1_qualified_source_sha'] = qualified
+          state['d1_evidence_sha256'] = digest
+          state['servo_visible_runtime_qualified'] = False
+          state['secure_boot_qualified'] = False
+          state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + '\n')
+
+          current = repo / 'docs/CURRENT_STATE.md'
+          text = current.read_text()
+          marker = '## D1 reproducible Debian/QEMU substrate'
+          section = f'''\n\n{marker}\n\n`PASS` at source `{qualified}`. Two independent signed-closure builds are byte-reproducible and the exact image passed QEMU PID1, udev, D-Bus, logind, headless Wayland, default-disabled AgentPort custody, authorization denial/acceptance, teardown, kill/recovery, release-marker absence, and clean-poweroff checks. Servo, visible UI, acceptance networking, Secure Boot, A/B update, and release authority remain outside this gate.\n'''
+          if marker in text:
+              text = text[:text.index(marker)].rstrip() + section
+          else:
+              text = text.rstrip() + section
+          current.write_text(text.rstrip() + '\n')
+          PY
+          python3 tools/validate_repository.py
+          git diff --check
+
+      - name: Upload complete D1 machine evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-qualify-promote-${{ github.sha }}
+          path: /tmp/trillionnium-d1/evidence
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 6
+
+      - name: Commit evidence, remove promotion workflow, and push
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/d1-qualify-promote.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            .github/workflows/d1-qualify-promote.yml \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            docs/evidence/2026-08-29-d1-reproducible-qemu-substrate.md \
+            docs/evidence/generated/d1-qemu-substrate-result.json \
+            manifests/repository-state.json
+          git commit -m "docs: promote machine-qualified reproducible D1 substrate"
+          git push origin HEAD:codex/d1-01-reproducible-qemu-substrate
+
+      - name: Promote the qualified D1 pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          pr="$(gh pr list --repo "$repo" --state open \
+            --head codex/d1-01-reproducible-qemu-substrate \
+            --json number --jq '.[0].number // empty')"
+          if [[ -z "$pr" ]]; then
+            pr="$(gh pr create --repo "$repo" --base main \
+              --head codex/d1-01-reproducible-qemu-substrate \
+              --title 'build: promote reproducible Debian/QEMU substrate (D1)' \
+              --body 'Machine-qualified signed Debian closure, two-build reproducibility, QEMU PID1/Wayland and default-disabled AgentPort acceptance. Servo, networking, Secure Boot and product release remain outside this gate.' \
+              --json number --jq '.number')"
+          fi
+          if [[ "$(gh pr view "$pr" --repo "$repo" --json isDraft --jq '.isDraft')" == true ]]; then
+            gh pr ready "$pr" --repo "$repo"
+          fi
+          gh pr merge "$pr" --repo "$repo" --merge --admin \
+            --subject 'build: add reproducible Debian/QEMU substrate (D1)' \
+            --body 'Promote the exact machine-qualified D1 candidate and bounded evidence.'
