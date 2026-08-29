@@ -1,0 +1,188 @@
+name: d0a02-qualify-promote
+
+on:
+  push:
+    branches:
+      - codex/d0a02-headed-runtime-v3
+    paths:
+      - .github/workflows/d0a02-qualify-promote.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+concurrency:
+  group: d0a02-qualify-promote
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 250
+    steps:
+      - name: Check out promotion candidate
+        uses: actions/checkout@v4
+        with:
+          ref: codex/d0a02-headed-runtime-v3
+          fetch-depth: 0
+
+      - name: Locate and wait for the exact headed-runtime gate
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD^)"
+          printf 'source_sha=%s\n' "$source_sha" >> "$GITHUB_OUTPUT"
+          run_id=
+          for _ in $(seq 1 480); do
+            run_id="$(gh run list --repo "$GITHUB_REPOSITORY" \
+              --workflow d0a02-headed-servo.yml \
+              --branch codex/d0a02-headed-runtime-v3 \
+              --limit 30 \
+              --json databaseId,headSha,status,conclusion \
+              --jq ".[] | select(.headSha == \"$source_sha\") | .databaseId" \
+              | head -n1)"
+            [[ -z "$run_id" ]] || break
+            sleep 15
+          done
+          if [[ -z "$run_id" ]]; then
+            echo "no exact-head D0A-02 headed runtime run found for $source_sha" >&2
+            exit 1
+          fi
+          gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
+          conclusion="$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" \
+            --json conclusion --jq '.conclusion')"
+          [[ "$conclusion" == success ]] || {
+            echo "headed runtime gate did not succeed: $conclusion" >&2
+            exit 1
+          }
+          printf 'run_id=%s\n' "$run_id" >> "$GITHUB_OUTPUT"
+
+      - name: Download and verify exact machine evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="${{ steps.gate.outputs.source_sha }}"
+          run_id="${{ steps.gate.outputs.run_id }}"
+          rm -rf /tmp/d0a02-promotion
+          mkdir -p /tmp/d0a02-promotion
+          gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
+            --name "d0a02-headed-servo-$source_sha" \
+            --dir /tmp/d0a02-promotion
+          evidence="$(find /tmp/d0a02-promotion -type f -name evidence.json -print -quit)"
+          test -n "$evidence"
+          jq -e '.status == "PASS"' "$evidence"
+          jq -e '.product_source_sha == "'"$source_sha"'"' "$evidence"
+          jq -e '.claims.native_trusted_chrome == true' "$evidence"
+          jq -e '.claims.one_untrusted_content_surface == true' "$evidence"
+          jq -e '.claims.real_servo_frame == true' "$evidence"
+          jq -e '.claims.pointer_keyboard_wheel_and_ime_paths == true' "$evidence"
+          jq -e '.claims.popup_denied == true' "$evidence"
+          jq -e '.claims.trusted_chrome_survived_content_recreation == true' "$evidence"
+          jq -e '.claims.external_network_used == false' "$evidence"
+          cp "$evidence" /tmp/d0a02-promotion/evidence-verified.json
+
+      - name: Materialize bounded D0A-02 repository evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+
+          repo = Path('.')
+          source_sha = '${{ steps.gate.outputs.source_sha }}'
+          run_id = '${{ steps.gate.outputs.run_id }}'
+          source = Path('/tmp/d0a02-promotion/evidence-verified.json')
+          evidence = json.loads(source.read_text())
+          generated = repo / 'docs/evidence/generated'
+          generated.mkdir(parents=True, exist_ok=True)
+          target = generated / 'd0a02-headed-servo-result.json'
+          target.write_text(json.dumps(evidence, indent=2, sort_keys=True) + '\n')
+          digest = hashlib.sha256(target.read_bytes()).hexdigest()
+
+          md = repo / 'docs/evidence/2026-08-29-d0a02-headed-servo.md'
+          md.write_text(f'''# D0A-02 headed Servo runtime evidence\n\n- Status: `PASS`\n- Product source SHA: `{source_sha}`\n- Servo revision: `{evidence["servo_revision"]}`\n- GitHub Actions run: `{run_id}`\n- Evidence JSON SHA-256: `{digest}`\n\nThe exact candidate created a real decorated native window, started the locked Servo revision, painted and captured a real content frame, retained exactly one untrusted content `WebView`, routed pointer, button, wheel, keyboard and IME input paths, denied an auxiliary `window.open`, destroyed and recreated the sole content surface, and preserved the native trusted window through recovery without external network access.\n\nThe gate does not claim that a naturally panicking Servo pipeline was injected, does not enable AgentPort or external effects, and does not authorize product release.\n''')
+
+          manifest_path = repo / 'docs/MANIFEST.json'
+          manifest = json.loads(manifest_path.read_text())
+          manifest['d0a02_headed_servo_runtime'] = True
+          manifest['d0a02_qualified_source_sha'] = source_sha
+          manifest['d0a02_evidence'] = str(md)
+          manifest['servo_visible_runtime_qualified'] = True
+          manifest['servo_pipeline_crash_injection_qualified'] = False
+          manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n')
+
+          state_path = repo / 'manifests/repository-state.json'
+          state = json.loads(state_path.read_text())
+          state['d0a02_status'] = 'PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY'
+          state['d0a02_qualified_source_sha'] = source_sha
+          state['d0a02_evidence_sha256'] = digest
+          state['servo_visible_runtime_qualified'] = True
+          state['servo_pipeline_crash_injection_qualified'] = False
+          state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + '\n')
+
+          current = repo / 'docs/CURRENT_STATE.md'
+          text = current.read_text()
+          marker = '## D0A-02 headed Servo workspace'
+          section = f'''\n\n{marker}\n\n`PASS` at source `{source_sha}` against locked Servo `{evidence["servo_revision"]}`. Machine evidence covers a decorated native trusted window, one real Servo content surface and frame, pointer/button/wheel/keyboard/IME routing, popup denial, sole-content recreation, trusted-window survival, and zero external networking. Natural Servo pipeline-crash injection remains outside this gate.\n'''
+          if marker not in text:
+              text = text.rstrip() + section
+          current.write_text(text.rstrip() + '\n')
+          PY
+          python3 tools/validate_repository.py
+          git diff --check
+
+      - name: Commit evidence and remove promotion workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/d0a02-qualify-promote.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            .github/workflows/d0a02-qualify-promote.yml \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            docs/evidence/2026-08-29-d0a02-headed-servo.md \
+            docs/evidence/generated/d0a02-headed-servo-result.json \
+            manifests/repository-state.json
+          git commit -m "docs: promote machine-qualified headed Servo workspace"
+          git push origin HEAD:codex/d0a02-headed-runtime-v3
+
+      - name: Create and merge the qualified D0A-02 pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          old_state="$(gh pr view 15 --repo "$repo" --json state --jq '.state' 2>/dev/null || true)"
+          if [[ "$old_state" == OPEN ]]; then
+            gh pr close 15 --repo "$repo" \
+              --comment 'Superseded by the current-main headed runtime promotion branch.'
+          fi
+          pr="$(gh pr list --repo "$repo" --state open \
+            --head codex/d0a02-headed-runtime-v3 \
+            --json number --jq '.[0].number // empty')"
+          if [[ -z "$pr" ]]; then
+            url="$(gh pr create --repo "$repo" --base main \
+              --head codex/d0a02-headed-runtime-v3 \
+              --title 'feat: promote native trusted workspace with headed Servo (D0A-02)' \
+              --body 'Promotes the exact machine-qualified native trusted window, single untrusted Servo content surface, real frame, input paths, popup denial and content recreation evidence. Natural Servo pipeline-crash injection and later BrowserActor/effect authority remain outside this gate.')"
+            pr="$(gh pr view "$url" --repo "$repo" --json number --jq '.number')"
+          fi
+          if [[ "$(gh pr view "$pr" --repo "$repo" --json isDraft --jq '.isDraft')" == true ]]; then
+            gh pr ready "$pr" --repo "$repo"
+          fi
+          gh pr merge "$pr" --repo "$repo" --merge --admin \
+            --subject 'feat: add native trusted workspace with headed Servo (D0A-02)' \
+            --body 'Promote the bounded exact-pin headed runtime and machine evidence.'
