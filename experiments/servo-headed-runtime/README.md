@@ -32,6 +32,11 @@ and recovery—without recording page secrets. The permanent gate keeps the
 failure artifact so a missing transition is repaired at its exact boundary
 rather than by weakening the acceptance corpus.
 
+`runtime-state.json` is emitted through a Rust format string. Its literal JSON
+object delimiters therefore remain escaped as `{{` and `}}`; predicate value
+placeholders remain single-braced. This is a compile-time contract, not a reason
+to skip or soften any runtime predicate.
+
 The exact-pin adapter converts Surfman construction/current-context failures at
 the application boundary, uses Servo's min/max `DeviceIntRect` convention, and
 clones the current WebView handle before native IME dispatch so no temporary
