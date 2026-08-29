@@ -9,6 +9,10 @@ User=hepta-agent
 Group=hepta-agent
 RuntimeDirectory=hepta-agent
 RuntimeDirectoryMode=0700
+# The oneshot client writes its bounded response into this runtime directory.
+# Preserve it after successful exit so the root-owned acceptance controller can
+# verify and hash the response before explicitly deleting all test-only state.
+RuntimeDirectoryPreserve=yes
 ExecStart=/usr/local/libexec/trillionnium-d1-agent-fixture-launcher
 TimeoutStartSec=150s
 NoNewPrivileges=yes
