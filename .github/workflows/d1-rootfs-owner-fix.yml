@@ -19,7 +19,7 @@ jobs:
         with:
           ref: codex/d1-01-reproducible-qemu-substrate
           fetch-depth: 0
-      - name: Normalize only builder-owned rootfs directories and symlinks
+      - name: Normalize only builder-owned rootfs metadata
         shell: bash
         run: |
           set -euo pipefail
@@ -37,70 +37,94 @@ jobs:
               )
           text = text.replace(old_commands, new_commands)
 
-          anchor = 'mmdebstrap "${mmdebstrap_args[@]}" >"$logs/mmdebstrap.log" 2>&1\n\n'
-          block = r'''mmdebstrap "${mmdebstrap_args[@]}" >"$logs/mmdebstrap.log" 2>&1
+          old_rsync = 'rsync -aHAX --numeric-ids "$overlay/" "$rootfs/"\n'
+          new_rsync = 'rsync -aHAX --numeric-ids --chown=0:0 "$overlay/" "$rootfs/"\n'
+          if text.count(old_rsync) != 1:
+              raise SystemExit(f"expected one overlay rsync, found {text.count(old_rsync)}")
+          text = text.replace(old_rsync, new_rsync)
 
-# GitHub-hosted sudo builds may leave mmdebstrap-created directory and symlink
-# metadata owned by the invoking builder UID/GID. Target systemd-tmpfiles
-# correctly rejects a rootfs whose trusted path parents are not guest root.
-# Normalize only those metadata nodes. Never recursively chown regular files:
-# that could erase package setuid bits or file capabilities.
-builder_uid=${SUDO_UID:-0}
-builder_gid=${SUDO_GID:-0}
-if ! [[ "$builder_uid" =~ ^[0-9]+$ && "$builder_gid" =~ ^[0-9]+$ ]]; then
-  echo "invalid sudo builder identity: uid=$builder_uid gid=$builder_gid" >&2
-  exit 1
-fi
-if (( builder_uid != 0 )); then
-  if awk -F: -v id="$builder_uid" '$3 == id { found = 1 } END { exit found ? 0 : 1 }' \
-      "$rootfs/etc/passwd"; then
-    echo "builder UID $builder_uid collides with a guest account" >&2
-    exit 1
-  fi
-  unexpected_uid_node=$(find "$rootfs" -xdev -uid "$builder_uid" \
-    ! -type d ! -type l -print -quit)
-  if [[ -n "$unexpected_uid_node" ]]; then
-    echo "refusing to rewrite builder-owned non-metadata node: $unexpected_uid_node" >&2
-    exit 1
-  fi
-  find "$rootfs" -xdev -uid "$builder_uid" \( -type d -o -type l \) \
-    -exec chown --no-dereference 0 {} +
-fi
-if (( builder_gid != 0 )); then
-  if awk -F: -v id="$builder_gid" '$3 == id { found = 1 } END { exit found ? 0 : 1 }' \
-      "$rootfs/etc/group"; then
-    echo "builder GID $builder_gid collides with a guest group" >&2
-    exit 1
-  fi
-  unexpected_gid_node=$(find "$rootfs" -xdev -gid "$builder_gid" \
-    ! -type d ! -type l -print -quit)
-  if [[ -n "$unexpected_gid_node" ]]; then
-    echo "refusing to rewrite builder-group-owned non-metadata node: $unexpected_gid_node" >&2
-    exit 1
-  fi
-  find "$rootfs" -xdev -gid "$builder_gid" \( -type d -o -type l \) \
-    -exec chgrp --no-dereference 0 {} +
-fi
-for trusted_path in "$rootfs" "$rootfs/etc" "$rootfs/run" "$rootfs/usr" "$rootfs/var"; do
-  [[ -d "$trusted_path" && ! -L "$trusted_path" ]] || {
-    echo "required trusted rootfs directory is missing or unsafe: $trusted_path" >&2
-    exit 1
-  }
-  [[ $(stat -c '%u:%g' "$trusted_path") == 0:0 ]] || {
-    echo "trusted rootfs directory is not guest-root-owned: $trusted_path" >&2
-    exit 1
-  }
-done
+          anchor = '''find "$rootfs/etc/systemd/system" -type f \\( -name '*.service' -o -name '*.socket' -o -name '*.target' \\) \\
+            -exec chmod 0644 {} +
 
-'''
+          chroot "$rootfs" /usr/bin/systemd-sysusers
+          '''
+          block = r'''find "$rootfs/etc/systemd/system" -type f \( -name '*.service' -o -name '*.socket' -o -name '*.target' \) \
+            -exec chmod 0644 {} +
+
+          # A sudo-hosted mmdebstrap build may map rootfs metadata to the invoking
+          # runner UID/GID. Target systemd-tmpfiles correctly rejects trusted path
+          # parents that are not guest root. Overlay files are explicitly installed
+          # as 0:0 above; here we normalize only directory and symlink metadata left
+          # at the builder identity. Regular or special nodes fail closed so package
+          # ownership, setuid bits, and file capabilities are never silently rewritten.
+          builder_uid=${SUDO_UID:-0}
+          builder_gid=${SUDO_GID:-0}
+          if ! [[ "$builder_uid" =~ ^[0-9]+$ && "$builder_gid" =~ ^[0-9]+$ ]]; then
+            echo "invalid sudo builder identity: uid=$builder_uid gid=$builder_gid" >&2
+            exit 1
+          fi
+          if (( builder_uid != 0 )); then
+            if awk -F: -v id="$builder_uid" '$3 == id { found = 1 } END { exit found ? 0 : 1 }' \
+                "$rootfs/etc/passwd"; then
+              echo "builder UID $builder_uid collides with a guest account" >&2
+              exit 1
+            fi
+            unexpected_uid_node=$(find "$rootfs" -xdev -uid "$builder_uid" \
+              ! -type d ! -type l -print -quit)
+            if [[ -n "$unexpected_uid_node" ]]; then
+              echo "refusing to rewrite builder-owned non-metadata node: $unexpected_uid_node" >&2
+              exit 1
+            fi
+            find "$rootfs" -xdev -uid "$builder_uid" \( -type d -o -type l \) \
+              -exec chown --no-dereference 0 {} +
+          fi
+          if (( builder_gid != 0 )); then
+            if awk -F: -v id="$builder_gid" '$3 == id { found = 1 } END { exit found ? 0 : 1 }' \
+                "$rootfs/etc/group"; then
+              echo "builder GID $builder_gid collides with a guest group" >&2
+              exit 1
+            fi
+            unexpected_gid_node=$(find "$rootfs" -xdev -gid "$builder_gid" \
+              ! -type d ! -type l -print -quit)
+            if [[ -n "$unexpected_gid_node" ]]; then
+              echo "refusing to rewrite builder-group-owned non-metadata node: $unexpected_gid_node" >&2
+              exit 1
+            fi
+            find "$rootfs" -xdev -gid "$builder_gid" \( -type d -o -type l \) \
+              -exec chgrp --no-dereference 0 {} +
+          fi
+          for trusted_path in "$rootfs" "$rootfs/etc" "$rootfs/run" "$rootfs/usr" "$rootfs/var"; do
+            [[ -d "$trusted_path" && ! -L "$trusted_path" ]] || {
+              echo "required trusted rootfs directory is missing or unsafe: $trusted_path" >&2
+              exit 1
+            }
+            [[ $(stat -c '%u:%g' "$trusted_path") == 0:0 ]] || {
+              echo "trusted rootfs directory is not guest-root-owned: $trusted_path" >&2
+              exit 1
+            }
+          done
+
+          chroot "$rootfs" /usr/bin/systemd-sysusers
+          '''
+          # The source indentation above is part of this workflow's Python block.
+          # Strip the ten spaces used solely to keep the YAML block scalar valid.
+          block = "\n".join(
+              line[10:] if line.startswith("          ") else line
+              for line in block.splitlines()
+          ) + "\n"
+          anchor = "\n".join(
+              line[10:] if line.startswith("          ") else line
+              for line in anchor.splitlines()
+          )
           if text.count(anchor) != 1:
-              raise SystemExit(f"expected one mmdebstrap anchor, found {text.count(anchor)}")
+              raise SystemExit(f"expected one sysusers anchor, found {text.count(anchor)}")
           text = text.replace(anchor, block)
           path.write_text(text, encoding="utf-8")
           PY
           rm .github/workflows/d1-rootfs-owner-fix.yml
           bash -n packaging/debian/image/build-d1-image.sh
           shellcheck -e SC2016,SC2054 packaging/debian/image/build-d1-image.sh
+          grep -F -- '--numeric-ids --chown=0:0' packaging/debian/image/build-d1-image.sh
           grep -F 'unexpected_uid_node=$(find "$rootfs" -xdev -uid "$builder_uid"' \
             packaging/debian/image/build-d1-image.sh
           grep -F -- '-exec chown --no-dereference 0 {} +' \
