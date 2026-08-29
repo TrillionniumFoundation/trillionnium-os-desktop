@@ -14,6 +14,9 @@
   "cargo_external_allowlist": "../manifests/cargo-external-allowlist.json",
   "debian_image_built": false,
   "debian_selection": "../manifests/debian-base.selection.json",
+  "durable_receipt_journal_product": true,
+  "durable_receipt_journal_host_validation": true,
+  "durable_receipt_journal_executes_or_replays_operations": false,
   "external_effects_enabled": false,
   "implementation_checkpoints": [
     {
@@ -63,9 +66,21 @@
       "status": "PASS_COMPILE_COMPATIBILITY_ONLY",
       "validated_head": "01d02d692c573ccde7a99d990f2a63235d9bc69f",
       "workflow_run_id": 33230713426
+    },
+    {
+      "evidence": "evidence/2026-08-29-d0c06-durable-receipts.md",
+      "id": "TOS-D0C-06",
+      "status": "HOST_VALIDATED_NO_EXECUTION_OR_REPLAY_AUTHORITY",
+      "validated_head": "25d2d5882018b9974fc360aaf646128c6b6f175f",
+      "workflow_run_ids": [
+        33235926576,
+        33235926577,
+        33235926596,
+        33235926613
+      ]
     }
   ],
-  "implementation_stage": "D0R_D0C05_D0A01_COMPILE_VALIDATED",
+  "implementation_stage": "D0R_D0C06_D0A01_COMPILE_VALIDATED",
   "product": "TrillionniumOS Desktop",
   "product_boundary": "../manifests/product-boundary.json",
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
@@ -82,7 +97,7 @@
   "servo_integrated": false,
   "servo_lock": "../manifests/servo.lock.json",
   "servo_qualification_evidence": "evidence/generated/d0a01-servo-qualification-result.json",
-  "status": "IMPLEMENTATION_COMPILE_VALIDATED",
+  "status": "IMPLEMENTATION_COMPILE_AND_RECEIPT_VALIDATED",
   "superseded_plan": "DESKTOP_PLAN-2026-08-28.md",
   "transport_core_source_present": true,
   "transport_exact_head_rust_validation": true,
