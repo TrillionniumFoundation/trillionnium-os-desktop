@@ -1,0 +1,113 @@
+name: merge-exact-main-promotion
+
+on:
+  push:
+    branches: ["codex/d5-product-foundation"]
+    paths:
+      - ".github/workflows/merge-exact-main-promotion.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: merge-exact-main-promotion
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Resolve open promotion PR and enforce exact-head gates
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/$REPOSITORY"
+          out=/tmp/promotion-merge
+          mkdir -p "$out"
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api/pulls?state=open&head=TrillionniumFoundation:codex/pr31-exact-main-promotion-v1&base=main" > "$out/search.json"
+          test "$(jq 'length' "$out/search.json")" = 1
+          jq '.[0]' "$out/search.json" > "$out/pr.json"
+          number=$(jq -er '.number' "$out/pr.json")
+          head=$(jq -er '.head.sha' "$out/pr.json")
+          author=$(jq -er '.user.login' "$out/pr.json")
+          test "$(jq -r '.draft' "$out/pr.json")" = false
+          test "$(jq -r '.mergeable' "$out/pr.json")" = true
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' "$api/pulls/$number/reviews?per_page=100" > "$out/reviews.json"
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' "$api/actions/runs?head_sha=$head&per_page=100" > "$out/actions.json"
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' "$api/branches/main" > "$out/main.json"
+          test "$(jq -r '.protected' "$out/main.json")" = true
+          NUMBER="$number" HEAD_SHA="$head" AUTHOR="$author" python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          root=Path('/tmp/promotion-merge'); head=os.environ['HEAD_SHA']; author=os.environ['AUTHOR']
+          reviews=json.loads((root/'reviews.json').read_text()); actions=json.loads((root/'actions.json').read_text()).get('workflow_runs',[])
+          effective={}
+          for r in sorted(reviews,key=lambda x:x.get('submitted_at') or ''):
+              u=r.get('user',{}); login=u.get('login')
+              if not login or login==author or u.get('type')=='Bot' or login.endswith('[bot]'): continue
+              effective[login]=r
+          approvals=sorted(u for u,r in effective.items() if r.get('state')=='APPROVED' and r.get('commit_id')==head)
+          rejections=sorted(u for u,r in effective.items() if r.get('state')=='CHANGES_REQUESTED')
+          if not approvals or rejections: raise SystemExit(f'SECURITY_REVIEW_REQUIRED approvals={approvals} rejections={rejections}')
+          excluded=('create-pr31-exact-main-promotion','qualify-exact-main-after-pr31','merge-pr31-after-independent-approval','merge-exact-main-promotion','stabilize-','integrate-','repair-','harden-','finalize-','request-independent-review','publish-closure-snapshot','final-candidate-qualification')
+          latest={}
+          for run in sorted(actions,key=lambda x:x.get('created_at') or ''):
+              name=run.get('name') or ''; path=run.get('path') or ''
+              if any(e in name or e in path for e in excluded): continue
+              latest[name]=run
+          if 'desktop-ci' not in latest: raise SystemExit('RESUME_REQUIRED: desktop-ci missing')
+          bad=[(n,r.get('status'),r.get('conclusion'),r.get('id')) for n,r in latest.items() if r.get('status')!='completed' or r.get('conclusion') not in ('success','skipped','neutral')]
+          if bad or latest['desktop-ci'].get('conclusion')!='success': raise SystemExit(f'RESUME_REQUIRED: {bad}')
+          report={'number':int(os.environ['NUMBER']),'head':head,'approvals':approvals,'runs':{n:{'id':r.get('id'),'status':r.get('status'),'conclusion':r.get('conclusion')} for n,r in latest.items()},'status':'READY_FOR_PROTECTED_BOT_MERGE'}
+          (root/'premerge.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          PY
+          printf '%s\n' "$number" > "$out/number.txt"
+          printf '%s\n' "$head" > "$out/head.txt"
+
+      - name: Merge promotion with exact SHA precondition
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=/tmp/promotion-merge
+          number=$(cat "$out/number.txt")
+          head=$(cat "$out/head.txt")
+          payload=$(jq -n --arg sha "$head" '{sha:$sha,merge_method:"merge",commit_title:"Promote PR 31 integrated exact-main evidence",commit_message:"Protected bot merge after exact-head CI and independent approval. D3 image activation and D4-D9 remain closed."}')
+          code=$(curl --silent --show-error --output "$out/merge-response.json" --write-out '%{http_code}' -X PUT \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' "$REPOSITORY" >/dev/null 2>&1 || true)
+          code=$(curl --silent --show-error --output "$out/merge-response.json" --write-out '%{http_code}' -X PUT \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$REPOSITORY/pulls/$number/merge" -d "$payload")
+          test "$code" = 200 || { cat "$out/merge-response.json" >&2; exit 1; }
+          jq -e '.merged == true and (.sha | length == 40)' "$out/merge-response.json" >/dev/null
+
+      - name: Upload promotion merge receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: exact-main-promotion-merge-receipt-${{ github.sha }}
+          path: /tmp/promotion-merge
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 6
