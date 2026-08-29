@@ -38,11 +38,10 @@ on:
       - "tools/prepare_d1_inputs.py"
       - "tools/resolve_debian_snapshot.py"
       - "tools/resolve_debian_snapshot_with_pinned_keys.py"
-      - "tools/patch_d1_procfs.py"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: d1-qemu-${{ github.ref }}
@@ -59,24 +58,6 @@ jobs:
     steps:
       - name: Check out candidate
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'push' && github.ref_name || '' }}
-          fetch-depth: 0
-
-      - name: Apply the one-shot target procfs fix
-        if: github.event_name == 'push' && github.ref_name == 'codex/d1-01-reproducible-qemu-substrate'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 tools/patch_d1_procfs.py
-          rm tools/patch_d1_procfs.py
-          bash -n packaging/debian/image/build-d1-image.sh
-          git diff --check
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packaging/debian/image/build-d1-image.sh tools/patch_d1_procfs.py
-          git commit -m "build: mount procfs for target Debian tmpfiles"
-          git push origin HEAD:codex/d1-01-reproducible-qemu-substrate
 
       - name: Install D1 host dependencies
         shell: bash
