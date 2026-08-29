@@ -61,7 +61,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 for command in mmdebstrap python3 jq tar chroot rsync sha256sum \
-  systemd-sysusers systemd-tmpfiles cmp diff readlink stat awk; do
+  systemd-sysusers systemd-tmpfiles cmp diff readlink stat awk locale; do
   command -v "$command" >/dev/null || {
     echo "required command is missing: $command" >&2
     exit 1
@@ -409,6 +409,13 @@ tar \
   -cf "$artifacts/rootfs.tar" .
 rootfs_tar_sha256=$(sha256sum "$artifacts/rootfs.tar" | awk '{print $1}')
 
+filesystem_locale=C.UTF-8
+filesystem_charmap=$(LC_ALL="$filesystem_locale" LANG="$filesystem_locale" locale charmap)
+if [[ $filesystem_charmap != UTF-8 ]]; then
+  echo "D1 tar import requires the exact C.UTF-8 charmap; got $filesystem_charmap" >&2
+  exit 1
+fi
+
 mke2fs_version=$("$mke2fs_binary" -V 2>&1 | awk 'NR == 1 { print $2 }')
 python3 -c 'import re,sys; m=re.fullmatch(r"(\d+)\.(\d+)\.(\d+)",sys.argv[1]); raise SystemExit(0 if m and tuple(map(int,m.groups())) >= (1,47,1) else 1)' "$mke2fs_version" || {
   echo "D1 reproducible tar input requires e2fsprogs >= 1.47.1; got $mke2fs_version" >&2
@@ -418,7 +425,7 @@ python3 -c 'import re,sys; m=re.fullmatch(r"(\d+)\.(\d+)\.(\d+)",sys.argv[1]); r
 image="$artifacts/trillionnium-d1.ext4"
 truncate -s "${image_size_mib}M" "$image"
 export E2FSPROGS_FAKE_TIME="$source_epoch"
-"$mke2fs_binary" \
+LC_ALL="$filesystem_locale" LANG="$filesystem_locale" "$mke2fs_binary" \
   -F \
   -q \
   -t ext4 \
