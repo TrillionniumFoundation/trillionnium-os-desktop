@@ -5,20 +5,33 @@ product implemented by this repository. The repository itself—not a separate
 local documentation tree—is the canonical source for plans, contracts,
 implementation, tests, packaging, and release evidence.
 
-## Canonical files
+## Canonical truth
 
+- [`../manifests/project-state.v1.json`](../manifests/project-state.v1.json) —
+  single machine project status
+- [`../manifests/gates.v1.json`](../manifests/gates.v1.json) — work-package,
+  evidence-tier, review, and invalidation registry
 - [`DESKTOP_PLAN.md`](DESKTOP_PLAN.md) — stable plan index
-- [`DESKTOP_PLAN-2026-08-28-d5.md`](DESKTOP_PLAN-2026-08-28-d5.md) — active plan
-- [`CURRENT_STATE.md`](CURRENT_STATE.md) — implementation and claim status
-- [`MANIFEST.json`](MANIFEST.json) — machine-readable documentation status
-- [`adr/`](adr/) — architecture decisions
-- [`architecture/`](architecture/) — state, process, and trust models
-- [`security/`](security/) — threat and release-claim boundaries
+- [`DESKTOP_PLAN-2026-08-29-d6.md`](DESKTOP_PLAN-2026-08-29-d6.md) — active plan
+- [`CURRENT_STATE.md`](CURRENT_STATE.md) — human-readable integrated state
+- [`MANIFEST.json`](MANIFEST.json) — documentation status and evidence links
 
-The previous d4 plan remains recoverable history. It is superseded by d5 and
-must not override current repository, origin, process, authority, revision, or
-network decisions.
+## d6 annexes
 
-The Android/mobile company repository `TrillionniumFoundation/trillionnium-os`
-is a sibling reference. It is not a source directory, workspace member,
-submodule, or default build dependency of the desktop product.
+- [`plan/PROJECT_TRUTH_AND_EVIDENCE.md`](plan/PROJECT_TRUTH_AND_EVIDENCE.md)
+- [`plan/GATE_CONTRACTS_AND_INVALIDATION.md`](plan/GATE_CONTRACTS_AND_INVALIDATION.md)
+- [`plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md`](plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md)
+- [`architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md`](architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md)
+- [`security/THREAT_MODEL_V2.md`](security/THREAT_MODEL_V2.md)
+- [`security/SECURITY_CONTROL_MATRIX.md`](security/SECURITY_CONTROL_MATRIX.md)
+- [`release/RELEASE_SECURITY_AND_QUALIFICATION.md`](release/RELEASE_SECURITY_AND_QUALIFICATION.md)
+
+The previous d5 and d4 plans remain recoverable history. They must not override
+d6 project, process, authority, evidence, revision, network, update, or release
+decisions.
+
+The Android/mobile company repository
+`TrillionniumFoundation/trillionnium-os` is a sibling reference, not a source
+directory, workspace member, submodule, or default build dependency. The exact
+reviewed reference and rejected mobile authorities are recorded in
+`manifests/upstream-reference-review.v1.json`.
