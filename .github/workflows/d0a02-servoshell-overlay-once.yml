@@ -19,60 +19,35 @@ jobs:
         with:
           ref: codex/d0a02-headed-runtime-v3
           fetch-depth: 0
-      - name: Move runtime overlay to dependency-complete servoshell package
+      - name: Remove optional tracing dependency from product runtime
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-
           source = Path('experiments/servo-headed-runtime/src/main.rs')
           text = source.read_text()
           if text.count('use tracing::warn;\n') != 1:
               raise SystemExit('expected one tracing warn import')
           text = text.replace('use tracing::warn;\n', '')
-          old_warning = 'warn!(?error, "failed to wake D0A-02 event loop");'
-          new_warning = 'eprintln!("failed to wake D0A-02 event loop: {error}");'
-          if text.count(old_warning) != 1:
-              raise SystemExit(f'expected one waker warning macro, got {text.count(old_warning)}')
-          source.write_text(text.replace(old_warning, new_warning))
-
-          workflow = Path('.github/workflows/servo-headed-runtime.yml')
-          text = workflow.read_text()
-          replacements = {
-              'rustfmt --check experiments/servo-headed-runtime/src/main.rs':
-                  'rustfmt --edition 2024 --check experiments/servo-headed-runtime/src/main.rs',
-              'servo-source/components/servo/examples/trillionnium_headed_runtime.rs':
-                  'servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs',
-              'servo-source/components/servo/examples/trillionnium_headed_fixture.html':
-                  'servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html',
-              '-p servo --example trillionnium_headed_runtime \\\n':
-                  '-p servoshell --example trillionnium_headed_runtime \\\n            --no-default-features --features bundled,js_jit,max_log_level \\\n',
-          }
-          for old, new in replacements.items():
-              count = text.count(old)
-              expected = 2 if (
-                  old.startswith('-p servo')
-                  or old.startswith('servo-source/components/servo/examples')
-              ) else 1
-              if count != expected:
-                  raise SystemExit(f'workflow anchor count {count}, expected {expected}: {old!r}')
-              text = text.replace(old, new)
-          workflow.write_text(text)
+          old = 'warn!(?error, "failed to wake D0A-02 event loop");'
+          new = 'eprintln!("failed to wake D0A-02 event loop: {error}");'
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one waker warning macro, got {text.count(old)}')
+          source.write_text(text.replace(old, new))
           PY
-          rm .github/workflows/d0a02-servoshell-overlay-once.yml
           rustup toolchain install 1.97.1 --profile minimal --component rustfmt
           RUSTUP_TOOLCHAIN=1.97.1 rustfmt --edition 2024 \
             experiments/servo-headed-runtime/src/main.rs
           RUSTUP_TOOLCHAIN=1.97.1 rustfmt --edition 2024 --check \
             experiments/servo-headed-runtime/src/main.rs
           git diff --check
-      - name: Commit servoshell runtime overlay correction
+      - name: Commit source-only correction
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "build: host headed runtime in exact-pin servoshell package"
+          git add experiments/servo-headed-runtime/src/main.rs
+          git commit -m "build: remove optional tracing dependency from headed runtime"
           git push origin HEAD:codex/d0a02-headed-runtime-v3
