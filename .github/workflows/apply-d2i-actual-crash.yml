@@ -1,0 +1,56 @@
+name: apply-d2i-actual-crash
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/d2i-actual-crash.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-d2i-actual-crash
+  cancel-in-progress: false
+
+jobs:
+  compose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact integration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+      - name: Apply actual crash proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/apply_d2i_actual_crash.py
+          rustfmt --edition 2024 runtime/servo/hepta_workspace_runtime.rs
+          shellcheck \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/qemu/run-d2i-boot-test.sh
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          grep -F 'opts.multiprocess = true' runtime/servo/hepta_workspace_runtime.rs
+          grep -F 'run_content_process(token)' runtime/servo/hepta_workspace_runtime.rs
+          grep -F 'ContentProcessTerminated' runtime/servo/hepta_workspace_runtime.rs
+          grep -F 'actual_content_process_crash_proven": true' \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
+          git diff --check
+      - name: Commit product and QEMU crash proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "trillionnium-d2i-crash"
+          git config user.email "d2i-crash@users.noreply.github.com"
+          git rm tools/apply_d2i_actual_crash.py
+          git add \
+            runtime/servo/hepta_workspace_runtime.rs \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/qemu/run-d2i-boot-test.sh
+          git diff --cached --check
+          git commit -m "feat(d2i): prove exact Servo content-process crash and recovery"
+          git push origin HEAD:codex/full-gap-closure-v2
