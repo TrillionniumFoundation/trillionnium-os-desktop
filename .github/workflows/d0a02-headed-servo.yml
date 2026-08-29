@@ -27,7 +27,6 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
-  SCCACHE_GHA_ENABLED: "true"
   CANDIDATE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
   TESTED_SHA: ${{ github.sha }}
@@ -183,6 +182,7 @@ jobs:
           rustup toolchain install "$channel" --profile minimal --component rustfmt
           RUSTC_WRAPPER= cargo +"$channel" install sccache --locked
           sccache --version
+          mkdir -p "$HOME/.cache/sccache"
           printf 'RUSTC_WRAPPER=sccache\n' >> "$GITHUB_ENV"
 
       - name: Restore exact-pin Servo build cache
@@ -203,9 +203,11 @@ jobs:
         run: |
           set -euo pipefail
           export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
+          mkdir -p /tmp/d0a02-headed
           rustfmt --edition 2024 components/servo/examples/hepta_workspace_runtime.rs
           cargo build --release --locked \
-            -p servo --example hepta_workspace_runtime
+            -p servo --example hepta_workspace_runtime \
+            2>&1 | tee /tmp/d0a02-headed/cargo-build.log
           test -x target/release/examples/hepta_workspace_runtime
 
       - name: Run headed workspace under an X11 compositor
@@ -213,7 +215,6 @@ jobs:
         run: |
           set -euo pipefail
           out=/tmp/d0a02-headed
-          rm -rf "$out"
           mkdir -p "$out"
           export DISPLAY=:99
           Xvfb "$DISPLAY" -screen 0 1280x800x24 -nolisten tcp \
