@@ -46,7 +46,7 @@ jobs:
             apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs
           git diff --check
 
-      - name: Validate source and feature boundaries
+      - name: Validate canonical and feature-gated source boundaries
         shell: bash
         run: |
           set -euo pipefail
@@ -62,6 +62,10 @@ jobs:
             packaging/debian/image/build-d1-image.sh \
             tests/qemu/run-d1-pipeline.sh
           cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
           cargo check --workspace --all-targets --all-features --locked
           cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
           cargo test --workspace --all-targets --all-features --locked
