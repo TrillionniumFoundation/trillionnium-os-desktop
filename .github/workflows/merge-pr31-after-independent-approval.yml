@@ -1,0 +1,170 @@
+name: merge-pr31-after-independent-approval
+
+on:
+  push:
+    branches: ["codex/d5-product-foundation"]
+    paths:
+      - ".github/workflows/merge-pr31-after-independent-approval.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: merge-pr31-after-independent-approval
+  cancel-in-progress: false
+
+jobs:
+  independently-enforced-merge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Revalidate exact candidate, permanent runs, approval and protected main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: "31"
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/$REPOSITORY"
+          out=/tmp/pr31-merge
+          mkdir -p "$out"
+          get() {
+            curl --fail --silent --show-error --retry 3 --retry-all-errors \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "$1" > "$2"
+          }
+          get "$api/pulls/$PR_NUMBER" "$out/pr-before.json"
+          head=$(jq -er '.head.sha' "$out/pr-before.json")
+          author=$(jq -er '.user.login' "$out/pr-before.json")
+          test "$(jq -r '.head.ref' "$out/pr-before.json")" = codex/full-gap-closure-v2
+          test "$(jq -r '.base.ref' "$out/pr-before.json")" = main
+          test "$(jq -r '.state' "$out/pr-before.json")" = open
+          test "$(jq -r '.draft' "$out/pr-before.json")" = false
+          test "$(jq -r '.mergeable' "$out/pr-before.json")" = true
+
+          get "$api/pulls/$PR_NUMBER/reviews?per_page=100" "$out/reviews.json"
+          get "$api/actions/runs?head_sha=$head&per_page=100" "$out/actions.json"
+          get "$api/branches/main" "$out/main.json"
+          test "$(jq -r '.protected' "$out/main.json")" = true
+
+          HEAD_SHA="$head" AUTHOR="$author" python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path('/tmp/pr31-merge')
+          reviews=json.loads((root/'reviews.json').read_text())
+          actions=json.loads((root/'actions.json').read_text()).get('workflow_runs',[])
+          head=os.environ['HEAD_SHA']; author=os.environ['AUTHOR']
+          effective={}
+          for review in sorted(reviews,key=lambda x:x.get('submitted_at') or ''):
+              user=review.get('user',{}); login=user.get('login')
+              if not login or login==author or user.get('type')=='Bot' or login.endswith('[bot]'):
+                  continue
+              effective[login]=review
+          approvals=sorted(login for login,r in effective.items() if r.get('state')=='APPROVED' and r.get('commit_id')==head)
+          rejections=sorted(login for login,r in effective.items() if r.get('state')=='CHANGES_REQUESTED')
+          if not approvals:
+              raise SystemExit('SECURITY_REVIEW_REQUIRED: no exact-head independent approval')
+          if rejections:
+              raise SystemExit(f'SECURITY_REVIEW_REQUIRED: active changes requested by {rejections}')
+          latest={}
+          for run in sorted(actions,key=lambda x:x.get('created_at') or ''):
+              latest[run.get('name')]=run
+          required=('desktop-ci','d2i-integrated-image','d3-browseractor','final-candidate-qualification')
+          missing=[name for name in required if name not in latest]
+          failed=[]
+          for name in required:
+              run=latest.get(name)
+              if run and (run.get('status')!='completed' or run.get('conclusion')!='success'):
+                  failed.append((name,run.get('status'),run.get('conclusion'),run.get('id')))
+          if missing or failed:
+              raise SystemExit(f'RESUME_REQUIRED: missing={missing} failed={failed}')
+          excluded=('merge-pr31-after-independent-approval','stabilize-','integrate-','repair-','harden-','finalize-','request-independent-review','publish-closure-snapshot')
+          other_bad=[]
+          for name,run in latest.items():
+              path=run.get('path') or ''
+              if any(fragment in (name or '') or fragment in path for fragment in excluded):
+                  continue
+              if run.get('status')!='completed' or run.get('conclusion') not in ('success','skipped','neutral'):
+                  other_bad.append((name,run.get('status'),run.get('conclusion'),run.get('id')))
+          if other_bad:
+              raise SystemExit(f'RESUME_REQUIRED: non-helper exact-head failures={other_bad}')
+          report={'head':head,'approvals':approvals,'rejections':rejections,
+                  'required_runs':{name:{'id':latest[name].get('id'),'status':latest[name].get('status'),'conclusion':latest[name].get('conclusion')} for name in required},
+                  'status':'READY_FOR_NON_AUTHOR_AUTOMATED_MERGE'}
+          (root/'premerge-decision.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          PY
+
+          # Re-fetch immediately before merge so approval and CI cannot be applied to
+          # a superseded candidate.
+          get "$api/pulls/$PR_NUMBER" "$out/pr-recheck.json"
+          test "$(jq -er '.head.sha' "$out/pr-recheck.json")" = "$head"
+          test "$(jq -er '.state' "$out/pr-recheck.json")" = open
+          printf '%s\n' "$head" > "$out/head-sha.txt"
+
+      - name: Merge through GitHub Actions bot with exact SHA precondition
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: "31"
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=/tmp/pr31-merge
+          head=$(cat "$out/head-sha.txt")
+          payload=$(jq -n --arg sha "$head" '{
+            sha:$sha,
+            merge_method:"merge",
+            commit_title:"Integrate d6 truth, D1/D2I and D3 exact-head candidate (#31)",
+            commit_message:"Merged by independent GitHub Actions enforcement after protected-main checks, exact-head permanent qualification and non-author approval. Production effects, fixed-hardware beta and signed-release claims remain closed."
+          }')
+          code=$(curl --silent --show-error --output "$out/merge-response.json" \
+            --write-out '%{http_code}' -X PUT \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$REPOSITORY/pulls/$PR_NUMBER/merge" \
+            -d "$payload")
+          test "$code" = 200 || { cat "$out/merge-response.json" >&2; exit 1; }
+          jq -e '.merged == true and (.sha | length == 40)' "$out/merge-response.json" >/dev/null
+
+      - name: Record merge outcome on PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: "31"
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=/tmp/pr31-merge
+          if [ -s "$out/merge-response.json" ]; then
+            body=$(jq -r 'if .merged then
+              "Protected merge completed by `github-actions[bot]`. Merge commit: `" + .sha + "`. Exact-main regression remains mandatory before integrated status promotion."
+              else "Fail-closed merge attempt did not complete: `" + (.message // "unknown") + "`." end' "$out/merge-response.json")
+          else
+            body='Fail-closed merge enforcement stopped before a merge request was sent.'
+          fi
+          jq -n --arg body "$body" '{body:$body}' > "$out/comment.json"
+          curl --fail --silent --show-error -X POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+            -d @"$out/comment.json" >/dev/null
+
+      - name: Upload merge receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr31-independent-merge-receipt-${{ github.sha }}
+          path: /tmp/pr31-merge
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 6
