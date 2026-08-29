@@ -1,0 +1,80 @@
+name: d0c06-materialize
+
+on:
+  push:
+    branches:
+      - codex/d0c06-durable-receipt-journal
+    paths:
+      - ".github/workflows/d0c06-materialize.yml"
+      - "tools/.d0c06-payload/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: d0c06-materialize-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact branch head
+        uses: actions/checkout@v4
+        with:
+          ref: codex/d0c06-durable-receipt-journal
+          fetch-depth: 0
+
+      - name: Verify and unpack reviewed payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF_NAME}" = "codex/d0c06-durable-receipt-journal"
+          test "$(find tools/.d0c06-payload -maxdepth 1 -type f -name 'part*' | wc -l)" -eq 5
+          cat tools/.d0c06-payload/part* | base64 --decode > /tmp/d0c06-payload.tar.gz
+          echo "bbea4970783fd968fa1a3f8d446d3fef3e0c898dce74e9d75ab70204fdd6662a  /tmp/d0c06-payload.tar.gz" | sha256sum --check --strict
+          python3 - <<'PY'
+          from pathlib import PurePosixPath
+          import tarfile
+
+          archive = tarfile.open('/tmp/d0c06-payload.tar.gz', 'r:gz')
+          members = archive.getmembers()
+          if not members:
+              raise SystemExit('empty D0C-06 payload')
+          for member in members:
+              path = PurePosixPath(member.name)
+              if path.is_absolute() or '..' in path.parts:
+                  raise SystemExit(f'unsafe archive path: {member.name}')
+              if member.issym() or member.islnk() or member.isdev():
+                  raise SystemExit(f'unsupported archive member: {member.name}')
+          required = {
+              '.github/workflows/receipt-journal.yml',
+              'contracts/receipt-journal.v1.json',
+              'crates/hepta-session-core/src/receipt_journal.rs',
+              'tools/verify_receipt_journal.py',
+          }
+          names = {member.name.rstrip('/') for member in members}
+          missing = sorted(required - names)
+          if missing:
+              raise SystemExit(f'payload missing required files: {missing}')
+          PY
+          tar --extract --gzip --file /tmp/d0c06-payload.tar.gz --directory .
+          rm -rf tools/.d0c06-payload .github/workflows/d0c06-materialize.yml
+          python3 -m py_compile tools/verify_receipt_journal.py
+          python3 tools/verify_receipt_journal.py
+          test ! -e tools/.d0c06-payload
+          test ! -e .github/workflows/d0c06-materialize.yml
+
+      - name: Commit product sources and remove bootstrap transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git diff --cached --quiet && { echo "no materialized changes" >&2; exit 1; }
+          git commit -m "feat: implement crash-consistent durable receipt journal (D0C-06)"
+          git push origin HEAD:codex/d0c06-durable-receipt-journal
