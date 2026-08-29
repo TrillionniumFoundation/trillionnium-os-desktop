@@ -97,7 +97,9 @@ jobs:
           cargo test --workspace --all-targets --locked
           cargo test --locked -p hepta-agent-portd --all-targets --all-features
           cargo run --locked -p hepta-browserd -- --self-check
-          cargo run --locked -p hepta-agent-portd -- --self-check
+          cargo run --locked -p hepta-agent-portd \
+            --bin hepta-agent-portd \
+            -- --self-check
           cargo run --locked -p hepta-agent-portd \
             --features fixture \
             --bin hepta-agent-port-fixture \
