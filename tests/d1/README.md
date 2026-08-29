@@ -30,9 +30,16 @@ The host filesystem tools are not taken from the mutable runner image. D1 pins
 upstream e2fsprogs `v1.47.2` to commit
 `c3cce4a07efefc62bc7fc57a678cb870af27d0f2`, builds it once into an isolated
 prefix, verifies the exact source checkout, and records SHA-256 digests for
-`mke2fs`, `e2fsck`, and `dumpe2fs`. Both candidates use those same binaries; no
-system-wide installation is modified.
+`mke2fs`, `e2fsck`, and `dumpe2fs`. Before either root build crosses the sudo
+boundary, the pipeline resolves canonical absolute paths for all three tools.
+The root builder requires those explicit bindings, verifies that they share one
+reviewed prefix, verifies that root's constrained PATH resolves to those exact
+files, and invokes the bound paths directly. A system-runner fallback is a hard
+failure rather than an alternate build mode.
 
-The permanent `d1-qemu-substrate` workflow runs directly on the tracked branch
-head. Transient dispatch or materialization workflows are not part of the
-candidate tree and cannot be used as evidence-bearing heads.
+The permanent `d1-final-qualification` workflow runs directly on the tracked
+branch head, validates all repository and D1 tests, performs both independent
+builds and QEMU acceptance, enforces the claim ceiling, and uploads the complete
+machine-readable evidence corpus. Transient dispatch, patch, materialization,
+or self-promotion workflows are not part of the candidate tree and cannot be
+used as evidence-bearing heads.
