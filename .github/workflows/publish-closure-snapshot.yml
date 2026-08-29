@@ -1,0 +1,260 @@
+name: publish-closure-snapshot
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/closure-snapshot.trigger"
+
+permissions:
+  actions: read
+  checks: read
+  contents: write
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: publish-closure-snapshot
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+
+      - name: Capture exact GitHub state
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: "31"
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/$REPOSITORY"
+          out=/tmp/closure-snapshot
+          raw="$out/raw"
+          mkdir -p "$raw"
+          source_sha=$(git rev-parse HEAD)
+          source_tree=$(git rev-parse HEAD^{tree})
+
+          get() {
+            url=$1
+            dest=$2
+            curl --fail --silent --show-error --retry 3 --retry-all-errors \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "$url" > "$dest"
+          }
+
+          get "$api/branches/main" "$raw/main.json"
+          get "$api/branches/codex/full-gap-closure-v2" "$raw/candidate.json"
+          get "$api/pulls/$PR_NUMBER" "$raw/pr31.json"
+          get "$api/pulls/$PR_NUMBER/reviews?per_page=100" "$raw/reviews.json"
+          get "$api/pulls/$PR_NUMBER/requested_reviewers" "$raw/requested-reviewers.json"
+          get "$api/actions/runs?head_sha=$source_sha&per_page=100" "$raw/actions.json"
+          get "$api/commits/$source_sha/check-runs?per_page=100" "$raw/check-runs.json"
+          get "$api/issues?state=open&per_page=100" "$raw/open-items.json"
+          get "$api/pulls?state=open&per_page=100" "$raw/open-prs.json"
+          protection_http=$(curl --silent --show-error --output "$raw/main-protection.json" \
+            --write-out '%{http_code}' \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api/branches/main/protection")
+          printf '%s\n' "$protection_http" > "$raw/main-protection.http"
+
+          SOURCE_SHA="$source_sha" SOURCE_TREE="$source_tree" PROTECTION_HTTP="$protection_http" \
+          python3 - <<'PY'
+          from __future__ import annotations
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          out = Path('/tmp/closure-snapshot')
+          raw = out / 'raw'
+          load = lambda name: json.loads((raw / name).read_text())
+          main = load('main.json')
+          candidate = load('candidate.json')
+          pr = load('pr31.json')
+          reviews = load('reviews.json')
+          requested = load('requested-reviewers.json')
+          actions = load('actions.json').get('workflow_runs', [])
+          checks = load('check-runs.json').get('check_runs', [])
+          open_items = load('open-items.json')
+          open_prs = load('open-prs.json')
+          source_sha = os.environ['SOURCE_SHA']
+          source_tree = os.environ['SOURCE_TREE']
+          protection_http = int(os.environ['PROTECTION_HTTP'])
+
+          author = pr.get('user', {}).get('login')
+          effective = {}
+          for review in sorted(reviews, key=lambda r: r.get('submitted_at') or ''):
+              login = review.get('user', {}).get('login')
+              user_type = review.get('user', {}).get('type')
+              if not login or login == author or user_type == 'Bot' or login.endswith('[bot]'):
+                  continue
+              effective[login] = review
+          exact_approvals = sorted(
+              login for login, review in effective.items()
+              if review.get('state') == 'APPROVED' and review.get('commit_id') == source_sha
+          )
+          active_rejections = sorted(
+              login for login, review in effective.items()
+              if review.get('state') == 'CHANGES_REQUESTED'
+          )
+
+          runs_by_name = {}
+          for run in sorted(actions, key=lambda r: r.get('created_at') or ''):
+              runs_by_name[run.get('name') or run.get('path') or str(run.get('id'))] = {
+                  'id': run.get('id'),
+                  'path': run.get('path'),
+                  'status': run.get('status'),
+                  'conclusion': run.get('conclusion'),
+                  'event': run.get('event'),
+                  'head_sha': run.get('head_sha'),
+                  'created_at': run.get('created_at'),
+                  'updated_at': run.get('updated_at'),
+                  'html_url': run.get('html_url'),
+              }
+          check_summary = [
+              {
+                  'name': item.get('name'),
+                  'status': item.get('status'),
+                  'conclusion': item.get('conclusion'),
+                  'app': item.get('app', {}).get('slug'),
+                  'details_url': item.get('details_url'),
+              }
+              for item in checks
+          ]
+
+          def run_state(name: str) -> str:
+              run = runs_by_name.get(name)
+              if run is None:
+                  return 'MISSING'
+              if run['status'] != 'completed':
+                  return run['status'].upper()
+              return (run['conclusion'] or 'UNKNOWN').upper()
+
+          required = [
+              'desktop-ci',
+              'd2i-integrated-image',
+              'd3-browseractor',
+              'independent-review-gate',
+          ]
+          required_states = {name: run_state(name) for name in required}
+          exact_head_match = candidate.get('commit', {}).get('sha') == source_sha
+          review_gate = bool(exact_approvals) and not active_rejections
+          branch_protected = protection_http == 200
+          all_required_green = all(value == 'SUCCESS' for value in required_states.values())
+
+          report = {
+              'schema': 'trillionnium.desktop.live-closure-snapshot.v1',
+              'captured_at': datetime.now(timezone.utc).isoformat(),
+              'repository': 'TrillionniumFoundation/trillionnium-os-desktop',
+              'source': {
+                  'branch': 'codex/full-gap-closure-v2',
+                  'sha': source_sha,
+                  'tree_sha': source_tree,
+                  'remote_branch_sha': candidate.get('commit', {}).get('sha'),
+                  'exact_head_match': exact_head_match,
+              },
+              'main': {
+                  'sha': main.get('commit', {}).get('sha'),
+                  'protected': branch_protected,
+                  'protection_http': protection_http,
+              },
+              'pr31': {
+                  'state': pr.get('state'),
+                  'draft': pr.get('draft'),
+                  'merged': pr.get('merged'),
+                  'mergeable': pr.get('mergeable'),
+                  'mergeable_state': pr.get('mergeable_state'),
+                  'base_ref': pr.get('base', {}).get('ref'),
+                  'base_sha': pr.get('base', {}).get('sha'),
+                  'head_ref': pr.get('head', {}).get('ref'),
+                  'head_sha': pr.get('head', {}).get('sha'),
+                  'author': author,
+                  'requested_reviewers': sorted(r.get('login') for r in requested.get('users', []) if r.get('login')),
+                  'requested_teams': sorted(r.get('slug') for r in requested.get('teams', []) if r.get('slug')),
+                  'exact_head_independent_approvals': exact_approvals,
+                  'active_changes_requested': active_rejections,
+                  'review_gate_pass': review_gate,
+              },
+              'exact_head_workflows': runs_by_name,
+              'required_workflow_states': required_states,
+              'check_runs': check_summary,
+              'open_pull_requests': [
+                  {'number': item.get('number'), 'title': item.get('title'), 'draft': item.get('draft'),
+                   'head_sha': item.get('head', {}).get('sha'), 'base_ref': item.get('base', {}).get('ref')}
+                  for item in open_prs
+              ],
+              'open_issues': [
+                  {'number': item.get('number'), 'title': item.get('title')}
+                  for item in open_items if 'pull_request' not in item
+              ],
+              'closure_predicates': {
+                  'candidate_exact_head_stable': exact_head_match,
+                  'required_exact_head_workflows_green': all_required_green,
+                  'independent_review_green': review_gate,
+                  'main_branch_protected': branch_protected,
+                  'pr31_mergeable': pr.get('mergeable') is True,
+              },
+              'outcome': (
+                  'MODULE_CLOSED_CANDIDATE'
+                  if exact_head_match and all_required_green and review_gate and branch_protected and pr.get('mergeable') is True
+                  else 'RESUME_REQUIRED'
+              ),
+          }
+          (out / 'closure-snapshot.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          lines = [
+              '# TrillionniumOS Desktop live closure snapshot',
+              '',
+              f"- Captured: `{report['captured_at']}`",
+              f"- Candidate: `{source_sha}`",
+              f"- Main: `{report['main']['sha']}`",
+              f"- PR #31: state=`{report['pr31']['state']}`, draft=`{report['pr31']['draft']}`, mergeable=`{report['pr31']['mergeable']}`",
+              f"- Exact-head independent approvals: `{', '.join(exact_approvals) or 'none'}`",
+              f"- Active changes requested: `{', '.join(active_rejections) or 'none'}`",
+              f"- Main branch protected: `{branch_protected}`",
+              f"- Outcome: `{report['outcome']}`",
+              '',
+              '## Required exact-head workflows',
+              '',
+          ]
+          lines.extend(f"- `{name}`: `{state}`" for name, state in required_states.items())
+          lines.extend(['', '## Open issues', ''])
+          lines.extend(f"- #{item['number']} {item['title']}" for item in report['open_issues'])
+          (out / 'closure-snapshot.md').write_text('\n'.join(lines) + '\n')
+
+          sentinel = out / 'sentinels'
+          sentinel.mkdir()
+          for key, value in report['closure_predicates'].items():
+              (sentinel / f"{key}={'PASS' if value else 'FAIL'}").write_text(source_sha + '\n')
+          for name, state in required_states.items():
+              safe = name.replace('/', '_')
+              (sentinel / f"workflow-{safe}={state}").write_text(source_sha + '\n')
+          (sentinel / f"outcome={report['outcome']}").write_text(source_sha + '\n')
+          PY
+
+      - name: Publish immutable snapshot view to dedicated branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "trillionnium-closure-snapshot"
+          git config user.email "closure-snapshot@users.noreply.github.com"
+          git checkout --orphan closure-snapshot-work
+          git rm -rf . >/dev/null 2>&1 || true
+          cp -a /tmp/closure-snapshot/closure-snapshot.json .
+          cp -a /tmp/closure-snapshot/closure-snapshot.md .
+          cp -a /tmp/closure-snapshot/sentinels .
+          git add closure-snapshot.json closure-snapshot.md sentinels
+          git commit -m "evidence: publish exact-head closure snapshot for $GITHUB_SHA"
+          git push --force origin HEAD:codex/closure-snapshot-live
