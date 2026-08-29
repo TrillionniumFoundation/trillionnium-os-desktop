@@ -1,0 +1,20 @@
+[Unit]
+Description=TrillionniumOS D1 authorized AgentPort fixture
+After=hepta-browserd-agent.socket
+Requires=hepta-browserd-agent.socket
+
+[Service]
+Type=oneshot
+User=hepta-agent
+Group=hepta-agent
+RuntimeDirectory=hepta-agent
+RuntimeDirectoryMode=0700
+ExecStart=/usr/local/libexec/trillionnium-d1-agent-fixture-launcher
+TimeoutStartSec=150s
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+RestrictAddressFamilies=AF_UNIX
+LockPersonality=yes
+MemoryDenyWriteExecute=yes

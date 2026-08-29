@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 publish = false
+default-run = "hepta-agent-portd"
 
 [dependencies]
 hepta-agent-port = { path = "../../crates/hepta-agent-port" }
@@ -17,3 +18,7 @@ libc = "=0.2.186"
 [[bin]]
 name = "hepta-agent-portd"
 path = "src/main.rs"
+
+[[bin]]
+name = "hepta-agent-d1-fixture"
+path = "src/bin/hepta-agent-d1-fixture.rs"
