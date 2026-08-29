@@ -11,11 +11,17 @@ behavior, per-connection teardown, kill/recovery, absence of the test-only enabl
 marker from the release candidate, and clean poweroff. It does not start Servo or
 claim a visible desktop frame.
 
-The current exact-head run additionally verifies that target Debian `tmpfiles`
-executes with an explicitly mounted and subsequently unmounted procfs, avoiding
-host/target systemd version coupling during rootfs construction. A sudo-hosted
-`mmdebstrap` build may map rootfs directory and symlink metadata to the invoking
-runner identity; the builder now normalizes only that unambiguous metadata back
-to guest `0:0`, installs the repository overlay explicitly as `0:0`, refuses to
-rewrite regular or special nodes, rejects guest UID/GID collisions, and asserts
-trusted rootfs path ownership before target `sysusers` and `tmpfiles` execute.
+The builder executes target Debian `tmpfiles` with an explicitly mounted and
+subsequently unmounted procfs, avoiding host/target systemd version coupling. A
+sudo-hosted `mmdebstrap` build may map rootfs directory and symlink metadata to
+the invoking runner identity; only that unambiguous metadata is normalized back
+to guest `0:0`, while regular and special nodes fail closed.
+
+Both build candidates first produce the same sorted, timestamp-normalized,
+numeric-owner rootfs tar. With e2fsprogs 1.47.1 or later, `mke2fs` consumes that
+tar directly using the fixed filesystem UUID, directory hash seed, label, epoch,
+inode size, block size, journal initialization, and inode-table initialization.
+The resulting ext4 image must pass read-only `e2fsck`, and its superblock header
+is retained as bounded diagnostics. An unpacked directory is not accepted as the
+ext4 population input because host directory enumeration can perturb inode
+allocation despite identical file content.
