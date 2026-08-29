@@ -79,13 +79,19 @@ jobs:
                   encoding='utf-8',
               )
           PY
-          rm -rf tools/.d0c06-payload .github/workflows/d0c06-materialize.yml
+          # GitHub's branch token can write product source but cannot create or
+          # delete workflow files. Keep the bootstrap workflow unchanged and
+          # let the repository-authorized connector add the permanent workflow
+          # and remove this bootstrap in a separate reviewed commit.
+          rm -f .github/workflows/receipt-journal.yml
+          rm -rf tools/.d0c06-payload
           python3 -m py_compile tools/verify_receipt_journal.py
           python3 tools/verify_receipt_journal.py
           test ! -e tools/.d0c06-payload
-          test ! -e .github/workflows/d0c06-materialize.yml
+          test -e .github/workflows/d0c06-materialize.yml
+          test ! -e .github/workflows/receipt-journal.yml
 
-      - name: Commit product sources and remove bootstrap transport
+      - name: Commit product sources and remove payload transport
         shell: bash
         run: |
           set -euo pipefail
