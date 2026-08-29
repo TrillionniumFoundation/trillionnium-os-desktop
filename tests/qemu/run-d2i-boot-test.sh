@@ -164,7 +164,11 @@ for key in [
 ]:
     assert acceptance[key] is True, (key, acceptance.get(key))
 assert acceptance["network_enabled"] is False, acceptance
-assert acceptance["actual_content_process_crash_proven"] is False, acceptance
+assert acceptance["actual_content_process_crash_proven"] is True, acceptance
+assert acceptance["actual_crash_callbacks"] >= 1, acceptance
+assert runtime["actual_content_process_crash_proven"] is True, runtime
+assert runtime["actual_crash_callbacks"] >= 1, runtime
+assert runtime["content_process_termination_observed"] is True, runtime
 assert acceptance["release_ready"] is False, acceptance
 assert runtime["status"] == "PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY", runtime
 assert runtime["content_surface_limit"] == 1, runtime
@@ -218,7 +222,7 @@ result = {
     "ime_path_exercised": True,
     "product_agent_port_default_disabled": True,
     "network_enabled": False,
-    "actual_content_process_crash_proven": False,
+    "actual_content_process_crash_proven": True,
     "secure_boot_qualified": False,
     "release_ready": False
   }

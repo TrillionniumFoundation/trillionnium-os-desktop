@@ -68,6 +68,11 @@ screenshot_sha=$(sha256sum "$screenshot" | awk '{print $1}')
 wayland_sha=$(sha256sum /run/hepta-desktop/weston.log | awk '{print $1}')
 actual_crash_callbacks=$(sed -n 's/.*"actual_crash_callbacks": \([0-9][0-9]*\).*/\1/p' "$runtime" | head -n1)
 actual_crash_callbacks=${actual_crash_callbacks:-0}
+(( actual_crash_callbacks >= 1 )) || fail actual_crash_callback_missing
+grep -Eq '"actual_content_process_crash_proven"[[:space:]]*:[[:space:]]*true' "$runtime" \
+  || fail actual_content_process_crash_not_proven
+grep -Eq '"content_process_termination_observed"[[:space:]]*:[[:space:]]*true' "$runtime" \
+  || fail content_process_termination_not_observed
 
 cat > "$result" <<EOF
 {
@@ -90,7 +95,7 @@ cat > "$result" <<EOF
   "recovery_screenshot_sha256": "$screenshot_sha",
   "wayland_log_sha256": "$wayland_sha",
   "actual_crash_callbacks": $actual_crash_callbacks,
-  "actual_content_process_crash_proven": false,
+  "actual_content_process_crash_proven": true,
   "release_ready": false
 }
 EOF
