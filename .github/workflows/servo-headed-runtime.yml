@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 300
     steps:
-      - name: Check out TrillionniumOS Desktop candidate
+      - name: Check out desktop candidate
         uses: actions/checkout@v4
 
       - name: Check out exact Servo source pin
@@ -66,11 +66,10 @@ jobs:
           ledger = json.loads(Path('manifests/servo-patch-ledger.v1.json').read_text())
           assert lock['commit'] == expected
           assert ledger['servo_commit'] == expected
-          assert ledger['patch_count'] == 0
-          assert ledger['patches'] == []
+          assert ledger['patch_count'] == 0 and ledger['patches'] == []
           PY
 
-      - name: Install Servo headed runtime dependencies
+      - name: Install headed runtime dependencies
         shell: bash
         run: |
           set -euo pipefail
@@ -100,7 +99,7 @@ jobs:
           RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL" rustc --version --verbose
           RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL" cargo --version --verbose
 
-      - name: Restore exact-pin Cargo and target cache
+      - name: Restore exact-pin Cargo cache
         uses: actions/cache@v4
         with:
           path: |
@@ -112,28 +111,30 @@ jobs:
             servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
             servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
 
-      - name: Install product-owned example overlay
+      - name: Install product-owned servoshell example overlay
         shell: bash
         run: |
           set -euo pipefail
           export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
-          rustfmt --check experiments/servo-headed-runtime/src/main.rs
-          cp experiments/servo-headed-runtime/src/main.rs \
-            servo-source/components/servo/examples/trillionnium_headed_runtime.rs
-          cp experiments/servo-headed-runtime/fixture/index.html \
-            servo-source/components/servo/examples/trillionnium_headed_fixture.html
+          rustfmt --edition 2024 --check experiments/servo-headed-runtime/src/main.rs
+          install -D -m 0644 experiments/servo-headed-runtime/src/main.rs \
+            servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs
+          install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
+            servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 
-      - name: Compile product-owned exact-pin headed runtime
+      - name: Compile exact-pin headed runtime
         shell: bash
         run: |
           set -euo pipefail
           export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
           mkdir -p artifacts/servo-headed-runtime
           cargo check --locked --manifest-path servo-source/Cargo.toml \
-            -p servo --example trillionnium_headed_runtime \
+            -p servoshell --example trillionnium_headed_runtime \
+            --no-default-features --features bundled,js_jit,max_log_level \
             2>&1 | tee artifacts/servo-headed-runtime/cargo-check.log
           cargo build --locked --manifest-path servo-source/Cargo.toml \
-            -p servo --example trillionnium_headed_runtime \
+            -p servoshell --example trillionnium_headed_runtime \
+            --no-default-features --features bundled,js_jit,max_log_level \
             2>&1 | tee artifacts/servo-headed-runtime/cargo-build.log
 
       - name: Run one-window local-fixture crash-and-recovery corpus
@@ -145,8 +146,7 @@ jobs:
           export HEPTA_D0A02_OUTPUT="$output"
           export RUST_BACKTRACE=1
 
-          Xvfb :99 -screen 0 1280x900x24 -nolisten tcp \
-            >"$output/xvfb.log" 2>&1 &
+          Xvfb :99 -screen 0 1280x900x24 -nolisten tcp >"$output/xvfb.log" 2>&1 &
           xvfb_pid=$!
           app_pid=
           cleanup() {
@@ -168,7 +168,6 @@ jobs:
           servo-source/target/debug/examples/trillionnium_headed_runtime \
             >"$output/runtime.log" 2>&1 &
           app_pid=$!
-
           for _ in $(seq 1 600); do
             [[ -f "$output/input-ready" ]] && break
             kill -0 "$app_pid" 2>/dev/null || {
@@ -183,10 +182,14 @@ jobs:
           test -n "$window_id"
           xwininfo -id "$window_id" >"$output/xwininfo.txt"
           xdotool windowfocus --sync "$window_id"
+          xdotool mousemove --window "$window_id" 200 132
+          xdotool click --window "$window_id" 1
+          xdotool key --window "$window_id" k
           xdotool mousemove --window "$window_id" 400 132
           xdotool click --window "$window_id" 1
           xdotool click --window "$window_id" 5
-          xdotool key --window "$window_id" k
+          xdotool mousemove --window "$window_id" 200 132
+          xdotool click --window "$window_id" 1
 
           ps -eo pid,ppid,stat,args >"$output/process-topology.txt"
           timeout 180 tail --pid="$app_pid" -f /dev/null
@@ -195,7 +198,7 @@ jobs:
           app_pid=
           test "$app_status" -eq 0
 
-      - name: Enforce headed runtime evidence and claim ceiling
+      - name: Enforce evidence and claim ceiling
         shell: bash
         run: |
           set -euo pipefail
@@ -203,7 +206,6 @@ jobs:
           from pathlib import Path
           import hashlib
           import json
-
           root = Path('artifacts/servo-headed-runtime/runtime')
           path = root / 'runtime-result.json'
           report = json.loads(path.read_text())
@@ -212,13 +214,16 @@ jobs:
           assert report['window_created'] is True
           assert report['trusted_chrome_separate_from_content'] is True
           assert report['logical_content_webview_peak'] == 1
-          assert report['initial_generation'] == 1
-          assert report['recovery_generation'] == 2
-          assert report['chrome_initial_pixels_verified'] is True
-          assert report['chrome_crash_pixels_verified'] is True
-          assert report['chrome_recovery_pixels_verified'] is True
+          assert report['initial_generation'] == 1 and report['recovery_generation'] == 2
+          assert all(report[key] is True for key in [
+              'chrome_initial_pixels_verified',
+              'chrome_crash_pixels_verified',
+              'chrome_recovery_pixels_verified',
+              'content_crash_observed',
+              'trusted_window_survived_content_crash',
+          ])
           assert report['native_pointer_events'] > 0
-          assert report['native_button_events'] >= 2
+          assert report['native_button_events'] >= 4
           assert report['native_wheel_events'] > 0
           assert report['native_keyboard_events'] >= 2
           assert report['synthetic_ime_composition_events'] == 3
@@ -226,25 +231,17 @@ jobs:
           assert report['input_method_controls'] > 0
           assert report['popup_requests_denied'] > 0
           assert report['external_navigation_requests_denied'] > 0
-          assert report['content_crash_observed'] is True
-          assert report['trusted_window_survived_content_crash'] is True
 
           initial = report['initial_page_evidence']
-          assert initial['generation'] == 1
-          assert initial['loaded'] is True
-          assert initial['pointerMoves'] > 0
-          assert initial['pointerDowns'] > 0
-          assert initial['clicks'] > 0
-          assert initial['wheels'] > 0
+          assert initial['generation'] == 1 and initial['loaded'] is True
+          assert initial['pointerMoves'] > 0 and initial['pointerDowns'] > 0
+          assert initial['clicks'] > 0 and initial['wheels'] > 0
           assert 'k' in [str(item).lower() for item in initial['keyDowns']]
-          states = [item[0] for item in initial['composition']]
-          assert states[-3:] == ['start', 'update', 'end']
+          assert [item[0] for item in initial['composition']][-3:] == ['start', 'update', 'end']
           assert initial['popupAttempted'] is True
           assert initial['externalNavigationAttempted'] is True
-
           recovery = report['recovery_page_evidence']
-          assert recovery['generation'] == 2
-          assert recovery['loaded'] is True
+          assert recovery['generation'] == 2 and recovery['loaded'] is True
 
           authority = report['authority']
           assert authority['fixture_listener_loopback_only'] is True
@@ -285,8 +282,8 @@ jobs:
         shell: bash
         run: |
           rm -f \
-            servo-source/components/servo/examples/trillionnium_headed_runtime.rs \
-            servo-source/components/servo/examples/trillionnium_headed_fixture.html
+            servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
+            servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
           test -z "$(git -C servo-source status --porcelain=v1)"
 
       - name: Validate tracked desktop repository
@@ -299,7 +296,7 @@ jobs:
           git archive --format=tar HEAD | tar -xf - -C "$validation_root"
           python3 "$validation_root/tools/validate_repository.py"
 
-      - name: Upload D0A-02 headed runtime evidence
+      - name: Upload headed runtime evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
