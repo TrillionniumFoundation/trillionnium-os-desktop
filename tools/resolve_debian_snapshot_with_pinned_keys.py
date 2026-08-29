@@ -121,6 +121,7 @@ def build_keyring(
         effective = run(
             [
                 "curl",
+                "--silent",
                 "--fail",
                 "--show-error",
                 "--location",
