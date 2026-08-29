@@ -130,10 +130,20 @@ def check_truth_alignment() -> None:
     for package in completed:
         if package not in gate_id_set:
             fail(f"completed package {package} is absent from gate registry")
+    gate_status_by_id = {
+        entry["id"]: entry.get("status")
+        for entry in gate_list
+        if isinstance(entry, dict) and isinstance(entry.get("id"), str)
+    }
+    for package in completed:
+        if gate_status_by_id.get(package) != "INTEGRATED_AND_EXACT_MAIN_VALIDATED":
+            fail(f"completed package {package} is not integrated-and-main-validated in gate registry")
+
     candidates = project.get("source_candidate_work_packages", [])
     if not isinstance(candidates, list):
         fail("project-state source candidates is not a list")
         candidates = []
+    candidate_view: list[dict[str, Any]] = []
     for candidate in candidates:
         if not isinstance(candidate, dict):
             fail("project-state contains a non-object source candidate")
@@ -144,8 +154,23 @@ def check_truth_alignment() -> None:
             fail(f"candidate package {package!r} is absent from gate registry")
         if status not in vocabulary:
             fail(f"candidate package {package!r} has unknown status {status!r}")
+        if gate_status_by_id.get(package) != status:
+            fail(f"candidate package {package!r} status disagrees with gate registry")
         if package in completed:
             fail(f"candidate package {package} is also listed as integrated complete")
+        candidate_view.append({
+            "id": package,
+            "branch": candidate.get("branch"),
+            "pr": candidate.get("pr"),
+            "status": status,
+        })
+
+    repository_candidates = repository.get("source_candidate_work_packages", [])
+    if repository_candidates != candidates:
+        fail("repository-state source candidates disagree with project-state")
+    docs_candidates = docs.get("active_candidates", [])
+    if docs_candidates != candidate_view:
+        fail("docs manifest active candidates disagree with project-state")
 
     required_nonclaims = {
         "headed_servo_integrated",
@@ -159,6 +184,12 @@ def check_truth_alignment() -> None:
     missing = sorted(required_nonclaims - nonclaims)
     if missing:
         fail(f"project-state is missing required non-claims: {missing}")
+    if set(repository.get("not_claimed", [])) != nonclaims:
+        fail("repository-state non-claims disagree with project-state")
+
+    policy = project.get("evidence_binding_policy", {})
+    if not isinstance(policy, dict) or not policy or any(value is not True for value in policy.values()):
+        fail("project-state evidence binding policy is not fully fail-closed")
 
     require_text(PLAN_PATH, [PLAN_REVISION, INTEGRATED_STAGE, "D1", "D0A-02", "D9"])
     require_text("docs/DESKTOP_PLAN.md", [Path(PLAN_PATH).name, PLAN_REVISION, INTEGRATED_STAGE])
