@@ -1,13 +1,11 @@
 # Product manifests
 
 These files record selected and locked product inputs and explicit blockers.
-An input lock does not prove a built or booted product; claim ceilings remain
-explicit and fail closed.
+A file may intentionally state that a required lock is unresolved; this is a
+fail-closed stage gate and not a completed image claim.
 
-- `repository-state.json` — implementation, validation and non-claim status
+- `repository-state.json` — implementation and non-claim status
 - `servo.lock.json` — pinned Servo compatibility-spike commit
 - `rust-toolchain.lock.json` — Rust compiler/tool components
-- `debian-base.selection.json` — selected Debian base and canonical lock pointer
-- `debian-snapshot.requirements.v1.json` — signed snapshot and resolver policy
-- `debian-snapshot.lock.v1.json` — exact signed InRelease and package closure
+- `debian-base.selection.json` — selected base and unresolved snapshot fields
 - `product-boundary.json` — desktop/mobile dependency firewall
