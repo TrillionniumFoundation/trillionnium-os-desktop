@@ -14,9 +14,19 @@ are denied.
 
 The runtime corpus records content and full-workspace screenshots, native X11
 pointer/button/wheel/keyboard forwarding, Servo IME composition, process
-topology, a test-only multiprocess content panic, trusted-window survival, and
-one replacement content generation. It does not start WebDriver, BrowserActor,
-AgentPort, external browsing, persistent credentials, or product authority.
+topology, a real multiprocess content-child termination, trusted-window
+survival, and one replacement content generation. It does not start WebDriver,
+BrowserActor, AgentPort, external browsing, persistent credentials, or product
+authority.
+
+The crash injector does not call a privileged DOM helper or treat a caught
+script-thread panic as a process crash. The trusted parent enumerates `/proc`
+and requires exactly one direct child whose canonical executable is identical
+to the parent binary and whose NUL-delimited command line contains
+`--content-process`. Only that PID is recorded and sent `SIGKILL`; zero or
+multiple candidates fail closed. Servo must then surface `notify_crashed`, the
+parent-owned window and trusted chrome must remain alive, and generation 2 must
+be created through the normal `WebViewBuilder` path.
 
 Every asynchronous `WebViewDelegate` transition that can satisfy or advance a
 qualification predicate explicitly posts `AppEvent::Drive`. This includes input
