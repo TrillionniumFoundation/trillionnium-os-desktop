@@ -203,13 +203,15 @@ jobs:
           print(f"repository={first('repository', 'repo', 'url')}")
           print(f"revision={first('commit', 'revision', 'rev', 'git_revision')}")
           PY
+          revision="$(jq -er '.commit // .revision // .servo.commit // .servo.revision' manifests/servo.lock.json)"
+          test -n "$revision"
           git clone --filter=blob:none --no-checkout \
             "$(python3 -c 'import json; d=json.load(open("manifests/servo.lock.json")); print(d.get("repository") or d.get("servo",{}).get("repository"))')" \
             /tmp/servo
           git -C /tmp/servo fetch --depth=1 origin \
-            "${{ steps.servo-pin.outputs.revision }}"
+            "$revision"
           git -C /tmp/servo checkout --detach FETCH_HEAD
-          test "$(git -C /tmp/servo rev-parse HEAD)" = "${{ steps.servo-pin.outputs.revision }}"
+          test "$(git -C /tmp/servo rev-parse HEAD)" = "$revision"
           test -z "$(git -C /tmp/servo status --porcelain=v1)"
           cp runtime/servo/hepta_workspace_runtime.rs \
             /tmp/servo/components/servo/examples/hepta_workspace_runtime.rs
