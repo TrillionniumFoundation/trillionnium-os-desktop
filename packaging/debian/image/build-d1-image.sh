@@ -230,7 +230,16 @@ if ! chroot "$rootfs" getent passwd hepta-desktop >/dev/null; then
     hepta-desktop
 fi
 chroot "$rootfs" /usr/sbin/usermod --lock root
+install -d -m 0555 "$rootfs/proc"
+mount --types proc proc "$rootfs/proc"
+set +e
 chroot "$rootfs" /usr/bin/systemd-tmpfiles --create
+tmpfiles_status=$?
+set -e
+umount "$rootfs/proc"
+if (( tmpfiles_status != 0 )); then
+  exit "$tmpfiles_status"
+fi
 install -d -o 1000 -g 1000 -m 0700 "$rootfs/run/hepta-desktop"
 rm -f "$rootfs/etc/hepta/enable-agent-port"
 rm -f "$rootfs/run/hepta/browserd/agent.sock"
