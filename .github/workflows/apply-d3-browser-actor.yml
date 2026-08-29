@@ -1,0 +1,106 @@
+name: apply-d3-browser-actor
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/d3-browser-actor.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-d3-browser-actor
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Check out exact integration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+
+      - name: Reconstruct and verify exact D3 source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find staging -maxdepth 1 -type f -name 'd3-upload.part*' | wc -l)" -eq 7
+          cat staging/d3-upload.part00 \
+              staging/d3-upload.part01 \
+              staging/d3-upload.part02 \
+              staging/d3-upload.part03 \
+              staging/d3-upload.part04 \
+              staging/d3-upload.part05 \
+              staging/d3-upload.part06 \
+            | base64 --decode > /tmp/d3-upload.tar.gz
+          printf '%s  %s\n' \
+            046ca843cd5b3830b41fe5a9ea24d83109c25ac789579bd37fe47edc016188be \
+            /tmp/d3-upload.tar.gz \
+            | sha256sum --check --strict
+          tar --extract --gzip --file /tmp/d3-upload.tar.gz --directory .
+          git diff --check
+
+      - name: Install exact Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Validate D3 source, product boundary, and all Rust graphs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all
+          cargo fmt --all --check
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo run --locked -p hepta-browserd -- --self-check
+          grep -F 'pub struct BrowserActor' crates/hepta-browser-actor/src/lib.rs
+          grep -F 'impl BrowserRequestHandler for BrowserActor' crates/hepta-browser-actor/src/lib.rs
+          grep -F 'impl OperationLifecycleObserver for ReceiptLifecycleObserver' \
+            crates/hepta-browser-actor/src/lib.rs
+          grep -F 'serve_one_with_observer' crates/hepta-agent-port/src/lib.rs
+          grep -F 'external_effect_authority' contracts/browser-actor.v1.json
+          git diff --check
+
+      - name: Commit validated D3 product source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "trillionnium-d3-actor"
+          git config user.email "d3-actor@users.noreply.github.com"
+          git rm staging/d3-upload.part00 \
+                 staging/d3-upload.part01 \
+                 staging/d3-upload.part02 \
+                 staging/d3-upload.part03 \
+                 staging/d3-upload.part04 \
+                 staging/d3-upload.part05 \
+                 staging/d3-upload.part06
+          git add \
+            Cargo.toml Cargo.lock \
+            apps/hepta-browserd/Cargo.toml \
+            apps/hepta-browserd/src/lib.rs \
+            contracts/browser-actor.v1.json \
+            crates/hepta-agent-port/src/lib.rs \
+            crates/hepta-browser-actor/Cargo.toml \
+            crates/hepta-browser-actor/src/lib.rs \
+            docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md \
+            manifests/cargo-external-allowlist.json \
+            tools/validate_repository.py
+          git diff --cached --check
+          git commit -m "feat(d3): add PageOwner BrowserActor principal and receipt core"
+          git push origin HEAD:codex/full-gap-closure-v2
