@@ -14,8 +14,8 @@ use std::io::{ErrorKind, Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::rc::{Rc, Weak};
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::Duration;
 
@@ -25,10 +25,10 @@ use servo::{
     CompositionEvent, CompositionState, CreateNewWebViewRequest, DeviceIntPoint, DeviceIntRect,
     DeviceIntSize, DevicePoint, EmbedderControl, EventLoopWaker, ImeEvent, InputEvent,
     InputEventId, InputEventResult, JSValue, Key, KeyState, KeyboardEvent, LoadStatus,
-    MouseButton as ServoMouseButton, MouseButtonAction, MouseButtonEvent, MouseMoveEvent,
-    NavigationRequest, NamedKey, OffscreenRenderingContext, Opts, Preferences, RenderingContext,
-    Servo, ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WheelDelta, WheelEvent,
-    WheelMode, WindowRenderingContext, run_content_process,
+    MouseButton as ServoMouseButton, MouseButtonAction, MouseButtonEvent, MouseMoveEvent, NamedKey,
+    NavigationRequest, OffscreenRenderingContext, Opts, Preferences, RenderingContext, Servo,
+    ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WheelDelta, WheelEvent, WheelMode,
+    WindowRenderingContext, run_content_process,
 };
 use tracing::warn;
 use url::Url;
@@ -59,7 +59,7 @@ fn main() {
         Err(error) => {
             eprintln!("D0A-02 runtime initialization failed: {error}");
             1
-        },
+        }
     };
     std::process::exit(exit_code);
 }
@@ -110,11 +110,11 @@ impl FixtureServer {
                     Ok((mut stream, _peer)) => serve_fixture(&mut stream),
                     Err(error) if error.kind() == ErrorKind::WouldBlock => {
                         thread::sleep(Duration::from_millis(10));
-                    },
+                    }
                     Err(error) => {
                         eprintln!("fixture accept failed: {error}");
                         break;
-                    },
+                    }
                 }
             }
         });
@@ -244,12 +244,12 @@ impl ApplicationHandler<AppEvent> for App {
                     let _ = timeout_proxy.send_event(AppEvent::Timeout);
                 });
                 self.state = Some(state);
-            },
+            }
             Err(error) => {
                 eprintln!("failed to create headed runtime: {error}");
                 self.exit_code = 1;
                 event_loop.exit();
-            },
+            }
         }
     }
 
@@ -258,27 +258,27 @@ impl ApplicationHandler<AppEvent> for App {
             AppEvent::Exit(code) => {
                 self.exit_code = code;
                 event_loop.exit();
-            },
+            }
             AppEvent::Timeout => {
                 if let Some(state) = &self.state {
                     if !state.completed.get() {
                         state.fail("runtime watchdog expired");
                     }
                 }
-            },
+            }
             AppEvent::Settled => {
                 if let Some(state) = &self.state {
                     state.settled.set(true);
                     state.servo.spin_event_loop();
                     state.drive();
                 }
-            },
+            }
             AppEvent::Wake | AppEvent::Drive => {
                 if let Some(state) = &self.state {
                     state.servo.spin_event_loop();
                     state.drive();
                 }
-            },
+            }
         }
     }
 
@@ -296,7 +296,7 @@ impl ApplicationHandler<AppEvent> for App {
             WindowEvent::CloseRequested => {
                 state.fail("window closed before qualification completed");
                 event_loop.exit();
-            },
+            }
             WindowEvent::RedrawRequested => state.compose(),
             WindowEvent::CursorMoved { position, .. } => state.forward_pointer_move(position),
             WindowEvent::MouseInput {
@@ -309,12 +309,14 @@ impl ApplicationHandler<AppEvent> for App {
             WindowEvent::Ime(event) => state.forward_native_ime(event),
             WindowEvent::Resized(new_size) => {
                 if new_size.width == WINDOW_WIDTH && new_size.height == WINDOW_HEIGHT {
-                    state.window_resize_events.set(state.window_resize_events.get() + 1);
+                    state
+                        .window_resize_events
+                        .set(state.window_resize_events.get() + 1);
                 } else {
                     state.fail("runtime window size changed from the fixed qualification surface");
                 }
-            },
-            _ => {},
+            }
+            _ => {}
         }
         let _ = state.proxy.send_event(AppEvent::Drive);
     }
@@ -396,10 +398,9 @@ impl RuntimeState {
             PhysicalSize::new(WINDOW_WIDTH, WINDOW_HEIGHT),
         )?);
         parent_context.make_current()?;
-        let content_context = Rc::new(parent_context.offscreen_context(PhysicalSize::new(
-            WINDOW_WIDTH,
-            CONTENT_HEIGHT,
-        )));
+        let content_context = Rc::new(
+            parent_context.offscreen_context(PhysicalSize::new(WINDOW_WIDTH, CONTENT_HEIGHT)),
+        );
 
         let profile = output_dir.join("servo-profile");
         fs::create_dir_all(&profile)?;
@@ -530,9 +531,7 @@ impl RuntimeState {
             self.request_focus();
             return;
         }
-        if self.generation.get() == 1
-            && self.focus_ready.get()
-            && !self.input_marker_written.get()
+        if self.generation.get() == 1 && self.focus_ready.get() && !self.input_marker_written.get()
         {
             if let Err(error) = fs::write(self.output_dir.join("input-ready"), "ready\n") {
                 self.fail(&format!("could not write input-ready marker: {error}"));
@@ -603,7 +602,7 @@ impl RuntimeState {
                 }
                 state.content_screenshot_saved.set(true);
                 let _ = state.proxy.send_event(AppEvent::Drive);
-            },
+            }
             Err(error) => state.fail(&format!("Servo screenshot failed: {error:?}")),
         });
     }
@@ -621,7 +620,7 @@ impl RuntimeState {
                 Ok(JSValue::Boolean(true)) => {
                     state.focus_ready.set(true);
                     let _ = state.proxy.send_event(AppEvent::Drive);
-                },
+                }
                 other => state.fail(&format!("fixture input focus failed: {other:?}")),
             },
         );
@@ -666,9 +665,8 @@ impl RuntimeState {
         };
         let state = self.clone();
         let generation = self.generation.get();
-        webview.evaluate_javascript(
-            "JSON.stringify(window.__heptaEvidence)",
-            move |result| match result {
+        webview.evaluate_javascript("JSON.stringify(window.__heptaEvidence)", move |result| {
+            match result {
                 Ok(JSValue::String(value)) => {
                     if generation == 1 {
                         *state.initial_page_evidence.borrow_mut() = Some(value);
@@ -676,10 +674,10 @@ impl RuntimeState {
                         *state.recovery_page_evidence.borrow_mut() = Some(value);
                     }
                     let _ = state.proxy.send_event(AppEvent::Drive);
-                },
+                }
                 other => state.fail(&format!("fixture evidence evaluation failed: {other:?}")),
-            },
-        );
+            }
+        });
     }
 
     fn trigger_content_crash(self: &Rc<Self>) {
@@ -780,7 +778,7 @@ impl RuntimeState {
                 Ok(chrome_ok) => {
                     self.chrome_crash_ok.set(chrome_ok);
                     self.crash_workspace_saved.set(true);
-                },
+                }
                 Err(error) => self.fail(&error),
             }
         } else if self.content_screenshot_saved.get() && !self.workspace_screenshot_saved.get() {
@@ -793,7 +791,7 @@ impl RuntimeState {
                         self.chrome_recovery_ok.set(chrome_ok);
                     }
                     self.workspace_screenshot_saved.set(true);
-                },
+                }
                 Err(error) => self.fail(&error),
             }
         }
@@ -813,10 +811,8 @@ impl RuntimeState {
             .ok_or_else(|| "could not read composed parent framebuffer".to_owned())?;
         let chrome = image.get_pixel(8, 8).0;
         let content = image.get_pixel(8, CHROME_HEIGHT + 24).0;
-        let chrome_ok = chrome[2] > 70
-            && chrome[2] > chrome[0]
-            && chrome[2] > chrome[1]
-            && chrome != content;
+        let chrome_ok =
+            chrome[2] > 70 && chrome[2] > chrome[0] && chrome[2] > chrome[1] && chrome != content;
         image
             .save(self.output_dir.join(name))
             .map_err(|error| format!("could not save composed workspace image: {error}"))?;
@@ -867,21 +863,16 @@ impl RuntimeState {
         let (x, y, mode) = match delta {
             MouseScrollDelta::LineDelta(x, y) => {
                 (x as f64 * 40.0, y as f64 * 40.0, WheelMode::DeltaLine)
-            },
+            }
             MouseScrollDelta::PixelDelta(position) => {
                 (position.x, position.y, WheelMode::DeltaPixel)
-            },
+            }
         };
         self.native_wheel_events
             .set(self.native_wheel_events.get() + 1);
         if let Some(webview) = self.webview.borrow().as_ref() {
             webview.notify_input_event(InputEvent::Wheel(WheelEvent::new(
-                WheelDelta {
-                    x,
-                    y,
-                    z: 0.0,
-                    mode,
-                },
+                WheelDelta { x, y, z: 0.0, mode },
                 self.last_content_point.get().into(),
             )));
         }
@@ -1083,7 +1074,9 @@ impl WebViewDelegate for RuntimeDelegate {
             if state.fixture_origin_matches(&request.url) {
                 request.allow();
             } else {
-                state.navigation_denied.set(state.navigation_denied.get() + 1);
+                state
+                    .navigation_denied
+                    .set(state.navigation_denied.get() + 1);
                 request.deny();
             }
         } else {
@@ -1132,7 +1125,7 @@ fn json_string(value: &str) -> String {
             character if character.is_control() => {
                 use std::fmt::Write as _;
                 let _ = write!(output, "\\u{:04x}", character as u32);
-            },
+            }
             character => output.push(character),
         }
     }
