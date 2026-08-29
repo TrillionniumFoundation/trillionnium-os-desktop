@@ -1,4 +1,4 @@
-name: d0a02-state-diagnostics-patch
+name: d0a02-state-diagnostics-brace-fix
 
 on:
   push:
@@ -6,13 +6,12 @@ on:
       - codex/d0a02-headed-runtime-v3
     paths:
       - .github/workflows/d0a02-state-diagnostics-patch.yml
-  workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: d0a02-state-diagnostics-patch
+  group: d0a02-state-diagnostics-brace-fix
   cancel-in-progress: false
 
 jobs:
@@ -25,7 +24,7 @@ jobs:
           ref: codex/d0a02-headed-runtime-v3
           fetch-depth: 0
 
-      - name: Persist every runtime predicate on failure
+      - name: Escape diagnostic JSON braces and remove the one-shot patcher
         shell: bash
         run: |
           set -euo pipefail
@@ -34,102 +33,21 @@ jobs:
 
           path = Path('experiments/servo-headed-runtime/src/main.rs')
           source = path.read_text()
-          anchor = (
-              '        let failure = self\n'
-              '            .failure\n'
-              '            .borrow()\n'
-              '            .clone()\n'
-              '            .unwrap_or_else(|| "unknown failure".to_owned());\n'
-              '        let report = format!(\n'
-          )
-          diagnostic = (
-              '        let failure = self\n'
-              '            .failure\n'
-              '            .borrow()\n'
-              '            .clone()\n'
-              '            .unwrap_or_else(|| "unknown failure".to_owned());\n'
-              '        let state_report = format!(\n'
-              '            concat!(\n'
-              '                "{\\n",\n'
-              '                "  \\"schema\\": \\"trillionnium.desktop.d0a02-runtime-state.v1\\",\\n",\n'
-              '                "  \\"generation\\": {},\\n",\n'
-              '                "  \\"load_complete\\": {},\\n",\n'
-              '                "  \\"frame_ready\\": {},\\n",\n'
-              '                "  \\"content_screenshot_requested\\": {},\\n",\n'
-              '                "  \\"content_screenshot_saved\\": {},\\n",\n'
-              '                "  \\"workspace_screenshot_saved\\": {},\\n",\n'
-              '                "  \\"focus_requested\\": {},\\n",\n'
-              '                "  \\"focus_ready\\": {},\\n",\n'
-              '                "  \\"input_marker_written\\": {},\\n",\n'
-              '                "  \\"native_pointer_events\\": {},\\n",\n'
-              '                "  \\"native_button_events\\": {},\\n",\n'
-              '                "  \\"native_wheel_events\\": {},\\n",\n'
-              '                "  \\"native_keyboard_events\\": {},\\n",\n'
-              '                "  \\"native_ime_events\\": {},\\n",\n'
-              '                "  \\"input_handled_callbacks\\": {},\\n",\n'
-              '                "  \\"synthetic_ime_sent\\": {},\\n",\n'
-              '                "  \\"settled\\": {},\\n",\n'
-              '                "  \\"page_evidence_requested\\": {},\\n",\n'
-              '                "  \\"initial_page_evidence_present\\": {},\\n",\n'
-              '                "  \\"recovery_page_evidence_present\\": {},\\n",\n'
-              '                "  \\"popup_denied\\": {},\\n",\n'
-              '                "  \\"navigation_denied\\": {},\\n",\n'
-              '                "  \\"input_method_controls\\": {},\\n",\n'
-              '                "  \\"crash_triggered\\": {},\\n",\n'
-              '                "  \\"crash_observed\\": {},\\n",\n'
-              '                "  \\"crash_workspace_saved\\": {},\\n",\n'
-              '                "  \\"recovery_started\\": {},\\n",\n'
-              '                "  \\"chrome_initial_ok\\": {},\\n",\n'
-              '                "  \\"chrome_crash_ok\\": {},\\n",\n'
-              '                "  \\"chrome_recovery_ok\\": {},\\n",\n'
-              '                "  \\"window_resize_events\\": {},\\n",\n'
-              '                "  \\"failure\\": {}\\n",\n'
-              '                "}\\n"\n'
-              '            ),\n'
-              '            self.generation.get(),\n'
-              '            self.load_complete.get(),\n'
-              '            self.frame_ready.get(),\n'
-              '            self.content_screenshot_requested.get(),\n'
-              '            self.content_screenshot_saved.get(),\n'
-              '            self.workspace_screenshot_saved.get(),\n'
-              '            self.focus_requested.get(),\n'
-              '            self.focus_ready.get(),\n'
-              '            self.input_marker_written.get(),\n'
-              '            self.native_pointer_events.get(),\n'
-              '            self.native_button_events.get(),\n'
-              '            self.native_wheel_events.get(),\n'
-              '            self.native_keyboard_events.get(),\n'
-              '            self.native_ime_events.get(),\n'
-              '            self.input_handled_callbacks.get(),\n'
-              '            self.synthetic_ime_sent.get(),\n'
-              '            self.settled.get(),\n'
-              '            self.page_evidence_requested.get(),\n'
-              '            self.initial_page_evidence.borrow().is_some(),\n'
-              '            self.recovery_page_evidence.borrow().is_some(),\n'
-              '            self.popup_denied.get(),\n'
-              '            self.navigation_denied.get(),\n'
-              '            self.input_method_controls.get(),\n'
-              '            self.crash_triggered.get(),\n'
-              '            self.crash_observed.get(),\n'
-              '            self.crash_workspace_saved.get(),\n'
-              '            self.recovery_started.get(),\n'
-              '            self.chrome_initial_ok.get(),\n'
-              '            self.chrome_crash_ok.get(),\n'
-              '            self.chrome_recovery_ok.get(),\n'
-              '            self.window_resize_events.get(),\n'
-              '            json_string(&failure),\n'
-              '        );\n'
-              '        let _ = fs::write(self.output_dir.join("runtime-state.json"), state_report);\n'
-              '        let report = format!(\n'
-          )
-          count = source.count(anchor)
-          if count != 1:
-              raise SystemExit(f'expected one failure-report anchor, found {count}')
-          path.write_text(source.replace(anchor, diagnostic))
+          old_open = '                "{\\n",\n'
+          new_open = '                "{{\\n",\n'
+          old_close = '                "}\\n"\n'
+          new_close = '                "}}\\n"\n'
+          if source.count(old_open) != 1:
+              raise SystemExit(f'expected exactly one unescaped opening diagnostic brace, found {source.count(old_open)}')
+          if source.count(old_close) != 1:
+              raise SystemExit(f'expected exactly one unescaped closing diagnostic brace, found {source.count(old_close)}')
+          source = source.replace(old_open, new_open).replace(old_close, new_close)
+          path.write_text(source)
           PY
           git diff --check
+          git rm .github/workflows/d0a02-state-diagnostics-patch.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add experiments/servo-headed-runtime/src/main.rs
-          git commit -m 'test: persist D0A-02 runtime predicate diagnostics'
+          git commit -m 'fix: escape D0A-02 diagnostic JSON braces'
           git push origin HEAD:codex/d0a02-headed-runtime-v3
