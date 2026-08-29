@@ -1,0 +1,67 @@
+#!/bin/bash
+set -euo pipefail
+
+result_dir=/var/lib/trillionnium-d1
+runtime_dir=/run/hepta-desktop
+serial_marker=TRILLIONNIUM_D1_ACCEPTANCE_PASS
+install -d -m 0755 "$result_dir"
+
+fail() {
+  reason=$1
+  printf 'TRILLIONNIUM_D1_ACCEPTANCE_FAIL:%s\n' "$reason"
+  cat > "$result_dir/acceptance.json" <<EOF
+{"schema":"trillionnium.desktop.d1-acceptance.v1","status":"FAIL","reason":"$reason"}
+EOF
+  sync
+  systemctl --no-block poweroff || true
+  exit 1
+}
+
+for unit in systemd-udevd.service dbus.service systemd-logind.service trillionnium-d1-wayland.service; do
+  systemctl is-active --quiet "$unit" || fail "unit_not_active:$unit"
+done
+
+for _ in $(seq 1 60); do
+  if [[ -S "$runtime_dir/wayland-0" ]]; then
+    break
+  fi
+  sleep 0.5
+done
+[[ -S "$runtime_dir/wayland-0" ]] || fail wayland_socket_missing
+
+runuser -u hepta-desktop -- \
+  env XDG_RUNTIME_DIR="$runtime_dir" WAYLAND_DISPLAY=wayland-0 \
+  wayland-info > "$result_dir/wayland-info.txt" 2>&1 \
+  || fail wayland_info_failed
+
+grep -q 'interface:' "$result_dir/wayland-info.txt" || fail wayland_info_empty
+[[ -s "$runtime_dir/weston.log" ]] || fail weston_log_missing
+
+image_id=$(cat /etc/trillionnium-d1-image-id 2>/dev/null || echo unknown)
+package_lock_sha256=$(cat /usr/lib/trillionnium-d1/package-lock.sha256 2>/dev/null || echo unknown)
+weston_log_sha256=$(sha256sum "$runtime_dir/weston.log" | awk '{print $1}')
+wayland_info_sha256=$(sha256sum "$result_dir/wayland-info.txt" | awk '{print $1}')
+kernel_release=$(uname -r)
+
+cat > "$result_dir/acceptance.json" <<EOF
+{
+  "schema": "trillionnium.desktop.d1-acceptance.v1",
+  "status": "PASS",
+  "image_id": "$image_id",
+  "package_lock_sha256": "$package_lock_sha256",
+  "kernel_release": "$kernel_release",
+  "systemd": "active",
+  "udev": "active",
+  "dbus": "active",
+  "logind": "active",
+  "wayland_compositor": "active",
+  "wayland_socket": "$runtime_dir/wayland-0",
+  "wayland_info_sha256": "$wayland_info_sha256",
+  "weston_log_sha256": "$weston_log_sha256",
+  "network_enabled": false
+}
+EOF
+chmod 0644 "$result_dir/acceptance.json" "$result_dir/wayland-info.txt"
+sync
+printf '%s\n' "$serial_marker"
+systemctl --no-block poweroff
