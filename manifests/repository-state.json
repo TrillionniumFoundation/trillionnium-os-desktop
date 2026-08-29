@@ -1,20 +1,21 @@
 {
-  "active_plan": "docs/DESKTOP_PLAN-2026-08-28-d5.md",
-  "active_plan_revision": "2026-08-28-d5",
-  "baseline_commit": "de113c32827a32c334cc77a61a761976c7174d04",
+  "active_plan": "docs/DESKTOP_PLAN-2026-08-29-d6.md",
+  "active_plan_revision": "2026-08-29-d6",
+  "baseline_commit": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
   "completed_work_packages": [
     "D0R-01",
     "D0R-02",
     "D0R-03",
     "D0C-01",
     "D0C-02",
-    "D0A-00",
-    "D0A-01",
     "D0C-03",
     "D0C-04",
     "D0C-05",
-    "D0C-06"
+    "D0C-06",
+    "D0A-00",
+    "D0A-01"
   ],
+  "gate_registry": "manifests/gates.v1.json",
   "host_validated_work_packages": [
     {
       "evidence": "docs/evidence/generated/d0c02-rust193-host-result.json",
@@ -63,18 +64,24 @@
   ],
   "implementation_stage": "D0R_D0C06_D0A01_COMPILE_VALIDATED",
   "not_claimed": [
-    "servo_integrated",
+    "headed_servo_integrated",
+    "visible_product_first_frame",
     "debian_image_built",
-    "wayland_session_booted",
-    "product_agent_listener_enabled",
-    "qemu_pid1_socket_activation",
+    "qemu_pid1_wayland_boot",
+    "integrated_qemu_headed_runtime",
+    "product_agent_port_enabled",
+    "taskflow_semantic_principal_bound",
     "browser_actor_dispatch",
-    "external_web_effects",
+    "external_navigation_or_effects",
     "signed_app_runtime",
+    "controlled_egress",
+    "signed_update_and_rollback",
+    "fixed_hardware_beta",
     "production_release"
   ],
   "partial_work_packages": [],
   "product": "TrillionniumOS Desktop",
+  "project_state": "manifests/project-state.v1.json",
   "qualification_work_packages": [
     {
       "artifact_digest": "sha256:aad3c47a4151b0ecaf96c4e0dd16680cc498667e155391c53b4a6e489a57501b",
@@ -90,6 +97,41 @@
   ],
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
   "repository_mode": "full_product_repository",
-  "schema": "trillionnium.desktop.repository-state.v1",
-  "source_candidate_work_packages": []
+  "schema": "trillionnium.desktop.repository-state.v2",
+  "source_candidate_work_packages": [
+    {
+      "base_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
+      "branch": "codex/d6-plan-truth-ci-closure-v1",
+      "claim_ceiling": "machine_truth_and_status_consistency_only",
+      "id": "D0T-01",
+      "pr": null,
+      "status": "SOURCE_CANDIDATE"
+    },
+    {
+      "base_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
+      "branch": "codex/d6-plan-truth-ci-closure-v1",
+      "claim_ceiling": "ci_immutability_and_exact_command_baseline_only",
+      "id": "D0T-02",
+      "pr": null,
+      "status": "SOURCE_CANDIDATE"
+    },
+    {
+      "base_sha": "77bfc22619e7d9b30a3736096cf8e604a3c268ac",
+      "branch": "codex/d1-01-reproducible-qemu-substrate",
+      "candidate_head_sha": "9250fcb9df75792c39e85e0113cecac8b393a544",
+      "claim_ceiling": "candidate_source_no_promoted_qemu_or_image_claim",
+      "id": "D1-01",
+      "pr": 23,
+      "status": "BASE_DRIFT"
+    },
+    {
+      "base_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
+      "branch": "codex/d0a02-headed-runtime-v3",
+      "candidate_head_sha": "95a5d56d70c3667275b305501e0fe43c8c119d63",
+      "claim_ceiling": "candidate_source_no_headed_runtime_pass",
+      "id": "D0A-02",
+      "pr": 27,
+      "status": "CI_BLOCKED"
+    }
+  ]
 }
