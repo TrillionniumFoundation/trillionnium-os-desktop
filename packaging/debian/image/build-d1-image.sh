@@ -5,9 +5,12 @@ usage() {
   cat <<'EOF'
 Usage: build-d1-image.sh \
   --selection manifests/debian-d1.selection.json \
-  --resolved-manifest /path/debian-d1.resolved.json \
+  --prepared-manifest /path/prepared-inputs.json \
   --sources-list /path/sources.list \
-  --packages packaging/debian/image/d1-packages.txt \
+  --exact-packages /path/exact-packages.txt \
+  --expected-package-lock /path/expected-package-lock.tsv \
+  --agent-portd-binary /path/hepta-agent-portd \
+  --agent-fixture-binary /path/hepta-agent-d1-fixture \
   --overlay packaging/debian/image/rootfs-overlay \
   --output-dir /path/output \
   --build-name build-a
@@ -15,18 +18,24 @@ EOF
 }
 
 selection=
-resolved_manifest=
+prepared_manifest=
 sources_list=
-packages_file=
+exact_packages=
+expected_package_lock=
+agent_portd_binary=
+agent_fixture_binary=
 overlay=
 output_dir=
 build_name=
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --selection) selection=$2; shift 2 ;;
-    --resolved-manifest) resolved_manifest=$2; shift 2 ;;
+    --prepared-manifest) prepared_manifest=$2; shift 2 ;;
     --sources-list) sources_list=$2; shift 2 ;;
-    --packages) packages_file=$2; shift 2 ;;
+    --exact-packages) exact_packages=$2; shift 2 ;;
+    --expected-package-lock) expected_package_lock=$2; shift 2 ;;
+    --agent-portd-binary) agent_portd_binary=$2; shift 2 ;;
+    --agent-fixture-binary) agent_fixture_binary=$2; shift 2 ;;
     --overlay) overlay=$2; shift 2 ;;
     --output-dir) output_dir=$2; shift 2 ;;
     --build-name) build_name=$2; shift 2 ;;
@@ -35,7 +44,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-for value in selection resolved_manifest sources_list packages_file overlay output_dir build_name; do
+required_values=(
+  selection prepared_manifest sources_list exact_packages expected_package_lock
+  agent_portd_binary agent_fixture_binary overlay output_dir build_name
+)
+for value in "${required_values[@]}"; do
   if [[ -z "${!value}" ]]; then
     echo "missing --${value//_/-}" >&2
     exit 2
@@ -47,30 +60,52 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-for command in mmdebstrap python3 jq mke2fs tar chroot rsync sha256sum findmnt; do
+for command in mmdebstrap python3 jq mke2fs tar chroot rsync sha256sum \
+  systemd-sysusers systemd-tmpfiles cmp diff readlink; do
   command -v "$command" >/dev/null || {
     echo "required command is missing: $command" >&2
     exit 1
   }
 done
 
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+repo_root=$(readlink -f "$script_dir/../../..")
 selection=$(readlink -f "$selection")
-resolved_manifest=$(readlink -f "$resolved_manifest")
+prepared_manifest=$(readlink -f "$prepared_manifest")
 sources_list=$(readlink -f "$sources_list")
-packages_file=$(readlink -f "$packages_file")
+exact_packages=$(readlink -f "$exact_packages")
+expected_package_lock=$(readlink -f "$expected_package_lock")
+agent_portd_binary=$(readlink -f "$agent_portd_binary")
+agent_fixture_binary=$(readlink -f "$agent_fixture_binary")
 overlay=$(readlink -f "$overlay")
 mkdir -p "$output_dir"
 output_dir=$(readlink -f "$output_dir")
 
+for path in "$selection" "$prepared_manifest" "$sources_list" "$exact_packages" \
+  "$expected_package_lock" "$agent_portd_binary" "$agent_fixture_binary"; do
+  [[ -f "$path" && ! -L "$path" ]] || {
+    echo "required regular input is missing or is a symlink: $path" >&2
+    exit 1
+  }
+done
+[[ -d "$overlay" && ! -L "$overlay" ]] || {
+  echo "D1 overlay is missing or unsafe: $overlay" >&2
+  exit 1
+}
+
 suite=$(jq -er '.suite' "$selection")
 architecture=$(jq -er '.architecture' "$selection")
-source_epoch=$(jq -er '.source_date_epoch' "$resolved_manifest")
+source_epoch=$(jq -er '.source_date_epoch' "$prepared_manifest")
 image_size_mib=$(jq -er '.root_filesystem.size_mib' "$selection")
 image_label=$(jq -er '.root_filesystem.label' "$selection")
 image_uuid=$(jq -er '.root_filesystem.uuid' "$selection")
-resolved_status=$(jq -er '.status' "$resolved_manifest")
-if [[ "$resolved_status" != PASS_SIGNED_INRELEASE ]]; then
-  echo "resolved manifest has not passed signed InRelease verification" >&2
+prepared_status=$(jq -er '.status' "$prepared_manifest")
+expected_count=$(jq -er '.package_count' "$prepared_manifest")
+expected_set_sha256=$(jq -er '.package_set_sha256' "$prepared_manifest")
+host_keyring=$(jq -er '.archive_keyring.path' "$prepared_manifest")
+if [[ "$prepared_status" != PASS_GENERATED_SIGNED_D1_PACKAGE_LOCK \
+   && "$prepared_status" != PASS_COMMITTED_SIGNED_D1_PACKAGE_LOCK ]]; then
+  echo "prepared D1 inputs have not passed signed package-lock validation" >&2
   exit 1
 fi
 if [[ "$architecture" != amd64 ]]; then
@@ -85,6 +120,14 @@ if ! [[ "$image_size_mib" =~ ^[0-9]+$ ]] || (( image_size_mib < 1024 )); then
   echo "invalid D1 image size" >&2
   exit 1
 fi
+if ! [[ "$expected_count" =~ ^[0-9]+$ ]] || (( expected_count < 319 )); then
+  echo "invalid D1 package count" >&2
+  exit 1
+fi
+[[ -f "$host_keyring" && ! -L "$host_keyring" ]] || {
+  echo "prepared Debian archive keyring is missing or unsafe" >&2
+  exit 1
+}
 
 build_dir="$output_dir/$build_name"
 rootfs="$build_dir/rootfs"
@@ -94,19 +137,21 @@ artifacts="$build_dir/artifacts"
 rm -rf "$build_dir"
 mkdir -p "$rootfs" "$normalized_rootfs" "$logs" "$artifacts"
 
-mapfile -t package_names < <(
-  sed -e 's/#.*$//' -e '/^[[:space:]]*$/d' "$packages_file" | LC_ALL=C sort -u
+mapfile -t package_specs < <(
+  sed -e '/^[[:space:]]*$/d' "$exact_packages" | LC_ALL=C sort -u
 )
-required_packages=(passwd)
-for package in "${required_packages[@]}"; do
-  if ! printf '%s\n' "${package_names[@]}" | grep -qxF "$package"; then
-    package_names+=("$package")
-  fi
-done
-include=$(IFS=,; echo "${package_names[*]}")
+if (( ${#package_specs[@]} != expected_count )); then
+  echo "exact package specification count does not match prepared lock" >&2
+  exit 1
+fi
+if printf '%s\n' "${package_specs[@]}" | grep -Evq '^[a-z0-9][a-z0-9+.-]+=[^[:space:]]+$'; then
+  echo "exact package specification contains an unsafe entry" >&2
+  exit 1
+fi
+include=$(IFS=,; echo "${package_specs[*]}")
 mapfile -t mirrors < <(sed -e '/^[[:space:]]*$/d' "$sources_list")
 if (( ${#mirrors[@]} == 0 )); then
-  echo "resolved apt sources list is empty" >&2
+  echo "prepared apt sources list is empty" >&2
   exit 1
 fi
 
@@ -116,7 +161,7 @@ export LC_ALL=C.UTF-8
 
 mmdebstrap_args=(
   --mode=root
-  --variant=minbase
+  --variant=custom
   --architectures="$architecture"
   --components=main
   --include="$include"
@@ -134,10 +179,12 @@ mmdebstrap_args=(
 mmdebstrap_args+=("${mirrors[@]}")
 mmdebstrap "${mmdebstrap_args[@]}" >"$logs/mmdebstrap.log" 2>&1
 
-# The package manager resolved only signed metadata from the snapshot. Keep the
-# exact source list in the image for provenance, but QEMU qualification has no
-# network device.
-install -D -m 0644 "$sources_list" "$rootfs/etc/apt/sources.list"
+# Preserve the exact signed snapshot configuration using an in-image keyring
+# path. QEMU acceptance itself has no network device.
+image_keyring=/usr/share/keyrings/trillionnium-debian-13-archive.gpg
+install -D -m 0644 "$host_keyring" "$rootfs$image_keyring"
+sed "s#signed-by=$host_keyring#signed-by=$image_keyring#g" "$sources_list" \
+  > "$rootfs/etc/apt/sources.list"
 install -D -m 0644 /dev/null "$rootfs/etc/apt/sources.list.d/.keep"
 cat > "$rootfs/etc/apt/apt.conf.d/99trillionnium-snapshot" <<'EOF'
 Acquire::Check-Valid-Until "false";
@@ -146,7 +193,33 @@ APT::Install-Recommends "false";
 APT::Install-Suggests "false";
 EOF
 
-# Create the one local D1 desktop identity without a password or login shell.
+rsync -aHAX --numeric-ids "$overlay/" "$rootfs/"
+install -D -m 0755 "$agent_portd_binary" "$rootfs/usr/libexec/hepta-agent-portd"
+install -D -m 0755 "$agent_fixture_binary" \
+  "$rootfs/usr/libexec/hepta-agent-d1-fixture"
+install -D -m 0644 \
+  "$repo_root/packaging/debian/systemd/hepta-browserd-agent.socket" \
+  "$rootfs/etc/systemd/system/hepta-browserd-agent.socket"
+install -D -m 0644 \
+  "$repo_root/packaging/debian/systemd/hepta-browserd-agent@.service" \
+  "$rootfs/etc/systemd/system/hepta-browserd-agent@.service"
+install -D -m 0644 \
+  "$repo_root/packaging/debian/sysusers.d/trillionnium-desktop.conf" \
+  "$rootfs/usr/lib/sysusers.d/trillionnium-desktop.conf"
+install -D -m 0644 \
+  "$repo_root/packaging/debian/tmpfiles.d/trillionnium-desktop.conf" \
+  "$rootfs/usr/lib/tmpfiles.d/trillionnium-desktop.conf"
+install -D -m 0644 \
+  "$repo_root/packaging/debian/systemd-preset/90-trillionnium-desktop.preset" \
+  "$rootfs/usr/lib/systemd/system-preset/90-trillionnium-desktop.preset"
+
+chmod 0755 \
+  "$rootfs/usr/local/libexec/trillionnium-d1-acceptance" \
+  "$rootfs/usr/local/libexec/trillionnium-d1-agent-fixture-launcher"
+find "$rootfs/etc/systemd/system" -type f \( -name '*.service' -o -name '*.socket' -o -name '*.target' \) \
+  -exec chmod 0644 {} +
+
+systemd-sysusers --root="$rootfs"
 if ! chroot "$rootfs" getent passwd hepta-desktop >/dev/null; then
   chroot "$rootfs" /usr/sbin/useradd \
     --uid 1000 \
@@ -157,15 +230,10 @@ if ! chroot "$rootfs" getent passwd hepta-desktop >/dev/null; then
     hepta-desktop
 fi
 chroot "$rootfs" /usr/sbin/usermod --lock root
-
-rsync -aHAX --numeric-ids "$overlay/" "$rootfs/"
-chmod 0755 "$rootfs/usr/local/libexec/trillionnium-d1-acceptance"
-chmod 0644 "$rootfs/etc/systemd/system/"*.service "$rootfs/etc/systemd/system/"*.target
-install -d -m 0755 "$rootfs/etc/systemd/system/trillionnium-d1-acceptance.target.wants"
-ln -sfn ../trillionnium-d1-wayland.service \
-  "$rootfs/etc/systemd/system/trillionnium-d1-acceptance.target.wants/trillionnium-d1-wayland.service"
-ln -sfn ../trillionnium-d1-acceptance.service \
-  "$rootfs/etc/systemd/system/trillionnium-d1-acceptance.target.wants/trillionnium-d1-acceptance.service"
+systemd-tmpfiles --root="$rootfs" --create
+install -d -o 1000 -g 1000 -m 0700 "$rootfs/run/hepta-desktop"
+rm -f "$rootfs/etc/hepta/enable-agent-port"
+rm -f "$rootfs/run/hepta/browserd/agent.sock"
 
 cat > "$rootfs/etc/fstab" <<EOF
 LABEL=$image_label / ext4 defaults 0 1
@@ -176,22 +244,36 @@ ln -s ../../../etc/machine-id "$rootfs/var/lib/dbus/machine-id"
 rm -f "$rootfs/var/lib/systemd/random-seed"
 rm -rf "$rootfs/var/log/journal" "$rootfs/var/tmp/"* "$rootfs/tmp/"*
 install -d -m 1777 "$rootfs/tmp" "$rootfs/var/tmp"
-install -d -m 0755 "$rootfs/usr/lib/trillionnium-d1" "$rootfs/var/lib/trillionnium-d1"
+install -d -m 0755 "$rootfs/usr/lib/trillionnium-d1" \
+  "$rootfs/var/lib/trillionnium-d1"
 
-# Resolve the exact installed package closure before deleting apt metadata.
+# The final installed closure must match every package, version, and
+# architecture in the signed D1 lock. No implicit mmdebstrap package is allowed.
 chroot "$rootfs" dpkg-query -W \
-  -f='${binary:Package}\t${Version}\t${Architecture}\n' \
+  -f='${Package}\t${Version}\t${Architecture}\n' \
   | LC_ALL=C sort > "$artifacts/package-lock.tsv"
+if ! cmp -s "$expected_package_lock" "$artifacts/package-lock.tsv"; then
+  diff -u "$expected_package_lock" "$artifacts/package-lock.tsv" \
+    > "$logs/package-lock.diff" || true
+  echo "installed D1 package closure differs from the signed lock" >&2
+  exit 1
+fi
+actual_count=$(wc -l < "$artifacts/package-lock.tsv")
+if (( actual_count != expected_count )); then
+  echo "installed D1 package count changed after exact comparison" >&2
+  exit 1
+fi
 package_lock_sha256=$(sha256sum "$artifacts/package-lock.tsv" | awk '{print $1}')
-printf '%s\n' "$package_lock_sha256" > "$rootfs/usr/lib/trillionnium-d1/package-lock.sha256"
+printf '%s\n' "$package_lock_sha256" \
+  > "$rootfs/usr/lib/trillionnium-d1/package-lock.sha256"
+printf '%s\n' "$expected_set_sha256" \
+  > "$rootfs/usr/lib/trillionnium-d1/package-set.sha256"
 
 selection_sha256=$(sha256sum "$selection" | awk '{print $1}')
-resolved_sha256=$(sha256sum "$resolved_manifest" | awk '{print $1}')
-image_id="trillionnium-desktop-d1-${build_name}-${selection_sha256:0:12}-${package_lock_sha256:0:12}"
+prepared_sha256=$(sha256sum "$prepared_manifest" | awk '{print $1}')
+image_id="trillionnium-desktop-d1-${selection_sha256:0:12}-${package_lock_sha256:0:12}"
 printf '%s\n' "$image_id" > "$rootfs/etc/trillionnium-d1-image-id"
 
-# Force a reproducible initramfs compression mode and rebuild all installed
-# initramfs artifacts with SOURCE_DATE_EPOCH in the environment.
 cat > "$rootfs/etc/initramfs-tools/conf.d/trillionnium-reproducible" <<'EOF'
 COMPRESS=gzip
 EOF
@@ -199,8 +281,14 @@ chroot "$rootfs" /usr/bin/env \
   SOURCE_DATE_EPOCH="$source_epoch" TZ=UTC LC_ALL=C.UTF-8 \
   update-initramfs -u -k all >"$logs/update-initramfs.log" 2>&1
 
-mapfile -t kernels < <(find "$rootfs/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -printf '%f\n' | LC_ALL=C sort)
-mapfile -t initrds < <(find "$rootfs/boot" -maxdepth 1 -type f -name 'initrd.img-*' -printf '%f\n' | LC_ALL=C sort)
+mapfile -t kernels < <(
+  find "$rootfs/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -printf '%f\n' \
+    | LC_ALL=C sort
+)
+mapfile -t initrds < <(
+  find "$rootfs/boot" -maxdepth 1 -type f -name 'initrd.img-*' -printf '%f\n' \
+    | LC_ALL=C sort
+)
 if (( ${#kernels[@]} != 1 || ${#initrds[@]} != 1 )); then
   printf 'kernels=%s\ninitrds=%s\n' "${kernels[*]}" "${initrds[*]}" >&2
   echo "D1 requires exactly one kernel and one initrd" >&2
@@ -211,9 +299,6 @@ initrd_name=${initrds[0]}
 cp --reflink=auto "$rootfs/boot/$kernel_name" "$artifacts/vmlinuz"
 cp --reflink=auto "$rootfs/boot/$initrd_name" "$artifacts/initrd.img"
 
-# Remove mutable package caches and normalize every timestamp before creating a
-# sorted rootfs archive. The archive is also an independent reproducibility
-# checkpoint before ext4 construction.
 rm -rf "$rootfs/var/lib/apt/lists/"* "$rootfs/var/cache/apt/archives/"*
 find "$rootfs/var/log" -type f -exec truncate -s 0 {} +
 find "$rootfs" -xdev -print0 \
@@ -261,15 +346,17 @@ initrd_sha256=$(sha256sum "$artifacts/initrd.img" | awk '{print $1}')
 python3 - "$artifacts/build-result.json" <<PY
 import json, pathlib
 result = {
-  "schema": "trillionnium.desktop.d1-build-result.v1",
+  "schema": "trillionnium.desktop.d1-build-result.v2",
   "status": "PASS_BUILD_ONLY",
   "build_name": "$build_name",
   "image_id": "$image_id",
   "source_date_epoch": $source_epoch,
   "selection_sha256": "$selection_sha256",
-  "resolved_manifest_sha256": "$resolved_sha256",
+  "prepared_manifest_sha256": "$prepared_sha256",
+  "signed_package_set_sha256": "$expected_set_sha256",
   "package_lock": {
     "path": "package-lock.tsv",
+    "entries": $actual_count,
     "sha256": "$package_lock_sha256"
   },
   "rootfs_tar": {
@@ -294,6 +381,7 @@ result = {
     "path": "initrd.img",
     "sha256": "$initrd_sha256"
   },
+  "release_marker_present": False,
   "qemu_booted": False,
   "network_during_acceptance": False
 }
@@ -302,4 +390,5 @@ pathlib.Path("$artifacts/build-result.json").write_text(
 )
 PY
 
+rm -rf "$rootfs" "$normalized_rootfs"
 printf '%s\n' "$artifacts"

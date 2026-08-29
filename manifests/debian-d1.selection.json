@@ -1,13 +1,14 @@
 {
-  "schema": "trillionnium.desktop.debian-d1-selection.v2",
-  "status": "COMMITTED_SIGNED_INPUT_LOCK_REQUIRED",
+  "schema": "trillionnium.desktop.debian-d1-selection.v3",
+  "status": "SIGNED_D1_CLOSURE_RESOLUTION_REQUIRED",
   "suite": "trixie",
   "architecture": "amd64",
   "snapshot_timestamp": "20260828T000000Z",
-  "snapshot_lock": "manifests/debian-snapshot.lock.v1.json",
-  "snapshot_requirements": "manifests/debian-snapshot.requirements.v1.json",
-  "expected_package_count": 319,
-  "expected_package_set_sha256": "89918a968afafdbabe03e43794565cb1dc936f3f24a09ec81030be4a4085333a",
+  "baseline_snapshot_lock": "manifests/debian-snapshot.lock.v1.json",
+  "baseline_package_count": 319,
+  "baseline_package_set_sha256": "89918a968afafdbabe03e43794565cb1dc936f3f24a09ec81030be4a4085333a",
+  "d1_requirements": "manifests/debian-d1.requirements.v1.json",
+  "committed_d1_lock": null,
   "network_during_qemu_acceptance": false,
   "root_filesystem": {
     "format": "ext4",
@@ -32,8 +33,9 @@
     "socket_path": "/run/hepta/browserd/agent.sock"
   },
   "promotion_requires": [
-    "committed_signed_snapshot_lock_validation",
-    "exact_319_package_closure",
+    "baseline_signed_snapshot_lock_validation",
+    "signed_full_D1_package_closure",
+    "committed_D1_package_lock",
     "two_build_rootfs_digest_match",
     "two_build_ext4_digest_match",
     "two_build_kernel_and_initrd_digest_match",

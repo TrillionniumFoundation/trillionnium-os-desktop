@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
@@ -12,7 +11,7 @@ TOOLS = Path(__file__).resolve().parents[2] / "tools"
 sys.path.insert(0, str(TOOLS))
 
 import compare_d1_builds  # noqa: E402
-import resolve_debian_d1_lock  # noqa: E402
+import prepare_d1_inputs  # noqa: E402
 
 
 @contextmanager
@@ -25,56 +24,72 @@ def argv(*values: str):
         sys.argv = original
 
 
-class ResolveDebianD1LockTests(unittest.TestCase):
+class PrepareD1InputsTests(unittest.TestCase):
     def test_snapshot_timestamp_becomes_utc_epoch(self) -> None:
-        expected = int(
-            datetime(2026, 8, 27, 0, 0, 0, tzinfo=timezone.utc).timestamp()
-        )
         self.assertEqual(
-            resolve_debian_d1_lock.parse_source_epoch("20260827T000000Z"),
-            expected,
+            prepare_d1_inputs.parse_snapshot_epoch("20260828T000000Z"),
+            1787875200,
         )
 
     def test_invalid_snapshot_timestamp_is_rejected(self) -> None:
-        for value in ["2026-08-27", "20260827", "20261327T000000Z", ""]:
+        for value in ["2026-08-28", "20260828", "20261328T000000Z", ""]:
             with self.subTest(value=value):
-                with self.assertRaises((ValueError, OverflowError)):
-                    resolve_debian_d1_lock.parse_source_epoch(value)
+                with self.assertRaises(RuntimeError):
+                    prepare_d1_inputs.parse_snapshot_epoch(value)
 
-    def test_validsig_fingerprints_are_required_and_deduplicated(self) -> None:
-        first = "A" * 40
-        second = "B" * 40
-        output = "\n".join(
-            [
-                f"[GNUPG:] VALIDSIG {second} 2026-08-27 1787788800 0 4 0 1 10 01 {second}",
-                f"[GNUPG:] VALIDSIG {first} 2026-08-27 1787788800 0 4 0 1 10 01 {first}",
-                f"[GNUPG:] VALIDSIG {second} 2026-08-27 1787788800 0 4 0 1 10 01 {second}",
-            ]
-        )
-        self.assertEqual(
-            resolve_debian_d1_lock.parse_valid_signers(output),
-            [first, second],
-        )
+    def package(self, name: str, *, version: str = "1", arch: str = "amd64"):
+        return {
+            "package": name,
+            "requested_name": name,
+            "version": version,
+            "architecture": arch,
+            "filename": f"pool/main/{name[0]}/{name}/{name}_{version}_{arch}.deb",
+            "size": 1,
+            "sha256": "a" * 64,
+        }
+
+    def lock(self, packages: list[dict[str, object]]) -> dict[str, object]:
+        return {
+            "packages": packages,
+            "resolved_package_count": len(packages),
+            "package_set_sha256": prepare_d1_inputs.sha256_bytes(
+                prepare_d1_inputs.canonical_json(packages)
+            ),
+        }
+
+    def test_package_map_rejects_digest_drift(self) -> None:
+        value = self.lock([self.package("alpha")])
+        value["package_set_sha256"] = "0" * 64
         with self.assertRaises(RuntimeError):
-            resolve_debian_d1_lock.parse_valid_signers("[GNUPG:] GOODSIG fixture")
+            prepare_d1_inputs.package_map(value)
+
+    def test_package_map_rejects_duplicate_identity(self) -> None:
+        value = self.lock([self.package("alpha"), self.package("alpha")])
+        with self.assertRaises(RuntimeError):
+            prepare_d1_inputs.package_map(value)
 
 
 class CompareD1BuildsTests(unittest.TestCase):
     def build_result(self) -> dict[str, object]:
         return {
-            "schema": "trillionnium.desktop.d1-build-result.v1",
+            "schema": "trillionnium.desktop.d1-build-result.v2",
             "status": "PASS_BUILD_ONLY",
             "build_name": "candidate",
             "image_id": "fixture-image",
-            "source_date_epoch": 1787788800,
+            "source_date_epoch": 1787875200,
             "selection_sha256": "a" * 64,
-            "resolved_manifest_sha256": "b" * 64,
-            "package_lock": {"path": "package-lock.tsv", "sha256": "c" * 64},
-            "rootfs_tar": {"path": "rootfs.tar", "sha256": "d" * 64},
+            "prepared_manifest_sha256": "b" * 64,
+            "signed_package_set_sha256": "c" * 64,
+            "package_lock": {
+                "path": "package-lock.tsv",
+                "entries": 1,
+                "sha256": "d" * 64,
+            },
+            "rootfs_tar": {"path": "rootfs.tar", "sha256": "e" * 64},
             "image": {
                 "path": "trillionnium-d1.ext4",
                 "bytes": 16,
-                "sha256": "e" * 64,
+                "sha256": "f" * 64,
                 "format": "ext4",
                 "label": "TOSD1",
                 "uuid": "7f453284-a1e5-4f17-9c30-7c5bde910001",
@@ -82,13 +97,14 @@ class CompareD1BuildsTests(unittest.TestCase):
             "kernel": {
                 "source_name": "vmlinuz-fixture",
                 "path": "vmlinuz",
-                "sha256": "f" * 64,
+                "sha256": "0" * 64,
             },
             "initrd": {
                 "source_name": "initrd.img-fixture",
                 "path": "initrd.img",
-                "sha256": "0" * 64,
+                "sha256": "1" * 64,
             },
+            "release_marker_present": False,
             "qemu_booted": False,
             "network_during_acceptance": False,
         }
@@ -107,21 +123,23 @@ class CompareD1BuildsTests(unittest.TestCase):
         for name, content in contents.items():
             (root / name).write_bytes(content)
         (root / "build-result.json").write_text(
-            json.dumps(self.build_result(), indent=2, sort_keys=True) + "\n"
+            json.dumps(self.build_result(), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
         )
         return root
 
-    def resolved_input(self, path: Path) -> Path:
+    def prepared_input(self, path: Path) -> Path:
         path.write_text(
             json.dumps(
                 {
-                    "schema": "trillionnium.desktop.debian-d1-resolved.v1",
-                    "status": "PASS_SIGNED_INRELEASE",
-                    "suite": "trixie",
-                    "architecture": "amd64",
+                    "schema": "trillionnium.desktop.d1-prepared-inputs.v2",
+                    "status": "PASS_GENERATED_SIGNED_D1_PACKAGE_LOCK",
+                    "package_count": 1,
+                    "package_set_sha256": "c" * 64,
                 }
             )
-            + "\n"
+            + "\n",
+            encoding="utf-8",
         )
         return path
 
@@ -130,56 +148,50 @@ class CompareD1BuildsTests(unittest.TestCase):
             root = Path(temp)
             first = self.create_artifacts(root / "first")
             second = self.create_artifacts(root / "second")
-            resolved_input = self.resolved_input(root / "resolved-input.json")
-            resolved_output = root / "resolved-output.json"
+            prepared = self.prepared_input(root / "prepared.json")
             result = root / "result.json"
             with argv(
                 "--first",
                 str(first),
                 "--second",
                 str(second),
-                "--resolved-input",
-                str(resolved_input),
-                "--resolved-output",
-                str(resolved_output),
+                "--prepared-inputs",
+                str(prepared),
                 "--result",
                 str(result),
             ):
                 self.assertEqual(compare_d1_builds.main(), 0)
-            result_data = json.loads(result.read_text())
-            resolved_data = json.loads(resolved_output.read_text())
-            self.assertEqual(result_data["status"], "PASS_TWO_INDEPENDENT_BUILDS")
-            self.assertTrue(result_data["reproducible"])
+            result_data = json.loads(result.read_text(encoding="utf-8"))
             self.assertEqual(
-                resolved_data["status"],
-                "PASS_SIGNED_SNAPSHOT_AND_REPRODUCIBLE_BUILD",
+                result_data["status"], "PASS_TWO_INDEPENDENT_BUILDS"
             )
+            self.assertTrue(result_data["reproducible"])
 
     def test_one_byte_image_difference_blocks_promotion(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             first = self.create_artifacts(root / "first")
             second = self.create_artifacts(root / "second", mutate_image=True)
-            resolved_input = self.resolved_input(root / "resolved-input.json")
+            prepared = self.prepared_input(root / "prepared.json")
             result = root / "result.json"
             with argv(
                 "--first",
                 str(first),
                 "--second",
                 str(second),
-                "--resolved-input",
-                str(resolved_input),
-                "--resolved-output",
-                str(root / "resolved-output.json"),
+                "--prepared-inputs",
+                str(prepared),
                 "--result",
                 str(result),
             ):
                 with self.assertRaises(RuntimeError):
                     compare_d1_builds.main()
-            result_data = json.loads(result.read_text())
+            result_data = json.loads(result.read_text(encoding="utf-8"))
             self.assertEqual(result_data["status"], "FAIL_BUILD_MISMATCH")
             self.assertFalse(
-                result_data["artifact_comparisons"]["trillionnium-d1.ext4"]["equal"]
+                result_data["artifact_comparisons"][
+                    "trillionnium-d1.ext4"
+                ]["equal"]
             )
 
 

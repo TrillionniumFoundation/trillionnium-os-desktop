@@ -3,53 +3,191 @@ set -euo pipefail
 
 result_dir=/var/lib/trillionnium-d1
 runtime_dir=/run/hepta-desktop
+agent_socket=/run/hepta/browserd/agent.sock
+agent_marker=/etc/hepta/enable-agent-port
+agent_mode=/run/trillionnium-d1-agent-mode
+agent_result=/run/hepta-agent/result.json
 serial_marker=TRILLIONNIUM_D1_ACCEPTANCE_PASS
 install -d -m 0755 "$result_dir"
 
 fail() {
   reason=$1
   printf 'TRILLIONNIUM_D1_ACCEPTANCE_FAIL:%s\n' "$reason"
-  cat > "$result_dir/acceptance.json" <<EOF
-{"schema":"trillionnium.desktop.d1-acceptance.v1","status":"FAIL","reason":"$reason"}
-EOF
+  printf '{"schema":"trillionnium.desktop.d1-acceptance.v2","status":"FAIL","reason":"%s"}\n' \
+    "$reason" > "$result_dir/acceptance.json"
   sync
   systemctl --no-block poweroff || true
   exit 1
 }
 
-for unit in systemd-udevd.service dbus.service systemd-logind.service trillionnium-d1-wayland.service; do
+wait_for_socket() {
+  for _ in $(seq 1 80); do
+    [[ -S "$agent_socket" ]] && return 0
+    sleep 0.25
+  done
+  return 1
+}
+
+active_connection_units() {
+  systemctl list-units \
+    --type=service \
+    --state=active \
+    --no-legend \
+    --plain \
+    'hepta-browserd-agent@*.service' \
+    | awk '{print $1}'
+}
+
+wait_for_no_connection_units() {
+  for _ in $(seq 1 80); do
+    [[ -z "$(active_connection_units)" ]] && return 0
+    sleep 0.25
+  done
+  return 1
+}
+
+wait_for_connection_unit() {
+  local unit
+  for _ in $(seq 1 80); do
+    unit=$(active_connection_units | head -n 1)
+    if [[ -n "$unit" ]]; then
+      printf '%s\n' "$unit"
+      return 0
+    fi
+    sleep 0.25
+  done
+  return 1
+}
+
+run_authorized_health() {
+  rm -f "$agent_result"
+  printf 'health\n' > "$agent_mode"
+  systemctl reset-failed hepta-agent.service >/dev/null 2>&1 || true
+  systemctl start hepta-agent.service || return 1
+  [[ -s "$agent_result" ]] || return 1
+  grep -q '"status":"PASS"' "$agent_result" || return 1
+  grep -q '"mode":"health"' "$agent_result" || return 1
+  grep -q '"request_id":"d1-agent-port-health:1"' "$agent_result" || return 1
+  wait_for_no_connection_units || return 1
+}
+
+for unit in systemd-udevd.service dbus.service systemd-logind.service \
+  trillionnium-d1-wayland.service; do
   systemctl is-active --quiet "$unit" || fail "unit_not_active:$unit"
 done
+[[ "$(ps -o comm= -p 1)" == systemd ]] || fail pid1_is_not_systemd
 
-for _ in $(seq 1 60); do
-  if [[ -S "$runtime_dir/wayland-0" ]]; then
-    break
-  fi
-  sleep 0.5
+for _ in $(seq 1 80); do
+  [[ -S "$runtime_dir/wayland-0" ]] && break
+  sleep 0.25
 done
 [[ -S "$runtime_dir/wayland-0" ]] || fail wayland_socket_missing
 
-runuser -u hepta-desktop -- \
-  env XDG_RUNTIME_DIR="$runtime_dir" WAYLAND_DISPLAY=wayland-0 \
-  wayland-info > "$result_dir/wayland-info.txt" 2>&1 \
+systemd-run \
+  --wait \
+  --quiet \
+  --collect \
+  --unit=trillionnium-d1-wayland-info \
+  --property=User=hepta-desktop \
+  --property=Group=hepta-desktop \
+  --setenv=XDG_RUNTIME_DIR="$runtime_dir" \
+  --setenv=WAYLAND_DISPLAY=wayland-0 \
+  /usr/bin/wayland-info > "$result_dir/wayland-info.txt" 2>&1 \
   || fail wayland_info_failed
-
 grep -q 'interface:' "$result_dir/wayland-info.txt" || fail wayland_info_empty
 [[ -s "$runtime_dir/weston.log" ]] || fail weston_log_missing
 
+# Product default: no marker, no enabled socket, no listening path.
+[[ ! -e "$agent_marker" ]] || fail agent_marker_shipped
+if systemctl is-enabled --quiet hepta-browserd-agent.socket; then
+  fail agent_socket_enabled_by_default
+fi
+systemctl start hepta-browserd-agent.socket >/dev/null 2>&1 || true
+systemctl is-active --quiet hepta-browserd-agent.socket \
+  && fail agent_socket_started_without_marker
+[[ ! -S "$agent_socket" ]] || fail agent_socket_path_exists_without_marker
+
+# D1-only activation with the marker created at runtime.
+install -d -m 0755 /etc/hepta
+: > "$agent_marker"
+systemctl start hepta-browserd-agent.socket \
+  || fail agent_socket_activation_failed
+wait_for_socket || fail agent_socket_path_missing
+systemctl is-active --quiet hepta-browserd-agent.socket \
+  || fail agent_socket_not_active
+socket_identity=$(stat -c '%U:%G:%a' "$agent_socket")
+[[ "$socket_identity" == hepta-browserd:hepta-agent:660 ]] \
+  || fail "agent_socket_identity:$socket_identity"
+
+# A peer outside hepta-agent cannot reach the filesystem socket.
+systemd-run \
+  --wait \
+  --quiet \
+  --collect \
+  --unit=trillionnium-d1-unauthorized-agent \
+  --property=User=hepta-desktop \
+  --property=Group=hepta-desktop \
+  /usr/libexec/hepta-agent-d1-fixture --mode expect-denied \
+  > "$result_dir/unauthorized-agent.json" 2>&1 \
+  || fail unauthorized_peer_probe_failed
+grep -q '"connection_admitted":false' "$result_dir/unauthorized-agent.json" \
+  || fail unauthorized_peer_was_not_denied
+
+# The exact hepta-agent.service identity can perform one bounded health request.
+run_authorized_health || fail authorized_health_request_failed
+cp "$agent_result" "$result_dir/authorized-health-initial.json"
+
+# Keep one accepted connection open, kill only its per-connection service, and
+# prove the socket custodian remains available for a subsequent request.
+printf 'hold\n' > "$agent_mode"
+rm -f "$agent_result"
+systemctl reset-failed hepta-agent.service >/dev/null 2>&1 || true
+systemctl start --no-block hepta-agent.service \
+  || fail authorized_hold_start_failed
+connection_unit=$(wait_for_connection_unit) \
+  || fail per_connection_service_not_observed
+systemctl kill --kill-who=all --signal=KILL "$connection_unit" \
+  || fail per_connection_kill_failed
+systemctl stop hepta-agent.service >/dev/null 2>&1 || true
+systemctl reset-failed "$connection_unit" hepta-agent.service >/dev/null 2>&1 || true
+systemctl is-active --quiet hepta-browserd-agent.socket \
+  || fail socket_custodian_died_with_connection
+run_authorized_health || fail authorized_health_recovery_failed
+cp "$agent_result" "$result_dir/authorized-health-recovery.json"
+
+journalctl --no-pager \
+  -u hepta-browserd-agent.socket \
+  -u 'hepta-browserd-agent@*.service' \
+  -u hepta-agent.service \
+  > "$result_dir/agent-port-journal.txt" 2>&1 || true
+
+# Remove all test-only activation state before the persistent receipt is read.
+systemctl stop hepta-browserd-agent.socket >/dev/null 2>&1 || true
+rm -f "$agent_marker" "$agent_mode" "$agent_socket"
+systemctl is-active --quiet hepta-browserd-agent.socket \
+  && fail agent_socket_remained_active
+[[ ! -e "$agent_marker" ]] || fail agent_marker_remained
+[[ ! -S "$agent_socket" ]] || fail agent_socket_path_remained
+
 image_id=$(cat /etc/trillionnium-d1-image-id 2>/dev/null || echo unknown)
 package_lock_sha256=$(cat /usr/lib/trillionnium-d1/package-lock.sha256 2>/dev/null || echo unknown)
+package_set_sha256=$(cat /usr/lib/trillionnium-d1/package-set.sha256 2>/dev/null || echo unknown)
 weston_log_sha256=$(sha256sum "$runtime_dir/weston.log" | awk '{print $1}')
 wayland_info_sha256=$(sha256sum "$result_dir/wayland-info.txt" | awk '{print $1}')
+initial_agent_sha256=$(sha256sum "$result_dir/authorized-health-initial.json" | awk '{print $1}')
+recovery_agent_sha256=$(sha256sum "$result_dir/authorized-health-recovery.json" | awk '{print $1}')
+journal_sha256=$(sha256sum "$result_dir/agent-port-journal.txt" | awk '{print $1}')
 kernel_release=$(uname -r)
 
 cat > "$result_dir/acceptance.json" <<EOF
 {
-  "schema": "trillionnium.desktop.d1-acceptance.v1",
+  "schema": "trillionnium.desktop.d1-acceptance.v2",
   "status": "PASS",
   "image_id": "$image_id",
   "package_lock_sha256": "$package_lock_sha256",
+  "package_set_sha256": "$package_set_sha256",
   "kernel_release": "$kernel_release",
+  "pid1": "systemd",
   "systemd": "active",
   "udev": "active",
   "dbus": "active",
@@ -58,10 +196,25 @@ cat > "$result_dir/acceptance.json" <<EOF
   "wayland_socket": "$runtime_dir/wayland-0",
   "wayland_info_sha256": "$wayland_info_sha256",
   "weston_log_sha256": "$weston_log_sha256",
+  "agent_port": {
+    "default_disabled": true,
+    "marker_created_at_runtime_only": true,
+    "socket_identity": "$socket_identity",
+    "unauthorized_peer_denied": true,
+    "authorized_request_completed": true,
+    "per_connection_service_observed": "$connection_unit",
+    "per_connection_teardown": true,
+    "connection_kill_recovered": true,
+    "marker_removed_before_poweroff": true,
+    "socket_removed_before_poweroff": true,
+    "initial_response_sha256": "$initial_agent_sha256",
+    "recovery_response_sha256": "$recovery_agent_sha256",
+    "journal_sha256": "$journal_sha256"
+  },
   "network_enabled": false
 }
 EOF
-chmod 0644 "$result_dir/acceptance.json" "$result_dir/wayland-info.txt"
+chmod 0644 "$result_dir/"*.json "$result_dir/"*.txt
 sync
 printf '%s\n' "$serial_marker"
 systemctl --no-block poweroff
