@@ -24,6 +24,14 @@ completion, crash notification, navigation denial, popup denial, and input-metho
 control delivery, so the event loop cannot sleep after the final prerequisite
 without advancing into crash and replacement-generation recovery.
 
+A failed runtime writes both the bounded public result and `runtime-state.json`.
+The diagnostic state captures every gate predicate and counter—load/frame,
+screenshots, focus, native and handled input, IME, page evidence, popup and
+navigation denial, crash notification, replacement generation, chrome pixels,
+and recovery—without recording page secrets. The permanent gate keeps the
+failure artifact so a missing transition is repaired at its exact boundary
+rather than by weakening the acceptance corpus.
+
 The exact-pin adapter converts Surfman construction/current-context failures at
 the application boundary, uses Servo's min/max `DeviceIntRect` convention, and
 clones the current WebView handle before native IME dispatch so no temporary
