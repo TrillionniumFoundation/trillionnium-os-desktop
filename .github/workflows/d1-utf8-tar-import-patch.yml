@@ -63,8 +63,8 @@ jobs:
           builder = replace_once(builder, anchor, replacement, 'UTF-8 preflight')
           builder = replace_once(
               builder,
-              '"$mke2fs_binary" \\\n',
-              'LC_ALL="$filesystem_locale" LANG="$filesystem_locale" "$mke2fs_binary" \\\n',
+              '"$mke2fs_binary" \\\n  -F \\\n',
+              'LC_ALL="$filesystem_locale" LANG="$filesystem_locale" "$mke2fs_binary" \\\n  -F \\\n',
               'mke2fs locale binding',
           )
           builder_path.write_text(builder)
