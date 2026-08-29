@@ -10,3 +10,7 @@ socket, default-disabled AgentPort custody, authorized and unauthorized peer
 behavior, per-connection teardown, kill/recovery, absence of the test-only enable
 marker from the release candidate, and clean poweroff. It does not start Servo or
 claim a visible desktop frame.
+
+The current exact-head run additionally verifies that target Debian `tmpfiles`
+executes with an explicitly mounted and subsequently unmounted procfs, avoiding
+host/target systemd version coupling during rootfs construction.
