@@ -6,9 +6,7 @@
 #![forbid(unsafe_code)]
 
 use hepta_agent_transport::{ClientConnection, PeerIdentity, PeerPolicy};
-use hepta_browser_codec::{
-    BrowserOperation, BrowserRequest, decode_response, encode_request,
-};
+use hepta_browser_codec::{BrowserOperation, BrowserRequest, decode_response, encode_request};
 use std::env;
 use std::fmt;
 use std::fs;
@@ -81,9 +79,8 @@ fn run() -> Result<FixtureResult, FixtureError> {
 fn run_health() -> Result<String, FixtureError> {
     let stream = UnixStream::connect(AGENT_SOCKET_PATH).map_err(FixtureError::Io)?;
     let server = PeerIdentity::from_stream(&stream).map_err(FixtureError::Transport)?;
-    let mut connection =
-        ClientConnection::connect(stream, PeerPolicy::exact(server), TIMEOUT)
-            .map_err(FixtureError::Transport)?;
+    let mut connection = ClientConnection::connect(stream, PeerPolicy::exact(server), TIMEOUT)
+        .map_err(FixtureError::Transport)?;
 
     let request = BrowserRequest {
         request_id: "d1-agent-port-health:1".to_owned(),
@@ -112,9 +109,9 @@ fn run_health() -> Result<String, FixtureError> {
 
     Ok(format!(
         concat!(
-            "{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v1\",",
+            "{{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v1\",",
             "\"status\":\"PASS\",\"mode\":\"health\",\"request_id\":\"{}\",",
-            "\"transport_sequence\":{},\"response_sha256\":\"{}\"}"
+            "\"transport_sequence\":{},\"response_sha256\":\"{}\"}}"
         ),
         request.request_id, sequence, decoded.canonical_sha256
     ))

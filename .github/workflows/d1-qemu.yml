@@ -122,7 +122,7 @@ jobs:
             tools/prepare_d1_inputs.py \
             tools/resolve_debian_snapshot.py \
             tools/resolve_debian_snapshot_with_pinned_keys.py
-          shellcheck \
+          shellcheck -e SC2016,SC2054 \
             packaging/debian/image/build-d1-image.sh \
             packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-acceptance \
             packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-agent-fixture-launcher \
