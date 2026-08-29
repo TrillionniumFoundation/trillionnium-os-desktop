@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "active_plan": {"type": "string"},
+    "active_plan_revision": {"type": "string"},
+    "evidence_binding_policy": {"type": "object"},
+    "integrated_completed_work_packages": {"items": {"type": "string"}, "type": "array", "uniqueItems": true},
+    "integrated_implementation_stage": {"type": "string"},
+    "not_claimed": {"items": {"type": "string"}, "type": "array", "uniqueItems": true},
+    "product": {"const": "TrillionniumOS Desktop"},
+    "repository": {"const": "TrillionniumFoundation/trillionnium-os-desktop"},
+    "schema": {"const": "trillionnium.desktop.project-state.v1"},
+    "source_candidate_work_packages": {"items": {"type": "object"}, "type": "array"}
+  },
+  "required": [
+    "schema",
+    "product",
+    "repository",
+    "active_plan",
+    "active_plan_revision",
+    "integrated_implementation_stage",
+    "integrated_completed_work_packages",
+    "source_candidate_work_packages",
+    "not_claimed",
+    "evidence_binding_policy"
+  ],
+  "title": "TrillionniumOS Desktop project state",
+  "type": "object"
+}
