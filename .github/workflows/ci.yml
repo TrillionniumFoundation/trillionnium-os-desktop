@@ -1,45 +1,42 @@
-name: apply-d0a02-page-ready-ime
+name: desktop-ci
 
 on:
   push:
-    branches: ["codex/d0a02-headed-runtime-v3"]
-    paths:
-      - ".github/workflows/ci.yml"
+    branches: [main, "codex/**"]
+  pull_request:
+    branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: apply-d0a02-page-ready-ime
-  cancel-in-progress: false
+  group: desktop-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  patch-runtime:
-    runs-on: ubuntu-24.04
+  repository-contracts:
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out exact D0A-02 package branch
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          ref: codex/d0a02-headed-runtime-v3
-          fetch-depth: 0
+          python-version: "3.13"
+      - name: Validate repository contracts and product boundary
+        run: python3 tools/validate_repository.py
 
-      - name: Apply page-ready IME sequencing repair
-        shell: bash
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install locked Rust toolchain
         run: |
-          set -euo pipefail
-          python3 tools/d0a02_ime_stage_patch.py
-          rustfmt --edition 2024 runtime/servo/hepta_workspace_runtime.rs
-          git diff --check
-          grep -F 'ime-composition.started' runtime/servo/hepta_workspace_runtime.rs
-          grep -F "document.getElementById('field').focus()" runtime/servo/hepta_workspace_runtime.rs
-
-      - name: Commit product runtime repair
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "trillionnium-d0a02-repair"
-          git config user.email "d0a02-repair@users.noreply.github.com"
-          git add runtime/servo/hepta_workspace_runtime.rs
-          git diff --cached --check
-          git commit -m "fix(servo): sequence IME after page input readiness"
-          git push origin HEAD:codex/d0a02-headed-runtime-v3
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.93.0
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Unit tests
+        run: cargo test --workspace
+      - name: D0 browserd self-check
+        run: cargo run -p hepta-browserd -- --self-check
