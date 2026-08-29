@@ -1,0 +1,269 @@
+{
+  "evidence_tiers": [
+    "source_shape",
+    "host",
+    "headed_host",
+    "qemu_image",
+    "integrated_qemu_image",
+    "hardware",
+    "signed_release"
+  ],
+  "gates": [
+    {
+      "claim_ceiling": ["no_runtime_promotion", "no_activation_change"],
+      "evidence_tier": "host",
+      "id": "D0T-01",
+      "invalidation_paths": ["manifests/project-state.v1.json", "manifests/gates.v1.json", "docs/MANIFEST.json", "manifests/repository-state.json", "docs/DESKTOP_PLAN.md", "docs/DESKTOP_PLAN-2026-08-29-d6.md", "docs/CURRENT_STATE.md", "README.md", "apps/hepta-browserd/src/lib.rs", "tools/validate_project_truth.py"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "security",
+      "stage": "truth",
+      "status": "SOURCE_CANDIDATE"
+    },
+    {
+      "claim_ceiling": ["no_product_runtime_claim"],
+      "evidence_tier": "host",
+      "id": "D0T-02",
+      "invalidation_paths": [".github/workflows/**", "Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "tools/validate_project_truth.py"],
+      "prerequisites": ["D0T-01"],
+      "required_commands": [],
+      "review_class": "security",
+      "stage": "ci",
+      "status": "SOURCE_CANDIDATE"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "source_or_host",
+      "id": "D0R-01",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0R",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "source_or_host",
+      "id": "D0R-02",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0R",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "source_or_host",
+      "id": "D0R-03",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0R",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "host",
+      "id": "D0C-01",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "host",
+      "id": "D0C-02",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "host",
+      "id": "D0C-03",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "host",
+      "id": "D0C-04",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "host",
+      "id": "D0C-05",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "host",
+      "id": "D0C-06",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "host",
+      "id": "D0A-00",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0A",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "host",
+      "id": "D0A-01",
+      "invalidation_paths": ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "contracts/**", "crates/**", "apps/**", "tools/**", ".github/workflows/**"],
+      "prerequisites": [],
+      "required_commands": [],
+      "review_class": "standard",
+      "stage": "D0A",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": ["local_fixture_only", "no_agent_port", "no_external_effects", "no_image_or_release"],
+      "evidence_tier": "headed_host",
+      "id": "D0A-02",
+      "invalidation_paths": ["experiments/servo-headed-runtime/**", "runtime/servo/**", "crates/hepta-workspace-composition/**", "contracts/workspace-composition.v1.json", "manifests/servo.lock.json", "manifests/servo-patch-ledger.v1.json", ".github/workflows/d0a02-*.yml", ".github/workflows/servo-headed-runtime.yml"],
+      "prerequisites": ["D0A-01"],
+      "required_commands": [],
+      "review_class": "security",
+      "stage": "servo_headed",
+      "status": "CI_BLOCKED"
+    },
+    {
+      "claim_ceiling": ["no_servo_frame", "no_secure_boot", "no_hardware_or_release"],
+      "evidence_tier": "qemu_image",
+      "id": "D1-01",
+      "invalidation_paths": ["manifests/debian-*.json", "packaging/debian/**", "tests/d1/**", "tests/qemu/**", "tools/prepare_d1_inputs.py", "tools/resolve_debian_snapshot_with_pinned_keys.py", ".github/workflows/d1-final-qualification.yml", "Cargo.toml", "Cargo.lock"],
+      "prerequisites": ["D0T-02", "D0C-05"],
+      "required_commands": [],
+      "review_class": "security",
+      "stage": "image",
+      "status": "BASE_DRIFT"
+    },
+    {
+      "claim_ceiling": ["no_hardware_or_release"],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D2I-01",
+      "invalidation_paths": ["packaging/debian/**", "runtime/servo/**", "experiments/servo-headed-runtime/**", "manifests/debian-*.json", "manifests/servo.lock.json", ".github/workflows/**"],
+      "prerequisites": ["D0A-02", "D1-01"],
+      "required_commands": [],
+      "review_class": "security",
+      "stage": "integrated_image",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": ["local_fixtures_only", "no_external_effects", "agent_port_development_profile_only"],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D3-01",
+      "invalidation_paths": ["apps/**", "crates/**", "contracts/**", "packaging/debian/systemd/**", "docs/architecture/**"],
+      "prerequisites": ["D2I-01", "D0C-06"],
+      "required_commands": [],
+      "review_class": "security",
+      "stage": "browser_actor",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D4-01",
+      "invalidation_paths": ["apps/**", "crates/**", "contracts/**", "packaging/**", "manifests/**", ".github/workflows/**"],
+      "prerequisites": ["D3-01"],
+      "required_commands": [],
+      "review_class": "security",
+      "stage": "collaboration",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D5-01",
+      "invalidation_paths": ["apps/**", "crates/**", "contracts/**", "packaging/**", "manifests/**", ".github/workflows/**"],
+      "prerequisites": ["D4-01"],
+      "required_commands": [],
+      "review_class": "security",
+      "stage": "trusted_apps",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D6-01",
+      "invalidation_paths": ["apps/**", "crates/**", "contracts/**", "packaging/**", "manifests/**", ".github/workflows/**"],
+      "prerequisites": ["D5-01"],
+      "required_commands": [],
+      "review_class": "security",
+      "stage": "capabilities_egress",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "hardware",
+      "id": "D7-01",
+      "invalidation_paths": ["apps/**", "crates/**", "contracts/**", "packaging/**", "manifests/**", ".github/workflows/**"],
+      "prerequisites": ["D6-01"],
+      "required_commands": [],
+      "review_class": "release",
+      "stage": "updates_reconciliation",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "hardware",
+      "id": "D8-01",
+      "invalidation_paths": ["apps/**", "crates/**", "contracts/**", "packaging/**", "manifests/**", ".github/workflows/**"],
+      "prerequisites": ["D7-01"],
+      "required_commands": [],
+      "review_class": "release",
+      "stage": "hardware_beta",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": ["no_later_stage_implication"],
+      "evidence_tier": "signed_release",
+      "id": "D9-01",
+      "invalidation_paths": ["apps/**", "crates/**", "contracts/**", "packaging/**", "manifests/**", ".github/workflows/**"],
+      "prerequisites": ["D8-01"],
+      "required_commands": [],
+      "review_class": "release",
+      "stage": "signed_release",
+      "status": "BLOCKED_UPSTREAM"
+    }
+  ],
+  "plan_revision": "2026-08-29-d6",
+  "schema": "trillionnium.desktop.gate-registry.v1",
+  "status_vocabulary": ["SOURCE_CANDIDATE", "CI_RUNNING", "CI_BLOCKED", "INFRASTRUCTURE_FAILURE", "PRODUCT_FAILURE", "EVIDENCE_PROMOTION_REQUIRED", "BASE_DRIFT", "BLOCKED_UPSTREAM", "SECURITY_REVIEW_REQUIRED", "REPOSITORY_SETTING_REQUIRED", "MODULE_CLOSED_CANDIDATE", "INTEGRATED_SOURCE_AWAITING_MAIN_EVIDENCE", "INTEGRATED_AND_EXACT_MAIN_VALIDATED", "STALE_EVIDENCE"]
+}
