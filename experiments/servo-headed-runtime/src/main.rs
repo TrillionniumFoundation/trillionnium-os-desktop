@@ -18,7 +18,7 @@ use std::rc::{Rc, Weak};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use euclid::default::{Point2D, Rect, Size2D};
 use glow::HasContext as _;
@@ -27,8 +27,8 @@ use servo::{
     DevicePoint, EmbedderControl, EventLoopWaker, ImeEvent, InputEvent, InputEventId,
     InputEventResult, JSValue, Key, KeyState, KeyboardEvent, LoadStatus,
     MouseButton as ServoMouseButton, MouseButtonAction, MouseButtonEvent, MouseMoveEvent, NamedKey,
-    NavigationRequest, OffscreenRenderingContext, Opts, RenderingContext, Servo,
-    ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WheelDelta, WheelEvent, WheelMode,
+    NavigationRequest, OffscreenRenderingContext, Opts, RenderingContext, Servo, ServoBuilder,
+    WebView, WebViewBuilder, WebViewDelegate, WheelDelta, WheelEvent, WheelMode,
     WindowRenderingContext, run_content_process,
 };
 use url::Url;
@@ -169,6 +169,8 @@ enum AppEvent {
     Drive,
     Settled,
     Timeout,
+    ContentProcessTerminated { pid: u32, start_time: u64 },
+    ContentProcessTerminationFailed(String),
     Exit(i32),
 }
 
@@ -264,6 +266,21 @@ impl ApplicationHandler<AppEvent> for App {
                     if !state.completed.get() {
                         state.fail("runtime watchdog expired");
                     }
+                }
+            }
+            AppEvent::ContentProcessTerminated { pid, start_time } => {
+                if let Some(state) = &self.state {
+                    state.crash_observed.set(true);
+                    *state.crash_reason.borrow_mut() = Some(format!(
+                        "exact content process terminated after SIGKILL: pid={pid}, start_time={start_time}"
+                    ));
+                    state.window.request_redraw();
+                    state.drive();
+                }
+            }
+            AppEvent::ContentProcessTerminationFailed(message) => {
+                if let Some(state) = &self.state {
+                    state.fail(&message);
                 }
             }
             AppEvent::Settled => {
@@ -694,11 +711,20 @@ impl RuntimeState {
                 return;
             }
         };
+        let content_start_time = match exact_content_process_start_time(content_pid) {
+            Ok(start_time) => start_time,
+            Err(error) => {
+                self.fail(&error);
+                return;
+            }
+        };
         if let Err(error) = fs::write(
             self.output_dir.join("content-process-pid.txt"),
             format!("{content_pid}\n"),
         ) {
-            self.fail(&format!("could not record exact content-process pid: {error}"));
+            self.fail(&format!(
+                "could not record exact content-process pid: {error}"
+            ));
             return;
         }
         if let Err(error) = fs::write(self.output_dir.join("content-crash-ready"), "ready\n") {
@@ -713,7 +739,9 @@ impl RuntimeState {
         {
             Ok(status) => status,
             Err(error) => {
-                self.fail(&format!("could not execute exact content-process kill: {error}"));
+                self.fail(&format!(
+                    "could not execute exact content-process kill: {error}"
+                ));
                 return;
             }
         };
@@ -723,7 +751,67 @@ impl RuntimeState {
             ));
             return;
         }
-        let _ = self.proxy.send_event(AppEvent::Drive);
+
+        let proxy = self.proxy.clone();
+        thread::spawn(move || {
+            let stat_path = format!("/proc/{content_pid}/stat");
+            let deadline = Instant::now() + Duration::from_secs(5);
+            loop {
+                match fs::read_to_string(&stat_path) {
+                    Err(error) if error.kind() == ErrorKind::NotFound => {
+                        let _ = proxy.send_event(AppEvent::ContentProcessTerminated {
+                            pid: content_pid,
+                            start_time: content_start_time,
+                        });
+                        break;
+                    }
+                    Err(error) => {
+                        let _ = proxy.send_event(AppEvent::ContentProcessTerminationFailed(
+                            format!("could not observe exact content-process termination: {error}"),
+                        ));
+                        break;
+                    }
+                    Ok(stat) => {
+                        let observed_start_time = match proc_start_time(&stat) {
+                            Some(start_time) => start_time,
+                            None => {
+                                let _ = proxy.send_event(
+                                    AppEvent::ContentProcessTerminationFailed(
+                                        "could not parse exact content-process start time while observing termination"
+                                            .to_owned(),
+                                    ),
+                                );
+                                break;
+                            }
+                        };
+                        if observed_start_time != content_start_time {
+                            let _ = proxy.send_event(AppEvent::ContentProcessTerminationFailed(
+                                format!(
+                                    "content-process pid identity changed before an unambiguous exit observation: pid={content_pid}, expected_start_time={content_start_time}, observed_start_time={observed_start_time}"
+                                ),
+                            ));
+                            break;
+                        }
+                        if proc_state(&stat) == Some('Z') {
+                            let _ = proxy.send_event(AppEvent::ContentProcessTerminated {
+                                pid: content_pid,
+                                start_time: content_start_time,
+                            });
+                            break;
+                        }
+                        if Instant::now() >= deadline {
+                            let _ = proxy.send_event(AppEvent::ContentProcessTerminationFailed(
+                                format!(
+                                    "exact content process remained executable after SIGKILL timeout: pid={content_pid}, start_time={content_start_time}"
+                                ),
+                            ));
+                            break;
+                        }
+                        thread::sleep(Duration::from_millis(10));
+                    }
+                }
+            }
+        });
     }
 
     fn start_recovery(self: &Rc<Self>) {
@@ -1219,7 +1307,8 @@ impl WebViewDelegate for RuntimeDelegate {
 fn exact_content_process_pid() -> Result<u32, String> {
     let parent_pid = std::process::id();
     let current_exe = fs::canonicalize(
-        env::current_exe().map_err(|error| format!("could not resolve parent executable: {error}"))?,
+        env::current_exe()
+            .map_err(|error| format!("could not resolve parent executable: {error}"))?,
     )
     .map_err(|error| format!("could not canonicalize parent executable: {error}"))?;
     let mut candidates = Vec::new();
@@ -1272,6 +1361,31 @@ fn exact_content_process_pid() -> Result<u32, String> {
             "multiple exact direct --content-process children were found: {candidates:?}"
         )),
     }
+}
+
+fn exact_content_process_start_time(pid: u32) -> Result<u64, String> {
+    let stat = fs::read_to_string(format!("/proc/{pid}/stat"))
+        .map_err(|error| format!("could not read exact content-process identity: {error}"))?;
+    proc_start_time(&stat)
+        .ok_or_else(|| "could not parse exact content-process start time".to_owned())
+}
+
+fn proc_state(stat: &str) -> Option<char> {
+    let command_end = stat.rfind(')')?;
+    stat.get(command_end + 2..)?
+        .split_whitespace()
+        .next()?
+        .chars()
+        .next()
+}
+
+fn proc_start_time(stat: &str) -> Option<u64> {
+    let command_end = stat.rfind(')')?;
+    stat.get(command_end + 2..)?
+        .split_whitespace()
+        .nth(19)?
+        .parse()
+        .ok()
 }
 
 fn proc_parent_pid(stat: &str) -> Option<u32> {

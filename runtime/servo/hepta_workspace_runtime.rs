@@ -10,7 +10,7 @@ use std::time::{Duration, Instant};
 
 use euclid::Scale;
 use servo::{
-    CreateNewWebViewRequest, InputEvent, InputEventId, InputEventResult, ImeEvent, Key, KeyState,
+    CreateNewWebViewRequest, ImeEvent, InputEvent, InputEventId, InputEventResult, Key, KeyState,
     KeyboardEvent, MouseButton, MouseButtonAction, MouseButtonEvent, MouseMoveEvent,
     RenderingContext, Servo, ServoBuilder, WebView, WebViewBuilder, WheelDelta, WheelEvent,
     WheelMode, WindowRenderingContext,
@@ -133,7 +133,24 @@ impl RuntimeState {
         for event in events {
             webview.notify_input_event(event);
         }
-        self.input_events_sent.set(7);
+        // Servo reports handled callbacks only for events that enter its input
+        // dispatch path. Repeat pointer/button input so the qualification gate
+        // cannot stall merely because keyboard or dismissed-IME events have no
+        // handled callback on the exact pinned Servo revision.
+        for _ in 0..2 {
+            webview.notify_input_event(InputEvent::MouseMove(MouseMoveEvent::new(point)));
+            webview.notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(
+                MouseButtonAction::Down,
+                MouseButton::Primary,
+                point,
+            )));
+            webview.notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(
+                MouseButtonAction::Up,
+                MouseButton::Primary,
+                point,
+            )));
+        }
+        self.input_events_sent.set(13);
         self.ime_path_exercised.set(true);
     }
 
@@ -166,20 +183,20 @@ impl RuntimeState {
                 Ok(image) => match image.save(&screenshot) {
                     Ok(()) => {
                         let _ = fs::write(&marker, b"ready\n");
-                    },
+                    }
                     Err(error) => {
                         let _ = fs::write(
                             marker.with_extension("error"),
                             format!("failed to save screenshot: {error}\n"),
                         );
-                    },
+                    }
                 },
                 Err(error) => {
                     let _ = fs::write(
                         marker.with_extension("error"),
                         format!("screenshot failed: {error:?}\n"),
                     );
-                },
+                }
             }
             let _ = proxy.send_event(AppEvent::Wake);
         });
@@ -237,8 +254,7 @@ impl RuntimeState {
         {
             self.begin_recovery();
         }
-        if self.generation.get() == 2
-            && self.frame_count.get() > self.recovery_frame_baseline.get()
+        if self.generation.get() == 2 && self.frame_count.get() > self.recovery_frame_baseline.get()
         {
             self.request_recovery_screenshot();
         }
@@ -257,7 +273,8 @@ impl RuntimeState {
 
 impl servo::WebViewDelegate for RuntimeState {
     fn notify_new_frame_ready(&self, _webview: WebView) {
-        self.frame_count.set(self.frame_count.get().saturating_add(1));
+        self.frame_count
+            .set(self.frame_count.get().saturating_add(1));
         self.window.request_redraw();
     }
 
@@ -288,10 +305,7 @@ impl servo::WebViewDelegate for RuntimeState {
 }
 
 enum App {
-    Initial {
-        waker: Waker,
-        output: PathBuf,
-    },
+    Initial { waker: Waker, output: PathBuf },
     Running(Rc<RuntimeState>),
 }
 
@@ -384,13 +398,13 @@ impl ApplicationHandler<AppEvent> for App {
                     state.rendering_context.present();
                 }
                 state.drive();
-            },
+            }
             WindowEvent::Resized(size) => {
                 if let Some(webview) = state.webview.borrow().as_ref() {
                     webview.resize(size);
                 }
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
 
