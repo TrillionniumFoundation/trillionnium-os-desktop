@@ -1,0 +1,98 @@
+name: d0a02-api-adapter-fix-once
+
+on:
+  push:
+    branches:
+      - codex/d0a02-headed-runtime-v3
+    paths:
+      - .github/workflows/d0a02-api-adapter-fix-once.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/d0a02-headed-runtime-v3
+          fetch-depth: 0
+      - name: Correct exact-pin runtime API adapters
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('experiments/servo-headed-runtime/src/main.rs')
+          text = path.read_text()
+          replacements = {
+              '    DeviceIntSize, DevicePoint, EmbedderControl, EventLoopWaker, ImeEvent, InputEvent,\n':
+                  '    DevicePoint, EmbedderControl, EventLoopWaker, ImeEvent, InputEvent,\n',
+              '''        let parent_context = Rc::new(WindowRenderingContext::new(
+            display_handle,
+            window_handle,
+            PhysicalSize::new(WINDOW_WIDTH, WINDOW_HEIGHT),
+        )?);
+        parent_context.make_current()?;
+''':
+                  '''        let parent_context = Rc::new(
+            WindowRenderingContext::new(
+                display_handle,
+                window_handle,
+                PhysicalSize::new(WINDOW_WIDTH, WINDOW_HEIGHT),
+            )
+            .map_err(|error| {
+                std::io::Error::other(format!(
+                    "WindowRenderingContext::new failed: {error:?}"
+                ))
+            })?,
+        );
+        parent_context.make_current().map_err(|error| {
+            std::io::Error::other(format!(
+                "WindowRenderingContext::make_current failed: {error:?}"
+            ))
+        })?;
+''',
+              '''        let rect = DeviceIntRect::new(
+            DeviceIntPoint::new(0, 0),
+            DeviceIntSize::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32),
+        );
+''':
+                  '''        let rect = DeviceIntRect::new(
+            DeviceIntPoint::new(0, 0),
+            DeviceIntPoint::new(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32),
+        );
+''',
+              '''        let Some(webview) = self.webview.borrow().as_ref() else {
+            return;
+        };
+''':
+                  '''        let Some(webview) = self.webview.borrow().as_ref().cloned() else {
+            return;
+        };
+''',
+          }
+          for old, new in replacements.items():
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one API adapter anchor, got {count}: {old[:80]!r}')
+              text = text.replace(old, new)
+          path.write_text(text)
+          PY
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt
+          RUSTUP_TOOLCHAIN=1.97.1 rustfmt --edition 2024 \
+            experiments/servo-headed-runtime/src/main.rs
+          RUSTUP_TOOLCHAIN=1.97.1 rustfmt --edition 2024 --check \
+            experiments/servo-headed-runtime/src/main.rs
+          git diff --check
+      - name: Commit exact Servo API adapter corrections
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/servo-headed-runtime/src/main.rs
+          git commit -m "fix: adapt headed runtime to exact Servo geometry and errors"
+          git push origin HEAD:codex/d0a02-headed-runtime-v3
