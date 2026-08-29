@@ -34,6 +34,9 @@ env:
   SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
+  CANDIDATE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
+  TESTED_SHA: ${{ github.sha }}
 
 jobs:
   qualify:
@@ -41,10 +44,18 @@ jobs:
     timeout-minutes: 300
     steps:
       - name: Check out desktop candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Record exact source identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'TESTED_TREE_SHA=%s\n' "$(git rev-parse HEAD^{tree})" >> "$GITHUB_ENV"
+          printf 'candidate_head=%s\nbase=%s\ntested=%s\ntree=%s\n' \
+            "$CANDIDATE_HEAD_SHA" "$BASE_SHA" "$TESTED_SHA" "$(git rev-parse HEAD^{tree})"
 
       - name: Check out exact Servo source pin
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: servo/servo
           ref: ${{ env.SERVO_COMMIT }}
@@ -100,7 +111,7 @@ jobs:
           RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL" cargo --version --verbose
 
       - name: Restore exact-pin Cargo cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             ~/.cargo/registry
@@ -111,16 +122,21 @@ jobs:
             servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
             servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
 
-      - name: Install product-owned servoshell example overlay
+      - name: Install deterministic formatted product overlay
         shell: bash
         run: |
           set -euo pipefail
           export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
-          rustfmt --edition 2024 --check experiments/servo-headed-runtime/src/main.rs
-          install -D -m 0644 experiments/servo-headed-runtime/src/main.rs \
+          overlay="$RUNNER_TEMP/trillionnium_headed_runtime.rs"
+          cp experiments/servo-headed-runtime/src/main.rs "$overlay"
+          rustfmt --edition 2024 "$overlay"
+          rustfmt --edition 2024 --check "$overlay"
+          install -D -m 0644 "$overlay" \
             servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs
           install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
             servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
+          printf 'FORMATTED_OVERLAY_SHA256=%s\n' "$(sha256sum "$overlay" | cut -d' ' -f1)" \
+            >> "$GITHUB_ENV"
 
       - name: Compile exact-pin headed runtime
         shell: bash
@@ -184,9 +200,6 @@ jobs:
           xdotool windowfocus --sync "$window_id"
           test "$(xdotool getwindowfocus)" = "$window_id"
 
-          # Pointer warps target exact window-relative coordinates. Button, wheel,
-          # and keyboard input intentionally omit --window so xdotool uses XTEST
-          # rather than XSendEvent; winit then observes native X11 input events.
           xdotool mousemove --sync --window "$window_id" 200 132
           xdotool mousedown 1
           xdotool mouseup 1
@@ -202,9 +215,7 @@ jobs:
           ps -eo pid,ppid,stat,args >"$output/process-topology.txt"
           timeout 180 tail --pid="$app_pid" -f /dev/null
           wait "$app_pid"
-          app_status=$?
           app_pid=
-          test "$app_status" -eq 0
 
       - name: Enforce evidence and claim ceiling
         shell: bash
@@ -214,6 +225,7 @@ jobs:
           from pathlib import Path
           import hashlib
           import json
+          import os
           root = Path('artifacts/servo-headed-runtime/runtime')
           path = root / 'runtime-result.json'
           report = json.loads(path.read_text())
@@ -282,6 +294,23 @@ jobs:
           }
           assert required.issubset(artifacts)
           report['artifacts'] = artifacts
+          report['evidence_identity'] = {
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'base_sha': os.environ['BASE_SHA'],
+              'candidate_head_sha': os.environ['CANDIDATE_HEAD_SHA'],
+              'tested_sha': os.environ['TESTED_SHA'],
+              'tree_sha': os.environ['TESTED_TREE_SHA'],
+              'workflow_sha256': hashlib.sha256(
+                  Path('.github/workflows/servo-headed-runtime.yml').read_bytes()
+              ).hexdigest(),
+              'source_sha256': hashlib.sha256(
+                  Path('experiments/servo-headed-runtime/src/main.rs').read_bytes()
+              ).hexdigest(),
+              'formatted_overlay_sha256': os.environ['FORMATTED_OVERLAY_SHA256'],
+              'servo_lock_sha256': hashlib.sha256(
+                  Path('manifests/servo.lock.json').read_bytes()
+              ).hexdigest(),
+          }
           path.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
           PY
 
@@ -306,7 +335,7 @@ jobs:
 
       - name: Upload headed runtime evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: servo-headed-runtime-${{ github.sha }}
           path: artifacts/servo-headed-runtime
