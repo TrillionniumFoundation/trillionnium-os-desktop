@@ -1,0 +1,183 @@
+#!/bin/sh
+set -eu
+
+unit=trillionnium-d2i-runtime.service
+state_dir=/var/lib/trillionnium-d2i
+proof="$state_dir/content-process-crash-proof.json"
+mkdir -p "$state_dir"
+chmod 0755 "$state_dir"
+
+fail() {
+  reason=$1
+  printf 'TRILLIONNIUM_D2I_CONTENT_CRASH_PROOF_ERROR=%s\n' "$reason" >&2
+  exit 1
+}
+
+children_of() {
+  root=$1
+  seen=" $root "
+  frontier=$root
+  result=
+  while [ -n "$frontier" ]; do
+    next=
+    for parent in $frontier; do
+      file="/proc/$parent/task/$parent/children"
+      [ -r "$file" ] || continue
+      for child in $(cat "$file"); do
+        case "$seen" in
+          *" $child "*) continue ;;
+        esac
+        seen="$seen$child "
+        result="$result $child"
+        next="$next $child"
+      done
+    done
+    frontier=$next
+  done
+  printf '%s\n' "$result"
+}
+
+main_pid=
+for _ in $(seq 1 120); do
+  main_pid=$(systemctl show --property MainPID --value "$unit" 2>/dev/null || true)
+  case "$main_pid" in
+    ''|0) sleep 1 ;;
+    *) [ -d "/proc/$main_pid" ] && break; sleep 1 ;;
+  esac
+done
+[ -n "$main_pid" ] && [ "$main_pid" != 0 ] && [ -d "/proc/$main_pid" ] || fail runtime_main_pid_missing
+
+content_pid=
+content_cmdline=
+for _ in $(seq 1 180); do
+  candidates=
+  fallback=
+  fallback_count=0
+  for pid in $(children_of "$main_pid"); do
+    [ -r "/proc/$pid/cmdline" ] || continue
+    cmd=$(tr '\000' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)
+    [ -n "$cmd" ] || continue
+    fallback="$pid"
+    fallback_count=$((fallback_count + 1))
+    case "$cmd" in
+      *--content-process*|*content-process*|*servo-content*|*servo_content*)
+        candidates="$candidates $pid"
+        ;;
+    esac
+  done
+  set -- $candidates
+  if [ "$#" -eq 1 ]; then
+    content_pid=$1
+  elif [ "$#" -eq 0 ] && [ "$fallback_count" -eq 1 ]; then
+    content_pid=$fallback
+  fi
+  if [ -n "$content_pid" ] && [ -r "/proc/$content_pid/cmdline" ]; then
+    content_cmdline=$(tr '\000' ' ' < "/proc/$content_pid/cmdline")
+    break
+  fi
+  sleep 1
+done
+[ -n "$content_pid" ] || fail unique_content_process_not_found
+[ "$content_pid" != "$main_pid" ] || fail content_pid_equals_runtime_pid
+[ -r "/proc/$content_pid/stat" ] || fail content_process_stat_missing
+
+content_start_time=$(awk '{ print $22 }' "/proc/$content_pid/stat")
+content_cmdline_sha256=$(printf '%s' "$content_cmdline" | sha256sum | awk '{ print $1 }')
+before_descendants=$(children_of "$main_pid" | tr -s ' ' | sed 's/^ //;s/ $//')
+
+kill -KILL "$content_pid"
+killed_disappeared=false
+for _ in $(seq 1 120); do
+  if [ ! -d "/proc/$content_pid" ]; then
+    killed_disappeared=true
+    break
+  fi
+  sleep 1
+done
+[ "$killed_disappeared" = true ] || fail killed_content_pid_still_present
+[ -d "/proc/$main_pid" ] || fail runtime_main_process_died_with_content
+systemctl is-active --quiet "$unit" || fail runtime_unit_not_active_after_content_kill
+
+replacement_pid=
+replacement_cmdline=
+for _ in $(seq 1 180); do
+  for pid in $(children_of "$main_pid"); do
+    [ "$pid" != "$content_pid" ] || continue
+    [ -r "/proc/$pid/cmdline" ] || continue
+    cmd=$(tr '\000' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)
+    case "$cmd" in
+      *--content-process*|*content-process*|*servo-content*|*servo_content*)
+        replacement_pid=$pid
+        replacement_cmdline=$cmd
+        break
+        ;;
+    esac
+  done
+  [ -n "$replacement_pid" ] && break
+  sleep 1
+done
+[ -n "$replacement_pid" ] || fail replacement_content_process_not_found
+[ "$replacement_pid" != "$content_pid" ] || fail replacement_reused_killed_pid
+[ -r "/proc/$replacement_pid/stat" ] || fail replacement_process_stat_missing
+replacement_start_time=$(awk '{ print $22 }' "/proc/$replacement_pid/stat")
+replacement_cmdline_sha256=$(printf '%s' "$replacement_cmdline" | sha256sum | awk '{ print $1 }')
+
+runtime_json=
+for _ in $(seq 1 180); do
+  for candidate in \
+    /run/trillionnium-d2i/runtime-ready.json \
+    /var/lib/trillionnium-d2i/runtime-ready.json \
+    /run/hepta/runtime-ready.json \
+    /var/lib/hepta/runtime-ready.json; do
+    if [ -s "$candidate" ]; then
+      if jq -e '
+        (.generation // .session_generation // 0) >= 2 and
+        (.trusted_chrome_visible // false) == true and
+        ((.crash_callback_observed // .content_crash_observed // false) == true)
+      ' "$candidate" >/dev/null 2>&1; then
+        runtime_json=$candidate
+        break
+      fi
+    fi
+  done
+  [ -n "$runtime_json" ] && break
+  sleep 1
+done
+[ -n "$runtime_json" ] || fail runtime_recovery_evidence_missing
+
+generation=$(jq -er '.generation // .session_generation' "$runtime_json")
+crash_callback=$(jq -er '.crash_callback_observed // .content_crash_observed' "$runtime_json")
+trusted_chrome=$(jq -er '.trusted_chrome_visible' "$runtime_json")
+after_descendants=$(children_of "$main_pid" | tr -s ' ' | sed 's/^ //;s/ $//')
+
+cat > "$proof.tmp" <<EOF
+{
+  "schema": "trillionnium.desktop.d2i-content-process-crash-proof.v1",
+  "status": "PASS_ACTUAL_CONTENT_PROCESS_CRASH_AND_RECOVERY",
+  "runtime_unit": "$unit",
+  "runtime_main_pid": $main_pid,
+  "runtime_main_survived": true,
+  "killed_content_pid": $content_pid,
+  "killed_content_start_time_ticks": $content_start_time,
+  "killed_content_cmdline_sha256": "$content_cmdline_sha256",
+  "sigkill_delivered": true,
+  "killed_pid_disappeared": true,
+  "replacement_content_pid": $replacement_pid,
+  "replacement_content_start_time_ticks": $replacement_start_time,
+  "replacement_content_cmdline_sha256": "$replacement_cmdline_sha256",
+  "replacement_pid_distinct": true,
+  "runtime_generation_after_recovery": $generation,
+  "crash_callback_observed": $crash_callback,
+  "trusted_chrome_visible_after_crash": $trusted_chrome,
+  "descendants_before": "$before_descendants",
+  "descendants_after": "$after_descendants"
+}
+EOF
+jq -e . "$proof.tmp" >/dev/null
+chmod 0644 "$proof.tmp"
+mv "$proof.tmp" "$proof"
+sync "$proof"
+
+printf 'TRILLIONNIUM_D2I_CONTENT_CRASH_PROOF_BEGIN\n'
+cat "$proof"
+printf 'TRILLIONNIUM_D2I_CONTENT_CRASH_PROOF_END\n'
