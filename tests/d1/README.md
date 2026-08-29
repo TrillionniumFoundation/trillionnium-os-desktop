@@ -25,3 +25,7 @@ The resulting ext4 image must pass read-only `e2fsck`, and its superblock header
 is retained as bounded diagnostics. An unpacked directory is not accepted as the
 ext4 population input because host directory enumeration can perturb inode
 allocation despite identical file content.
+
+The permanent `d1-qemu-substrate` workflow runs directly on the tracked branch
+head. Transient dispatch or materialization workflows are not part of the
+candidate tree and cannot be used as evidence-bearing heads.
