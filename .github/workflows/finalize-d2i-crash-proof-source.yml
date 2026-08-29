@@ -1,0 +1,71 @@
+name: finalize-d2i-crash-proof-source
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/d2i-crash-proof-source.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-d2i-crash-proof-source
+  cancel-in-progress: false
+
+jobs:
+  validate-and-commit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact integration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+
+      - name: Set executable modes and validate proof source
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod 0755 \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof \
+            tests/qemu/extract-d2i-content-crash-proof.sh \
+            tools/verify_d2i_content_crash_proof.py
+          rm -f .github/d2i-crash-proof-source.trigger
+          shellcheck \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof \
+            tests/qemu/extract-d2i-content-crash-proof.sh
+          python3 -m unittest tests.d1.test_d2i_content_crash_proof
+          python3 -m py_compile tools/verify_d2i_content_crash_proof.py
+          systemd-analyze verify \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-content-crash-proof.service \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-acceptance.service
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git add -A
+          git diff --cached --check
+
+      - name: Commit bounded source changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "trillionnium-d2i-proof"
+          git config user.email "d2i-proof@users.noreply.github.com"
+          git commit -m "test(d2i): prove actual Servo content-process crash and recovery"
+          git push origin HEAD:codex/full-gap-closure-v2
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d2i-crash-proof-source-diagnostics-${{ github.sha }}
+          path: |
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-content-crash-proof.service
+            tests/d1/test_d2i_content_crash_proof.py
+            tests/qemu/extract-d2i-content-crash-proof.sh
+            tools/verify_d2i_content_crash_proof.py
+          if-no-files-found: error
+          retention-days: 7
