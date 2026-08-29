@@ -57,10 +57,11 @@ impl WebViewDelegate for ProbeWebViewDelegate {
 }
 
 fn construct_servo() -> Servo {
-    ServoBuilder::default()
+    let servo = ServoBuilder::default()
         .event_loop_waker(Box::new(ProbeWaker))
-        .delegate(Rc::new(ProbeServoDelegate))
-        .build()
+        .build();
+    servo.set_delegate(Rc::new(ProbeServoDelegate));
+    servo
 }
 
 fn construct_webview(
