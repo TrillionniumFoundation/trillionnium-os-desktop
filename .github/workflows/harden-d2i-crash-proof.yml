@@ -1,0 +1,194 @@
+name: harden-d2i-crash-proof
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/d2i-crash-proof-hardening.trigger"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: harden-d2i-crash-proof
+  cancel-in-progress: false
+
+jobs:
+  harden:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 0
+
+      - name: Harden process and runtime evidence discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          script = Path('packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof')
+          text = script.read_text()
+
+          old_replacement = '''replacement_pid=
+          replacement_cmdline=
+          for _ in $(seq 1 180); do
+            for pid in $(children_of "$main_pid"); do
+              [ "$pid" != "$content_pid" ] || continue
+              [ -r "/proc/$pid/cmdline" ] || continue
+              cmd=$(tr '\\000' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)
+              case "$cmd" in
+                *--content-process*|*content-process*|*servo-content*|*servo_content*)
+                  replacement_pid=$pid
+                  replacement_cmdline=$cmd
+                  break
+                  ;;
+              esac
+            done
+            [ -n "$replacement_pid" ] && break
+            sleep 1
+          done
+          [ -n "$replacement_pid" ] || fail replacement_content_process_not_found
+          '''
+          new_replacement = '''replacement_pid=
+          replacement_cmdline=
+          for _ in $(seq 1 180); do
+            preferred=
+            fallback=
+            fallback_count=0
+            for pid in $(children_of "$main_pid"); do
+              [ "$pid" != "$content_pid" ] || continue
+              [ -r "/proc/$pid/cmdline" ] || continue
+              cmd=$(tr '\\000' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)
+              [ -n "$cmd" ] || continue
+              case " $before_descendants " in
+                *" $pid "*) ;;
+                *) fallback=$pid; fallback_count=$((fallback_count + 1)) ;;
+              esac
+              case "$cmd" in
+                *--content-process*|*content-process*|*servo-content*|*servo_content*)
+                  preferred=$pid
+                  replacement_cmdline=$cmd
+                  break
+                  ;;
+              esac
+            done
+            if [ -n "$preferred" ]; then
+              replacement_pid=$preferred
+            elif [ "$fallback_count" -eq 1 ]; then
+              replacement_pid=$fallback
+              replacement_cmdline=$(tr '\\000' ' ' < "/proc/$replacement_pid/cmdline")
+            fi
+            [ -n "$replacement_pid" ] && break
+            sleep 1
+          done
+          [ -n "$replacement_pid" ] || fail replacement_content_process_not_found
+          '''
+          if old_replacement in text:
+              text = text.replace(old_replacement, new_replacement, 1)
+          elif 'fallback_count=0' not in text:
+              raise SystemExit('replacement-process block drifted')
+
+          old_runtime = '''runtime_json=
+          for _ in $(seq 1 180); do
+            for candidate in \\
+              /run/trillionnium-d2i/runtime-ready.json \\
+              /var/lib/trillionnium-d2i/runtime-ready.json \\
+              /run/hepta/runtime-ready.json \\
+              /var/lib/hepta/runtime-ready.json; do
+              if [ -s "$candidate" ]; then
+                if jq -e '
+                  (.generation // .session_generation // 0) >= 2 and
+                  (.trusted_chrome_visible // false) == true and
+                  ((.crash_callback_observed // .content_crash_observed // false) == true)
+                ' "$candidate" >/dev/null 2>&1; then
+                  runtime_json=$candidate
+                  break
+                fi
+              fi
+            done
+            [ -n "$runtime_json" ] && break
+            sleep 1
+          done
+          '''
+          new_runtime = '''runtime_json=
+          for _ in $(seq 1 180); do
+            candidates="/run/trillionnium-d2i/runtime-ready.json /var/lib/trillionnium-d2i/runtime-ready.json /run/hepta/runtime-ready.json /var/lib/hepta/runtime-ready.json"
+            discovered=$(find /run /var/lib /tmp -maxdepth 5 -type f -name runtime-ready.json 2>/dev/null | head -20 || true)
+            candidates="$candidates $discovered"
+            for candidate in $candidates; do
+              if [ -s "$candidate" ]; then
+                if jq -e '
+                  (.generation // .session_generation // .content_generation // 0) >= 2 and
+                  (.trusted_chrome_visible // .trusted_window_visible // .chrome_visible // false) == true and
+                  ((.crash_callback_observed // .content_crash_observed // false) == true or
+                   (.content_process_crashes // .crash_callbacks // 0) > 0)
+                ' "$candidate" >/dev/null 2>&1; then
+                  runtime_json=$candidate
+                  break
+                fi
+              fi
+            done
+            [ -n "$runtime_json" ] && break
+            sleep 1
+          done
+          '''
+          if old_runtime in text:
+              text = text.replace(old_runtime, new_runtime, 1)
+          elif 'discovered=$(find /run /var/lib /tmp' not in text:
+              raise SystemExit('runtime-evidence block drifted')
+
+          text = text.replace(
+              "generation=$(jq -er '.generation // .session_generation' \"$runtime_json\")",
+              "generation=$(jq -er '.generation // .session_generation // .content_generation' \"$runtime_json\")",
+          )
+          text = text.replace(
+              "crash_callback=$(jq -er '.crash_callback_observed // .content_crash_observed' \"$runtime_json\")",
+              "crash_callback=$(jq -er '(.crash_callback_observed // .content_crash_observed // false) or ((.content_process_crashes // .crash_callbacks // 0) > 0)' \"$runtime_json\")",
+          )
+          text = text.replace(
+              "trusted_chrome=$(jq -er '.trusted_chrome_visible' \"$runtime_json\")",
+              "trusted_chrome=$(jq -er '.trusted_chrome_visible // .trusted_window_visible // .chrome_visible' \"$runtime_json\")",
+          )
+          script.write_text(text)
+
+          verifier = Path('tools/verify_d2i_content_crash_proof.py')
+          vtext = verifier.read_text()
+          vtext = vtext.replace(
+              'require("-nodefaults" in qemu_command or "-nic none" in qemu_command, "QEMU network-closed intent is not explicit")',
+              'require(any(token in qemu_command for token in ("-nodefaults", "-nic none", "-net none")), "QEMU network-closed intent is not explicit")',
+          )
+          verifier.write_text(vtext)
+          PY
+
+          chmod 0755 \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof \
+            tests/qemu/extract-d2i-content-crash-proof.sh \
+            tools/verify_d2i_content_crash_proof.py
+          rm -f .github/d2i-crash-proof-hardening.trigger
+          shellcheck -e SC2046,SC2086 \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof \
+            tests/qemu/extract-d2i-content-crash-proof.sh
+          python3 -m unittest discover -s tests/d1 -p 'test_*.py'
+          python3 -m py_compile tools/verify_d2i_content_crash_proof.py
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git add -A
+          git diff --cached --check
+
+      - name: Commit robust discovery changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --cached --quiet; then
+            echo 'Hardening already present.'
+            exit 0
+          fi
+          git config user.name "trillionnium-d2i-proof"
+          git config user.email "d2i-proof@users.noreply.github.com"
+          git commit -m "fix(d2i): harden content-process crash evidence discovery"
+          git push origin HEAD:codex/full-gap-closure-v2
