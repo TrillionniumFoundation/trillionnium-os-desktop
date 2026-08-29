@@ -1,0 +1,102 @@
+name: request-independent-review
+
+on:
+  push:
+    branches: ["codex/full-gap-closure-v2"]
+    paths:
+      - ".github/request-independent-review.trigger"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: request-independent-review-pr31
+  cancel-in-progress: false
+
+jobs:
+  request:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out governance source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-gap-closure-v2
+          fetch-depth: 1
+
+      - name: Resolve and request non-author human reviewers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: "31"
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.github.com/repos/$REPOSITORY
+          pr=$(mktemp)
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api/pulls/$PR_NUMBER" > "$pr"
+          author=$(jq -er '.user.login' "$pr")
+          head_ref=$(jq -er '.head.ref' "$pr")
+          head_sha=$(jq -er '.head.sha' "$pr")
+          test "$head_ref" = codex/full-gap-closure-v2
+
+          candidates=$(mktemp)
+          : > "$candidates"
+          if [ -f .github/CODEOWNERS ]; then
+            grep -Eo '@[A-Za-z0-9](?:[A-Za-z0-9-]{0,37})(?:/[A-Za-z0-9_.-]+)?' .github/CODEOWNERS \
+              | sed 's/^@//' \
+              | grep -v '/' \
+              >> "$candidates" || true
+          fi
+          page=1
+          while [ "$page" -le 10 ]; do
+            response=$(mktemp)
+            curl --fail --silent --show-error \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/orgs/TrillionniumFoundation/members?per_page=100&page=$page" \
+              > "$response" || break
+            jq -r '.[].login' "$response" >> "$candidates"
+            count=$(jq 'length' "$response")
+            rm -f "$response"
+            [ "$count" -eq 100 ] || break
+            page=$((page + 1))
+          done
+
+          reviewers=$(sort -u "$candidates" \
+            | grep -v -Fx "$author" \
+            | grep -v -E '\[bot\]$|^(github-actions|dependabot|copilot)$' \
+            | head -15 \
+            | jq -Rsc 'split("\n") | map(select(length > 0))')
+
+          if [ "$(jq 'length' <<<"$reviewers")" -eq 0 ]; then
+            body=$(jq -n --arg head "$head_sha" '{body:("REPOSITORY_SETTING_REQUIRED: no non-author human reviewer is resolvable for PR #31 at exact head `" + $head + "`. Create an independent organization security/release team, update CODEOWNERS, and request that team. Automated or Copilot review is not accepted as independent approval.")}')
+            curl --fail --silent --show-error -X POST \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "$api/issues/31/comments" -d "$body" >/dev/null
+            exit 1
+          fi
+
+          payload=$(jq -n --argjson reviewers "$reviewers" '{reviewers:$reviewers}')
+          curl --fail --silent --show-error -X POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api/pulls/$PR_NUMBER/requested_reviewers" \
+            -d "$payload" | jq '{requested_reviewers:[.requested_reviewers[].login]}'
+
+          body=$(jq -n --arg head "$head_sha" --argjson reviewers "$reviewers" '{body:("Independent review requested for exact integration head `" + $head + "` from: " + ($reviewers | join(", ")) + ". Approval must target the current head and no active CHANGES_REQUESTED may remain.")}')
+          curl --fail --silent --show-error -X POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api/issues/$PR_NUMBER/comments" -d "$body" >/dev/null
