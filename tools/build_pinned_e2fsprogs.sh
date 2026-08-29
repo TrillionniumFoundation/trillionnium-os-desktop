@@ -66,7 +66,7 @@ build_fingerprint="$commit:${configure_flags[*]}:$runtime_locale"
 
 valid_existing=false
 if [[ -f "$stamp" && -x "$bin_dir/mke2fs" && -x "$bin_dir/e2fsck" && -x "$bin_dir/dumpe2fs" ]]; then
-  installed_version=$($bin_dir/mke2fs -V 2>&1 | awk 'NR == 1 { print $2 }')
+  installed_version=$("$bin_dir/mke2fs" -V 2>&1 | awk 'NR == 1 { print $2 }')
   if [[ "$installed_version" == "$version" && "$(cat "$stamp")" == "$build_fingerprint" ]]; then
     valid_existing=true
   fi
@@ -94,7 +94,7 @@ if [[ "$valid_existing" != true ]]; then
   test -x "$bin_dir/mke2fs"
   test -x "$bin_dir/e2fsck"
   test -x "$bin_dir/dumpe2fs"
-  installed_version=$($bin_dir/mke2fs -V 2>&1 | awk 'NR == 1 { print $2 }')
+  installed_version=$("$bin_dir/mke2fs" -V 2>&1 | awk 'NR == 1 { print $2 }')
   test "$installed_version" = "$version"
   printf '%s\n' "$build_fingerprint" > "$stamp"
 fi
