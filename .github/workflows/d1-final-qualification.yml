@@ -17,6 +17,7 @@ on:
       - "packaging/debian/tmpfiles.d/**"
       - "tests/d1/**"
       - "tests/qemu/**"
+      - "tools/build_pinned_e2fsprogs.sh"
       - "tools/compare_d1_builds.py"
       - "tools/prepare_d1_inputs.py"
       - "tools/resolve_debian_snapshot.py"
@@ -65,6 +66,7 @@ jobs:
             curl \
             debian-archive-keyring \
             e2fsprogs \
+            gettext \
             gnupg \
             jq \
             mmdebstrap \
@@ -87,7 +89,9 @@ jobs:
           manifest = json.loads(Path('manifests/e2fsprogs-host-toolchain.v1.json').read_text())
           assert manifest['commit'] == 'c3cce4a07efefc62bc7fc57a678cb870af27d0f2'
           assert manifest['version'] == '1.47.2'
-          assert manifest['build']['configure_flags'] == ['--disable-nls']
+          assert manifest['build']['configure_flags'] == ['--enable-nls']
+          assert manifest['build']['runtime_locale'] == 'C.UTF-8'
+          assert manifest['build']['utf8_tar_import_probe_required'] is True
           assert manifest['build']['install_system_wide'] is False
           assert manifest['build']['isolated_prefix_required'] is True
           PY
@@ -98,7 +102,7 @@ jobs:
           cd "$build"
           "$GITHUB_WORKSPACE/e2fsprogs-source/configure" \
             --prefix="$prefix" \
-            --disable-nls
+            --enable-nls
           make -j2
           make -C e2fsck install
           make -C misc install
@@ -106,6 +110,54 @@ jobs:
           test -x "$prefix/sbin/e2fsck"
           test -x "$prefix/sbin/dumpe2fs"
           test "$("$prefix/sbin/mke2fs" -V 2>&1 | awk 'NR == 1 { print $2 }')" = "$E2FSPROGS_VERSION"
+          test "$(LC_ALL=C.UTF-8 LANG=C.UTF-8 locale charmap)" = UTF-8
+          probe="$RUNNER_TEMP/e2fsprogs-utf8-probe"
+          rm -rf "$probe"
+          mkdir -p "$probe/root"
+          printf 'utf8-path-probe\n' > "$probe/root/路径.txt"
+          LC_ALL=C tar \
+            --sort=name \
+            --format=pax \
+            --pax-option=delete=atime,delete=ctime,exthdr.name=%d/PaxHeaders/%f \
+            --numeric-owner \
+            --mtime='@1700000000' \
+            -C "$probe/root" \
+            -cf "$probe/rootfs.tar" .
+          truncate -s 64M "$probe/probe.ext4"
+          probe_uuid=7f453284-a1e5-4f17-9c30-7c5bde91ffff
+          E2FSPROGS_FAKE_TIME=1700000000 \
+            LC_ALL=C.UTF-8 LANG=C.UTF-8 \
+            "$prefix/sbin/mke2fs" \
+            -F -q -t ext4 -b 4096 -I 256 -m 0 \
+            -L TOSD1PROBE -U "$probe_uuid" \
+            -E "root_owner=0:0,lazy_itable_init=0,lazy_journal_init=0,hash_seed=$probe_uuid" \
+            -d "$probe/rootfs.tar" \
+            "$probe/probe.ext4"
+          "$prefix/sbin/e2fsck" -fn "$probe/probe.ext4"
+          mkdir -p /tmp/trillionnium-d1/evidence
+          python3 - "$prefix/sbin/mke2fs" \
+            /tmp/trillionnium-d1/evidence/e2fsprogs-utf8-probe.json \
+            "$E2FSPROGS_COMMIT" "$E2FSPROGS_VERSION" <<'PROBE_PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          import sys
+
+          binary = Path(sys.argv[1])
+          output = Path(sys.argv[2])
+          report = {
+              "schema": "trillionnium.desktop.e2fsprogs-utf8-probe.v1",
+              "status": "PASS_UTF8_TAR_IMPORT",
+              "commit": sys.argv[3],
+              "version": sys.argv[4],
+              "configure_flags": ["--enable-nls"],
+              "runtime_locale": "C.UTF-8",
+              "source_patch_count": 0,
+              "mke2fs_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
+          }
+          output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          PROBE_PY
+          rm -rf "$probe"
           printf '%s\n' "$prefix/sbin" "$prefix/bin" >> "$GITHUB_PATH"
           cd "$GITHUB_WORKSPACE"
           rm -rf e2fsprogs-source
@@ -159,6 +211,7 @@ jobs:
             tools/resolve_debian_snapshot.py \
             tools/resolve_debian_snapshot_with_pinned_keys.py
           shellcheck -e SC2016,SC2054 \
+            tools/build_pinned_e2fsprogs.sh \
             packaging/debian/image/build-d1-image.sh \
             packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-acceptance \
             packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-agent-fixture-launcher \
@@ -204,11 +257,17 @@ jobs:
           repro = json.loads((root / 'reproducibility-result.json').read_text())
           boot = json.loads((root / 'qemu/boot-result.json').read_text())
           acceptance = json.loads((root / 'qemu/acceptance.json').read_text())
+          utf8_probe = json.loads((root / 'evidence/e2fsprogs-utf8-probe.json').read_text())
           assert pipeline['status'] == 'PASS', pipeline
           assert repro['status'] == 'PASS_TWO_INDEPENDENT_BUILDS', repro
           assert repro['reproducible'] is True, repro
           assert boot['status'] == 'PASS_QEMU_PID1_WAYLAND_AND_AGENT_PORT', boot
           assert acceptance['status'] == 'PASS', acceptance
+          assert utf8_probe['status'] == 'PASS_UTF8_TAR_IMPORT', utf8_probe
+          assert utf8_probe['commit'] == os.environ['E2FSPROGS_COMMIT'], utf8_probe
+          assert utf8_probe['configure_flags'] == ['--enable-nls'], utf8_probe
+          assert utf8_probe['runtime_locale'] == 'C.UTF-8', utf8_probe
+          assert utf8_probe['source_patch_count'] == 0, utf8_probe
           claims = boot['claims']
           for key in [
               'systemd_booted', 'udev_active', 'dbus_active', 'logind_active',
@@ -233,6 +292,7 @@ jobs:
               'qualified_source_sha': os.environ['GITHUB_SHA'],
               'workflow_run_id': os.environ['GITHUB_RUN_ID'],
               'workflow_run_attempt': int(os.environ['GITHUB_RUN_ATTEMPT']),
+              'e2fsprogs_utf8_probe': utf8_probe,
               'pipeline': pipeline,
               'reproducibility': repro,
               'boot': boot,
