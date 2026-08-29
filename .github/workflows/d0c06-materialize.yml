@@ -43,19 +43,23 @@ jobs:
           members = archive.getmembers()
           if not members:
               raise SystemExit('empty D0C-06 payload')
+          names = set()
           for member in members:
               path = PurePosixPath(member.name)
               if path.is_absolute() or '..' in path.parts:
                   raise SystemExit(f'unsafe archive path: {member.name}')
               if member.issym() or member.islnk() or member.isdev():
                   raise SystemExit(f'unsupported archive member: {member.name}')
+              normalized = member.name
+              while normalized.startswith('./'):
+                  normalized = normalized[2:]
+              names.add(normalized.rstrip('/'))
           required = {
               '.github/workflows/receipt-journal.yml',
               'contracts/receipt-journal.v1.json',
               'crates/hepta-session-core/src/receipt_journal.rs',
               'tools/verify_receipt_journal.py',
           }
-          names = {member.name.rstrip('/') for member in members}
           missing = sorted(required - names)
           if missing:
               raise SystemExit(f'payload missing required files: {missing}')
