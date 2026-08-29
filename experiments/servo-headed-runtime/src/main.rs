@@ -951,7 +951,7 @@ impl RuntimeState {
             .unwrap_or_else(|| "unknown failure".to_owned());
         let state_report = format!(
             concat!(
-                "{\n",
+                "{{\n",
                 "  \"schema\": \"trillionnium.desktop.d0a02-runtime-state.v1\",\n",
                 "  \"generation\": {},\n",
                 "  \"load_complete\": {},\n",
@@ -985,7 +985,7 @@ impl RuntimeState {
                 "  \"chrome_recovery_ok\": {},\n",
                 "  \"window_resize_events\": {},\n",
                 "  \"failure\": {}\n",
-                "}\n"
+                "}}\n"
             ),
             self.generation.get(),
             self.load_complete.get(),
