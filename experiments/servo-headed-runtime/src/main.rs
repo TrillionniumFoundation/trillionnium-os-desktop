@@ -30,7 +30,6 @@ use servo::{
     ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WheelDelta, WheelEvent, WheelMode,
     WindowRenderingContext, run_content_process,
 };
-use tracing::warn;
 use url::Url;
 use winit::application::ApplicationHandler;
 use winit::dpi::{PhysicalPosition, PhysicalSize};
@@ -188,7 +187,7 @@ impl EventLoopWaker for Waker {
 
     fn wake(&self) {
         if let Err(error) = self.0.send_event(AppEvent::Wake) {
-            warn!(?error, "failed to wake D0A-02 event loop");
+            eprintln!("failed to wake D0A-02 event loop: {error}");
         }
     }
 }
