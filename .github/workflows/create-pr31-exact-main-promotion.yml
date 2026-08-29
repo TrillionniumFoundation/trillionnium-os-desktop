@@ -1,0 +1,271 @@
+name: create-pr31-exact-main-promotion
+
+on:
+  push:
+    branches: ["codex/d5-product-foundation"]
+    paths:
+      - ".github/workflows/create-pr31-exact-main-promotion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: create-pr31-exact-main-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out current protected main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Bind exact-main evidence and transform canonical truth atomically
+        env:
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch=codex/pr31-exact-main-promotion-v1
+          git checkout -B "$branch"
+          mkdir -p evidence/integrated-main/2026-08-30-pr31
+          raw="https://raw.githubusercontent.com/$REPOSITORY/codex/exact-main-evidence-live"
+          for file in exact-main-qualification.json exact-main-qualification.md exact-main-workflows.json local-validation.status; do
+            curl --fail --silent --show-error --retry 3 --retry-all-errors \
+              "$raw/$file" -o "evidence/integrated-main/2026-08-30-pr31/$file"
+          done
+          test "$(jq -er '.main_sha' evidence/integrated-main/2026-08-30-pr31/exact-main-qualification.json)" = "$(git rev-parse HEAD)"
+          jq -e '.status == "PASS_INTEGRATED_EXACT_MAIN"' evidence/integrated-main/2026-08-30-pr31/exact-main-qualification.json >/dev/null
+          test "$(cat evidence/integrated-main/2026-08-30-pr31/local-validation.status)" = PASS_EXACT_MAIN_LOCAL
+
+          cat > /tmp/promote.py <<'PY'
+          from __future__ import annotations
+          import json
+          from pathlib import Path
+
+          REPORT_PATH=Path('evidence/integrated-main/2026-08-30-pr31/exact-main-qualification.json')
+          REPORT=json.loads(REPORT_PATH.read_text())
+          MAIN=REPORT['main_sha']
+          TREE=REPORT['main_tree_sha']
+          STAGE='D0T_D0R_D0C06_D0A02_D1_D2I_EXACT_MAIN_VALIDATED'
+          OLD='D0R_D0C06_D0A01_COMPILE_VALIDATED'
+          COMPLETED=['D0T-01','D0T-02','D0A-02','D1-01','D2I-01']
+          PROVEN_REMOVALS={
+            'headed_servo_integrated','visible_product_first_frame','debian_image_built',
+            'qemu_pid1_wayland_boot','integrated_qemu_headed_runtime'
+          }
+
+          def dump(path,obj):
+              Path(path).write_text(json.dumps(obj,indent=2,sort_keys=False)+'\n')
+
+          project=json.loads(Path('manifests/project-state.v1.json').read_text())
+          completed=project.setdefault('integrated_completed_work_packages',[])
+          for item in COMPLETED:
+              if item not in completed: completed.append(item)
+          project['integrated_implementation_stage']=STAGE
+          project['not_claimed']=[x for x in project.get('not_claimed',[]) if x not in PROVEN_REMOVALS]
+          project['integrated_main_sha']=MAIN
+          project['integrated_main_tree_sha']=TREE
+          project['integrated_main_evidence']={
+            'status':'PASS_INTEGRATED_EXACT_MAIN','path':str(REPORT_PATH),'main_sha':MAIN,
+            'tree_sha':TREE,'pr':31,'workflow_run_id':REPORT.get('workflow_run_id'),
+            'evidence_tier':'integrated_qemu_image','claim_ceiling':REPORT.get('claim_ceiling',{}),
+          }
+          for item in project.get('source_candidate_work_packages',[]):
+              if item.get('id') in COMPLETED:
+                  item['status']='INTEGRATED_AND_EXACT_MAIN_VALIDATED'
+                  item['integrated_main_sha']=MAIN
+                  item['integrated_main_evidence']=str(REPORT_PATH)
+          if not any(x.get('id')=='D3-01' for x in project.get('source_candidate_work_packages',[])):
+              project.setdefault('source_candidate_work_packages',[]).append({
+                'id':'D3-01','branch':'codex/d3-pageowner-browseractor-v1',
+                'status':'INTEGRATED_SOURCE_AWAITING_MAIN_EVIDENCE',
+                'claim_ceiling':'local_fixtures_only_no_external_effects','integrated_main_sha':MAIN,
+              })
+          dump('manifests/project-state.v1.json',project)
+
+          gates=json.loads(Path('manifests/gates.v1.json').read_text())
+          for gate in gates.get('gates',[]):
+              if gate.get('id') in COMPLETED:
+                  gate['status']='INTEGRATED_AND_EXACT_MAIN_VALIDATED'
+                  gate['integrated_main_sha']=MAIN
+                  gate['evidence_path']=str(REPORT_PATH)
+              elif gate.get('id')=='D3-01':
+                  gate['status']='INTEGRATED_SOURCE_AWAITING_MAIN_EVIDENCE'
+                  gate['integrated_main_sha']=MAIN
+                  gate['evidence_path']='evidence/integrated-main/2026-08-30-pr31/exact-main-workflows.json'
+          dump('manifests/gates.v1.json',gates)
+
+          for name in ['manifests/repository-state.json','docs/MANIFEST.json']:
+              path=Path(name); obj=json.loads(path.read_text())
+              for key in ('integrated_implementation_stage','implementation_stage','implementation_status'):
+                  if key in obj: obj[key]=STAGE
+              if name.endswith('repository-state.json'):
+                  obj['integrated_implementation_stage']=STAGE
+                  obj['integrated_main_sha']=MAIN
+                  obj['integrated_main_tree_sha']=TREE
+                  obj['exact_main_evidence']=str(REPORT_PATH)
+              dump(name,obj)
+
+          for name in [
+            'docs/DESKTOP_PLAN.md','docs/DESKTOP_PLAN-2026-08-29-d6.md','docs/CURRENT_STATE.md',
+            'README.md','docs/README.md','apps/hepta-browserd/src/lib.rs'
+          ]:
+              path=Path(name)
+              if path.exists(): path.write_text(path.read_text().replace(OLD,STAGE))
+
+          current=f'''# TrillionniumOS Desktop — current state
+
+          **Updated:** 2026-08-30  
+          **Canonical plan:** `2026-08-29-d6`  
+          **Repository mode:** `FULL_PRODUCT_REPOSITORY`  
+          **Integrated implementation stage:** `{STAGE}`  
+          **Integrated main:** `{MAIN}`  
+          **Machine truth:** `manifests/project-state.v1.json`
+
+          ## Integrated and exact-main validated
+
+          PR #31 was merged by protected automation after a non-author approval on its
+          exact head. The merged `main` was requalified both locally and through the
+          permanent workflows recorded in
+          [`exact-main-qualification.json`](../evidence/integrated-main/2026-08-30-pr31/exact-main-qualification.json).
+
+          The demonstrated boundary now includes D0T, D0R, D0C-01 through D0C-06,
+          exact-pin headed Servo on deterministic fixtures, reproducible signed-input
+          Debian/QEMU D1, and one combined D1+D2 image. That image proves native
+          input/IME, default-disabled product AgentPort, no network device, actual Servo
+          content-process SIGKILL, main-runtime and trusted-chrome survival, crash
+          callback, a distinct replacement process, and generation advance.
+
+          D3 PageOwner/BrowserActor source is integrated and exact-main source-tested.
+
+          ## Active blocker
+
+          D3 is **not yet promoted at integrated-image evidence tier**. Its remaining gate
+          is one locked image corpus proving semantic-principal binding, explicit
+          development-profile AgentPort activation, unauthorized-peer refusal, typed
+          BrowserActor dispatch, deadline/cancellation propagation, and durable
+          requested/dispatched/terminal-or-indeterminate receipts. Product activation
+          and external effects remain closed.
+
+          ## Explicit non-claims
+
+          - no production AgentPort activation;
+          - no external navigation, credentials, capabilities, downloads, or effects;
+          - no signed trusted-app runtime or controlled egress;
+          - no signed update/rollback qualification;
+          - no fixed-hardware beta or production release.
+
+          ## Next dependency order
+
+          1. D3 integrated-image AgentPort/receipt corpus.
+          2. D4 same-page human/Agent collaboration.
+          3. D5 signed trusted applications.
+          4. D6 capability services and controlled egress.
+          5. D7 recovery, updates and effect reconciliation.
+          6. D8 fixed-hardware beta.
+          7. D9 independently signed release promotion.
+          '''
+          import textwrap
+          Path('docs/CURRENT_STATE.md').write_text(textwrap.dedent(current))
+
+          plan=Path('docs/DESKTOP_PLAN-2026-08-29-d6.md')
+          text=plan.read_text()
+          marker='## 4A. Integrated exact-main checkpoint after PR #31'
+          if marker not in text:
+              insert=f'''\n{marker}\n\nIntegrated main `{MAIN}` has exact-main evidence at\n`evidence/integrated-main/2026-08-30-pr31/`. D0T-01/02, D0A-02, D1-01 and\nD2I-01 are integrated and exact-main validated at their declared tiers. D3\nsource is integrated but its development-profile AgentPort, semantic-principal\nbinding and durable receipt corpus still require one integrated-image gate.\nThis checkpoint does not enable production authority or advance D4-D9.\n'''
+              pos=text.find('\n## 5.')
+              plan.write_text(text[:pos]+insert+text[pos:] if pos!=-1 else text+insert)
+
+          checkpoint=f'''\n## Integrated exact-main checkpoint\n\nProtected `main` `{MAIN}` is validated through D2I. See\n`evidence/integrated-main/2026-08-30-pr31/`. D3 source is present, but its\nintegrated-image activation/receipt gate and all D4-D9 promotion gates remain\nclosed.\n'''
+          for name in ('README.md','docs/README.md'):
+              path=Path(name); text=path.read_text()
+              if '## Integrated exact-main checkpoint' not in text:
+                  path.write_text(text.rstrip()+checkpoint+'\n')
+          PY
+          python3 /tmp/promote.py
+
+      - name: Install exact Rust toolchain and validate promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          git diff --check
+
+      - name: Commit and push promotion branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "trillionnium-evidence-promotion"
+          git config user.email "evidence-promotion@users.noreply.github.com"
+          git add -A
+          git commit -m "docs(truth): promote PR 31 integrated exact-main evidence"
+          git push --force-with-lease origin HEAD:codex/pr31-exact-main-promotion-v1
+
+      - name: Open reviewed promotion PR and request prior independent approvers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/$REPOSITORY"
+          head_sha=$(git rev-parse HEAD)
+          existing=$(curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api/pulls?state=open&head=TrillionniumFoundation:codex/pr31-exact-main-promotion-v1&base=main")
+          if [ "$(jq 'length' <<<"$existing")" -eq 0 ]; then
+            payload=$(jq -n --arg head codex/pr31-exact-main-promotion-v1 --arg base main '{
+              title:"docs(truth): promote PR 31 integrated exact-main evidence",
+              head:$head,base:$base,draft:false,
+              body:"Promotes only the exact-main-proven D0T, D0A-02, D1 and D2I gates. D3 remains source-integrated but awaits its development-profile AgentPort/principal/receipt image corpus. D4-D9 and all production/external-effect/release claims remain closed. Requires independent review and a post-promotion exact-main rerun."
+            }')
+            curl --fail --silent --show-error -X POST \
+              -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' "$api/pulls" -d "$payload" > /tmp/promotion-pr.json
+          else
+            printf '%s' "$existing" | jq '.[0]' > /tmp/promotion-pr.json
+          fi
+          number=$(jq -er '.number' /tmp/promotion-pr.json)
+          curl --fail --silent --show-error \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' "$api/pulls/31/reviews?per_page=100" > /tmp/pr31-reviews.json
+          author=$(jq -r '.user.login' /tmp/promotion-pr.json)
+          reviewers=$(jq --arg author "$author" --arg head "$(jq -r '.head.sha' < /tmp/pr31-reviews.json 2>/dev/null || true)" '
+            map(select(.state == "APPROVED"))
+            | map(select(.user.login != $author and .user.type != "Bot" and (.user.login | endswith("[bot]") | not)))
+            | map(.user.login) | unique
+          ' /tmp/pr31-reviews.json)
+          if [ "$(jq 'length' <<<"$reviewers")" -gt 0 ]; then
+            jq -n --argjson reviewers "$reviewers" '{reviewers:$reviewers}' > /tmp/reviewer-request.json
+            curl --fail --silent --show-error -X POST \
+              -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "$api/pulls/$number/requested_reviewers" -d @/tmp/reviewer-request.json >/dev/null || true
+          fi
+          jq '{number,html_url,head_sha:.head.sha,base_sha:.base.sha}' /tmp/promotion-pr.json
