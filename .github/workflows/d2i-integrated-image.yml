@@ -57,6 +57,12 @@ jobs:
       - name: Validate tracked source and read-only gate surface
         run: bash tools/run_d2i_integrated_image.sh validate-source
 
+      - name: Validate resource reclamation and failure diagnostics helpers
+        run: |
+          shellcheck \
+            tools/reclaim_d2i_servo_workspace.sh \
+            tools/collect_d2i_failure_diagnostics.sh
+
       - name: Prove D1 product and qualification dependency separation
         run: bash tools/run_d2i_integrated_image.sh prove-d1-graphs
 
@@ -93,6 +99,9 @@ jobs:
       - name: Build callback-independent causal Servo runtime
         run: bash tools/run_d2i_integrated_image.sh build-runtime
 
+      - name: Reclaim exact Servo build workspace before D1 image construction
+        run: bash tools/reclaim_d2i_servo_workspace.sh
+
       - name: Build and qualify exact D1 image
         run: bash tools/run_d2i_integrated_image.sh run-d1
 
@@ -104,6 +113,11 @@ jobs:
 
       - name: Build and strictly verify portable D2I evidence
         run: bash tools/run_d2i_integrated_image.sh finalize-evidence
+
+      - name: Collect bounded cross-stage failure diagnostics
+        if: failure()
+        continue-on-error: true
+        run: bash tools/collect_d2i_failure_diagnostics.sh
 
       - name: Upload canonical portable D2I evidence
         if: always()
