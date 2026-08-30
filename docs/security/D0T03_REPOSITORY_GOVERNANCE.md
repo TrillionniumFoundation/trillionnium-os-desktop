@@ -32,6 +32,18 @@ references, checkout credential persistence, and shell/Python/REST mutation
 commands. YAML anchors, aliases, merge keys, tags, malformed collections, and
 symlinked workflow inputs are rejected. The parser is intentionally dependency
 free so the source gate does not acquire an unpinned package authority.
+Its command-graph scanner fails closed for dynamic Git executables/subcommands,
+array expansions, aliases/functions/sourced scripts, process substitutions and
+unquoted heredoc expansions, GitHub CLI or curl/wget dynamic methods, and
+Python subprocess/HTTP/exec/spawn wrapper aliases. Literal read-only probes
+remain explicitly allow-listed; the legacy D1 evidence helper remains a second,
+narrow scanner for its own qualification receipt.
+
+Here, `repository_write: false` is a remote/protected-source boundary: the
+qualification jobs may fetch the current base into an ephemeral runner
+checkout to bind an exact object, but they may not commit, push, tag, merge,
+rewrite, or update any protected or promotion ref. The fetch exception is
+explicitly represented in the D2I contract and is not release authority.
 
 The source bootstrap is only `SOURCE_BOOTSTRAP_READY`. It cannot promote itself
 to `INTEGRATED` or `CLOSED`.

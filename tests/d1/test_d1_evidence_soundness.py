@@ -132,6 +132,9 @@ class D1EvidenceSoundnessTests(unittest.TestCase):
             "QEMU boot claims",
             "acceptance AgentPort evidence",
             "prepared-input claims",
+            "EXT4_SUPERBLOCK_EPOCH_MAX",
+            "require_ext4_superblock_epoch",
+            "build_source_epoch = require_ext4_superblock_epoch",
         ):
             self.assertIn(required, verifier)
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
 import sys
 import unittest
 
@@ -59,6 +60,11 @@ class D2IContractTests(unittest.TestCase):
         policy = contract["source_binding"]["workflow_mutation_policy"]
         self.assertFalse(policy["repository_write"])
         self.assertEqual(
+            policy["repository_write_scope"],
+            "remote_or_protected_source_and_promotion_refs",
+        )
+        self.assertTrue(policy["ephemeral_checkout_fetch_allowed"])
+        self.assertEqual(
             set(policy["forbidden_git_operations"]),
             {
                 "push",
@@ -72,6 +78,22 @@ class D2IContractTests(unittest.TestCase):
         self.assertEqual(
             policy["scanner"],
             "tools/finalize_d1_evidence.py:workflow_contains_git_mutation",
+        )
+        self.assertEqual(
+            policy["permanent_scanner"],
+            "tools/validate_governance_integrity.py:_contains_mutation",
+        )
+        self.assertTrue(policy["dynamic_forms_fail_closed"])
+        self.assertEqual(
+            set(policy["forbidden_dynamic_forms"]),
+            {
+                "shell_dynamic_git_subcommand_or_executable",
+                "shell_array_alias_function_or_sourced_command",
+                "shell_process_substitution_or_unquoted_heredoc_expansion",
+                "shell_dynamic_github_cli_or_http_method",
+                "python_dynamic_process_or_http_method",
+                "python_exec_spawn_or_wrapper_command_graph",
+            },
         )
         self.assertIn(
             "permanent_workflow_repository_mutation_scan",
@@ -270,6 +292,116 @@ class D2IContractTests(unittest.TestCase):
             1,
         )
         self.assertIn("external-injector.log", host_gate)
+
+    def test_image_preparation_normalizes_ext4_mutation_metadata(self) -> None:
+        """Repeated D2I preparations must not retain host-clock ext4 fields."""
+
+        prepare = (ROOT / "tests/qemu/prepare-d2i-image.sh").read_text()
+        contract = json.loads(
+            (ROOT / "contracts/d2i-integrated-image.v1.json").read_text()
+        )
+        normalization = contract["image"]["metadata_normalization"]
+        self.assertIs(type(normalization["bound_to_source_date_epoch"]), bool)
+        self.assertTrue(normalization["bound_to_source_date_epoch"])
+        self.assertIs(type(normalization["source_date_epoch_min"]), int)
+        self.assertIs(type(normalization["source_date_epoch_max"]), int)
+        self.assertEqual(normalization["source_date_epoch_min"], 1)
+        self.assertEqual(normalization["source_date_epoch_max"], 4294967295)
+        self.assertEqual(
+            normalization["injected_inode_times"],
+            ["atime", "ctime", "mtime", "crtime"],
+        )
+        self.assertTrue(normalization["injected_inode_generations"])
+        self.assertEqual(
+            normalization["parent_directory_times"],
+            ["atime", "ctime", "mtime"],
+        )
+        self.assertEqual(
+            normalization["superblock_times"],
+            ["mtime", "wtime", "lastcheck", "mkfs_time"],
+        )
+        self.assertEqual(normalization["superblock_kbytes_written"], 0)
+        self.assertIn("dumpe2fs", prepare)
+        for path in (
+            "/usr/libexec",
+            "/etc/systemd/system",
+            "/usr/local/libexec",
+            "/usr/lib/trillionnium-d1",
+        ):
+            with self.subTest(parent_directory=path):
+                self.assertIn(path, prepare)
+        for token in (
+            'for index in "${!injected_paths[@]}"',
+            'set_inode_field $path generation $((4096 + index))',
+            'set_inode_field $path atime @${source_epoch}',
+            'set_inode_field $path ctime @${source_epoch}',
+            'set_inode_field $path mtime @${source_epoch}',
+            'set_inode_field $path crtime @${source_epoch}',
+            'set_super_value mtime @${source_epoch}',
+            'set_super_value wtime @${source_epoch}',
+            'set_super_value lastcheck @${source_epoch}',
+            'set_super_value mkfs_time @${source_epoch}',
+            'set_super_value kbytes_written 0',
+            'e2fsck -fn "$output_image"',
+            '"metadata_normalization": {',
+            'source_epoch =~ ^[1-9][0-9]*$',
+            'source_epoch_max=4294967295',
+            '${#source_epoch} > 10',
+            'source_epoch > source_epoch_max',
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, prepare)
+
+        workflow = (ROOT / ".github/workflows/d2i-integrated-image.yml").read_text()
+        self.assertIn("Prepare the integrated image twice and require byte equality", workflow)
+        self.assertIn("tests/qemu/prepare-d2i-image.sh", workflow)
+        self.assertIn("manifest_repository=\"$(jq -er '.repository' manifests/e2fsprogs-host-toolchain.v1.json)\"", workflow)
+        self.assertIn("test \"$manifest_repository\" = \"https://github.com/tytso/e2fsprogs.git\"", workflow)
+        self.assertIn("manifest_commit=\"$(jq -er '.commit' manifests/e2fsprogs-host-toolchain.v1.json)\"", workflow)
+        self.assertIn("test \"$manifest_commit\" = \"$E2FSPROGS_COMMIT\"", workflow)
+        self.assertIn("manifest_tag=\"$(jq -er '.tag' manifests/e2fsprogs-host-toolchain.v1.json)\"", workflow)
+        self.assertIn("test \"$manifest_tag\" = \"v$E2FSPROGS_VERSION\"", workflow)
+        self.assertIn("manifest_version=\"$(jq -er '.version' manifests/e2fsprogs-host-toolchain.v1.json)\"", workflow)
+        self.assertIn("test \"$manifest_version\" = \"$E2FSPROGS_VERSION\"", workflow)
+        self.assertIn("expected_metadata_normalization", workflow)
+        self.assertIn("type(metadata['superblock_kbytes_written']) is int", workflow)
+        self.assertIn("prep_a['metadata_normalization']", workflow)
+        self.assertIn("prep_b['metadata_normalization']", workflow)
+        self.assertIn("assert prep_a == prep_b", workflow)
+        self.assertIn("prepared = read_json(root / 'd1/prepared/prepared-inputs.json')", workflow)
+        self.assertIn("1 <= source_epoch <= 4294967295", workflow)
+        self.assertIn("type(prep_a['source_date_epoch']) is int", workflow)
+        self.assertIn("type(prep_b['source_date_epoch']) is int", workflow)
+        self.assertIn("prep_a['source_date_epoch'] == source_epoch", workflow)
+        self.assertIn("prep_b['source_date_epoch'] == source_epoch", workflow)
+
+    def test_image_preparation_rejects_unrepresentable_source_epoch(self) -> None:
+        script = ROOT / "tests/qemu/prepare-d2i-image.sh"
+        common = [
+            "bash",
+            str(script),
+            "--base-image",
+            "/does/not/need/to/exist",
+            "--runtime-binary",
+            "/does/not/need/to/exist",
+            "--overlay",
+            "/does/not/need/to/exist",
+            "--servo-revision",
+            "0" * 40,
+            "--output-image",
+            "/tmp/d2i-contract-test-image",
+            "--evidence",
+            "/tmp/d2i-contract-test-evidence.json",
+        ]
+        for epoch in ("0", "4294967296", "999999999999999999999"):
+            with self.subTest(epoch=epoch):
+                result = subprocess.run(
+                    [*common[:8], "--source-epoch", epoch, *common[8:]],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(result.returncode, 2, result.stderr)
 
     def test_servo_checkout_uses_canonical_repository_and_sha_only(self) -> None:
         workflow = (ROOT / ".github/workflows/d2i-integrated-image.yml").read_text()

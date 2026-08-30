@@ -201,8 +201,17 @@ if [[ "$architecture" != amd64 ]]; then
   echo "D1 supports amd64 only" >&2
   exit 1
 fi
-if ! [[ "$source_epoch" =~ ^[0-9]+$ ]] || (( source_epoch <= 0 )); then
-  echo "invalid source epoch" >&2
+source_epoch_max=4294967295
+if ! [[ "$source_epoch" =~ ^[1-9][0-9]*$ ]]; then
+  echo "invalid source epoch (must be positive)" >&2
+  exit 1
+fi
+if (( ${#source_epoch} > 10 )); then
+  echo "invalid source epoch (exceeds ext4 superblock range)" >&2
+  exit 1
+fi
+if (( source_epoch > source_epoch_max )); then
+  echo "invalid source epoch (exceeds ext4 superblock range)" >&2
   exit 1
 fi
 if ! [[ "$image_size_mib" =~ ^[0-9]+$ ]] || (( image_size_mib < 1024 )); then

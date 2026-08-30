@@ -30,6 +30,11 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 PACKAGE_RE = re.compile(r"^[a-z0-9][a-z0-9+.-]+$")
 SNAPSHOT_HOST = "snapshot.debian.org"
 SNAPSHOT_INRELEASE_PATH_RE = re.compile(r"^/file/[0-9a-f]{40}/InRelease$")
+# ext4 superblock timestamp fields are unsigned 32-bit Unix seconds.  Keep
+# the prepared manifest inside that representation so downstream D1/D2I image
+# builders cannot silently truncate a seemingly bound source epoch.
+EXT4_SUPERBLOCK_EPOCH_MIN = 1
+EXT4_SUPERBLOCK_EPOCH_MAX = 0xFFFFFFFF
 TRUST_ROOT_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+-]*$")
 ARCHIVE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", re.ASCII)
 _O_CLOEXEC = getattr(os, "O_CLOEXEC", 0)
@@ -167,7 +172,13 @@ def parse_snapshot_epoch(timestamp: str) -> int:
         )
     except ValueError as error:
         raise RuntimeError(f"invalid snapshot timestamp: {timestamp}") from error
-    return int(parsed.timestamp())
+    epoch = int(parsed.timestamp())
+    if not EXT4_SUPERBLOCK_EPOCH_MIN <= epoch <= EXT4_SUPERBLOCK_EPOCH_MAX:
+        raise RuntimeError(
+            "snapshot timestamp epoch is outside the ext4 superblock range: "
+            f"{timestamp} ({epoch})"
+        )
+    return epoch
 
 
 def validate_package(entry: dict[str, Any]) -> tuple[str, str, str]:

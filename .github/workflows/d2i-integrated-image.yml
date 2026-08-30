@@ -164,6 +164,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          manifest_repository="$(jq -er '.repository' manifests/e2fsprogs-host-toolchain.v1.json)"
+          manifest_commit="$(jq -er '.commit' manifests/e2fsprogs-host-toolchain.v1.json)"
+          manifest_tag="$(jq -er '.tag' manifests/e2fsprogs-host-toolchain.v1.json)"
+          manifest_version="$(jq -er '.version' manifests/e2fsprogs-host-toolchain.v1.json)"
+          test "$manifest_repository" = "https://github.com/tytso/e2fsprogs.git"
+          test "$manifest_commit" = "$E2FSPROGS_COMMIT"
+          test "$manifest_tag" = "v$E2FSPROGS_VERSION"
+          test "$manifest_version" = "$E2FSPROGS_VERSION"
           test "$(git -C e2fsprogs-source rev-parse HEAD)" = "$E2FSPROGS_COMMIT"
           test -z "$(git -C e2fsprogs-source status --porcelain=v1)"
           prefix="$RUNNER_TEMP/e2fsprogs-$E2FSPROGS_VERSION"
@@ -646,6 +654,7 @@ jobs:
           if _has_symlink_component(root) or not root.is_dir():
               raise RuntimeError(f'D2I working root is missing or unsafe: {root}')
           d1 = read_json(root / 'd1/pipeline-result.json')
+          prepared = read_json(root / 'd1/prepared/prepared-inputs.json')
           repro = read_json(root / 'd1/reproducibility-result.json')
           prep_a = read_json(root / 'integrated/preparation-a.json')
           prep_b = read_json(root / 'integrated/preparation-b.json')
@@ -656,6 +665,33 @@ jobs:
           assert d1['status'] == 'PASS', d1
           assert repro['status'] == 'PASS_TWO_INDEPENDENT_BUILDS', repro
           assert prep_a['status'] == 'PASS_DETERMINISTIC_INPUT_INJECTION', prep_a
+          source_epoch = prepared['source_date_epoch']
+          assert type(source_epoch) is int and 1 <= source_epoch <= 4294967295, prepared
+          assert type(prep_a['source_date_epoch']) is int, prep_a
+          assert type(prep_b['source_date_epoch']) is int, prep_b
+          assert prep_a['source_date_epoch'] == source_epoch, prep_a
+          assert prep_b['source_date_epoch'] == source_epoch, prep_b
+          expected_metadata_normalization = {
+              'injected_inode_times': True,
+              'injected_inode_generations': True,
+              'parent_directory_times': True,
+              'superblock_times': True,
+              'superblock_kbytes_written': 0,
+          }
+          for preparation in (prep_a, prep_b):
+              metadata = preparation['metadata_normalization']
+              assert type(metadata) is dict, preparation
+              for key in (
+                  'injected_inode_times',
+                  'injected_inode_generations',
+                  'parent_directory_times',
+                  'superblock_times',
+              ):
+                  assert type(metadata[key]) is bool, preparation
+              assert type(metadata['superblock_kbytes_written']) is int, preparation
+          assert prep_a['metadata_normalization'] == expected_metadata_normalization
+          assert prep_b['metadata_normalization'] == expected_metadata_normalization
+          assert prep_a == prep_b, (prep_a, prep_b)
           assert prep_a['integrated_image_sha256'] == prep_b['integrated_image_sha256']
           assert prep_a['servo_revision'] == prep_b['servo_revision']
           assert re.fullmatch(r'[0-9a-f]{40}', prep_a['servo_revision'])

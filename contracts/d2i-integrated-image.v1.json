@@ -11,6 +11,16 @@
     "runtime_injection": "deterministic exact headed runtime binary plus bounded systemd qualification overlay and one external crash helper",
     "independent_preparations": 2,
     "byte_for_byte_equality_required": true,
+    "metadata_normalization": {
+      "bound_to_source_date_epoch": true,
+      "source_date_epoch_min": 1,
+      "source_date_epoch_max": 4294967295,
+      "injected_inode_times": ["atime", "ctime", "mtime", "crtime"],
+      "injected_inode_generations": true,
+      "parent_directory_times": ["atime", "ctime", "mtime"],
+      "superblock_times": ["mtime", "wtime", "lastcheck", "mkfs_time"],
+      "superblock_kbytes_written": 0
+    },
     "package_lock_must_remain_unchanged": true
   },
   "source_binding": {
@@ -27,7 +37,19 @@
     },
     "workflow_mutation_policy": {
       "repository_write": false,
+      "repository_write_scope": "remote_or_protected_source_and_promotion_refs",
+      "ephemeral_checkout_fetch_allowed": true,
       "scanner": "tools/finalize_d1_evidence.py:workflow_contains_git_mutation",
+      "permanent_scanner": "tools/validate_governance_integrity.py:_contains_mutation",
+      "dynamic_forms_fail_closed": true,
+      "forbidden_dynamic_forms": [
+        "shell_dynamic_git_subcommand_or_executable",
+        "shell_array_alias_function_or_sourced_command",
+        "shell_process_substitution_or_unquoted_heredoc_expansion",
+        "shell_dynamic_github_cli_or_http_method",
+        "python_dynamic_process_or_http_method",
+        "python_exec_spawn_or_wrapper_command_graph"
+      ],
       "forbidden_git_operations": [
         "push",
         "update-ref",

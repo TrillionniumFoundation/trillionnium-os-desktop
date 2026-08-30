@@ -6,8 +6,9 @@ Rust domain types live in `crates/trillionnium-contract-core` and
 
 - `browser-api.v1.schema.json` — typed Agent/browser requests
 - `receipt.v1.schema.json` — operation evidence envelope (the journal's
-  `export_redacted_jsonl` output is validated against this schema after
-  lifecycle aggregation)
+  `export_redacted_jsonl` output is checked by schema-equivalent Rust
+  validation after lifecycle aggregation; this pinned schema remains the
+  wire-contract reference)
 - `capability-permit.v1.schema.json` — short-lived typed permit
 - `app-manifest.v1.schema.json` — signed trusted app metadata
 - `error-codes.v1.json` — stable failure taxonomy

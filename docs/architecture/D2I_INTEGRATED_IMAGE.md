@@ -7,6 +7,17 @@ bounded qualification-only systemd overlay twice, and requires the resulting
 images to be byte-for-byte identical. D2I does not inherit a cross-run or
 hermetic-host reproducibility claim that D1 has not established.
 
+The image preparation step binds every e2fsprogs mutation to the committed
+`source_date_epoch` in the inclusive Unix-second range `1..4294967295`
+(the ext4 superblock timestamp representation is unsigned 32-bit; values
+outside that range would truncate or wrap). Debugfs receives the value with its
+`@<unix-seconds>` form, not its calendar-date form; zero is rejected because
+e2fsprogs treats a zero fake-time value as unset. It normalizes injected inode
+times and generations, pre-existing parent-directory times, and the ext4
+superblock write/check accounting fields after the repair pass. The final
+read-only `e2fsck` check must still pass; these normalizations remove host-clock
+metadata without weakening filesystem integrity validation.
+
 The evidence envelope binds the complete checked-out repository through its
 `tree_sha`. Its file-level `input_digests` map is generated from the D2I-01
 invalidation pathspecs in `manifests/gates.v1.json`, covering every tracked

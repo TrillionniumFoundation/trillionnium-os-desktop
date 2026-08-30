@@ -43,8 +43,10 @@ guest root ownership.
 
 Both build candidates first produce the same sorted, timestamp-normalized,
 numeric-owner rootfs tar. A pinned, isolated upstream e2fsprogs toolchain
-imports that tar into ext4 using fixed label, UUID, hash seed, epoch, inode size,
-block size, and eager journal/inode-table initialization. A deterministic UTF-8
+imports that tar into ext4 using fixed label, UUID, hash seed, and a committed
+`source_date_epoch` in the inclusive ext4-superblock-safe range
+`1..4294967295`, plus fixed inode size, block size, and eager journal/inode-table
+initialization. A deterministic UTF-8
 tar import probe containing `路径.txt` must pass before either full image build.
 The pipeline passes canonical absolute paths for `mke2fs`, `e2fsck`, and
 `dumpe2fs` across the sudo boundary and forbids a system-runner fallback.
@@ -53,6 +55,15 @@ The full package lock, rootfs archive, ext4 image, kernel, and initrd must match
 byte-for-byte across the two builds. A mismatch is a hard failure. This is a
 same-run two-build identity claim under the recorded runner/toolchain; it is not
 a cross-run or hermetic-host reproducibility claim.
+
+The D2I preparation pass applies its runtime and qualification overlay twice to
+the qualified D1 image. It binds debugfs mutations to a
+`source_date_epoch` in the inclusive ext4-superblock-safe range
+`1..4294967295` using
+debugfs's explicit `@<unix-seconds>` timestamp syntax, normalizes injected
+inode generations and times, parent-directory times, and ext4 superblock
+accounting after repair, then requires a read-only `e2fsck` pass before
+publishing each preparation receipt.
 
 ## Receipt ceiling
 

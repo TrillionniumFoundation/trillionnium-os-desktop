@@ -223,6 +223,9 @@ Debian/QEMU image and repeat:
 - content-process crash/recovery;
 - AgentPort default-disabled state;
 - no external network device;
+- deterministic ext4 metadata normalization bound to the committed source
+  epoch in the inclusive ext4-safe range `1..4294967295`, followed by a
+  passing read-only filesystem check;
 - bounded evidence export.
 
 **Exit:** one exact image digest satisfies the combined gate.

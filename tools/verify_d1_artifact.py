@@ -36,6 +36,10 @@ RUN_ID_RE = re.compile(r"^[1-9][0-9]*$")
 PR_REF_RE = re.compile(r"^refs/pull/([1-9][0-9]*)/merge$")
 PR_REF_NAME_RE = re.compile(r"^[1-9][0-9]*/merge$")
 REPOSITORY = "TrillionniumFoundation/trillionnium-os-desktop"
+# D1/D2I ext4 superblock time fields are unsigned 32-bit Unix seconds.  Keep
+# transport verification aligned with the source builders so a forged result
+# cannot advertise an epoch that image metadata could not represent.
+EXT4_SUPERBLOCK_EPOCH_MAX = 0xFFFFFFFF
 
 # Raw logs are useful diagnostics, but cannot replace a required canonical
 # result or digest-bearing file.
@@ -390,6 +394,15 @@ def require_positive_int(value: Any, label: str) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise ValueError(f"{label} is not a positive integer")
     return value
+
+
+def require_ext4_superblock_epoch(value: Any, label: str) -> int:
+    epoch = require_positive_int(value, label)
+    if epoch > EXT4_SUPERBLOCK_EPOCH_MAX:
+        raise ValueError(
+            f"{label} exceeds the ext4 superblock timestamp range"
+        )
+    return epoch
 
 
 def require_nonnegative_int(value: Any, label: str) -> int:
@@ -1105,7 +1118,7 @@ def validate_result_semantics(
     prepared_selection_digest = require_sha256(
         prepared.get("selection_sha256"), "prepared.selection_sha256"
     )
-    prepared_source_epoch = require_positive_int(
+    prepared_source_epoch = require_ext4_superblock_epoch(
         prepared.get("source_date_epoch"), "prepared.source_date_epoch"
     )
     reproducibility_package_count = require_positive_int(
@@ -1193,7 +1206,10 @@ def validate_result_semantics(
             raise ValueError(f"{build_name} selection digest is not bound to prepared inputs")
         if build.get("signed_package_set_sha256") != prepared_package_set_digest:
             raise ValueError(f"{build_name} package-set digest is not bound to prepared inputs")
-        if build.get("source_date_epoch") != prepared_source_epoch:
+        build_source_epoch = require_ext4_superblock_epoch(
+            build.get("source_date_epoch"), f"{build_name}.source_date_epoch"
+        )
+        if build_source_epoch != prepared_source_epoch:
             raise ValueError(f"{build_name} source epoch is not bound to prepared inputs")
     build_a = build_results["build-a"]
     build_b = build_results["build-b"]

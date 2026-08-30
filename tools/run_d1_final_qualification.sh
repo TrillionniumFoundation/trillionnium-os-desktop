@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Permanent D1 qualification runner. It never mutates Git refs.
+# Permanent D1 qualification runner. It never mutates remote or protected Git
+# refs; the read-only source checkout may update ephemeral fetch metadata while
+# resolving the exact base object.
 set -euo pipefail
 
 assert_absent() {

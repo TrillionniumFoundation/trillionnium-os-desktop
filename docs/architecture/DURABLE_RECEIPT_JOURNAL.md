@@ -92,6 +92,15 @@ receipt.v1 envelope. Retention planning returns only old, inactive segments
 whose sealed digest exactly matches the source digest recorded by a completed
 export; it never deletes files itself.
 
+The observer emits only fields it owns at this lifecycle boundary. Optional
+producer-owned fields in the receipt.v1 schema—such as package-lock and
+normalized-target digests, final URL/redirect evidence, challenge and
+snapshot evidence, receipt-chain digests, and signing-key identity—are
+intentionally omitted until their owning producer supplies them. Omission is
+not a negative assertion: consumers must treat an absent optional field as
+“not supplied by this observer,” never as proof that the fact is empty, false,
+or unavailable.
+
 ## Promotion evidence
 
 D0C-06 requires Rust 1.93 formatting, Clippy with warnings denied, the complete

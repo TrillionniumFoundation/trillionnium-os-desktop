@@ -55,6 +55,20 @@ class PrepareD1InputsTests(unittest.TestCase):
             1787875200,
         )
 
+    def test_snapshot_epoch_stays_within_ext4_superblock_range(self) -> None:
+        self.assertEqual(
+            prepare_d1_inputs.parse_snapshot_epoch("19700101T000001Z"),
+            1,
+        )
+        self.assertEqual(
+            prepare_d1_inputs.parse_snapshot_epoch("21060207T062815Z"),
+            4294967295,
+        )
+        for value in ("19691231T235959Z", "21060207T062816Z"):
+            with self.subTest(value=value):
+                with self.assertRaises(RuntimeError):
+                    prepare_d1_inputs.parse_snapshot_epoch(value)
+
     def test_invalid_snapshot_timestamp_is_rejected(self) -> None:
         for value in ["2026-08-28", "20260828", "20261328T000000Z", ""]:
             with self.subTest(value=value):
