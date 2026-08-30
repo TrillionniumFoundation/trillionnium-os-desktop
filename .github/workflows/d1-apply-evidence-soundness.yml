@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 15
     env:
       BRANCH: codex/d1-01-current-main-v2
-      EXPECTED_PARENT: 441f60aca15def26d99e40d4240bd39b2f78a9e8
+      EXPECTED_PARENT: 16350146d01f77b1c746d1a59f567b1d22052b96
     steps:
       - name: Check out exact one-shot transaction
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -54,7 +54,7 @@ jobs:
             contents: read
 
           concurrency:
-            group: d1-final-qualification-${{ github.ref }}
+            group: d1-final-qualification-__GITHUB_REF__
             cancel-in-progress: true
 
           env:
@@ -74,7 +74,7 @@ jobs:
                 - name: Derive and validate exact Git identities
                   shell: bash
                   env:
-                    EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha || '' }}
+                    EXPECTED_PR_HEAD: __EXPECTED_PR_HEAD__
                   run: tools/run_d1_final_qualification.sh identities
 
                 - name: Install and bind D1 host dependencies
@@ -92,7 +92,7 @@ jobs:
                       ~/.cargo/registry
                       ~/.cargo/git
                       target
-                    key: d1-final-cargo-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+                    key: d1-final-cargo-__RUNNER_OS__-__HASH_FILES__
 
                 - name: Build isolated exact e2fsprogs toolchain
                   shell: bash
@@ -122,7 +122,7 @@ jobs:
                   if: always()
                   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
                   with:
-                    name: d1-final-qualification-${{ github.sha }}
+                    name: d1-final-qualification-__GITHUB_SHA__
                     path: /tmp/trillionnium-d1-artifact
                     if-no-files-found: warn
                     retention-days: 14
@@ -132,13 +132,41 @@ jobs:
                   if: failure()
                   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
                   with:
-                    name: d1-final-qualification-diagnostics-${{ github.sha }}
+                    name: d1-final-qualification-diagnostics-__GITHUB_SHA__
                     path: /tmp/trillionnium-d1/evidence
                     if-no-files-found: warn
                     retention-days: 7
                     compression-level: 0
           YAML
-          sed -i 's/^          //' .github/workflows/d1-final-qualification.yml
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path(".github/workflows/d1-final-qualification.yml")
+          text = path.read_text(encoding="utf-8")
+
+          def expression(body: str) -> str:
+              return "$" + "{{ " + body + " }}"
+
+          replacements = {
+              "__GITHUB_REF__": expression("github.ref"),
+              "__EXPECTED_PR_HEAD__": expression(
+                  "github.event.pull_request.head.sha || ''"
+              ),
+              "__RUNNER_OS__": expression("runner.os"),
+              "__HASH_FILES__": expression(
+                  "hashFiles('Cargo.lock', 'rust-toolchain.toml')"
+              ),
+              "__GITHUB_SHA__": expression("github.sha"),
+          }
+          for marker, value in replacements.items():
+              if marker not in text:
+                  raise SystemExit(f"missing permanent-workflow marker: {marker}")
+              text = text.replace(marker, value)
+          if "__" in text:
+              raise SystemExit("unresolved permanent-workflow placeholder")
+          path.write_text(text, encoding="utf-8")
+          PY
 
           rm -f \
             .github/workflows/d1-generate-evidence-soundness-patch.yml \
@@ -150,7 +178,9 @@ jobs:
             tools/finalize_d1_evidence.py \
             tools/verify_d1_artifact.py \
             tests/d1/test_d1_evidence_soundness.py \
-            tests/d1/test_d1_tools.py
+            tests/d1/test_d1_tools.py \
+            tests/d1/test_d1_qualification_separation.py \
+            tests/d1/test_d1_tool_binding.py
           python3 -m json.tool manifests/gates.v1.json >/dev/null
           bash -n \
             packaging/debian/image/build-d1-image.sh \
@@ -173,7 +203,10 @@ jobs:
           EOF
           )
           actual=$(git diff --cached --name-only)
-          test "$actual" = "$expected"
+          if [[ "$actual" != "$expected" ]]; then
+            printf 'unexpected staged paths:\n%s\n' "$actual" >&2
+            exit 1
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
