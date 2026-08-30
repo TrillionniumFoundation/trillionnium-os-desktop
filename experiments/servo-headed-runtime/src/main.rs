@@ -1035,7 +1035,7 @@ impl RuntimeState {
         }
         self.old_process_absent.set(true);
         self.window.request_redraw();
-        self.drive();
+        let _ = self.proxy.send_event(AppEvent::Drive);
     }
 
     fn start_recovery(self: &Rc<Self>) {
