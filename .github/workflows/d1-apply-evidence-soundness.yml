@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 15
     env:
       BRANCH: codex/d1-01-current-main-v2
-      EXPECTED_PARENT: 16350146d01f77b1c746d1a59f567b1d22052b96
+      EXPECTED_PARENT: 11e7f580694fc9e7d49ae08b217a70324091d676
     steps:
       - name: Check out exact one-shot transaction
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -29,7 +29,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Apply, validate, and self-delete atomically
+      - name: Apply validated non-workflow source patch
         shell: bash
         run: |
           set -euo pipefail
@@ -39,139 +39,6 @@ jobs:
           test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BRANCH)"
 
           python3 tools/maintenance_patch_d1_evidence.py
-
-          cat > .github/workflows/d1-final-qualification.yml <<'YAML'
-          name: d1-final-qualification
-
-          on:
-            pull_request:
-              branches: [main]
-            push:
-              branches: [main]
-            workflow_dispatch:
-
-          permissions:
-            contents: read
-
-          concurrency:
-            group: d1-final-qualification-__GITHUB_REF__
-            cancel-in-progress: true
-
-          env:
-            CARGO_TERM_COLOR: always
-            CARGO_INCREMENTAL: "0"
-
-          jobs:
-            qualify:
-              runs-on: ubuntu-24.04
-              timeout-minutes: 300
-              steps:
-                - name: Check out exact tested object
-                  uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-                  with:
-                    fetch-depth: 0
-
-                - name: Derive and validate exact Git identities
-                  shell: bash
-                  env:
-                    EXPECTED_PR_HEAD: __EXPECTED_PR_HEAD__
-                  run: tools/run_d1_final_qualification.sh identities
-
-                - name: Install and bind D1 host dependencies
-                  shell: bash
-                  run: tools/run_d1_final_qualification.sh install-deps
-
-                - name: Install exact repository Rust toolchain
-                  shell: bash
-                  run: tools/run_d1_final_qualification.sh install-rust
-
-                - name: Restore Cargo cache
-                  uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
-                  with:
-                    path: |
-                      ~/.cargo/registry
-                      ~/.cargo/git
-                      target
-                    key: d1-final-cargo-__RUNNER_OS__-__HASH_FILES__
-
-                - name: Build isolated exact e2fsprogs toolchain
-                  shell: bash
-                  run: tools/run_d1_final_qualification.sh build-e2fsprogs
-
-                - name: Validate tracked source corpus
-                  shell: bash
-                  run: tools/run_d1_final_qualification.sh validate-source
-
-                - name: Prove product and qualification graphs are separate
-                  shell: bash
-                  run: tools/run_d1_final_qualification.sh prove-graphs
-
-                - name: Build and audit product and qualification binaries
-                  shell: bash
-                  run: tools/run_d1_final_qualification.sh build-binaries
-
-                - name: Resolve signed closure, build twice, and qualify under QEMU
-                  shell: bash
-                  run: tools/run_d1_final_qualification.sh run-pipeline
-
-                - name: Build and strictly verify portable D1 evidence
-                  shell: bash
-                  run: tools/run_d1_final_qualification.sh enforce-evidence
-
-                - name: Upload canonical portable D1 evidence
-                  if: always()
-                  uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-                  with:
-                    name: d1-final-qualification-__GITHUB_SHA__
-                    path: /tmp/trillionnium-d1-artifact
-                    if-no-files-found: warn
-                    retention-days: 14
-                    compression-level: 0
-
-                - name: Upload bounded failure diagnostics
-                  if: failure()
-                  uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-                  with:
-                    name: d1-final-qualification-diagnostics-__GITHUB_SHA__
-                    path: /tmp/trillionnium-d1/evidence
-                    if-no-files-found: warn
-                    retention-days: 7
-                    compression-level: 0
-          YAML
-
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path(".github/workflows/d1-final-qualification.yml")
-          text = path.read_text(encoding="utf-8")
-
-          def expression(body: str) -> str:
-              return "$" + "{{ " + body + " }}"
-
-          replacements = {
-              "__GITHUB_REF__": expression("github.ref"),
-              "__EXPECTED_PR_HEAD__": expression(
-                  "github.event.pull_request.head.sha || ''"
-              ),
-              "__RUNNER_OS__": expression("runner.os"),
-              "__HASH_FILES__": expression(
-                  "hashFiles('Cargo.lock', 'rust-toolchain.toml')"
-              ),
-              "__GITHUB_SHA__": expression("github.sha"),
-          }
-          for marker, value in replacements.items():
-              if marker not in text:
-                  raise SystemExit(f"missing permanent-workflow marker: {marker}")
-              text = text.replace(marker, value)
-          if "__" in text:
-              raise SystemExit("unresolved permanent-workflow placeholder")
-          path.write_text(text, encoding="utf-8")
-          PY
-
-          rm -f \
-            .github/workflows/d1-generate-evidence-soundness-patch.yml \
-            .github/workflows/d1-apply-evidence-soundness.yml \
-            tools/maintenance_patch_d1_evidence.py
 
           python3 -m py_compile \
             tools/d1_rootfs_manifest.py \
@@ -190,15 +57,15 @@ jobs:
           python3 tools/validate_project_truth.py
           git diff --check
 
-          git add -A
+          git add \
+            manifests/gates.v1.json \
+            packaging/debian/image/build-d1-image.sh \
+            tests/d1/test_d1_evidence_soundness.py \
+            tools/run_d1_final_qualification.sh
           expected=$(cat <<'EOF'
-          .github/workflows/d1-apply-evidence-soundness.yml
-          .github/workflows/d1-final-qualification.yml
-          .github/workflows/d1-generate-evidence-soundness-patch.yml
           manifests/gates.v1.json
           packaging/debian/image/build-d1-image.sh
           tests/d1/test_d1_evidence_soundness.py
-          tools/maintenance_patch_d1_evidence.py
           tools/run_d1_final_qualification.sh
           EOF
           )
@@ -207,6 +74,7 @@ jobs:
             printf 'unexpected staged paths:\n%s\n' "$actual" >&2
             exit 1
           fi
+          test -z "$(git status --porcelain=v1 | grep -v '^M  \|^A  ' || true)"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
