@@ -2,6 +2,16 @@
 # Permanent D1 qualification runner. It never mutates Git refs.
 set -euo pipefail
 
+assert_absent() {
+  local pattern=$1
+  local path=$2
+  local message=$3
+  if grep -q -- "$pattern" "$path"; then
+    printf '%s\n' "$message" >&2
+    return 1
+  fi
+}
+
 step_identities() {
 set -euo pipefail
 tested_sha=$(git rev-parse HEAD)
@@ -245,8 +255,14 @@ grep -q 'hepta-agent-port v' \
   /tmp/trillionnium-d1/evidence/qualification-cargo-tree.txt
 grep -q 'hepta-browser-codec v' \
   /tmp/trillionnium-d1/evidence/qualification-cargo-tree.txt
-! grep -q 'hepta-agent-d1-fixture' packaging/debian/hepta-agent-portd.install
-! grep -q 'image/rootfs-overlay' packaging/debian/hepta-agent-portd.install
+assert_absent \
+  'hepta-agent-d1-fixture' \
+  packaging/debian/hepta-agent-portd.install \
+  'production install map contains the D1 qualification fixture'
+assert_absent \
+  'image/rootfs-overlay' \
+  packaging/debian/hepta-agent-portd.install \
+  'production install map imports the qualification rootfs overlay'
 }
 
 step_build_binaries() {
@@ -275,10 +291,14 @@ strings target/release/hepta-agent-portd \
   > /tmp/trillionnium-d1/evidence/product-daemon.strings
 strings target/release/hepta-agent-d1-fixture \
   > /tmp/trillionnium-d1/evidence/qualification-fixture.strings
-! grep -q 'agent_port_ready' \
-  /tmp/trillionnium-d1/evidence/product-daemon.strings
-! grep -q 'browser_runtime_available' \
-  /tmp/trillionnium-d1/evidence/product-daemon.strings
+assert_absent \
+  'agent_port_ready' \
+  /tmp/trillionnium-d1/evidence/product-daemon.strings \
+  'product daemon contains qualification-only agent_port_ready text'
+assert_absent \
+  'browser_runtime_available' \
+  /tmp/trillionnium-d1/evidence/product-daemon.strings \
+  'product daemon contains qualification-only browser_runtime_available text'
 grep -q 'qualification_only' \
   /tmp/trillionnium-d1/evidence/qualification-fixture.strings
 grep -q 'product_handler_connected' \
