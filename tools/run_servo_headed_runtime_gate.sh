@@ -152,10 +152,27 @@ require_regular_path "$PWD/experiments/servo-headed-runtime/src/main.rs" \
   "D0A-02 committed runtime source" || exit 1
 require_regular_path "$PWD/experiments/servo-headed-runtime/fixture/index.html" \
   "D0A-02 committed fixture source" || exit 1
-reject_symlink_path "$PWD/servo-source/ports/servoshell/examples" \
-  "D0A-02 Servo examples directory" || exit 1
-if [[ ! -d "$PWD/servo-source/ports/servoshell/examples" || \
-      -L "$PWD/servo-source/ports/servoshell/examples" ]]; then
+examples_dir="$PWD/servo-source/ports/servoshell/examples"
+examples_parent=$(dirname -- "$examples_dir")
+# Some exact Servo pins intentionally omit an examples directory.  Validate
+# the tracked parent, create only the missing final component, and revalidate
+# before writing the ephemeral product overlay.  This preserves the zero-patch
+# checkout proof while avoiding a broad mkdir that could cross a symlink.
+reject_symlink_path "$examples_parent" "D0A-02 Servo examples parent" || exit 1
+if [[ ! -d "$examples_parent" || -L "$examples_parent" ]]; then
+  echo "D0A-02 Servo examples parent is missing or unsafe" >&2
+  exit 1
+fi
+reject_symlink_path "$examples_dir" "D0A-02 Servo examples directory" || exit 1
+if [[ -L "$examples_dir" || ( -e "$examples_dir" && ! -d "$examples_dir" ) ]]; then
+  echo "D0A-02 Servo examples directory is not a directory" >&2
+  exit 1
+fi
+if [[ ! -e "$examples_dir" ]]; then
+  mkdir -- "$examples_dir"
+fi
+reject_symlink_path "$examples_dir" "D0A-02 Servo examples directory" || exit 1
+if [[ ! -d "$examples_dir" || -L "$examples_dir" ]]; then
   echo "D0A-02 Servo examples directory is missing or unsafe" >&2
   exit 1
 fi
@@ -163,9 +180,9 @@ cp experiments/servo-headed-runtime/src/main.rs "$overlay"
 rustfmt --edition 2024 "$overlay"
 rustfmt --edition 2024 --check "$overlay"
 install -D -m 0644 "$overlay" \
-  servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs
+  "$examples_dir/trillionnium_headed_runtime.rs"
 install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
-  servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
+  "$examples_dir/trillionnium_headed_fixture.html"
 {
   printf 'FORMATTED_OVERLAY_SHA256=%s\n' "$(sha256sum "$overlay" | cut -d' ' -f1)"
   printf 'COMMITTED_SOURCE_SHA256=%s\n' \

@@ -74,7 +74,17 @@ class D0AEvidenceHardeningTests(unittest.TestCase):
         headed = (TOOLS / "run_servo_headed_runtime_gate.sh").read_text(encoding="utf-8")
         self.assertIn('source "$script_dir/reject_symlink_path.sh"', headed)
         self.assertIn('reject_symlink_path "$PWD/artifacts/servo-headed-runtime/runtime"', headed)
-        self.assertIn('reject_symlink_path "$PWD/servo-source/ports/servoshell/examples"', headed)
+        self.assertIn('examples_dir="$PWD/servo-source/ports/servoshell/examples"', headed)
+
+    def test_headed_gate_creates_only_missing_servo_examples_leaf(self) -> None:
+        headed = (TOOLS / "run_servo_headed_runtime_gate.sh").read_text(encoding="utf-8")
+        # The pinned Servo tree may omit this optional directory.  The gate must
+        # validate its tracked parent and create only the final leaf, retaining
+        # the no-symlink boundary before installing ephemeral overlay files.
+        self.assertIn('examples_parent=$(dirname -- "$examples_dir")', headed)
+        self.assertIn('reject_symlink_path "$examples_parent"', headed)
+        self.assertIn('mkdir -- "$examples_dir"', headed)
+        self.assertIn('reject_symlink_path "$examples_dir"', headed)
 
 
 if __name__ == "__main__":
