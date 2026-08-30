@@ -85,6 +85,11 @@ class CompareD1BuildsTests(unittest.TestCase):
                 "entries": 1,
                 "sha256": "d" * 64,
             },
+            "rootfs_manifest": {
+                "path": "rootfs-content-manifest.json",
+                "entries": 1,
+                "sha256": "2" * 64,
+            },
             "rootfs_tar": {"path": "rootfs.tar", "sha256": "e" * 64},
             "image": {
                 "path": "trillionnium-d1.ext4",
@@ -111,8 +116,26 @@ class CompareD1BuildsTests(unittest.TestCase):
 
     def create_artifacts(self, root: Path, *, mutate_image: bool = False) -> Path:
         root.mkdir(parents=True)
+        rootfs_manifest = {
+            "schema": "trillionnium.desktop.d1-rootfs-manifest.v1",
+            "entry_count": 1,
+            "entries": [
+                {
+                    "path": "usr/libexec/hepta-agent-portd",
+                    "kind": "file",
+                    "mode": "0755",
+                    "uid": 0,
+                    "gid": 0,
+                    "bytes": 16,
+                    "sha256": "2" * 64,
+                }
+            ],
+        }
         contents = {
             "package-lock.tsv": b"bash\t1\tamd64\n",
+            "rootfs-content-manifest.json": (
+                json.dumps(rootfs_manifest, indent=2, sort_keys=True) + "\n"
+            ).encode("utf-8"),
             "rootfs.tar": b"rootfs-fixture",
             "trillionnium-d1.ext4": b"image-fixture-00",
             "vmlinuz": b"kernel-fixture",
