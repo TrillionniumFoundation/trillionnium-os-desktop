@@ -70,7 +70,9 @@ jobs:
 
       - name: Resolve signed closure, build twice, and qualify under QEMU
         shell: bash
-        run: tools/run_d1_final_qualification.sh run-pipeline
+        run: |
+          shellcheck tools/run_d1_product_image_qualification.sh
+          tools/run_d1_product_image_qualification.sh
 
       - name: Build and strictly verify portable D1 evidence
         shell: bash
