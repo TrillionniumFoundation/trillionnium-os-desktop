@@ -328,6 +328,48 @@ class GovernanceModelTests(unittest.TestCase):
             with self.subTest(command=command):
                 self.assertFalse(VALIDATOR._contains_mutation(command))
 
+    def test_bounded_dynamic_git_http_shell_and_module_forms_are_rejected(self) -> None:
+        nested_backtick = "echo " + "`" + r"echo \`git push\`" + "`"
+        nested_parameter = "echo ${x:-" + "`" + r"echo \`git push\`" + "`}"
+        rejected = (
+            "git checkout --detach HEAD -- pathspec",
+            "git checkout --detach HEAD pathspec",
+            "git fetch ${ARGS}",
+            "git fetch --no-tags ${ARGS}",
+            "git fetch --upload-pack=helper origin main",
+            "git fetch --depth=1 origin ${ARGS}",
+            "git status --output=out",
+            "git diff --ext-diff",
+            "git show --textconv",
+            "git log --paginate",
+            "curl --post-data${DATA} https://example.test/resource",
+            "curl --config${CFG} https://example.test/resource",
+            "curl --header${HEADER} https://example.test/resource",
+            nested_backtick,
+            nested_parameter,
+            "bash --rcfile /tmp/evil -c 'echo ok'",
+            "bash --login -c 'echo ok'",
+            "python3 -m evil",
+            "print(f'{subprocess.run([\"git\", \"push\"])}')",
+            "print(f'{requests.post(url)}')",
+        )
+        for command in rejected:
+            with self.subTest(command=command):
+                self.assertTrue(VALIDATOR._contains_mutation(command))
+
+        allowed = (
+            "git -C . fetch --no-tags origin main",
+            "git -C /tmp/servo fetch --depth=1 origin $SERVO_REVISION",
+            "git checkout --detach FETCH_HEAD",
+            "curl --request=GET https://example.test/resource",
+            "echo 'echo `git push`'",
+            "python3 -m unittest tests.test_validate_governance_integrity -v",
+            "python3 -m py_compile",
+        )
+        for command in allowed:
+            with self.subTest(allow_command=command):
+                self.assertFalse(VALIDATOR._contains_mutation(command))
+
     def test_dynamic_git_command_graph_forms_are_rejected(self) -> None:
         """Reject Git mutations hidden behind shell command-graph features.
 

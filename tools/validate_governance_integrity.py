@@ -141,6 +141,10 @@ GIT_READ_ONLY_SUBCOMMANDS = frozenset(
         "fetch",
     }
 )
+# Options which can write files or invoke an external pager/helper even when
+# the Git verb itself is normally read-only. Dynamic option names are also
+# rejected by the invocation checker below.
+GIT_SIDE_EFFECT_OPTIONS = frozenset({"--output", "-o", "--ext-diff", "--textconv", "--paginate"})
 # Git accepts global options before the subcommand.  Options in this set take
 # a separate argument; ``--git-dir=/path``/friends are handled by the ``=``
 # branch in ``_git_invocation_mutates``.  Keeping this list explicit prevents
@@ -2339,6 +2343,93 @@ def _shell_static_prefix(value: str) -> str | None:
     return match.group(1) if match else None
 
 
+def _git_ref_expansion_is_reviewed(value: str) -> bool:
+    """Return whether a dynamic Git ref has reviewed provenance."""
+    value = value.strip()
+    if not _shell_token_has_expansion(value):
+        return True
+    if value.startswith("${") and value.endswith("}"):
+        name = value[2:-1]
+    elif value.startswith("$"):
+        name = value[1:]
+    else:
+        return False
+    if not name or not (name[0].isalpha() or name[0] == "_"):
+        return False
+    if not all(character.isalnum() or character == "_" for character in name):
+        return False
+    return name.upper().endswith(("REVISION", "SHA", "COMMIT", "REF", "OID", "HEAD"))
+
+
+def _git_fetch_is_read_only(tokens: list[str], verb_index: int) -> bool:
+    """Allow only the exact bounded fetch shape used by qualification."""
+    tail = tokens[verb_index + 1:]
+    if not tail:
+        return False
+    positional: list[str] = []
+    index = 0
+    while index < len(tail):
+        argument = tail[index]
+        if argument in {"--no-tags", "--quiet", "-q", "--verbose", "-v"}:
+            index += 1
+            continue
+        if argument == "--depth":
+            if index + 1 >= len(tail) or not tail[index + 1].isdigit() or int(tail[index + 1]) < 1:
+                return False
+            index += 2
+            continue
+        if argument.startswith("--depth="):
+            value = argument.split("=", 1)[1]
+            if not value.isdigit() or int(value) < 1:
+                return False
+            index += 1
+            continue
+        if argument.startswith("-"):
+            return False
+        positional.append(argument)
+        index += 1
+    if len(positional) != 2:
+        return False
+    remote, revision = positional
+    if _shell_token_has_expansion(remote):
+        return False
+    if not remote or not all(character.isalnum() or character in "._-" for character in remote):
+        return False
+    return _git_ref_expansion_is_reviewed(revision)
+
+
+def _git_checkout_is_read_only(tokens: list[str], verb_index: int) -> bool:
+    """Allow only a detached checkout of one reviewed revision."""
+    tail = tokens[verb_index + 1:]
+    detached = False
+    revision: str | None = None
+    for argument in tail:
+        if argument == "--detach":
+            detached = True
+            continue
+        if argument in {"--quiet", "-q", "--progress", "--no-progress"}:
+            continue
+        if argument.startswith("-"):
+            return False
+        if revision is not None:
+            return False
+        revision = argument
+    return detached and revision is not None and _git_ref_expansion_is_reviewed(revision)
+
+
+def _git_option_is_side_effectful(argument: str) -> bool:
+    """Reject write/pager options, including attached dynamic spellings."""
+    lowered = argument.lower()
+    for option in GIT_SIDE_EFFECT_OPTIONS:
+        normalized = option.lower()
+        if lowered == normalized or lowered.startswith(normalized + "="):
+            return True
+        if normalized.startswith("--") and lowered.startswith(normalized):
+            suffix = argument[len(option):]
+            if suffix and _shell_token_has_expansion(suffix):
+                return True
+    return argument.startswith("--") and _shell_token_has_expansion(argument)
+
 def _git_invocation_mutates(tokens: list[str], executable_index: int) -> bool:
     """Return whether a Git invocation is not statically read-only.
 
@@ -2359,6 +2450,11 @@ def _git_invocation_mutates(tokens: list[str], executable_index: int) -> bool:
         return True
     if executable not in GIT_EXECUTABLES:
         return False
+
+    # File-output, external-diff, text-conversion, and pager options can
+    # mutate the workspace or execute helpers even for a read-only verb.
+    if any(_git_option_is_side_effectful(argument) for argument in tokens[executable_index + 1 :]):
+        return True
 
     # Configuration/helper options are dangerous wherever they occur. Git's
     # option parser accepts several of them both before and after a verb, and
@@ -2413,15 +2509,9 @@ def _git_invocation_mutates(tokens: list[str], executable_index: int) -> bool:
             ):
                 return True
             if verb == "checkout":
-                tail = [item.lower() for item in tokens[cursor + 1 :]]
-                # Only detached checkout is used by the reviewed qualification
-                # workflows.  Branch creation or path restoration changes a
-                # worktree and is therefore a mutation.
-                if "--detach" not in tail or any(
-                    item in {"-b", "-B", "--orphan"} for item in tail
-                ):
-                    return True
-                return False
+                return not _git_checkout_is_read_only(tokens, cursor)
+            if verb == "fetch":
+                return not _git_fetch_is_read_only(tokens, cursor)
             if verb == "switch":
                 return True
             return verb not in GIT_READ_ONLY_SUBCOMMANDS
@@ -3514,6 +3604,14 @@ def _shell_interpreter_payload(
     index = 0
     while index < len(arguments):
         argument = arguments[index]
+        # Startup files and interactive/login modes execute code outside this
+        # payload and are controlled by the runner environment.
+        if argument in {"--rcfile", "--init-file", "--startup-file", "--login", "-i"}:
+            return "", True
+        if argument.startswith(("--rcfile=", "--init-file=", "--startup-file=")):
+            return "", True
+        if argument.startswith("-") and not argument.startswith("--") and "i" in argument[1:]:
+            return "", True
         if argument == "--":
             # Everything after ``--`` is a script name/argument, not an
             # interpreter option.  In particular, do not mistake a script
@@ -3612,6 +3710,28 @@ def _shell_payload_expansion_is_reviewed(payload: str) -> bool:
                 return False
     return True
 
+
+def _shell_unescape_legacy_backticks(value: str) -> str:
+    """Unescape odd backslash runs before legacy nested backticks."""
+    output: list[str] = []
+    index = 0
+    while index < len(value):
+        if value[index] != "\\":
+            output.append(value[index])
+            index += 1
+            continue
+        end = index
+        while end < len(value) and value[end] == "\\":
+            end += 1
+        run = value[index:end]
+        if end < len(value) and value[end] == "`" and len(run) % 2 == 1:
+            output.append(run[:-1])
+            output.append("`")
+            index = end + 1
+        else:
+            output.append(run)
+            index = end
+    return "".join(output)
 
 def _shell_substitution_payloads(command: str) -> tuple[list[str], bool]:
     """Extract shell ``$(...)``/backtick payloads outside single quotes.
@@ -3713,7 +3833,11 @@ def _shell_substitution_payloads(command: str) -> tuple[list[str], bool]:
                 elif current == "\\":
                     nested_escaped = True
                 elif current == "`":
-                    payloads.append(command[index + 1 : cursor])
+                    payload = command[index + 1 : cursor]
+                    payloads.append(payload)
+                    normalized = _shell_unescape_legacy_backticks(payload)
+                    if normalized != payload:
+                        payloads.append(normalized)
                     index = cursor + 1
                     break
                 cursor += 1
@@ -4038,7 +4162,15 @@ def _http_invocation_mutates(tokens: list[str], executable_index: int) -> bool:
                 return True
             if method.upper() not in {"GET", "HEAD", "OPTIONS"}:
                 return True
-        elif argument in {"-H", "--header"} or lowered.startswith("--header="):
+        elif (
+            argument in {"-H", "--header"}
+            or lowered.startswith("--header=")
+            or (
+                lowered.startswith("--header")
+                and len(argument) > len("--header")
+                and _shell_token_has_expansion(argument[len("--header") :])
+            )
+        ):
             header = ""
             if "=" in argument:
                 header = argument.split("=", 1)[1].strip("'\"")
@@ -4070,6 +4202,11 @@ def _http_invocation_mutates(tokens: list[str], executable_index: int) -> bool:
             or any(
                 lowered == item.lower()
                 or lowered.startswith(f"{item.lower()}=")
+                or (
+                    lowered.startswith(item.lower())
+                    and len(argument) > len(item)
+                    and _shell_token_has_expansion(argument[len(item) :])
+                )
                 for item in HTTP_DATA_FLAGS
                 if item.startswith("--")
             )
@@ -4231,6 +4368,21 @@ def _shell_dynamic_mutates(command: str, *, depth: int) -> bool:
 
     if depth > 2:
         return True
+
+    # A command substitution assigned to a variable and then expanded as the
+    # command word is an unresolved executable graph. Ordinary path
+    # assignments remain allowed.
+    for assignment in re.finditer(
+        r"(?m)(?:^|[;&|]\\s*)([A-Za-z_][A-Za-z0-9_]*)=\\$\\(",
+        command,
+    ):
+        name = assignment.group(1)
+        remainder = command[assignment.end() :]
+        if re.search(
+            rf"(?m)(?:^|[;&|]\\s*)[\\\"']?\\$\\{{?{re.escape(name)}\\}}?[\\\"']?(?:\\s|$)",
+            remainder,
+        ):
+            return True
 
     # Brace expansion can synthesize an otherwise unregistered executable or
     # script path before the shell tokenizer sees command boundaries.
@@ -4958,6 +5110,23 @@ def _python_interpreter_payload(arguments: list[str]) -> tuple[str | None, bool]
     """Return a Python ``-c`` payload, including clustered short flags."""
 
     for index, argument in enumerate(arguments):
+        if argument in {"-m", "--module"}:
+            if index + 1 >= len(arguments):
+                return "", True
+            module = arguments[index + 1]
+            if _shell_token_has_expansion(module) or module not in {"unittest", "py_compile"}:
+                return "", True
+            return None, False
+        if argument.startswith("-m") and len(argument) > 2:
+            module = argument[2:]
+            if _shell_token_has_expansion(module) or module not in {"unittest", "py_compile"}:
+                return "", True
+            return None, False
+        if argument.startswith("--module="):
+            module = argument.split("=", 1)[1]
+            if _shell_token_has_expansion(module) or module not in {"unittest", "py_compile"}:
+                return "", True
+            return None, False
         if argument == "--":
             if (
                 index + 1 < len(arguments)
@@ -6338,6 +6507,29 @@ def _python_primary_argument(call: ast.Call, *, shell_string: bool = False) -> a
     return None
 
 
+def _python_formatted_value_mutates(command: str) -> bool:
+    """Reject process or HTTP calls evaluated inside f-string expressions."""
+    try:
+        tree = ast.parse(command, mode="exec")
+    except (SyntaxError, ValueError, MemoryError, RecursionError):
+        return False
+    effectful = {
+        value.lower()
+        for value in (
+            *(PYTHON_PROCESS_METHODS),
+            "system", "post", "put", "patch", "delete", "request", "urlopen",
+        )
+    }
+    for formatted in ast.walk(tree):
+        if not isinstance(formatted, ast.FormattedValue):
+            continue
+        for node in ast.walk(formatted.value):
+            if isinstance(node, ast.Call):
+                terminal = _python_call_name(node.func).rsplit(".", 1)[-1].lower()
+                if terminal in effectful:
+                    return True
+    return False
+
 def _python_call_mutates(command: str, *, depth: int) -> bool:
     """Inspect Python process/network calls without executing their payloads.
 
@@ -6349,6 +6541,9 @@ def _python_call_mutates(command: str, *, depth: int) -> bool:
     """
 
     if depth > 2:
+        return True
+
+    if _python_formatted_value_mutates(command):
         return True
 
     if _python_dynamic_module_dispatch_mutates(command):
