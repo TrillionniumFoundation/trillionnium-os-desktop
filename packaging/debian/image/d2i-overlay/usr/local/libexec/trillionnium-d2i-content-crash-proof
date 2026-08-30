@@ -4,7 +4,9 @@
 # The headed runtime publishes an identity-bound arm marker.  This helper is
 # the sole process allowed to deliver SIGKILL in the integrated image; the
 # runtime itself only observes the receipt and the resulting topology.
-# shellcheck disable=SC2046,SC2002
+# The /proc children file is intentionally tokenized as a whitespace-delimited
+# PID list; keep the explicit ShellCheck exceptions next to that contract.
+# shellcheck disable=SC2013,SC2046,SC2002
 set -eu
 
 unit=trillionnium-d2i-runtime.service
@@ -67,9 +69,13 @@ for _ in $(seq 1 180); do
     *) [ -d "/proc/$runtime_main_pid" ] && break; sleep 1 ;;
   esac
 done
-[ -n "$runtime_main_pid" ] && [ "$runtime_main_pid" != 0 ] \
-  && [ -d "/proc/$runtime_main_pid" ] \
-  || fail runtime_main_pid_missing
+if [ -n "$runtime_main_pid" ] \
+  && [ "$runtime_main_pid" != 0 ] \
+  && [ -d "/proc/$runtime_main_pid" ]; then
+  :
+else
+  fail runtime_main_pid_missing
+fi
 
 for _ in $(seq 1 240); do
   if [ -s "$ready" ] && [ -s "$identity" ]; then
@@ -114,8 +120,11 @@ for pid in $(children_of "$runtime_main_pid"); do
       ;;
   esac
 done
-[ "$matching_count" = 1 ] && [ "$candidate_count" = 1 ] \
-  || fail external_crash_target_not_unique
+if [ "$matching_count" = 1 ] && [ "$candidate_count" = 1 ]; then
+  :
+else
+  fail external_crash_target_not_unique
+fi
 current_start=$(proc_start_time "$expected_pid" 2>/dev/null || true)
 [ "$current_start" = "$expected_start" ] \
   || fail external_crash_target_identity_changed

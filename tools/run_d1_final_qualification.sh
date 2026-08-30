@@ -232,7 +232,10 @@ python3 -m py_compile \
   tools/resolve_debian_snapshot.py \
   tools/resolve_debian_snapshot_with_pinned_keys.py \
   tools/verify_d1_artifact.py
-shellcheck -e SC2016,SC2054 \
+# Follow the explicitly bound helper so dynamic script-relative sources are
+# analyzed rather than downgraded to SC1091 (the directives are repository-root
+# relative because this command runs from the workspace root).
+shellcheck -x -e SC2016,SC2054 \
   tools/reject_symlink_path.sh \
   packaging/debian/image/build-d1-image.sh \
   packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-acceptance \

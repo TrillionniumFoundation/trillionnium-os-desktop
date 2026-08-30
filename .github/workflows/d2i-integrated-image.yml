@@ -216,7 +216,10 @@ jobs:
           python3 tools/validate_project_truth.py
           python3 tools/verify_systemd_socket_custody.py
           make test-python
-          shellcheck -e SC2016,SC2054 \
+          # Follow the repository-root-bound helper sources; without -x
+          # ShellCheck reports SC1091 for the intentional dynamic script_dir
+          # paths even when a source directive is present.
+          shellcheck -x -e SC2016,SC2054 \
             tools/reject_symlink_path.sh \
             packaging/debian/image/build-d1-image.sh \
             packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
