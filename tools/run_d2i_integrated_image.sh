@@ -3,7 +3,7 @@
 set -euo pipefail
 
 step_identities() {
-  local tested_sha tree_sha parent_count base_sha candidate_head_sha role authoritative
+  local tested_sha tree_sha parent_count base_sha candidate_head_sha role authoritative topology
   tested_sha=$(git rev-parse HEAD)
   tree_sha=$(git rev-parse 'HEAD^{tree}')
   parent_count=$(git show -s --format='%P' HEAD | awk '{print NF}')
@@ -26,6 +26,7 @@ step_identities() {
       }
       role=pr_synthetic_merge
       authoritative=false
+      topology=pr_merge_commit
       ;;
     push)
       [[ $GITHUB_REF == refs/heads/main ]] || {
@@ -37,6 +38,7 @@ step_identities() {
       candidate_head_sha=$tested_sha
       role=exact_main_push
       authoritative=true
+      topology=exact_push_commit
       ;;
     workflow_dispatch)
       [[ $parent_count -ge 1 ]]
@@ -44,6 +46,7 @@ step_identities() {
       candidate_head_sha=$tested_sha
       role=manual_non_authoritative
       authoritative=false
+      topology=manual_checkout
       ;;
     *)
       echo "unsupported D2I event: $GITHUB_EVENT_NAME" >&2
@@ -57,9 +60,16 @@ step_identities() {
     printf 'CANDIDATE_HEAD_SHA=%s\n' "$candidate_head_sha"
     printf 'EVIDENCE_ROLE=%s\n' "$role"
     printf 'PROMOTION_AUTHORITATIVE=%s\n' "$authoritative"
+    # The D2I gate embeds the canonical D1 portable receipt. Export the exact
+    # identity interface expected by the D1 finalizer rather than reconstructing
+    # or weakening it in a second implementation.
+    printf 'TESTED_TOPOLOGY=%s\n' "$topology"
+    printf 'SOURCE_REF=%s\n' "$GITHUB_REF"
+    printf 'SOURCE_REF_NAME=%s\n' "$GITHUB_REF_NAME"
   } >> "$GITHUB_ENV"
-  printf 'role=%s\nauthoritative=%s\nbase=%s\ncandidate=%s\ntested=%s\ntree=%s\n' \
-    "$role" "$authoritative" "$base_sha" "$candidate_head_sha" "$tested_sha" "$tree_sha"
+  printf 'role=%s\nauthoritative=%s\nref=%s\ntopology=%s\nbase=%s\ncandidate=%s\ntested=%s\ntree=%s\n' \
+    "$role" "$authoritative" "$GITHUB_REF" "$topology" \
+    "$base_sha" "$candidate_head_sha" "$tested_sha" "$tree_sha"
 }
 
 step_install_deps() {
