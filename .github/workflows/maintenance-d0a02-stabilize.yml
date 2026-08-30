@@ -1,0 +1,263 @@
+name: maintenance-d0a02-stabilize
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/maintenance-d0a02-stabilize.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: maintenance-d0a02-stabilize
+  cancel-in-progress: false
+
+jobs:
+  stabilize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out D0A-02 candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d0a02-proof-soundness-v4
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Merge current main and materialize stable source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main codex/d0a02-proof-soundness-v4
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/codex/d0a02-proof-soundness-v4)"
+          git merge --no-edit origin/main
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected one match, found {count}")
+              return text.replace(old, new, 1)
+
+          source_path = Path('experiments/servo-headed-runtime/src/main.rs')
+          source = source_path.read_text(encoding='utf-8')
+          source = replace_once(
+              source,
+              '''        if self.exact_termination_observed.get()
+              && self.servo_crash_callback_observed.get()
+              && !self.crash_workspace_saved.get()
+              && !self.recovery_started.get()
+''',
+              '''        if self.exact_termination_observed.get()
+              && self.old_process_absent.get()
+              && !self.crash_workspace_saved.get()
+              && !self.recovery_started.get()
+''',
+              'drive crash placeholder gate',
+          )
+          source = replace_once(
+              source,
+              '''        if !self.signal_sent.get()
+              || !self.exact_termination_observed.get()
+              || !self.old_process_absent.get()
+              || !self.servo_crash_callback_observed.get()
+          {
+''',
+              '''        if !self.signal_sent.get()
+              || !self.exact_termination_observed.get()
+              || !self.old_process_absent.get()
+          {
+''',
+              'recovery causality gate',
+          )
+          source = replace_once(
+              source,
+              '''        if self.exact_termination_observed.get()
+              && self.servo_crash_callback_observed.get()
+              && !self.recovery_started.get()
+              && !self.crash_workspace_saved.get()
+''',
+              '''        if self.exact_termination_observed.get()
+              && self.old_process_absent.get()
+              && !self.recovery_started.get()
+              && !self.crash_workspace_saved.get()
+''',
+              'compose crash placeholder gate',
+          )
+          source = replace_once(
+              source,
+              '''            (
+                  self.servo_crash_callback_observed.get(),
+                  "Servo crash callback was not observed separately",
+              ),
+''',
+              '',
+              'obsolete pipeline panic invariant',
+          )
+          source = replace_once(
+              source,
+              '''                "    \\"servo_crash_callback_observed\\": true,\\n",
+                "    \\"servo_crash_callback_reason\\": {}\\n",
+''',
+              '''                "    \\"servo_pipeline_panic_callback_required\\": false,\\n",
+                "    \\"servo_pipeline_panic_callback_observed\\": {},\\n",
+                "    \\"servo_pipeline_panic_callback_reason\\": {}\\n",
+''',
+              'runtime callback evidence fields',
+          )
+          source = replace_once(
+              source,
+              '''            selected.start_time,
+            json_string(&crash_callback_reason),
+''',
+              '''            selected.start_time,
+            self.servo_crash_callback_observed.get(),
+            json_string(&crash_callback_reason),
+''',
+              'runtime callback evidence arguments',
+          )
+          source = replace_once(
+              source,
+              '''    fn notify_crashed(&self, webview: WebView, reason: String, _backtrace: Option<String>) {
+''',
+              '''    // Servo defines this callback for a pipeline panic. External SIGKILL of the
+    // multiprocess content child is proved independently by exact PID/start-time
+    // selection, successful signal dispatch, /proc disappearance, zero-child
+    // topology, trusted-chrome survival, and a distinct replacement identity.
+    fn notify_crashed(&self, webview: WebView, reason: String, _backtrace: Option<String>) {
+''',
+              'pipeline panic callback documentation',
+          )
+          source_path.write_text(source, encoding='utf-8')
+
+          workflow_path = Path('.github/workflows/servo-headed-runtime.yml')
+          workflow = workflow_path.read_text(encoding='utf-8')
+          trigger_anchor = '      - "manifests/servo-patch-ledger.v1.json"\n'
+          trigger_addition = trigger_anchor + '''      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
+      - "tools/validate_repository.py"
+      - "tools/validate_project_truth.py"
+      - "Cargo.toml"
+      - "Cargo.lock"
+'''
+          if workflow.count(trigger_anchor) != 2:
+              raise SystemExit('expected pull_request and push trigger anchors')
+          workflow = workflow.replace(trigger_anchor, trigger_addition)
+          workflow = replace_once(
+              workflow,
+              '''          for key in [
+              'signal_sent',
+              'exact_termination_observed',
+              'old_process_absent',
+              'servo_crash_callback_observed',
+          ]:
+              assert fault[key] is True, (key, fault)
+          assert isinstance(fault['servo_crash_callback_reason'], str)
+''',
+              '''          for key in [
+              'signal_sent',
+              'exact_termination_observed',
+              'old_process_absent',
+          ]:
+              assert fault[key] is True, (key, fault)
+          assert fault['servo_pipeline_panic_callback_required'] is False
+          assert isinstance(fault['servo_pipeline_panic_callback_observed'], bool)
+          assert isinstance(fault['servo_pipeline_panic_callback_reason'], str)
+''',
+              'workflow callback assertions',
+          )
+          workflow = replace_once(
+              workflow,
+              '''              'repository': os.environ['GITHUB_REPOSITORY'],
+              'mode': os.environ['EVIDENCE_MODE'],
+''',
+              '''              'repository': os.environ['GITHUB_REPOSITORY'],
+              'event_name': os.environ['GITHUB_EVENT_NAME'],
+              'ref': os.environ['GITHUB_REF'],
+              'ref_name': os.environ['GITHUB_REF_NAME'],
+              'promotion_authoritative': os.environ['EVIDENCE_MODE'] == 'exact_main_push',
+              'mode': os.environ['EVIDENCE_MODE'],
+''',
+              'workflow evidence ref identity',
+          )
+          workflow = replace_once(
+              workflow,
+              '''                  'exact_termination_observed': True,
+              },
+''',
+              '''                  'exact_termination_observed': True,
+                  'servo_pipeline_panic_callback_observed': fault['servo_pipeline_panic_callback_observed'],
+              },
+''',
+              'receipt optional callback evidence',
+          )
+          workflow_path.write_text(workflow, encoding='utf-8')
+
+          doc_path = Path('docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md')
+          doc = doc_path.read_text(encoding='utf-8')
+          doc = replace_once(
+              doc,
+              '''adapter then records four separate facts:
+
+1. the exact PID/start-time target was selected;
+2. `SIGKILL` was successfully sent to that identity;
+3. the matching `/proc` identity disappeared and no active content child
+   existed before recovery;
+4. Servo independently delivered the current generation-1 crash callback.
+
+Recovery is forbidden until all four facts are present. The adapter captures
+''',
+              '''adapter then records three mandatory, independently checkable facts:
+
+1. the exact PID/start-time target was selected;
+2. `SIGKILL` was successfully sent to that identity;
+3. the matching `/proc` identity disappeared and no active content child
+   existed before recovery.
+
+Servo documents `WebViewDelegate::notify_crashed` as a pipeline-panic callback.
+An externally killed content process is not required to emit that callback, so
+it is recorded as optional diagnostic evidence and cannot block or satisfy the
+external-process recovery proof.
+
+Recovery is forbidden until all three mandatory facts are present. The adapter captures
+''',
+              'architecture crash evidence contract',
+          )
+          doc_path.write_text(doc, encoding='utf-8')
+          PY
+
+          rm -f \
+            .github/workflows/maintenance-d0a02-stabilize.yml \
+            .github/workflows/d0a02-finalize-clipboard-proof.yml \
+            .github/workflows/d0a02-materialize-clipboard-roundtrip.yml \
+            .github/workflows/d0a02-materialize-v2.yml \
+            .github/workflows/d0a02-one-shot-format-materialized-source.yml \
+            .github/workflows/d0a02-source-snapshot.yml \
+            .github/workflows/d0a02-transactional-qualification.yml \
+            tools/materialize_d0a02_clipboard_roundtrip.py \
+            tools/materialize_d0a02_v2.py
+          rm -rf tools/.d0a02-materialize
+
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt
+          rustfmt +1.97.1 --edition 2024 experiments/servo-headed-runtime/src/main.rs
+
+          test -z "$(grep -R --line-number --fixed-strings 'contents: write' .github/workflows || true)"
+          test -z "$(grep -R --line-number -E 'git[[:space:]]+push|gh[[:space:]]+workflow[[:space:]]+run' .github/workflows || true)"
+          test -z "$(find tools -path '*/.d0a02-materialize/*' -o -name 'materialize_d0a02*' -print -quit)"
+          git diff --check
+
+      - name: Commit stable review surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -A
+          test -n "$(git status --porcelain=v1)"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "fix(d0a02): stabilize causal process-recovery proof"
+          git push origin HEAD:codex/d0a02-proof-soundness-v4
