@@ -4166,9 +4166,14 @@ def _http_invocation_mutates(tokens: list[str], executable_index: int) -> bool:
             argument in {"-H", "--header"}
             or lowered.startswith("--header=")
             or (
+                # Attached long forms such as `--header${HEADER}` are
+                # either dynamic or malformed.  A source-only scan cannot
+                # prove their value is a harmless header, so reject every
+                # non-`=` attached spelling before it can bypass the
+                # separate-argument branch above.
                 lowered.startswith("--header")
                 and len(argument) > len("--header")
-                and _shell_token_has_expansion(argument[len("--header") :])
+                and not lowered.startswith("--header=")
             )
         ):
             header = ""
@@ -4620,7 +4625,7 @@ def _shell_dynamic_mutates(command: str, *, depth: int) -> bool:
                 payload, dynamic = _shell_interpreter_payload(tokens, index)
                 if payload is not None:
                     if (
-                        (dynamic and not _shell_payload_expansion_is_reviewed(payload))
+                        (dynamic and (not payload or not _shell_payload_expansion_is_reviewed(payload)))
                         or SHELL_ARRAY_EXPANSION.search(payload)
                         or re.search(r"(?m)\b(?:alias|eval)\b", payload)
                     ):
@@ -6822,6 +6827,13 @@ def _contains_mutation(command: str, *, _depth: int = 0) -> bool:
     # command that consumes it; words such as ``gh api``/``curl -X POST`` in a
     # fixture payload are not executed by the workflow shell.
     shell_command = _strip_shell_heredoc_bodies(command)
+    # Expand only the exact IFS separator forms before token-level Git
+    # dispatch.  Without this normalization, `fetch${IFS}origin${IFS}main`
+    # is seen as a one-token incomplete fetch and is rejected even though its
+    # bounded expansion is the reviewed read-only `git fetch origin main`
+    # shape.  Other parameter expansions remain opaque and fail closed.
+    if SHELL_IFS_EXPANSION.search(shell_command):
+        shell_command = SHELL_IFS_EXPANSION.sub(" ", shell_command)
     python_command = _python_scan_source(command)
     if _python_http_call_mutates(python_command):
         return True
