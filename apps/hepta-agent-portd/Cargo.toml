@@ -10,10 +10,12 @@ publish = false
 [features]
 default = []
 fixture = ["dep:hepta-agent-port"]
+d1-qualification = ["dep:hepta-agent-port", "dep:hepta-browser-codec"]
 
 [dependencies]
 hepta-agent-port = { path = "../../crates/hepta-agent-port", optional = true }
 hepta-agent-transport = { path = "../../crates/hepta-agent-transport" }
+hepta-browser-codec = { path = "../../crates/hepta-browser-codec", optional = true }
 hepta-peer-attestation = { path = "../../crates/hepta-peer-attestation" }
 libc = "=0.2.186"
 
@@ -25,3 +27,8 @@ path = "src/main.rs"
 name = "hepta-agent-port-fixture"
 path = "src/bin/hepta-agent-port-fixture.rs"
 required-features = ["fixture"]
+
+[[bin]]
+name = "hepta-agent-d1-fixture"
+path = "src/bin/hepta-agent-d1-fixture.rs"
+required-features = ["d1-qualification"]
