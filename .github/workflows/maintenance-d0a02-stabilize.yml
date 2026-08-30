@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - ".github/workflows/maintenance-d0a02-stabilize.yml"
-      - "tools/maintenance_stage_d0a02_workflow.py"
+      - "tools/maintenance_extract_servo_gate_runner.py"
 
 permissions:
   contents: write
@@ -16,58 +16,49 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  stage-final-workflow-object:
+  materialize-gate-runner:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    env:
-      GH_TOKEN: ${{ github.token }}
-      BRANCH: codex/d0a02-proof-soundness-v4
     steps:
       - name: Check out exact D0A-02 candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: codex/d0a02-proof-soundness-v4
           fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: true
 
-      - name: Create final workflow commit object without moving a ref
+      - name: Generate stable runner from corrected permanent gate
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin main "$BRANCH"
-          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BRANCH)"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git fetch --no-tags origin main codex/d0a02-proof-soundness-v4
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/codex/d0a02-proof-soundness-v4)"
           git show origin/main:tools/maintenance_stage_d0a02_workflow.py \
             > "$RUNNER_TEMP/stage-workflow.py"
+          git show origin/main:tools/maintenance_extract_servo_gate_runner.py \
+            > "$RUNNER_TEMP/extract-runner.py"
           python3 "$RUNNER_TEMP/stage-workflow.py"
+          python3 "$RUNNER_TEMP/extract-runner.py"
+          git restore .github/workflows/servo-headed-runtime.yml
 
-          workflow=.github/workflows/servo-headed-runtime.yml
-          ! sed -n '1,/^permissions:/p' "$workflow" | grep -q 'paths:'
-          ! grep -q 'contents: write' "$workflow"
-          ! grep -Eq 'git[[:space:]]+push|gh[[:space:]]+workflow[[:space:]]+run' "$workflow"
-          grep -q 'servo_pipeline_panic_callback_required' "$workflow"
-          grep -q "promotion_authoritative.*exact_main_push" "$workflow"
+          bash -n tools/run_servo_headed_runtime_gate.sh
+          grep -q 'servo_pipeline_panic_callback_required' \
+            tools/run_servo_headed_runtime_gate.sh
+          grep -q "promotion_authoritative.*exact_main_push" \
+            tools/run_servo_headed_runtime_gate.sh
+          ! grep -Eq 'git[[:space:]]+push|gh[[:space:]]+workflow[[:space:]]+run' \
+            tools/run_servo_headed_runtime_gate.sh
+          git diff --check
 
-          base_commit=$(git rev-parse HEAD)
-          base_tree=$(git rev-parse 'HEAD^{tree}')
-          blob_sha=$(jq -Rs '{content: ., encoding: "utf-8"}' "$workflow" |
-            gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" --input - --jq .sha)
-          tree_sha=$(jq -n --arg base_tree "$base_tree" --arg blob_sha "$blob_sha" \
-            '{base_tree:$base_tree,tree:[{path:".github/workflows/servo-headed-runtime.yml",mode:"100644",type:"blob",sha:$blob_sha}]}' |
-            gh api --method POST "repos/$GITHUB_REPOSITORY/git/trees" --input - --jq .sha)
-          commit_sha=$(jq -n \
-            --arg message "ci(d0a02): install permanent read-only causal qualification gate" \
-            --arg tree "$tree_sha" --arg parent "$base_commit" \
-            '{message:$message,tree:$tree,parents:[$parent]}' |
-            gh api --method POST "repos/$GITHUB_REPOSITORY/git/commits" --input - --jq .sha)
-          printf 'base_commit=%s\ncommit_sha=%s\n' "$base_commit" "$commit_sha" \
-            | tee staged-commit.txt
-
-      - name: Upload staged object identity
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: d0a02-staged-workflow-commit
-          path: staged-commit.txt
-          if-no-files-found: error
-          retention-days: 1
-          compression-level: 0
+      - name: Commit only the permanent gate runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add tools/run_servo_headed_runtime_gate.sh
+          test -n "$(git status --porcelain=v1)"
+          test "$(git diff --cached --name-only)" = tools/run_servo_headed_runtime_gate.sh
+          git commit -m "ci(d0a02): extract permanent headed gate runner"
+          git push origin HEAD:codex/d0a02-proof-soundness-v4
