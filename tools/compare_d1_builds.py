@@ -7,15 +7,18 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from typing import Any
 
 
 ARTIFACTS = (
     "package-lock.tsv",
+    "rootfs-content-manifest.json",
     "rootfs.tar",
     "trillionnium-d1.ext4",
     "vmlinuz",
     "initrd.img",
 )
+MAX_REPORTED_ROOTFS_DIFFERENCES = 512
 
 
 def sha256(path: Path) -> str:
@@ -37,6 +40,65 @@ def load_build(artifacts: Path) -> dict[str, object]:
         if not (artifacts / name).is_file():
             raise FileNotFoundError(artifacts / name)
     return result
+
+
+def rootfs_entries(path: Path) -> dict[str, dict[str, Any]]:
+    document = json.loads(path.read_text(encoding="utf-8"))
+    if document.get("schema") != "trillionnium.desktop.d1-rootfs-manifest.v1":
+        raise ValueError(f"unexpected rootfs manifest schema: {path}")
+    entries = document.get("entries")
+    if not isinstance(entries, list):
+        raise ValueError(f"rootfs manifest entries are not a list: {path}")
+    by_path: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        if not isinstance(entry, dict) or not isinstance(entry.get("path"), str):
+            raise ValueError(f"rootfs manifest contains an invalid entry: {path}")
+        name = entry["path"]
+        if name in by_path:
+            raise ValueError(f"rootfs manifest repeats path {name!r}: {path}")
+        by_path[name] = entry
+    if document.get("entry_count") != len(by_path):
+        raise ValueError(f"rootfs manifest entry count is inconsistent: {path}")
+    return by_path
+
+
+def compare_rootfs_manifests(first: Path, second: Path) -> dict[str, Any]:
+    first_entries = rootfs_entries(first)
+    second_entries = rootfs_entries(second)
+    first_paths = set(first_entries)
+    second_paths = set(second_entries)
+    missing_from_second = sorted(first_paths - second_paths)
+    missing_from_first = sorted(second_paths - first_paths)
+    changed: list[dict[str, Any]] = []
+    for name in sorted(first_paths & second_paths):
+        left = first_entries[name]
+        right = second_entries[name]
+        if left == right:
+            continue
+        fields = sorted(set(left) | set(right))
+        changed_fields = [field for field in fields if left.get(field) != right.get(field)]
+        changed.append(
+            {
+                "path": name,
+                "changed_fields": changed_fields,
+                "first": {field: left.get(field) for field in changed_fields},
+                "second": {field: right.get(field) for field in changed_fields},
+            }
+        )
+    total = len(missing_from_second) + len(missing_from_first) + len(changed)
+    return {
+        "equal": total == 0,
+        "first_entry_count": len(first_entries),
+        "second_entry_count": len(second_entries),
+        "missing_from_second_count": len(missing_from_second),
+        "missing_from_first_count": len(missing_from_first),
+        "changed_count": len(changed),
+        "difference_count": total,
+        "report_truncated": total > MAX_REPORTED_ROOTFS_DIFFERENCES,
+        "missing_from_second": missing_from_second[:MAX_REPORTED_ROOTFS_DIFFERENCES],
+        "missing_from_first": missing_from_first[:MAX_REPORTED_ROOTFS_DIFFERENCES],
+        "changed": changed[:MAX_REPORTED_ROOTFS_DIFFERENCES],
+    }
 
 
 def main() -> int:
@@ -80,6 +142,13 @@ def main() -> int:
         }
         all_equal = all_equal and equal
 
+    rootfs_diff = compare_rootfs_manifests(
+        first / "rootfs-content-manifest.json",
+        second / "rootfs-content-manifest.json",
+    )
+    if rootfs_diff["equal"] is not comparisons["rootfs-content-manifest.json"]["equal"]:
+        raise RuntimeError("rootfs manifest semantic and byte equality disagree")
+
     invariant_fields = (
         "image_id",
         "source_date_epoch",
@@ -87,6 +156,7 @@ def main() -> int:
         "prepared_manifest_sha256",
         "signed_package_set_sha256",
         "package_lock",
+        "rootfs_manifest",
         "rootfs_tar",
         "image",
         "kernel",
@@ -117,7 +187,7 @@ def main() -> int:
         raise RuntimeError("build result is not bound to the signed D1 package set")
 
     result = {
-        "schema": "trillionnium.desktop.d1-reproducibility-result.v2",
+        "schema": "trillionnium.desktop.d1-reproducibility-result.v3",
         "status": (
             "PASS_TWO_INDEPENDENT_BUILDS"
             if all_equal
@@ -128,10 +198,14 @@ def main() -> int:
         "prepared_inputs_sha256": sha256(prepared_path),
         "signed_package_set_sha256": prepared["package_set_sha256"],
         "artifact_comparisons": comparisons,
+        "rootfs_manifest_diff": rootfs_diff,
         "invariant_mismatches": invariant_mismatches,
         "package_count": len(package_lines),
         "reproducible": all_equal,
         "claims": {
+            "two_build_rootfs_manifest_match": comparisons[
+                "rootfs-content-manifest.json"
+            ]["equal"],
             "two_build_rootfs_match": comparisons["rootfs.tar"]["equal"],
             "two_build_ext4_match": comparisons["trillionnium-d1.ext4"]["equal"],
             "two_build_kernel_match": comparisons["vmlinuz"]["equal"],
