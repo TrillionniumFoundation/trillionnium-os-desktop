@@ -2,26 +2,9 @@ name: servo-headed-runtime
 
 on:
   pull_request:
-    paths:
-      - ".github/workflows/servo-headed-runtime.yml"
-      - "experiments/servo-headed-runtime/**"
-      - "contracts/workspace-composition.v1.json"
-      - "crates/hepta-workspace-composition/**"
-      - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
-      - "manifests/servo.lock.json"
-      - "manifests/servo-patch-ledger.v1.json"
+    branches: [main]
   push:
-    branches:
-      - main
-      - codex/d0a02-proof-soundness-v4
-    paths:
-      - ".github/workflows/servo-headed-runtime.yml"
-      - "experiments/servo-headed-runtime/**"
-      - "contracts/workspace-composition.v1.json"
-      - "crates/hepta-workspace-composition/**"
-      - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
-      - "manifests/servo.lock.json"
-      - "manifests/servo-patch-ledger.v1.json"
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -52,73 +35,7 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          set -euo pipefail
-          tested_sha=$(git rev-parse HEAD)
-          tested_tree_sha=$(git rev-parse 'HEAD^{tree}')
-          mapfile -t parents < <(
-            git show -s --format='%P' HEAD | tr ' ' '\n' | sed '/^$/d'
-          )
-          merged_candidate_sha=
-          case "$EVENT_NAME" in
-            pull_request)
-              [[ ${#parents[@]} -eq 2 ]] || {
-                echo "pull-request qualification requires an exact two-parent merge" >&2
-                exit 1
-              }
-              base_sha=${parents[0]}
-              candidate_head_sha=${parents[1]}
-              [[ -n "$EVENT_HEAD_SHA" && "$candidate_head_sha" == "$EVENT_HEAD_SHA" ]] || {
-                echo "checked-out merge second parent is not the live PR head" >&2
-                exit 1
-              }
-              evidence_mode=pr_synthetic_merge
-              merged_candidate_sha=$candidate_head_sha
-              ;;
-            push)
-              candidate_head_sha=$tested_sha
-              if [[ "$GITHUB_REF_NAME" == main ]]; then
-                [[ ${#parents[@]} -ge 1 ]] || {
-                  echo "exact-main qualification requires at least one parent" >&2
-                  exit 1
-                }
-                base_sha=${parents[0]}
-                evidence_mode=exact_main_push
-                if [[ ${#parents[@]} -ge 2 ]]; then
-                  merged_candidate_sha=${parents[1]}
-                fi
-              else
-                git fetch --no-tags origin main
-                base_sha=$(git merge-base HEAD origin/main)
-                evidence_mode=candidate_branch_push
-              fi
-              ;;
-            workflow_dispatch)
-              candidate_head_sha=$tested_sha
-              git fetch --no-tags origin main
-              base_sha=$(git merge-base HEAD origin/main)
-              evidence_mode=manual_exact_object
-              ;;
-            *)
-              echo "unsupported event for D0A-02 evidence: $EVENT_NAME" >&2
-              exit 1
-              ;;
-          esac
-          git cat-file -e "$base_sha^{commit}"
-          git cat-file -e "$candidate_head_sha^{commit}"
-          [[ -z "$(git status --porcelain=v1)" ]]
-          {
-            printf 'TESTED_SHA=%s\n' "$tested_sha"
-            printf 'TESTED_TREE_SHA=%s\n' "$tested_tree_sha"
-            printf 'BASE_SHA=%s\n' "$base_sha"
-            printf 'CANDIDATE_HEAD_SHA=%s\n' "$candidate_head_sha"
-            printf 'MERGED_CANDIDATE_SHA=%s\n' "$merged_candidate_sha"
-            printf 'TESTED_PARENT_COUNT=%s\n' "${#parents[@]}"
-            printf 'EVIDENCE_MODE=%s\n' "$evidence_mode"
-          } >> "$GITHUB_ENV"
-          printf 'mode=%s\nbase=%s\ncandidate=%s\ntested=%s\ntree=%s\nparents=%s\n' \
-            "$evidence_mode" "$base_sha" "$candidate_head_sha" \
-            "$tested_sha" "$tested_tree_sha" "${parents[*]:-none}"
+        run: bash tools/run_servo_headed_runtime_gate.sh identities
 
       - name: Check out exact Servo source pin
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -132,52 +49,15 @@ jobs:
 
       - name: Verify exact clean zero-patch Servo input
         shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git -C servo-source rev-parse HEAD)" = "$SERVO_COMMIT"
-          test -z "$(git -C servo-source status --porcelain=v1)"
-          python3 - <<'PY'
-          from pathlib import Path
-          import json
-
-          expected = '670ae8a70801b162e186f81cbb5bdd2d59c39108'
-          lock = json.loads(Path('manifests/servo.lock.json').read_text())
-          ledger = json.loads(Path('manifests/servo-patch-ledger.v1.json').read_text())
-          assert lock['commit'] == expected
-          assert ledger['servo_commit'] == expected
-          assert ledger['patch_count'] == 0 and ledger['patches'] == []
-          PY
+        run: bash tools/run_servo_headed_runtime_gate.sh verify-servo
 
       - name: Install headed runtime dependencies
         shell: bash
-        run: |
-          set -euo pipefail
-          sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' \
-            servo-source/python/servo/platform/linux_packages/apt/apt_common.txt \
-            servo-source/python/servo/platform/linux_packages/apt/apt_ubuntu_only.txt \
-            | sort -u > /tmp/servo-packages.txt
-          sudo apt-get update
-          xargs -r sudo apt-get install -y --no-install-recommends < /tmp/servo-packages.txt
-          sudo apt-get install -y --no-install-recommends \
-            iproute2 mesa-utils x11-utils xdotool xvfb
-          sudo apt-get purge -y fonts-droid-fallback || true
-          sudo rm -rf /var/lib/apt/lists/*
+        run: bash tools/run_servo_headed_runtime_gate.sh install-deps
 
       - name: Install Servo-declared Rust channel
         shell: bash
-        run: |
-          set -euo pipefail
-          SERVO_RUST_CHANNEL="$(python3 - <<'PY'
-          from pathlib import Path
-          import tomllib
-          print(tomllib.loads(Path('servo-source/rust-toolchain.toml').read_text())['toolchain']['channel'])
-          PY
-          )"
-          printf 'SERVO_RUST_CHANNEL=%s\n' "$SERVO_RUST_CHANNEL" >> "$GITHUB_ENV"
-          rustup toolchain install "$SERVO_RUST_CHANNEL" --profile minimal
-          rustup component add rustfmt --toolchain "$SERVO_RUST_CHANNEL"
-          RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL" rustc --version --verbose
-          RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL" cargo --version --verbose
+        run: bash tools/run_servo_headed_runtime_gate.sh install-rust
 
       - name: Restore exact-pin Cargo cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
@@ -186,367 +66,42 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             servo-source/target
-          key: servo-headed-v2-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('servo-source/Cargo.lock', 'servo-source/rust-toolchain.toml', 'experiments/servo-headed-runtime/src/main.rs', '.github/workflows/servo-headed-runtime.yml') }}
+          key: servo-headed-v3-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('servo-source/Cargo.lock', 'servo-source/rust-toolchain.toml', 'experiments/servo-headed-runtime/src/main.rs', 'tools/run_servo_headed_runtime_gate.sh', '.github/workflows/servo-headed-runtime.yml') }}
           restore-keys: |
+            servo-headed-v3-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
             servo-headed-v2-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
             servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
-            servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
 
       - name: Install deterministic formatted product overlay
         shell: bash
-        run: |
-          set -euo pipefail
-          export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
-          overlay="$RUNNER_TEMP/trillionnium_headed_runtime.rs"
-          cp experiments/servo-headed-runtime/src/main.rs "$overlay"
-          rustfmt --edition 2024 "$overlay"
-          rustfmt --edition 2024 --check "$overlay"
-          install -D -m 0644 "$overlay" \
-            servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs
-          install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
-            servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
-          {
-            printf 'FORMATTED_OVERLAY_SHA256=%s\n' "$(sha256sum "$overlay" | cut -d' ' -f1)"
-            printf 'COMMITTED_SOURCE_SHA256=%s\n' \
-              "$(sha256sum experiments/servo-headed-runtime/src/main.rs | cut -d' ' -f1)"
-          } >> "$GITHUB_ENV"
+        run: bash tools/run_servo_headed_runtime_gate.sh install-overlay
 
       - name: Compile exact-pin headed runtime
         shell: bash
-        run: |
-          set -euo pipefail
-          export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
-          mkdir -p artifacts/servo-headed-runtime
-          cargo check --locked --manifest-path servo-source/Cargo.toml \
-            -p servoshell --example trillionnium_headed_runtime \
-            --no-default-features --features bundled,gamepad,js_jit,max_log_level \
-            2>&1 | tee artifacts/servo-headed-runtime/cargo-check.log
-          cargo build --locked --manifest-path servo-source/Cargo.toml \
-            -p servoshell --example trillionnium_headed_runtime \
-            --no-default-features --features bundled,gamepad,js_jit,max_log_level \
-            2>&1 | tee artifacts/servo-headed-runtime/cargo-build.log
+        run: bash tools/run_servo_headed_runtime_gate.sh compile
 
       - name: Run causal one-window crash-and-recovery corpus
         shell: bash
-        run: |
-          set -euo pipefail
-          output="$PWD/artifacts/servo-headed-runtime/runtime"
-          mkdir -p "$output"
-          export HEPTA_D0A02_OUTPUT="$output"
-          export RUST_BACKTRACE=1
-
-          Xvfb :99 -screen 0 1280x900x24 -nolisten tcp >"$output/xvfb.log" 2>&1 &
-          xvfb_pid=$!
-          app_pid=
-          cleanup() {
-            if [[ -n "${app_pid:-}" ]]; then
-              kill "$app_pid" 2>/dev/null || true
-              wait "$app_pid" 2>/dev/null || true
-            fi
-            kill "$xvfb_pid" 2>/dev/null || true
-            wait "$xvfb_pid" 2>/dev/null || true
-          }
-          trap cleanup EXIT
-          export DISPLAY=:99
-          for _ in $(seq 1 100); do
-            xdpyinfo >/dev/null 2>&1 && break
-            sleep 0.1
-          done
-          xdpyinfo >"$output/xdpyinfo.txt"
-
-          servo-source/target/debug/examples/trillionnium_headed_runtime \
-            >"$output/runtime.log" 2>&1 &
-          app_pid=$!
-          for _ in $(seq 1 600); do
-            [[ -f "$output/input-ready" ]] && break
-            kill -0 "$app_pid" 2>/dev/null || {
-              cat "$output/runtime.log" >&2
-              exit 1
-            }
-            sleep 0.1
-          done
-          test -f "$output/input-ready"
-
-          window_id="$(xdotool search --name 'TrillionniumOS Desktop.*D0A-02' | head -n1)"
-          test -n "$window_id"
-          xwininfo -id "$window_id" >"$output/xwininfo.txt"
-          xdotool windowfocus --sync "$window_id"
-          test "$(xdotool getwindowfocus)" = "$window_id"
-
-          xdotool mousemove --sync --window "$window_id" 200 132
-          xdotool mousedown 1
-          xdotool mouseup 1
-          xdotool key k
-          xdotool mousemove --sync --window "$window_id" 400 164
-          xdotool mousedown 1
-          xdotool mouseup 1
-          xdotool click 5
-          xdotool mousemove --sync --window "$window_id" 200 132
-          xdotool mousedown 1
-          xdotool mouseup 1
-
-          ps -eo pid,ppid,stat,args >"$output/process-table-during-input.txt"
-          timeout 180 tail --pid="$app_pid" -f /dev/null
-          wait "$app_pid"
-          app_pid=
-          ps -eo pid,ppid,stat,args >"$output/process-table-after-result.txt"
+        run: bash tools/run_servo_headed_runtime_gate.sh run-runtime
 
       - name: Enforce causal evidence and claim ceiling
         shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          import hashlib
-          import json
-          import os
-
-          root = Path('artifacts/servo-headed-runtime/runtime')
-          path = root / 'runtime-result.json'
-          report = json.loads(path.read_text())
-          assert report['schema'] == 'trillionnium.desktop.d0a02-headed-runtime.v2'
-          assert report['status'] == 'PASS_HEADED_LOCAL_FIXTURE_ONLY'
-          assert report['servo_commit'] == '670ae8a70801b162e186f81cbb5bdd2d59c39108'
-          assert report['window_created'] is True
-          assert report['trusted_chrome_separate_from_content'] is True
-          assert report['callback_identity_enforced'] is True
-          assert isinstance(report['stale_callbacks_ignored'], int)
-          assert report['stale_callbacks_ignored'] >= 0
-          assert report['logical_content_webview_peak'] == 1
-          assert report['logical_webviews_created'] == 2
-          assert report['logical_webviews_invalidated'] == 1
-          assert report['logical_webviews_live_at_result'] == 1
-          assert report['initial_generation'] == 1
-          assert report['recovery_generation'] == 2
-          assert all(report[key] is True for key in [
-              'chrome_initial_pixels_verified',
-              'chrome_crash_pixels_verified',
-              'chrome_recovery_pixels_verified',
-              'trusted_window_survived_content_crash',
-          ])
-          assert report['native_pointer_events'] > 0
-          assert report['native_button_events'] >= 4
-          assert report['native_wheel_events'] > 0
-          assert report['native_keyboard_events'] >= 2
-          assert report['native_ime_events'] > 0
-          assert report['synthetic_ime_composition_events'] == 3
-          assert report['input_handled_callbacks'] >= 6
-          assert report['input_method_controls'] > 0
-          assert report['popup_requests_denied'] > 0
-          assert report['external_navigation_requests_denied'] > 0
-
-          initial = report['initial_page_evidence']
-          assert initial['generation'] == 1 and initial['loaded'] is True
-          assert initial['pointerMoves'] > 0 and initial['pointerDowns'] > 0
-          assert initial['clicks'] > 0 and initial['wheels'] > 0
-          assert 'k' in [str(item).lower() for item in initial['keyDowns']]
-          assert initial['popupAttempted'] is True
-          assert initial['externalNavigationAttempted'] is True
-          recovery = report['recovery_page_evidence']
-          assert recovery['generation'] == 2 and recovery['loaded'] is True
-
-          fault = report['fault_injection']
-          assert fault['generation'] == 1
-          assert fault['mechanism'] == 'external_SIGKILL'
-          assert isinstance(fault['selected_pid'], int) and fault['selected_pid'] > 1
-          assert isinstance(fault['selected_start_time'], int)
-          assert fault['selected_start_time'] > 0
-          for key in [
-              'signal_sent',
-              'exact_termination_observed',
-              'old_process_absent',
-              'servo_crash_callback_observed',
-          ]:
-              assert fault[key] is True, (key, fault)
-          assert isinstance(fault['servo_crash_callback_reason'], str)
-
-          replacement = report['replacement_process']
-          assert replacement['generation'] == 2
-          assert replacement['distinct_from_fault_target'] is True
-          assert isinstance(replacement['pid'], int) and replacement['pid'] > 1
-          assert isinstance(replacement['start_time'], int)
-          assert replacement['start_time'] > 0
-          assert replacement['pid'] != fault['selected_pid']
-
-          pre = json.loads((root / 'process-topology-pre-fault.json').read_text())
-          terminated = json.loads(
-              (root / 'process-topology-post-termination.json').read_text()
-          )
-          recovered = json.loads(
-              (root / 'process-topology-post-recovery.json').read_text()
-          )
-          assert pre['active_process_count'] == 1 and len(pre['processes']) == 1
-          assert terminated['active_process_count'] == 0
-          assert terminated['processes'] == []
-          assert recovered['active_process_count'] == 1
-          assert len(recovered['processes']) == 1
-          old = pre['processes'][0]
-          new = recovered['processes'][0]
-          assert (old['pid'], old['start_time']) == (
-              fault['selected_pid'],
-              fault['selected_start_time'],
-          )
-          assert (new['pid'], new['start_time']) == (
-              replacement['pid'],
-              replacement['start_time'],
-          )
-          assert old['pid'] != new['pid']
-          assert old['parent_pid'] == pre['embedder_pid']
-          assert new['parent_pid'] == recovered['embedder_pid']
-
-          selected_receipt = json.loads(
-              (root / 'content-process-identity.json').read_text()
-          )
-          signal_receipt = json.loads((root / 'content-sigkill-sent.json').read_text())
-          assert selected_receipt == {
-              'generation': 1,
-              'pid': fault['selected_pid'],
-              'start_time': fault['selected_start_time'],
-          }
-          assert signal_receipt == {
-              'generation': 1,
-              'pid': fault['selected_pid'],
-              'signal': 'SIGKILL',
-              'start_time': fault['selected_start_time'],
-          }
-
-          authority = report['authority']
-          assert authority['fixture_listener_loopback_only'] is True
-          for key in [
-              'external_navigation_performed',
-              'webdriver_listener_started',
-              'browser_actor_started',
-              'agent_port_enabled',
-              'persistent_credentials_used',
-              'clipboard_path_claimed',
-              'clean_runtime_teardown_claimed',
-              'product_ready',
-          ]:
-              assert authority[key] is False, (key, authority)
-
-          report['ime_evidence'] = {
-              'native_winit_events_observed': report['native_ime_events'],
-              'servo_input_method_controls_observed': report['input_method_controls'],
-              'composition_events_submitted': report['synthetic_ime_composition_events'],
-              'dom_composition_events_observed': len(initial['composition']),
-              'claim_ceiling': (
-                  'basic embedder IME control and submission path only; '
-                  'DOM composition dispatch is not claimed by this gate'
-              ),
-          }
-
-          artifacts = {}
-          for file in sorted(root.glob('*.png')):
-              data = file.read_bytes()
-              assert data.startswith(b'\x89PNG\r\n\x1a\n')
-              artifacts[file.name] = {
-                  'bytes': len(data),
-                  'sha256': hashlib.sha256(data).hexdigest(),
-              }
-          required = {
-              'content-generation-1.png',
-              'content-generation-2.png',
-              'workspace-generation-1.png',
-              'workspace-crash-placeholder.png',
-              'workspace-generation-2.png',
-          }
-          assert required.issubset(artifacts)
-          report['artifacts'] = artifacts
-
-          evidence_files = [
-              'content-process-identity.json',
-              'content-sigkill-sent.json',
-              'process-topology-pre-fault.json',
-              'process-topology-post-termination.json',
-              'process-topology-post-recovery.json',
-          ]
-          evidence_file_digests = {
-              name: hashlib.sha256((root / name).read_bytes()).hexdigest()
-              for name in evidence_files
-          }
-          report['evidence_identity'] = {
-              'repository': os.environ['GITHUB_REPOSITORY'],
-              'mode': os.environ['EVIDENCE_MODE'],
-              'base_sha': os.environ['BASE_SHA'],
-              'candidate_head_sha': os.environ['CANDIDATE_HEAD_SHA'],
-              'merged_candidate_sha': os.environ['MERGED_CANDIDATE_SHA'] or None,
-              'tested_sha': os.environ['TESTED_SHA'],
-              'tree_sha': os.environ['TESTED_TREE_SHA'],
-              'parent_count': int(os.environ['TESTED_PARENT_COUNT']),
-              'workflow_sha256': hashlib.sha256(
-                  Path('.github/workflows/servo-headed-runtime.yml').read_bytes()
-              ).hexdigest(),
-              'source_sha256': os.environ['COMMITTED_SOURCE_SHA256'],
-              'formatted_overlay_sha256': os.environ['FORMATTED_OVERLAY_SHA256'],
-              'fixture_sha256': hashlib.sha256(
-                  Path('experiments/servo-headed-runtime/fixture/index.html').read_bytes()
-              ).hexdigest(),
-              'servo_lock_sha256': hashlib.sha256(
-                  Path('manifests/servo.lock.json').read_bytes()
-              ).hexdigest(),
-              'evidence_file_sha256': evidence_file_digests,
-          }
-          path.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
-
-          runtime_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
-          receipt = {
-              'schema': 'trillionnium.desktop.d0a02-gate-evidence.v2',
-              'status': 'PASS_CAUSAL_HEADED_HOST_ONLY',
-              'runtime_result_sha256': runtime_sha256,
-              'runtime_evidence_identity': report['evidence_identity'],
-              'fault_identity': {
-                  'generation': 1,
-                  'pid': fault['selected_pid'],
-                  'start_time': fault['selected_start_time'],
-                  'signal': 'SIGKILL',
-                  'exact_termination_observed': True,
-              },
-              'replacement_identity': {
-                  'generation': 2,
-                  'pid': replacement['pid'],
-                  'start_time': replacement['start_time'],
-              },
-              'claim_ceiling': {
-                  'headed_local_fixture_only': True,
-                  'clipboard_path': False,
-                  'clean_runtime_teardown': False,
-                  'debian_qemu_integration': False,
-                  'browser_actor': False,
-                  'agent_port': False,
-                  'external_effects': False,
-                  'release': False,
-              },
-          }
-          (root / 'gate-evidence.json').write_text(
-              json.dumps(receipt, indent=2, sort_keys=True) + '\n'
-          )
-          PY
+        run: bash tools/run_servo_headed_runtime_gate.sh enforce-evidence
 
       - name: Restore clean exact Servo checkout
         if: always()
         shell: bash
-        run: |
-          rm -f \
-            servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
-            servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
-          test -z "$(git -C servo-source status --porcelain=v1)"
+        run: bash tools/run_servo_headed_runtime_gate.sh restore-servo
 
       - name: Validate tracked desktop repository
         shell: bash
-        run: |
-          set -euo pipefail
-          validation_root="$RUNNER_TEMP/trillionnium-d0a02-validation"
-          rm -rf "$validation_root"
-          mkdir -p "$validation_root"
-          git archive --format=tar HEAD | tar -xf - -C "$validation_root"
-          python3 "$validation_root/tools/validate_repository.py"
-          python3 "$validation_root/tools/validate_project_truth.py"
+        run: bash tools/run_servo_headed_runtime_gate.sh validate-repository
 
       - name: Upload headed runtime evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: servo-headed-runtime-v2-${{ github.sha }}
+          name: servo-headed-runtime-v3-${{ github.sha }}
           path: artifacts/servo-headed-runtime
           if-no-files-found: warn
           retention-days: 30
