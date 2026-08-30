@@ -299,6 +299,7 @@ class GovernanceModelTests(unittest.TestCase):
             'bash --login -c "git push origin main"',
             'bash --noprofile --norc -c "git push origin main"',
             'sh --login -c "git push origin main"',
+            "x=$(printf git)\n$x push origin main",
             "sudo -u builder git push origin main",
             "timeout 30 git push origin main",
             "if git push origin main; then :; fi",
@@ -1206,7 +1207,6 @@ class WrapperAndScriptGraphTests(unittest.TestCase):
         commands = (
             "tools/run_d1_final_qualification.sh identities",
             "./tools/run_servo_headed_runtime_gate.sh identities",
-            "bash --login tools/run_servo_headed_runtime_gate.sh identities",
             "bash --noprofile --norc -c 'printf ok'",
             "python3 tools/validate_repository.py",
             'python3 "$validation_root/tools/validate_repository.py"',

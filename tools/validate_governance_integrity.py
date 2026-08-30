@@ -2116,6 +2116,11 @@ def _shell_command_tokens(
             # quoted braces remain part of their quoted token.
             punctuation_chars=";&|(){}\n",
         )
+        lexer.wordchars += (
+            _SHELL_BRACE_OPEN_SENTINEL
+            + _SHELL_BRACE_CLOSE_SENTINEL
+            + _SHELL_EXPANSION_SPACE_SENTINEL
+        )
         lexer.whitespace_split = True
         # Keep newline out of ``whitespace`` so punctuation handling emits it
         # as a command boundary (newlines inside quoted strings remain part of
@@ -4186,7 +4191,13 @@ def _http_invocation_mutates(tokens: list[str], executable_index: int) -> bool:
             # another transport-specific write control) even when no literal
             # ``-X`` flag is present.  Static source cannot prove its value,
             # so reject dynamic header payloads just like dynamic methods.
-            if _shell_token_has_expansion(header) or header.startswith("@"):
+            if (
+                _shell_token_has_expansion(header)
+                or header.startswith("@")
+                or header.startswith("$")
+                or "{" in header
+                or "}" in header
+            ):
                 return True
             if re.search(r"(?i)(?:method-override|^:method\s*:)", header):
                 if _shell_token_has_expansion(header) or re.search(
@@ -4379,11 +4390,11 @@ def _shell_dynamic_mutates(command: str, *, depth: int) -> bool:
     # assignments remain allowed. Keep the pattern deliberately small and
     # inspect command segments without relying on shell quoting semantics.
     for assignment in re.finditer(r"([A-Za-z_][A-Za-z0-9_]*)=\$\(", command):
-        if assignment.start() > 0 and command[assignment.start() - 1] not in " \t;&|":
+        if assignment.start() > 0 and command[assignment.start() - 1] not in " \t\r\n;&|":
             continue
         name = assignment.group(1)
         remainder = command[assignment.end() :]
-        for segment in re.split(r"[;&|]", remainder):
+        for segment in re.split(r"[;&|\r\n]", remainder):
             fields = segment.strip().split()
             if not fields:
                 continue
