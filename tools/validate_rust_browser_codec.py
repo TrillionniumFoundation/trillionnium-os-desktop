@@ -164,6 +164,17 @@ def load_json_nofollow(path: Path, *, label: str = "JSON source") -> object:
             os.close(descriptor)
 
 
+def regular_file_exists_nofollow(path: Path, *, label: str) -> bool:
+    """Check one regular file through the same no-follow open policy."""
+
+    try:
+        descriptor = _open_regular(path, label=label)
+    except (OSError, ValueError):
+        return False
+    os.close(descriptor)
+    return True
+
+
 def sha256(path: Path) -> str:
     return hashlib.sha256(read_bytes_nofollow(path, label="hashed source")).hexdigest()
 
@@ -384,6 +395,11 @@ def main() -> int:
     require(validation["merge_ready"] is True, "contract is merge-ready after exact-head validation", checks)
     host_result = repo_path(
         contract.get("rust_host_result"), label="rust_host_result"
+    )
+    require(
+        regular_file_exists_nofollow(host_result, label="exact-head Rust host result"),
+        "exact-head Rust host result exists",
+        checks,
     )
     host = load_json_nofollow(host_result, label="exact-head Rust host result")
     require(host["status"] == "PASS", "exact-head Rust host result is PASS", checks)
