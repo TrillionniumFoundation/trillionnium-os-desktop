@@ -174,7 +174,8 @@ fn verify_local_socket_path(stream: &UnixStream, expected: &Path) -> Result<(), 
 fn run_health() -> Result<String, FixtureError> {
     let stream = UnixStream::connect(AGENT_SOCKET_PATH).map_err(FixtureError::Io)?;
     let server = PeerIdentity::from_stream(&stream)?;
-    let mut connection = ClientConnection::connect(stream, PeerPolicy::exact(server), CLIENT_TIMEOUT)?;
+    let mut connection =
+        ClientConnection::connect(stream, PeerPolicy::exact(server), CLIENT_TIMEOUT)?;
 
     let request = BrowserRequest {
         request_id: "d1-agent-port-health:1".to_owned(),
@@ -330,10 +331,7 @@ enum FixtureError {
     Attestation(AttestationError),
     WrongInheritedDescriptor,
     UnnamedInheritedSocket,
-    SocketPathMismatch {
-        expected: PathBuf,
-        actual: PathBuf,
-    },
+    SocketPathMismatch { expected: PathBuf, actual: PathBuf },
     Invariant(&'static str),
     Usage(&'static str),
 }
