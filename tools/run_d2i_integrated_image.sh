@@ -82,8 +82,10 @@ step_install_rust() {
 }
 
 step_build_e2fsprogs() {
+  # The D1 helper publishes D1_E2FSPROGS_DIR and its bin directory through
+  # GITHUB_ENV/GITHUB_PATH. GitHub applies those files to the next workflow
+  # step, not to this parent shell, so same-step variable checks are invalid.
   bash tools/run_d1_final_qualification.sh build-e2fsprogs
-  test -x "$D1_E2FSPROGS_DIR/debugfs"
 }
 
 step_validate_source() {
@@ -143,14 +145,29 @@ PY
 }
 
 step_build_runtime() {
+  local generated evidence
+  generated=servo-source/components/servo/examples/hepta_workspace_runtime.rs
+  evidence=/tmp/trillionnium-d2i/evidence/runtime-transformation.json
   mkdir -p /tmp/trillionnium-d2i/evidence
   python3 tools/prepare_d2i_runtime.py \
     --source runtime/servo/hepta_workspace_runtime.rs \
-    --output servo-source/components/servo/examples/hepta_workspace_runtime.rs \
-    --evidence /tmp/trillionnium-d2i/evidence/runtime-transformation.json
+    --output "$generated" \
+    --evidence "$evidence"
   export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
-  rustfmt --edition 2024 --check \
-    servo-source/components/servo/examples/hepta_workspace_runtime.rs
+  rustfmt --edition 2024 "$generated"
+  rustfmt --edition 2024 --check "$generated"
+  python3 - "$generated" "$evidence" <<'PY'
+from pathlib import Path
+import hashlib
+import json
+import sys
+source = Path(sys.argv[1])
+evidence = Path(sys.argv[2])
+record = json.loads(evidence.read_text())
+record['formatted_output_sha256'] = hashlib.sha256(source.read_bytes()).hexdigest()
+record['formatter'] = 'rustfmt from exact Servo Rust channel'
+evidence.write_text(json.dumps(record, indent=2, sort_keys=True) + '\n')
+PY
   cargo build --release --locked --manifest-path servo-source/Cargo.toml \
     -p servo --example hepta_workspace_runtime
   install -D -m 0755 \
@@ -158,7 +175,7 @@ step_build_runtime() {
     /tmp/trillionnium-d2i/hepta-workspace-runtime
   sha256sum /tmp/trillionnium-d2i/hepta-workspace-runtime \
     > /tmp/trillionnium-d2i/headed-runtime.sha256
-  rm -f servo-source/components/servo/examples/hepta_workspace_runtime.rs
+  rm -f "$generated"
   test -z "$(git -C servo-source status --porcelain=v1)"
 }
 
