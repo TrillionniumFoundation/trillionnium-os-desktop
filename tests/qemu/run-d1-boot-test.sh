@@ -38,7 +38,9 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P) || {
   echo "cannot locate D1 QEMU script directory" >&2
   exit 1
 }
-# shellcheck source=../../tools/reject_symlink_path.sh
+# ShellCheck resolves source directives from the repository working directory.
+# Keep this root-relative so the same annotation works in CI and locally.
+# shellcheck source=tools/reject_symlink_path.sh
 source "$script_dir/../../tools/reject_symlink_path.sh"
 safe_io="$script_dir/../../tools/qemu_safe_io.py"
 require_regular_path "$safe_io" "D1 safe I/O helper" || exit 1

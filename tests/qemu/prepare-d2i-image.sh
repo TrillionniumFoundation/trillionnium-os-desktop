@@ -53,7 +53,9 @@ safe_io="$script_dir/../../tools/qemu_safe_io.py"
   echo "missing safe QEMU I/O helper" >&2
   exit 1
 }
-# shellcheck source=../../tools/reject_symlink_path.sh
+# ShellCheck resolves source directives from the repository working directory.
+# Keep this root-relative so the same annotation works in CI and locally.
+# shellcheck source=tools/reject_symlink_path.sh
 source "$script_dir/../../tools/reject_symlink_path.sh"
 reject_symlink_path "$base_image" "D2I base image" || exit 1
 reject_symlink_path "$runtime_binary" "D2I runtime binary" || exit 1

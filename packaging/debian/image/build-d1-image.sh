@@ -106,7 +106,9 @@ fi
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(readlink -f "$script_dir/../../..")
-# shellcheck source=../../../tools/reject_symlink_path.sh
+# ShellCheck resolves source directives from the repository working directory.
+# Keep this root-relative so the same annotation works in CI and locally.
+# shellcheck source=tools/reject_symlink_path.sh
 source "$script_dir/../../../tools/reject_symlink_path.sh"
 check_raw_path() {
   reject_symlink_path "$2" "$1" || exit 1

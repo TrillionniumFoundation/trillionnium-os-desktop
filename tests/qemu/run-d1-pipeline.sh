@@ -26,7 +26,9 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P) || {
 # Check the raw spellings before canonicalization.  ``readlink -f`` would
 # otherwise erase a symlinked workspace/output parent and let subsequent
 # writes escape the caller's intended tree.
-# shellcheck source=../../tools/reject_symlink_path.sh
+# ShellCheck resolves source directives from the repository working directory.
+# Keep this root-relative so the same annotation works in CI and locally.
+# shellcheck source=tools/reject_symlink_path.sh
 source "$script_dir/../../tools/reject_symlink_path.sh"
 if ! reject_symlink_path "$workspace" "D1 workspace"; then
   exit 1
