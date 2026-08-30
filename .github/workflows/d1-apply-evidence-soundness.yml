@@ -1,0 +1,183 @@
+name: d1-apply-evidence-soundness
+
+on:
+  push:
+    branches:
+      - codex/d1-01-current-main-v2
+    paths:
+      - ".github/workflows/d1-apply-evidence-soundness.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: d1-apply-evidence-soundness
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      BRANCH: codex/d1-01-current-main-v2
+      EXPECTED_PARENT: 441f60aca15def26d99e40d4240bd39b2f78a9e8
+    steps:
+      - name: Check out exact one-shot transaction
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Apply, validate, and self-delete atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "$EXPECTED_PARENT"
+          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/d1-apply-evidence-soundness.yml"
+          git fetch --no-tags origin "$BRANCH"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BRANCH)"
+
+          python3 tools/maintenance_patch_d1_evidence.py
+
+          cat > .github/workflows/d1-final-qualification.yml <<'YAML'
+          name: d1-final-qualification
+
+          on:
+            pull_request:
+              branches: [main]
+            push:
+              branches: [main]
+            workflow_dispatch:
+
+          permissions:
+            contents: read
+
+          concurrency:
+            group: d1-final-qualification-${{ github.ref }}
+            cancel-in-progress: true
+
+          env:
+            CARGO_TERM_COLOR: always
+            CARGO_INCREMENTAL: "0"
+
+          jobs:
+            qualify:
+              runs-on: ubuntu-24.04
+              timeout-minutes: 300
+              steps:
+                - name: Check out exact tested object
+                  uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+                  with:
+                    fetch-depth: 0
+
+                - name: Derive and validate exact Git identities
+                  shell: bash
+                  env:
+                    EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha || '' }}
+                  run: tools/run_d1_final_qualification.sh identities
+
+                - name: Install and bind D1 host dependencies
+                  shell: bash
+                  run: tools/run_d1_final_qualification.sh install-deps
+
+                - name: Install exact repository Rust toolchain
+                  shell: bash
+                  run: tools/run_d1_final_qualification.sh install-rust
+
+                - name: Restore Cargo cache
+                  uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+                  with:
+                    path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      target
+                    key: d1-final-cargo-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+
+                - name: Build isolated exact e2fsprogs toolchain
+                  shell: bash
+                  run: tools/run_d1_final_qualification.sh build-e2fsprogs
+
+                - name: Validate tracked source corpus
+                  shell: bash
+                  run: tools/run_d1_final_qualification.sh validate-source
+
+                - name: Prove product and qualification graphs are separate
+                  shell: bash
+                  run: tools/run_d1_final_qualification.sh prove-graphs
+
+                - name: Build and audit product and qualification binaries
+                  shell: bash
+                  run: tools/run_d1_final_qualification.sh build-binaries
+
+                - name: Resolve signed closure, build twice, and qualify under QEMU
+                  shell: bash
+                  run: tools/run_d1_final_qualification.sh run-pipeline
+
+                - name: Build and strictly verify portable D1 evidence
+                  shell: bash
+                  run: tools/run_d1_final_qualification.sh enforce-evidence
+
+                - name: Upload canonical portable D1 evidence
+                  if: always()
+                  uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+                  with:
+                    name: d1-final-qualification-${{ github.sha }}
+                    path: /tmp/trillionnium-d1-artifact
+                    if-no-files-found: warn
+                    retention-days: 14
+                    compression-level: 0
+
+                - name: Upload bounded failure diagnostics
+                  if: failure()
+                  uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+                  with:
+                    name: d1-final-qualification-diagnostics-${{ github.sha }}
+                    path: /tmp/trillionnium-d1/evidence
+                    if-no-files-found: warn
+                    retention-days: 7
+                    compression-level: 0
+          YAML
+          sed -i 's/^          //' .github/workflows/d1-final-qualification.yml
+
+          rm -f \
+            .github/workflows/d1-generate-evidence-soundness-patch.yml \
+            .github/workflows/d1-apply-evidence-soundness.yml \
+            tools/maintenance_patch_d1_evidence.py
+
+          python3 -m py_compile \
+            tools/d1_rootfs_manifest.py \
+            tools/finalize_d1_evidence.py \
+            tools/verify_d1_artifact.py \
+            tests/d1/test_d1_evidence_soundness.py \
+            tests/d1/test_d1_tools.py
+          python3 -m json.tool manifests/gates.v1.json >/dev/null
+          bash -n \
+            packaging/debian/image/build-d1-image.sh \
+            tools/run_d1_final_qualification.sh
+          python3 -m unittest discover -s tests/d1 -p 'test_*.py' -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --check
+
+          git add -A
+          expected=$(cat <<'EOF'
+          .github/workflows/d1-apply-evidence-soundness.yml
+          .github/workflows/d1-final-qualification.yml
+          .github/workflows/d1-generate-evidence-soundness-patch.yml
+          manifests/gates.v1.json
+          packaging/debian/image/build-d1-image.sh
+          tests/d1/test_d1_evidence_soundness.py
+          tools/maintenance_patch_d1_evidence.py
+          tools/run_d1_final_qualification.sh
+          EOF
+          )
+          actual=$(git diff --cached --name-only)
+          test "$actual" = "$expected"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "ci(d1): close evidence and reproducibility soundness gaps"
+          git fetch --no-tags origin "$BRANCH"
+          test "$(git rev-parse HEAD^)" = "$(git rev-parse origin/$BRANCH)"
+          git push origin "HEAD:$BRANCH"
