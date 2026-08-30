@@ -1,28 +1,16 @@
 {
   "active_candidates": [
     {
-      "branch": "codex/d6-plan-truth-ci-closure-v1",
-      "id": "D0T-01",
-      "pr": 28,
-      "status": "MODULE_CLOSED_CANDIDATE"
-    },
-    {
-      "branch": "codex/d6-plan-truth-ci-closure-v1",
-      "id": "D0T-02",
-      "pr": 28,
-      "status": "MODULE_CLOSED_CANDIDATE"
-    },
-    {
-      "branch": "codex/d1-01-reproducible-qemu-substrate",
+      "branch": "codex/d1-01-d6-replay-v1",
       "id": "D1-01",
-      "pr": 23,
+      "pr": 29,
       "status": "BASE_DRIFT"
     },
     {
       "branch": "codex/d0a02-headed-runtime-v3",
       "id": "D0A-02",
       "pr": 27,
-      "status": "CI_BLOCKED"
+      "status": "MODULE_CLOSED_CANDIDATE"
     }
   ],
   "active_plan": "DESKTOP_PLAN-2026-08-29-d6.md",
@@ -30,6 +18,8 @@
   "agent_port_connected_bridge_product": true,
   "agent_port_enable_marker_shipped": false,
   "agent_port_exact_head_rust_validation": true,
+  "agent_port_fixture_handler_in_product_binary": false,
+  "agent_port_product_activation_fail_closed_until_D3": true,
   "agent_port_systemd_custody_host_validation": true,
   "agent_port_systemd_custody_product": true,
   "authenticated_agent_listener_enabled": false,
@@ -37,7 +27,6 @@
   "browser_codec_exact_head_rust_validation": true,
   "browser_runtime": "servo",
   "browser_runtime_integrated": false,
-  "canonical_browser_codec_product": true,
   "cargo_external_allowlist": "../manifests/cargo-external-allowlist.json",
   "debian_image_built": false,
   "debian_selection": "../manifests/debian-base.selection.json",
@@ -106,6 +95,20 @@
         33235926596,
         33235926613
       ]
+    },
+    {
+      "artifact_digest": "sha256:50ce0bc82723d6c64c8d2ca2ac900651273ef65e85e9f7b7c233e60f8e628978",
+      "artifact_id": 9725709890,
+      "evidence": "evidence/2026-08-30-d0a02-headed-runtime.md",
+      "id": "TOS-D0A-02",
+      "job_id": 99199795258,
+      "machine_evidence": "evidence/generated/d0a02-headed-runtime-evidence.json",
+      "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+      "status": "PASS_HEADED_LOCAL_FIXTURE_ONLY_MODULE_CLOSED_CANDIDATE",
+      "validated_head": "fe0ea6169127ce1f7950618b55374d83834a462c",
+      "tested_merge_sha": "0df9b9c15f51d12f34ef1af288dfae5a009f073f",
+      "tree_sha": "37dc62883d12f3e8917f21545e8223ff809c452d",
+      "workflow_run_id": 33289966647
     }
   ],
   "implementation_stage": "D0R_D0C06_D0A01_COMPILE_VALIDATED",
@@ -125,10 +128,11 @@
   "rust_toolchain_lock": "../manifests/rust-toolchain.lock.json",
   "schema": "trillionnium.desktop.docs.manifest.v3",
   "servo_compile_qualified": true,
+  "servo_headed_candidate_qualified": true,
   "servo_integrated": false,
   "servo_lock": "../manifests/servo.lock.json",
   "servo_qualification_evidence": "evidence/generated/d0a01-servo-qualification-result.json",
-  "status": "D0_FOUNDATION_VALIDATED_D1_D2_CANDIDATES_NOT_PROMOTED",
+  "status": "D0_FOUNDATION_VALIDATED_D0A02_MODULE_CLOSED_CANDIDATE",
   "superseded_plan": "DESKTOP_PLAN-2026-08-28-d5.md",
   "transport_core_source_present": true,
   "transport_exact_head_rust_validation": true,

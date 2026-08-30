@@ -1,0 +1,116 @@
+{
+  "artifacts": {
+    "content-generation-1.png": {
+      "bytes": 28088,
+      "sha256": "f1213a7267177d174d181aa165f7c1aa22e53975b6ec59db0008dd33e41d4c33"
+    },
+    "content-generation-2.png": {
+      "bytes": 28088,
+      "sha256": "f1213a7267177d174d181aa165f7c1aa22e53975b6ec59db0008dd33e41d4c33"
+    },
+    "workspace-crash-placeholder.png": {
+      "bytes": 17041,
+      "sha256": "dfaff8b8d3cc3010d9efc2b5f480e60bad6d478c4b2b2116c729c9b159afc6fa"
+    },
+    "workspace-generation-1.png": {
+      "bytes": 29517,
+      "sha256": "86aaedc4b1e1c06b2a15272043e635c2ab980a948723102d2666abffc078ef3f"
+    },
+    "workspace-generation-2.png": {
+      "bytes": 29517,
+      "sha256": "86aaedc4b1e1c06b2a15272043e635c2ab980a948723102d2666abffc078ef3f"
+    }
+  },
+  "authority": {
+    "agent_port_enabled": false,
+    "browser_actor_started": false,
+    "external_navigation_performed": false,
+    "fixture_listener_loopback_only": true,
+    "persistent_credentials_used": false,
+    "product_ready": false,
+    "webdriver_listener_started": false
+  },
+  "chrome_crash_pixels_verified": true,
+  "chrome_initial_pixels_verified": true,
+  "chrome_recovery_pixels_verified": true,
+  "content_crash_observed": true,
+  "content_crash_reason": "exact content process terminated after SIGKILL: pid=9038, start_time=42042",
+  "evidence_identity": {
+    "base_sha": "bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1",
+    "candidate_head_sha": "fe0ea6169127ce1f7950618b55374d83834a462c",
+    "formatted_overlay_sha256": "1631a61125b85430f2a2ebd9640c444fc7b89db987afab2d46fbbf76ec1007ce",
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "servo_lock_sha256": "a64fc7f64926d0a3726ce50551aa879065bcfac285caa553494c7be59ad953f4",
+    "source_sha256": "1631a61125b85430f2a2ebd9640c444fc7b89db987afab2d46fbbf76ec1007ce",
+    "tested_sha": "0df9b9c15f51d12f34ef1af288dfae5a009f073f",
+    "tree_sha": "37dc62883d12f3e8917f21545e8223ff809c452d",
+    "workflow_sha256": "b82f725eb857bfa364ec763714967e67ad41ede931040d6a4ad7f0b1d5440dc3"
+  },
+  "external_navigation_requests_denied": 2,
+  "ime_evidence": {
+    "claim_ceiling": "basic embedder IME control and submission path only; DOM composition dispatch is not claimed by this gate",
+    "composition_events_submitted": 3,
+    "dom_composition_events_observed": 3,
+    "native_winit_events_observed": 1,
+    "servo_input_method_controls_observed": 3
+  },
+  "initial_generation": 1,
+  "initial_page_evidence": {
+    "clicks": 1,
+    "composition": [
+      [
+        "start",
+        ""
+      ],
+      [
+        "update",
+        "hepta"
+      ],
+      [
+        "end",
+        "hepta"
+      ]
+    ],
+    "externalNavigationAttempted": true,
+    "generation": 1,
+    "inputEvents": 3,
+    "keyDowns": [
+      "k"
+    ],
+    "loaded": true,
+    "pointerDowns": 3,
+    "pointerMoves": 4,
+    "popupAttempted": true,
+    "wheels": 1
+  },
+  "input_handled_callbacks": 19,
+  "input_method_controls": 3,
+  "logical_content_webview_peak": 1,
+  "native_button_events": 6,
+  "native_ime_events": 1,
+  "native_keyboard_events": 2,
+  "native_pointer_events": 5,
+  "native_wheel_events": 2,
+  "popup_requests_denied": 2,
+  "recovery_generation": 2,
+  "recovery_page_evidence": {
+    "clicks": 0,
+    "composition": [],
+    "externalNavigationAttempted": true,
+    "generation": 2,
+    "inputEvents": 0,
+    "keyDowns": [],
+    "loaded": true,
+    "pointerDowns": 0,
+    "pointerMoves": 0,
+    "popupAttempted": true,
+    "wheels": 0
+  },
+  "schema": "trillionnium.desktop.d0a02-headed-runtime.v1",
+  "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+  "status": "PASS_HEADED_LOCAL_FIXTURE_ONLY",
+  "synthetic_ime_composition_events": 3,
+  "trusted_chrome_separate_from_content": true,
+  "trusted_window_survived_content_crash": true,
+  "window_created": true
+}

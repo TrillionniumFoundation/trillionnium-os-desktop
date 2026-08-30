@@ -1,7 +1,12 @@
 {
   "active_plan": "docs/DESKTOP_PLAN-2026-08-29-d6.md",
   "active_plan_revision": "2026-08-29-d6",
-  "baseline_main_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
+  "baseline_main_sha": "bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1",
+  "candidate_state_policy": {
+    "committed_snapshot_not_live_api": true,
+    "live_pr_or_ci_state_must_be_read_from_github": true,
+    "promotion_requires_exact_head_and_exact_main_evidence": true
+  },
   "evidence_binding_policy": {
     "base_sha_required": true,
     "exact_main_rerun_required_after_merge": true,
@@ -14,6 +19,8 @@
     "workflow_digest_required": true
   },
   "integrated_completed_work_packages": [
+    "D0T-01",
+    "D0T-02",
     "D0R-01",
     "D0R-02",
     "D0R-03",
@@ -75,41 +82,33 @@
     "no_self_approval_or_self_merge",
     "release_signing_dual_control"
   ],
+  "repository_setting_status": {
+    "gate": "D0T-03",
+    "status": "REPOSITORY_SETTING_REQUIRED",
+    "source_changes_cannot_satisfy_this_gate": true
+  },
   "schema": "trillionnium.desktop.project-state.v1",
   "source_candidate_work_packages": [
     {
-      "base_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
-      "branch": "codex/d6-plan-truth-ci-closure-v1",
-      "claim_ceiling": "machine_truth_and_status_consistency_only",
-      "id": "D0T-01",
-      "pr": 28,
-      "status": "MODULE_CLOSED_CANDIDATE"
-    },
-    {
-      "base_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
-      "branch": "codex/d6-plan-truth-ci-closure-v1",
-      "claim_ceiling": "ci_immutability_and_exact_command_baseline_only",
-      "id": "D0T-02",
-      "pr": 28,
-      "status": "MODULE_CLOSED_CANDIDATE"
-    },
-    {
-      "base_sha": "77bfc22619e7d9b30a3736096cf8e604a3c268ac",
-      "branch": "codex/d1-01-reproducible-qemu-substrate",
-      "candidate_head_sha": "9250fcb9df75792c39e85e0113cecac8b393a544",
+      "base_sha": "bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1",
+      "branch": "codex/d1-01-d6-replay-v1",
+      "candidate_head_sha": "95fe921c833dea9560d4b1492781795c589d6140",
       "claim_ceiling": "candidate_source_no_promoted_qemu_or_image_claim",
       "id": "D1-01",
-      "pr": 23,
+      "pr": 29,
       "status": "BASE_DRIFT"
     },
     {
-      "base_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
+      "base_sha": "bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1",
       "branch": "codex/d0a02-headed-runtime-v3",
-      "candidate_head_sha": "95a5d56d70c3667275b305501e0fe43c8c119d63",
-      "claim_ceiling": "candidate_source_no_headed_runtime_pass",
+      "candidate_head_sha": "fe0ea6169127ce1f7950618b55374d83834a462c",
+      "claim_ceiling": "headed_host_local_fixture_only_no_image_no_agent_port_no_external_effects",
+      "evidence_artifact_digest": "sha256:50ce0bc82723d6c64c8d2ca2ac900651273ef65e85e9f7b7c233e60f8e628978",
+      "evidence_artifact_id": 9725709890,
+      "evidence_run_id": 33289966647,
       "id": "D0A-02",
       "pr": 27,
-      "status": "CI_BLOCKED"
+      "status": "MODULE_CLOSED_CANDIDATE"
     }
   ],
   "truth_precedence": [

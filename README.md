@@ -13,6 +13,7 @@ The active canonical plan is `2026-08-29-d6`. The integrated main-stage truth is
 
 Integrated and demonstrated at host/source evidence levels:
 
+- D0T-01/D0T-02 machine truth and immutable CI inputs;
 - Rust 2024 workspace pinned to Rust 1.93.0;
 - product-boundary and exact Cargo dependency locks;
 - signed Debian snapshot/package input closure;
@@ -20,36 +21,47 @@ Integrated and demonstrated at host/source evidence levels:
   deterministic Agent/human arbitration, and bounded queues;
 - authenticated bounded AF_UNIX connected-stream transport;
 - canonical bounded JSON Browser API codec;
-- exactly-one request-bound connected AgentPort bridge;
+- exactly-one request-bound connected AgentPort core;
 - default-disabled systemd socket custody and peer attestation;
+- product AgentPort fixture separation and fail-closed activation until D3;
 - durable, crash-consistent receipt journal with no execution or replay API;
 - exact-pin Servo compile compatibility only.
 
+PR #27 has passed its headed-host module-closure corpus on exact source head
+`fe0ea6169127ce1f7950618b55374d83834a462c`. That candidate proves one native
+trusted window, one logical local-fixture Servo content surface, native
+input/basic IME, popup/navigation refusal, and content-process crash recovery
+on the tested X11/Xvfb runner. It is not integrated until its promotion head
+and merged main both pass.
+
 Not integrated or claimed:
 
-- product-owned headed Servo runtime or visible first frame;
-- Debian/Wayland/QEMU boot;
-- QEMU PID 1 AgentPort activation;
+- headed Servo inside the Debian/QEMU product image;
+- Debian/Wayland/QEMU boot on current main;
 - BrowserActor/PageOwner dispatch or TaskFlow semantic-principal binding;
 - external navigation, credentials, capabilities, or external effects;
 - signed applications, controlled egress, signed update/rollback, fixed
   hardware, or production release.
 
-D1 PR #23 is a base-drifted candidate. D0A-02/D2 PR #27 is a candidate whose
-headed qualification must pass on its exact head and again on integrated main.
-Neither PR is part of the integrated product truth.
+The active D1 replay is PR #29. PR #23 is historical and superseded. D1 must be
+rebuilt after product/fixture separation so QEMU qualification traffic cannot
+substitute a fixture handler into the production daemon.
 
 ## Canonical truth and plan
 
 - [`manifests/project-state.v1.json`](manifests/project-state.v1.json) — single
-  machine status
+  committed machine status snapshot
 - [`manifests/gates.v1.json`](manifests/gates.v1.json) — gates, evidence tiers,
-  review classes, and invalidation inputs
+  required commands, review classes, and invalidation inputs
 - [`docs/DESKTOP_PLAN-2026-08-29-d6.md`](docs/DESKTOP_PLAN-2026-08-29-d6.md) —
   active development plan
 - [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) — integrated state summary
-- [`docs/plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md`](docs/plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md)
-  — candidate blocker snapshot
+- [`docs/evidence/2026-08-30-d0a02-headed-runtime.md`](docs/evidence/2026-08-30-d0a02-headed-runtime.md)
+  — headed-host candidate evidence
+
+Live PR/check state is read from GitHub. The committed candidate entries are
+evidence snapshots and must not be interpreted as a substitute for current
+GitHub status.
 
 ## Required checks
 
