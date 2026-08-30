@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
 
       - name: Record runner and source identity
         run: |
@@ -33,6 +35,12 @@ jobs:
           set -euo pipefail
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
+          python3 -m unittest tests.test_validate_project_truth -v
+
+      - name: Run repository Python contract suites
+        run: |
+          set -euo pipefail
+          make test-python
 
   rust:
     runs-on: ubuntu-24.04
@@ -40,6 +48,8 @@ jobs:
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
 
       - name: Install locked Rust toolchain
         run: |

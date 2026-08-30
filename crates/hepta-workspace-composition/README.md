@@ -7,7 +7,8 @@ Engine-neutral D0A-02 model for one visible TrillionniumOS Desktop workspace:
 - no shared DOM or external-navigation replacement of trusted chrome;
 - explicit pointer, keyboard and IME ownership;
 - popup/new-window denial;
-- content crash placeholder while trusted chrome remains available.
+- content crash placeholder while trusted chrome remains available;
+- fail-closed input routing while replacement content is recovering.
 
 This crate does not start Servo, create a native window or render a frame. It
 provides the deterministic state and invariant layer that the headed runtime

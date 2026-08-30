@@ -1,0 +1,148 @@
+#!/bin/bash
+set -euo pipefail
+
+out=/var/lib/trillionnium-d2i
+result="$out/guest-acceptance.json"
+diagnostics="$out/guest-failure-diagnostics.txt"
+mkdir -p "$out"
+
+poweroff_guest() {
+  sync
+  systemctl poweroff --no-block || systemctl poweroff --force --no-block || true
+}
+
+fail() {
+  local reason=$1
+  printf 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:%s\n' "$reason" >&2
+  {
+    printf 'reason=%s\n' "$reason"
+    printf '\n-- unit status --\n'
+    systemctl --no-pager --full status \
+      trillionnium-d1-wayland.service \
+      trillionnium-d2i-runtime.service \
+      trillionnium-d2i-content-crash-proof.service \
+      trillionnium-d2i-acceptance.service || true
+    printf '\n-- runtime journal --\n'
+    journalctl --no-pager -u trillionnium-d2i-runtime.service -u \
+      trillionnium-d2i-content-crash-proof.service -n 240 || true
+    printf '\n-- evidence directory --\n'
+    find "$out" -maxdepth 1 -type f -printf '%f\n' | sort || true
+  } >"$diagnostics" 2>&1 || true
+  cat "$diagnostics" >&2 || true
+  cat > "$result" <<EOF
+{
+  "schema": "trillionnium.desktop.d2i-guest-acceptance.v1",
+  "status": "FAIL",
+  "reason": "${reason//\"/\\\"}",
+  "network_enabled": false,
+  "product_agent_port_enabled": false
+}
+EOF
+  poweroff_guest
+  exit 1
+}
+
+systemctl is-active --quiet systemd-udevd.service || fail udev_inactive
+systemctl is-active --quiet dbus.service || fail dbus_inactive
+systemctl is-active --quiet systemd-logind.service || fail logind_inactive
+systemctl is-active --quiet trillionnium-d1-wayland.service || fail wayland_inactive
+systemctl is-active --quiet trillionnium-d2i-content-crash-proof.service \
+  || fail external_crash_proof_inactive
+
+runtime="$out/runtime-ready.json"
+proof="$out/content-process-crash-proof.json"
+screenshot="$out/servo-content-recovered.png"
+test -s "$runtime" || fail runtime_evidence_missing
+test -s "$proof" || fail external_crash_proof_missing
+test -s "$screenshot" || fail recovery_screenshot_missing
+
+grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS_HEADED_LOCAL_FIXTURE_ONLY"' "$runtime" \
+  || fail runtime_status_not_pass
+grep -Eq '"logical_content_webview_peak"[[:space:]]*:[[:space:]]*1' "$runtime" \
+  || fail content_surface_limit_changed
+grep -Eq '"recovery_generation"[[:space:]]*:[[:space:]]*2' "$runtime" \
+  || fail recovery_generation_missing
+grep -Eq '"logical_webviews_created"[[:space:]]*:[[:space:]]*2' "$runtime" \
+  || fail recovered_frame_missing
+grep -Eq '"page_input_verified"[[:space:]]*:[[:space:]]*true' "$runtime" \
+  || fail page_input_not_verified
+grep -Eq '"native_pointer_events"[[:space:]]*:[[:space:]]*[1-9][0-9]*' "$runtime" \
+  || fail pointer_input_not_observed
+grep -Eq '"native_button_events"[[:space:]]*:[[:space:]]*([4-9]|[1-9][0-9]+)' "$runtime" \
+  || fail button_input_not_observed
+grep -Eq '"native_wheel_events"[[:space:]]*:[[:space:]]*[1-9][0-9]*' "$runtime" \
+  || fail wheel_input_not_observed
+grep -Eq '"native_keyboard_events"[[:space:]]*:[[:space:]]*([2-9]|[1-9][0-9]+)' "$runtime" \
+  || fail keyboard_input_not_observed
+grep -Eq '"ime_path_exercised"[[:space:]]*:[[:space:]]*true' "$runtime" \
+  || fail ime_path_not_exercised
+grep -Eq '"synthetic_ime_composition_events"[[:space:]]*:[[:space:]]*3' "$runtime" \
+  || fail ime_composition_not_complete
+grep -Eq '"input_method_controls"[[:space:]]*:[[:space:]]*[1-9][0-9]*' "$runtime" \
+  || fail ime_controls_not_observed
+grep -Eq '"popup_requests_denied"[[:space:]]*:[[:space:]]*[1-9][0-9]*' "$runtime" \
+  || fail popup_denial_not_observed
+grep -Eq '"external_navigation_requests_denied"[[:space:]]*:[[:space:]]*[1-9][0-9]*' "$runtime" \
+  || fail navigation_denial_not_observed
+grep -Eq '"external_network_used"[[:space:]]*:[[:space:]]*false' "$runtime" \
+  || fail runtime_network_claim_changed
+grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS_EXTERNAL_CONTENT_PROCESS_TERMINATION_AND_RECOVERY"' "$proof" \
+  || fail external_crash_proof_not_pass
+grep -Eq '"injector_count"[[:space:]]*:[[:space:]]*1' "$proof" \
+  || fail external_crash_injector_count_changed
+grep -Eq '"runtime_internal_injector"[[:space:]]*:[[:space:]]*false' "$proof" \
+  || fail runtime_internal_injector_enabled
+
+[[ ! -e /etc/hepta/enable-agent-port ]] || fail release_marker_present
+[[ ! -S /run/hepta/browserd/agent.sock ]] || fail product_agent_socket_present
+if systemctl is-active --quiet hepta-browserd-agent.socket; then
+  fail product_agent_socket_active
+fi
+non_loopback=$(find /sys/class/net -mindepth 1 -maxdepth 1 ! -name lo -printf '%f\n')
+[[ -z "$non_loopback" ]] || fail non_loopback_network_device_present
+
+journalctl --no-pager -u trillionnium-d2i-runtime.service -u \
+  trillionnium-d2i-content-crash-proof.service > "$out/runtime-journal.txt" || true
+runtime_sha=$(sha256sum "$runtime" | awk '{print $1}')
+screenshot_sha=$(sha256sum "$screenshot" | awk '{print $1}')
+wayland_sha=$(sha256sum /run/hepta-desktop/weston.log | awk '{print $1}')
+actual_crash_callbacks=$(sed -n \
+  -n 's/.*"servo_pipeline_panic_callback_observed": \(true\|false\).*/\1/p' \
+  "$runtime" | head -n1)
+if [[ "$actual_crash_callbacks" == true ]]; then
+  actual_crash_callbacks=1
+else
+  actual_crash_callbacks=0
+fi
+
+cat > "$result" <<EOF
+{
+  "schema": "trillionnium.desktop.d2i-guest-acceptance.v1",
+  "status": "PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE",
+  "pid1": "systemd",
+  "udev_active": true,
+  "dbus_active": true,
+  "logind_active": true,
+  "headless_wayland_active": true,
+  "headed_servo_runtime_completed": true,
+  "trusted_chrome_survived_recovery": true,
+  "content_surface_limit": 1,
+  "page_input_verified": true,
+  "ime_path_exercised": true,
+  "product_agent_port_default_disabled": true,
+  "product_agent_port_socket_absent": true,
+  "network_enabled": false,
+  "runtime_ready_sha256": "$runtime_sha",
+  "recovery_screenshot_sha256": "$screenshot_sha",
+  "wayland_log_sha256": "$wayland_sha",
+  "actual_crash_callbacks": $actual_crash_callbacks,
+  "external_crash_proof_status": "PASS_EXTERNAL_CONTENT_PROCESS_TERMINATION_AND_RECOVERY",
+  "external_crash_injector_count": 1,
+  "runtime_internal_injector": false,
+  "actual_content_process_crash_proven": false,
+  "release_ready": false
+}
+EOF
+
+printf 'TRILLIONNIUM_D2I_ACCEPTANCE_PASS\n'
+poweroff_guest

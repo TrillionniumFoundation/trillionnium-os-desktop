@@ -10,16 +10,162 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import stat
 import sys
+from pathlib import PurePosixPath
 import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+_O_CLOEXEC = getattr(os, "O_CLOEXEC", 0)
+_O_NONBLOCK = getattr(os, "O_NONBLOCK", 0)
+_O_NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
+
+
+def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Decode JSON objects without silently selecting a duplicate member.
+
+    Contract and host-result files are evidence inputs.  Accepting duplicate
+    keys would make the value depend on the parser (or on which consumer reads
+    it first), so this validator treats ambiguity as a hard failure.
+    """
+
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON object key: {key!r}")
+        result[key] = value
+    return result
+
+
+def load_json_strict(value: object) -> object:
+    """Load JSON from a text/bytes value or a file-like stream strictly."""
+
+    if hasattr(value, "read"):
+        return json.load(value, object_pairs_hook=_reject_duplicate_json_keys)
+    return json.loads(value, object_pairs_hook=_reject_duplicate_json_keys)
+
+
+def _has_symlink_component(path: Path) -> bool:
+    """Check lexical path components without resolving links."""
+
+    lexical = Path(os.fspath(path))
+    if not lexical.is_absolute():
+        lexical = Path.cwd() / lexical
+    current = Path(lexical.anchor)
+    for component in lexical.parts:
+        if component in {lexical.anchor, "."}:
+            continue
+        if component == "..":
+            current = current.parent
+            continue
+        current /= component
+        try:
+            mode = os.lstat(current).st_mode
+        except FileNotFoundError:
+            return False
+        except OSError as error:
+            raise ValueError(f"cannot inspect path component: {current}") from error
+        if stat.S_ISLNK(mode):
+            return True
+    return False
+
+
+def _open_regular(path: Path, *, label: str) -> int:
+    """Open a regular file with a final-component no-follow check."""
+
+    if _has_symlink_component(path):
+        raise ValueError(f"{label} contains a symlink: {path}")
+    try:
+        descriptor = os.open(
+            path,
+            os.O_RDONLY | _O_CLOEXEC | _O_NONBLOCK | _O_NOFOLLOW,
+        )
+    except OSError as error:
+        raise ValueError(f"{label} is absent or unreadable: {path}") from error
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise ValueError(f"{label} is not a regular file: {path}")
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def read_text_nofollow(path: Path, *, label: str = "source file") -> str:
+    """Read one regular UTF-8 file without following a symlink."""
+
+    descriptor = _open_regular(path, label=label)
+    try:
+        with os.fdopen(descriptor, "r", encoding="utf-8", closefd=True) as stream:
+            descriptor = -1
+            return stream.read()
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+
+
+def read_bytes_nofollow(path: Path, *, label: str = "source file") -> bytes:
+    """Read one regular binary file without following a symlink."""
+
+    descriptor = _open_regular(path, label=label)
+    try:
+        with os.fdopen(descriptor, "rb", closefd=True) as stream:
+            descriptor = -1
+            return stream.read()
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+
+
+def repo_path(value: object, *, label: str = "repository-relative path") -> Path:
+    """Convert an untrusted contract path to a confined repository path.
+
+    Only canonical POSIX-relative paths are accepted.  In particular, an
+    absolute path or a traversal component cannot escape ``ROOT`` even when
+    this helper is called by a workflow inline script.
+    """
+
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise ValueError(f"{label} must be a non-empty relative path")
+    if "\\" in value or any(ord(char) < 0x20 or ord(char) == 0x7F for char in value):
+        raise ValueError(f"{label} contains unsafe characters")
+    parsed = PurePosixPath(value)
+    if (
+        parsed.is_absolute()
+        or not parsed.parts
+        or any(part in {"", ".", ".."} for part in parsed.parts)
+        or parsed.as_posix() != value
+    ):
+        raise ValueError(f"{label} must be a canonical repository-relative path")
+    candidate = ROOT.joinpath(*parsed.parts)
+    # The lexical checks above make this containment check explicit and guard
+    # against future changes to path construction.
+    try:
+        candidate.relative_to(ROOT)
+    except ValueError as error:
+        raise ValueError(f"{label} escapes repository root") from error
+    return candidate
+
+
+def load_json_nofollow(path: Path, *, label: str = "JSON source") -> object:
+    """Read and strictly decode a repository/evidence JSON file."""
+
+    descriptor = _open_regular(path, label=label)
+    try:
+        with os.fdopen(descriptor, "r", encoding="utf-8", closefd=True) as stream:
+            descriptor = -1
+            return load_json_strict(stream)
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+
 
 def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashlib.sha256(read_bytes_nofollow(path, label="hashed source")).hexdigest()
 
 
 def require(condition: bool, message: str, checks: list[str]) -> None:
@@ -28,26 +174,105 @@ def require(condition: bool, message: str, checks: list[str]) -> None:
     checks.append(message)
 
 
+def index_lock_packages(lock: object) -> dict[str, list[dict[str, object]]]:
+    """Index Cargo.lock packages without silently folding duplicate records.
+
+    Cargo permits the same crate name at multiple versions/sources.  A plain
+    ``{name: package}`` comprehension silently keeps whichever record appears
+    last, allowing a malformed lockfile (or a future validator change) to make
+    the checked dependency appear to resolve to a different package.  Retain
+    every record and reject duplicate package identities, where the identity
+    is the complete ``(name, version, source)`` tuple.
+    """
+
+    if not isinstance(lock, dict):
+        raise AssertionError("Cargo.lock root must be an object")
+    entries = lock.get("package")
+    if not isinstance(entries, list):
+        raise AssertionError("Cargo.lock package list is missing")
+    by_name: dict[str, list[dict[str, object]]] = {}
+    seen: set[tuple[object, object, object]] = set()
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            raise AssertionError(f"Cargo.lock package {index} is not an object")
+        name = entry.get("name")
+        version = entry.get("version")
+        source = entry.get("source")
+        if not isinstance(name, str) or not isinstance(version, str):
+            raise AssertionError(f"Cargo.lock package {index} lacks name/version")
+        if source is not None and not isinstance(source, str):
+            raise AssertionError(f"Cargo.lock package {name} has invalid source")
+        identity = (name, version, source)
+        if identity in seen:
+            raise AssertionError(
+                "Cargo.lock contains duplicate package identity "
+                f"(name={name!r}, version={version!r}, source={source!r})"
+            )
+        seen.add(identity)
+        by_name.setdefault(name, []).append(entry)
+    return by_name
+
+
+def one_lock_package(
+    packages: dict[str, list[dict[str, object]]], name: str
+) -> dict[str, object]:
+    candidates = packages.get(name, [])
+    if len(candidates) != 1:
+        raise AssertionError(
+            f"Cargo.lock package {name!r} is ambiguous or missing "
+            f"({len(candidates)} records)"
+        )
+    return candidates[0]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--write-result", type=Path)
     args = parser.parse_args()
 
     checks: list[str] = []
-    contract = json.loads((ROOT / "contracts/browser-codec.v1.json").read_text())
-    errors = json.loads((ROOT / "contracts/error-codes.v1.json").read_text())["codes"]
-    workspace = tomllib.loads((ROOT / "Cargo.toml").read_text())
-    lock = tomllib.loads((ROOT / "Cargo.lock").read_text())
-    manifest = tomllib.loads(
-        (ROOT / "crates/hepta-browser-codec/Cargo.toml").read_text()
+    contract = load_json_nofollow(
+        ROOT / "contracts/browser-codec.v1.json", label="codec contract"
     )
-    lib = (ROOT / "crates/hepta-browser-codec/src/lib.rs").read_text()
-    json_source = (ROOT / "crates/hepta-browser-codec/src/json.rs").read_text()
-    model_paths = [ROOT / "crates/hepta-browser-codec/src/model.rs", *sorted((ROOT / "crates/hepta-browser-codec/src/model").glob("*.rs"))]
-    model = "\n".join(path.read_text() for path in model_paths)
-    tests = (ROOT / "crates/hepta-browser-codec/src/tests.rs").read_text()
-    browserd_manifest = tomllib.loads((ROOT / "apps/hepta-browserd/Cargo.toml").read_text())
-    browserd = (ROOT / "apps/hepta-browserd/src/lib.rs").read_text()
+    errors = load_json_nofollow(
+        ROOT / "contracts/error-codes.v1.json", label="error-code contract"
+    )["codes"]
+    workspace = tomllib.loads(
+        read_text_nofollow(ROOT / "Cargo.toml", label="workspace manifest")
+    )
+    lock = tomllib.loads(
+        read_text_nofollow(ROOT / "Cargo.lock", label="Cargo.lock")
+    )
+    manifest = tomllib.loads(
+        read_text_nofollow(
+            ROOT / "crates/hepta-browser-codec/Cargo.toml",
+            label="codec manifest",
+        )
+    )
+    lib = read_text_nofollow(
+        ROOT / "crates/hepta-browser-codec/src/lib.rs", label="codec lib"
+    )
+    json_source = read_text_nofollow(
+        ROOT / "crates/hepta-browser-codec/src/json.rs", label="codec JSON source"
+    )
+    model_paths = [
+        ROOT / "crates/hepta-browser-codec/src/model.rs",
+        *sorted((ROOT / "crates/hepta-browser-codec/src/model").glob("*.rs")),
+    ]
+    model = "\n".join(
+        read_text_nofollow(path, label="codec model source") for path in model_paths
+    )
+    tests = read_text_nofollow(
+        ROOT / "crates/hepta-browser-codec/src/tests.rs", label="codec tests"
+    )
+    browserd_manifest = tomllib.loads(
+        read_text_nofollow(
+            ROOT / "apps/hepta-browserd/Cargo.toml", label="browserd manifest"
+        )
+    )
+    browserd = read_text_nofollow(
+        ROOT / "apps/hepta-browserd/src/lib.rs", label="browserd source"
+    )
 
     members = workspace["workspace"]["members"]
     defaults = workspace["workspace"]["default-members"]
@@ -69,15 +294,17 @@ def main() -> int:
         checks,
     )
 
-    packages = {item["name"]: item for item in lock["package"]}
+    packages = index_lock_packages(lock)
+    codec_package = one_lock_package(packages, "hepta-browser-codec")
+    browserd_package = one_lock_package(packages, "hepta-browserd")
     require("hepta-browser-codec" in packages, "Cargo.lock contains codec package", checks)
     require(
-        packages["hepta-browser-codec"].get("dependencies") == ["sha2"],
+        codec_package.get("dependencies") == ["sha2"],
         "Cargo.lock binds codec only to sha2",
         checks,
     )
     require(
-        "hepta-browser-codec" in packages["hepta-browserd"].get("dependencies", []),
+        "hepta-browser-codec" in browserd_package.get("dependencies", []),
         "Cargo.lock binds browserd to codec",
         checks,
     )
@@ -142,8 +369,8 @@ def main() -> int:
         path = ROOT / "contracts/golden" / name
         require(path.exists(), f"golden vector exists: {name}", checks)
         require(name in tests, f"Rust tests include golden vector: {name}", checks)
-        raw = path.read_bytes()
-        require(raw == json.dumps(json.loads(raw), ensure_ascii=False, sort_keys=True,
+        raw = read_bytes_nofollow(path, label=f"golden vector {name}")
+        require(raw == json.dumps(load_json_strict(raw), ensure_ascii=False, sort_keys=True,
                                   separators=(",", ":")).encode(),
                 f"golden vector is canonical: {name}", checks)
 
@@ -155,9 +382,10 @@ def main() -> int:
     for field in ["rust_fmt", "rust_clippy", "rust_tests", "browserd_self_check"]:
         require(validation[field] == "PASS", f"host validation records {field} PASS", checks)
     require(validation["merge_ready"] is True, "contract is merge-ready after exact-head validation", checks)
-    host_result = ROOT / contract["rust_host_result"]
-    require(host_result.is_file(), "exact-head Rust host result exists", checks)
-    host = json.loads(host_result.read_text())
+    host_result = repo_path(
+        contract.get("rust_host_result"), label="rust_host_result"
+    )
+    host = load_json_nofollow(host_result, label="exact-head Rust host result")
     require(host["status"] == "PASS", "exact-head Rust host result is PASS", checks)
     require(host["validated_source_sha"] == "4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb",
             "host result binds the tested source commit", checks)

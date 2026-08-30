@@ -120,6 +120,7 @@ Orthogonal control states:
 Idle
 AgentObserving
 AgentMutating
+AgentNavigating
 HumanActive
 HumanImeComposing
 ```
@@ -143,7 +144,10 @@ only after snapshot consistency and privacy tests demonstrate safety.
 Human focus uses a bounded monotonic lease. Human focus may interrupt Agent work
 and invalidates any assumption that a mutation completed uninterrupted. IME
 composition explicitly owns text input. Modal, navigation, capability, cancel,
-and recovery states block incompatible mutations with typed failures.
+and recovery states block incompatible mutations with typed failures. A
+`CancelRequested` transition is also a hard ownership boundary: it revokes any
+human lease immediately, refuses new human focus/input/IME events until
+`CancelCompleted`, and leaves no old lease usable after completion.
 
 The queue is bounded FIFO. Overflow returns `queue_full`; it does not allocate
 without limit, drop an older request, or silently execute outside ordering.

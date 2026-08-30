@@ -155,6 +155,49 @@ fn encoder_sorts_object_keys_recursively() {
 }
 
 #[test]
+fn constructed_json_values_enforce_depth_and_container_item_bounds() {
+    let mut nested = JsonValue::Null;
+    for _ in 0..=MAX_JSON_DEPTH {
+        nested = JsonValue::Array(vec![nested]);
+    }
+    assert!(matches!(
+        nested.canonical_bytes(),
+        Err(JsonError::NestingDepth {
+            maximum: MAX_JSON_DEPTH
+        })
+    ));
+
+    let oversized = JsonValue::Array(vec![JsonValue::Null; MAX_CONTAINER_ITEMS + 1]);
+    assert!(matches!(
+        oversized.canonical_bytes(),
+        Err(JsonError::ContainerItems {
+            maximum: MAX_CONTAINER_ITEMS
+        })
+    ));
+}
+
+#[test]
+fn constructed_json_values_enforce_string_and_key_bounds() {
+    let oversized_string = JsonValue::String("s".repeat(MAX_JSON_STRING_BYTES + 1));
+    assert!(matches!(
+        oversized_string.canonical_bytes(),
+        Err(JsonError::MessageSize {
+            maximum: MAX_JSON_STRING_BYTES,
+            ..
+        })
+    ));
+
+    let oversized_key = BTreeMap::from([("k".repeat(MAX_JSON_KEY_BYTES + 1), JsonValue::Null)]);
+    assert!(matches!(
+        JsonValue::Object(oversized_key).canonical_bytes(),
+        Err(JsonError::MessageSize {
+            maximum: MAX_JSON_KEY_BYTES,
+            ..
+        })
+    ));
+}
+
+#[test]
 fn full_self_check_passes() {
     self_check().unwrap();
 }

@@ -1,9 +1,9 @@
 #![forbid(unsafe_code)]
 
-//! D0 browser daemon scaffold. This is a deterministic contract, transport,
-//! codec, connected AgentPort, durable-receipt, and session self-check only:
-//! it does not start Servo, bind a listener, dispatch a BrowserActor, or
-//! perform an external network operation.
+//! Browser daemon control-core scaffold. This validates contracts, transport,
+//! AgentPort, durable receipts, session arbitration, and the D3 PageOwner /
+//! BrowserActor source model. It does not yet start the integrated Servo
+//! adapter, bind a product listener, or perform an external network operation.
 
 use hepta_browser_contracts::BROWSER_API_PROTOCOL;
 use hepta_session_core::{
@@ -62,6 +62,9 @@ pub fn run_self_check() -> Result<SelfCheckReport, String> {
     checks_run += 1;
 
     hepta_agent_port::self_check().map_err(|error| error.to_string())?;
+    checks_run += 1;
+
+    hepta_browser_actor::self_check()?;
     checks_run += 1;
 
     let mut machine = SessionMachine::new();
@@ -170,7 +173,7 @@ mod tests {
     fn self_check_exercises_transport_codec_agent_port_preemption_revision_and_recovery() {
         let report = run_self_check().expect("self-check must pass");
         assert!(report.ok);
-        assert!(report.checks_run >= 10);
+        assert!(report.checks_run >= 11);
         assert_eq!(report.final_session_generation, 2);
         assert!(report.final_document_generation >= 3);
         assert!(report.to_json().contains(ACTIVE_PLAN_REVISION));

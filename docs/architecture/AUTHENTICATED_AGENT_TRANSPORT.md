@@ -1,7 +1,8 @@
 # Authenticated Agent transport
 
 **Checkpoint:** `TOS-D0C-02`  
-**Status:** source candidate; exact-head Rust validation pending
+**Status:** source candidate; the permanent reference workflow now reruns the
+exact locked Rust transport gate on affected inputs.
 
 ## Boundary
 
@@ -59,8 +60,11 @@ descriptor or credential buffer.
 
 Unit-test source covers peer rejection, nonce binding, sequence replay, digest
 tampering, oversized frames, deadline exhaustion, and a local round trip.
-Those Rust checks are **UNEXECUTED** for the candidate head until a trusted
-Rust 1.93 environment runs the exact commands recorded in the evidence file.
+The permanent reference workflow installs the repository's locked Rust 1.93
+toolchain and runs package-scoped `fmt`, `check`, Clippy, and test commands on
+the exact transport crate. Historical evidence remains stale whenever any
+declared invalidation input changes, so a fresh exact-head run is still needed
+after source or lock updates.
 
 This source is not evidence of a product socket, a running Servo session,
 systemd integration, external browser authority, or merge readiness.

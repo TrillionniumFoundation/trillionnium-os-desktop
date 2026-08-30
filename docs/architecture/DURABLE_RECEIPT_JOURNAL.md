@@ -12,10 +12,15 @@ or replay anything. The product may bind it to BrowserActor only after this
 standalone durability gate passes.
 
 Every segment is a private `0600` regular file. A sidecar writer lease is
-created atomically and binds the current Linux boot ID, PID, and `/proc` start
-time. A crash leaves a stale lease; reopening requires the explicit crash
-recovery policy and verifies that the recorded process identity is no longer
-live before removing it.
+created atomically, held with an advisory descriptor lock, and binds the
+current Linux boot ID, PID, and `/proc` start time. A clean teardown keeps the
+sidecar inode and writes a `released=1` marker while holding the lock; this
+avoids a check-then-unlink rename race and lets the next opener safely reuse
+the same inode. A crash leaves the identity payload stale; reopening requires
+the explicit crash-recovery policy and verifies that the recorded process
+identity is no longer live before replacing the payload in place. Malformed or
+unreadable lease state is never treated as stale, and a replacement lock inode
+is never removed by an old writer.
 
 ## Format and chain
 
@@ -32,9 +37,12 @@ The prefix binds:
 - payload length and payload digest.
 
 Rotated segments bind the previous complete segment digest and last record
-digest. Rotation is refused while any receipt is unresolved, so recovery of an
-individual segment never needs hidden lifecycle state from an unavailable
-predecessor.
+digest. Rotation is refused while any receipt is unresolved. The in-memory
+successor carries terminal receipt progress, and `inspect_chain` replays
+lifecycle/effect-class validation across every supplied segment, so a receipt
+identifier cannot be admitted again after rotation. Callers reopening a later
+segment must inspect the complete ordered chain before treating it as
+appendable.
 
 ## Commit and recovery
 

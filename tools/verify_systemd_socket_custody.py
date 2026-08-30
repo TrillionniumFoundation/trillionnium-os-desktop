@@ -8,6 +8,7 @@ import pathlib
 import sys
 import tomllib
 from collections import defaultdict
+from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOCKET = ROOT / "packaging/debian/systemd/hepta-browserd-agent.socket"
@@ -23,6 +24,79 @@ PORTD_CARGO = ROOT / "apps/hepta-agent-portd/Cargo.toml"
 ATTESTOR = ROOT / "crates/hepta-peer-attestation/src/lib.rs"
 MARKER = "/etc/hepta/enable-agent-port"
 SOCKET_PATH = "/run/hepta/browserd/agent.sock"
+
+# Keep the parser fail-closed: systemd unit files are executable policy, so an
+# unreviewed directive must not silently pass this static custody audit.  The
+# allowlists cover the two units audited below; list-valued directives are
+# explicitly enumerated because systemd permits them to occur more than once.
+ALLOWED_SECTIONS = {"Unit", "Socket", "Service", "Install"}
+ALLOWED_KEYS = {
+    "Unit": {"Description", "Documentation", "ConditionPathExists", "Requires", "After"},
+    "Socket": {
+        "ListenStream",
+        "SocketUser",
+        "SocketGroup",
+        "SocketMode",
+        "DirectoryMode",
+        "Accept",
+        "Backlog",
+        "MaxConnections",
+        "RemoveOnStop",
+    },
+    "Service": {
+        "Type",
+        "User",
+        "Group",
+        "SupplementaryGroups",
+        "ExecStart",
+        "StandardInput",
+        "StandardOutput",
+        "StandardError",
+        "Restart",
+        "RuntimeMaxSec",
+        "TimeoutStopSec",
+        "UMask",
+        "NoNewPrivileges",
+        "CapabilityBoundingSet",
+        "AmbientCapabilities",
+        "PrivateNetwork",
+        "PrivateTmp",
+        "PrivateDevices",
+        "ProtectSystem",
+        "ProtectHome",
+        "ProtectKernelTunables",
+        "ProtectKernelModules",
+        "ProtectKernelLogs",
+        "ProtectControlGroups",
+        "ProtectClock",
+        "ProtectHostname",
+        "ProtectProc",
+        "ProcSubset",
+        "RestrictAddressFamilies",
+        "RestrictNamespaces",
+        "RestrictRealtime",
+        "RestrictSUIDSGID",
+        "LockPersonality",
+        "MemoryDenyWriteExecute",
+        "RemoveIPC",
+        "SystemCallArchitectures",
+        "SystemCallFilter",
+        "DevicePolicy",
+        "ReadWritePaths",
+    },
+    "Install": {"WantedBy"},
+}
+MULTI_VALUE_KEYS = {"Documentation", "Requires", "After", "SupplementaryGroups", "SystemCallFilter", "ReadWritePaths"}
+
+# ``SystemCallFilter=`` has stateful systemd semantics: an empty assignment
+# resets the accumulated allow/deny sets.  Merely checking the first and last
+# entries therefore lets an inserted reset (or an inserted positive rule)
+# silently broaden the service's syscall authority.  Keep the allow-list
+# exact, and require every subsequent assignment to be an explicit deny set.
+EXPECTED_SYSCALL_ALLOW = ("@system-service", "pidfd_open")
+EXPECTED_SYSCALL_DENY = frozenset(
+    {"@mount", "@raw-io", "@reboot", "@swap", "@privileged", "@resources", "@obsolete", "@debug"}
+)
 
 
 def require(condition: bool, message: str) -> None:
@@ -46,11 +120,24 @@ def parse_unit(path: pathlib.Path) -> dict[str, dict[str, list[str]]]:
         if line.startswith("[") and line.endswith("]"):
             section = line[1:-1]
             require(section != "", f"empty section in {path}:{line_number}")
+            require(
+                section in ALLOWED_SECTIONS,
+                f"unknown section {section!r} in {path}:{line_number}",
+            )
             continue
         require(section is not None, f"directive outside section in {path}:{line_number}")
         require("=" in line, f"malformed directive in {path}:{line_number}")
         key, value = line.split("=", 1)
         require(key != "", f"empty directive in {path}:{line_number}")
+        require(
+            key in ALLOWED_KEYS.get(section, set()),
+            f"unknown directive {key!r} in [{section}] {path}:{line_number}",
+        )
+        if key not in MULTI_VALUE_KEYS:
+            require(
+                key not in result[section],
+                f"duplicate directive {key!r} in [{section}] {path}:{line_number}",
+            )
         result[section][key].append(value)
     return {name: dict(values) for name, values in result.items()}
 
@@ -63,6 +150,93 @@ def one(unit: dict[str, dict[str, list[str]]], section: str, key: str) -> str:
 
 def yes(value: str) -> bool:
     return value.lower() in {"yes", "true", "1", "on"}
+
+
+def validate_system_call_filters(filters: list[str]) -> None:
+    """Validate the effective shape of the service syscall policy.
+
+    The unit currently has one positive allow assignment and one negative
+    assignment.  Rejecting resets, extra positive assignments, and unknown
+    deny tokens prevents the static audit from accepting a policy whose
+    effective set differs from the reviewed contract.
+    """
+
+    require(len(filters) == 2, f"syscall filter set must contain exactly two assignments, got {filters!r}")
+    allow = filters[0].split()
+    require(
+        tuple(allow) == EXPECTED_SYSCALL_ALLOW,
+        f"syscall allow set changed: {allow!r}",
+    )
+    deny = filters[1].split()
+    require(
+        len(deny) >= 2 and deny[0].startswith("~") and deny[0] != "~",
+        "syscall deny assignment is empty or missing '~' prefix",
+    )
+    require(
+        all(not token.startswith("~") for token in deny[1:]),
+        "syscall deny assignment contains an extra negation token",
+    )
+    require(
+        len(deny[1:]) == len(set(deny[1:])),
+        "syscall deny assignment contains duplicate tokens",
+    )
+    require(
+        deny[0][1:] in EXPECTED_SYSCALL_DENY and set(deny[1:]) == EXPECTED_SYSCALL_DENY - {deny[0][1:]},
+        f"syscall deny set changed: {deny!r}",
+    )
+
+
+def index_lock_packages(lock: object) -> dict[str, list[dict[str, Any]]]:
+    """Index Cargo.lock entries without silently folding package identities.
+
+    A package identity is the complete ``(name, version, source)`` tuple.
+    Indexing by name alone lets a duplicate or alternate record overwrite the
+    one being checked.  Keep every record and reject duplicate identities so
+    callers can fail closed on malformed lockfiles.
+    """
+
+    if not isinstance(lock, dict):
+        raise AssertionError("Cargo.lock root must be an object")
+    entries = lock.get("package")
+    if not isinstance(entries, list):
+        raise AssertionError("Cargo.lock package list is missing")
+
+    by_name: dict[str, list[dict[str, Any]]] = {}
+    seen: set[tuple[str, str, str | None]] = set()
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            raise AssertionError(f"Cargo.lock package {index} is not an object")
+        name = entry.get("name")
+        version = entry.get("version")
+        source = entry.get("source")
+        if not isinstance(name, str) or not name:
+            raise AssertionError(f"Cargo.lock package {index} has invalid name")
+        if not isinstance(version, str) or not version:
+            raise AssertionError(f"Cargo.lock package {name} has invalid version")
+        if source is not None and (not isinstance(source, str) or not source):
+            raise AssertionError(f"Cargo.lock package {name} has invalid source")
+        identity = (name, version, source)
+        if identity in seen:
+            raise AssertionError(
+                "Cargo.lock contains duplicate package identity "
+                f"(name={name!r}, version={version!r}, source={source!r})"
+            )
+        seen.add(identity)
+        by_name.setdefault(name, []).append(entry)
+    return by_name
+
+
+def one_lock_package(
+    packages: dict[str, list[dict[str, Any]]], name: str
+) -> dict[str, Any]:
+    """Return the sole record for a package name, rejecting ambiguity."""
+
+    candidates = packages.get(name, [])
+    require(
+        len(candidates) == 1,
+        f"Cargo.lock package {name!r} is ambiguous or missing ({len(candidates)} records)",
+    )
+    return candidates[0]
 
 
 def audit_socket() -> None:
@@ -106,8 +280,7 @@ def audit_service() -> None:
     require(yes(one(unit, "Service", "LockPersonality")), "personality changes must be blocked")
     require(yes(one(unit, "Service", "MemoryDenyWriteExecute")), "W^X hardening is required")
     filters = unit.get("Service", {}).get("SystemCallFilter", [])
-    require(filters and "@system-service" in filters[0] and "pidfd_open" in filters[0], "pidfd allow set missing")
-    require(len(filters) >= 2 and filters[-1].startswith("~"), "syscall deny set missing")
+    validate_system_call_filters(filters)
 
 
 def audit_packaging() -> None:
@@ -197,7 +370,20 @@ def audit_source_and_features() -> None:
 
     features = cargo.get("features", {})
     require(features.get("default") == [], "fixture feature is enabled by default")
-    require(features.get("fixture") == ["dep:hepta-agent-port"], "fixture feature mapping changed")
+    # The qualification binaries share the package's explicit fixture graph;
+    # keep both optional dependencies feature-gated and never enabled by
+    # default.  `hepta-browser-codec` is needed by the D1 client fixture even
+    # though the tiny self-check binary itself only constructs D0FixtureHandler.
+    require(
+        features.get("fixture")
+        == ["dep:hepta-agent-port", "dep:hepta-browser-codec"],
+        "fixture feature mapping changed",
+    )
+    require(
+        features.get("d1-qualification")
+        == ["dep:hepta-agent-port", "dep:hepta-browser-codec"],
+        "D1 qualification feature mapping changed",
+    )
     dependency = cargo.get("dependencies", {}).get("hepta-agent-port")
     require(isinstance(dependency, dict) and dependency.get("optional") is True, "fixture dependency is not optional")
     bins = {entry.get("name"): entry for entry in cargo.get("bin", [])}
@@ -252,16 +438,25 @@ def audit_contract_and_workspace() -> None:
         "workspace misses AgentPort custody members",
     )
     lock = tomllib.loads(read(ROOT / "Cargo.lock"))
-    packages = {package["name"]: package for package in lock["package"]}
-    require("hepta-agent-portd" in packages, "lock misses hepta-agent-portd")
-    require("hepta-peer-attestation" in packages, "lock misses hepta-peer-attestation")
-    for package in lock["package"]:
-        if "source" in package:
-            require(package.get("checksum"), f"registry package {package['name']} has no checksum")
-            require(
-                package["source"] == "registry+https://github.com/rust-lang/crates.io-index",
-                f"unexpected registry source for {package['name']}",
-            )
+    packages = index_lock_packages(lock)
+    for expected_name in ("hepta-agent-portd", "hepta-peer-attestation"):
+        package = one_lock_package(packages, expected_name)
+        require(
+            package.get("source") is None,
+            f"workspace package {expected_name} unexpectedly has a source",
+        )
+    for package_list in packages.values():
+        for package in package_list:
+            source = package.get("source")
+            if source is not None:
+                require(
+                    package.get("checksum"),
+                    f"registry package {package['name']} has no checksum",
+                )
+                require(
+                    source == "registry+https://github.com/rust-lang/crates.io-index",
+                    f"unexpected registry source for {package['name']}",
+                )
 
 
 def main() -> int:

@@ -425,12 +425,17 @@ impl WorkspaceState {
                     ContentLifecycle::Detached => {
                         return Err(CompositionError::ContentNotAttached);
                     }
-                    ContentLifecycle::Crashed { .. } => {
+                    // A replacement frame is not admissible until the
+                    // explicit `ContentRecovered` event has established the
+                    // requested session generation.  Treat the pending
+                    // recovery as unavailable using the existing
+                    // `ContentCrashed` error so callers retain the public
+                    // error surface and cannot publish a stale frame while
+                    // the replacement identity is still being established.
+                    ContentLifecycle::Crashed { .. } | ContentLifecycle::Recovering { .. } => {
                         return Err(CompositionError::ContentCrashed);
                     }
-                    ContentLifecycle::Attached
-                    | ContentLifecycle::FrameReady { .. }
-                    | ContentLifecycle::Recovering { .. } => {}
+                    ContentLifecycle::Attached | ContentLifecycle::FrameReady { .. } => {}
                 }
                 self.content = ContentLifecycle::FrameReady {
                     document_generation,
@@ -440,7 +445,16 @@ impl WorkspaceState {
                 effects.push(WorkspaceEffect::Compose(self.composition_frame()));
             }
             WorkspaceEvent::PointerMoved { x, y } => {
-                if self.config.trusted_chrome_rect().contains(x, y) {
+                // A recovering surface has no presentable frame and must not
+                // receive input addressed by stale hit-test coordinates. A
+                // pointer over trusted chrome remains safe to route; content
+                // area movement is dropped until replacement is committed.
+                if matches!(self.content, ContentLifecycle::Recovering { .. })
+                    && self.config.content_rect().contains(x, y)
+                {
+                    self.pointer_owner = InputOwner::None;
+                    effects.push(WorkspaceEffect::DropPointerOutsideWorkspace);
+                } else if self.config.trusted_chrome_rect().contains(x, y) {
                     self.pointer_owner = InputOwner::TrustedChrome;
                     effects.push(WorkspaceEffect::RoutePointerToTrustedChrome);
                 } else if self.config.content_rect().contains(x, y) {
@@ -461,10 +475,14 @@ impl WorkspaceState {
                     effects.push(WorkspaceEffect::RouteKeyboardToTrustedChrome);
                 }
                 SurfaceTarget::Content => {
-                    if !self.content.has_live_surface()
-                        || matches!(self.content, ContentLifecycle::Crashed { .. })
-                    {
-                        return Err(CompositionError::ContentNotAttached);
+                    match self.content {
+                        ContentLifecycle::Detached => {
+                            return Err(CompositionError::ContentNotAttached);
+                        }
+                        ContentLifecycle::Crashed { .. } | ContentLifecycle::Recovering { .. } => {
+                            return Err(CompositionError::ContentCrashed);
+                        }
+                        ContentLifecycle::Attached | ContentLifecycle::FrameReady { .. } => {}
                     }
                     self.keyboard_owner = InputOwner::Content;
                     effects.push(WorkspaceEffect::RouteKeyboardToContent);
@@ -488,8 +506,14 @@ impl WorkspaceState {
                 effects.push(WorkspaceEffect::EndContentIme);
             }
             WorkspaceEvent::ExistingContentNavigationRequested => {
-                if !self.content.has_live_surface() {
-                    return Err(CompositionError::ContentNotAttached);
+                match self.content {
+                    ContentLifecycle::Detached => {
+                        return Err(CompositionError::ContentNotAttached);
+                    }
+                    ContentLifecycle::Crashed { .. } | ContentLifecycle::Recovering { .. } => {
+                        return Err(CompositionError::ContentCrashed);
+                    }
+                    ContentLifecycle::Attached | ContentLifecycle::FrameReady { .. } => {}
                 }
                 effects.push(WorkspaceEffect::NavigateExistingContent);
             }

@@ -1,20 +1,31 @@
 {
   "active_candidates": [
     {
-      "branch": "codex/d1-01-d6-replay-v1",
+      "branch": "codex/d1-01-current-main-v2",
       "id": "D1-01",
-      "pr": 29,
+      "pr": 32,
       "status": "BASE_DRIFT"
     },
     {
-      "branch": "codex/d0a02-headed-runtime-v3",
+      "branch": "codex/d0a02-proof-soundness-v4",
       "id": "D0A-02",
-      "pr": 27,
+      "pr": 33,
       "status": "MODULE_CLOSED_CANDIDATE"
+    },
+    {
+      "branch": "codex/d2i-current-main-v1",
+      "id": "D2I-01",
+      "pr": 35,
+      "status": "BLOCKED_UPSTREAM"
     }
   ],
   "active_plan": "DESKTOP_PLAN-2026-08-29-d6.md",
   "active_plan_revision": "2026-08-29-d6",
+  "candidate_state_snapshot": {
+    "observed_at": "2026-08-30T10:47:03Z",
+    "observed_main_sha": "afd42c0f90d254dfb7b04d9c45216e879840f95e",
+    "source": "github_api_committed_snapshot"
+  },
   "agent_port_connected_bridge_product": true,
   "agent_port_enable_marker_shipped": false,
   "agent_port_exact_head_rust_validation": true,
@@ -105,10 +116,34 @@
       "machine_evidence": "evidence/generated/d0a02-headed-runtime-evidence.json",
       "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
       "status": "PASS_HEADED_LOCAL_FIXTURE_ONLY_MODULE_CLOSED_CANDIDATE",
+      "evidence_lifecycle": "HISTORICAL_SNAPSHOT_SUPERSEDED_BY_PR_33",
       "validated_head": "fe0ea6169127ce1f7950618b55374d83834a462c",
       "tested_merge_sha": "0df9b9c15f51d12f34ef1af288dfae5a009f073f",
       "tree_sha": "37dc62883d12f3e8917f21545e8223ff809c452d",
       "workflow_run_id": 33289966647
+    }
+  ],
+  "historical_candidates": [
+    {
+      "branch": "codex/d0a02-headed-runtime-v3",
+      "id": "D0A-02",
+      "pr": 27,
+      "status": "MERGED_HISTORICAL",
+      "superseded_by_pr": 33
+    },
+    {
+      "branch": "codex/d1-01-d6-replay-v1",
+      "id": "D1-01",
+      "pr": 29,
+      "status": "SUPERSEDED_HISTORICAL",
+      "superseded_by_pr": 32
+    },
+    {
+      "branch": "codex/d1-01-reproducible-qemu-substrate",
+      "id": "D1-01",
+      "pr": 23,
+      "status": "SUPERSEDED_HISTORICAL",
+      "superseded_by_pr": 32
     }
   ],
   "implementation_stage": "D0R_D0C06_D0A01_COMPILE_VALIDATED",

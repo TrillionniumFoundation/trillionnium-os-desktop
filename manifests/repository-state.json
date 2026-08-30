@@ -2,6 +2,11 @@
   "active_plan": "docs/DESKTOP_PLAN-2026-08-29-d6.md",
   "active_plan_revision": "2026-08-29-d6",
   "baseline_commit": "bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1",
+  "candidate_state_snapshot": {
+    "observed_at": "2026-08-30T10:47:03Z",
+    "observed_main_sha": "afd42c0f90d254dfb7b04d9c45216e879840f95e",
+    "source": "github_api_committed_snapshot"
+  },
   "completed_work_packages": [
     "D0T-01",
     "D0T-02",
@@ -112,28 +117,70 @@
   ],
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
   "repository_mode": "full_product_repository",
+  "historical_source_candidates": [
+    {
+      "branch": "codex/d0a02-headed-runtime-v3",
+      "candidate_head_sha": "e25c42ef69fc2968ac2d1b002cc53f15de2e9e0f",
+      "evidence_source_head_sha": "fe0ea6169127ce1f7950618b55374d83834a462c",
+      "historical": true,
+      "id": "D0A-02",
+      "pr": 27,
+      "status": "MERGED_HISTORICAL",
+      "superseded_by_pr": 33
+    },
+    {
+      "branch": "codex/d1-01-d6-replay-v1",
+      "candidate_head_sha": "95fe921c833dea9560d4b1492781795c589d6140",
+      "historical": true,
+      "id": "D1-01",
+      "pr": 29,
+      "status": "SUPERSEDED_HISTORICAL",
+      "superseded_by_pr": 32
+    },
+    {
+      "branch": "codex/d1-01-reproducible-qemu-substrate",
+      "candidate_head_sha": "9250fcb9df75792c39e85e0113cecac8b393a544",
+      "historical": true,
+      "id": "D1-01",
+      "pr": 23,
+      "status": "SUPERSEDED_HISTORICAL",
+      "superseded_by_pr": 32
+    }
+  ],
   "schema": "trillionnium.desktop.repository-state.v2",
   "source_candidate_work_packages": [
     {
-      "base_sha": "bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1",
-      "branch": "codex/d1-01-d6-replay-v1",
-      "candidate_head_sha": "95fe921c833dea9560d4b1492781795c589d6140",
+      "base_sha": "afd42c0f90d254dfb7b04d9c45216e879840f95e",
+      "branch": "codex/d1-01-current-main-v2",
+      "candidate_head_sha": "ec5e8b2caaac8981d6cdf73dae8b3c4004e6ebd0",
       "claim_ceiling": "candidate_source_no_promoted_qemu_or_image_claim",
+      "evidence_artifact_digest": "sha256:246d18c84dfc0f85ed91cb8bb8018698695002eed259ac41f2003b53ea4639ba",
+      "evidence_artifact_id": 9730059502,
+      "evidence_run_id": 33304391615,
       "id": "D1-01",
-      "pr": 29,
+      "pr": 32,
       "status": "BASE_DRIFT"
     },
     {
-      "base_sha": "bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1",
-      "branch": "codex/d0a02-headed-runtime-v3",
-      "candidate_head_sha": "fe0ea6169127ce1f7950618b55374d83834a462c",
-      "claim_ceiling": "headed_host_local_fixture_only_no_image_no_agent_port_no_external_effects",
-      "evidence_artifact_digest": "sha256:50ce0bc82723d6c64c8d2ca2ac900651273ef65e85e9f7b7c233e60f8e628978",
-      "evidence_artifact_id": 9725709890,
-      "evidence_run_id": 33289966647,
+      "base_sha": "afd42c0f90d254dfb7b04d9c45216e879840f95e",
+      "branch": "codex/d0a02-proof-soundness-v4",
+      "candidate_head_sha": "f29e0989335654dfc52ca1dbd049ae1f128d4c59",
+      "claim_ceiling": "headed_host_local_fixture_only_no_native_clipboard_no_clean_teardown_no_image_no_agent_port_no_external_effects",
+      "evidence_artifact_digest": "sha256:bcac5c08dcc4af839b0da3da52d73b0e59e8d80be5767750a243fdaff280e290",
+      "evidence_artifact_id": 9729987669,
+      "evidence_run_id": 33304160993,
       "id": "D0A-02",
-      "pr": 27,
+      "pr": 33,
       "status": "MODULE_CLOSED_CANDIDATE"
+    },
+    {
+      "base_sha": "afd42c0f90d254dfb7b04d9c45216e879840f95e",
+      "branch": "codex/d2i-current-main-v1",
+      "candidate_head_sha": "14a045cb1e17841a662c59f8ec0e676e86cfec56",
+      "claim_ceiling": "source_coexistence_only_no_integrated_image_claim",
+      "id": "D2I-01",
+      "pr": 35,
+      "status": "BLOCKED_UPSTREAM"
     }
   ]
 }

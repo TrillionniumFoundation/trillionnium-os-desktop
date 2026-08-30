@@ -310,14 +310,18 @@ impl ClientConnection {
         timeout: Duration,
     ) -> Result<u64, TransportError> {
         let sequence = self.next_request_sequence;
+        // Reserve the successor before writing any bytes. If the cursor is
+        // already at u64::MAX, writing first would emit a request and then
+        // return SequenceExhausted, leaving the cursor unchanged so a later
+        // call could replay the same sequence on the wire.
+        let next_sequence = sequence
+            .checked_add(1)
+            .ok_or(TransportError::SequenceExhausted)?;
         self.framed.write_frame(
             &Frame::new(FrameKind::Request, sequence, self.binding, payload)?,
             timeout,
         )?;
-        self.next_request_sequence = self
-            .next_request_sequence
-            .checked_add(1)
-            .ok_or(TransportError::SequenceExhausted)?;
+        self.next_request_sequence = next_sequence;
         Ok(sequence)
     }
 
@@ -759,7 +763,10 @@ mod tests {
     fn unauthorized_peer_is_rejected_before_challenge() {
         let (client, server) = UnixStream::pair().unwrap();
         let identity = PeerIdentity::from_stream(&server).unwrap();
-        let wrong_uid = identity.uid.checked_add(1).unwrap_or(identity.uid - 1);
+        // The workspace tests also run as root in minimal qualification
+        // containers.  Avoid an underflow when choosing a deliberately
+        // unauthorized UID for that valid identity.
+        let wrong_uid = identity.uid.checked_add(1).unwrap_or(0);
         let error = ServerConnection::accept_with_nonce_source(
             server,
             PeerPolicy::new(wrong_uid),
@@ -848,6 +855,42 @@ mod tests {
             )
             .unwrap();
         server.join().unwrap();
+    }
+
+    #[test]
+    fn sequence_overflow_is_rejected_before_request_write() {
+        let (client_stream, mut peer_stream) = UnixStream::pair().unwrap();
+        let binding = SessionNonce::new([9; NONCE_BYTES]).unwrap();
+        let peer = PeerIdentity {
+            pid: None,
+            uid: 0,
+            gid: 0,
+        };
+        let mut client = ClientConnection {
+            framed: FramedUnixStream::new(client_stream),
+            binding,
+            peer,
+            next_request_sequence: u64::MAX,
+        };
+
+        let error = client
+            .send_request(b"must-not-be-written".to_vec(), Duration::from_secs(1))
+            .expect_err("sequence exhaustion must preflight before writing");
+        assert!(matches!(error, TransportError::SequenceExhausted));
+        assert_eq!(client.next_request_sequence, u64::MAX);
+        peer_stream
+            .set_read_timeout(Some(Duration::from_millis(50)))
+            .unwrap();
+        let mut byte = [0_u8; 1];
+        let read = peer_stream.read(&mut byte);
+        assert!(matches!(
+            read,
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut
+                )
+        ));
     }
 
     #[test]

@@ -11,13 +11,28 @@ on:
       - "packaging/debian/tmpfiles.d/**"
       - "packaging/debian/systemd-preset/**"
       - "packaging/debian/hepta-agent-portd.install"
+      - "packaging/debian/development/**"
       - "contracts/agent-port-custody.v1.json"
       - "tools/verify_systemd_socket_custody.py"
+      - "tools/validate_d3_development_profile.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_systemd_custody_validator.py"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/repository-state.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "contracts/browser-actor.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "rust-toolchain.toml"
   push:
     branches:
       - main
@@ -32,13 +47,28 @@ on:
       - "packaging/debian/tmpfiles.d/**"
       - "packaging/debian/systemd-preset/**"
       - "packaging/debian/hepta-agent-portd.install"
+      - "packaging/debian/development/**"
       - "contracts/agent-port-custody.v1.json"
       - "tools/verify_systemd_socket_custody.py"
+      - "tools/validate_d3_development_profile.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_systemd_custody_validator.py"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/repository-state.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "contracts/browser-actor.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "rust-toolchain.toml"
 
 permissions:
   contents: read
@@ -54,6 +84,8 @@ jobs:
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
 
       - name: Install exact Rust toolchain
         run: |
@@ -66,6 +98,13 @@ jobs:
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_d3_development_profile.py
+
+      - name: Run systemd custody parser regressions
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tests/test_systemd_custody_validator.py
+          python3 -m unittest tests.test_systemd_custody_validator -v
 
       - name: Verify systemd unit syntax and account mappings
         shell: bash
@@ -73,15 +112,19 @@ jobs:
           set -euo pipefail
           sudo mkdir -p /usr/libexec /usr/lib/sysusers.d
           sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-portd
+          sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-port-developmentd
           sudo install -m 0644 \
             packaging/debian/sysusers.d/trillionnium-desktop.conf \
             /usr/lib/sysusers.d/trillionnium-desktop.conf
           sudo systemd-sysusers /usr/lib/sysusers.d/trillionnium-desktop.conf
           systemd-analyze verify \
             packaging/debian/systemd/hepta-browserd-agent.socket \
-            packaging/debian/systemd/hepta-browserd-agent@.service
+            packaging/debian/systemd/hepta-browserd-agent@.service \
+            packaging/debian/systemd/hepta-browserd-agent-development.socket \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service
           sudo rm -f \
             /usr/libexec/hepta-agent-portd \
+            /usr/libexec/hepta-agent-port-developmentd \
             /usr/lib/sysusers.d/trillionnium-desktop.conf
 
       - name: Check default product graph and fixture feature graph
@@ -104,6 +147,10 @@ jobs:
             --features fixture \
             --bin hepta-agent-port-fixture \
             -- --self-check
+          cargo run --locked -p hepta-agent-portd \
+            --features development \
+            --bin hepta-agent-port-developmentd \
+            -- --profile development --self-check
 
       - name: Build and audit the production binary graph
         shell: bash
@@ -111,7 +158,10 @@ jobs:
           set -euo pipefail
           cargo clean -p hepta-agent-portd
           cargo build --release --locked -p hepta-agent-portd --bin hepta-agent-portd
+          cargo build --release --locked -p hepta-agent-portd \
+            --features development --bin hepta-agent-port-developmentd
           test -x target/release/hepta-agent-portd
+          test -x target/release/hepta-agent-port-developmentd
           test ! -e target/release/hepta-agent-port-fixture
           ! strings target/release/hepta-agent-portd | grep -F 'D0FixtureHandler'
           ! strings target/release/hepta-agent-portd | grep -F 'agent-port-fixture-self-check'

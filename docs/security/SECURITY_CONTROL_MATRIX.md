@@ -8,7 +8,7 @@
 | bounded authenticated carrier | AF_UNIX connected stream, peer creds, nonce, digest, sequence, deadlines | malformed corpus, peer tests | host validated | no product listener claim |
 | socket custody | systemd socket/service, default-disabled marker, sandbox | PID 1 QEMU activation corpus | host validated only | D1 runtime evidence missing |
 | semantic principal binding | not integrated | exact service identity and TaskFlow mapping | open | D3 |
-| stale-reference control | state machine and codec fields | headed/runtime ambiguity/navigation/crash corpus | partial | D2/D3 |
+| stale-reference control | state-machine revisions plus fail-closed `PageRuntime::dispatch_page_act` resolver boundary | headed/runtime frame re-resolution, ambiguity, navigation and crash corpus | partial | Servo DOM/accessibility resolver and D3 integrated corpus |
 | trusted shell separation | architecture/contracts | headed pixels, process and origin evidence | candidate | D2 |
 | renderer sandbox | design only | namespace/seccomp/LSM escape corpus | open | D2/D6/D8 |
 | durable receipts | bounded chained journal | independent parser, corruption, disk-full, crash corpus | host validated | authenticity anchor and integration remain |

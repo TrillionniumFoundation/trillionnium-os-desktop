@@ -10,9 +10,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom, Write};
-use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
-use std::path::{Path, PathBuf};
-use std::process;
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
+use std::path::{Component, Path, PathBuf};
 
 pub type Digest = [u8; 32];
 
@@ -28,6 +27,16 @@ const MAX_SEGMENT_BYTES: u64 = 64 * 1024 * 1024;
 const MAX_DETAIL_BYTES: usize = 4096;
 const WRITER_LOCK_SUFFIX: &str = "writer-lock";
 const ZERO_DIGEST: Digest = [0; 32];
+
+// The product is Linux-only.  Keep the final path component pinned while
+// opening an existing journal; this prevents a symlink swap between the
+// metadata preflight and the actual open.  The fallback preserves compilation
+// for other Unix targets, where their platform-specific no-follow constant is
+// not part of Rust's standard library.
+#[cfg(target_os = "linux")]
+const OPEN_NOFOLLOW_FLAG: i32 = 0o400000; // O_NOFOLLOW from asm-generic/fcntl.h
+#[cfg(not(target_os = "linux"))]
+const OPEN_NOFOLLOW_FLAG: i32 = 0;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(u8)]
@@ -284,6 +293,11 @@ impl ReceiptEvent {
                 let outcome = self.outcome.ok_or_else(|| {
                     JournalError::InvalidInput("completed event requires a terminal outcome".into())
                 })?;
+                if self.response_sha256.is_none() {
+                    return Err(JournalError::InvalidInput(
+                        "completed event requires response_sha256".into(),
+                    ));
+                }
                 if outcome == ReceiptOutcome::Succeeded && self.error_code.is_some() {
                     return Err(JournalError::InvalidInput(
                         "successful completion cannot carry error_code".into(),
@@ -504,7 +518,12 @@ struct ReceiptProgress {
 
 #[derive(Debug)]
 struct WriterLease {
-    path: PathBuf,
+    // Keep the lock descriptor open for the complete journal lifetime.  The
+    // descriptor carries an advisory OS file lock.  The sidecar pathname is
+    // intentionally never unlinked during Drop: a metadata check followed by
+    // `remove_file` has a rename race in which teardown could delete a
+    // replacement lock installed by another same-UID process.
+    _file: File,
 }
 
 impl WriterLease {
@@ -514,39 +533,88 @@ impl WriterLease {
         let payload = identity.encode();
         match create_private_file(&path, true) {
             Ok(mut file) => {
+                lock_file(&file)?;
                 file.write_all(payload.as_bytes()).map_err(map_io_error)?;
                 file.sync_all().map_err(map_io_error)?;
                 sync_parent(&path)?;
-                Ok(Self { path })
+                Self::from_locked_file(path, file)
             }
             Err(JournalError::Io(error)) if error.kind() == io::ErrorKind::AlreadyExists => {
-                let active = ProcessIdentity::from_lock_file(&path)
-                    .and_then(|existing| existing.is_active())
-                    .unwrap_or(false);
-                if active {
+                // Open and lock the existing inode before reading its
+                // identity.  A creator may have only written a partial
+                // payload; treating parse/I/O failures as "stale" and
+                // unlinking the path would let a second writer race the
+                // first one.  Fail closed instead.
+                let mut file = open_existing_file(&path, true)?;
+                lock_file(&file)?;
+                let metadata = file.metadata().map_err(map_io_error)?;
+                if !path_matches_metadata(&path, &metadata)? {
                     return Err(JournalError::WriterBusy);
                 }
-                if !recover_stale {
-                    return Err(JournalError::StaleWriterLease);
+                let existing = process_identity_from_file(&mut file)?;
+                if !existing.released {
+                    let active = existing.is_active()?;
+                    if active {
+                        return Err(JournalError::WriterBusy);
+                    }
+                    if !recover_stale {
+                        return Err(JournalError::StaleWriterLease);
+                    }
                 }
-                fs::remove_file(&path).map_err(map_io_error)?;
-                sync_parent(&path)?;
-                let mut file = create_private_file(&path, true)?;
+                // We hold the inode lock, so recover in place rather than
+                // removing/recreating the path.  This keeps any contender's
+                // descriptor tied to the same inode and eliminates a
+                // check-then-unlink window.
+                file.set_len(0).map_err(map_io_error)?;
+                file.seek(SeekFrom::Start(0)).map_err(map_io_error)?;
                 file.write_all(payload.as_bytes()).map_err(map_io_error)?;
                 file.sync_all().map_err(map_io_error)?;
                 sync_parent(&path)?;
-                Ok(Self { path })
+                Self::from_locked_file(path, file)
             }
             Err(error) => Err(error),
         }
+    }
+
+    fn from_locked_file(path: PathBuf, file: File) -> Result<Self, JournalError> {
+        let metadata = file.metadata().map_err(map_io_error)?;
+        if !path_matches_metadata(&path, &metadata)? {
+            return Err(JournalError::WriterBusy);
+        }
+        Ok(Self { _file: file })
     }
 }
 
 impl Drop for WriterLease {
     fn drop(&mut self) {
-        let _ = fs::remove_file(&self.path);
-        let _ = sync_parent(&self.path);
+        // Keep the sidecar inode in place and publish a clean-release marker
+        // while the advisory lock is still held.  A contender therefore sees
+        // either WriterBusy (until unlock), a complete `released=1` marker,
+        // or a malformed/partial payload that is rejected fail closed.  We do
+        // not unlink the pathname: checking identity and then unlinking is a
+        // TOCTOU window that can remove a replacement lock.
+        if self._file.set_len(0).is_ok()
+            && self._file.seek(SeekFrom::Start(0)).is_ok()
+            && self._file.write_all(b"released=1\n").is_ok()
+        {
+            let _ = self._file.sync_all();
+        }
     }
+}
+
+fn lock_file(file: &File) -> Result<(), JournalError> {
+    match file.try_lock() {
+        Ok(()) => Ok(()),
+        Err(std::fs::TryLockError::WouldBlock) => Err(JournalError::WriterBusy),
+        Err(std::fs::TryLockError::Error(error)) => Err(map_io_error(error)),
+    }
+}
+
+fn path_matches_metadata(path: &Path, metadata: &fs::Metadata) -> Result<bool, JournalError> {
+    let path_metadata = fs::symlink_metadata(path).map_err(map_io_error)?;
+    Ok(path_metadata.file_type().is_file()
+        && path_metadata.dev() == metadata.dev()
+        && path_metadata.ino() == metadata.ino())
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -554,18 +622,25 @@ struct ProcessIdentity {
     pid: u32,
     start_time_ticks: u64,
     boot_id: String,
+    released: bool,
 }
 
 impl ProcessIdentity {
     fn current() -> Result<Self, JournalError> {
-        let pid = process::id();
-        let start_time_ticks = process_start_time(pid)?;
+        // `/proc/self` is resolved by the procfs mount visible to this
+        // process.  In a PID namespace the numeric value returned by
+        // `process::id()` may refer to a different (host) namespace than the
+        // `/proc/<pid>` hierarchy mounted for the process.  Read both values
+        // from the same `/proc/self/stat` record so the lease remains
+        // self-consistent regardless of the procfs/PID namespace pairing.
+        let (pid, start_time_ticks) = current_process_stat()?;
         let boot_id =
             read_bounded_text(Path::new("/proc/sys/kernel/random/boot_id"), 128, "boot_id")?;
         Ok(Self {
             pid,
             start_time_ticks,
             boot_id: boot_id.trim().to_owned(),
+            released: false,
         })
     }
 
@@ -576,29 +651,10 @@ impl ProcessIdentity {
         )
     }
 
-    fn from_lock_file(path: &Path) -> Result<Self, JournalError> {
-        let text = read_bounded_text(path, 1024, "writer lease")?;
-        let mut pid = None;
-        let mut start_time_ticks = None;
-        let mut boot_id = None;
-        for line in text.lines() {
-            if let Some(value) = line.strip_prefix("pid=") {
-                pid = value.parse::<u32>().ok();
-            } else if let Some(value) = line.strip_prefix("start_time_ticks=") {
-                start_time_ticks = value.parse::<u64>().ok();
-            } else if let Some(value) = line.strip_prefix("boot_id=") {
-                boot_id = Some(value.to_owned());
-            }
-        }
-        Ok(Self {
-            pid: pid.ok_or(JournalError::InvalidRecord("writer lease lacks pid"))?,
-            start_time_ticks: start_time_ticks
-                .ok_or(JournalError::InvalidRecord("writer lease lacks start time"))?,
-            boot_id: boot_id.ok_or(JournalError::InvalidRecord("writer lease lacks boot id"))?,
-        })
-    }
-
     fn is_active(&self) -> Result<bool, JournalError> {
+        if self.released {
+            return Ok(false);
+        }
         let current_boot =
             read_bounded_text(Path::new("/proc/sys/kernel/random/boot_id"), 128, "boot_id")?;
         if current_boot.trim() != self.boot_id {
@@ -612,6 +668,56 @@ impl ProcessIdentity {
     }
 }
 
+fn process_identity_from_file(file: &mut File) -> Result<ProcessIdentity, JournalError> {
+    file.seek(SeekFrom::Start(0)).map_err(map_io_error)?;
+    let mut bytes = Vec::new();
+    file.take(1025)
+        .read_to_end(&mut bytes)
+        .map_err(map_io_error)?;
+    if bytes.len() > 1024 {
+        return Err(JournalError::InvalidInput(
+            "writer lease exceeds bound".into(),
+        ));
+    }
+    let text = String::from_utf8(bytes)
+        .map_err(|_| JournalError::InvalidInput("writer lease is not UTF-8".into()))?;
+    let mut pid = None;
+    let mut start_time_ticks = None;
+    let mut boot_id = None;
+    let mut released = false;
+    for line in text.lines() {
+        if let Some(value) = line.strip_prefix("pid=") {
+            pid = value.parse::<u32>().ok();
+        } else if let Some(value) = line.strip_prefix("start_time_ticks=") {
+            start_time_ticks = value.parse::<u64>().ok();
+        } else if let Some(value) = line.strip_prefix("boot_id=") {
+            boot_id = Some(value.to_owned());
+        } else if line == "released=1" {
+            released = true;
+        }
+    }
+    if released {
+        if pid.is_some() || start_time_ticks.is_some() || boot_id.is_some() {
+            return Err(JournalError::InvalidRecord(
+                "writer lease release marker is mixed with identity",
+            ));
+        }
+        return Ok(ProcessIdentity {
+            pid: 0,
+            start_time_ticks: 0,
+            boot_id: String::new(),
+            released: true,
+        });
+    }
+    Ok(ProcessIdentity {
+        pid: pid.ok_or(JournalError::InvalidRecord("writer lease lacks pid"))?,
+        start_time_ticks: start_time_ticks
+            .ok_or(JournalError::InvalidRecord("writer lease lacks start time"))?,
+        boot_id: boot_id.ok_or(JournalError::InvalidRecord("writer lease lacks boot id"))?,
+        released: false,
+    })
+}
+
 pub struct ReceiptJournal {
     path: PathBuf,
     file: File,
@@ -620,7 +726,14 @@ pub struct ReceiptJournal {
     next_sequence: u64,
     previous_record_sha256: Digest,
     progress: HashMap<String, ReceiptProgress>,
+    // Highest durable lifecycle timestamp observed in this segment.  The
+    // value is advisory (the journal intentionally accepts events from
+    // multiple clocks), but carrying it into a new observer prevents a
+    // reopened writer from restarting its logical sequence at zero.
+    last_monotonic_ms: u64,
     end_offset: u64,
+    file_device: u64,
+    file_inode: u64,
     poisoned: bool,
 }
 
@@ -641,6 +754,8 @@ impl ReceiptJournal {
                 created_wall_clock_unix_ms,
             },
             false,
+            HashMap::new(),
+            0,
         )
     }
 
@@ -648,22 +763,36 @@ impl ReceiptJournal {
         path: &Path,
         header: SegmentHeader,
         recover_stale_writer_lease: bool,
+        prior_progress: HashMap<String, ReceiptProgress>,
+        prior_last_monotonic_ms: u64,
     ) -> Result<Self, JournalError> {
         validate_new_path(path)?;
         validate_segment_header(&header)?;
         let lease = WriterLease::acquire(path, recover_stale_writer_lease)?;
         let mut file = create_private_file(path, true)?;
+        // Lock the journal inode itself in addition to the pathname lease.
+        // A hard-link alias has a different sidecar pathname but resolves to
+        // this same inode; the advisory lock makes that alias fail closed.
+        lock_file(&file)?;
         let encoded = encode_segment_header(&header)?;
         commit_bytes(&mut file, &encoded)?;
         sync_parent(path)?;
+        let metadata = file.metadata().map_err(map_io_error)?;
         Ok(Self {
             path: path.to_owned(),
             file,
             _lease: lease,
             next_sequence: header.first_sequence,
             previous_record_sha256: header.previous_record_sha256,
-            progress: HashMap::new(),
+            // A rotated segment shares the journal's receipt namespace with
+            // every predecessor.  Carry the terminal progress map forward so
+            // a request identifier that already reached a terminal state
+            // cannot be admitted again immediately after rotation.
+            progress: prior_progress,
+            last_monotonic_ms: prior_last_monotonic_ms,
             end_offset: encoded.len() as u64,
+            file_device: metadata.dev(),
+            file_inode: metadata.ino(),
             header,
             poisoned: false,
         })
@@ -671,13 +800,26 @@ impl ReceiptJournal {
 
     pub fn open(path: impl AsRef<Path>, policy: OpenPolicy) -> Result<Self, JournalError> {
         let path = path.as_ref();
-        validate_existing_path(path)?;
+        // Capture the no-follow pathname identity before opening.  A
+        // concurrent rename can otherwise replace A with a different regular
+        // file B between metadata validation and `open`; comparing the FD's
+        // device/inode against this snapshot rejects that substitution before
+        // any bytes are recovered or written.
+        let expected_identity = validate_existing_path_identity(path)?;
+        // Pin and lock the journal inode before touching the pathname
+        // sidecar.  Between metadata validation and a sidecar-only acquire,
+        // a same-user actor could rename a different regular file over this
+        // path; opening first lets us compare the path after lease admission
+        // and ensures all writes use the originally pinned descriptor.
+        let mut file = open_existing_file_checked(path, true, expected_identity)?;
+        let inode_metadata = file.metadata().map_err(map_io_error)?;
+        lock_file(&file)?;
         let lease = WriterLease::acquire(path, policy.recover_stale_writer_lease)?;
-        let mut file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .open(path)
-            .map_err(map_io_error)?;
+        if !path_matches_metadata(path, &inode_metadata)? {
+            return Err(JournalError::InsecurePath(
+                "journal path changed while acquiring writer lease".into(),
+            ));
+        }
         let mut report = recover_file(&mut file)?;
         if let TailStatus::TornTail { offset, .. } = report.tail {
             if !policy.repair_torn_tail {
@@ -695,6 +837,12 @@ impl ReceiptJournal {
             }
         }
         let progress = progress_from_records(&report.records)?;
+        let last_monotonic_ms = report
+            .records
+            .iter()
+            .map(|record| record.event.monotonic_ms)
+            .max()
+            .unwrap_or(0);
         file.seek(SeekFrom::Start(report.last_complete_offset))
             .map_err(map_io_error)?;
         Ok(Self {
@@ -705,15 +853,58 @@ impl ReceiptJournal {
             next_sequence: report.next_sequence,
             previous_record_sha256: report.last_record_sha256,
             progress,
+            last_monotonic_ms,
             end_offset: report.last_complete_offset,
+            file_device: inode_metadata.dev(),
+            file_inode: inode_metadata.ino(),
             poisoned: false,
         })
+    }
+
+    fn verify_active_append_state(&self, expected_offset: u64) -> Result<(), JournalError> {
+        let expected = (self.file_device, self.file_inode);
+        let file_metadata = self.file.metadata().map_err(map_io_error)?;
+        if !metadata_matches_identity(&file_metadata, expected) {
+            return Err(JournalError::InsecurePath(
+                "journal inode changed while open".into(),
+            ));
+        }
+        if file_metadata.len() != expected_offset {
+            return Err(JournalError::Corruption {
+                offset: expected_offset,
+                reason: format!(
+                    "journal length changed while open (expected {}, found {})",
+                    expected_offset,
+                    file_metadata.len()
+                ),
+            });
+        }
+        let path_metadata = fs::symlink_metadata(&self.path).map_err(map_io_error)?;
+        if !metadata_matches_identity(&path_metadata, expected) {
+            return Err(JournalError::InsecurePath(
+                "journal path no longer names the open inode".into(),
+            ));
+        }
+        Ok(())
     }
 
     pub fn append(&mut self, event: ReceiptEvent) -> Result<CommittedRecord, JournalError> {
         if self.poisoned {
             return Err(JournalError::WriterPoisoned);
         }
+        if let Err(error) = self.verify_active_append_state(self.end_offset) {
+            self.poisoned = true;
+            return Err(error);
+        }
+        // Reserve the successor sequence before writing any bytes.  Without
+        // this preflight, a journal at `u64::MAX` would commit a record and
+        // then fail the increment below, leaving the in-memory cursor on the
+        // old offset; a subsequent append could overwrite that durable
+        // record and break the hash chain.
+        let next_sequence = self
+            .next_sequence
+            .checked_add(1)
+            .ok_or_else(|| JournalError::InvalidInput("sequence overflow".into()))?;
         event.validate()?;
         let previous = self
             .progress
@@ -743,17 +934,19 @@ impl ReceiptJournal {
             self.poisoned = true;
             return Err(error);
         }
+        if let Err(error) = self.verify_active_append_state(new_size) {
+            self.poisoned = true;
+            return Err(error);
+        }
         let committed = CommittedRecord {
             sequence: self.next_sequence,
             record_sha256: digest,
             end_offset: new_size,
         };
-        self.next_sequence = self
-            .next_sequence
-            .checked_add(1)
-            .ok_or_else(|| JournalError::InvalidInput("sequence overflow".into()))?;
+        self.next_sequence = next_sequence;
         self.previous_record_sha256 = digest;
         self.end_offset = new_size;
+        self.last_monotonic_ms = self.last_monotonic_ms.max(event.monotonic_ms);
         self.progress.insert(
             event.receipt_id,
             ReceiptProgress {
@@ -765,7 +958,16 @@ impl ReceiptJournal {
     }
 
     pub fn inspect(&mut self) -> Result<RecoveryReport, JournalError> {
-        recover_file(&mut self.file)
+        let report = recover_file(&mut self.file)?;
+        self.last_monotonic_ms = self.last_monotonic_ms.max(
+            report
+                .records
+                .iter()
+                .map(|record| record.event.monotonic_ms)
+                .max()
+                .unwrap_or(0),
+        );
+        Ok(report)
     }
 
     pub fn seal(&mut self) -> Result<SegmentSeal, JournalError> {
@@ -803,7 +1005,38 @@ impl ReceiptJournal {
                 "rotation requires a quiescent journal with no unresolved receipts".into(),
             ));
         }
-        let seal = self.seal()?;
+        // Rotation derives the successor header from the in-memory cursor.
+        // Verify the active inode and exact offset before and after sealing so
+        // an out-of-band append/rename cannot produce a successor that points
+        // at a different record chain or silently skips sequence numbers.
+        if let Err(error) = self.verify_active_append_state(self.end_offset) {
+            self.poisoned = true;
+            return Err(error);
+        }
+        let seal = match self.seal() {
+            Ok(seal) => seal,
+            Err(error) => {
+                self.poisoned = true;
+                return Err(error);
+            }
+        };
+        if let Err(error) = self.verify_active_append_state(self.end_offset) {
+            self.poisoned = true;
+            return Err(error);
+        }
+        let expected_last_sequence = self
+            .next_sequence
+            .checked_sub(1)
+            .filter(|sequence| *sequence >= self.header.first_sequence);
+        if seal.last_sequence != expected_last_sequence
+            || seal.last_record_sha256 != self.previous_record_sha256
+        {
+            self.poisoned = true;
+            return Err(JournalError::Corruption {
+                offset: self.end_offset,
+                reason: "journal cursor disagrees with sealed records during rotation".into(),
+            });
+        }
         let next =
             Self::create_segment(
                 next_path.as_ref(),
@@ -818,6 +1051,8 @@ impl ReceiptJournal {
                     created_wall_clock_unix_ms,
                 },
                 false,
+                self.progress.clone(),
+                self.last_monotonic_ms,
             )?;
         Ok((seal, next))
     }
@@ -825,13 +1060,185 @@ impl ReceiptJournal {
     pub fn path(&self) -> &Path {
         &self.path
     }
+
+    /// Return the greatest durable lifecycle timestamp observed by this
+    /// journal writer.  Callers that create a new lifecycle observer after a
+    /// reopen can continue from this value instead of restarting at zero.
+    pub fn last_monotonic_ms(&self) -> u64 {
+        self.last_monotonic_ms
+    }
 }
 
 pub fn inspect_path(path: impl AsRef<Path>) -> Result<RecoveryReport, JournalError> {
     let path = path.as_ref();
-    validate_existing_path(path)?;
-    let mut file = File::open(path).map_err(map_io_error)?;
+    let expected_identity = validate_existing_path_identity(path)?;
+    let mut file = open_existing_file_checked(path, false, expected_identity)?;
     recover_file(&mut file)
+}
+
+/// Inspect an ordered, complete ReceiptJournal segment chain.
+///
+/// Unlike [`inspect_path`], this verifies the cross-segment links emitted by
+/// [`ReceiptJournal::rotate`]: one journal ID, contiguous segment numbers and
+/// global record sequences, a clean predecessor before every successor, and
+/// both predecessor digests.  The caller must provide the complete chain in
+/// ascending segment order beginning with segment one; a missing or reordered
+/// segment is rejected.  The returned reports retain the same per-segment
+/// recovery details as [`inspect_path`].
+pub fn inspect_chain<I, P>(paths: I) -> Result<Vec<RecoveryReport>, JournalError>
+where
+    I: IntoIterator<Item = P>,
+    P: AsRef<Path>,
+{
+    let paths: Vec<PathBuf> = paths
+        .into_iter()
+        .map(|path| path.as_ref().to_owned())
+        .collect();
+    if paths.is_empty() {
+        return Err(JournalError::InvalidInput(
+            "segment chain must contain at least one path".into(),
+        ));
+    }
+
+    let mut inspected = Vec::with_capacity(paths.len());
+    for (index, path) in paths.iter().enumerate() {
+        let expected_identity = validate_existing_path_identity(path)?;
+        let mut file = open_existing_file_checked(path, false, expected_identity).map_err(
+            |error| match error {
+                JournalError::InsecurePath(reason)
+                    if reason == "journal path changed before opening" =>
+                {
+                    JournalError::InsecurePath(format!(
+                        "segment chain entry {index} changed before opening"
+                    ))
+                }
+                other => other,
+            },
+        )?;
+        let bytes = read_segment_bytes(&mut file)?;
+        let digest = sha256(&bytes);
+        let report = recover_bytes(&bytes)?;
+        if report.tail != TailStatus::Clean {
+            return Err(JournalError::Corruption {
+                offset: report.last_complete_offset,
+                reason: format!(
+                    "segment chain entry {index} has a torn tail; repair before chain inspection"
+                ),
+            });
+        }
+        inspected.push((report, digest));
+    }
+
+    let first = &inspected[0].0;
+    if first.header.segment_number != 1 {
+        return Err(JournalError::Corruption {
+            offset: 0,
+            reason: "segment chain does not begin with segment one".into(),
+        });
+    }
+
+    for (index, window) in inspected.windows(2).enumerate() {
+        let (previous, previous_digest) = &window[0];
+        let (current, _) = &window[1];
+        if !previous.unresolved.is_empty() {
+            return Err(JournalError::Corruption {
+                offset: 0,
+                reason: format!(
+                    "segment chain predecessor at index {index} has unresolved receipts"
+                ),
+            });
+        }
+        if current.header.journal_id != first.header.journal_id {
+            return Err(JournalError::Corruption {
+                offset: 0,
+                reason: format!(
+                    "segment chain entry {} has a different journal ID",
+                    index + 1
+                ),
+            });
+        }
+        let expected_segment_number =
+            previous
+                .header
+                .segment_number
+                .checked_add(1)
+                .ok_or_else(|| JournalError::Corruption {
+                    offset: 0,
+                    reason: "segment number overflow in chain".into(),
+                })?;
+        if current.header.segment_number != expected_segment_number {
+            return Err(JournalError::Corruption {
+                offset: 0,
+                reason: format!(
+                    "segment number is not contiguous: expected {expected_segment_number}, found {}",
+                    current.header.segment_number
+                ),
+            });
+        }
+        if current.header.first_sequence != previous.next_sequence {
+            return Err(JournalError::Corruption {
+                offset: 0,
+                reason: format!(
+                    "first sequence is not contiguous: expected {}, found {}",
+                    previous.next_sequence, current.header.first_sequence
+                ),
+            });
+        }
+        if current.header.previous_segment_sha256 != *previous_digest {
+            return Err(JournalError::Corruption {
+                offset: 0,
+                reason: "previous-segment digest link mismatch".into(),
+            });
+        }
+        if current.header.previous_record_sha256 != previous.last_record_sha256 {
+            return Err(JournalError::Corruption {
+                offset: 0,
+                reason: "previous-record digest link across segments mismatch".into(),
+            });
+        }
+    }
+
+    // Lifecycle identity is global to a journal, not scoped to one segment.
+    // `ReceiptJournal::rotate` carries this map for the in-memory successor,
+    // but chain inspection must independently enforce the same rule when a
+    // process reopens archived segments.  Without this pass a completed
+    // receipt could be followed by a fresh `Requested` record with the same
+    // identifier in a later segment, defeating duplicate/admission guards and
+    // permitting a caller to replay an operation after rotation.
+    let mut chain_progress: HashMap<String, ReceiptProgress> = HashMap::new();
+    for (segment_index, (report, _)) in inspected.iter().enumerate() {
+        for record in &report.records {
+            let receipt_id = &record.event.receipt_id;
+            let previous = chain_progress.get(receipt_id).map(|item| item.last_state);
+            validate_transition(receipt_id, previous, record.event.lifecycle).map_err(|error| {
+                JournalError::Corruption {
+                    offset: 0,
+                    reason: format!(
+                        "segment chain entry {segment_index} has invalid cross-segment receipt lifecycle: {error}"
+                    ),
+                }
+            })?;
+            if let Some(item) = chain_progress.get(receipt_id)
+                && item.effect_class != record.event.effect_class
+            {
+                return Err(JournalError::Corruption {
+                    offset: 0,
+                    reason: format!(
+                        "segment chain entry {segment_index} changes effect class for receipt {receipt_id}"
+                    ),
+                });
+            }
+            chain_progress.insert(
+                receipt_id.clone(),
+                ReceiptProgress {
+                    last_state: record.event.lifecycle,
+                    effect_class: record.event.effect_class,
+                },
+            );
+        }
+    }
+
+    Ok(inspected.into_iter().map(|(report, _)| report).collect())
 }
 
 pub fn export_redacted_jsonl(
@@ -1505,13 +1912,70 @@ fn read_segment_bytes(file: &mut File) -> Result<Vec<u8>, JournalError> {
 }
 
 fn create_private_file(path: &Path, create_new: bool) -> Result<File, JournalError> {
+    validate_parent_components(path)?;
     OpenOptions::new()
         .read(true)
         .write(true)
         .create_new(create_new)
         .mode(0o600)
+        .custom_flags(OPEN_NOFOLLOW_FLAG)
         .open(path)
         .map_err(map_io_error)
+}
+
+fn open_existing_file(path: &Path, writable: bool) -> Result<File, JournalError> {
+    validate_parent_components(path)?;
+    let mut options = OpenOptions::new();
+    options
+        .read(true)
+        .write(writable)
+        .custom_flags(OPEN_NOFOLLOW_FLAG);
+    let file = options.open(path).map_err(|error| {
+        #[cfg(target_os = "linux")]
+        if error.raw_os_error() == Some(40) {
+            return JournalError::InsecurePath(
+                "journal path became a symlink while opening".into(),
+            );
+        }
+        map_io_error(error)
+    })?;
+    validate_opened_file(&file)?;
+    Ok(file)
+}
+
+fn open_existing_file_checked(
+    path: &Path,
+    writable: bool,
+    expected_identity: (u64, u64),
+) -> Result<File, JournalError> {
+    let file = open_existing_file(path, writable)?;
+    let metadata = file.metadata().map_err(map_io_error)?;
+    if !metadata_matches_identity(&metadata, expected_identity) {
+        return Err(JournalError::InsecurePath(
+            "journal path changed before opening".into(),
+        ));
+    }
+    Ok(file)
+}
+
+fn validate_opened_file(file: &File) -> Result<(), JournalError> {
+    let metadata = file.metadata().map_err(map_io_error)?;
+    if !metadata.is_file() {
+        return Err(JournalError::InsecurePath(
+            "journal must be a regular file".into(),
+        ));
+    }
+    if metadata.nlink() != 1 {
+        return Err(JournalError::InsecurePath(
+            "journal must have exactly one hard link".into(),
+        ));
+    }
+    if metadata.permissions().mode() & 0o077 != 0 {
+        return Err(JournalError::InsecurePath(
+            "journal permissions must not grant group/other access".into(),
+        ));
+    }
+    Ok(())
 }
 
 fn validate_new_path(path: &Path) -> Result<(), JournalError> {
@@ -1520,34 +1984,95 @@ fn validate_new_path(path: &Path) -> Result<(), JournalError> {
             "path must name a regular file".into(),
         ));
     }
+    validate_parent_components(path)?;
     if fs::symlink_metadata(path).is_ok() {
         return Err(JournalError::InsecurePath(
             "destination already exists".into(),
         ));
     }
-    let parent = path
-        .parent()
-        .ok_or_else(|| JournalError::InsecurePath("journal path has no parent directory".into()))?;
-    let metadata = fs::symlink_metadata(parent).map_err(map_io_error)?;
-    if metadata.file_type().is_symlink() || !metadata.is_dir() {
-        return Err(JournalError::InsecurePath(
-            "parent must be a real directory".into(),
-        ));
-    }
     Ok(())
 }
 
-fn validate_existing_path(path: &Path) -> Result<(), JournalError> {
+fn validate_existing_path_identity(path: &Path) -> Result<(u64, u64), JournalError> {
+    validate_parent_components(path)?;
     let metadata = fs::symlink_metadata(path).map_err(map_io_error)?;
     if metadata.file_type().is_symlink() || !metadata.is_file() {
         return Err(JournalError::InsecurePath(
             "journal must be a regular non-symlink file".into(),
         ));
     }
+    if metadata.nlink() != 1 {
+        return Err(JournalError::InsecurePath(
+            "journal must have exactly one hard link".into(),
+        ));
+    }
     if metadata.permissions().mode() & 0o077 != 0 {
         return Err(JournalError::InsecurePath(
             "journal permissions must not grant group/other access".into(),
         ));
+    }
+    Ok((metadata.dev(), metadata.ino()))
+}
+
+fn metadata_matches_identity(metadata: &fs::Metadata, identity: (u64, u64)) -> bool {
+    metadata.file_type().is_file()
+        && metadata.nlink() == 1
+        && metadata.dev() == identity.0
+        && metadata.ino() == identity.1
+}
+
+/// Validate every directory component above a journal file before opening it.
+///
+/// Checking only the immediate parent leaves an ancestor symlink or a
+/// group/other-writable directory available for path substitution.  The
+/// journal is commonly placed below `/tmp` in tests; a root-owned sticky
+/// directory such as `/tmp` is the one deliberate exception to the
+/// write-permission rule because sticky semantics prevent an unrelated user
+/// from renaming entries owned by the journal user.  Ownership is otherwise
+/// intentionally not constrained: the D3 service's private directory is
+/// owned by `hepta-browserd`, not root.
+fn validate_parent_components(path: &Path) -> Result<(), JournalError> {
+    if path
+        .components()
+        .any(|component| matches!(component, Component::ParentDir))
+    {
+        return Err(JournalError::InsecurePath(
+            "journal path must not contain '..'".into(),
+        ));
+    }
+
+    let mut parent = path
+        .parent()
+        .ok_or_else(|| JournalError::InsecurePath("journal path has no parent directory".into()))?;
+    loop {
+        // `Path::parent` returns an empty path for a single relative
+        // component.  The existing path validators will reject that case;
+        // there is no directory component left for this helper to inspect.
+        if parent.as_os_str().is_empty() {
+            break;
+        }
+        let metadata = fs::symlink_metadata(parent).map_err(map_io_error)?;
+        if metadata.file_type().is_symlink() || !metadata.is_dir() {
+            return Err(JournalError::InsecurePath(format!(
+                "journal parent {} must be a real directory",
+                parent.display()
+            )));
+        }
+        let mode = metadata.permissions().mode();
+        let root_owned_sticky = metadata.uid() == 0 && mode & 0o1000 != 0;
+        if mode & 0o022 != 0 && !root_owned_sticky {
+            return Err(JournalError::InsecurePath(format!(
+                "journal parent {} must not be group/other writable",
+                parent.display()
+            )));
+        }
+        let Some(next) = parent.parent() else {
+            break;
+        };
+        if next == parent {
+            break;
+        }
+        parent = next;
     }
     Ok(())
 }
@@ -1563,6 +2088,7 @@ fn writer_lock_path(journal_path: &Path) -> Result<PathBuf, JournalError> {
 }
 
 fn sync_parent(path: &Path) -> Result<(), JournalError> {
+    validate_parent_components(path)?;
     let parent = path
         .parent()
         .ok_or_else(|| JournalError::InsecurePath("path has no parent directory".into()))?;
@@ -1574,6 +2100,21 @@ fn sync_parent(path: &Path) -> Result<(), JournalError> {
 fn process_start_time(pid: u32) -> Result<u64, JournalError> {
     let path = PathBuf::from(format!("/proc/{pid}/stat"));
     let stat = read_bounded_text(&path, 64 * 1024, "process stat")?;
+    parse_process_stat(&stat).map(|(_, start_time)| start_time)
+}
+
+fn current_process_stat() -> Result<(u32, u64), JournalError> {
+    let stat = read_bounded_text(Path::new("/proc/self/stat"), 64 * 1024, "process stat")?;
+    parse_process_stat(&stat)
+}
+
+fn parse_process_stat(stat: &str) -> Result<(u32, u64), JournalError> {
+    let pid_end = stat
+        .find(' ')
+        .ok_or(JournalError::InvalidRecord("process stat lacks pid"))?;
+    let pid = stat[..pid_end]
+        .parse::<u32>()
+        .map_err(|_| JournalError::InvalidRecord("process pid is invalid"))?;
     let end = stat.rfind(')').ok_or(JournalError::InvalidRecord(
         "process stat lacks command terminator",
     ))?;
@@ -1581,9 +2122,15 @@ fn process_start_time(pid: u32) -> Result<u64, JournalError> {
     let value = fields
         .get(19)
         .ok_or(JournalError::InvalidRecord("process stat lacks start time"))?;
-    value
+    let start_time_ticks = value
         .parse::<u64>()
-        .map_err(|_| JournalError::InvalidRecord("process start time is invalid"))
+        .map_err(|_| JournalError::InvalidRecord("process start time is invalid"))?;
+    if start_time_ticks == 0 {
+        return Err(JournalError::InvalidRecord(
+            "process start time must be non-zero",
+        ));
+    }
+    Ok((pid, start_time_ticks))
 }
 
 fn read_bounded_text(
@@ -1843,6 +2390,8 @@ impl<'a> Cursor<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::os::unix::fs::symlink;
+    use std::process;
     use std::sync::atomic::{AtomicU64, Ordering};
     use std::thread;
 
@@ -1857,6 +2406,312 @@ mod tests {
         let _ = fs::remove_dir_all(&path);
         fs::create_dir(&path).expect("create test directory");
         path
+    }
+
+    #[test]
+    fn process_identity_uses_procfs_self_pid_and_start_time() {
+        // `/proc/self/stat` reports the PID in the procfs namespace visible
+        // to this process.  This is intentionally not compared with
+        // `process::id()`: under a host-mounted procfs they can differ.
+        let identity = ProcessIdentity::current().expect("read current process identity");
+        let (procfs_pid, procfs_start) = current_process_stat().expect("read /proc/self/stat");
+        assert_eq!(identity.pid, procfs_pid);
+        assert_eq!(identity.start_time_ticks, procfs_start);
+        assert!(identity.is_active().expect("current process is active"));
+    }
+
+    #[test]
+    fn process_stat_parser_uses_last_command_terminator() {
+        // The command field may contain a closing parenthesis.  The Linux
+        // procfs format terminates it at the final `)` before the state field.
+        let stat = "42 (worker ) name) S 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 12345 20";
+        assert_eq!(
+            parse_process_stat(stat).expect("parse synthetic stat"),
+            (42, 12345)
+        );
+    }
+
+    #[test]
+    fn process_stat_parser_rejects_zero_start_time() {
+        let stat = "42 (worker) S 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 0 20";
+        assert!(matches!(
+            parse_process_stat(stat),
+            Err(JournalError::InvalidRecord(
+                "process start time must be non-zero"
+            ))
+        ));
+    }
+
+    #[test]
+    fn malformed_writer_lock_is_never_recovered_as_stale() {
+        let directory = temp_dir("malformed-writer-lock");
+        let path = directory.join("journal.bin");
+        let journal =
+            ReceiptJournal::create(&path, JournalId([21; 16]), 1).expect("create journal");
+        drop(journal);
+
+        let lock = writer_lock_path(&path).expect("writer lock path");
+        let mut lock_file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .truncate(true)
+            .open(&lock)
+            .expect("open malformed lock");
+        lock_file
+            .write_all(b"pid=\n")
+            .expect("write partial lock payload");
+        lock_file.sync_all().expect("sync partial lock payload");
+        drop(lock_file);
+
+        // Even crash-recovery mode must not unlink a lock whose payload is
+        // malformed or only partially committed: the original writer may
+        // still be finishing its payload.
+        assert!(matches!(
+            ReceiptJournal::open(&path, OpenPolicy::RECOVER_CRASH),
+            Err(JournalError::InvalidRecord(_))
+        ));
+        assert_eq!(fs::read(&lock).expect("malformed lock remains"), b"pid=\n");
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn partially_written_locked_lease_is_busy_not_recovered() {
+        let directory = temp_dir("partial-writer-lock");
+        let path = directory.join("journal.bin");
+        let journal =
+            ReceiptJournal::create(&path, JournalId([23; 16]), 1).expect("create journal");
+        drop(journal);
+
+        let lock = writer_lock_path(&path).expect("writer lock path");
+        let mut lock_file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .truncate(true)
+            .open(&lock)
+            .expect("open partial lock");
+        lock_file.try_lock().expect("hold partial lock");
+        lock_file
+            .write_all(b"pid=")
+            .expect("write partial lock payload");
+        lock_file.sync_all().expect("sync partial lock payload");
+
+        // The second opener must observe the OS lock before parsing the
+        // incomplete payload.  Returning WriterBusy avoids treating a live
+        // creator as stale and unlinking its lock.
+        assert!(matches!(
+            ReceiptJournal::open(&path, OpenPolicy::RECOVER_CRASH),
+            Err(JournalError::WriterBusy)
+        ));
+        assert_eq!(fs::read(&lock).expect("partial lock remains"), b"pid=");
+        drop(lock_file);
+        fs::remove_file(&lock).expect("remove partial lock");
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn writer_lock_drop_does_not_unlink_replacement_inode() {
+        let directory = temp_dir("writer-lock-replacement");
+        let path = directory.join("journal.bin");
+        let journal =
+            ReceiptJournal::create(&path, JournalId([22; 16]), 1).expect("create journal");
+        let lock = writer_lock_path(&path).expect("writer lock path");
+        let displaced = directory.join("displaced-lock");
+        fs::rename(&lock, &displaced).expect("displace owned lock");
+        let mut replacement = create_private_file(&lock, true).expect("create replacement lock");
+        replacement
+            .write_all(b"replacement")
+            .expect("write replacement marker");
+        replacement.sync_all().expect("sync replacement marker");
+
+        drop(journal);
+        assert!(
+            lock.exists(),
+            "tearing down an old lease must not remove a replacement lock"
+        );
+        drop(replacement);
+        fs::remove_file(&lock).expect("remove replacement lock");
+        fs::remove_file(&displaced).expect("remove displaced lock");
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn clean_writer_drop_leaves_reusable_release_marker() {
+        let directory = temp_dir("writer-lock-release-marker");
+        let path = directory.join("journal.bin");
+        let journal =
+            ReceiptJournal::create(&path, JournalId([29; 16]), 1).expect("create journal");
+        let lock = writer_lock_path(&path).expect("writer lock path");
+        drop(journal);
+        assert_eq!(
+            fs::read(&lock).expect("release marker remains"),
+            b"released=1\n"
+        );
+        // A clean marker is safe to reuse even under STRICT; active or
+        // malformed payloads retain the fail-closed behavior above.
+        let reopened = ReceiptJournal::open(&path, OpenPolicy::STRICT).expect("strict reopen");
+        drop(reopened);
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn existing_journal_symlink_paths_are_rejected() {
+        let directory = temp_dir("symlink");
+        let target = directory.join("journal.bin");
+        let link = directory.join("journal-link.bin");
+        let journal =
+            ReceiptJournal::create(&target, JournalId([17; 16]), 1).expect("create target journal");
+        drop(journal);
+        symlink(&target, &link).expect("create symlink");
+
+        assert!(matches!(
+            inspect_path(&link),
+            Err(JournalError::InsecurePath(_))
+        ));
+        assert!(matches!(
+            ReceiptJournal::open(&link, OpenPolicy::STRICT),
+            Err(JournalError::InsecurePath(_))
+        ));
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn hardlinked_journal_aliases_are_rejected() {
+        let directory = temp_dir("hardlink-alias");
+        let target = directory.join("journal.bin");
+        let alias = directory.join("journal-alias.bin");
+        let journal =
+            ReceiptJournal::create(&target, JournalId([24; 16]), 1).expect("create journal");
+        drop(journal);
+        fs::hard_link(&target, &alias).expect("create hard-link alias");
+
+        assert!(matches!(
+            ReceiptJournal::open(&alias, OpenPolicy::STRICT),
+            Err(JournalError::InsecurePath(reason))
+                if reason.contains("exactly one hard link")
+        ));
+        assert!(matches!(
+            inspect_path(&alias),
+            Err(JournalError::InsecurePath(reason))
+                if reason.contains("exactly one hard link")
+        ));
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn journal_inode_identity_check_rejects_rename_replacement() {
+        let directory = temp_dir("rename-replacement");
+        let path = directory.join("journal.bin");
+        let displaced = directory.join("journal.displaced");
+        let journal =
+            ReceiptJournal::create(&path, JournalId([25; 16]), 1).expect("create journal");
+        drop(journal);
+
+        // Model the interval between the initial open and sidecar admission:
+        // retain the original inode, replace the pathname with another
+        // private regular file, and verify that the post-admission identity
+        // comparison rejects the substitution.
+        let file = open_existing_file(&path, true).expect("open original journal");
+        lock_file(&file).expect("lock original journal");
+        let original = file.metadata().expect("original metadata");
+        fs::rename(&path, &displaced).expect("displace original path");
+        let replacement = create_private_file(&path, true).expect("create replacement");
+        drop(replacement);
+        assert!(!path_matches_metadata(&path, &original).expect("compare path identity"));
+        drop(file);
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn journal_preopen_identity_check_rejects_replacement_inode() {
+        let directory = temp_dir("preopen-rename-replacement");
+        let path = directory.join("journal.bin");
+        let displaced = directory.join("journal.displaced");
+        let journal =
+            ReceiptJournal::create(&path, JournalId([26; 16]), 1).expect("create journal");
+        drop(journal);
+
+        // Capture the same no-follow metadata snapshot used by `open`, then
+        // replace the pathname before opening it.  The FD now names B, so the
+        // pre-open identity comparison must reject it rather than silently
+        // recovering a foreign journal.
+        let expected = validate_existing_path_identity(&path).expect("identity");
+        fs::rename(&path, &displaced).expect("displace original path");
+        let replacement = create_private_file(&path, true).expect("create replacement");
+        drop(replacement);
+        assert!(matches!(
+            open_existing_file_checked(&path, true, expected),
+            Err(JournalError::InsecurePath(reason))
+                if reason.contains("changed before opening")
+        ));
+
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn nofollow_open_rejects_symlink_even_without_metadata_preflight() {
+        let directory = temp_dir("symlink-nofollow");
+        let target = directory.join("target.bin");
+        let link = directory.join("link.bin");
+        let mut file = create_private_file(&target, true).expect("create target");
+        file.write_all(b"fixture").expect("write target");
+        file.sync_all().expect("sync target");
+        drop(file);
+        symlink(&target, &link).expect("create symlink");
+
+        assert!(matches!(
+            open_existing_file(&link, false),
+            Err(JournalError::InsecurePath(_))
+        ));
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn parent_component_symlink_is_rejected() {
+        let directory = temp_dir("parent-symlink");
+        let real = directory.join("real");
+        let link = directory.join("link");
+        fs::create_dir(&real).expect("create real parent");
+        symlink(&real, &link).expect("create parent symlink");
+
+        // Keep the immediate parent a real directory so this specifically
+        // exercises validation of an ancestor component rather than the
+        // existing direct-parent check.
+        let immediate_parent = link.join("nested");
+        fs::create_dir(&immediate_parent).expect("create nested parent");
+        let path = immediate_parent.join("journal.bin");
+        assert!(matches!(
+            ReceiptJournal::create(&path, JournalId([18; 16]), 1),
+            Err(JournalError::InsecurePath(reason))
+                if reason.contains("must be a real directory")
+        ));
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn writable_parent_component_is_rejected() {
+        let directory = temp_dir("parent-permissions");
+        let outer = directory.join("outer");
+        let inner = outer.join("inner");
+        fs::create_dir(&outer).expect("create outer parent");
+        fs::create_dir(&inner).expect("create inner parent");
+        let path = inner.join("journal.bin");
+        let journal =
+            ReceiptJournal::create(&path, JournalId([19; 16]), 1).expect("create journal");
+        drop(journal);
+
+        fs::set_permissions(&outer, fs::Permissions::from_mode(0o775))
+            .expect("make ancestor group writable");
+        assert!(matches!(
+            inspect_path(&path),
+            Err(JournalError::InsecurePath(reason))
+                if reason.contains("must not be group/other writable")
+        ));
+        // Restore a private mode before removing the temporary tree so the
+        // test remains valid under a non-root runner as well.
+        fs::set_permissions(&outer, fs::Permissions::from_mode(0o755))
+            .expect("restore ancestor permissions");
+        fs::remove_dir_all(directory).expect("cleanup");
     }
 
     fn digest(byte: u8) -> Digest {
@@ -1920,6 +2775,56 @@ mod tests {
     }
 
     #[test]
+    fn reopen_preserves_highest_monotonic_lifecycle_timestamp() {
+        let directory = temp_dir("monotonic-reopen");
+        let path = directory.join("journal.bin");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([30; 16]), 1).expect("create journal");
+        let mut first = event("clock-1", LifecycleState::Requested);
+        first.monotonic_ms = 41;
+        journal.append(first).expect("append first");
+        let mut second = event("clock-1", LifecycleState::Dispatched);
+        second.monotonic_ms = 7;
+        journal.append(second).expect("append second");
+        assert_eq!(journal.last_monotonic_ms(), 41);
+        drop(journal);
+
+        let reopened = ReceiptJournal::open(&path, OpenPolicy::STRICT).expect("reopen");
+        assert_eq!(
+            reopened.last_monotonic_ms(),
+            41,
+            "reopened writer must not reset its logical timestamp"
+        );
+        drop(reopened);
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn rotation_preserves_highest_monotonic_lifecycle_timestamp() {
+        let directory = temp_dir("monotonic-rotation");
+        let first = directory.join("segment-1.bin");
+        let second = directory.join("segment-2.bin");
+        let mut journal =
+            ReceiptJournal::create(&first, JournalId([31; 16]), 1).expect("create journal");
+        let mut requested = event("clock-rotate", LifecycleState::Requested);
+        requested.monotonic_ms = 91;
+        journal.append(requested).expect("append request");
+        let mut dispatched = event("clock-rotate", LifecycleState::Dispatched);
+        dispatched.monotonic_ms = 12;
+        journal.append(dispatched).expect("append dispatch");
+        let mut completed = event("clock-rotate", LifecycleState::Completed);
+        completed.monotonic_ms = 7;
+        completed.outcome = Some(ReceiptOutcome::Succeeded);
+        completed.response_sha256 = Some(digest(3));
+        journal.append(completed).expect("append completion");
+
+        let (_, next) = journal.rotate(&second, 2).expect("rotate");
+        assert_eq!(next.last_monotonic_ms(), 91);
+        drop(next);
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
     fn invalid_lifecycle_transition_is_rejected() {
         let directory = temp_dir("transition");
         let path = directory.join("journal.bin");
@@ -1933,6 +2838,110 @@ mod tests {
             .expect_err("completion before request must fail");
         assert!(matches!(error, JournalError::InvalidTransition { .. }));
         fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn sequence_overflow_is_rejected_before_durable_append() {
+        let directory = temp_dir("sequence-overflow");
+        let path = directory.join("journal.bin");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([20; 16]), 1).expect("create journal");
+        let before = fs::read(&path).expect("read header");
+
+        // Exercise the terminal cursor directly; reaching this value through
+        // normal appends is infeasible, but a persisted/corrupt input must
+        // still fail without writing a record.
+        journal.next_sequence = u64::MAX;
+        let error = journal
+            .append(event("receipt-1", LifecycleState::Requested))
+            .expect_err("sequence overflow must fail before write");
+        assert!(matches!(
+            error,
+            JournalError::InvalidInput(message) if message == "sequence overflow"
+        ));
+        assert_eq!(journal.next_sequence, u64::MAX);
+        assert_eq!(fs::read(&path).expect("read unchanged journal"), before);
+        drop(journal);
+
+        // Reopening proves the rejected attempt left a clean, appendable
+        // journal rather than a torn or partially committed record.
+        let mut reopened = ReceiptJournal::open(&path, OpenPolicy::STRICT).expect("reopen");
+        let committed = reopened
+            .append(event("receipt-1", LifecycleState::Requested))
+            .expect("append after rejected overflow");
+        assert_eq!(committed.sequence, 1);
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn append_rejects_active_path_inode_replacement_and_poisons_writer() {
+        let directory = temp_dir("append-inode-replacement");
+        let path = directory.join("journal.bin");
+        let displaced = directory.join("journal.displaced");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([27; 16]), 1).expect("create journal");
+        fs::rename(&path, &displaced).expect("displace open path");
+        let replacement = create_private_file(&path, true).expect("create replacement");
+        drop(replacement);
+
+        let error = journal
+            .append(event("receipt-1", LifecycleState::Requested))
+            .expect_err("append must reject path replacement");
+        assert!(matches!(
+            error,
+            JournalError::InsecurePath(reason)
+                if reason.contains("open inode") || reason.contains("inode changed")
+        ));
+        assert!(matches!(
+            journal.append(event("receipt-1", LifecycleState::Requested)),
+            Err(JournalError::WriterPoisoned)
+        ));
+        drop(journal);
+        assert!(
+            path.exists(),
+            "replacement path must not be removed by old writer"
+        );
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn append_rejects_external_length_drift_and_poisons_writer() {
+        let directory = temp_dir("append-length-drift");
+        let path = directory.join("journal.bin");
+        let mut journal =
+            ReceiptJournal::create(&path, JournalId([28; 16]), 1).expect("create journal");
+        let mut external = OpenOptions::new()
+            .append(true)
+            .open(&path)
+            .expect("open external append handle");
+        external.write_all(b"tamper").expect("write drift");
+        external.sync_all().expect("sync drift");
+        drop(external);
+
+        let error = journal
+            .append(event("receipt-1", LifecycleState::Requested))
+            .expect_err("append must reject external length drift");
+        assert!(matches!(error, JournalError::Corruption { .. }));
+        assert!(matches!(
+            journal.append(event("receipt-1", LifecycleState::Requested)),
+            Err(JournalError::WriterPoisoned)
+        ));
+        drop(journal);
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn completed_event_requires_response_digest() {
+        let mut completed = event("receipt-1", LifecycleState::Completed);
+        completed.outcome = Some(ReceiptOutcome::Succeeded);
+        let error = completed
+            .validate()
+            .expect_err("completed event without response digest must fail");
+        assert!(matches!(
+            error,
+            JournalError::InvalidInput(message)
+                if message == "completed event requires response_sha256"
+        ));
     }
 
     #[test]
@@ -2059,6 +3068,187 @@ mod tests {
         assert_eq!(
             report.header.previous_record_sha256,
             seal.last_record_sha256
+        );
+        let chain = inspect_chain([&first, &second]).expect("verify segment chain");
+        assert_eq!(chain.len(), 2);
+        assert_eq!(chain[0].header.segment_number, 1);
+        assert_eq!(chain[1].header.segment_number, 2);
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn rotation_preserves_receipt_namespace_and_chain_rejects_replay() {
+        let directory = temp_dir("rotation-receipt-namespace");
+        let first = directory.join("segment-1.bin");
+        let second = directory.join("segment-2.bin");
+        let mut journal =
+            ReceiptJournal::create(&first, JournalId([29; 16]), 1).expect("create journal");
+        journal
+            .append(event("replay-me", LifecycleState::Requested))
+            .expect("append request");
+        journal
+            .append(event("replay-me", LifecycleState::Dispatched))
+            .expect("append dispatch");
+        let mut completed = event("replay-me", LifecycleState::Completed);
+        completed.outcome = Some(ReceiptOutcome::Succeeded);
+        completed.response_sha256 = Some(digest(9));
+        journal.append(completed).expect("append completion");
+
+        // The in-memory successor inherits terminal receipt progress.  A
+        // reused ID must be rejected before any bytes are appended.
+        let (_, mut next) = journal.rotate(&second, 2).expect("rotate");
+        assert!(matches!(
+            next.append(event("replay-me", LifecycleState::Requested)),
+            Err(JournalError::InvalidTransition {
+                from: Some(LifecycleState::Completed),
+                to: LifecycleState::Requested,
+                ..
+            })
+        ));
+        next.append(event("fresh-id", LifecycleState::Requested))
+            .expect("fresh receipt remains admissible");
+        drop(next);
+
+        // A process that reopens only the new segment starts with no in-memory
+        // predecessor map.  Simulate that legacy/restarted writer: the
+        // duplicate can be appended to the segment itself, but chain
+        // inspection must independently carry progress across the boundary
+        // and reject it.
+        let mut reopened = ReceiptJournal::open(&second, OpenPolicy::STRICT).expect("reopen");
+        reopened
+            .append(event("replay-me", LifecycleState::Requested))
+            .expect("legacy writer can append duplicate locally");
+        drop(reopened);
+
+        assert!(matches!(
+            inspect_chain([&first, &second]),
+            Err(JournalError::Corruption { reason, .. })
+                if reason.contains("cross-segment receipt lifecycle")
+        ));
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn rotation_rejects_out_of_band_append_before_creating_successor() {
+        let directory = temp_dir("rotation-drift");
+        let first = directory.join("segment-1.bin");
+        let second = directory.join("segment-2.bin");
+        let mut journal =
+            ReceiptJournal::create(&first, JournalId([31; 16]), 1).expect("create journal");
+        journal
+            .append(event("rotation-drift", LifecycleState::Requested))
+            .expect("append request");
+        journal
+            .append(event("rotation-drift", LifecycleState::Dispatched))
+            .expect("append dispatch");
+        let mut completed = event("rotation-drift", LifecycleState::Completed);
+        completed.outcome = Some(ReceiptOutcome::Succeeded);
+        completed.response_sha256 = Some(digest(10));
+        journal.append(completed).expect("append completion");
+
+        // Simulate a same-UID writer that ignores advisory locks and appends
+        // after the in-memory cursor was last checked. Rotation must fail
+        // closed rather than sealing the drifted bytes and creating a broken
+        // successor header.
+        let mut external = OpenOptions::new()
+            .append(true)
+            .open(&first)
+            .expect("open external append handle");
+        external.write_all(b"out-of-band").expect("append drift");
+        external.sync_all().expect("sync drift");
+        drop(external);
+
+        let error = match journal.rotate(&second, 2) {
+            Ok(_) => panic!("rotation must reject cursor drift"),
+            Err(error) => error,
+        };
+        assert!(matches!(error, JournalError::Corruption { .. }));
+        assert!(
+            !second.exists(),
+            "failed rotation must not create successor"
+        );
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn chain_rejects_missing_or_reordered_segments() {
+        let directory = temp_dir("chain-order");
+        let first = directory.join("segment-1.bin");
+        let second = directory.join("segment-2.bin");
+        let third = directory.join("segment-3.bin");
+        let mut journal =
+            ReceiptJournal::create(&first, JournalId([15; 16]), 1).expect("create journal");
+
+        for (receipt_id, response_byte) in [("receipt-1", 1_u8), ("receipt-2", 2_u8)] {
+            journal
+                .append(event(receipt_id, LifecycleState::Requested))
+                .expect("append request");
+            journal
+                .append(event(receipt_id, LifecycleState::Dispatched))
+                .expect("append dispatch");
+            let mut completed = event(receipt_id, LifecycleState::Completed);
+            completed.outcome = Some(ReceiptOutcome::Succeeded);
+            completed.response_sha256 = Some(digest(response_byte));
+            journal.append(completed).expect("append completion");
+            if receipt_id == "receipt-1" {
+                let (_, next) = journal.rotate(&second, 2).expect("rotate to second");
+                journal = next;
+            }
+        }
+        let (_, third_journal) = journal.rotate(&third, 3).expect("rotate to third");
+        drop(third_journal);
+
+        // Segment three cannot be linked directly to segment one, and a
+        // suffix or reversed order cannot masquerade as a complete chain.
+        assert!(matches!(
+            inspect_chain([&first, &third]),
+            Err(JournalError::Corruption { .. })
+        ));
+        assert!(matches!(
+            inspect_chain([&second, &third]),
+            Err(JournalError::Corruption { .. })
+        ));
+        assert!(matches!(
+            inspect_chain([&third, &second]),
+            Err(JournalError::Corruption { .. })
+        ));
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn chain_rejects_tampered_predecessor_digest_link() {
+        let directory = temp_dir("chain-link");
+        let first = directory.join("segment-1.bin");
+        let second = directory.join("segment-2.bin");
+        let mut journal =
+            ReceiptJournal::create(&first, JournalId([16; 16]), 1).expect("create journal");
+        journal
+            .append(event("receipt-1", LifecycleState::Requested))
+            .expect("append request");
+        journal
+            .append(event("receipt-1", LifecycleState::Dispatched))
+            .expect("append dispatch");
+        let mut completed = event("receipt-1", LifecycleState::Completed);
+        completed.outcome = Some(ReceiptOutcome::Succeeded);
+        completed.response_sha256 = Some(digest(3));
+        journal.append(completed).expect("append completion");
+        let (_, next) = journal.rotate(&second, 2).expect("rotate");
+        drop(next);
+
+        // Re-encode a valid header with a forged predecessor digest.  The
+        // segment remains internally valid, so only cross-segment verification
+        // can detect the substitution.
+        let mut bytes = fs::read(&second).expect("read second segment");
+        let mut header =
+            decode_segment_header(&bytes[..SEGMENT_HEADER_LEN]).expect("decode second header");
+        header.previous_segment_sha256 = digest(0xee);
+        let encoded = encode_segment_header(&header).expect("encode forged header");
+        bytes[..SEGMENT_HEADER_LEN].copy_from_slice(&encoded);
+        fs::write(&second, bytes).expect("write forged header");
+        assert!(inspect_path(&second).is_ok());
+        let error = inspect_chain([&first, &second]).expect_err("forged link must fail");
+        assert!(
+            matches!(error, JournalError::Corruption { reason, .. } if reason.contains("previous-segment digest link"))
         );
         fs::remove_dir_all(directory).expect("cleanup");
     }

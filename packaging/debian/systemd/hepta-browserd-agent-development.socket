@@ -1,0 +1,23 @@
+[Unit]
+Description=TrillionniumOS Desktop development-profile AgentPort socket
+Documentation=https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+# The marker is an administrator action.  It is never shipped by the product
+# package, so this socket remains absent in production images by default.
+ConditionPathExists=/etc/hepta/enable-agent-port-development
+Conflicts=hepta-browserd-agent.socket
+
+[Socket]
+ListenStream=/run/hepta/browserd/agent-development.sock
+SocketUser=hepta-browserd
+SocketGroup=hepta-agent
+SocketMode=0660
+DirectoryMode=0750
+Accept=yes
+Backlog=8
+MaxConnections=8
+RemoveOnStop=yes
+
+[Install]
+# No preset enables this unit.  Operators must select the development profile
+# and create the marker explicitly before starting it.
+WantedBy=sockets.target

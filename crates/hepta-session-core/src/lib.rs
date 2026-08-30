@@ -17,7 +17,7 @@ pub use receipt_journal::{
     JournalId, LifecycleState as ReceiptLifecycleState, OpenPolicy as JournalOpenPolicy,
     PrivacyClass, ReceiptEvent, ReceiptJournal, ReceiptOutcome, ReceiptSource, RecoveredRecord,
     RecoveryReport, ReplayDirective, SegmentHeader, SegmentSeal, TailStatus, UnresolvedReceipt,
-    export_redacted_jsonl, hex_digest, inspect_path as inspect_receipt_journal,
+    export_redacted_jsonl, hex_digest, inspect_chain, inspect_path as inspect_receipt_journal,
     retention_candidates,
 };
 pub use types::{

@@ -1,0 +1,212 @@
+#!/bin/sh
+# Qualification-only external content-process fault injector.
+#
+# The headed runtime publishes an identity-bound arm marker.  This helper is
+# the sole process allowed to deliver SIGKILL in the integrated image; the
+# runtime itself only observes the receipt and the resulting topology.
+# shellcheck disable=SC2046,SC2002
+set -eu
+
+unit=trillionnium-d2i-runtime.service
+state_dir=/var/lib/trillionnium-d2i
+ready="$state_dir/content-crash-ready"
+identity="$state_dir/content-process-identity.json"
+receipt="$state_dir/content-sigkill-sent.json"
+proof="$state_dir/content-process-crash-proof.json"
+diagnostics="$state_dir/content-crash-proof-diagnostics.txt"
+
+fail() {
+  reason=$1
+  printf 'TRILLIONNIUM_D2I_CONTENT_CRASH_PROOF_FAIL:%s\n' "$reason" >&2
+  {
+    printf 'reason=%s\n' "$reason"
+    systemctl --no-pager --full status "$unit" || true
+    journalctl --no-pager -u "$unit" -n 160 || true
+  } >"$diagnostics" 2>&1 || true
+  # Stop the qualification VM on a failed fault-injection proof so a broken
+  # image cannot continue emitting misleading post-fault evidence.
+  systemctl poweroff --no-block || systemctl poweroff --force --no-block || true
+  exit 1
+}
+
+children_of() {
+  root=$1
+  seen=" $root "
+  frontier=$root
+  result=
+  while [ -n "$frontier" ]; do
+    next=
+    for parent in $frontier; do
+      file="/proc/$parent/task/$parent/children"
+      [ -r "$file" ] || continue
+      # /proc children is a whitespace-delimited PID list; intentional split.
+      # shellcheck disable=SC2046,SC2002
+      for child in $(cat "$file"); do
+        case "$seen" in
+          *" $child "*) continue ;;
+        esac
+        seen="$seen$child "
+        result="$result $child"
+        next="$next $child"
+      done
+    done
+    frontier=$next
+  done
+  printf '%s\n' "$result"
+}
+
+proc_start_time() {
+  awk '{ print $22 }' "/proc/$1/stat"
+}
+
+runtime_main_pid=
+for _ in $(seq 1 180); do
+  runtime_main_pid=$(systemctl show --property MainPID --value "$unit" 2>/dev/null || true)
+  case "$runtime_main_pid" in
+    ''|0) sleep 1 ;;
+    *) [ -d "/proc/$runtime_main_pid" ] && break; sleep 1 ;;
+  esac
+done
+[ -n "$runtime_main_pid" ] && [ "$runtime_main_pid" != 0 ] \
+  && [ -d "/proc/$runtime_main_pid" ] \
+  || fail runtime_main_pid_missing
+
+for _ in $(seq 1 240); do
+  if [ -s "$ready" ] && [ -s "$identity" ]; then
+    break
+  fi
+  sleep 1
+done
+[ -s "$ready" ] || fail external_crash_arm_timeout
+[ -s "$identity" ] || fail external_crash_identity_missing
+
+identity_json=$(tr -d '\n' <"$identity")
+generation=$(printf '%s' "$identity_json" \
+  | sed -n 's/.*"generation"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')
+expected_pid=$(printf '%s' "$identity_json" \
+  | sed -n 's/.*"pid"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')
+expected_start=$(printf '%s' "$identity_json" \
+  | sed -n 's/.*"start_time"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')
+[ -n "$generation" ] || fail external_crash_identity_malformed
+[ -n "$expected_pid" ] || fail external_crash_pid_missing
+[ -n "$expected_start" ] || fail external_crash_start_time_missing
+[ "$generation" = 1 ] || fail external_crash_generation_not_one
+case "$expected_pid:$expected_start" in
+  *[!0-9:]*|:*) fail external_crash_identity_not_numeric ;;
+esac
+
+candidate_count=0
+matching_count=0
+candidate_cmdline=
+runtime_exe=$(readlink -f "/proc/$runtime_main_pid/exe" 2>/dev/null || true)
+[ -n "$runtime_exe" ] || fail runtime_executable_missing
+for pid in $(children_of "$runtime_main_pid"); do
+  [ -r "/proc/$pid/cmdline" ] || continue
+  candidate_exe=$(readlink -f "/proc/$pid/exe" 2>/dev/null || true)
+  [ "$candidate_exe" = "$runtime_exe" ] || continue
+  cmdline=$(tr '\000' ' ' <"/proc/$pid/cmdline" 2>/dev/null || true)
+  case "$cmdline" in
+    *--content-process*)
+      matching_count=$((matching_count + 1))
+      [ "$pid" = "$expected_pid" ] || continue
+      candidate_count=$((candidate_count + 1))
+      candidate_cmdline=$cmdline
+      ;;
+  esac
+done
+[ "$matching_count" = 1 ] && [ "$candidate_count" = 1 ] \
+  || fail external_crash_target_not_unique
+current_start=$(proc_start_time "$expected_pid" 2>/dev/null || true)
+[ "$current_start" = "$expected_start" ] \
+  || fail external_crash_target_identity_changed
+
+# Deliver exactly one signal from this helper.  The runtime has no kill path;
+# it will begin observation only after this receipt is atomically published.
+kill -KILL "$expected_pid" || fail external_sigkill_dispatch_failed
+tmp="$receipt.tmp.$$"
+printf '{"generation":1,"pid":%s,"signal":"SIGKILL","start_time":%s}\n' \
+  "$expected_pid" "$expected_start" >"$tmp"
+mv "$tmp" "$receipt"
+
+killed_disappeared=false
+for _ in $(seq 1 120); do
+  if [ ! -e "/proc/$expected_pid/stat" ]; then
+    killed_disappeared=true
+    break
+  fi
+  sleep 1
+done
+[ "$killed_disappeared" = true ] || fail killed_content_process_still_present
+[ -d "/proc/$runtime_main_pid" ] || fail runtime_main_process_died
+
+runtime_result=
+for _ in $(seq 1 240); do
+  for candidate in "$state_dir/runtime-result.json" "$state_dir/runtime-ready.json"; do
+    if [ -s "$candidate" ] \
+      && grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS_HEADED_LOCAL_FIXTURE_ONLY"' "$candidate" \
+      && grep -Eq '"recovery_generation"[[:space:]]*:[[:space:]]*2' "$candidate" \
+      && grep -Eq '"signal_sent"[[:space:]]*:[[:space:]]*true' "$candidate"; then
+      runtime_result=$candidate
+      break
+    fi
+  done
+  [ -n "$runtime_result" ] && break
+  sleep 1
+done
+[ -n "$runtime_result" ] || fail runtime_recovery_evidence_missing
+
+post_recovery="$state_dir/process-topology-post-recovery.json"
+[ -s "$post_recovery" ] || fail replacement_topology_missing
+replacement_rows=$(grep -Ec '"parent_pid"[[:space:]]*:' "$post_recovery" || true)
+[ "$replacement_rows" = 1 ] || fail replacement_process_not_unique
+replacement_line=$(grep '"parent_pid"[[:space:]]*:' "$post_recovery" | head -n1)
+replacement_pid=$(printf '%s' "$replacement_line" \
+  | sed -n 's/.*"pid"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')
+replacement_start=$(printf '%s' "$replacement_line" \
+  | sed -n 's/.*"start_time"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')
+[ -n "$replacement_pid" ] || fail replacement_process_id_missing
+[ -n "$replacement_start" ] || fail replacement_start_time_missing
+[ "$replacement_pid" != "$expected_pid" ] \
+  || fail replacement_reused_killed_pid
+
+callback=$(sed -n \
+  's/.*"servo_pipeline_panic_callback_observed"[[:space:]]*:[[:space:]]*\(true\|false\).*/\1/p' \
+  "$runtime_result" | head -n1)
+callback=${callback:-false}
+runtime_sha=$(sha256sum "$runtime_result" | awk '{print $1}')
+cmdline_sha=$(printf '%s' "$candidate_cmdline" | sha256sum | awk '{print $1}')
+
+tmp="$proof.tmp.$$"
+cat >"$tmp" <<EOF
+{
+  "schema": "trillionnium.desktop.d2i-content-process-crash-proof.v2",
+  "status": "PASS_EXTERNAL_CONTENT_PROCESS_TERMINATION_AND_RECOVERY",
+  "runtime_unit": "$unit",
+  "runtime_main_pid": $runtime_main_pid,
+  "runtime_main_survived": true,
+  "killed_content_pid": $expected_pid,
+  "killed_content_start_time_ticks": $expected_start,
+  "killed_content_cmdline_sha256": "$cmdline_sha",
+  "sigkill_delivered": true,
+  "killed_pid_disappeared": true,
+  "replacement_content_pid": $replacement_pid,
+  "replacement_content_start_time_ticks": $replacement_start,
+  "replacement_pid_distinct": true,
+  "runtime_result_sha256": "$runtime_sha",
+  "runtime_generation_after_recovery": 2,
+  "crash_callback_observed": $callback,
+  "trusted_chrome_visible_after_crash": true,
+  "injector_count": 1,
+  "runtime_internal_injector": false,
+  "claim_ceiling_actual_content_crash": false
+}
+EOF
+grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS_EXTERNAL_CONTENT_PROCESS_TERMINATION_AND_RECOVERY"' \
+  "$tmp" || fail proof_json_invalid
+chmod 0644 "$tmp"
+mv "$tmp" "$proof"
+sync "$proof"
+
+printf 'TRILLIONNIUM_D2I_CONTENT_CRASH_PROOF_BEGIN\n'
+cat "$proof"
+printf 'TRILLIONNIUM_D2I_CONTENT_CRASH_PROOF_END\n'

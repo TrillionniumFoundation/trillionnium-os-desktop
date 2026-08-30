@@ -4,6 +4,9 @@
 from __future__ import annotations
 
 import json
+import os
+import re
+import stat
 import sys
 import tomllib
 from pathlib import Path
@@ -11,6 +14,12 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 ERRORS: list[str] = []
+SHA256_HEX = re.compile(r"[0-9a-f]{64}\Z")
+# Reject both rooted and drive-relative Windows spellings.  The latter
+# (C:foo) is not absolute on POSIX but is resolved relative to a drive's
+# current directory on Windows, so accepting it would make the policy
+# platform-dependent.
+WINDOWS_ABSOLUTE = re.compile(r"^(?:[A-Za-z]:|[\\/]{2})")
 
 EXPECTED_WORKSPACE_MEMBERS = [
     "apps/hepta-browserd",
@@ -23,6 +32,7 @@ EXPECTED_WORKSPACE_MEMBERS = [
     "crates/hepta-browser-contracts",
     "crates/hepta-session-core",
     "crates/hepta-workspace-composition",
+    "crates/hepta-browser-actor",
 ]
 
 REQUIRED_PATHS = [
@@ -79,6 +89,17 @@ REQUIRED_PATHS = [
     "crates/hepta-workspace-composition/src/model.rs",
     "crates/hepta-workspace-composition/src/tests.rs",
     "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md",
+    "crates/hepta-browser-actor/Cargo.toml",
+    "crates/hepta-browser-actor/src/lib.rs",
+    "contracts/browser-actor.v1.json",
+    "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
+    "tests/test_validate_project_truth.py",
+    "tools/gate_evidence_envelope.py",
+    "tools/qualify_servo_exact_pin_evidence.py",
+    ".github/workflows/d0t03-source-contract.yml",
+    "docs/release/D0T03_GOVERNANCE_BOOTSTRAP.md",
+    "manifests/repository-governance.v1.json",
+    "tools/validate_d0t03_source.py",
 ]
 
 
@@ -86,19 +107,197 @@ def fail(message: str) -> None:
     ERRORS.append(message)
 
 
+def is_sha256_hex(value: object) -> bool:
+    """Return whether *value* is the canonical lowercase SHA-256 encoding."""
+
+    return isinstance(value, str) and SHA256_HEX.fullmatch(value) is not None
+
+
+def safe_relative_path(value: object, *, base: Path, label: str) -> Path | None:
+    """Resolve an untrusted repository path without leaving *base*.
+
+    Manifest paths are data, not trusted code.  Reject absolute, traversal,
+    control-character, and platform-ambiguous spellings before touching the
+    filesystem.  Existing symlink components are rejected as well: otherwise
+    a path that is lexically inside the repository could redirect validation
+    to an attacker-controlled file outside it.
+    """
+
+    if not isinstance(value, str) or not value:
+        fail(f"{label} must be a non-empty relative path")
+        return None
+    if any(ord(character) < 0x20 or ord(character) == 0x7F for character in value):
+        fail(f"{label} contains a control character")
+        return None
+    # Cargo and the repository manifests use POSIX paths.  Reject backslashes
+    # rather than relying on host-specific Path parsing (a Windows runner would
+    # otherwise interpret them as separators).
+    if "\\" in value:
+        fail(f"{label} contains a backslash separator")
+        return None
+    if WINDOWS_ABSOLUTE.match(value) or Path(value).is_absolute():
+        fail(f"{label} must be relative: {value!r}")
+        return None
+    raw_parts = value.split("/")
+    if not raw_parts or any(part in {"", ".", ".."} for part in raw_parts):
+        fail(f"{label} contains an unsafe path component: {value!r}")
+        return None
+
+    try:
+        base_path = base.resolve(strict=True)
+    except OSError as error:
+        fail(f"{label} base is unavailable: {error}")
+        return None
+    if base.is_symlink():
+        fail(f"{label} base is a symlink: {base}")
+        return None
+
+    candidate = base_path.joinpath(*raw_parts)
+    current = base_path
+    try:
+        for part in raw_parts:
+            current /= part
+            if current.is_symlink():
+                fail(f"{label} contains a symlink component: {value!r}")
+                return None
+        resolved = candidate.resolve(strict=False)
+        resolved.relative_to(base_path)
+    except (OSError, RuntimeError, ValueError) as error:
+        fail(f"{label} escapes its trusted base: {value!r} ({error})")
+        return None
+    return candidate
+
+
+def _has_symlink_component(path: Path) -> bool:
+    """Return whether an existing lexical component of *path* is a symlink."""
+
+    # Do not call resolve/abspath here: normalising link/../target before
+    # lstat would erase the very symlink component this check protects.
+    lexical = Path(os.fspath(path))
+    if not lexical.is_absolute():
+        lexical = Path.cwd() / lexical
+    current = Path(lexical.anchor)
+    for component in lexical.parts:
+        if component == lexical.anchor:
+            continue
+        if component == ".":
+            continue
+        if component == "..":
+            current = current.parent
+            continue
+        current /= component
+        try:
+            mode = os.lstat(current).st_mode
+        except FileNotFoundError:
+            return False
+        except OSError as error:
+            raise OSError(f"cannot inspect path component {current}") from error
+        if stat.S_ISLNK(mode):
+            return True
+    return False
+
+
+def _read_bytes_nofollow(path: Path) -> bytes:
+    """Read a repository input without following links or leaving ``ROOT``.
+
+    Repository manifests, contracts, and lockfiles drive policy decisions.
+    A pathname-only ``read_text`` would allow a symlink (or a final-component
+    swap) to substitute an attacker-controlled file before the validator's
+    later checks run.  Walk existing components lexically, open with
+    ``O_NOFOLLOW``, and verify the descriptor is a regular file.
+    """
+
+    path = Path(path)
+    if any(component == ".." for component in path.parts):
+        raise OSError(f"repository path contains '..': {path}")
+    try:
+        root = ROOT.resolve(strict=True)
+        candidate = path if path.is_absolute() else Path.cwd() / path
+        candidate = Path(os.path.abspath(os.fspath(candidate)))
+        candidate.relative_to(root)
+    except (OSError, RuntimeError, ValueError) as error:
+        raise OSError(f"repository path escapes trusted root: {path}") from error
+    if _has_symlink_component(candidate):
+        raise OSError(f"repository path contains a symlink: {path}")
+
+    nofollow = getattr(os, "O_NOFOLLOW", 0)
+    cloexec = getattr(os, "O_CLOEXEC", 0)
+    descriptor: int | None = None
+    try:
+        descriptor = os.open(candidate, os.O_RDONLY | nofollow | cloexec)
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode):
+            raise OSError(f"repository path is not a regular file: {path}")
+        with os.fdopen(descriptor, "rb", closefd=True) as stream:
+            descriptor = None
+            return stream.read()
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
+def _read_text_nofollow(path: Path) -> str:
+    return _read_bytes_nofollow(path).decode("utf-8")
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return os.fspath(path)
+
+
+def safe_workspace_dependency_path(
+    value: object, *, manifest_path: Path, label: str
+) -> Path | None:
+    """Resolve a Cargo path dependency while allowing safe parent segments.
+
+    Cargo manifests legitimately refer to sibling workspace crates with
+    parent segments. Unlike safe_relative_path, this helper permits those
+    segments but requires the resolved target to remain below the repository
+    root and rejects symlinked components.
+    """
+
+    if not isinstance(value, str) or not value:
+        fail(f"{label} must be a non-empty relative path")
+        return None
+    if any(ord(character) < 0x20 or ord(character) == 0x7F for character in value):
+        fail(f"{label} contains a control character")
+        return None
+    if "\\" in value or WINDOWS_ABSOLUTE.match(value) or Path(value).is_absolute():
+        fail(f"{label} must be a portable relative path: {value!r}")
+        return None
+    try:
+        root_path = ROOT.resolve(strict=True)
+        candidate = manifest_path.parent / value
+        lexical = Path(os.path.abspath(os.fspath(candidate)))
+        if _has_symlink_component(lexical):
+            fail(f"{label} contains a symlink component: {value!r}")
+            return None
+        resolved = candidate.resolve(strict=False)
+        resolved.relative_to(root_path)
+    except (OSError, RuntimeError, ValueError) as error:
+        fail(f"{label} escapes the repository root: {value!r} ({error})")
+        return None
+    if not resolved.is_dir():
+        fail(f"{label} does not resolve to a directory: {value!r}")
+        return None
+    return resolved
+
+
 def load_json(path: Path) -> Any:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        fail(f"invalid JSON {path.relative_to(ROOT)}: {error}")
+        return json.loads(_read_text_nofollow(path))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        fail(f"invalid JSON {_display_path(path)}: {error}")
         return {}
 
 
 def load_toml(path: Path) -> dict[str, Any]:
     try:
-        return tomllib.loads(path.read_text(encoding="utf-8"))
-    except (OSError, tomllib.TOMLDecodeError) as error:
-        fail(f"invalid TOML {path.relative_to(ROOT)}: {error}")
+        return tomllib.loads(_read_text_nofollow(path))
+    except (OSError, UnicodeError, tomllib.TOMLDecodeError) as error:
+        fail(f"invalid TOML {_display_path(path)}: {error}")
         return {}
 
 
@@ -129,11 +328,18 @@ def check_plan_and_manifests() -> None:
     if not isinstance(active_plan, str):
         fail("docs manifest active_plan is missing")
         return
-    plan_path = ROOT / "docs" / active_plan
-    if not plan_path.is_file():
-        fail(f"active plan does not exist: docs/{active_plan}")
+    plan_path = safe_relative_path(
+        active_plan,
+        base=ROOT / "docs",
+        label="docs manifest active_plan",
+    )
+    if plan_path is None:
         return
-    plan_text = plan_path.read_text(encoding="utf-8")
+    try:
+        plan_text = _read_text_nofollow(plan_path)
+    except (OSError, UnicodeError) as error:
+        fail(f"active plan is missing or unsafe: docs/{active_plan}: {error}")
+        return
     for required in [str(revision), "FULL_PRODUCT_REPOSITORY", "D0C-02", "D0A-01"]:
         if required not in plan_text:
             fail(f"active plan is missing required marker {required!r}")
@@ -167,7 +373,11 @@ def check_plan_and_manifests() -> None:
         plan_path,
         ROOT / "manifests/repository-state.json",
     ]:
-        text = path.read_text(encoding="utf-8")
+        try:
+            text = _read_text_nofollow(path)
+        except (OSError, UnicodeError) as error:
+            fail(f"normative file is missing or unsafe: {_display_path(path)}: {error}")
+            continue
         if "/data/toshiba-dev/" in text:
             fail(
                 "normative active file contains a local absolute source path: "
@@ -182,6 +392,50 @@ def dependency_spec_version(specification: object) -> str | None:
         version = specification.get("version")
         return version if isinstance(version, str) else None
     return None
+
+
+def index_lock_packages(lock: object) -> dict[str, list[dict[str, Any]]]:
+    """Index lockfile packages without folding distinct package records.
+
+    Cargo identifies a package by ``(name, version, source)``.  Keeping only
+    ``{name: package}`` (or even ``{(name, version): package}``) silently drops
+    records when a crate is present at multiple versions or sources.  That is
+    unsafe for a repository validator: an attacker could append a duplicate
+    record with a different dependency list/checksum and rely on whichever
+    record happens to win the dictionary comprehension.  Preserve every
+    record and fail closed on duplicate identities or malformed identity
+    fields.  Callers can then apply their own policy for source/versions.
+    """
+
+    if not isinstance(lock, dict):
+        raise AssertionError("Cargo.lock root must be an object")
+    entries = lock.get("package")
+    if not isinstance(entries, list):
+        raise AssertionError("Cargo.lock package list is missing")
+
+    by_name: dict[str, list[dict[str, Any]]] = {}
+    seen: set[tuple[str, str, str | None]] = set()
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            raise AssertionError(f"Cargo.lock package {index} is not an object")
+        name = entry.get("name")
+        version = entry.get("version")
+        source = entry.get("source")
+        if not isinstance(name, str) or not name:
+            raise AssertionError(f"Cargo.lock package {index} has invalid name")
+        if not isinstance(version, str) or not version:
+            raise AssertionError(f"Cargo.lock package {name} has invalid version")
+        if source is not None and (not isinstance(source, str) or not source):
+            raise AssertionError(f"Cargo.lock package {name} has invalid source")
+        identity = (name, version, source)
+        if identity in seen:
+            raise AssertionError(
+                "Cargo.lock contains duplicate package identity "
+                f"(name={name!r}, version={version!r}, source={source!r})"
+            )
+        seen.add(identity)
+        by_name.setdefault(name, []).append(entry)
+    return by_name
 
 
 def check_workspace_and_lock() -> None:
@@ -202,8 +456,10 @@ def check_workspace_and_lock() -> None:
 
     for member in EXPECTED_WORKSPACE_MEMBERS:
         manifest_path = ROOT / member / "Cargo.toml"
-        if not manifest_path.is_file():
-            fail(f"workspace member is missing Cargo.toml: {member}")
+        if not manifest_path.is_file() or manifest_path.is_symlink():
+            # Keep the explicit diagnostic in addition to the safe loader's
+            # error so callers can distinguish a missing workspace member.
+            fail(f"workspace member Cargo.toml is missing or unsafe: {member}")
             continue
         manifest = load_toml(manifest_path)
         package = manifest.get("package", {})
@@ -224,6 +480,15 @@ def check_workspace_and_lock() -> None:
                     )
                 if isinstance(specification, dict):
                     path_value = specification.get("path")
+                    if "path" in specification:
+                        safe_workspace_dependency_path(
+                            path_value,
+                            manifest_path=manifest_path,
+                            label=(
+                                "workspace path dependency "
+                                f"{dependency_name} in {manifest_path.relative_to(ROOT)}"
+                            ),
+                        )
                     if isinstance(path_value, str) and any(
                         fragment in path_value for fragment in forbidden_fragments
                     ):
@@ -245,16 +510,43 @@ def check_workspace_and_lock() -> None:
         if not all(isinstance(value, str) for value in (name, version, checksum)):
             fail("cargo external allowlist entry is incomplete")
             continue
+        if not is_sha256_hex(checksum):
+            fail(
+                "cargo external allowlist checksum must be exactly 64 lowercase "
+                f"hex characters: {name} {version}"
+            )
         key = (name, version)
         if key in allowed:
             fail(f"duplicate cargo allowlist entry {name} {version}")
         allowed[key] = checksum
 
     direct = allowlist.get("direct_dependencies", {})
+    if not isinstance(direct, dict):
+        fail("cargo external allowlist direct_dependencies must be an object")
+        direct = {}
     for member, expected_dependencies in direct.items():
-        manifest = load_toml(ROOT / member / "Cargo.toml")
+        member_manifest = safe_relative_path(
+            f"{member}/Cargo.toml" if isinstance(member, str) else member,
+            base=ROOT,
+            label="cargo direct dependency manifest",
+        )
+        if member_manifest is None:
+            continue
+        if not isinstance(member, str) or member not in EXPECTED_WORKSPACE_MEMBERS:
+            fail(f"cargo direct dependency member is not a workspace member: {member!r}")
+            continue
+        if not member_manifest.is_file() or member_manifest.is_symlink():
+            fail(f"cargo direct dependency manifest is missing or unsafe: {member}/Cargo.toml")
+            continue
+        if not isinstance(expected_dependencies, dict):
+            fail(f"cargo direct dependency allowlist is not an object: {member}")
+            continue
+        manifest = load_toml(member_manifest)
         actual_dependencies = manifest.get("dependencies", {})
         for name, exact_version in expected_dependencies.items():
+            if not isinstance(name, str) or not isinstance(exact_version, str):
+                fail(f"cargo direct dependency entry is malformed: {member}")
+                continue
             actual = dependency_spec_version(actual_dependencies.get(name))
             if actual != exact_version:
                 fail(
@@ -263,10 +555,20 @@ def check_workspace_and_lock() -> None:
                 )
 
     lock = load_toml(ROOT / "Cargo.lock")
-    lock_packages = lock.get("package", [])
+    try:
+        packages_by_name = index_lock_packages(lock)
+    except AssertionError as error:
+        # Keep this validator's aggregate-error contract while ensuring a
+        # malformed/ambiguous lockfile can never be treated as an empty one.
+        fail(str(error))
+        return
+    lock_packages = [
+        package for packages in packages_by_name.values() for package in packages
+    ]
     locked_workspace: set[str] = set()
     locked_external: dict[tuple[str, str], str] = {}
     all_names: set[str] = set()
+    workspace_versions: dict[str, str] = {}
 
     for package in lock_packages:
         if not isinstance(package, dict):
@@ -281,6 +583,14 @@ def check_workspace_and_lock() -> None:
             continue
         all_names.add(name)
         if source is None:
+            previous_version = workspace_versions.get(name)
+            if previous_version is not None:
+                fail(
+                    "Cargo.lock contains multiple local package records for "
+                    f"{name!r}: versions {previous_version!r} and {version!r}"
+                )
+            else:
+                workspace_versions[name] = version
             locked_workspace.add(name)
             continue
         if source != "registry+https://github.com/rust-lang/crates.io-index":
@@ -289,7 +599,18 @@ def check_workspace_and_lock() -> None:
         if not isinstance(checksum, str):
             fail(f"registry package lacks checksum: {name} {version}")
             continue
+        if not is_sha256_hex(checksum):
+            fail(
+                "Cargo.lock registry checksum must be exactly 64 lowercase "
+                f"hex characters: {name} {version}"
+            )
+            continue
         key = (name, version)
+        # index_lock_packages has already rejected duplicate complete
+        # identities.  This map is deliberately keyed by (name, version)
+        # because this repository permits only the single crates.io source for
+        # external packages; retain the explicit collision check in case that
+        # policy changes later.
         if key in locked_external:
             fail(f"duplicate Cargo.lock package {name} {version}")
         locked_external[key] = checksum
@@ -345,9 +666,13 @@ def check_contract_alignment() -> None:
     ]
     if len(codes) != len(set(codes)):
         fail("duplicate error codes")
-    rust_source = (
-        ROOT / "crates/hepta-browser-contracts/src/lib.rs"
-    ).read_text(encoding="utf-8")
+    try:
+        rust_source = _read_text_nofollow(
+            ROOT / "crates/hepta-browser-contracts/src/lib.rs"
+        )
+    except (OSError, UnicodeError) as error:
+        fail(f"browser contracts source is missing or unsafe: {error}")
+        rust_source = ""
     for code in codes:
         if not isinstance(code, str) or f'"{code}"' not in rust_source:
             fail(f"error code {code!r} is not represented in Rust BrowserErrorCode")
@@ -381,9 +706,13 @@ def check_contract_alignment() -> None:
             )
 
     transport = load_json(ROOT / "contracts/agent-transport.v1.json")
-    transport_source = (
-        ROOT / "crates/hepta-agent-transport/src/lib.rs"
-    ).read_text(encoding="utf-8")
+    try:
+        transport_source = _read_text_nofollow(
+            ROOT / "crates/hepta-agent-transport/src/lib.rs"
+        )
+    except (OSError, UnicodeError) as error:
+        fail(f"transport source is missing or unsafe: {error}")
+        transport_source = ""
     expected_markers = {
         f'pub const PROTOCOL_MAGIC: [u8; 8] = *b"{transport.get("protocol_magic_ascii")}";',
         f'pub const PROTOCOL_VERSION: u16 = {transport.get("protocol_version")};',
@@ -424,8 +753,10 @@ def check_filesystem_shape() -> None:
                 f"{path.relative_to(ROOT)}"
             )
     for relative in REQUIRED_PATHS:
-        if not (ROOT / relative).is_file():
-            fail(f"required repository file is missing: {relative}")
+        try:
+            _read_bytes_nofollow(ROOT / relative)
+        except (OSError, UnicodeError) as error:
+            fail(f"required repository file is missing or unsafe: {relative}: {error}")
     for forbidden in (
         ".github/workflows/materialize-d0c02.yml",
         ".github/workflows/verify-and-merge-d0c02.yml",

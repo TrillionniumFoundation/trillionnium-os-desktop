@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 import socket
 import sys
 import time
 import unittest
 from pathlib import Path
+
+from tests.test_agent_port_custody_workflow import trigger_paths
 
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "tools" / "agent_transport_reference.py"
@@ -18,6 +21,55 @@ SPEC.loader.exec_module(ref)
 
 
 class TransportReferenceTests(unittest.TestCase):
+    def test_registry_and_workflow_triggers_cover_the_same_inputs(self) -> None:
+        registry = json.loads(
+            (ROOT / "manifests/gates.v1.json").read_text(encoding="utf-8")
+        )
+        gate = next(item for item in registry["gates"] if item["id"] == "D0C-02")
+        expected = set(gate["invalidation_paths"])
+        workflow = (
+            ROOT / ".github/workflows/agent-transport-reference.yml"
+        ).read_text(encoding="utf-8")
+        for event in ("pull_request", "push"):
+            actual = trigger_paths(workflow, event)
+            self.assertEqual(
+                actual,
+                expected,
+                f"D0C-02 {event} trigger drift: "
+                f"missing={sorted(expected - actual)}, "
+                f"unregistered={sorted(actual - expected)}",
+            )
+
+    def test_permanent_workflow_revalidates_rust_transport_inputs(self) -> None:
+        workflow = (
+            ROOT / ".github/workflows/agent-transport-reference.yml"
+        ).read_text(encoding="utf-8")
+        for required in (
+            '"crates/hepta-agent-transport/**"',
+            '"Cargo.toml"',
+            '"Cargo.lock"',
+            '"rust-toolchain.toml"',
+            '"manifests/cargo-external-allowlist.json"',
+            '"tools/validate_repository.py"',
+            "cargo fmt --all --check",
+            "cargo check --locked -p hepta-agent-transport --all-targets",
+            "cargo clippy --locked -p hepta-agent-transport --all-targets",
+            "cargo test --locked -p hepta-agent-transport --all-targets",
+        ):
+            self.assertIn(required, workflow)
+
+        registry = json.loads(
+            (ROOT / "manifests/gates.v1.json").read_text(encoding="utf-8")
+        )
+        gate = next(item for item in registry["gates"] if item["id"] == "D0C-02")
+        self.assertIn("tests/transport/**", gate["invalidation_paths"])
+        marker = '"tests/transport/**"'
+        self.assertGreaterEqual(
+            workflow.count(marker),
+            2,
+            "transport gate must trigger for every transport test on PR and push",
+        )
+
     def test_contract_matches_reference(self) -> None:
         checks = ref.validate_contract(ROOT / "contracts" / "agent-transport.v1.json")
         self.assertTrue(all(checks.values()))

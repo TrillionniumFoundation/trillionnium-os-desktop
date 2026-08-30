@@ -4,12 +4,20 @@ on:
   pull_request:
     paths:
       - ".github/workflows/agent-transport-reference.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "crates/hepta-agent-transport/**"
       - "contracts/agent-transport.v1.json"
       - "contracts/golden/agent-transport-request.v1.json"
       - "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
       - "tools/agent_transport_reference.py"
-      - "tests/transport/test_agent_transport_reference.py"
+      - "tests/transport/**"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
       - "tools/validate_project_truth.py"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/repository-state.json"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
   push:
@@ -17,12 +25,20 @@ on:
       - main
     paths:
       - ".github/workflows/agent-transport-reference.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "crates/hepta-agent-transport/**"
       - "contracts/agent-transport.v1.json"
       - "contracts/golden/agent-transport-request.v1.json"
       - "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
       - "tools/agent_transport_reference.py"
-      - "tests/transport/test_agent_transport_reference.py"
+      - "tests/transport/**"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
       - "tools/validate_project_truth.py"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/repository-state.json"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
 
@@ -36,6 +52,32 @@ jobs:
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Install exact locked Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Run exact locked Rust transport gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --locked -p hepta-agent-transport --all-targets
+          cargo clippy --locked -p hepta-agent-transport --all-targets -- -D warnings
+          cargo test --locked -p hepta-agent-transport --all-targets
 
       - name: Validate project truth
         run: |

@@ -10,17 +10,32 @@ on:
       - "crates/hepta-browser-codec/**"
       - "crates/hepta-browser-contracts/**"
       - "contracts/browser-api.v1.schema.json"
+      - "contracts/browser-*.json"
+      - "contracts/browser-actor.v1.json"
       - "contracts/browser-codec.v1.json"
       - "contracts/browser-wire.v1.schema.json"
       - "contracts/browser-response.v1.schema.json"
       - "contracts/error-codes.v1.json"
       - "contracts/golden/*.wire.json"
       - "tools/browser_codec_reference.py"
+      - "tools/browser_codec_reference*"
       - "tools/browser_codec_reference/**"
       - "tools/validate_rust_browser_codec.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_validate_rust_browser_codec.py"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/repository-state.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "rust-toolchain.toml"
       - "docs/evidence/generated/d0c03-*.json"
   push:
     branches: [main]
@@ -32,17 +47,32 @@ on:
       - "crates/hepta-browser-codec/**"
       - "crates/hepta-browser-contracts/**"
       - "contracts/browser-api.v1.schema.json"
+      - "contracts/browser-*.json"
+      - "contracts/browser-actor.v1.json"
       - "contracts/browser-codec.v1.json"
       - "contracts/browser-wire.v1.schema.json"
       - "contracts/browser-response.v1.schema.json"
       - "contracts/error-codes.v1.json"
       - "contracts/golden/*.wire.json"
       - "tools/browser_codec_reference.py"
+      - "tools/browser_codec_reference*"
       - "tools/browser_codec_reference/**"
       - "tools/validate_rust_browser_codec.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_validate_rust_browser_codec.py"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/repository-state.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "rust-toolchain.toml"
       - "docs/evidence/generated/d0c03-*.json"
 
 permissions:
@@ -57,6 +87,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Compile standard-library references and audits
         run: >-
@@ -65,12 +96,18 @@ jobs:
           tools/browser_codec_reference/*.py
           tools/validate_rust_browser_codec.py
           tools/validate_project_truth.py
+          tests/test_validate_rust_browser_codec.py
 
       - name: Validate repository and project truth
         run: |
           set -euo pipefail
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
+
+      - name: Run browser codec Python regressions
+        run: |
+          set -euo pipefail
+          python3 -m unittest tests.test_validate_rust_browser_codec -v
 
       - name: Regenerate reference, audit and golden vectors
         run: |
@@ -98,14 +135,28 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json
           from pathlib import Path
 
           source_sha = "4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb"
-          contract = json.loads(Path("contracts/browser-codec.v1.json").read_text())
-          reference = json.loads(Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json").read_text())
-          audit = json.loads(Path("docs/evidence/generated/d0c03-rust-source-audit-result.json").read_text())
-          host = json.loads(Path(contract["rust_host_result"]).read_text())
+          import sys
+          sys.path.insert(0, str(Path("tools").resolve()))
+          from validate_rust_browser_codec import load_json_nofollow, repo_path
+
+          contract = load_json_nofollow(
+              Path("contracts/browser-codec.v1.json"), label="codec contract"
+          )
+          reference = load_json_nofollow(
+              Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json"),
+              label="codec reference result",
+          )
+          audit = load_json_nofollow(
+              Path("docs/evidence/generated/d0c03-rust-source-audit-result.json"),
+              label="codec source audit result",
+          )
+          host = load_json_nofollow(
+              repo_path(contract.get("rust_host_result"), label="rust_host_result"),
+              label="Rust host result",
+          )
 
           assert contract["validation"]["python_reference"] == "PASS_27_OF_27"
           assert contract["validation"]["rust_source_audit"] == "PASS"
@@ -133,6 +184,8 @@ jobs:
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
 
       - name: Install exact Rust toolchain
         run: |
