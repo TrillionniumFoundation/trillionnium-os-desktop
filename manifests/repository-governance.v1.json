@@ -8,6 +8,81 @@
       "Tomasrgbsf",
       "ProfHepta"
     ],
+    "protected_codeowner_rules": [
+      {
+        "pattern": "*",
+        "owners": [
+          "Tomasrgbsf",
+          "ProfHepta"
+        ],
+        "samples": [
+          "README.md",
+          "Cargo.toml"
+        ]
+      },
+      {
+        "pattern": "/.github/",
+        "owners": [
+          "Tomasrgbsf",
+          "ProfHepta"
+        ],
+        "samples": [
+          ".github/CODEOWNERS",
+          ".github/workflows/d0t03-source-contract.yml"
+        ]
+      },
+      {
+        "pattern": "/contracts/",
+        "owners": [
+          "Tomasrgbsf",
+          "ProfHepta"
+        ],
+        "samples": [
+          "contracts/browser-api.v1.schema.json"
+        ]
+      },
+      {
+        "pattern": "/manifests/",
+        "owners": [
+          "Tomasrgbsf",
+          "ProfHepta"
+        ],
+        "samples": [
+          "manifests/project-state.v1.json",
+          "manifests/repository-governance.v1.json"
+        ]
+      },
+      {
+        "pattern": "/docs/adr/",
+        "owners": [
+          "Tomasrgbsf",
+          "ProfHepta"
+        ],
+        "samples": [
+          "docs/adr/0001-example.md"
+        ]
+      },
+      {
+        "pattern": "/docs/security/",
+        "owners": [
+          "Tomasrgbsf",
+          "ProfHepta"
+        ],
+        "samples": [
+          "docs/security/THREAT_MODEL.md"
+        ]
+      },
+      {
+        "pattern": "/docs/release/",
+        "owners": [
+          "Tomasrgbsf",
+          "ProfHepta"
+        ],
+        "samples": [
+          "docs/release/D0T03_GOVERNANCE_BOOTSTRAP.md"
+        ]
+      }
+    ],
     "organization_team_codeowners_required_for_closure": true,
     "stale_approvals_dismissed_required": true,
     "approval_after_latest_push_required": true,
@@ -31,6 +106,9 @@
       ".github/workflows/receipt-journal.yml",
       ".github/workflows/servo-exact-pin.yml",
       ".github/workflows/servo-headed-runtime.yml",
+      ".github/workflows/d0t03-source-contract.yml"
+    ],
+    "candidate_workflows_pending_integration": [
       ".github/workflows/d1-final-qualification.yml",
       ".github/workflows/d2i-integrated-image.yml"
     ]
