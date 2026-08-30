@@ -71,6 +71,12 @@
   },
   "runtime": {
     "engine": "exact pinned Servo",
+    "home": "/run/hepta-desktop",
+    "writable_runtime_paths": [
+      "/run/hepta-desktop/cache",
+      "/run/hepta-desktop/config"
+    ],
+    "cache_configuration": "runtime service creates cache/config under RuntimeDirectory before ExecStart",
     "trusted_chrome": "native window decorations",
     "logical_content_surface_limit": 1,
     "input_claim": "image-local Servo dispatch; D0A-02 separately proves headed-host native input",

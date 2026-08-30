@@ -28,7 +28,11 @@ qualification input.
 
 The tested image boots under QEMU q35/TCG with `-nic none`. systemd starts the
 existing headless Weston service, then runs the headed workspace as the
-unprivileged `hepta-desktop` user. The runtime has a private network namespace,
+unprivileged `hepta-desktop` user. Because the unit uses `ProtectSystem=strict`,
+its `HOME`, `XDG_CACHE_HOME`, and `XDG_CONFIG_HOME` are explicitly rooted in
+the service-owned `/run/hepta-desktop` `RuntimeDirectory`; the unit creates the
+cache/config directories before `ExecStart` and does not rely on writes under
+`/var`. The runtime has a private network namespace,
 may use AF_UNIX for Wayland and Servo IPC, and has no product AgentPort
 activation marker or socket.
 

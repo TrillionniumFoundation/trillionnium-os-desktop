@@ -16,11 +16,15 @@ StateDirectoryMode=0700
 RuntimeDirectory=hepta-desktop
 RuntimeDirectoryMode=0700
 Environment=XDG_RUNTIME_DIR=/run/hepta-desktop
+Environment=HOME=/run/hepta-desktop
+Environment=XDG_CACHE_HOME=/run/hepta-desktop/cache
+Environment=XDG_CONFIG_HOME=/run/hepta-desktop/config
 Environment=WAYLAND_DISPLAY=wayland-0
 Environment=WINIT_UNIX_BACKEND=wayland
 Environment=LIBGL_ALWAYS_SOFTWARE=1
 Environment=HEPTA_D0A02_OUTPUT=/var/lib/trillionnium-d2i
 Environment=HEPTA_D2I_HOLD_AFTER_RESULT=1
+ExecStartPre=/usr/bin/mkdir -p /run/hepta-desktop/cache /run/hepta-desktop/config
 ExecStart=/usr/libexec/hepta-workspace-runtime
 TimeoutStartSec=300s
 RemainAfterExit=no

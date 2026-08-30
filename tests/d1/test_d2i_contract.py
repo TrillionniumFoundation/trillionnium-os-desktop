@@ -135,6 +135,23 @@ class D2IContractTests(unittest.TestCase):
         self.assertIn("HEPTA_D0A02_OUTPUT=/var/lib/trillionnium-d2i", service)
         self.assertIn("Type=simple", service)
         self.assertIn("HEPTA_D2I_HOLD_AFTER_RESULT=1", service)
+        self.assertIn("Environment=HOME=/run/hepta-desktop", service)
+        self.assertIn("Environment=XDG_CACHE_HOME=/run/hepta-desktop/cache", service)
+        self.assertIn("Environment=XDG_CONFIG_HOME=/run/hepta-desktop/config", service)
+        self.assertIn(
+            "ExecStartPre=/usr/bin/mkdir -p /run/hepta-desktop/cache /run/hepta-desktop/config",
+            service,
+        )
+        contract = json.loads(
+            (ROOT / "contracts/d2i-integrated-image.v1.json").read_text()
+        )
+        runtime_contract = contract["runtime"]
+        self.assertEqual(runtime_contract["home"], "/run/hepta-desktop")
+        self.assertEqual(
+            runtime_contract["writable_runtime_paths"],
+            ["/run/hepta-desktop/cache", "/run/hepta-desktop/config"],
+        )
+        self.assertIn("RuntimeDirectory", runtime_contract["cache_configuration"])
 
     def test_external_fault_injector_is_single_and_runtime_is_observer_only(self) -> None:
         contract = json.loads(
