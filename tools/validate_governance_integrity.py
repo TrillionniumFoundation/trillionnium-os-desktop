@@ -348,8 +348,15 @@ SHELL_DYNAMIC_HTTP_METHOD = re.compile(
 )
 SHELL_COMMAND_SUBSTITUTION = re.compile(r"\$\(([^\n]{0,8192})\)|`([^`\n]{0,8192})`")
 SHELL_COMMAND_SUBSTITUTION_EXECUTABLE = re.compile(
-    r"(?im)(?:^|[;&|]\s*|(?:if|while|until)\s+)"
-    r"(?:\$\([^()\n]{0,8192}\)|`[^`\n]{0,8192}`)(?:\s|$)"
+    # A substitution can occupy command position at the start of a segment,
+    # after a pipeline/list separator, or after a compound-command keyword.
+    # Include ``then``/``do``/``else``/``elif`` and shell negation so forms
+    # such as ``if true; then $(printf git) push; fi`` cannot hide a dynamic
+    # executable behind the control-flow token.  Whitespace after a segment
+    # boundary is permitted because process-substitution payloads are often
+    # extracted with a leading space.
+    r"(?im)(?:^|[;&|]\s*|(?:if|while|until|then|do|else|elif)\s+)\s*"
+    r"(?:!\s+)?(?:\$\([^()\n]{0,8192}\)|`[^`\n]{0,8192}`)(?:\s|$)"
 )
 GH_EXECUTABLES = frozenset({"gh", "gh.exe"})
 HTTP_EXECUTABLES = frozenset({"curl", "curl.exe", "wget", "wget.exe"})
@@ -5163,10 +5170,17 @@ def _python_dynamic_import_mutates(command: str, *, depth: int) -> bool:
         if cursor >= len(command) or command[cursor] != ".":
             continue
         cursor += 1
-        name_match = re.match(r"\s*([A-Za-z_][A-Za-z0-9_]*)\s*\(", command[cursor:])
+        # Permit a bounded dotted attribute chain.  ``__import__(
+        # "urllib.request").request.urlopen(...)`` has two attributes between
+        # the dynamic importer and the effectful call; matching only one
+        # attribute silently dropped that HTTP graph.
+        name_match = re.match(
+            r"\s*((?:[A-Za-z_][A-Za-z0-9_]*\s*\.)*[A-Za-z_][A-Za-z0-9_]*)\s*\(",
+            command[cursor:],
+        )
         if name_match is None:
             continue
-        method = name_match.group(1).lower()
+        method = name_match.group(1).rsplit(".", 1)[-1].strip().lower()
         call_start = cursor + name_match.end() - 1
         outer_end = _python_call_end(command, call_start + 1)
         snippet = command[match.start() : min(len(command), outer_end + 1)]
@@ -5177,7 +5191,11 @@ def _python_dynamic_import_mutates(command: str, *, depth: int) -> bool:
         outer = expression.body
         if not isinstance(outer, ast.Call) or not isinstance(outer.func, ast.Attribute):
             return True
+        # Walk through any intermediate attributes to recover the dynamic
+        # importer call at the root of the function chain.
         importer = outer.func.value
+        while isinstance(importer, ast.Attribute):
+            importer = importer.value
         if not isinstance(importer, ast.Call):
             return True
         module_name = (
