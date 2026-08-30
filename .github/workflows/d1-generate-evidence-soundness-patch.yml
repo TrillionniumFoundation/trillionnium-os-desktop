@@ -1,0 +1,73 @@
+name: d1-generate-evidence-soundness-patch
+
+on:
+  push:
+    branches:
+      - codex/d1-01-current-main-v2
+    paths:
+      - ".github/workflows/d1-generate-evidence-soundness-patch.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d1-generate-evidence-soundness-patch
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact generator head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Generate ordinary source patch without repository mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/maintenance_patch_d1_evidence.py
+          python3 -m py_compile \
+            tools/d1_rootfs_manifest.py \
+            tools/finalize_d1_evidence.py \
+            tools/verify_d1_artifact.py \
+            tests/d1/test_d1_evidence_soundness.py
+          bash -n \
+            packaging/debian/image/build-d1-image.sh \
+            tools/run_d1_final_qualification.sh
+          git diff --check
+          git diff --exit-code -- .github/workflows/d1-final-qualification.yml
+
+      - name: Stage exact generated source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p generated-patch/packaging/debian/image \
+            generated-patch/tools \
+            generated-patch/manifests \
+            generated-patch/tests/d1
+          cp packaging/debian/image/build-d1-image.sh \
+            generated-patch/packaging/debian/image/build-d1-image.sh
+          cp tools/run_d1_final_qualification.sh \
+            generated-patch/tools/run_d1_final_qualification.sh
+          cp manifests/gates.v1.json \
+            generated-patch/manifests/gates.v1.json
+          cp tests/d1/test_d1_evidence_soundness.py \
+            generated-patch/tests/d1/test_d1_evidence_soundness.py
+          sha256sum \
+            generated-patch/packaging/debian/image/build-d1-image.sh \
+            generated-patch/tools/run_d1_final_qualification.sh \
+            generated-patch/manifests/gates.v1.json \
+            generated-patch/tests/d1/test_d1_evidence_soundness.py \
+            > generated-patch/SHA256SUMS
+
+      - name: Upload generated patch for external application
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d1-evidence-soundness-generated-${{ github.sha }}
+          path: generated-patch
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
