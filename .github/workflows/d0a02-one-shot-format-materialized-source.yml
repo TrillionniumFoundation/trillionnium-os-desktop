@@ -1,0 +1,65 @@
+name: d0a02-one-shot-format-materialized-source
+
+on:
+  push:
+    branches:
+      - codex/d0a02-proof-soundness-v4
+    paths:
+      - ".github/workflows/d0a02-one-shot-format-materialized-source.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: d0a02-one-shot-format-materialized-source-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact helper head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Materialize if the first one-shot has not completed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f tools/materialize_d0a02_clipboard_roundtrip.py ]]; then
+            python3 tools/materialize_d0a02_clipboard_roundtrip.py
+          fi
+          test -f tools/validate_d0a02_clipboard_roundtrip.py
+          python3 tools/validate_d0a02_proof_soundness.py
+          python3 tools/validate_d0a02_clipboard_roundtrip.py
+
+      - name: Format with the exact Servo Rust channel
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt
+          rustfmt +1.97.1 --edition 2024 experiments/servo-headed-runtime/src/main.rs
+          python3 tools/validate_d0a02_proof_soundness.py
+          python3 tools/validate_d0a02_clipboard_roundtrip.py
+
+      - name: Commit permanent formatted surfaces and remove one-shots
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f \
+            .github/workflows/d0a02-materialize-clipboard-roundtrip.yml \
+            .github/workflows/d0a02-one-shot-format-materialized-source.yml \
+            tools/materialize_d0a02_clipboard_roundtrip.py
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No formatting/materialization change remained.'
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m 'test(d0a02): format Servo clipboard proof'
+          git push origin "HEAD:$GITHUB_REF_NAME"
