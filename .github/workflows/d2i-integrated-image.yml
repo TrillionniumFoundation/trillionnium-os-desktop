@@ -1,0 +1,128 @@
+name: d2i-integrated-image
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d2i-integrated-image-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+
+jobs:
+  qualify:
+    name: d2i-integrated-image / qualify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Check out exact integrated candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Derive exact Git identity and evidence role
+        env:
+          EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha || '' }}
+        run: bash tools/run_d2i_integrated_image.sh identities
+
+      - name: Install and bind D1 plus Servo host dependencies
+        run: bash tools/run_d2i_integrated_image.sh install-deps
+
+      - name: Install exact repository Rust toolchain
+        run: bash tools/run_d2i_integrated_image.sh install-rust
+
+      - name: Restore repository Cargo cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: d2i-repository-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+
+      - name: Build exact pinned e2fsprogs toolchain
+        run: bash tools/run_d2i_integrated_image.sh build-e2fsprogs
+
+      - name: Validate tracked source and read-only gate surface
+        run: bash tools/run_d2i_integrated_image.sh validate-source
+
+      - name: Prove D1 product and qualification dependency separation
+        run: bash tools/run_d2i_integrated_image.sh prove-d1-graphs
+
+      - name: Build and audit D1 product and qualification binaries
+        run: bash tools/run_d2i_integrated_image.sh build-d1-binaries
+
+      - name: Check out exact clean Servo source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.SERVO_COMMIT }}
+          path: servo-source
+          fetch-depth: 1
+          submodules: false
+          persist-credentials: false
+
+      - name: Verify exact Servo pin and zero-patch ledger
+        run: bash tools/run_d2i_integrated_image.sh verify-servo
+
+      - name: Install Servo-declared Rust channel
+        run: bash tools/run_d2i_integrated_image.sh install-servo-rust
+
+      - name: Restore exact-pin Servo cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            servo-source/target
+          key: d2i-servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('runtime/servo/hepta_workspace_runtime.rs', 'tools/prepare_d2i_runtime.py') }}
+          restore-keys: |
+            d2i-servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
+
+      - name: Build callback-independent causal Servo runtime
+        run: bash tools/run_d2i_integrated_image.sh build-runtime
+
+      - name: Build and qualify exact D1 image
+        run: bash tools/run_d2i_integrated_image.sh run-d1
+
+      - name: Prepare two byte-identical integrated images
+        run: bash tools/run_d2i_integrated_image.sh prepare-images
+
+      - name: Boot and qualify exact integrated image without networking
+        run: bash tools/run_d2i_integrated_image.sh boot-image
+
+      - name: Build and strictly verify portable D2I evidence
+        run: bash tools/run_d2i_integrated_image.sh finalize-evidence
+
+      - name: Upload canonical portable D2I evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d2i-integrated-image-${{ github.sha }}
+          path: /tmp/trillionnium-d2i-artifact
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 0
+
+      - name: Upload bounded failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d2i-integrated-image-diagnostics-${{ github.sha }}
+          path: |
+            /tmp/trillionnium-d2i/evidence
+            /tmp/trillionnium-d2i/qemu
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 0

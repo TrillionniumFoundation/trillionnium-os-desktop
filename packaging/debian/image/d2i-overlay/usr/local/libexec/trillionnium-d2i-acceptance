@@ -1,0 +1,151 @@
+#!/bin/bash
+set -euo pipefail
+
+out=/var/lib/trillionnium-d2i
+result="$out/guest-acceptance.json"
+mkdir -p "$out"
+
+poweroff_guest() {
+  sync
+  systemctl poweroff --no-block || systemctl poweroff --force --no-block || true
+}
+
+fail() {
+  local reason=$1
+  printf 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:%s\n' "$reason" >&2
+  cat > "$result" <<EOF
+{
+  "schema": "trillionnium.desktop.d2i-guest-acceptance.v2",
+  "status": "FAIL",
+  "reason": "${reason//\"/\\\"}",
+  "network_enabled": false,
+  "product_agent_port_enabled": false
+}
+EOF
+  poweroff_guest
+  exit 1
+}
+
+json_true() {
+  local key=$1
+  local path=$2
+  grep -Eq "\"${key}\"[[:space:]]*:[[:space:]]*true" "$path"
+}
+
+json_uint() {
+  local key=$1
+  local path=$2
+  sed -n "s/.*\"${key}\"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p" "$path" | head -n1
+}
+
+systemctl is-active --quiet systemd-udevd.service || fail udev_inactive
+systemctl is-active --quiet dbus.service || fail dbus_inactive
+systemctl is-active --quiet systemd-logind.service || fail logind_inactive
+systemctl is-active --quiet trillionnium-d1-wayland.service || fail wayland_inactive
+systemctl is-active --quiet trillionnium-d2i-runtime.service || fail headed_runtime_inactive
+
+runtime="$out/runtime-ready.json"
+screenshot="$out/servo-content-recovered.png"
+pre="$out/process-topology-pre-fault.json"
+terminated="$out/process-topology-post-termination.json"
+recovered="$out/process-topology-post-recovery.json"
+selected="$out/content-process-identity.json"
+signal="$out/content-sigkill-sent.json"
+for path in "$runtime" "$screenshot" "$pre" "$terminated" "$recovered" "$selected" "$signal"; do
+  test -s "$path" || fail "missing_$(basename "$path")"
+done
+
+grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY"' "$runtime" \
+  || fail runtime_status_not_pass
+grep -Eq '"content_surface_limit"[[:space:]]*:[[:space:]]*1' "$runtime" \
+  || fail content_surface_limit_changed
+grep -Eq '"content_generation"[[:space:]]*:[[:space:]]*2' "$runtime" \
+  || fail recovery_generation_missing
+grep -Eq '"frame_count"[[:space:]]*:[[:space:]]*[2-9][0-9]*' "$runtime" \
+  || fail recovered_frame_missing
+for key in page_input_verified ime_path_exercised signal_sent \
+  content_process_termination_observed zero_content_processes_after_termination \
+  replacement_process_distinct actual_content_process_crash_proven; do
+  json_true "$key" "$runtime" || fail "runtime_${key}_not_true"
+done
+
+grep -Eq '"ime_composition_events_sent"[[:space:]]*:[[:space:]]*3' "$runtime" \
+  || fail ime_composition_not_complete
+grep -Eq '"external_network_used"[[:space:]]*:[[:space:]]*false' "$runtime" \
+  || fail runtime_network_claim_changed
+popup_denied=$(json_uint popup_requests_denied "$runtime")
+nav_denied=$(json_uint external_navigation_requests_denied "$runtime")
+[[ ${popup_denied:-0} -ge 1 ]] || fail popup_denial_missing
+[[ ${nav_denied:-0} -ge 1 ]] || fail external_navigation_denial_missing
+
+grep -Eq '"active_process_count"[[:space:]]*:[[:space:]]*1' "$pre" \
+  || fail pre_fault_process_cardinality_changed
+grep -Eq '"active_process_count"[[:space:]]*:[[:space:]]*0' "$terminated" \
+  || fail zero_process_intermediate_missing
+grep -Eq '"active_process_count"[[:space:]]*:[[:space:]]*1' "$recovered" \
+  || fail replacement_process_cardinality_changed
+
+old_pid=$(json_uint pid "$selected")
+old_start=$(json_uint start_time_ticks "$selected")
+signal_pid=$(json_uint pid "$signal")
+signal_start=$(json_uint start_time_ticks "$signal")
+new_pid=$(json_uint replacement_content_process_pid "$runtime")
+new_start=$(json_uint replacement_content_process_start_time_ticks "$runtime")
+[[ ${old_pid:-0} -gt 1 && ${old_start:-0} -gt 0 ]] || fail selected_identity_invalid
+[[ $old_pid == "$signal_pid" && $old_start == "$signal_start" ]] || fail signal_identity_mismatch
+[[ ${new_pid:-0} -gt 1 && ${new_start:-0} -gt 0 ]] || fail replacement_identity_invalid
+[[ $new_pid != "$old_pid" || $new_start != "$old_start" ]] || fail replacement_identity_reused
+
+grep -Eq '"signal"[[:space:]]*:[[:space:]]*"SIGKILL"' "$signal" \
+  || fail signal_receipt_invalid
+
+[[ ! -e /etc/hepta/enable-agent-port ]] || fail release_marker_present
+[[ ! -S /run/hepta/browserd/agent.sock ]] || fail product_agent_socket_present
+if systemctl is-active --quiet hepta-browserd-agent.socket; then
+  fail product_agent_socket_active
+fi
+non_loopback=$(find /sys/class/net -mindepth 1 -maxdepth 1 ! -name lo -printf '%f\n')
+[[ -z "$non_loopback" ]] || fail non_loopback_network_device_present
+
+journalctl --no-pager -u trillionnium-d2i-runtime.service > "$out/runtime-journal.txt" || true
+runtime_sha=$(sha256sum "$runtime" | awk '{print $1}')
+screenshot_sha=$(sha256sum "$screenshot" | awk '{print $1}')
+wayland_sha=$(sha256sum /run/hepta-desktop/weston.log | awk '{print $1}')
+actual_crash_callbacks=$(json_uint actual_crash_callbacks "$runtime")
+actual_crash_callbacks=${actual_crash_callbacks:-0}
+
+cat > "$result" <<EOF
+{
+  "schema": "trillionnium.desktop.d2i-guest-acceptance.v2",
+  "status": "PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE",
+  "pid1": "systemd",
+  "udev_active": true,
+  "dbus_active": true,
+  "logind_active": true,
+  "headless_wayland_active": true,
+  "headed_servo_runtime_completed": true,
+  "trusted_chrome_survived_recovery": true,
+  "content_surface_limit": 1,
+  "page_input_verified": true,
+  "ime_path_exercised": true,
+  "popup_denied": true,
+  "external_navigation_denied": true,
+  "sigkill_delivered": true,
+  "exact_old_identity_absent": true,
+  "zero_process_intermediate": true,
+  "replacement_identity_distinct": true,
+  "crash_callback_required": false,
+  "actual_crash_callbacks": $actual_crash_callbacks,
+  "actual_content_process_crash_proven": true,
+  "product_agent_port_default_disabled": true,
+  "product_agent_port_socket_absent": true,
+  "network_enabled": false,
+  "runtime_ready_sha256": "$runtime_sha",
+  "recovery_screenshot_sha256": "$screenshot_sha",
+  "wayland_log_sha256": "$wayland_sha",
+  "release_ready": false
+}
+EOF
+
+printf 'TRILLIONNIUM_D2I_ACCEPTANCE_PASS\n'
+poweroff_guest
