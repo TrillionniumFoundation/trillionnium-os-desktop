@@ -55,6 +55,30 @@ class D2IContractTests(unittest.TestCase):
         self.assertIn("pr_synthetic_merge", runner)
         self.assertIn("exact_main_push", runner)
 
+    def test_combined_gate_reclaims_servo_tree_and_preserves_failures(self) -> None:
+        workflow = (ROOT / ".github/workflows/d2i-integrated-image.yml").read_text()
+        reclaim = (ROOT / "tools/reclaim_d2i_servo_workspace.sh").read_text()
+        diagnostics = (ROOT / "tools/collect_d2i_failure_diagnostics.sh").read_text()
+
+        reclaim_step = "bash tools/reclaim_d2i_servo_workspace.sh"
+        d1_step = "bash tools/run_d2i_integrated_image.sh run-d1"
+        diagnostics_step = "bash tools/collect_d2i_failure_diagnostics.sh"
+        self.assertIn(reclaim_step, workflow)
+        self.assertIn(diagnostics_step, workflow)
+        self.assertLess(workflow.index(reclaim_step), workflow.index(d1_step))
+        self.assertIn("continue-on-error: true", workflow)
+
+        self.assertIn("rm -rf --one-file-system servo-source", reclaim)
+        self.assertIn("headed-runtime digest changed", reclaim)
+        self.assertIn("PASS_SERVO_BUILD_TREE_RECLAIMED", reclaim)
+        self.assertIn("available_bytes_before", reclaim)
+        self.assertIn("available_bytes_after", reclaim)
+
+        self.assertIn("/tmp/trillionnium-d1", diagnostics)
+        self.assertIn("MAX_BYTES = 4 * 1024 * 1024", diagnostics)
+        self.assertIn("tail_truncated", diagnostics)
+        self.assertIn("diagnostics_only_not_qualification_evidence", diagnostics)
+
     def test_runtime_and_host_verifier_reject_callback_as_authority(self) -> None:
         transform = (ROOT / "tools/prepare_d2i_runtime.py").read_text()
         boot_transform = (ROOT / "tools/prepare_d2i_boot_runner.py").read_text()
