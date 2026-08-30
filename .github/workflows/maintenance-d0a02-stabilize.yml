@@ -8,17 +8,20 @@ on:
       - ".github/workflows/maintenance-d0a02-stabilize.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: maintenance-d0a02-stabilize
   cancel-in-progress: false
 
 jobs:
-  export-final-workflow:
+  stage-final-workflow-object:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: codex/d0a02-proof-soundness-v4
     steps:
       - name: Check out exact D0A-02 candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -27,41 +30,74 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Generate final permanent read-only gate
+      - name: Create final workflow commit object without moving a ref
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin main
+          git fetch --no-tags origin main "$BRANCH"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BRANCH)"
           git show origin/main:tools/maintenance_stabilize_d0a02.py > "$RUNNER_TEMP/stabilize.py"
           python3 - <<'PY'
           import importlib.util
           import os
           from pathlib import Path
 
-          path = Path(os.environ['RUNNER_TEMP']) / 'stabilize.py'
-          spec = importlib.util.spec_from_file_location('stabilize', path)
+          helper = Path(os.environ['RUNNER_TEMP']) / 'stabilize.py'
+          spec = importlib.util.spec_from_file_location('stabilize', helper)
           module = importlib.util.module_from_spec(spec)
           assert spec.loader is not None
           spec.loader.exec_module(module)
           module.patch_workflow()
-          PY
-          ! grep -q 'contents: write' .github/workflows/servo-headed-runtime.yml
-          ! grep -Eq 'git[[:space:]]+push|gh[[:space:]]+workflow[[:space:]]+run' \
-            .github/workflows/servo-headed-runtime.yml
-          grep -q 'servo_pipeline_panic_callback_required' \
-            .github/workflows/servo-headed-runtime.yml
-          grep -q '"Cargo.toml"' .github/workflows/servo-headed-runtime.yml
-          grep -q '"Cargo.lock"' .github/workflows/servo-headed-runtime.yml
-          mkdir -p final-workflow/.github/workflows
-          cp .github/workflows/servo-headed-runtime.yml \
-            final-workflow/.github/workflows/servo-headed-runtime.yml
 
-      - name: Upload exact final workflow
+          path = Path('.github/workflows/servo-headed-runtime.yml')
+          text = path.read_text(encoding='utf-8')
+          start = text.index('on:\n')
+          end = text.index('\npermissions:\n')
+          trigger = '''on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+'''
+          path.write_text(text[:start] + trigger + text[end:], encoding='utf-8')
+          PY
+
+          workflow=.github/workflows/servo-headed-runtime.yml
+          ! grep -q 'paths:' <(sed -n '1,/^permissions:/p' "$workflow")
+          ! grep -q 'contents: write' "$workflow"
+          ! grep -Eq 'git[[:space:]]+push|gh[[:space:]]+workflow[[:space:]]+run' "$workflow"
+          grep -q 'servo_pipeline_panic_callback_required' "$workflow"
+          grep -q "promotion_authoritative.*exact_main_push" "$workflow"
+
+          base_commit=$(git rev-parse HEAD)
+          base_tree=$(git rev-parse 'HEAD^{tree}')
+          blob_sha=$(jq -Rs '{content: ., encoding: "utf-8"}' "$workflow" |
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" --input - --jq .sha)
+          tree_sha=$(jq -n \
+            --arg base_tree "$base_tree" \
+            --arg blob_sha "$blob_sha" \
+            '{base_tree:$base_tree,tree:[{path:".github/workflows/servo-headed-runtime.yml",mode:"100644",type:"blob",sha:$blob_sha}]}' |
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/trees" --input - --jq .sha)
+          commit_sha=$(jq -n \
+            --arg message "ci(d0a02): install permanent read-only causal qualification gate" \
+            --arg tree "$tree_sha" \
+            --arg parent "$base_commit" \
+            '{message:$message,tree:$tree,parents:[$parent]}' |
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/commits" --input - --jq .sha)
+          {
+            printf 'base_commit=%s\n' "$base_commit"
+            printf 'base_tree=%s\n' "$base_tree"
+            printf 'blob_sha=%s\n' "$blob_sha"
+            printf 'tree_sha=%s\n' "$tree_sha"
+            printf 'commit_sha=%s\n' "$commit_sha"
+          } | tee staged-commit.txt
+
+      - name: Upload staged object identity
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: d0a02-final-permanent-workflow
-          path: final-workflow
-          include-hidden-files: true
+          name: d0a02-staged-workflow-commit
+          path: staged-commit.txt
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
