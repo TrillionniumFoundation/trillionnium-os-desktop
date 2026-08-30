@@ -378,11 +378,16 @@ jobs:
           set -euo pipefail
           export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
           rustfmt --edition 2024 ports/servoshell/examples/trillionnium_headed_runtime.rs
-          cargo build --release --locked \
+          # The integrated image gate is qualification-only and must use
+          # the same debug profile as the independently passing headed runtime
+          # gate.  Keeping optimization out of this evidence path also avoids
+          # release-only Servo/Wayland startup faults being mistaken for D2I
+          # integration evidence; release packaging remains a later D8/D9 gate.
+          cargo build --locked \
             -p servoshell --example trillionnium_headed_runtime \
             --no-default-features --features bundled,gamepad,js_jit,max_log_level
           mkdir -p /tmp/trillionnium-d2i
-          cp target/release/examples/trillionnium_headed_runtime \
+          cp target/debug/examples/trillionnium_headed_runtime \
             /tmp/trillionnium-d2i/hepta-workspace-runtime
           chmod 0755 /tmp/trillionnium-d2i/hepta-workspace-runtime
           sha256sum /tmp/trillionnium-d2i/hepta-workspace-runtime \
