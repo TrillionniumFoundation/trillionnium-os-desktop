@@ -55,6 +55,30 @@ class D2IContractTests(unittest.TestCase):
         self.assertIn("pr_synthetic_merge", runner)
         self.assertIn("exact_main_push", runner)
 
+    def test_d1_subreceipt_receives_complete_identity_interface(self) -> None:
+        runner = (ROOT / "tools/run_d2i_integrated_image.sh").read_text()
+        required_exports = [
+            "TESTED_SHA",
+            "TESTED_TREE_SHA",
+            "BASE_SHA",
+            "CANDIDATE_HEAD_SHA",
+            "EVIDENCE_ROLE",
+            "PROMOTION_AUTHORITATIVE",
+            "TESTED_TOPOLOGY",
+            "SOURCE_REF",
+            "SOURCE_REF_NAME",
+        ]
+        for name in required_exports:
+            self.assertIn(f"printf '{name}=%s", runner)
+        self.assertIn("topology=pr_merge_commit", runner)
+        self.assertIn("topology=exact_push_commit", runner)
+        self.assertIn("topology=manual_checkout", runner)
+        self.assertIn("run_d1_final_qualification.sh enforce-evidence", runner)
+        self.assertLess(
+            runner.index("printf 'SOURCE_REF=%s"),
+            runner.index("step_run_d1()"),
+        )
+
     def test_combined_gate_reclaims_servo_tree_and_preserves_failures(self) -> None:
         workflow = (ROOT / ".github/workflows/d2i-integrated-image.yml").read_text()
         reclaim = (ROOT / "tools/reclaim_d2i_servo_workspace.sh").read_text()
