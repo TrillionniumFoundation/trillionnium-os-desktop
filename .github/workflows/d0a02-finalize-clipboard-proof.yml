@@ -1,0 +1,68 @@
+name: d0a02-finalize-clipboard-proof
+
+on:
+  push:
+    branches:
+      - codex/d0a02-proof-soundness-v4
+    paths:
+      - ".github/workflows/d0a02-finalize-clipboard-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: d0a02-finalize-clipboard-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  converge:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the current remote head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Converge permanent clipboard proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$GITHUB_REF_NAME"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$GITHUB_REF_NAME)"
+          if [[ -f tools/materialize_d0a02_clipboard_roundtrip.py ]]; then
+            python3 tools/materialize_d0a02_clipboard_roundtrip.py
+          fi
+          test -f tools/validate_d0a02_clipboard_roundtrip.py
+          test -f docs/architecture/D0A02_CLIPBOARD_ROUNDTRIP.md
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt
+          rustfmt +1.97.1 --edition 2024 experiments/servo-headed-runtime/src/main.rs
+          python3 tools/validate_d0a02_proof_soundness.py
+          python3 tools/validate_d0a02_clipboard_roundtrip.py
+          python3 -m py_compile \
+            tools/validate_d0a02_proof_soundness.py \
+            tools/validate_d0a02_clipboard_roundtrip.py
+          ! grep -R --line-number --fixed-strings 'xclip' \
+            experiments/servo-headed-runtime/src/main.rs \
+            .github/workflows/servo-headed-runtime.yml
+
+      - name: Remove all one-shot publication surfaces and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f \
+            .github/workflows/d0a02-materialize-clipboard-roundtrip.yml \
+            .github/workflows/d0a02-one-shot-format-materialized-source.yml \
+            .github/workflows/d0a02-finalize-clipboard-proof.yml \
+            tools/materialize_d0a02_clipboard_roundtrip.py
+          git add -A
+          test -n "$(git status --porcelain=v1)"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m 'test(d0a02): finalize Servo clipboard proof'
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          python3 tools/validate_d0a02_proof_soundness.py
+          python3 tools/validate_d0a02_clipboard_roundtrip.py
+          git push origin "HEAD:$GITHUB_REF_NAME"
