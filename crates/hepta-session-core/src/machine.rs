@@ -4,8 +4,8 @@ use hepta_browser_contracts::{BrowserErrorCode, ElementRef, error_for_freshness}
 use trillionnium_contract_core::{LeaseId, RevisionClock};
 
 use crate::types::{
-    ControlState, HumanLease, MAX_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent, SessionPhase,
-    TransitionError,
+    ControlSource, ControlState, HumanLease, MAX_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent,
+    SessionPhase, TransitionError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -20,6 +20,7 @@ pub struct SessionSnapshot {
 pub struct SessionMachine {
     control: ControlState,
     phase: SessionPhase,
+    pending_navigation_source: Option<ControlSource>,
     revisions: RevisionClock,
     human_lease: Option<HumanLease>,
 }
@@ -35,6 +36,7 @@ impl SessionMachine {
         Self {
             control: ControlState::Idle,
             phase: SessionPhase::Ready,
+            pending_navigation_source: None,
             revisions: RevisionClock::new(),
             human_lease: None,
         }
@@ -47,6 +49,11 @@ impl SessionMachine {
             revisions: self.revisions,
             human_lease: self.human_lease.clone(),
         }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn revisions_mut_for_test(&mut self) -> &mut RevisionClock {
+        &mut self.revisions
     }
 
     pub fn validate_element_ref(&self, element: &ElementRef) -> Result<(), BrowserErrorCode> {
@@ -90,9 +97,19 @@ impl SessionMachine {
                 self.control = ControlState::Idle;
             }
             SessionEvent::HumanFocusGained { lease_id, ttl_ms } => {
+                // Cancellation owns the session until reconciliation finishes.
+                // Do not allow a new human lease to be acquired after the
+                // current lease has been revoked by `CancelRequested`.
+                self.require_human_interaction_allowed()?;
                 if ttl_ms == 0 || ttl_ms > MAX_HUMAN_LEASE_TTL_MS {
                     return Err(TransitionError::InvalidLeaseTtl);
                 }
+                let expires_at_ms =
+                    now_ms
+                        .checked_add(ttl_ms)
+                        .ok_or(TransitionError::InvalidTransition(
+                            "human lease expiration overflowed",
+                        ))?;
                 if matches!(
                     self.control,
                     ControlState::AgentObserving | ControlState::AgentMutating
@@ -103,7 +120,7 @@ impl SessionMachine {
                 self.human_lease = Some(HumanLease {
                     lease_id,
                     acquired_at_ms: now_ms,
-                    expires_at_ms: now_ms.saturating_add(ttl_ms),
+                    expires_at_ms,
                 });
                 effects.push(SessionEffect::HumanLeaseGranted);
             }
@@ -111,8 +128,23 @@ impl SessionMachine {
                 lease_id,
                 extend_by_ms,
             } => {
+                self.require_human_interaction_allowed()?;
                 let expired = {
-                    let lease = self.require_matching_lease(&lease_id)?;
+                    let lease = self
+                        .human_lease
+                        .as_ref()
+                        .ok_or(TransitionError::HumanLeaseRequired)?;
+                    if lease.lease_id != lease_id {
+                        return Err(TransitionError::LeaseMismatch);
+                    }
+                    // Adapter-owned human/system navigation may return the
+                    // machine to `Idle` while retaining a lease for focus
+                    // cleanup.  A lease alone must never authorize input:
+                    // require the explicit ownership state before extending
+                    // it or admitting a human event.
+                    if self.control != ControlState::HumanActive {
+                        return Err(TransitionError::ControlConflict(self.control));
+                    }
                     now_ms >= lease.expires_at_ms
                 };
                 if expired {
@@ -121,18 +153,26 @@ impl SessionMachine {
                     effects.push(SessionEffect::HumanLeaseExpired);
                 } else {
                     let extension = extend_by_ms.min(MAX_HUMAN_LEASE_TTL_MS);
+                    let expires_at_ms =
+                        now_ms
+                            .checked_add(extension)
+                            .ok_or(TransitionError::InvalidTransition(
+                                "human lease expiration overflowed",
+                            ))?;
                     let lease = self.require_matching_lease(&lease_id)?;
-                    lease.expires_at_ms = now_ms.saturating_add(extension);
+                    lease.expires_at_ms = expires_at_ms;
                     effects.push(SessionEffect::HumanLeaseExtended);
                 }
             }
             SessionEvent::HumanFocusReleased { lease_id } => {
+                self.require_human_interaction_allowed()?;
                 self.require_matching_lease(&lease_id)?;
                 self.human_lease = None;
                 self.control = ControlState::Idle;
                 effects.push(SessionEffect::HumanLeaseReleased);
             }
             SessionEvent::ImeStarted { lease_id } => {
+                self.require_human_interaction_allowed()?;
                 self.require_matching_lease(&lease_id)?;
                 if self.control != ControlState::HumanActive {
                     return Err(TransitionError::ControlConflict(self.control));
@@ -140,6 +180,7 @@ impl SessionMachine {
                 self.control = ControlState::HumanImeComposing;
             }
             SessionEvent::ImeEnded { lease_id } => {
+                self.require_human_interaction_allowed()?;
                 self.require_matching_lease(&lease_id)?;
                 if self.control != ControlState::HumanImeComposing {
                     return Err(TransitionError::ControlConflict(self.control));
@@ -147,32 +188,59 @@ impl SessionMachine {
                 self.control = ControlState::HumanActive;
             }
             SessionEvent::DomCommitted => {
-                self.revisions.on_dom_commit();
+                self.revisions
+                    .try_on_dom_commit()
+                    .map_err(|_error| TransitionError::RevisionExhausted)?;
                 effects.push(SessionEffect::MutationEpochAdvanced);
             }
             SessionEvent::SemanticSnapshotPublished => {
-                self.revisions.on_semantic_snapshot();
+                self.revisions
+                    .try_on_semantic_snapshot()
+                    .map_err(|_error| TransitionError::RevisionExhausted)?;
                 effects.push(SessionEffect::SemanticSnapshotAdvanced);
             }
-            SessionEvent::NavigationStarted { .. } => {
+            SessionEvent::NavigationStarted { source } => {
                 self.require_ready()?;
+                // Agent navigation is an active operation and must acquire
+                // the same exclusive control as page actions.  Human/system
+                // adapters retain their existing transition semantics; D4
+                // owns their preemption and focus policy.
+                if source == ControlSource::Agent {
+                    self.require_idle()?;
+                    self.control = ControlState::AgentNavigating;
+                }
+                self.pending_navigation_source = Some(source);
                 self.phase = SessionPhase::NavigationPending;
             }
             SessionEvent::NavigationCommitted => {
                 if self.phase != SessionPhase::NavigationPending {
                     return Err(TransitionError::PhaseConflict(self.phase));
                 }
-                self.revisions.on_navigation_commit();
+                if self.pending_navigation_source == Some(ControlSource::Agent)
+                    && self.control != ControlState::AgentNavigating
+                {
+                    return Err(TransitionError::ControlConflict(self.control));
+                }
+                self.revisions
+                    .try_on_navigation_commit()
+                    .map_err(|_error| TransitionError::RevisionExhausted)?;
                 self.phase = SessionPhase::Ready;
                 self.control = ControlState::Idle;
+                self.pending_navigation_source = None;
                 effects.push(SessionEffect::DocumentGenerationAdvanced);
             }
             SessionEvent::NavigationFailed => {
                 if self.phase != SessionPhase::NavigationPending {
                     return Err(TransitionError::PhaseConflict(self.phase));
                 }
+                if self.pending_navigation_source == Some(ControlSource::Agent)
+                    && self.control != ControlState::AgentNavigating
+                {
+                    return Err(TransitionError::ControlConflict(self.control));
+                }
                 self.phase = SessionPhase::Ready;
                 self.control = ControlState::Idle;
+                self.pending_navigation_source = None;
             }
             SessionEvent::ModalOpened => {
                 self.require_ready()?;
@@ -199,6 +267,16 @@ impl SessionMachine {
                     return Err(TransitionError::PhaseConflict(self.phase));
                 }
                 self.phase = SessionPhase::Cancelling;
+                // Any pending navigation is now being reconciled under the
+                // cancellation boundary; its terminal adapter event must not
+                // be able to resurrect the old ownership marker.
+                self.pending_navigation_source = None;
+                // Cancellation is a hard ownership boundary.  Revoke a human
+                // lease immediately so an already-issued lease cannot continue
+                // sending input while an Agent operation is reconciled.  Keep
+                // Agent control intact until `CancelCompleted` so adapters can
+                // finish the in-flight operation's cleanup path.
+                self.revoke_human_lease();
             }
             SessionEvent::CancelCompleted => {
                 if self.phase != SessionPhase::Cancelling {
@@ -206,11 +284,18 @@ impl SessionMachine {
                 }
                 self.phase = SessionPhase::Ready;
                 self.control = ControlState::Idle;
+                self.pending_navigation_source = None;
+                // Defensive cleanup keeps this transition fail closed even if
+                // a future adapter populated a lease during reconciliation.
+                self.revoke_human_lease();
             }
             SessionEvent::BrowserCrashed => {
-                self.revisions.on_process_recovery();
+                self.revisions
+                    .try_on_process_recovery()
+                    .map_err(|_error| TransitionError::RevisionExhausted)?;
                 self.phase = SessionPhase::Recovering;
                 self.control = ControlState::Idle;
+                self.pending_navigation_source = None;
                 self.human_lease = None;
                 effects.push(SessionEffect::AllReferencesInvalidated);
             }
@@ -239,6 +324,7 @@ impl SessionMachine {
             SessionEvent::Close => {
                 self.phase = SessionPhase::Closed;
                 self.control = ControlState::Idle;
+                self.pending_navigation_source = None;
                 self.human_lease = None;
                 effects.push(SessionEffect::SessionClosed);
             }
@@ -259,6 +345,28 @@ impl SessionMachine {
             Ok(())
         } else {
             Err(TransitionError::ControlConflict(self.control))
+        }
+    }
+
+    fn require_human_interaction_allowed(&self) -> Result<(), TransitionError> {
+        if self.phase == SessionPhase::Cancelling {
+            Err(TransitionError::PhaseConflict(self.phase))
+        } else if self.pending_navigation_source == Some(ControlSource::Agent) {
+            Err(TransitionError::PhaseConflict(
+                SessionPhase::NavigationPending,
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn revoke_human_lease(&mut self) {
+        self.human_lease = None;
+        if matches!(
+            self.control,
+            ControlState::HumanActive | ControlState::HumanImeComposing
+        ) {
+            self.control = ControlState::Idle;
         }
     }
 

@@ -61,6 +61,56 @@ pub trait BrowserRequestHandler {
     ) -> Result<HandlerOutcome, AgentPortError>;
 }
 
+/// Durable lifecycle hook around one admitted BrowserActor operation.
+///
+/// `requested` and `dispatched` run before the handler. `completed` runs only
+/// after a bounded canonical response has been constructed and hashed, but
+/// before transport commit. Any observer failure is fail-closed. If execution
+/// may have started and no terminal record can be written, recovery sees the
+/// last durable `dispatched` event and must not automatically replay a
+/// potential external effect.
+pub trait OperationLifecycleObserver {
+    fn requested(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+
+    fn dispatched(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+
+    fn completed(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+        _response: &BrowserResponse,
+        _canonical_response_sha256: &str,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+
+    fn interrupted(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+        _error: &AgentPortError,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct NoopOperationLifecycleObserver;
+
+impl OperationLifecycleObserver for NoopOperationLifecycleObserver {}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServiceEvidence {
     pub peer: PeerIdentity,
@@ -81,7 +131,36 @@ pub fn serve_one<H: BrowserRequestHandler>(
     server_ceiling: Duration,
     handler: &mut H,
 ) -> Result<ServiceEvidence, AgentPortError> {
-    serve_one_with_nonce_source(stream, peer_policy, OsNonceSource, server_ceiling, handler)
+    let mut observer = NoopOperationLifecycleObserver;
+    serve_one_with_nonce_source_and_observer(
+        stream,
+        peer_policy,
+        OsNonceSource,
+        server_ceiling,
+        handler,
+        &mut observer,
+    )
+}
+
+pub fn serve_one_with_observer<H, O>(
+    stream: UnixStream,
+    peer_policy: PeerPolicy,
+    server_ceiling: Duration,
+    handler: &mut H,
+    observer: &mut O,
+) -> Result<ServiceEvidence, AgentPortError>
+where
+    H: BrowserRequestHandler,
+    O: OperationLifecycleObserver,
+{
+    serve_one_with_nonce_source_and_observer(
+        stream,
+        peer_policy,
+        OsNonceSource,
+        server_ceiling,
+        handler,
+        observer,
+    )
 }
 
 pub fn serve_one_with_nonce_source<S, H>(
@@ -94,6 +173,30 @@ pub fn serve_one_with_nonce_source<S, H>(
 where
     S: NonceSource,
     H: BrowserRequestHandler,
+{
+    let mut observer = NoopOperationLifecycleObserver;
+    serve_one_with_nonce_source_and_observer(
+        stream,
+        peer_policy,
+        nonce_source,
+        server_ceiling,
+        handler,
+        &mut observer,
+    )
+}
+
+pub fn serve_one_with_nonce_source_and_observer<S, H, O>(
+    stream: UnixStream,
+    peer_policy: PeerPolicy,
+    nonce_source: S,
+    server_ceiling: Duration,
+    handler: &mut H,
+    observer: &mut O,
+) -> Result<ServiceEvidence, AgentPortError>
+where
+    S: NonceSource,
+    H: BrowserRequestHandler,
+    O: OperationLifecycleObserver,
 {
     if server_ceiling.is_zero() {
         return Err(AgentPortError::DeadlineExceeded);
@@ -134,15 +237,56 @@ where
     };
 
     context.remaining()?;
-    let outcome = handler.handle(&context, &request)?;
+    observer.requested(&context, &request)?;
+    // A lifecycle record has been admitted once `requested` returns.  If the
+    // deadline expires before the dispatch marker can be written, close that
+    // admission explicitly so an observer cannot retain an orphaned
+    // in-flight/requested record.
+    if let Err(error) = context.remaining() {
+        observer.interrupted(&context, &request, &error)?;
+        return Err(error);
+    }
+    observer.dispatched(&context, &request)?;
+    // The same rule applies after the durable dispatch marker: a deadline
+    // boundary before handler entry is still an interrupted operation, not a
+    // silent early return with an unresolved receipt.
+    if let Err(error) = context.remaining() {
+        observer.interrupted(&context, &request, &error)?;
+        return Err(error);
+    }
+
+    let outcome = match handler.handle(&context, &request) {
+        Ok(outcome) => outcome,
+        Err(error) => {
+            observer.interrupted(&context, &request, &error)?;
+            return Err(error);
+        }
+    };
 
     // A synchronous handler may return after its budget. Such a result is
     // discarded and no response frame is committed.
-    context.remaining()?;
-    let response = bind_response(&request, outcome)?;
+    if let Err(error) = context.remaining() {
+        observer.interrupted(&context, &request, &error)?;
+        return Err(error);
+    }
+    let response = match bind_response(&request, outcome) {
+        Ok(response) => response,
+        Err(error) => {
+            observer.interrupted(&context, &request, &error)?;
+            return Err(error);
+        }
+    };
     let response_ok = response.outcome.is_ok();
-    let encoded = encode_response(&response)?;
+    let encoded = match encode_response(&response) {
+        Ok(encoded) => encoded,
+        Err(error) => {
+            let error = AgentPortError::Codec(error);
+            observer.interrupted(&context, &request, &error)?;
+            return Err(error);
+        }
+    };
     let response_sha256 = sha256_hex(&encoded);
+    observer.completed(&context, &request, &response, &response_sha256)?;
     connection.send_response(request_frame.sequence, encoded, context.remaining()?)?;
 
     Ok(ServiceEvidence {
@@ -547,6 +691,108 @@ mod tests {
             self.0.fetch_add(1, Ordering::SeqCst);
             Ok(HandlerOutcome::Success(JsonObject::new()))
         }
+    }
+
+    struct DeadlineObserver {
+        wait_after_requested: bool,
+        events: Vec<&'static str>,
+    }
+
+    impl DeadlineObserver {
+        fn wait_for_expiry(&self, context: &DispatchContext) {
+            while context.remaining().is_ok() {
+                thread::yield_now();
+            }
+        }
+    }
+
+    impl OperationLifecycleObserver for DeadlineObserver {
+        fn requested(
+            &mut self,
+            context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<(), AgentPortError> {
+            self.events.push("requested");
+            if self.wait_after_requested {
+                self.wait_for_expiry(context);
+            }
+            Ok(())
+        }
+
+        fn dispatched(
+            &mut self,
+            context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<(), AgentPortError> {
+            self.events.push("dispatched");
+            if !self.wait_after_requested {
+                self.wait_for_expiry(context);
+            }
+            Ok(())
+        }
+
+        fn interrupted(
+            &mut self,
+            _context: &DispatchContext,
+            _request: &BrowserRequest,
+            error: &AgentPortError,
+        ) -> Result<(), AgentPortError> {
+            assert!(matches!(error, AgentPortError::DeadlineExceeded));
+            self.events.push("interrupted");
+            Ok(())
+        }
+    }
+
+    fn assert_deadline_interrupts_after_lifecycle_event(wait_after_requested: bool) {
+        let server_ceiling = Duration::from_millis(50);
+        let client_timeout = Duration::from_secs(2);
+        let (client_stream, server_stream) = UnixStream::pair().expect("socketpair");
+        let client_policy = policy(&client_stream);
+        let server_policy = policy(&server_stream);
+        let server = thread::spawn(move || {
+            let counter = Arc::new(AtomicUsize::new(0));
+            let mut handler = CountingHandler(Arc::clone(&counter));
+            let mut observer = DeadlineObserver {
+                wait_after_requested,
+                events: Vec::new(),
+            };
+            let result = serve_one_with_nonce_source_and_observer(
+                server_stream,
+                server_policy,
+                FixedNonceSource([0x66; NONCE_BYTES]),
+                server_ceiling,
+                &mut handler,
+                &mut observer,
+            );
+            (result, observer.events, counter.load(Ordering::SeqCst))
+        });
+        let mut client = ClientConnection::connect(client_stream, client_policy, client_timeout)
+            .expect("client connect");
+        client
+            .send_request(
+                encode_request(&health_request()).expect("encode"),
+                client_timeout,
+            )
+            .expect("send request");
+        drop(client);
+        let (result, events, invocation_count) = server.join().expect("server join");
+        assert!(matches!(result, Err(AgentPortError::DeadlineExceeded)));
+        assert_eq!(invocation_count, 0);
+        if wait_after_requested {
+            assert_eq!(events, ["requested", "interrupted"]);
+        } else {
+            assert_eq!(events, ["requested", "dispatched", "interrupted"]);
+        }
+    }
+
+    #[test]
+    fn deadline_after_requested_is_recorded_as_interrupted() {
+        assert_deadline_interrupts_after_lifecycle_event(true);
+    }
+
+    #[test]
+    fn deadline_after_dispatched_is_recorded_as_interrupted() {
+        assert_deadline_interrupts_after_lifecycle_event(false);
     }
 
     #[test]

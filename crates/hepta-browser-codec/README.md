@@ -11,6 +11,7 @@ SHA-256 evidence inputs.
 
 It deliberately does **not** create a listener, dispatch a BrowserActor, start
 Servo, grant a capability, or authorize an external effect. The current source
-has passed the repository's static cross-contract audit and 27-vector
-independent reference, but Rust 1.93 formatting, Clippy, tests, and browserd
-self-check remain unexecuted until a trusted exact-head runner is available.
+has passed the repository's static cross-contract audit, the 27-vector
+independent reference, and the recorded Rust 1.93 host validation. Exact-head
+CI must rerun after every source or contract change; no listener or dispatch
+claim follows from these checks.

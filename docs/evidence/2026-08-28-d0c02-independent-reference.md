@@ -1,18 +1,31 @@
 # D0C-02 independent Agent transport reference evidence
 
+> **HISTORICAL BASELINE / STALE_EVIDENCE:** This reference run records the
+> independent Python transport oracle at its original checkpoint. The bound
+> Rust host result and contract metadata are historical; rerun the exact-head
+> gate before using either result for current promotion.
+
+> **SUPERSEDED_HISTORICAL:** The unexecuted-Rust wording below describes the
+> initial snapshot. Current Rust host validation and claim status are recorded
+> in `docs/evidence/2026-08-28-d0c02-authenticated-uds.md` and the machine
+> evidence under `docs/evidence/generated/`.
+
 **Date:** 2026-08-28  
 **Scope:** wire-contract reference and local AF_UNIX behavior only  
 **Product listener:** not created  
 **Browser payload semantics:** not interpreted  
-**Rust execution gate:** still unexecuted
+**Rust execution gate:** historical host result exists; it is stale for the
+current candidate
+**Evidence lifecycle:** `STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN`
 
 ## Purpose
 
-The Rust 1.93 hosted execution path is unavailable because the private-repository
-GitHub jobs fail before runner assignment. This evidence therefore adds a
-second implementation of the fixed transport contract using only the Python
-standard library. It does not replace the Rust format, Clippy, test or
-`hepta-browserd --self-check` merge gate.
+At this checkpoint the private-repository GitHub jobs failed before runner
+assignment, so this evidence added a second implementation of the fixed
+transport contract using only the Python standard library. A later historical
+Rust host result is recorded separately; this reference remains independent
+and does not replace the Rust format, Clippy, test or `hepta-browserd
+--self-check` merge gate.
 
 ## Executed environment
 

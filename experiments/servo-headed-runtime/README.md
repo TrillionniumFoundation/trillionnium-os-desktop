@@ -24,9 +24,10 @@ script-thread panic as a process crash. The trusted parent enumerates `/proc`
 and requires exactly one direct child whose canonical executable is identical
 to the parent binary and whose NUL-delimited command line contains
 `--content-process`. Only that PID is recorded and sent `SIGKILL`; zero or
-multiple candidates fail closed. Servo must then surface `notify_crashed`, the
-parent-owned window and trusted chrome must remain alive, and generation 2 must
-be created through the normal `WebViewBuilder` path.
+multiple candidates fail closed. Servo may surface `notify_crashed` as
+diagnostic telemetry, but that callback is not required for the external
+SIGKILL proof. The parent-owned window and trusted chrome must remain alive,
+and generation 2 must be created through the normal `WebViewBuilder` path.
 
 Every asynchronous `WebViewDelegate` transition that can satisfy or advance a
 qualification predicate explicitly posts `AppEvent::Drive`. This includes input

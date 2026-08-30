@@ -2,6 +2,11 @@
   "schema": "trillionnium.desktop.receipt-journal-contract.v1",
   "status": "SOURCE_CANDIDATE_NO_BROWSER_DISPATCH",
   "owner": "hepta-session-core::receipt_journal",
+  "receipt_envelope_schema": {
+    "path": "contracts/receipt.v1.schema.json",
+    "sha256": "8610d2e9dd8ccc72b9803b2a51704aa282ccd96f50d19ac33074060e8cfc0eed",
+    "version_policy": "active_2026-08-29-d6_plus_historical_2026-08-28-d5_only"
+  },
   "format": {
     "byte_order": "big_endian",
     "segment_magic_ascii": "HPTJRNL1",
@@ -70,6 +75,13 @@
     "secret_redacted_persists_detail": false,
     "redacted_export_includes_sensitive_detail": false,
     "retention_deletes_unexported_segments": false
+  },
+  "exports": {
+    "public_receipt_envelope": "export_redacted_jsonl",
+    "public_receipt_envelope_schema": "contracts/receipt.v1.schema.json",
+    "public_receipt_envelope_lifecycle": "requested_and_dispatched_are_aggregated_into_one_terminal_envelope",
+    "public_receipt_envelope_unresolved": "fail_closed_until_interrupted_or_indeterminate_terminal_record",
+    "forensic_lifecycle_export": "export_journal_redacted_jsonl"
   },
   "claim_ceiling": {
     "browser_actor_bound": false,

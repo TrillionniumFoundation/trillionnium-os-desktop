@@ -26,7 +26,13 @@
     "trusted_chrome_survives_content_crash": true,
     "crash_placeholder": true,
     "new_session_generation_required": true,
-    "new_frame_required_after_recovery": true
+    "new_frame_required_after_recovery": true,
+    "recovering_input_policy": {
+      "content_pointer": "drop",
+      "content_keyboard_focus": "deny",
+      "content_navigation": "deny",
+      "trusted_chrome_input": "allowed"
+    }
   },
   "source_gate": {
     "rust_crate": "crates/hepta-workspace-composition",

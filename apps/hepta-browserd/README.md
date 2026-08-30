@@ -9,6 +9,7 @@ network operation.
 cargo run -p hepta-browserd -- --self-check
 ```
 
-The first production-shaped listener is a later D0C-2/D3 deliverable and must
+The connected carrier and contract checks are host-validated in D0C-02 through
+D0C-04. A production-shaped listener is still a later D3 deliverable and must
 bind peer credentials, a per-session nonce, bounded frames, deadlines, and the
 machine-readable browser API contract before accepting mutations.

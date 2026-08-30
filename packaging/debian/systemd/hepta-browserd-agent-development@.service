@@ -1,0 +1,52 @@
+[Unit]
+Description=TrillionniumOS Desktop development-profile AgentPort connection
+Documentation=https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+ConditionPathExists=/etc/hepta/enable-agent-port-development
+Requires=hepta-browserd-agent-development.socket
+After=hepta-browserd-agent-development.socket
+
+[Service]
+Type=exec
+User=hepta-browserd
+Group=hepta-browserd
+SupplementaryGroups=hepta-agent
+ExecStart=/usr/libexec/hepta-agent-port-developmentd --profile development
+EnvironmentFile=-/etc/hepta/agent-port-development.conf
+StandardInput=socket
+StandardOutput=journal
+StandardError=journal
+Restart=no
+RuntimeMaxSec=25s
+TimeoutStopSec=2s
+UMask=0077
+
+# Development activation retains the production custody sandbox.  The actor
+# runtime itself is loopback-fixture-only and has no external-effect authority.
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateNetwork=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=default
+ProcSubset=all
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RemoveIPC=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service pidfd_open
+SystemCallFilter=~@mount @raw-io @reboot @swap @privileged @resources @obsolete @debug
+DevicePolicy=closed
+ReadWritePaths=/run/hepta/browserd /var/lib/hepta-browserd/development

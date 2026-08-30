@@ -1,0 +1,118 @@
+{
+  "schema": "trillionnium.desktop.d2i-integrated-image.v1",
+  "status": "IMPLEMENTED_CANDIDATE_REQUIRES_MACHINE_EVIDENCE",
+  "work_package": "D2I-01",
+  "dependencies": [
+    "D0A-02",
+    "D1-01"
+  ],
+  "image": {
+    "base": "exact reproducible D1 ext4 image",
+    "runtime_injection": "deterministic exact headed runtime binary plus bounded systemd qualification overlay and one external crash helper",
+    "independent_preparations": 2,
+    "byte_for_byte_equality_required": true,
+    "package_lock_must_remain_unchanged": true
+  },
+  "source_binding": {
+    "repository_tree": "tree_sha is the authoritative identity for the exact checked-out Git tree",
+    "input_digests": {
+      "scope": "all tracked files selected by the D2I-01 invalidation pathspecs",
+      "generated_from": "manifests/gates.v1.json",
+      "exhaustive_for_scope": true
+    },
+    "external_inputs": {
+      "servo": "canonical repository plus exact lowercase commit recorded in the preparation receipt",
+      "e2fsprogs": "canonical repository plus exact commit and version recorded in the envelope",
+      "host_environment": "not hermetic; runner identity and tool receipts remain separate"
+    },
+    "workflow_mutation_policy": {
+      "repository_write": false,
+      "scanner": "tools/finalize_d1_evidence.py:workflow_contains_git_mutation",
+      "forbidden_git_operations": [
+        "push",
+        "update-ref",
+        "receive-pack",
+        "git-push",
+        "git-update-ref",
+        "git-receive-pack"
+      ]
+    }
+  },
+  "boot": {
+    "machine": "q35",
+    "acceleration": "tcg",
+    "network": "none",
+    "pid1": "systemd",
+    "display_server": "Weston headless Wayland",
+    "runtime_user": "hepta-desktop",
+    "product_agent_port_default_disabled": true
+  },
+  "runtime": {
+    "engine": "exact pinned Servo",
+    "trusted_chrome": "native window decorations",
+    "logical_content_surface_limit": 1,
+    "input_claim": "image-local Servo dispatch; D0A-02 separately proves headed-host native input",
+    "page_input_result_required": true,
+    "ime_composition_sequence_required": [
+      "start",
+      "update",
+      "end"
+    ],
+    "popup_denial_required": true,
+    "external_navigation_denial_required": true,
+    "fault_mechanism": "external SIGKILL of exact PID/start-time identity",
+    "zero_process_intermediate_required": true,
+    "distinct_replacement_identity_required": true,
+    "servo_crash_callback_required": false,
+    "recovery_generation_required": 2,
+    "recovery_screenshot_required": true,
+    "external_network_allowed": false
+  },
+  "fault_injection": {
+    "mechanism": "external-systemd-helper",
+    "injector_count": 1,
+    "runtime_internal_injector": false,
+    "receipt": "content-sigkill-sent.json",
+    "arm_marker": "content-crash-ready",
+    "topology_proof": {
+      "content_process_direct_child": true,
+      "intermediate_processes": 0,
+      "pre_fault_active_content_processes": 1,
+      "post_termination_active_content_processes": 0,
+      "post_recovery_active_content_processes": 1
+    }
+  },
+  "claim_ceiling": {
+    "candidate_can_prove_same_image_d1_plus_headed_servo": true,
+    "actual_content_process_crash_can_be_proven_without_callback": true,
+    "actual_content_process_crash_currently_proven": false,
+    "external_browsing_or_effects": false,
+    "product_agent_port_enabled": false,
+    "secure_boot": false,
+    "hardware_readiness": false,
+    "release_readiness": false
+  },
+  "promotion_requires": [
+    "two_deterministic_integrated_images_byte_equal",
+    "exact_head_d1_pipeline_pass",
+    "exact_head_d2i_qemu_pass",
+    "systemd_udev_dbus_logind_active",
+    "headless_wayland_active",
+    "headed_servo_window_created",
+    "trusted_chrome_survives_recovery",
+    "one_logical_content_surface",
+    "page_input_verified",
+    "ime_start_update_end_verified",
+    "product_agent_port_default_disabled",
+    "qemu_network_none",
+    "sigkill_success_bound_to_exact_pid_start_time",
+    "old_identity_absent",
+    "zero_process_intermediate",
+    "distinct_replacement_identity",
+    "digest_bound_machine_evidence_committed",
+    "permanent_workflow_repository_mutation_scan",
+    "independent_review",
+    "protected_main",
+    "exact_main_rerun_after_merge"
+  ]
+}

@@ -1,8 +1,25 @@
 # D0C-04 connected AgentPort Rust source evidence
 
+> **HISTORICAL BASELINE / STALE_EVIDENCE:** The recorded Rust 1.93 host
+> result is bound to `5abd71db79b75e400c1c1d7cb0eac85a68041cae`. Current
+> source checks remain useful, but the workspace and AgentPort integration
+> inputs changed after that run; an exact-candidate-head host rerun is required
+> before any promotion.
+
+> **SUPERSEDED_HISTORICAL:** The source-candidate/UNEXECUTED paragraphs below
+> are retained as an audit snapshot. The later host-validation section and
+> `docs/evidence/generated/d0c04-rust193-host-result.json` record the prior
+> historical run; neither is current evidence, and no listener or BrowserActor
+> claim is implied.
+
 **Date:** 2026-08-28  
 **Claim level:** source candidate plus static and inherited reference evidence  
 **Merge readiness:** not merge-ready
+**Evidence freshness:** `STALE_EVIDENCE`
+**Merge-ready machine flag:** `false`
+**Stale reason:** Host result `5abd71db79b75e400c1c1d7cb0eac85a68041cae` was
+recorded before the current candidate tree; run the AgentPort Rust 1.93 gate on
+the exact candidate head before promotion.
 
 The candidate implements an already-connected AF_UNIX path, authenticated
 transport composition, strict canonical decoding before dispatch, exactly-one
@@ -34,7 +51,7 @@ visible frame, external navigation authority, external effect, Debian image or
 release claim.
 
 
-## Host-validation promotion
+## Historical host-validation promotion
 
 Product tree `5abd71db79b75e400c1c1d7cb0eac85a68041cae` passed exact Rust 1.93.0 formatting, Clippy with
 warnings denied, all 45 workspace tests, and the integrated 10-check browserd
@@ -45,3 +62,5 @@ bounds. No listener, BrowserActor, Servo call, or external-effect authority was
 introduced.
 
 Machine evidence: `docs/evidence/generated/d0c04-rust193-host-result.json`.
+This is immutable historical evidence and is not merge-ready for the current
+candidate; rerun the gate on the exact candidate head before promotion.

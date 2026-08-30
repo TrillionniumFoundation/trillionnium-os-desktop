@@ -1,9 +1,17 @@
 # D0A-02 headed Servo runtime evidence
 
+> **HISTORICAL SNAPSHOT / STALE_EVIDENCE:** This artifact is bound to source
+> head `fe0ea6169127ce1f7950618b55374d83834a462c`. The active PR #33 candidate
+> supersedes that snapshot; rerun `servo-headed-runtime` on the exact
+> candidate head before promotion or an exact-main claim.
+
 **Evidence date:** 2026-08-30  
 **Gate:** `D0A-02`  
 **Evidence tier:** `headed_host`  
 **Status:** `PASS_HEADED_LOCAL_FIXTURE_ONLY`  
+**Evidence lifecycle:** `STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN`
+**Evidence freshness:** `STALE_EVIDENCE`
+**Merge readiness:** `merge_ready: false` (historical evidence only)
 **Candidate source head:** `fe0ea6169127ce1f7950618b55374d83834a462c`  
 **Base main:** `bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1`  
 **Tested merge SHA:** `0df9b9c15f51d12f34ef1af288dfae5a009f073f`  
@@ -65,6 +73,7 @@ observable teardown debt.
 
 ## Promotion rule
 
-This evidence promotion commit must itself pass all exact-head gates. After
-merge, the same source and headed-runtime corpus must pass on exact main before
-`D0A-02` becomes integrated truth.
+This historical snapshot is not merge-ready. The active PR #33 candidate must
+rerun the same source and headed-runtime corpus on its exact head, then pass
+all exact-head gates. After merge, the corpus must pass again on exact main
+before `D0A-02` becomes integrated truth.

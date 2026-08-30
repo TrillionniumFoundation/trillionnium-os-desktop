@@ -166,6 +166,71 @@ fn content_keyboard_focus_requires_a_live_content_surface() {
 }
 
 #[test]
+fn recovering_content_rejects_focus_and_navigation() {
+    let mut state = state();
+    attach(&mut state);
+    state
+        .apply(WorkspaceEvent::ContentCrashed {
+            surface_id: surface(),
+        })
+        .unwrap();
+    state
+        .apply(WorkspaceEvent::BeginContentRecovery {
+            requested_session_generation: 2,
+        })
+        .unwrap();
+
+    let before_focus = state.snapshot();
+    assert_eq!(
+        state
+            .apply(WorkspaceEvent::KeyboardFocusRequested {
+                target: SurfaceTarget::Content,
+            })
+            .unwrap_err(),
+        CompositionError::ContentCrashed
+    );
+    assert_eq!(state.snapshot(), before_focus);
+
+    let before_navigation = state.snapshot();
+    assert_eq!(
+        state
+            .apply(WorkspaceEvent::ExistingContentNavigationRequested)
+            .unwrap_err(),
+        CompositionError::ContentCrashed
+    );
+    assert_eq!(state.snapshot(), before_navigation);
+}
+
+#[test]
+fn recovering_content_drops_pointer_input_until_replacement_frame() {
+    let mut state = state();
+    attach(&mut state);
+    state
+        .apply(WorkspaceEvent::ContentCrashed {
+            surface_id: surface(),
+        })
+        .unwrap();
+    state
+        .apply(WorkspaceEvent::BeginContentRecovery {
+            requested_session_generation: 2,
+        })
+        .unwrap();
+
+    let dropped = state
+        .apply(WorkspaceEvent::PointerMoved { x: 10, y: 100 })
+        .unwrap();
+    assert_eq!(dropped, vec![WorkspaceEffect::DropPointerOutsideWorkspace]);
+    assert_eq!(state.snapshot().pointer_owner, InputOwner::None);
+
+    // Trusted chrome remains interactive while content is recovering.
+    let chrome = state
+        .apply(WorkspaceEvent::PointerMoved { x: 10, y: 10 })
+        .unwrap();
+    assert_eq!(chrome, vec![WorkspaceEffect::RoutePointerToTrustedChrome]);
+    assert_eq!(state.snapshot().pointer_owner, InputOwner::TrustedChrome);
+}
+
+#[test]
 fn ime_is_owned_only_by_content_keyboard_focus() {
     let mut state = state();
     attach(&mut state);
@@ -364,6 +429,40 @@ fn recovery_does_not_reuse_the_old_presentable_frame() {
             session_generation: 2,
         })
         .unwrap();
+    assert!(!state.composition_frame().content_presentable);
+}
+
+#[test]
+fn recovering_surface_cannot_publish_a_frame_before_recovered() {
+    let mut state = state();
+    attach(&mut state);
+    state
+        .apply(WorkspaceEvent::ContentCrashed {
+            surface_id: surface(),
+        })
+        .unwrap();
+    state
+        .apply(WorkspaceEvent::BeginContentRecovery {
+            requested_session_generation: 2,
+        })
+        .unwrap();
+
+    assert_eq!(
+        state
+            .apply(WorkspaceEvent::ContentFrameCommitted {
+                surface_id: surface(),
+                document_generation: 2,
+                frame_sha256: digest('e'),
+            })
+            .unwrap_err(),
+        CompositionError::ContentCrashed
+    );
+    assert!(matches!(
+        state.snapshot().content,
+        ContentLifecycle::Recovering {
+            requested_session_generation: 2
+        }
+    ));
     assert!(!state.composition_frame().content_presentable);
 }
 

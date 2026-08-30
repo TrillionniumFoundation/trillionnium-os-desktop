@@ -1,6 +1,10 @@
 {
   "schema": "trillionnium.desktop.agent-port-custody.v1",
   "status": "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER",
+  "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+  "evidence_freshness": "STALE_EVIDENCE",
+  "merge_ready": false,
+  "stale_reason": "D0C-05 host result 7be7121b1d2593a0e708ec9ade189ef84ab245da was recorded before the current candidate tree. Rerun agent-port-custody on the exact candidate head, then update the bound evidence and merge_ready flag under independent review.",
   "work_package": "D0C-05",
   "socket": {
     "address_family": "AF_UNIX",
@@ -81,6 +85,11 @@
     "external_effect_authority": false
   },
   "host_validation": {
+    "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+    "evidence_freshness": "STALE_EVIDENCE",
+    "merge_ready": false,
+    "reason": "The recorded systemd custody host result is a historical baseline. Static custody and claim-ceiling checks remain available, but the exact-head custody gate must be rerun before promotion.",
+    "stale_reason": "D0C-05 host result 7be7121b1d2593a0e708ec9ade189ef84ab245da was recorded before the current candidate tree. Rerun agent-port-custody on the exact candidate head, then update the bound evidence and merge_ready flag under independent review.",
     "validated_source_head": "7be7121b1d2593a0e708ec9ade189ef84ab245da",
     "runner": "ubuntu-24.04",
     "rust_version": "1.93.0",

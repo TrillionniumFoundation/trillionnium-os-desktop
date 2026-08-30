@@ -9,12 +9,32 @@ publish = false
 
 [features]
 default = []
-fixture = ["dep:hepta-agent-port"]
+fixture = [
+  "dep:hepta-agent-port",
+  "dep:hepta-browser-codec",
+]
+d1-qualification = [
+  "dep:hepta-agent-port",
+  "dep:hepta-browser-codec",
+  "hepta-peer-attestation/qualification-static-attestation",
+]
+# The development profile is intentionally opt-in.  It links the typed
+# BrowserActor and receipt observer into a separate binary; the default
+# product daemon remains fixture-free and fail-closed.
+development = [
+  "dep:hepta-agent-port",
+  "dep:hepta-browser-codec",
+  "dep:hepta-browser-actor",
+  "dep:hepta-session-core",
+]
 
 [dependencies]
 hepta-agent-port = { path = "../../crates/hepta-agent-port", optional = true }
 hepta-agent-transport = { path = "../../crates/hepta-agent-transport" }
+hepta-browser-codec = { path = "../../crates/hepta-browser-codec", optional = true }
+hepta-browser-actor = { path = "../../crates/hepta-browser-actor", optional = true }
 hepta-peer-attestation = { path = "../../crates/hepta-peer-attestation" }
+hepta-session-core = { path = "../../crates/hepta-session-core", optional = true }
 libc = "=0.2.186"
 
 [[bin]]
@@ -25,3 +45,18 @@ path = "src/main.rs"
 name = "hepta-agent-port-fixture"
 path = "src/bin/hepta-agent-port-fixture.rs"
 required-features = ["fixture"]
+
+[[bin]]
+name = "hepta-agent-port-qualificationd"
+path = "src/bin/hepta-agent-port-qualificationd.rs"
+required-features = ["d1-qualification"]
+
+[[bin]]
+name = "hepta-agent-d1-fixture"
+path = "src/bin/hepta-agent-d1-fixture.rs"
+required-features = ["d1-qualification"]
+
+[[bin]]
+name = "hepta-agent-port-developmentd"
+path = "src/bin/hepta-agent-port-developmentd.rs"
+required-features = ["development"]

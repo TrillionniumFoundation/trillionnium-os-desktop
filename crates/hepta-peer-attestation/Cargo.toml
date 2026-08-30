@@ -7,6 +7,14 @@ license.workspace = true
 repository.workspace = true
 publish = false
 
+[features]
+default = []
+# The static executable binding is reserved for the explicit D1
+# qualification graph.  Production and D3 development builds use the live
+# procfs attestation path and must not link this escape hatch.
+qualification-static-attestation = []
+
 [dependencies]
 hepta-agent-transport = { path = "../hepta-agent-transport" }
 libc = "=0.2.186"
+sha2 = "=0.10.9"

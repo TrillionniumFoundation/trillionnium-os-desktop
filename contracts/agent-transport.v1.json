@@ -1,6 +1,10 @@
 {
   "schema": "trillionnium.desktop.agent-transport.v1",
   "status": "HOST_VALIDATED_NO_LISTENER",
+  "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+  "evidence_freshness": "STALE_EVIDENCE",
+  "merge_ready": false,
+  "stale_reason": "Host result 786debc12aa8d790b231397c1a3341fbf89de080 was recorded before the current candidate tree. Run agent-transport-reference on the exact candidate head, then update the bound evidence and merge_ready flag under independent review.",
   "carrier": "AF_UNIX_STREAM",
   "protocol_magic_ascii": "HEPTA001",
   "protocol_version": 1,
@@ -50,9 +54,12 @@
     "workflow_run_id": 33167838644,
     "runner_image": "ubuntu-24.04@20260823.283.1",
     "rustc": "1.93.0 (254b59607 2026-01-19)",
-    "merge_ready": true,
+    "evidence_freshness": "STALE_EVIDENCE",
+    "merge_ready": false,
+    "reason": "The recorded Rust 1.93.0 host result is a historical baseline. The independent reference remains PASS, but exact-head host evidence must be rerun before promotion.",
     "python_reference_unit_tests": "PASS_15_OF_15",
-    "python_reference_self_check": "PASS"
+    "python_reference_self_check": "PASS",
+    "stale_reason": "Host result 786debc12aa8d790b231397c1a3341fbf89de080 was recorded before the current candidate tree. Run agent-transport-reference on the exact candidate head, then update the bound evidence and merge_ready flag under independent review."
   },
   "remaining_gates": [
     "dedicated_agent_and_browserd_service_uids",

@@ -1,5 +1,11 @@
 # D0C-04 execution checkpoint — 2026-08-28
 
+> **SUPERSEDED_HISTORICAL:** This checkpoint predates the Rust 1.93 host
+> validation and validator migration recorded in the current D0C-04 evidence.
+> Its source and claim ceiling remain historical; consult
+> `docs/architecture/CONNECTED_AGENT_PORT_BRIDGE.md` and
+> `manifests/project-state.v1.json` for current truth.
+
 The candidate connects the authenticated bounded transport and canonical Browser
 codec to an exactly-one typed handler boundary. It does not create or activate
 a listener.

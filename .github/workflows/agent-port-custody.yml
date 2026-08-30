@@ -4,20 +4,62 @@ on:
   pull_request:
     paths:
       - ".github/workflows/agent-port-custody.yml"
+      - ".github/**"
+      - ".github/workflows/**"
+      - "apps/**"
+      - "apps/hepta-browserd/**"
       - "apps/hepta-agent-portd/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/**"
+      - "contracts/**"
+      - "contracts/agent-port-bridge.v1.json"
+      - "docs/**"
+      - "manifests/**"
+      - "packaging/**"
+      - "experiments/**"
+      - "tests/**"
+      - "tools/**"
+      - "**/*.json"
+      - "README.md"
+      - "SECURITY.md"
+      - "CONTRIBUTING.md"
+      - "LICENSE"
+      - "Makefile"
+      - ".gitignore"
+      - ".editorconfig"
       - "crates/hepta-peer-attestation/**"
       - "packaging/debian/systemd/**"
       - "packaging/debian/sysusers.d/**"
       - "packaging/debian/tmpfiles.d/**"
       - "packaging/debian/systemd-preset/**"
       - "packaging/debian/hepta-agent-portd.install"
+      - "packaging/debian/development/**"
       - "contracts/agent-port-custody.v1.json"
       - "tools/verify_systemd_socket_custody.py"
+      - "tools/validate_d3_development_profile.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_d0c04_rust_product.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_systemd_custody_validator.py"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/repository-state.json"
+      - "manifests/d0c04-candidate.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/evidence/generated/d0c05-rust193-host-result.json"
+      - "docs/evidence/2026-08-28-d0c04-*.md"
+      - "docs/evidence/generated/d0c04-rust193-host-result.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "contracts/browser-actor.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "rust-toolchain.toml"
   push:
     branches:
       - main
@@ -25,20 +67,62 @@ on:
       - codex/d3-agentport-fixture-separation-v1
     paths:
       - ".github/workflows/agent-port-custody.yml"
+      - ".github/**"
+      - ".github/workflows/**"
+      - "apps/**"
+      - "apps/hepta-browserd/**"
       - "apps/hepta-agent-portd/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/**"
+      - "contracts/**"
+      - "contracts/agent-port-bridge.v1.json"
+      - "docs/**"
+      - "manifests/**"
+      - "packaging/**"
+      - "experiments/**"
+      - "tests/**"
+      - "tools/**"
+      - "**/*.json"
+      - "README.md"
+      - "SECURITY.md"
+      - "CONTRIBUTING.md"
+      - "LICENSE"
+      - "Makefile"
+      - ".gitignore"
+      - ".editorconfig"
       - "crates/hepta-peer-attestation/**"
       - "packaging/debian/systemd/**"
       - "packaging/debian/sysusers.d/**"
       - "packaging/debian/tmpfiles.d/**"
       - "packaging/debian/systemd-preset/**"
       - "packaging/debian/hepta-agent-portd.install"
+      - "packaging/debian/development/**"
       - "contracts/agent-port-custody.v1.json"
       - "tools/verify_systemd_socket_custody.py"
+      - "tools/validate_d3_development_profile.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_d0c04_rust_product.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_systemd_custody_validator.py"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/repository-state.json"
+      - "manifests/d0c04-candidate.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/evidence/generated/d0c05-rust193-host-result.json"
+      - "docs/evidence/2026-08-28-d0c04-*.md"
+      - "docs/evidence/generated/d0c04-rust193-host-result.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "contracts/browser-actor.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "rust-toolchain.toml"
 
 permissions:
   contents: read
@@ -54,6 +138,8 @@ jobs:
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
 
       - name: Install exact Rust toolchain
         run: |
@@ -64,8 +150,16 @@ jobs:
       - name: Audit repository, truth, custody, and fixture separation
         run: |
           python3 tools/validate_repository.py
+          python3 tools/validate_d0c04_rust_product.py
           python3 tools/validate_project_truth.py
           python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_d3_development_profile.py
+
+      - name: Run systemd custody parser regressions
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tests/test_systemd_custody_validator.py
+          python3 -m unittest tests.test_systemd_custody_validator -v
 
       - name: Verify systemd unit syntax and account mappings
         shell: bash
@@ -73,15 +167,19 @@ jobs:
           set -euo pipefail
           sudo mkdir -p /usr/libexec /usr/lib/sysusers.d
           sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-portd
+          sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-port-developmentd
           sudo install -m 0644 \
             packaging/debian/sysusers.d/trillionnium-desktop.conf \
             /usr/lib/sysusers.d/trillionnium-desktop.conf
           sudo systemd-sysusers /usr/lib/sysusers.d/trillionnium-desktop.conf
           systemd-analyze verify \
             packaging/debian/systemd/hepta-browserd-agent.socket \
-            packaging/debian/systemd/hepta-browserd-agent@.service
+            packaging/debian/systemd/hepta-browserd-agent@.service \
+            packaging/debian/systemd/hepta-browserd-agent-development.socket \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service
           sudo rm -f \
             /usr/libexec/hepta-agent-portd \
+            /usr/libexec/hepta-agent-port-developmentd \
             /usr/lib/sysusers.d/trillionnium-desktop.conf
 
       - name: Check default product graph and fixture feature graph
@@ -104,6 +202,10 @@ jobs:
             --features fixture \
             --bin hepta-agent-port-fixture \
             -- --self-check
+          cargo run --locked -p hepta-agent-portd \
+            --features development \
+            --bin hepta-agent-port-developmentd \
+            -- --profile development --self-check
 
       - name: Build and audit the production binary graph
         shell: bash
@@ -111,7 +213,10 @@ jobs:
           set -euo pipefail
           cargo clean -p hepta-agent-portd
           cargo build --release --locked -p hepta-agent-portd --bin hepta-agent-portd
+          cargo build --release --locked -p hepta-agent-portd \
+            --features development --bin hepta-agent-port-developmentd
           test -x target/release/hepta-agent-portd
+          test -x target/release/hepta-agent-port-developmentd
           test ! -e target/release/hepta-agent-port-fixture
           ! strings target/release/hepta-agent-portd | grep -F 'D0FixtureHandler'
           ! strings target/release/hepta-agent-portd | grep -F 'agent-port-fixture-self-check'
@@ -133,6 +238,8 @@ jobs:
           import json
           from pathlib import Path
           contract = json.loads(Path('contracts/agent-port-custody.v1.json').read_text())
+          evidence = json.loads(Path('docs/evidence/generated/d0c05-rust193-host-result.json').read_text())
+          docs = json.loads(Path('docs/MANIFEST.json').read_text())
           assert contract['activation']['enabled_by_default'] is False
           assert contract['activation']['marker_shipped'] is False
           assert contract['activation']['tcp_listener'] is False
@@ -146,4 +253,28 @@ jobs:
           assert separation['production_binary_references_fixture_handler'] is False
           assert separation['debian_package_installs_fixture_binary'] is False
           assert separation['external_effect_authority'] is False
+          current = (
+              contract.get('evidence_lifecycle') in (None, 'CURRENT')
+              and contract['host_validation'].get('evidence_lifecycle') in (None, 'CURRENT')
+              and contract['host_validation'].get('evidence_freshness') in (None, 'CURRENT')
+              and contract['host_validation'].get('merge_ready') is True
+              and evidence.get('evidence_lifecycle') in (None, 'CURRENT')
+              and evidence.get('evidence_freshness') in (None, 'CURRENT')
+              and evidence.get('merge_ready') is True
+          )
+          assert docs['agent_port_systemd_custody_exact_head_rust_validation'] is current
+          assert docs['agent_port_systemd_custody_host_evidence_freshness'] == (
+              'CURRENT' if current else 'STALE_EVIDENCE'
+          )
+          if not current:
+              historical_head = '7be7121b1d2593a0e708ec9ade189ef84ab245da'
+              assert contract['evidence_lifecycle'] == 'STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN'
+              assert contract['host_validation']['evidence_lifecycle'] == 'STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN'
+              assert contract['host_validation']['evidence_freshness'] == 'STALE_EVIDENCE'
+              assert contract['host_validation']['merge_ready'] is False
+              assert historical_head in contract['host_validation']['stale_reason']
+              assert evidence['evidence_lifecycle'] == 'STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN'
+              assert evidence['evidence_freshness'] == 'STALE_EVIDENCE'
+              assert evidence['merge_ready'] is False
+              assert historical_head in evidence['stale_reason']
           PY

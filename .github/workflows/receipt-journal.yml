@@ -9,13 +9,27 @@ on:
       - "Cargo.lock"
       - "crates/hepta-session-core/**"
       - "contracts/receipt-journal.v1.json"
+      - "contracts/receipt.v1.schema.json"
       - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
       - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
+      - "docs/evidence/generated/d0c06-rust193-host-result.json"
       - "manifests/cargo-external-allowlist.json"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/repository-state.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "docs/plan/**"
       - "tools/verify_receipt_journal.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_verify_receipt_journal.py"
+      - "rust-toolchain.toml"
   push:
     branches:
       - main
@@ -26,13 +40,27 @@ on:
       - "Cargo.lock"
       - "crates/hepta-session-core/**"
       - "contracts/receipt-journal.v1.json"
+      - "contracts/receipt.v1.schema.json"
       - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
       - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
+      - "docs/evidence/generated/d0c06-rust193-host-result.json"
       - "manifests/cargo-external-allowlist.json"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/repository-state.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "docs/plan/**"
       - "tools/verify_receipt_journal.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_verify_receipt_journal.py"
+      - "rust-toolchain.toml"
   workflow_dispatch:
 
 permissions:
@@ -49,6 +77,8 @@ jobs:
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
 
       - name: Install exact Rust toolchain
         run: |
@@ -61,6 +91,7 @@ jobs:
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/verify_receipt_journal.py
+          python3 -m unittest tests.test_verify_receipt_journal -v
 
       - name: Enforce formatting, all targets, and warnings
         run: |

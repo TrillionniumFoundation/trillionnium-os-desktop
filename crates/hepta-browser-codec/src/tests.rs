@@ -121,6 +121,65 @@ fn fixture_url_is_loopback_only() {
 }
 
 #[test]
+fn loopback_fixture_url_accepts_authority_only_and_query_forms() {
+    for url in [
+        "http://localhost",
+        "http://LOCALHOST:8080/fixture",
+        "http://127.0.0.1?ready=1",
+        "http://[::1]#fixture",
+    ] {
+        let encoded = format!(
+            "{{\"operation\":{{\"expected_document_generation\":1,\"target\":{{\"type\":\"local_http_fixture\",\"url\":\"{url}\"}},\"type\":\"page_navigate\"}},\"protocol\":\"trillionnium.desktop.browser-api.v1\",\"request_id\":\"fixture:url-form\",\"session_generation\":1,\"session_id\":\"session-1\"}}"
+        );
+        assert!(
+            decode_request(encoded.as_bytes()).is_ok(),
+            "fixture URL rejected: {url}"
+        );
+    }
+}
+
+#[test]
+fn loopback_fixture_url_rejects_noncanonical_scheme_and_empty_port() {
+    for url in [
+        "HTTP://localhost/",
+        "http://localhost:",
+        "http://localhost:000000/",
+        "http://localhost:65536/",
+        "http://[::1]:65536/",
+        "http://[::1%25lo]/",
+    ] {
+        let encoded = format!(
+            "{{\"operation\":{{\"expected_document_generation\":1,\"target\":{{\"type\":\"local_http_fixture\",\"url\":\"{url}\"}},\"type\":\"page_navigate\"}},\"protocol\":\"trillionnium.desktop.browser-api.v1\",\"request_id\":\"fixture:url-invalid\",\"session_generation\":1,\"session_id\":\"session-1\"}}"
+        );
+        assert!(
+            decode_request(encoded.as_bytes()).is_err(),
+            "unsafe URL accepted: {url}"
+        );
+    }
+}
+
+#[test]
+fn external_url_rejects_ambiguous_authority_forms() {
+    for url in [
+        "https://example.com\\evil",
+        "https://exa mple.com/",
+        "https://example.com:",
+        "https://example.com:000000/",
+        "https://[::1%25lo]/",
+        "https://[v1.fe]/",
+    ] {
+        let encoded_url = url.replace('\\', "\\\\");
+        let encoded = format!(
+            "{{\"operation\":{{\"expected_document_generation\":1,\"target\":{{\"type\":\"external_https\",\"url\":\"{encoded_url}\"}},\"type\":\"page_navigate\"}},\"protocol\":\"trillionnium.desktop.browser-api.v1\",\"request_id\":\"external:url-invalid\",\"session_generation\":1,\"session_id\":\"session-1\"}}"
+        );
+        assert!(
+            decode_request(encoded.as_bytes()).is_err(),
+            "unsafe URL accepted: {url}"
+        );
+    }
+}
+
+#[test]
 fn error_retry_policy_is_code_bound() {
     let encoded = br#"{"error":{"code":"indeterminate","message":"unknown after disconnect","retry":"caller_decides"},"ok":false,"protocol":"trillionnium.desktop.browser-api.v1","request_id":"error:1"}"#;
     assert!(matches!(
@@ -152,6 +211,49 @@ fn encoder_sorts_object_keys_recursively() {
     .unwrap();
     let encoded = String::from_utf8(encode_response(&response).unwrap()).unwrap();
     assert!(encoded.contains(r#""result":{"a":1,"z":2}"#));
+}
+
+#[test]
+fn constructed_json_values_enforce_depth_and_container_item_bounds() {
+    let mut nested = JsonValue::Null;
+    for _ in 0..=MAX_JSON_DEPTH {
+        nested = JsonValue::Array(vec![nested]);
+    }
+    assert!(matches!(
+        nested.canonical_bytes(),
+        Err(JsonError::NestingDepth {
+            maximum: MAX_JSON_DEPTH
+        })
+    ));
+
+    let oversized = JsonValue::Array(vec![JsonValue::Null; MAX_CONTAINER_ITEMS + 1]);
+    assert!(matches!(
+        oversized.canonical_bytes(),
+        Err(JsonError::ContainerItems {
+            maximum: MAX_CONTAINER_ITEMS
+        })
+    ));
+}
+
+#[test]
+fn constructed_json_values_enforce_string_and_key_bounds() {
+    let oversized_string = JsonValue::String("s".repeat(MAX_JSON_STRING_BYTES + 1));
+    assert!(matches!(
+        oversized_string.canonical_bytes(),
+        Err(JsonError::MessageSize {
+            maximum: MAX_JSON_STRING_BYTES,
+            ..
+        })
+    ));
+
+    let oversized_key = BTreeMap::from([("k".repeat(MAX_JSON_KEY_BYTES + 1), JsonValue::Null)]);
+    assert!(matches!(
+        JsonValue::Object(oversized_key).canonical_bytes(),
+        Err(JsonError::MessageSize {
+            maximum: MAX_JSON_KEY_BYTES,
+            ..
+        })
+    ));
 }
 
 #[test]

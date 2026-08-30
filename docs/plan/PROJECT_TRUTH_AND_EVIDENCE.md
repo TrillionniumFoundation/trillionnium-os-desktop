@@ -58,6 +58,16 @@ source-shape
 A tier may prove only its stated environment and artifact. A pass at one tier
 does not imply the next.
 
+Gate capability status and evidence freshness are orthogonal machine fields.
+`status` records the bounded implementation/capability outcome that was
+observed at the recorded head; `evidence_lifecycle`, `evidence_freshness`, and
+`merge_ready` record whether that observation is still current for promotion.
+Consequently a gate may retain `INTEGRATED_AND_EXACT_MAIN_VALIDATED` (or
+`MODULE_CLOSED_CANDIDATE`) as its capability status while carrying
+`STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN`, `STALE_EVIDENCE`, and
+`merge_ready: false`. Fresh exact-head evidence is required before promotion;
+staleness must never be represented by erasing or widening the claim ceiling.
+
 ## 5. Promotion transaction
 
 Promotion is atomic across:

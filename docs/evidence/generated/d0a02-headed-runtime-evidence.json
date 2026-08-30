@@ -1,5 +1,9 @@
 {
   "schema": "trillionnium.desktop.d0a02-headed-runtime-evidence.v1",
+  "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+  "evidence_freshness": "STALE_EVIDENCE",
+  "merge_ready": false,
+  "stale_reason": "D0A-02 headed-host evidence is bound to historical source head fe0ea6169127ce1f7950618b55374d83834a462c; the PR #33 candidate supersedes that snapshot. Rerun servo-headed-runtime on the exact candidate head before promotion.",
   "package": "D0A-02",
   "gate": "D0A-02",
   "status": "PASS_HEADED_LOCAL_FIXTURE_ONLY",
@@ -145,6 +149,10 @@
   "promotion": {
     "source_head_exact_run_passed": true,
     "evidence_committed": true,
+    "evidence_freshness": "STALE_EVIDENCE",
+    "merge_ready": false,
+    "superseded_by_pr": 33,
+    "stale_reason": "D0A-02 headed-host evidence is bound to historical source head fe0ea6169127ce1f7950618b55374d83834a462c; the PR #33 candidate supersedes that snapshot. Rerun servo-headed-runtime on the exact candidate head before promotion.",
     "exact_head_rerun_required_after_this_commit": true,
     "exact_main_rerun_required_after_merge": true
   }

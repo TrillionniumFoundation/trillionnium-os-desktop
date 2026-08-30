@@ -15,9 +15,10 @@ pub use queue::{ArbiterQueue, QueueError};
 pub use receipt_journal::{
     ArchivedSegment, CommittedRecord, Digest, EffectClass as ReceiptEffectClass, JournalError,
     JournalId, LifecycleState as ReceiptLifecycleState, OpenPolicy as JournalOpenPolicy,
-    PrivacyClass, ReceiptEvent, ReceiptJournal, ReceiptOutcome, ReceiptSource, RecoveredRecord,
-    RecoveryReport, ReplayDirective, SegmentHeader, SegmentSeal, TailStatus, UnresolvedReceipt,
-    export_redacted_jsonl, hex_digest, inspect_path as inspect_receipt_journal,
+    PrivacyClass, ReceiptEnvelope, ReceiptEvent, ReceiptJournal, ReceiptOutcome, ReceiptSource,
+    ReceiptStatus, RecoveredRecord, RecoveryReport, ReplayDirective, SegmentHeader, SegmentSeal,
+    TailStatus, UnresolvedReceipt, export_journal_redacted_jsonl, export_receipt_envelopes_jsonl,
+    export_redacted_jsonl, hex_digest, inspect_chain, inspect_path as inspect_receipt_journal,
     retention_candidates,
 };
 pub use types::{
