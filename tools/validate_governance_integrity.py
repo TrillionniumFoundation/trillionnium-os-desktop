@@ -4371,19 +4371,20 @@ def _shell_dynamic_mutates(command: str, *, depth: int) -> bool:
 
     # A command substitution assigned to a variable and then expanded as the
     # command word is an unresolved executable graph. Ordinary path
-    # assignments remain allowed.
-    for assignment in re.finditer(
-        r"(?m)(?:^|[;&|]\\s*)([A-Za-z_][A-Za-z0-9_]*)=\\$\\(",
-        command,
-    ):
+    # assignments remain allowed. Keep the pattern deliberately small and
+    # inspect command segments without relying on shell quoting semantics.
+    for assignment in re.finditer(r"([A-Za-z_][A-Za-z0-9_]*)=\$\(", command):
+        if assignment.start() > 0 and command[assignment.start() - 1] not in " \t;&|":
+            continue
         name = assignment.group(1)
         remainder = command[assignment.end() :]
-        if re.search(
-            rf"(?m)(?:^|[;&|]\\s*)[\\\"']?\\$\\{{?{re.escape(name)}\\}}?[\\\"']?(?:\\s|$)",
-            remainder,
-        ):
-            return True
-
+        for segment in re.split(r"[;&|]", remainder):
+            fields = segment.strip().split()
+            if not fields:
+                continue
+            first = fields[0].strip("\"'")
+            if first in {f"${name}", f"${{{name}}}"}:
+                return True
     # Brace expansion can synthesize an otherwise unregistered executable or
     # script path before the shell tokenizer sees command boundaries.
     if _shell_brace_expansion_mutates(command):
