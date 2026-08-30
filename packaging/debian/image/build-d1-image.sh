@@ -398,6 +398,16 @@ find "$rootfs" -xdev -print0 \
   | LC_ALL=C sort -z \
   | xargs -0r touch --no-dereference --date="@$source_epoch"
 
+python3 "$repo_root/tools/d1_rootfs_manifest.py" \
+  --root "$rootfs" \
+  --output "$artifacts/rootfs-content-manifest.json"
+rootfs_manifest_sha256=$(sha256sum \
+  "$artifacts/rootfs-content-manifest.json" | awk '{print $1}')
+rootfs_manifest_entries=$(jq -er '.entry_count' \
+  "$artifacts/rootfs-content-manifest.json")
+rootfs_manifest_entries_sha256=$(jq -er '.entries_sha256' \
+  "$artifacts/rootfs-content-manifest.json")
+
 tar \
   --sort=name \
   --format=pax \
@@ -468,6 +478,12 @@ result = {
     "path": "package-lock.tsv",
     "entries": $actual_count,
     "sha256": "$package_lock_sha256"
+  },
+  "rootfs_manifest": {
+    "path": "rootfs-content-manifest.json",
+    "entries": $rootfs_manifest_entries,
+    "entries_sha256": "$rootfs_manifest_entries_sha256",
+    "sha256": "$rootfs_manifest_sha256"
   },
   "rootfs_tar": {
     "path": "rootfs.tar",

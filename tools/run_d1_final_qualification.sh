@@ -8,36 +8,73 @@ tested_sha=$(git rev-parse HEAD)
 tree_sha=$(git rev-parse 'HEAD^{tree}')
 parent_line=$(git rev-list --parents -n 1 HEAD)
 parent_count=$(awk '{print NF - 1}' <<<"$parent_line")
-if [[ "$EVENT_NAME" == pull_request ]]; then
-  [[ "$parent_count" -eq 2 ]] || {
-    echo "pull-request qualification requires an exact two-parent merge object" >&2
+git fetch --no-tags origin main
+case "$GITHUB_EVENT_NAME" in
+  pull_request)
+    [[ "$parent_count" -eq 2 ]] || {
+      echo "pull-request qualification requires an exact two-parent merge object" >&2
+      exit 1
+    }
+    base_sha=$(git rev-parse HEAD^1)
+    candidate_head_sha=$(git rev-parse HEAD^2)
+    current_main=$(git rev-parse origin/main)
+    [[ "$base_sha" == "$current_main" ]] || {
+      echo "tested pull-request base is not the current main object" >&2
+      exit 1
+    }
+    [[ -n "${EXPECTED_PR_HEAD:-}" && "$candidate_head_sha" == "$EXPECTED_PR_HEAD" ]] || {
+      echo "tested second parent does not equal the exact pull-request head" >&2
+      exit 1
+    }
+    topology=pr_merge_commit
+    evidence_role=pr_synthetic_merge
+    promotion_authoritative=false
+    ;;
+  push)
+    [[ "$GITHUB_REF" == refs/heads/main ]] || {
+      echo "D1 push qualification is authoritative only on refs/heads/main" >&2
+      exit 1
+    }
+    [[ "$parent_count" -ge 1 ]] || {
+      echo "exact-main qualification requires a parent commit" >&2
+      exit 1
+    }
+    base_sha=$(git rev-parse HEAD^1)
+    candidate_head_sha=$tested_sha
+    topology=exact_push_commit
+    evidence_role=exact_main_push
+    promotion_authoritative=true
+    ;;
+  workflow_dispatch)
+    [[ "$parent_count" -ge 1 ]] || {
+      echo "manual qualification requires a parent commit" >&2
+      exit 1
+    }
+    base_sha=$(git rev-parse HEAD^1)
+    candidate_head_sha=$tested_sha
+    topology=manual_checkout
+    evidence_role=manual_non_authoritative
+    promotion_authoritative=false
+    ;;
+  *)
+    echo "unsupported D1 qualification event: $GITHUB_EVENT_NAME" >&2
     exit 1
-  }
-  base_sha=$(git rev-parse HEAD^1)
-  candidate_head_sha=$(git rev-parse HEAD^2)
-  [[ -n "$EXPECTED_PR_HEAD" && "$candidate_head_sha" == "$EXPECTED_PR_HEAD" ]] || {
-    echo "tested second parent does not equal the exact pull-request head" >&2
-    exit 1
-  }
-  topology=pr_merge_commit
-else
-  [[ "$parent_count" -ge 1 ]] || {
-    echo "push qualification requires a parent commit" >&2
-    exit 1
-  }
-  base_sha=$(git rev-parse HEAD^1)
-  candidate_head_sha=$tested_sha
-  topology=exact_push_commit
-fi
+    ;;
+esac
 {
   printf 'TESTED_SHA=%s\n' "$tested_sha"
   printf 'TESTED_TREE_SHA=%s\n' "$tree_sha"
   printf 'BASE_SHA=%s\n' "$base_sha"
   printf 'CANDIDATE_HEAD_SHA=%s\n' "$candidate_head_sha"
   printf 'TESTED_TOPOLOGY=%s\n' "$topology"
+  printf 'SOURCE_REF=%s\n' "$GITHUB_REF"
+  printf 'SOURCE_REF_NAME=%s\n' "$GITHUB_REF_NAME"
+  printf 'EVIDENCE_ROLE=%s\n' "$evidence_role"
+  printf 'PROMOTION_AUTHORITATIVE=%s\n' "$promotion_authoritative"
 } >> "$GITHUB_ENV"
-printf 'topology=%s\nbase=%s\ncandidate=%s\ntested=%s\ntree=%s\n' \
-  "$topology" "$base_sha" "$candidate_head_sha" "$tested_sha" "$tree_sha"
+printf 'role=%s\nauthoritative=%s\nref=%s\ntopology=%s\nbase=%s\ncandidate=%s\ntested=%s\ntree=%s\n' \
+  "$evidence_role" "$promotion_authoritative" "$GITHUB_REF" "$topology" \
+  "$base_sha" "$candidate_head_sha" "$tested_sha" "$tree_sha"
 }
 
 step_install_deps() {
@@ -58,6 +95,72 @@ sudo apt-get install -y --no-install-recommends \
   shellcheck \
   systemd
 sudo rm -rf /var/lib/apt/lists/*
+mkdir -p /tmp/trillionnium-d1/evidence
+python3 - <<'PY'
+from pathlib import Path
+import hashlib
+import json
+import os
+import platform
+import shutil
+import subprocess
+
+commands = [
+    'apt-get', 'chroot', 'cpio', 'dpkg', 'dpkg-query', 'gzip', 'locale',
+    'mmdebstrap', 'qemu-system-x86_64', 'rsync', 'sha256sum',
+    'systemd-sysusers', 'systemd-tmpfiles', 'tar', 'touch',
+]
+
+def digest(path: Path) -> str:
+    value = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            value.update(chunk)
+    return value.hexdigest()
+
+binaries = {}
+for command in commands:
+    resolved = shutil.which(command)
+    if resolved is None:
+        raise SystemExit(f'missing image-producing host command: {command}')
+    path = Path(resolved).resolve()
+    binaries[command] = {
+        'path': str(path),
+        'sha256': digest(path),
+        'bytes': path.stat().st_size,
+    }
+packages = subprocess.check_output(
+    ['dpkg-query', '-W', '-f=${binary:Package}\t${Version}\n'], text=True
+).splitlines()
+packages = sorted(line for line in packages if line.strip())
+canonical_packages = ('\n'.join(packages) + '\n').encode()
+os_release = {}
+for line in Path('/etc/os-release').read_text(encoding='utf-8').splitlines():
+    if '=' in line:
+        key, value = line.split('=', 1)
+        os_release[key] = value.strip('"')
+record = {
+    'schema': 'trillionnium.desktop.d1-host-toolchain.v1',
+    'runner': {
+        'os': os.environ.get('RUNNER_OS'),
+        'arch': os.environ.get('RUNNER_ARCH'),
+        'environment': os.environ.get('RUNNER_ENVIRONMENT'),
+        'image_os': os.environ.get('ImageOS'),
+        'image_version': os.environ.get('ImageVersion'),
+        'python': platform.python_version(),
+        'kernel': platform.release(),
+        'machine': platform.machine(),
+    },
+    'os_release': os_release,
+    'installed_package_count': len(packages),
+    'installed_packages_sha256': hashlib.sha256(canonical_packages).hexdigest(),
+    'installed_packages': packages,
+    'binaries': binaries,
+}
+Path('/tmp/trillionnium-d1/evidence/host-toolchain.json').write_text(
+    json.dumps(record, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+)
+PY
 }
 
 step_install_rust() {
@@ -104,16 +207,20 @@ python3 tools/validate_project_truth.py
 python3 -m unittest discover -s tests/d1 -p 'test_*.py' -v
 python3 -m py_compile \
   tools/compare_d1_builds.py \
+  tools/d1_rootfs_manifest.py \
+  tools/finalize_d1_evidence.py \
   tools/prepare_d1_inputs.py \
   tools/resolve_debian_snapshot.py \
-  tools/resolve_debian_snapshot_with_pinned_keys.py
+  tools/resolve_debian_snapshot_with_pinned_keys.py \
+  tools/verify_d1_artifact.py
 shellcheck -e SC2016,SC2054 \
   packaging/debian/image/build-d1-image.sh \
   packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-acceptance \
   packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-agent-fixture-launcher \
   tests/qemu/run-d1-boot-test.sh \
   tests/qemu/run-d1-pipeline.sh \
-  tools/build_pinned_e2fsprogs.sh
+  tools/build_pinned_e2fsprogs.sh \
+  tools/run_d1_final_qualification.sh
 cargo fmt --all --check
 cargo check --workspace --all-targets --locked
 cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
@@ -193,140 +300,18 @@ tests/qemu/run-d1-pipeline.sh \
 
 step_enforce_evidence() {
 set -euo pipefail
-python3 - <<'PY'
-from pathlib import Path
-import hashlib
-import json
-import os
-
-root = Path('/tmp/trillionnium-d1')
-evidence = root / 'evidence'
-pipeline = json.loads((root / 'pipeline-result.json').read_text())
-repro = json.loads((root / 'reproducibility-result.json').read_text())
-boot = json.loads((root / 'qemu/boot-result.json').read_text())
-acceptance = json.loads((root / 'qemu/acceptance.json').read_text())
-host_tool = json.loads((evidence / 'e2fsprogs-host-tool-result.json').read_text())
-product_check = json.loads((evidence / 'product-daemon-self-check-host.json').read_text())
-qualification_check = json.loads((evidence / 'd1-qualification-self-check-host.json').read_text())
-
-assert pipeline['status'] == 'PASS', pipeline
-assert repro['status'] == 'PASS_TWO_INDEPENDENT_BUILDS', repro
-assert repro['reproducible'] is True, repro
-assert boot['status'] == 'PASS_QEMU_PID1_WAYLAND_AND_AGENT_PORT', boot
-assert acceptance['schema'] == 'trillionnium.desktop.d1-acceptance.v2', acceptance
-assert acceptance['status'] == 'PASS', acceptance
-assert host_tool['status'] == 'PASS_PINNED_ISOLATED_HOST_TOOL', host_tool
-assert product_check['ok'] is True, product_check
-assert product_check['product_handler_connected'] is False, product_check
-assert product_check['fixture_handler_linked'] is False, product_check
-assert qualification_check['status'] == 'PASS', qualification_check
-assert qualification_check['qualification_only'] is True, qualification_check
-assert qualification_check['product_handler_connected'] is False, qualification_check
-
-claims = boot['claims']
-for key in [
-    'systemd_booted', 'udev_active', 'dbus_active', 'logind_active',
-    'headless_wayland_active', 'agent_port_default_disabled',
-    'agent_port_pid1_activation_validated', 'unauthorized_peer_denied',
-    'authorized_fixture_request', 'per_connection_teardown',
-    'connection_kill_recovered',
-]:
-    assert claims[key] is True, (key, claims.get(key))
-assert claims['network_enabled'] is False
-assert claims['servo_started'] is False
-assert claims['visible_window_created'] is False
-assert claims['secure_boot_qualified'] is False
-assert boot['release_marker_absent'] is True
-assert boot['clean_poweroff'] is True
-
-agent = acceptance['agent_port']
-for key in [
-    'qualification_only_server', 'product_daemon_fixture_free',
-    'marker_removed_before_poweroff', 'socket_removed_before_poweroff',
-]:
-    assert agent[key] is True, (key, agent.get(key))
-assert agent['product_handler_connected'] is False, agent
-assert agent['product_daemon_exercised_for_requests'] is False, agent
-assert agent['qualification_server_exec'] == \
-    '/usr/libexec/hepta-agent-d1-fixture --mode server', agent
-
-workflow = Path('.github/workflows/d1-final-qualification.yml')
-input_paths = [
-    Path('Cargo.lock'),
-    Path('rust-toolchain.toml'),
-    Path('apps/hepta-agent-portd/Cargo.toml'),
-    Path('apps/hepta-agent-portd/src/main.rs'),
-    Path('apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs'),
-    Path('manifests/debian-d1.lock.v1.json'),
-    Path('manifests/debian-d1.requirements.v1.json'),
-    Path('manifests/debian-d1.selection.json'),
-    Path('manifests/e2fsprogs-host-toolchain.v1.json'),
-    Path('packaging/debian/image/build-d1-image.sh'),
-    Path('packaging/debian/image/rootfs-overlay/etc/systemd/system/'
-         'hepta-browserd-agent@.service.d/10-d1-qualification-server.conf'),
-    Path('packaging/debian/image/rootfs-overlay/usr/local/libexec/'
-         'trillionnium-d1-acceptance'),
-    Path('packaging/debian/systemd/hepta-browserd-agent@.service'),
-    Path('tests/qemu/run-d1-boot-test.sh'),
-    Path('tests/qemu/run-d1-pipeline.sh'),
-]
-output_paths = [
-    evidence / 'product-cargo-tree.txt',
-    evidence / 'qualification-cargo-tree.txt',
-    evidence / 'product-daemon-self-check-host.json',
-    evidence / 'd1-qualification-self-check-host.json',
-    root / 'pipeline-result.json',
-    root / 'reproducibility-result.json',
-    root / 'qemu/boot-result.json',
-    root / 'qemu/acceptance.json',
-]
-summary = {
-    'schema': 'trillionnium.desktop.d1-final-qualification.v2',
-    'status': 'PASS',
-    'repository': os.environ['GITHUB_REPOSITORY'],
-    'event_name': os.environ['GITHUB_EVENT_NAME'],
-    'tested_topology': os.environ['TESTED_TOPOLOGY'],
-    'base_sha': os.environ['BASE_SHA'],
-    'candidate_head_sha': os.environ['CANDIDATE_HEAD_SHA'],
-    'tested_sha': os.environ['TESTED_SHA'],
-    'tree_sha': os.environ['TESTED_TREE_SHA'],
-    'workflow_sha256': hashlib.sha256(workflow.read_bytes()).hexdigest(),
-    'workflow_run_id': os.environ['GITHUB_RUN_ID'],
-    'workflow_run_attempt': int(os.environ['GITHUB_RUN_ATTEMPT']),
-    'input_digests': {
-        str(path): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in input_paths
-    },
-    'output_digests': {
-        str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in output_paths
-    },
-    'product_fixture_separation': {
-        'product_default_graph_fixture_free': True,
-        'qualification_feature': 'd1-qualification',
-        'qualification_binary': 'hepta-agent-d1-fixture',
-        'qualification_server_exec': agent['qualification_server_exec'],
-        'product_handler_connected': False,
-        'production_install_map_contains_qualification_binary': False,
-    },
-    'host_tool': host_tool,
-    'pipeline': pipeline,
-    'reproducibility': repro,
-    'boot': boot,
-    'acceptance': acceptance,
-    'claim_ceiling': {
-        'servo_started': False,
-        'visible_window_created': False,
-        'network_enabled_during_acceptance': False,
-        'secure_boot_qualified': False,
-        'product_agent_port_enabled': False,
-        'product_release_authorized': False,
-    },
-}
-(evidence / 'd1-final-qualification.json').write_text(
-    json.dumps(summary, indent=2, sort_keys=True) + '\n'
-)
-PY
+python3 tools/finalize_d1_evidence.py \
+  --repository "$GITHUB_WORKSPACE" \
+  --root /tmp/trillionnium-d1 \
+  --artifact-root /tmp/trillionnium-d1-artifact
+python3 tools/verify_d1_artifact.py /tmp/trillionnium-d1-artifact \
+  | tee /tmp/trillionnium-d1/evidence/offline-verification.json
+# Re-finalize so the independent verifier report is itself digest-bound.
+python3 tools/finalize_d1_evidence.py \
+  --repository "$GITHUB_WORKSPACE" \
+  --root /tmp/trillionnium-d1 \
+  --artifact-root /tmp/trillionnium-d1-artifact
+python3 tools/verify_d1_artifact.py /tmp/trillionnium-d1-artifact
 }
 
 case "${1:-}" in

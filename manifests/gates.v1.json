@@ -1,6 +1,4 @@
 {
-  "schema": "trillionnium.desktop.gate-registry.v1",
-  "plan_revision": "2026-08-29-d6",
   "evidence_tiers": [
     "source_shape",
     "host",
@@ -10,6 +8,587 @@
     "hardware",
     "signed_release"
   ],
+  "gates": [
+    {
+      "claim_ceiling": [
+        "no_runtime_promotion",
+        "no_activation_change"
+      ],
+      "evidence_tier": "host",
+      "id": "D0T-01",
+      "invalidation_paths": [
+        "manifests/project-state.v1.json",
+        "manifests/gates.v1.json",
+        "docs/MANIFEST.json",
+        "manifests/repository-state.json",
+        "docs/**",
+        "apps/hepta-browserd/src/lib.rs",
+        "tools/validate_project_truth.py"
+      ],
+      "prerequisites": [],
+      "required_commands": [
+        "python3 tools/validate_project_truth.py"
+      ],
+      "review_class": "security",
+      "stage": "truth",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "no_product_runtime_claim"
+      ],
+      "evidence_tier": "host",
+      "id": "D0T-02",
+      "invalidation_paths": [
+        ".github/workflows/**",
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "manifests/ci-action-pins.v1.json",
+        "tools/validate_project_truth.py"
+      ],
+      "prerequisites": [
+        "D0T-01"
+      ],
+      "required_commands": [
+        "python3 tools/validate_project_truth.py",
+        "cargo check --workspace --all-targets --locked",
+        "cargo clippy --workspace --all-targets --locked -- -D warnings",
+        "cargo test --workspace --all-targets --locked"
+      ],
+      "review_class": "security",
+      "stage": "ci",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "repository_settings_only",
+        "no_source_only_promotion"
+      ],
+      "evidence_tier": "source_shape",
+      "id": "D0T-03",
+      "invalidation_paths": [
+        ".github/CODEOWNERS",
+        "docs/release/**",
+        "repository:rulesets",
+        "repository:branch-protection",
+        "organization:teams"
+      ],
+      "prerequisites": [
+        "D0T-02"
+      ],
+      "required_commands": [
+        "capture protected-main, required-check, review-separation, and signing-dual-control settings evidence"
+      ],
+      "review_class": "security",
+      "stage": "repository_governance",
+      "status": "REPOSITORY_SETTING_REQUIRED"
+    },
+    {
+      "claim_ceiling": [
+        "no_later_stage_implication"
+      ],
+      "evidence_tier": "host",
+      "id": "D0R-01",
+      "invalidation_paths": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "tools/**",
+        ".github/workflows/**"
+      ],
+      "prerequisites": [],
+      "required_commands": [
+        "python3 tools/validate_repository.py",
+        "cargo check --workspace --all-targets --locked"
+      ],
+      "review_class": "standard",
+      "stage": "D0R",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "input_lock_only",
+        "no_image_claim"
+      ],
+      "evidence_tier": "host",
+      "id": "D0R-02",
+      "invalidation_paths": [
+        "manifests/**",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        ".github/workflows/**"
+      ],
+      "prerequisites": [
+        "D0R-01"
+      ],
+      "required_commands": [
+        "python3 tools/validate_repository.py"
+      ],
+      "review_class": "security",
+      "stage": "D0R",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "repository_checks_only"
+      ],
+      "evidence_tier": "host",
+      "id": "D0R-03",
+      "invalidation_paths": [
+        "tools/validate_repository.py",
+        "tools/validate_project_truth.py",
+        ".github/workflows/**"
+      ],
+      "prerequisites": [
+        "D0R-01",
+        "D0R-02"
+      ],
+      "required_commands": [
+        "python3 tools/validate_repository.py",
+        "python3 tools/validate_project_truth.py"
+      ],
+      "review_class": "standard",
+      "stage": "D0R",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "contracts_only"
+      ],
+      "evidence_tier": "host",
+      "id": "D0C-01",
+      "invalidation_paths": [
+        "contracts/**",
+        "crates/**",
+        "Cargo.lock"
+      ],
+      "prerequisites": [
+        "D0R-03"
+      ],
+      "required_commands": [
+        "cargo test --workspace --all-targets --locked"
+      ],
+      "review_class": "security",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "connected_stream_only",
+        "no_listener"
+      ],
+      "evidence_tier": "host",
+      "id": "D0C-02",
+      "invalidation_paths": [
+        "crates/hepta-agent-transport/**",
+        "contracts/agent-transport.v1.json",
+        "tests/transport/**",
+        ".github/workflows/agent-transport-reference.yml"
+      ],
+      "prerequisites": [
+        "D0C-01"
+      ],
+      "required_commands": [
+        "cargo test --locked -p hepta-agent-transport",
+        "python3 tools/agent_transport_reference.py"
+      ],
+      "review_class": "security",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "codec_only",
+        "no_dispatch"
+      ],
+      "evidence_tier": "host",
+      "id": "D0C-03",
+      "invalidation_paths": [
+        "crates/hepta-browser-codec/**",
+        "contracts/browser-*.json",
+        "tools/browser_codec_reference*",
+        ".github/workflows/browser-codec-reference.yml"
+      ],
+      "prerequisites": [
+        "D0C-01"
+      ],
+      "required_commands": [
+        "cargo test --locked -p hepta-browser-codec",
+        "python3 tools/browser_codec_reference.py"
+      ],
+      "review_class": "security",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "exactly_one_connected_request",
+        "no_browser_actor"
+      ],
+      "evidence_tier": "host",
+      "id": "D0C-04",
+      "invalidation_paths": [
+        "crates/hepta-agent-port/**",
+        "apps/hepta-agent-portd/**",
+        "Cargo.lock"
+      ],
+      "prerequisites": [
+        "D0C-02",
+        "D0C-03"
+      ],
+      "required_commands": [
+        "cargo test --locked -p hepta-agent-port"
+      ],
+      "review_class": "security",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "host_custody_only",
+        "default_disabled",
+        "no_booted_listener"
+      ],
+      "evidence_tier": "host",
+      "id": "D0C-05",
+      "invalidation_paths": [
+        "packaging/debian/systemd/**",
+        "crates/hepta-peer-attestation/**",
+        "apps/hepta-agent-portd/**",
+        ".github/workflows/agent-port-custody.yml"
+      ],
+      "prerequisites": [
+        "D0C-04"
+      ],
+      "required_commands": [
+        "cargo test --locked -p hepta-peer-attestation",
+        "cargo run --locked -p hepta-agent-portd --bin hepta-agent-portd -- --self-check"
+      ],
+      "review_class": "security",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "facts_only",
+        "no_execution",
+        "no_replay"
+      ],
+      "evidence_tier": "host",
+      "id": "D0C-06",
+      "invalidation_paths": [
+        "crates/hepta-session-core/**",
+        "contracts/receipt-journal.v1.json",
+        "tools/verify_receipt_journal.py",
+        ".github/workflows/receipt-journal.yml"
+      ],
+      "prerequisites": [
+        "D0C-01"
+      ],
+      "required_commands": [
+        "cargo test --locked -p hepta-session-core",
+        "python3 tools/verify_receipt_journal.py"
+      ],
+      "review_class": "security",
+      "stage": "D0C",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "pure_state_machine_only"
+      ],
+      "evidence_tier": "host",
+      "id": "D0A-00",
+      "invalidation_paths": [
+        "crates/hepta-session-core/**",
+        "docs/architecture/**"
+      ],
+      "prerequisites": [
+        "D0C-01"
+      ],
+      "required_commands": [
+        "cargo test --locked -p hepta-session-core"
+      ],
+      "review_class": "standard",
+      "stage": "D0A",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "compile_compatibility_only",
+        "no_visible_frame"
+      ],
+      "evidence_tier": "host",
+      "id": "D0A-01",
+      "invalidation_paths": [
+        "manifests/servo*.json",
+        "experiments/servo-embedder-probe/**",
+        "tools/qualify_servo_exact_pin*",
+        ".github/workflows/servo-exact-pin.yml"
+      ],
+      "prerequisites": [
+        "D0R-02"
+      ],
+      "required_commands": [
+        "run .github/workflows/servo-exact-pin.yml on the exact source head"
+      ],
+      "review_class": "security",
+      "stage": "D0A",
+      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED"
+    },
+    {
+      "claim_ceiling": [
+        "local_fixture_only",
+        "no_agent_port",
+        "no_external_effects",
+        "no_image",
+        "no_release"
+      ],
+      "evidence_tier": "headed_host",
+      "id": "D0A-02",
+      "invalidation_paths": [
+        "experiments/servo-headed-runtime/**",
+        "crates/hepta-workspace-composition/**",
+        "manifests/servo*.json",
+        ".github/workflows/servo-headed-runtime.yml",
+        "Cargo.toml",
+        "Cargo.lock"
+      ],
+      "prerequisites": [
+        "D0A-01"
+      ],
+      "required_commands": [
+        "run .github/workflows/servo-headed-runtime.yml on the exact source head",
+        "python3 tools/validate_repository.py"
+      ],
+      "review_class": "security",
+      "stage": "servo_headed",
+      "status": "MODULE_CLOSED_CANDIDATE"
+    },
+    {
+      "claim_ceiling": [
+        "no_servo_frame",
+        "no_secure_boot",
+        "no_hardware",
+        "no_release"
+      ],
+      "evidence_tier": "qemu_image",
+      "id": "D1-01",
+      "invalidation_paths": [
+        ".github/workflows/d1-final-qualification.yml",
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "apps/**",
+        "crates/**",
+        "contracts/**",
+        "manifests/debian-*.json",
+        "manifests/e2fsprogs-host-toolchain.v1.json",
+        "manifests/d1-host-toolchain.lock.v1.json",
+        "manifests/project-state.v1.json",
+        "manifests/gates.v1.json",
+        "packaging/debian/**",
+        "tests/d1/**",
+        "tests/qemu/**",
+        "tests/fixtures/**",
+        "tools/**"
+      ],
+      "prerequisites": [
+        "D0T-02",
+        "D0C-05"
+      ],
+      "required_commands": [
+        "run .github/workflows/d1-final-qualification.yml on the exact source head"
+      ],
+      "review_class": "security",
+      "stage": "image",
+      "status": "BASE_DRIFT"
+    },
+    {
+      "claim_ceiling": [
+        "no_hardware",
+        "no_release"
+      ],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D2I-01",
+      "invalidation_paths": [
+        "packaging/debian/**",
+        "experiments/servo-headed-runtime/**",
+        "manifests/**",
+        ".github/workflows/**"
+      ],
+      "prerequisites": [
+        "D0A-02",
+        "D1-01"
+      ],
+      "required_commands": [
+        "run the D2I QEMU image workflow on one exact image digest"
+      ],
+      "review_class": "security",
+      "stage": "integrated_image",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": [
+        "local_fixtures_only",
+        "no_external_effects",
+        "development_activation_only"
+      ],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D3-01",
+      "invalidation_paths": [
+        "apps/**",
+        "crates/**",
+        "contracts/**",
+        "packaging/debian/systemd/**"
+      ],
+      "prerequisites": [
+        "D2I-01",
+        "D0C-06"
+      ],
+      "required_commands": [
+        "run the D3 principal/dispatch/receipt corpus on the exact integrated image"
+      ],
+      "review_class": "security",
+      "stage": "browser_actor",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": [
+        "no_later_stage_implication"
+      ],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D4-01",
+      "invalidation_paths": [
+        "apps/**",
+        "crates/**",
+        "contracts/**"
+      ],
+      "prerequisites": [
+        "D3-01"
+      ],
+      "required_commands": [
+        "run the D4 human/Agent state-machine and trace corpus"
+      ],
+      "review_class": "security",
+      "stage": "collaboration",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": [
+        "no_later_stage_implication"
+      ],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D5-01",
+      "invalidation_paths": [
+        "apps/**",
+        "crates/**",
+        "contracts/**",
+        "manifests/**"
+      ],
+      "prerequisites": [
+        "D4-01"
+      ],
+      "required_commands": [
+        "run the D5 signed-app and trusted-origin corpus"
+      ],
+      "review_class": "security",
+      "stage": "trusted_apps",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": [
+        "no_later_stage_implication"
+      ],
+      "evidence_tier": "integrated_qemu_image",
+      "id": "D6-01",
+      "invalidation_paths": [
+        "apps/**",
+        "crates/**",
+        "contracts/**",
+        "packaging/**"
+      ],
+      "prerequisites": [
+        "D5-01"
+      ],
+      "required_commands": [
+        "run the D6 capability, portal, resolver, redirect, and connected-peer corpus"
+      ],
+      "review_class": "security",
+      "stage": "capabilities_egress",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": [
+        "no_later_stage_implication"
+      ],
+      "evidence_tier": "hardware",
+      "id": "D7-01",
+      "invalidation_paths": [
+        "apps/**",
+        "crates/**",
+        "contracts/**",
+        "packaging/**",
+        "manifests/**"
+      ],
+      "prerequisites": [
+        "D6-01"
+      ],
+      "required_commands": [
+        "run the D7 update, rollback, effect-reconciliation, and power-loss corpus"
+      ],
+      "review_class": "release",
+      "stage": "updates_reconciliation",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": [
+        "fixed_bom_only",
+        "no_signed_release"
+      ],
+      "evidence_tier": "hardware",
+      "id": "D8-01",
+      "invalidation_paths": [
+        "packaging/**",
+        "manifests/**",
+        "docs/release/**"
+      ],
+      "prerequisites": [
+        "D7-01"
+      ],
+      "required_commands": [
+        "run the D8 fixed-BOM hardware qualification corpus"
+      ],
+      "review_class": "release",
+      "stage": "hardware_beta",
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "claim_ceiling": [
+        "exact_release_artifacts_only"
+      ],
+      "evidence_tier": "signed_release",
+      "id": "D9-01",
+      "invalidation_paths": [
+        "packaging/**",
+        "manifests/**",
+        "docs/release/**",
+        ".github/workflows/**"
+      ],
+      "prerequisites": [
+        "D8-01"
+      ],
+      "required_commands": [
+        "run the D9 offline signing and independent release verification ceremony"
+      ],
+      "review_class": "release",
+      "stage": "signed_release",
+      "status": "BLOCKED_UPSTREAM"
+    }
+  ],
+  "plan_revision": "2026-08-29-d6",
+  "schema": "trillionnium.desktop.gate-registry.v1",
   "status_vocabulary": [
     "SOURCE_CANDIDATE",
     "CI_RUNNING",
@@ -25,576 +604,5 @@
     "INTEGRATED_SOURCE_AWAITING_MAIN_EVIDENCE",
     "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
     "STALE_EVIDENCE"
-  ],
-  "gates": [
-    {
-      "id": "D0T-01",
-      "stage": "truth",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [],
-      "invalidation_paths": [
-        "manifests/project-state.v1.json",
-        "manifests/gates.v1.json",
-        "docs/MANIFEST.json",
-        "manifests/repository-state.json",
-        "docs/**",
-        "apps/hepta-browserd/src/lib.rs",
-        "tools/validate_project_truth.py"
-      ],
-      "claim_ceiling": [
-        "no_runtime_promotion",
-        "no_activation_change"
-      ],
-      "required_commands": [
-        "python3 tools/validate_project_truth.py"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0T-02",
-      "stage": "ci",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0T-01"
-      ],
-      "invalidation_paths": [
-        ".github/workflows/**",
-        "Cargo.toml",
-        "Cargo.lock",
-        "rust-toolchain.toml",
-        "manifests/ci-action-pins.v1.json",
-        "tools/validate_project_truth.py"
-      ],
-      "claim_ceiling": [
-        "no_product_runtime_claim"
-      ],
-      "required_commands": [
-        "python3 tools/validate_project_truth.py",
-        "cargo check --workspace --all-targets --locked",
-        "cargo clippy --workspace --all-targets --locked -- -D warnings",
-        "cargo test --workspace --all-targets --locked"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0T-03",
-      "stage": "repository_governance",
-      "status": "REPOSITORY_SETTING_REQUIRED",
-      "evidence_tier": "source_shape",
-      "prerequisites": [
-        "D0T-02"
-      ],
-      "invalidation_paths": [
-        ".github/CODEOWNERS",
-        "docs/release/**",
-        "repository:rulesets",
-        "repository:branch-protection",
-        "organization:teams"
-      ],
-      "claim_ceiling": [
-        "repository_settings_only",
-        "no_source_only_promotion"
-      ],
-      "required_commands": [
-        "capture protected-main, required-check, review-separation, and signing-dual-control settings evidence"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0R-01",
-      "stage": "D0R",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [],
-      "invalidation_paths": [
-        "Cargo.toml",
-        "Cargo.lock",
-        "rust-toolchain.toml",
-        "tools/**",
-        ".github/workflows/**"
-      ],
-      "claim_ceiling": [
-        "no_later_stage_implication"
-      ],
-      "required_commands": [
-        "python3 tools/validate_repository.py",
-        "cargo check --workspace --all-targets --locked"
-      ],
-      "review_class": "standard"
-    },
-    {
-      "id": "D0R-02",
-      "stage": "D0R",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0R-01"
-      ],
-      "invalidation_paths": [
-        "manifests/**",
-        "Cargo.lock",
-        "rust-toolchain.toml",
-        ".github/workflows/**"
-      ],
-      "claim_ceiling": [
-        "input_lock_only",
-        "no_image_claim"
-      ],
-      "required_commands": [
-        "python3 tools/validate_repository.py"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0R-03",
-      "stage": "D0R",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0R-01",
-        "D0R-02"
-      ],
-      "invalidation_paths": [
-        "tools/validate_repository.py",
-        "tools/validate_project_truth.py",
-        ".github/workflows/**"
-      ],
-      "claim_ceiling": [
-        "repository_checks_only"
-      ],
-      "required_commands": [
-        "python3 tools/validate_repository.py",
-        "python3 tools/validate_project_truth.py"
-      ],
-      "review_class": "standard"
-    },
-    {
-      "id": "D0C-01",
-      "stage": "D0C",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0R-03"
-      ],
-      "invalidation_paths": [
-        "contracts/**",
-        "crates/**",
-        "Cargo.lock"
-      ],
-      "claim_ceiling": [
-        "contracts_only"
-      ],
-      "required_commands": [
-        "cargo test --workspace --all-targets --locked"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0C-02",
-      "stage": "D0C",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0C-01"
-      ],
-      "invalidation_paths": [
-        "crates/hepta-agent-transport/**",
-        "contracts/agent-transport.v1.json",
-        "tests/transport/**",
-        ".github/workflows/agent-transport-reference.yml"
-      ],
-      "claim_ceiling": [
-        "connected_stream_only",
-        "no_listener"
-      ],
-      "required_commands": [
-        "cargo test --locked -p hepta-agent-transport",
-        "python3 tools/agent_transport_reference.py"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0C-03",
-      "stage": "D0C",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0C-01"
-      ],
-      "invalidation_paths": [
-        "crates/hepta-browser-codec/**",
-        "contracts/browser-*.json",
-        "tools/browser_codec_reference*",
-        ".github/workflows/browser-codec-reference.yml"
-      ],
-      "claim_ceiling": [
-        "codec_only",
-        "no_dispatch"
-      ],
-      "required_commands": [
-        "cargo test --locked -p hepta-browser-codec",
-        "python3 tools/browser_codec_reference.py"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0C-04",
-      "stage": "D0C",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0C-02",
-        "D0C-03"
-      ],
-      "invalidation_paths": [
-        "crates/hepta-agent-port/**",
-        "apps/hepta-agent-portd/**",
-        "Cargo.lock"
-      ],
-      "claim_ceiling": [
-        "exactly_one_connected_request",
-        "no_browser_actor"
-      ],
-      "required_commands": [
-        "cargo test --locked -p hepta-agent-port"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0C-05",
-      "stage": "D0C",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0C-04"
-      ],
-      "invalidation_paths": [
-        "packaging/debian/systemd/**",
-        "crates/hepta-peer-attestation/**",
-        "apps/hepta-agent-portd/**",
-        ".github/workflows/agent-port-custody.yml"
-      ],
-      "claim_ceiling": [
-        "host_custody_only",
-        "default_disabled",
-        "no_booted_listener"
-      ],
-      "required_commands": [
-        "cargo test --locked -p hepta-peer-attestation",
-        "cargo run --locked -p hepta-agent-portd --bin hepta-agent-portd -- --self-check"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0C-06",
-      "stage": "D0C",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0C-01"
-      ],
-      "invalidation_paths": [
-        "crates/hepta-session-core/**",
-        "contracts/receipt-journal.v1.json",
-        "tools/verify_receipt_journal.py",
-        ".github/workflows/receipt-journal.yml"
-      ],
-      "claim_ceiling": [
-        "facts_only",
-        "no_execution",
-        "no_replay"
-      ],
-      "required_commands": [
-        "cargo test --locked -p hepta-session-core",
-        "python3 tools/verify_receipt_journal.py"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0A-00",
-      "stage": "D0A",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0C-01"
-      ],
-      "invalidation_paths": [
-        "crates/hepta-session-core/**",
-        "docs/architecture/**"
-      ],
-      "claim_ceiling": [
-        "pure_state_machine_only"
-      ],
-      "required_commands": [
-        "cargo test --locked -p hepta-session-core"
-      ],
-      "review_class": "standard"
-    },
-    {
-      "id": "D0A-01",
-      "stage": "D0A",
-      "status": "INTEGRATED_AND_EXACT_MAIN_VALIDATED",
-      "evidence_tier": "host",
-      "prerequisites": [
-        "D0R-02"
-      ],
-      "invalidation_paths": [
-        "manifests/servo*.json",
-        "experiments/servo-embedder-probe/**",
-        "tools/qualify_servo_exact_pin*",
-        ".github/workflows/servo-exact-pin.yml"
-      ],
-      "claim_ceiling": [
-        "compile_compatibility_only",
-        "no_visible_frame"
-      ],
-      "required_commands": [
-        "run .github/workflows/servo-exact-pin.yml on the exact source head"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D0A-02",
-      "stage": "servo_headed",
-      "status": "MODULE_CLOSED_CANDIDATE",
-      "evidence_tier": "headed_host",
-      "prerequisites": [
-        "D0A-01"
-      ],
-      "invalidation_paths": [
-        "experiments/servo-headed-runtime/**",
-        "crates/hepta-workspace-composition/**",
-        "manifests/servo*.json",
-        ".github/workflows/servo-headed-runtime.yml",
-        "Cargo.toml",
-        "Cargo.lock"
-      ],
-      "claim_ceiling": [
-        "local_fixture_only",
-        "no_agent_port",
-        "no_external_effects",
-        "no_image",
-        "no_release"
-      ],
-      "required_commands": [
-        "run .github/workflows/servo-headed-runtime.yml on the exact source head",
-        "python3 tools/validate_repository.py"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D1-01",
-      "stage": "image",
-      "status": "BASE_DRIFT",
-      "evidence_tier": "qemu_image",
-      "prerequisites": [
-        "D0T-02",
-        "D0C-05"
-      ],
-      "invalidation_paths": [
-        "manifests/debian-*.json",
-        "packaging/debian/**",
-        "tests/d1/**",
-        "tests/qemu/**",
-        "tests/fixtures/**",
-        "tools/prepare_d1_inputs.py",
-        "tools/resolve_debian_snapshot*.py",
-        ".github/workflows/d1-final-qualification.yml",
-        "Cargo.lock"
-      ],
-      "claim_ceiling": [
-        "no_servo_frame",
-        "no_secure_boot",
-        "no_hardware",
-        "no_release"
-      ],
-      "required_commands": [
-        "run .github/workflows/d1-final-qualification.yml on the exact source head"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D2I-01",
-      "stage": "integrated_image",
-      "status": "BLOCKED_UPSTREAM",
-      "evidence_tier": "integrated_qemu_image",
-      "prerequisites": [
-        "D0A-02",
-        "D1-01"
-      ],
-      "invalidation_paths": [
-        "packaging/debian/**",
-        "experiments/servo-headed-runtime/**",
-        "manifests/**",
-        ".github/workflows/**"
-      ],
-      "claim_ceiling": [
-        "no_hardware",
-        "no_release"
-      ],
-      "required_commands": [
-        "run the D2I QEMU image workflow on one exact image digest"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D3-01",
-      "stage": "browser_actor",
-      "status": "BLOCKED_UPSTREAM",
-      "evidence_tier": "integrated_qemu_image",
-      "prerequisites": [
-        "D2I-01",
-        "D0C-06"
-      ],
-      "invalidation_paths": [
-        "apps/**",
-        "crates/**",
-        "contracts/**",
-        "packaging/debian/systemd/**"
-      ],
-      "claim_ceiling": [
-        "local_fixtures_only",
-        "no_external_effects",
-        "development_activation_only"
-      ],
-      "required_commands": [
-        "run the D3 principal/dispatch/receipt corpus on the exact integrated image"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D4-01",
-      "stage": "collaboration",
-      "status": "BLOCKED_UPSTREAM",
-      "evidence_tier": "integrated_qemu_image",
-      "prerequisites": [
-        "D3-01"
-      ],
-      "invalidation_paths": [
-        "apps/**",
-        "crates/**",
-        "contracts/**"
-      ],
-      "claim_ceiling": [
-        "no_later_stage_implication"
-      ],
-      "required_commands": [
-        "run the D4 human/Agent state-machine and trace corpus"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D5-01",
-      "stage": "trusted_apps",
-      "status": "BLOCKED_UPSTREAM",
-      "evidence_tier": "integrated_qemu_image",
-      "prerequisites": [
-        "D4-01"
-      ],
-      "invalidation_paths": [
-        "apps/**",
-        "crates/**",
-        "contracts/**",
-        "manifests/**"
-      ],
-      "claim_ceiling": [
-        "no_later_stage_implication"
-      ],
-      "required_commands": [
-        "run the D5 signed-app and trusted-origin corpus"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D6-01",
-      "stage": "capabilities_egress",
-      "status": "BLOCKED_UPSTREAM",
-      "evidence_tier": "integrated_qemu_image",
-      "prerequisites": [
-        "D5-01"
-      ],
-      "invalidation_paths": [
-        "apps/**",
-        "crates/**",
-        "contracts/**",
-        "packaging/**"
-      ],
-      "claim_ceiling": [
-        "no_later_stage_implication"
-      ],
-      "required_commands": [
-        "run the D6 capability, portal, resolver, redirect, and connected-peer corpus"
-      ],
-      "review_class": "security"
-    },
-    {
-      "id": "D7-01",
-      "stage": "updates_reconciliation",
-      "status": "BLOCKED_UPSTREAM",
-      "evidence_tier": "hardware",
-      "prerequisites": [
-        "D6-01"
-      ],
-      "invalidation_paths": [
-        "apps/**",
-        "crates/**",
-        "contracts/**",
-        "packaging/**",
-        "manifests/**"
-      ],
-      "claim_ceiling": [
-        "no_later_stage_implication"
-      ],
-      "required_commands": [
-        "run the D7 update, rollback, effect-reconciliation, and power-loss corpus"
-      ],
-      "review_class": "release"
-    },
-    {
-      "id": "D8-01",
-      "stage": "hardware_beta",
-      "status": "BLOCKED_UPSTREAM",
-      "evidence_tier": "hardware",
-      "prerequisites": [
-        "D7-01"
-      ],
-      "invalidation_paths": [
-        "packaging/**",
-        "manifests/**",
-        "docs/release/**"
-      ],
-      "claim_ceiling": [
-        "fixed_bom_only",
-        "no_signed_release"
-      ],
-      "required_commands": [
-        "run the D8 fixed-BOM hardware qualification corpus"
-      ],
-      "review_class": "release"
-    },
-    {
-      "id": "D9-01",
-      "stage": "signed_release",
-      "status": "BLOCKED_UPSTREAM",
-      "evidence_tier": "signed_release",
-      "prerequisites": [
-        "D8-01"
-      ],
-      "invalidation_paths": [
-        "packaging/**",
-        "manifests/**",
-        "docs/release/**",
-        ".github/workflows/**"
-      ],
-      "claim_ceiling": [
-        "exact_release_artifacts_only"
-      ],
-      "required_commands": [
-        "run the D9 offline signing and independent release verification ceremony"
-      ],
-      "review_class": "release"
-    }
   ]
 }
