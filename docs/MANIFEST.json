@@ -1,23 +1,51 @@
 {
-  "active_plan": "DESKTOP_PLAN-2026-08-28-d5.md",
-  "active_plan_revision": "2026-08-28-d5",
+  "active_candidates": [
+    {
+      "branch": "codex/d6-plan-truth-ci-closure-v1",
+      "id": "D0T-01",
+      "pr": 28,
+      "status": "MODULE_CLOSED_CANDIDATE"
+    },
+    {
+      "branch": "codex/d6-plan-truth-ci-closure-v1",
+      "id": "D0T-02",
+      "pr": 28,
+      "status": "MODULE_CLOSED_CANDIDATE"
+    },
+    {
+      "branch": "codex/d1-01-reproducible-qemu-substrate",
+      "id": "D1-01",
+      "pr": 23,
+      "status": "BASE_DRIFT"
+    },
+    {
+      "branch": "codex/d0a02-headed-runtime-v3",
+      "id": "D0A-02",
+      "pr": 27,
+      "status": "CI_BLOCKED"
+    }
+  ],
+  "active_plan": "DESKTOP_PLAN-2026-08-29-d6.md",
+  "active_plan_revision": "2026-08-29-d6",
   "agent_port_connected_bridge_product": true,
-  "agent_port_exact_head_rust_validation": true,
-  "agent_port_systemd_custody_product": true,
-  "agent_port_systemd_custody_host_validation": true,
-  "authenticated_agent_listener_implemented": true,
-  "authenticated_agent_listener_enabled": false,
   "agent_port_enable_marker_shipped": false,
+  "agent_port_exact_head_rust_validation": true,
+  "agent_port_systemd_custody_host_validation": true,
+  "agent_port_systemd_custody_product": true,
+  "authenticated_agent_listener_enabled": false,
+  "authenticated_agent_listener_implemented": true,
   "browser_codec_exact_head_rust_validation": true,
   "browser_runtime": "servo",
+  "browser_runtime_integrated": false,
   "canonical_browser_codec_product": true,
   "cargo_external_allowlist": "../manifests/cargo-external-allowlist.json",
   "debian_image_built": false,
   "debian_selection": "../manifests/debian-base.selection.json",
-  "durable_receipt_journal_product": true,
-  "durable_receipt_journal_host_validation": true,
   "durable_receipt_journal_executes_or_replays_operations": false,
+  "durable_receipt_journal_host_validation": true,
+  "durable_receipt_journal_product": true,
   "external_effects_enabled": false,
+  "gate_registry": "../manifests/gates.v1.json",
   "implementation_checkpoints": [
     {
       "evidence": "evidence/2026-08-28-d0c02-authenticated-uds.md",
@@ -81,8 +109,11 @@
     }
   ],
   "implementation_stage": "D0R_D0C06_D0A01_COMPILE_VALIDATED",
+  "integrated_qemu_headed_runtime": false,
   "product": "TrillionniumOS Desktop",
   "product_boundary": "../manifests/product-boundary.json",
+  "project_state": "../manifests/project-state.v1.json",
+  "qemu_pid1_wayland_booted": false,
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
   "repository_mode": "FULL_PRODUCT_REPOSITORY",
   "revision_model": [
@@ -92,15 +123,16 @@
     "mutation_epoch"
   ],
   "rust_toolchain_lock": "../manifests/rust-toolchain.lock.json",
-  "schema": "trillionnium.desktop.docs.manifest.v2",
+  "schema": "trillionnium.desktop.docs.manifest.v3",
   "servo_compile_qualified": true,
   "servo_integrated": false,
   "servo_lock": "../manifests/servo.lock.json",
   "servo_qualification_evidence": "evidence/generated/d0a01-servo-qualification-result.json",
-  "status": "IMPLEMENTATION_COMPILE_AND_RECEIPT_VALIDATED",
-  "superseded_plan": "DESKTOP_PLAN-2026-08-28.md",
+  "status": "D0_FOUNDATION_VALIDATED_D1_D2_CANDIDATES_NOT_PROMOTED",
+  "superseded_plan": "DESKTOP_PLAN-2026-08-28-d5.md",
   "transport_core_source_present": true,
   "transport_exact_head_rust_validation": true,
   "trusted_app_origin_model": "distinct_synthetic_https_hosts_under_apps.hepta.invalid",
-  "trusted_shell_topology": "one_visible_workspace_plus_trusted_shell_surface_plus_one_untrusted_content_webview"
+  "trusted_shell_topology": "one_visible_workspace_plus_trusted_shell_surface_plus_one_untrusted_content_webview",
+  "upstream_reference_review": "../manifests/upstream-reference-review.v1.json"
 }

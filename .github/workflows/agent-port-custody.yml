@@ -3,6 +3,7 @@ name: agent-port-custody
 on:
   pull_request:
     paths:
+      - ".github/workflows/agent-port-custody.yml"
       - "apps/hepta-agent-portd/**"
       - "crates/hepta-peer-attestation/**"
       - "packaging/debian/systemd/**"
@@ -12,13 +13,18 @@ on:
       - "packaging/debian/hepta-agent-portd.install"
       - "contracts/agent-port-custody.v1.json"
       - "tools/verify_systemd_socket_custody.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
   push:
     branches:
       - main
       - codex/d0c05-systemd-custody-v2
+      - codex/d3-agentport-fixture-separation-v1
     paths:
+      - ".github/workflows/agent-port-custody.yml"
       - "apps/hepta-agent-portd/**"
       - "crates/hepta-peer-attestation/**"
       - "packaging/debian/systemd/**"
@@ -28,27 +34,37 @@ on:
       - "packaging/debian/hepta-agent-portd.install"
       - "contracts/agent-port-custody.v1.json"
       - "tools/verify_systemd_socket_custody.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
 
 permissions:
   contents: read
 
+concurrency:
+  group: agent-port-custody-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate-custody:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.93.0
-          components: rustfmt, clippy
+      - name: Install exact Rust toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
 
-      - name: Audit repository and custody contract
+      - name: Audit repository, truth, custody, and fixture separation
         run: |
           python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
           python3 tools/verify_systemd_socket_custody.py
 
       - name: Verify systemd unit syntax and account mappings
@@ -68,18 +84,40 @@ jobs:
             /usr/libexec/hepta-agent-portd \
             /usr/lib/sysusers.d/trillionnium-desktop.conf
 
-      - name: Check Rust formatting and warnings
+      - name: Check default product graph and fixture feature graph
         run: |
           cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo check --locked -p hepta-agent-portd --all-targets --all-features
+          cargo clippy --locked -p hepta-agent-portd --all-targets --all-features -- -D warnings
 
-      - name: Run complete Rust regression
+      - name: Run product and explicit fixture regressions
         run: |
           cargo test --workspace --all-targets --locked
+          cargo test --locked -p hepta-agent-portd --all-targets --all-features
           cargo run --locked -p hepta-browserd -- --self-check
-          cargo run --locked -p hepta-agent-portd -- --self-check
+          cargo run --locked -p hepta-agent-portd \
+            --bin hepta-agent-portd \
+            -- --self-check
+          cargo run --locked -p hepta-agent-portd \
+            --features fixture \
+            --bin hepta-agent-port-fixture \
+            -- --self-check
 
-      - name: Reconfirm claim ceiling
+      - name: Build and audit the production binary graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo clean -p hepta-agent-portd
+          cargo build --release --locked -p hepta-agent-portd --bin hepta-agent-portd
+          test -x target/release/hepta-agent-portd
+          test ! -e target/release/hepta-agent-port-fixture
+          ! strings target/release/hepta-agent-portd | grep -F 'D0FixtureHandler'
+          ! strings target/release/hepta-agent-portd | grep -F 'agent-port-fixture-self-check'
+          ! grep -F 'hepta-agent-port-fixture' packaging/debian/hepta-agent-portd.install
+
+      - name: Reconfirm closed authority and activation ceiling
         shell: bash
         run: |
           set -euo pipefail
@@ -87,6 +125,10 @@ jobs:
           test ! -e /etc/hepta/enable-agent-port
           ! grep -R -n -E 'TcpListener|UnixListener|WebDriver' \
             apps/hepta-agent-portd crates/hepta-peer-attestation
+          ! grep -F 'D0FixtureHandler' apps/hepta-agent-portd/src/main.rs
+          grep -F 'ProductHandlerUnavailable' apps/hepta-agent-portd/src/main.rs
+          grep -F 'D0FixtureHandler' \
+            apps/hepta-agent-portd/src/bin/hepta-agent-port-fixture.rs
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -97,4 +139,11 @@ jobs:
           assert contract['dispatch']['browser_actor'] is False
           assert contract['dispatch']['servo_runtime'] is False
           assert contract['dispatch']['external_effect_authority'] is False
+          assert contract['dispatch']['fixture_substitution'] is False
+          assert contract['dispatch']['activation_without_browser_actor'] == 'fail_closed_before_request_decode'
+          separation = contract['fixture_separation']
+          assert separation['feature_enabled_by_default'] is False
+          assert separation['production_binary_references_fixture_handler'] is False
+          assert separation['debian_package_installs_fixture_binary'] is False
+          assert separation['external_effect_authority'] is False
           PY

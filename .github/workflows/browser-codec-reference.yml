@@ -3,6 +3,7 @@ name: browser-codec-reference-and-rust-gate
 on:
   pull_request:
     paths:
+      - ".github/workflows/browser-codec-reference.yml"
       - "Cargo.toml"
       - "Cargo.lock"
       - "apps/hepta-browserd/**"
@@ -17,24 +18,32 @@ on:
       - "tools/browser_codec_reference.py"
       - "tools/browser_codec_reference/**"
       - "tools/validate_rust_browser_codec.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
       - "docs/evidence/generated/d0c03-*.json"
-      - ".github/workflows/browser-codec-reference.yml"
   push:
     branches: [main]
     paths:
+      - ".github/workflows/browser-codec-reference.yml"
       - "Cargo.toml"
       - "Cargo.lock"
       - "apps/hepta-browserd/**"
       - "crates/hepta-browser-codec/**"
       - "crates/hepta-browser-contracts/**"
+      - "contracts/browser-api.v1.schema.json"
       - "contracts/browser-codec.v1.json"
+      - "contracts/browser-wire.v1.schema.json"
+      - "contracts/browser-response.v1.schema.json"
       - "contracts/error-codes.v1.json"
       - "contracts/golden/*.wire.json"
       - "tools/browser_codec_reference.py"
       - "tools/browser_codec_reference/**"
       - "tools/validate_rust_browser_codec.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
       - "docs/evidence/generated/d0c03-*.json"
-      - ".github/workflows/browser-codec-reference.yml"
 
 permissions:
   contents: read
@@ -42,8 +51,10 @@ permissions:
 jobs:
   reference-and-static-audit:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
 
@@ -53,6 +64,13 @@ jobs:
           tools/browser_codec_reference.py
           tools/browser_codec_reference/*.py
           tools/validate_rust_browser_codec.py
+          tools/validate_project_truth.py
+
+      - name: Validate repository and project truth
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
 
       - name: Regenerate reference, audit and golden vectors
         run: |
@@ -109,25 +127,30 @@ jobs:
           assert host["external_effect_authorized"] is False
           PY
 
-          # D0C-03 entered main through a squash merge, so the original tested
-          # branch commit is intentionally not a mainline ancestor. Current
-          # integrity is proved by deterministic reference regeneration above,
-          # static source-contract audit above, and the exact-head Rust job
-          # below rather than by a false Git ancestry assumption.
-
   rust-exact-head:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.93.0
-          components: rustfmt, clippy
-      - run: python3 tools/validate_repository.py
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Install exact Rust toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+
+      - name: Validate repository and project truth
+        run: |
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+
       - run: cargo fmt --all --check
+      - run: cargo check --workspace --all-targets --locked
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --all-targets --locked
       - run: cargo run --locked -p hepta-browserd -- --self-check
+
       - name: Confirm no listener or activation marker
         shell: bash
         run: |

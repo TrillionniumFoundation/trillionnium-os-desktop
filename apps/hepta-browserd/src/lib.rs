@@ -1,9 +1,9 @@
 #![forbid(unsafe_code)]
 
 //! D0 browser daemon scaffold. This is a deterministic contract, transport,
-//! codec, connected AgentPort, and session self-check only: it does not
-//! start Servo, bind a
-//! listener, dispatch a BrowserActor, or perform an external network operation.
+//! codec, connected AgentPort, durable-receipt, and session self-check only:
+//! it does not start Servo, bind a listener, dispatch a BrowserActor, or
+//! perform an external network operation.
 
 use hepta_browser_contracts::BROWSER_API_PROTOCOL;
 use hepta_session_core::{
@@ -12,8 +12,8 @@ use hepta_session_core::{
 };
 use trillionnium_contract_core::LeaseId;
 
-pub const ACTIVE_PLAN_REVISION: &str = "2026-08-28-d5";
-pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C04_SOURCE";
+pub const ACTIVE_PLAN_REVISION: &str = "2026-08-29-d6";
+pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C06_D0A01_COMPILE_VALIDATED";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SelfCheckReport {

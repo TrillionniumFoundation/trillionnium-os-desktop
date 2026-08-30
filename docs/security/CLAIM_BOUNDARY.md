@@ -1,15 +1,20 @@
 # Evidence and claim boundary
 
-| Evidence | It proves | It does not prove |
-| --- | --- | --- |
-| schema parses | document syntax | runtime enforcement |
-| Rust unit test | pure contract/state behavior | Servo, display, transport, image |
-| browserd self-check | deterministic D0 transition sequence | browser or network operation |
-| host Servo fixture | pinned host embedding behavior | Debian image or hardware readiness |
-| QEMU boot | image and virtual-device behavior | fixed-hardware qualification |
-| hardware test | one selected hardware lane | public release or general compatibility |
-| signed release evidence | exact released artifacts and gates | future versions or other hardware |
+The machine source for current claims and non-claims is
+`manifests/project-state.v1.json`.
 
-Every stage promotion updates `CURRENT_STATE.md`, `docs/MANIFEST.json`, and
-`manifests/repository-state.json`. Missing evidence remains an explicit
+| Evidence tier | It may prove | It does not prove |
+| --- | --- | --- |
+| source shape | files, schemas, graph, static policy | runtime enforcement |
+| host unit/property | deterministic pure behavior | headed Servo, image, hardware |
+| host integration/fixture | bounded local process/transport behavior | product activation or external authority |
+| headed host | real frame/input/recovery on one host environment | Debian image or hardware |
+| QEMU image | exact image and virtual-device behavior | headed integration unless repeated in that image |
+| integrated QEMU image | headed Servo and services in one exact image | fixed hardware or release |
+| fixed hardware | one selected hardware/BOM lane | other hardware or signed release |
+| signed release | exact released artifacts, provenance, keys, update/rollback gates | future versions or other hardware |
+
+Candidate head, tested merge, integrated main, and signed artifact identities
+are distinct. A PR pass does not prove integrated main. A lower tier never
+implies a higher tier. Missing or invalidated evidence remains an explicit
 non-claim.

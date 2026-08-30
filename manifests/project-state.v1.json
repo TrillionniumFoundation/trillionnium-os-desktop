@@ -1,0 +1,130 @@
+{
+  "active_plan": "docs/DESKTOP_PLAN-2026-08-29-d6.md",
+  "active_plan_revision": "2026-08-29-d6",
+  "baseline_main_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
+  "evidence_binding_policy": {
+    "base_sha_required": true,
+    "exact_main_rerun_required_after_merge": true,
+    "input_digests_required": true,
+    "lower_tier_never_implies_higher_tier": true,
+    "output_digests_required": true,
+    "pr_head_sha_required": true,
+    "tested_merge_sha_required_for_pr": true,
+    "tree_sha_required": true,
+    "workflow_digest_required": true
+  },
+  "integrated_completed_work_packages": [
+    "D0R-01",
+    "D0R-02",
+    "D0R-03",
+    "D0C-01",
+    "D0C-02",
+    "D0C-03",
+    "D0C-04",
+    "D0C-05",
+    "D0C-06",
+    "D0A-00",
+    "D0A-01"
+  ],
+  "integrated_implementation_stage": "D0R_D0C06_D0A01_COMPILE_VALIDATED",
+  "not_claimed": [
+    "headed_servo_integrated",
+    "visible_product_first_frame",
+    "debian_image_built",
+    "qemu_pid1_wayland_boot",
+    "integrated_qemu_headed_runtime",
+    "product_agent_port_enabled",
+    "taskflow_semantic_principal_bound",
+    "browser_actor_dispatch",
+    "external_navigation_or_effects",
+    "signed_app_runtime",
+    "controlled_egress",
+    "signed_update_and_rollback",
+    "fixed_hardware_beta",
+    "production_release"
+  ],
+  "product": "TrillionniumOS Desktop",
+  "profiles": {
+    "development": {
+      "agent_port": "explicit_profile_only",
+      "network": "controlled",
+      "production_authority": false
+    },
+    "fixture": {
+      "agent_port": "connected_pairs_only",
+      "network": "none_or_loopback_fixture",
+      "production_authority": false
+    },
+    "production": {
+      "agent_port": "default_disabled",
+      "network": "policy_controlled_after_D6",
+      "production_authority": false
+    },
+    "qualification": {
+      "agent_port": "test_only_explicit_activation",
+      "network": "gate_controlled",
+      "production_authority": false
+    }
+  },
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "repository_mode": "FULL_PRODUCT_REPOSITORY",
+  "repository_setting_gates": [
+    "protected_main",
+    "required_status_checks",
+    "organization_team_codeowners",
+    "no_self_approval_or_self_merge",
+    "release_signing_dual_control"
+  ],
+  "schema": "trillionnium.desktop.project-state.v1",
+  "source_candidate_work_packages": [
+    {
+      "base_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
+      "branch": "codex/d6-plan-truth-ci-closure-v1",
+      "claim_ceiling": "machine_truth_and_status_consistency_only",
+      "id": "D0T-01",
+      "pr": 28,
+      "status": "MODULE_CLOSED_CANDIDATE"
+    },
+    {
+      "base_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
+      "branch": "codex/d6-plan-truth-ci-closure-v1",
+      "claim_ceiling": "ci_immutability_and_exact_command_baseline_only",
+      "id": "D0T-02",
+      "pr": 28,
+      "status": "MODULE_CLOSED_CANDIDATE"
+    },
+    {
+      "base_sha": "77bfc22619e7d9b30a3736096cf8e604a3c268ac",
+      "branch": "codex/d1-01-reproducible-qemu-substrate",
+      "candidate_head_sha": "9250fcb9df75792c39e85e0113cecac8b393a544",
+      "claim_ceiling": "candidate_source_no_promoted_qemu_or_image_claim",
+      "id": "D1-01",
+      "pr": 23,
+      "status": "BASE_DRIFT"
+    },
+    {
+      "base_sha": "d878fff0d809413e1f3048a87e0a8247b97d99b9",
+      "branch": "codex/d0a02-headed-runtime-v3",
+      "candidate_head_sha": "95a5d56d70c3667275b305501e0fe43c8c119d63",
+      "claim_ceiling": "candidate_source_no_headed_runtime_pass",
+      "id": "D0A-02",
+      "pr": 27,
+      "status": "CI_BLOCKED"
+    }
+  ],
+  "truth_precedence": [
+    "manifests/project-state.v1.json",
+    "manifests/gates.v1.json",
+    "docs/MANIFEST.json",
+    "manifests/repository-state.json",
+    "docs/DESKTOP_PLAN-2026-08-29-d6.md",
+    "docs/CURRENT_STATE.md",
+    "README.md"
+  ],
+  "upstream_reference": {
+    "mobile_authority_imported": false,
+    "relationship": "company_sibling_reference_not_build_dependency",
+    "repository": "TrillionniumFoundation/trillionnium-os",
+    "reviewed_main_sha": "bb0f85e63b251b99a6fb490dfe6406a992d95f45"
+  }
+}

@@ -1,14 +1,14 @@
-//! One-connection systemd socket-activation service for the local AgentPort.
+//! Product one-connection systemd socket-activation service for AgentPort.
 //!
-//! The binary never binds or listens. In product mode it duplicates the
-//! already-accepted AF_UNIX stream supplied on standard input, verifies its
-//! local pathname, resolves and attests the dedicated peer identity, serves
-//! exactly one request through `hepta-agent-port`, then exits.
+//! The binary never binds or listens. It verifies an already-accepted AF_UNIX
+//! stream and the dedicated peer mechanism identity. Until D3 connects a real
+//! BrowserActor handler, product activation fails closed without decoding or
+//! dispatching a request. The D0 fixture handler lives in a separate,
+//! feature-gated binary and is not part of the production installation graph.
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
-use hepta_agent_port::{D0FixtureHandler, ServiceEvidence, serve_one};
-use hepta_agent_transport::{PeerIdentity, PeerPolicy};
+use hepta_agent_transport::PeerIdentity;
 use hepta_peer_attestation::{
     AttestationError, PeerRuntimePolicy, ProcfsPeerAttestor, resolve_group_id, resolve_user_id,
 };
@@ -17,27 +17,32 @@ use std::io;
 use std::os::fd::{AsRawFd, FromRawFd};
 use std::os::unix::net::UnixStream;
 use std::path::Path;
-use std::time::Duration;
 
 const AGENT_SOCKET_PATH: &str = "/run/hepta/browserd/agent.sock";
 const EXPECTED_PEER_USER: &str = "hepta-agent";
 const EXPECTED_PEER_GROUP: &str = "hepta-agent";
 const EXPECTED_PEER_UNIT: &str = "hepta-agent.service";
-const CONNECTION_CEILING: Duration = Duration::from_secs(20);
 
 fn main() {
     let outcome = if std::env::args().any(|argument| argument == "--self-check") {
-        self_check().map(|report| println!("{report}"))
+        self_check()
     } else {
-        serve_inherited_connection().map(|evidence| println!("{}", evidence_json(&evidence)))
+        refuse_unconnected_product_handler().map(|()| String::new())
     };
-    if let Err(error) = outcome {
-        eprintln!("hepta-agent-portd: {error}");
-        std::process::exit(1);
+    match outcome {
+        Ok(report) => {
+            if !report.is_empty() {
+                println!("{report}");
+            }
+        }
+        Err(error) => {
+            eprintln!("hepta-agent-portd: {error}");
+            std::process::exit(1);
+        }
     }
 }
 
-fn serve_inherited_connection() -> Result<ServiceEvidence, ServiceError> {
+fn refuse_unconnected_product_handler() -> Result<(), ServiceError> {
     let stream = inherited_stream_from_stdin()?;
     verify_local_socket_path(&stream, Path::new(AGENT_SOCKET_PATH))?;
 
@@ -48,21 +53,11 @@ fn serve_inherited_connection() -> Result<ServiceEvidence, ServiceError> {
         PeerRuntimePolicy::for_system_service(expected_uid, expected_gid, EXPECTED_PEER_UNIT)?;
     let attested = ProcfsPeerAttestor::default().attest(peer, &runtime_policy)?;
 
-    let transport_policy = PeerPolicy {
-        expected_pid: peer.pid,
-        expected_uid,
-        expected_gid: Some(expected_gid),
-    };
-    let mut handler = D0FixtureHandler::default();
-    let evidence = serve_one(stream, transport_policy, CONNECTION_CEILING, &mut handler)?;
-    if handler.invocation_count != 1 {
-        return Err(ServiceError::Invariant(
-            "the connected service did not dispatch exactly once",
-        ));
-    }
-    // Keep the pidfd and verified snapshot alive through the complete request.
+    // Keep the pidfd-backed identity alive until the connection is refused.
+    // The product binary intentionally does not decode a request or instantiate
+    // the D0 fixture. A real BrowserActor binding is a separate D3 promotion.
     let _held_identity = attested.snapshot();
-    Ok(evidence)
+    Err(ServiceError::ProductHandlerUnavailable)
 }
 
 fn inherited_stream_from_stdin() -> Result<UnixStream, ServiceError> {
@@ -118,50 +113,7 @@ fn verify_local_socket_path(stream: &UnixStream, expected: &Path) -> Result<(), 
     Ok(())
 }
 
-fn evidence_json(evidence: &ServiceEvidence) -> String {
-    format!(
-        concat!(
-            "{{\"schema\":\"trillionnium.desktop.agent-portd-result.v1\",",
-            "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{},",
-            "\"transport_sequence\":{},\"request_id\":\"{}\",",
-            "\"request_sha256\":\"{}\",\"response_sha256\":\"{}\",",
-            "\"response_ok\":{},\"response_committed\":{}}}"
-        ),
-        evidence.peer.pid.unwrap_or_default(),
-        evidence.peer.uid,
-        evidence.peer.gid,
-        evidence.transport_sequence,
-        escape_json(&evidence.request_id),
-        evidence.request_sha256,
-        evidence.response_sha256,
-        evidence.response_ok,
-        evidence.response_committed,
-    )
-}
-
-fn escape_json(value: &str) -> String {
-    let mut output = String::with_capacity(value.len());
-    for character in value.chars() {
-        match character {
-            '"' => output.push_str("\\\""),
-            '\\' => output.push_str("\\\\"),
-            '\n' => output.push_str("\\n"),
-            '\r' => output.push_str("\\r"),
-            '\t' => output.push_str("\\t"),
-            character if character.is_control() => {
-                use std::fmt::Write;
-                let _ = write!(output, "\\u{:04x}", character as u32);
-            }
-            character => output.push(character),
-        }
-    }
-    output
-}
-
 fn self_check() -> Result<String, ServiceError> {
-    use std::os::unix::net::UnixStream;
-
-    hepta_agent_port::self_check()?;
     let (left, _right) = UnixStream::pair().map_err(ServiceError::Io)?;
     verify_stream_socket(left.as_raw_fd())?;
     let peer = PeerIdentity::from_stream(&left)?;
@@ -176,9 +128,12 @@ fn self_check() -> Result<String, ServiceError> {
     }
     Ok(format!(
         concat!(
-            "{{\"schema\":\"trillionnium.desktop.agent-portd-self-check.v1\",",
+            "{{\"schema\":\"trillionnium.desktop.agent-portd-self-check.v2\",",
             "\"ok\":true,\"listener_created\":false,",
             "\"expected_product_socket\":\"{}\",",
+            "\"product_handler_connected\":false,",
+            "\"fixture_handler_linked\":false,",
+            "\"activation_fail_closed\":true,",
             "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{}}}"
         ),
         AGENT_SOCKET_PATH, snapshot.pid, snapshot.uid, snapshot.gid,
@@ -189,7 +144,6 @@ fn self_check() -> Result<String, ServiceError> {
 enum ServiceError {
     Io(io::Error),
     Transport(hepta_agent_transport::TransportError),
-    AgentPort(hepta_agent_port::AgentPortError),
     Attestation(AttestationError),
     WrongInheritedDescriptor,
     UnnamedInheritedSocket,
@@ -197,6 +151,7 @@ enum ServiceError {
         expected: std::path::PathBuf,
         actual: std::path::PathBuf,
     },
+    ProductHandlerUnavailable,
     Invariant(&'static str),
 }
 
@@ -205,7 +160,6 @@ impl fmt::Display for ServiceError {
         match self {
             Self::Io(error) => write!(formatter, "inherited socket I/O failed: {error}"),
             Self::Transport(error) => write!(formatter, "transport failed: {error}"),
-            Self::AgentPort(error) => write!(formatter, "AgentPort failed: {error}"),
             Self::Attestation(error) => write!(formatter, "peer attestation failed: {error}"),
             Self::WrongInheritedDescriptor => {
                 formatter.write_str("standard input is not an AF_UNIX stream socket")
@@ -219,6 +173,9 @@ impl fmt::Display for ServiceError {
                 actual.display(),
                 expected.display()
             ),
+            Self::ProductHandlerUnavailable => formatter.write_str(
+                "product BrowserActor handler is not connected; fixture substitution is forbidden",
+            ),
             Self::Invariant(reason) => write!(formatter, "service invariant failed: {reason}"),
         }
     }
@@ -229,7 +186,6 @@ impl std::error::Error for ServiceError {
         match self {
             Self::Io(error) => Some(error),
             Self::Transport(error) => Some(error),
-            Self::AgentPort(error) => Some(error),
             Self::Attestation(error) => Some(error),
             _ => None,
         }
@@ -248,12 +204,6 @@ impl From<hepta_agent_transport::TransportError> for ServiceError {
     }
 }
 
-impl From<hepta_agent_port::AgentPortError> for ServiceError {
-    fn from(error: hepta_agent_port::AgentPortError) -> Self {
-        Self::AgentPort(error)
-    }
-}
-
 impl From<AttestationError> for ServiceError {
     fn from(error: AttestationError) -> Self {
         Self::Attestation(error)
@@ -263,7 +213,6 @@ impl From<AttestationError> for ServiceError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::os::unix::net::UnixStream;
 
     #[test]
     fn socketpair_is_a_stream_but_not_a_product_path() {
@@ -276,33 +225,20 @@ mod tests {
     }
 
     #[test]
-    fn self_check_keeps_listener_closed() {
+    fn product_self_check_reports_fixture_separation_and_closed_activation() {
         let report = self_check().expect("self-check");
         assert!(report.contains("\"ok\":true"));
         assert!(report.contains("\"listener_created\":false"));
+        assert!(report.contains("\"product_handler_connected\":false"));
+        assert!(report.contains("\"fixture_handler_linked\":false"));
+        assert!(report.contains("\"activation_fail_closed\":true"));
     }
 
     #[test]
-    fn evidence_json_is_request_bound() {
-        let evidence = ServiceEvidence {
-            peer: PeerIdentity {
-                pid: Some(42),
-                uid: 1000,
-                gid: 1001,
-            },
-            transport_sequence: 1,
-            request_id: "request:one".to_owned(),
-            session_id: None,
-            session_generation: None,
-            request_sha256: "a".repeat(64),
-            response_sha256: "b".repeat(64),
-            effect_class: hepta_browser_codec::EffectClass::Observation,
-            response_ok: true,
-            response_committed: true,
-        };
-        let encoded = evidence_json(&evidence);
-        assert!(encoded.contains("\"request_id\":\"request:one\""));
-        assert!(encoded.contains(&"a".repeat(64)));
-        assert!(encoded.contains(&"b".repeat(64)));
+    fn missing_browser_actor_has_a_stable_fail_closed_error() {
+        assert_eq!(
+            ServiceError::ProductHandlerUnavailable.to_string(),
+            "product BrowserActor handler is not connected; fixture substitution is forbidden"
+        );
     }
 }
