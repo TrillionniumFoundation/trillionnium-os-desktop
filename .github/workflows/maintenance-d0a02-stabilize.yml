@@ -32,6 +32,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git fetch --no-tags origin main codex/d0a02-proof-soundness-v4
           test "$(git rev-parse HEAD)" = "$(git rev-parse origin/codex/d0a02-proof-soundness-v4)"
           git merge --no-edit origin/main
@@ -64,7 +66,5 @@ jobs:
           set -euo pipefail
           git add -A
           test -n "$(git status --porcelain=v1)"
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git commit -m "fix(d0a02): stabilize causal process-recovery proof"
           git push origin HEAD:codex/d0a02-proof-soundness-v4
