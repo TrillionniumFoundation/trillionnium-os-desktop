@@ -30,16 +30,8 @@ jobs:
 
           path = Path("experiments/servo-headed-runtime/src/main.rs")
           text = path.read_text(encoding="utf-8")
-          old = """        self.window.request_redraw();
-        self.drive();
-    }
-
-    fn start_recovery"""
-          new = """        self.window.request_redraw();
-        let _ = self.proxy.send_event(AppEvent::Drive);
-    }
-
-    fn start_recovery"""
+          old = "        self.window.request_redraw();\n        self.drive();\n    }\n\n    fn start_recovery"
+          new = "        self.window.request_redraw();\n        let _ = self.proxy.send_event(AppEvent::Drive);\n    }\n\n    fn start_recovery"
           if old in text:
               if text.count(old) != 1:
                   raise SystemExit("receiver-call repair target is not unique")
