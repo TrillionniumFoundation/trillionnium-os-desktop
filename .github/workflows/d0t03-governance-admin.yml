@@ -1,0 +1,92 @@
+name: d0t03-governance-admin
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - codex/gap-closure-governance-v2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d0t03-governance-admin-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  governance_plan:
+    name: d0t03-governance-plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact candidate without write credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Compile governance manager and tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/d0t03_governance_admin.py \
+            tests/governance/test_d0t03_governance_admin.py
+
+      - name: Run settings-plan and identity-separation corpus
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover \
+            -s tests/governance \
+            -p 'test_*.py' \
+            -v
+
+      - name: Generate bounded plan-only evidence
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/d0t03-governance-admin
+          python3 tools/d0t03_governance_admin.py self-test \
+            --write-result artifacts/d0t03-governance-admin/self-test.json \
+            | tee artifacts/d0t03-governance-admin/self-test.stdout.json
+          cmp \
+            artifacts/d0t03-governance-admin/self-test.json \
+            artifacts/d0t03-governance-admin/self-test.stdout.json
+
+      - name: Validate repository and governance workflow integrity
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/validate_governance_integrity.py
+
+      - name: Enforce plan-only claim ceiling
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('artifacts/d0t03-governance-admin/self-test.json').read_text())
+          assert result['status'] == 'PASS_PLAN_ONLY'
+          assert result['distinct_contexts'] is True
+          assert result['settings_applied'] is False
+          assert result['independent_review_completed'] is False
+          assert result['release_key_custody_proven'] is False
+          PY
+
+      - name: Confirm workflow has no setting mutation authority
+        run: |
+          set -euo pipefail
+          test "${GITHUB_EVENT_NAME}" != "pull_request_target"
+          test -z "${GITHUB_TOKEN_WRITE_PROBE:-}"
+          ! grep -R -nE '(^|[[:space:]])(git[[:space:]]+(push|commit|tag)|gh[[:space:]]+api.*-(X|--method)[[:space:]]*(PUT|POST|PATCH|DELETE))' \
+            .github/workflows/d0t03-governance-admin.yml
+
+      - name: Upload exact-head plan evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d0t03-governance-admin-${{ github.sha }}
+          path: artifacts/d0t03-governance-admin
+          if-no-files-found: warn
+          retention-days: 30
