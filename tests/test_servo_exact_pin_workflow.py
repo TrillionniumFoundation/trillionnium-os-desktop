@@ -70,6 +70,8 @@ class ServoExactPinWorkflowTests(unittest.TestCase):
         self.assertIn("PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}", workflow)
         self.assertIn("PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}", workflow)
         self.assertLess(workflow.index(identity), workflow.index("Check out exact Servo source pin"))
+        desktop_checkout = workflow[workflow.index("Check out TrillionniumOS Desktop candidate") : workflow.index("Check out exact Servo source pin")]
+        self.assertIn("fetch-depth: 0", desktop_checkout)
         self.assertIn("qualify_servo_exact_pin_evidence.py", workflow)
         self.assertIn("gate-evidence-envelope.json", workflow)
         self.assertIn("gate_evidence_envelope.py", workflow)

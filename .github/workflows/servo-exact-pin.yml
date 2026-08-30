@@ -55,6 +55,9 @@ jobs:
       - name: Check out TrillionniumOS Desktop candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          # The identity helper must see both synthetic-merge parents.  A
+          # depth-1 checkout records the merge object but hides its parents.
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Verify exact desktop Git identity

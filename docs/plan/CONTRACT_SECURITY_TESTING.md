@@ -1,13 +1,14 @@
 # TrillionniumOS Desktop d5 contracts, security, and testing
 
 **Plan revision:** `2026-08-28-d5`
-**Status:** normative component of the active canonical plan
+**Status:** `SUPERSEDED_HISTORICAL` — d5 provenance only; not an active normative component
+**Active successor:** [`../DESKTOP_PLAN-2026-08-29-d6.md`](../DESKTOP_PLAN-2026-08-29-d6.md)
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`
 
-This annex is versioned and reviewed atomically with
-[`../DESKTOP_PLAN-2026-08-28-d5.md`](../DESKTOP_PLAN-2026-08-28-d5.md). If an
-annex conflicts with the executive lock in the main plan, the executive lock
-wins until the plan and annex are updated together.
+This historical annex is retained for provenance and was versioned with
+[`../DESKTOP_PLAN-2026-08-28-d5.md`](../DESKTOP_PLAN-2026-08-28-d5.md). The
+active normative plan is d6; this annex does not override its executive lock,
+machine truth, or claim ceilings.
 
 ## 4. Contract and transport architecture
 
