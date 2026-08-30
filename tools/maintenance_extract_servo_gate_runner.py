@@ -47,8 +47,8 @@ def extract_run_block(lines: list[str], step_name: str) -> str:
             break
     raw = "\n".join(lines[run_line + 1 : end]).rstrip() + "\n"
     block = textwrap.dedent(raw)
-    if not block.strip() or "set -euo pipefail" not in block:
-        raise SystemExit(f"invalid run block for: {step_name}")
+    if not block.strip():
+        raise SystemExit(f"empty run block for: {step_name}")
     return block
 
 
@@ -70,9 +70,7 @@ def main() -> None:
     for command, block in blocks:
         output.extend([f"{function_name(command)}() {{", block.rstrip(), "}", ""])
 
-    output.extend([
-        'case "${1:-}" in',
-    ])
+    output.append('case "${1:-}" in')
     for command, _ in blocks:
         output.extend([
             f"  {command})",
