@@ -89,7 +89,11 @@ if [[ "$valid_existing" != true ]]; then
       --prefix="$prefix" \
       "${configure_flags[@]}"
     make -j2
-    make install
+    # Install only the three reviewed image-construction tools. A top-level
+    # `make install` also writes udev/systemd/scrub assets to host paths that
+    # are outside the isolated prefix and is therefore forbidden.
+    make -C e2fsck install
+    make -C misc install
   ) >&2
   test -x "$bin_dir/mke2fs"
   test -x "$bin_dir/e2fsck"
