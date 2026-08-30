@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - ".github/workflows/maintenance-d0a02-stabilize.yml"
+      - "tools/maintenance_stage_d0a02_workflow.py"
 
 permissions:
   contents: write
@@ -36,35 +37,12 @@ jobs:
           set -euo pipefail
           git fetch --no-tags origin main "$BRANCH"
           test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BRANCH)"
-          git show origin/main:tools/maintenance_stabilize_d0a02.py > "$RUNNER_TEMP/stabilize.py"
-          python3 - <<'PY'
-          import importlib.util
-          import os
-          from pathlib import Path
-
-          helper = Path(os.environ['RUNNER_TEMP']) / 'stabilize.py'
-          spec = importlib.util.spec_from_file_location('stabilize', helper)
-          module = importlib.util.module_from_spec(spec)
-          assert spec.loader is not None
-          spec.loader.exec_module(module)
-          module.patch_workflow()
-
-          path = Path('.github/workflows/servo-headed-runtime.yml')
-          text = path.read_text(encoding='utf-8')
-          start = text.index('on:\n')
-          end = text.index('\npermissions:\n')
-          trigger = '''on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-  workflow_dispatch:
-'''
-          path.write_text(text[:start] + trigger + text[end:], encoding='utf-8')
-          PY
+          git show origin/main:tools/maintenance_stage_d0a02_workflow.py \
+            > "$RUNNER_TEMP/stage-workflow.py"
+          python3 "$RUNNER_TEMP/stage-workflow.py"
 
           workflow=.github/workflows/servo-headed-runtime.yml
-          ! grep -q 'paths:' <(sed -n '1,/^permissions:/p' "$workflow")
+          ! sed -n '1,/^permissions:/p' "$workflow" | grep -q 'paths:'
           ! grep -q 'contents: write' "$workflow"
           ! grep -Eq 'git[[:space:]]+push|gh[[:space:]]+workflow[[:space:]]+run' "$workflow"
           grep -q 'servo_pipeline_panic_callback_required' "$workflow"
@@ -74,24 +52,16 @@ jobs:
           base_tree=$(git rev-parse 'HEAD^{tree}')
           blob_sha=$(jq -Rs '{content: ., encoding: "utf-8"}' "$workflow" |
             gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" --input - --jq .sha)
-          tree_sha=$(jq -n \
-            --arg base_tree "$base_tree" \
-            --arg blob_sha "$blob_sha" \
+          tree_sha=$(jq -n --arg base_tree "$base_tree" --arg blob_sha "$blob_sha" \
             '{base_tree:$base_tree,tree:[{path:".github/workflows/servo-headed-runtime.yml",mode:"100644",type:"blob",sha:$blob_sha}]}' |
             gh api --method POST "repos/$GITHUB_REPOSITORY/git/trees" --input - --jq .sha)
           commit_sha=$(jq -n \
             --arg message "ci(d0a02): install permanent read-only causal qualification gate" \
-            --arg tree "$tree_sha" \
-            --arg parent "$base_commit" \
+            --arg tree "$tree_sha" --arg parent "$base_commit" \
             '{message:$message,tree:$tree,parents:[$parent]}' |
             gh api --method POST "repos/$GITHUB_REPOSITORY/git/commits" --input - --jq .sha)
-          {
-            printf 'base_commit=%s\n' "$base_commit"
-            printf 'base_tree=%s\n' "$base_tree"
-            printf 'blob_sha=%s\n' "$blob_sha"
-            printf 'tree_sha=%s\n' "$tree_sha"
-            printf 'commit_sha=%s\n' "$commit_sha"
-          } | tee staged-commit.txt
+          printf 'base_commit=%s\ncommit_sha=%s\n' "$base_commit" "$commit_sha" \
+            | tee staged-commit.txt
 
       - name: Upload staged object identity
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
