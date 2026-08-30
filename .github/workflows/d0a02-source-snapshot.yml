@@ -37,6 +37,7 @@ jobs:
         with:
           name: d0a02-source-snapshot-${{ github.sha }}
           path: source-snapshot
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
