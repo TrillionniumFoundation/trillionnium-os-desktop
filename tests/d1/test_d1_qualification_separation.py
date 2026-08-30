@@ -60,20 +60,33 @@ class D1QualificationSeparationTests(unittest.TestCase):
             qualification_drop_in,
         )
 
-    def test_permanent_workflow_builds_and_audits_both_graphs_explicitly(self) -> None:
+    def test_permanent_workflow_delegates_to_audited_runner_that_proves_both_graphs(self) -> None:
         workflow = (
             ROOT / ".github/workflows/d1-final-qualification.yml"
         ).read_text(encoding="utf-8")
-        self.assertIn("cargo tree --locked -p hepta-agent-portd --no-default-features", workflow)
-        self.assertIn("--features d1-qualification", workflow)
-        self.assertIn("--bin hepta-agent-d1-fixture", workflow)
-        self.assertIn("product-daemon.strings", workflow)
-        self.assertIn("qualification-fixture.strings", workflow)
-        self.assertIn("product_handler_connected", workflow)
-        self.assertIn("qualification_only", workflow)
-        self.assertIn("git rev-parse HEAD^1", workflow)
-        self.assertIn("git rev-parse HEAD^2", workflow)
-        self.assertIn("- main", workflow)
+        runner = (ROOT / "tools/run_d1_final_qualification.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("branches: [main]", workflow)
+        self.assertIn(
+            "tools/run_d1_final_qualification.sh prove-graphs", workflow
+        )
+        self.assertIn(
+            "tools/run_d1_final_qualification.sh build-binaries", workflow
+        )
+        self.assertIn(
+            "cargo tree --locked -p hepta-agent-portd --no-default-features", runner
+        )
+        self.assertIn("--features d1-qualification", runner)
+        self.assertIn("--bin hepta-agent-d1-fixture", runner)
+        self.assertIn("product-daemon.strings", runner)
+        self.assertIn("qualification-fixture.strings", runner)
+        self.assertIn("product_handler_connected", runner)
+        self.assertIn("qualification_only", runner)
+        self.assertIn("git rev-parse HEAD^1", runner)
+        self.assertIn("git rev-parse HEAD^2", runner)
+        self.assertIn("refs/heads/main", runner)
 
 
 if __name__ == "__main__":
