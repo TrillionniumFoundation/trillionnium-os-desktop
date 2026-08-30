@@ -1,0 +1,103 @@
+name: d4-collaboration-d3-integration
+
+on:
+  pull_request:
+    branches:
+      - codex/d3-reviewed-head-anchor-v1
+  push:
+    branches:
+      - codex/d4-collaboration-state-machine-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d4-collaboration-d3-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    name: d4-collaboration-d3-integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact D3 plus D4 tested object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Enforce exact PR synthetic-merge identity
+        if: github.event_name == 'pull_request'
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-list --count --parents -n 1 HEAD | awk '{print NF-1}')" = 2
+          test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE"
+          test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD"
+
+      - name: Compile deterministic collaboration reference and tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/d4_collaboration_reference.py \
+            tests/d4/test_collaboration_reference.py
+
+      - name: Run D4 state, lease, preemption, and replay corpus
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover \
+            -s tests/d4 \
+            -p 'test_*.py' \
+            -v
+
+      - name: Generate bounded D4 source evidence
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/d4-collaboration-d3-integration
+          python3 tools/d4_collaboration_reference.py \
+            --contract contracts/human-agent-collaboration.v1.json \
+            --write-result artifacts/d4-collaboration-d3-integration/reference-result.json \
+            | tee artifacts/d4-collaboration-d3-integration/reference-result.stdout.json
+          cmp \
+            artifacts/d4-collaboration-d3-integration/reference-result.json \
+            artifacts/d4-collaboration-d3-integration/reference-result.stdout.json
+
+      - name: Validate complete merged repository object
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+
+      - name: Enforce no runtime or production claim
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          contract = json.loads(Path('contracts/human-agent-collaboration.v1.json').read_text())
+          result = json.loads(Path('artifacts/d4-collaboration-d3-integration/reference-result.json').read_text())
+          assert contract['status'] == 'SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D3'
+          assert result['status'] == 'PASS_SOURCE_REFERENCE_ONLY'
+          assert result['native_input_integrated'] is False
+          assert result['system_clipboard_integrated'] is False
+          assert result['browser_actor_runtime_integrated'] is False
+          assert result['external_effects_enabled'] is False
+          assert result['release_ready'] is False
+          PY
+
+      - name: Upload exact-object integration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d4-collaboration-d3-integration-${{ github.sha }}
+          path: artifacts/d4-collaboration-d3-integration
+          if-no-files-found: warn
+          retention-days: 30
