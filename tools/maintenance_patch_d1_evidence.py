@@ -16,7 +16,10 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
 
 def replace_function(text: str, name: str, next_name: str, body: str) -> str:
     start = text.index(f"{name}() {{")
-    end = text.index(f"\n{next_name}() {{", start)
+    if next_name == "case":
+        end = text.index('\ncase "${1:-}" in', start)
+    else:
+        end = text.index(f"\n{next_name}() {{", start)
     return text[:start] + body.rstrip() + "\n" + text[end:]
 
 
@@ -280,8 +283,8 @@ python3 tools/finalize_d1_evidence.py \
   --root /tmp/trillionnium-d1 \
   --artifact-root /tmp/trillionnium-d1-artifact
 python3 tools/verify_d1_artifact.py /tmp/trillionnium-d1-artifact \
-  | tee /tmp/trillionnium-d1-artifact/evidence/offline-verification.json
-# Re-finalize so the verifier output itself is digest-bound, then verify once more.
+  | tee /tmp/trillionnium-d1/evidence/offline-verification.json
+# Re-finalize so the independent verifier report is itself digest-bound.
 python3 tools/finalize_d1_evidence.py \
   --repository "$GITHUB_WORKSPACE" \
   --root /tmp/trillionnium-d1 \
