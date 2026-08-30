@@ -235,10 +235,16 @@ jobs:
           cargo check --workspace --all-targets --all-features --locked
           cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
           cargo test --workspace --all-targets --all-features --locked
+          # Keep the two qualification binaries under their distinct feature
+          # contracts.  Cargo's required-features gate rejects the D1 fixture
+          # when it is bundled into the fixture-only invocation.
           cargo build --release --locked \
             -p hepta-agent-portd \
             --features fixture \
-            --bin hepta-agent-port-qualificationd \
+            --bin hepta-agent-port-qualificationd
+          cargo build --release --locked \
+            -p hepta-agent-portd \
+            --features d1-qualification \
             --bin hepta-agent-d1-fixture
           test -x target/release/hepta-agent-port-qualificationd
           test -x target/release/hepta-agent-d1-fixture
@@ -294,10 +300,28 @@ jobs:
           git -C /tmp/servo checkout --detach FETCH_HEAD
           test "$(git -C /tmp/servo rev-parse HEAD)" = "$SERVO_REVISION"
           test -z "$(git -C /tmp/servo status --porcelain=v1)"
+          # The pinned Servo tree may omit this optional leaf.  Validate the
+          # tracked parent, create only the final directory component, and
+          # revalidate before installing the ephemeral runtime sources.
+          source tools/reject_symlink_path.sh
+          examples_dir=/tmp/servo/ports/servoshell/examples
+          examples_parent=$(dirname -- "$examples_dir")
+          reject_symlink_path "$examples_parent" "D2I Servo examples parent"
+          [[ -d "$examples_parent" && ! -L "$examples_parent" ]]
+          reject_symlink_path "$examples_dir" "D2I Servo examples directory"
+          if [[ -L "$examples_dir" || ( -e "$examples_dir" && ! -d "$examples_dir" ) ]]; then
+            echo "D2I Servo examples directory is not a directory" >&2
+            exit 1
+          fi
+          if [[ ! -e "$examples_dir" ]]; then
+            mkdir -- "$examples_dir"
+          fi
+          reject_symlink_path "$examples_dir" "D2I Servo examples directory"
+          [[ -d "$examples_dir" && ! -L "$examples_dir" ]]
           cp experiments/servo-headed-runtime/src/main.rs \
-            /tmp/servo/ports/servoshell/examples/trillionnium_headed_runtime.rs
+            "$examples_dir/trillionnium_headed_runtime.rs"
           cp experiments/servo-headed-runtime/fixture/index.html \
-            /tmp/servo/ports/servoshell/examples/trillionnium_headed_fixture.html
+            "$examples_dir/trillionnium_headed_fixture.html"
 
       - name: Install Servo toolchain and restore exact-pin cache
         shell: bash

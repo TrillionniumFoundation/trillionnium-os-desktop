@@ -153,6 +153,10 @@ class D2IContractTests(unittest.TestCase):
         self.assertIn('"$SERVO_REVISION"', workflow)
         self.assertIn("SERVO_REVISION: ${{ steps.servo-pin.outputs.revision }}", workflow)
         self.assertIn('--servo-revision "$SERVO_REVISION"', workflow)
+        self.assertIn("source tools/reject_symlink_path.sh", workflow)
+        self.assertIn('examples_parent=$(dirname -- "$examples_dir")', workflow)
+        self.assertIn('mkdir -- "$examples_dir"', workflow)
+        self.assertIn('reject_symlink_path "$examples_dir"', workflow)
 
     def test_input_digest_manifest_is_registry_derived_and_complete_for_scope(self) -> None:
         registry = json.loads(
