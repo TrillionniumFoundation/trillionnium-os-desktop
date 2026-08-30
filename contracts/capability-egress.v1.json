@@ -1,0 +1,193 @@
+{
+  "schema": "trillionnium.desktop.capability-egress.v1",
+  "work_package": "D6-01",
+  "status": "SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D5",
+  "prerequisites": [
+    "D0T-03",
+    "D2I-01",
+    "D3-01",
+    "D4-01",
+    "D5-01"
+  ],
+  "permit": {
+    "schema": "trillionnium.desktop.capability-permit.v1",
+    "signature_algorithm": "Ed25519",
+    "required_bindings": [
+      "permit_id",
+      "issuer_id",
+      "issuer_key_id",
+      "subject",
+      "audience",
+      "resource",
+      "actions",
+      "issued_at_epoch",
+      "not_before_epoch",
+      "expires_at_epoch",
+      "nonce",
+      "maximum_uses",
+      "constraints",
+      "signature"
+    ],
+    "maximum_lifetime_seconds": 3600,
+    "maximum_uses": 1024,
+    "unknown_field_policy": "reject",
+    "revoked_issuer_policy": "reject",
+    "expired_policy": "reject",
+    "not_yet_valid_policy": "reject",
+    "replay_policy": "reject_after_maximum_uses"
+  },
+  "subject": {
+    "required_fields": [
+      "taskflow_principal",
+      "mechanism_uid",
+      "mechanism_unit",
+      "session_id",
+      "page_owner_id"
+    ],
+    "all_fields_must_match_runtime": true,
+    "wildcard_allowed": false
+  },
+  "portals": {
+    "file": {
+      "audience": "portal:file",
+      "raw_host_path_allowed": false,
+      "resource_kind": "opaque_file_handle",
+      "actions": [
+        "read",
+        "write",
+        "create",
+        "truncate"
+      ],
+      "maximum_bytes_bound_required": true
+    },
+    "network": {
+      "audience": "portal:network",
+      "resource_kind": "exact_origin_set",
+      "actions": [
+        "http_request",
+        "websocket_connect",
+        "download"
+      ],
+      "direct_connection_allowed": false,
+      "controlled_resolver_required": true,
+      "egress_proxy_required": true,
+      "connected_peer_ip_validation_required": true
+    },
+    "notification": {
+      "audience": "portal:notification",
+      "actions": [
+        "show"
+      ]
+    },
+    "audio": {
+      "audience": "portal:audio",
+      "actions": [
+        "play"
+      ]
+    }
+  },
+  "network": {
+    "allowed_schemes": [
+      "https",
+      "wss"
+    ],
+    "plaintext_http_allowed": false,
+    "external_schemes_allowed": false,
+    "url_userinfo_allowed": false,
+    "non_canonical_host_allowed": false,
+    "maximum_redirects": 5,
+    "redirect_reauthorization_required": true,
+    "https_downgrade_allowed": false,
+    "resolver_response_required": true,
+    "maximum_dns_addresses": 16,
+    "maximum_cname_depth": 8,
+    "dns_ttl_bound_required": true,
+    "connected_peer_must_be_in_approved_dns_set": true,
+    "private_ip_allowed": false,
+    "loopback_ip_allowed": false,
+    "link_local_ip_allowed": false,
+    "multicast_ip_allowed": false,
+    "unspecified_ip_allowed": false,
+    "reserved_ip_allowed": false,
+    "metadata_ip_allowed": false,
+    "ipv4_mapped_bypass_allowed": false,
+    "transition_tunnel_bypass_allowed": false,
+    "proxy_bypass_allowed": false,
+    "captive_portal_origin_change_allowed": false,
+    "tls_interception_allowed": false,
+    "quic_allowed": false,
+    "webtransport_allowed": false
+  },
+  "request_contexts": [
+    "top_level",
+    "iframe",
+    "worker",
+    "service_worker",
+    "prefetch",
+    "websocket",
+    "download"
+  ],
+  "context_policy": {
+    "explicit_context_allowlist_required": true,
+    "worker_inherits_ambient_authority": false,
+    "service_worker_inherits_ambient_authority": false,
+    "iframe_inherits_ambient_authority": false,
+    "prefetch_inherits_ambient_authority": false,
+    "download_requires_network_and_file_permits": true
+  },
+  "required_corpus": [
+    "valid_https_via_controlled_resolver_and_proxy",
+    "valid_wss_via_controlled_resolver_and_proxy",
+    "signature_tamper_rejected",
+    "unknown_field_rejected",
+    "audience_mismatch_rejected",
+    "subject_mismatch_rejected",
+    "resource_mismatch_rejected",
+    "action_mismatch_rejected",
+    "expired_permit_rejected",
+    "not_yet_valid_permit_rejected",
+    "overlong_permit_rejected",
+    "revoked_issuer_rejected",
+    "permit_replay_rejected",
+    "raw_file_path_rejected",
+    "file_byte_limit_enforced",
+    "notification_and_audio_scoped",
+    "url_userinfo_rejected",
+    "plaintext_and_external_scheme_rejected",
+    "noncanonical_host_rejected",
+    "private_loopback_linklocal_metadata_rejected",
+    "ipv4_mapped_ipv6_rejected",
+    "six_to_four_and_teredo_rejected",
+    "dns_answer_overflow_rejected",
+    "cname_depth_rejected",
+    "resolver_mismatch_rejected",
+    "dns_name_mismatch_rejected",
+    "dns_ttl_mismatch_rejected",
+    "connected_peer_mismatch_rejected",
+    "proxy_bypass_rejected",
+    "redirect_origin_reauthorization",
+    "redirect_budget_enforced",
+    "https_downgrade_rejected",
+    "captive_portal_redirect_rejected",
+    "tls_interception_rejected",
+    "iframe_worker_service_worker_prefetch_contexts_scoped",
+    "download_requires_file_permit",
+    "quic_and_webtransport_rejected",
+    "decision_receipt_tamper_rejected"
+  ],
+  "claim_ceiling": {
+    "pure_capability_and_egress_reference": true,
+    "network_namespace_integrated": false,
+    "controlled_resolver_integrated": false,
+    "egress_proxy_integrated": false,
+    "kernel_peer_ip_observed": false,
+    "file_portal_integrated": false,
+    "notification_portal_integrated": false,
+    "audio_portal_integrated": false,
+    "production_credentials_available": false,
+    "external_network_enabled": false,
+    "external_effects_enabled": false,
+    "hardware_qualified": false,
+    "release_ready": false
+  }
+}
