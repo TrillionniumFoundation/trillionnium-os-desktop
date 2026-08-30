@@ -35,7 +35,9 @@ jobs:
 
       - name: Emit bounded source-only evidence
         env:
-          EVIDENCE_ROLE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'exact_main_source' || 'candidate_source' }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
           mkdir -p artifacts/d0t03-source
@@ -46,38 +48,95 @@ jobs:
           import os
           import subprocess
 
+          def git(*args: str) -> str:
+              return subprocess.check_output(["git", *args], text=True).strip()
+
+          tested_sha = git("rev-parse", "HEAD")
+          tree_sha = git("rev-parse", "HEAD^{tree}")
+          parent_line = git("show", "-s", "--format=%P", "HEAD")
+          parents = parent_line.split() if parent_line else []
+          event_name = os.environ["GITHUB_EVENT_NAME"]
+          ref = os.environ["GITHUB_REF"]
+
+          pr_number = None
+          pr_head_sha = None
+          base_sha = None
+          if event_name == "pull_request":
+              if len(parents) != 2:
+                  raise SystemExit(
+                      "pull_request evidence requires an exact two-parent merge"
+                  )
+              base_sha, pr_head_sha = parents
+              expected_head = os.environ.get("EVENT_PR_HEAD_SHA", "")
+              expected_base = os.environ.get("EVENT_PR_BASE_SHA", "")
+              if pr_head_sha != expected_head or base_sha != expected_base:
+                  raise SystemExit(
+                      "checked-out PR merge parents do not match the event identities"
+                  )
+              raw_number = os.environ.get("EVENT_PR_NUMBER", "")
+              if not raw_number.isdigit():
+                  raise SystemExit(
+                      "pull_request evidence is missing the PR number"
+                  )
+              pr_number = int(raw_number)
+              evidence_role = "pr_synthetic_merge"
+          elif event_name == "push":
+              if ref != "refs/heads/main" or not parents:
+                  raise SystemExit(
+                      "push evidence is accepted only for exact refs/heads/main"
+                  )
+              base_sha = parents[0]
+              evidence_role = "exact_main_source"
+          elif event_name == "workflow_dispatch":
+              base_sha = parents[0] if parents else None
+              evidence_role = "manual_non_authoritative"
+          else:
+              raise SystemExit(f"unsupported evidence event: {event_name}")
+
           inputs = [
-              Path('.github/CODEOWNERS'),
-              Path('.github/workflows/d0t03-source-contract.yml'),
-              Path('manifests/repository-governance.v1.json'),
-              Path('tools/validate_d0t03_source.py'),
-              Path('docs/release/D0T03_GOVERNANCE_BOOTSTRAP.md'),
+              Path(".github/CODEOWNERS"),
+              Path(".github/workflows/d0t03-source-contract.yml"),
+              Path("manifests/repository-governance.v1.json"),
+              Path("tools/validate_d0t03_source.py"),
+              Path("docs/release/D0T03_GOVERNANCE_BOOTSTRAP.md"),
           ]
           result = {
-              'schema': 'trillionnium.desktop.d0t03-source-evidence.v1',
-              'status': 'PASS_SOURCE_CONTRACT_SETTINGS_STILL_REQUIRED',
-              'repository': os.environ['GITHUB_REPOSITORY'],
-              'event_name': os.environ['GITHUB_EVENT_NAME'],
-              'ref': os.environ['GITHUB_REF'],
-              'evidence_role': os.environ['EVIDENCE_ROLE'],
-              'tested_sha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
-              'tree_sha': subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip(),
-              'input_digests': {
+              "schema": "trillionnium.desktop.d0t03-source-evidence.v2",
+              "status": "PASS_SOURCE_CONTRACT_SETTINGS_STILL_REQUIRED",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "event_name": event_name,
+              "ref": ref,
+              "ref_name": os.environ["GITHUB_REF_NAME"],
+              "evidence_role": evidence_role,
+              "promotion_authoritative": False,
+              "pr_number": pr_number,
+              "pr_head_sha": pr_head_sha,
+              "base_sha": base_sha,
+              "tested_sha": tested_sha,
+              "tree_sha": tree_sha,
+              "parent_shas": parents,
+              "run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "workflow": os.environ["GITHUB_WORKFLOW"],
+              "workflow_ref": os.environ["GITHUB_WORKFLOW_REF"],
+              "workflow_sha": os.environ["GITHUB_WORKFLOW_SHA"],
+              "input_digests": {
                   str(path): hashlib.sha256(path.read_bytes()).hexdigest()
                   for path in inputs
               },
-              'claims': {
-                  'source_contract_valid': True,
-                  'interim_two_identity_codeowners_present': True,
-                  'protected_main_observed': False,
-                  'organization_team_codeowners_observed': False,
-                  'independent_review_observed': False,
-                  'release_environment_observed': False,
-                  'd0t03_closed': False,
+              "claims": {
+                  "source_contract_valid": True,
+                  "interim_two_identity_codeowners_present": True,
+                  "protected_main_observed": False,
+                  "organization_team_codeowners_observed": False,
+                  "independent_review_observed": False,
+                  "release_environment_observed": False,
+                  "d0t03_closed": False,
               },
           }
-          Path('artifacts/d0t03-source/evidence.json').write_text(
-              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          Path("artifacts/d0t03-source/evidence.json").write_text(
+              json.dumps(result, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
           )
           PY
 
