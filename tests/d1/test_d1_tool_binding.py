@@ -22,12 +22,18 @@ class D1FilesystemToolBindingTests(unittest.TestCase):
         workflow = (
             REPOSITORY_ROOT / ".github/workflows/d1-final-qualification.yml"
         ).read_text(encoding="utf-8")
+        runner = (
+            REPOSITORY_ROOT / "tools/run_d1_final_qualification.sh"
+        ).read_text(encoding="utf-8")
         helper = (REPOSITORY_ROOT / "tools/build_pinned_e2fsprogs.sh").read_text(
             encoding="utf-8"
         )
-        self.assertIn("tools/build_pinned_e2fsprogs.sh", workflow)
-        self.assertIn("e2fsprogs-host-tool-result.json", workflow)
-        self.assertIn("gettext", workflow)
+        self.assertIn(
+            "tools/run_d1_final_qualification.sh build-e2fsprogs", workflow
+        )
+        self.assertIn("tools/build_pinned_e2fsprogs.sh", runner)
+        self.assertIn("e2fsprogs-host-tool-result.json", runner)
+        self.assertIn("gettext", runner)
         self.assertIn("--enable-nls", helper)
         self.assertNotIn("--disable-nls", helper)
         self.assertIn("路径.txt", helper)
