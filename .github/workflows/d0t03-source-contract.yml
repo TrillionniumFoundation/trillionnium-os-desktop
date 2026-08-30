@@ -1,0 +1,91 @@
+name: d0t03-source-contract
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d0t03-source-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: d0t03-source-contract / validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact source object without credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate repository and governance source contract
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/validate_d0t03_source.py
+
+      - name: Emit bounded source-only evidence
+        env:
+          EVIDENCE_ROLE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'exact_main_source' || 'candidate_source' }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/d0t03-source
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import subprocess
+
+          inputs = [
+              Path('.github/CODEOWNERS'),
+              Path('.github/workflows/d0t03-source-contract.yml'),
+              Path('manifests/repository-governance.v1.json'),
+              Path('tools/validate_d0t03_source.py'),
+              Path('docs/release/D0T03_GOVERNANCE_BOOTSTRAP.md'),
+          ]
+          result = {
+              'schema': 'trillionnium.desktop.d0t03-source-evidence.v1',
+              'status': 'PASS_SOURCE_CONTRACT_SETTINGS_STILL_REQUIRED',
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'event_name': os.environ['GITHUB_EVENT_NAME'],
+              'ref': os.environ['GITHUB_REF'],
+              'evidence_role': os.environ['EVIDENCE_ROLE'],
+              'tested_sha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+              'tree_sha': subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip(),
+              'input_digests': {
+                  str(path): hashlib.sha256(path.read_bytes()).hexdigest()
+                  for path in inputs
+              },
+              'claims': {
+                  'source_contract_valid': True,
+                  'interim_two_identity_codeowners_present': True,
+                  'protected_main_observed': False,
+                  'organization_team_codeowners_observed': False,
+                  'independent_review_observed': False,
+                  'release_environment_observed': False,
+                  'd0t03_closed': False,
+              },
+          }
+          Path('artifacts/d0t03-source/evidence.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+
+      - name: Upload source-only governance evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d0t03-source-contract-${{ github.sha }}
+          path: artifacts/d0t03-source
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
