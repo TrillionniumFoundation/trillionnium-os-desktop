@@ -5,6 +5,30 @@ governance gate. It installs an interim two-identity CODEOWNERS surface, a
 machine-readable policy contract, a fail-closed validator, and a read-only
 source evidence workflow.
 
+The validator treats CODEOWNERS ordering as a security boundary. It requires:
+
+- every active rule to contain the exact approved identity set, using exact
+  owner tokens rather than substring matching;
+- the active rule order and pattern set to equal the canonical ordered registry
+  in `manifests/repository-governance.v1.json`;
+- no duplicate or unsupported patterns;
+- the sole catch-all rule to appear first;
+- last-match-wins evaluation of canonical sensitive paths to resolve to the
+  approved identities;
+- every currently required workflow, including the D0T-03 workflow itself, to
+  exist exactly once in the required-workflow registry.
+
+D1 and D2I workflows remain explicitly listed as pending integration rather
+than being represented as present required workflows before their reviewed
+merges.
+
+The source workflow emits evidence schema
+`trillionnium.desktop.d0t03-source-evidence.v2`. Pull-request evidence is bound
+to the PR number, exact event head and base SHAs, checked-out two-parent
+synthetic merge, tree SHA, full ref, workflow ref and SHA, run ID, and run
+attempt. Push evidence is accepted only from exact `refs/heads/main`; manual
+runs remain non-authoritative. No source-only evidence can promote D0T-03.
+
 It deliberately does **not** claim that GitHub repository or organization
 settings exist. D0T-03 remains `REPOSITORY_SETTING_REQUIRED` until all of the
 following are observed and independently reviewed on GitHub:
