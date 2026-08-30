@@ -1,0 +1,59 @@
+{
+  "schema": "trillionnium.desktop.repository-governance.v1",
+  "work_package": "D0T-03",
+  "status": "SOURCE_BOOTSTRAP_READY_REPOSITORY_SETTINGS_REQUIRED",
+  "main_branch": {
+    "name": "main",
+    "pull_request_required": true,
+    "strict_required_checks": true,
+    "force_push_allowed": false,
+    "deletion_allowed": false,
+    "linear_history_required": true,
+    "administrator_bypass_allowed": false
+  },
+  "review": {
+    "minimum_distinct_approver_identities": 2,
+    "dismiss_stale_approvals": true,
+    "approval_after_latest_push": true,
+    "code_owner_review_required": true,
+    "all_conversations_resolved": true,
+    "author_self_approval_counts": false,
+    "author_self_merge_allowed": false,
+    "organization_team_codeowners_required": true
+  },
+  "actions": {
+    "default_workflow_permissions": "read",
+    "actions_may_approve_pull_requests": false,
+    "source_mutating_workflows_allowed": false,
+    "mutable_external_action_refs_allowed": false,
+    "pull_request_target_allowed": false
+  },
+  "release": {
+    "protected_environment": "production",
+    "minimum_independent_approvers": 2,
+    "source_author_may_approve_release": false,
+    "signing_key_available_to_pull_request_workflows": false,
+    "signing_and_source_authority_separated": true
+  },
+  "required_status_contexts": [
+    "desktop-ci / repository-contracts",
+    "desktop-ci / rust",
+    "governance-integrity / governance-integrity"
+  ],
+  "dynamic_acceptance_required": [
+    "direct_push_rejected",
+    "force_push_rejected",
+    "branch_delete_rejected",
+    "author_self_approval_not_counted",
+    "stale_approval_dismissed_after_push",
+    "failed_required_check_blocks_merge",
+    "two_distinct_approvals_and_green_checks_allow_merge",
+    "release_requires_two_non_author_approvers"
+  ],
+  "claim_ceiling": {
+    "source_contract_proves_live_repository_settings": false,
+    "source_contract_proves_independent_human_review": false,
+    "source_contract_proves_signing_key_custody": false,
+    "source_contract_proves_release_readiness": false
+  }
+}
