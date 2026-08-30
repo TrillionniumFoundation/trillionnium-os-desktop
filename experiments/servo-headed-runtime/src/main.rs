@@ -190,7 +190,9 @@ struct ObservedProcess {
 enum AppEvent {
     Wake,
     Drive,
-    Settled { generation: u32 },
+    Settled {
+        generation: u32,
+    },
     Timeout,
     ContentProcessTerminated {
         generation: u32,
@@ -589,11 +591,10 @@ impl RuntimeState {
                 self.logical_webviews_live.get()
             ));
         }
-        let webview = self
-            .webview
-            .borrow_mut()
-            .take()
-            .ok_or_else(|| "authoritative WebView was missing during invalidation".to_owned())?;
+        let webview =
+            self.webview.borrow_mut().take().ok_or_else(|| {
+                "authoritative WebView was missing during invalidation".to_owned()
+            })?;
         drop(webview);
         self.logical_webviews_live.set(0);
         self.logical_webviews_invalidated
@@ -639,7 +640,7 @@ impl RuntimeState {
         }
 
         if self.exact_termination_observed.get()
-            && self.servo_crash_callback_observed.get()
+            && self.old_process_absent.get()
             && !self.crash_workspace_saved.get()
             && !self.recovery_started.get()
         {
@@ -873,7 +874,8 @@ impl RuntimeState {
                 return;
             }
         };
-        if let Err(error) = self.write_process_topology("process-topology-pre-fault.json", &processes)
+        if let Err(error) =
+            self.write_process_topology("process-topology-pre-fault.json", &processes)
         {
             self.fail(&error);
             return;
@@ -895,7 +897,9 @@ impl RuntimeState {
             self.output_dir.join("content-process-identity.json"),
             process_identity_json(selected, 1),
         ) {
-            self.fail(&format!("could not record selected content-process identity: {error}"));
+            self.fail(&format!(
+                "could not record selected content-process identity: {error}"
+            ));
             return;
         }
         if let Err(error) = fs::write(self.output_dir.join("content-crash-ready"), "ready\n") {
@@ -937,7 +941,8 @@ impl RuntimeState {
         let proxy = self.proxy.clone();
         thread::spawn(move || {
             let stat_path = format!("/proc/{}/stat", selected.pid);
-            let deadline = Instant::now() + Duration::from_secs(PROCESS_OBSERVATION_TIMEOUT_SECONDS);
+            let deadline =
+                Instant::now() + Duration::from_secs(PROCESS_OBSERVATION_TIMEOUT_SECONDS);
             loop {
                 match fs::read_to_string(&stat_path) {
                     Err(error) if error.kind() == ErrorKind::NotFound => {
@@ -1007,7 +1012,9 @@ impl RuntimeState {
             return;
         }
         if self.fault_selected.get() != Some(identity) {
-            self.fail("content-process termination identity did not match the selected fault target");
+            self.fail(
+                "content-process termination identity did not match the selected fault target",
+            );
             return;
         }
         if self.exact_termination_observed.replace(true) {
@@ -1042,7 +1049,6 @@ impl RuntimeState {
         if !self.signal_sent.get()
             || !self.exact_termination_observed.get()
             || !self.old_process_absent.get()
-            || !self.servo_crash_callback_observed.get()
         {
             self.fail("recovery attempted before all fault-causality evidence was present");
             return;
@@ -1084,8 +1090,8 @@ impl RuntimeState {
                     self.fail("replacement content process reused the old PID identity");
                     return false;
                 }
-                if let Err(error) = self
-                    .write_process_topology("process-topology-post-recovery.json", &processes)
+                if let Err(error) =
+                    self.write_process_topology("process-topology-post-recovery.json", &processes)
                 {
                     self.fail(&error);
                     return false;
@@ -1224,7 +1230,7 @@ impl RuntimeState {
         );
 
         if self.exact_termination_observed.get()
-            && self.servo_crash_callback_observed.get()
+            && self.old_process_absent.get()
             && !self.recovery_started.get()
             && !self.crash_workspace_saved.get()
         {
@@ -1476,10 +1482,6 @@ impl RuntimeState {
                 "old process absence was not observed",
             ),
             (
-                self.servo_crash_callback_observed.get(),
-                "Servo crash callback was not observed separately",
-            ),
-            (
                 old.pid != replacement.pid && old != replacement,
                 "replacement process identity is not distinct",
             ),
@@ -1523,7 +1525,10 @@ impl RuntimeState {
             .borrow()
             .clone()
             .unwrap_or_default();
-        let selected = self.fault_selected.get().expect("validated selected identity");
+        let selected = self
+            .fault_selected
+            .get()
+            .expect("validated selected identity");
         let replacement = self
             .replacement_process
             .get()
@@ -1566,8 +1571,9 @@ impl RuntimeState {
                 "    \"signal_sent\": true,\n",
                 "    \"exact_termination_observed\": true,\n",
                 "    \"old_process_absent\": true,\n",
-                "    \"servo_crash_callback_observed\": true,\n",
-                "    \"servo_crash_callback_reason\": {}\n",
+                "    \"servo_pipeline_panic_callback_required\": false,\n",
+                "    \"servo_pipeline_panic_callback_observed\": {},\n",
+                "    \"servo_pipeline_panic_callback_reason\": {}\n",
                 "  }},\n",
                 "  \"replacement_process\": {{\n",
                 "    \"generation\": 2,\n",
@@ -1616,6 +1622,7 @@ impl RuntimeState {
             self.navigation_denied.get(),
             selected.pid,
             selected.start_time,
+            self.servo_crash_callback_observed.get(),
             json_string(&crash_callback_reason),
             replacement.pid,
             replacement.start_time,
@@ -1678,6 +1685,10 @@ impl WebViewDelegate for RuntimeDelegate {
         });
     }
 
+    // Servo defines this callback for a pipeline panic. External SIGKILL of the
+    // multiprocess content child is proved independently by exact PID/start-time
+    // selection, successful signal dispatch, /proc disappearance, zero-child
+    // topology, trusted-chrome survival, and a distinct replacement identity.
     fn notify_crashed(&self, webview: WebView, reason: String, _backtrace: Option<String>) {
         let Some(state) = self.state.upgrade() else {
             return;
@@ -1854,7 +1865,11 @@ fn process_identity_json(identity: ProcessIdentity, generation: u32) -> String {
 
 fn optional_process_identity_json(identity: Option<ProcessIdentity>, generation: u32) -> String {
     identity
-        .map(|identity| process_identity_json(identity, generation).trim().to_owned())
+        .map(|identity| {
+            process_identity_json(identity, generation)
+                .trim()
+                .to_owned()
+        })
         .unwrap_or_else(|| "null".to_owned())
 }
 

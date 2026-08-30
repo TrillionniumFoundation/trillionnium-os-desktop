@@ -34,15 +34,19 @@ The recovery corpus uses an explicitly external `SIGKILL` fault injection. It
 is not represented as a Servo panic hook. Before dispatching the signal, the
 adapter records the unique direct `--content-process` child's PID and Linux
 `/proc/<pid>/stat` start time and immediately revalidates that identity. The
-adapter then records four separate facts:
+adapter then records three mandatory, independently checkable facts:
 
 1. the exact PID/start-time target was selected;
 2. `SIGKILL` was successfully sent to that identity;
 3. the matching `/proc` identity disappeared and no active content child
-   existed before recovery;
-4. Servo independently delivered the current generation-1 crash callback.
+   existed before recovery.
 
-Recovery is forbidden until all four facts are present. The adapter captures
+Servo documents `WebViewDelegate::notify_crashed` as a pipeline-panic callback.
+An externally killed content process is not required to emit that callback, so
+it is recorded as optional diagnostic evidence and cannot block or satisfy the
+external-process recovery proof.
+
+Recovery is forbidden until all three mandatory facts are present. The adapter captures
 machine-readable process topology before the fault, after exact termination,
 and after recovery. Generation 2 is authoritative only after one distinct
 replacement PID/start-time identity exists, the old PID remains absent, and a
