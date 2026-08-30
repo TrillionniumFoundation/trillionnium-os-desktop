@@ -60,6 +60,16 @@ class D1ProductImageBindingTests(unittest.TestCase):
             source,
         )
 
+    def test_self_check_comparison_is_strict_but_pid_independent(self) -> None:
+        source = (
+            ROOT / "tools/run_d1_product_image_qualification.sh"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("object_pairs_hook=reject_duplicates", source)
+        self.assertIn('EXPECTED_KEYS - {"peer_pid"}', source)
+        self.assertIn('type(item) is not int', source)
+        self.assertNotIn('cmp --silent -- "$self_check"', source)
+
     def test_guest_product_claim_matches_effective_image_binary(self) -> None:
         pipeline = (ROOT / "tests/qemu/run-d1-pipeline.sh").read_text(
             encoding="utf-8"

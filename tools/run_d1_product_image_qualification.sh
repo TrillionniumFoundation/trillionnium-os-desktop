@@ -64,24 +64,6 @@ cleanup() {
 trap cleanup EXIT
 
 "$product_binary" --self-check > "$self_check"
-python3 - "$self_check" <<'PY'
-from __future__ import annotations
-
-import json
-from pathlib import Path
-import sys
-
-path = Path(sys.argv[1])
-value = json.loads(path.read_text(encoding="utf-8"))
-if value.get("ok") is not True:
-    raise SystemExit("product daemon self-check is not healthy")
-if value.get("product_handler_connected") is not False:
-    raise SystemExit("product daemon unexpectedly links a request handler")
-if value.get("fixture_handler_linked") is not False:
-    raise SystemExit("product daemon unexpectedly links a qualification fixture")
-if value.get("activation_fail_closed") is not True:
-    raise SystemExit("product daemon activation is not fail-closed")
-PY
 
 # The old pipeline injects this path as /usr/libexec/hepta-agent-portd. Replace
 # its bytes only for the duration of the image build, then restore the distinct
@@ -92,9 +74,70 @@ if [[ "$(sha256sum -- "$legacy_image_slot" | awk '{print $1}')" != "$product_sha
   exit 1
 fi
 "$legacy_image_slot" --self-check > "$slot_self_check"
-cmp --silent -- "$self_check" "$slot_self_check" || {
-  echo "D1 image slot self-check differs from the product binary" >&2
-  exit 1
+
+python3 - "$self_check" "$slot_self_check" <<'PY'
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import sys
+from typing import Any
+
+
+EXPECTED_KEYS = {
+    "schema",
+    "ok",
+    "listener_created",
+    "expected_product_socket",
+    "product_handler_connected",
+    "fixture_handler_linked",
+    "activation_fail_closed",
+    "peer_pid",
+    "peer_uid",
+    "peer_gid",
 }
+EXPECTED_STABLE = {
+    "schema": "trillionnium.desktop.agent-portd-self-check.v2",
+    "ok": True,
+    "listener_created": False,
+    "expected_product_socket": "/run/hepta/browserd/agent.sock",
+    "product_handler_connected": False,
+    "fixture_handler_linked": False,
+    "activation_fail_closed": True,
+}
+
+
+def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    value: dict[str, Any] = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError(f"duplicate JSON member: {key}")
+        value[key] = item
+    return value
+
+
+def load_report(path: Path) -> dict[str, Any]:
+    value = json.loads(
+        path.read_text(encoding="utf-8"),
+        object_pairs_hook=reject_duplicates,
+    )
+    if not isinstance(value, dict) or set(value) != EXPECTED_KEYS:
+        raise SystemExit(f"unexpected product self-check schema: {path}")
+    for key, expected in EXPECTED_STABLE.items():
+        if type(value[key]) is not type(expected) or value[key] != expected:
+            raise SystemExit(f"unexpected product self-check field {key}: {path}")
+    for key in ("peer_pid", "peer_uid", "peer_gid"):
+        item = value[key]
+        if type(item) is not int or item < (1 if key == "peer_pid" else 0):
+            raise SystemExit(f"invalid product self-check identity {key}: {path}")
+    return value
+
+
+source = load_report(Path(sys.argv[1]))
+slot = load_report(Path(sys.argv[2]))
+for key in EXPECTED_KEYS - {"peer_pid"}:
+    if source[key] != slot[key]:
+        raise SystemExit(f"D1 image slot changed stable self-check field: {key}")
+PY
 
 "$runner" run-pipeline
