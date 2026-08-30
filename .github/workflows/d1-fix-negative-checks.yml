@@ -1,0 +1,107 @@
+name: d1-fix-negative-checks
+
+on:
+  push:
+    branches:
+      - codex/d1-01-current-main-v2
+    paths:
+      - ".github/workflows/d1-fix-negative-checks.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: d1-fix-negative-checks
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      BRANCH: codex/d1-01-current-main-v2
+      EXPECTED_PARENT: eeac6f5abc87cc22876d0094bcde8e4ae0a7b293
+    steps:
+      - name: Check out exact transaction head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Replace negated grep assertions and validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "$EXPECTED_PARENT"
+          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/d1-fix-negative-checks.yml"
+          git fetch --no-tags origin "$BRANCH"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BRANCH)"
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("tools/run_d1_final_qualification.sh")
+          text = path.read_text(encoding="utf-8")
+          marker = "set -euo pipefail\n\nstep_identities()"
+          helper = """set -euo pipefail
+
+assert_absent() {
+  local pattern=$1
+  local path=$2
+  local message=$3
+  if grep -q -- \"$pattern\" \"$path\"; then
+    printf '%s\\n' \"$message\" >&2
+    return 1
+  fi
+}
+
+step_identities()"""
+          if text.count(marker) != 1:
+              raise SystemExit("runner helper insertion point is not unique")
+          text = text.replace(marker, helper)
+
+          replacements = {
+              """! grep -q 'hepta-agent-d1-fixture' packaging/debian/hepta-agent-portd.install
+! grep -q 'image/rootfs-overlay' packaging/debian/hepta-agent-portd.install""": """assert_absent \\
+  'hepta-agent-d1-fixture' \\
+  packaging/debian/hepta-agent-portd.install \\
+  'production install map contains the D1 qualification fixture'
+assert_absent \\
+  'image/rootfs-overlay' \\
+  packaging/debian/hepta-agent-portd.install \\
+  'production install map imports the qualification rootfs overlay'""",
+              """! grep -q 'agent_port_ready' \\
+  /tmp/trillionnium-d1/evidence/product-daemon.strings
+! grep -q 'browser_runtime_available' \\
+  /tmp/trillionnium-d1/evidence/product-daemon.strings""": """assert_absent \\
+  'agent_port_ready' \\
+  /tmp/trillionnium-d1/evidence/product-daemon.strings \\
+  'product daemon contains qualification-only agent_port_ready text'
+assert_absent \\
+  'browser_runtime_available' \\
+  /tmp/trillionnium-d1/evidence/product-daemon.strings \\
+  'product daemon contains qualification-only browser_runtime_available text'""",
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit("negative assertion replacement target is not unique")
+              text = text.replace(old, new)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+          bash -n tools/run_d1_final_qualification.sh
+          shellcheck -e SC2016,SC2054 tools/run_d1_final_qualification.sh
+          python3 -m unittest discover -s tests/d1 -p 'test_*.py' -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --check
+
+          git add tools/run_d1_final_qualification.sh
+          test "$(git diff --cached --name-only)" = "tools/run_d1_final_qualification.sh"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix(d1): make negative boundary checks ShellCheck-safe"
+          git fetch --no-tags origin "$BRANCH"
+          test "$(git rev-parse HEAD^)" = "$(git rev-parse origin/$BRANCH)"
+          git push origin "HEAD:$BRANCH"
