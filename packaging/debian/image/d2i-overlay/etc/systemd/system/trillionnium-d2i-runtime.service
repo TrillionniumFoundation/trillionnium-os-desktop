@@ -21,7 +21,13 @@ Environment=XDG_CACHE_HOME=/run/hepta-desktop/cache
 Environment=XDG_CONFIG_HOME=/run/hepta-desktop/config
 Environment=WAYLAND_DISPLAY=wayland-0
 Environment=WINIT_UNIX_BACKEND=wayland
+# The D2I guest runs under QEMU TCG.  LLVMpipe JIT workers can bind generated
+# machine code to the synthetic CPU feature surface and have crashed before the
+# runtime can arm its evidence protocol.  Keep this qualification deterministic
+# and architecture-neutral by selecting Mesa's interpreter renderer explicitly.
 Environment=LIBGL_ALWAYS_SOFTWARE=1
+Environment=GALLIUM_DRIVER=softpipe
+Environment=DRAW_USE_LLVM=0
 Environment=HEPTA_D0A02_OUTPUT=/var/lib/trillionnium-d2i
 Environment=HEPTA_D2I_HOLD_AFTER_RESULT=1
 ExecStartPre=/usr/bin/mkdir -p /run/hepta-desktop/cache /run/hepta-desktop/config
