@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          test "$(git rev-parse HEAD^)" = "7df00bf8fb78936bd9b986cb58901d55f33d27b9"
+          test "$(git rev-parse HEAD^)" = "2e2aafe54af1121aff0424a0e8a6025b4c81a7ee"
           git merge-base --is-ancestor \
             f44837a6867b134fb329d14407e3ae918ed74a4b \
             HEAD
@@ -60,14 +60,25 @@ jobs:
           test ! -e .github/workflows/closure-overlay-bootstrap.yml
           git diff --check
 
-      - name: Emit exact failing Rust source context
+      - name: Emit exact authority and observation implementation context
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n' '=== authority_coordinator.rs:900-1020 ==='
-          nl -ba apps/hepta-browserd/src/authority_coordinator.rs | sed -n '900,1020p'
-          printf '%s\n' '=== product_policy.rs:3180-3305 ==='
-          nl -ba apps/hepta-browserd/src/product_policy.rs | sed -n '3180,3305p'
+          printf '%s\n' '=== authority helper matches ==='
+          grep -n -E 'fn (test_registry|issue_test_evidence|update_fixture|fixture_key_id)|fixture_key_id|signer_key_sha256' \
+            apps/hepta-browserd/src/authority_coordinator.rs || true
+          printf '%s\n' '=== authority test module and update fixture ==='
+          grep -n -B 90 -A 180 'fn update_fixture' \
+            apps/hepta-browserd/src/authority_coordinator.rs || true
+          printf '%s\n' '=== authorize_network implementation ==='
+          grep -n -B 100 -A 220 'fn authorize_network' \
+            apps/hepta-browserd/src/product_policy.rs || true
+          printf '%s\n' '=== evidence binding/authentication error sites ==='
+          grep -n -B 45 -A 65 -E 'EVIDENCE_BINDING_MISMATCH|EVIDENCE_AUTHENTICATION_FAILED' \
+            apps/hepta-browserd/src/product_policy.rs || true
+          printf '%s\n' '=== network fixture construction ==='
+          grep -n -B 80 -A 180 'fn network_fixture_bundle' \
+            apps/hepta-browserd/src/product_policy.rs || true
 
       - name: Validate Python, governance, D7 and source inventory
         shell: bash
