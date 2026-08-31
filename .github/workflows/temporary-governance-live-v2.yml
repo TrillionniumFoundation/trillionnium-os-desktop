@@ -1,0 +1,196 @@
+name: temporary-governance-live-v2
+
+on:
+  push:
+    branches:
+      - codex/control-governance-live-v2
+
+permissions:
+  contents: write
+  metadata: read
+
+concurrency:
+  group: temporary-governance-live-v2
+  cancel-in-progress: false
+
+jobs:
+  governance:
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CONTROL_BRANCH: codex/control-governance-live-v2
+      GOVERNED_BRANCH: main
+    steps:
+      - name: Check out governance control branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/control-governance-live-v2
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Inspect, attempt, and verify strict branch protection
+        id: governance
+        run: |
+          set -euo pipefail
+          repo=$GITHUB_REPOSITORY
+          owner=${repo%%/*}
+          api=https://api.github.com
+          auth=(-H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28')
+          mkdir -p /tmp/governance-live
+          get_endpoint() {
+            local path=$1
+            local output=$2
+            curl -sS "${auth[@]}" -o "$output" -w '%{http_code}' "$api/$path"
+          }
+          before_status=$(get_endpoint "repos/$repo/branches/$GOVERNED_BRANCH/protection" /tmp/governance-live/protection-before.json)
+          rulesets_status=$(get_endpoint "repos/$repo/rulesets?per_page=100" /tmp/governance-live/rulesets.json)
+          environments_status=$(get_endpoint "repos/$repo/environments?per_page=100" /tmp/governance-live/environments.json)
+          teams_status=$(get_endpoint "orgs/$owner/teams?per_page=100" /tmp/governance-live/teams.json)
+          codeowners_status=$(get_endpoint "repos/$repo/contents/.github/CODEOWNERS?ref=$GOVERNED_BRANCH" /tmp/governance-live/codeowners.json)
+
+          cat > /tmp/governance-live/desired-protection.json <<'JSON'
+          {
+            "required_status_checks": {
+              "strict": true,
+              "contexts": [
+                "desktop-ci / repository-contracts",
+                "desktop-ci / rust",
+                "governance-integrity / governance-integrity"
+              ]
+            },
+            "enforce_admins": true,
+            "required_pull_request_reviews": {
+              "dismiss_stale_reviews": true,
+              "require_code_owner_reviews": false,
+              "required_approving_review_count": 1,
+              "require_last_push_approval": true,
+              "bypass_pull_request_allowances": {
+                "users": [],
+                "teams": [],
+                "apps": []
+              }
+            },
+            "restrictions": null,
+            "required_linear_history": true,
+            "allow_force_pushes": false,
+            "allow_deletions": false,
+            "block_creations": false,
+            "required_conversation_resolution": true,
+            "lock_branch": false,
+            "allow_fork_syncing": true
+          }
+          JSON
+
+          put_status=$(curl -sS "${auth[@]}" \
+            -X PUT \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/governance-live/desired-protection.json \
+            -o /tmp/governance-live/protection-put.json \
+            -w '%{http_code}' \
+            "$api/repos/$repo/branches/$GOVERNED_BRANCH/protection")
+          after_status=$(get_endpoint "repos/$repo/branches/$GOVERNED_BRANCH/protection" /tmp/governance-live/protection-after.json)
+
+          applied=false
+          if test "$put_status" = 200 && test "$after_status" = 200; then
+            jq -e '
+              .required_status_checks.strict == true and
+              ([.required_status_checks.contexts[]] | sort) == ([
+                "desktop-ci / repository-contracts",
+                "desktop-ci / rust",
+                "governance-integrity / governance-integrity"
+              ] | sort) and
+              .enforce_admins.enabled == true and
+              .required_pull_request_reviews.dismiss_stale_reviews == true and
+              .required_pull_request_reviews.required_approving_review_count == 1 and
+              .required_pull_request_reviews.require_last_push_approval == true and
+              .required_linear_history.enabled == true and
+              .allow_force_pushes.enabled == false and
+              .allow_deletions.enabled == false and
+              .required_conversation_resolution.enabled == true
+            ' /tmp/governance-live/protection-after.json >/dev/null
+            applied=true
+          fi
+
+          valid_team=
+          if test "$teams_status" = 200; then
+            while IFS= read -r slug; do
+              test -n "$slug" || continue
+              members_status=$(get_endpoint "orgs/$owner/teams/$slug/members?per_page=100" "/tmp/governance-live/team-$slug-members.json")
+              if test "$members_status" = 200 && test "$(jq 'length' "/tmp/governance-live/team-$slug-members.json")" -ge 2; then
+                valid_team=$slug
+                break
+              fi
+            done < <(jq -r 'sort_by((.name | ascii_downcase | test("review|security|maintain|core") | not), .name)[]?.slug' /tmp/governance-live/teams.json)
+          fi
+
+          printf 'before_status=%s\nput_status=%s\nafter_status=%s\napplied=%s\nrulesets_status=%s\nenvironments_status=%s\nteams_status=%s\ncodeowners_status=%s\nvalid_team=%s\n' \
+            "$before_status" "$put_status" "$after_status" "$applied" "$rulesets_status" "$environments_status" "$teams_status" "$codeowners_status" "${valid_team:-}" \
+            | tee /tmp/governance-live/state.txt
+          printf 'applied=%s\nvalid_team=%s\n' "$applied" "${valid_team:-}" >> "$GITHUB_OUTPUT"
+
+      - name: Persist live governance evidence and remove temporary workflow
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          APPLIED: ${{ steps.governance.outputs.applied }}
+          VALID_TEAM: ${{ steps.governance.outputs.valid_team }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$CONTROL_BRANCH"
+          git checkout -B "$CONTROL_BRANCH" "origin/$CONTROL_BRANCH"
+          rm -f .github/workflows/temporary-governance-live-v2.yml
+          mkdir -p diagnostics/governance-live-v2
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import json
+          from pathlib import Path
+          import os
+
+          root = Path('/tmp/governance-live')
+          def load(name: str):
+              path = root / name
+              if not path.exists():
+                  return None
+              try:
+                  return json.loads(path.read_text())
+              except Exception:
+                  return {"unparsed_tail": path.read_text(errors='replace')[-4000:]}
+
+          state = {}
+          state_path = root / 'state.txt'
+          if state_path.exists():
+              for line in state_path.read_text().splitlines():
+                  if '=' in line:
+                      key, value = line.split('=', 1)
+                      state[key] = value
+          report = {
+              "schema": "trillionnium.desktop.governance-live-result.v2",
+              "job_status": os.environ.get("JOB_STATUS"),
+              "governed_branch": "main",
+              "branch_protection_applied": os.environ.get("APPLIED") == "true",
+              "independent_review_team": os.environ.get("VALID_TEAM") or None,
+              "http_status": state,
+              "desired": load("desired-protection.json"),
+              "before": load("protection-before.json"),
+              "put_response": load("protection-put.json"),
+              "after": load("protection-after.json"),
+              "rulesets": load("rulesets.json"),
+              "environments": load("environments.json"),
+              "teams": load("teams.json"),
+              "codeowners": load("codeowners.json"),
+              "claim_ceiling": {
+                  "live_repository_settings_proven": os.environ.get("APPLIED") == "true",
+                  "organization_team_codeowners_proven": bool(os.environ.get("VALID_TEAM")) and state.get("codeowners_status") == "200",
+                  "independent_human_review_proven": False,
+                  "signing_key_custody_proven": False,
+                  "release_readiness_proven": False
+              }
+          }
+          Path('diagnostics/governance-live-v2/latest.json').write_text(json.dumps(report, indent=2) + '\n')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- .github/workflows/temporary-governance-live-v2.yml diagnostics/governance-live-v2/latest.json
+          git commit -m "diagnostics(governance): record live settings result ($JOB_STATUS)"
+          git push origin "HEAD:refs/heads/$CONTROL_BRANCH"
