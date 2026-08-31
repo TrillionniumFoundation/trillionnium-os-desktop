@@ -63,7 +63,24 @@ impl SessionMachine {
         }
     }
 
+    /// Apply one event transactionally.
+    ///
+    /// No rejected event may leave a partially updated ownership, phase, lease,
+    /// navigation, or revision state behind. This is especially important for
+    /// revision exhaustion and adapter events that arrive after cancellation.
     pub fn apply(
+        &mut self,
+        event: SessionEvent,
+        now_ms: u64,
+    ) -> Result<Vec<SessionEffect>, TransitionError> {
+        let mut candidate = self.clone();
+        let effects = candidate.apply_inner(event, now_ms)?;
+        candidate.validate_invariants()?;
+        *self = candidate;
+        Ok(effects)
+    }
+
+    fn apply_inner(
         &mut self,
         event: SessionEvent,
         now_ms: u64,
@@ -75,8 +92,7 @@ impl SessionMachine {
         let mut effects = Vec::new();
         match event {
             SessionEvent::BeginAgentObservation => {
-                self.require_ready()?;
-                self.require_idle()?;
+                self.require_agent_control_available()?;
                 self.control = ControlState::AgentObserving;
             }
             SessionEvent::EndAgentObservation => {
@@ -86,8 +102,7 @@ impl SessionMachine {
                 self.control = ControlState::Idle;
             }
             SessionEvent::BeginAgentMutation => {
-                self.require_ready()?;
-                self.require_idle()?;
+                self.require_agent_control_available()?;
                 self.control = ControlState::AgentMutating;
             }
             SessionEvent::EndAgentMutation => {
@@ -139,9 +154,7 @@ impl SessionMachine {
                     }
                     // Adapter-owned human/system navigation may return the
                     // machine to `Idle` while retaining a lease for focus
-                    // cleanup.  A lease alone must never authorize input:
-                    // require the explicit ownership state before extending
-                    // it or admitting a human event.
+                    // cleanup. A lease alone must never authorize input.
                     if self.control != ControlState::HumanActive {
                         return Err(TransitionError::ControlConflict(self.control));
                     }
@@ -201,21 +214,44 @@ impl SessionMachine {
             }
             SessionEvent::NavigationStarted { source } => {
                 self.require_ready()?;
-                // Agent navigation is an active operation and must acquire
-                // the same exclusive control as page actions.  Human/system
-                // adapters retain their existing transition semantics; D4
-                // owns their preemption and focus policy.
-                if source == ControlSource::Agent {
-                    self.require_idle()?;
-                    self.control = ControlState::AgentNavigating;
+                match source {
+                    ControlSource::Agent => {
+                        // Agent navigation is an active operation and must
+                        // acquire the same exclusive control as page actions.
+                        // An idle control marker with a retained human lease is
+                        // not sufficient: the lease must be explicitly
+                        // released or expire before Agent admission.
+                        self.require_agent_control_available()?;
+                        self.control = ControlState::AgentNavigating;
+                    }
+                    ControlSource::Human => {
+                        if self.control != ControlState::HumanActive {
+                            return Err(TransitionError::ControlConflict(self.control));
+                        }
+                        if self.human_lease.is_none() {
+                            return Err(TransitionError::HumanLeaseRequired);
+                        }
+                    }
+                    ControlSource::System => {
+                        // System adapters may navigate an idle or human-owned
+                        // page, but may not relabel active Agent work or an IME
+                        // composition as a system navigation.
+                        if matches!(
+                            self.control,
+                            ControlState::AgentObserving
+                                | ControlState::AgentMutating
+                                | ControlState::AgentNavigating
+                                | ControlState::HumanImeComposing
+                        ) {
+                            return Err(TransitionError::ControlConflict(self.control));
+                        }
+                    }
                 }
                 self.pending_navigation_source = Some(source);
                 self.phase = SessionPhase::NavigationPending;
             }
             SessionEvent::NavigationCommitted => {
-                if self.phase != SessionPhase::NavigationPending {
-                    return Err(TransitionError::PhaseConflict(self.phase));
-                }
+                self.require_pending_navigation()?;
                 if self.pending_navigation_source == Some(ControlSource::Agent)
                     && self.control != ControlState::AgentNavigating
                 {
@@ -224,23 +260,17 @@ impl SessionMachine {
                 self.revisions
                     .try_on_navigation_commit()
                     .map_err(|_error| TransitionError::RevisionExhausted)?;
-                self.phase = SessionPhase::Ready;
-                self.control = ControlState::Idle;
-                self.pending_navigation_source = None;
+                self.finish_navigation();
                 effects.push(SessionEffect::DocumentGenerationAdvanced);
             }
             SessionEvent::NavigationFailed => {
-                if self.phase != SessionPhase::NavigationPending {
-                    return Err(TransitionError::PhaseConflict(self.phase));
-                }
+                self.require_pending_navigation()?;
                 if self.pending_navigation_source == Some(ControlSource::Agent)
                     && self.control != ControlState::AgentNavigating
                 {
                     return Err(TransitionError::ControlConflict(self.control));
                 }
-                self.phase = SessionPhase::Ready;
-                self.control = ControlState::Idle;
-                self.pending_navigation_source = None;
+                self.finish_navigation();
             }
             SessionEvent::ModalOpened => {
                 self.require_ready()?;
@@ -271,9 +301,9 @@ impl SessionMachine {
                 // cancellation boundary; its terminal adapter event must not
                 // be able to resurrect the old ownership marker.
                 self.pending_navigation_source = None;
-                // Cancellation is a hard ownership boundary.  Revoke a human
+                // Cancellation is a hard ownership boundary. Revoke a human
                 // lease immediately so an already-issued lease cannot continue
-                // sending input while an Agent operation is reconciled.  Keep
+                // sending input while an Agent operation is reconciled. Keep
                 // Agent control intact until `CancelCompleted` so adapters can
                 // finish the in-flight operation's cleanup path.
                 self.revoke_human_lease();
@@ -348,6 +378,36 @@ impl SessionMachine {
         }
     }
 
+    fn require_agent_control_available(&self) -> Result<(), TransitionError> {
+        self.require_ready()?;
+        self.require_idle()?;
+        if self.human_lease.is_some() {
+            Err(TransitionError::InvalidTransition(
+                "active human lease blocks Agent control",
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn require_pending_navigation(&self) -> Result<(), TransitionError> {
+        if self.phase != SessionPhase::NavigationPending {
+            return Err(TransitionError::PhaseConflict(self.phase));
+        }
+        if self.pending_navigation_source.is_none() {
+            return Err(TransitionError::InvalidTransition(
+                "navigation phase has no source owner",
+            ));
+        }
+        Ok(())
+    }
+
+    fn finish_navigation(&mut self) {
+        self.phase = SessionPhase::Ready;
+        self.control = ControlState::Idle;
+        self.pending_navigation_source = None;
+    }
+
     fn require_human_interaction_allowed(&self) -> Result<(), TransitionError> {
         if self.phase == SessionPhase::Cancelling {
             Err(TransitionError::PhaseConflict(self.phase))
@@ -382,5 +442,204 @@ impl SessionMachine {
             return Err(TransitionError::LeaseMismatch);
         }
         Ok(lease)
+    }
+
+    fn validate_invariants(&self) -> Result<(), TransitionError> {
+        if self.human_lease.is_some()
+            && matches!(
+                self.control,
+                ControlState::AgentObserving
+                    | ControlState::AgentMutating
+                    | ControlState::AgentNavigating
+            )
+        {
+            return Err(TransitionError::InvalidTransition(
+                "human lease overlaps Agent control",
+            ));
+        }
+        if matches!(
+            self.control,
+            ControlState::HumanActive | ControlState::HumanImeComposing
+        ) && self.human_lease.is_none()
+        {
+            return Err(TransitionError::InvalidTransition(
+                "human control has no active lease",
+            ));
+        }
+        if self.phase == SessionPhase::NavigationPending
+            && self.pending_navigation_source.is_none()
+        {
+            return Err(TransitionError::InvalidTransition(
+                "navigation phase has no source owner",
+            ));
+        }
+        if self.phase != SessionPhase::NavigationPending
+            && self.pending_navigation_source.is_some()
+        {
+            return Err(TransitionError::InvalidTransition(
+                "navigation owner survived its phase",
+            ));
+        }
+        if self.pending_navigation_source == Some(ControlSource::Agent)
+            && self.control != ControlState::AgentNavigating
+        {
+            return Err(TransitionError::InvalidTransition(
+                "Agent navigation has no exclusive control",
+            ));
+        }
+        if self.control == ControlState::AgentNavigating
+            && !matches!(
+                self.phase,
+                SessionPhase::NavigationPending | SessionPhase::Cancelling
+            )
+        {
+            return Err(TransitionError::InvalidTransition(
+                "Agent navigation control survived its phase",
+            ));
+        }
+        if matches!(self.phase, SessionPhase::Recovering | SessionPhase::Closed)
+            && (self.control != ControlState::Idle || self.human_lease.is_some())
+        {
+            return Err(TransitionError::InvalidTransition(
+                "terminal recovery state retains page ownership",
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod invariant_tests {
+    use super::*;
+    use crate::types::DEFAULT_HUMAN_LEASE_TTL_MS;
+
+    fn lease() -> LeaseId {
+        LeaseId::parse("lease_id", "machine-invariant-lease").expect("lease")
+    }
+
+    fn retained_lease_after_human_navigation() -> SessionMachine {
+        let mut machine = SessionMachine::new();
+        machine
+            .apply(
+                SessionEvent::HumanFocusGained {
+                    lease_id: lease(),
+                    ttl_ms: DEFAULT_HUMAN_LEASE_TTL_MS,
+                },
+                0,
+            )
+            .expect("focus");
+        machine
+            .apply(
+                SessionEvent::NavigationStarted {
+                    source: ControlSource::Human,
+                },
+                1,
+            )
+            .expect("human navigation");
+        machine
+            .apply(SessionEvent::NavigationCommitted, 2)
+            .expect("commit");
+        assert_eq!(machine.snapshot().control, ControlState::Idle);
+        assert!(machine.snapshot().human_lease.is_some());
+        machine
+    }
+
+    #[test]
+    fn retained_human_lease_blocks_every_agent_admission_path() {
+        let mut machine = retained_lease_after_human_navigation();
+        let before = machine.snapshot();
+        assert_eq!(
+            machine.apply(SessionEvent::BeginAgentObservation, 3),
+            Err(TransitionError::InvalidTransition(
+                "active human lease blocks Agent control"
+            ))
+        );
+        assert_eq!(machine.snapshot(), before);
+        assert_eq!(
+            machine.apply(SessionEvent::BeginAgentMutation, 3),
+            Err(TransitionError::InvalidTransition(
+                "active human lease blocks Agent control"
+            ))
+        );
+        assert_eq!(machine.snapshot(), before);
+        assert_eq!(
+            machine.apply(
+                SessionEvent::NavigationStarted {
+                    source: ControlSource::Agent,
+                },
+                3,
+            ),
+            Err(TransitionError::InvalidTransition(
+                "active human lease blocks Agent control"
+            ))
+        );
+        assert_eq!(machine.snapshot(), before);
+
+        machine
+            .apply(SessionEvent::HumanFocusReleased { lease_id: lease() }, 4)
+            .expect("lease release");
+        machine
+            .apply(SessionEvent::BeginAgentMutation, 5)
+            .expect("Agent admitted after explicit release");
+    }
+
+    #[test]
+    fn source_labels_cannot_relabel_active_page_control() {
+        let mut machine = SessionMachine::new();
+        machine
+            .apply(SessionEvent::BeginAgentMutation, 0)
+            .expect("Agent mutation");
+        let before = machine.snapshot();
+        assert_eq!(
+            machine.apply(
+                SessionEvent::NavigationStarted {
+                    source: ControlSource::Human,
+                },
+                1,
+            ),
+            Err(TransitionError::ControlConflict(
+                ControlState::AgentMutating
+            ))
+        );
+        assert_eq!(machine.snapshot(), before);
+        assert_eq!(
+            machine.apply(
+                SessionEvent::NavigationStarted {
+                    source: ControlSource::System,
+                },
+                1,
+            ),
+            Err(TransitionError::ControlConflict(
+                ControlState::AgentMutating
+            ))
+        );
+        assert_eq!(machine.snapshot(), before);
+    }
+
+    #[test]
+    fn rejected_events_are_transactional() {
+        let mut machine = SessionMachine::new();
+        machine
+            .apply(
+                SessionEvent::NavigationStarted {
+                    source: ControlSource::Agent,
+                },
+                0,
+            )
+            .expect("Agent navigation");
+        let before = machine.snapshot();
+        assert_eq!(
+            machine.apply(
+                SessionEvent::HumanFocusGained {
+                    lease_id: lease(),
+                    ttl_ms: DEFAULT_HUMAN_LEASE_TTL_MS,
+                },
+                1,
+            ),
+            Err(TransitionError::PhaseConflict(
+                SessionPhase::NavigationPending
+            ))
+        );
+        assert_eq!(machine.snapshot(), before);
     }
 }
