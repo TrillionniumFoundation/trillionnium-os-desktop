@@ -51,6 +51,11 @@ const FIXTURE_HTML: &str = include_str!("trillionnium_headed_fixture.html");
 const NATIVE_INPUT_TIMEOUT_SECONDS: u64 = 150;
 const PROCESS_OBSERVATION_TIMEOUT_SECONDS: u64 = 10;
 const EXTERNAL_FAULT_POLL_MILLISECONDS: u64 = 50;
+const D2I_IMAGE_LOCAL_INPUT_ENV: &str = "HEPTA_D2I_IMAGE_LOCAL_INPUT";
+
+fn d2i_image_local_input_enabled() -> bool {
+    env::var_os(D2I_IMAGE_LOCAL_INPUT_ENV).is_some()
+}
 
 fn main() {
     if let Some(token) = content_process_token() {
@@ -427,6 +432,11 @@ struct RuntimeState {
     native_wheel_events: Cell<u32>,
     native_keyboard_events: Cell<u32>,
     native_ime_events: Cell<u32>,
+    image_local_pointer_events: Cell<u32>,
+    image_local_button_events: Cell<u32>,
+    image_local_wheel_events: Cell<u32>,
+    image_local_keyboard_events: Cell<u32>,
+    image_local_input_sent: Cell<bool>,
     input_handled_callbacks: Cell<u32>,
     synthetic_ime_sent: Cell<bool>,
     settled: Cell<bool>,
@@ -537,6 +547,11 @@ impl RuntimeState {
             native_wheel_events: Cell::new(0),
             native_keyboard_events: Cell::new(0),
             native_ime_events: Cell::new(0),
+            image_local_pointer_events: Cell::new(0),
+            image_local_button_events: Cell::new(0),
+            image_local_wheel_events: Cell::new(0),
+            image_local_keyboard_events: Cell::new(0),
+            image_local_input_sent: Cell::new(false),
             input_handled_callbacks: Cell::new(0),
             synthetic_ime_sent: Cell::new(false),
             settled: Cell::new(false),
@@ -717,10 +732,19 @@ impl RuntimeState {
         }
 
         if self.generation.get() == 1
-            && self.native_pointer_events.get() > 0
-            && self.native_button_events.get() >= 2
-            && self.native_wheel_events.get() > 0
-            && self.native_keyboard_events.get() >= 2
+            && self.focus_ready.get()
+            && d2i_image_local_input_enabled()
+            && !self.image_local_input_sent.get()
+        {
+            self.send_d2i_image_local_input();
+            return;
+        }
+
+        if self.generation.get() == 1
+            && self.qualified_pointer_events() > 0
+            && self.qualified_button_events() >= 4
+            && self.qualified_wheel_events() > 0
+            && self.qualified_keyboard_events() >= 2
             && !self.synthetic_ime_sent.get()
         {
             self.send_synthetic_ime();
@@ -813,6 +837,88 @@ impl RuntimeState {
                 }
             },
         );
+    }
+
+    fn qualified_pointer_events(&self) -> u32 {
+        if d2i_image_local_input_enabled() {
+            self.image_local_pointer_events.get()
+        } else {
+            self.native_pointer_events.get()
+        }
+    }
+
+    fn qualified_button_events(&self) -> u32 {
+        if d2i_image_local_input_enabled() {
+            self.image_local_button_events.get()
+        } else {
+            self.native_button_events.get()
+        }
+    }
+
+    fn qualified_wheel_events(&self) -> u32 {
+        if d2i_image_local_input_enabled() {
+            self.image_local_wheel_events.get()
+        } else {
+            self.native_wheel_events.get()
+        }
+    }
+
+    fn qualified_keyboard_events(&self) -> u32 {
+        if d2i_image_local_input_enabled() {
+            self.image_local_keyboard_events.get()
+        } else {
+            self.native_keyboard_events.get()
+        }
+    }
+
+    fn send_d2i_image_local_input(&self) {
+        let Some(webview) = self.webview.borrow().as_ref().cloned() else {
+            self.fail("missing WebView while delivering D2I image-local input");
+            return;
+        };
+        // D2I has no host input device by design.  Exercise the exact Servo
+        // input boundary from inside the networkless guest and report this
+        // source separately; D0A-02 remains the authority for native host
+        // pointer/keyboard injection.
+        let first = DevicePoint::new(200.0, 68.0);
+        let second = DevicePoint::new(400.0, 100.0);
+        for point in [first, second, first] {
+            webview.notify_input_event(InputEvent::MouseMove(MouseMoveEvent::new(point.into())));
+            self.image_local_pointer_events
+                .set(self.image_local_pointer_events.get() + 1);
+            for action in [MouseButtonAction::Down, MouseButtonAction::Up] {
+                webview.notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(
+                    action,
+                    ServoMouseButton::Primary,
+                    point.into(),
+                )));
+                self.image_local_button_events
+                    .set(self.image_local_button_events.get() + 1);
+            }
+        }
+        webview.notify_input_event(InputEvent::Wheel(WheelEvent::new(
+            WheelDelta {
+                x: 0.0,
+                y: -40.0,
+                z: 0.0,
+                mode: WheelMode::DeltaPixel,
+            },
+            second.into(),
+        )));
+        self.image_local_wheel_events
+            .set(self.image_local_wheel_events.get() + 1);
+        for key_state in [KeyState::Down, KeyState::Up] {
+            webview.notify_input_event(InputEvent::Keyboard(
+                KeyboardEvent::from_state_and_key(
+                    key_state,
+                    Key::Character("k".to_owned()),
+                ),
+            ));
+            self.image_local_keyboard_events
+                .set(self.image_local_keyboard_events.get() + 1);
+        }
+        self.image_local_input_sent.set(true);
+        let _ = self.proxy.send_event(AppEvent::Drive);
     }
 
     fn send_synthetic_ime(self: &Rc<Self>) {
@@ -1447,6 +1553,23 @@ impl RuntimeState {
                 "  \"stale_callbacks_ignored\": {},\n",
                 "  \"load_complete\": {},\n",
                 "  \"frame_ready\": {},\n",
+                "  \"content_screenshot_requested\": {},\n",
+                "  \"content_screenshot_saved\": {},\n",
+                "  \"workspace_screenshot_saved\": {},\n",
+                "  \"focus_requested\": {},\n",
+                "  \"focus_ready\": {},\n",
+                "  \"input_source\": {},\n",
+                "  \"qualified_pointer_events\": {},\n",
+                "  \"qualified_button_events\": {},\n",
+                "  \"qualified_wheel_events\": {},\n",
+                "  \"qualified_keyboard_events\": {},\n",
+                "  \"synthetic_ime_sent\": {},\n",
+                "  \"settled\": {},\n",
+                "  \"page_evidence_requested\": {},\n",
+                "  \"initial_page_evidence_present\": {},\n",
+                "  \"popup_denied\": {},\n",
+                "  \"navigation_denied\": {},\n",
+                "  \"input_method_controls\": {},\n",
                 "  \"fault_selected\": {},\n",
                 "  \"signal_sent\": {},\n",
                 "  \"exact_termination_observed\": {},\n",
@@ -1464,6 +1587,27 @@ impl RuntimeState {
             self.stale_callbacks_ignored.get(),
             self.load_complete.get(),
             self.frame_ready.get(),
+            self.content_screenshot_requested.get(),
+            self.content_screenshot_saved.get(),
+            self.workspace_screenshot_saved.get(),
+            self.focus_requested.get(),
+            self.focus_ready.get(),
+            json_string(if d2i_image_local_input_enabled() {
+                "d2i_image_local_servo_dispatch"
+            } else {
+                "native_window_events"
+            }),
+            self.qualified_pointer_events(),
+            self.qualified_button_events(),
+            self.qualified_wheel_events(),
+            self.qualified_keyboard_events(),
+            self.synthetic_ime_sent.get(),
+            self.settled.get(),
+            self.page_evidence_requested.get(),
+            self.initial_page_evidence.borrow().is_some(),
+            self.popup_denied.get(),
+            self.navigation_denied.get(),
+            self.input_method_controls.get(),
             optional_process_identity_json(self.fault_selected.get(), 1),
             self.signal_sent.get(),
             self.exact_termination_observed.get(),
@@ -1599,6 +1743,7 @@ impl RuntimeState {
                 "  \"content_surface_limit\": 1,\n",
                 "  \"content_generation\": 2,\n",
                 "  \"page_input_verified\": true,\n",
+                "  \"input_source\": {},\n",
                 "  \"ime_path_exercised\": true,\n",
                 "  \"ime_composition_events_sent\": 3,\n",
                 "  \"external_network_used\": false,\n",
@@ -1610,6 +1755,10 @@ impl RuntimeState {
                 "  \"native_wheel_events\": {},\n",
                 "  \"native_keyboard_events\": {},\n",
                 "  \"native_ime_events\": {},\n",
+                "  \"image_local_pointer_events\": {},\n",
+                "  \"image_local_button_events\": {},\n",
+                "  \"image_local_wheel_events\": {},\n",
+                "  \"image_local_keyboard_events\": {},\n",
                 "  \"window_resize_events\": {},\n",
                 "  \"synthetic_ime_composition_events\": 3,\n",
                 "  \"input_handled_callbacks\": {},\n",
@@ -1660,6 +1809,11 @@ impl RuntimeState {
             self.logical_webviews_created.get(),
             self.logical_webviews_invalidated.get(),
             self.logical_webviews_live.get(),
+            json_string(if d2i_image_local_input_enabled() {
+                "d2i_image_local_servo_dispatch"
+            } else {
+                "native_window_events"
+            }),
             self.chrome_initial_ok.get(),
             self.chrome_crash_ok.get(),
             self.chrome_recovery_ok.get(),
@@ -1668,6 +1822,10 @@ impl RuntimeState {
             self.native_wheel_events.get(),
             self.native_keyboard_events.get(),
             self.native_ime_events.get(),
+            self.image_local_pointer_events.get(),
+            self.image_local_button_events.get(),
+            self.image_local_wheel_events.get(),
+            self.image_local_keyboard_events.get(),
             self.window_resize_events.get(),
             self.input_handled_callbacks.get(),
             self.input_method_controls.get(),

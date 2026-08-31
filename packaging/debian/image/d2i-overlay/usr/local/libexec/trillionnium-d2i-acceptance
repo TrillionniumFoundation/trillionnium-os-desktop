@@ -66,14 +66,24 @@ grep -Eq '"logical_webviews_created"[[:space:]]*:[[:space:]]*2' "$runtime" \
   || fail recovered_frame_missing
 grep -Eq '"page_input_verified"[[:space:]]*:[[:space:]]*true' "$runtime" \
   || fail page_input_not_verified
-grep -Eq '"native_pointer_events"[[:space:]]*:[[:space:]]*[1-9][0-9]*' "$runtime" \
-  || fail pointer_input_not_observed
-grep -Eq '"native_button_events"[[:space:]]*:[[:space:]]*([4-9]|[1-9][0-9]+)' "$runtime" \
-  || fail button_input_not_observed
-grep -Eq '"native_wheel_events"[[:space:]]*:[[:space:]]*[1-9][0-9]*' "$runtime" \
-  || fail wheel_input_not_observed
-grep -Eq '"native_keyboard_events"[[:space:]]*:[[:space:]]*([2-9]|[1-9][0-9]+)' "$runtime" \
-  || fail keyboard_input_not_observed
+grep -Eq '"input_source"[[:space:]]*:[[:space:]]*"d2i_image_local_servo_dispatch"' "$runtime" \
+  || fail d2i_input_source_not_explicit
+grep -Eq '"image_local_pointer_events"[[:space:]]*:[[:space:]]*[1-9][0-9]*' "$runtime" \
+  || fail image_local_pointer_input_not_observed
+grep -Eq '"image_local_button_events"[[:space:]]*:[[:space:]]*([4-9]|[1-9][0-9]+)' "$runtime" \
+  || fail image_local_button_input_not_observed
+grep -Eq '"image_local_wheel_events"[[:space:]]*:[[:space:]]*[1-9][0-9]*' "$runtime" \
+  || fail image_local_wheel_input_not_observed
+grep -Eq '"image_local_keyboard_events"[[:space:]]*:[[:space:]]*([2-9]|[1-9][0-9]+)' "$runtime" \
+  || fail image_local_keyboard_input_not_observed
+grep -Eq '"native_pointer_events"[[:space:]]*:[[:space:]]*0' "$runtime" \
+  || fail native_pointer_input_unexpected
+grep -Eq '"native_button_events"[[:space:]]*:[[:space:]]*0' "$runtime" \
+  || fail native_button_input_unexpected
+grep -Eq '"native_wheel_events"[[:space:]]*:[[:space:]]*0' "$runtime" \
+  || fail native_wheel_input_unexpected
+grep -Eq '"native_keyboard_events"[[:space:]]*:[[:space:]]*0' "$runtime" \
+  || fail native_keyboard_input_unexpected
 grep -Eq '"ime_path_exercised"[[:space:]]*:[[:space:]]*true' "$runtime" \
   || fail ime_path_not_exercised
 grep -Eq '"synthetic_ime_composition_events"[[:space:]]*:[[:space:]]*3' "$runtime" \
@@ -138,6 +148,8 @@ cat > "$result" <<EOF
   "trusted_chrome_survived_recovery": true,
   "content_surface_limit": 1,
   "page_input_verified": true,
+  "input_source": "d2i_image_local_servo_dispatch",
+  "native_host_input_claimed": false,
   "ime_path_exercised": true,
   "product_agent_port_default_disabled": true,
   "product_agent_port_socket_absent": true,

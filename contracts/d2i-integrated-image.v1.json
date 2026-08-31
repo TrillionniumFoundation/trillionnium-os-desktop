@@ -15,10 +15,24 @@
       "bound_to_source_date_epoch": true,
       "source_date_epoch_min": 1,
       "source_date_epoch_max": 4294967295,
-      "injected_inode_times": ["atime", "ctime", "mtime", "crtime"],
+      "injected_inode_times": [
+        "atime",
+        "ctime",
+        "mtime",
+        "crtime"
+      ],
       "injected_inode_generations": true,
-      "parent_directory_times": ["atime", "ctime", "mtime"],
-      "superblock_times": ["mtime", "wtime", "lastcheck", "mkfs_time"],
+      "parent_directory_times": [
+        "atime",
+        "ctime",
+        "mtime"
+      ],
+      "superblock_times": [
+        "mtime",
+        "wtime",
+        "lastcheck",
+        "mkfs_time"
+      ],
       "superblock_kbytes_written": 0
     },
     "package_lock_must_remain_unchanged": true
@@ -79,14 +93,20 @@
     "cache_configuration": "runtime service creates cache/config under RuntimeDirectory before ExecStart",
     "software_renderer": {
       "force_software": true,
-      "gallium_driver": "softpipe",
-      "llvm_jit_disabled": true,
+      "gallium_driver": "llvmpipe",
+      "cpu_capability_ceiling": "sse2",
+      "native_vector_width_bits": 128,
+      "worker_threads": 1,
+      "draw_module_llvm_disabled": true,
       "environment": [
         "LIBGL_ALWAYS_SOFTWARE=1",
-        "GALLIUM_DRIVER=softpipe",
+        "GALLIUM_DRIVER=llvmpipe",
+        "GALLIUM_OVERRIDE_CPU_CAPS=sse2",
+        "LP_NATIVE_VECTOR_WIDTH=128",
+        "LP_NUM_THREADS=1",
         "DRAW_USE_LLVM=0"
       ],
-      "qualification_reason": "avoid CPU-feature-dependent LLVM JIT execution inside the QEMU TCG evidence boundary"
+      "qualification_reason": "retain bounded screenshot throughput while preventing LLVM JIT code from selecting instructions above the QEMU-safe SSE2 baseline"
     },
     "trusted_chrome": "native window decorations",
     "logical_content_surface_limit": 1,
@@ -105,7 +125,20 @@
     "servo_crash_callback_required": false,
     "recovery_generation_required": 2,
     "recovery_screenshot_required": true,
-    "external_network_allowed": false
+    "external_network_allowed": false,
+    "input": {
+      "source": "d2i_image_local_servo_dispatch",
+      "native_host_input_claimed": false,
+      "external_input_device_present": false,
+      "events": [
+        "pointer_move",
+        "primary_button_down_up",
+        "wheel",
+        "keyboard_down_up",
+        "ime_start_update_end"
+      ],
+      "d0a02_native_host_input_remains_separate": true
+    }
   },
   "fault_injection": {
     "mechanism": "external-systemd-helper",
@@ -138,10 +171,11 @@
     "systemd_udev_dbus_logind_active",
     "headless_wayland_active",
     "headed_servo_window_created",
-    "softpipe_renderer_without_llvm_jit",
+    "bounded_llvmpipe_sse2_single_worker",
     "trusted_chrome_survives_recovery",
     "one_logical_content_surface",
     "page_input_verified",
+    "d2i_image_local_input_source_explicit",
     "ime_start_update_end_verified",
     "product_agent_port_default_disabled",
     "qemu_network_none",
