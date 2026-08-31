@@ -138,7 +138,7 @@ class D3DevelopmentProfilePathTests(unittest.TestCase):
     def tearDown(self) -> None:
         D3_PROFILE.ERRORS.clear()
 
-    def test_development_excludes_qualification_static_attestation(self) -> None:
+    def test_development_uses_only_its_dedicated_static_attestation(self) -> None:
         manifest = tomllib.loads(
             (ROOT / "apps/hepta-agent-portd/Cargo.toml").read_text(
                 encoding="utf-8"
@@ -146,9 +146,15 @@ class D3DevelopmentProfilePathTests(unittest.TestCase):
         )
         features = manifest["features"]
         static_feature = "hepta-peer-attestation/qualification-static-attestation"
+        development_static = (
+            "hepta-peer-attestation/development-static-attestation"
+        )
         self.assertNotIn(static_feature, features["development"])
         self.assertNotIn(static_feature, features["fixture"])
         self.assertIn(static_feature, features["d1-qualification"])
+        self.assertIn(development_static, features["development"])
+        self.assertNotIn(development_static, features["fixture"])
+        self.assertNotIn(development_static, features["d1-qualification"])
 
     @unittest.skipUnless(hasattr(os, "symlink"), "symlink support is required")
     def test_require_text_rejects_parent_symlink(self) -> None:

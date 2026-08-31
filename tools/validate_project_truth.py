@@ -71,15 +71,17 @@ PLAN_REVISION = "2026-08-29-d6"
 PLAN_PATH = "docs/DESKTOP_PLAN-2026-08-29-d6.md"
 INTEGRATED_STAGE = "D0R_D0C06_D0A01_COMPILE_VALIDATED"
 D3_ACTIVATION_TRUTH = {
-    "development_live_activation_status": "BLOCKED_UPSTREAM_CROSS_UID_PROCFS",
+    "development_live_activation_status": "SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE",
     "development_source_wiring_only": True,
-    "development_static_attestation_available": False,
-    "development_static_attestation_scope": "d1_qualification_only",
+    "development_static_attestation_available": True,
+    "development_static_attestation_scope": "explicit_development_profile_only",
     "development_service_user": "hepta-browserd",
     "development_expected_peer_user": "hepta-agent",
+    "development_trusted_executable_path": "/usr/libexec/hepta-agent",
+    "development_cross_uid_procfs_required": False,
     "development_blocker": (
-        "cross-UID /proc/<pid>/exe reads require PTRACE_MODE_READ_FSCREDS; "
-        "the development service has no CAP_SYS_PTRACE"
+        "exact integrated-image principal/dispatch/receipt evidence and independent "
+        "security review remain required before live activation"
     ),
 }
 D0A02_HISTORICAL_HEAD = "fe0ea6169127ce1f7950618b55374d83834a462c"

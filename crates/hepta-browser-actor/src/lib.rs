@@ -747,15 +747,17 @@ impl<R: PageRuntime> BrowserActor<R> {
         &self.binding
     }
 
-    /// Dispatch one request after refreshing the caller's procfs attestation.
+    /// Dispatch one request after refreshing the caller's attestation with
+    /// the exact executable source selected at admission.
     ///
     /// The regular [`BrowserRequestHandler::handle`] implementation retains
     /// the inexpensive SO_PEERCRED tuple check for compatibility.  Services
     /// that hold an [`hepta_peer_attestation::AttestedPeer`] for a connection
     /// should call this method instead: it checks the pidfd, reads a fresh
-    /// bounded snapshot, and verifies start-time/cgroup/unit/executable
-    /// continuity before runtime work begins.  The attested peer should be
-    /// scoped to one request/connection and dropped immediately afterwards.
+    /// bounded snapshot through the original live-procfs or trusted-path
+    /// source, and verifies start-time/cgroup/unit/executable continuity before
+    /// runtime work begins.  The attested peer should be scoped to one
+    /// request/connection and dropped immediately afterwards.
     pub fn handle_attested(
         &mut self,
         context: &DispatchContext,
@@ -776,18 +778,12 @@ impl<R: PageRuntime> BrowserActor<R> {
         attestor: &hepta_peer_attestation::ProcfsPeerAttestor,
         attested: &hepta_peer_attestation::AttestedPeer,
     ) -> Result<HandlerOutcome, AgentPortError> {
-        // Refreshing procfs and hashing `/proc/<pid>/exe` is bounded but can
-        // still consume a meaningful part of the request budget.  Refuse to
-        // start that work after the absolute deadline and re-check before the
-        // actor enters its runtime dispatch path.
+        // Refreshing identity and hashing either `/proc/<pid>/exe` or a
+        // reviewed trusted path is bounded but can still consume a meaningful
+        // part of the request budget.  Refuse to start that work after the
+        // absolute deadline and re-check before runtime dispatch.
         context.remaining()?;
-        if let Err(error) = attested.ensure_alive() {
-            return Ok(failure(
-                BrowserErrorCode::PolicyDenied,
-                &format!("peer attestation is no longer alive: {error}"),
-            ));
-        }
-        let snapshot = match attestor.read_snapshot(attested.snapshot().pid) {
+        let snapshot = match attested.refresh_snapshot(attestor) {
             Ok(snapshot) => snapshot,
             Err(error) => {
                 return Ok(failure(
@@ -804,12 +800,6 @@ impl<R: PageRuntime> BrowserActor<R> {
             return Ok(failure(
                 BrowserErrorCode::PolicyDenied,
                 &format!("peer attestation continuity rejected dispatch: {error}"),
-            ));
-        }
-        if let Err(error) = attested.ensure_alive() {
-            return Ok(failure(
-                BrowserErrorCode::PolicyDenied,
-                &format!("peer attestation changed before dispatch: {error}"),
             ));
         }
         self.handle_inner(context, request)

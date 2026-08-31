@@ -9,10 +9,12 @@ publish = false
 
 [features]
 default = []
-# The static executable binding is reserved for the explicit D1
-# qualification graph.  Production and D3 development builds use the live
-# procfs attestation path and must not link this escape hatch.
+# Static executable bindings are opt-in and non-production.  D1
+# qualification and the explicit D3 development profile select distinct
+# features so source validators can prove neither path enters the default
+# product graph.
 qualification-static-attestation = []
+development-static-attestation = []
 
 [dependencies]
 hepta-agent-transport = { path = "../hepta-agent-transport" }

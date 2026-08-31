@@ -371,6 +371,9 @@ def audit_source_and_features() -> None:
     features = cargo.get("features", {})
     require(features.get("default") == [], "fixture feature is enabled by default")
     static_feature = "hepta-peer-attestation/qualification-static-attestation"
+    development_static_feature = (
+        "hepta-peer-attestation/development-static-attestation"
+    )
     # Keep optional dependencies feature-gated and never enabled by default.
     # The generic fixture graph is deliberately static-attestation-free;
     # only the explicit D1 qualification graph may link that API.
@@ -391,6 +394,22 @@ def audit_source_and_features() -> None:
     require(
         static_feature not in features.get("development", []),
         "development feature unexpectedly enables qualification static attestation",
+    )
+    require(
+        features.get("development")
+        == [
+            "dep:hepta-agent-port",
+            "dep:hepta-browser-codec",
+            "dep:hepta-browser-actor",
+            "dep:hepta-session-core",
+            development_static_feature,
+        ],
+        "development feature mapping changed",
+    )
+    require(
+        development_static_feature not in features.get("fixture", [])
+        and development_static_feature not in features.get("d1-qualification", []),
+        "development static attestation leaked into another feature graph",
     )
     dependency = cargo.get("dependencies", {}).get("hepta-agent-port")
     require(isinstance(dependency, dict) and dependency.get("optional") is True, "fixture dependency is not optional")
@@ -419,6 +438,8 @@ def audit_source_and_features() -> None:
         "parse_unified_cgroup_path",
         "ProcessIdentityChanged",
         "ensure_pidfd_alive",
+        "pub fn refresh_snapshot",
+        "executable_source: ExecutableSource",
     ):
         require(required in attestor, f"peer attestor misses {required!r}")
 

@@ -109,13 +109,13 @@
   ],
   "partial_work_packages": [],
   "product": "TrillionniumOS Desktop",
-  "development_live_activation_status": "BLOCKED_UPSTREAM_CROSS_UID_PROCFS",
+  "development_live_activation_status": "SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE",
   "development_source_wiring_only": true,
-  "development_static_attestation_available": false,
-  "development_static_attestation_scope": "d1_qualification_only",
+  "development_static_attestation_available": true,
+  "development_static_attestation_scope": "explicit_development_profile_only",
   "development_service_user": "hepta-browserd",
   "development_expected_peer_user": "hepta-agent",
-  "development_blocker": "cross-UID /proc/<pid>/exe reads require PTRACE_MODE_READ_FSCREDS; the development service has no CAP_SYS_PTRACE",
+  "development_blocker": "exact integrated-image principal/dispatch/receipt evidence and independent security review remain required before live activation",
   "project_state": "manifests/project-state.v1.json",
   "qualification_work_packages": [
     {
@@ -219,5 +219,7 @@
       "pr": 35,
       "status": "BLOCKED_UPSTREAM"
     }
-  ]
+  ],
+  "development_trusted_executable_path": "/usr/libexec/hepta-agent",
+  "development_cross_uid_procfs_required": false
 }

@@ -24,8 +24,8 @@ use hepta_browser_actor::{
 };
 use hepta_browser_codec::BrowserRequest;
 use hepta_peer_attestation::{
-    AttestationError, AttestedPeer, PeerRuntimePolicy, ProcfsPeerAttestor, resolve_group_id,
-    resolve_user_id,
+    AttestationError, AttestedPeer, PeerRuntimePolicy, ProcfsPeerAttestor, hash_trusted_executable,
+    resolve_group_id, resolve_user_id,
 };
 use hepta_session_core::{JournalError, JournalId, JournalOpenPolicy, ReceiptJournal};
 use std::fmt;
@@ -44,6 +44,7 @@ const DEVELOPMENT_JOURNAL_ROOT: &str = "/var/lib/hepta-browserd/development";
 const EXPECTED_PEER_USER: &str = "hepta-agent";
 const EXPECTED_PEER_GROUP: &str = "hepta-agent";
 const EXPECTED_PEER_UNIT: &str = "hepta-agent.service";
+const DEVELOPMENT_PEER_EXECUTABLE: &str = "/usr/libexec/hepta-agent";
 const EXPECTED_EXECUTABLE_ENV: &str = "HEPTA_D3_EXPECTED_EXECUTABLE_SHA256";
 const PRINCIPAL_ID_ENV: &str = "HEPTA_D3_PRINCIPAL_ID";
 const IMAGE_ID_ENV: &str = "HEPTA_D3_IMAGE_ID";
@@ -111,10 +112,17 @@ fn serve_inherited_connection(arguments: &[String]) -> Result<ServiceEvidence, S
     let runtime_policy =
         PeerRuntimePolicy::for_system_service(expected_uid, expected_gid, EXPECTED_PEER_UNIT)?;
     let attestor = ProcfsPeerAttestor::default();
-    let attested = attestor.attest(peer, &runtime_policy)?;
+    // Cross-UID `/proc/<pid>/exe` reads are intentionally unavailable to this
+    // service.  Bind the reviewed TaskFlow service mechanism to one compiled,
+    // root-owned executable path instead; the attestor retains this exact
+    // source and reopens/re-hashes it at every BrowserActor dispatch.
+    let executable = hash_trusted_executable(DEVELOPMENT_PEER_EXECUTABLE)?;
+    let attested =
+        attestor.attest_with_static_executable_digest(peer, &runtime_policy, &executable)?;
 
-    // The executable digest is supplied by the explicitly selected profile,
-    // not copied from an untrusted request.  `bind_attested` then copies the
+    // The administrator-provided digest is an additional image/configuration
+    // pin.  It must equal the independently opened trusted path before the
+    // semantic principal is constructed.  `bind_attested` then copies the
     // digest/unit/cgroup only from the immutable, pidfd-backed snapshot.
     let principal = principal_from_environment(
         expected_uid,
@@ -168,12 +176,16 @@ fn self_check(arguments: &[String]) -> Result<String, ServiceError> {
             "\"browser_actor_connected\":false,",
             "\"receipt_observer_wired\":true,\"receipt_observer_connected\":false,",
             "\"attestation_exercised\":false,\"journal_exercised\":false,",
+            "\"static_attestation_wired\":true,",
+            "\"cross_uid_procfs_required\":false,",
+            "\"trusted_executable_path\":\"{}\",",
             "\"scope\":\"source_wiring_only\",",
             "\"external_effect_authority\":false,",
             "\"socket\":\"{}\",\"plan_revision\":\"{}\",",
             "\"servo_commit\":\"{}\",\"browserd_version\":\"{}\"}}"
         ),
         DEVELOPMENT_PROFILE,
+        DEVELOPMENT_PEER_EXECUTABLE,
         DEVELOPMENT_SOCKET_PATH,
         D3_PLAN_REVISION,
         D3_SERVO_COMMIT,
@@ -264,10 +276,16 @@ fn require_marker(path: &Path) -> Result<MarkerGuard, ServiceError> {
 fn principal_from_environment(
     expected_uid: u32,
     expected_gid: u32,
-    _attested_digest: &str,
+    attested_digest: &str,
 ) -> Result<TaskFlowPrincipal, ServiceError> {
-    let executable_sha256 = std::env::var(EXPECTED_EXECUTABLE_ENV)
+    let configured = std::env::var(EXPECTED_EXECUTABLE_ENV)
         .map_err(|_| ServiceError::MissingConfiguration(EXPECTED_EXECUTABLE_ENV))?;
+    if configured != attested_digest {
+        return Err(ServiceError::ConfiguredExecutableDigestMismatch {
+            configured,
+            observed: attested_digest.to_owned(),
+        });
+    }
     let principal_id =
         std::env::var(PRINCIPAL_ID_ENV).unwrap_or_else(|_| "taskflow-development-local".to_owned());
     Ok(TaskFlowPrincipal {
@@ -276,7 +294,7 @@ fn principal_from_environment(
         expected_gid,
         expected_systemd_unit: EXPECTED_PEER_UNIT.to_owned(),
         expected_cgroup_v2_path: format!("/system.slice/{EXPECTED_PEER_UNIT}"),
-        expected_executable_sha256: executable_sha256,
+        expected_executable_sha256: attested_digest.to_owned(),
     })
 }
 
@@ -568,16 +586,26 @@ enum ServiceError {
     MarkerParentNotRootOwned(PathBuf),
     MarkerParentWritable(PathBuf),
     MissingConfiguration(&'static str),
+    ConfiguredExecutableDigestMismatch {
+        configured: String,
+        observed: String,
+    },
     UnknownArgument(String),
     JournalPathHasNoParent,
-    JournalPathInvalid { path: PathBuf, reason: &'static str },
+    JournalPathInvalid {
+        path: PathBuf,
+        reason: &'static str,
+    },
     JournalIdentityMismatch,
     JournalRotationRequiresCompleteChain(u64),
     JournalHasUnresolvedReceipts(usize),
     ClockBeforeUnixEpoch,
     WrongInheritedDescriptor,
     UnnamedInheritedSocket,
-    SocketPathMismatch { expected: PathBuf, actual: PathBuf },
+    SocketPathMismatch {
+        expected: PathBuf,
+        actual: PathBuf,
+    },
 }
 
 impl fmt::Display for ServiceError {
@@ -634,6 +662,13 @@ impl fmt::Display for ServiceError {
                     "required development configuration {name} is absent"
                 )
             }
+            Self::ConfiguredExecutableDigestMismatch {
+                configured,
+                observed,
+            } => write!(
+                formatter,
+                "configured development executable digest {configured} does not match trusted path digest {observed}"
+            ),
             Self::UnknownArgument(argument) => {
                 write!(formatter, "unknown development-profile argument {argument}")
             }
@@ -895,9 +930,26 @@ mod tests {
         assert!(report.contains("\"integrated_image_qualified\":false"));
         assert!(report.contains("\"attestation_exercised\":false"));
         assert!(report.contains("\"journal_exercised\":false"));
+        assert!(report.contains("\"static_attestation_wired\":true"));
+        assert!(report.contains("\"cross_uid_procfs_required\":false"));
+        assert!(report.contains(&format!(
+            "\"trusted_executable_path\":\"{DEVELOPMENT_PEER_EXECUTABLE}\""
+        )));
         assert!(report.contains("\"scope\":\"source_wiring_only\""));
         assert!(report.contains("\"listener_created\":false"));
         assert!(report.contains("\"marker_shipped\":false"));
+    }
+
+    #[test]
+    fn configured_digest_must_match_the_trusted_path_observation() {
+        let observed = "a".repeat(64);
+        let error = ServiceError::ConfiguredExecutableDigestMismatch {
+            configured: "b".repeat(64),
+            observed: observed.clone(),
+        };
+        let rendered = error.to_string();
+        assert!(rendered.contains(&"b".repeat(64)));
+        assert!(rendered.contains(&observed));
     }
 
     #[test]
