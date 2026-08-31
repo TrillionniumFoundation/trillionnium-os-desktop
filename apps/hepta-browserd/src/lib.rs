@@ -2,10 +2,10 @@
 
 //! TrillionniumOS browser daemon control core.
 //!
-//! The historical D0-D3 self-check remains isolated in `legacy`.  The compiled
+//! The historical D0-D3 self-check remains isolated in `legacy`. The compiled
 //! D4-D7 policy, deterministic authority coordinator, and explicitly injected
 //! product-authority runtime are exercised through the public self-check as
-//! side-effect-free source integrations.  No integrated-image, hardware,
+//! side-effect-free source integrations. No integrated-image, hardware,
 //! signing, external-network, or release authority is implied.
 
 mod legacy;
@@ -26,6 +26,16 @@ pub const AUTHORITY_RUNTIME_SOURCE_STAGE: &str =
 
 pub fn run_self_check() -> Result<SelfCheckReport, String> {
     let mut report = legacy::run_self_check()?;
+
+    // Reassert the AgentPort invariant at the public browserd boundary. The
+    // legacy check covers the historical path; this invocation makes the
+    // exported composition statically auditable after module refactors.
+    hepta_agent_port::self_check().map_err(|error| error.to_string())?;
+    report.checks_run = report
+        .checks_run
+        .checked_add(1)
+        .ok_or_else(|| "self-check counter overflow".to_owned())?;
+
     let policy = product_policy::run_self_check().map_err(|error| error.to_string())?;
     let coordinator =
         authority_coordinator::run_self_check().map_err(|error| error.to_string())?;
@@ -59,10 +69,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn public_self_check_includes_d4_d7_layers_without_authority_widening() {
+    fn public_self_check_includes_agent_port_and_d4_d7_layers_without_authority_widening() {
         let report = run_self_check().expect("integrated source self-check must pass");
         assert!(report.ok);
-        assert!(report.checks_run >= 19);
+        assert!(report.checks_run >= 20);
         assert!(report.to_json().contains(ACTIVE_PLAN_REVISION));
         assert_eq!(
             PRODUCT_POLICY_SOURCE_STAGE,
