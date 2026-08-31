@@ -1,0 +1,81 @@
+name: temporary-d4-d9-source-export
+
+on:
+  push:
+    branches:
+      - codex/d4-d9-source-export-v1
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact cumulative reference branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Copy only D4-D9 work-package sources
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d4-d9-source
+          files=(
+            .github/workflows/d4-collaboration-d3-integration.yml
+            .github/workflows/d4-collaboration.yml
+            docs/architecture/HUMAN_AGENT_COLLABORATION.md
+            tests/d4/test_collaboration_reference.py
+            tools/d4_collaboration_reference.py
+            .github/workflows/d5-trusted-app.yml
+            contracts/trusted-app-bundle.v1.json
+            docs/architecture/TRUSTED_APP_BUNDLES.md
+            tests/d5/test_trusted_app_bundle.py
+            tools/trusted_app_bundle.py
+            tools/trusted_app_indicator.py
+            .github/workflows/d6-capability-egress.yml
+            contracts/capability-egress.v1.json
+            docs/architecture/CAPABILITY_AND_CONTROLLED_EGRESS.md
+            tests/d6/test_capability_egress_reference.py
+            tools/capability_egress_reference.py
+            .github/workflows/d7-recovery-update.yml
+            contracts/recovery-update-reconciliation.v1.json
+            docs/architecture/RECOVERY_UPDATE_AND_EFFECT_RECONCILIATION.md
+            tests/d7/test_ab_update_reference.py
+            tests/d7/test_effect_reconciliation_reference.py
+            tools/ab_update_reference.py
+            tools/effect_reconciliation_reference.py
+            .github/workflows/d8-hardware-promotion-policy.yml
+            .github/workflows/d8-hardware-qualification.yml
+            contracts/hardware-beta-qualification.v1.json
+            docs/architecture/FIXED_HARDWARE_BETA_QUALIFICATION.md
+            tests/d8/test_000_fixture_isolation.py
+            tests/d8/test_hardware_evidence_verifier.py
+            tests/d8/test_hardware_promotion_gate.py
+            tools/hardware_evidence_verifier.py
+            tools/hardware_promotion_gate.py
+            tools/hardware_verification_receipt.py
+            .github/workflows/d9-release-promotion.yml
+            contracts/signed-release-promotion.v1.json
+            docs/architecture/SIGNED_RELEASE_PROMOTION.md
+            tests/d9/test_release_promotion_verifier.py
+            tools/release_promotion_verifier.py
+          )
+          for file in "${files[@]}"; do
+            test -f "$file"
+            install -D -m 0644 "$file" "/tmp/d4-d9-source/$file"
+          done
+          printf '%s\n' "${files[@]}" | sort > /tmp/d4-d9-source/.exported-files.txt
+          (cd /tmp/d4-d9-source && sha256sum "${files[@]}") > /tmp/d4-d9-source/.sha256sum
+          test "$(find /tmp/d4-d9-source -type f | wc -l)" -eq 40
+
+      - name: Upload exact D4-D9 source subset
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d4-d9-source-${{ github.sha }}
+          path: /tmp/d4-d9-source
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 6
+          include-hidden-files: true
