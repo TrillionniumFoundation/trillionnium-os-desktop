@@ -21,6 +21,17 @@ pub const PRODUCT_POLICY_SOURCE_STAGE: &str = "D4_D7_COMPILED_SIDE_EFFECT_FREE_P
 
 pub fn run_self_check() -> Result<SelfCheckReport, String> {
     let mut report = legacy::run_self_check()?;
+
+    // Reassert the AgentPort invariant at the public browserd boundary.  The
+    // legacy self-check also covers the historical call path; keeping this
+    // explicit invocation makes the currently exported composition statically
+    // auditable and ensures a future module refactor cannot silently omit it.
+    hepta_agent_port::self_check().map_err(|error| error.to_string())?;
+    report.checks_run = report
+        .checks_run
+        .checked_add(1)
+        .ok_or_else(|| "self-check counter overflow".to_owned())?;
+
     let policy = product_policy::run_self_check().map_err(|error| error.to_string())?;
     report.checks_run = report
         .checks_run
@@ -41,11 +52,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn public_self_check_includes_d4_d7_policy_without_authority_widening() {
+    fn public_self_check_includes_agent_port_and_d4_d7_policy_without_authority_widening() {
         let report = run_self_check().expect("integrated source self-check must pass");
         assert!(report.ok);
-        assert!(report.checks_run >= 15);
+        assert!(report.checks_run >= 16);
         assert!(report.to_json().contains(ACTIVE_PLAN_REVISION));
-        assert_eq!(PRODUCT_POLICY_SOURCE_STAGE, "D4_D7_COMPILED_SIDE_EFFECT_FREE_POLICY_CORE");
+        assert_eq!(
+            PRODUCT_POLICY_SOURCE_STAGE,
+            "D4_D7_COMPILED_SIDE_EFFECT_FREE_POLICY_CORE"
+        );
     }
 }
