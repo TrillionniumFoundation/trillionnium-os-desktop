@@ -42,13 +42,24 @@ jobs:
           set -euo pipefail
           python3 tools/verify_systemd_socket_custody.py
           python3 tools/validate_agent_port_path_custody.py
-          python3 -m unittest tests.test_agent_port_path_custody -v
+          python3 -m unittest tests.test_agent_port_path_custody tests.d1.test_d1_path_custody -v
+          bash -n packaging/debian/image/rootfs-overlay/usr/local/libexec/trillionnium-d1-agent-port-path-custody
 
       - name: Verify effective systemd unit syntax
         run: |
           set -euo pipefail
           temporary="$(mktemp -d)"
-          trap 'rm -rf "$temporary"' EXIT
+          cleanup() {
+            sudo rm -f /usr/libexec/hepta-agent-portd \
+              /usr/libexec/hepta-agent-port-developmentd \
+              /usr/libexec/hepta-agent || true
+            rm -rf "$temporary"
+          }
+          trap cleanup EXIT
+          sudo mkdir -p /usr/libexec
+          sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-portd
+          sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-port-developmentd
+          sudo install -m 0755 /bin/true /usr/libexec/hepta-agent
           mkdir -p "$temporary/usr/lib/systemd/system"
           cp packaging/debian/systemd/hepta-browserd-agent.socket \
              packaging/debian/systemd/hepta-browserd-agent@.service \

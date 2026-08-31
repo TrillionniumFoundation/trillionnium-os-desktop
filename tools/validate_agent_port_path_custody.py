@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify root-owned AgentPort pathname custody and effective unit overrides."""
+"""Verify root-owned AgentPort parent-path custody and effective unit overrides."""
 
 from __future__ import annotations
 
@@ -13,7 +13,9 @@ from typing import Iterable
 
 DEFAULT_ROOT = Path(__file__).resolve().parents[1]
 SOCKET_DIRECTORY = "/run/hepta/browserd"
-SOCKET_GROUP = "hepta-agent-socket"
+DIRECTORY_GROUP = "hepta-agent-socket"
+SOCKET_OWNER = "hepta-browserd"
+SOCKET_GROUP = "hepta-agent"
 PRODUCT_SOCKET = "packaging/debian/systemd/hepta-browserd-agent.socket"
 PRODUCT_SOCKET_DROPIN = "packaging/debian/systemd/hepta-browserd-agent.socket.d/10-root-path-custody.conf"
 PRODUCT_SERVICE = "packaging/debian/systemd/hepta-browserd-agent@.service"
@@ -68,7 +70,6 @@ def read_regular_text(root: Path, relative: str) -> str:
 
 
 def parse_unit(text: str, *, label: str) -> list[tuple[str, str, str]]:
-    """Parse ordered systemd assignments while preserving list resets."""
     assignments: list[tuple[str, str, str]] = []
     section: str | None = None
     for line_number, raw in enumerate(text.splitlines(), 1):
@@ -146,8 +147,8 @@ def validate(root: Path = DEFAULT_ROOT) -> dict[str, object]:
         ("development", development_socket, "/run/hepta/browserd/agent-development.sock"),
     ):
         require_equal(last_value(unit, "Socket", "ListenStream"), expected_path, f"{label} socket path drift")
-        require_equal(last_value(unit, "Socket", "SocketUser"), "root", f"{label} socket must be root-owned")
-        require_equal(last_value(unit, "Socket", "SocketGroup"), SOCKET_GROUP, f"{label} socket client group drift")
+        require_equal(last_value(unit, "Socket", "SocketUser"), SOCKET_OWNER, f"{label} socket inode owner drift")
+        require_equal(last_value(unit, "Socket", "SocketGroup"), SOCKET_GROUP, f"{label} socket inode group drift")
         require_equal(last_value(unit, "Socket", "SocketMode"), "0660", f"{label} socket mode drift")
         require_equal(last_value(unit, "Socket", "DirectoryMode"), "0750", f"{label} directory mode drift")
 
@@ -161,13 +162,12 @@ def validate(root: Path = DEFAULT_ROOT) -> dict[str, object]:
     rows = [line.split() for line in non_comment_lines(read_regular_text(root, TMPFILES))]
     runtime_rows = [row for row in rows if len(row) >= 5 and row[1] == SOCKET_DIRECTORY]
     require_equal(len(runtime_rows), 1, "runtime directory row count")
-    runtime = runtime_rows[0]
-    require_equal(runtime[:5], ["d", SOCKET_DIRECTORY, "0750", "root", SOCKET_GROUP], "runtime directory custody drift")
+    require_equal(runtime_rows[0][:5], ["d", SOCKET_DIRECTORY, "0750", "root", DIRECTORY_GROUP], "runtime directory custody drift")
 
     fields = [line.split() for line in non_comment_lines(read_regular_text(root, SYSUSERS))]
-    require(any(row[:2] == ["g", SOCKET_GROUP] for row in fields), "dedicated socket group is missing")
-    require(any(len(row) >= 3 and row[:3] == ["m", "hepta-agent", SOCKET_GROUP] for row in fields), "Agent client is not enrolled in socket group")
-    require(not any(len(row) >= 3 and row[:3] == ["m", "hepta-browserd", SOCKET_GROUP] for row in fields), "browser mechanism belongs to socket custody group")
+    require(any(row[:2] == ["g", DIRECTORY_GROUP] for row in fields), "dedicated directory group is missing")
+    require(any(len(row) >= 3 and row[:3] == ["m", "hepta-agent", DIRECTORY_GROUP] for row in fields), "Agent client is not enrolled in directory group")
+    require(not any(len(row) >= 3 and row[:3] == ["m", "hepta-browserd", DIRECTORY_GROUP] for row in fields), "browser mechanism belongs to directory custody group")
 
     installed_sources = {line.split()[0] for line in non_comment_lines(read_regular_text(root, INSTALL))}
     require(PRODUCT_SOCKET_DROPIN in installed_sources, "production package omits socket custody drop-in")
@@ -181,13 +181,13 @@ def validate(root: Path = DEFAULT_ROOT) -> dict[str, object]:
     custody = contract.get("path_custody")
     require(isinstance(custody, dict), "contract path_custody object is missing")
     expected = {
-        "socket_owner": "root",
-        "socket_group": SOCKET_GROUP,
+        "socket_inode_owner": SOCKET_OWNER,
+        "socket_inode_group": SOCKET_GROUP,
         "directory_owner": "root",
-        "directory_group": SOCKET_GROUP,
+        "directory_group": DIRECTORY_GROUP,
         "directory_mode": "0750",
-        "browser_service_in_socket_group": False,
-        "browser_service_socket_directory_access": "read_only",
+        "browser_service_in_directory_group": False,
+        "browser_service_socket_directory_access": "read_only_mount_and_no_dac_traversal",
         "browser_service_socket_path_mutation_authority": False,
         "development_profile_in_production_install_map": False,
     }
@@ -198,10 +198,11 @@ def validate(root: Path = DEFAULT_ROOT) -> dict[str, object]:
         "schema": "trillionnium.desktop.agent-port-path-custody-result.v1",
         "status": "PASS_SOURCE_POLICY",
         "socket_directory": SOCKET_DIRECTORY,
-        "socket_owner": "root",
-        "socket_group": SOCKET_GROUP,
+        "socket_inode_owner": SOCKET_OWNER,
+        "socket_inode_group": SOCKET_GROUP,
         "directory_owner": "root",
-        "directory_group": SOCKET_GROUP,
+        "directory_group": DIRECTORY_GROUP,
+        "browser_service_in_directory_group": False,
         "product_service_socket_path_mutation_authority": False,
         "development_service_socket_path_mutation_authority": False,
         "product_dropins_installed": True,
