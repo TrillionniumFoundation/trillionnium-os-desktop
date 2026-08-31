@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 """Bind D0A-01 evidence to one immutable desktop Git object.
 
-The permanent Servo compile gate runs for pull requests, exact ``main`` pushes,
-and manual dispatches.  GitHub's checkout object alone is not enough to prove
-which source was tested, so this helper validates the event topology and exports
-the identities consumed by the evidence envelope.  It has no write authority:
-the only network operation is a read-only fetch of ``origin/main``.
+The permanent Servo compile gate accepts three fail-closed topologies:
+
+* an exact push of ``refs/heads/main`` (promotion-authoritative);
+* a pull-request synthetic merge whose declared base/head match its two parents;
+* a manual branch/tag run (non-authoritative).
+
+Pull requests may target ``main`` or a reviewed stacked candidate branch.  A
+stacked base is accepted only when the current ``origin/main`` object is its Git
+ancestor.  This prevents an unrelated or stale branch from acquiring a valid
+D0A identity while allowing the repository's explicit dependency-ordered PR
+chain to qualify source changes before final promotion to main.
+
+The helper has no write authority. Its only network operation is a read-only
+fetch of ``origin/main``.
 """
 
 from __future__ import annotations
@@ -27,19 +36,18 @@ PR_REF_RE = re.compile(r"^refs/pull/([1-9][0-9]*)/merge$")
 
 
 def validate_event_ref(event_name: str, source_ref: str, source_ref_name: str) -> None:
-    """Bind the event class to GitHub's immutable ref topology.
-
-    These values are copied into evidence and later consumed as provenance.
-    Checking only the commit parents is insufficient when a caller can supply
-    an inconsistent ref tuple (for example, a PR role on a branch ref).
-    """
+    """Bind the event class to GitHub's immutable ref topology."""
 
     for value, label in (
         (event_name, "event name"),
         (source_ref, "source ref"),
         (source_ref_name, "source ref name"),
     ):
-        if not isinstance(value, str) or not value or any(ord(char) < 0x20 for char in value):
+        if (
+            not isinstance(value, str)
+            or not value
+            or any(ord(character) < 0x20 for character in value)
+        ):
             raise ValueError(f"{label} is malformed")
 
     if event_name == "pull_request":
@@ -54,8 +62,6 @@ def validate_event_ref(event_name: str, source_ref: str, source_ref_name: str) -
         return
 
     if event_name == "workflow_dispatch":
-        # Manual runs may target a branch or tag, but never a pull-request
-        # merge ref.  GitHub's ref_name is the suffix after refs/{heads,tags}/.
         for prefix in ("refs/heads/", "refs/tags/"):
             if source_ref.startswith(prefix):
                 suffix = source_ref[len(prefix) :]
@@ -85,8 +91,14 @@ def derive_identity(
     pr_head_sha: str = "",
     pr_base_sha: str = "",
     dispatch_base_sha: str = "",
+    pr_base_contains_current_main: bool = False,
 ) -> dict[str, Any]:
-    """Return fail-closed identity fields for one already-observed topology."""
+    """Return fail-closed identity fields for one already-observed topology.
+
+    ``pr_base_contains_current_main`` is ignored for a PR that directly targets
+    the current main object. For a stacked PR it must be supplied only after an
+    independent ``git merge-base --is-ancestor`` check succeeds.
+    """
 
     validate_event_ref(event_name, source_ref, source_ref_name)
     tested_sha = valid_sha(tested_sha, "tested SHA")
@@ -104,10 +116,14 @@ def derive_identity(
         pr_base_sha = valid_sha(pr_base_sha, "pull-request base SHA")
         if parent_list[0] != pr_base_sha:
             raise ValueError("merge first parent does not equal the live pull-request base")
-        if parent_list[0] != current_main_sha:
-            raise ValueError("merge first parent is not the current origin/main object")
         if parent_list[1] != pr_head_sha:
             raise ValueError("merge second parent does not equal the live pull-request head")
+
+        targets_current_main = pr_base_sha == current_main_sha
+        if not targets_current_main and not pr_base_contains_current_main:
+            raise ValueError(
+                "stacked pull-request base does not contain the current origin/main object"
+            )
         return {
             "EVENT_NAME": event_name,
             "EVENT_SHA": event_sha,
@@ -120,7 +136,11 @@ def derive_identity(
             "CANDIDATE_HEAD_SHA": parent_list[1],
             "TESTED_MERGE_SHA": tested_sha,
             "INTEGRATED_MAIN_SHA": "",
-            "EVIDENCE_ROLE": "pr_synthetic_merge",
+            "EVIDENCE_ROLE": (
+                "pr_synthetic_merge"
+                if targets_current_main
+                else "stacked_pr_synthetic_merge"
+            ),
             "PROMOTION_AUTHORITATIVE": "false",
         }
 
@@ -150,7 +170,11 @@ def derive_identity(
     if event_name == "workflow_dispatch":
         if not parent_list:
             raise ValueError("manual qualification requires at least one parent")
-        base_sha = valid_sha(dispatch_base_sha, "manual base SHA") if dispatch_base_sha else current_main_sha
+        base_sha = (
+            valid_sha(dispatch_base_sha, "manual base SHA")
+            if dispatch_base_sha
+            else current_main_sha
+        )
         return {
             "EVENT_NAME": event_name,
             "EVENT_SHA": event_sha,
@@ -174,6 +198,19 @@ def git(*args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
 
+def git_is_ancestor(ancestor: str, descendant: str) -> bool:
+    completed = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+        cwd=ROOT,
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    if completed.returncode not in {0, 1}:
+        raise ValueError("cannot determine stacked pull-request ancestry")
+    return completed.returncode == 0
+
+
 def append_github_env(identity: dict[str, Any]) -> None:
     destination = os.environ.get("GITHUB_ENV")
     if not destination:
@@ -190,17 +227,36 @@ def run() -> int:
     event_name = os.environ.get("EVENT_NAME") or os.environ.get("GITHUB_EVENT_NAME", "")
     event_sha = os.environ.get("EVENT_SHA") or os.environ.get("GITHUB_SHA", "")
     source_ref = os.environ.get("SOURCE_REF") or os.environ.get("GITHUB_REF", "")
-    source_ref_name = os.environ.get("SOURCE_REF_NAME") or os.environ.get("GITHUB_REF_NAME", "")
+    source_ref_name = os.environ.get("SOURCE_REF_NAME") or os.environ.get(
+        "GITHUB_REF_NAME", ""
+    )
     if not event_name or not event_sha or not source_ref or not source_ref_name:
         raise ValueError("GitHub event/ref identity environment is incomplete")
 
     tested_sha = git("rev-parse", "HEAD")
     tested_tree_sha = git("rev-parse", "HEAD^{tree}")
     parents = git("show", "-s", "--format=%P", "HEAD").split()
-    subprocess.run(["git", "fetch", "--no-tags", "origin", "main"], cwd=ROOT, check=True)
+    subprocess.run(
+        ["git", "fetch", "--no-tags", "origin", "main"],
+        cwd=ROOT,
+        check=True,
+    )
     current_main_sha = git("rev-parse", "origin/main")
+    pr_base_sha = os.environ.get("PR_BASE_SHA", "")
+    pr_base_contains_current_main = False
+    if event_name == "pull_request" and pr_base_sha and pr_base_sha != current_main_sha:
+        valid_sha(pr_base_sha, "pull-request base SHA")
+        subprocess.run(
+            ["git", "cat-file", "-e", f"{pr_base_sha}^{{commit}}"],
+            cwd=ROOT,
+            check=True,
+        )
+        pr_base_contains_current_main = git_is_ancestor(current_main_sha, pr_base_sha)
+
     dispatch_base_sha = (
-        git("merge-base", tested_sha, current_main_sha) if event_name == "workflow_dispatch" else ""
+        git("merge-base", tested_sha, current_main_sha)
+        if event_name == "workflow_dispatch"
+        else ""
     )
     identity = derive_identity(
         event_name=event_name,
@@ -212,13 +268,18 @@ def run() -> int:
         parents=parents,
         current_main_sha=current_main_sha,
         pr_head_sha=os.environ.get("PR_HEAD_SHA", ""),
-        pr_base_sha=os.environ.get("PR_BASE_SHA", ""),
+        pr_base_sha=pr_base_sha,
         dispatch_base_sha=dispatch_base_sha,
+        pr_base_contains_current_main=pr_base_contains_current_main,
     )
 
     event_before = os.environ.get("EVENT_BEFORE", "")
     if event_name == "push" and event_before and event_before != ZERO_SHA and parents:
-        subprocess.run(["git", "cat-file", "-e", f"{event_before}^{{commit}}"], cwd=ROOT, check=True)
+        subprocess.run(
+            ["git", "cat-file", "-e", f"{event_before}^{{commit}}"],
+            cwd=ROOT,
+            check=True,
+        )
         subprocess.run(
             ["git", "merge-base", "--is-ancestor", event_before, parents[0]],
             cwd=ROOT,
