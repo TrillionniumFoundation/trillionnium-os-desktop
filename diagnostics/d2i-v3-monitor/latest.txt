@@ -1,0 +1,165 @@
+schema=trillionnium.desktop.d2i-v3-monitor.v1
+recorded_at=2026-08-31T04:23:50Z
+candidate=08d4921851accb66f924152c2f067c3b396db77d
+run_id=33353877221
+status=completed
+conclusion=failure
+
+--- failed log tail ---
+integrated-image	Boot the exact integrated image with no network device	﻿2026-08-31T03:43:14.9565224Z ##[group]Run set -euo pipefail
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9565559Z ^[[36;1mset -euo pipefail^[[0m
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9565816Z ^[[36;1mtests/qemu/run-d2i-boot-test.sh \^[[0m
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9566164Z ^[[36;1m  --selection manifests/debian-d1.selection.json \^[[0m
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9566635Z ^[[36;1m  --artifacts /tmp/trillionnium-d2i/d1/build-a/candidate/artifacts \^[[0m
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9567121Z ^[[36;1m  --image /tmp/trillionnium-d2i/integrated/d2i-a.ext4 \^[[0m
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9567584Z ^[[36;1m  --preparation /tmp/trillionnium-d2i/integrated/preparation-a.json \^[[0m
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9568015Z ^[[36;1m  --output-dir /tmp/trillionnium-d2i/qemu^[[0m
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9606069Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9606402Z env:
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9606592Z   CARGO_TERM_COLOR: always
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9606818Z   CARGO_INCREMENTAL: 0
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9607099Z   E2FSPROGS_COMMIT: c3cce4a07efefc62bc7fc57a678cb870af27d0f2
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9607439Z   E2FSPROGS_VERSION: 1.47.2
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9607765Z   CANDIDATE_HEAD_SHA: 08d4921851accb66f924152c2f067c3b396db77d
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9608126Z   BASE_SHA: afd42c0f90d254dfb7b04d9c45216e879840f95e
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9608452Z   TESTED_SHA: 2783b107826a8df31bc1d9950c8c7e0e43b32dd1
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9609057Z   TESTED_TREE_SHA: 92cffcaedea9d2cdcfa4ad49135ac81cbd7eaacc
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9609458Z   RUST_CHANNEL: 1.93.0
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9609669Z   SERVO_RUST_CHANNEL: 1.97.1
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:43:14.9609897Z ##[endgroup]
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:54.5370312Z [   87.982634] bash[1157]: TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:recovery_screenshot_missing
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:54.5371283Z [   88.647649] bash[1168]: Aug 31 03:44:51 runnervmgx7h7 bash[1157]: TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:recovery_screenshot_missing
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8326423Z D2I bounded guest diagnostics:
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8327269Z --- /tmp/trillionnium-d2i/qemu/guest-failure-diagnostics.txt (tail) ---
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8345199Z reason=recovery_screenshot_missing
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8345482Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8345575Z -- unit status --
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8346642Z ● trillionnium-d1-wayland.service - TrillionniumOS D1 headless Wayland acceptance compositor
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8347870Z      Loaded: loaded (/etc/systemd/system/trillionnium-d1-wayland.service; disabled; preset: enabled)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8349117Z     Drop-In: /etc/systemd/system/trillionnium-d1-wayland.service.d
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8350000Z              └─10-runtime-home.conf
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8350401Z      Active: active (running) since Mon 2026-08-31 03:43:43 UTC; 1min 8s ago
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8350818Z  Invocation: a2f0164aaf77407c9bd800e6bc6dd5ed
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8351442Z     Process: 354 ExecStartPre=/usr/bin/mkdir -p /run/hepta-desktop/cache /run/hepta-desktop/config (code=exited, status=0/SUCCESS)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8352365Z    Main PID: 371 (weston)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8352842Z       Tasks: 3 (limit: 3444)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8353236Z      Memory: 19.9M (peak: 20.7M)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8353634Z         CPU: 2.564s
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8354113Z      CGroup: /system.slice/trillionnium-d1-wayland.service
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8354961Z              ├─371 /usr/bin/weston --backend=headless-backend.so --socket=wayland-0 --idle-time=0 --log=/run/hepta-desktop/weston.log
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8355644Z              ├─434 /usr/libexec/weston-keyboard
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8356015Z              └─435 /usr/libexec/weston-desktop-shell
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8356228Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8356415Z Aug 31 03:43:45 runnervmgx7h7 weston[435]: could not load cursor 'dnd-move'
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8356876Z Aug 31 03:43:45 runnervmgx7h7 weston[434]: could not load cursor 'dnd-move'
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8357326Z Aug 31 03:43:45 runnervmgx7h7 weston[434]: could not load cursor 'dnd-copy'
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8357770Z Aug 31 03:43:45 runnervmgx7h7 weston[434]: could not load cursor 'dnd-none'
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8358212Z Aug 31 03:43:45 runnervmgx7h7 weston[435]: could not load cursor 'dnd-copy'
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8358652Z Aug 31 03:43:45 runnervmgx7h7 weston[435]: could not load cursor 'dnd-none'
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8359503Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8359891Z ● trillionnium-d2i-runtime.service - TrillionniumOS D2I headed Servo workspace qualification
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8360592Z      Loaded: loaded (/etc/systemd/system/trillionnium-d2i-runtime.service; disabled; preset: enabled)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8361190Z      Active: active (running) since Mon 2026-08-31 03:43:44 UTC; 1min 6s ago
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8361593Z  Invocation: a01dfa8f7169440aa9540cc24dfc854f
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8362193Z     Process: 388 ExecStartPre=/usr/bin/mkdir -p /run/hepta-desktop/cache /run/hepta-desktop/config (code=exited, status=0/SUCCESS)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8362775Z    Main PID: 427 (hepta-workspace)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8363030Z       Tasks: 41 (limit: 3444)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8363268Z      Memory: 446.5M (peak: 447M)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8363504Z         CPU: 1min 11.510s
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8363821Z      CGroup: /system.slice/trillionnium-d2i-runtime.service
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8364253Z              ├─ 427 /usr/libexec/hepta-workspace-runtime
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8364807Z              └─1093 /usr/libexec/hepta-workspace-runtime --content-process /tmp/.tmpv8dLjA/socket
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8366424Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8366827Z Aug 31 03:44:24 runnervmgx7h7 hepta-workspace-runtime[427]: D2I external content-process crash armed: pid=494, start_time=2794
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8367645Z Aug 31 03:44:48 runnervmgx7h7 hepta-workspace-runtime[427]: D2I runtime evidence complete; holding for supervised shutdown
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8368458Z Aug 31 03:44:48 runnervmgx7h7 hepta-workspace-runtime[427]: failed to wake D0A-02 event loop: Tried to wake up a closed `EventLoop`
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8369277Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8369763Z ● trillionnium-d2i-content-crash-proof.service - TrillionniumOS D2I external Servo content-process crash proof
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8370573Z      Loaded: loaded (/etc/systemd/system/trillionnium-d2i-content-crash-proof.service; disabled; preset: enabled)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8371175Z      Active: active (exited) since Mon 2026-08-31 03:44:50 UTC; 1s ago
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8371563Z  Invocation: 77e0c50c0df24553ace60bc9dcaaba4c
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8372098Z     Process: 431 ExecStart=/usr/local/libexec/trillionnium-d2i-content-crash-proof (code=exited, status=0/SUCCESS)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8372645Z    Main PID: 431 (code=exited, status=0/SUCCESS)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8373106Z    Mem peak: 3.7M
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8373297Z         CPU: 13.739s
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8373427Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8373750Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "post_recovery_direct_child": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8374673Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "runtime_result_sha256": "264320e026d8492670f3673d69cb5e2498cd01ec7cb42a4b255342509b91109c",
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8375596Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "runtime_generation_after_recovery": 2,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8376341Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "crash_callback_observed": false,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8377093Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "trusted_chrome_visible_after_crash": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8377782Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "injector_count": 1,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8378451Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "runtime_internal_injector": false,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8379541Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "claim_ceiling_actual_content_crash": false
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8380178Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]: }
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8380789Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[431]: TRILLIONNIUM_D2I_CONTENT_CRASH_PROOF_END
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8381205Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8381613Z ● trillionnium-d2i-acceptance.service - TrillionniumOS D2I integrated-image acceptance and poweroff
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8382488Z      Loaded: loaded (/etc/systemd/system/trillionnium-d2i-acceptance.service; disabled; preset: enabled)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8383055Z      Active: activating (start) since Mon 2026-08-31 03:44:50 UTC; 1s ago
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8383390Z         Job: 72
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8383615Z  Invocation: ddd2f707bbea43c5897eb506effc839a
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8383892Z    Main PID: 1157 (bash)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8384112Z       Tasks: 2 (limit: 3444)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8384344Z      Memory: 3.1M (peak: 3.1M)
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8384570Z         CPU: 961ms
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8384838Z      CGroup: /system.slice/trillionnium-d2i-acceptance.service
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8385338Z              ├─1157 /bin/bash /usr/local/libexec/trillionnium-d2i-acceptance
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8386392Z              └─1164 systemctl --no-pager --full status trillionnium-d1-wayland.service trillionnium-d2i-runtime.service trillionnium-d2i-content-crash-proof.service trillionnium-d2i-acceptance.service
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8387149Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8387416Z Aug 31 03:44:51 runnervmgx7h7 bash[1157]: TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:recovery_screenshot_missing
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8387781Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8387862Z -- runtime journal --
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8388350Z Aug 31 03:44:24 runnervmgx7h7 hepta-workspace-runtime[427]: D2I external content-process crash armed: pid=494, start_time=2794
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8389423Z Aug 31 03:44:48 runnervmgx7h7 hepta-workspace-runtime[427]: D2I runtime evidence complete; holding for supervised shutdown
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8390218Z Aug 31 03:44:48 runnervmgx7h7 hepta-workspace-runtime[427]: failed to wake D0A-02 event loop: Tried to wake up a closed `EventLoop`
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8391008Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[431]: TRILLIONNIUM_D2I_CONTENT_CRASH_PROOF_BEGIN
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8391620Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]: {
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8392349Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "schema": "trillionnium.desktop.d2i-content-process-crash-proof.v2",
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8393297Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "status": "PASS_EXTERNAL_CONTENT_PROCESS_TERMINATION_AND_RECOVERY",
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8394311Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "runtime_unit": "trillionnium-d2i-runtime.service",
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8395051Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "runtime_main_pid": 427,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8395716Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "runtime_main_survived": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8396380Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "killed_content_pid": 494,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8397086Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "killed_content_start_time_ticks": 2794,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8398048Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "killed_content_cmdline_sha256": "fe91333eae29b66967928d3414e199cba43ab06f6350b528ecb7f0b26e24265e",
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8399266Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "sigkill_delivered": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8399986Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "killed_pid_disappeared": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8400692Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "replacement_content_pid": 1093,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8401437Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "replacement_content_start_time_ticks": 6976,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8402184Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "replacement_pid_distinct": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8402919Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "zero_process_intermediate_topology": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8403793Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "pre_fault_direct_child": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8404540Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "post_termination_active_content_processes": 0,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8405339Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "post_recovery_active_content_processes": 1,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8406082Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "post_recovery_direct_child": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8406978Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "runtime_result_sha256": "264320e026d8492670f3673d69cb5e2498cd01ec7cb42a4b255342509b91109c",
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8407895Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "runtime_generation_after_recovery": 2,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8408618Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "crash_callback_observed": false,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8409639Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "trusted_chrome_visible_after_crash": true,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8410333Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "injector_count": 1,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8411001Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "runtime_internal_injector": false,
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8411735Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]:   "claim_ceiling_actual_content_crash": false
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8412348Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[1155]: }
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8412945Z Aug 31 03:44:50 runnervmgx7h7 trillionnium-d2i-content-crash-proof[431]: TRILLIONNIUM_D2I_CONTENT_CRASH_PROOF_END
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8413363Z 
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8413453Z -- evidence directory --
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8413682Z content-crash-ready
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8413897Z content-generation-1.png
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8414119Z content-generation-2.png
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8414352Z content-process-crash-proof.json
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8414611Z content-process-identity.json
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8414855Z content-sigkill-sent.json
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8415073Z fixture-origin.txt
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8415413Z guest-failure-diagnostics.txt
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8415638Z input-ready
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8415847Z process-topology-post-recovery.json
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8416132Z process-topology-post-termination.json
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8416416Z process-topology-pre-fault.json
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8416660Z runtime-ready.json
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8416855Z runtime-result.json
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8417049Z window-created
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8417255Z workspace-crash-placeholder.png
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8417505Z workspace-generation-1.png
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8417737Z workspace-generation-2.png
+integrated-image	Boot the exact integrated image with no network device	2026-08-31T03:44:55.8435275Z ##[error]Process completed with exit code 1.
