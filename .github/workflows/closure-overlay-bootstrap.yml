@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          test "$(git rev-parse HEAD^)" = "ecd94adedd306464fbc707f2d2496decf55426a4"
+          test "$(git rev-parse HEAD^)" = "7df00bf8fb78936bd9b986cb58901d55f33d27b9"
           git merge-base --is-ancestor \
             f44837a6867b134fb329d14407e3ae918ed74a4b \
             HEAD
@@ -59,6 +59,15 @@ jobs:
           test ! -e .closure-bootstrap
           test ! -e .github/workflows/closure-overlay-bootstrap.yml
           git diff --check
+
+      - name: Emit exact failing Rust source context
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' '=== authority_coordinator.rs:900-1020 ==='
+          nl -ba apps/hepta-browserd/src/authority_coordinator.rs | sed -n '900,1020p'
+          printf '%s\n' '=== product_policy.rs:3180-3305 ==='
+          nl -ba apps/hepta-browserd/src/product_policy.rs | sed -n '3180,3305p'
 
       - name: Validate Python, governance, D7 and source inventory
         shell: bash
