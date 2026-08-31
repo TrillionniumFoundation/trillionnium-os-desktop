@@ -1,0 +1,204 @@
+name: temporary-full-closure-orchestrator
+
+on:
+  push:
+    branches:
+      - codex/full-closure-orchestrator-v1
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temporary-full-closure-orchestrator
+  cancel-in-progress: false
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out complete controller history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Cancel obsolete or prematurely waiting controller runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/trillionnium-orchestrator
+          branches=(
+            codex/d2i-apply-v3
+            codex/d2i-sigsegv-rescue-v1
+            codex/d3-after-d2i-controller-v1
+            codex/d3-after-d2i-controller-v2
+            codex/d4-d9-integration-controller-v1
+            codex/d4-d9-integration-controller-v2
+            codex/live-governance-controller-v1
+            codex/live-governance-controller-v2
+            codex/live-governance-controller-v3
+            codex/review-auto-merge-controller-v1
+            codex/post-merge-main-closure-v1
+          )
+          : > /tmp/trillionnium-orchestrator/cancelled-runs.tsv
+          for branch in "${branches[@]}"; do
+            encoded=$(jq -rn --arg value "$branch" '$value|@uri')
+            gh api --paginate \
+              "repos/$GITHUB_REPOSITORY/actions/runs?branch=$encoded&per_page=100" \
+              --jq '.workflow_runs[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "pending") | [.id,.name,.status] | @tsv' \
+              | while IFS=$'\t' read -r run_id name status; do
+                  test -n "$run_id" || continue
+                  if gh run cancel "$run_id" --repo "$GITHUB_REPOSITORY"; then
+                    printf '%s\t%s\t%s\t%s\n' "$branch" "$run_id" "$name" "$status" \
+                      >> /tmp/trillionnium-orchestrator/cancelled-runs.tsv
+                  fi
+                done
+          done
+
+      - name: Serialize D2I, D3, D4-D9, governance and exact-main closure
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          : > /tmp/trillionnium-orchestrator/stages.tsv
+
+          latest_run_record() {
+            local branch=$1
+            local path=$2
+            local encoded
+            encoded=$(jq -rn --arg value "$branch" '$value|@uri')
+            gh api \
+              "repos/$GITHUB_REPOSITORY/actions/runs?branch=$encoded&per_page=100" \
+              --jq '.workflow_runs[] | select(.path == "'"$path"'") | [.id,.status,(.conclusion // ""),.head_sha,.created_at] | @tsv' \
+              | head -n1
+          }
+
+          trigger_controller() {
+            local stage=$1
+            local branch=$2
+            local path=$3
+            local slug
+            local worktree
+            local started
+            local trigger_sha
+            local record
+            local run_id
+            local status
+            local conclusion
+            local head_sha
+            slug=$(printf '%s' "$stage" | tr -c 'A-Za-z0-9._-' '-')
+            worktree="/tmp/controller-$slug"
+            rm -rf "$worktree"
+            git fetch --no-tags origin "$branch"
+            git worktree add --detach "$worktree" "origin/$branch"
+            started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            git -C "$worktree" commit --allow-empty \
+              -m "ci: orchestrator trigger $stage"
+            trigger_sha=$(git -C "$worktree" rev-parse HEAD)
+            git -C "$worktree" push origin "HEAD:refs/heads/$branch"
+            git worktree remove --force "$worktree"
+            run_id=
+            for attempt in $(seq 1 90); do
+              record=$(latest_run_record "$branch" "$path" || true)
+              if test -n "$record"; then
+                IFS=$'\t' read -r run_id status conclusion head_sha created_at <<<"$record"
+                if test "$head_sha" = "$trigger_sha" && [[ "$created_at" > "$started" || "$created_at" = "$started" ]]; then
+                  break
+                fi
+              fi
+              run_id=
+              sleep 10
+            done
+            test -n "$run_id" || {
+              echo "controller run was not created for $stage" >&2
+              return 1
+            }
+            printf '%s\tTRIGGERED\t%s\t%s\n' "$stage" "$run_id" "$trigger_sha" \
+              >> /tmp/trillionnium-orchestrator/stages.tsv
+            if ! gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status; then
+              printf '%s\tFAIL\t%s\t%s\n' "$stage" "$run_id" "$trigger_sha" \
+                >> /tmp/trillionnium-orchestrator/stages.tsv
+              return 1
+            fi
+            printf '%s\tPASS\t%s\t%s\n' "$stage" "$run_id" "$trigger_sha" \
+              >> /tmp/trillionnium-orchestrator/stages.tsv
+          }
+
+          require_controller() {
+            local stage=$1
+            local branch=$2
+            local path=$3
+            local allow_retry=$4
+            local record
+            local run_id
+            local status
+            local conclusion
+            local head_sha
+            local created_at
+            record=$(latest_run_record "$branch" "$path" || true)
+            if test -n "$record"; then
+              IFS=$'\t' read -r run_id status conclusion head_sha created_at <<<"$record"
+              case "$status/$conclusion" in
+                completed/success)
+                  printf '%s\tREUSED_PASS\t%s\t%s\n' "$stage" "$run_id" "$head_sha" \
+                    >> /tmp/trillionnium-orchestrator/stages.tsv
+                  return 0
+                  ;;
+                queued/|in_progress/|waiting/|pending/)
+                  if gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status; then
+                    printf '%s\tWAITED_PASS\t%s\t%s\n' "$stage" "$run_id" "$head_sha" \
+                      >> /tmp/trillionnium-orchestrator/stages.tsv
+                    return 0
+                  fi
+                  ;;
+              esac
+            fi
+            test "$allow_retry" = yes || {
+              echo "$stage has no successful reusable run" >&2
+              return 1
+            }
+            trigger_controller "$stage" "$branch" "$path"
+          }
+
+          # The D2I reconciler is the only controller intentionally allowed to
+          # remain active before this orchestrator starts.  Reuse it when it
+          # has already proved the exact candidate; otherwise trigger one fresh
+          # idempotent run.
+          require_controller D2I \
+            codex/d2i-reconcile-v4 \
+            .github/workflows/temporary-d2i-reconcile-v4.yml yes
+
+          trigger_controller D3 \
+            codex/d3-after-d2i-controller-v2 \
+            .github/workflows/temporary-d3-after-d2i-controller-v2.yml
+
+          trigger_controller D4-D9 \
+            codex/d4-d9-integration-controller-v2 \
+            .github/workflows/temporary-d4-d9-integration-controller-v2.yml
+
+          trigger_controller GOVERNANCE \
+            codex/live-governance-controller-v3 \
+            .github/workflows/temporary-live-governance-controller-v3.yml
+
+          trigger_controller POST-MERGE-MAIN \
+            codex/post-merge-main-closure-v1 \
+            .github/workflows/temporary-post-merge-main-closure.yml
+
+      - name: Upload orchestration ledger
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: full-closure-orchestrator-${{ github.sha }}
+          path: /tmp/trillionnium-orchestrator
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
