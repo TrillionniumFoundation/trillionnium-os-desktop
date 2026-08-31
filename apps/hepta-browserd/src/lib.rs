@@ -10,7 +10,14 @@
 mod legacy;
 pub mod product_policy;
 
-pub use legacy::{ACTIVE_PLAN_REVISION, IMPLEMENTATION_STAGE, SelfCheckReport};
+pub use legacy::SelfCheckReport;
+
+// Canonical machine-truth anchors retained at the public crate entry point.
+// Product-policy compilation widens tested source coverage, not the promoted
+// implementation or release claim represented by these two values.
+pub const ACTIVE_PLAN_REVISION: &str = "2026-08-29-d6";
+pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C06_D0A01_COMPILE_VALIDATED";
+pub const PRODUCT_POLICY_SOURCE_STAGE: &str = "D4_D7_COMPILED_SIDE_EFFECT_FREE_POLICY_CORE";
 
 pub fn run_self_check() -> Result<SelfCheckReport, String> {
     let mut report = legacy::run_self_check()?;
@@ -39,5 +46,6 @@ mod tests {
         assert!(report.ok);
         assert!(report.checks_run >= 15);
         assert!(report.to_json().contains(ACTIVE_PLAN_REVISION));
+        assert_eq!(PRODUCT_POLICY_SOURCE_STAGE, "D4_D7_COMPILED_SIDE_EFFECT_FREE_POLICY_CORE");
     }
 }

@@ -2,10 +2,12 @@
 """D0A evidence facade supporting non-authoritative stacked PR identities.
 
 The detailed envelope implementation remains in
-``qualify_servo_exact_pin_evidence_impl``.  This entry point extends only the
-identity validation vocabulary: a stacked synthetic merge is accepted when the
-preceding identity helper has bound it to a base that contains current main.
-It remains non-authoritative and carries no integrated-main SHA.
+``qualify_servo_exact_pin_evidence_impl``. This entry point validates the
+stacked synthetic-merge identity emitted by the preceding Git topology step,
+then normalizes it to the generic envelope's stable
+``pr_synthetic_merge`` role. The exact stacked base remains bound by
+``BASE_SHA``; the evidence stays non-authoritative and carries no
+integrated-main SHA.
 """
 from __future__ import annotations
 
@@ -68,7 +70,14 @@ def validate_identity_environment(identity: dict[str, str]) -> dict[str, str]:
         or identity["BASE_SHA"] == current_main_sha
     ):
         raise ValueError("D0A-01 stacked pull-request identity tuple is inconsistent")
-    return identity
+
+    # The generic evidence schema intentionally has one non-authoritative PR
+    # role. Stacked ancestry and exact parent order were already established by
+    # qualify_servo_exact_pin_identity.py; BASE_SHA preserves the reviewed
+    # stacked base. Normalize only the role vocabulary used by the envelope.
+    normalized = dict(identity)
+    normalized["EVIDENCE_ROLE"] = "pr_synthetic_merge"
+    return normalized
 
 
 _impl.identity_from_environment = identity_from_environment

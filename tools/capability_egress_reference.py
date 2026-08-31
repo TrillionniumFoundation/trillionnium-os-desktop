@@ -7,8 +7,8 @@ classification rules explicit and version-independent:
 
 * a sole permit for the wrong portal reports ``AUDIENCE_MISMATCH`` rather than
   being hidden behind a cardinality error;
-* specific non-global IP classes are classified before Python's broad
-  ``is_private`` predicate, whose coverage has changed between Python releases.
+* narrow non-global IP classes are classified before Python's broader and
+  version-dependent ``is_global``/``is_private`` predicates.
 
 The module remains a pure source reference and performs no network or external
 effect.
@@ -44,22 +44,23 @@ def validate_public_ip(value: Any) -> ipaddress._BaseAddress:
         if address.teredo is not None:
             _impl.fail("TEREDO_FORBIDDEN", canonical)
 
+    # Check narrow semantic classes unconditionally.  Python 3.13 deliberately
+    # reports some multicast addresses as global, while Python releases also
+    # differ in which special-purpose ranges satisfy ``is_private``.  Stable
+    # policy reason codes must not depend on those broad predicates.
+    if address.is_loopback:
+        _impl.fail("LOOPBACK_IP_FORBIDDEN", canonical)
+    if address.is_link_local:
+        _impl.fail("LINK_LOCAL_IP_FORBIDDEN", canonical)
+    if address.is_unspecified:
+        _impl.fail("UNSPECIFIED_IP_FORBIDDEN", canonical)
+    if address.is_multicast:
+        _impl.fail("MULTICAST_IP_FORBIDDEN", canonical)
+    if address.is_reserved:
+        _impl.fail("RESERVED_IP_FORBIDDEN", canonical)
+    if address.is_private:
+        _impl.fail("PRIVATE_IP_FORBIDDEN", canonical)
     if not address.is_global:
-        # Check narrow semantic classes before ``is_private``.  Newer Python
-        # releases intentionally classify more special-purpose ranges as
-        # private, which must not change this contract's stable reason codes.
-        if address.is_loopback:
-            _impl.fail("LOOPBACK_IP_FORBIDDEN", canonical)
-        if address.is_link_local:
-            _impl.fail("LINK_LOCAL_IP_FORBIDDEN", canonical)
-        if address.is_unspecified:
-            _impl.fail("UNSPECIFIED_IP_FORBIDDEN", canonical)
-        if address.is_multicast:
-            _impl.fail("MULTICAST_IP_FORBIDDEN", canonical)
-        if address.is_reserved:
-            _impl.fail("RESERVED_IP_FORBIDDEN", canonical)
-        if address.is_private:
-            _impl.fail("PRIVATE_IP_FORBIDDEN", canonical)
         _impl.fail("NON_GLOBAL_IP_FORBIDDEN", canonical)
     return address
 

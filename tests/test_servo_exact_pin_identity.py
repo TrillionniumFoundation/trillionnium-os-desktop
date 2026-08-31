@@ -73,7 +73,7 @@ class ServoExactPinIdentityTests(unittest.TestCase):
                 pr_base_contains_current_main=True,
             )
 
-    def test_stacked_evidence_role_is_non_authoritative_and_distinct(self) -> None:
+    def test_stacked_evidence_is_normalized_to_generic_non_authoritative_role(self) -> None:
         identity = {
             "EVENT_NAME": "pull_request",
             "SOURCE_REF": "refs/pull/57/merge",
@@ -88,7 +88,12 @@ class ServoExactPinIdentityTests(unittest.TestCase):
             "EVIDENCE_ROLE": "stacked_pr_synthetic_merge",
             "PROMOTION_AUTHORITATIVE": "false",
         }
-        self.assertIs(EVIDENCE.validate_identity_environment(identity), identity)
+        normalized = EVIDENCE.validate_identity_environment(identity)
+        self.assertIsNot(normalized, identity)
+        self.assertEqual(normalized["EVIDENCE_ROLE"], "pr_synthetic_merge")
+        self.assertEqual(normalized["BASE_SHA"], sha("c"))
+        self.assertEqual(identity["EVIDENCE_ROLE"], "stacked_pr_synthetic_merge")
+
         forged = dict(identity)
         forged["BASE_SHA"] = forged["CURRENT_MAIN_SHA"]
         with self.assertRaisesRegex(ValueError, "stacked pull-request"):
