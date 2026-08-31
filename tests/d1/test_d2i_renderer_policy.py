@@ -76,6 +76,30 @@ class D2IRendererPolicyTests(unittest.TestCase):
             contract["promotion_requires"],
         )
 
+    def test_recovery_screenshot_contract_matches_runtime_guest_and_host(self) -> None:
+        runtime = (ROOT / "experiments/servo-headed-runtime/src/main.rs").read_text()
+        acceptance = (
+            ROOT
+            / "packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance"
+        ).read_text()
+        boot = (ROOT / "tests/qemu/run-d2i-boot-test.sh").read_text()
+        workflow = (ROOT / ".github/workflows/d2i-integrated-image.yml").read_text()
+
+        screenshot = "workspace-generation-2.png"
+        self.assertIn(
+            'save_workspace_image(&format!("workspace-generation-{generation}.png"))',
+            runtime,
+        )
+        self.assertIn(f'screenshot="$out/{screenshot}"', acceptance)
+        self.assertIn(f'screenshot="$output_dir/{screenshot}"', boot)
+        self.assertIn(
+            f"dump_guest_file /var/lib/trillionnium-d2i/{screenshot}",
+            boot,
+        )
+        self.assertIn(f"root / 'qemu/{screenshot}'", workflow)
+        for source in (acceptance, boot, workflow):
+            self.assertNotIn("servo-content-recovered.png", source)
+
 
 if __name__ == "__main__":
     unittest.main()

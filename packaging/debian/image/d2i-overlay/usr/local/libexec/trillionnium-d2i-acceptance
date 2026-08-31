@@ -51,7 +51,7 @@ systemctl is-active --quiet trillionnium-d2i-content-crash-proof.service \
 
 runtime="$out/runtime-ready.json"
 proof="$out/content-process-crash-proof.json"
-screenshot="$out/servo-content-recovered.png"
+screenshot="$out/workspace-generation-2.png"
 test -s "$runtime" || fail runtime_evidence_missing
 test -s "$proof" || fail external_crash_proof_missing
 test -s "$screenshot" || fail recovery_screenshot_missing

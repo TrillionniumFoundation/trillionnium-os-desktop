@@ -96,7 +96,7 @@ qemu_log="$output_dir/qemu.log"
 command_file="$output_dir/qemu-command.txt"
 acceptance="$output_dir/guest-acceptance.json"
 runtime_ready="$output_dir/runtime-ready.json"
-screenshot="$output_dir/servo-content-recovered.png"
+screenshot="$output_dir/workspace-generation-2.png"
 runtime_journal="$output_dir/runtime-journal.txt"
 runtime_result="$output_dir/runtime-result.json"
 runtime_state="$output_dir/runtime-state.json"
@@ -203,7 +203,7 @@ collect_guest_diagnostics() {
     "$output_dir/process-topology-post-termination.json" "$output_dir/debugfs-topology-term.log" || true
   dump_guest_file /var/lib/trillionnium-d2i/process-topology-post-recovery.json \
     "$output_dir/process-topology-post-recovery.json" "$output_dir/debugfs-topology-recovery.log" || true
-  dump_guest_file /var/lib/trillionnium-d2i/servo-content-recovered.png \
+  dump_guest_file /var/lib/trillionnium-d2i/workspace-generation-2.png \
     "$screenshot" "$output_dir/debugfs-screenshot.log" || true
 }
 
