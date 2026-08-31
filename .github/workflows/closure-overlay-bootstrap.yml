@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          test "$(git rev-parse HEAD^)" = "147c357cfb0ce642fcda760417902acc3050ad14"
+          test "$(git rev-parse HEAD^)" = "553331cf13ec2b6efc390d5d3a00ff8c9e4cd713"
           git merge-base --is-ancestor \
             f44837a6867b134fb329d14407e3ae918ed74a4b \
             HEAD
@@ -66,6 +66,7 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           authority_path = Path("apps/hepta-browserd/src/authority_coordinator.rs")
           authority = authority_path.read_text(encoding="utf-8")
@@ -83,18 +84,21 @@ jobs:
 
           policy_path = Path("apps/hepta-browserd/src/product_policy.rs")
           policy = policy_path.read_text(encoding="utf-8")
-          policy_old = '''                .expect_err("observation signature binds peer")
-              .code(),
-          "EVIDENCE_AUTHENTICATION_FAILED"'''
-          policy_new = '''                .expect_err("observation evidence binds peer")
-              .code(),
-          "EVIDENCE_BINDING_MISMATCH"'''
-          if policy.count(policy_old) != 1:
-              raise SystemExit("network observation error-precedence anchor drifted")
-          policy_path.write_text(
-              policy.replace(policy_old, policy_new),
-              encoding="utf-8",
+          policy_pattern = re.compile(
+              r'\.expect_err\("observation signature binds peer"\)'
+              r'(\s*\.code\(\),\s*)'
+              r'"EVIDENCE_AUTHENTICATION_FAILED"'
           )
+          policy, replacements = policy_pattern.subn(
+              r'.expect_err("observation evidence binds peer")'
+              r'\1"EVIDENCE_BINDING_MISMATCH"',
+              policy,
+          )
+          if replacements != 1:
+              raise SystemExit(
+                  f"network observation error-precedence anchor drifted: {replacements} matches"
+              )
+          policy_path.write_text(policy, encoding="utf-8")
           PY
           git diff --check
 
