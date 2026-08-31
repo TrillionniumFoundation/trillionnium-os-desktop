@@ -1,0 +1,568 @@
+name: temporary-d2i-repair-fallback-v2
+
+on:
+  push:
+    branches:
+      - codex/d2i-repair-fallback-v2
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temporary-d2i-repair-fallback-v2
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      PR_NUMBER: "52"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out fallback controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d2i-repair-fallback-v2
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install pinned repository toolchain
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          git checkout --detach "refs/remotes/origin/$TARGET_BRANCH"
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Repair only classified exact-head failures
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d2i-repair-fallback
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          refresh() {
+            git fetch --no-tags origin \
+              "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH" >/dev/null
+            git rev-parse "refs/remotes/origin/$TARGET_BRANCH"
+          }
+
+          has_v3() {
+            local ref=$1
+            git show "$ref:packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service" 2>/dev/null \
+              | grep -Fxq 'Environment=HEPTA_D2I_IMAGE_LOCAL_INPUT=1' \
+              && git show "$ref:packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance" 2>/dev/null \
+                | grep -Fq 'd2i_image_local_servo_dispatch'
+          }
+
+          wait_run() {
+            local candidate=$1
+            local merge_sha=
+            local run_id=
+            local conclusion=
+            for attempt in $(seq 1 180); do
+              [[ "$(refresh)" == "$candidate" ]] || return 44
+              pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+              head=$(jq -r '.head.sha' <<<"$pr")
+              merge=$(jq -r '.merge_commit_sha // empty' <<<"$pr")
+              if [[ "$head" == "$candidate" && -n "$merge" ]]; then
+                merge_sha=$merge
+                break
+              fi
+              sleep 10
+            done
+            [[ -n "$merge_sha" ]] || return 45
+            for attempt in $(seq 1 300); do
+              [[ "$(refresh)" == "$candidate" ]] || return 44
+              runs=$(gh api \
+                "repos/$GITHUB_REPOSITORY/actions/workflows/d2i-integrated-image.yml/runs?event=pull_request&per_page=75")
+              run=$(jq -c --arg sha "$merge_sha" \
+                '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' \
+                <<<"$runs")
+              if [[ -n "$run" ]]; then
+                run_id=$(jq -r '.id' <<<"$run")
+                status=$(jq -r '.status' <<<"$run")
+                if [[ "$status" == completed ]]; then
+                  conclusion=$(jq -r '.conclusion // "unknown"' <<<"$run")
+                  break
+                fi
+              fi
+              sleep 15
+            done
+            [[ -n "$run_id" && -n "$conclusion" ]] || return 46
+            printf '%s\t%s\t%s\n' "$merge_sha" "$run_id" "$conclusion"
+          }
+
+          collect() {
+            local run_id=$1
+            local out=$2
+            rm -rf "$out"
+            mkdir -p "$out"
+            artifacts=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")
+            while IFS=$'\t' read -r id name; do
+              case "$name" in
+                *diagnostic*|*failure*|*evidence*)
+                  mkdir -p "$out/$id"
+                  gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > "$out/$id.zip" || true
+                  unzip -q "$out/$id.zip" -d "$out/$id" 2>/dev/null || true
+                  rm -f "$out/$id.zip"
+                  ;;
+              esac
+            done < <(jq -r '.artifacts[] | select(.expired == false) | [.id,.name] | @tsv' <<<"$artifacts")
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/logs" > "$out/logs.zip" || true
+            unzip -q "$out/logs.zip" -d "$out/logs" 2>/dev/null || true
+            rm -f "$out/logs.zip"
+            find "$out" -type f -size +24M -delete || true
+          }
+
+          classify() {
+            EVIDENCE=$1 python3 - <<'PY'
+          from __future__ import annotations
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ['EVIDENCE'])
+          segv = False
+          watchdog = False
+          loaded = False
+          frames = False
+          for path in root.rglob('*'):
+              if not path.is_file() or path.stat().st_size > 24 * 1024 * 1024:
+                  continue
+              try:
+                  data = path.read_bytes()
+              except OSError:
+                  continue
+              lower = data.lower()
+              if any(token in lower for token in (
+                  b'sigsegv', b'signal=11', b'status=11/segv', b'signal=segv'
+              )):
+                  segv = True
+              if b'runtime watchdog expired' in lower:
+                  watchdog = True
+              if path.suffix.lower() != '.json':
+                  continue
+              try:
+                  value = json.loads(data)
+              except Exception:
+                  continue
+              stack = [value]
+              while stack:
+                  item = stack.pop()
+                  if isinstance(item, dict):
+                      if item.get('failure') == 'runtime watchdog expired':
+                          watchdog = True
+                      if item.get('load_complete') is True:
+                          loaded = True
+                      frame_count = item.get('frame_ready')
+                      if isinstance(frame_count, int) and frame_count > 0:
+                          frames = True
+                      stack.extend(item.values())
+                  elif isinstance(item, list):
+                      stack.extend(item)
+          if segv:
+              print('segfault')
+          elif watchdog and loaded and frames:
+              print('watchdog')
+          else:
+              print('unknown')
+          PY
+          }
+
+          write_test() {
+            local driver=$1
+            local watchdog=$2
+            if [[ "$driver" == llvmpipe ]]; then
+              cat > tests/d1/test_d2i_renderer_policy.py <<PY
+          from __future__ import annotations
+
+          import json
+          from pathlib import Path
+          import unittest
+
+
+          ROOT = Path(__file__).resolve().parents[2]
+
+
+          class D2IRendererPolicyTests(unittest.TestCase):
+              def test_guest_runtime_uses_evidence_bound_renderer(self) -> None:
+                  service = (
+                      ROOT
+                      / "packaging/debian/image/d2i-overlay/etc/systemd/system/"
+                      "trillionnium-d2i-runtime.service"
+                  ).read_text()
+                  self.assertIn("Environment=LIBGL_ALWAYS_SOFTWARE=1", service)
+                  self.assertIn("Environment=GALLIUM_DRIVER=llvmpipe", service)
+                  self.assertIn("Environment=GALLIUM_OVERRIDE_CPU_CAPS=sse2", service)
+                  self.assertIn("Environment=LP_NATIVE_VECTOR_WIDTH=128", service)
+                  self.assertIn("Environment=LP_NUM_THREADS=1", service)
+                  self.assertIn("Environment=DRAW_USE_LLVM=0", service)
+                  self.assertIn("Environment=HEPTA_D2I_IMAGE_LOCAL_INPUT=1", service)
+
+                  contract = json.loads(
+                      (ROOT / "contracts/d2i-integrated-image.v1.json").read_text()
+                  )
+                  runtime = contract["runtime"]
+                  self.assertEqual(runtime["qualification_watchdog_seconds"], $watchdog)
+                  renderer = runtime["software_renderer"]
+                  self.assertTrue(renderer["force_software"])
+                  self.assertEqual(renderer["gallium_driver"], "llvmpipe")
+                  self.assertFalse(renderer["llvm_jit_disabled"])
+                  self.assertEqual(
+                      renderer["environment"],
+                      [
+                          "LIBGL_ALWAYS_SOFTWARE=1",
+                          "GALLIUM_DRIVER=llvmpipe",
+                          "GALLIUM_OVERRIDE_CPU_CAPS=sse2",
+                          "LP_NATIVE_VECTOR_WIDTH=128",
+                          "LP_NUM_THREADS=1",
+                          "DRAW_USE_LLVM=0",
+                      ],
+                  )
+                  self.assertIn(
+                      "constrained_llvmpipe_renderer",
+                      contract["promotion_requires"],
+                  )
+
+              def test_d2i_input_claim_is_image_local_only(self) -> None:
+                  acceptance = (
+                      ROOT
+                      / "packaging/debian/image/d2i-overlay/usr/local/libexec/"
+                      "trillionnium-d2i-acceptance"
+                  ).read_text()
+                  runtime = (
+                      ROOT / "experiments/servo-headed-runtime/src/main.rs"
+                  ).read_text()
+                  self.assertIn("d2i_image_local_servo_dispatch", acceptance)
+                  self.assertIn("HEPTA_D2I_IMAGE_LOCAL_INPUT", runtime)
+                  self.assertIn("native_input_events", acceptance)
+
+
+          if __name__ == "__main__":
+              unittest.main()
+          PY
+            else
+              cat > tests/d1/test_d2i_renderer_policy.py <<PY
+          from __future__ import annotations
+
+          import json
+          from pathlib import Path
+          import unittest
+
+
+          ROOT = Path(__file__).resolve().parents[2]
+
+
+          class D2IRendererPolicyTests(unittest.TestCase):
+              def test_guest_runtime_uses_evidence_bound_renderer(self) -> None:
+                  service = (
+                      ROOT
+                      / "packaging/debian/image/d2i-overlay/etc/systemd/system/"
+                      "trillionnium-d2i-runtime.service"
+                  ).read_text()
+                  self.assertIn("Environment=LIBGL_ALWAYS_SOFTWARE=1", service)
+                  self.assertIn("Environment=GALLIUM_DRIVER=softpipe", service)
+                  self.assertNotIn("Environment=GALLIUM_OVERRIDE_CPU_CAPS=", service)
+                  self.assertNotIn("Environment=LP_NATIVE_VECTOR_WIDTH=", service)
+                  self.assertNotIn("Environment=LP_NUM_THREADS=", service)
+                  self.assertIn("Environment=DRAW_USE_LLVM=0", service)
+                  self.assertIn("Environment=HEPTA_D2I_IMAGE_LOCAL_INPUT=1", service)
+
+                  contract = json.loads(
+                      (ROOT / "contracts/d2i-integrated-image.v1.json").read_text()
+                  )
+                  runtime = contract["runtime"]
+                  self.assertEqual(runtime["qualification_watchdog_seconds"], $watchdog)
+                  renderer = runtime["software_renderer"]
+                  self.assertTrue(renderer["force_software"])
+                  self.assertEqual(renderer["gallium_driver"], "softpipe")
+                  self.assertTrue(renderer["llvm_jit_disabled"])
+                  self.assertEqual(
+                      renderer["environment"],
+                      [
+                          "LIBGL_ALWAYS_SOFTWARE=1",
+                          "GALLIUM_DRIVER=softpipe",
+                          "DRAW_USE_LLVM=0",
+                      ],
+                  )
+                  self.assertIn(
+                      "softpipe_renderer_without_llvm_jit",
+                      contract["promotion_requires"],
+                  )
+
+              def test_d2i_input_claim_is_image_local_only(self) -> None:
+                  acceptance = (
+                      ROOT
+                      / "packaging/debian/image/d2i-overlay/usr/local/libexec/"
+                      "trillionnium-d2i-acceptance"
+                  ).read_text()
+                  runtime = (
+                      ROOT / "experiments/servo-headed-runtime/src/main.rs"
+                  ).read_text()
+                  self.assertIn("d2i_image_local_servo_dispatch", acceptance)
+                  self.assertIn("HEPTA_D2I_IMAGE_LOCAL_INPUT", runtime)
+                  self.assertIn("native_input_events", acceptance)
+
+
+          if __name__ == "__main__":
+              unittest.main()
+          PY
+            fi
+          }
+
+          prove() {
+            python3 tools/validate_repository.py
+            python3 tools/validate_project_truth.py
+            python3 tools/verify_systemd_socket_custody.py
+            if [[ -f tools/validate_d3_development_profile.py ]]; then
+              python3 tools/validate_d3_development_profile.py
+            fi
+            python3 -m unittest discover -s tests -t . -p 'test_*.py'
+            python3 -m json.tool contracts/d2i-integrated-image.v1.json >/dev/null
+            shellcheck -x -e SC2016,SC2054 \
+              packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
+            rustfmt --edition 2024 --check experiments/servo-headed-runtime/src/main.rs
+            cargo fmt --all --check
+            cargo check --workspace --all-targets --locked
+            cargo clippy --workspace --all-targets --locked -- -D warnings
+            cargo test --workspace --all-targets --locked
+            cargo check --workspace --all-targets --all-features --locked
+            cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+            cargo test --workspace --all-targets --all-features --locked
+            git diff --check
+          }
+
+          repair() {
+            local current=$1
+            local decision=$2
+            local cycle=$3
+            git checkout -B "fallback-repair-$cycle" "$current"
+            DECISION="$decision" python3 - <<'PY'
+          from __future__ import annotations
+          import json
+          import os
+          from pathlib import Path
+          import re
+
+          runtime_path = Path('experiments/servo-headed-runtime/src/main.rs')
+          service_path = Path(
+              'packaging/debian/image/d2i-overlay/etc/systemd/system/'
+              'trillionnium-d2i-runtime.service'
+          )
+          contract_path = Path('contracts/d2i-integrated-image.v1.json')
+          decision = os.environ['DECISION']
+
+          runtime = runtime_path.read_text()
+          marker = runtime.find('runtime watchdog expired')
+          if marker < 0:
+              raise SystemExit('watchdog failure marker missing')
+          durations = list(re.finditer(r'Duration::from_secs\((\d+)\)', runtime))
+          if not durations:
+              raise SystemExit('bounded watchdog duration missing')
+          duration = min(durations, key=lambda item: abs(item.start() - marker))
+          previous_watchdog = int(duration.group(1))
+
+          service = service_path.read_text()
+          match = re.search(r'^Environment=GALLIUM_DRIVER=(\w+)$', service, re.M)
+          if match is None:
+              raise SystemExit('Gallium driver missing')
+          previous_driver = match.group(1)
+          if decision == 'segfault':
+              driver = 'softpipe'
+              watchdog = max(previous_watchdog, 600)
+          elif decision == 'watchdog':
+              if previous_driver == 'llvmpipe' and previous_watchdog < 300:
+                  driver, watchdog = 'llvmpipe', 300
+              elif previous_driver == 'llvmpipe' and previous_watchdog < 480:
+                  driver, watchdog = 'llvmpipe', 480
+              elif previous_driver == 'llvmpipe':
+                  driver, watchdog = 'softpipe', 600
+              elif previous_watchdog < 600:
+                  driver, watchdog = 'softpipe', 600
+              else:
+                  driver, watchdog = 'softpipe', 900
+          else:
+              raise SystemExit('unbounded decision')
+
+          runtime = runtime[:duration.start(1)] + str(watchdog) + runtime[duration.end(1):]
+          runtime_path.write_text(runtime)
+
+          controlled = (
+              'Environment=GALLIUM_DRIVER=',
+              'Environment=GALLIUM_OVERRIDE_CPU_CAPS=',
+              'Environment=LP_NATIVE_VECTOR_WIDTH=',
+              'Environment=LP_NUM_THREADS=',
+              'Environment=DRAW_USE_LLVM=',
+          )
+          lines = [line for line in service.splitlines() if not line.startswith(controlled)]
+          anchor = lines.index('Environment=LIBGL_ALWAYS_SOFTWARE=1') + 1
+          if driver == 'llvmpipe':
+              renderer_lines = [
+                  'Environment=GALLIUM_DRIVER=llvmpipe',
+                  'Environment=GALLIUM_OVERRIDE_CPU_CAPS=sse2',
+                  'Environment=LP_NATIVE_VECTOR_WIDTH=128',
+                  'Environment=LP_NUM_THREADS=1',
+                  'Environment=DRAW_USE_LLVM=0',
+              ]
+              environment = [
+                  'LIBGL_ALWAYS_SOFTWARE=1',
+                  'GALLIUM_DRIVER=llvmpipe',
+                  'GALLIUM_OVERRIDE_CPU_CAPS=sse2',
+                  'LP_NATIVE_VECTOR_WIDTH=128',
+                  'LP_NUM_THREADS=1',
+                  'DRAW_USE_LLVM=0',
+              ]
+              requirement = 'constrained_llvmpipe_renderer'
+              jit_disabled = False
+              reason = (
+                  'SSE2-bounded, 128-bit, single-thread LLVMpipe JIT inside '
+                  'the QEMU TCG qualification boundary'
+              )
+          else:
+              renderer_lines = [
+                  'Environment=GALLIUM_DRIVER=softpipe',
+                  'Environment=DRAW_USE_LLVM=0',
+              ]
+              environment = [
+                  'LIBGL_ALWAYS_SOFTWARE=1',
+                  'GALLIUM_DRIVER=softpipe',
+                  'DRAW_USE_LLVM=0',
+              ]
+              requirement = 'softpipe_renderer_without_llvm_jit'
+              jit_disabled = True
+              reason = (
+                  'interpreter renderer selected after exact-head evidence '
+                  'proved LLVM JIT instability or bounded noncompletion'
+              )
+          lines[anchor:anchor] = renderer_lines
+          service = '\n'.join(lines) + '\n'
+          service = re.sub(r'^TimeoutStartSec=\d+s$', 'TimeoutStartSec=1200s', service, flags=re.M)
+          service_path.write_text(service)
+
+          contract = json.loads(contract_path.read_text())
+          contract['runtime']['qualification_watchdog_seconds'] = watchdog
+          renderer = contract['runtime']['software_renderer']
+          renderer['force_software'] = True
+          renderer['gallium_driver'] = driver
+          renderer['llvm_jit_disabled'] = jit_disabled
+          renderer['draw_module_llvm_disabled'] = True
+          renderer['qualification_reason'] = reason
+          renderer['environment'] = environment
+          if driver == 'llvmpipe':
+              renderer['llvm_jit_constraints'] = {
+                  'cpu_caps': 'sse2',
+                  'native_vector_width_bits': 128,
+                  'threads': 1,
+              }
+          else:
+              renderer.pop('llvm_jit_constraints', None)
+          contract['promotion_requires'] = [
+              item for item in contract['promotion_requires']
+              if not (
+                  isinstance(item, str)
+                  and 'renderer' in item
+                  and ('llvmpipe' in item or 'softpipe' in item)
+              )
+          ]
+          if requirement not in contract['promotion_requires']:
+              contract['promotion_requires'].append(requirement)
+          contract_path.write_text(json.dumps(contract, indent=2) + '\n')
+          Path('/tmp/fallback-selection.json').write_text(json.dumps({
+              'previous_driver': previous_driver,
+              'previous_watchdog': previous_watchdog,
+              'driver': driver,
+              'watchdog': watchdog,
+              'decision': decision,
+          }, indent=2) + '\n')
+          PY
+            driver=$(jq -r '.driver' /tmp/fallback-selection.json)
+            watchdog=$(jq -r '.watchdog' /tmp/fallback-selection.json)
+            write_test "$driver" "$watchdog"
+            rustfmt --edition 2024 experiments/servo-headed-runtime/src/main.rs
+            prove
+            git add -- \
+              contracts/d2i-integrated-image.v1.json \
+              experiments/servo-headed-runtime/src/main.rs \
+              packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+              tests/d1/test_d2i_renderer_policy.py
+            git diff --cached --check
+            git commit -m "fix(d2i): evidence-bound fallback ${driver}-${watchdog}s"
+            repaired=$(git rev-parse HEAD)
+            [[ "$(refresh)" == "$current" ]] || return 44
+            git push origin "$repaired:refs/heads/$TARGET_BRANCH"
+            cp /tmp/fallback-selection.json "/tmp/d2i-repair-fallback/repair-$cycle.json"
+          }
+
+          repairs=0
+          for cycle in $(seq 1 18); do
+            current=$(refresh)
+            if ! has_v3 "$current"; then
+              sleep 20
+              continue
+            fi
+            if result=$(wait_run "$current"); then
+              IFS=$'\t' read -r merge_sha run_id conclusion <<< "$result"
+            else
+              rc=$?
+              [[ "$rc" -eq 44 ]] && continue
+              echo "exact-head D2I run binding failed with rc=$rc" >&2
+              exit 1
+            fi
+            printf '%s\t%s\t%s\t%s\n' "$current" "$merge_sha" "$run_id" "$conclusion" \
+              >> /tmp/d2i-repair-fallback/runs.tsv
+            [[ "$conclusion" == success ]] && exit 0
+            repairs=$((repairs + 1))
+            [[ "$repairs" -le 5 ]] || {
+              echo "bounded fallback repairs exhausted" >&2
+              exit 1
+            }
+            evidence="/tmp/d2i-repair-fallback/run-$run_id"
+            collect "$run_id" "$evidence"
+            decision=$(classify "$evidence")
+            printf '%s\t%s\n' "$run_id" "$decision" \
+              >> /tmp/d2i-repair-fallback/decisions.tsv
+            [[ "$decision" != unknown ]] || {
+              echo "failure is outside fallback policy" >&2
+              exit 1
+            }
+            [[ "$(refresh)" == "$current" ]] || continue
+            repair "$current" "$decision" "$repairs" || {
+              [[ "$?" -eq 44 ]] && continue
+              exit 1
+            }
+          done
+          echo "fallback observation loop exhausted" >&2
+          exit 1
+
+      - name: Bound retained evidence
+        if: always()
+        run: |
+          find /tmp/d2i-repair-fallback -type f -size +24M -delete 2>/dev/null || true
+          find /tmp/d2i-repair-fallback -type f -printf '%P\t%s\n' | sort \
+            > /tmp/d2i-repair-fallback/files.tsv 2>/dev/null || true
+
+      - name: Upload fallback evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d2i-repair-fallback-v2-${{ github.sha }}
+          path: /tmp/d2i-repair-fallback
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
+          include-hidden-files: true
