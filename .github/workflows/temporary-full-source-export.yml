@@ -1,0 +1,35 @@
+name: temporary-full-source-export
+
+on:
+  push:
+    branches:
+      - codex/full-source-audit-export-v1
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact audit source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Materialize tracked source without Git metadata
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/trillionnium-source
+          git archive --format=tar HEAD | tar -xf - -C /tmp/trillionnium-source
+          test ! -e /tmp/trillionnium-source/.git
+          find /tmp/trillionnium-source -type f -printf '%P\n' | sort > /tmp/trillionnium-source/.source-files.txt
+      - name: Upload exact tracked source
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: exact-source-${{ github.sha }}
+          path: /tmp/trillionnium-source
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 6
+          include-hidden-files: true
