@@ -1,0 +1,42 @@
+name: temporary-exact-source-export-08d492
+
+on:
+  push:
+    branches:
+      - codex/source-export-08d492-v1
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact candidate source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 08d4921851accb66f924152c2f067c3b396db77d
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify and materialize tracked source
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = 08d4921851accb66f924152c2f067c3b396db77d
+          mkdir -p /tmp/trillionnium-source
+          git archive --format=tar HEAD | tar -xf - -C /tmp/trillionnium-source
+          test ! -e /tmp/trillionnium-source/.git
+          find /tmp/trillionnium-source -type f -printf '%P\n' | sort \
+            > /tmp/trillionnium-source/.source-files.txt
+          printf '%s\n' 08d4921851accb66f924152c2f067c3b396db77d \
+            > /tmp/trillionnium-source/.source-commit.txt
+
+      - name: Upload exact tracked source
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: exact-source-08d4921851accb66f924152c2f067c3b396db77d
+          path: /tmp/trillionnium-source
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 6
+          include-hidden-files: true
