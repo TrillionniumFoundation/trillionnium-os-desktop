@@ -1,0 +1,120 @@
+name: temporary-promote-d2i-v3
+
+on:
+  push:
+    branches:
+      - codex/d2i-promote-v3
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-promote-d2i-v3
+  cancel-in-progress: false
+
+jobs:
+  verify-and-fast-forward:
+    runs-on: ubuntu-24.04
+    env:
+      BASE_SHA: 8096d78ec6a457cf11e28f258c0cdf8b5dec27b2
+      PROOF_BRANCH: codex/d2i-apply-v3-proof
+      TARGET_BRANCH: codex/full-gap-closure-final
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out promotion controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d2i-promote-v3
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for the clean proved D2I source commit
+        run: |
+          set -euo pipefail
+          proof=
+          for attempt in $(seq 1 90); do
+            git fetch --no-tags origin \
+              "+refs/heads/$PROOF_BRANCH:refs/remotes/origin/$PROOF_BRANCH"
+            candidate=$(git rev-parse "refs/remotes/origin/$PROOF_BRANCH")
+            message=$(git show -s --format=%s "$candidate")
+            clean=true
+            for transient in \
+              .github/workflows/temporary-d2i-apply-v3.yml \
+              tools/temporary-d2i-fix-v3.patch.xz.b85; do
+              if git cat-file -e "$candidate:$transient" 2>/dev/null; then
+                clean=false
+              fi
+            done
+            if [[ "$message" == \
+                "fix(d2i): constrain llvmpipe and bind image-local input evidence" \
+                && "$clean" == true ]]; then
+              proof=$candidate
+              break
+            fi
+            sleep 10
+          done
+          [[ -n "$proof" ]] || {
+            echo "clean proved D2I v3 commit was not published" >&2
+            exit 1
+          }
+          git merge-base --is-ancestor "$BASE_SHA" "$proof"
+          actual=$(git diff --name-only "$BASE_SHA..$proof" | sort)
+          expected=$(printf '%s\n' \
+            contracts/d2i-integrated-image.v1.json \
+            experiments/servo-headed-runtime/src/main.rs \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/d1/test_d2i_renderer_policy.py | sort)
+          test "$actual" = "$expected"
+          printf 'PROOF_SHA=%s\n' "$proof" >> "$GITHUB_ENV"
+          git checkout --detach "$proof"
+
+      - name: Install pinned repository toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Re-prove the exact promoted tree
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          python3 -m json.tool contracts/d2i-integrated-image.v1.json >/dev/null
+          shellcheck -x -e SC2016,SC2054 \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
+          rustfmt --edition 2024 --check experiments/servo-headed-runtime/src/main.rs
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          test -z "$(git status --porcelain=v1)"
+
+      - name: Atomically fast-forward the unified candidate
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          current=$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")
+          if [[ "$current" == "$PROOF_SHA" ]]; then
+            echo "unified candidate is already at the proved D2I tree"
+            exit 0
+          fi
+          [[ "$current" == "$BASE_SHA" ]] || {
+            echo "unified candidate moved outside the bounded promotion base" >&2
+            exit 1
+          }
+          git push origin "$PROOF_SHA:refs/heads/$TARGET_BRANCH"
