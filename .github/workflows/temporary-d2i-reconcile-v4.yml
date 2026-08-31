@@ -1,0 +1,438 @@
+name: temporary-d2i-reconcile-v4
+
+on:
+  push:
+    branches:
+      - codex/d2i-reconcile-v4
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: temporary-d2i-reconcile-v4
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      UNIFIED_BRANCH: codex/full-gap-closure-final
+      D2I_PAYLOAD_BRANCH: codex/d2i-apply-v3
+      PATCH_SHA256: 8cfd0197bd75b9439ab143be30daa96052603fda0bab74272fe1e8c9b2e4ca2f
+      PATCH_XZ_SHA256: b1a1d1b6df372e1460644cc9fb07272c3fa07bd4450ded3019df599a0ba99e54
+      SERVICE_PATH: packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service
+      ACCEPTANCE_PATH: packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
+      RUNTIME_PATH: experiments/servo-headed-runtime/src/main.rs
+      PYTHONDONTWRITEBYTECODE: "1"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/trillionnium-d2i-reconcile-target
+    steps:
+      - name: Check out reconciliation controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Decode and authenticate the proved five-file patch
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$D2I_PAYLOAD_BRANCH" "$UNIFIED_BRANCH"
+          git show "origin/$D2I_PAYLOAD_BRANCH:tools/temporary-d2i-fix-v3.patch.xz.b85" \
+            > /tmp/d2i-v3.patch.xz.b85
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import hashlib
+          import lzma
+          import os
+
+          encoded = Path('/tmp/d2i-v3.patch.xz.b85').read_text().strip()
+          compressed = base64.b85decode(encoded)
+          if hashlib.sha256(compressed).hexdigest() != os.environ['PATCH_XZ_SHA256']:
+              raise SystemExit('compressed D2I patch digest mismatch')
+          patch = lzma.decompress(compressed)
+          if hashlib.sha256(patch).hexdigest() != os.environ['PATCH_SHA256']:
+              raise SystemExit('D2I patch digest mismatch')
+          Path('/tmp/d2i-v3.patch').write_bytes(patch)
+          PY
+
+      - name: Materialize the current unified candidate and reconcile source
+        id: source
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          current=$(git rev-parse "origin/$UNIFIED_BRANCH")
+          git checkout --detach "$current"
+          source_state=existing
+          if ! grep -q '^Environment=HEPTA_D2I_IMAGE_LOCAL_INPUT=1$' "$SERVICE_PATH" \
+              || ! grep -q 'd2i_image_local_servo_dispatch' "$ACCEPTANCE_PATH" \
+              || ! grep -q 'HEPTA_D2I_IMAGE_LOCAL_INPUT' "$RUNTIME_PATH"; then
+            source_state=applied
+            git apply --check /tmp/d2i-v3.patch
+            git apply --whitespace=error-all /tmp/d2i-v3.patch
+            actual=$(git diff --name-only | sort)
+            expected=$(printf '%s\n' \
+              contracts/d2i-integrated-image.v1.json \
+              experiments/servo-headed-runtime/src/main.rs \
+              packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+              packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+              tests/d1/test_d2i_renderer_policy.py | sort)
+            test "$actual" = "$expected"
+          fi
+          git diff --check
+          printf 'SOURCE_BASE_SHA=%s\n' "$current" >> "$GITHUB_ENV"
+          printf 'SOURCE_STATE=%s\n' "$source_state" >> "$GITHUB_ENV"
+          printf 'base=%s\nstate=%s\n' "$current" "$source_state" >> "$GITHUB_OUTPUT"
+
+      - name: Install the exact repository toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Prove the reconciled D2I source tree
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          test ! -f tools/validate_d3_development_profile.py || \
+            python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          python3 -m json.tool contracts/d2i-integrated-image.v1.json >/dev/null
+          bash -n "$ACCEPTANCE_PATH"
+          bash -n packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          git diff --check
+
+      - name: Publish the missing D2I source commit with compare-and-swap
+        if: steps.source.outputs.state == 'applied'
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          test "$(git rev-parse "origin/$UNIFIED_BRANCH")" = "$SOURCE_BASE_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            contracts/d2i-integrated-image.v1.json \
+            experiments/servo-headed-runtime/src/main.rs \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/d1/test_d2i_renderer_policy.py
+          git commit -m "fix(d2i): bind constrained renderer and image-local input evidence"
+          test "$(git rev-parse HEAD^)" = "$SOURCE_BASE_SHA"
+          git push origin HEAD:refs/heads/$UNIFIED_BRANCH
+          printf 'QUALIFIED_SOURCE_SHA=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Bind qualification to the actual source head
+        if: steps.source.outputs.state == 'existing'
+        run: |
+          printf 'QUALIFIED_SOURCE_SHA=%s\n' "$SOURCE_BASE_SHA" >> "$GITHUB_ENV"
+
+      - name: Dispatch and wait for a fresh exact-head D2I machine run
+        id: machine
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/trillionnium-d2i-reconcile/evidence
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          test "$(git rev-parse "origin/$UNIFIED_BRANCH")" = "$QUALIFIED_SOURCE_SHA"
+          started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run d2i-integrated-image.yml \
+            --repo "$GITHUB_REPOSITORY" --ref "$UNIFIED_BRANCH"
+          run_id=
+          status=
+          conclusion=
+          for attempt in $(seq 1 900); do
+            record=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow d2i-integrated-image.yml \
+              --branch "$UNIFIED_BRANCH" \
+              --event workflow_dispatch \
+              --limit 60 \
+              --json databaseId,headSha,status,conclusion,createdAt \
+              --jq '.[] | select(.headSha == "'"$QUALIFIED_SOURCE_SHA"'" and .createdAt >= "'"$started"'") | [.databaseId,.status,(.conclusion // "")] | @tsv' \
+              | head -n1)
+            if test -n "$record"; then
+              IFS=$'\t' read -r run_id status conclusion <<<"$record"
+              if test "$status" = completed; then
+                break
+              fi
+            fi
+            sleep 20
+          done
+          test -n "$run_id" || { echo "fresh exact-head D2I run not found" >&2; exit 1; }
+          test "$status" = completed || { echo "D2I run did not complete" >&2; exit 1; }
+          printf '%s\n' "$QUALIFIED_SOURCE_SHA" \
+            > /tmp/trillionnium-d2i-reconcile/evidence/source-sha.txt
+          printf '%s\n' "$run_id" \
+            > /tmp/trillionnium-d2i-reconcile/evidence/first-run-id.txt
+          printf '%s\n' "$conclusion" \
+            > /tmp/trillionnium-d2i-reconcile/evidence/first-conclusion.txt
+          printf 'run_id=%s\nconclusion=%s\n' "$run_id" "$conclusion" >> "$GITHUB_OUTPUT"
+          printf 'FIRST_D2I_RUN_ID=%s\nFIRST_D2I_CONCLUSION=%s\n' \
+            "$run_id" "$conclusion" >> "$GITHUB_ENV"
+
+      - name: Download first-run diagnostics on failure
+        if: steps.machine.outputs.conclusion != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.machine.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/trillionnium-d2i-reconcile/first-failure
+          gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --dir /tmp/trillionnium-d2i-reconcile/first-failure
+
+      - name: Classify failure and require an explicit llvmpipe SIGSEGV
+        if: steps.machine.outputs.conclusion != 'success'
+        id: classify
+        run: |
+          set -euo pipefail
+          find /tmp/trillionnium-d2i-reconcile/first-failure -type f \
+            \( -name '*.txt' -o -name '*.log' -o -name '*.json' \) \
+            -size -16M -print0 \
+            | xargs -0 -r grep -I -n -E \
+                'SIGSEGV|status=11/SEGV|signal[ =]11|segmentation fault' \
+            > /tmp/trillionnium-d2i-reconcile/evidence/sigsegv-matches.txt || true
+          if test -s /tmp/trillionnium-d2i-reconcile/evidence/sigsegv-matches.txt \
+              && grep -q '^Environment=GALLIUM_DRIVER=llvmpipe$' "$SERVICE_PATH"; then
+            printf 'rescue=yes\n' >> "$GITHUB_OUTPUT"
+          else
+            printf 'rescue=no\n' >> "$GITHUB_OUTPUT"
+            echo "D2I failure is not the single allowed llvmpipe SIGSEGV rescue class" >&2
+            exit 1
+          fi
+
+      - name: Apply the bounded non-JIT softpipe fallback
+        if: steps.classify.outputs.rescue == 'yes'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          service_path = Path('packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service')
+          text = service_path.read_text()
+          required = [
+              'Environment=GALLIUM_DRIVER=llvmpipe',
+              'Environment=GALLIUM_OVERRIDE_CPU_CAPS=sse2',
+              'Environment=LP_NATIVE_VECTOR_WIDTH=128',
+              'Environment=LP_NUM_THREADS=1',
+              'Environment=DRAW_USE_LLVM=0',
+              'Environment=HEPTA_D2I_IMAGE_LOCAL_INPUT=1',
+          ]
+          for line in required:
+              if line not in text:
+                  raise SystemExit(f'missing exact constrained renderer line: {line}')
+          lines = []
+          for line in text.splitlines():
+              if line.startswith('Environment=GALLIUM_OVERRIDE_CPU_CAPS='):
+                  continue
+              if line.startswith('Environment=LP_NATIVE_VECTOR_WIDTH='):
+                  continue
+              if line.startswith('Environment=LP_NUM_THREADS='):
+                  continue
+              if line == 'Environment=GALLIUM_DRIVER=llvmpipe':
+                  line = 'Environment=GALLIUM_DRIVER=softpipe'
+              lines.append(line)
+          service_path.write_text('\n'.join(lines) + '\n')
+
+          contract_path = Path('contracts/d2i-integrated-image.v1.json')
+          contract = json.loads(contract_path.read_text())
+          renderer = contract['runtime']['software_renderer']
+          renderer['force_software'] = True
+          renderer['gallium_driver'] = 'softpipe'
+          renderer['llvm_jit_disabled'] = True
+          for key in list(renderer):
+              if key in {
+                  'cpu_caps', 'cpu_caps_override', 'native_vector_width',
+                  'thread_count', 'threads', 'llvmpipe_jit_constrained',
+              }:
+                  renderer.pop(key, None)
+          renderer['environment'] = [
+              'LIBGL_ALWAYS_SOFTWARE=1',
+              'GALLIUM_DRIVER=softpipe',
+              'DRAW_USE_LLVM=0',
+          ]
+          renderer['qualification_reason'] = (
+              'fresh exact-head D2I evidence contained an llvmpipe SIGSEGV; '
+              'softpipe removes LLVM JIT execution from the QEMU TCG evidence boundary'
+          )
+          requirements = [
+              item for item in contract.get('promotion_requires', [])
+              if 'llvmpipe' not in item and item != 'softpipe_renderer_without_llvm_jit'
+          ]
+          requirements.append('softpipe_renderer_without_llvm_jit')
+          contract['promotion_requires'] = requirements
+          contract_path.write_text(json.dumps(contract, indent=2) + '\n')
+
+          Path('tests/d1/test_d2i_renderer_policy.py').write_text('''from __future__ import annotations
+
+import json
+from pathlib import Path
+import unittest
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+class D2IRendererPolicyTests(unittest.TestCase):
+    def test_guest_runtime_uses_non_jit_softpipe_after_exact_tcg_sigsegv(self) -> None:
+        service = (
+            ROOT
+            / "packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service"
+        ).read_text()
+        self.assertIn("Environment=LIBGL_ALWAYS_SOFTWARE=1", service)
+        self.assertIn("Environment=GALLIUM_DRIVER=softpipe", service)
+        self.assertIn("Environment=DRAW_USE_LLVM=0", service)
+        self.assertIn("Environment=HEPTA_D2I_IMAGE_LOCAL_INPUT=1", service)
+        self.assertNotIn("Environment=GALLIUM_DRIVER=llvmpipe", service)
+        self.assertNotIn("Environment=GALLIUM_OVERRIDE_CPU_CAPS=", service)
+        self.assertNotIn("Environment=LP_NATIVE_VECTOR_WIDTH=", service)
+        self.assertNotIn("Environment=LP_NUM_THREADS=", service)
+
+        contract = json.loads(
+            (ROOT / "contracts/d2i-integrated-image.v1.json").read_text()
+        )
+        renderer = contract["runtime"]["software_renderer"]
+        self.assertTrue(renderer["force_software"])
+        self.assertEqual(renderer["gallium_driver"], "softpipe")
+        self.assertTrue(renderer["llvm_jit_disabled"])
+        self.assertEqual(
+            renderer["environment"],
+            [
+                "LIBGL_ALWAYS_SOFTWARE=1",
+                "GALLIUM_DRIVER=softpipe",
+                "DRAW_USE_LLVM=0",
+            ],
+        )
+        self.assertIn(
+            "softpipe_renderer_without_llvm_jit",
+            contract["promotion_requires"],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
+''')
+          PY
+          actual=$(git diff --name-only | sort)
+          expected=$(printf '%s\n' \
+            contracts/d2i-integrated-image.v1.json \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+            tests/d1/test_d2i_renderer_policy.py | sort)
+          test "$actual" = "$expected"
+          git diff --check
+
+      - name: Prove and publish the SIGSEGV-bound fallback
+        if: steps.classify.outputs.rescue == 'yes'
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          test ! -f tools/validate_d3_development_profile.py || \
+            python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          git diff --check
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          test "$(git rev-parse "origin/$UNIFIED_BRANCH")" = "$QUALIFIED_SOURCE_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            contracts/d2i-integrated-image.v1.json \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+            tests/d1/test_d2i_renderer_policy.py
+          git commit -m "fix(d2i): remove LLVM JIT after exact TCG SIGSEGV"
+          git push origin HEAD:refs/heads/$UNIFIED_BRANCH
+          printf 'RESCUE_SHA=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Rerun D2I after the one allowed renderer rescue
+        if: steps.classify.outputs.rescue == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run d2i-integrated-image.yml \
+            --repo "$GITHUB_REPOSITORY" --ref "$UNIFIED_BRANCH"
+          run_id=
+          status=
+          conclusion=
+          for attempt in $(seq 1 900); do
+            record=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow d2i-integrated-image.yml \
+              --branch "$UNIFIED_BRANCH" \
+              --event workflow_dispatch \
+              --limit 60 \
+              --json databaseId,headSha,status,conclusion,createdAt \
+              --jq '.[] | select(.headSha == "'"$RESCUE_SHA"'" and .createdAt >= "'"$started"'") | [.databaseId,.status,(.conclusion // "")] | @tsv' \
+              | head -n1)
+            if test -n "$record"; then
+              IFS=$'\t' read -r run_id status conclusion <<<"$record"
+              if test "$status" = completed; then
+                break
+              fi
+            fi
+            sleep 20
+          done
+          test -n "$run_id"
+          test "$status" = completed
+          printf '%s\n' "$run_id" \
+            > /tmp/trillionnium-d2i-reconcile/evidence/rescue-run-id.txt
+          printf '%s\n' "$conclusion" \
+            > /tmp/trillionnium-d2i-reconcile/evidence/rescue-conclusion.txt
+          if test "$conclusion" != success; then
+            mkdir -p /tmp/trillionnium-d2i-reconcile/rescue-failure
+            gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
+              --dir /tmp/trillionnium-d2i-reconcile/rescue-failure || true
+            echo "bounded softpipe rescue did not produce a successful D2I proof" >&2
+            exit 1
+          fi
+
+      - name: Confirm exact machine proof
+        run: |
+          set -euo pipefail
+          if test "$FIRST_D2I_CONCLUSION" = success; then
+            printf 'D2I exact-head machine proof passed at %s in run %s\n' \
+              "$QUALIFIED_SOURCE_SHA" "$FIRST_D2I_RUN_ID"
+          else
+            test -n "${RESCUE_SHA:-}"
+            printf 'D2I exact-head machine proof passed after SIGSEGV rescue at %s\n' \
+              "$RESCUE_SHA"
+          fi
+
+      - name: Upload reconciliation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d2i-reconcile-v4-${{ github.sha }}
+          path: /tmp/trillionnium-d2i-reconcile
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
