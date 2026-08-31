@@ -1,0 +1,176 @@
+name: temporary-d2i-gate-d3-integrate
+
+on:
+  push:
+    branches:
+      - codex/d2i-apply-v3-proof
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temporary-d2i-gate-d3-integrate
+  cancel-in-progress: false
+
+jobs:
+  gate-and-integrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      PROOF_BRANCH: codex/d2i-apply-v3-proof
+      D3_BASE: 8096d78ec6a457cf11e28f258c0cdf8b5dec27b2
+      D3_HEAD: 371642a76b01618306bd24a6457aab1f8e25dc68
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out control branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d2i-apply-v3-proof
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for exact PR-head D2I machine qualification
+        id: gate
+        run: |
+          set -euo pipefail
+          repo=$GITHUB_REPOSITORY
+          candidate=$(git ls-remote --heads origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')
+          test -n "$candidate"
+          pr_head=$(gh api "repos/$repo/pulls/52" --jq '.head.sha')
+          test "$pr_head" = "$candidate"
+          workflow_id=$(gh api "repos/$repo/actions/workflows" --paginate --jq \
+            '.workflows[] | select(.path == ".github/workflows/d2i-integrated-image.yml") | .id' | head -n1)
+          test -n "$workflow_id"
+          run_id=
+          for _ in $(seq 1 180); do
+            run_id=$(gh api "repos/$repo/actions/workflows/$workflow_id/runs?event=pull_request&per_page=100" \
+              --jq ".workflow_runs
+                | map(select(.head_branch == \"$TARGET_BRANCH\"))
+                | map(select(any(.pull_requests[]?; .number == 52 and (.head.sha == \"$candidate\" or .head.sha == null))))
+                | sort_by(.created_at) | reverse | .[0].id // empty")
+            if test -n "$run_id"; then
+              status=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')
+              if test "$status" = completed; then
+                break
+              fi
+            fi
+            sleep 15
+          done
+          test -n "$run_id"
+          status=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')
+          conclusion=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.conclusion')
+          printf 'candidate=%s\nrun_id=%s\nstatus=%s\nconclusion=%s\n' \
+            "$candidate" "$run_id" "$status" "$conclusion" | tee /tmp/d2i-gate-state.txt
+          printf 'candidate=%s\n' "$candidate" >> "$GITHUB_OUTPUT"
+          printf 'run_id=%s\n' "$run_id" >> "$GITHUB_OUTPUT"
+          if test "$status" != completed || test "$conclusion" != success; then
+            gh run view "$run_id" --repo "$repo" --log-failed > /tmp/d2i-failed.log 2>&1 || true
+            exit 1
+          fi
+
+      - name: Install pinned repository toolchain
+        if: success()
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$TARGET_BRANCH" "$D3_HEAD"
+          git checkout -B "$TARGET_BRANCH" "${{ steps.gate.outputs.candidate }}"
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Replay exact clean D3 delta onto the D2I-qualified candidate
+        if: success()
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ steps.gate.outputs.candidate }}"
+          git cat-file -e "$D3_BASE^{commit}"
+          git cat-file -e "$D3_HEAD^{commit}"
+          git diff --binary --full-index "$D3_BASE" "$D3_HEAD" > /tmp/d3-clean.patch
+          test -s /tmp/d3-clean.patch
+          git apply --check /tmp/d3-clean.patch
+          git apply --index --whitespace=error-all /tmp/d3-clean.patch
+          expected=$(git diff --name-only "$D3_BASE" "$D3_HEAD" | sort)
+          actual=$(git diff --cached --name-only | sort)
+          test "$actual" = "$expected"
+          test ! -e .github/workflows/temporary-d3-apply.yml
+          test ! -e tools/temporary-d3.patch.xz.b85
+          git diff --cached --check
+
+      - name: Re-prove D3 source truth and all Rust feature graphs
+        if: success()
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --bin hepta-agent-portd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --features development --bin hepta-agent-port-developmentd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --features d1-qualification --bin hepta-agent-port-qualificationd
+
+      - name: Atomically publish D3 on the exact D2I-qualified parent
+        if: success()
+        run: |
+          set -euo pipefail
+          remote=$(git ls-remote --heads origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')
+          test "$remote" = "${{ steps.gate.outputs.candidate }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(d3): bind development peer to trusted executable source"
+          test "$(git show -s --format=%P HEAD)" = "${{ steps.gate.outputs.candidate }}"
+          git push origin "HEAD:refs/heads/$TARGET_BRANCH"
+
+      - name: Persist bounded failure diagnosis on the isolated control branch
+        if: failure()
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$PROOF_BRANCH"
+          git checkout -B "$PROOF_BRANCH" "origin/$PROOF_BRANCH"
+          rm -f .github/workflows/temporary-d2i-gate-d3-integrate.yml
+          mkdir -p diagnostics/d2i-v3-monitor
+          {
+            printf 'schema=trillionnium.desktop.d2i-v3-monitor.v1\n'
+            printf 'recorded_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            test -f /tmp/d2i-gate-state.txt && cat /tmp/d2i-gate-state.txt || true
+            printf '\n--- failed log tail ---\n'
+            test -f /tmp/d2i-failed.log && tail -n 1200 /tmp/d2i-failed.log || true
+          } > diagnostics/d2i-v3-monitor/latest.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- \
+            .github/workflows/temporary-d2i-gate-d3-integrate.yml \
+            diagnostics/d2i-v3-monitor/latest.txt
+          git commit -m "diagnostics(d2i): record exact v3 qualification failure"
+          git push origin "HEAD:refs/heads/$PROOF_BRANCH"
+
+      - name: Remove the temporary gate from the isolated control branch
+        if: success()
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$PROOF_BRANCH"
+          git checkout -B "$PROOF_BRANCH" "origin/$PROOF_BRANCH"
+          rm .github/workflows/temporary-d2i-gate-d3-integrate.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u -- .github/workflows/temporary-d2i-gate-d3-integrate.yml
+          git commit -m "ci: remove temporary D2I-to-D3 integration gate"
+          git push origin "HEAD:refs/heads/$PROOF_BRANCH"
