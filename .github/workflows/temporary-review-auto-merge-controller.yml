@@ -1,0 +1,237 @@
+name: temporary-review-auto-merge-controller
+
+on:
+  push:
+    branches:
+      - codex/review-auto-merge-controller-v1
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: temporary-review-auto-merge-controller
+  cancel-in-progress: false
+
+jobs:
+  request-and-arm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      UNIFIED_BRANCH: codex/full-gap-closure-final
+      PULL_REQUEST: "52"
+      ADMIN_TOKEN: ${{ secrets.TRILLIONNIUM_GITHUB_ADMIN_TOKEN }}
+    steps:
+      - name: Check out controller history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Wait for final source chain and exact-head D2I proof
+        id: prerequisite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          candidate=
+          d2i_run=
+          for attempt in $(seq 1 180); do
+            git fetch --no-tags origin "$UNIFIED_BRANCH"
+            probe=$(git rev-parse "origin/$UNIFIED_BRANCH")
+            pr_head=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" --jq .head.sha)
+            phase_success=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow temporary-d4-d9-integration-controller.yml \
+              --branch codex/d4-d9-integration-controller-v1 \
+              --limit 10 \
+              --json status,conclusion \
+              --jq '.[] | select(.status == "completed" and .conclusion == "success") | "yes"' \
+              | head -n1 || true)
+            if test "$pr_head" = "$probe" && test "$phase_success" = yes; then
+              d2i_run=$(gh run list \
+                --repo "$GITHUB_REPOSITORY" \
+                --workflow d2i-integrated-image.yml \
+                --branch "$UNIFIED_BRANCH" \
+                --limit 60 \
+                --json databaseId,headSha,status,conclusion \
+                --jq '.[] | select(.headSha == "'"$probe"'" and .status == "completed" and .conclusion == "success") | .databaseId' \
+                | head -n1)
+              if test -n "$d2i_run"; then
+                candidate=$probe
+                break
+              fi
+            fi
+            sleep 20
+          done
+          test -n "$candidate" || {
+            echo "final PR head with exact D2I evidence was not observed" >&2
+            exit 1
+          }
+          printf 'FINAL_PR_HEAD=%s\n' "$candidate" >> "$GITHUB_ENV"
+          printf 'FINAL_D2I_RUN=%s\n' "$d2i_run" >> "$GITHUB_ENV"
+          printf 'head=%s\nd2i_run=%s\n' "$candidate" "$d2i_run" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve a real eligible review team
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/trillionnium-review-control
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          gh api --paginate "repos/$GITHUB_REPOSITORY/teams?per_page=100" \
+            > /tmp/trillionnium-review-control/repository-teams.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('/tmp/trillionnium-review-control')
+          data = json.loads((root/'repository-teams.json').read_text())
+          if isinstance(data, dict):
+              data = [data]
+          eligible = sorted(
+              (
+                  item for item in data
+                  if isinstance(item, dict)
+                  and item.get('slug')
+                  and item.get('permission') in {'push', 'maintain', 'admin'}
+              ),
+              key=lambda item: (item.get('permission') != 'admin', item['slug']),
+          )
+          if not eligible:
+              raise SystemExit('no real repository team is eligible to review')
+          selected = eligible[0]
+          (root/'selected-team.json').write_text(
+              json.dumps(selected, indent=2, sort_keys=True) + '\n'
+          )
+          (root/'selected-team-slug.txt').write_text(selected['slug'] + '\n')
+          PY
+          printf 'REVIEW_TEAM=%s\n' \
+            "$(cat /tmp/trillionnium-review-control/selected-team-slug.txt)" \
+            >> "$GITHUB_ENV"
+
+      - name: Request independent team review on exact head
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" --jq .head.sha)" = "$FINAL_PR_HEAD"
+          python3 - <<'PY' > /tmp/trillionnium-review-control/review-request.json
+          import json
+          import os
+          print(json.dumps({'team_reviewers': [os.environ['REVIEW_TEAM']]}))
+          PY
+          gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST/requested_reviewers" \
+            --input /tmp/trillionnium-review-control/review-request.json \
+            > /tmp/trillionnium-review-control/review-request-response.json
+
+      - name: Enable repository auto-merge when administration is available
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          cat > /tmp/trillionnium-review-control/repository-auto-merge.json <<'JSON'
+          {"allow_auto_merge": true,"allow_squash_merge": true,"delete_branch_on_merge": false}
+          JSON
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY" \
+            --input /tmp/trillionnium-review-control/repository-auto-merge.json \
+            > /tmp/trillionnium-review-control/repository-response.json
+
+      - name: Arm protected squash auto-merge without self-approval
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" --jq .head.sha)" = "$FINAL_PR_HEAD"
+          gh pr merge "$PULL_REQUEST" \
+            --repo "$GITHUB_REPOSITORY" \
+            --auto --squash
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" \
+            > /tmp/trillionnium-review-control/pr-after-auto-merge.json
+
+      - name: Verify request and preserve the human boundary
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST/requested_reviewers" \
+            > /tmp/trillionnium-review-control/requested-reviewers.json
+          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST/reviews?per_page=100" \
+            > /tmp/trillionnium-review-control/reviews.json
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path('/tmp/trillionnium-review-control')
+          requested = json.loads((root/'requested-reviewers.json').read_text())
+          reviews = json.loads((root/'reviews.json').read_text())
+          if isinstance(reviews, dict):
+              reviews = [reviews]
+          team = os.environ['REVIEW_TEAM']
+          requested_slugs = {
+              item.get('slug')
+              for item in requested.get('teams', [])
+              if isinstance(item, dict)
+          }
+          approvals = sorted({
+              (review.get('user') or {}).get('login')
+              for review in reviews
+              if review.get('state') == 'APPROVED'
+              and review.get('commit_id') == os.environ['FINAL_PR_HEAD']
+              and (review.get('user') or {}).get('login')
+          })
+          report = {
+              'schema': 'trillionnium.desktop.independent-review-request.v1',
+              'pull_request': int(os.environ['PULL_REQUEST']),
+              'exact_head_sha': os.environ['FINAL_PR_HEAD'],
+              'exact_head_d2i_run': int(os.environ['FINAL_D2I_RUN']),
+              'requested_team': team,
+              'team_request_visible': team in requested_slugs,
+              'exact_head_approvals_visible': approvals,
+              'assistant_did_not_self_approve': True,
+              'auto_merge_armed': True,
+          }
+          (root/'review-control-evidence.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n'
+          )
+          if not report['team_request_visible'] and not approvals:
+              raise SystemExit('review request is not visible and no exact-head approval exists')
+          PY
+
+      - name: Upload review-control evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: independent-review-control-${{ github.sha }}
+          path: /tmp/trillionnium-review-control
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
