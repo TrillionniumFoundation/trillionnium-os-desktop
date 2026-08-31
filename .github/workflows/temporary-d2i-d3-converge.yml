@@ -1,0 +1,247 @@
+name: temporary-d2i-d3-converge
+
+on:
+  push:
+    branches:
+      - codex/d2i-d3-converge-v1
+
+permissions:
+  actions: read
+  checks: read
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temporary-d2i-d3-converge
+  cancel-in-progress: false
+
+jobs:
+  wait-prove-and-integrate:
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASE_SHA: 8096d78ec6a457cf11e28f258c0cdf8b5dec27b2
+      TARGET_BRANCH: codex/full-gap-closure-final
+      D3_SHA: 371642a76b01618306bd24a6457aab1f8e25dc68
+      PR_NUMBER: "52"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out convergence controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d2i-d3-converge-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for the proved D2I tree on the unified candidate
+        run: |
+          set -euo pipefail
+          d2i_sha=
+          for attempt in $(seq 1 120); do
+            git fetch --no-tags origin \
+              "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+            candidate=$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")
+            subject=$(git show -s --format=%s "$candidate")
+            if [[ "$subject" == \
+                "fix(d2i): constrain llvmpipe and bind image-local input evidence" ]]; then
+              d2i_sha=$candidate
+              break
+            fi
+            sleep 10
+          done
+          [[ -n "$d2i_sha" ]] || {
+            echo "proved D2I v3 tree was not promoted" >&2
+            exit 1
+          }
+          actual=$(git diff --name-only "$BASE_SHA..$d2i_sha" | sort)
+          expected=$(printf '%s\n' \
+            contracts/d2i-integrated-image.v1.json \
+            experiments/servo-headed-runtime/src/main.rs \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/d1/test_d2i_renderer_policy.py | sort)
+          test "$actual" = "$expected"
+          printf 'D2I_SHA=%s\n' "$d2i_sha" >> "$GITHUB_ENV"
+
+      - name: Wait for the exact PR merge and D2I machine workflow
+        run: |
+          set -euo pipefail
+          merge_sha=
+          for attempt in $(seq 1 120); do
+            pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+            head=$(jq -r '.head.sha' <<<"$pr")
+            merge=$(jq -r '.merge_commit_sha // empty' <<<"$pr")
+            if [[ "$head" == "$D2I_SHA" && -n "$merge" ]]; then
+              merge_sha=$merge
+              break
+            fi
+            sleep 10
+          done
+          [[ -n "$merge_sha" ]] || {
+            echo "PR merge object for the D2I head was not created" >&2
+            exit 1
+          }
+          run_id=
+          conclusion=
+          for attempt in $(seq 1 240); do
+            runs=$(gh api \
+              "repos/$GITHUB_REPOSITORY/actions/workflows/d2i-integrated-image.yml/runs?event=pull_request&branch=$TARGET_BRANCH&per_page=30")
+            run=$(jq -c --arg sha "$merge_sha" \
+              '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' \
+              <<<"$runs")
+            if [[ -n "$run" ]]; then
+              run_id=$(jq -r '.id' <<<"$run")
+              status=$(jq -r '.status' <<<"$run")
+              if [[ "$status" == completed ]]; then
+                conclusion=$(jq -r '.conclusion // "unknown"' <<<"$run")
+                break
+              fi
+            fi
+            sleep 15
+          done
+          [[ -n "$run_id" && -n "$conclusion" ]] || {
+            echo "exact D2I workflow did not complete inside the bounded monitor" >&2
+            exit 1
+          }
+          printf 'D2I_RUN_ID=%s\nD2I_CONCLUSION=%s\nPR_MERGE_SHA=%s\n' \
+            "$run_id" "$conclusion" "$merge_sha" >> "$GITHUB_ENV"
+          printf 'D2I run %s completed with %s\n' "$run_id" "$conclusion"
+
+      - name: Extract bounded failure evidence
+        if: env.D2I_CONCLUSION != 'success'
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d2i-run /tmp/d2i-bounded
+          gh run download "$D2I_RUN_ID" -R "$GITHUB_REPOSITORY" -D /tmp/d2i-run || true
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import shutil
+
+          source = Path('/tmp/d2i-run')
+          output = Path('/tmp/d2i-bounded')
+          manifest = []
+          for path in sorted(p for p in source.rglob('*') if p.is_file()):
+              rel = path.relative_to(source)
+              size = path.stat().st_size
+              digest = hashlib.sha256(path.read_bytes()).hexdigest() if size <= 16 * 1024 * 1024 else 'omitted-large'
+              manifest.append(f'{rel}\t{size}\t{digest}')
+              name = path.name.lower()
+              keep = path.suffix.lower() in {'.json', '.txt', '.log'}
+              keep = keep or any(word in name for word in ('serial', 'journal', 'diagnostic', 'failure', 'status'))
+              keep = keep or (path.suffix.lower() == '.png' and size <= 12 * 1024 * 1024)
+              if not keep:
+                  continue
+              destination = output / rel
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              if size <= 8 * 1024 * 1024:
+                  shutil.copy2(path, destination)
+              else:
+                  data = path.read_bytes()
+                  destination.write_bytes(
+                      data[:4 * 1024 * 1024]
+                      + b'\n\n--- bounded extractor omitted middle ---\n\n'
+                      + data[-4 * 1024 * 1024:]
+                  )
+          (output / 'artifact-manifest.tsv').write_text('\n'.join(manifest) + '\n')
+          PY
+
+      - name: Upload bounded D2I failure evidence
+        if: env.D2I_CONCLUSION != 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: bounded-d2i-v3-failure-${{ github.sha }}
+          path: /tmp/d2i-bounded
+          if-no-files-found: warn
+          retention-days: 2
+          compression-level: 6
+          include-hidden-files: true
+
+      - name: Refuse D3 integration after a failed D2I gate
+        if: env.D2I_CONCLUSION != 'success'
+        run: |
+          echo "D2I machine qualification failed: $D2I_CONCLUSION" >&2
+          exit 1
+
+      - name: Apply the clean net D3 source change
+        if: env.D2I_CONCLUSION == 'success'
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH" \
+            "$D3_SHA"
+          current=$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")
+          test "$current" = "$D2I_SHA"
+          git checkout -B d3-integrated "$current"
+          git diff --binary "$BASE_SHA" "$D3_SHA" > /tmp/d3-net.patch
+          git apply --check /tmp/d3-net.patch
+          git apply --index --whitespace=error-all /tmp/d3-net.patch
+          actual=$(git diff --cached --name-only | sort)
+          expected=$(printf '%s\n' \
+            apps/hepta-agent-portd/Cargo.toml \
+            apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs \
+            contracts/browser-actor.v1.json \
+            crates/hepta-browser-actor/src/lib.rs \
+            crates/hepta-peer-attestation/Cargo.toml \
+            crates/hepta-peer-attestation/src/lib.rs \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md \
+            manifests/project-state.v1.json \
+            manifests/repository-state.json \
+            packaging/debian/development/README.md \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service \
+            tests/d1/test_d1_qualification_separation.py \
+            tests/test_systemd_custody_validator.py \
+            tools/validate_d3_development_profile.py \
+            tools/validate_project_truth.py \
+            tools/verify_systemd_socket_custody.py | sort)
+          test "$actual" = "$expected"
+          git diff --cached --check
+
+      - name: Install pinned repository toolchain
+        if: env.D2I_CONCLUSION == 'success'
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Prove the D2I plus D3 integrated source tree
+        if: env.D2I_CONCLUSION == 'success'
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --bin hepta-agent-portd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --features development --bin hepta-agent-port-developmentd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --features d1-qualification --bin hepta-agent-port-qualificationd
+
+      - name: Publish the proved D2I plus D3 source tree
+        if: env.D2I_CONCLUSION == 'success'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(d3): bind development peer to trusted executable source"
+          git fetch --no-tags origin \
+            "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          test "$(git rev-parse refs/remotes/origin/$TARGET_BRANCH)" = "$D2I_SHA"
+          git push origin HEAD:refs/heads/$TARGET_BRANCH
