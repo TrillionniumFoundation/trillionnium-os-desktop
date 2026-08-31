@@ -1,0 +1,27 @@
+name: temporary-source-export
+
+on:
+  push:
+    branches:
+      - codex/full-gap-closure-final
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Upload validator source
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: temporary-validator-source-${{ github.sha }}
+          path: tools/validate_governance_integrity.py
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
