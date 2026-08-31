@@ -1,0 +1,166 @@
+name: temporary-live-governance-ruleset
+
+on:
+  push:
+    branches:
+      - codex/live-governance-ruleset-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ruleset:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      ADMIN_TOKEN: ${{ secrets.TRILLIONNIUM_GITHUB_ADMIN_TOKEN }}
+      RULESET_NAME: Trillionnium main governance
+    steps:
+      - name: Create or update the active no-bypass main ruleset
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root=/tmp/trillionnium-governance-ruleset
+          mkdir -p "$root"
+          token=$ADMIN_TOKEN
+          token_source=admin_secret
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+            token_source=github_token
+          fi
+          export GH_TOKEN=$token
+          printf '%s\n' "$token_source" > "$root/token-source.txt"
+          cat > "$root/request.json" <<'JSON'
+          {
+            "name": "Trillionnium main governance",
+            "target": "branch",
+            "enforcement": "active",
+            "bypass_actors": [],
+            "conditions": {
+              "ref_name": {
+                "include": ["refs/heads/main"],
+                "exclude": []
+              }
+            },
+            "rules": [
+              {"type": "deletion"},
+              {"type": "non_fast_forward"},
+              {"type": "required_linear_history"},
+              {"type": "required_signatures"},
+              {
+                "type": "pull_request",
+                "parameters": {
+                  "required_approving_review_count": 1,
+                  "dismiss_stale_reviews_on_push": true,
+                  "require_code_owner_review": true,
+                  "require_last_push_approval": true,
+                  "required_review_thread_resolution": true,
+                  "allowed_merge_methods": ["squash"]
+                }
+              },
+              {
+                "type": "required_status_checks",
+                "parameters": {
+                  "required_status_checks": [
+                    {"context": "desktop-ci / repository-contracts"},
+                    {"context": "desktop-ci / rust"},
+                    {"context": "governance-integrity / governance-integrity"}
+                  ],
+                  "strict_required_status_checks_policy": true,
+                  "do_not_enforce_on_create": false
+                }
+              }
+            ]
+          }
+          JSON
+          gh api --paginate "repos/$GITHUB_REPOSITORY/rulesets?per_page=100" \
+            > "$root/list-before.json"
+          ruleset_id=$(python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          data = json.loads(Path('/tmp/trillionnium-governance-ruleset/list-before.json').read_text())
+          for item in data:
+              if item.get('name') == os.environ['RULESET_NAME']:
+                  print(item['id'])
+                  break
+          PY
+          )
+          if test -n "$ruleset_id"; then
+            gh api --method PUT \
+              "repos/$GITHUB_REPOSITORY/rulesets/$ruleset_id" \
+              --input "$root/request.json" > "$root/mutation-response.json"
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/rulesets" \
+              --input "$root/request.json" > "$root/mutation-response.json"
+            ruleset_id=$(jq -er '.id' "$root/mutation-response.json")
+          fi
+          printf '%s\n' "$ruleset_id" > "$root/ruleset-id.txt"
+          gh api "repos/$GITHUB_REPOSITORY/rulesets/$ruleset_id" \
+            > "$root/verified.json"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path('/tmp/trillionnium-governance-ruleset')
+          value = json.loads((root/'verified.json').read_text())
+          rules = value.get('rules') or []
+          by_type = {rule.get('type'): rule for rule in rules if isinstance(rule, dict)}
+          pr = (by_type.get('pull_request') or {}).get('parameters') or {}
+          status = (by_type.get('required_status_checks') or {}).get('parameters') or {}
+          contexts = {
+              item.get('context')
+              for item in status.get('required_status_checks', [])
+              if isinstance(item, dict) and item.get('context')
+          }
+          required = {
+              'desktop-ci / repository-contracts',
+              'desktop-ci / rust',
+              'governance-integrity / governance-integrity',
+          }
+          checks = {
+              'name_exact': value.get('name') == os.environ['RULESET_NAME'],
+              'target_branch': value.get('target') == 'branch',
+              'enforcement_active': value.get('enforcement') == 'active',
+              'no_bypass_actors': not value.get('bypass_actors'),
+              'main_only': (value.get('conditions') or {}).get('ref_name', {}).get('include') == ['refs/heads/main'],
+              'deletion_forbidden': 'deletion' in by_type,
+              'non_fast_forward_forbidden': 'non_fast_forward' in by_type,
+              'linear_history': 'required_linear_history' in by_type,
+              'signatures': 'required_signatures' in by_type,
+              'one_approval': int(pr.get('required_approving_review_count') or 0) >= 1,
+              'dismiss_stale': pr.get('dismiss_stale_reviews_on_push') is True,
+              'codeowner_review': pr.get('require_code_owner_review') is True,
+              'last_push_approval': pr.get('require_last_push_approval') is True,
+              'thread_resolution': pr.get('required_review_thread_resolution') is True,
+              'squash_only': pr.get('allowed_merge_methods') == ['squash'],
+              'strict_status_checks': status.get('strict_required_status_checks_policy') is True,
+              'required_contexts': required <= contexts,
+          }
+          report = {
+              'schema': 'trillionnium.desktop.live-governance-ruleset.v1',
+              'ruleset_id': value.get('id'),
+              'token_source': (root/'token-source.txt').read_text().strip(),
+              'checks': checks,
+              'all_checks_pass': all(checks.values()),
+          }
+          (root/'ruleset-evidence.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n'
+          )
+          if not report['all_checks_pass']:
+              failed = [name for name, ok in checks.items() if not ok]
+              raise SystemExit('ruleset verification failed: ' + ', '.join(failed))
+          PY
+
+      - name: Upload ruleset evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: live-governance-ruleset-${{ github.sha }}
+          path: /tmp/trillionnium-governance-ruleset
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
