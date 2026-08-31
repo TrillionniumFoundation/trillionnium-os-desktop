@@ -1,0 +1,294 @@
+name: temporary-code-squash-fallback-v1
+
+on:
+  push:
+    branches:
+      - codex/control-code-squash-fallback-v1
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: temporary-code-squash-fallback-v1
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      CONTROL_BRANCH: codex/control-code-squash-fallback-v1
+      D9_CANDIDATE: codex/d9-integration-candidate-v2
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out squash fallback control branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/control-code-squash-fallback-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Route only after an authoritative code-stage failure
+        id: route
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/squash-fallback
+          branch_sha() {
+            git ls-remote --heads origin "refs/heads/$1" | awk '{print $1}'
+          }
+          fetch_report() {
+            local branch=$1 path=$2 output=$3 sha
+            sha=$(branch_sha "$branch")
+            test -n "$sha" || return 1
+            git fetch --no-tags origin "$sha" >/dev/null 2>&1 || return 1
+            git show "$sha:$path" > "$output" 2>/dev/null
+          }
+          report_failed() {
+            test -f "$1" && grep -Eqi 'job_status[" ]*[:=][" ]*(failure|failed|error)|conclusion[" ]*[:=][" ]*(failure|failed|cancelled|timed_out)' "$1"
+          }
+          ready=false
+          reason=none
+          stage=0
+          target=
+          for _ in $(seq 1 1080); do
+            d9=$(branch_sha "$D9_CANDIDATE")
+            if test -n "$d9"; then
+              reason=d9_already_exists
+              break
+            fi
+            target=$(branch_sha "$TARGET_BRANCH")
+            subject=$(git show -s --format=%s "$target" 2>/dev/null || true)
+            case "$subject" in
+              'feat(d3): bind development peer to trusted executable source') stage=3 ;;
+              'feat(d4):'*) stage=4 ;;
+              'feat(d5):'*) stage=5 ;;
+              'feat(d6):'*) stage=6 ;;
+              'feat(d7):'*) stage=7 ;;
+              'feat(d8):'*) stage=8 ;;
+              *) stage=0 ;;
+            esac
+            rm -f /tmp/squash-fallback/*.report
+            fetch_report codex/control-d4-build-v2 diagnostics/d4-candidate-v2/latest.txt /tmp/squash-fallback/d4.report || true
+            fetch_report codex/control-d4-promote-d5-build-v3 diagnostics/d4-promote-d5-build-v3/latest.txt /tmp/squash-fallback/d5.report || true
+            fetch_report codex/control-d5-promote-d6-build-v2 diagnostics/d5-promote-d6-build-v2/latest.txt /tmp/squash-fallback/d6.report || true
+            fetch_report codex/control-d6-through-d9-v3 diagnostics/d6-through-d9-v3/latest.txt /tmp/squash-fallback/d7d9.report || true
+            fetch_report codex/control-d2i-v4 diagnostics/d2i-v4-monitor/latest.txt /tmp/squash-fallback/d2i.report || true
+            if report_failed /tmp/squash-fallback/d4.report; then reason=d4_primary_failed; ready=true; break; fi
+            if report_failed /tmp/squash-fallback/d5.report; then reason=d5_primary_failed; ready=true; break; fi
+            if report_failed /tmp/squash-fallback/d6.report; then reason=d6_primary_failed; ready=true; break; fi
+            if report_failed /tmp/squash-fallback/d7d9.report; then reason=d7_d9_primary_failed; ready=true; break; fi
+            if report_failed /tmp/squash-fallback/d2i.report; then reason=d2i_fallback_failed; break; fi
+            sleep 20
+          done
+          if test "$ready" = true; then
+            test "$stage" -ge 3
+          fi
+          printf 'ready=%s\nreason=%s\nstage=%s\ntarget=%s\n' "$ready" "$reason" "$stage" "$target" | tee /tmp/squash-fallback/route.txt
+          printf 'ready=%s\nreason=%s\nstage=%s\ntarget=%s\n' "$ready" "$reason" "$stage" "$target" >> "$GITHUB_OUTPUT"
+
+      - name: Install pinned repository toolchain
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin '${{ steps.route.outputs.target }}'
+          git checkout --detach '${{ steps.route.outputs.target }}'
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Recover remaining stages from source trees
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          repo=$GITHUB_REPOSITORY
+          stage='${{ steps.route.outputs.stage }}'
+          : > /tmp/squash-fallback/state.txt
+          : > /tmp/squash-fallback/history.txt
+          : > /tmp/squash-fallback/diffs.txt
+          RESULT_HEAD=
+
+          remote_head() {
+            git ls-remote --heads origin "refs/heads/$1" | awk '{print $1}'
+          }
+
+          prove_source() {
+            python3 tools/validate_repository.py
+            python3 tools/validate_project_truth.py
+            python3 tools/verify_systemd_socket_custody.py
+            python3 -m unittest discover -s tests -t . -p 'test_*.py'
+            cargo fmt --all --check
+            cargo check --workspace --all-targets --locked
+            cargo clippy --workspace --all-targets --locked -- -D warnings
+            cargo test --workspace --all-targets --locked
+            cargo check --workspace --all-targets --all-features --locked
+            cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+            cargo test --workspace --all-targets --all-features --locked
+          }
+
+          dispatch_d2i_once() {
+            local stage_name=$1 candidate=$2 attempt=$3 workflow_id run_id status conclusion
+            gh workflow run d2i-integrated-image.yml --repo "$repo" --ref "$TARGET_BRANCH"
+            workflow_id=$(gh api "repos/$repo/actions/workflows" --paginate --jq '.workflows[] | select(.path == ".github/workflows/d2i-integrated-image.yml") | .id' | head -n1)
+            test -n "$workflow_id"
+            run_id=
+            for _ in $(seq 1 480); do
+              run_id=$(gh api "repos/$repo/actions/workflows/$workflow_id/runs?event=workflow_dispatch&per_page=100" --jq ".workflow_runs | map(select(.head_branch == \"$TARGET_BRANCH\" and .head_sha == \"$candidate\")) | sort_by(.created_at) | reverse | .[$((attempt - 1))].id // empty")
+              if test -n "$run_id" && test "$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')" = completed; then
+                break
+              fi
+              sleep 15
+            done
+            test -n "$run_id"
+            status=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')
+            conclusion=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.conclusion')
+            printf '%s_attempt_%s_run=%s\n%s_attempt_%s_status=%s\n%s_attempt_%s_conclusion=%s\n' "$stage_name" "$attempt" "$run_id" "$stage_name" "$attempt" "$status" "$stage_name" "$attempt" "$conclusion" | tee -a /tmp/squash-fallback/state.txt
+            if test "$status" != completed || test "$conclusion" != success; then
+              gh run view "$run_id" --repo "$repo" --log-failed > "/tmp/squash-fallback/${stage_name}-attempt-${attempt}.log" 2>&1 || true
+              return 1
+            fi
+          }
+
+          dispatch_d2i() {
+            local stage_name=$1 candidate=$2
+            dispatch_d2i_once "$stage_name" "$candidate" 1 && return 0
+            dispatch_d2i_once "$stage_name" "$candidate" 2
+          }
+
+          remove_nonproduct_paths() {
+            local target=$1 path
+            mapfile -t bad_paths < <(git diff --cached --name-only | grep -E '(^|/)(temporary|diagnostics?)(/|$)|\.patch(\.|$)|\.b85$' || true)
+            for path in "${bad_paths[@]}"; do
+              git reset -q "$target" -- "$path" || true
+              if git cat-file -e "$target:$path" 2>/dev/null; then
+                git checkout -q "$target" -- "$path"
+              else
+                rm -rf -- "$path"
+              fi
+            done
+          }
+
+          build_stage_tree() {
+            local stage_name=$1 candidate_branch=$2 commit_message=$3
+            shift 3
+            local target source_branch source work_branch final_tree final_commit current
+            target=$(remote_head "$TARGET_BRANCH")
+            test -n "$target"
+            work_branch="fallback-work-$stage_name"
+            git fetch --no-tags origin "$TARGET_BRANCH" "$@"
+            git checkout -B "$work_branch" "$target"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            for source_branch in "$@"; do
+              source=$(git rev-parse "origin/$source_branch")
+              printf 'stage=%s source=%s source_head=%s target=%s\n' "$stage_name" "$source_branch" "$source" "$target" | tee -a /tmp/squash-fallback/history.txt
+              git merge --squash --no-commit "$source"
+              remove_nonproduct_paths "$target"
+              if test -n "$(git diff --cached --name-only)"; then
+                git diff --cached --check
+                git commit -m "temporary $stage_name source fold: $source_branch"
+              fi
+            done
+            final_tree=$(git rev-parse HEAD^{tree})
+            if test "$final_tree" = "$(git rev-parse "$target^{tree}")"; then
+              echo "$stage_name fallback produced an empty tree" >&2
+              return 1
+            fi
+            prove_source
+            git diff --name-status "$target" HEAD | tee -a /tmp/squash-fallback/diffs.txt
+            final_commit=$(printf '%s\n' "$commit_message" | git commit-tree "$final_tree" -p "$target")
+            test "$(git show -s --format=%P "$final_commit")" = "$target"
+            test "$(git rev-parse "$final_commit^{tree}")" = "$final_tree"
+            current=$(remote_head "$TARGET_BRANCH")
+            test "$current" = "$target"
+            existing=$(remote_head "$candidate_branch")
+            if test -n "$existing"; then
+              test "$(git rev-parse "$existing^{tree}")" = "$final_tree"
+              final_commit=$existing
+            else
+              git push origin "$final_commit:refs/heads/$candidate_branch"
+            fi
+            git push origin "$final_commit:refs/heads/$TARGET_BRANCH"
+            printf '%s_head=%s\n%s_parent=%s\n' "$stage_name" "$final_commit" "$stage_name" "$target" | tee -a /tmp/squash-fallback/state.txt
+            RESULT_HEAD=$final_commit
+          }
+
+          if test "$stage" -lt 4; then
+            build_stage_tree d4 codex/d4-squash-recovery-v1 'feat(d4): integrate collaboration state machine' codex/d4-collaboration-state-machine-v1
+            dispatch_d2i d4 "$RESULT_HEAD"
+            stage=4
+          fi
+          if test "$stage" -lt 5; then
+            build_stage_tree d5 codex/d5-squash-recovery-v1 'feat(d5): integrate trusted application product foundation' codex/d5-product-foundation codex/d5-trusted-app-verifier-v1
+            dispatch_d2i d5 "$RESULT_HEAD"
+            stage=5
+          fi
+          if test "$stage" -lt 6; then
+            build_stage_tree d6 codex/d6-squash-recovery-v1 'feat(d6): integrate capability, egress, and plan-truth closure' codex/d6-capability-egress-policy-v1 codex/d6-plan-truth-ci-closure-v1 codex/d6-source-integration-candidate-v1
+            dispatch_d2i d6 "$RESULT_HEAD"
+            stage=6
+          fi
+          if test "$stage" -lt 7; then
+            build_stage_tree d7 codex/d7-squash-recovery-v1 'feat(d7): integrate recovery and update reconciliation' codex/d7-recovery-update-reconciliation-v1
+            dispatch_d2i d7 "$RESULT_HEAD"
+            stage=7
+          fi
+          if test "$stage" -lt 8; then
+            build_stage_tree d8 codex/d8-squash-recovery-v1 'feat(d8): integrate hardware qualification verifier source' codex/d8-hardware-qualification-verifier-v1
+            dispatch_d2i d8 "$RESULT_HEAD"
+            stage=8
+          fi
+          if test "$stage" -eq 8; then
+            target=$(remote_head "$TARGET_BRANCH")
+            existing=$(remote_head "$D9_CANDIDATE")
+            if test -n "$existing"; then
+              git fetch --no-tags origin "$existing"
+              test "$(git show -s --format=%P "$existing")" = "$target"
+              git checkout --detach "$existing"
+              prove_source
+              RESULT_HEAD=$existing
+            else
+              build_stage_tree d9 "$D9_CANDIDATE" 'feat(d9): build signed release promotion source candidate' codex/d9-signed-release-promotion-v1
+            fi
+            printf 'd9_candidate=%s\nd9_promoted=false\nrelease_readiness_claimed=false\n' "$RESULT_HEAD" | tee -a /tmp/squash-fallback/state.txt
+          fi
+
+      - name: Persist squash fallback result and remove workflow
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          ROUTE_READY: ${{ steps.route.outputs.ready }}
+          ROUTE_REASON: ${{ steps.route.outputs.reason }}
+          ROUTE_STAGE: ${{ steps.route.outputs.stage }}
+        run: |
+          set -euo pipefail
+          status_snapshot=$(git status --short 2>&1 || true)
+          git fetch --no-tags origin "$CONTROL_BRANCH"
+          git checkout -B "$CONTROL_BRANCH" "origin/$CONTROL_BRANCH"
+          rm -f .github/workflows/temporary-code-squash-fallback-v1.yml
+          mkdir -p diagnostics/code-squash-fallback-v1
+          {
+            printf 'schema=trillionnium.desktop.code-squash-fallback.v1\n'
+            printf 'recorded_at=%s\njob_status=%s\nroute_ready=%s\nroute_reason=%s\nroute_stage=%s\n\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$JOB_STATUS" "$ROUTE_READY" "$ROUTE_REASON" "$ROUTE_STAGE"
+            for file in /tmp/squash-fallback/route.txt /tmp/squash-fallback/state.txt /tmp/squash-fallback/history.txt /tmp/squash-fallback/diffs.txt /tmp/squash-fallback/*.log; do
+              test -f "$file" || continue
+              printf '%s\n' "--- $(basename "$file") ---"
+              tail -n 2200 "$file"
+              printf '\n'
+            done
+            printf '%s\n%s\n' '--- status ---' "$status_snapshot"
+          } > diagnostics/code-squash-fallback-v1/latest.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- .github/workflows/temporary-code-squash-fallback-v1.yml diagnostics/code-squash-fallback-v1/latest.txt
+          git commit -m "diagnostics(code): record squash fallback result ($JOB_STATUS)"
+          git push origin "HEAD:refs/heads/$CONTROL_BRANCH"
