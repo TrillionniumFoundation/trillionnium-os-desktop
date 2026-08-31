@@ -1,0 +1,123 @@
+name: temporary-full-source-integration-orchestrator
+
+on:
+  push:
+    branches:
+      - codex/full-source-integration-orchestrator-v1
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-full-source-integration-orchestrator
+  cancel-in-progress: false
+
+jobs:
+  integrate-and-prove:
+    runs-on: ubuntu-24.04
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out orchestrator source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/full-source-integration-orchestrator-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Materialize the exact ordered D3-D9 integration
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --no-tags origin \
+            +refs/heads/codex/full-gap-closure-final:refs/remotes/origin/codex/full-gap-closure-final \
+            +refs/heads/codex/d3-cross-uid-static-attestation-v2:refs/remotes/origin/codex/d3-cross-uid-static-attestation-v2 \
+            +refs/heads/codex/d4-collaboration-state-machine-v1:refs/remotes/origin/codex/d4-collaboration-state-machine-v1 \
+            +refs/heads/codex/d5-product-foundation:refs/remotes/origin/codex/d5-product-foundation \
+            +refs/heads/codex/d5-trusted-app-verifier-v1:refs/remotes/origin/codex/d5-trusted-app-verifier-v1 \
+            +refs/heads/codex/d6-capability-egress-policy-v1:refs/remotes/origin/codex/d6-capability-egress-policy-v1 \
+            +refs/heads/codex/d6-plan-truth-ci-closure-v1:refs/remotes/origin/codex/d6-plan-truth-ci-closure-v1 \
+            +refs/heads/codex/d6-source-integration-candidate-v1:refs/remotes/origin/codex/d6-source-integration-candidate-v1 \
+            +refs/heads/codex/d7-recovery-update-reconciliation-v1:refs/remotes/origin/codex/d7-recovery-update-reconciliation-v1 \
+            +refs/heads/codex/d8-hardware-qualification-verifier-v1:refs/remotes/origin/codex/d8-hardware-qualification-verifier-v1 \
+            +refs/heads/codex/d9-signed-release-promotion-v1:refs/remotes/origin/codex/d9-signed-release-promotion-v1
+          base=$(git rev-parse refs/remotes/origin/codex/full-gap-closure-final)
+          printf '%s\n' "$base" > /tmp/integration-base
+          git switch --detach "$base"
+          for branch in \
+            codex/d3-cross-uid-static-attestation-v2 \
+            codex/d4-collaboration-state-machine-v1 \
+            codex/d5-product-foundation \
+            codex/d5-trusted-app-verifier-v1 \
+            codex/d6-capability-egress-policy-v1 \
+            codex/d6-plan-truth-ci-closure-v1 \
+            codex/d6-source-integration-candidate-v1 \
+            codex/d7-recovery-update-reconciliation-v1 \
+            codex/d8-hardware-qualification-verifier-v1 \
+            codex/d9-signed-release-promotion-v1; do
+            git merge --no-edit --no-ff "refs/remotes/origin/$branch"
+          done
+          git status --short
+          git diff --check "$(cat /tmp/integration-base)..HEAD"
+
+      - name: Install exact repository Rust toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Prove repository truth and all Python contracts
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          if [[ -f tools/validate_d3_development_profile.py ]]; then
+            python3 tools/validate_d3_development_profile.py
+          fi
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          git diff --check "$(cat /tmp/integration-base)..HEAD"
+
+      - name: Prove every Rust feature graph
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Publish one clean parent-bound integration commit
+        run: |
+          set -euo pipefail
+          base=$(cat /tmp/integration-base)
+          test -z "$(git status --porcelain=v1)"
+          git fetch --no-tags origin \
+            +refs/heads/codex/full-gap-closure-final:refs/remotes/origin/codex/full-gap-closure-final
+          current=$(git rev-parse refs/remotes/origin/codex/full-gap-closure-final)
+          test "$current" = "$base" || {
+            echo "candidate moved during source integration proof" >&2
+            exit 1
+          }
+          tree=$(git rev-parse HEAD^{tree})
+          commit=$(printf '%s\n\n%s\n' \
+            'feat: integrate D3-D9 source blockers on the D2I v3 candidate' \
+            'Ordered, conflict-free integration proven by repository truth validation, the complete Python contract suite, and Rust default/all-feature fmt, check, clippy and test graphs.' \
+            | git commit-tree "$tree" -p "$base")
+          test "$(git rev-parse "$commit^")" = "$base"
+          test "$(git rev-parse "$commit^{tree}")" = "$tree"
+          printf 'BASE=%s\nFINAL_TREE=%s\nFINAL_COMMIT=%s\n' "$base" "$tree" "$commit"
+          git push origin "$commit":refs/heads/codex/full-source-integration-proved-v1
