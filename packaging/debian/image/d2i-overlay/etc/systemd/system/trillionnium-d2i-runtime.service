@@ -21,13 +21,20 @@ Environment=XDG_CACHE_HOME=/run/hepta-desktop/cache
 Environment=XDG_CONFIG_HOME=/run/hepta-desktop/config
 Environment=WAYLAND_DISPLAY=wayland-0
 Environment=WINIT_UNIX_BACKEND=wayland
-# The D2I guest runs under QEMU TCG.  LLVMpipe JIT workers can bind generated
-# machine code to the synthetic CPU feature surface and have crashed before the
-# runtime can arm its evidence protocol.  Keep this qualification deterministic
-# and architecture-neutral by selecting Mesa's interpreter renderer explicitly.
+# The D2I guest runs under QEMU TCG.  Keep LLVMpipe's speed for bounded
+# screenshot evidence while overriding its JIT feature selection to the SSE2
+# baseline and one worker.  This prevents generated AVX/AVX-512 code from being
+# coupled to QEMU's synthetic `-cpu max` surface.
 Environment=LIBGL_ALWAYS_SOFTWARE=1
-Environment=GALLIUM_DRIVER=softpipe
+Environment=GALLIUM_DRIVER=llvmpipe
+Environment=GALLIUM_OVERRIDE_CPU_CAPS=sse2
+Environment=LP_NATIVE_VECTOR_WIDTH=128
+Environment=LP_NUM_THREADS=1
 Environment=DRAW_USE_LLVM=0
+# There is deliberately no virtual input device or host injector in D2I.
+# Exercise the Servo input boundary from inside the networkless image and keep
+# that evidence distinct from D0A-02's native host-input qualification.
+Environment=HEPTA_D2I_IMAGE_LOCAL_INPUT=1
 Environment=HEPTA_D0A02_OUTPUT=/var/lib/trillionnium-d2i
 Environment=HEPTA_D2I_HOLD_AFTER_RESULT=1
 ExecStartPre=/usr/bin/mkdir -p /run/hepta-desktop/cache /run/hepta-desktop/config
