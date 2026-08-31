@@ -1,0 +1,252 @@
+name: temporary-post-merge-main-closure
+
+on:
+  push:
+    branches:
+      - codex/post-merge-main-closure-v1
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: temporary-post-merge-main-closure
+  cancel-in-progress: false
+
+jobs:
+  close-main:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      PULL_REQUEST: "52"
+      TARGET_BRANCH: main
+      ADMIN_TOKEN: ${{ secrets.TRILLIONNIUM_GITHUB_ADMIN_TOKEN }}
+      PYTHONDONTWRITEBYTECODE: "1"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/trillionnium-post-merge-target
+    steps:
+      - name: Check out all repository history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Wait for the protected PR merge and bind exact source identities
+        id: merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/trillionnium-post-merge
+          merged_sha=
+          approved_head=
+          main_sha=
+          for attempt in $(seq 1 300); do
+            gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" \
+              > /tmp/trillionnium-post-merge/pr.json
+            merged=$(jq -r '.merged' /tmp/trillionnium-post-merge/pr.json)
+            if test "$merged" = true; then
+              merged_sha=$(jq -er '.merge_commit_sha' /tmp/trillionnium-post-merge/pr.json)
+              approved_head=$(jq -er '.head.sha' /tmp/trillionnium-post-merge/pr.json)
+              git fetch --no-tags origin "$TARGET_BRANCH" "$approved_head"
+              main_sha=$(git rev-parse "origin/$TARGET_BRANCH")
+              break
+            fi
+            sleep 20
+          done
+          test -n "$merged_sha" || {
+            echo "PR #$PULL_REQUEST was not merged through the protected path" >&2
+            exit 1
+          }
+          test -n "$approved_head"
+          test -n "$main_sha"
+          git cat-file -e "$approved_head^{commit}"
+          git cat-file -e "$main_sha^{commit}"
+          candidate_tree=$(git rev-parse "$approved_head^{tree}")
+          main_tree=$(git rev-parse "$main_sha^{tree}")
+          test "$candidate_tree" = "$main_tree" || {
+            echo "merged main tree differs from the approved PR head tree" >&2
+            exit 1
+          }
+          {
+            printf 'APPROVED_HEAD_SHA=%s\n' "$approved_head"
+            printf 'APPROVED_HEAD_TREE=%s\n' "$candidate_tree"
+            printf 'MERGE_COMMIT_SHA=%s\n' "$merged_sha"
+            printf 'MAIN_SHA=%s\n' "$main_sha"
+            printf 'MAIN_TREE=%s\n' "$main_tree"
+          } >> "$GITHUB_ENV"
+          jq -n \
+            --arg approved_head "$approved_head" \
+            --arg approved_tree "$candidate_tree" \
+            --arg merge_commit "$merged_sha" \
+            --arg main_sha "$main_sha" \
+            --arg main_tree "$main_tree" \
+            '{approved_head_sha:$approved_head,approved_head_tree:$approved_tree,merge_commit_sha:$merge_commit,main_sha:$main_sha,main_tree:$main_tree}' \
+            > /tmp/trillionnium-post-merge/source-binding.json
+          printf 'approved_head=%s\nmain_sha=%s\nmain_tree=%s\n' \
+            "$approved_head" "$main_sha" "$main_tree" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the exact current main object
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$TARGET_BRANCH"
+          test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$MAIN_SHA"
+          git checkout --detach "$MAIN_SHA"
+
+      - name: Install the exact repository toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Re-prove the complete main source tree
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          test ! -f tools/validate_d3_development_profile.py || \
+            python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          test -z "$(git status --porcelain=v1)"
+
+      - name: Wait for D2I success bound to exact main SHA
+        id: d2i
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          run_id=
+          for attempt in $(seq 1 300); do
+            git fetch --no-tags origin "$TARGET_BRANCH"
+            test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$MAIN_SHA" || {
+              echo "main advanced before exact-main qualification completed" >&2
+              exit 1
+            }
+            run_id=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow d2i-integrated-image.yml \
+              --branch "$TARGET_BRANCH" \
+              --limit 100 \
+              --json databaseId,headSha,status,conclusion,event \
+              --jq '.[] | select(.headSha == "'"$MAIN_SHA"'" and .status == "completed" and .conclusion == "success") | .databaseId' \
+              | head -n1)
+            if test -n "$run_id"; then
+              break
+            fi
+            sleep 20
+          done
+          test -n "$run_id" || {
+            echo "no successful D2I run is bound to exact main SHA $MAIN_SHA" >&2
+            exit 1
+          }
+          printf '%s\n' "$run_id" \
+            > /tmp/trillionnium-post-merge/main-d2i-run-id.txt
+          printf 'run_id=%s\n' "$run_id" >> "$GITHUB_OUTPUT"
+
+      - name: Verify live governance and exact-head independent approval
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH" \
+            > /tmp/trillionnium-post-merge/branch.json
+          gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection" \
+            > /tmp/trillionnium-post-merge/protection.json
+          gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection/required_signatures" \
+            > /tmp/trillionnium-post-merge/signatures.json
+          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST/reviews?per_page=100" \
+            > /tmp/trillionnium-post-merge/reviews.json
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path('/tmp/trillionnium-post-merge')
+          branch = json.loads((root/'branch.json').read_text())
+          protection = json.loads((root/'protection.json').read_text())
+          signatures = json.loads((root/'signatures.json').read_text())
+          reviews = json.loads((root/'reviews.json').read_text())
+          if isinstance(reviews, dict):
+              reviews = [reviews]
+          required = {
+              'desktop-ci / repository-contracts',
+              'desktop-ci / rust',
+              'governance-integrity / governance-integrity',
+          }
+          contexts = set((protection.get('required_status_checks') or {}).get('contexts') or [])
+          contexts.update(
+              item.get('context')
+              for item in (protection.get('required_status_checks') or {}).get('checks', [])
+              if isinstance(item, dict) and item.get('context')
+          )
+          approved_users = sorted({
+              (review.get('user') or {}).get('login')
+              for review in reviews
+              if review.get('state') == 'APPROVED'
+              and review.get('commit_id') == os.environ['APPROVED_HEAD_SHA']
+              and (review.get('user') or {}).get('login')
+          })
+          review_policy = protection.get('required_pull_request_reviews') or {}
+          checks = {
+              'main_protected': branch.get('protected') is True,
+              'strict_required_checks': (protection.get('required_status_checks') or {}).get('strict') is True,
+              'required_contexts': required <= contexts,
+              'admins_enforced': (protection.get('enforce_admins') or {}).get('enabled') is True,
+              'codeowner_review_required': review_policy.get('require_code_owner_reviews') is True,
+              'last_push_approval_required': review_policy.get('require_last_push_approval') is True,
+              'signatures_required': signatures.get('enabled') is True,
+              'exact_head_approval_exists': bool(approved_users),
+          }
+          report = {
+              'schema': 'trillionnium.desktop.post-merge-main-closure.v1',
+              'approved_head_sha': os.environ['APPROVED_HEAD_SHA'],
+              'approved_head_tree': os.environ['APPROVED_HEAD_TREE'],
+              'merge_commit_sha': os.environ['MERGE_COMMIT_SHA'],
+              'main_sha': os.environ['MAIN_SHA'],
+              'main_tree': os.environ['MAIN_TREE'],
+              'main_d2i_run_id': int((root/'main-d2i-run-id.txt').read_text().strip()),
+              'exact_head_approvers': approved_users,
+              'checks': checks,
+              'all_checks_pass': all(checks.values()),
+          }
+          (root/'post-merge-main-closure.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n'
+          )
+          if not report['all_checks_pass']:
+              failed = [name for name, ok in checks.items() if not ok]
+              raise SystemExit('post-merge closure remains incomplete: ' + ', '.join(failed))
+          PY
+
+      - name: Upload exact-main closure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: post-merge-main-closure-${{ github.sha }}
+          path: /tmp/trillionnium-post-merge
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 6
