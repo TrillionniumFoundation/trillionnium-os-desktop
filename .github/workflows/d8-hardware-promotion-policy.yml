@@ -1,0 +1,88 @@
+name: d8-hardware-promotion-policy
+
+on:
+  pull_request:
+    branches:
+      - main
+      - codex/d7-recovery-update-reconciliation-v1
+  push:
+    branches:
+      - main
+      - codex/d8-hardware-qualification-verifier-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d8-hardware-promotion-policy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hardware_promotion_policy:
+    name: d8-hardware-promotion-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact candidate without write credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Compile strict gate and cross-artifact corpus
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/trusted_app_bundle.py \
+            tools/hardware_evidence_verifier.py \
+            tools/hardware_verification_receipt.py \
+            tools/hardware_promotion_gate.py \
+            tests/d8/test_hardware_promotion_gate.py
+
+      - name: Run complete D8 verifier and promotion-policy corpus
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover \
+            -s tests/d8 \
+            -p 'test_*.py' \
+            -v
+
+      - name: Generate strict fixture-only evidence
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/d8-hardware-promotion-policy
+          python3 tools/hardware_promotion_gate.py self-test \
+            --contract contracts/hardware-beta-qualification.v1.json \
+            --write-result artifacts/d8-hardware-promotion-policy/reference-result.json \
+            | tee artifacts/d8-hardware-promotion-policy/reference-result.stdout.json
+          cmp \
+            artifacts/d8-hardware-promotion-policy/reference-result.json \
+            artifacts/d8-hardware-promotion-policy/reference-result.stdout.json
+
+      - name: Reconfirm strict source-only claim ceiling
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('artifacts/d8-hardware-promotion-policy/reference-result.json').read_text())
+          assert result['status'] == 'PASS_SOURCE_REFERENCE_ONLY'
+          assert result['fixture_gate_status'] == 'PASS_FIXTURE_FORMAT_ONLY'
+          assert result['fixture_policy_eligible'] is False
+          assert result['security_case_accounting_bound'] is True
+          assert result['known_limitations_cross_artifact_bound'] is True
+          assert result['source_gate_generated_physical_evidence'] is False
+          assert result['source_gate_enrolled_lab_key'] is False
+          assert result['hardware_beta_promoted'] is False
+          assert result['release_ready'] is False
+          PY
+
+      - name: Upload strict exact-head source evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d8-hardware-promotion-policy-${{ github.sha }}
+          path: artifacts/d8-hardware-promotion-policy
+          if-no-files-found: warn
+          retention-days: 30
