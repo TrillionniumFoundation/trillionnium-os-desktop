@@ -23,7 +23,6 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/d4-d9-source
           files=(
-            .github/workflows/d4-collaboration-d3-integration.yml
             .github/workflows/d4-collaboration.yml
             docs/architecture/HUMAN_AGENT_COLLABORATION.md
             tests/d4/test_collaboration_reference.py
@@ -68,7 +67,7 @@ jobs:
           done
           printf '%s\n' "${files[@]}" | sort > /tmp/d4-d9-source/.exported-files.txt
           (cd /tmp/d4-d9-source && sha256sum "${files[@]}") > /tmp/d4-d9-source/.sha256sum
-          test "$(find /tmp/d4-d9-source -type f | wc -l)" -eq 40
+          test "$(find /tmp/d4-d9-source -type f | wc -l)" -eq 39
 
       - name: Upload exact D4-D9 source subset
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
