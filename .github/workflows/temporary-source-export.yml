@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Apply exact fail-closed parser repair
+      - name: Apply structural fail-closed parser repair
         env:
           PYTHONDONTWRITEBYTECODE: "1"
         run: |
@@ -31,40 +31,37 @@ jobs:
           from pathlib import Path
 
           path = Path("tools/validate_governance_integrity.py")
-          text = path.read_text(encoding="utf-8")
-          old = '''        elif (
-              argument in {"-H", "--header"}
-              or lowered.startswith("--header=")
-              or (
-                  # Attached long forms such as `--header${HEADER}` are
-                  # either dynamic or malformed.  A source-only scan cannot
-                  # prove their value is a harmless header, so reject every
-                  # non-`=` attached spelling before it can bypass the
-                  # separate-argument branch above.
-                  lowered.startswith("--header")
-                  and len(argument) > len("--header")
-                  and not lowered.startswith("--header=")
-              )
-          ):
-              header = ""
-          '''
-          new = '''        elif (
-              # Attached long forms such as `--header${HEADER}` are either
-              # dynamic or malformed.  A source-only scan cannot prove their
-              # value is a harmless header, so reject every non-`=` attached
-              # spelling before it can consume the following URL as its value.
-              lowered.startswith("--header")
-              and len(argument) > len("--header")
-              and not lowered.startswith("--header=")
-          ):
-              return True
-          elif argument in {"-H", "--header"} or lowered.startswith("--header="):
-              header = ""
-          '''
-          count = text.count(old)
-          if count != 1:
-              raise SystemExit(f"repair target count was {count}, expected exactly one")
-          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+          starts = [
+              index
+              for index in range(len(lines) - 2)
+              if lines[index] == "        elif (\n"
+              and lines[index + 1] == '            argument in {"-H", "--header"}\n'
+              and lines[index + 2] == '            or lowered.startswith("--header=")\n'
+          ]
+          if len(starts) != 1:
+              raise SystemExit(f"repair start count was {len(starts)}, expected exactly one")
+          start = starts[0]
+          try:
+              stop = lines.index('            header = ""\n', start, start + 24) + 1
+          except ValueError as error:
+              raise SystemExit("repair stop was not found in the bounded source window") from error
+          replacement = [
+              "        elif (\n",
+              "            # Attached long forms such as `--header${HEADER}` are either\n",
+              "            # dynamic or malformed.  A source-only scan cannot prove their\n",
+              "            # value is a harmless header, so reject every non-`=` attached\n",
+              "            # spelling before it can consume the following URL as its value.\n",
+              '            lowered.startswith("--header")\n',
+              '            and len(argument) > len("--header")\n',
+              '            and not lowered.startswith("--header=")\n',
+              "        ):\n",
+              "            return True\n",
+              '        elif argument in {"-H", "--header"} or lowered.startswith("--header="):\n',
+              '            header = ""\n',
+          ]
+          lines[start:stop] = replacement
+          path.write_text("".join(lines), encoding="utf-8")
           PY
 
       - name: Prove syntax and the existing negative regression
