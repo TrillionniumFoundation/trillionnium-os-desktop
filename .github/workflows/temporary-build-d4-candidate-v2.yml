@@ -1,0 +1,176 @@
+name: temporary-build-d4-candidate-v2
+
+on:
+  push:
+    branches:
+      - codex/control-d4-build-v2
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-build-d4-candidate-v2
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      TARGET_BRANCH: codex/full-gap-closure-final
+      CONTROL_BRANCH: codex/control-d4-build-v2
+      SOURCE_BRANCH: codex/d4-collaboration-state-machine-v1
+      CANDIDATE_BRANCH: codex/d4-integration-candidate-v2
+      PROOF_BRANCH: codex/d2i-apply-v3-proof
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out D4 control branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/control-d4-build-v2
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Route only after exact D3 integration
+        id: route
+        run: |
+          set -euo pipefail
+          ready=false
+          for _ in $(seq 1 450); do
+            git fetch --no-tags origin "$TARGET_BRANCH" >/dev/null 2>&1 || true
+            target=$(git rev-parse "origin/$TARGET_BRANCH" 2>/dev/null || true)
+            message=$(git show -s --format=%s "$target" 2>/dev/null || true)
+            if test "$message" = 'feat(d3): bind development peer to trusted executable source'; then
+              ready=true
+              printf 'target=%s\n' "$target" >> "$GITHUB_OUTPUT"
+              break
+            fi
+            diagnostic=$(git ls-remote --heads origin "refs/heads/$PROOF_BRANCH" | awk '{print $1}')
+            if test -n "$diagnostic"; then
+              if git show "$diagnostic:diagnostics/d2i-v3-monitor/latest.txt" >/dev/null 2>&1; then
+                ready=false
+                break
+              fi
+            fi
+            sleep 10
+          done
+          printf 'ready=%s\n' "$ready" >> "$GITHUB_OUTPUT"
+          test "$ready" = true || exit 0
+
+      - name: Select and replay only D4-labelled source commits
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          target='${{ steps.route.outputs.target }}'
+          git fetch --no-tags origin "$SOURCE_BRANCH"
+          source=$(git rev-parse "origin/$SOURCE_BRANCH")
+          merge_base=$(git merge-base "$target" "$source")
+          printf 'target=%s\nsource=%s\nmerge_base=%s\n' "$target" "$source" "$merge_base" | tee /tmp/d4-state.txt
+          git log --reverse --format='%H%x09%s' "$merge_base..$source" | tee /tmp/d4-history.txt
+          mapfile -t commits < <(
+            git log --reverse --format='%H%x09%s' \
+              --extended-regexp --regexp-ignore-case \
+              --grep='(^|[^[:alnum:]])d4([^[:alnum:]]|$)' \
+              "$merge_base..$source" |
+            awk -F '\t' 'tolower($2) !~ /(temporary|diagnostic|export|audit-only)/ {print $1}'
+          )
+          test "${#commits[@]}" -gt 0
+          printf '%s\n' "${commits[@]}" > /tmp/d4-selected.txt
+          git checkout -B "$CANDIDATE_BRANCH" "$target"
+          for commit in "${commits[@]}"; do
+            parents=$(git show -s --format=%P "$commit" | wc -w)
+            test "$parents" -eq 1
+            git cherry-pick --no-commit "$commit"
+          done
+          test -n "$(git diff --cached --name-only)"
+          git diff --cached --name-status | tee /tmp/d4-diff.txt
+          if git diff --cached --name-only | grep -E '(^|/)(temporary|diagnostics?)(/|$)|\.patch(\.|$)|\.b85$'; then
+            echo 'D4 candidate contains temporary or diagnostic material' >&2
+            exit 1
+          fi
+          git diff --cached --check
+
+      - name: Install pinned repository toolchain
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Prove D4 candidate source truth and feature graphs
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Publish isolated D4 candidate
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          remote_target=$(git ls-remote --heads origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')
+          test "$remote_target" = '${{ steps.route.outputs.target }}'
+          test -z "$(git ls-remote --heads origin "refs/heads/$CANDIDATE_BRANCH")"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m 'feat(d4): integrate collaboration state machine candidate'
+          git push origin "HEAD:refs/heads/$CANDIDATE_BRANCH"
+
+      - name: Persist bounded D4 construction failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          status_snapshot=$(git status --short 2>&1 || true)
+          git fetch --no-tags origin "$CONTROL_BRANCH"
+          git checkout -B "$CONTROL_BRANCH" "origin/$CONTROL_BRANCH"
+          rm -f .github/workflows/temporary-build-d4-candidate-v2.yml
+          mkdir -p diagnostics/d4-candidate-v2
+          {
+            printf 'schema=trillionnium.desktop.d4-candidate-diagnostic.v1\n'
+            printf 'recorded_at=%s\n\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            for file in /tmp/d4-state.txt /tmp/d4-history.txt /tmp/d4-selected.txt /tmp/d4-diff.txt; do
+              if test -f "$file"; then
+                printf '%s\n' "--- $(basename "$file") ---"
+                cat "$file"
+                printf '\n'
+              fi
+            done
+            printf '%s\n%s\n' '--- status ---' "$status_snapshot"
+          } > diagnostics/d4-candidate-v2/latest.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- \
+            .github/workflows/temporary-build-d4-candidate-v2.yml \
+            diagnostics/d4-candidate-v2/latest.txt
+          git commit -m 'diagnostics(d4): record candidate construction failure'
+          git push origin "HEAD:refs/heads/$CONTROL_BRANCH"
+
+      - name: Remove D4 control workflow
+        if: success()
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$CONTROL_BRANCH"
+          git checkout -B "$CONTROL_BRANCH" "origin/$CONTROL_BRANCH"
+          rm .github/workflows/temporary-build-d4-candidate-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u -- .github/workflows/temporary-build-d4-candidate-v2.yml
+          git commit -m 'ci: remove temporary D4 candidate builder'
+          git push origin "HEAD:refs/heads/$CONTROL_BRANCH"
