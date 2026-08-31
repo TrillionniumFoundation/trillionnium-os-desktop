@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          test "$(git rev-parse HEAD^)" = "2e2aafe54af1121aff0424a0e8a6025b4c81a7ee"
+          test "$(git rev-parse HEAD^)" = "147c357cfb0ce642fcda760417902acc3050ad14"
           git merge-base --is-ancestor \
             f44837a6867b134fb329d14407e3ae918ed74a4b \
             HEAD
@@ -60,25 +60,43 @@ jobs:
           test ! -e .github/workflows/closure-overlay-bootstrap.yml
           git diff --check
 
-      - name: Emit exact authority and observation implementation context
+      - name: Apply exact Rust closure fixes without weakening policy
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n' '=== authority helper matches ==='
-          grep -n -E 'fn (test_registry|issue_test_evidence|update_fixture|fixture_key_id)|fixture_key_id|signer_key_sha256' \
-            apps/hepta-browserd/src/authority_coordinator.rs || true
-          printf '%s\n' '=== authority test module and update fixture ==='
-          grep -n -B 90 -A 180 'fn update_fixture' \
-            apps/hepta-browserd/src/authority_coordinator.rs || true
-          printf '%s\n' '=== authorize_network implementation ==='
-          grep -n -B 100 -A 220 'fn authorize_network' \
-            apps/hepta-browserd/src/product_policy.rs || true
-          printf '%s\n' '=== evidence binding/authentication error sites ==='
-          grep -n -B 45 -A 65 -E 'EVIDENCE_BINDING_MISMATCH|EVIDENCE_AUTHENTICATION_FAILED' \
-            apps/hepta-browserd/src/product_policy.rs || true
-          printf '%s\n' '=== network fixture construction ==='
-          grep -n -B 80 -A 180 'fn network_fixture_bundle' \
-            apps/hepta-browserd/src/product_policy.rs || true
+          python3 - <<'PY'
+          from pathlib import Path
+
+          authority_path = Path("apps/hepta-browserd/src/authority_coordinator.rs")
+          authority = authority_path.read_text(encoding="utf-8")
+          authority_old = '            signer_key_sha256: "d".repeat(64),'
+          authority_new = '''            signer_key_sha256: registry
+              .key_id("fixture-update-manifest")
+              .expect("fixture update manifest key")
+              .to_owned(),'''
+          if authority.count(authority_old) != 1:
+              raise SystemExit("authority signer fixture anchor drifted")
+          authority_path.write_text(
+              authority.replace(authority_old, authority_new),
+              encoding="utf-8",
+          )
+
+          policy_path = Path("apps/hepta-browserd/src/product_policy.rs")
+          policy = policy_path.read_text(encoding="utf-8")
+          policy_old = '''                .expect_err("observation signature binds peer")
+              .code(),
+          "EVIDENCE_AUTHENTICATION_FAILED"'''
+          policy_new = '''                .expect_err("observation evidence binds peer")
+              .code(),
+          "EVIDENCE_BINDING_MISMATCH"'''
+          if policy.count(policy_old) != 1:
+              raise SystemExit("network observation error-precedence anchor drifted")
+          policy_path.write_text(
+              policy.replace(policy_old, policy_new),
+              encoding="utf-8",
+          )
+          PY
+          git diff --check
 
       - name: Validate Python, governance, D7 and source inventory
         shell: bash
