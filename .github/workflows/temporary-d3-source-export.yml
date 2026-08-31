@@ -17,25 +17,23 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-      - name: Stage bounded source set
+      - name: Stage complete bounded D3 reference set
         run: |
           set -euo pipefail
           mkdir -p /tmp/d3-source
+          patterns='BLOCKED_UPSTREAM_CROSS_UID_PROCFS|qualification-static-attestation|development_static_attestation|development_blocker|HEPTA_D3_EXPECTED_EXECUTABLE_SHA256|attest_with_static_executable_digest|hash_trusted_executable'
+          grep -RIlE "$patterns" \
+            --exclude-dir=.git \
+            --exclude='*.lock' \
+            . | sed 's#^./##' | sort > /tmp/d3-source/matching-files.txt
+          while IFS= read -r file; do
+            cp --parents "$file" /tmp/d3-source
+          done < /tmp/d3-source/matching-files.txt
           cp --parents \
-            crates/hepta-peer-attestation/Cargo.toml \
-            crates/hepta-peer-attestation/src/lib.rs \
             crates/hepta-browser-actor/src/lib.rs \
-            apps/hepta-agent-portd/Cargo.toml \
-            apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs \
-            tools/validate_d3_development_profile.py \
-            contracts/browser-actor.v1.json \
             packaging/debian/systemd/hepta-browserd-agent-development@.service \
-            packaging/debian/development/README.md \
-            manifests/project-state.v1.json \
-            manifests/gates.v1.json \
-            docs/CURRENT_STATE.md \
             /tmp/d3-source
-      - name: Upload bounded D3 source set
+      - name: Upload complete bounded D3 reference set
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: temporary-d3-source-${{ github.sha }}
