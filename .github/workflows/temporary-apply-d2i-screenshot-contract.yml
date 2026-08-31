@@ -1,0 +1,94 @@
+name: temporary-apply-d2i-screenshot-contract
+
+on:
+  push:
+    branches:
+      - codex/d2i-screenshot-contract-v1
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-apply-d2i-screenshot-contract
+  cancel-in-progress: false
+
+jobs:
+  prove-and-publish:
+    runs-on: ubuntu-24.04
+    env:
+      BASE_SHA: 08d4921851accb66f924152c2f067c3b396db77d
+      TARGET_BRANCH: codex/full-gap-closure-final
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out bounded repair carrier
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d2i-screenshot-contract-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Decode exact patch and restore clean parent
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import hashlib
+          import lzma
+
+          encoded = Path("tools/temporary-d2i-screenshot-contract.patch.xz.b85").read_text().strip()
+          compressed = base64.b85decode(encoded)
+          if hashlib.sha256(compressed).hexdigest() != "aa5038355a46e8ea046a4ed694e16522c7d742104f6c2560ffe7c22eb61e3956":
+              raise SystemExit("compressed D2I screenshot patch digest mismatch")
+          patch = lzma.decompress(compressed)
+          if hashlib.sha256(patch).hexdigest() != "800e4686833349715fbb48ba653c6663ba7717cf193acbf1b6a626ad62906c1b":
+              raise SystemExit("D2I screenshot patch digest mismatch")
+          Path("/tmp/d2i-screenshot-contract.patch").write_bytes(patch)
+          PY
+          git fetch --no-tags origin "$TARGET_BRANCH"
+          test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$BASE_SHA"
+          git reset --hard "$BASE_SHA"
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          git apply --check /tmp/d2i-screenshot-contract.patch
+          git apply --whitespace=error-all /tmp/d2i-screenshot-contract.patch
+
+      - name: Prove source truth and complete test surface
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          bash -n packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
+          bash -n tests/qemu/run-d2i-boot-test.sh
+          if command -v shellcheck >/dev/null; then
+            shellcheck -x -e SC2016,SC2054 \
+              packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+              tests/qemu/run-d2i-boot-test.sh
+          fi
+
+      - name: Publish only the proved clean source commit
+        run: |
+          set -euo pipefail
+          actual=$(git diff --name-only | sort)
+          expected=$(printf '%s\n' \
+            .github/workflows/d2i-integrated-image.yml \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/d1/test_d2i_renderer_policy.py \
+            tests/qemu/run-d2i-boot-test.sh | sort)
+          test "$actual" = "$expected"
+          ! grep -R --line-number --fixed-strings 'servo-content-recovered.png' \
+            .github/workflows/d2i-integrated-image.yml \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/qemu/run-d2i-boot-test.sh
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- \
+            .github/workflows/d2i-integrated-image.yml \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/d1/test_d2i_renderer_policy.py \
+            tests/qemu/run-d2i-boot-test.sh
+          git commit -m "fix(d2i): bind recovery screenshot to generated workspace image"
+          test "$(git rev-parse HEAD^)" = "$BASE_SHA"
+          git push origin HEAD:"refs/heads/$TARGET_BRANCH"
