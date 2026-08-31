@@ -30,11 +30,13 @@ jobs:
           git rev-parse HEAD
           git rev-parse HEAD^{tree}
 
-      - name: Validate repository, project truth, and product boundary
+      - name: Validate repository, project truth, custody, and late-stage inventory
         run: |
           set -euo pipefail
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
+          python3 tools/validate_agent_port_path_custody.py
+          python3 tools/validate_late_stage_source_packages.py
           python3 -m unittest tests.test_validate_project_truth -v
 
       - name: Run repository Python contract suites

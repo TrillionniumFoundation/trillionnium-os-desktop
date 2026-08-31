@@ -1,0 +1,93 @@
+name: agent-port-path-custody
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "codex/**"
+  push:
+    branches:
+      - main
+      - "codex/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-port-path-custody-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  path_custody:
+    name: agent-port-path-custody
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact candidate without write credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record exact Git identity
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+          git show -s --format='%P' HEAD
+
+      - name: Run legacy and pathname-custody validators
+        run: |
+          set -euo pipefail
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_agent_port_path_custody.py
+          python3 -m unittest tests.test_agent_port_path_custody -v
+
+      - name: Verify effective systemd unit syntax
+        run: |
+          set -euo pipefail
+          temporary="$(mktemp -d)"
+          trap 'rm -rf "$temporary"' EXIT
+          mkdir -p "$temporary/usr/lib/systemd/system"
+          cp packaging/debian/systemd/hepta-browserd-agent.socket \
+             packaging/debian/systemd/hepta-browserd-agent@.service \
+             packaging/debian/systemd/hepta-browserd-agent-development.socket \
+             packaging/debian/systemd/hepta-browserd-agent-development@.service \
+             "$temporary/usr/lib/systemd/system/"
+          cp -R packaging/debian/systemd/hepta-browserd-agent.socket.d \
+             packaging/debian/systemd/hepta-browserd-agent@.service.d \
+             packaging/debian/systemd/hepta-browserd-agent-development.socket.d \
+             packaging/debian/systemd/hepta-browserd-agent-development@.service.d \
+             "$temporary/usr/lib/systemd/system/"
+          SYSTEMD_UNIT_PATH="$temporary/usr/lib/systemd/system" \
+            systemd-analyze verify \
+              hepta-browserd-agent.socket \
+              'hepta-browserd-agent@.service' \
+              hepta-browserd-agent-development.socket \
+              'hepta-browserd-agent-development@.service'
+
+      - name: Validate repository and project truth
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+
+      - name: Generate bounded source-policy evidence
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/agent-port-path-custody
+          python3 tools/validate_agent_port_path_custody.py \
+            --write-result artifacts/agent-port-path-custody/result.json \
+            | tee artifacts/agent-port-path-custody/stdout.json
+          cmp artifacts/agent-port-path-custody/result.json \
+              artifacts/agent-port-path-custody/stdout.json
+
+      - name: Upload exact-head source evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: agent-port-path-custody-${{ github.sha }}
+          path: artifacts/agent-port-path-custody
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,0 +1,104 @@
+{
+  "schema": "trillionnium.desktop.late-stage-source-packages.v1",
+  "plan_revision": "2026-08-29-d6",
+  "integration_branch": "codex/full-development-gap-closure-v3",
+  "parent_candidate_branch": "codex/full-gap-closure-final",
+  "evidence_status": "PENDING_EXACT_HEAD",
+  "promotion_authoritative": false,
+  "packages": [
+    {
+      "id": "D4-01",
+      "prerequisites": ["D3-01"],
+      "status": "SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D3",
+      "contract": "contracts/human-agent-collaboration.v1.json",
+      "workflows": [".github/workflows/d4-collaboration.yml", ".github/workflows/d4-d9-source-suite.yml"],
+      "tools": ["tools/d4_collaboration_reference.py"],
+      "tests": ["tests/d4"],
+      "source_package_present": true,
+      "runtime_integrated": false,
+      "promotion_authoritative": false
+    },
+    {
+      "id": "D5-01",
+      "prerequisites": ["D4-01"],
+      "status": "SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D4",
+      "contract": "contracts/trusted-app-bundle.v1.json",
+      "workflows": [".github/workflows/d5-trusted-app.yml", ".github/workflows/d4-d9-source-suite.yml"],
+      "tools": ["tools/trusted_app_bundle.py", "tools/trusted_app_indicator.py"],
+      "tests": ["tests/d5"],
+      "source_package_present": true,
+      "runtime_integrated": false,
+      "production_signing_key_custody_proven": false,
+      "promotion_authoritative": false
+    },
+    {
+      "id": "D6-01",
+      "prerequisites": ["D5-01"],
+      "status": "SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D5",
+      "contract": "contracts/capability-egress.v1.json",
+      "workflows": [".github/workflows/d6-capability-egress.yml", ".github/workflows/d4-d9-source-suite.yml"],
+      "tools": ["tools/capability_egress_reference.py"],
+      "tests": ["tests/d6"],
+      "source_package_present": true,
+      "runtime_integrated": false,
+      "external_network_executed": false,
+      "external_effects_enabled": false,
+      "promotion_authoritative": false
+    },
+    {
+      "id": "D7-01",
+      "prerequisites": ["D6-01"],
+      "status": "SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D6",
+      "contract": "contracts/recovery-update-reconciliation.v1.json",
+      "workflows": [".github/workflows/d7-recovery-update.yml", ".github/workflows/d4-d9-source-suite.yml"],
+      "tools": ["tools/effect_reconciliation_reference.py", "tools/ab_update_reference.py"],
+      "tests": ["tests/d7"],
+      "source_package_present": true,
+      "runtime_integrated": false,
+      "production_update_key_enrolled": false,
+      "hardware_power_loss_tested": false,
+      "promotion_authoritative": false
+    },
+    {
+      "id": "D8-01",
+      "prerequisites": ["D7-01"],
+      "status": "SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D7",
+      "contract": "contracts/hardware-beta-qualification.v1.json",
+      "workflows": [".github/workflows/d8-hardware-qualification.yml", ".github/workflows/d8-hardware-promotion-policy.yml", ".github/workflows/d4-d9-source-suite.yml"],
+      "tools": ["tools/hardware_evidence_verifier.py", "tools/hardware_verification_receipt.py", "tools/hardware_promotion_gate.py"],
+      "tests": ["tests/d8"],
+      "source_package_present": true,
+      "physical_hardware_run_completed": false,
+      "stability_72h_completed": false,
+      "power_loss_corpus_completed": false,
+      "hardware_beta_promoted": false,
+      "promotion_authoritative": false
+    },
+    {
+      "id": "D9-01",
+      "prerequisites": ["D8-01"],
+      "status": "SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D8",
+      "contract": "contracts/signed-release-promotion.v1.json",
+      "workflows": [".github/workflows/d9-release-promotion.yml", ".github/workflows/d4-d9-source-suite.yml"],
+      "tools": ["tools/release_promotion_verifier.py"],
+      "tests": ["tests/d9"],
+      "source_package_present": true,
+      "independent_release_approvals_obtained": false,
+      "offline_key_custody_proven": false,
+      "release_artifacts_published": false,
+      "production_release_promoted": false,
+      "promotion_authoritative": false
+    }
+  ],
+  "external_non_synthesizable_requirements": {
+    "D0T-03": ["protected repository settings", "organization-team CODEOWNERS", "independent non-author approvals", "separated release custody"],
+    "D8-01": ["independent fixed-hardware lab", "24/72-hour stability", "at least 100 unexpected power-loss trials"],
+    "D9-01": ["protected release approval", "offline/HSM key custody", "independent signing and publication identities"]
+  },
+  "claim_ceiling": {
+    "source_reference_packages_only": true,
+    "D4_D7_product_runtime_integrated": false,
+    "D8_physical_evidence_obtained": false,
+    "D9_production_release_promoted": false
+  }
+}

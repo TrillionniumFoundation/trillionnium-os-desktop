@@ -1,6 +1,8 @@
 target/release/hepta-agent-portd usr/libexec
 packaging/debian/systemd/hepta-browserd-agent.socket lib/systemd/system
+packaging/debian/systemd/hepta-browserd-agent.socket.d/10-root-path-custody.conf lib/systemd/system/hepta-browserd-agent.socket.d
 packaging/debian/systemd/hepta-browserd-agent@.service lib/systemd/system
+packaging/debian/systemd/hepta-browserd-agent@.service.d/10-root-path-custody.conf lib/systemd/system/hepta-browserd-agent@.service.d
 packaging/debian/sysusers.d/trillionnium-desktop.conf usr/lib/sysusers.d
 packaging/debian/tmpfiles.d/trillionnium-desktop.conf usr/lib/tmpfiles.d
 packaging/debian/systemd-preset/90-trillionnium-desktop.preset usr/lib/systemd/system-preset
