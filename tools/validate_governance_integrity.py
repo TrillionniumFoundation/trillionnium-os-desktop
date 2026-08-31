@@ -4168,19 +4168,16 @@ def _http_invocation_mutates(tokens: list[str], executable_index: int) -> bool:
             if method.upper() not in {"GET", "HEAD", "OPTIONS"}:
                 return True
         elif (
-            argument in {"-H", "--header"}
-            or lowered.startswith("--header=")
-            or (
-                # Attached long forms such as `--header${HEADER}` are
-                # either dynamic or malformed.  A source-only scan cannot
-                # prove their value is a harmless header, so reject every
-                # non-`=` attached spelling before it can bypass the
-                # separate-argument branch above.
-                lowered.startswith("--header")
-                and len(argument) > len("--header")
-                and not lowered.startswith("--header=")
-            )
+            # Attached long forms such as `--header${HEADER}` are either
+            # dynamic or malformed.  A source-only scan cannot prove their
+            # value is a harmless header, so reject every non-`=` attached
+            # spelling before it can consume the following URL as its value.
+            lowered.startswith("--header")
+            and len(argument) > len("--header")
+            and not lowered.startswith("--header=")
         ):
+            return True
+        elif argument in {"-H", "--header"} or lowered.startswith("--header="):
             header = ""
             if "=" in argument:
                 header = argument.split("=", 1)[1].strip("'\"")
