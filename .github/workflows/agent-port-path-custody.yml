@@ -60,6 +60,10 @@ jobs:
           sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-portd
           sudo install -m 0755 /bin/true /usr/libexec/hepta-agent-port-developmentd
           sudo install -m 0755 /bin/true /usr/libexec/hepta-agent
+          grep -Fx 'ConditionFileIsExecutable=/usr/libexec/hepta-agent' \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service
+          ! grep -Eq '^[[:space:]]*ConditionPathIsExecutable=' \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service
           mkdir -p "$temporary/usr/lib/systemd/system"
           cp packaging/debian/systemd/hepta-browserd-agent.socket \
              packaging/debian/systemd/hepta-browserd-agent@.service \
@@ -71,7 +75,7 @@ jobs:
              packaging/debian/systemd/hepta-browserd-agent-development.socket.d \
              packaging/debian/systemd/hepta-browserd-agent-development@.service.d \
              "$temporary/usr/lib/systemd/system/"
-          SYSTEMD_UNIT_PATH="$temporary/usr/lib/systemd/system" \
+          SYSTEMD_UNIT_PATH="$temporary/usr/lib/systemd/system:/etc/systemd/system:/run/systemd/system:/usr/local/lib/systemd/system:/usr/lib/systemd/system:/lib/systemd/system" \
             systemd-analyze verify \
               hepta-browserd-agent.socket \
               'hepta-browserd-agent@.service' \

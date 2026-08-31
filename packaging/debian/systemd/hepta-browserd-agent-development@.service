@@ -2,7 +2,7 @@
 Description=TrillionniumOS Desktop development-profile AgentPort connection
 Documentation=https://github.com/TrillionniumFoundation/trillionnium-os-desktop
 ConditionPathExists=/etc/hepta/enable-agent-port-development
-ConditionPathIsExecutable=/usr/libexec/hepta-agent
+ConditionFileIsExecutable=/usr/libexec/hepta-agent
 Requires=hepta-browserd-agent-development.socket
 After=hepta-browserd-agent-development.socket
 
