@@ -1,0 +1,189 @@
+name: temporary-live-governance-bootstrap
+
+on:
+  push:
+    branches:
+      - codex/live-governance-bootstrap-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      TARGET_BRANCH: main
+      ADMIN_TOKEN: ${{ secrets.TRILLIONNIUM_GITHUB_ADMIN_TOKEN }}
+    steps:
+      - name: Attempt live governance mutations and preserve every response
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          root=/tmp/trillionnium-governance-bootstrap
+          mkdir -p "$root"
+          token=$ADMIN_TOKEN
+          token_source=admin_secret
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+            token_source=github_token
+          fi
+          export GH_TOKEN=$token
+          printf '%s\n' "$token_source" > "$root/token-source.txt"
+
+          cat > "$root/protection-request.json" <<'JSON'
+          {
+            "required_status_checks": {
+              "strict": true,
+              "contexts": [
+                "desktop-ci / repository-contracts",
+                "desktop-ci / rust",
+                "governance-integrity / governance-integrity"
+              ]
+            },
+            "enforce_admins": true,
+            "required_pull_request_reviews": {
+              "dismiss_stale_reviews": true,
+              "require_code_owner_reviews": true,
+              "required_approving_review_count": 1,
+              "require_last_push_approval": true
+            },
+            "restrictions": null,
+            "required_linear_history": true,
+            "allow_force_pushes": false,
+            "allow_deletions": false,
+            "block_creations": false,
+            "required_conversation_resolution": true,
+            "lock_branch": false,
+            "allow_fork_syncing": false
+          }
+          JSON
+          printf '{"allow_auto_merge":true,"allow_squash_merge":true}\n' \
+            > "$root/repository-merge-policy.json"
+
+          failures=0
+          gh api --paginate "repos/$GITHUB_REPOSITORY/teams?per_page=100" \
+            > "$root/repository-teams.json" 2> "$root/repository-teams.error.txt"
+          rc=$?
+          printf '%s\n' "$rc" > "$root/repository-teams.rc"
+          test "$rc" -eq 0 || failures=$((failures + 1))
+
+          gh api --method PUT \
+            "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection" \
+            --input "$root/protection-request.json" \
+            > "$root/protection-response.json" 2> "$root/protection.error.txt"
+          rc=$?
+          printf '%s\n' "$rc" > "$root/protection.rc"
+          test "$rc" -eq 0 || failures=$((failures + 1))
+
+          gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection/required_signatures" \
+            > "$root/signatures-response.json" 2> "$root/signatures.error.txt"
+          rc=$?
+          printf '%s\n' "$rc" > "$root/signatures.rc"
+          test "$rc" -eq 0 || failures=$((failures + 1))
+
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY" \
+            --input "$root/repository-merge-policy.json" \
+            > "$root/repository-response.json" 2> "$root/repository.error.txt"
+          rc=$?
+          printf '%s\n' "$rc" > "$root/repository.rc"
+          test "$rc" -eq 0 || failures=$((failures + 1))
+
+          gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH" \
+            > "$root/branch-verified.json" 2> "$root/branch-verified.error.txt"
+          rc=$?
+          printf '%s\n' "$rc" > "$root/branch-verified.rc"
+          test "$rc" -eq 0 || failures=$((failures + 1))
+
+          gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection" \
+            > "$root/protection-verified.json" 2> "$root/protection-verified.error.txt"
+          rc=$?
+          printf '%s\n' "$rc" > "$root/protection-verified.rc"
+          test "$rc" -eq 0 || failures=$((failures + 1))
+
+          gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection/required_signatures" \
+            > "$root/signatures-verified.json" 2> "$root/signatures-verified.error.txt"
+          rc=$?
+          printf '%s\n' "$rc" > "$root/signatures-verified.rc"
+          test "$rc" -eq 0 || failures=$((failures + 1))
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          root = Path('/tmp/trillionnium-governance-bootstrap')
+          def load(name):
+              path = root / name
+              try:
+                  return json.loads(path.read_text())
+              except Exception:
+                  return None
+          branch = load('branch-verified.json') or {}
+          protection = load('protection-verified.json') or {}
+          signatures = load('signatures-verified.json') or {}
+          teams = load('repository-teams.json')
+          if isinstance(teams, dict):
+              teams = [teams]
+          eligible = sorted({
+              item.get('slug')
+              for item in (teams or [])
+              if isinstance(item, dict)
+              and item.get('slug')
+              and item.get('permission') in {'push', 'maintain', 'admin'}
+          })
+          contexts = set((protection.get('required_status_checks') or {}).get('contexts') or [])
+          contexts.update(
+              item.get('context')
+              for item in (protection.get('required_status_checks') or {}).get('checks', [])
+              if isinstance(item, dict) and item.get('context')
+          )
+          required = {
+              'desktop-ci / repository-contracts',
+              'desktop-ci / rust',
+              'governance-integrity / governance-integrity',
+          }
+          review = protection.get('required_pull_request_reviews') or {}
+          checks = {
+              'eligible_repository_team_visible': bool(eligible),
+              'branch_protected': branch.get('protected') is True,
+              'strict_status_checks': (protection.get('required_status_checks') or {}).get('strict') is True,
+              'required_contexts_present': required <= contexts,
+              'admins_enforced': (protection.get('enforce_admins') or {}).get('enabled') is True,
+              'dismiss_stale_reviews': review.get('dismiss_stale_reviews') is True,
+              'code_owner_reviews': review.get('require_code_owner_reviews') is True,
+              'last_push_approval': review.get('require_last_push_approval') is True,
+              'approval_count': int(review.get('required_approving_review_count') or 0) >= 1,
+              'linear_history': (protection.get('required_linear_history') or {}).get('enabled') is True,
+              'force_push_disabled': (protection.get('allow_force_pushes') or {}).get('enabled') is False,
+              'deletion_disabled': (protection.get('allow_deletions') or {}).get('enabled') is False,
+              'conversation_resolution': (protection.get('required_conversation_resolution') or {}).get('enabled') is True,
+              'required_signatures': signatures.get('enabled') is True,
+          }
+          report = {
+              'schema': 'trillionnium.desktop.live-governance-bootstrap.v1',
+              'token_source': (root/'token-source.txt').read_text().strip(),
+              'eligible_repository_teams': eligible,
+              'checks': checks,
+              'all_checks_pass': all(checks.values()),
+          }
+          (root/'bootstrap-evidence.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+          all_pass=$(python3 -c "import json; print(str(json.load(open('$root/bootstrap-evidence.json'))['all_checks_pass']).lower())")
+          printf '%s\n' "$failures" > "$root/mutation-failure-count.txt"
+          test "$failures" -eq 0 && test "$all_pass" = true
+
+      - name: Upload bootstrap evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: live-governance-bootstrap-${{ github.sha }}
+          path: /tmp/trillionnium-governance-bootstrap
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
