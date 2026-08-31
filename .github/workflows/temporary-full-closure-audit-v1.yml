@@ -1,0 +1,471 @@
+name: temporary-full-closure-audit-v1
+
+on:
+  push:
+    branches:
+      - codex/control-full-closure-audit-v1
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: temporary-full-closure-audit-v1
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      CONTROL_BRANCH: codex/control-full-closure-audit-v1
+      D9_CANDIDATE: codex/d9-integration-candidate-v2
+      D6_D9_CONTROL: codex/control-d6-through-d9-v3
+      D5_D6_CONTROL: codex/control-d5-promote-d6-build-v2
+      D4_D5_CONTROL: codex/control-d4-promote-d5-build-v3
+      D4_CONTROL: codex/control-d4-build-v2
+      D2I_V4_CONTROL: codex/control-d2i-v4
+      D2I_V3_CONTROL: codex/d2i-apply-v3-proof
+      GOVERNANCE_CONTROL: codex/control-governance-live-v2
+      EXTERNAL_CONTROL: codex/control-external-readiness-v2
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out closure audit control branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/control-full-closure-audit-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for authoritative terminal evidence
+        id: route
+        run: |
+          set -euo pipefail
+          repo=$GITHUB_REPOSITORY
+          mkdir -p /tmp/full-closure
+          branch_sha() {
+            git ls-remote --heads origin "refs/heads/$1" | awk '{print $1}'
+          }
+          fetch_report() {
+            local branch=$1
+            local path=$2
+            local output=$3
+            local sha
+            sha=$(branch_sha "$branch")
+            test -n "$sha" || return 1
+            git fetch --no-tags origin "$sha" >/dev/null 2>&1 || return 1
+            git show "$sha:$path" > "$output" 2>/dev/null
+          }
+          report_is_failure() {
+            local file=$1
+            test -f "$file" || return 1
+            grep -Eqi '(^|[" =:])(job_status|status)[" ]*[:=][" ]*(failure|failed|error)|conclusion[" ]*[:=][" ]*(failure|failed|cancelled|timed_out)|"branch_protection_applied"[ ]*:[ ]*false' "$file"
+          }
+
+          code_terminal=false
+          code_terminal_reason=not_reached
+          governance_ready=false
+          external_ready=false
+          for _ in $(seq 1 1080); do
+            d9=$(branch_sha "$D9_CANDIDATE")
+            if test -n "$d9"; then
+              code_terminal=true
+              code_terminal_reason=d9_candidate_exists
+            else
+              rm -f /tmp/full-closure/d6-d9.json /tmp/full-closure/d5-d6.txt /tmp/full-closure/d4-d5.txt /tmp/full-closure/d4.txt /tmp/full-closure/d2i-v4.txt /tmp/full-closure/d2i-v3.txt
+              fetch_report "$D6_D9_CONTROL" diagnostics/d6-through-d9-v3/latest.txt /tmp/full-closure/d6-d9.json || true
+              fetch_report "$D5_D6_CONTROL" diagnostics/d5-promote-d6-build-v2/latest.txt /tmp/full-closure/d5-d6.txt || true
+              fetch_report "$D4_D5_CONTROL" diagnostics/d4-promote-d5-build-v3/latest.txt /tmp/full-closure/d4-d5.txt || true
+              fetch_report "$D4_CONTROL" diagnostics/d4-candidate-v2/latest.txt /tmp/full-closure/d4.txt || true
+              fetch_report "$D2I_V4_CONTROL" diagnostics/d2i-v4-monitor/latest.txt /tmp/full-closure/d2i-v4.txt || true
+              fetch_report "$D2I_V3_CONTROL" diagnostics/d2i-v3-monitor/latest.txt /tmp/full-closure/d2i-v3.txt || true
+              for candidate in d6-d9 d5-d6 d4-d5 d4 d2i-v4 d2i-v3; do
+                file=/tmp/full-closure/$candidate.txt
+                test -f "$file" || file=/tmp/full-closure/$candidate.json
+                if report_is_failure "$file"; then
+                  code_terminal=true
+                  code_terminal_reason="failure_report:$candidate"
+                  break
+                fi
+              done
+            fi
+            fetch_report "$GOVERNANCE_CONTROL" diagnostics/governance-live-v2/latest.json /tmp/full-closure/governance.json && governance_ready=true || true
+            fetch_report "$EXTERNAL_CONTROL" diagnostics/external-readiness-v2/latest.json /tmp/full-closure/external.json && external_ready=true || true
+            if test "$code_terminal" = true && test "$governance_ready" = true && test "$external_ready" = true; then
+              break
+            fi
+            sleep 20
+          done
+          printf 'code_terminal=%s\ncode_terminal_reason=%s\ngovernance_ready=%s\nexternal_ready=%s\n' \
+            "$code_terminal" "$code_terminal_reason" "$governance_ready" "$external_ready" \
+            | tee /tmp/full-closure/route.txt
+          printf 'code_terminal=%s\ncode_terminal_reason=%s\ngovernance_ready=%s\nexternal_ready=%s\n' \
+            "$code_terminal" "$code_terminal_reason" "$governance_ready" "$external_ready" >> "$GITHUB_OUTPUT"
+
+      - name: Snapshot exact live repository and evidence state
+        if: always()
+        run: |
+          set -euo pipefail
+          repo=$GITHUB_REPOSITORY
+          api=https://api.github.com
+          auth=(-H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28')
+          mkdir -p /tmp/full-closure/live
+          get_endpoint() {
+            local path=$1
+            local output=$2
+            local status
+            status=$(curl -sS "${auth[@]}" -o "$output" -w '%{http_code}' "$api/$path")
+            printf '%s=%s\n' "$output" "$status" >> /tmp/full-closure/http-status.txt
+          }
+          get_endpoint "repos/$repo/branches/$TARGET_BRANCH" /tmp/full-closure/live/target-branch.json
+          get_endpoint "repos/$repo/branches/main" /tmp/full-closure/live/main-branch.json
+          get_endpoint "repos/$repo/branches/main/protection" /tmp/full-closure/live/main-protection.json
+          get_endpoint "repos/$repo/rulesets?per_page=100" /tmp/full-closure/live/rulesets.json
+          get_endpoint "repos/$repo/environments?per_page=100" /tmp/full-closure/live/environments.json
+          get_endpoint "repos/$repo/environments/production" /tmp/full-closure/live/production.json
+          get_endpoint "repos/$repo/actions/runners?per_page=100" /tmp/full-closure/live/runners.json
+          get_endpoint "repos/$repo/actions/secrets?per_page=100" /tmp/full-closure/live/secrets.json
+          get_endpoint "repos/$repo/pulls/52" /tmp/full-closure/live/pr.json
+          get_endpoint "repos/$repo/pulls/52/reviews?per_page=100" /tmp/full-closure/live/reviews.json
+          get_endpoint "repos/$repo/issues/52/comments?per_page=100" /tmp/full-closure/live/comments.json
+          target=$(jq -r '.commit.sha // empty' /tmp/full-closure/live/target-branch.json)
+          test -n "$target" && get_endpoint "repos/$repo/commits/$target/check-runs?per_page=100" /tmp/full-closure/live/check-runs.json || true
+          test -n "$target" && get_endpoint "repos/$repo/commits/$target/status" /tmp/full-closure/live/combined-status.json || true
+          d9=$(git ls-remote --heads origin "refs/heads/$D9_CANDIDATE" | awk '{print $1}')
+          printf 'target=%s\nd9=%s\n' "$target" "${d9:-}" > /tmp/full-closure/heads.txt
+          if test -n "$d9"; then
+            git fetch --no-tags origin "$d9"
+            git show -s --format='d9_parent=%P\nd9_subject=%s\nd9_tree=%T' "$d9" > /tmp/full-closure/d9-identity.txt
+            git show "$d9:.github/CODEOWNERS" > /tmp/full-closure/live/codeowners.txt 2>/dev/null || true
+          elif test -n "$target"; then
+            git fetch --no-tags origin "$target"
+            git show "$target:.github/CODEOWNERS" > /tmp/full-closure/live/codeowners.txt 2>/dev/null || true
+          fi
+
+      - name: Independently re-prove isolated D9 candidate when present
+        id: d9proof
+        if: always()
+        run: |
+          set -euo pipefail
+          d9=$(awk -F= '$1=="d9" {print $2}' /tmp/full-closure/heads.txt)
+          if test -z "$d9"; then
+            printf 'present=false\nproved=false\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git checkout --detach "$d9"
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          set +e
+          {
+            python3 tools/validate_repository.py &&
+            python3 tools/validate_project_truth.py &&
+            python3 tools/verify_systemd_socket_custody.py &&
+            python3 -m unittest discover -s tests -t . -p 'test_*.py' &&
+            cargo fmt --all --check &&
+            cargo check --workspace --all-targets --locked &&
+            cargo clippy --workspace --all-targets --locked -- -D warnings &&
+            cargo test --workspace --all-targets --locked &&
+            cargo check --workspace --all-targets --all-features --locked &&
+            cargo clippy --workspace --all-targets --all-features --locked -- -D warnings &&
+            cargo test --workspace --all-targets --all-features --locked
+          } > /tmp/full-closure/d9-proof.log 2>&1
+          proof_status=$?
+          set -e
+          proved=false
+          test "$proof_status" -eq 0 && proved=true
+          printf 'present=true\nproved=%s\n' "$proved" >> "$GITHUB_OUTPUT"
+          printf 'd9_proof_exit=%s\nd9_proved=%s\n' "$proof_status" "$proved" >> /tmp/full-closure/heads.txt
+
+      - name: Compute fail-closed closure verdict
+        if: always()
+        env:
+          D9_PRESENT: ${{ steps.d9proof.outputs.present }}
+          D9_PROVED: ${{ steps.d9proof.outputs.proved }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+          from typing import Any
+
+          root = Path('/tmp/full-closure')
+          live = root / 'live'
+
+          def load_json(path: Path) -> Any:
+              if not path.exists():
+                  return None
+              try:
+                  return json.loads(path.read_text())
+              except Exception:
+                  return {"unparsed_tail": path.read_text(errors='replace')[-6000:]}
+
+          def parse_kv(path: Path) -> dict[str, str]:
+              result: dict[str, str] = {}
+              if path.exists():
+                  for line in path.read_text(errors='replace').splitlines():
+                      if '=' in line:
+                          key, value = line.split('=', 1)
+                          result[key] = value
+              return result
+
+          route = parse_kv(root / 'route.txt')
+          heads = parse_kv(root / 'heads.txt')
+          identity = parse_kv(root / 'd9-identity.txt')
+          target_payload = load_json(live / 'target-branch.json') or {}
+          target = target_payload.get('commit', {}).get('sha') or heads.get('target')
+          d9 = heads.get('d9') or None
+          d9_parent = identity.get('d9_parent')
+          d9_parent_exact = bool(d9 and target and d9_parent == target)
+
+          workflow_runs: list[dict[str, Any]] = []
+          exact_d2i_success = False
+          try:
+              workflow_list = subprocess.check_output(
+                  ['gh', 'api', f'repos/{os.environ["GITHUB_REPOSITORY"]}/actions/workflows', '--paginate'],
+                  text=True,
+              )
+              workflows = json.loads(workflow_list).get('workflows', [])
+              d2i = next((item for item in workflows if item.get('path') == '.github/workflows/d2i-integrated-image.yml'), None)
+              if d2i and target:
+                  runs_text = subprocess.check_output(
+                      ['gh', 'api', f'repos/{os.environ["GITHUB_REPOSITORY"]}/actions/workflows/{d2i["id"]}/runs?per_page=100'],
+                      text=True,
+                  )
+                  workflow_runs = json.loads(runs_text).get('workflow_runs', [])
+                  exact_d2i_success = any(
+                      run.get('head_sha') == target
+                      and run.get('status') == 'completed'
+                      and run.get('conclusion') == 'success'
+                      for run in workflow_runs
+                  )
+          except Exception as exc:
+              workflow_runs = [{"audit_error": str(exc)}]
+
+          protection = load_json(live / 'main-protection.json') or {}
+          required_contexts = {
+              'desktop-ci / repository-contracts',
+              'desktop-ci / rust',
+              'governance-integrity / governance-integrity',
+          }
+          actual_contexts = set((protection.get('required_status_checks') or {}).get('contexts') or [])
+          reviews_rule = protection.get('required_pull_request_reviews') or {}
+          branch_protection_strict = bool(
+              (protection.get('required_status_checks') or {}).get('strict') is True
+              and required_contexts.issubset(actual_contexts)
+              and (protection.get('enforce_admins') or {}).get('enabled') is True
+              and reviews_rule.get('required_approving_review_count', 0) >= 1
+              and reviews_rule.get('dismiss_stale_reviews') is True
+              and reviews_rule.get('require_last_push_approval') is True
+              and (protection.get('allow_force_pushes') or {}).get('enabled') is False
+              and (protection.get('allow_deletions') or {}).get('enabled') is False
+              and (protection.get('required_conversation_resolution') or {}).get('enabled') is True
+          )
+
+          pr = load_json(live / 'pr.json') or {}
+          reviews = load_json(live / 'reviews.json') or []
+          pr_author = (pr.get('user') or {}).get('login')
+          pr_head = (pr.get('head') or {}).get('sha')
+          independent_approval = any(
+              review.get('state') == 'APPROVED'
+              and (review.get('user') or {}).get('login') not in {None, pr_author}
+              and review.get('commit_id') in {None, pr_head}
+              for review in reviews if isinstance(review, dict)
+          )
+
+          codeowners_text = (live / 'codeowners.txt').read_text(errors='replace') if (live / 'codeowners.txt').exists() else ''
+          organization_team_codeowners = bool(re.search(r'@TrillionniumFoundation/[A-Za-z0-9_.-]+', codeowners_text))
+
+          production = load_json(live / 'production.json') or {}
+          production_environment = any(
+              rule.get('type') == 'required_reviewers' and rule.get('prevent_self_review') is True
+              for rule in production.get('protection_rules', []) if isinstance(rule, dict)
+          )
+
+          runners = load_json(live / 'runners.json') or {}
+          online_runners = [runner for runner in runners.get('runners', []) if runner.get('status') == 'online']
+          online_self_hosted_runner = bool(online_runners)
+
+          governance_report = load_json(root / 'governance.json') or {}
+          external_report = load_json(root / 'external.json') or {}
+          external_ceiling = external_report.get('claim_ceiling') or {}
+          governance_ceiling = governance_report.get('claim_ceiling') or {}
+
+          hardware_qualification = bool(external_ceiling.get('hardware_readiness_proven') is True)
+          hsm_custody = bool(external_ceiling.get('signing_key_hsm_custody_proven') is True)
+          dual_control = bool(external_ceiling.get('dual_control_proven') is True)
+          signed_release = False
+          exact_main_rerun = False
+          fixed_hardware_24_72h = False
+          power_loss_100_cycle = False
+
+          d9_present = os.environ.get('D9_PRESENT') == 'true'
+          d9_proved = os.environ.get('D9_PROVED') == 'true'
+          source_pipeline_closed = bool(d9_present and d9_proved and d9_parent_exact)
+          machine_pipeline_closed = bool(target and exact_d2i_success)
+          governance_closed = bool(
+              branch_protection_strict
+              and organization_team_codeowners
+              and independent_approval
+              and production_environment
+          )
+          release_external_closed = bool(
+              online_self_hosted_runner
+              and hardware_qualification
+              and fixed_hardware_24_72h
+              and power_loss_100_cycle
+              and hsm_custody
+              and dual_control
+              and signed_release
+              and exact_main_rerun
+          )
+          all_gaps_closed = bool(
+              source_pipeline_closed
+              and machine_pipeline_closed
+              and governance_closed
+              and release_external_closed
+          )
+
+          checks = {
+              'd9_candidate_present': d9_present,
+              'd9_candidate_full_source_proof': d9_proved,
+              'd9_parent_is_current_unified_head': d9_parent_exact,
+              'exact_current_head_d2i_success': exact_d2i_success,
+              'main_branch_protection_strict': branch_protection_strict,
+              'organization_team_codeowners': organization_team_codeowners,
+              'independent_non_author_current_head_approval': independent_approval,
+              'production_environment_prevents_self_review': production_environment,
+              'online_self_hosted_runner': online_self_hosted_runner,
+              'fixed_hardware_24_72h_qualification': fixed_hardware_24_72h,
+              'power_loss_recovery_100_cycle_corpus': power_loss_100_cycle,
+              'hardware_readiness_evidence': hardware_qualification,
+              'offline_hsm_key_custody': hsm_custody,
+              'dual_control_release': dual_control,
+              'signed_release_published': signed_release,
+              'exact_main_rerun_after_merge': exact_main_rerun,
+          }
+          open_blockers = [name for name, value in checks.items() if not value]
+          report = {
+              'schema': 'trillionnium.desktop.full-closure-audit.v1',
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'target_branch': os.environ['TARGET_BRANCH'],
+              'target_head': target,
+              'd9_candidate': d9,
+              'd9_parent': d9_parent,
+              'route': route,
+              'checks': checks,
+              'summary': {
+                  'source_pipeline_closed': source_pipeline_closed,
+                  'machine_pipeline_closed': machine_pipeline_closed,
+                  'governance_closed': governance_closed,
+                  'release_external_closed': release_external_closed,
+                  'all_gaps_closed': all_gaps_closed,
+                  'open_blocker_count': len(open_blockers),
+              },
+              'open_blockers': open_blockers,
+              'claim_ceiling': {
+                  'release_readiness_proven': all_gaps_closed,
+                  'promotion_authorized': all_gaps_closed,
+              },
+              'live': {
+                  'target_branch': target_payload,
+                  'main_branch': load_json(live / 'main-branch.json'),
+                  'main_protection': protection,
+                  'rulesets': load_json(live / 'rulesets.json'),
+                  'production_environment': production,
+                  'runners': runners,
+                  'pr': pr,
+                  'reviews': reviews,
+                  'check_runs': load_json(live / 'check-runs.json'),
+                  'combined_status': load_json(live / 'combined-status.json'),
+                  'd2i_runs_for_audit': workflow_runs[:25],
+              },
+              'upstream_reports': {
+                  'governance': governance_report,
+                  'external_readiness': external_report,
+                  'governance_claim_ceiling': governance_ceiling,
+                  'external_claim_ceiling': external_ceiling,
+              },
+          }
+          (root / 'full-closure-audit.json').write_text(json.dumps(report, indent=2) + '\n')
+
+          lines = [
+              '# TrillionniumOS Desktop full closure audit',
+              '',
+              f'- Unified candidate: `{target or "missing"}`',
+              f'- D9 isolated candidate: `{d9 or "missing"}`',
+              f'- Source pipeline closed: **{source_pipeline_closed}**',
+              f'- Exact-head D2I machine pipeline closed: **{machine_pipeline_closed}**',
+              f'- Live governance closed: **{governance_closed}**',
+              f'- Hardware/signing/release external evidence closed: **{release_external_closed}**',
+              f'- All gaps closed: **{all_gaps_closed}**',
+              '',
+              '## Open blockers',
+              '',
+          ]
+          lines.extend(f'- `{item}`' for item in open_blockers)
+          lines.extend([
+              '',
+              'The D9 source candidate is intentionally not promoted unless every current-head machine, governance, hardware, key-custody, independent-review, and post-merge requirement is proven.',
+          ])
+          (root / 'full-closure-audit.md').write_text('\n'.join(lines) + '\n')
+          PY
+
+      - name: Publish one bounded PR audit comment
+        if: always()
+        run: |
+          set -euo pipefail
+          test -f /tmp/full-closure/full-closure-audit.md || exit 0
+          marker='<!-- trillionnium-full-closure-audit-v1 -->'
+          body=/tmp/full-closure/pr-comment.md
+          {
+            printf '%s\n\n' "$marker"
+            cat /tmp/full-closure/full-closure-audit.md
+          } > "$body"
+          repo=$GITHUB_REPOSITORY
+          existing=$(gh api "repos/$repo/issues/52/comments?per_page=100" --paginate --jq ".[] | select(.body | contains(\"$marker\")) | .id" | tail -n1)
+          if test -n "$existing"; then
+            jq -Rs '{body:.}' < "$body" | gh api "repos/$repo/issues/comments/$existing" --method PATCH --input - >/dev/null
+          else
+            gh pr comment 52 --repo "$repo" --body-file "$body" >/dev/null
+          fi
+
+      - name: Persist closure audit and remove temporary workflow
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          status_snapshot=$(git status --short 2>&1 || true)
+          git fetch --no-tags origin "$CONTROL_BRANCH"
+          git checkout -B "$CONTROL_BRANCH" "origin/$CONTROL_BRANCH"
+          rm -f .github/workflows/temporary-full-closure-audit-v1.yml
+          mkdir -p diagnostics/full-closure-audit-v1
+          cp /tmp/full-closure/full-closure-audit.json diagnostics/full-closure-audit-v1/latest.json 2>/dev/null || true
+          cp /tmp/full-closure/full-closure-audit.md diagnostics/full-closure-audit-v1/latest.md 2>/dev/null || true
+          {
+            printf 'job_status=%s\n' "$JOB_STATUS"
+            printf '%s\n' '--- control status before cleanup ---'
+            printf '%s\n' "$status_snapshot"
+            test -f /tmp/full-closure/route.txt && cat /tmp/full-closure/route.txt || true
+          } > diagnostics/full-closure-audit-v1/control.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- .github/workflows/temporary-full-closure-audit-v1.yml diagnostics/full-closure-audit-v1
+          git commit -m "diagnostics(closure): publish full terminal audit ($JOB_STATUS)"
+          git push origin "HEAD:refs/heads/$CONTROL_BRANCH"
