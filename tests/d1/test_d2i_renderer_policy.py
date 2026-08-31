@@ -20,10 +20,10 @@ class D2IRendererPolicyTests(unittest.TestCase):
             "Environment=GALLIUM_OVERRIDE_CPU_CAPS=sse2",
             "Environment=LP_NATIVE_VECTOR_WIDTH=128",
             "Environment=LP_NUM_THREADS=1",
-            "Environment=DRAW_USE_LLVM=0",
         ):
             self.assertIn(line, service)
         self.assertNotIn("Environment=GALLIUM_DRIVER=softpipe", service)
+        self.assertNotIn("Environment=DRAW_USE_LLVM=0", service)
 
         contract = json.loads(
             (ROOT / "contracts/d2i-integrated-image.v1.json").read_text()
@@ -34,7 +34,7 @@ class D2IRendererPolicyTests(unittest.TestCase):
         self.assertEqual(renderer["cpu_capability_ceiling"], "sse2")
         self.assertEqual(renderer["native_vector_width_bits"], 128)
         self.assertEqual(renderer["worker_threads"], 1)
-        self.assertTrue(renderer["draw_module_llvm_disabled"])
+        self.assertTrue(renderer["llvm_execution_path_required"])
         self.assertEqual(
             renderer["environment"],
             [
@@ -43,7 +43,6 @@ class D2IRendererPolicyTests(unittest.TestCase):
                 "GALLIUM_OVERRIDE_CPU_CAPS=sse2",
                 "LP_NATIVE_VECTOR_WIDTH=128",
                 "LP_NUM_THREADS=1",
-                "DRAW_USE_LLVM=0",
             ],
         )
         self.assertIn(

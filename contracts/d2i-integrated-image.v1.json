@@ -97,16 +97,15 @@
       "cpu_capability_ceiling": "sse2",
       "native_vector_width_bits": 128,
       "worker_threads": 1,
-      "draw_module_llvm_disabled": true,
       "environment": [
         "LIBGL_ALWAYS_SOFTWARE=1",
         "GALLIUM_DRIVER=llvmpipe",
         "GALLIUM_OVERRIDE_CPU_CAPS=sse2",
         "LP_NATIVE_VECTOR_WIDTH=128",
-        "LP_NUM_THREADS=1",
-        "DRAW_USE_LLVM=0"
+        "LP_NUM_THREADS=1"
       ],
-      "qualification_reason": "retain bounded screenshot throughput while preventing LLVM JIT code from selecting instructions above the QEMU-safe SSE2 baseline"
+      "qualification_reason": "retain bounded screenshot throughput while constraining LLVMpipe JIT instructions to the QEMU-safe SSE2 baseline without disabling the LLVM execution path required for context creation",
+      "llvm_execution_path_required": true
     },
     "trusted_chrome": "native window decorations",
     "logical_content_surface_limit": 1,
