@@ -76,6 +76,7 @@ jobs:
       - name: Prove every Rust feature graph
         run: |
           set -euo pipefail
+          cargo fmt --all
           cargo fmt --all --check
           cargo check --workspace --all-targets --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings
