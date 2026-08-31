@@ -1,0 +1,56 @@
+name: temporary-d2i-diagnostics-extract
+
+on:
+  push:
+    branches:
+      - codex/d2i-diagnostics-extract-v1
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download exact failed-run artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          artifact-ids: 9742420359
+          path: /tmp/d2i-full
+          github-token: ${{ github.token }}
+          repository: TrillionniumFoundation/trillionnium-os-desktop
+          run-id: 33346518300
+      - name: Retain bounded textual and screenshot diagnostics
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d2i-bounded
+          find /tmp/d2i-full -type f -print0 | while IFS= read -r -d '' file; do
+            rel=${file#/tmp/d2i-full/}
+            size=$(stat -c %s "$file")
+            case "$file" in
+              *.json|*.txt|*.log)
+                mkdir -p "/tmp/d2i-bounded/$(dirname "$rel")"
+                if (( size > 4194304 )); then
+                  tail -c 4194304 "$file" > "/tmp/d2i-bounded/$rel"
+                else
+                  cp "$file" "/tmp/d2i-bounded/$rel"
+                fi
+                ;;
+              *.png)
+                if (( size <= 8388608 )); then
+                  mkdir -p "/tmp/d2i-bounded/$(dirname "$rel")"
+                  cp "$file" "/tmp/d2i-bounded/$rel"
+                fi
+                ;;
+            esac
+          done
+          find /tmp/d2i-bounded -type f -printf '%P\t%s\n' | sort | tee /tmp/d2i-bounded/manifest.tsv
+      - name: Upload bounded diagnostics
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: bounded-d2i-diagnostics-${{ github.sha }}
+          path: /tmp/d2i-bounded
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
