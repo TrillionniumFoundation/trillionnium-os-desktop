@@ -1,0 +1,85 @@
+name: temporary-prove-d3-current-candidate
+
+on:
+  push:
+    branches:
+      - codex/d3-current-proof-v1
+
+permissions:
+  contents: read
+
+jobs:
+  prove:
+    runs-on: ubuntu-24.04
+    env:
+      CANDIDATE_SHA: da9151daf8b1bdccd8120a770e352757f8fba12d
+      PYTHONDONTWRITEBYTECODE: "1"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Check out exact D3 integration candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify exact source identity
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
+          test "$(git rev-parse HEAD^)" = d6899033e3f46c1183d4e769e626d75af8d00383
+          test "$(git rev-parse HEAD^{tree})" = 4ba1674cd18af84345e08988ce8aabcad18ca6ff
+          test -z "$(git status --porcelain=v1)"
+
+      - name: Install pinned Rust toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Prove source truth and D3 separation
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+
+      - name: Prove every Rust feature graph
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Prove production development and qualification binaries
+        run: |
+          set -euo pipefail
+          cargo build --release --locked \
+            -p hepta-agent-portd --no-default-features \
+            --bin hepta-agent-portd
+          cargo build --release --locked \
+            -p hepta-agent-portd --no-default-features \
+            --features development \
+            --bin hepta-agent-port-developmentd
+          cargo build --release --locked \
+            -p hepta-agent-portd --no-default-features \
+            --features d1-qualification \
+            --bin hepta-agent-port-qualificationd
+          test -x target/release/hepta-agent-portd
+          test -x target/release/hepta-agent-port-developmentd
+          test -x target/release/hepta-agent-port-qualificationd
