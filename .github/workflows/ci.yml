@@ -23,6 +23,19 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Snapshot exact candidate source
+        run: |
+          set -euo pipefail
+          tar --exclude=.git -czf /tmp/trillionnium-os-desktop-source.tar.gz .
+
+      - name: Upload exact candidate source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: closure-source-${{ github.sha }}
+          path: /tmp/trillionnium-os-desktop-source.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Record runner and source identity
         run: |
           set -euo pipefail
