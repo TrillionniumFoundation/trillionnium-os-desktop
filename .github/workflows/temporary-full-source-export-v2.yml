@@ -15,18 +15,19 @@ jobs:
       - name: Check out exact audit source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: 64bd2bd6aea68e34dfdfa436069a1cbdef9017af
           fetch-depth: 1
           persist-credentials: false
       - name: Materialize tracked source without Git metadata
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = 64bd2bd6aea68e34dfdfa436069a1cbdef9017af
+          test "$(git rev-parse HEAD)" = 64bd2bd6aea68e34dfdfa436069a1cbdef9017af
           mkdir -p /tmp/trillionnium-source
-          git archive --format=tar HEAD^ | tar -xf - -C /tmp/trillionnium-source
+          git archive --format=tar HEAD | tar -xf - -C /tmp/trillionnium-source
           test ! -e /tmp/trillionnium-source/.git
           find /tmp/trillionnium-source -type f -printf '%P\n' | sort > /tmp/trillionnium-source/.source-files.txt
-          printf '%s\n' 64bd2bd6aea68e34dfdfa436069a1cbdef9017af > /tmp/trillionnium-source/.source-commit
-          printf '%s\n' "$(git rev-parse HEAD^^{tree})" > /tmp/trillionnium-source/.source-tree
+          printf '%s\n' "$(git rev-parse HEAD)" > /tmp/trillionnium-source/.source-commit
+          printf '%s\n' "$(git rev-parse HEAD^{tree})" > /tmp/trillionnium-source/.source-tree
       - name: Upload exact tracked source
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
