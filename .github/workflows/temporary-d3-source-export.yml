@@ -1,0 +1,45 @@
+name: temporary-d3-source-export
+
+on:
+  push:
+    branches:
+      - codex/d3-cross-uid-static-attestation-v1
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact D3 candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Stage bounded source set
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d3-source
+          cp --parents \
+            crates/hepta-peer-attestation/Cargo.toml \
+            crates/hepta-peer-attestation/src/lib.rs \
+            crates/hepta-browser-actor/src/lib.rs \
+            apps/hepta-agent-portd/Cargo.toml \
+            apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs \
+            tools/validate_d3_development_profile.py \
+            contracts/browser-actor.v1.json \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service \
+            packaging/debian/development/README.md \
+            manifests/project-state.v1.json \
+            manifests/gates.v1.json \
+            docs/CURRENT_STATE.md \
+            /tmp/d3-source
+      - name: Upload bounded D3 source set
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: temporary-d3-source-${{ github.sha }}
+          path: /tmp/d3-source
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
