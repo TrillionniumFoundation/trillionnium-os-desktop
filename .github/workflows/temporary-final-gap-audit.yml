@@ -1,0 +1,456 @@
+name: temporary-final-gap-audit
+
+on:
+  push:
+    branches:
+      - codex/final-gap-audit-v1
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: temporary-final-gap-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      PR_NUMBER: "52"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+      COMMENT_MARKER: "<!-- trillionnium-final-gap-audit -->"
+    steps:
+      - name: Check out final audit controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/final-gap-audit-v1
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Wait for D3 and every maximal D4-D9 source head
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/final-gap-audit/live
+          branches=(
+            codex/d4-collaboration-state-machine-v1
+            codex/d5-product-foundation
+            codex/d5-trusted-app-verifier-v1
+            codex/d6-capability-egress-policy-v1
+            codex/d6-plan-truth-ci-closure-v1
+            codex/d6-source-integration-candidate-v1
+            codex/d7-recovery-update-reconciliation-v1
+            codex/d8-hardware-qualification-verifier-v1
+            codex/d9-signed-release-promotion-v1
+          )
+          for branch in "${branches[@]}"; do
+            git fetch --no-tags origin \
+              "+refs/heads/$branch:refs/remotes/origin/$branch"
+          done
+          selected=()
+          for branch in "${branches[@]}"; do
+            head=$(git rev-parse "refs/remotes/origin/$branch")
+            contained=false
+            for other in "${branches[@]}"; do
+              [[ "$branch" == "$other" ]] && continue
+              other_head=$(git rev-parse "refs/remotes/origin/$other")
+              if git merge-base --is-ancestor "$head" "$other_head"; then
+                contained=true
+                break
+              fi
+            done
+            [[ "$contained" == true ]] || selected+=("$branch")
+          done
+          printf '%s\n' "${selected[@]}" > /tmp/final-gap-audit/maximal-source-heads.txt
+          final=
+          for attempt in $(seq 1 300); do
+            git fetch --no-tags origin \
+              "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+            candidate=$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")
+            ready=true
+            if ! git log --format=%s "$candidate" | \
+                grep -Fxq "feat(d3): bind development peer to trusted executable source"; then
+              ready=false
+            fi
+            for branch in "${selected[@]}"; do
+              head=$(git rev-parse "refs/remotes/origin/$branch")
+              git merge-base --is-ancestor "$head" "$candidate" || ready=false
+            done
+            if git ls-tree -r --name-only "$candidate" | \
+                grep -E '^(\.github/workflows|tools)/temporary-' >/dev/null; then
+              ready=false
+            fi
+            if [[ "$ready" == true ]]; then
+              final=$candidate
+              sleep 60
+              git fetch --no-tags origin \
+                "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+              stable=$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")
+              [[ "$stable" == "$final" ]] && break
+              final=
+            fi
+            sleep 15
+          done
+          [[ -n "$final" ]] || {
+            echo "fully converged source head was not observed" >&2
+            exit 1
+          }
+          printf 'FINAL_SOURCE_SHA=%s\n' "$final" >> "$GITHUB_ENV"
+          git show -s --format='sha=%H%ntree=%T%nsubject=%s' "$final" \
+            > /tmp/final-gap-audit/final-source.txt
+
+      - name: Require final exact-head D2I machine evidence
+        run: |
+          set -euo pipefail
+          merge_sha=
+          for attempt in $(seq 1 160); do
+            pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+            head=$(jq -r '.head.sha' <<<"$pr")
+            merge=$(jq -r '.merge_commit_sha // empty' <<<"$pr")
+            if [[ "$head" == "$FINAL_SOURCE_SHA" && -n "$merge" ]]; then
+              merge_sha=$merge
+              break
+            fi
+            sleep 10
+          done
+          [[ -n "$merge_sha" ]] || {
+            echo "final PR merge object was not created" >&2
+            exit 1
+          }
+          run_id=
+          conclusion=
+          for attempt in $(seq 1 280); do
+            runs=$(gh api \
+              "repos/$GITHUB_REPOSITORY/actions/workflows/d2i-integrated-image.yml/runs?event=pull_request&branch=$TARGET_BRANCH&per_page=60")
+            run=$(jq -c --arg sha "$merge_sha" \
+              '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' \
+              <<<"$runs")
+            if [[ -n "$run" ]]; then
+              run_id=$(jq -r '.id' <<<"$run")
+              status=$(jq -r '.status' <<<"$run")
+              if [[ "$status" == completed ]]; then
+                conclusion=$(jq -r '.conclusion // "unknown"' <<<"$run")
+                break
+              fi
+            fi
+            sleep 15
+          done
+          printf 'final_source_sha=%s\npr_merge_sha=%s\nd2i_run_id=%s\nd2i_conclusion=%s\n' \
+            "$FINAL_SOURCE_SHA" "$merge_sha" "$run_id" "$conclusion" \
+            > /tmp/final-gap-audit/final-d2i.txt
+          [[ "$conclusion" == success ]] || {
+            echo "final exact-head D2I qualification did not pass" >&2
+            exit 1
+          }
+          printf 'FINAL_D2I_RUN_ID=%s\nFINAL_PR_MERGE_SHA=%s\n' \
+            "$run_id" "$merge_sha" >> "$GITHUB_ENV"
+
+      - name: Check out and re-prove the final exact source tree
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.FINAL_SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pinned repository toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Re-prove all source gates
+        run: |
+          set -euo pipefail
+          exec > >(tee /tmp/final-gap-audit/source-gates.log) 2>&1
+          test "$(git rev-parse HEAD)" = "$FINAL_SOURCE_SHA"
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          if [[ -f tools/validate_governance_integrity.py ]]; then
+            python3 tools/validate_governance_integrity.py
+          fi
+          if [[ -f tools/validate_d3_development_profile.py ]]; then
+            python3 tools/validate_d3_development_profile.py
+          fi
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          test -z "$(git status --porcelain=v1)"
+
+      - name: Request an available non-author reviewer without self-approval
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+          author=$(jq -r '.user.login' <<<"$pr")
+          reviews=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100")
+          requested=$(jq -r '.requested_reviewers[].login' <<<"$pr" | sort -u)
+          reviewed=$(jq -r '.[].user.login' <<<"$reviews" | sort -u)
+          collaborators=$(gh api \
+            "repos/$GITHUB_REPOSITORY/collaborators?affiliation=all&per_page=100")
+          mapfile -t candidates < <(
+            jq -r --arg author "$author" \
+              '.[] | select(.login != $author and .type == "User" and (.permissions.push or .permissions.maintain or .permissions.admin)) | .login' \
+              <<<"$collaborators" | sort -u
+          )
+          reviewers=()
+          for login in "${candidates[@]}"; do
+            grep -Fxq "$login" <<<"$requested" && continue
+            grep -Fxq "$login" <<<"$reviewed" && continue
+            reviewers+=("$login")
+            [[ ${#reviewers[@]} -ge 5 ]] && break
+          done
+          if [[ ${#reviewers[@]} -gt 0 ]]; then
+            payload=$(printf '%s\n' "${reviewers[@]}" | jq -R . | jq -s '{reviewers: .}')
+            gh api --method POST \
+              "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/requested_reviewers" \
+              --input - <<<"$payload" >/dev/null
+            printf '%s\n' "${reviewers[@]}" > /tmp/final-gap-audit/requested-reviewers.txt
+          else
+            echo "no eligible independent collaborator was discoverable" \
+              > /tmp/final-gap-audit/requested-reviewers.txt
+          fi
+
+      - name: Capture live governance, review, environment, and release objects
+        run: |
+          set -euo pipefail
+          capture() {
+            local name=$1
+            shift
+            if "$@" > "/tmp/final-gap-audit/live/$name.json" 2> "/tmp/final-gap-audit/live/$name.error"; then
+              rm -f "/tmp/final-gap-audit/live/$name.error"
+            else
+              printf '{"unavailable":true}\n' > "/tmp/final-gap-audit/live/$name.json"
+            fi
+          }
+          capture repository gh api "repos/$GITHUB_REPOSITORY"
+          capture main-protection gh api "repos/$GITHUB_REPOSITORY/branches/main/protection"
+          capture rulesets gh api "repos/$GITHUB_REPOSITORY/rulesets?includes_parents=true"
+          capture pull-request gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER"
+          capture reviews gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100"
+          capture requested-reviewers gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/requested_reviewers"
+          capture environments gh api "repos/$GITHUB_REPOSITORY/environments?per_page=100"
+          capture releases gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100"
+          capture tags gh api "repos/$GITHUB_REPOSITORY/tags?per_page=100"
+          capture actions-runs gh api \
+            "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$FINAL_SOURCE_SHA&per_page=100"
+          if [[ -f .github/CODEOWNERS ]]; then
+            cp .github/CODEOWNERS /tmp/final-gap-audit/live/CODEOWNERS.txt
+          elif [[ -f CODEOWNERS ]]; then
+            cp CODEOWNERS /tmp/final-gap-audit/live/CODEOWNERS.txt
+          elif [[ -f docs/CODEOWNERS ]]; then
+            cp docs/CODEOWNERS /tmp/final-gap-audit/live/CODEOWNERS.txt
+          fi
+
+      - name: Derive the evidence-bounded final gap ledger
+        run: |
+          set -euo pipefail
+          FINAL_SOURCE_SHA="$FINAL_SOURCE_SHA" \
+          FINAL_D2I_RUN_ID="$FINAL_D2I_RUN_ID" \
+          FINAL_PR_MERGE_SHA="$FINAL_PR_MERGE_SHA" \
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path('/tmp/final-gap-audit')
+          live = root / 'live'
+
+          def load(name: str, default):
+              path = live / f'{name}.json'
+              try:
+                  return json.loads(path.read_text())
+              except Exception:
+                  return default
+
+          protection = load('main-protection', {})
+          reviews = load('reviews', [])
+          pr = load('pull-request', {})
+          environments = load('environments', {})
+          releases = load('releases', [])
+          tags = load('tags', [])
+          rulesets = load('rulesets', [])
+
+          author = ((pr.get('user') or {}).get('login'))
+          approved_reviewers = sorted({
+              ((review.get('user') or {}).get('login'))
+              for review in reviews
+              if review.get('state') == 'APPROVED'
+              and ((review.get('user') or {}).get('login'))
+              and ((review.get('user') or {}).get('login')) != author
+          })
+          required_contexts = {
+              'desktop-ci / repository-contracts',
+              'desktop-ci / rust',
+              'governance-integrity / governance-integrity',
+          }
+          observed_contexts = set()
+          status_checks = protection.get('required_status_checks') or {}
+          for item in status_checks.get('contexts') or []:
+              if isinstance(item, str):
+                  observed_contexts.add(item)
+          for item in status_checks.get('checks') or []:
+              if isinstance(item, dict) and isinstance(item.get('context'), str):
+                  observed_contexts.add(item['context'])
+          reviews_policy = protection.get('required_pull_request_reviews') or {}
+          enforce_admins = protection.get('enforce_admins') or {}
+          codeowners_present = (live / 'CODEOWNERS.txt').is_file()
+          environment_items = environments.get('environments') if isinstance(environments, dict) else []
+          protected_environment = any(
+              isinstance(item, dict)
+              and (
+                  (item.get('protection_rules') and len(item.get('protection_rules')) > 0)
+                  or item.get('prevent_self_review') is True
+              )
+              for item in (environment_items or [])
+          )
+          signed_release_objects = [
+              item for item in releases
+              if isinstance(item, dict) and not item.get('draft') and not item.get('prerelease')
+          ]
+          ledger = {
+              'schema': 'trillionnium.desktop.final-gap-audit.v1',
+              'final_source_sha': os.environ['FINAL_SOURCE_SHA'],
+              'final_pr_merge_sha': os.environ['FINAL_PR_MERGE_SHA'],
+              'final_d2i_run_id': int(os.environ['FINAL_D2I_RUN_ID']),
+              'source_gates_reproved': True,
+              'exact_head_d2i_machine_evidence': True,
+              'source_work_packages_converged': True,
+              'live_governance': {
+                  'main_branch_protection_readable': bool(protection) and not protection.get('unavailable'),
+                  'main_branch_protected': bool(protection) and not protection.get('unavailable'),
+                  'required_status_contexts_complete': required_contexts <= observed_contexts,
+                  'strict_status_checks': status_checks.get('strict') is True,
+                  'admins_enforced': (
+                      enforce_admins.get('enabled') is True
+                      if isinstance(enforce_admins, dict)
+                      else enforce_admins is True
+                  ),
+                  'required_approving_review_count': reviews_policy.get('required_approving_review_count', 0),
+                  'code_owner_review_required': reviews_policy.get('require_code_owner_reviews') is True,
+                  'last_push_approval_required': reviews_policy.get('require_last_push_approval') is True,
+                  'force_pushes_blocked': (protection.get('allow_force_pushes') or {}).get('enabled') is False
+                      if isinstance(protection.get('allow_force_pushes'), dict) else False,
+                  'deletions_blocked': (protection.get('allow_deletions') or {}).get('enabled') is False
+                      if isinstance(protection.get('allow_deletions'), dict) else False,
+                  'ruleset_count': len(rulesets) if isinstance(rulesets, list) else 0,
+                  'codeowners_present': codeowners_present,
+              },
+              'independent_review': {
+                  'author': author,
+                  'approved_non_author_reviewers': approved_reviewers,
+                  'proven': bool(approved_reviewers),
+              },
+              'deployment_and_release': {
+                  'protected_environment_observed': protected_environment,
+                  'release_count': len(signed_release_objects),
+                  'tag_count': len(tags) if isinstance(tags, list) else 0,
+                  'offline_hsm_dual_custody_proven': False,
+                  'multi_role_release_signing_proven': False,
+                  'fixed_hardware_24_72h_qualification_proven': False,
+                  'power_loss_recovery_100_cycle_corpus_proven': False,
+              },
+          }
+          unresolved = []
+          gov = ledger['live_governance']
+          for key in (
+              'main_branch_protected',
+              'required_status_contexts_complete',
+              'strict_status_checks',
+              'admins_enforced',
+              'code_owner_review_required',
+              'last_push_approval_required',
+              'codeowners_present',
+          ):
+              if not gov[key]:
+                  unresolved.append(f'live_governance.{key}')
+          if not ledger['independent_review']['proven']:
+              unresolved.append('independent_review.non_author_approval')
+          deployment = ledger['deployment_and_release']
+          for key in (
+              'protected_environment_observed',
+              'offline_hsm_dual_custody_proven',
+              'multi_role_release_signing_proven',
+              'fixed_hardware_24_72h_qualification_proven',
+              'power_loss_recovery_100_cycle_corpus_proven',
+          ):
+              if not deployment[key]:
+                  unresolved.append(f'deployment_and_release.{key}')
+          ledger['unresolved_external_evidence'] = unresolved
+          ledger['all_source_and_ci_gaps_closed'] = True
+          ledger['all_project_release_gaps_closed'] = not unresolved
+          (root / 'final-gap-audit.json').write_text(
+              json.dumps(ledger, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+
+      - name: Publish the final evidence ledger to PR 52
+        run: |
+          set -euo pipefail
+          audit=/tmp/final-gap-audit/final-gap-audit.json
+          unresolved=$(jq -r '.unresolved_external_evidence | length' "$audit")
+          source_sha=$(jq -r '.final_source_sha' "$audit")
+          run_id=$(jq -r '.final_d2i_run_id' "$audit")
+          release_ready=$(jq -r '.all_project_release_gaps_closed' "$audit")
+          body=$(mktemp)
+          {
+            echo "$COMMENT_MARKER"
+            echo "## Final gap audit"
+            echo
+            echo "- Exact final source: \`$source_sha\`"
+            echo "- Exact-head D2I machine run: \`$run_id\` — **PASS**"
+            echo "- Source and CI work-package convergence: **PASS**"
+            echo "- Project release gaps fully closed: **$release_ready**"
+            echo "- Unresolved external evidence items: **$unresolved**"
+            echo
+            if [[ "$unresolved" -gt 0 ]]; then
+              echo "### Evidence that remains external"
+              echo
+              jq -r '.unresolved_external_evidence[] | "- `" + . + "`"' "$audit"
+              echo
+              echo "These items are not converted to PASS by source contracts or by an author-controlled workflow."
+            fi
+          } > "$body"
+          comments=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments?per_page=100")
+          comment_id=$(jq -r --arg marker "$COMMENT_MARKER" \
+            '[.[] | select(.user.login == "github-actions[bot]" and (.body | contains($marker)))] | last | .id // empty' \
+            <<<"$comments")
+          payload=$(jq -Rs '{body: .}' < "$body")
+          if [[ -n "$comment_id" ]]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" \
+              --input - <<<"$payload" >/dev/null
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+              --input - <<<"$payload" >/dev/null
+          fi
+
+      - name: Upload final audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-gap-audit-${{ github.sha }}
+          path: /tmp/final-gap-audit
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
+          include-hidden-files: true
