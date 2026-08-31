@@ -1,0 +1,163 @@
+name: temporary-d2i-failure-classifier
+
+on:
+  push:
+    branches:
+      - codex/d2i-failure-classifier-v1
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  classify:
+    runs-on: ubuntu-24.04
+    env:
+      UNIFIED_BRANCH: codex/full-gap-closure-final
+    steps:
+      - name: Resolve and wait for exact-head D2I run
+        id: run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          candidate=$(gh api "repos/$GITHUB_REPOSITORY/branches/$UNIFIED_BRANCH" --jq .commit.sha)
+          run_id=
+          status=
+          conclusion=
+          for attempt in $(seq 1 120); do
+            record=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow d2i-integrated-image.yml \
+              --branch "$UNIFIED_BRANCH" \
+              --limit 50 \
+              --json databaseId,headSha,status,conclusion,createdAt \
+              --jq '.[] | select(.headSha == "'"$candidate"'") | [.databaseId,.status,(.conclusion // "")] | @tsv' \
+              | head -n1)
+            if test -n "$record"; then
+              IFS=$'\t' read -r run_id status conclusion <<<"$record"
+              if test "$status" = completed; then
+                break
+              fi
+            fi
+            sleep 20
+          done
+          test -n "$run_id"
+          test "$status" = completed
+          {
+            printf 'candidate=%s\n' "$candidate"
+            printf 'run_id=%s\n' "$run_id"
+            printf 'conclusion=%s\n' "$conclusion"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Download failed evidence transport
+        if: steps.run.outputs.conclusion != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.run.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d2i-download
+          gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --dir /tmp/d2i-download
+
+      - name: Build bounded causal classification
+        if: steps.run.outputs.conclusion != 'success'
+        env:
+          CANDIDATE: ${{ steps.run.outputs.candidate }}
+          RUN_ID: ${{ steps.run.outputs.run_id }}
+          CONCLUSION: ${{ steps.run.outputs.conclusion }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path('/tmp/d2i-download')
+          out = Path('/tmp/d2i-classification')
+          out.mkdir(parents=True, exist_ok=True)
+
+          def candidates(name: str) -> list[Path]:
+              return sorted(p for p in root.rglob(name) if p.is_file())
+
+          def read_tail(path: Path, limit: int = 4 * 1024 * 1024) -> str:
+              data = path.read_bytes()
+              return data[-limit:].decode('utf-8', errors='replace')
+
+          state = None
+          state_path = None
+          for path in candidates('runtime-state.json'):
+              try:
+                  value = json.loads(path.read_text(encoding='utf-8'))
+              except Exception:
+                  continue
+              if isinstance(value, dict):
+                  state = value
+                  state_path = path
+          text_parts: list[str] = []
+          selected: list[dict[str, object]] = []
+          names = {
+              'content-crash-proof-diagnostics.txt',
+              'serial.log',
+              'runtime-journal.log',
+              'acceptance-journal.log',
+              'runtime-state.json',
+              'd2i-evidence.json',
+              'failure.txt',
+          }
+          for path in sorted(p for p in root.rglob('*') if p.is_file() and p.name in names):
+              tail = read_tail(path)
+              text_parts.append(f'\n--- {path.relative_to(root)} ---\n{tail}')
+              selected.append({'path': str(path.relative_to(root)), 'size': path.stat().st_size})
+          joined = ''.join(text_parts)
+          lower = joined.lower()
+          classification = 'unclassified_d2i_failure'
+          reasons: list[str] = []
+          if state:
+              failure = str(state.get('failure') or '')
+              if failure == 'runtime watchdog expired' and state.get('load_complete') is True and int(state.get('frame_ready') or 0) > 0:
+                  classification = 'renderer_throughput_or_capture_deadline'
+                  reasons.append('runtime loaded and produced frames but expired before the arm marker')
+              if state.get('fault_selected') is None:
+                  reasons.append('fault selection was never reached')
+              if state.get('signal_sent') is False:
+                  reasons.append('external SIGKILL was never sent')
+          if 'sigsegv' in lower or 'signal=11' in lower or 'status=11/segv' in lower:
+              classification = 'renderer_or_runtime_sigsegv'
+              reasons.append('guest diagnostics contain SIGSEGV evidence')
+          if 'content-crash-ready' in lower and state and state.get('signal_sent') is False:
+              classification = 'external_fault_injector_did_not_fire'
+              reasons.append('arm evidence exists without a sent signal')
+          report = {
+              'schema': 'trillionnium.desktop.d2i-failure-classification.v1',
+              'candidate_sha': os.environ['CANDIDATE'],
+              'workflow_run_id': int(os.environ['RUN_ID']),
+              'workflow_conclusion': os.environ['CONCLUSION'],
+              'classification': classification,
+              'reasons': reasons,
+              'runtime_state_path': str(state_path.relative_to(root)) if state_path else None,
+              'runtime_state': state,
+              'selected_files': selected,
+          }
+          (out / 'classification.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          (out / 'diagnostic-tails.txt').write_text(joined[-8 * 1024 * 1024:], encoding='utf-8')
+          PY
+
+      - name: Upload bounded classification
+        if: steps.run.outputs.conclusion != 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: bounded-d2i-classification-${{ steps.run.outputs.candidate }}
+          path: /tmp/d2i-classification
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 6
+
+      - name: Confirm successful gate
+        if: steps.run.outputs.conclusion == 'success'
+        run: |
+          printf 'D2I exact-head proof passed: candidate=%s run=%s\n' \
+            '${{ steps.run.outputs.candidate }}' '${{ steps.run.outputs.run_id }}'
