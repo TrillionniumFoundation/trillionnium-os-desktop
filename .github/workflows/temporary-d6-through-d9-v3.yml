@@ -1,0 +1,310 @@
+name: temporary-d6-through-d9-v3
+
+on:
+  push:
+    branches:
+      - codex/control-d6-through-d9-v3
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: temporary-d6-through-d9-v3
+  cancel-in-progress: false
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      CONTROL_BRANCH: codex/control-d6-through-d9-v3
+      D6_CANDIDATE: codex/d6-integration-candidate-v2
+      PREVIOUS_CONTROL: codex/control-d5-promote-d6-build-v2
+      D7_SOURCE: codex/d7-recovery-update-reconciliation-v1
+      D7_CANDIDATE: codex/d7-integration-candidate-v2
+      D8_SOURCE: codex/d8-hardware-qualification-verifier-v1
+      D8_CANDIDATE: codex/d8-integration-candidate-v2
+      D9_SOURCE: codex/d9-signed-release-promotion-v1
+      D9_CANDIDATE: codex/d9-integration-candidate-v2
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out corrected orchestration control branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/control-d6-through-d9-v3
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for D6 candidate or terminal upstream failure
+        id: route
+        run: |
+          set -euo pipefail
+          : > /tmp/pipeline-v3-state.txt
+          ready=false
+          candidate=
+          for _ in $(seq 1 1080); do
+            candidate=$(git ls-remote --heads origin "refs/heads/$D6_CANDIDATE" | awk '{print $1}')
+            if test -n "$candidate"; then
+              ready=true
+              break
+            fi
+            previous=$(git ls-remote --heads origin "refs/heads/$PREVIOUS_CONTROL" | awk '{print $1}')
+            if test -n "$previous" && git show "$previous:diagnostics/d5-promote-d6-build-v2/latest.txt" >/dev/null 2>&1; then
+              printf 'blocked_by=diagnostics/d5-promote-d6-build-v2/latest.txt\n' >> /tmp/pipeline-v3-state.txt
+              break
+            fi
+            sleep 10
+          done
+          printf 'ready=%s\n' "$ready" | tee -a /tmp/pipeline-v3-state.txt
+          printf 'ready=%s\n' "$ready" >> "$GITHUB_OUTPUT"
+          test "$ready" = true && printf 'candidate=%s\n' "$candidate" >> "$GITHUB_OUTPUT" || true
+
+      - name: Install pinned repository toolchain
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$D6_CANDIDATE"
+          git checkout --detach "origin/$D6_CANDIDATE"
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Correctly sequence D6-D8 and build isolated D9
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          repo=$GITHUB_REPOSITORY
+          : > /tmp/pipeline-v3-history.txt
+          : > /tmp/pipeline-v3-selected.txt
+          : > /tmp/pipeline-v3-skipped.txt
+          : > /tmp/pipeline-v3-diffs.txt
+          RESULT_HEAD=
+
+          remote_head() {
+            git ls-remote --heads origin "refs/heads/$1" | awk '{print $1}'
+          }
+
+          prove_source() {
+            python3 tools/validate_repository.py
+            python3 tools/validate_project_truth.py
+            python3 tools/verify_systemd_socket_custody.py
+            python3 -m unittest discover -s tests -t . -p 'test_*.py'
+            cargo fmt --all --check
+            cargo check --workspace --all-targets --locked
+            cargo clippy --workspace --all-targets --locked -- -D warnings
+            cargo test --workspace --all-targets --locked
+            cargo check --workspace --all-targets --all-features --locked
+            cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+            cargo test --workspace --all-targets --all-features --locked
+          }
+
+          dispatch_d2i() {
+            local stage=$1
+            local candidate=$2
+            local workflow_id run_id status conclusion
+            gh workflow run d2i-integrated-image.yml --repo "$repo" --ref "$TARGET_BRANCH"
+            workflow_id=$(gh api "repos/$repo/actions/workflows" --paginate --jq '.workflows[] | select(.path == ".github/workflows/d2i-integrated-image.yml") | .id' | head -n1)
+            test -n "$workflow_id"
+            run_id=
+            for _ in $(seq 1 420); do
+              run_id=$(gh api "repos/$repo/actions/workflows/$workflow_id/runs?event=workflow_dispatch&per_page=100" --jq ".workflow_runs | map(select(.head_branch == \"$TARGET_BRANCH\" and .head_sha == \"$candidate\")) | sort_by(.created_at) | reverse | .[0].id // empty")
+              if test -n "$run_id" && test "$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')" = completed; then
+                break
+              fi
+              sleep 15
+            done
+            test -n "$run_id"
+            status=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')
+            conclusion=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.conclusion')
+            printf '%s_d2i_run=%s\n%s_d2i_status=%s\n%s_d2i_conclusion=%s\n' "$stage" "$run_id" "$stage" "$status" "$stage" "$conclusion" | tee -a /tmp/pipeline-v3-state.txt
+            if test "$status" != completed || test "$conclusion" != success; then
+              gh run view "$run_id" --repo "$repo" --log-failed > "/tmp/${stage}-d2i-v3-failed.log" 2>&1 || true
+              return 1
+            fi
+          }
+
+          promote_existing() {
+            local stage=$1
+            local candidate_branch=$2
+            local target candidate parent
+            git fetch --no-tags origin "$TARGET_BRANCH" "$candidate_branch"
+            target=$(git rev-parse "origin/$TARGET_BRANCH")
+            candidate=$(git rev-parse "origin/$candidate_branch")
+            test "$(git show -s --format=%P "$candidate" | wc -w)" -eq 1
+            parent=$(git show -s --format=%P "$candidate")
+            if test "$target" != "$candidate"; then
+              test "$parent" = "$target"
+            fi
+            git checkout -B "reprove-$stage" "$candidate"
+            test -z "$(git status --porcelain=v1)"
+            prove_source
+            current=$(remote_head "$TARGET_BRANCH")
+            if test "$current" != "$candidate"; then
+              test "$current" = "$parent"
+              git push origin "$candidate:refs/heads/$TARGET_BRANCH"
+            fi
+            printf '%s_head=%s\n%s_parent=%s\n' "$stage" "$candidate" "$stage" "$parent" | tee -a /tmp/pipeline-v3-state.txt
+            RESULT_HEAD=$candidate
+          }
+
+          build_or_reuse_candidate() {
+            local stage=$1
+            local candidate_branch=$2
+            local commit_message=$3
+            shift 3
+            local target existing source_branch source merge_base commit patch_id before after head current
+            target=$(remote_head "$TARGET_BRANCH")
+            test -n "$target"
+            existing=$(remote_head "$candidate_branch")
+            if test -n "$existing"; then
+              git fetch --no-tags origin "$candidate_branch"
+              test "$(git show -s --format=%P "$existing")" = "$target"
+              git checkout -B "reprove-${stage}-candidate" "$existing"
+              prove_source
+              RESULT_HEAD=$existing
+              printf '%s_candidate_reused=%s\n' "$stage" "$existing" | tee -a /tmp/pipeline-v3-state.txt
+              return 0
+            fi
+            git fetch --no-tags origin "$TARGET_BRANCH" "$@"
+            git checkout -B "build-$stage" "$target"
+            declare -A seen_patch=()
+            local selected_file="/tmp/${stage}-v3-selected.txt"
+            local skipped_file="/tmp/${stage}-v3-skipped.txt"
+            local history_file="/tmp/${stage}-v3-history.txt"
+            : > "$selected_file"
+            : > "$skipped_file"
+            : > "$history_file"
+            for source_branch in "$@"; do
+              source=$(git rev-parse "origin/$source_branch")
+              merge_base=$(git merge-base "$target" "$source")
+              printf 'stage=%s source=%s head=%s merge_base=%s\n' "$stage" "$source_branch" "$source" "$merge_base" >> "$history_file"
+              git log --reverse --format='%H%x09%s' "$merge_base..$source" >> "$history_file"
+              mapfile -t commits < <(git log --reverse --format='%H%x09%s' --extended-regexp --regexp-ignore-case --grep="(^|[^[:alnum:]])${stage}([^[:alnum:]]|$)" "$merge_base..$source" | awk -F '\t' 'tolower($2) !~ /(temporary|diagnostic|export|audit-only)/ {print $1}')
+              for commit in "${commits[@]}"; do
+                if test "$(git show -s --format=%P "$commit" | wc -w)" -ne 1; then
+                  printf '%s merge-commit\n' "$commit" >> "$skipped_file"
+                  continue
+                fi
+                patch_id=$(git show --pretty=format: --binary "$commit" | git patch-id --stable | awk 'NR==1 {print $1}')
+                test -n "$patch_id"
+                if test -n "${seen_patch[$patch_id]:-}"; then
+                  printf '%s duplicate-patch %s\n' "$commit" "$patch_id" >> "$skipped_file"
+                  continue
+                fi
+                seen_patch[$patch_id]=1
+                before=$(git diff --cached --binary | sha256sum | awk '{print $1}')
+                git cherry-pick --no-commit "$commit"
+                after=$(git diff --cached --binary | sha256sum | awk '{print $1}')
+                if test "$before" = "$after"; then
+                  printf '%s empty-on-target %s\n' "$commit" "$patch_id" >> "$skipped_file"
+                  continue
+                fi
+                printf '%s %s\n' "$commit" "$patch_id" >> "$selected_file"
+              done
+            done
+            test -s "$selected_file"
+            test -n "$(git diff --cached --name-only)"
+            git diff --cached --name-status | tee "/tmp/${stage}-v3-diff.txt"
+            if git diff --cached --name-only | grep -E '(^|/)(temporary|diagnostics?)(/|$)|\.patch(\.|$)|\.b85$'; then
+              echo "$stage candidate contains temporary or diagnostic material" >&2
+              return 1
+            fi
+            git diff --cached --check
+            prove_source
+            test -z "$(remote_head "$candidate_branch")"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "$commit_message"
+            head=$(git rev-parse HEAD)
+            test "$(git show -s --format=%P HEAD)" = "$target"
+            git push origin "$head:refs/heads/$candidate_branch"
+            cat "$history_file" >> /tmp/pipeline-v3-history.txt
+            cat "$selected_file" >> /tmp/pipeline-v3-selected.txt
+            cat "$skipped_file" >> /tmp/pipeline-v3-skipped.txt
+            cat "/tmp/${stage}-v3-diff.txt" >> /tmp/pipeline-v3-diffs.txt
+            printf '%s_candidate=%s\n%s_candidate_parent=%s\n' "$stage" "$head" "$stage" "$target" | tee -a /tmp/pipeline-v3-state.txt
+            RESULT_HEAD=$head
+          }
+
+          promote_candidate() {
+            local stage=$1
+            local candidate_branch=$2
+            local head parent target
+            git fetch --no-tags origin "$TARGET_BRANCH" "$candidate_branch"
+            head=$(git rev-parse "origin/$candidate_branch")
+            parent=$(git show -s --format=%P "$head")
+            target=$(git rev-parse "origin/$TARGET_BRANCH")
+            if test "$target" != "$head"; then
+              test "$parent" = "$target"
+            fi
+            git checkout -B "final-reprove-$stage" "$head"
+            prove_source
+            current=$(remote_head "$TARGET_BRANCH")
+            if test "$current" != "$head"; then
+              test "$current" = "$parent"
+              git push origin "$head:refs/heads/$TARGET_BRANCH"
+            fi
+            printf '%s_head=%s\n' "$stage" "$head" | tee -a /tmp/pipeline-v3-state.txt
+            RESULT_HEAD=$head
+          }
+
+          promote_existing d6 "$D6_CANDIDATE"
+          d6=$RESULT_HEAD
+          dispatch_d2i d6 "$d6"
+
+          build_or_reuse_candidate d7 "$D7_CANDIDATE" 'feat(d7): integrate recovery and update reconciliation' "$D7_SOURCE"
+          d7_candidate=$RESULT_HEAD
+          promote_candidate d7 "$D7_CANDIDATE"
+          d7=$RESULT_HEAD
+          test "$d7" = "$d7_candidate"
+          dispatch_d2i d7 "$d7"
+
+          build_or_reuse_candidate d8 "$D8_CANDIDATE" 'feat(d8): integrate hardware qualification verifier source' "$D8_SOURCE"
+          d8_candidate=$RESULT_HEAD
+          promote_candidate d8 "$D8_CANDIDATE"
+          d8=$RESULT_HEAD
+          test "$d8" = "$d8_candidate"
+          dispatch_d2i d8 "$d8"
+
+          build_or_reuse_candidate d9 "$D9_CANDIDATE" 'feat(d9): build signed release promotion source candidate' "$D9_SOURCE"
+          d9=$RESULT_HEAD
+          printf 'd9_candidate=%s\nd9_promoted=false\nrelease_readiness_claimed=false\n' "$d9" | tee -a /tmp/pipeline-v3-state.txt
+
+      - name: Persist corrected orchestration result and remove workflow
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          ROUTE_READY: ${{ steps.route.outputs.ready }}
+        run: |
+          set -euo pipefail
+          status_snapshot=$(git status --short 2>&1 || true)
+          git fetch --no-tags origin "$CONTROL_BRANCH"
+          git checkout -B "$CONTROL_BRANCH" "origin/$CONTROL_BRANCH"
+          rm -f .github/workflows/temporary-d6-through-d9-v3.yml
+          mkdir -p diagnostics/d6-through-d9-v3
+          {
+            printf 'schema=trillionnium.desktop.d6-through-d9-orchestration.v3\n'
+            printf 'recorded_at=%s\njob_status=%s\nroute_ready=%s\n\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$JOB_STATUS" "$ROUTE_READY"
+            for file in /tmp/pipeline-v3-state.txt /tmp/pipeline-v3-history.txt /tmp/pipeline-v3-selected.txt /tmp/pipeline-v3-skipped.txt /tmp/pipeline-v3-diffs.txt /tmp/d6-d2i-v3-failed.log /tmp/d7-d2i-v3-failed.log /tmp/d8-d2i-v3-failed.log; do
+              test -f "$file" || continue
+              printf '%s\n' "--- $(basename "$file") ---"
+              tail -n 2400 "$file"
+              printf '\n'
+            done
+            printf '%s\n%s\n' '--- status ---' "$status_snapshot"
+          } > diagnostics/d6-through-d9-v3/latest.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- .github/workflows/temporary-d6-through-d9-v3.yml diagnostics/d6-through-d9-v3/latest.txt
+          git commit -m "diagnostics(d6-d9): record corrected orchestration ($JOB_STATUS)"
+          git push origin "HEAD:refs/heads/$CONTROL_BRANCH"
