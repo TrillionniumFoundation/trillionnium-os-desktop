@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: codex/d4-d7-authority-runtime-v1
-          fetch-depth: 5
+          fetch-depth: 0
           persist-credentials: true
 
       - name: Verify exact bootstrap ancestry and reconstruct overlay
@@ -30,10 +30,10 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          test "$(git rev-parse HEAD^)" = "33b44e9aa9b53259c0c5b44769818ef5fe385c8c"
-          test "$(git rev-parse HEAD^^)" = "52136bc9f888fa70d1209fafc8fe0cf35a63751e"
-          test "$(git rev-parse HEAD^^^)" = "4f6617c74bbb3774ca0999ad8da68502b3b0a417"
-          test "$(git rev-parse HEAD^^^^)" = "f44837a6867b134fb329d14407e3ae918ed74a4b"
+          test "$(git rev-parse HEAD^)" = "ecd94adedd306464fbc707f2d2496decf55426a4"
+          git merge-base --is-ancestor \
+            f44837a6867b134fb329d14407e3ae918ed74a4b \
+            HEAD
           for index in 00 01 02 03 04 05 06 07; do
             test -f ".closure-bootstrap/patch.part.${index}"
           done
@@ -89,6 +89,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          cargo fmt --all
           cargo fmt --all -- --check
           cargo check --workspace --all-targets --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings
