@@ -1,0 +1,407 @@
+name: temporary-d2i-v4-fallback
+
+on:
+  push:
+    branches:
+      - codex/control-d2i-v4
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: temporary-d2i-v4-fallback
+  cancel-in-progress: false
+
+jobs:
+  fallback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      CONTROL_BRANCH: codex/control-d2i-v4
+      PROOF_BRANCH: codex/d2i-apply-v3-proof
+      V4_BRANCH: codex/d2i-v4-softpipe-bounded-timeout
+      D3_BASE: 8096d78ec6a457cf11e28f258c0cdf8b5dec27b2
+      D3_HEAD: 371642a76b01618306bd24a6457aab1f8e25dc68
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out fallback control branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/control-d2i-v4
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Route only a real D2I v3 machine failure
+        id: route
+        run: |
+          set -euo pipefail
+          ready=false
+          classification=none
+          diagnostic_sha=
+          for _ in $(seq 1 540); do
+            git fetch --no-tags origin "$TARGET_BRANCH" "$PROOF_BRANCH" >/dev/null 2>&1 || true
+            target=$(git rev-parse "origin/$TARGET_BRANCH" 2>/dev/null || true)
+            message=$(git show -s --format=%s "$target" 2>/dev/null || true)
+            if test "$message" = 'feat(d3): bind development peer to trusted executable source'; then
+              break
+            fi
+            proof=$(git rev-parse "origin/$PROOF_BRANCH" 2>/dev/null || true)
+            if test -n "$proof" && git show "$proof:diagnostics/d2i-v3-monitor/latest.txt" > /tmp/d2i-v3-diagnostic.txt 2>/dev/null; then
+              diagnostic_sha=$proof
+              if grep -Eqi 'SIGSEGV|segmentation fault|signal[ =:]+11|core dumped' /tmp/d2i-v3-diagnostic.txt; then
+                classification=renderer_crash
+                ready=true
+              elif grep -Fqi 'runtime watchdog expired' /tmp/d2i-v3-diagnostic.txt; then
+                classification=throughput_timeout
+                ready=true
+              else
+                classification=unknown
+              fi
+              break
+            fi
+            sleep 10
+          done
+          printf 'ready=%s\nclassification=%s\n' "$ready" "$classification" | tee /tmp/d2i-v4-route.txt
+          printf 'ready=%s\nclassification=%s\n' "$ready" "$classification" >> "$GITHUB_OUTPUT"
+          test -n "$diagnostic_sha" && printf 'diagnostic_sha=%s\n' "$diagnostic_sha" >> "$GITHUB_OUTPUT" || true
+
+      - name: Build bounded softpipe and timeout policy
+        if: steps.route.outputs.ready == 'true'
+        id: build
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$TARGET_BRANCH"
+          parent=$(git rev-parse "origin/$TARGET_BRANCH")
+          message=$(git show -s --format=%s "$parent")
+          test "$message" = 'fix(d2i): constrain llvmpipe and bind image-local input evidence'
+          test -z "$(git ls-remote --heads origin "refs/heads/$V4_BRANCH")"
+          git checkout -B "$V4_BRANCH" "$parent"
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import json
+          from pathlib import Path
+          import re
+
+          service_path = Path('packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service')
+          service = service_path.read_text()
+          service = service.replace('Environment=GALLIUM_DRIVER=llvmpipe', 'Environment=GALLIUM_DRIVER=softpipe')
+          service = re.sub(r'^Environment=(?:GALLIUM_OVERRIDE_CPU_CAPS|LP_NATIVE_VECTOR_WIDTH|LP_NUM_THREADS)=.*\n', '', service, flags=re.MULTILINE)
+          if 'Environment=HEPTA_D0A02_WATCHDOG_SECONDS=900' not in service:
+              marker = 'Environment=HEPTA_D2I_IMAGE_LOCAL_INPUT=1\n'
+              if marker not in service:
+                  marker = 'Environment=HEPTA_D0A02_OUTPUT=/var/lib/trillionnium-d2i\n'
+              if marker not in service:
+                  raise SystemExit('D2I service watchdog insertion marker not found')
+              service = service.replace(marker, marker + 'Environment=HEPTA_D0A02_WATCHDOG_SECONDS=900\n', 1)
+          if 'Environment=DRAW_USE_LLVM=0' not in service:
+              raise SystemExit('D2I service lost DRAW_USE_LLVM=0')
+          service_path.write_text(service)
+
+          runtime_path = Path('experiments/servo-headed-runtime/src/main.rs')
+          runtime = runtime_path.read_text()
+          helper_name = 'd2i_watchdog_duration'
+          if helper_name not in runtime:
+              failure_index = runtime.find('runtime watchdog expired')
+              if failure_index < 0:
+                  raise SystemExit('runtime watchdog failure marker not found')
+              candidates = list(re.finditer(r'(?:std::time::)?Duration::from_secs\((\d+)\)', runtime))
+              if not candidates:
+                  raise SystemExit('runtime watchdog duration expression not found')
+              candidate = min(candidates, key=lambda match: abs(match.start() - failure_index))
+              if abs(candidate.start() - failure_index) > 6000:
+                  raise SystemExit('nearest duration is not safely bound to runtime watchdog')
+              runtime = runtime[:candidate.start()] + f'{helper_name}()' + runtime[candidate.end():]
+              main_index = runtime.find('\nfn main(')
+              if main_index < 0:
+                  raise SystemExit('main function marker not found')
+              helper = '''
+
+fn d2i_watchdog_duration() -> std::time::Duration {
+    const DEFAULT_SECONDS: u64 = 150;
+    const MIN_SECONDS: u64 = 30;
+    const MAX_SECONDS: u64 = 1200;
+    let seconds = std::env::var("HEPTA_D0A02_WATCHDOG_SECONDS")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .filter(|seconds| (MIN_SECONDS..=MAX_SECONDS).contains(seconds))
+        .unwrap_or(DEFAULT_SECONDS);
+    std::time::Duration::from_secs(seconds)
+}
+'''
+              runtime = runtime[:main_index] + helper + runtime[main_index:]
+          runtime_path.write_text(runtime)
+
+          def patch_deadlines(path: Path, required: bool) -> int:
+              text = path.read_text()
+              count = 0
+              pattern = re.compile(r'(?m)^(?P<indent>\s*)(?P<name>[A-Za-z_]*(?:deadline|timeout)[A-Za-z_]*)=\$\(\(SECONDS \+ (?P<seconds>1[5-9]0|2[0-9]{2}|300)\)\)$', re.IGNORECASE)
+              def replace(match: re.Match[str]) -> str:
+                  nonlocal count
+                  count += 1
+                  return f'{match.group("indent")}{match.group("name")}=$((SECONDS + ${{D2I_MACHINE_TIMEOUT_SECONDS:-1200}}))'
+              text = pattern.sub(replace, text)
+              seq_pattern = re.compile(r'\bseq 1 (180|240|300)\b')
+              text, seq_count = seq_pattern.subn('seq 1 "${D2I_MACHINE_TIMEOUT_SECONDS:-1200}"', text)
+              count += seq_count
+              if 'D2I_MACHINE_TIMEOUT_SECONDS' not in text:
+                  insertion = ': "${D2I_MACHINE_TIMEOUT_SECONDS:=1200}"\nexport D2I_MACHINE_TIMEOUT_SECONDS\n'
+                  marker = 'set -euo pipefail\n'
+                  if marker not in text:
+                      raise SystemExit(f'{path}: strict shell marker not found')
+                  text = text.replace(marker, marker + insertion, 1)
+              path.write_text(text)
+              if required and count == 0:
+                  raise SystemExit(f'{path}: no bounded D2I deadline was found')
+              return count
+
+          host_count = patch_deadlines(Path('tests/qemu/run-d2i-boot-test.sh'), required=True)
+          acceptance_count = patch_deadlines(Path('packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance'), required=False)
+
+          contract_path = Path('contracts/d2i-integrated-image.v1.json')
+          contract = json.loads(contract_path.read_text())
+          renderer = contract['runtime']['software_renderer']
+          renderer['force_software'] = True
+          renderer['gallium_driver'] = 'softpipe'
+          renderer['llvm_jit_disabled'] = True
+          renderer.pop('cpu_caps_override', None)
+          renderer.pop('native_vector_width', None)
+          renderer.pop('worker_threads', None)
+          renderer.pop('llvm_jit_constrained', None)
+          renderer['environment'] = [
+              'LIBGL_ALWAYS_SOFTWARE=1',
+              'GALLIUM_DRIVER=softpipe',
+              'DRAW_USE_LLVM=0',
+          ]
+          renderer['qualification_reason'] = 'avoid CPU-feature-dependent LLVM JIT execution inside the QEMU TCG evidence boundary'
+          contract['runtime']['watchdog_seconds'] = 900
+          contract['runtime']['machine_timeout_seconds'] = 1200
+          promotion = contract.get('promotion_requires', [])
+          promotion = [item for item in promotion if 'llvmpipe' not in item]
+          if 'softpipe_renderer_without_llvm_jit' not in promotion:
+              promotion.append('softpipe_renderer_without_llvm_jit')
+          if 'bounded_d2i_machine_timeout' not in promotion:
+              promotion.append('bounded_d2i_machine_timeout')
+          contract['promotion_requires'] = promotion
+          contract_path.write_text(json.dumps(contract, indent=2) + '\n')
+
+          test_path = Path('tests/d1/test_d2i_renderer_policy.py')
+          test_path.write_text('''from __future__ import annotations
+
+import json
+from pathlib import Path
+import unittest
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+class D2IRendererPolicyTests(unittest.TestCase):
+    def test_guest_runtime_uses_non_jit_softpipe_with_bounded_timeout(self) -> None:
+        service = (
+            ROOT
+            / "packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service"
+        ).read_text()
+        self.assertIn("Environment=LIBGL_ALWAYS_SOFTWARE=1", service)
+        self.assertIn("Environment=GALLIUM_DRIVER=softpipe", service)
+        self.assertIn("Environment=DRAW_USE_LLVM=0", service)
+        self.assertIn("Environment=HEPTA_D0A02_WATCHDOG_SECONDS=900", service)
+        self.assertIn("Environment=HEPTA_D2I_IMAGE_LOCAL_INPUT=1", service)
+        self.assertNotIn("GALLIUM_DRIVER=llvmpipe", service)
+        self.assertNotIn("GALLIUM_OVERRIDE_CPU_CAPS", service)
+        self.assertNotIn("LP_NATIVE_VECTOR_WIDTH", service)
+        self.assertNotIn("LP_NUM_THREADS", service)
+
+        runtime = (ROOT / "experiments/servo-headed-runtime/src/main.rs").read_text()
+        self.assertIn("fn d2i_watchdog_duration()", runtime)
+        self.assertIn("HEPTA_D0A02_WATCHDOG_SECONDS", runtime)
+        self.assertIn("MAX_SECONDS: u64 = 1200", runtime)
+
+        contract = json.loads((ROOT / "contracts/d2i-integrated-image.v1.json").read_text())
+        renderer = contract["runtime"]["software_renderer"]
+        self.assertTrue(renderer["force_software"])
+        self.assertEqual(renderer["gallium_driver"], "softpipe")
+        self.assertTrue(renderer["llvm_jit_disabled"])
+        self.assertEqual(
+            renderer["environment"],
+            ["LIBGL_ALWAYS_SOFTWARE=1", "GALLIUM_DRIVER=softpipe", "DRAW_USE_LLVM=0"],
+        )
+        self.assertEqual(contract["runtime"]["watchdog_seconds"], 900)
+        self.assertEqual(contract["runtime"]["machine_timeout_seconds"], 1200)
+        self.assertIn("softpipe_renderer_without_llvm_jit", contract["promotion_requires"])
+        self.assertIn("bounded_d2i_machine_timeout", contract["promotion_requires"])
+
+
+if __name__ == "__main__":
+    unittest.main()
+''')
+
+          timeout_test = Path('tests/d1/test_d2i_timeout_policy.py')
+          timeout_test.write_text('''from __future__ import annotations
+
+from pathlib import Path
+import unittest
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+class D2ITimeoutPolicyTests(unittest.TestCase):
+    def test_host_and_guest_deadlines_are_explicit_and_bounded(self) -> None:
+        host = (ROOT / "tests/qemu/run-d2i-boot-test.sh").read_text()
+        acceptance = (
+            ROOT
+            / "packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance"
+        ).read_text()
+        self.assertIn("D2I_MACHINE_TIMEOUT_SECONDS", host)
+        self.assertIn("1200", host)
+        self.assertIn("D2I_MACHINE_TIMEOUT_SECONDS", acceptance)
+
+
+if __name__ == "__main__":
+    unittest.main()
+''')
+          print(f'patched_host_deadlines={host_count}')
+          print(f'patched_acceptance_deadlines={acceptance_count}')
+          PY
+          rustfmt --edition 2024 experiments/servo-headed-runtime/src/main.rs
+          printf 'parent=%s\n' "$parent" >> "$GITHUB_OUTPUT"
+
+      - name: Install pinned toolchain and prove D2I v4 source
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          python3 -m json.tool contracts/d2i-integrated-image.v1.json >/dev/null
+          bash -n tests/qemu/run-d2i-boot-test.sh
+          bash -n packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
+          rustfmt --edition 2024 --check experiments/servo-headed-runtime/src/main.rs
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          git diff --check
+
+      - name: Publish and promote clean D2I v4 source commit
+        if: steps.route.outputs.ready == 'true'
+        id: promote
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote --heads origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')" = '${{ steps.build.outputs.parent }}'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            contracts/d2i-integrated-image.v1.json \
+            experiments/servo-headed-runtime/src/main.rs \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/d1/test_d2i_renderer_policy.py \
+            tests/d1/test_d2i_timeout_policy.py \
+            tests/qemu/run-d2i-boot-test.sh
+          git commit -m 'fix(d2i): bound softpipe qualification time without JIT'
+          head=$(git rev-parse HEAD)
+          git push origin "$head:refs/heads/$V4_BRANCH"
+          git push origin "$head:refs/heads/$TARGET_BRANCH"
+          printf 'head=%s\n' "$head" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch and require exact D2I v4 machine evidence
+        if: steps.route.outputs.ready == 'true'
+        id: machine
+        run: |
+          set -euo pipefail
+          repo=$GITHUB_REPOSITORY
+          candidate='${{ steps.promote.outputs.head }}'
+          gh workflow run d2i-integrated-image.yml --repo "$repo" --ref "$TARGET_BRANCH"
+          workflow_id=$(gh api "repos/$repo/actions/workflows" --paginate --jq '.workflows[] | select(.path == ".github/workflows/d2i-integrated-image.yml") | .id' | head -n1)
+          run_id=
+          for _ in $(seq 1 480); do
+            run_id=$(gh api "repos/$repo/actions/workflows/$workflow_id/runs?event=workflow_dispatch&per_page=100" --jq ".workflow_runs | map(select(.head_branch == \"$TARGET_BRANCH\" and .head_sha == \"$candidate\")) | sort_by(.created_at) | reverse | .[0].id // empty")
+            if test -n "$run_id" && test "$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')" = completed; then
+              break
+            fi
+            sleep 15
+          done
+          test -n "$run_id"
+          status=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')
+          conclusion=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.conclusion')
+          printf 'candidate=%s\nrun_id=%s\nstatus=%s\nconclusion=%s\n' "$candidate" "$run_id" "$status" "$conclusion" | tee /tmp/d2i-v4-machine.txt
+          if test "$status" != completed || test "$conclusion" != success; then
+            gh run view "$run_id" --repo "$repo" --log-failed > /tmp/d2i-v4-failed.log 2>&1 || true
+            exit 1
+          fi
+
+      - name: Integrate already-proved D3 delta after D2I v4 success
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          parent='${{ steps.promote.outputs.head }}'
+          git fetch --no-tags origin "$TARGET_BRANCH" "$D3_HEAD"
+          test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$parent"
+          git checkout -B "$TARGET_BRANCH" "$parent"
+          git diff --binary --full-index "$D3_BASE" "$D3_HEAD" > /tmp/d3-clean.patch
+          git apply --check /tmp/d3-clean.patch
+          git apply --index --whitespace=error-all /tmp/d3-clean.patch
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m 'feat(d3): bind development peer to trusted executable source'
+          test "$(git show -s --format=%P HEAD)" = "$parent"
+          git push origin "HEAD:refs/heads/$TARGET_BRANCH"
+
+      - name: Persist bounded v4 result and remove temporary workflow
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          ROUTE_READY: ${{ steps.route.outputs.ready }}
+          CLASSIFICATION: ${{ steps.route.outputs.classification }}
+        run: |
+          set -euo pipefail
+          status_snapshot=$(git status --short 2>&1 || true)
+          git fetch --no-tags origin "$CONTROL_BRANCH"
+          git checkout -B "$CONTROL_BRANCH" "origin/$CONTROL_BRANCH"
+          rm -f .github/workflows/temporary-d2i-v4-fallback.yml
+          mkdir -p diagnostics/d2i-v4-monitor
+          {
+            printf 'schema=trillionnium.desktop.d2i-v4-fallback-result.v1\n'
+            printf 'recorded_at=%s\njob_status=%s\nroute_ready=%s\nclassification=%s\n\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$JOB_STATUS" "$ROUTE_READY" "$CLASSIFICATION"
+            for file in /tmp/d2i-v4-route.txt /tmp/d2i-v3-diagnostic.txt /tmp/d2i-v4-machine.txt /tmp/d2i-v4-failed.log; do
+              if test -f "$file"; then
+                printf '%s\n' "--- $(basename "$file") ---"
+                tail -n 1800 "$file"
+                printf '\n'
+              fi
+            done
+            printf '%s\n%s\n' '--- status ---' "$status_snapshot"
+          } > diagnostics/d2i-v4-monitor/latest.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- .github/workflows/temporary-d2i-v4-fallback.yml diagnostics/d2i-v4-monitor/latest.txt
+          git commit -m "diagnostics(d2i): record v4 fallback result ($JOB_STATUS)"
+          git push origin "HEAD:refs/heads/$CONTROL_BRANCH"
