@@ -1,0 +1,141 @@
+name: temporary-d3-apply
+
+on:
+  push:
+    branches:
+      - codex/d3-cross-uid-static-attestation-v2
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-d3-apply-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply-and-prove:
+    runs-on: ubuntu-24.04
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out exact D3 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d3-cross-uid-static-attestation-v2
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Decode and apply the bounded D3 patch
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import hashlib
+          import lzma
+
+          encoded = Path("tools/temporary-d3.patch.xz.b85").read_text().strip()
+          compressed = base64.b85decode(encoded)
+          if hashlib.sha256(compressed).hexdigest() != "c833d6e96c9368431f6c23d171133d87e72f967061bdcbf057e8b3f566305433":
+              raise SystemExit("compressed D3 patch digest mismatch")
+          patch = lzma.decompress(compressed)
+          if hashlib.sha256(patch).hexdigest() != "644da962d82830c86b392221679273ff514adef40e0e1fce20365d11234fdbfd":
+              raise SystemExit("D3 patch digest mismatch")
+          Path("/tmp/d3.patch").write_bytes(patch)
+          PY
+          git apply --check /tmp/d3.patch
+          git apply --whitespace=error-all /tmp/d3.patch
+          rm .github/workflows/temporary-d3-apply.yml
+          rm tools/temporary-d3.patch.xz.b85
+
+      - name: Install pinned repository toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Prove source truth and feature separation
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+
+      - name: Prove every Rust feature graph
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --bin hepta-agent-portd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --features development --bin hepta-agent-port-developmentd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --features d1-qualification --bin hepta-agent-port-qualificationd
+
+      - name: Publish only the proved final source tree
+        run: |
+          set -euo pipefail
+          actual=$(git diff --name-only | sort)
+          expected=$(printf '%s\n' \
+            .github/workflows/temporary-d3-apply.yml \
+            apps/hepta-agent-portd/Cargo.toml \
+            apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs \
+            contracts/browser-actor.v1.json \
+            crates/hepta-browser-actor/src/lib.rs \
+            crates/hepta-peer-attestation/Cargo.toml \
+            crates/hepta-peer-attestation/src/lib.rs \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md \
+            manifests/project-state.v1.json \
+            manifests/repository-state.json \
+            packaging/debian/development/README.md \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service \
+            tests/d1/test_d1_qualification_separation.py \
+            tests/test_systemd_custody_validator.py \
+            tools/temporary-d3.patch.xz.b85 \
+            tools/validate_d3_development_profile.py \
+            tools/validate_project_truth.py \
+            tools/verify_systemd_socket_custody.py | sort)
+          test "$actual" = "$expected"
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- \
+            .github/workflows/temporary-d3-apply.yml \
+            apps/hepta-agent-portd/Cargo.toml \
+            apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs \
+            contracts/browser-actor.v1.json \
+            crates/hepta-browser-actor/src/lib.rs \
+            crates/hepta-peer-attestation/Cargo.toml \
+            crates/hepta-peer-attestation/src/lib.rs \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md \
+            manifests/project-state.v1.json \
+            manifests/repository-state.json \
+            packaging/debian/development/README.md \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service \
+            tests/d1/test_d1_qualification_separation.py \
+            tests/test_systemd_custody_validator.py \
+            tools/temporary-d3.patch.xz.b85 \
+            tools/validate_d3_development_profile.py \
+            tools/validate_project_truth.py \
+            tools/verify_systemd_socket_custody.py
+          git commit -m "feat(d3): bind development peer to trusted executable source"
+          git push origin HEAD:refs/heads/codex/d3-cross-uid-static-attestation-v2
