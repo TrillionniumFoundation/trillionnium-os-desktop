@@ -206,12 +206,21 @@ def check_lock(checks: list[str]) -> None:
         "crates/hepta-agent-port": {"sha2": "=0.10.9"},
         "crates/hepta-session-core": {"sha2": "=0.10.9"},
         "crates/hepta-browser-actor": {"sha2": "=0.10.9"},
+        "apps/hepta-browserd": {
+            "ed25519-compact": "=2.1.1",
+            "sha2": "=0.10.9",
+        },
     }
     require(allowlist.get("direct_dependencies") == expected_direct, "direct allowlist drifted")
     for crate, expected in expected_direct.items():
         dependencies = parse_toml(f"{crate}/Cargo.toml").get("dependencies", {})
         for name, version in expected.items():
-            require(dependencies.get(name) == version, f"{crate}: {name} pin drifted")
+            observed = dependencies.get(name)
+            observed_version = observed.get("version") if isinstance(observed, dict) else observed
+            require(observed_version == version, f"{crate}: {name} pin drifted")
+            if crate == "apps/hepta-browserd" and name == "ed25519-compact":
+                require(observed.get("default-features") is False, "browserd: ed25519 default features enabled")
+                require(observed.get("features") == ["std"], "browserd: ed25519 feature set drifted")
     checks.extend(["lock:local", "lock:registry", "lock:direct"])
 
 

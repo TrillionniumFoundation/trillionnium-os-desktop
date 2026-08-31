@@ -52,6 +52,15 @@ EXPECTED_REQUIRED_WORKFLOW_REGISTRY = frozenset(
         ".github/workflows/receipt-journal.yml",
         ".github/workflows/servo-exact-pin.yml",
         ".github/workflows/servo-headed-runtime.yml",
+        ".github/workflows/agent-port-path-custody.yml",
+        ".github/workflows/d4-collaboration.yml",
+        ".github/workflows/d4-d9-source-suite.yml",
+        ".github/workflows/d5-trusted-app.yml",
+        ".github/workflows/d6-capability-egress.yml",
+        ".github/workflows/d7-recovery-update.yml",
+        ".github/workflows/d8-hardware-promotion-policy.yml",
+        ".github/workflows/d8-hardware-qualification.yml",
+        ".github/workflows/d9-release-promotion.yml",
     }
 )
 _O_CLOEXEC = getattr(os, "O_CLOEXEC", 0)

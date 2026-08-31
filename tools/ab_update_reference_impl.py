@@ -865,7 +865,11 @@ def self_test() -> dict[str, Any]:
     image = b"immutable fixture update image v2"
     recovery_image = b"offline recovery fixture image"
     update, update_public = build_update_manifest_fixture(seed_update, image)
-    recovery, recovery_public = build_recovery_manifest_fixture(seed_recovery, recovery_image)
+    recovery, recovery_public = build_recovery_manifest_fixture(
+        seed_recovery,
+        recovery_image,
+        minimum_rollback_index=update["rollback_index"],
+    )
     trust = fixture_trust(update_public, recovery_public)
     engine = fixture_engine()
     engine.stage(update, image, trust, now_epoch=100, available_bytes=4096)

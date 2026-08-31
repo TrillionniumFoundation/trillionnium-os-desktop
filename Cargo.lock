@@ -47,6 +47,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ed25519-compact"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9b3460f44bea8cd47f45a0c70892f1eff856d97cd55358b2f73f663789f6190"
+
+[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -118,12 +124,14 @@ dependencies = [
 name = "hepta-browserd"
 version = "0.1.0"
 dependencies = [
+ "ed25519-compact",
  "hepta-agent-port",
  "hepta-agent-transport",
  "hepta-browser-actor",
  "hepta-browser-codec",
  "hepta-browser-contracts",
  "hepta-session-core",
+ "sha2",
  "trillionnium-contract-core",
 ]
 

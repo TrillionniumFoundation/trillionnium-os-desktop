@@ -62,12 +62,63 @@ def validate_workflow(path: Path) -> None:
     require("persist-credentials: false" in text, f"{path.name} retains checkout credentials")
     for raw in text.splitlines():
         line = raw.strip()
-        if not line.startswith("uses:"):
+        match = re.fullmatch(r"(?:-\s*)?uses\s*:\s*(.+)", line)
+        if match is None:
             continue
-        action = line.split(":", 1)[1].strip().strip("\"'")
+        action = match.group(1).strip().strip("\"'")
         if action.startswith("./"):
             continue
         require(IMMUTABLE_ACTION.fullmatch(action) is not None, f"{path.name} uses mutable action {action!r}")
+
+
+def validate_authority_hardening() -> list[str]:
+    policy = safe_path("apps/hepta-browserd/src/product_policy.rs").read_text(encoding="utf-8")
+    coordinator = safe_path("apps/hepta-browserd/src/authority_coordinator.rs").read_text(encoding="utf-8")
+    runtime = safe_path("apps/hepta-browserd/src/product_runtime.rs").read_text(encoding="utf-8")
+    browserd = safe_path("apps/hepta-browserd/src/lib.rs").read_text(encoding="utf-8")
+    cargo = safe_path("apps/hepta-browserd/Cargo.toml").read_text(encoding="utf-8")
+
+    checks = {
+        "human_lease_identity": "Human { lease_id: String }" in policy
+        and "HUMAN_LEASE_MISMATCH" in policy,
+        "no_self_asserted_signature_evidence": "SignatureEvidence::from_external_verifier" not in policy
+        and "predecessor_rotation_verified" not in policy,
+        "authenticated_evidence_registry": "TrustedVerifierRegistry" in policy
+        and "EVIDENCE_AUTHENTICATION_FAILED" in policy
+        and "EVIDENCE_REGISTRY_GENERATION_STALE" in policy
+        and "EVIDENCE_VERIFIER_REVOKED" in policy,
+        "network_observation_binding": "pub struct NetworkObservation" in policy
+        and "NETWORK_OBSERVATION_BINDING_MISMATCH" in policy
+        and "CONTROLLED_EGRESS_REQUIRED" in policy,
+        "immutable_effect_command": "pub struct EffectCommand" in policy
+        and "EFFECT_COMMAND_DIGEST_MISMATCH" in policy
+        and "EFFECT_JOURNAL_RECORD_DIGEST_MISMATCH" in policy,
+        "signed_update_health_binding": "pub struct UpdateHealthClaim" in policy
+        and "UPDATE_HEALTH_BINDING_MISMATCH" in policy
+        and "UPDATE_BOOT_MEASUREMENT_MISMATCH" in policy,
+        "write_ahead_receipt_sink": "pub trait PolicyReceiptSink" in coordinator
+        and "self.receipt_sink.append(&receipt)?" in coordinator
+        and "receipt_sink_failure_publishes_no_domain_or_receipt_state" in coordinator,
+        "truthful_external_effect_receipt": "external_effect_attempted" in coordinator
+        and "matches!(observation, ProviderObservation::Applied)" in coordinator,
+        "backend_receives_bound_command": "command: &EffectCommand" in runtime
+        and "EXTERNAL_REPORT_BINDING_MISMATCH" in runtime,
+        "authorization_precedes_effect_preparation_and_dispatch": False,
+        "codec_composition_self_check": "hepta_browser_codec::self_check()" in browserd,
+        "exact_ed25519_pin": 'ed25519-compact = { version = "=2.1.1", default-features = false, features = ["std"] }' in cargo,
+        "exact_sha2_pin": 'sha2 = "=0.10.9"' in cargo,
+    }
+
+    authorize = runtime.find(".authorize_and_prepare_network_effect(")
+    dispatch = runtime.find(".mark_effect_dispatched(")
+    execute = runtime.find(".execute_network(&command)")
+    checks["authorization_precedes_effect_preparation_and_dispatch"] = (
+        authorize >= 0 and dispatch > authorize and execute > dispatch
+    )
+
+    failed = sorted(name for name, passed in checks.items() if not passed)
+    require(not failed, f"D4-D7 authority hardening drift: {failed}")
+    return sorted(checks)
 
 
 def validate() -> dict[str, object]:
@@ -115,11 +166,13 @@ def validate() -> dict[str, object]:
 
     unified = safe_path(".github/workflows/d4-d9-source-suite.yml").read_text(encoding="utf-8")
     require('branches:\n      - main\n      - "codex/**"' in unified, "unified suite does not cover main and codex candidates")
+    authority_hardening = validate_authority_hardening()
     return {
         "schema": "trillionnium.desktop.late-stage-source-validation.v1",
         "status": "PASS_SOURCE_INVENTORY",
         "packages": observed,
         "source_packages_present": True,
+        "authority_hardening_source_checks": authority_hardening,
         "runtime_integration_claimed": False,
         "physical_evidence_claimed": False,
         "release_promotion_claimed": False,

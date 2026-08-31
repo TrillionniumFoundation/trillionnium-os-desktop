@@ -20,6 +20,10 @@ class LateStageSourceInventoryTests(unittest.TestCase):
         self.assertEqual(result["status"], "PASS_SOURCE_INVENTORY")
         self.assertEqual(result["packages"], ["D4-01", "D5-01", "D6-01", "D7-01", "D8-01", "D9-01"])
         self.assertTrue(result["source_packages_present"])
+        self.assertGreaterEqual(len(result["authority_hardening_source_checks"]), 12)
+        self.assertIn(
+            "write_ahead_receipt_sink", result["authority_hardening_source_checks"]
+        )
         self.assertFalse(result["runtime_integration_claimed"])
         self.assertFalse(result["physical_evidence_claimed"])
         self.assertFalse(result["release_promotion_claimed"])

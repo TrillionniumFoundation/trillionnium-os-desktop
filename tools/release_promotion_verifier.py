@@ -932,6 +932,25 @@ def verify_document_artifacts(
         fail("RELEASE_CVE_REVIEW_TIME_INVALID")
     require_identifier(cve["reviewer_id"], "RELEASE_CVE_REVIEWER_ID_INVALID")
 
+    limitations = load_json(artifacts["known_limitations"][1])
+    if set(limitations) != {"schema", "limitations"} or limitations["schema"] != "trillionnium.desktop.known-limitations.v1":
+        fail("RELEASE_KNOWN_LIMITATIONS_FIELD_SET_OR_SCHEMA_MISMATCH")
+    if not isinstance(limitations["limitations"], list) or not limitations["limitations"]:
+        fail("RELEASE_KNOWN_LIMITATIONS_REVIEW_REQUIRED")
+    for item in limitations["limitations"]:
+        if not isinstance(item, dict) or set(item) != {
+            "id",
+            "severity",
+            "description",
+            "mitigation",
+            "status",
+            "reviewer_id",
+        }:
+            fail("RELEASE_KNOWN_LIMITATION_FIELD_SET_MISMATCH")
+        if not all(isinstance(item[key], str) and item[key] for key in item):
+            fail("RELEASE_KNOWN_LIMITATION_VALUE_INVALID")
+
+
     notes = load_json(artifacts["release_notes"][1])
     required_notes = {
         "schema",
@@ -954,24 +973,6 @@ def verify_document_artifacts(
             fail("RELEASE_NOTES_VALUE_MISSING", key)
     if not isinstance(notes["security_changes"], list):
         fail("RELEASE_NOTES_SECURITY_CHANGES_INVALID")
-
-    limitations = load_json(artifacts["known_limitations"][1])
-    if set(limitations) != {"schema", "limitations"} or limitations["schema"] != "trillionnium.desktop.known-limitations.v1":
-        fail("RELEASE_KNOWN_LIMITATIONS_FIELD_SET_OR_SCHEMA_MISMATCH")
-    if not isinstance(limitations["limitations"], list) or not limitations["limitations"]:
-        fail("RELEASE_KNOWN_LIMITATIONS_REVIEW_REQUIRED")
-    for item in limitations["limitations"]:
-        if not isinstance(item, dict) or set(item) != {
-            "id",
-            "severity",
-            "description",
-            "mitigation",
-            "status",
-            "reviewer_id",
-        }:
-            fail("RELEASE_KNOWN_LIMITATION_FIELD_SET_MISMATCH")
-        if not all(isinstance(item[key], str) and item[key] for key in item):
-            fail("RELEASE_KNOWN_LIMITATION_VALUE_INVALID")
 
     nonclaims = load_json(artifacts["machine_nonclaims"][1])
     if nonclaims != {
@@ -1060,6 +1061,12 @@ def verify_release(
         "tag": source["tag"],
     }:
         fail("RELEASE_SOURCE_ARCHIVE_IDENTITY_MISMATCH")
+
+    # Validate each local release document before any downstream document
+    # consumes its digest. This preserves fail-closed verification while
+    # reporting the narrowest corrupt artifact instead of a secondary
+    # cross-artifact mismatch.
+    verify_document_artifacts(evidence, artifacts, contract, now_epoch=now_epoch)
 
     promoter = evidence["promoter"]
     if not isinstance(promoter, dict) or set(promoter) != PROMOTER_FIELDS:
@@ -1178,7 +1185,6 @@ def verify_release(
 
     d8 = load_json(artifacts["d8_hardware_evidence"][1])
     verify_d8_binding(d8, evidence, contract, require_production)
-    verify_document_artifacts(evidence, artifacts, contract, now_epoch=now_epoch)
     verify_previous_release(
         previous_release, evidence, trust, require_production=require_production
     )

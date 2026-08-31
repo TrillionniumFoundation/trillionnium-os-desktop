@@ -8,8 +8,8 @@
 //! side-effect-free source integrations. No integrated-image, hardware,
 //! signing, external-network, or release authority is implied.
 
-mod legacy;
 pub mod authority_coordinator;
+mod legacy;
 pub mod product_policy;
 pub mod product_runtime;
 
@@ -36,9 +36,14 @@ pub fn run_self_check() -> Result<SelfCheckReport, String> {
         .checked_add(1)
         .ok_or_else(|| "self-check counter overflow".to_owned())?;
 
+    hepta_browser_codec::self_check().map_err(|error| error.to_string())?;
+    report.checks_run = report
+        .checks_run
+        .checked_add(1)
+        .ok_or_else(|| "self-check counter overflow".to_owned())?;
+
     let policy = product_policy::run_self_check().map_err(|error| error.to_string())?;
-    let coordinator =
-        authority_coordinator::run_self_check().map_err(|error| error.to_string())?;
+    let coordinator = authority_coordinator::run_self_check().map_err(|error| error.to_string())?;
     let runtime = product_runtime::run_self_check().map_err(|error| error.to_string())?;
 
     let additional_checks = policy
@@ -72,7 +77,7 @@ mod tests {
     fn public_self_check_includes_agent_port_and_d4_d7_layers_without_authority_widening() {
         let report = run_self_check().expect("integrated source self-check must pass");
         assert!(report.ok);
-        assert!(report.checks_run >= 20);
+        assert!(report.checks_run >= 21);
         assert!(report.to_json().contains(ACTIVE_PLAN_REVISION));
         assert_eq!(
             PRODUCT_POLICY_SOURCE_STAGE,
