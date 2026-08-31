@@ -1,0 +1,258 @@
+name: temporary-d4-d9-integration-controller
+
+on:
+  push:
+    branches:
+      - codex/d4-d9-integration-controller-v1
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: temporary-d4-d9-integration-controller
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      UNIFIED_BRANCH: codex/full-gap-closure-final
+      PYTHONDONTWRITEBYTECODE: "1"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/trillionnium-phase-target
+    steps:
+      - name: Check out controller source and all history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for D3-integrated exact-head D2I regression
+        id: prerequisite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          candidate=
+          run_id=
+          for attempt in $(seq 1 180); do
+            git fetch --no-tags origin "$UNIFIED_BRANCH"
+            probe=$(git rev-parse "origin/$UNIFIED_BRANCH")
+            if git cat-file -e "$probe:tools/validate_d3_development_profile.py" 2>/dev/null; then
+              candidate=$probe
+              record=$(gh run list \
+                --repo "$GITHUB_REPOSITORY" \
+                --workflow d2i-integrated-image.yml \
+                --branch "$UNIFIED_BRANCH" \
+                --limit 50 \
+                --json databaseId,headSha,status,conclusion,createdAt \
+                --jq '.[] | select(.headSha == "'"$candidate"'" and .status == "completed" and .conclusion == "success") | .databaseId' \
+                | head -n1)
+              if test -n "$record"; then
+                run_id=$record
+                break
+              fi
+            fi
+            sleep 20
+          done
+          test -n "$candidate" || {
+            echo "D3-integrated unified candidate was not observed" >&2
+            exit 1
+          }
+          test -n "$run_id" || {
+            echo "no successful D2I regression is bound to D3 candidate $candidate" >&2
+            exit 1
+          }
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          test "$(git rev-parse "origin/$UNIFIED_BRANCH")" = "$candidate"
+          printf 'START_SHA=%s\n' "$candidate" >> "$GITHUB_ENV"
+          printf 'PREREQUISITE_D2I_RUN=%s\n' "$run_id" >> "$GITHUB_ENV"
+          printf 'start_sha=%s\nrun_id=%s\n' "$candidate" "$run_id" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact phase branch heads
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            codex/d4-collaboration-state-machine-v1 \
+            codex/d5-product-foundation \
+            codex/d5-trusted-app-verifier-v1 \
+            codex/d6-capability-egress-policy-v1 \
+            codex/d6-plan-truth-ci-closure-v1 \
+            codex/d6-source-integration-candidate-v1 \
+            codex/d7-recovery-update-reconciliation-v1 \
+            codex/d8-hardware-qualification-verifier-v1 \
+            codex/d9-signed-release-promotion-v1
+          mkdir -p /tmp/trillionnium-phase-audit
+          : > /tmp/trillionnium-phase-audit/results.tsv
+          for branch in \
+            codex/d4-collaboration-state-machine-v1 \
+            codex/d5-product-foundation \
+            codex/d5-trusted-app-verifier-v1 \
+            codex/d6-capability-egress-policy-v1 \
+            codex/d6-plan-truth-ci-closure-v1 \
+            codex/d6-source-integration-candidate-v1 \
+            codex/d7-recovery-update-reconciliation-v1 \
+            codex/d8-hardware-qualification-verifier-v1 \
+            codex/d9-signed-release-promotion-v1; do
+            printf '%s\t%s\n' "$branch" "$(git rev-parse "origin/$branch")" \
+              >> /tmp/trillionnium-phase-audit/pinned-heads.tsv
+          done
+
+      - name: Install exact repository Rust toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Replay and prove phase trees in dependency order
+        run: |
+          set -euo pipefail
+          git checkout --detach "$START_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          prove_tree() {
+            python3 tools/validate_repository.py
+            python3 tools/validate_project_truth.py
+            python3 tools/verify_systemd_socket_custody.py
+            if test -f tools/validate_d3_development_profile.py; then
+              python3 tools/validate_d3_development_profile.py
+            fi
+            python3 -m unittest discover -s tests -t . -p 'test_*.py'
+            cargo fmt --all --check
+            cargo check --workspace --all-targets --locked
+            cargo clippy --workspace --all-targets --locked -- -D warnings
+            cargo test --workspace --all-targets --locked
+            cargo check --workspace --all-targets --all-features --locked
+            cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+            cargo test --workspace --all-targets --all-features --locked
+            git diff --check
+          }
+
+          integrate_phase() {
+            local phase=$1
+            local branch=$2
+            local message=$3
+            local source
+            local base
+            local changed
+            source=$(git rev-parse "origin/$branch")
+            base=$(git merge-base "$START_SHA" "$source")
+            git diff --name-only "$base" "$source" \
+              > "/tmp/trillionnium-phase-audit/$phase-source-files.txt"
+            if grep -E '(^|/)(temporary-[^/]*|temporary[^/]*)$|^tools/temporary-' \
+                "/tmp/trillionnium-phase-audit/$phase-source-files.txt"; then
+              echo "$phase source tree contains a temporary path" >&2
+              return 1
+            fi
+            printf '%s\tSTART\t%s\n' "$phase" "$source" \
+              >> /tmp/trillionnium-phase-audit/results.tsv
+            git reset --hard HEAD
+            git clean -ffd
+            if ! git merge --squash --no-commit "$source" \
+                > "/tmp/trillionnium-phase-audit/$phase-merge.log" 2>&1; then
+              printf '%s\tMERGE_FAIL\t%s\n' "$phase" "$source" \
+                >> /tmp/trillionnium-phase-audit/results.tsv
+              git reset --hard HEAD
+              git clean -ffd
+              return 1
+            fi
+            changed=$(git status --porcelain=v1)
+            if test -z "$changed"; then
+              printf '%s\tNOOP\t%s\n' "$phase" "$source" \
+                >> /tmp/trillionnium-phase-audit/results.tsv
+              return 0
+            fi
+            git status --short \
+              > "/tmp/trillionnium-phase-audit/$phase-result-files.txt"
+            if grep -E '(^|/)(temporary-[^/]*|temporary[^/]*)$|tools/temporary-' \
+                "/tmp/trillionnium-phase-audit/$phase-result-files.txt"; then
+              echo "$phase merge result contains a temporary path" >&2
+              return 1
+            fi
+            if ! prove_tree \
+                > "/tmp/trillionnium-phase-audit/$phase-proof.log" 2>&1; then
+              printf '%s\tPROOF_FAIL\t%s\n' "$phase" "$source" \
+                >> /tmp/trillionnium-phase-audit/results.tsv
+              return 1
+            fi
+            git add --all
+            git diff --cached --check
+            git commit -m "$message" \
+              -m "Source-Branch: $branch" \
+              -m "Source-SHA: $source"
+            printf '%s\tPASS\t%s\t%s\n' "$phase" "$source" "$(git rev-parse HEAD)" \
+              >> /tmp/trillionnium-phase-audit/results.tsv
+          }
+
+          integrate_phase D4 codex/d4-collaboration-state-machine-v1 \
+            "feat(d4): integrate collaboration state machine"
+          integrate_phase D5A codex/d5-product-foundation \
+            "feat(d5): integrate trusted application product foundation"
+          integrate_phase D5B codex/d5-trusted-app-verifier-v1 \
+            "feat(d5): integrate trusted application verification"
+          integrate_phase D6A codex/d6-capability-egress-policy-v1 \
+            "feat(d6): integrate capability and egress policy"
+          integrate_phase D6B codex/d6-plan-truth-ci-closure-v1 \
+            "ci(d6): integrate plan truth and source closure gates"
+
+          # D6 integration candidate is an audit oracle, not an extra product
+          # phase. Record its exact delta for comparison without merging stale
+          # aggregate history into the clean candidate chain.
+          d6_oracle=$(git rev-parse origin/codex/d6-source-integration-candidate-v1)
+          git diff --name-status "$START_SHA" "$d6_oracle" \
+            > /tmp/trillionnium-phase-audit/D6-oracle-delta.txt
+          printf 'D6-ORACLE\tAUDITED_NOT_MERGED\t%s\n' "$d6_oracle" \
+            >> /tmp/trillionnium-phase-audit/results.tsv
+
+          integrate_phase D7 codex/d7-recovery-update-reconciliation-v1 \
+            "feat(d7): integrate recovery and update reconciliation"
+          integrate_phase D8 codex/d8-hardware-qualification-verifier-v1 \
+            "feat(d8): integrate hardware qualification verifier"
+          integrate_phase D9 codex/d9-signed-release-promotion-v1 \
+            "feat(d9): integrate signed release promotion gate"
+
+          prove_tree > /tmp/trillionnium-phase-audit/final-proof.log 2>&1
+          test -z "$(git status --porcelain=v1)"
+          printf 'FINAL_SHA=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Publish clean phase commit chain atomically
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          test "$(git rev-parse "origin/$UNIFIED_BRANCH")" = "$START_SHA"
+          test -n "$FINAL_SHA"
+          git push origin "$FINAL_SHA:refs/heads/$UNIFIED_BRANCH"
+
+      - name: Dispatch final integrated machine regression
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run d2i-integrated-image.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$UNIFIED_BRANCH"
+          printf 'prerequisite_run=%s\nstart=%s\nfinal=%s\n' \
+            "$PREREQUISITE_D2I_RUN" "$START_SHA" "$FINAL_SHA"
+
+      - name: Upload bounded phase audit
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d4-d9-integration-audit-${{ github.sha }}
+          path: /tmp/trillionnium-phase-audit
+          if-no-files-found: warn
+          retention-days: 7
+          compression-level: 6
