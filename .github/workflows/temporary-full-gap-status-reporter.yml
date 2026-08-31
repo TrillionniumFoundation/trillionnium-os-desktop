@@ -6,132 +6,20 @@ on:
       - codex/full-gap-status-reporter-v1
 
 permissions:
-  actions: read
   contents: read
-  pull-requests: write
 
 concurrency:
   group: temporary-full-gap-status-reporter
   cancel-in-progress: true
 
 jobs:
-  report:
+  retired:
+    name: retired-status-reporter
     runs-on: ubuntu-24.04
-    timeout-minutes: 330
-    env:
-      GH_TOKEN: ${{ github.token }}
-      TARGET_BRANCH: codex/full-gap-closure-final
-      PR_NUMBER: "52"
-      MARKER: "<!-- trillionnium-full-gap-closure-status -->"
+    timeout-minutes: 2
     steps:
-      - name: Check out status controller
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: codex/full-gap-status-reporter-v1
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Continuously publish evidence-chain status
+      - name: Confirm retirement
         run: |
           set -euo pipefail
-          workflows=(
-            temporary-d2i-apply-v3.yml
-            temporary-promote-d2i-v3.yml
-            temporary-d2i-d3-converge.yml
-            temporary-d2i-d3-converge-v2.yml
-            temporary-d2i-auto-repair.yml
-            temporary-d4-d9-converge.yml
-          )
-          branches=(
-            codex/d2i-apply-v3-proof
-            codex/d2i-promote-v3
-            codex/d2i-d3-converge-v1
-            codex/d2i-d3-converge-v2
-            codex/d2i-auto-repair-v1
-            codex/d4-d9-converge-v1
-          )
-          for cycle in $(seq 1 100); do
-            target=$(gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH")
-            target_sha=$(jq -r '.commit.sha' <<<"$target")
-            target_subject=$(gh api "repos/$GITHUB_REPOSITORY/commits/$target_sha" --jq '.commit.message | split("\n")[0]')
-            pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
-            pr_head=$(jq -r '.head.sha' <<<"$pr")
-            merge_sha=$(jq -r '.merge_commit_sha // empty' <<<"$pr")
-            d2i_status=not-created
-            d2i_conclusion=-
-            d2i_run=-
-            if [[ "$pr_head" == "$target_sha" && -n "$merge_sha" ]]; then
-              runs=$(gh api \
-                "repos/$GITHUB_REPOSITORY/actions/workflows/d2i-integrated-image.yml/runs?event=pull_request&branch=$TARGET_BRANCH&per_page=40")
-              d2i=$(jq -c --arg sha "$merge_sha" \
-                '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' \
-                <<<"$runs")
-              if [[ -n "$d2i" ]]; then
-                d2i_status=$(jq -r '.status' <<<"$d2i")
-                d2i_conclusion=$(jq -r '.conclusion // "-"' <<<"$d2i")
-                d2i_run=$(jq -r '.id' <<<"$d2i")
-              fi
-            fi
-            body=$(mktemp)
-            {
-              echo "$MARKER"
-              echo "## Full-gap closure controller"
-              echo
-              echo "| Field | Exact state |"
-              echo "|---|---|"
-              echo "| Unified candidate | \`$target_sha\` |"
-              echo "| Head subject | \`$target_subject\` |"
-              echo "| PR head synchronized | \`$([[ "$pr_head" == "$target_sha" ]] && echo true || echo false)\` |"
-              echo "| Exact-head D2I run | \`$d2i_run\` |"
-              echo "| D2I status | \`$d2i_status / $d2i_conclusion\` |"
-              echo
-              echo "### Controllers"
-              echo
-              echo "| Controller | Status | Conclusion | Run |"
-              echo "|---|---|---|---|"
-              for index in "${!workflows[@]}"; do
-                workflow=${workflows[$index]}
-                branch=${branches[$index]}
-                response=$(gh api \
-                  "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/runs?branch=$branch&per_page=1" 2>/dev/null || echo '{"workflow_runs":[]}')
-                run=$(jq -c '.workflow_runs[0] // empty' <<<"$response")
-                if [[ -n "$run" ]]; then
-                  status=$(jq -r '.status' <<<"$run")
-                  conclusion=$(jq -r '.conclusion // "-"' <<<"$run")
-                  id=$(jq -r '.id' <<<"$run")
-                else
-                  status=not-created
-                  conclusion=-
-                  id=-
-                fi
-                echo "| \`$workflow\` | \`$status\` | \`$conclusion\` | \`$id\` |"
-              done
-              echo
-              echo "The table reports observed GitHub objects only; it does not convert source policy into human-review, hardware, HSM, or release-custody evidence."
-            } > "$body"
-            comments=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments?per_page=100")
-            comment_id=$(jq -r --arg marker "$MARKER" \
-              '[.[] | select(.user.login == "github-actions[bot]" and (.body | contains($marker)))] | last | .id // empty' \
-              <<<"$comments")
-            payload=$(jq -Rs '{body: .}' < "$body")
-            if [[ -n "$comment_id" ]]; then
-              gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" \
-                --input - <<<"$payload" >/dev/null
-            else
-              gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-                --input - <<<"$payload" >/dev/null
-            fi
-            if [[ "$d2i_status" == completed && "$d2i_conclusion" == success ]] \
-                && git ls-remote "https://github.com/$GITHUB_REPOSITORY.git" \
-                  refs/heads/codex/d4-d9-converge-v1 >/dev/null; then
-              # Do not terminate solely on D2I success; a later controller may still advance the head.
-              sleep 120
-              latest=$(gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH" --jq '.commit.sha')
-              if [[ "$latest" == "$target_sha" ]]; then
-                exit 0
-              fi
-            fi
-            sleep 120
-          done
-          echo "status reporter reached its bounded observation window" >&2
-          exit 1
+          echo 'The long-polling temporary status reporter is retired.'
+          echo 'GitHub API state is read on demand; no runner is reserved for polling.'
