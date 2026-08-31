@@ -1,0 +1,483 @@
+name: temporary-live-governance-controller-v3
+
+on:
+  push:
+    branches:
+      - codex/live-governance-controller-v3
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: temporary-live-governance-controller-v3
+  cancel-in-progress: false
+
+jobs:
+  govern:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      UNIFIED_BRANCH: codex/full-gap-closure-final
+      TARGET_BRANCH: main
+      PULL_REQUEST: "52"
+      ADMIN_TOKEN: ${{ secrets.TRILLIONNIUM_GITHUB_ADMIN_TOKEN }}
+      PYTHONDONTWRITEBYTECODE: "1"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: /tmp/trillionnium-live-governance-v3-target
+    steps:
+      - name: Check out controller history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for either proved D4-D9 controller and exact-head D2I
+        id: prerequisite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/trillionnium-live-governance-v3
+          candidate=
+          d2i_run=
+          phase_controller=
+          for attempt in $(seq 1 300); do
+            git fetch --no-tags origin "$UNIFIED_BRANCH"
+            probe=$(git rev-parse "origin/$UNIFIED_BRANCH")
+            pr_head=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" --jq .head.sha)
+            v1=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow temporary-d4-d9-integration-controller.yml \
+              --branch codex/d4-d9-integration-controller-v1 \
+              --limit 10 --json status,conclusion,databaseId \
+              --jq '.[] | select(.status == "completed" and .conclusion == "success") | .databaseId' \
+              | head -n1 || true)
+            v2=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow temporary-d4-d9-integration-controller-v2.yml \
+              --branch codex/d4-d9-integration-controller-v2 \
+              --limit 10 --json status,conclusion,databaseId \
+              --jq '.[] | select(.status == "completed" and .conclusion == "success") | .databaseId' \
+              | head -n1 || true)
+            if test -n "$v1"; then
+              phase_controller="v1:$v1"
+            elif test -n "$v2"; then
+              phase_controller="v2:$v2"
+            else
+              sleep 20
+              continue
+            fi
+            if test "$pr_head" != "$probe"; then
+              sleep 20
+              continue
+            fi
+            d2i_run=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow d2i-integrated-image.yml \
+              --branch "$UNIFIED_BRANCH" \
+              --limit 100 \
+              --json databaseId,headSha,status,conclusion \
+              --jq '.[] | select(.headSha == "'"$probe"'" and .status == "completed" and .conclusion == "success") | .databaseId' \
+              | head -n1)
+            if test -n "$d2i_run"; then
+              candidate=$probe
+              break
+            fi
+            sleep 20
+          done
+          test -n "$candidate" || {
+            echo "final source controller plus exact-head D2I proof was not observed" >&2
+            exit 1
+          }
+          {
+            printf 'FINAL_SOURCE_SHA=%s\n' "$candidate"
+            printf 'FINAL_SOURCE_D2I_RUN=%s\n' "$d2i_run"
+            printf 'PHASE_CONTROLLER=%s\n' "$phase_controller"
+          } >> "$GITHUB_ENV"
+          printf '%s\n' "$candidate" \
+            > /tmp/trillionnium-live-governance-v3/source-sha.txt
+          printf '%s\n' "$d2i_run" \
+            > /tmp/trillionnium-live-governance-v3/source-d2i-run.txt
+          printf '%s\n' "$phase_controller" \
+            > /tmp/trillionnium-live-governance-v3/phase-controller.txt
+          printf 'candidate=%s\nd2i_run=%s\ncontroller=%s\n' \
+            "$candidate" "$d2i_run" "$phase_controller" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve or create a real repository custody team
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          teams=/tmp/trillionnium-live-governance-v3/repository-teams.json
+          if ! gh api --paginate "repos/$GITHUB_REPOSITORY/teams?per_page=100" \
+              > "$teams" \
+              2> /tmp/trillionnium-live-governance-v3/team-query-error.txt; then
+            echo "repository team enumeration requires an administration-capable token" >&2
+            exit 1
+          fi
+          selected=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('/tmp/trillionnium-live-governance-v3/repository-teams.json')
+          data = json.loads(path.read_text())
+          if isinstance(data, dict):
+              data = [data]
+          eligible = sorted(
+              (
+                  item for item in data
+                  if isinstance(item, dict)
+                  and item.get('slug')
+                  and item.get('permission') in {'push', 'maintain', 'admin'}
+              ),
+              key=lambda item: (item.get('permission') != 'admin', item['slug']),
+          )
+          print(eligible[0]['slug'] if eligible else '')
+          PY
+          )
+          if test -z "$selected"; then
+            test -n "$ADMIN_TOKEN" || {
+              echo "no eligible repository team exists and no org-admin token is configured" >&2
+              exit 1
+            }
+            python3 - <<'PY' > /tmp/trillionnium-live-governance-v3/create-team.json
+          import json
+          import os
+          print(json.dumps({
+              'name': 'Desktop Maintainers',
+              'description': 'Independent custody and review for TrillionniumOS Desktop',
+              'privacy': 'closed',
+              'notification_setting': 'notifications_enabled',
+              'repo_names': [os.environ['GITHUB_REPOSITORY']],
+          }))
+          PY
+            gh api --method POST \
+              "orgs/$GITHUB_REPOSITORY_OWNER/teams" \
+              --input /tmp/trillionnium-live-governance-v3/create-team.json \
+              > /tmp/trillionnium-live-governance-v3/create-team-response.json
+            selected=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          value = json.loads(Path('/tmp/trillionnium-live-governance-v3/create-team-response.json').read_text())
+          print(value['slug'])
+          PY
+            )
+          fi
+          test -n "$selected"
+          printf '%s\n' "$selected" \
+            > /tmp/trillionnium-live-governance-v3/team-slug.txt
+          printf 'CODEOWNER_TEAM=%s\n' "$selected" >> "$GITHUB_ENV"
+
+      - name: Bind CODEOWNERS to the actual custody team
+        id: codeowners
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          test "$(git rev-parse "origin/$UNIFIED_BRANCH")" = "$FINAL_SOURCE_SHA"
+          git checkout --detach "$FINAL_SOURCE_SHA"
+          mkdir -p .github
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+
+          path = Path('.github/CODEOWNERS')
+          existing = path.read_text(encoding='utf-8') if path.exists() else ''
+          owner = f"@{os.environ['GITHUB_REPOSITORY_OWNER']}/{os.environ['CODEOWNER_TEAM']}"
+          begin = '# BEGIN TRILLIONNIUM GOVERNED OWNERSHIP V1'
+          end = '# END TRILLIONNIUM GOVERNED OWNERSHIP V1'
+          block = '\n'.join([
+              begin,
+              f'* {owner}',
+              f'/.github/ {owner}',
+              f'/contracts/ {owner}',
+              f'/manifests/ {owner}',
+              f'/packaging/ {owner}',
+              f'/tools/ {owner}',
+              f'/docs/DESKTOP_PLAN-2026-08-29-d6.md {owner}',
+              end,
+              '',
+          ])
+          if begin in existing or end in existing:
+              before, _, rest = existing.partition(begin)
+              _, _, after = rest.partition(end)
+              existing = before.rstrip() + ('\n\n' if before.strip() else '') + block + after.lstrip('\n')
+          else:
+              existing = existing.rstrip() + ('\n\n' if existing.strip() else '') + block
+          path.write_text(existing, encoding='utf-8')
+          PY
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          test ! -f tools/validate_d3_development_profile.py || \
+            python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          git diff --check
+          git add .github/CODEOWNERS
+          if git diff --cached --quiet; then
+            governed=$FINAL_SOURCE_SHA
+            changed=no
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore(governance): bind CODEOWNERS to independent team custody"
+            git fetch --no-tags origin "$UNIFIED_BRANCH"
+            test "$(git rev-parse "origin/$UNIFIED_BRANCH")" = "$FINAL_SOURCE_SHA"
+            git push origin HEAD:refs/heads/$UNIFIED_BRANCH
+            governed=$(git rev-parse HEAD)
+            changed=yes
+          fi
+          printf 'GOVERNED_SHA=%s\nCODEOWNERS_CHANGED=%s\n' \
+            "$governed" "$changed" >> "$GITHUB_ENV"
+          printf '%s\n' "$governed" \
+            > /tmp/trillionnium-live-governance-v3/governed-sha.txt
+          printf 'sha=%s\nchanged=%s\n' "$governed" "$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Re-prove exact CODEOWNERS head when source changed
+        if: steps.codeowners.outputs.changed == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run d2i-integrated-image.yml \
+            --repo "$GITHUB_REPOSITORY" --ref "$UNIFIED_BRANCH"
+          run_id=
+          status=
+          conclusion=
+          for attempt in $(seq 1 900); do
+            record=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow d2i-integrated-image.yml \
+              --branch "$UNIFIED_BRANCH" \
+              --event workflow_dispatch \
+              --limit 100 \
+              --json databaseId,headSha,status,conclusion,createdAt \
+              --jq '.[] | select(.headSha == "'"$GOVERNED_SHA"'" and .createdAt >= "'"$started"'") | [.databaseId,.status,(.conclusion // "")] | @tsv' \
+              | head -n1)
+            if test -n "$record"; then
+              IFS=$'\t' read -r run_id status conclusion <<<"$record"
+              if test "$status" = completed; then
+                break
+              fi
+            fi
+            sleep 20
+          done
+          test -n "$run_id"
+          test "$status" = completed
+          test "$conclusion" = success
+          printf '%s\n' "$run_id" \
+            > /tmp/trillionnium-live-governance-v3/governed-d2i-run.txt
+          printf 'GOVERNED_D2I_RUN=%s\n' "$run_id" >> "$GITHUB_ENV"
+
+      - name: Reuse already-bound exact machine proof when CODEOWNERS is unchanged
+        if: steps.codeowners.outputs.changed == 'no'
+        run: |
+          printf '%s\n' "$FINAL_SOURCE_D2I_RUN" \
+            > /tmp/trillionnium-live-governance-v3/governed-d2i-run.txt
+          printf 'GOVERNED_D2I_RUN=%s\n' "$FINAL_SOURCE_D2I_RUN" >> "$GITHUB_ENV"
+
+      - name: Configure strict main protection and required signatures
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          cat > /tmp/trillionnium-live-governance-v3/protection-request.json <<'JSON'
+          {
+            "required_status_checks": {
+              "strict": true,
+              "contexts": [
+                "desktop-ci / repository-contracts",
+                "desktop-ci / rust",
+                "governance-integrity / governance-integrity"
+              ]
+            },
+            "enforce_admins": true,
+            "required_pull_request_reviews": {
+              "dismiss_stale_reviews": true,
+              "require_code_owner_reviews": true,
+              "required_approving_review_count": 1,
+              "require_last_push_approval": true
+            },
+            "restrictions": null,
+            "required_linear_history": true,
+            "allow_force_pushes": false,
+            "allow_deletions": false,
+            "block_creations": false,
+            "required_conversation_resolution": true,
+            "lock_branch": false,
+            "allow_fork_syncing": false
+          }
+          JSON
+          gh api --method PUT \
+            "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection" \
+            --input /tmp/trillionnium-live-governance-v3/protection-request.json \
+            > /tmp/trillionnium-live-governance-v3/protection-response.json \
+            2> /tmp/trillionnium-live-governance-v3/protection-error.txt
+          gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection/required_signatures" \
+            > /tmp/trillionnium-live-governance-v3/signature-response.json
+
+      - name: Request team review and arm protected auto-merge
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" --jq .head.sha)" = "$GOVERNED_SHA"
+          python3 - <<'PY' > /tmp/trillionnium-live-governance-v3/review-request.json
+          import json
+          import os
+          print(json.dumps({'team_reviewers': [os.environ['CODEOWNER_TEAM']]}))
+          PY
+          gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST/requested_reviewers" \
+            --input /tmp/trillionnium-live-governance-v3/review-request.json \
+            > /tmp/trillionnium-live-governance-v3/review-request-response.json
+          printf '{"allow_auto_merge":true,"allow_squash_merge":true}\n' \
+            > /tmp/trillionnium-live-governance-v3/repository-merge-policy.json
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY" \
+            --input /tmp/trillionnium-live-governance-v3/repository-merge-policy.json \
+            > /tmp/trillionnium-live-governance-v3/repository-response.json
+          gh pr merge "$PULL_REQUEST" --repo "$GITHUB_REPOSITORY" --auto --squash
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" \
+            > /tmp/trillionnium-live-governance-v3/pr-auto-merge.json
+
+      - name: Verify live governance and wait for an independent exact-head approval
+        env:
+          FALLBACK_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          token=$ADMIN_TOKEN
+          if test -z "$token"; then
+            token=$FALLBACK_TOKEN
+          fi
+          export GH_TOKEN=$token
+          approval_user=
+          for attempt in $(seq 1 180); do
+            gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH" \
+              > /tmp/trillionnium-live-governance-v3/branch.json
+            gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection" \
+              > /tmp/trillionnium-live-governance-v3/protection-verified.json
+            gh api "repos/$GITHUB_REPOSITORY/branches/$TARGET_BRANCH/protection/required_signatures" \
+              > /tmp/trillionnium-live-governance-v3/signatures-verified.json
+            gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST" \
+              > /tmp/trillionnium-live-governance-v3/pr.json
+            gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST/reviews?per_page=100" \
+              > /tmp/trillionnium-live-governance-v3/reviews.json
+            approval_user=$(python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path('/tmp/trillionnium-live-governance-v3')
+          pr = json.loads((root/'pr.json').read_text())
+          reviews = json.loads((root/'reviews.json').read_text())
+          if isinstance(reviews, dict):
+              reviews = [reviews]
+          author = (pr.get('user') or {}).get('login')
+          head = (pr.get('head') or {}).get('sha')
+          users = sorted({
+              (review.get('user') or {}).get('login')
+              for review in reviews
+              if review.get('state') == 'APPROVED'
+              and review.get('commit_id') == head
+              and (review.get('user') or {}).get('login')
+              and (review.get('user') or {}).get('login') != author
+          })
+          print(users[0] if users else '')
+          PY
+            )
+            if test -n "$approval_user"; then
+              break
+            fi
+            sleep 20
+          done
+          printf '%s\n' "$approval_user" \
+            > /tmp/trillionnium-live-governance-v3/independent-approval-user.txt
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path('/tmp/trillionnium-live-governance-v3')
+          branch = json.loads((root/'branch.json').read_text())
+          protection = json.loads((root/'protection-verified.json').read_text())
+          signatures = json.loads((root/'signatures-verified.json').read_text())
+          pr = json.loads((root/'pr.json').read_text())
+          approval = (root/'independent-approval-user.txt').read_text().strip()
+          contexts = set((protection.get('required_status_checks') or {}).get('contexts') or [])
+          contexts.update(
+              item.get('context')
+              for item in (protection.get('required_status_checks') or {}).get('checks', [])
+              if isinstance(item, dict) and item.get('context')
+          )
+          required = {
+              'desktop-ci / repository-contracts',
+              'desktop-ci / rust',
+              'governance-integrity / governance-integrity',
+          }
+          review = protection.get('required_pull_request_reviews') or {}
+          checks = {
+              'branch_protected': branch.get('protected') is True,
+              'strict_checks': (protection.get('required_status_checks') or {}).get('strict') is True,
+              'required_contexts': required <= contexts,
+              'admins_enforced': (protection.get('enforce_admins') or {}).get('enabled') is True,
+              'dismiss_stale': review.get('dismiss_stale_reviews') is True,
+              'codeowner_review': review.get('require_code_owner_reviews') is True,
+              'last_push_approval': review.get('require_last_push_approval') is True,
+              'one_approval': int(review.get('required_approving_review_count') or 0) >= 1,
+              'linear_history': (protection.get('required_linear_history') or {}).get('enabled') is True,
+              'force_push_disabled': (protection.get('allow_force_pushes') or {}).get('enabled') is False,
+              'deletion_disabled': (protection.get('allow_deletions') or {}).get('enabled') is False,
+              'conversation_resolution': (protection.get('required_conversation_resolution') or {}).get('enabled') is True,
+              'signed_commits': signatures.get('enabled') is True,
+              'pr_exact_head': (pr.get('head') or {}).get('sha') == os.environ['GOVERNED_SHA'],
+              'independent_exact_head_approval': bool(approval),
+          }
+          report = {
+              'schema': 'trillionnium.desktop.live-governance-evidence.v2',
+              'target_branch': os.environ['TARGET_BRANCH'],
+              'pull_request': int(os.environ['PULL_REQUEST']),
+              'candidate_sha': os.environ['GOVERNED_SHA'],
+              'candidate_d2i_run': int(os.environ['GOVERNED_D2I_RUN']),
+              'codeowner_team': os.environ['CODEOWNER_TEAM'],
+              'independent_approval_user': approval or None,
+              'checks': checks,
+              'all_checks_pass': all(checks.values()),
+          }
+          (root/'live-governance-evidence.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n'
+          )
+          if not report['all_checks_pass']:
+              failed = [name for name, ok in checks.items() if not ok]
+              raise SystemExit('live governance remains incomplete: ' + ', '.join(failed))
+          PY
+
+      - name: Upload live governance evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: live-governance-v3-${{ github.sha }}
+          path: /tmp/trillionnium-live-governance-v3
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
