@@ -1,0 +1,259 @@
+name: temporary-promote-d5-build-d6-v2
+
+on:
+  push:
+    branches:
+      - codex/control-d5-promote-d6-build-v2
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: temporary-promote-d5-build-d6-v2
+  cancel-in-progress: false
+
+jobs:
+  promote-and-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      CONTROL_BRANCH: codex/control-d5-promote-d6-build-v2
+      D5_CANDIDATE: codex/d5-integration-candidate-v2
+      PREVIOUS_CONTROL: codex/control-d4-promote-d5-build-v2
+      D6_CANDIDATE: codex/d6-integration-candidate-v2
+      D6_SOURCE_A: codex/d6-capability-egress-policy-v1
+      D6_SOURCE_B: codex/d6-plan-truth-ci-closure-v1
+      D6_SOURCE_C: codex/d6-source-integration-candidate-v1
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out D5/D6 control branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/control-d5-promote-d6-build-v2
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for isolated D5 candidate
+        id: route
+        run: |
+          set -euo pipefail
+          ready=false
+          candidate=
+          for _ in $(seq 1 720); do
+            candidate=$(git ls-remote --heads origin "refs/heads/$D5_CANDIDATE" | awk '{print $1}')
+            if test -n "$candidate"; then
+              ready=true
+              break
+            fi
+            previous=$(git ls-remote --heads origin "refs/heads/$PREVIOUS_CONTROL" | awk '{print $1}')
+            if test -n "$previous" && git show "$previous:diagnostics/d4-promote-d5-build-v2/latest.txt" >/dev/null 2>&1; then
+              break
+            fi
+            sleep 10
+          done
+          printf 'ready=%s\n' "$ready" >> "$GITHUB_OUTPUT"
+          test "$ready" = true && printf 'candidate=%s\n' "$candidate" >> "$GITHUB_OUTPUT" || true
+
+      - name: Verify ancestry and install pinned toolchain
+        if: steps.route.outputs.ready == 'true'
+        id: d5
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$TARGET_BRANCH" "$D5_CANDIDATE"
+          target=$(git rev-parse "origin/$TARGET_BRANCH")
+          candidate=$(git rev-parse "origin/$D5_CANDIDATE")
+          test "$candidate" = '${{ steps.route.outputs.candidate }}'
+          test "$(git show -s --format=%P "$candidate" | wc -w)" -eq 1
+          parent=$(git show -s --format=%P "$candidate")
+          test "$parent" = "$target"
+          git checkout -B "$D5_CANDIDATE" "$candidate"
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          printf 'parent=%s\nhead=%s\n' "$parent" "$candidate" >> "$GITHUB_OUTPUT"
+
+      - name: Independently re-prove D5 candidate
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain=v1)"
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Fast-forward unified candidate to D5
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote --heads origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')" = '${{ steps.d5.outputs.parent }}'
+          git push origin '${{ steps.d5.outputs.head }}:refs/heads/codex/full-gap-closure-final'
+
+      - name: Dispatch and require exact D5-head D2I evidence
+        if: steps.route.outputs.ready == 'true'
+        id: d2i
+        run: |
+          set -euo pipefail
+          repo=$GITHUB_REPOSITORY
+          candidate='${{ steps.d5.outputs.head }}'
+          gh workflow run d2i-integrated-image.yml --repo "$repo" --ref "$TARGET_BRANCH"
+          workflow_id=$(gh api "repos/$repo/actions/workflows" --paginate --jq \
+            '.workflows[] | select(.path == ".github/workflows/d2i-integrated-image.yml") | .id' | head -n1)
+          test -n "$workflow_id"
+          run_id=
+          for _ in $(seq 1 360); do
+            run_id=$(gh api "repos/$repo/actions/workflows/$workflow_id/runs?event=workflow_dispatch&per_page=100" \
+              --jq ".workflow_runs | map(select(.head_branch == \"$TARGET_BRANCH\" and .head_sha == \"$candidate\")) | sort_by(.created_at) | reverse | .[0].id // empty")
+            if test -n "$run_id"; then
+              status=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')
+              test "$status" = completed && break
+            fi
+            sleep 15
+          done
+          test -n "$run_id"
+          status=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status')
+          conclusion=$(gh api "repos/$repo/actions/runs/$run_id" --jq '.conclusion')
+          printf 'candidate=%s\nrun_id=%s\nstatus=%s\nconclusion=%s\n' "$candidate" "$run_id" "$status" "$conclusion" | tee /tmp/d5-d2i-state.txt
+          if test "$status" != completed || test "$conclusion" != success; then
+            gh run view "$run_id" --repo "$repo" --log-failed > /tmp/d5-d2i-failed.log 2>&1 || true
+            exit 1
+          fi
+          printf 'run_id=%s\n' "$run_id" >> "$GITHUB_OUTPUT"
+
+      - name: Replay deduplicated single-parent D6 commits
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          d5='${{ steps.d5.outputs.head }}'
+          git fetch --no-tags origin "$D6_SOURCE_A" "$D6_SOURCE_B" "$D6_SOURCE_C"
+          git checkout -B "$D6_CANDIDATE" "$d5"
+          : > /tmp/d6-history.txt
+          : > /tmp/d6-selected.txt
+          : > /tmp/d6-skipped.txt
+          declare -A seen_patch=()
+          for source_branch in "$D6_SOURCE_A" "$D6_SOURCE_B" "$D6_SOURCE_C"; do
+            source=$(git rev-parse "origin/$source_branch")
+            merge_base=$(git merge-base "$d5" "$source")
+            printf 'source=%s head=%s merge_base=%s\n' "$source_branch" "$source" "$merge_base" >> /tmp/d6-history.txt
+            git log --reverse --format='%H%x09%s' "$merge_base..$source" >> /tmp/d6-history.txt
+            mapfile -t commits < <(
+              git log --reverse --format='%H%x09%s' \
+                --extended-regexp --regexp-ignore-case \
+                --grep='(^|[^[:alnum:]])d6([^[:alnum:]]|$)' \
+                "$merge_base..$source" |
+              awk -F '\t' 'tolower($2) !~ /(temporary|diagnostic|export|audit-only)/ {print $1}'
+            )
+            for commit in "${commits[@]}"; do
+              if test "$(git show -s --format=%P "$commit" | wc -w)" -ne 1; then
+                printf '%s merge-commit\n' "$commit" >> /tmp/d6-skipped.txt
+                continue
+              fi
+              patch_id=$(git show --pretty=format: --binary "$commit" | git patch-id --stable | awk 'NR == 1 {print $1}')
+              test -n "$patch_id"
+              if test -n "${seen_patch[$patch_id]:-}"; then
+                printf '%s duplicate-patch %s\n' "$commit" "$patch_id" >> /tmp/d6-skipped.txt
+                continue
+              fi
+              seen_patch[$patch_id]=1
+              before=$(git diff --cached --binary | git patch-id --stable | sha256sum | awk '{print $1}')
+              git cherry-pick --no-commit "$commit"
+              after=$(git diff --cached --binary | git patch-id --stable | sha256sum | awk '{print $1}')
+              if test "$before" = "$after"; then
+                printf '%s empty-on-target %s\n' "$commit" "$patch_id" >> /tmp/d6-skipped.txt
+                continue
+              fi
+              printf '%s %s\n' "$commit" "$patch_id" >> /tmp/d6-selected.txt
+            done
+          done
+          test -s /tmp/d6-selected.txt
+          test -n "$(git diff --cached --name-only)"
+          git diff --cached --name-status | tee /tmp/d6-diff.txt
+          if git diff --cached --name-only | grep -E '(^|/)(temporary|diagnostics?)(/|$)|\.patch(\.|$)|\.b85$'; then
+            echo 'D6 candidate contains temporary or diagnostic material' >&2
+            exit 1
+          fi
+          git diff --cached --check
+
+      - name: Prove D6 candidate source truth and feature graphs
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Publish isolated D6 candidate
+        if: steps.route.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote --heads origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')" = '${{ steps.d5.outputs.head }}'
+          test -z "$(git ls-remote --heads origin "refs/heads/$D6_CANDIDATE")"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m 'feat(d6): integrate capability, egress, and plan-truth closure'
+          git push origin "HEAD:refs/heads/$D6_CANDIDATE"
+
+      - name: Persist bounded D5/D6 failure diagnosis
+        if: failure()
+        run: |
+          set -euo pipefail
+          status_snapshot=$(git status --short 2>&1 || true)
+          git fetch --no-tags origin "$CONTROL_BRANCH"
+          git checkout -B "$CONTROL_BRANCH" "origin/$CONTROL_BRANCH"
+          rm -f .github/workflows/temporary-promote-d5-build-d6-v2.yml
+          mkdir -p diagnostics/d5-promote-d6-build-v2
+          {
+            printf 'schema=trillionnium.desktop.d5-promote-d6-build-diagnostic.v1\n'
+            printf 'recorded_at=%s\n\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            for file in /tmp/d5-d2i-state.txt /tmp/d5-d2i-failed.log /tmp/d6-history.txt /tmp/d6-selected.txt /tmp/d6-skipped.txt /tmp/d6-diff.txt; do
+              if test -f "$file"; then
+                printf '%s\n' "--- $(basename "$file") ---"
+                tail -n 1800 "$file"
+                printf '\n'
+              fi
+            done
+            printf '%s\n%s\n' '--- status ---' "$status_snapshot"
+          } > diagnostics/d5-promote-d6-build-v2/latest.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- .github/workflows/temporary-promote-d5-build-d6-v2.yml diagnostics/d5-promote-d6-build-v2/latest.txt
+          git commit -m 'diagnostics(d5-d6): record promotion or construction failure'
+          git push origin "HEAD:refs/heads/$CONTROL_BRANCH"
+
+      - name: Remove D5/D6 control workflow
+        if: success()
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$CONTROL_BRANCH"
+          git checkout -B "$CONTROL_BRANCH" "origin/$CONTROL_BRANCH"
+          rm .github/workflows/temporary-promote-d5-build-d6-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u -- .github/workflows/temporary-promote-d5-build-d6-v2.yml
+          git commit -m 'ci: remove temporary D5/D6 promotion workflow'
+          git push origin "HEAD:refs/heads/$CONTROL_BRANCH"
