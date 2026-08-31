@@ -101,20 +101,24 @@ map, and the production `hepta-agent-portd` remains default-disabled and
 fail-closed.  The development runtime accepts only ephemeral loopback fixtures;
 it does not create a listener or grant external-effect authority.
 
-Live activation of this development profile is explicitly blocked upstream by
-the service identity split: systemd runs the connection service as
-`hepta-browserd`, while the expected attested peer is `hepta-agent`.  Linux
-`PTRACE_MODE_READ_FSCREDS` consequently denies the cross-UID
-`/proc/<pid>/exe` refresh used by strict peer attestation; the unit intentionally
-grants no `CAP_SYS_PTRACE`, and its `hepta-agent` supplementary group does not
-change that rule.  The contract records this as
-`BLOCKED_UPSTREAM_CROSS_UID_PROCFS`, with `development_source_wiring_only` true
-and `development_static_attestation_available` false for the D3 live profile
-(the static API remains scoped to D1 qualification, as recorded by
-`development_static_attestation_scope`).  Resuming live activation requires an
-approved fixed root-owned executable path/API or a same-UID service architecture,
-followed by the integrated-image principal/dispatch/receipt corpus; adding
-ptrace capability or weakening procfs checks is not an approved closure.
+The cross-UID executable-identity source blocker is closed without weakening the
+service split.  systemd still runs the connection service as `hepta-browserd`
+while the expected peer is `hepta-agent`, and the unit still grants no
+`CAP_SYS_PTRACE`.  The explicit development graph instead selects the reviewed
+`development-static-attestation` API and the compiled
+`/usr/libexec/hepta-agent` path.  Every parent and the executable itself must be
+root-owned, non-symlink, and non-writable; the path is reopened and re-hashed
+for both admission snapshots and each BrowserActor dispatch.  The same
+`AttestedPeer` continues to prove live PID/UID/GID, pidfd liveness, start time,
+cgroup, and systemd unit.  BrowserActor calls `AttestedPeer::refresh_snapshot`,
+so a static admission cannot silently fall back to the forbidden cross-UID
+`/proc/<pid>/exe` read at dispatch.  The contract records
+`SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE`, with
+`development_static_attestation_available` true and scope
+`explicit_development_profile_only`.  This is a reviewed service-mechanism path
+binding, not a claim that the live procfs executable link was observed.  Exact
+integrated-image principal/dispatch/receipt evidence and independent security
+review remain mandatory before activation or promotion.
 
 Its `--self-check` is source-wiring evidence, not a live service claim: the
 report marks `development_only`, `browser_actor_wired`, and

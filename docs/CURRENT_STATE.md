@@ -143,18 +143,21 @@ corpus passes. The source work does not authorize production credentials,
 external navigation/effects, a TCP or WebDriver listener, or any later-stage
 claim.
 
-The development profile also records a concrete live-activation blocker:
-systemd runs its connection service as `hepta-browserd`, while the expected
-attested peer is `hepta-agent`. Linux `PTRACE_MODE_READ_FSCREDS` denies the
-cross-UID `/proc/<pid>/exe` refresh required by strict peer attestation. The
-unit grants no `CAP_SYS_PTRACE`; supplementary group membership is not a
-substitute. The browser-actor contract therefore records
-`BLOCKED_UPSTREAM_CROSS_UID_PROCFS`, `development_source_wiring_only: true`,
-and `development_static_attestation_available: false` for the D3 live profile
-(the static API remains scoped to D1 qualification). A safe resume requires an
-approved fixed root-owned executable path/API or same-UID architecture plus the
-integrated-image corpus; bypassing the policy with ptrace capability or weaker
-checks is not accepted.
+The cross-UID executable-identity source blocker now has a source-complete,
+fail-closed implementation.  The connection service remains `hepta-browserd`,
+the expected peer remains `hepta-agent`, and the unit still grants no
+`CAP_SYS_PTRACE`.  The explicit development feature binds the reviewed
+`hepta-agent.service` mechanism to `/usr/libexec/hepta-agent`; the executable
+and every parent path must be root-owned, non-symlink, and non-writable.  The
+attestor stores that source in `AttestedPeer` and reopens/re-hashes it at every
+BrowserActor dispatch while retaining live PID/UID/GID, pidfd, start-time,
+cgroup, and unit checks.  Machine truth therefore records
+`SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE`,
+`development_static_attestation_available: true`, and scope
+`explicit_development_profile_only`.  D3 remains `BLOCKED_UPSTREAM` until the
+exact integrated-image principal/dispatch/receipt corpus passes and receives
+independent security review; this source change grants no production or release
+authority and does not claim a live `/proc/<pid>/exe` observation.
 
 ## Historical candidate references
 

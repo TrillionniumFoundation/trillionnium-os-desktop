@@ -109,9 +109,10 @@ def check_manifest() -> None:
         "dep:hepta-browser-codec",
         "dep:hepta-browser-actor",
         "dep:hepta-session-core",
+        "hepta-peer-attestation/development-static-attestation",
     ]:
         fail(
-            "development feature must link only the typed actor/codec/port/session crates"
+            "development feature must link the typed actor stack and only its dedicated static attestation feature"
         )
     if "hepta-peer-attestation/qualification-static-attestation" in features.get(
         "development", []
@@ -119,6 +120,10 @@ def check_manifest() -> None:
         fail(
             "development feature must not enable qualification-static-attestation"
         )
+    if "hepta-peer-attestation/development-static-attestation" not in features.get(
+        "development", []
+    ):
+        fail("development feature must enable its dedicated static attestation path")
     if features.get("default") != []:
         fail("development profile must not become a default Cargo feature")
 
@@ -151,6 +156,9 @@ def check_sources() -> None:
         "DEVELOPMENT_MARKER_PATH",
         "--profile development",
         "ProcfsPeerAttestor",
+        "DEVELOPMENT_PEER_EXECUTABLE",
+        "hash_trusted_executable",
+        "attest_with_static_executable_digest",
         "PrincipalBinding::bind_attested",
         "BrowserActor",
         "DeterministicLocalRuntime",
@@ -170,15 +178,16 @@ def check_sources() -> None:
         "attestation_exercised\\\":false",
         "journal_exercised\\\":false",
         "scope\\\":\\\"source_wiring_only",
+        "static_attestation_wired\\\":true",
+        "cross_uid_procfs_required\\\":false",
     )
     for forbidden in (
         "UnixListener",
         "TcpListener",
         "TcpStream",
         "D0FixtureHandler",
-        "attest_with_static_executable_digest",
-        "hash_trusted_executable",
         "qualification-static-attestation",
+        "CAP_SYS_PTRACE",
     ):
         if forbidden in development:
             fail(f"development binary must not contain {forbidden}")
@@ -187,6 +196,17 @@ def check_sources() -> None:
         ROOT / "crates/hepta-browser-actor/src/lib.rs",
         "dispatch_page_act",
         "semantic frame/structure re-resolution is unavailable",
+        "attested.refresh_snapshot(attestor)",
+    )
+    if "attestor.read_snapshot(attested.snapshot().pid)" in actor:
+        fail("BrowserActor must not discard the executable source during refresh")
+
+    require_text(
+        ROOT / "crates/hepta-peer-attestation/src/lib.rs",
+        "development-static-attestation",
+        "executable_source: ExecutableSource",
+        "pub fn refresh_snapshot",
+        "read_snapshot_with_source(self.snapshot.pid, &self.executable_source)",
     )
     if "fn dispatch_page_act" not in actor:
         fail("BrowserActor runtime must expose the semantic PageAct resolver hook")
@@ -226,20 +246,22 @@ def check_units() -> None:
     service = require_text(
         ROOT / "packaging/debian/systemd/hepta-browserd-agent-development@.service",
         "ConditionPathExists=/etc/hepta/enable-agent-port-development",
+        "ConditionPathIsExecutable=/usr/libexec/hepta-agent",
         "Requires=hepta-browserd-agent-development.socket",
         "StandardInput=socket",
         "ExecStart=/usr/libexec/hepta-agent-port-developmentd --profile development",
         "EnvironmentFile=-/etc/hepta/agent-port-development.conf",
         "PrivateNetwork=yes",
         "RestrictAddressFamilies=AF_UNIX",
+        "ReadOnlyPaths=/usr/libexec/hepta-agent",
         "ReadWritePaths=/run/hepta/browserd /var/lib/hepta-browserd/development",
     )
     if "Tcp" in service or "WebDriver" in service:
         fail("development service must not expose TCP/WebDriver authority")
     # The development service deliberately runs as hepta-browserd while its
-    # attested peer is hepta-agent.  Linux's PTRACE_MODE_READ_FSCREDS policy
-    # therefore blocks the live /proc/<pid>/exe refresh across those UIDs;
-    # supplementary group membership is not a substitute for ptrace access.
+    # attested peer is hepta-agent.  It must retain that custody split without
+    # gaining ptrace; the dedicated trusted-path source closes only the
+    # executable-identity read, while pidfd/procfs process facts remain strict.
     for marker in (
         "User=hepta-browserd",
         "Group=hepta-browserd",
@@ -260,6 +282,8 @@ def check_units() -> None:
         "cargo build --release --locked -p hepta-agent-portd",
         "enable-agent-port-development",
         "HEPTA_D3_EXPECTED_EXECUTABLE_SHA256",
+        "/usr/libexec/hepta-agent",
+        "development-static-attestation",
         "agent-development.sock",
         "PrincipalBinding::bind_attested",
     )
@@ -284,13 +308,15 @@ def check_contract() -> None:
         "development_socket": "/run/hepta/browserd/agent-development.sock",
         "development_profile_argument": "--profile development",
         "development_requires_expected_executable_sha256": True,
-        "development_live_activation_status": "BLOCKED_UPSTREAM_CROSS_UID_PROCFS",
+        "development_live_activation_status": "SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE",
         "development_source_wiring_only": True,
-        "development_static_attestation_available": False,
-        "development_static_attestation_scope": "d1_qualification_only",
+        "development_static_attestation_available": True,
+        "development_static_attestation_scope": "explicit_development_profile_only",
         "development_service_user": "hepta-browserd",
         "development_expected_peer_user": "hepta-agent",
-        "development_blocker": "cross-UID /proc/<pid>/exe reads require PTRACE_MODE_READ_FSCREDS; the development service has no CAP_SYS_PTRACE",
+        "development_trusted_executable_path": "/usr/libexec/hepta-agent",
+        "development_cross_uid_procfs_required": False,
+        "development_blocker": "exact integrated-image principal/dispatch/receipt evidence and independent security review remain required before live activation",
         "development_binary_in_production_install_map": False,
         "listener_created_by_actor_crate": False,
         "production_release_authorized": False,

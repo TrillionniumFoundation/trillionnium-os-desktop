@@ -12,13 +12,31 @@ use sha2::{Digest as _, Sha256};
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::fs;
-#[cfg(all(unix, feature = "qualification-static-attestation"))]
+#[cfg(all(
+    unix,
+    any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    )
+))]
 use std::fs::OpenOptions;
 use std::io::{self, Read};
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
-#[cfg(all(unix, feature = "qualification-static-attestation"))]
+#[cfg(all(
+    unix,
+    any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    )
+))]
 use std::os::unix::fs::MetadataExt;
-#[cfg(all(unix, feature = "qualification-static-attestation"))]
+#[cfg(all(
+    unix,
+    any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    )
+))]
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 
@@ -37,29 +55,39 @@ pub struct PeerRuntimeSnapshot {
     pub start_time_ticks: u64,
     pub cgroup_v2_path: String,
     pub systemd_unit: Option<String>,
-    /// SHA-256 of the exact executable image observed through `/proc/<pid>/exe`.
-    /// The digest is part of the identity snapshot so a process `execve` or
-    /// executable replacement between the before/after reads fails closed.
+    /// SHA-256 selected by the attestation source.  The default source hashes
+    /// the exact image observed through `/proc/<pid>/exe`.  Explicit
+    /// non-production static profiles instead re-open and hash one validated,
+    /// root-owned executable path for every snapshot.  Callers must preserve
+    /// the source kind through refreshes and must not describe a trusted-path
+    /// binding as a live procfs image observation.
     pub executable_sha256: String,
 }
 
-/// Digest and pathname of a qualification executable that was opened and
-/// validated as a root-owned, non-writable regular file.
+/// Digest and pathname of an explicit non-production profile executable
+/// that was opened and validated as a root-owned, non-writable regular file.
 ///
 /// Keeping the pathname alongside the digest is intentional: a bare string
 /// would let a caller hash one file and then accidentally use the digest as a
 /// claim about another file.  The attestation helper re-opens this exact path
 /// (with `O_NOFOLLOW`) for both identity snapshots and rejects any digest
-/// change.  This type is only available in the explicit qualification feature;
-/// production/development builds expose only the live `/proc/<pid>/exe` path.
-#[cfg(feature = "qualification-static-attestation")]
+/// change.  This type is available only to the explicit D1 qualification
+/// graph or the explicit D3 development graph.  The default product graph
+/// exposes only the live `/proc/<pid>/exe` path.
+#[cfg(any(
+    feature = "qualification-static-attestation",
+    feature = "development-static-attestation"
+))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TrustedExecutableDigest {
     path: PathBuf,
     digest: String,
 }
 
-#[cfg(feature = "qualification-static-attestation")]
+#[cfg(any(
+    feature = "qualification-static-attestation",
+    feature = "development-static-attestation"
+))]
 impl TrustedExecutableDigest {
     /// Return the lowercase SHA-256 digest represented by this binding.
     pub fn as_str(&self) -> &str {
@@ -72,17 +100,23 @@ impl TrustedExecutableDigest {
     }
 }
 
-#[cfg(feature = "qualification-static-attestation")]
+#[cfg(any(
+    feature = "qualification-static-attestation",
+    feature = "development-static-attestation"
+))]
 impl AsRef<str> for TrustedExecutableDigest {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 enum ExecutableSource {
     Live,
-    #[cfg(feature = "qualification-static-attestation")]
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     Static(TrustedExecutableDigest),
 }
 
@@ -196,7 +230,10 @@ impl ProcfsPeerAttestor {
         let systemd_unit = systemd_unit_from_cgroup_path(&cgroup_v2_path);
         let executable_sha256 = match executable_source {
             ExecutableSource::Live => hash_executable(&process_root.join("exe"))?,
-            #[cfg(feature = "qualification-static-attestation")]
+            #[cfg(any(
+                feature = "qualification-static-attestation",
+                feature = "development-static-attestation"
+            ))]
             ExecutableSource::Static(binding) => {
                 // Re-open and re-hash the same validated pathname for every
                 // snapshot.  A bare startup digest would leave a replacement
@@ -310,20 +347,25 @@ impl ProcfsPeerAttestor {
         self.attest_inner(peer, policy, &ExecutableSource::Live)
     }
 
-    /// Attest a qualification-only peer when the supervisor cannot dereference
-    /// `/proc/<pid>/exe` across service UIDs.  Linux deliberately gates that
-    /// procfs file behind `PTRACE_MODE_READ_FSCREDS`; granting the browser
-    /// service `CAP_SYS_PTRACE` would violate the custody boundary.  The
-    /// caller must instead supply the binding for the fixed, root-owned
-    /// executable named by the qualification systemd unit (normally obtained
-    /// with [`hash_trusted_executable`]).
+    /// Attest an explicit non-production profile peer when the supervisor
+    /// cannot dereference `/proc/<pid>/exe` across service UIDs.  Linux gates
+    /// that procfs file behind `PTRACE_MODE_READ_FSCREDS`; granting the browser
+    /// service `CAP_SYS_PTRACE` would violate the custody boundary.  The caller
+    /// instead supplies the binding for one fixed, root-owned executable path
+    /// selected by the reviewed profile (normally obtained with
+    /// [`hash_trusted_executable`]).
     ///
     /// This method retains PID/UID/GID/start-time/cgroup/unit and pidfd checks,
-    /// and compares the supplied digest across the before/after snapshots. It
-    /// is intentionally explicit and is not used by the production or D3
-    /// development daemons, which continue to require a live procfs digest via
-    /// [`Self::attest`].
-    #[cfg(feature = "qualification-static-attestation")]
+    /// compares the supplied path digest across both initial snapshots, and
+    /// stores the same source in the returned [`AttestedPeer`] so every later
+    /// dispatch refresh reopens that path rather than silently falling back to
+    /// a cross-UID procfs read.  It is unavailable to the default product
+    /// feature graph.  A trusted-path binding identifies the reviewed service
+    /// mechanism; it is not a claim that `/proc/<pid>/exe` was observed.
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     pub fn attest_with_static_executable_digest(
         &self,
         peer: PeerIdentity,
@@ -364,6 +406,7 @@ impl ProcfsPeerAttestor {
         Ok(AttestedPeer {
             snapshot: after,
             pidfd,
+            executable_source: executable_source.clone(),
         })
     }
 }
@@ -372,6 +415,7 @@ impl ProcfsPeerAttestor {
 pub struct AttestedPeer {
     snapshot: PeerRuntimeSnapshot,
     pidfd: OwnedFd,
+    executable_source: ExecutableSource,
 }
 
 impl AttestedPeer {
@@ -381,6 +425,24 @@ impl AttestedPeer {
 
     pub fn ensure_alive(&self) -> Result<(), AttestationError> {
         ensure_pidfd_alive(&self.pidfd)
+    }
+
+    /// Re-read the complete identity using the exact executable source that
+    /// created this attestation.  This prevents an explicit trusted-path
+    /// profile from reverting to a forbidden cross-UID `/proc/<pid>/exe` read
+    /// at the BrowserActor dispatch boundary.
+    pub fn refresh_snapshot(
+        &self,
+        attestor: &ProcfsPeerAttestor,
+    ) -> Result<PeerRuntimeSnapshot, AttestationError> {
+        self.ensure_alive()?;
+        let refreshed =
+            attestor.read_snapshot_with_source(self.snapshot.pid, &self.executable_source)?;
+        if refreshed != self.snapshot {
+            return Err(AttestationError::ProcessIdentityChanged);
+        }
+        self.ensure_alive()?;
+        Ok(refreshed)
     }
 }
 
@@ -532,17 +594,20 @@ fn hash_open_file(path: &Path, file: &mut fs::File) -> Result<String, Attestatio
     Ok(hex_digest(&digest.finalize()))
 }
 
-/// Hash a fixed executable that is trusted by a qualification image's
-/// root-owned package/install map.  This helper rejects symlinks and writable
-/// non-root-owned files before reading bytes, so a qualification caller cannot
-/// turn the static-digest escape hatch into an arbitrary file claim.
+/// Hash a fixed executable trusted by an explicit non-production profile's
+/// root-owned package/install map.  This helper rejects symlinks, unsafe path
+/// components, and writable or non-root-owned files before reading bytes, so a
+/// profile caller cannot turn the static binding into an arbitrary file claim.
 ///
 /// The returned value intentionally carries the validated pathname with the
 /// digest.  Callers pass that binding to
 /// [`ProcfsPeerAttestor::attest_with_static_executable_digest`], which reopens
 /// the path for each identity snapshot and therefore does not rely on a bare
 /// digest surviving a path replacement.
-#[cfg(feature = "qualification-static-attestation")]
+#[cfg(any(
+    feature = "qualification-static-attestation",
+    feature = "development-static-attestation"
+))]
 pub fn hash_trusted_executable(
     path: impl AsRef<Path>,
 ) -> Result<TrustedExecutableDigest, AttestationError> {
@@ -587,7 +652,10 @@ pub fn hash_trusted_executable(
     })
 }
 
-#[cfg(feature = "qualification-static-attestation")]
+#[cfg(any(
+    feature = "qualification-static-attestation",
+    feature = "development-static-attestation"
+))]
 fn validate_trusted_path(path: &Path) -> Result<(), AttestationError> {
     use std::path::Component;
 
@@ -650,7 +718,10 @@ fn validate_trusted_path(path: &Path) -> Result<(), AttestationError> {
     Ok(())
 }
 
-#[cfg(feature = "qualification-static-attestation")]
+#[cfg(any(
+    feature = "qualification-static-attestation",
+    feature = "development-static-attestation"
+))]
 fn validate_executable_digest(value: &str) -> Result<(), AttestationError> {
     if value.len() != 64
         || !value
@@ -923,11 +994,20 @@ pub enum AttestationError {
     EmptyExecutable {
         path: PathBuf,
     },
-    #[cfg(feature = "qualification-static-attestation")]
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     UntrustedExecutable(PathBuf),
-    #[cfg(feature = "qualification-static-attestation")]
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     InvalidExecutableDigest,
-    #[cfg(feature = "qualification-static-attestation")]
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     ExecutableDigestMismatch {
         expected: String,
         actual: String,
@@ -996,17 +1076,26 @@ impl fmt::Display for AttestationError {
             Self::EmptyExecutable { path } => {
                 write!(formatter, "executable {} is empty", path.display())
             }
-            #[cfg(feature = "qualification-static-attestation")]
+            #[cfg(any(
+                feature = "qualification-static-attestation",
+                feature = "development-static-attestation"
+            ))]
             Self::UntrustedExecutable(path) => write!(
                 formatter,
-                "qualification executable {} is not a root-owned, non-writable regular file",
+                "trusted executable {} is not a root-owned, non-writable regular file",
                 path.display()
             ),
-            #[cfg(feature = "qualification-static-attestation")]
+            #[cfg(any(
+                feature = "qualification-static-attestation",
+                feature = "development-static-attestation"
+            ))]
             Self::InvalidExecutableDigest => {
                 formatter.write_str("executable digest must be lowercase non-zero SHA-256")
             }
-            #[cfg(feature = "qualification-static-attestation")]
+            #[cfg(any(
+                feature = "qualification-static-attestation",
+                feature = "development-static-attestation"
+            ))]
             Self::ExecutableDigestMismatch { expected, actual } => write!(
                 formatter,
                 "trusted executable digest changed (expected {expected}, observed {actual})"
@@ -1226,7 +1315,10 @@ mod tests {
         fs::remove_dir_all(root).expect("remove fixture");
     }
 
-    #[cfg(feature = "qualification-static-attestation")]
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     #[test]
     fn static_executable_digest_validation_is_strict() {
         assert!(validate_executable_digest(&"a".repeat(64)).is_ok());
@@ -1244,7 +1336,10 @@ mod tests {
         ));
     }
 
-    #[cfg(feature = "qualification-static-attestation")]
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     #[test]
     fn trusted_executable_hash_returns_path_bound_digest() {
         let path = Path::new("/usr/bin/true");
@@ -1260,7 +1355,10 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "qualification-static-attestation")]
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     #[test]
     fn trusted_executable_hash_rejects_relative_or_parent_paths() {
         assert!(matches!(
@@ -1274,7 +1372,10 @@ mod tests {
         ));
     }
 
-    #[cfg(feature = "qualification-static-attestation")]
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     #[test]
     fn trusted_executable_hash_rejects_symlink_aliases() {
         let unique = SystemTime::now()
@@ -1294,7 +1395,10 @@ mod tests {
         fs::remove_dir_all(root).expect("remove fixture");
     }
 
-    #[cfg(feature = "qualification-static-attestation")]
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
     #[test]
     fn static_digest_binding_detects_digest_mismatch_before_attestation() {
         let unique = SystemTime::now()
@@ -1457,6 +1561,12 @@ mod tests {
             .attest(peer, &PeerRuntimePolicy::exact(&snapshot))
             .expect("attested peer");
         attested.ensure_alive().expect("peer remains alive");
+        assert_eq!(
+            attested
+                .refresh_snapshot(&attestor)
+                .expect("live source refresh"),
+            snapshot
+        );
         assert_eq!(attested.snapshot(), &snapshot);
         assert_eq!(snapshot.executable_sha256.len(), 64);
         assert!(
@@ -1464,6 +1574,36 @@ mod tests {
                 .executable_sha256
                 .bytes()
                 .all(|byte| byte.is_ascii_digit() || matches!(byte, b'a'..=b'f'))
+        );
+    }
+
+    #[cfg(any(
+        feature = "qualification-static-attestation",
+        feature = "development-static-attestation"
+    ))]
+    #[test]
+    fn static_attested_peer_refresh_reuses_the_original_trusted_path_source() {
+        let (left, _right) = UnixStream::pair().expect("socketpair");
+        let peer = PeerIdentity::from_stream(&left).expect("peer credentials");
+        let attestor = ProcfsPeerAttestor::default();
+        let pid = peer.pid.expect("peer PID");
+        let executable =
+            hash_trusted_executable("/usr/bin/true").expect("trusted executable binding");
+        let expected = attestor
+            .read_snapshot_with_source(pid, &ExecutableSource::Static(executable.clone()))
+            .expect("static-source snapshot");
+        let attested = attestor
+            .attest_with_static_executable_digest(
+                peer,
+                &PeerRuntimePolicy::exact(&expected),
+                &executable,
+            )
+            .expect("static attestation");
+        assert_eq!(
+            attested
+                .refresh_snapshot(&attestor)
+                .expect("static source refresh"),
+            expected
         );
     }
 

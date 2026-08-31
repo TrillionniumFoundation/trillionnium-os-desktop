@@ -17,9 +17,15 @@ class D1QualificationSeparationTests(unittest.TestCase):
         self.assertIn("dep:hepta-agent-port", features["d1-qualification"])
         self.assertIn("dep:hepta-browser-codec", features["d1-qualification"])
         static_feature = "hepta-peer-attestation/qualification-static-attestation"
+        development_static = (
+            "hepta-peer-attestation/development-static-attestation"
+        )
         self.assertIn(static_feature, features["d1-qualification"])
         self.assertNotIn(static_feature, features["fixture"])
         self.assertNotIn(static_feature, features["development"])
+        self.assertIn(development_static, features["development"])
+        self.assertNotIn(development_static, features["fixture"])
+        self.assertNotIn(development_static, features["d1-qualification"])
 
         bins = {entry["name"]: entry for entry in manifest["bin"]}
         self.assertNotIn("required-features", bins["hepta-agent-portd"])

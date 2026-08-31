@@ -3,14 +3,16 @@
 The development profile is deliberately outside the production Debian install
 map.  Build the opt-in binary with:
 
-> **Activation blocker (d6):** this profile is source-wiring evidence only and
-> live activation is `BLOCKED_UPSTREAM_CROSS_UID_PROCFS`.  systemd runs the
-> development service as `hepta-browserd`, while the attested peer is
-> `hepta-agent`; Linux denies the cross-UID `/proc/<pid>/exe` refresh under
-> `PTRACE_MODE_READ_FSCREDS`.  The unit intentionally grants no
-> `CAP_SYS_PTRACE`, and the D1-only static attestation feature is not enabled
-> by this development build.  Do not treat the commands below as a product or
-> integrated-image activation recipe.
+> **Claim ceiling (d6):** this profile is source-wiring evidence only.  The
+> service retains the `hepta-browserd`/`hepta-agent` UID split and grants no
+> `CAP_SYS_PTRACE`.  Instead of weakening procfs policy, the explicit
+> `development-static-attestation` feature binds `hepta-agent.service` to the
+> compiled `/usr/libexec/hepta-agent` path.  That path and every parent must be
+> root-owned and non-writable; the attestor reopens and re-hashes it for the
+> initial double snapshot and every BrowserActor dispatch.  PID/UID/GID, pidfd,
+> start time, cgroup, and systemd unit remain live process checks.  This closes
+> the source blocker but does not establish integrated-image execution,
+> independent review, or product/release authority.
 
 ```text
 cargo build --release --locked -p hepta-agent-portd \
@@ -19,8 +21,10 @@ cargo build --release --locked -p hepta-agent-portd \
 
 Install that binary as `/usr/libexec/hepta-agent-port-developmentd` together
 with the `hepta-browserd-agent-development.socket` and
-`hepta-browserd-agent-development@.service` units.  Create the marker only on a
-developer image after selecting the profile:
+`hepta-browserd-agent-development@.service` units.  The reviewed TaskFlow
+mechanism must be installed as the real, root-owned, non-symlink executable
+`/usr/libexec/hepta-agent`; the development unit refuses to start without it.
+Create the marker only on a developer image after selecting the profile:
 
 ```text
 install -o root -g root -m 0644 /dev/null \
@@ -28,7 +32,8 @@ install -o root -g root -m 0644 /dev/null \
 ```
 
 The service also requires `/etc/hepta/agent-port-development.conf` containing
-the exact SHA-256 of the intended `hepta-agent.service` executable:
+the exact SHA-256 of `/usr/libexec/hepta-agent`.  This administrator pin must
+match the independently opened trusted-path digest before principal binding:
 
 ```text
 HEPTA_D3_EXPECTED_EXECUTABLE_SHA256=<lowercase-64-hex-digest>

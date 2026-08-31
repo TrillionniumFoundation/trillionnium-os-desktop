@@ -41,13 +41,13 @@
   "browser_codec_exact_head_rust_validation": false,
   "browser_codec_source_audit": true,
   "browser_codec_host_evidence_freshness": "STALE_EVIDENCE",
-  "development_live_activation_status": "BLOCKED_UPSTREAM_CROSS_UID_PROCFS",
+  "development_live_activation_status": "SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE",
   "development_source_wiring_only": true,
-  "development_static_attestation_available": false,
-  "development_static_attestation_scope": "d1_qualification_only",
+  "development_static_attestation_available": true,
+  "development_static_attestation_scope": "explicit_development_profile_only",
   "development_service_user": "hepta-browserd",
   "development_expected_peer_user": "hepta-agent",
-  "development_blocker": "cross-UID /proc/<pid>/exe reads require PTRACE_MODE_READ_FSCREDS; the development service has no CAP_SYS_PTRACE",
+  "development_blocker": "exact integrated-image principal/dispatch/receipt evidence and independent security review remain required before live activation",
   "browser_runtime": "servo",
   "browser_runtime_integrated": false,
   "cargo_external_allowlist": "../manifests/cargo-external-allowlist.json",
@@ -215,5 +215,7 @@
   "transport_host_evidence_freshness": "STALE_EVIDENCE",
   "trusted_app_origin_model": "distinct_synthetic_https_hosts_under_apps.hepta.invalid",
   "trusted_shell_topology": "one_visible_workspace_plus_trusted_shell_surface_plus_one_untrusted_content_webview",
-  "upstream_reference_review": "../manifests/upstream-reference-review.v1.json"
+  "upstream_reference_review": "../manifests/upstream-reference-review.v1.json",
+  "development_trusted_executable_path": "/usr/libexec/hepta-agent",
+  "development_cross_uid_procfs_required": false
 }
