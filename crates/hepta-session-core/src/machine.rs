@@ -466,15 +466,13 @@ impl SessionMachine {
                 "human control has no active lease",
             ));
         }
-        if self.phase == SessionPhase::NavigationPending
-            && self.pending_navigation_source.is_none()
+        if self.phase == SessionPhase::NavigationPending && self.pending_navigation_source.is_none()
         {
             return Err(TransitionError::InvalidTransition(
                 "navigation phase has no source owner",
             ));
         }
-        if self.phase != SessionPhase::NavigationPending
-            && self.pending_navigation_source.is_some()
+        if self.phase != SessionPhase::NavigationPending && self.pending_navigation_source.is_some()
         {
             return Err(TransitionError::InvalidTransition(
                 "navigation owner survived its phase",
