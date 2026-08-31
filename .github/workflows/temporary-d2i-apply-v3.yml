@@ -1,0 +1,138 @@
+name: temporary-d2i-apply-v3
+
+on:
+  push:
+    branches:
+      - codex/d2i-apply-v3
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: temporary-d2i-apply-v3
+  cancel-in-progress: false
+
+jobs:
+  apply-prove-publish:
+    runs-on: ubuntu-24.04
+    env:
+      EXPECTED_UNIFIED_HEAD: 8096d78ec6a457cf11e28f258c0cdf8b5dec27b2
+      PATCH_SHA256: 8cfd0197bd75b9439ab143be30daa96052603fda0bab74272fe1e8c9b2e4ca2f
+      PATCH_XZ_SHA256: b1a1d1b6df372e1460644cc9fb07272c3fa07bd4450ded3019df599a0ba99e54
+      PYTHONDONTWRITEBYTECODE: "1"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Check out isolated payload branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d2i-apply-v3
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Decode bounded patch and rebase worktree onto exact unified head
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import hashlib
+          import lzma
+          import os
+
+          encoded = Path("tools/temporary-d2i-fix-v3.patch.xz.b85").read_text().strip()
+          compressed = base64.b85decode(encoded)
+          actual_compressed = hashlib.sha256(compressed).hexdigest()
+          if actual_compressed != os.environ["PATCH_XZ_SHA256"]:
+              raise SystemExit(f"compressed patch digest mismatch: {actual_compressed}")
+          patch = lzma.decompress(compressed)
+          actual_patch = hashlib.sha256(patch).hexdigest()
+          if actual_patch != os.environ["PATCH_SHA256"]:
+              raise SystemExit(f"patch digest mismatch: {actual_patch}")
+          Path("/tmp/d2i-v3.patch").write_bytes(patch)
+          PY
+          git fetch --no-tags origin codex/full-gap-closure-final
+          actual_head=$(git rev-parse origin/codex/full-gap-closure-final)
+          test "$actual_head" = "$EXPECTED_UNIFIED_HEAD"
+          git checkout --detach "$EXPECTED_UNIFIED_HEAD"
+          git apply --check /tmp/d2i-v3.patch
+          git apply --whitespace=error-all /tmp/d2i-v3.patch
+          git diff --check
+          actual=$(git diff --name-only | sort)
+          expected=$(printf '%s\n' \
+            contracts/d2i-integrated-image.v1.json \
+            experiments/servo-headed-runtime/src/main.rs \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/d1/test_d2i_renderer_policy.py | sort)
+          test "$actual" = "$expected"
+
+      - name: Install exact repository Rust toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          rustc --version --verbose
+          cargo --version --verbose
+
+      - name: Prove repository truth and D2I source policy
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          python3 -m json.tool contracts/d2i-integrated-image.v1.json >/dev/null
+          bash -n packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
+          bash -n packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-content-crash-proof
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          git diff --check
+
+      - name: Publish one clean fast-forward commit
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin codex/full-gap-closure-final
+          test "$(git rev-parse origin/codex/full-gap-closure-final)" = "$EXPECTED_UNIFIED_HEAD"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            contracts/d2i-integrated-image.v1.json \
+            experiments/servo-headed-runtime/src/main.rs \
+            packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-runtime.service \
+            packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+            tests/d1/test_d2i_renderer_policy.py
+          git commit -m "fix(d2i): bind constrained llvmpipe and image-local input evidence"
+          test "$(git rev-parse HEAD^)" = "$EXPECTED_UNIFIED_HEAD"
+          test -z "$(git status --porcelain=v1)"
+          git push origin HEAD:refs/heads/codex/full-gap-closure-final
+          printf 'PUBLISHED_SHA=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Dispatch exact-head qualification workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test -n "$PUBLISHED_SHA"
+          gh workflow run d2i-integrated-image.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref codex/full-gap-closure-final
+          gh workflow run ci.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref codex/full-gap-closure-final
+          gh workflow run governance-integrity.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref codex/full-gap-closure-final
+          printf 'published=%s\n' "$PUBLISHED_SHA"
