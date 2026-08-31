@@ -1,0 +1,178 @@
+name: temporary-d3-after-d2i-controller
+
+on:
+  push:
+    branches:
+      - codex/d3-after-d2i-controller-v1
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: temporary-d3-after-d2i-controller
+  cancel-in-progress: false
+
+jobs:
+  gate-and-integrate:
+    runs-on: ubuntu-24.04
+    env:
+      D3_BASE_SHA: 8096d78ec6a457cf11e28f258c0cdf8b5dec27b2
+      D3_PROVED_SHA: 371642a76b01618306bd24a6457aab1f8e25dc68
+      UNIFIED_BRANCH: codex/full-gap-closure-final
+      PYTHONDONTWRITEBYTECODE: "1"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Check out controller source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for exact unified-head D2I machine proof
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          candidate=$(git rev-parse "origin/$UNIFIED_BRANCH")
+          test "$candidate" != "$D3_BASE_SHA" || {
+            echo "D2I v3 has not yet been published to the unified candidate" >&2
+            exit 1
+          }
+          run_id=
+          for attempt in $(seq 1 90); do
+            run_id=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow d2i-integrated-image.yml \
+              --branch "$UNIFIED_BRANCH" \
+              --event workflow_dispatch \
+              --limit 30 \
+              --json databaseId,headSha,status,conclusion,createdAt \
+              --jq '.[] | select(.headSha == "'"$candidate"'") | .databaseId' \
+              | head -n1)
+            if test -n "$run_id"; then
+              break
+            fi
+            sleep 20
+          done
+          test -n "$run_id" || {
+            echo "no workflow_dispatch D2I run found for exact candidate $candidate" >&2
+            exit 1
+          }
+          gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          test "$(git rev-parse "origin/$UNIFIED_BRANCH")" = "$candidate"
+          printf 'D2I_PROVED_SHA=%s\n' "$candidate" >> "$GITHUB_ENV"
+          printf 'D2I_PROVED_RUN_ID=%s\n' "$run_id" >> "$GITHUB_ENV"
+
+      - name: Materialize exact proved D3 delta on top of D2I
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$UNIFIED_BRANCH" codex/d3-cross-uid-static-attestation-v2
+          test "$(git rev-parse origin/codex/d3-cross-uid-static-attestation-v2)" = "$D3_PROVED_SHA"
+          git cat-file -e "$D3_BASE_SHA^{commit}"
+          git cat-file -e "$D3_PROVED_SHA^{commit}"
+          expected=$(printf '%s\n' \
+            apps/hepta-agent-portd/Cargo.toml \
+            apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs \
+            contracts/browser-actor.v1.json \
+            crates/hepta-browser-actor/src/lib.rs \
+            crates/hepta-peer-attestation/Cargo.toml \
+            crates/hepta-peer-attestation/src/lib.rs \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md \
+            manifests/project-state.v1.json \
+            manifests/repository-state.json \
+            packaging/debian/development/README.md \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service \
+            tests/d1/test_d1_qualification_separation.py \
+            tests/test_systemd_custody_validator.py \
+            tools/validate_d3_development_profile.py \
+            tools/validate_project_truth.py \
+            tools/verify_systemd_socket_custody.py | sort)
+          actual=$(git diff --name-only "$D3_BASE_SHA" "$D3_PROVED_SHA" | sort)
+          test "$actual" = "$expected"
+          git diff --binary "$D3_BASE_SHA" "$D3_PROVED_SHA" -- \
+            apps/hepta-agent-portd/Cargo.toml \
+            apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs \
+            contracts/browser-actor.v1.json \
+            crates/hepta-browser-actor/src/lib.rs \
+            crates/hepta-peer-attestation/Cargo.toml \
+            crates/hepta-peer-attestation/src/lib.rs \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md \
+            manifests/project-state.v1.json \
+            manifests/repository-state.json \
+            packaging/debian/development/README.md \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service \
+            tests/d1/test_d1_qualification_separation.py \
+            tests/test_systemd_custody_validator.py \
+            tools/validate_d3_development_profile.py \
+            tools/validate_project_truth.py \
+            tools/verify_systemd_socket_custody.py > /tmp/d3-proved.patch
+          git checkout --detach "$D2I_PROVED_SHA"
+          git apply --check /tmp/d3-proved.patch
+          git apply --whitespace=error-all /tmp/d3-proved.patch
+          git diff --check
+          test "$(git diff --name-only | sort)" = "$expected"
+
+      - name: Install exact repository toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Re-prove D3 over the D2I-integrated tree
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --bin hepta-agent-portd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --features development --bin hepta-agent-port-developmentd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --features d1-qualification --bin hepta-agent-port-qualificationd
+          git diff --check
+
+      - name: Publish clean D3 integration commit
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$UNIFIED_BRANCH"
+          test "$(git rev-parse "origin/$UNIFIED_BRANCH")" = "$D2I_PROVED_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "feat(d3): bind cross-UID peer to trusted executable identity"
+          test "$(git rev-parse HEAD^)" = "$D2I_PROVED_SHA"
+          test -z "$(git status --porcelain=v1)"
+          git push origin HEAD:refs/heads/$UNIFIED_BRANCH
+          printf 'D3_INTEGRATED_SHA=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Dispatch integrated D2I regression proof
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run d2i-integrated-image.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$UNIFIED_BRANCH"
+          printf 'd2i_proof_run=%s\nd3_integrated=%s\n' \
+            "$D2I_PROVED_RUN_ID" "$D3_INTEGRATED_SHA"
