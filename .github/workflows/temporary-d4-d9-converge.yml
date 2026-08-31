@@ -1,0 +1,260 @@
+name: temporary-d4-d9-converge
+
+on:
+  push:
+    branches:
+      - codex/d4-d9-converge-v1
+
+permissions:
+  actions: read
+  checks: read
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temporary-d4-d9-converge
+  cancel-in-progress: false
+
+jobs:
+  converge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      PR_NUMBER: "52"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out convergence controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d4-d9-converge-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for the proved D3 integrated candidate
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/convergence-report
+          d3_sha=
+          for attempt in $(seq 1 300); do
+            git fetch --no-tags origin \
+              "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+            candidate=$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")
+            subject=$(git show -s --format=%s "$candidate")
+            if [[ "$subject" == \
+                "feat(d3): bind development peer to trusted executable source" ]]; then
+              d3_sha=$candidate
+              break
+            fi
+            sleep 15
+          done
+          [[ -n "$d3_sha" ]] || {
+            echo "D3 integrated candidate was not published" | tee /tmp/convergence-report/failure.txt >&2
+            exit 1
+          }
+          git log --format=%s -n 12 "$d3_sha" | \
+            grep -Fx "fix(d2i): constrain llvmpipe and bind image-local input evidence"
+          printf 'D3_INTEGRATED_SHA=%s\n' "$d3_sha" >> "$GITHUB_ENV"
+          printf 'd3_integrated_sha=%s\n' "$d3_sha" > /tmp/convergence-report/source-anchor.txt
+
+      - name: Require exact-head D2I machine qualification after D3
+        run: |
+          set -euo pipefail
+          merge_sha=
+          for attempt in $(seq 1 160); do
+            pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+            head=$(jq -r '.head.sha' <<<"$pr")
+            merge=$(jq -r '.merge_commit_sha // empty' <<<"$pr")
+            if [[ "$head" == "$D3_INTEGRATED_SHA" && -n "$merge" ]]; then
+              merge_sha=$merge
+              break
+            fi
+            sleep 10
+          done
+          [[ -n "$merge_sha" ]] || {
+            echo "no exact PR merge object for D3 integrated head" | tee /tmp/convergence-report/failure.txt >&2
+            exit 1
+          }
+          run_id=
+          conclusion=
+          for attempt in $(seq 1 260); do
+            runs=$(gh api \
+              "repos/$GITHUB_REPOSITORY/actions/workflows/d2i-integrated-image.yml/runs?event=pull_request&branch=$TARGET_BRANCH&per_page=40")
+            run=$(jq -c --arg sha "$merge_sha" \
+              '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' \
+              <<<"$runs")
+            if [[ -n "$run" ]]; then
+              run_id=$(jq -r '.id' <<<"$run")
+              status=$(jq -r '.status' <<<"$run")
+              if [[ "$status" == completed ]]; then
+                conclusion=$(jq -r '.conclusion // "unknown"' <<<"$run")
+                break
+              fi
+            fi
+            sleep 15
+          done
+          printf 'run_id=%s\nconclusion=%s\nmerge_sha=%s\n' \
+            "$run_id" "$conclusion" "$merge_sha" | tee /tmp/convergence-report/d3-d2i-result.txt
+          [[ "$conclusion" == success ]] || {
+            echo "D3 exact-head D2I qualification did not pass" | tee /tmp/convergence-report/failure.txt >&2
+            exit 1
+          }
+
+      - name: Fetch and select only maximal source work-package heads
+        run: |
+          set -euo pipefail
+          branches=(
+            codex/d4-collaboration-state-machine-v1
+            codex/d5-product-foundation
+            codex/d5-trusted-app-verifier-v1
+            codex/d6-capability-egress-policy-v1
+            codex/d6-plan-truth-ci-closure-v1
+            codex/d6-source-integration-candidate-v1
+            codex/d7-recovery-update-reconciliation-v1
+            codex/d8-hardware-qualification-verifier-v1
+            codex/d9-signed-release-promotion-v1
+          )
+          : > /tmp/convergence-report/branch-heads.tsv
+          for branch in "${branches[@]}"; do
+            git fetch --no-tags origin \
+              "+refs/heads/$branch:refs/remotes/origin/$branch"
+            head=$(git rev-parse "refs/remotes/origin/$branch")
+            merge_base=$(git merge-base "$D3_INTEGRATED_SHA" "$head")
+            printf '%s\t%s\t%s\n' "$branch" "$head" "$merge_base" \
+              >> /tmp/convergence-report/branch-heads.tsv
+            if git ls-tree -r --name-only "$head" | \
+                grep -E '^(\.github/workflows|tools)/temporary-' >/dev/null; then
+              echo "transient workflow or payload remains in $branch" | \
+                tee /tmp/convergence-report/failure.txt >&2
+              exit 1
+            fi
+          done
+          selected=()
+          for branch in "${branches[@]}"; do
+            head=$(git rev-parse "refs/remotes/origin/$branch")
+            contained=false
+            for other in "${branches[@]}"; do
+              [[ "$branch" == "$other" ]] && continue
+              other_head=$(git rev-parse "refs/remotes/origin/$other")
+              if git merge-base --is-ancestor "$head" "$other_head"; then
+                contained=true
+                break
+              fi
+            done
+            if [[ "$contained" == false ]]; then
+              selected+=("$branch")
+            fi
+          done
+          (IFS=,; printf 'SELECTED_BRANCHES=%s\n' "${selected[*]}") >> "$GITHUB_ENV"
+          printf '%s\n' "${selected[@]}" > /tmp/convergence-report/selected-branches.txt
+          test "${#selected[@]}" -ge 1
+
+      - name: Install pinned repository toolchain
+        run: |
+          set -euo pipefail
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Merge maximal work-package heads with per-stage truth gates
+        run: |
+          set -euo pipefail
+          exec > >(tee -a /tmp/convergence-report/merge-and-gate.log) 2>&1
+          git fetch --no-tags origin \
+            "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          test "$(git rev-parse refs/remotes/origin/$TARGET_BRANCH)" = "$D3_INTEGRATED_SHA"
+          git checkout -B post-d3-integration "$D3_INTEGRATED_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          IFS=',' read -r -a selected <<< "$SELECTED_BRANCHES"
+          for branch in "${selected[@]}"; do
+            head=$(git rev-parse "refs/remotes/origin/$branch")
+            if git merge-base --is-ancestor "$head" HEAD; then
+              echo "already integrated: $branch $head"
+              continue
+            fi
+            echo "merging: $branch $head"
+            if ! git merge --no-ff --no-commit "$head"; then
+              git diff --name-only --diff-filter=U > /tmp/convergence-report/conflicts.txt || true
+              echo "merge conflict in $branch" | tee /tmp/convergence-report/failure.txt >&2
+              exit 1
+            fi
+            if find . -path ./.git -prune -o \
+                \( -path './.github/workflows/temporary-*' -o -path './tools/temporary-*' \) \
+                -print -quit | grep -q .; then
+              echo "transient source entered integrated tree from $branch" | \
+                tee /tmp/convergence-report/failure.txt >&2
+              exit 1
+            fi
+            git diff --check
+            python3 tools/validate_repository.py
+            python3 tools/validate_project_truth.py
+            python3 tools/verify_systemd_socket_custody.py
+            python3 -m unittest discover -s tests -t . -p 'test_*.py'
+            git commit -m "integrate: ${branch#codex/}"
+          done
+          test -z "$(git status --porcelain=v1)"
+
+      - name: Prove the fully converged source feature graph
+        run: |
+          set -euo pipefail
+          exec > >(tee -a /tmp/convergence-report/final-gates.log) 2>&1
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          if [[ -f tools/validate_governance_integrity.py ]]; then
+            python3 tools/validate_governance_integrity.py
+          fi
+          if [[ -f tools/validate_d3_development_profile.py ]]; then
+            python3 tools/validate_d3_development_profile.py
+          fi
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --bin hepta-agent-portd
+          if cargo metadata --no-deps --format-version 1 | jq -e \
+              '.packages[] | select(.name == "hepta-agent-portd") | .features.development' >/dev/null; then
+            cargo build --release --locked -p hepta-agent-portd \
+              --no-default-features --features development \
+              --bin hepta-agent-port-developmentd
+          fi
+          cargo build --release --locked -p hepta-agent-portd \
+            --no-default-features --features d1-qualification \
+            --bin hepta-agent-port-qualificationd
+          test -z "$(git status --porcelain=v1)"
+
+      - name: Publish the converged source candidate atomically
+        run: |
+          set -euo pipefail
+          final=$(git rev-parse HEAD)
+          tree=$(git rev-parse HEAD^{tree})
+          printf 'final_sha=%s\nfinal_tree=%s\n' "$final" "$tree" | \
+            tee /tmp/convergence-report/final-source.txt
+          git fetch --no-tags origin \
+            "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          test "$(git rev-parse refs/remotes/origin/$TARGET_BRANCH)" = "$D3_INTEGRATED_SHA"
+          git push origin HEAD:refs/heads/$TARGET_BRANCH
+
+      - name: Upload convergence evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d4-d9-convergence-${{ github.sha }}
+          path: /tmp/convergence-report
+          if-no-files-found: warn
+          retention-days: 7
+          compression-level: 6
+          include-hidden-files: true
