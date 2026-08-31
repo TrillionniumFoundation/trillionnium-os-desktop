@@ -1,0 +1,88 @@
+name: temporary-d2i-diagnostics-extract-v4
+
+on:
+  push:
+    branches:
+      - codex/d2i-diagnostics-extract-v4
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download exact failed-run diagnostics
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          artifact-ids: 9744382261
+          path: /tmp/d2i-full
+          github-token: ${{ github.token }}
+          repository: TrillionniumFoundation/trillionnium-os-desktop
+          run-id: 33351475393
+
+      - name: Retain bounded causal evidence
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          from pathlib import Path
+          import hashlib
+          import shutil
+
+          source = Path('/tmp/d2i-full')
+          output = Path('/tmp/d2i-bounded')
+          output.mkdir(parents=True, exist_ok=True)
+          text_suffixes = {
+              '.json', '.txt', '.log', '.service', '.target', '.socket',
+              '.journal', '.conf', '.env', '.status', '.out', '.err',
+          }
+          causal_tokens = (
+              'serial', 'journal', 'diagnostic', 'failure', 'status',
+              'evidence', 'runtime', 'acceptance', 'crash', 'inject',
+              'qemu', 'systemd', 'console', 'weston', 'wayland', 'servo',
+          )
+          manifest: list[str] = []
+          kept: list[str] = []
+          for path in sorted(p for p in source.rglob('*') if p.is_file()):
+              rel = path.relative_to(source)
+              size = path.stat().st_size
+              digest = hashlib.sha256(path.read_bytes()).hexdigest() if size <= 16 * 1024 * 1024 else 'omitted-large'
+              manifest.append(f'{rel}\t{size}\t{digest}')
+              lower = path.name.lower()
+              keep_text = path.suffix.lower() in text_suffixes or any(token in lower for token in causal_tokens)
+              keep_image = path.suffix.lower() in {'.png', '.ppm'} and size <= 16 * 1024 * 1024
+              if not (keep_text or keep_image):
+                  continue
+              destination = output / rel
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              if keep_image:
+                  shutil.copy2(path, destination)
+              else:
+                  data = path.read_bytes()
+                  if len(data) <= 8 * 1024 * 1024:
+                      destination.write_bytes(data)
+                  else:
+                      marker = b'\n\n--- middle omitted by bounded extractor ---\n\n'
+                      destination.write_bytes(
+                          data[:2 * 1024 * 1024] + marker + data[-6 * 1024 * 1024:]
+                      )
+              kept.append(str(rel))
+          (output / 'artifact-manifest.tsv').write_text('\n'.join(manifest) + '\n', encoding='utf-8')
+          (output / 'kept-files.txt').write_text('\n'.join(kept) + '\n', encoding='utf-8')
+          if not kept:
+              raise SystemExit('no causal diagnostics retained')
+          PY
+          find /tmp/d2i-bounded -type f -printf '%P\t%s\n' | sort
+
+      - name: Upload bounded causal evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: bounded-d2i-v3-failure-${{ github.sha }}
+          path: /tmp/d2i-bounded
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 6
+          include-hidden-files: true
