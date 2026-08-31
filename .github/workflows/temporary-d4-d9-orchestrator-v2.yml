@@ -1,0 +1,313 @@
+name: temporary-d4-d9-orchestrator-v2
+
+on:
+  push:
+    branches:
+      - codex/d4-d9-orchestrator-v2
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temporary-d4-d9-orchestrator-v2
+  cancel-in-progress: false
+
+jobs:
+  converge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/full-gap-closure-final
+      PR_NUMBER: "52"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out D4-D9 orchestration controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d4-d9-orchestrator-v2
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install pinned repository toolchain
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          git checkout --detach "refs/remotes/origin/$TARGET_BRANCH"
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Wait for D3 and exact-head D2I PASS
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d4-d9-orchestrator
+          refresh() {
+            git fetch --no-tags origin \
+              "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH" >/dev/null
+            git rev-parse "refs/remotes/origin/$TARGET_BRANCH"
+          }
+          anchor=
+          for cycle in $(seq 1 36); do
+            candidate=$(refresh)
+            if ! git log --format=%s "$candidate" | \
+                grep -Fxq "feat(d3): bind development peer to trusted executable source"; then
+              sleep 30
+              continue
+            fi
+            merge_sha=
+            for attempt in $(seq 1 160); do
+              [[ "$(refresh)" == "$candidate" ]] || break
+              pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+              head=$(jq -r '.head.sha' <<<"$pr")
+              merge=$(jq -r '.merge_commit_sha // empty' <<<"$pr")
+              if [[ "$head" == "$candidate" && -n "$merge" ]]; then
+                merge_sha=$merge
+                break
+              fi
+              sleep 10
+            done
+            [[ -n "$merge_sha" ]] || continue
+            run_id=
+            conclusion=
+            for attempt in $(seq 1 300); do
+              [[ "$(refresh)" == "$candidate" ]] || break
+              runs=$(gh api \
+                "repos/$GITHUB_REPOSITORY/actions/workflows/d2i-integrated-image.yml/runs?event=pull_request&per_page=75")
+              run=$(jq -c --arg sha "$merge_sha" \
+                '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' \
+                <<<"$runs")
+              if [[ -n "$run" ]]; then
+                run_id=$(jq -r '.id' <<<"$run")
+                status=$(jq -r '.status' <<<"$run")
+                if [[ "$status" == completed ]]; then
+                  conclusion=$(jq -r '.conclusion // "unknown"' <<<"$run")
+                  break
+                fi
+              fi
+              sleep 15
+            done
+            printf '%s\t%s\t%s\t%s\n' "$candidate" "$merge_sha" "$run_id" "$conclusion" \
+              >> /tmp/d4-d9-orchestrator/pre-integration-d2i.tsv
+            if [[ "$conclusion" == success && "$(refresh)" == "$candidate" ]]; then
+              anchor=$candidate
+              break
+            fi
+            sleep 30
+          done
+          [[ -n "$anchor" ]] || {
+            echo "no stable D3 candidate with exact-head D2I PASS was observed" >&2
+            exit 1
+          }
+          printf 'ANCHOR_SHA=%s\n' "$anchor" >> "$GITHUB_ENV"
+          printf '%s\n' "$anchor" > /tmp/d4-d9-orchestrator/anchor.txt
+
+      - name: Select maximal post-D3 source heads
+        run: |
+          set -euo pipefail
+          branches=(
+            codex/d4-collaboration-state-machine-v1
+            codex/d5-product-foundation
+            codex/d5-trusted-app-verifier-v1
+            codex/d6-capability-egress-policy-v1
+            codex/d6-plan-truth-ci-closure-v1
+            codex/d6-source-integration-candidate-v1
+            codex/d7-recovery-update-reconciliation-v1
+            codex/d8-hardware-qualification-verifier-v1
+            codex/d9-signed-release-promotion-v1
+          )
+          : > /tmp/d4-d9-orchestrator/branch-heads.tsv
+          for branch in "${branches[@]}"; do
+            git fetch --no-tags origin \
+              "+refs/heads/$branch:refs/remotes/origin/$branch"
+            head=$(git rev-parse "refs/remotes/origin/$branch")
+            merge_base=$(git merge-base "$ANCHOR_SHA" "$head")
+            printf '%s\t%s\t%s\n' "$branch" "$head" "$merge_base" \
+              >> /tmp/d4-d9-orchestrator/branch-heads.tsv
+            if git ls-tree -r --name-only "$head" | \
+                grep -E '^(\.github/workflows|tools)/temporary-' >/dev/null; then
+              echo "transient controller source remains in $branch" >&2
+              exit 1
+            fi
+          done
+          selected=()
+          for branch in "${branches[@]}"; do
+            head=$(git rev-parse "refs/remotes/origin/$branch")
+            contained=false
+            for other in "${branches[@]}"; do
+              [[ "$branch" == "$other" ]] && continue
+              other_head=$(git rev-parse "refs/remotes/origin/$other")
+              if git merge-base --is-ancestor "$head" "$other_head"; then
+                contained=true
+                break
+              fi
+            done
+            [[ "$contained" == true ]] || selected+=("$branch")
+          done
+          printf '%s\n' "${selected[@]}" > /tmp/d4-d9-orchestrator/maximal-branches.txt
+          (IFS=,; printf 'MAXIMAL_BRANCHES=%s\n' "${selected[*]}") >> "$GITHUB_ENV"
+          test "${#selected[@]}" -ge 1
+
+      - name: Try validated merge strategies in deterministic order
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          IFS=',' read -r -a selected <<< "$MAXIMAL_BRANCHES"
+
+          source_gate() {
+            python3 tools/validate_repository.py
+            python3 tools/validate_project_truth.py
+            python3 tools/verify_systemd_socket_custody.py
+            if [[ -f tools/validate_governance_integrity.py ]]; then
+              python3 tools/validate_governance_integrity.py
+            fi
+            if [[ -f tools/validate_d3_development_profile.py ]]; then
+              python3 tools/validate_d3_development_profile.py
+            fi
+            python3 -m unittest discover -s tests -t . -p 'test_*.py'
+            git diff --check
+          }
+
+          attempt_strategy() {
+            local strategy=$1
+            local label=$2
+            git merge --abort 2>/dev/null || true
+            git reset --hard "$ANCHOR_SHA"
+            git clean -fdx
+            git checkout -B "d4-d9-$label" "$ANCHOR_SHA"
+            : > "/tmp/d4-d9-orchestrator/$label.log"
+            for branch in "${selected[@]}"; do
+              head=$(git rev-parse "refs/remotes/origin/$branch")
+              if git merge-base --is-ancestor "$head" HEAD; then
+                continue
+              fi
+              printf 'merge %s %s with strategy=%s\n' "$branch" "$head" "$strategy" \
+                | tee -a "/tmp/d4-d9-orchestrator/$label.log"
+              if [[ "$strategy" == default ]]; then
+                if ! git merge --no-ff --no-commit "$head" \
+                    >> "/tmp/d4-d9-orchestrator/$label.log" 2>&1; then
+                  git diff --name-only --diff-filter=U \
+                    > "/tmp/d4-d9-orchestrator/$label-conflicts.txt" || true
+                  return 1
+                fi
+              else
+                if ! git merge --no-ff --no-commit -X "$strategy" "$head" \
+                    >> "/tmp/d4-d9-orchestrator/$label.log" 2>&1; then
+                  git diff --name-only --diff-filter=U \
+                    > "/tmp/d4-d9-orchestrator/$label-conflicts.txt" || true
+                  return 1
+                fi
+              fi
+              if find . -path ./.git -prune -o \
+                  \( -path './.github/workflows/temporary-*' -o -path './tools/temporary-*' \) \
+                  -print -quit | grep -q .; then
+                echo "transient source entered merged tree" \
+                  >> "/tmp/d4-d9-orchestrator/$label.log"
+                return 1
+              fi
+              if ! source_gate >> "/tmp/d4-d9-orchestrator/$label.log" 2>&1; then
+                return 1
+              fi
+              git commit -m "integrate: ${branch#codex/} [$label]" \
+                >> "/tmp/d4-d9-orchestrator/$label.log" 2>&1
+            done
+            source_gate >> "/tmp/d4-d9-orchestrator/$label.log" 2>&1
+          }
+
+          selected_strategy=
+          for entry in default:default theirs:later-stage ours:current-stage; do
+            strategy=${entry%%:*}
+            label=${entry#*:}
+            if attempt_strategy "$strategy" "$label"; then
+              selected_strategy=$label
+              break
+            fi
+          done
+          [[ -n "$selected_strategy" ]] || {
+            echo "no merge strategy passed the source truth gates" >&2
+            exit 1
+          }
+          printf 'SELECTED_STRATEGY=%s\n' "$selected_strategy" >> "$GITHUB_ENV"
+          printf '%s\n' "$selected_strategy" \
+            > /tmp/d4-d9-orchestrator/selected-strategy.txt
+          git rev-parse HEAD > /tmp/d4-d9-orchestrator/integrated-head.txt
+
+      - name: Prove the complete Rust feature graph
+        run: |
+          set -euo pipefail
+          exec > >(tee /tmp/d4-d9-orchestrator/full-gates.log) 2>&1
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          if [[ -f tools/validate_governance_integrity.py ]]; then
+            python3 tools/validate_governance_integrity.py
+          fi
+          if [[ -f tools/validate_d3_development_profile.py ]]; then
+            python3 tools/validate_d3_development_profile.py
+          fi
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo build --release --locked -p hepta-agent-portd \
+            --no-default-features --bin hepta-agent-portd
+          if cargo metadata --no-deps --format-version 1 | jq -e \
+              '.packages[] | select(.name == "hepta-agent-portd") | .features.development' >/dev/null; then
+            cargo build --release --locked -p hepta-agent-portd \
+              --no-default-features --features development \
+              --bin hepta-agent-port-developmentd
+          fi
+          cargo build --release --locked -p hepta-agent-portd \
+            --no-default-features --features d1-qualification \
+            --bin hepta-agent-port-qualificationd
+          test -z "$(git status --porcelain=v1)"
+
+      - name: Publish only if the exact anchor is still current
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          remote=$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")
+          if IFS=',' read -r -a selected <<< "$MAXIMAL_BRANCHES"; then
+            all_present=true
+            for branch in "${selected[@]}"; do
+              head=$(git rev-parse "refs/remotes/origin/$branch")
+              git merge-base --is-ancestor "$head" "$remote" || all_present=false
+            done
+            if [[ "$all_present" == true ]]; then
+              echo "post-D3 source heads were concurrently integrated"
+              exit 0
+            fi
+          fi
+          test "$remote" = "$ANCHOR_SHA"
+          final=$(git rev-parse HEAD)
+          tree=$(git rev-parse HEAD^{tree})
+          printf 'final=%s\ntree=%s\nstrategy=%s\n' "$final" "$tree" "$SELECTED_STRATEGY" \
+            > /tmp/d4-d9-orchestrator/published-source.txt
+          git push origin "$final:refs/heads/$TARGET_BRANCH"
+
+      - name: Upload D4-D9 convergence evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d4-d9-orchestrator-v2-${{ github.sha }}
+          path: /tmp/d4-d9-orchestrator
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
+          include-hidden-files: true
