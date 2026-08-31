@@ -1,0 +1,205 @@
+name: temporary-d2i-d3-converge-v2
+
+on:
+  push:
+    branches:
+      - codex/d2i-d3-converge-v2
+
+permissions:
+  actions: read
+  checks: read
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temporary-d2i-d3-converge-v2
+  cancel-in-progress: false
+
+jobs:
+  follow-and-integrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASE_SHA: 8096d78ec6a457cf11e28f258c0cdf8b5dec27b2
+      TARGET_BRANCH: codex/full-gap-closure-final
+      D3_SHA: 371642a76b01618306bd24a6457aab1f8e25dc68
+      PR_NUMBER: "52"
+      CARGO_INCREMENTAL: "0"
+      CARGO_TERM_COLOR: always
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out retry-aware convergence controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/d2i-d3-converge-v2
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Follow candidate repairs until an exact D2I head passes
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d2i-follow
+          qualified=
+          for cycle in $(seq 1 24); do
+            git fetch --no-tags origin \
+              "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+            candidate=$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")
+            if git log --format=%s "$candidate" | \
+                grep -Fxq "feat(d3): bind development peer to trusted executable source"; then
+              printf 'ALREADY_INTEGRATED=true\n' >> "$GITHUB_ENV"
+              exit 0
+            fi
+            if ! git log --format=%s "$candidate" | \
+                grep -Fxq "fix(d2i): constrain llvmpipe and bind image-local input evidence"; then
+              sleep 15
+              continue
+            fi
+            merge_sha=
+            for attempt in $(seq 1 100); do
+              pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+              head=$(jq -r '.head.sha' <<<"$pr")
+              merge=$(jq -r '.merge_commit_sha // empty' <<<"$pr")
+              if [[ "$head" == "$candidate" && -n "$merge" ]]; then
+                merge_sha=$merge
+                break
+              fi
+              new_head=$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')
+              [[ "$new_head" == "$candidate" ]] || break
+              sleep 10
+            done
+            [[ -n "$merge_sha" ]] || continue
+            run_id=
+            conclusion=
+            for attempt in $(seq 1 260); do
+              runs=$(gh api \
+                "repos/$GITHUB_REPOSITORY/actions/workflows/d2i-integrated-image.yml/runs?event=pull_request&branch=$TARGET_BRANCH&per_page=50")
+              run=$(jq -c --arg sha "$merge_sha" \
+                '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' \
+                <<<"$runs")
+              if [[ -n "$run" ]]; then
+                run_id=$(jq -r '.id' <<<"$run")
+                status=$(jq -r '.status' <<<"$run")
+                if [[ "$status" == completed ]]; then
+                  conclusion=$(jq -r '.conclusion // "unknown"' <<<"$run")
+                  break
+                fi
+              fi
+              new_head=$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')
+              [[ "$new_head" == "$candidate" ]] || break
+              sleep 15
+            done
+            printf '%s\t%s\t%s\t%s\n' "$candidate" "$merge_sha" "$run_id" "$conclusion" \
+              >> /tmp/d2i-follow/attempts.tsv
+            if [[ "$conclusion" == success ]]; then
+              qualified=$candidate
+              break
+            fi
+            if [[ -n "$run_id" ]]; then
+              mkdir -p "/tmp/d2i-follow/run-$run_id"
+              gh run download "$run_id" -R "$GITHUB_REPOSITORY" \
+                -D "/tmp/d2i-follow/run-$run_id" || true
+              find "/tmp/d2i-follow/run-$run_id" -type f -size +8M -delete || true
+            fi
+            for wait in $(seq 1 120); do
+              new_head=$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')
+              [[ "$new_head" != "$candidate" ]] && break
+              sleep 15
+            done
+          done
+          [[ -n "$qualified" ]] || {
+            echo "no repaired D2I candidate obtained exact-head success" >&2
+            exit 1
+          }
+          printf 'QUALIFIED_D2I_SHA=%s\nALREADY_INTEGRATED=false\n' "$qualified" >> "$GITHUB_ENV"
+
+      - name: Install pinned repository toolchain
+        if: env.ALREADY_INTEGRATED != 'true'
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$QUALIFIED_D2I_SHA" "$D3_SHA"
+          git checkout -B d3-integrated "$QUALIFIED_D2I_SHA"
+          channel=$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("rust-toolchain.toml").read_text())["toolchain"]["channel"])
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+
+      - name: Apply and prove the clean D3 net source change
+        if: env.ALREADY_INTEGRATED != 'true'
+        run: |
+          set -euo pipefail
+          git diff --binary "$BASE_SHA" "$D3_SHA" > /tmp/d3-net.patch
+          git apply --check /tmp/d3-net.patch
+          git apply --index --whitespace=error-all /tmp/d3-net.patch
+          actual=$(git diff --cached --name-only | sort)
+          expected=$(printf '%s\n' \
+            apps/hepta-agent-portd/Cargo.toml \
+            apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs \
+            contracts/browser-actor.v1.json \
+            crates/hepta-browser-actor/src/lib.rs \
+            crates/hepta-peer-attestation/Cargo.toml \
+            crates/hepta-peer-attestation/src/lib.rs \
+            docs/CURRENT_STATE.md \
+            docs/MANIFEST.json \
+            docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md \
+            manifests/project-state.v1.json \
+            manifests/repository-state.json \
+            packaging/debian/development/README.md \
+            packaging/debian/systemd/hepta-browserd-agent-development@.service \
+            tests/d1/test_d1_qualification_separation.py \
+            tests/test_systemd_custody_validator.py \
+            tools/validate_d3_development_profile.py \
+            tools/validate_project_truth.py \
+            tools/verify_systemd_socket_custody.py | sort)
+          test "$actual" = "$expected"
+          git diff --cached --check
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_systemd_socket_custody.py
+          python3 tools/validate_d3_development_profile.py
+          python3 -m unittest discover -s tests -t . -p 'test_*.py'
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo build --release --locked -p hepta-agent-portd --no-default-features --bin hepta-agent-portd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features \
+            --features development --bin hepta-agent-port-developmentd
+          cargo build --release --locked -p hepta-agent-portd --no-default-features \
+            --features d1-qualification --bin hepta-agent-port-qualificationd
+
+      - name: Publish D3 only if the qualified head is still current
+        if: env.ALREADY_INTEGRATED != 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(d3): bind development peer to trusted executable source"
+          git fetch --no-tags origin \
+            "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          remote=$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")
+          if git log --format=%s "$remote" | \
+              grep -Fxq "feat(d3): bind development peer to trusted executable source"; then
+            echo "D3 was concurrently integrated by another proved controller"
+            exit 0
+          fi
+          test "$remote" = "$QUALIFIED_D2I_SHA"
+          git push origin HEAD:refs/heads/$TARGET_BRANCH
+
+      - name: Upload followed D2I attempts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d2i-d3-follow-${{ github.sha }}
+          path: /tmp/d2i-follow
+          if-no-files-found: warn
+          retention-days: 5
+          compression-level: 6
+          include-hidden-files: true
