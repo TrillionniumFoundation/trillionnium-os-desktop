@@ -81,23 +81,31 @@ def read_text(relative: str) -> str:
     return require_text(ROOT / relative)
 
 
-def load_toml(relative: str) -> dict[str, Any]:
+def load_toml(relative: str) -> dict[str, Any] | None:
+    error_count = len(ERRORS)
+    text = read_text(relative)
+    if len(ERRORS) != error_count:
+        return None
     try:
-        return tomllib.loads(read_text(relative))
+        return tomllib.loads(text)
     except tomllib.TOMLDecodeError as error:
         fail(f"invalid TOML {relative}: {error}")
-        return {}
+        return None
 
 
-def load_json(relative: str) -> dict[str, Any]:
+def load_json(relative: str) -> dict[str, Any] | None:
+    error_count = len(ERRORS)
+    text = read_text(relative)
+    if len(ERRORS) != error_count:
+        return None
     try:
-        value = json.loads(read_text(relative))
+        value = json.loads(text)
     except json.JSONDecodeError as error:
         fail(f"invalid JSON {relative}: {error}")
-        return {}
+        return None
     if not isinstance(value, dict):
         fail(f"{relative} must contain an object")
-        return {}
+        return None
     return value
 
 
@@ -135,6 +143,8 @@ def check_manifest() -> None:
     """Retain the historical validator API for the existing custody tests."""
 
     manifest = load_toml("apps/hepta-agent-portd/Cargo.toml")
+    if manifest is None:
+        return
     features = manifest.get("features")
     if not isinstance(features, dict):
         fail("hepta-agent-portd feature table is missing")
@@ -154,6 +164,8 @@ def check_manifest() -> None:
 
 def check_workspace() -> None:
     root = load_toml("Cargo.toml")
+    if root is None:
+        return
     workspace = root.get("workspace")
     if not isinstance(workspace, dict):
         fail("root Cargo.toml has no workspace table")
@@ -163,7 +175,11 @@ def check_workspace() -> None:
         if not isinstance(values, list) or "crates/hepta-d3-development" not in values:
             fail(f"workspace.{field} must include crates/hepta-d3-development")
 
-    crate_text = read_text("crates/hepta-d3-development/Cargo.toml")
+    crate_relative = "crates/hepta-d3-development/Cargo.toml"
+    error_count = len(ERRORS)
+    crate_text = read_text(crate_relative)
+    if len(ERRORS) != error_count:
+        return
     try:
         crate = tomllib.loads(crate_text)
     except tomllib.TOMLDecodeError as error:
