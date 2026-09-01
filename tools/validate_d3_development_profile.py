@@ -13,7 +13,7 @@ _PARTS = (
     "_validate_d3_development_profile_impl.001.part",
     "_validate_d3_development_profile_impl.002.part",
 )
-_EXPECTED_SHA256 = "766396da1574fc91a9dd7046be14d93a5818923e734ee24ad7c3712fb9e5b029"
+_EXPECTED_SHA256 = "72cac859b6517395da344e94a66fb6dd3849c4b794610c446d282569ec385787"
 
 
 def _read_fragment(name: str) -> bytes:
