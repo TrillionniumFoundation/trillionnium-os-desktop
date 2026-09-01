@@ -31,6 +31,7 @@ EXPECTED_MEMBERS = [
     "crates/hepta-session-core",
     "crates/hepta-workspace-composition",
     "crates/hepta-browser-actor",
+    "crates/hepta-d3-development",
 ]
 LOCAL_PACKAGES = {
     "hepta-agent-port",
@@ -40,6 +41,7 @@ LOCAL_PACKAGES = {
     "hepta-browser-codec",
     "hepta-browser-contracts",
     "hepta-browserd",
+    "hepta-d3-development",
     "hepta-peer-attestation",
     "hepta-session-core",
     "hepta-workspace-composition",
@@ -206,6 +208,7 @@ def check_lock(checks: list[str]) -> None:
         "crates/hepta-agent-port": {"sha2": "=0.10.9"},
         "crates/hepta-session-core": {"sha2": "=0.10.9"},
         "crates/hepta-browser-actor": {"sha2": "=0.10.9"},
+        "crates/hepta-d3-development": {"libc": "=0.2.186"},
         "apps/hepta-browserd": {
             "ed25519-compact": "=2.1.1",
             "sha2": "=0.10.9",
