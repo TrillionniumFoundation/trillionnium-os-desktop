@@ -20,21 +20,11 @@ const ACCESSIBLE_NAME_SHA256: &str =
 const STRUCTURAL_FINGERPRINT: &str =
     "1111111111111111111111111111111111111111111111111111111111111111";
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub(crate) struct AtomicFixtureRuntime {
     inner: DeterministicLocalRuntime,
     semantic_snapshot: Option<SemanticSnapshot>,
     applied_action_count: u64,
-}
-
-impl Default for AtomicFixtureRuntime {
-    fn default() -> Self {
-        Self {
-            inner: DeterministicLocalRuntime::default(),
-            semantic_snapshot: None,
-            applied_action_count: 0,
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
