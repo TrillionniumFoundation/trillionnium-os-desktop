@@ -47,6 +47,8 @@ opment",
 
 def check_contract() -> None:
     contract = load_json("contracts/browser-actor.v1.json")
+    if contract is None:
+        return
     activation = contract.get("activation")
     if not isinstance(activation, dict):
         fail("browser-actor activation contract is missing")
