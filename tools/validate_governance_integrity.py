@@ -4,9 +4,10 @@
 The reviewed implementation remains in ``_validate_governance_integrity_impl``.
 This facade registers the D3 semantic-resolver workflow and its executable
 source inputs without weakening the exact workflow inventory or read-only
-workflow policy.  It also preserves the validator's test contract: regression
-tests may replace ``ROOT`` with a temporary repository and every proxied helper
-will synchronize that root before entering the implementation module.
+workflow policy. It also preserves the validator's historical test contract:
+regression tests may replace mutable policy globals with temporary fixtures and
+every proxied helper synchronizes those values before entering the
+implementation module.
 """
 
 from __future__ import annotations
@@ -44,14 +45,54 @@ _impl.REVIEWED_LOCAL_SCRIPTS = frozenset(
     }
 )
 
+_CANONICAL_ROOT = _impl.ROOT
+_CANONICAL_WORKFLOW_ROOT = _impl.WORKFLOW_ROOT
+_CANONICAL_CONTRACT_PATH = _impl.CONTRACT_PATH
+_CANONICAL_EXPECTED_REQUIRED_WORKFLOWS = tuple(_impl.EXPECTED_REQUIRED_WORKFLOWS)
+_CANONICAL_REVIEWED_LOCAL_SCRIPTS = frozenset(_impl.REVIEWED_LOCAL_SCRIPTS)
+_MUTABLE_UPPERCASE_GLOBALS = tuple(
+    name
+    for name in vars(_impl)
+    if name.isupper()
+    and name not in {"ROOT", "WORKFLOW_ROOT", "CONTRACT_PATH"}
+)
+
+
+def _selected_path(name: str, canonical: Path, derived: Path, root: Path) -> Path:
+    """Honor an explicit facade override or derive a path from an overridden root."""
+
+    value = globals().get(name, canonical)
+    selected = value if isinstance(value, Path) else Path(value)
+    if root != _CANONICAL_ROOT and selected == canonical:
+        return derived
+    return selected
+
 
 def _sync_globals() -> None:
-    root = globals().get("ROOT", _impl.ROOT)
-    if not isinstance(root, Path):
-        root = Path(root)
+    root_value = globals().get("ROOT", _CANONICAL_ROOT)
+    root = root_value if isinstance(root_value, Path) else Path(root_value)
     _impl.ROOT = root
-    _impl.WORKFLOW_ROOT = root / ".github" / "workflows"
-    _impl.CONTRACT_PATH = root / "contracts" / "repository-governance.v1.json"
+    _impl.WORKFLOW_ROOT = _selected_path(
+        "WORKFLOW_ROOT",
+        _CANONICAL_WORKFLOW_ROOT,
+        root / ".github" / "workflows",
+        root,
+    )
+    _impl.CONTRACT_PATH = _selected_path(
+        "CONTRACT_PATH",
+        _CANONICAL_CONTRACT_PATH,
+        root / "contracts" / "repository-governance.v1.json",
+        root,
+    )
+
+    # The original single-module validator exposed its policy constants as
+    # mutable module globals. Several adversarial regression tests deliberately
+    # replace those constants to build tiny fixture repositories. Mirror every
+    # uppercase implementation global so the facade remains behaviorally
+    # equivalent instead of silently restoring the production registry.
+    for name in _MUTABLE_UPPERCASE_GLOBALS:
+        if name in globals():
+            setattr(_impl, name, globals()[name])
 
 
 def _proxy(function: Callable[..., Any]) -> Callable[..., Any]:
@@ -80,12 +121,11 @@ for _name, _value in vars(_impl).items():
     else:
         globals()[_name] = _value
 
-# Mutable compatibility globals intentionally live in the facade.  The proxy
-# synchronizes them into the implementation before every externally invoked
-# helper, matching the historical single-module behavior used by tests.
-ROOT = _impl.ROOT
-WORKFLOW_ROOT = _impl.WORKFLOW_ROOT
-CONTRACT_PATH = _impl.CONTRACT_PATH
+ROOT = _CANONICAL_ROOT
+WORKFLOW_ROOT = _CANONICAL_WORKFLOW_ROOT
+CONTRACT_PATH = _CANONICAL_CONTRACT_PATH
+EXPECTED_REQUIRED_WORKFLOWS = _CANONICAL_EXPECTED_REQUIRED_WORKFLOWS
+REVIEWED_LOCAL_SCRIPTS = _CANONICAL_REVIEWED_LOCAL_SCRIPTS
 
 
 if __name__ == "__main__":
