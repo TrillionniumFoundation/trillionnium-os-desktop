@@ -73,5 +73,12 @@ jobs:
       - name: Unit and integration tests
         run: cargo test --workspace --all-targets --locked
 
+      - name: Compile and test optional qualification graphs
+        run: |
+          set -euo pipefail
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
       - name: D0 browserd self-check
         run: cargo run --locked -p hepta-browserd -- --self-check
