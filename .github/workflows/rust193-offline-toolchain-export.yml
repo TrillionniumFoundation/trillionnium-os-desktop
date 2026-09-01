@@ -1,0 +1,92 @@
+name: rust193-offline-toolchain-export
+
+on:
+  push:
+    branches: [codex/rust193-offline-toolchain-export-v1]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust193-offline-toolchain-export-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out exact source object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install exact toolchain and locked dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel="$(python3 - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path('rust-toolchain.toml').read_text())['toolchain']['channel'])
+          PY
+          )"
+          test "$channel" = 1.93.0
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup override set "$channel"
+          cargo fetch --locked
+          rustc --version --verbose
+          cargo --version --verbose
+          cargo fmt --version
+          cargo clippy --version
+          printf '%s\n' "$channel" > /tmp/rust-channel.txt
+
+      - name: Create relocatable offline bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel="$(cat /tmp/rust-channel.txt)"
+          host="$(rustc -vV | sed -n 's/^host: //p')"
+          toolchain="$HOME/.rustup/toolchains/$channel-$host"
+          test -x "$toolchain/bin/rustc"
+          test -x "$toolchain/bin/cargo"
+          test -x "$toolchain/bin/rustfmt"
+          test -x "$toolchain/bin/clippy-driver"
+          root=/tmp/trillionnium-rust193-offline
+          rm -rf "$root"
+          mkdir -p "$root/toolchain" "$root/cargo-home"
+          cp -a "$toolchain/." "$root/toolchain/"
+          cp -a "$HOME/.cargo/registry" "$root/cargo-home/"
+          if test -d "$HOME/.cargo/git"; then
+            cp -a "$HOME/.cargo/git" "$root/cargo-home/"
+          fi
+          cat > "$root/activate.sh" <<'SH'
+          #!/usr/bin/env bash
+          ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+          export PATH="$ROOT/toolchain/bin:$PATH"
+          export CARGO_HOME="$ROOT/cargo-home"
+          export RUSTUP_TOOLCHAIN=1.93.0
+          export CARGO_NET_OFFLINE=true
+          SH
+          chmod 0755 "$root/activate.sh"
+          printf 'channel=%s\nhost=%s\nsource_sha=%s\nsource_tree=%s\n' \
+            "$channel" "$host" "$GITHUB_SHA" "$(git rev-parse HEAD^{tree})" \
+            > "$root/manifest.txt"
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
+            -C /tmp -cf - trillionnium-rust193-offline \
+            | gzip -n -6 > /tmp/trillionnium-rust193-offline.tar.gz
+          sha256sum /tmp/trillionnium-rust193-offline.tar.gz \
+            > /tmp/trillionnium-rust193-offline.tar.gz.sha256
+
+      - name: Upload offline Rust bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: rust193-offline-${{ github.sha }}
+          path: |
+            /tmp/trillionnium-rust193-offline.tar.gz
+            /tmp/trillionnium-rust193-offline.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
