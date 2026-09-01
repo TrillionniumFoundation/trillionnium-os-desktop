@@ -1,8 +1,6 @@
 use crate::activation;
 use crate::storage;
-use crate::{
-    AnyError, PEER_EXECUTABLE, PEER_GROUP, PEER_UNIT, PEER_USER, REQUEST_BUDGET, invalid,
-};
+use crate::{AnyError, PEER_EXECUTABLE, PEER_GROUP, PEER_UNIT, PEER_USER, REQUEST_BUDGET, invalid};
 use hepta_agent_port::{
     AgentPortError, BrowserRequestHandler, DispatchContext, HandlerOutcome, ServiceEvidence,
     serve_one_with_observer,
@@ -51,9 +49,7 @@ pub(crate) fn run_service(arguments: &[String]) -> Result<(), AnyError> {
     let expected_gid = resolve_group_id(PEER_GROUP)?;
     let policy = PeerRuntimePolicy::for_system_service(expected_uid, expected_gid, PEER_UNIT)?;
     let executable = hash_trusted_executable(PEER_EXECUTABLE)?;
-    if activation::required_env("HEPTA_D3_EXPECTED_EXECUTABLE_SHA256")?
-        != executable.as_str()
-    {
+    if activation::required_env("HEPTA_D3_EXPECTED_EXECUTABLE_SHA256")? != executable.as_str() {
         return Err(invalid("configured executable digest does not match trusted path").into());
     }
 

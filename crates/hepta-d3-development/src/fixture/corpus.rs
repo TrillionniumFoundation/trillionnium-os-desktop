@@ -20,15 +20,10 @@ pub(crate) fn run() -> Result<String, AnyError> {
             ui_mode: "headed".to_owned(),
         },
     ))?;
-    let mut coordinates = Coordinates::from_result(client::success(
-        &created,
-        "session_create",
-    )?)?;
+    let mut coordinates = Coordinates::from_result(client::success(&created, "session_create")?)?;
 
-    let snapshot = client::invoke(coordinates.request(
-        "d3-snapshot",
-        BrowserOperation::SessionSnapshot,
-    ))?;
+    let snapshot =
+        client::invoke(coordinates.request("d3-snapshot", BrowserOperation::SessionSnapshot))?;
     coordinates.update(client::success(&snapshot, "session_snapshot")?)?;
 
     let stale_generation = coordinates.document_generation;
@@ -120,16 +115,12 @@ pub(crate) fn run() -> Result<String, AnyError> {
         "semantic resolver ceiling",
     )?;
 
-    let closed = client::invoke(coordinates.request(
-        "d3-close",
-        BrowserOperation::SessionClose,
-    ))?;
+    let closed = client::invoke(coordinates.request("d3-close", BrowserOperation::SessionClose))?;
     client::success(&closed, "session_close")?;
 
-    let post_close = client::invoke(coordinates.request(
-        "d3-post-close-stale",
-        BrowserOperation::SessionSnapshot,
-    ))?;
+    let post_close = client::invoke(
+        coordinates.request("d3-post-close-stale", BrowserOperation::SessionSnapshot),
+    )?;
     client::error(
         &post_close,
         BrowserErrorCode::StaleSession,

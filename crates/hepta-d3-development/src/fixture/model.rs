@@ -32,11 +32,7 @@ impl Coordinates {
         Ok(())
     }
 
-    pub(crate) fn request(
-        &self,
-        request_id: &str,
-        operation: BrowserOperation,
-    ) -> BrowserRequest {
+    pub(crate) fn request(&self, request_id: &str, operation: BrowserOperation) -> BrowserRequest {
         BrowserRequest {
             request_id: request_id.to_owned(),
             session_id: Some(self.session_id.clone()),
@@ -57,9 +53,6 @@ fn string_field<'a>(object: &'a JsonObject, key: &str) -> Result<&'a str, AnyErr
 fn u64_field(object: &JsonObject, key: &str) -> Result<u64, AnyError> {
     match object.get(key) {
         Some(JsonValue::Integer(value)) if *value >= 0 => Ok(u64::try_from(*value)?),
-        _ => Err(invalid(format!(
-            "result field {key} is not a non-negative integer"
-        ))
-        .into()),
+        _ => Err(invalid(format!("result field {key} is not a non-negative integer")).into()),
     }
 }

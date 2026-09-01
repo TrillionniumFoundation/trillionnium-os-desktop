@@ -50,10 +50,7 @@ pub(crate) fn require_marker() -> Result<MarkerGuard, AnyError> {
         .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
         .open(path)?;
     let metadata = file.metadata()?;
-    if !metadata.is_file()
-        || metadata.uid() != 0
-        || metadata.permissions().mode() & 0o022 != 0
-    {
+    if !metadata.is_file() || metadata.uid() != 0 || metadata.permissions().mode() & 0o022 != 0 {
         return Err(invalid("development marker is unsafe").into());
     }
     Ok(MarkerGuard { _file: file })

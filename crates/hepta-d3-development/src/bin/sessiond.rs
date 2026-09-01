@@ -21,8 +21,7 @@ pub(crate) type AnyError = Box<dyn Error + Send + Sync>;
 pub(crate) const MARKER_PATH: &str = "/etc/hepta/enable-agent-port-development";
 pub(crate) const SOCKET_PATH: &str = "/run/hepta/browserd/agent-development.sock";
 pub(crate) const SOCKET_FD_NAME: &str = "agent-development";
-pub(crate) const JOURNAL_PATH: &str =
-    "/var/lib/hepta-browserd/development/receipts.journal";
+pub(crate) const JOURNAL_PATH: &str = "/var/lib/hepta-browserd/development/receipts.journal";
 pub(crate) const JOURNAL_ROOT: &str = "/var/lib/hepta-browserd/development";
 pub(crate) const PEER_USER: &str = "hepta-agent";
 pub(crate) const PEER_GROUP: &str = "hepta-agent";
@@ -86,10 +85,8 @@ mod tests {
         assert!(storage::validate_journal_path(Path::new(JOURNAL_PATH)).is_ok());
         assert!(storage::validate_journal_path(Path::new("relative.journal")).is_err());
         assert!(
-            storage::validate_journal_path(Path::new(
-                "/var/lib/hepta-browserd/outside.journal"
-            ))
-            .is_err()
+            storage::validate_journal_path(Path::new("/var/lib/hepta-browserd/outside.journal"))
+                .is_err()
         );
     }
 }

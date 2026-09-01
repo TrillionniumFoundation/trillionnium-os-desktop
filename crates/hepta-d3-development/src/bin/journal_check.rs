@@ -159,7 +159,9 @@ fn run() -> Result<CheckResult, CheckError> {
     }
 
     if !principal_bound {
-        return Err(CheckError::Invariant("receipt principal binding is missing"));
+        return Err(CheckError::Invariant(
+            "receipt principal binding is missing",
+        ));
     }
     if completed != EXPECTED_RECEIPTS.len() || succeeded != 8 || refused != 2 || failed != 2 {
         return Err(CheckError::UnexpectedOutcomes {
@@ -271,7 +273,10 @@ impl fmt::Display for CheckError {
                 write!(formatter, "receipt {receipt} changes evidence identity")
             }
             Self::UnexpectedTerminal(receipt) => {
-                write!(formatter, "receipt {receipt} has an unexpected terminal state")
+                write!(
+                    formatter,
+                    "receipt {receipt} has an unexpected terminal state"
+                )
             }
             Self::UnexpectedReceipts { expected, actual } => write!(
                 formatter,
