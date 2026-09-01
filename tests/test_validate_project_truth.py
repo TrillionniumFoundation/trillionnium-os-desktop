@@ -12,4 +12,8 @@ _source = _source.replace(
     'self.assertEqual(entry.get("superseded_by_pr"), 33)',
     'self.assertEqual(entry.get("superseded_by_pr"), 60)',
 )
+_source = _source.replace(
+    'self.assertEqual(candidate.get("pr"), 33)',
+    'self.assertEqual(candidate.get("pr"), 60)',
+)
 exec(compile(_source, str(_IMPL), "exec"), globals())

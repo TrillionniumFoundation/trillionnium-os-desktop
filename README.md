@@ -28,12 +28,12 @@ GitHub at decision time.
 ## Current convergence candidate
 
 Draft PR **#60**, branch `codex/d6-gap-closure-v1`, is the single active
-convergence surface. Its recorded pre-truth-refresh source snapshot is:
+convergence surface. Its committed pre-truth-refresh evidence snapshot is:
 
 ```text
-base main:     78888fac3bee7974138ab1c5e4807511bee7fcbb
-source head:   e87c63f257c9f660bc0fc104633efb39bcaca320
-source tree:   e3fae0714a12b2876a07e8d332d82bb51907b750
+base main:       78888fac3bee7974138ab1c5e4807511bee7fcbb
+source head:     e87c63f257c9f660bc0fc104633efb39bcaca320
+source tree:     e3fae0714a12b2876a07e8d332d82bb51907b750
 synthetic merge: 56f7a021bddbc3f9349c9afd2206670a7765853c
 ```
 
@@ -42,8 +42,8 @@ a fixed review object, made session transitions transactional, closed retained
 human-lease Agent-admission paths, added bounded state-space exploration, and
 made authenticated transport fail-stop after wire/protocol failure.
 
-The snapshot passed the repository/Rust/codec/transport/receipt/custody and
-D4-D9 source/verifier checks. It also produced candidate-only evidence for:
+It passed the repository/Rust/codec/transport/receipt/custody and D4-D9
+source/verifier checks. It also produced candidate-only evidence for:
 
 - exact-pin Servo compile compatibility;
 - headed-host Servo local-fixture input and causal content-process recovery;
@@ -53,9 +53,9 @@ D4-D9 source/verifier checks. It also produced candidate-only evidence for:
 - one byte-identical D2I integrated QEMU image with no network device and the
   bounded local-fixture claim ceiling.
 
-The source snapshot and its artifacts are **not integrated-main evidence**.
-This truth refresh changes the PR head and therefore requires a fresh exact-head
-matrix before independent review and promotion.
+The snapshot and its artifacts are **not integrated-main evidence**. Any later
+truth or source commit changes the exact head and therefore requires a fresh
+exact-head matrix before independent review and promotion.
 
 ## Integrated foundation
 
@@ -83,14 +83,27 @@ The production AgentPort remains default-disabled and fails closed without a
 real promoted BrowserActor binding. Test, qualification, development, and
 production binaries are physically separated.
 
+## D3 development identity boundary
+
+The cross-UID `/proc/<pid>/exe` source blocker is closed without adding
+`CAP_SYS_PTRACE`. The explicit development profile binds the compiled,
+root-owned, non-symlink `/usr/libexec/hepta-agent` path and reopens and re-hashes
+it at admission and dispatch, while retaining live PID/UID/GID, pidfd liveness,
+start time, cgroup, and systemd-unit checks. This mechanism is development-only
+and is not production authority.
+
+D3 remains blocked on independent security review, a Servo-owned atomic
+semantic resolver, and the complete principal/dispatch/receipt/cancellation/
+crash corpus inside the exact integrated image.
+
 ## Open authority and external-evidence blockers
 
 PR #60 cannot close the following through source authorship alone:
 
 - protected `main`, required checks, organization-team CODEOWNERS, latest-push
   non-author approval, no self-merge, and independent release authority;
-- a reviewed solution for cross-UID live executable attestation in the D3
-  development service without granting broad ptrace authority;
+- independent review and exact integrated-image qualification of the D3 static
+  trusted-path plus live process-identity binding;
 - a Servo-owned atomic semantic resolver and exact integrated-image D3
   principal/dispatch/receipt corpus;
 - fixed-BOM independent hardware qualification, including long-duration and
@@ -109,6 +122,11 @@ The repository does not currently claim that:
 - D3 through D9 are integrated product gates;
 - fixed hardware has been qualified;
 - production signing keys or a signed release exist.
+
+The D0A-02 headed-host ceiling explicitly retains:
+
+- `no_native_clipboard`;
+- `no_clean_teardown`.
 
 ## Local verification
 

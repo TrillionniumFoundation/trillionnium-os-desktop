@@ -16,15 +16,15 @@ durable non-replaying receipt facts, and exact-pin Servo compile compatibility.
 
 It does not imply a promoted headed runtime, Debian/QEMU product image,
 BrowserActor activation, external network/effect authority, hardware beta, or
-signed release. The current `main` head is `78888fac3bee7974138ab1c5e4807511bee7fcbb`;
-its root README-clearing commit is unsigned and `main` remains unprotected, so
-D0T-03 is still `REPOSITORY_SETTING_REQUIRED`.
+signed release. The recorded `main` head is
+`78888fac3bee7974138ab1c5e4807511bee7fcbb`; `main` remains unprotected, so
+D0T-03 remains `REPOSITORY_SETTING_REQUIRED`.
 
 ## 2. Single convergence candidate — PR #60
 
 Draft PR #60 on `codex/d6-gap-closure-v1` supersedes active development surfaces
 PR #32, PR #33, PR #35, and unstable aggregate PR #59. The committed machine
-snapshot records the last source object before this truth refresh:
+snapshot records the last source object before the truth-refresh series:
 
 ```text
 base SHA:       78888fac3bee7974138ab1c5e4807511bee7fcbb
@@ -37,14 +37,16 @@ The candidate is an ordinary Git object. Workflows have read-only repository
 permissions, checkout does not persist write credentials, and the four
 self-modifying `closure-overlay-bootstrap-v2` through `v5` workflows were
 removed. No workflow is allowed to manufacture and push a future review object.
+Live head and check state must be read from GitHub rather than inferred from the
+snapshot above.
 
 ## 3. Core fixes completed in the candidate
 
 ### Session arbitration
 
-`SessionMachine::apply` now executes transactionally. A rejected event cannot
-leave partially advanced revisions, ownership, navigation source, or lease
-state. Every Agent observation, mutation, and navigation admission requires
+`SessionMachine::apply` executes transactionally. A rejected event cannot leave
+partially advanced revisions, ownership, navigation source, or lease state.
+Every Agent observation, mutation, and navigation admission requires
 `Ready + Idle + no human lease`; Human/System source labels cannot relabel
 active Agent work. Navigation, cancellation, recovery, and close transitions
 maintain explicit ownership invariants.
@@ -63,10 +65,6 @@ stable broken-pipe transport error without attempting byte-stream
 resynchronization. Pure local preflight failures do not poison because no byte
 has been consumed or emitted.
 
-The exact candidate transport workflow passed the Rust package gate, the
-independent Python reference and fault corpus, the golden vector, deterministic
-evidence regeneration, and the no-listener/opaque-payload claim ceiling.
-
 ## 4. Candidate-only evidence at the recorded source snapshot
 
 ### D0A-01 exact-pin Servo
@@ -81,9 +79,10 @@ Workflow `33454164056`, artifact `9781038860`, digest
 `sha256:8f027ec3ebebfb0364ccee4f5e72de874903c2386d3c3dab5cba3166f1d4e65f`
 reported `PASS_CAUSAL_HEADED_HOST_ONLY`. It bound base/head/tested-merge/tree,
 observed the exact generation-1 content PID receive `SIGKILL`, retained trusted
-chrome, and produced a distinct generation-2 content process. It excludes
-AgentPort, BrowserActor, native clipboard, clean teardown, Debian/QEMU,
-external effects, and release claims.
+chrome, and produced a distinct generation-2 content process. Its explicit
+non-claims include `no_native_clipboard` and `no_clean_teardown`, as well as no
+AgentPort, BrowserActor, Debian/QEMU, external-effect, hardware, or release
+promotion.
 
 ### D1 QEMU substrate
 
@@ -101,19 +100,20 @@ create a visible product window.
 
 Workflow `33454164136`, artifact `9781160555`, digest
 `sha256:b840c33e30fcbb1bf267967a88af17c6681daa0fdd89111593900ca0b60274b2`
-reported `PASS_CANDIDATE_REQUIRES_REVIEW_AND_EXACT_MAIN`. It rebuilt the
-D1 substrate, built the exact Servo runtime, prepared the integrated image
-twice with byte equality, and booted Q35/TCG without a network device. The
-guest reached the local Servo fixture, verified page input and basic IME,
-retained trusted chrome after an externally selected generation-1 content PID
-received `SIGKILL`, and created a distinct generation-2 replacement. The
-strict claim field `actual_content_process_crash_currently_proven` remains
-`false` because no Servo pipeline-panic callback was observed; product
-AgentPort, external effects, hardware, Secure Boot, and release remain false.
+reported `PASS_CANDIDATE_REQUIRES_REVIEW_AND_EXACT_MAIN`. It rebuilt the D1
+substrate, built the exact Servo runtime, prepared the integrated image twice
+with byte equality, and booted Q35/TCG without a network device. The guest
+reached the local Servo fixture, verified page input and basic IME, retained
+trusted chrome after an externally selected generation-1 content PID received
+`SIGKILL`, and created a distinct generation-2 replacement.
+
+The strict field `actual_content_process_crash_currently_proven` remains false
+because no Servo pipeline-panic callback was observed. Product AgentPort,
+external effects, hardware, Secure Boot, and release remain false.
 
 All artifacts above are PR synthetic-merge evidence with
-`promotion_authoritative: false`. This truth-refresh commit invalidates their
-exact-head identity and requires one final current-head rerun.
+`promotion_authoritative: false`. A truth-refresh or source commit changes the
+exact head and requires a new exact-head run.
 
 ## 5. D3 source state and remaining executable blocker
 
@@ -122,21 +122,35 @@ binding, bounded queues, revision and stale-target checks, cancellation/deadline
 paths, durable receipt observer, local-fixture runtime, and an explicitly
 selected development-profile AgentPort binary.
 
-Live development activation remains fail closed. The systemd service runs as
-`hepta-browserd`, while the attested peer runs as `hepta-agent`. Linux
-`PTRACE_MODE_READ_FSCREDS` denies cross-UID `/proc/<pid>/exe` reads, and the
-service intentionally has no `CAP_SYS_PTRACE`. Qualification-only static
-attestation is not promoted into the D3 live profile. The canonical status is
-therefore `BLOCKED_UPSTREAM_CROSS_UID_PROCFS`, with
-`development_source_wiring_only: true` and
-`development_static_attestation_available: false`.
+The cross-UID `/proc/<pid>/exe` source blocker is closed without granting
+`CAP_SYS_PTRACE`. The explicit development graph uses the reviewed
+`development-static-attestation` path: it opens and hashes the compiled,
+root-owned, non-symlink `/usr/libexec/hepta-agent` path while retaining live
+PID/UID/GID, pidfd liveness, start time, cgroup, and systemd-unit checks. The
+same trusted path is reopened and re-hashed before BrowserActor dispatch, so a
+static admission cannot silently fall back to the forbidden cross-UID procfs
+executable read.
 
-Resumption requires an independently reviewed mechanism that preserves distinct
-service identities and binds the semantic principal to an unforgeable live
-process identity without widening browser authority. It must then be exercised
-inside the exact D2I image together with authorized/unauthorized principal,
-page observation/action, revision, cancellation/deadline, crash, journal
-recovery, and indeterminate-receipt cases.
+Machine truth records:
+
+```text
+development_live_activation_status: SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE
+development_static_attestation_available: true
+development_static_attestation_scope: explicit_development_profile_only
+development_cross_uid_procfs_required: false
+```
+
+Live development activation nevertheless remains fail closed. The exact D2I
+image has not yet executed the complete D3 principal, attestation, dispatch,
+receipt, cancellation, deadline, crash, recovery, and indeterminate-outcome
+corpus, and independent security review has not promoted that authority.
+
+D3 closure therefore requires:
+
+1. independent security review of the static trusted-path plus live process
+   binding;
+2. a Servo-owned atomic semantic resolver for `page_act`;
+3. the full D3 corpus inside the exact promoted integrated image.
 
 ## 6. Later-stage source versus product evidence
 
@@ -149,7 +163,7 @@ retain negative promotion results. They do not close their product gates:
 - D6 needs installed network namespace, resolver, proxy, redirect, connected
   peer-IP, portal, and bypass controls;
 - D7 needs a real persistent effect executor, boot/update slots, rollback
-  counter, recovery media, and power-loss corpus;
+  counter, recovery media, and power-loss evidence;
 - D8 needs independent fixed-BOM hardware, 24/72-hour stability, and repeated
   power-loss evidence;
 - D9 needs protected release governance, offline HSM custody, independent
@@ -167,7 +181,7 @@ exact-main evidence.
 
 ## 8. Promotion sequence
 
-1. Finish the truth refresh and pass every exact-head PR #60 workflow.
+1. Pass every workflow on one final exact PR #60 head.
 2. Freeze that head and publish its exact source/base/tree/tested-merge and
    artifact identities in the PR record.
 3. Configure protected-main/ruleset/CODEOWNERS/environment controls and capture
@@ -176,5 +190,6 @@ exact-main evidence.
    self-merge, or administrator bypass.
 5. Merge only after all required checks pass, then rerun exact main and update
    integrated machine truth.
-6. Resolve D3 live attestation and run the exact integrated-image D3 corpus.
+6. Run and independently review the exact-image D3 corpus and Servo semantic
+   resolver.
 7. Continue D4 through D9 strictly in prerequisite order.
