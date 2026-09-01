@@ -1,100 +1,116 @@
 # TrillionniumOS Desktop
 
-TrillionniumOS Desktop is the full product repository for a Debian-based,
-AI-native desktop appliance. The target product is one compositor/native
-trusted workspace plus one human/Agent-shared Servo content surface. System,
-network, device, credential, update, and signing authority remain outside the
-browser content process.
+TrillionniumOS Desktop is a Debian-based, AI-native desktop appliance under
+active development. The architecture combines one compositor-owned trusted
+workspace, one logical untrusted Servo content surface, a shared PageOwner for
+human and Agent interaction, explicit system capabilities, durable receipts,
+controlled egress, immutable updates, and evidence-gated release promotion.
 
-## Current integrated state
+This repository is a **full product source repository**, but it is **not a
+released desktop operating system**. Source, host, headed-host, QEMU image,
+integrated-image, hardware, and signed-release evidence are separate tiers.
+Passing a lower tier never implies a higher one.
 
-The active canonical plan is `2026-08-29-d6`. The integrated main-stage truth is
-`D0R_D0C06_D0A01_COMPILE_VALIDATED`.
+## Canonical truth
 
-The canonical d6 baseline is `bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1`.
-The committed candidate snapshot was observed from GitHub at
-`2026-08-30T10:47:03Z` with `origin/main` at
-`afd42c0f90d254dfb7b04d9c45216e879840f95e`; live PR state must still be read
-from GitHub.
+- Active plan: [`docs/DESKTOP_PLAN-2026-08-29-d6.md`](docs/DESKTOP_PLAN-2026-08-29-d6.md)
+- Plan revision: `2026-08-29-d6`
+- Integrated-main stage: `D0R_D0C06_D0A01_COMPILE_VALIDATED`
+- Machine truth: [`manifests/project-state.v1.json`](manifests/project-state.v1.json)
+- Gate registry: [`manifests/gates.v1.json`](manifests/gates.v1.json)
+- Current state: [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md)
+- Blocker ledger: [`docs/plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md`](docs/plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md)
 
-Integrated and demonstrated at host/source evidence levels:
+Machine files describe committed snapshots. Live PR heads, checks, reviews,
+branch protection, rulesets, environments, and releases must be read from
+GitHub at decision time.
 
-- D0T-01/D0T-02 machine-truth and immutable-CI-input foundations (their prior
-  exact-main evidence is pending refresh after invalidating changes);
-- Rust 2024 workspace pinned to Rust 1.93.0;
-- product-boundary and exact Cargo dependency locks;
-- signed Debian snapshot/package input closure;
-- strict Browser API contracts, layered session/document/snapshot revisions,
-  deterministic Agent/human arbitration, and bounded queues;
-- authenticated bounded AF_UNIX connected-stream transport;
-- canonical bounded JSON Browser API codec;
-- exactly-one request-bound connected AgentPort core;
-- default-disabled systemd socket custody and peer attestation;
-- product AgentPort fixture separation and fail-closed activation pending a
-  promoted, integrated D3 implementation;
-- durable, crash-consistent receipt journal with no execution or replay API;
-- exact-pin Servo compile compatibility only.
+## Current convergence candidate
 
-The current D0A-02 candidate is PR #33 on
-`codex/d0a02-proof-soundness-v4`, head
-`f29e0989335654dfc52ca1dbd049ae1f128d4c59`, with headed-host artifact
-`9729987669` (`sha256:bcac5c08dcc4af839b0da3da52d73b0e59e8d80be5767750a243fdaff280e290`).
-It proves one native trusted window, one logical local-fixture Servo content
-surface, bounded native input/basic IME, popup/navigation refusal, and causal
-content-process crash recovery on the tested X11/Xvfb runner. Native clipboard
-is intentionally outside this headed-host gate and remains a D4
-ownership/lease/drag-drop requirement. Bounded clean Servo teardown and child
-reaping are also outside this gate; the candidate claim ceiling retains
-`no_native_clipboard` and `no_clean_teardown`. It remains a
-`MODULE_CLOSED_CANDIDATE`: independent review, settings evidence, merge, and
-an exact-main rerun are still required.
+Draft PR **#60**, branch `codex/d6-gap-closure-v1`, is the single active
+convergence surface. Its recorded pre-truth-refresh source snapshot is:
 
-A D3 source foundation is present only in the opt-in development profile: it
-contains the engine-neutral BrowserActor/PageOwner boundary, attested principal
-binding, receipt observation, and a loopback-fixture runtime. This source
-profile is not connected to the production daemon, is not a promoted D3 gate,
-and has no integrated-image or exact-main evidence.
+```text
+base main:     78888fac3bee7974138ab1c5e4807511bee7fcbb
+source head:   e87c63f257c9f660bc0fc104633efb39bcaca320
+source tree:   e3fae0714a12b2876a07e8d332d82bb51907b750
+synthetic merge: 56f7a021bddbc3f9349c9afd2206670a7765853c
+```
 
-Not integrated or claimed:
+That snapshot removed every self-modifying closure bootstrap workflow, restored
+a fixed review object, made session transitions transactional, closed retained
+human-lease Agent-admission paths, added bounded state-space exploration, and
+made authenticated transport fail-stop after wire/protocol failure.
 
-- headed Servo inside the Debian/QEMU product image;
-- Debian/Wayland/QEMU boot on current main;
-- integrated-image BrowserActor/PageOwner dispatch or production TaskFlow
-  semantic-principal binding (the development-only source profile is not an
-  integrated claim);
-- external navigation, credentials, capabilities, or external effects;
-- signed applications, controlled egress, signed update/rollback, fixed
-  hardware, or production release.
+The snapshot passed the repository/Rust/codec/transport/receipt/custody and
+D4-D9 source/verifier checks. It also produced candidate-only evidence for:
 
-The current D1 candidate is PR #32 on
-`codex/d1-01-current-main-v2`, head
-`ec5e8b2caaac8981d6cdf73dae8b3c4004e6ebd0`; it remains `BASE_DRIFT` until
-rebased/reconstructed on the latest main and rerun. PR #29 and PR #23 are
-historical, superseded candidates. PR #35 (`codex/d2i-current-main-v1`) is a
-source-only D2I composition and remains `BLOCKED_UPSTREAM`.
+- exact-pin Servo compile compatibility;
+- headed-host Servo local-fixture input and causal content-process recovery;
+- two byte-identical D1 builds plus Q35/TCG PID 1, Wayland placeholder,
+  default-disabled qualification AgentPort, negative peer cases, recovery, and
+  clean shutdown;
+- one byte-identical D2I integrated QEMU image with no network device and the
+  bounded local-fixture claim ceiling.
 
-PR #27 (merged at `e25c42ef69fc2968ac2d1b002cc53f15de2e9e0f`) is retained only
-as historical provenance and is superseded by PR #33. D1 must be rebuilt after
-product/fixture separation so QEMU qualification traffic cannot substitute a
-fixture handler into the production daemon.
+The source snapshot and its artifacts are **not integrated-main evidence**.
+This truth refresh changes the PR head and therefore requires a fresh exact-head
+matrix before independent review and promotion.
 
-## Canonical truth and plan
+## Integrated foundation
 
-- [`manifests/project-state.v1.json`](manifests/project-state.v1.json) — single
-  committed machine status snapshot
-- [`manifests/gates.v1.json`](manifests/gates.v1.json) — gates, evidence tiers,
-  required commands, review classes, and invalidation inputs
-- [`docs/DESKTOP_PLAN-2026-08-29-d6.md`](docs/DESKTOP_PLAN-2026-08-29-d6.md) —
-  active development plan
-- [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) — integrated state summary
-- [`docs/evidence/2026-08-30-d0a02-headed-runtime.md`](docs/evidence/2026-08-30-d0a02-headed-runtime.md)
-  — headed-host candidate evidence
+Integrated `main` still claims only the D0 foundation and exact-pin Servo
+compile baseline represented by `D0R_D0C06_D0A01_COMPILE_VALIDATED`. The source
+repository contains substantially more candidate code, including PageOwner,
+BrowserActor, trusted-app, capability/egress, update/reconciliation, hardware
+qualification, and release-promotion models, but those later gates remain
+unpromoted until their prerequisite evidence tiers are met.
 
-Live PR/check state is read from GitHub. The committed candidate entries are
-evidence snapshots and must not be interpreted as a substitute for current
-GitHub status.
+The local control path is designed as:
 
-## Required checks
+```text
+systemd-owned AF_UNIX connection
+  -> kernel peer identity and runtime attestation
+  -> fail-stop bounded transport
+  -> canonical Browser API codec
+  -> exactly-one AgentPort request lifecycle
+  -> semantic TaskFlow principal binding
+  -> PageOwner / BrowserActor
+  -> durable requested / dispatched / terminal receipt facts
+```
+
+The production AgentPort remains default-disabled and fails closed without a
+real promoted BrowserActor binding. Test, qualification, development, and
+production binaries are physically separated.
+
+## Open authority and external-evidence blockers
+
+PR #60 cannot close the following through source authorship alone:
+
+- protected `main`, required checks, organization-team CODEOWNERS, latest-push
+  non-author approval, no self-merge, and independent release authority;
+- a reviewed solution for cross-UID live executable attestation in the D3
+  development service without granting broad ptrace authority;
+- a Servo-owned atomic semantic resolver and exact integrated-image D3
+  principal/dispatch/receipt corpus;
+- fixed-BOM independent hardware qualification, including long-duration and
+  power-loss testing;
+- offline HSM key custody, independent release promotion, signed artifacts,
+  anti-rollback metadata, and publication controls.
+
+## Explicit non-claims
+
+The repository does not currently claim that:
+
+- PR #60 has been independently approved or merged;
+- its candidate evidence has passed an exact-main rerun;
+- a production AgentPort, external navigation, credentials, capabilities, or
+  external effects are enabled;
+- D3 through D9 are integrated product gates;
+- fixed hardware has been qualified;
+- production signing keys or a signed release exist.
+
+## Local verification
 
 ```bash
 python3 tools/validate_repository.py
@@ -106,6 +122,5 @@ cargo test --workspace --all-targets --locked
 cargo run --locked -p hepta-browserd -- --self-check
 ```
 
-`hepta-browserd --self-check` starts no Servo runtime, product listener, or
-external network operation. Evidence is valid only for the exact tested commit,
-tree, workflow, inputs, environment, and output digests.
+Higher evidence tiers are produced only by the dedicated immutable GitHub
+Actions workflows and must be interpreted under their recorded claim ceilings.

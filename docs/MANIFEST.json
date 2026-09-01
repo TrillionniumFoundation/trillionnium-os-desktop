@@ -1,30 +1,83 @@
 {
   "active_candidates": [
     {
-      "branch": "codex/d1-01-current-main-v2",
-      "id": "D1-01",
-      "pr": 32,
-      "status": "BASE_DRIFT"
+      "id": "D0T-03",
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
+      "status": "REPOSITORY_SETTING_REQUIRED"
     },
     {
-      "branch": "codex/d0a02-proof-soundness-v4",
       "id": "D0A-02",
-      "pr": 33,
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
       "status": "MODULE_CLOSED_CANDIDATE"
     },
     {
-      "branch": "codex/d2i-current-main-v1",
+      "id": "D1-01",
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
+      "status": "MODULE_CLOSED_CANDIDATE"
+    },
+    {
       "id": "D2I-01",
-      "pr": 35,
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
+      "status": "MODULE_CLOSED_CANDIDATE"
+    },
+    {
+      "id": "D3-01",
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "id": "D4-01",
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "id": "D5-01",
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "id": "D6-01",
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "id": "D7-01",
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "id": "D8-01",
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
+      "status": "BLOCKED_UPSTREAM"
+    },
+    {
+      "id": "D9-01",
+      "branch": "codex/d6-gap-closure-v1",
+      "pr": 60,
       "status": "BLOCKED_UPSTREAM"
     }
   ],
   "active_plan": "DESKTOP_PLAN-2026-08-29-d6.md",
   "active_plan_revision": "2026-08-29-d6",
   "candidate_state_snapshot": {
-    "observed_at": "2026-08-30T10:47:03Z",
-    "observed_main_sha": "afd42c0f90d254dfb7b04d9c45216e879840f95e",
-    "source": "github_api_committed_snapshot"
+    "observed_at": "2026-09-01T00:26:03Z",
+    "observed_main_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+    "observed_candidate_pr": 60,
+    "observed_candidate_branch": "codex/d6-gap-closure-v1",
+    "observed_candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+    "observed_candidate_tree_sha": "e3fae0714a12b2876a07e8d332d82bb51907b750",
+    "source": "github_api_committed_snapshot_before_truth_refresh",
+    "live_pr_or_ci_state_must_be_read_from_github": true
   },
   "agent_port_connected_bridge_product": true,
   "agent_port_enable_marker_shipped": false,
@@ -156,8 +209,8 @@
       "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
       "evidence_freshness": "STALE_EVIDENCE",
       "merge_ready": false,
-      "stale_reason": "D0A-02 headed-host evidence is bound to historical source head fe0ea6169127ce1f7950618b55374d83834a462c; the PR #33 candidate supersedes that snapshot. Rerun servo-headed-runtime on the exact candidate head before promotion.",
-      "superseded_by_pr": 33,
+      "stale_reason": "D0A-02 headed-host evidence is bound to historical source head fe0ea6169127ce1f7950618b55374d83834a462c; PR #60 supersedes the PR #33 candidate and this snapshot. Rerun servo-headed-runtime on the exact candidate head for PR #60 before promotion.",
+      "superseded_by_pr": 60,
       "validated_head": "fe0ea6169127ce1f7950618b55374d83834a462c",
       "tested_merge_sha": "0df9b9c15f51d12f34ef1af288dfae5a009f073f",
       "tree_sha": "37dc62883d12f3e8917f21545e8223ff809c452d",
@@ -208,7 +261,7 @@
   "servo_integrated": false,
   "servo_lock": "../manifests/servo.lock.json",
   "servo_qualification_evidence": "evidence/generated/d0a01-servo-qualification-result.json",
-  "status": "D0_FOUNDATION_VALIDATED_D0A02_MODULE_CLOSED_CANDIDATE",
+  "status": "D0_FOUNDATION_VALIDATED_PR60_CONVERGENCE_CANDIDATE",
   "superseded_plan": "DESKTOP_PLAN-2026-08-28-d5.md",
   "transport_core_source_present": true,
   "transport_exact_head_rust_validation": false,

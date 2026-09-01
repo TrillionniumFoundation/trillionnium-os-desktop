@@ -1,26 +1,68 @@
-# Blocker closure ledger
+# TrillionniumOS Desktop — blocker closure ledger
 
-**Snapshot:** 2026-08-30 (GitHub candidate snapshot observed at `2026-08-30T10:47:03Z`)<br>
-**Baseline main:** `bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1`
+**Plan:** `2026-08-29-d6`  
+**Updated:** 2026-09-01  
+**Integrated-main stage:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`
 
-This ledger is a human view of `manifests/project-state.v1.json`; machine truth
-wins. The D3 source foundation mentioned below is an unpromoted development
-candidate; it is deliberately absent from the active candidate list until its
-final PR head and evidence identities are known.
+This ledger separates source closure, candidate evidence, integrated-main
+evidence, repository settings, independent review, hardware, key custody, and
+release authority. A green source/verifier workflow never promotes a higher
+evidence tier.
 
-| Package | Candidate | Current blocker at snapshot | Required closure |
+## Current convergence identity
+
+PR #60 on `codex/d6-gap-closure-v1` is the only active convergence surface. The
+machine snapshot before this truth refresh is source head
+`e87c63f257c9f660bc0fc104633efb39bcaca320`, tree
+`e3fae0714a12b2876a07e8d332d82bb51907b750`, base
+`78888fac3bee7974138ab1c5e4807511bee7fcbb`, and synthetic merge
+`56f7a021bddbc3f9349c9afd2206670a7765853c`.
+
+## Gate ledger
+
+| Gate | Candidate state | Remaining blocker | Minimal closure action |
 | --- | --- | --- | --- |
-| D0T-01/D0T-02 | merged d6 baseline `bf6bba2`; later main changes hit invalidation paths | historical exact-main evidence must be refreshed on the current main before new promotion | exact-head truth/CI validation, independent review, exact-main rerun |
-| D0C-02 | historical host result at `786debc12aa8d790b231397c1a3341fbf89de080` (run `33167838644`) | declared transport/workspace inputs changed after the recorded run; evidence is `STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN` while the bounded carrier claim ceiling remains unchanged | rerun the Rust 1.93 transport/workspace gate on the exact current head and refresh the bound evidence under review |
-| D0C-03/D0C-04 | historical codec/bridge host results at `4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb` / `5abd71db79b75e400c1c1d7cb0eac85a68041cae` | codec and AgentPort inputs changed after their recorded runs; both host artifacts are stale even though source/static checks remain available | rerun the exact-head codec and AgentPort Rust gates, then update evidence freshness and promotion bindings |
-| D0C-05 | historical custody result at `7be7121b1d2593a0e708ec9ade189ef84ab245da` (runs `33190387511`, `33190387553`, `33190387564`) | packaging, service, workspace, and shared validator inputs changed after the recorded runs; contract/artifact freshness is `STALE_EVIDENCE` and `merge_ready: false` even though the source-capability flag remains true | rerun the systemd custody, Rust, and claim-ceiling corpus on the exact current head before any current host promotion |
-| D0C-06 | historical receipt result at `25d2d5882018b9974fc360aaf646128c6b6f175f` (runs `33235926576`, `33235926577`, `33235926596`, `33235926613`) | receipt-journal/workspace/validator inputs changed after the recorded runs; facts-only claim ceiling remains bounded but evidence is stale | rerun the permanent receipt-journal qualification and full workspace regression on the exact current head |
-| D0A-01 | historical Servo compile qualification at `01d02d692c573ccde7a99d990f2a63235d9bc69f` (run `33230713426`, job `99042937091`) | repository qualification inputs and evidence tooling changed after the recorded run; compile-only result is `STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN` | rerun the exact-pin Servo workflow against the current candidate head and rebind the artifact digest |
-| D0A-02/D2 | PR #33 / `codex/d0a02-proof-soundness-v4` (PR #27 is merged historical) | candidate evidence is headed-host only and still lacks independent review, protected-main settings, reviewed merge, and exact-main rerun; its claim ceiling intentionally excludes native clipboard | pass exact current-head workflow, satisfy D0T-03, merge, rerun exact main; validate clipboard ownership/lease/drag-drop independently under D4 |
-| D1-01 | PR #32 / `codex/d1-01-current-main-v2` (PR #29 and #23 are superseded historical) | candidate is base-drifted from the latest main and not merged | rebase/reconstruct current main, commit signed D1 lock, reproducible build and QEMU pass, exact-main rerun |
-| D2I-01 | PR #35 / `codex/d2i-current-main-v1` | source coexistence only; depends on promoted D0A-02 and D1 | same-image QEMU headed Servo integration gate |
-| D3-01 | source foundation present in a development candidate; no promoted PR/head | source-level PageOwner/BrowserActor, principal attestation, receipt observation, and opt-in development AgentPort exist, but there is no exact integrated-image run, independent review, D0T-03 settings evidence, or production activation; D3 remains `BLOCKED_UPSTREAM` | finalize the candidate head, run the exact integrated-image principal/dispatch/receipt corpus (including unauthorized-peer, revision, cancellation/deadline, and indeterminate-receipt cases), obtain independent review and D0T-03 evidence, then rerun exact main |
-| D4-D9 | none | dependency gates open | execute in canonical order |
+| D0T-01/D0T-02 | source and exact-head checks pass on the recorded PR #60 snapshot | truth-refresh changes the head; integrated main remains stale | pass the final exact-head matrix, independently review, merge, rerun exact main, then update integrated truth |
+| D0T-03 | source contract and negative verifier pass | `main` is unprotected; no repository ruleset/required checks; organization-team CODEOWNERS and independent release roles are not demonstrated | configure live GitHub settings, capture API evidence, require latest-push non-author approval, prohibit self-merge/admin bypass |
+| D0C-02 | fail-stop transport implementation and exact candidate reference/Rust/fault corpus pass | historical machine artifact rows remain stale until promotion; final truth head requires rerun | pass final exact-head transport workflow and bind result in PR; promote only after review/merge/exact-main |
+| D0C-03/D0C-04 | canonical codec and exactly-one AgentPort candidate checks pass | historical machine artifact rows remain stale; no production BrowserActor authority | final exact-head rerun and later D3 promoted binding |
+| D0C-05 | production/fixture/development binary separation, socket custody, path custody, and negative activation checks pass | live repository governance and D3 authority remain open | final exact-head rerun; keep product listener default-disabled |
+| D0C-06 | receipt journal and failure corpus pass | facts-only journal is not an effect executor and machine artifact is unpromoted | final exact-head rerun; integrate requested/dispatched/terminal facts in D3 image |
+| D0A-01 | exact Servo pin compile candidate passes | truth-refresh exact-head identity and exact-main promotion | rerun final head, independent review, merge, exact-main |
+| D0A-02 | `MODULE_CLOSED_CANDIDATE`; headed-host causal SIGKILL/replacement evidence passes on recorded source snapshot | truth-refresh rerun, D0T-03, independent review, merge, exact-main; claim ceiling excludes native clipboard and clean teardown | pass final headed workflow and promote only through reviewed merge |
+| D1-01 | `MODULE_CLOSED_CANDIDATE`; two-build reproducibility and QEMU PID 1/Wayland/no-net/qualification AgentPort corpus pass | truth-refresh rerun, D0T-03, independent review, merge, exact-main | pass final D1 workflow and promote its exact image/input digests |
+| D2I-01 | `MODULE_CLOSED_CANDIDATE`; exact integrated local-fixture QEMU image evidence passes on recorded source snapshot | truth-refresh rerun, D0T-03, independent review, merge, exact-main | pass final D2I workflow and bind one image digest |
+| D3-01 | PageOwner/BrowserActor/principal/receipt/development-profile source exists | cross-UID live `/proc/<pid>/exe` attestation is denied without ptrace; no Servo-owned atomic resolver or exact-image D3 corpus | select and independently review a least-authority live identity mechanism; implement Servo resolver; run full D3 corpus in exact promoted image |
+| D4-01 | collaboration state/reference source and bounded tests pass | D3 runtime prerequisite is open | run same-PageOwner human/Agent/IME/clipboard/drag-drop/modal/crash trace corpus after D3 |
+| D5-01 | trusted-app policy/source verifier passes | no promoted signed-app runtime, storage/service-worker enforcement, publisher/revocation ceremony | integrate after D4 and qualify exact image |
+| D6-01 | capability/egress policy/source verifier passes | no installed portal/network namespace/resolver/proxy/peer-IP enforcement or adversarial bypass corpus | integrate real controls after D5 and qualify exact image/network lab |
+| D7-01 | recovery/update/effect models and negative verifier pass | no real effect executor, persistent prepare/execute reconciliation, boot slots, rollback counter, recovery media, or power-loss evidence | implement after D6 and qualify under image plus hardware fault injection |
+| D8-01 | source verifier correctly rejects synthetic promotion | no independent fixed-BOM hardware lab, 24/72-hour stability, suspend/input/audio/accessibility/multi-monitor and repeated power-loss corpus | execute on the fixed BOM with independent operators and immutable evidence |
+| D9-01 | release verifier correctly retains negative promotion result | no protected release commit, offline HSM custodians, independent signer/attestor/promoter, signed artifacts, anti-rollback, or production publication | conduct the independent release ceremony only after D8 |
 
-Repository-setting gates for protected main, team CODEOWNERS, independent review,
-and signing custody cannot be proven solely by source changes.
+## Closed source blockers in PR #60
+
+- Removed every self-modifying closure bootstrap workflow.
+- Restored a fixed submitted review object and read-only checkout credentials.
+- Made session transitions transactional and added explicit navigation owner
+  invariants.
+- Closed Agent admission while any human lease remains.
+- Added bounded event-space exploration and hidden-state rollback checks.
+- Made transport permanently fail-stop after wire/protocol failure while
+  preserving safe local-preflight reuse.
+- Re-ran repository, Rust, transport, codec, receipt, custody, D4-D9 source,
+  exact-pin Servo, headed Servo, D1, and D2I workflows on a single recorded
+  candidate source snapshot.
+
+## Non-source blockers
+
+The following cannot be closed by another author-controlled source commit:
+
+1. GitHub branch/ruleset/environment configuration and independent review.
+2. An independently accepted D3 cross-UID live identity mechanism.
+3. Fixed hardware and long-duration/power-loss execution.
+4. Offline HSM custody and separation of release duties.
+5. Publication and exact-main evidence after reviewed merge.
+
+Each remains a hard stop. No source field or passing negative verifier may be
+used to manufacture a promotion claim.

@@ -1,231 +1,180 @@
 # TrillionniumOS Desktop — current state
 
-**Updated:** 2026-08-30<br>
-**Canonical plan:** `2026-08-29-d6`<br>
-**Repository mode:** `FULL_PRODUCT_REPOSITORY`<br>
-**Integrated implementation stage:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`<br>
-**Canonical d6 baseline:** `bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1`<br>
-**Machine truth:** `manifests/project-state.v1.json`<br>
-**Candidate snapshot:** GitHub API observation `2026-08-30T10:47:03Z`, observed
-`origin/main` `afd42c0f90d254dfb7b04d9c45216e879840f95e`
+**Updated:** 2026-09-01  
+**Canonical plan:** `2026-08-29-d6`  
+**Repository mode:** `FULL_PRODUCT_REPOSITORY`  
+**Integrated implementation stage:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`  
+**Machine truth:** `manifests/project-state.v1.json`
 
-The candidate rows below are committed snapshots, not live GitHub state. A new
-main commit, workflow change, input-lock change, or candidate-head change
-invalidates the corresponding evidence and requires a fresh exact-head run.
+## 1. Integrated-main truth
 
-## Integrated and demonstrated
+The integrated-main claim remains the bounded d6 foundation. It includes the
+repository/toolchain/input locks, Browser API and revision contracts,
+deterministic session arbitration, bounded local transport, exactly-one
+AgentPort core, default-disabled systemd custody, peer-attestation machinery,
+durable non-replaying receipt facts, and exact-pin Servo compile compatibility.
 
-D0T-01 and D0T-02 were integrated at the canonical d6 baseline
-`bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1`. Subsequent main changes touched
-their declared invalidation paths, so the historical exact-main evidence must
-be refreshed before a new promotion is treated as current. This does not
-satisfy D0T-03: protected main, required checks, organization-team CODEOWNERS,
-no self-approval/self-merge, and release-signing dual control still require
-GitHub settings and independent reviewers.
+It does not imply a promoted headed runtime, Debian/QEMU product image,
+BrowserActor activation, external network/effect authority, hardware beta, or
+signed release. The current `main` head is `78888fac3bee7974138ab1c5e4807511bee7fcbb`;
+its root README-clearing commit is unsigned and `main` remains unprotected, so
+D0T-03 is still `REPOSITORY_SETTING_REQUIRED`.
 
-The machine gate rows for D0T-01 and D0T-02 intentionally retain
-`INTEGRATED_AND_EXACT_MAIN_VALIDATED` as their capability status. That status
-does not make the historical promotion observation current: the exact-main
-evidence described above remains pending refresh after the invalidating
-changes. Capability status and evidence freshness are orthogonal, and no
-current `merge_ready` claim is implied until the refresh is independently
-reviewed.
+## 2. Single convergence candidate — PR #60
 
-The D0 foundation contains the Rust workspace, product-boundary and dependency
-locks, layered page revisions, deterministic Agent/human arbitration, synthetic
-trusted origins, Browser API contracts, fail-closed validation, signed Debian
-input closure, and durable non-replaying receipts.
-
-The following local control path was host-validated at historical checkpoints;
-the corresponding D0C evidence is stale until the exact-head reruns listed
-below:
+Draft PR #60 on `codex/d6-gap-closure-v1` supersedes active development surfaces
+PR #32, PR #33, PR #35, and unstable aggregate PR #59. The committed machine
+snapshot records the last source object before this truth refresh:
 
 ```text
-already-connected AF_UNIX stream
-  -> SO_PEERCRED + nonce + sequence + digest transport
-  -> bounded canonical Browser API codec
-  -> exactly-one request-bound AgentPort core
-  -> default-disabled systemd socket custody
-  -> pidfd/procfs/cgroup/unit peer attestation
-  -> durable non-replaying receipt facts
+base SHA:       78888fac3bee7974138ab1c5e4807511bee7fcbb
+candidate SHA:  e87c63f257c9f660bc0fc104633efb39bcaca320
+candidate tree: e3fae0714a12b2876a07e8d332d82bb51907b750
+tested merge:   56f7a021bddbc3f9349c9afd2206670a7765853c
 ```
 
-The product `hepta-agent-portd` does not link or instantiate the fixture
-handler. The D3 development candidate now contains a source-level
-PageOwner/BrowserActor boundary, attested principal binding, receipt
-observation, and an explicitly selected development AgentPort profile. Those
-changes are not D3 gate evidence: the production daemon remains
-default-disabled and fails closed before request decoding or dispatch, the
-development socket is opt-in and local-fixture-only, and the fixture binary is
-feature-gated and outside the production installation graph.
+The candidate is an ordinary Git object. Workflows have read-only repository
+permissions, checkout does not persist write credentials, and the four
+self-modifying `closure-overlay-bootstrap-v2` through `v5` workflows were
+removed. No workflow is allowed to manufacture and push a future review object.
 
-D0A-01's historical evidence demonstrates exact-pin Servo compile
-compatibility against commit `670ae8a70801b162e186f81cbb5bdd2d59c39108`; the
-stale result is not a visible-frame or runtime-integration claim.
+## 3. Core fixes completed in the candidate
 
-## Active candidate snapshot
+### Session arbitration
 
-| Gate | Candidate | Head / tested merge | Base | Status and claim ceiling |
-| --- | --- | --- | --- | --- |
-| D0A-02 | PR #33, `codex/d0a02-proof-soundness-v4` | `f29e0989335654dfc52ca1dbd049ae1f128d4c59` / `a81f1d93ef69d73cee4239625146c991c01825f3` | `afd42c0f90d254dfb7b04d9c45216e879840f95e` | `MODULE_CLOSED_CANDIDATE`; headed host/local fixture only, no image, AgentPort, or external effects |
-| D1-01 | PR #32, `codex/d1-01-current-main-v2` | `ec5e8b2caaac8981d6cdf73dae8b3c4004e6ebd0` / `c5650e892796a6864d83e8ffc6317edc291725ae` | `afd42c0f90d254dfb7b04d9c45216e879840f95e` | `BASE_DRIFT`; candidate QEMU/image evidence is not promoted |
-| D2I-01 | PR #35, `codex/d2i-current-main-v1` | `14a045cb1e17841a662c59f8ec0e676e86cfec56` / none | `afd42c0f90d254dfb7b04d9c45216e879840f95e` | `BLOCKED_UPSTREAM`; source coexistence only, no integrated-image evidence |
+`SessionMachine::apply` now executes transactionally. A rejected event cannot
+leave partially advanced revisions, ownership, navigation source, or lease
+state. Every Agent observation, mutation, and navigation admission requires
+`Ready + Idle + no human lease`; Human/System source labels cannot relabel
+active Agent work. Navigation, cancellation, recovery, and close transitions
+maintain explicit ownership invariants.
 
-### D0A-02 proof-soundness candidate — PR #33
+A bounded integration test explores 31 event forms to depth seven, checks public
+ownership invariants after every accepted transition, and compares both the
+public snapshot and hidden behavioural signature after every rejected
+transition.
 
-The candidate's permanent workflow run `33304160993` produced artifact
-`9729987669` with digest
-`sha256:bcac5c08dcc4af839b0da3da52d73b0e59e8d80be5767750a243fdaff280e290`.
-Its bounded headed-host corpus proves one trusted window, one authoritative
-loopback-fixture WebView at a time, native pointer/button/wheel/keyboard/basic
-IME paths, popup/navigation denial, causal content-process replacement, and
-trusted-chrome survival. Native clipboard is intentionally outside this
-headed-host gate and remains a D4 ownership/lease/drag-drop requirement.
-Bounded clean Servo teardown and child reaping are also outside this gate; the
-candidate claim ceiling retains `no_native_clipboard` and `no_clean_teardown`.
-It does not prove Debian/QEMU integration,
-BrowserActor, AgentPort activation, external effects, hardware, or release
-readiness.
+### Authenticated transport
 
-Status remains `MODULE_CLOSED_CANDIDATE`: independent security review,
-D0T-03 settings, reviewed merge, and an exact-main rerun are still required.
-The snapshot was observed against `afd42c0`; later main commits invalidate it.
+The raw framed carrier is private behind a fail-stop facade. Any frame I/O,
+deadline, digest, nonce, kind, challenge, or sequence error drops the owned
+carrier and permanently poisons the public connection. Later calls return a
+stable broken-pipe transport error without attempting byte-stream
+resynchronization. Pure local preflight failures do not poison because no byte
+has been consumed or emitted.
 
-### D1-01 current-main candidate — PR #32
+The exact candidate transport workflow passed the Rust package gate, the
+independent Python reference and fault corpus, the golden vector, deterministic
+evidence regeneration, and the no-listener/opaque-payload claim ceiling.
 
-The candidate's permanent workflow run `33304391615` produced artifact
-`9730059502` with digest
-`sha256:246d18c84dfc0f85ed91cb8bb8018698695002eed259ac41f2003b53ea4639ba`.
-The evidence describes the signed package lock, two-build normalized image
-comparison, Q35/TCG `-nic none` boot, systemd PID 1/Wayland, qualification-only
-AgentPort activation, authorization/denial, teardown, recovery, marker removal,
-and clean poweroff. It does not prove Servo startup, an integrated D1+D2 image,
-external effects, hardware, or release readiness.
+## 4. Candidate-only evidence at the recorded source snapshot
 
-Status remains `BASE_DRIFT` until this candidate is rebased/reconstructed on the
-latest main and its exact-main evidence is rerun. No QEMU/image claim is
-promoted by this snapshot.
+### D0A-01 exact-pin Servo
 
-### D2I source candidate — PR #35
+Workflow `33454164032`, artifact `9781017648`, digest
+`sha256:1766545a1c872c112c0e46f36133541a3d44735998fad194f05aa8c6bfc11ec6`
+passed against the exact Servo lock. This remains compile compatibility only.
 
-PR #35 composes D1 and D0A-02 source heads only. It intentionally contains no
-integrated-image workflow, runtime receipt, or promotion claim. D2I remains
-`BLOCKED_UPSTREAM` until promoted D0A-02 and D1 inputs are available.
+### D0A-02 headed host
 
-## D3 source foundation — development-only, not live
+Workflow `33454164056`, artifact `9781038860`, digest
+`sha256:8f027ec3ebebfb0364ccee4f5e72de874903c2386d3c3dab5cba3166f1d4e65f`
+reported `PASS_CAUSAL_HEADED_HOST_ONLY`. It bound base/head/tested-merge/tree,
+observed the exact generation-1 content PID receive `SIGKILL`, retained trusted
+chrome, and produced a distinct generation-2 content process. It excludes
+AgentPort, BrowserActor, native clipboard, clean teardown, Debian/QEMU,
+external effects, and release claims.
 
-The current development candidate contains the first source foundation for
-D3-01:
+### D1 QEMU substrate
 
-- an engine-neutral `PageOwner`/`BrowserActor` ownership and typed-dispatch
-  boundary with session, document, snapshot, and mutation revision checks;
-- attested TaskFlow-principal binding that includes the mechanism identity and
-  executable digest;
-- D0C-06 receipt lifecycle observation with cancellation, deadlines, and
-  indeterminate-outcome handling; and
-- a separate, explicitly selected development AgentPort binary and systemd
-  socket that accepts deterministic loopback fixtures only.
+Workflow `33454164165`, artifact `9781049604`, digest
+`sha256:9609711473c622301c285468e1f3c5a66c0ac2ea2675c375f157a5d371a5577e`
+reported `PASS`. Two independent builds produced identical rootfs tar,
+rootfs manifest, ext4, kernel, initrd, and package lock. Q35/TCG booted systemd
+PID 1, udev, D-Bus, logind, and the supervised Wayland placeholder without a
+network device. The qualification-only AgentPort proved default-disabled state,
+authorized and unauthorized cases, per-connection teardown, connection-kill
+recovery, marker/socket removal, and clean poweroff. It did not start Servo or
+create a visible product window.
 
-Semantic `page_act` dispatch remains intentionally fail closed in this source
-candidate. `PageRuntime::dispatch_page_act` requires a runtime-owned atomic
-frame/structure re-resolution and returns `unsupported` by default; the
-deterministic development runtime has no DOM resolver. A Servo resolver and
-its ambiguity/structure regression corpus are required before D3 can claim
-semantic-action execution.
+### D2I integrated image
 
-This is a source-level development profile, not a live product activation and
-not a promoted gate. No D3 candidate PR/head, integrated-image run, or exact
-main evidence is recorded in machine truth yet; those identities must be
-updated only after the development PR reaches its final head and its evidence
-is independently reviewed. D3-01 therefore remains `BLOCKED_UPSTREAM` until
-D2I is promoted and the exact integrated-image principal/dispatch/receipt
-corpus passes. The source work does not authorize production credentials,
-external navigation/effects, a TCP or WebDriver listener, or any later-stage
-claim.
+Workflow `33454164136`, artifact `9781160555`, digest
+`sha256:b840c33e30fcbb1bf267967a88af17c6681daa0fdd89111593900ca0b60274b2`
+reported `PASS_CANDIDATE_REQUIRES_REVIEW_AND_EXACT_MAIN`. It rebuilt the
+D1 substrate, built the exact Servo runtime, prepared the integrated image
+twice with byte equality, and booted Q35/TCG without a network device. The
+guest reached the local Servo fixture, verified page input and basic IME,
+retained trusted chrome after an externally selected generation-1 content PID
+received `SIGKILL`, and created a distinct generation-2 replacement. The
+strict claim field `actual_content_process_crash_currently_proven` remains
+`false` because no Servo pipeline-panic callback was observed; product
+AgentPort, external effects, hardware, Secure Boot, and release remain false.
 
-The cross-UID executable-identity source blocker now has a source-complete,
-fail-closed implementation.  The connection service remains `hepta-browserd`,
-the expected peer remains `hepta-agent`, and the unit still grants no
-`CAP_SYS_PTRACE`.  The explicit development feature binds the reviewed
-`hepta-agent.service` mechanism to `/usr/libexec/hepta-agent`; the executable
-and every parent path must be root-owned, non-symlink, and non-writable.  The
-attestor stores that source in `AttestedPeer` and reopens/re-hashes it at every
-BrowserActor dispatch while retaining live PID/UID/GID, pidfd, start-time,
-cgroup, and unit checks.  Machine truth therefore records
-`SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE`,
-`development_static_attestation_available: true`, and scope
-`explicit_development_profile_only`.  D3 remains `BLOCKED_UPSTREAM` until the
-exact integrated-image principal/dispatch/receipt corpus passes and receives
-independent security review; this source change grants no production or release
-authority and does not claim a live `/proc/<pid>/exe` observation.
+All artifacts above are PR synthetic-merge evidence with
+`promotion_authoritative: false`. This truth-refresh commit invalidates their
+exact-head identity and requires one final current-head rerun.
 
-## Historical candidate references
+## 5. D3 source state and remaining executable blocker
 
-These references are retained for provenance and are not active gate evidence:
+The candidate contains the typed PageOwner/BrowserActor core, TaskFlow principal
+binding, bounded queues, revision and stale-target checks, cancellation/deadline
+paths, durable receipt observer, local-fixture runtime, and an explicitly
+selected development-profile AgentPort binary.
 
-- PR #27 / `codex/d0a02-headed-runtime-v3` merged at `e25c42ef69fc2968ac2d1b002cc53f15de2e9e0f`; its headed-host evidence is
-  `MERGED_HISTORICAL` and superseded by PR #33.
-- PR #29 / `codex/d1-01-d6-replay-v1` closed unmerged at head
-  `95fe921c833dea9560d4b1492781795c589d6140`; it is
-  `SUPERSEDED_HISTORICAL` by PR #32.
-- PR #23 / `codex/d1-01-reproducible-qemu-substrate` closed unmerged at head
-  `9250fcb9df75792c39e85e0113cecac8b393a544`; it is
-  `SUPERSEDED_HISTORICAL` by PR #32.
+Live development activation remains fail closed. The systemd service runs as
+`hepta-browserd`, while the attested peer runs as `hepta-agent`. Linux
+`PTRACE_MODE_READ_FSCREDS` denies cross-UID `/proc/<pid>/exe` reads, and the
+service intentionally has no `CAP_SYS_PTRACE`. Qualification-only static
+attestation is not promoted into the D3 live profile. The canonical status is
+therefore `BLOCKED_UPSTREAM_CROSS_UID_PROCFS`, with
+`development_source_wiring_only: true` and
+`development_static_attestation_available: false`.
 
-## Exact historical evidence
+Resumption requires an independently reviewed mechanism that preserves distinct
+service identities and binds the semantic principal to an unforgeable live
+process identity without widening browser authority. It must then be exercised
+inside the exact D2I image together with authorized/unauthorized principal,
+page observation/action, revision, cancellation/deadline, crash, journal
+recovery, and indeterminate-receipt cases.
 
-- D0C-02: historical head `786debc12aa8d790b231397c1a3341fbf89de080`, run
-  `33167838644`; the checked-in host result is explicitly
-  `STALE_EVIDENCE` until an exact-head rerun.
-- D0C-03: historical head `4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb`, run
-  `33176689873`; the checked-in host result is explicitly
-  `STALE_EVIDENCE` until an exact-head rerun.
-- D0C-04: historical head `5abd71db79b75e400c1c1d7cb0eac85a68041cae`, run
-  `33179346462`; the checked-in host result is explicitly `STALE_EVIDENCE`
-  until an exact-head rerun.
-- D0C-05: historical head `7be7121b1d2593a0e708ec9ade189ef84ab245da`, runs
-  `33190387511`, `33190387553`, and `33190387564`; the checked-in custody
-  result is explicitly `STALE_EVIDENCE` with `merge_ready: false` until an
-  exact-head rerun. The manifest's `agent_port_systemd_custody_host_validation`
-  flag records source capability only; the companion exact-head and freshness
-  flags remain false/stale.
-- D0C-06: historical head `25d2d5882018b9974fc360aaf646128c6b6f175f`, runs
-  `33235926576`, `33235926577`, `33235926596`, and `33235926613`; the
-  checked-in receipt result is explicitly `STALE_EVIDENCE` until an exact-head
-  rerun.
-- D0A-01: historical head `01d02d692c573ccde7a99d990f2a63235d9bc69f`, run
-  `33230713426`, job `99042937091`; the checked-in Servo qualification is
-  explicitly `STALE_EVIDENCE` until an exact-head rerun.
-- D0T-01/D0T-02 and AgentPort fixture separation: baseline main
-  `bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1`, exact-main runs
-  `33289882701`, `33289882702`, `33289882703`, `33289882704`,
-  `33289882707`, and `33289882733`.
+## 6. Later-stage source versus product evidence
 
-All D0C-02 through D0C-06 and D0A-01 rows above carry
-`STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN` in both machine-state manifests and
-their generated or linked evidence. Historical package evidence does not
-substitute for a later exact-main rerun when any invalidation input changes.
+D4-D9 source/reference workflows pass their bounded contracts and deliberately
+retain negative promotion results. They do not close their product gates:
 
-## Explicit non-claims
+- D4 still depends on a promoted D3 same-PageOwner runtime corpus;
+- D5 needs signed-app runtime integration and persistent storage/service-worker
+  enforcement;
+- D6 needs installed network namespace, resolver, proxy, redirect, connected
+  peer-IP, portal, and bypass controls;
+- D7 needs a real persistent effect executor, boot/update slots, rollback
+  counter, recovery media, and power-loss corpus;
+- D8 needs independent fixed-BOM hardware, 24/72-hour stability, and repeated
+  power-loss evidence;
+- D9 needs protected release governance, offline HSM custody, independent
+  signers/attestors/promoter, signed immutable artifacts, anti-rollback, and
+  controlled publication.
 
-- no headed Servo runtime is integrated on main;
-- no Debian image, QEMU PID 1, or Wayland boot is integrated on main;
-- no integrated D1+D2 image exists;
-- no production AgentPort activation exists;
-- no production TaskFlow semantic-principal activation exists (the development
-  profile's source-level attestation is not a production claim);
-- no integrated-image BrowserActor/PageOwner dispatch exists;
-- no external navigation, credentials, capabilities, or external effects are authorized;
-- no signed app runtime or controlled egress exists;
-- no signed update/rollback, fixed-hardware beta, or production release exists.
+## 7. Historical provenance
 
-## Immediate execution order
+PR #27 remains historical headed-host provenance. PR #23, PR #29, and PR #32
+are historical D1 attempts. PR #33 and PR #35 are superseded candidate
+surfaces. PR #59 is superseded because its head and review identity were
+unstable and it contained workflows capable of writing future source objects.
+None substitutes for final PR #60 exact-head, independent-review, merge, and
+exact-main evidence.
 
-1. Refresh D0T-01/D0T-02 exact-main truth/CI evidence after the invalidating main changes.
-2. Rebase/requalify PR #33, obtain independent review and D0T-03 settings evidence, merge, and rerun exact main.
-3. Rebase/reconstruct PR #32 on that exact main and rerun the two-build/QEMU corpus.
-4. Build and qualify the combined D2I image represented by PR #35.
-5. Finalize the D3 development candidate, record its final PR/head and
-   evidence identities, run the exact integrated-image principal/dispatch/
-   receipt corpus, and obtain independent review before promotion.
-6. Continue D4 through D9 in dependency order.
+## 8. Promotion sequence
+
+1. Finish the truth refresh and pass every exact-head PR #60 workflow.
+2. Freeze that head and publish its exact source/base/tree/tested-merge and
+   artifact identities in the PR record.
+3. Configure protected-main/ruleset/CODEOWNERS/environment controls and capture
+   reviewed settings evidence.
+4. Obtain latest-push independent non-author approval; no self-approval,
+   self-merge, or administrator bypass.
+5. Merge only after all required checks pass, then rerun exact main and update
+   integrated machine truth.
+6. Resolve D3 live attestation and run the exact integrated-image D3 corpus.
+7. Continue D4 through D9 strictly in prerequisite order.

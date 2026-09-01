@@ -1,7 +1,7 @@
 # D0A-02 headed Servo runtime evidence
 
 > **HISTORICAL SNAPSHOT / STALE_EVIDENCE:** This artifact is bound to source
-> head `fe0ea6169127ce1f7950618b55374d83834a462c`. The active PR #33 candidate
+> head `fe0ea6169127ce1f7950618b55374d83834a462c`. The active PR #60 candidate
 > supersedes that snapshot; rerun `servo-headed-runtime` on the exact
 > candidate head before promotion or an exact-main claim.
 
@@ -73,7 +73,7 @@ observable teardown debt.
 
 ## Promotion rule
 
-This historical snapshot is not merge-ready. The active PR #33 candidate must
+This historical snapshot is not merge-ready. The active PR #60 candidate must
 rerun the same source and headed-runtime corpus on its exact head, then pass
 all exact-head gates. After merge, the corpus must pass again on exact main
 before `D0A-02` becomes integrated truth.
