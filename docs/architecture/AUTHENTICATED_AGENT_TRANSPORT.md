@@ -12,6 +12,10 @@ already-connected `AF_UNIX/SOCK_STREAM`; it does not bind a path, select an
 Agent, interpret browser operations, issue a capability, or create a public
 listener.
 
+The raw framing implementation is private to the crate. Public callers receive
+only the fail-stop connection facade, so a caller cannot bypass poisoned-state
+handling after a wire or protocol failure.
+
 ## Authentication and replay boundary
 
 Both endpoints verify kernel-provided peer PID/UID/GID against an explicit
@@ -27,7 +31,7 @@ therefore systemd unit/cgroup binding, executable/service provenance, socket
 path custody, and a product principal mapping remain mandatory before a
 listener is enabled.
 
-## Framing
+## Framing and failure semantics
 
 The fixed 88-byte big-endian header is defined by
 `contracts/agent-transport.v1.json`. The receiver validates the advertised
@@ -42,6 +46,18 @@ response construction belong to D0C-03/D0C-04.
 The raw carrier sequence permits only strictly ordered request frames. The
 product dispatch layer is additionally locked to one outstanding request per
 accepted connection; the carrier does not itself grant pipelining authority.
+
+Any error after frame I/O begins, and any kind, nonce, sequence, challenge, or
+other protocol-state violation discovered after a frame is consumed,
+permanently poisons the public connection. The facade immediately drops the
+private carrier, closing its owned stream. Every later operation returns a
+stable `BrokenPipe` transport error identifying the poisoned connection,
+without attempting byte-stream resynchronization.
+
+Pure local preflight rejection, such as a zero timeout or an oversized outbound
+value rejected before any byte is written, leaves the stream usable. Sequence
+exhaustion is also computed before transmission and cannot desynchronize the
+carrier.
 
 ## Dependency and unsafe boundary
 
@@ -60,12 +76,15 @@ descriptor or credential buffer.
 ## Evidence and non-claims
 
 Unit-test source covers peer rejection, nonce binding, sequence replay, digest
-tampering, oversized frames, deadline exhaustion, and a local round trip.
-The permanent reference workflow installs the repository's locked Rust 1.93
-toolchain and runs package-scoped `fmt`, `check`, Clippy, and test commands on
-the exact transport crate. Historical evidence remains stale whenever any
-declared invalidation input changes, so a fresh exact-head run is still needed
-after source or lock updates.
+tampering, oversized frames, deadline exhaustion, fail-stop poisoning,
+subsequent-reuse rejection, the local-preflight distinction, and a local round
+trip. The permanent reference workflow installs the repository's locked Rust
+1.93 toolchain and runs package-scoped `fmt`, `check`, Clippy, and test commands
+on the exact transport crate.
+
+Historical evidence remains stale whenever any declared invalidation input
+changes. A fresh exact-head run is therefore required after this facade or its
+contract changes.
 
 This source is not evidence of a product socket, a running Servo session,
 systemd integration, external browser authority, or merge readiness.

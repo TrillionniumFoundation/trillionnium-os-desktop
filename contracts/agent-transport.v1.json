@@ -18,17 +18,53 @@
     "close": 5
   },
   "header_layout": [
-    {"field": "magic", "offset": 0, "bytes": 8},
-    {"field": "version_be", "offset": 8, "bytes": 2},
-    {"field": "kind", "offset": 10, "bytes": 1},
-    {"field": "reserved_flags_zero", "offset": 11, "bytes": 1},
-    {"field": "sequence_be", "offset": 12, "bytes": 8},
-    {"field": "payload_length_be", "offset": 20, "bytes": 4},
-    {"field": "session_nonce", "offset": 24, "bytes": 32},
-    {"field": "payload_sha256", "offset": 56, "bytes": 32}
+    {
+      "field": "magic",
+      "offset": 0,
+      "bytes": 8
+    },
+    {
+      "field": "version_be",
+      "offset": 8,
+      "bytes": 2
+    },
+    {
+      "field": "kind",
+      "offset": 10,
+      "bytes": 1
+    },
+    {
+      "field": "reserved_flags_zero",
+      "offset": 11,
+      "bytes": 1
+    },
+    {
+      "field": "sequence_be",
+      "offset": 12,
+      "bytes": 8
+    },
+    {
+      "field": "payload_length_be",
+      "offset": 20,
+      "bytes": 4
+    },
+    {
+      "field": "session_nonce",
+      "offset": 24,
+      "bytes": 32
+    },
+    {
+      "field": "payload_sha256",
+      "offset": 56,
+      "bytes": 32
+    }
   ],
   "authentication": {
-    "peer_credentials": ["pid", "uid", "gid"],
+    "peer_credentials": [
+      "pid",
+      "uid",
+      "gid"
+    ],
     "peer_policy": "expected_uid_required_expected_gid_and_pid_optional",
     "session_nonce_bytes": 32,
     "nonce_source": "/dev/urandom",
@@ -42,7 +78,11 @@
     "enforced_by": "D0C-04 AgentPort bridge",
     "transport_core_pipelining_authority": false
   },
-  "listener": {"enabled": false, "socket_path": null, "public_network": false},
+  "listener": {
+    "enabled": false,
+    "socket_path": null,
+    "public_network": false
+  },
   "dependency_lock": "manifests/cargo-external-allowlist.json",
   "validation": {
     "source_and_static_repository_validation": "PASS",
@@ -80,5 +120,12 @@
     "product_listener_created": false,
     "browser_payload_interpreted": false
   },
-  "host_evidence": "docs/evidence/generated/d0c02-rust193-host-result.json"
+  "host_evidence": "docs/evidence/generated/d0c02-rust193-host-result.json",
+  "failure_semantics": {
+    "wire_or_protocol_error": "public_connection_facade_drops_private_carrier_and_becomes_poisoned",
+    "subsequent_operation": "stable_io_broken_pipe_poisoned_error_without_additional_io",
+    "local_preflight_error": "connection_remains_usable_when_no_bytes_were_read_or_written",
+    "raw_carrier_visibility": "private_module_not_reexported",
+    "resynchronization": false
+  }
 }
