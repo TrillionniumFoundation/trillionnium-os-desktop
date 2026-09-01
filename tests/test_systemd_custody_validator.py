@@ -201,8 +201,16 @@ class D3DevelopmentProfilePathTests(unittest.TestCase):
             with mock.patch.object(D3_PROFILE, "ROOT", root):
                 D3_PROFILE.check_manifest()
                 D3_PROFILE.check_contract()
-            self.assertGreaterEqual(len(D3_PROFILE.ERRORS), 2)
-            self.assertTrue(all("symlink" in error for error in D3_PROFILE.ERRORS))
+            symlink_errors = [
+                error for error in D3_PROFILE.ERRORS if "symlink" in error
+            ]
+            self.assertEqual(len(symlink_errors), 2)
+            self.assertTrue(
+                any("apps/hepta-agent-portd/Cargo.toml" in error for error in symlink_errors)
+            )
+            self.assertTrue(
+                any("contracts/browser-actor.v1.json" in error for error in symlink_errors)
+            )
 
 
 if __name__ == "__main__":
