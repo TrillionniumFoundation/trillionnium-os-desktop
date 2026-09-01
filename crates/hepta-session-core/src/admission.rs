@@ -12,9 +12,7 @@ use trillionnium_contract_core::LeaseId;
 use trillionnium_contract_core::RevisionClock;
 
 use crate::machine::{SessionMachine as Reducer, SessionSnapshot};
-use crate::types::{
-    ControlSource, SessionEffect, SessionEvent, SessionPhase, TransitionError,
-};
+use crate::types::{ControlSource, SessionEffect, SessionEvent, SessionPhase, TransitionError};
 
 #[derive(Debug, Clone)]
 pub struct SessionMachine {
@@ -70,11 +68,7 @@ impl SessionMachine {
         Ok(effects)
     }
 
-    fn require_admission(
-        &self,
-        event: &SessionEvent,
-        now_ms: u64,
-    ) -> Result<(), TransitionError> {
+    fn require_admission(&self, event: &SessionEvent, now_ms: u64) -> Result<(), TransitionError> {
         let snapshot = self.reducer.snapshot();
         if snapshot.phase == SessionPhase::Closed && !matches!(event, SessionEvent::Close) {
             return Err(TransitionError::Closed);
@@ -138,10 +132,7 @@ fn require_active_matching_lease(
     require_live_timestamp(lease.acquired_at_ms, lease.expires_at_ms, now_ms)
 }
 
-fn require_active_lease(
-    snapshot: &SessionSnapshot,
-    now_ms: u64,
-) -> Result<(), TransitionError> {
+fn require_active_lease(snapshot: &SessionSnapshot, now_ms: u64) -> Result<(), TransitionError> {
     let lease = snapshot
         .human_lease
         .as_ref()

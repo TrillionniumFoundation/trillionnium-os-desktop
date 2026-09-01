@@ -291,10 +291,7 @@ fn regressed_human_event_time_never_consumes_a_lease() {
     focus(&mut machine, lease_id.clone());
     let before = machine.snapshot();
     assert_eq!(
-        machine.apply(
-            SessionEvent::ImeStarted { lease_id },
-            LEASE_START_MS - 1,
-        ),
+        machine.apply(SessionEvent::ImeStarted { lease_id }, LEASE_START_MS - 1,),
         Err(TransitionError::InvalidTransition(
             "human lease event time precedes acquisition"
         ))
