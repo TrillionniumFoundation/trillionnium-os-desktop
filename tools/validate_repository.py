@@ -38,6 +38,7 @@ _impl.REQUIRED_PATHS = [
     "crates/hepta-d3-development/src/lib.rs",
     "crates/hepta-d3-development/src/bin/sessiond.rs",
     "crates/hepta-d3-development/src/sessiond/activation.rs",
+    "crates/hepta-d3-development/src/sessiond/runtime.rs",
     "crates/hepta-d3-development/src/sessiond/service.rs",
     "crates/hepta-d3-development/src/sessiond/storage.rs",
     "crates/hepta-d3-development/src/bin/fixture.rs",

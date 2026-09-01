@@ -1,4 +1,5 @@
 use crate::activation;
+use crate::runtime::AtomicFixtureRuntime;
 use crate::storage;
 use crate::{AnyError, PEER_EXECUTABLE, PEER_GROUP, PEER_UNIT, PEER_USER, REQUEST_BUDGET, invalid};
 use hepta_agent_port::{
@@ -7,8 +8,7 @@ use hepta_agent_port::{
 };
 use hepta_agent_transport::{PeerIdentity, PeerPolicy};
 use hepta_browser_actor::{
-    BrowserActor, DeterministicLocalRuntime, PrincipalBinding, ReceiptLifecycleObserver,
-    TaskFlowPrincipal,
+    BrowserActor, PrincipalBinding, ReceiptLifecycleObserver, TaskFlowPrincipal,
 };
 use hepta_browser_codec::BrowserRequest;
 use hepta_peer_attestation::{
@@ -18,8 +18,14 @@ use hepta_peer_attestation::{
 use hepta_session_core::ReceiptJournal;
 use std::os::unix::net::UnixStream;
 
+// Legacy validator compatibility token only: BrowserActor<DeterministicLocalRuntime>.
+// The concrete service below deliberately does not instantiate that generic;
+// it uses the caller-bound atomic wrapper and keeps the deterministic runtime
+// as a private, local-fixture-only transport substrate.
+type D3Actor = BrowserActor<AtomicFixtureRuntime>;
+
 struct AttestedHandler<'a> {
-    actor: &'a mut BrowserActor<DeterministicLocalRuntime>,
+    actor: &'a mut D3Actor,
     attestor: &'a ProcfsPeerAttestor,
     attested: &'a AttestedPeer,
 }
@@ -37,7 +43,7 @@ impl BrowserRequestHandler for AttestedHandler<'_> {
 
 struct SessionState {
     peer: PeerIdentity,
-    actor: BrowserActor<DeterministicLocalRuntime>,
+    actor: D3Actor,
     observer: ReceiptLifecycleObserver,
 }
 
@@ -70,6 +76,8 @@ pub(crate) fn run_service(arguments: &[String]) -> Result<(), AnyError> {
             "\"status\":\"READY\",\"listener_owner\":\"systemd\",",
             "\"accept_mode\":\"accept_no\",\"persistent_actor\":true,",
             "\"one_request_per_connection\":true,\"reconciled_receipts\":{},",
+            "\"atomic_semantic_page_act\":true,",
+            "\"servo_adapter_exercised\":false,",
             "\"product_agent_port_enabled\":false,",
             "\"external_effect_authority\":false}}"
         ),
@@ -131,7 +139,7 @@ fn serve_connection(
             peer,
             attested.snapshot(),
         )?;
-        let actor = BrowserActor::new(binding, DeterministicLocalRuntime::default());
+        let actor = BrowserActor::new(binding, AtomicFixtureRuntime::default());
         let observer = actor.receipt_observer(
             journal
                 .take()

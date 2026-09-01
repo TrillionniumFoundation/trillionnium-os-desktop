@@ -7,6 +7,8 @@
 
 #[path = "../sessiond/activation.rs"]
 mod activation;
+#[path = "../sessiond/runtime.rs"]
+mod runtime;
 #[path = "../sessiond/service.rs"]
 mod service;
 #[path = "../sessiond/storage.rs"]
@@ -55,6 +57,9 @@ fn self_check(arguments: &[String]) -> Result<String, AnyError> {
             "\"same_peer_pid_required\":true,\"receipt_recovery_wired\":true,",
             "\"static_attestation_wired\":true,",
             "\"cross_uid_procfs_required\":false,",
+            "\"atomic_semantic_page_act_wired\":true,",
+            "\"caller_bound_target_revalidation\":true,",
+            "\"servo_adapter_exercised\":false,",
             "\"product_agent_port_enabled\":false,",
             "\"external_effect_authority\":false,\"socket\":\"{}\",",
             "\"plan_revision\":\"{}\",\"servo_commit\":\"{}\",",

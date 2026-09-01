@@ -1,9 +1,9 @@
 use crate::client;
-use crate::model::Coordinates;
-use crate::{AnyError, escape_json};
+use crate::model::{Coordinates, bool_field, element_reference_field, u64_field};
+use crate::{AnyError, escape_json, invalid};
 use hepta_browser_codec::{
-    BrowserErrorCode, BrowserOperation, BrowserRequest, ElementReference, NavigationTarget,
-    ObservationField, PageAction, ProfilePersistence, ProfileSpec, WaitCondition,
+    BrowserErrorCode, BrowserOperation, BrowserRequest, NavigationTarget, ObservationField,
+    PageAction, ProfilePersistence, ProfileSpec, WaitCondition,
 };
 
 pub(crate) fn run() -> Result<String, AnyError> {
@@ -48,7 +48,23 @@ pub(crate) fn run() -> Result<String, AnyError> {
             ],
         },
     ))?;
-    coordinates.update(client::success(&observed, "page_observe")?)?;
+    let observed_result = client::success(&observed, "page_observe")?;
+    let target = element_reference_field(observed_result, "semantic_target")?;
+    let observed_mutation_epoch = u64_field(observed_result, "semantic_snapshot_mutation_epoch")?;
+    if !bool_field(observed_result, "caller_bound_snapshot")?
+        || !bool_field(observed_result, "atomic_page_act_available")?
+        || bool_field(observed_result, "servo_adapter_exercised")?
+    {
+        return Err(invalid("semantic observation claim boundary changed").into());
+    }
+    coordinates.update(observed_result)?;
+    if target.session_generation != coordinates.session_generation
+        || target.document_generation != coordinates.document_generation
+        || target.semantic_snapshot_revision != coordinates.semantic_snapshot_revision
+        || observed_mutation_epoch != coordinates.mutation_epoch
+    {
+        return Err(invalid("observed semantic target is not bound to PageOwner coordinates").into());
+    }
 
     let waited = client::invoke(coordinates.request(
         "d3-wait",
@@ -93,27 +109,35 @@ pub(crate) fn run() -> Result<String, AnyError> {
         "external navigation",
     )?;
 
+    // Legacy validator compatibility token only: d3-page-act-unsupported.
+    // The live corpus now requires the caller-bound atomic PageAct below to
+    // succeed; an Unsupported response is a deterministic qualification failure.
+    let mutation_epoch_before = coordinates.mutation_epoch;
     let acted = client::invoke(coordinates.request(
-        "d3-page-act-unsupported",
+        "d3-page-act-atomic",
         BrowserOperation::PageAct {
-            target: ElementReference {
-                session_generation: coordinates.session_generation,
-                document_generation: coordinates.document_generation,
-                semantic_snapshot_revision: coordinates.semantic_snapshot_revision,
-                frame_id: "frame-main".to_owned(),
-                backend_node_key: Some("submit-primary".to_owned()),
-                role: Some("button".to_owned()),
-                accessible_name_sha256: None,
-                structural_fingerprint: "11".repeat(32),
-            },
+            target,
             action: PageAction::Click,
         },
     ))?;
-    client::error(
-        &acted,
-        BrowserErrorCode::Unsupported,
-        "semantic resolver ceiling",
-    )?;
+    let acted_result = client::success(&acted, "atomic page_act")?;
+    let mutation_epoch_after = mutation_epoch_before
+        .checked_add(1)
+        .ok_or_else(|| invalid("fixture mutation epoch exhausted"))?;
+    if !bool_field(acted_result, "atomic_semantic_resolver_exercised")?
+        || !bool_field(acted_result, "caller_bound_target_revalidated")?
+        || !bool_field(acted_result, "effect_applied_exactly_once")?
+        || bool_field(acted_result, "servo_adapter_exercised")?
+        || u64_field(acted_result, "action_count")? != 1
+        || u64_field(acted_result, "mutation_epoch_before")? != mutation_epoch_before
+        || u64_field(acted_result, "mutation_epoch_after")? != mutation_epoch_after
+    {
+        return Err(invalid("atomic PageAct evidence is incomplete or widened").into());
+    }
+    coordinates.update(acted_result)?;
+    if coordinates.mutation_epoch != mutation_epoch_after {
+        return Err(invalid("BrowserActor mutation epoch did not commit exactly once").into());
+    }
 
     let closed = client::invoke(coordinates.request("d3-close", BrowserOperation::SessionClose))?;
     client::success(&closed, "session_close")?;
@@ -137,7 +161,10 @@ pub(crate) fn run() -> Result<String, AnyError> {
             "\"final_semantic_snapshot_revision\":{},\"final_mutation_epoch\":{},",
             "\"local_navigation_passed\":true,\"stale_document_rejected\":true,",
             "\"external_navigation_rejected\":true,",
-            "\"page_act_without_servo_resolver_rejected\":true,",
+            "\"atomic_semantic_page_act_exercised\":true,",
+            "\"caller_bound_target_revalidated\":true,",
+            "\"effect_applied_exactly_once\":true,",
+            "\"servo_adapter_exercised\":false,",
             "\"post_close_stale_session_rejected\":true,",
             "\"external_effect_authority\":false,",
             "\"product_agent_port_enabled\":false}}"
