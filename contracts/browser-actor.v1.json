@@ -65,6 +65,7 @@
       "atomic_resolve_and_act": true,
       "default_without_resolver": "unsupported",
       "deterministic_local_runtime_page_act": "unsupported",
+      "independent_reference_model": "contracts/semantic-resolver.v1.json",
       "promotion_requires_servo_resolver": true
     }
   },
@@ -74,13 +75,16 @@
     "dispatched_before_runtime_call": true,
     "terminal_response_digest_bound": true,
     "potential_external_effect_interruption": "indeterminate_never_automatic_replay",
+    "service_restart_reconciliation": "requested_to_interrupted_dispatched_effect_to_indeterminate",
     "observer_failure": "fail_closed"
   },
   "activation": {
     "product_agent_port_enabled": false,
     "development_profile_requires_explicit_selection": true,
-    "development_binary": "hepta-agent-port-developmentd",
-    "development_cargo_feature": "development",
+    "development_binary": "hepta-agent-port-development-sessiond",
+    "development_fixture_binary": "hepta-agent-d3-fixture",
+    "development_journal_checker": "hepta-d3-journal-check",
+    "development_cargo_package": "hepta-d3-development",
     "development_marker": "/etc/hepta/enable-agent-port-development",
     "development_socket": "/run/hepta/browserd/agent-development.sock",
     "development_profile_argument": "--profile development",
@@ -91,12 +95,19 @@
     "development_static_attestation_scope": "explicit_development_profile_only",
     "development_service_user": "hepta-browserd",
     "development_expected_peer_user": "hepta-agent",
-    "development_blocker": "exact integrated-image principal/dispatch/receipt evidence and independent security review remain required before live activation",
-    "development_binary_in_production_install_map": false,
-    "listener_created_by_actor_crate": false,
-    "production_release_authorized": false,
     "development_trusted_executable_path": "/usr/libexec/hepta-agent",
     "development_cross_uid_procfs_required": false,
-    "development_attestation_refresh_uses_original_source": true
+    "development_attestation_refresh_uses_original_source": true,
+    "development_listener_owner": "systemd",
+    "development_socket_accept_mode": "accept_no_persistent_service",
+    "development_actor_lifetime": "persistent_across_one_request_connections",
+    "development_same_peer_pid_required": true,
+    "development_one_request_per_connection": true,
+    "development_restart_reconciles_unresolved_receipts": true,
+    "development_blocker": "exact integrated-image principal/dispatch/receipt evidence and independent security review remain required before live activation",
+    "development_semantic_resolver_blocker": "Servo-owned atomic semantic resolver remains required before PageAct promotion",
+    "development_binary_in_production_install_map": false,
+    "listener_created_by_actor_crate": false,
+    "production_release_authorized": false
   }
 }

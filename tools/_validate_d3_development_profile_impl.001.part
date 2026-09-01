@@ -1,0 +1,155 @@
+nstance(dependencies, dict):
+        fail("D3 development crate dependencies are missing")
+        return
+    expected_local = {
+        "hepta-agent-port",
+        "hepta-agent-transport",
+        "hepta-browser-actor",
+        "hepta-browser-codec",
+        "hepta-peer-attestation",
+        "hepta-session-core",
+    }
+    if not expected_local <= dependencies.keys():
+        fail("D3 development crate does not link the complete typed actor stack")
+    if any(
+        not isinstance(dependencies.get(name), dict)
+        or dependencies[name].get("optional") is not True
+        for name in (*sorted(expected_local), "libc")
+    ):
+        fail("every D3 runtime dependency must remain optional")
+    development = features.get("development") if isinstance(features, dict) else None
+    if not isinstance(development, list):
+        fail("D3 development feature is missing")
+    else:
+        required = {
+            *(f"dep:{name}" for name in expected_local),
+            "dep:libc",
+            "hepta-peer-attestation/development-static-attestation",
+        }
+        if set(development) != required:
+            fail("D3 development feature graph changed")
+        if "hepta-peer-attestation/qualification-static-attestation" in development:
+            fail("D3 development package must not enable qualification static attestation")
+
+    bins = crate.get("bin")
+    expected_names = {
+        "hepta-agent-port-development-sessiond",
+        "hepta-agent-d3-fixture",
+        "hepta-d3-journal-check",
+    }
+    if not isinstance(bins, list):
+        fail("D3 development crate has no binary declarations")
+    else:
+        names = {entry.get("name") for entry in bins if isinstance(entry, dict)}
+        if names != expected_names:
+            fail(f"D3 binary set changed: {sorted(str(name) for name in names)}")
+        for entry in bins:
+            if isinstance(entry, dict) and entry.get("required-features") != ["development"]:
+                fail(f"D3 binary {entry.get('name')!r} is not feature-gated")
+    for forbidden in ("qualification-static-attestation", "CAP_SYS_PTRACE"):
+        if forbidden in crate_text:
+            fail(f"D3 crate unexpectedly contains {forbidden}")
+
+
+def _joined_sources(relatives: tuple[str, ...]) -> str:
+    return "\n".join(read_text(relative) for relative in relatives)
+
+
+def check_session_daemon() -> None:
+    relatives = (
+        "crates/hepta-d3-development/src/bin/sessiond.rs",
+        "crates/hepta-d3-development/src/sessiond/activation.rs",
+        "crates/hepta-d3-development/src/sessiond/service.rs",
+        "crates/hepta-d3-development/src/sessiond/storage.rs",
+    )
+    source = _joined_sources(relatives)
+    markers = (
+        "LISTEN_PID",
+        "LISTEN_FDS",
+        "LISTEN_FDNAMES",
+        "SO_ACCEPTCONN",
+        "UnixListener::from_raw_fd",
+        "listener.accept()",
+        "BrowserActor<DeterministicLocalRuntime>",
+        "ReceiptLifecycleObserver",
+        "serve_one_with_observer",
+        "attest_with_static_executable_digest",
+        "PrincipalBinding::bind_attested",
+        "same_peer",
+        "reconcile_unresolved",
+        "\\\"persistent_actor\\\":true",
+        "\\\"one_request_per_connection\\\":true",
+        "\\\"product_agent_port_enabled\\\":false",
+        "\\\"external_effect_authority\\\":false",
+    )
+    for marker in markers:
+        if marker not in source:
+            fail(f"D3 persistent session service is missing {marker!r}")
+    for forbidden in (
+        "UnixListener::bind",
+        "TcpListener",
+        "TcpStream",
+        "CAP_SYS_PTRACE",
+        "qualification-static-attestation",
+    ):
+        if forbidden in source:
+            fail(f"D3 persistent session service must not contain {forbidden}")
+
+
+def check_fixture_and_journal() -> None:
+    fixture = _joined_sources(
+        (
+            "crates/hepta-d3-development/src/bin/fixture.rs",
+            "crates/hepta-d3-development/src/fixture/client.rs",
+            "crates/hepta-d3-development/src/fixture/corpus.rs",
+            "crates/hepta-d3-development/src/fixture/model.rs",
+        )
+    )
+    for marker in (
+        "d3-health",
+        "d3-create",
+        "d3-navigate-local",
+        "d3-observe",
+        "d3-wait",
+        "d3-extract",
+        "d3-stale-document",
+        "d3-external-denied",
+        "d3-page-act-unsupported",
+        "d3-close",
+        "d3-post-close-stale",
+        "same_process_pid",
+        "\\\"persistent_actor_proven\\\":true",
+    ):
+        if marker not in fixture:
+            fail(f"D3 TaskFlow fixture is missing {marker!r}")
+    for forbidden in ("UnixListener", "TcpListener", "TcpStream"):
+        if forbidden in fixture:
+            fail(f"D3 TaskFlow fixture must not contain {forbidden}")
+
+    journal = read_text("crates/hepta-d3-development/src/bin/journal_check.rs")
+    for marker in (
+        "Requested",
+        "Dispatched",
+        "is_terminal",
+        "\\\"unresolved_receipts\\\":0",
+        "\\\"requested_dispatched_terminal_for_every_receipt\\\":true",
+        "\\\"potential_external_effects_never_auto_replayed\\\":true",
+    ):
+        if marker not in journal:
+            fail(f"D3 receipt checker is missing {marker!r}")
+
+
+def check_units() -> None:
+    socket_relative = "packaging/debian/systemd/hepta-browserd-agent-development.socket"
+    service_relative = "packaging/debian/systemd/hepta-browserd-agent-development.service"
+    socket = parse_unit(socket_relative)
+    service = parse_unit(service_relative)
+    expected_socket = {
+        ("Unit", "ConditionPathExists"): "/etc/hepta/enable-agent-port-development",
+        ("Socket", "ListenStream"): "/run/hepta/browserd/agent-development.sock",
+        ("Socket", "SocketUser"): "hepta-browserd",
+        ("Socket", "SocketGroup"): "hepta-agent",
+        ("Socket", "SocketMode"): "0660",
+        ("Socket", "Accept"): "no",
+        ("Socket", "Service"): "hepta-browserd-agent-development.service",
+        ("Socket", "FileDescriptorName"): "agent-devel

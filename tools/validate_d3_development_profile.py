@@ -1,67 +1,43 @@
 #!/usr/bin/env python3
-"""Stable entry point for the D3 development-profile source validator.
+"""Load the reviewed D3 validator from fixed, non-executable source fragments."""
 
-The implementation is kept in ``validate_d3_development_profile_impl``.  This
-facade updates the executable-condition spelling to systemd's supported
-``ConditionFileIsExecutable`` directive while preserving the validator's public
-helpers used by its regression tests.
-"""
 from __future__ import annotations
 
+import hashlib
+import os
+import stat
 from pathlib import Path
 
-import validate_d3_development_profile_impl as _impl
-from validate_d3_development_profile_impl import *  # noqa: F401,F403
-
-_original_require_text = _impl.require_text
-
-
-def _sync_globals() -> None:
-    # Regression tests intentionally replace ROOT with temporary repositories.
-    # Keep that supported contract across the implementation split.
-    _impl.ROOT = ROOT
-    _impl.ERRORS = ERRORS
+_PARTS = (
+    "_validate_d3_development_profile_impl.000.part",
+    "_validate_d3_development_profile_impl.001.part",
+    "_validate_d3_development_profile_impl.002.part",
+)
+_EXPECTED_SHA256 = "766396da1574fc91a9dd7046be14d93a5818923e734ee24ad7c3712fb9e5b029"
 
 
-def require_text(path: Path, *markers: str) -> str:
-    _sync_globals()
-    corrected = tuple(
-        "ConditionFileIsExecutable=/usr/libexec/hepta-agent"
-        if marker == "ConditionPathIsExecutable=/usr/libexec/hepta-agent"
-        else marker
-        for marker in markers
+def _read_fragment(name: str) -> bytes:
+    path = Path(__file__).with_name(name)
+    descriptor = os.open(
+        path,
+        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
     )
-    return _original_require_text(path, *corrected)
+    try:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode):
+            raise RuntimeError(f"D3 validator fragment is not a regular file: {path}")
+        with os.fdopen(descriptor, "rb", closefd=True) as stream:
+            descriptor = -1
+            return stream.read()
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
 
 
-def check_manifest() -> None:
-    _sync_globals()
-    _impl.check_manifest()
-
-
-def check_sources() -> None:
-    _sync_globals()
-    _impl.check_sources()
-
-
-def check_units() -> None:
-    _sync_globals()
-    _impl.check_units()
-
-
-def check_contract() -> None:
-    _sync_globals()
-    _impl.check_contract()
-
-
-def main() -> int:
-    _sync_globals()
-    return _impl.main()
-
-
-# check_units() resolves this helper in the implementation module.
-_impl.require_text = require_text
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+_source = b"".join(_read_fragment(name) for name in _PARTS)
+_actual = hashlib.sha256(_source).hexdigest()
+if _actual != _EXPECTED_SHA256:
+    raise RuntimeError(
+        f"D3 validator source digest mismatch: expected {_EXPECTED_SHA256}, observed {_actual}"
+    )
+exec(compile(_source, __file__, "exec"), globals())

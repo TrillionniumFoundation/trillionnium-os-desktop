@@ -1,0 +1,98 @@
+opment",
+        ("Socket", "RemoveOnStop"): "yes",
+    }
+    for (section, key), value in expected_socket.items():
+        if one(socket, section, key) != value:
+            fail(f"{socket_relative} {section}.{key} must equal {value!r}")
+
+    expected_service = {
+        ("Unit", "ConditionPathExists"): "/etc/hepta/enable-agent-port-development",
+        ("Unit", "ConditionFileIsExecutable"): "/usr/libexec/hepta-agent",
+        ("Service", "User"): "hepta-browserd",
+        ("Service", "Group"): "hepta-browserd",
+        ("Service", "SupplementaryGroups"): "hepta-agent",
+        ("Service", "ExecStart"): "/usr/libexec/hepta-agent-port-development-sessiond --profile development",
+        ("Service", "PrivateNetwork"): "yes",
+        ("Service", "RestrictAddressFamilies"): "AF_UNIX",
+        ("Service", "ProtectProc"): "default",
+        ("Service", "ProcSubset"): "all",
+        ("Service", "CapabilityBoundingSet"): "",
+        ("Service", "AmbientCapabilities"): "",
+        ("Service", "StateDirectory"): "hepta-browserd",
+    }
+    for (section, key), value in expected_service.items():
+        if one(service, section, key) != value:
+            fail(f"{service_relative} {section}.{key} must equal {value!r}")
+    service_text = read_text(service_relative)
+    for forbidden in ("StandardInput=socket", "CAP_SYS_PTRACE", "PrivateNetwork=no"):
+        if forbidden in service_text:
+            fail(f"persistent D3 service must not contain {forbidden}")
+
+    # The historical template remains only for existing source-audit workflows.
+    # The canonical Accept=no socket must never reference it, and neither unit
+    # may enter the production Debian install map.
+    legacy = ROOT / "packaging/debian/systemd/hepta-browserd-agent-development@.service"
+    if legacy.exists() and "hepta-browserd-agent-development@.service" in read_text(socket_relative):
+        fail("canonical D3 socket still references the per-connection template")
+    production_install = read_text("packaging/debian/hepta-agent-portd.install")
+    for forbidden in (
+        "hepta-agent-port-development-sessiond",
+        "hepta-agent-d3-fixture",
+        "hepta-d3-journal-check",
+        "hepta-browserd-agent-development",
+    ):
+        if forbidden in production_install:
+            fail(f"production install map unexpectedly contains {forbidden}")
+
+
+def check_contract() -> None:
+    contract = load_json("contracts/browser-actor.v1.json")
+    activation = contract.get("activation")
+    if not isinstance(activation, dict):
+        fail("browser-actor activation contract is missing")
+        return
+    expected = {
+        "product_agent_port_enabled": False,
+        "development_profile_requires_explicit_selection": True,
+        "development_binary": "hepta-agent-port-development-sessiond",
+        "development_fixture_binary": "hepta-agent-d3-fixture",
+        "development_journal_checker": "hepta-d3-journal-check",
+        "development_listener_owner": "systemd",
+        "development_socket_accept_mode": "accept_no_persistent_service",
+        "development_actor_lifetime": "persistent_across_one_request_connections",
+        "development_same_peer_pid_required": True,
+        "development_marker": "/etc/hepta/enable-agent-port-development",
+        "development_socket": "/run/hepta/browserd/agent-development.sock",
+        "development_profile_argument": "--profile development",
+        "development_static_attestation_available": True,
+        "development_cross_uid_procfs_required": False,
+        "development_binary_in_production_install_map": False,
+        "production_release_authorized": False,
+    }
+    for key, value in expected.items():
+        if activation.get(key) != value:
+            fail(f"browser-actor activation.{key} must equal {value!r}")
+
+
+def main() -> int:
+    ERRORS.clear()
+    check_manifest()
+    check_workspace()
+    check_session_daemon()
+    check_fixture_and_journal()
+    check_units()
+    check_contract()
+    if ERRORS:
+        for error in ERRORS:
+            print(f"ERROR: {error}", file=sys.stderr)
+        print(
+            f"D3 persistent development-profile validation failed with {len(ERRORS)} error(s)",
+            file=sys.stderr,
+        )
+        return 1
+    print("D3 persistent development-profile validation passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
