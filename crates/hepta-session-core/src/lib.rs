@@ -5,12 +5,14 @@
 //! clock source, or policy authority is owned by this crate; adapters inject
 //! events, monotonic timestamps, and receipt facts.
 
+mod admission;
 mod machine;
 mod queue;
 pub mod receipt_journal;
 mod types;
 
-pub use machine::{SessionMachine, SessionSnapshot};
+pub use admission::SessionMachine;
+pub use machine::SessionSnapshot;
 pub use queue::{ArbiterQueue, QueueError};
 pub use receipt_journal::{
     ArchivedSegment, CommittedRecord, Digest, EffectClass as ReceiptEffectClass, JournalError,
