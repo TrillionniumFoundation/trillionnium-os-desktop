@@ -25,22 +25,30 @@ import validate_d3_development_profile as D3_PROFILE  # noqa: E402
 
 class UnitParserTests(unittest.TestCase):
     def test_repository_units_parse_with_strict_policy_allowlist(self) -> None:
-        socket = VALIDATOR.parse_unit(ROOT / "packaging/debian/systemd/hepta-browserd-agent.socket")
-        service = VALIDATOR.parse_unit(ROOT / "packaging/debian/systemd/hepta-browserd-agent@.service")
+        socket = VALIDATOR.parse_unit(
+            ROOT / "packaging/debian/systemd/hepta-browserd-agent.socket"
+        )
+        service = VALIDATOR.parse_unit(
+            ROOT / "packaging/debian/systemd/hepta-browserd-agent@.service"
+        )
         self.assertIn("Socket", socket)
         self.assertIn("Service", service)
 
     def test_unknown_directive_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory(dir=ROOT) as directory:
             path = Path(directory) / "unsafe.socket"
-            path.write_text("[Socket]\nListenDatagram=/tmp/extra.sock\n", encoding="utf-8")
+            path.write_text(
+                "[Socket]\nListenDatagram=/tmp/extra.sock\n", encoding="utf-8"
+            )
             with self.assertRaises(AssertionError):
                 VALIDATOR.parse_unit(path)
 
     def test_duplicate_single_value_directive_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory(dir=ROOT) as directory:
             path = Path(directory) / "unsafe.service"
-            path.write_text("[Service]\nUser=hepta-browserd\nUser=root\n", encoding="utf-8")
+            path.write_text(
+                "[Service]\nUser=hepta-browserd\nUser=root\n", encoding="utf-8"
+            )
             with self.assertRaises(AssertionError):
                 VALIDATOR.parse_unit(path)
 
@@ -71,7 +79,9 @@ class UnitParserTests(unittest.TestCase):
             VALIDATOR.validate_system_call_filters(filters)
 
     def test_syscall_filter_policy_accepts_reviewed_unit(self) -> None:
-        service = VALIDATOR.parse_unit(ROOT / "packaging/debian/systemd/hepta-browserd-agent@.service")
+        service = VALIDATOR.parse_unit(
+            ROOT / "packaging/debian/systemd/hepta-browserd-agent@.service"
+        )
         VALIDATOR.validate_system_call_filters(service["Service"]["SystemCallFilter"])
 
     def test_historical_custody_evidence_is_explicitly_stale(self) -> None:
@@ -81,9 +91,9 @@ class UnitParserTests(unittest.TestCase):
             )
         )
         evidence = json.loads(
-            (ROOT / "docs/evidence/generated/d0c05-rust193-host-result.json").read_text(
-                encoding="utf-8"
-            )
+            (
+                ROOT / "docs/evidence/generated/d0c05-rust193-host-result.json"
+            ).read_text(encoding="utf-8")
         )
         docs = json.loads((ROOT / "docs/MANIFEST.json").read_text(encoding="utf-8"))
         state = json.loads(
@@ -95,7 +105,8 @@ class UnitParserTests(unittest.TestCase):
             contract["status"], "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER"
         )
         self.assertEqual(
-            contract["evidence_lifecycle"], "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN"
+            contract["evidence_lifecycle"],
+            "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
         )
         self.assertEqual(
             validation["evidence_lifecycle"],
@@ -105,12 +116,15 @@ class UnitParserTests(unittest.TestCase):
         self.assertFalse(validation["merge_ready"])
         self.assertIn(historical_head, validation["stale_reason"])
         self.assertEqual(
-            evidence["evidence_lifecycle"], "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN"
+            evidence["evidence_lifecycle"],
+            "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
         )
         self.assertEqual(evidence["evidence_freshness"], "STALE_EVIDENCE")
         self.assertFalse(evidence["merge_ready"])
         self.assertIn(historical_head, evidence["stale_reason"])
-        self.assertFalse(docs["agent_port_systemd_custody_exact_head_rust_validation"])
+        self.assertFalse(
+            docs["agent_port_systemd_custody_exact_head_rust_validation"]
+        )
         self.assertEqual(
             docs["agent_port_systemd_custody_host_evidence_freshness"],
             "STALE_EVIDENCE",
@@ -137,6 +151,27 @@ class D3DevelopmentProfilePathTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         D3_PROFILE.ERRORS.clear()
+
+    def assert_only_two_symlink_errors(self) -> None:
+        self.assertEqual(len(D3_PROFILE.ERRORS), 2)
+        self.assertTrue(
+            all("symlink" in error for error in D3_PROFILE.ERRORS),
+            D3_PROFILE.ERRORS,
+        )
+        self.assertTrue(
+            any(
+                "apps/hepta-agent-portd/Cargo.toml" in error
+                for error in D3_PROFILE.ERRORS
+            ),
+            D3_PROFILE.ERRORS,
+        )
+        self.assertTrue(
+            any(
+                "contracts/browser-actor.v1.json" in error
+                for error in D3_PROFILE.ERRORS
+            ),
+            D3_PROFILE.ERRORS,
+        )
 
     def test_development_uses_only_its_dedicated_static_attestation(self) -> None:
         manifest = tomllib.loads(
@@ -169,7 +204,9 @@ class D3DevelopmentProfilePathTests(unittest.TestCase):
                 self.assertEqual(
                     D3_PROFILE.require_text(linked / "source.rs", "trusted"), ""
                 )
-            self.assertTrue(any("symlink" in error for error in D3_PROFILE.ERRORS))
+            self.assertTrue(
+                any("symlink" in error for error in D3_PROFILE.ERRORS)
+            )
 
     def test_require_text_rejects_parent_traversal(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -197,20 +234,59 @@ class D3DevelopmentProfilePathTests(unittest.TestCase):
             contract_target = root / "contract-outside.json"
             contract_target.write_text("{}", encoding="utf-8")
             (cargo_parent / "Cargo.toml").symlink_to(cargo_target)
-            (contract_parent / "browser-actor.v1.json").symlink_to(contract_target)
+            (contract_parent / "browser-actor.v1.json").symlink_to(
+                contract_target
+            )
             with mock.patch.object(D3_PROFILE, "ROOT", root):
                 D3_PROFILE.check_manifest()
                 D3_PROFILE.check_contract()
-            symlink_errors = [
-                error for error in D3_PROFILE.ERRORS if "symlink" in error
-            ]
-            self.assertEqual(len(symlink_errors), 2)
-            self.assertTrue(
-                any("apps/hepta-agent-portd/Cargo.toml" in error for error in symlink_errors)
+            self.assert_only_two_symlink_errors()
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "symlink support is required")
+    def test_manifest_and_contract_checks_reject_dangling_symlinks_without_cascades(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cargo_parent = root / "apps/hepta-agent-portd"
+            cargo_parent.mkdir(parents=True)
+            contract_parent = root / "contracts"
+            contract_parent.mkdir()
+            (cargo_parent / "Cargo.toml").symlink_to(root / "missing-cargo.toml")
+            (contract_parent / "browser-actor.v1.json").symlink_to(
+                root / "missing-contract.json"
             )
-            self.assertTrue(
-                any("contracts/browser-actor.v1.json" in error for error in symlink_errors)
+            with mock.patch.object(D3_PROFILE, "ROOT", root):
+                D3_PROFILE.check_manifest()
+                D3_PROFILE.check_contract()
+            self.assert_only_two_symlink_errors()
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "symlink support is required")
+    def test_manifest_and_contract_checks_reject_symlinked_parents_without_cascades(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            real_apps = root / "real-apps"
+            real_apps.mkdir()
+            real_agent_portd = real_apps / "hepta-agent-portd"
+            real_agent_portd.mkdir()
+            (real_agent_portd / "Cargo.toml").write_text(
+                "[features]\n", encoding="utf-8"
             )
+            real_contracts = root / "real-contracts"
+            real_contracts.mkdir()
+            (real_contracts / "browser-actor.v1.json").write_text(
+                "{}", encoding="utf-8"
+            )
+            (root / "apps").symlink_to(real_apps, target_is_directory=True)
+            (root / "contracts").symlink_to(
+                real_contracts, target_is_directory=True
+            )
+            with mock.patch.object(D3_PROFILE, "ROOT", root):
+                D3_PROFILE.check_manifest()
+                D3_PROFILE.check_contract()
+            self.assert_only_two_symlink_errors()
 
 
 if __name__ == "__main__":
