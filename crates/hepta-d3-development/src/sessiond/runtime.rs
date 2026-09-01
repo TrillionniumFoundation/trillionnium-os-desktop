@@ -7,8 +7,8 @@
 //! resolve/act split. It does not claim a Servo adapter or product authority.
 
 use hepta_browser_actor::{
-    BrowserActorMessage, DeterministicLocalRuntime, PageOwnerSnapshot, PageRuntime,
-    RequestControl, RuntimeFailure, RuntimeReply,
+    BrowserActorMessage, DeterministicLocalRuntime, PageOwnerSnapshot, PageRuntime, RequestControl,
+    RuntimeFailure, RuntimeReply,
 };
 use hepta_browser_codec::{ElementReference, JsonObject, JsonValue, PageAction};
 
@@ -102,10 +102,9 @@ impl PageRuntime for AtomicFixtureRuntime {
                 "caller_bound_target_revalidation".to_owned(),
                 JsonValue::Bool(true),
             );
-            reply.result.insert(
-                "servo_adapter_exercised".to_owned(),
-                JsonValue::Bool(false),
-            );
+            reply
+                .result
+                .insert("servo_adapter_exercised".to_owned(), JsonValue::Bool(false));
         }
 
         if captures_semantic_snapshot {
@@ -139,23 +138,19 @@ impl PageRuntime for AtomicFixtureRuntime {
                 "semantic_snapshot_mutation_epoch".to_owned(),
                 json_u64(coordinates.mutation_epoch)?,
             );
-            reply.result.insert(
-                "caller_bound_snapshot".to_owned(),
-                JsonValue::Bool(true),
-            );
+            reply
+                .result
+                .insert("caller_bound_snapshot".to_owned(), JsonValue::Bool(true));
             reply.result.insert(
                 "atomic_page_act_available".to_owned(),
                 JsonValue::Bool(true),
             );
-            reply.result.insert(
-                "servo_adapter_exercised".to_owned(),
-                JsonValue::Bool(false),
-            );
+            reply
+                .result
+                .insert("servo_adapter_exercised".to_owned(), JsonValue::Bool(false));
         }
 
-        if reports_extract
-            && let Some(JsonValue::Object(value)) = reply.result.get_mut("value")
-        {
+        if reports_extract && let Some(JsonValue::Object(value)) = reply.result.get_mut("value") {
             value.insert(
                 "action_count".to_owned(),
                 json_u64(self.applied_action_count)?,
@@ -173,20 +168,20 @@ impl PageRuntime for AtomicFixtureRuntime {
         control: &RequestControl,
     ) -> Result<RuntimeReply, RuntimeFailure> {
         control.ensure_active()?;
-        let owner = owner.ok_or_else(|| {
-            RuntimeFailure::Internal("PageAct has no PageOwner".to_owned())
-        })?;
+        let owner =
+            owner.ok_or_else(|| RuntimeFailure::Internal("PageAct has no PageOwner".to_owned()))?;
         if !owner.local_fixture_only {
             return Err(RuntimeFailure::PolicyDenied(
                 "atomic fixture action requires a local-only PageOwner",
             ));
         }
         let current = RuntimeCoordinates::from_owner(owner);
-        let snapshot = self.semantic_snapshot.clone().ok_or(
-            RuntimeFailure::PolicyDenied(
+        let snapshot = self
+            .semantic_snapshot
+            .clone()
+            .ok_or(RuntimeFailure::PolicyDenied(
                 "PageAct requires a caller-bound semantic observation",
-            ),
-        )?;
+            ))?;
         validate_binding(&snapshot, &current, &target, &action)?;
 
         let next_action_count = self.applied_action_count.checked_add(1).ok_or_else(|| {
@@ -240,18 +235,12 @@ impl PageRuntime for AtomicFixtureRuntime {
             "effect_applied_exactly_once".to_owned(),
             JsonValue::Bool(true),
         );
-        result.insert(
-            "local_fixture_only".to_owned(),
-            JsonValue::Bool(true),
-        );
+        result.insert("local_fixture_only".to_owned(), JsonValue::Bool(true));
         result.insert(
             "external_effect_authority".to_owned(),
             JsonValue::Bool(false),
         );
-        result.insert(
-            "servo_adapter_exercised".to_owned(),
-            JsonValue::Bool(false),
-        );
+        result.insert("servo_adapter_exercised".to_owned(), JsonValue::Bool(false));
 
         Ok(RuntimeReply {
             result,

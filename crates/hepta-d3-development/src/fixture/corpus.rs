@@ -63,7 +63,9 @@ pub(crate) fn run() -> Result<String, AnyError> {
         || target.semantic_snapshot_revision != coordinates.semantic_snapshot_revision
         || observed_mutation_epoch != coordinates.mutation_epoch
     {
-        return Err(invalid("observed semantic target is not bound to PageOwner coordinates").into());
+        return Err(
+            invalid("observed semantic target is not bound to PageOwner coordinates").into(),
+        );
     }
 
     let waited = client::invoke(coordinates.request(
