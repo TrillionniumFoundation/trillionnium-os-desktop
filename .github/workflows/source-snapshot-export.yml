@@ -1,0 +1,48 @@
+name: source-snapshot-export
+
+on:
+  push:
+    branches: [codex/source-snapshot-d3-448-v1]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-snapshot-export-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact source object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Create deterministic source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          mkdir -p /tmp/trillionnium-source-snapshot
+          git archive --format=tar HEAD | gzip -n -9 \
+            > "/tmp/trillionnium-source-snapshot/trillionnium-os-desktop-${GITHUB_SHA}.tar.gz"
+          sha256sum "/tmp/trillionnium-source-snapshot/trillionnium-os-desktop-${GITHUB_SHA}.tar.gz" \
+            > /tmp/trillionnium-source-snapshot/SHA256SUMS
+          printf '%s\n' "$GITHUB_REPOSITORY" > /tmp/trillionnium-source-snapshot/repository.txt
+          printf '%s\n' "$GITHUB_SHA" > /tmp/trillionnium-source-snapshot/commit.txt
+          printf '%s\n' "$(git rev-parse HEAD^{tree})" > /tmp/trillionnium-source-snapshot/tree.txt
+
+      - name: Upload exact source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: source-snapshot-${{ github.sha }}
+          path: /tmp/trillionnium-source-snapshot
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
