@@ -5,10 +5,7 @@
 //! digest, nonce, kind, or sequence failure. Local preflight rejection occurs
 //! before any byte is emitted and therefore does not poison the connection.
 
-#![cfg_attr(
-    not(any(target_os = "linux", target_os = "android")),
-    allow(dead_code)
-)]
+#![cfg_attr(not(any(target_os = "linux", target_os = "android")), allow(dead_code))]
 #![deny(unsafe_op_in_unsafe_fn)]
 
 mod wire;

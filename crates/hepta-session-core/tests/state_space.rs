@@ -1,8 +1,8 @@
 use std::collections::{HashSet, VecDeque};
 
 use hepta_session_core::{
-    ControlSource, ControlState, SessionEvent, SessionMachine, SessionPhase,
-    DEFAULT_HUMAN_LEASE_TTL_MS,
+    ControlSource, ControlState, DEFAULT_HUMAN_LEASE_TTL_MS, SessionEvent, SessionMachine,
+    SessionPhase,
 };
 use trillionnium_contract_core::LeaseId;
 
@@ -48,9 +48,7 @@ fn event_corpus() -> Vec<SessionEvent> {
         SessionEvent::ImeStarted {
             lease_id: foreign.clone(),
         },
-        SessionEvent::ImeEnded {
-            lease_id: primary,
-        },
+        SessionEvent::ImeEnded { lease_id: primary },
         SessionEvent::ImeEnded { lease_id: foreign },
         SessionEvent::DomCommitted,
         SessionEvent::SemanticSnapshotPublished,
@@ -144,7 +142,10 @@ fn assert_public_invariants(machine: &SessionMachine) {
         );
     }
 
-    if matches!(snapshot.phase, SessionPhase::Recovering | SessionPhase::Closed) {
+    if matches!(
+        snapshot.phase,
+        SessionPhase::Recovering | SessionPhase::Closed
+    ) {
         assert_eq!(snapshot.control, ControlState::Idle, "{snapshot:?}");
         assert!(snapshot.human_lease.is_none(), "{snapshot:?}");
     }
@@ -196,7 +197,10 @@ fn bounded_event_space_preserves_arbitration_and_transactionality() {
         }
     }
 
-    assert!(seen.len() >= 100, "state exploration was unexpectedly shallow");
+    assert!(
+        seen.len() >= 100,
+        "state exploration was unexpectedly shallow"
+    );
     assert!(seen.len() < 100_000, "state exploration escaped its bound");
     assert!(attempted_transitions >= seen.len() * events.len());
     assert!(rejected_transitions > attempted_transitions / 3);
