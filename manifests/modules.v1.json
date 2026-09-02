@@ -1,0 +1,462 @@
+{
+  "schema": "trillionnium.desktop.modules.v1",
+  "plan_revision": "2026-08-29-d6",
+  "policy": {
+    "workspace_members_must_match_exactly": true,
+    "module_readme_required": true,
+    "minimum_readme_bytes": 3000,
+    "required_sections": [
+      "## Status and claim ceiling",
+      "## Responsibilities",
+      "## Non-responsibilities",
+      "## Dependency and call direction",
+      "## Public API and binaries",
+      "## Configuration and features",
+      "## State, concurrency, and failure semantics",
+      "## Security invariants",
+      "## Testing and evidence",
+      "## Operations and troubleshooting",
+      "## Compatibility and change protocol"
+    ],
+    "binary_inventory_must_match_cargo": true,
+    "feature_inventory_must_match_cargo": true,
+    "references_must_exist": true,
+    "symlink_paths_forbidden": true,
+    "lower_tier_never_implies_higher_tier": true
+  },
+  "modules": [
+    {
+      "id": "hepta-browserd",
+      "package": "hepta-browserd",
+      "path": "apps/hepta-browserd",
+      "kind": "application",
+      "status": "source_candidate_integrated_foundation",
+      "claim_ceiling": "compiled side-effect-free D4-D7 policy and coordination source; no integrated-image, external-effect, update, hardware, signing, or release authority",
+      "owner_class": "desktop-runtime",
+      "architecture": [
+        "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
+        "docs/architecture/HUMAN_AGENT_COLLABORATION.md",
+        "docs/architecture/CAPABILITY_AND_CONTROLLED_EGRESS.md",
+        "docs/architecture/RECOVERY_UPDATE_AND_EFFECT_RECONCILIATION.md"
+      ],
+      "contracts": [
+        "contracts/browser-actor.v1.json",
+        "contracts/human-agent-collaboration.v1.json",
+        "contracts/capability-egress.v1.json",
+        "contracts/recovery-update-reconciliation.v1.json"
+      ],
+      "tests": [
+        "apps/hepta-browserd/src/lib.rs",
+        "apps/hepta-browserd/src/product_policy.rs",
+        "apps/hepta-browserd/src/authority_coordinator.rs",
+        "apps/hepta-browserd/src/product_runtime.rs"
+      ],
+      "workflows": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/d4-d9-source-suite.yml"
+      ],
+      "binaries": [
+        {
+          "name": "hepta-browserd",
+          "path": "src/main.rs",
+          "required_features": []
+        }
+      ],
+      "features": [],
+      "documentation": "apps/hepta-browserd/README.md"
+    },
+    {
+      "id": "hepta-agent-portd",
+      "package": "hepta-agent-portd",
+      "path": "apps/hepta-agent-portd",
+      "kind": "application",
+      "status": "profile_separated_candidate",
+      "claim_ceiling": "production binary remains fail closed; fixture, D1 qualification, and development binaries are opt-in and non-production",
+      "owner_class": "agent-port-custody",
+      "architecture": [
+        "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
+        "docs/architecture/AGENT_PORT_PRODUCT_QUALIFICATION_SEPARATION.md",
+        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
+        "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md"
+      ],
+      "contracts": [
+        "contracts/agent-port-custody.v1.json",
+        "contracts/agent-port-bridge.v1.json",
+        "contracts/browser-actor.v1.json"
+      ],
+      "tests": [
+        "apps/hepta-agent-portd/src/main.rs",
+        "apps/hepta-agent-portd/src/bin/hepta-agent-port-qualificationd.rs",
+        "apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs"
+      ],
+      "workflows": [
+        ".github/workflows/agent-port-custody.yml",
+        ".github/workflows/agent-port-path-custody.yml",
+        ".github/workflows/d1-final-qualification.yml"
+      ],
+      "binaries": [
+        {
+          "name": "hepta-agent-portd",
+          "path": "src/main.rs",
+          "required_features": []
+        },
+        {
+          "name": "hepta-agent-port-fixture",
+          "path": "src/bin/hepta-agent-port-fixture.rs",
+          "required_features": [
+            "fixture"
+          ]
+        },
+        {
+          "name": "hepta-agent-port-qualificationd",
+          "path": "src/bin/hepta-agent-port-qualificationd.rs",
+          "required_features": [
+            "d1-qualification"
+          ]
+        },
+        {
+          "name": "hepta-agent-d1-fixture",
+          "path": "src/bin/hepta-agent-d1-fixture.rs",
+          "required_features": [
+            "d1-qualification"
+          ]
+        },
+        {
+          "name": "hepta-agent-port-developmentd",
+          "path": "src/bin/hepta-agent-port-developmentd.rs",
+          "required_features": [
+            "development"
+          ]
+        }
+      ],
+      "features": [
+        "default",
+        "fixture",
+        "d1-qualification",
+        "development"
+      ],
+      "documentation": "apps/hepta-agent-portd/README.md"
+    },
+    {
+      "id": "hepta-agent-transport",
+      "package": "hepta-agent-transport",
+      "path": "crates/hepta-agent-transport",
+      "kind": "library",
+      "status": "host_validated_mechanism",
+      "claim_ceiling": "authenticated bounded connected-stream carrier only; no listener, semantic principal, browser dispatch, capability, or external effect",
+      "owner_class": "transport-security",
+      "architecture": [
+        "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md"
+      ],
+      "contracts": [
+        "contracts/agent-transport.v1.json"
+      ],
+      "tests": [
+        "tests/transport/test_agent_transport_reference.py",
+        "crates/hepta-agent-transport/src/facade.rs",
+        "crates/hepta-agent-transport/src/facade/wire.rs"
+      ],
+      "workflows": [
+        ".github/workflows/agent-transport-reference.yml",
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": [],
+      "documentation": "crates/hepta-agent-transport/README.md"
+    },
+    {
+      "id": "hepta-browser-codec",
+      "package": "hepta-browser-codec",
+      "path": "crates/hepta-browser-codec",
+      "kind": "library",
+      "status": "host_validated_contract_boundary",
+      "claim_ceiling": "canonical Browser API parsing, validation, encoding, hashing, and effect classification only; no listener, authorization, or dispatch",
+      "owner_class": "browser-contract-security",
+      "architecture": [
+        "docs/architecture/CANONICAL_BROWSER_CODEC.md",
+        "docs/architecture/RUST_BROWSER_CODEC.md"
+      ],
+      "contracts": [
+        "contracts/browser-codec.v1.json",
+        "contracts/browser-wire.v1.schema.json",
+        "contracts/browser-response.v1.schema.json",
+        "contracts/browser-api.v1.schema.json"
+      ],
+      "tests": [
+        "tests/test_validate_rust_browser_codec.py",
+        "crates/hepta-browser-codec/src/tests.rs"
+      ],
+      "workflows": [
+        ".github/workflows/browser-codec-reference.yml",
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": [],
+      "documentation": "crates/hepta-browser-codec/README.md"
+    },
+    {
+      "id": "hepta-agent-port",
+      "package": "hepta-agent-port",
+      "path": "crates/hepta-agent-port",
+      "kind": "library",
+      "status": "host_validated_mechanism",
+      "claim_ceiling": "exactly one authenticated connected-stream Browser API lifecycle; no listener, principal authority, Servo dispatch, or external effect",
+      "owner_class": "agent-port-core",
+      "architecture": [
+        "docs/architecture/CONNECTED_AGENT_PORT_BRIDGE.md",
+        "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
+      ],
+      "contracts": [
+        "contracts/agent-port-bridge.v1.json",
+        "contracts/receipt.v1.schema.json"
+      ],
+      "tests": [
+        "crates/hepta-agent-port/src/lib.rs",
+        "crates/hepta-session-core/src/receipt_journal.rs"
+      ],
+      "workflows": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/receipt-journal.yml"
+      ],
+      "binaries": [],
+      "features": [],
+      "documentation": "crates/hepta-agent-port/README.md"
+    },
+    {
+      "id": "hepta-peer-attestation",
+      "package": "hepta-peer-attestation",
+      "path": "crates/hepta-peer-attestation",
+      "kind": "library",
+      "status": "host_validated_identity_mechanism",
+      "claim_ceiling": "local Linux process/service identity attestation; no semantic principal, browser authorization, or production activation",
+      "owner_class": "local-identity-security",
+      "architecture": [
+        "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
+        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
+        "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md"
+      ],
+      "contracts": [
+        "contracts/agent-port-custody.v1.json",
+        "contracts/browser-actor.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-peer-attestation/src/lib.rs",
+        "tests/test_validate_d3_development_profile.py"
+      ],
+      "workflows": [
+        ".github/workflows/agent-port-custody.yml",
+        ".github/workflows/agent-port-path-custody.yml"
+      ],
+      "binaries": [],
+      "features": [
+        "default",
+        "qualification-static-attestation",
+        "development-static-attestation"
+      ],
+      "documentation": "crates/hepta-peer-attestation/README.md"
+    },
+    {
+      "id": "trillionnium-contract-core",
+      "package": "trillionnium-contract-core",
+      "path": "crates/trillionnium-contract-core",
+      "kind": "library",
+      "status": "integrated_contract_foundation",
+      "claim_ceiling": "platform-neutral bounded identifiers, digests, time and revision primitives only",
+      "owner_class": "contract-foundation",
+      "architecture": [
+        "docs/plan/CONTRACT_SECURITY_TESTING.md",
+        "docs/architecture/SESSION_STATE_MACHINE.md"
+      ],
+      "contracts": [
+        "contracts/browser-api.v1.schema.json",
+        "contracts/receipt.v1.schema.json"
+      ],
+      "tests": [
+        "crates/trillionnium-contract-core/src/lib.rs"
+      ],
+      "workflows": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/browser-codec-reference.yml"
+      ],
+      "binaries": [],
+      "features": [],
+      "documentation": "crates/trillionnium-contract-core/README.md"
+    },
+    {
+      "id": "hepta-browser-contracts",
+      "package": "hepta-browser-contracts",
+      "path": "crates/hepta-browser-contracts",
+      "kind": "library",
+      "status": "integrated_contract_foundation",
+      "claim_ceiling": "engine-neutral typed Browser API and risk/reference model; no wire parsing, browser runtime, capability, or effect authority",
+      "owner_class": "browser-contract-security",
+      "architecture": [
+        "docs/architecture/CANONICAL_BROWSER_CODEC.md",
+        "docs/architecture/ATOMIC_SEMANTIC_RESOLVER.md",
+        "docs/architecture/TRUSTED_APP_BUNDLES.md"
+      ],
+      "contracts": [
+        "contracts/browser-api.v1.schema.json",
+        "contracts/error-codes.v1.json",
+        "contracts/semantic-resolver.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-browser-contracts/src/lib.rs",
+        "tests/d3/test_semantic_resolver_reference.py"
+      ],
+      "workflows": [
+        ".github/workflows/browser-codec-reference.yml",
+        ".github/workflows/d3-semantic-resolver-reference.yml"
+      ],
+      "binaries": [],
+      "features": [],
+      "documentation": "crates/hepta-browser-contracts/README.md"
+    },
+    {
+      "id": "hepta-session-core",
+      "package": "hepta-session-core",
+      "path": "crates/hepta-session-core",
+      "kind": "library",
+      "status": "host_validated_state_and_journal_core",
+      "claim_ceiling": "deterministic session admission, queueing, revisions, and durable non-replaying receipt facts; no browser, socket, clock, policy, or effect executor",
+      "owner_class": "session-and-receipt-security",
+      "architecture": [
+        "docs/architecture/SESSION_STATE_MACHINE.md",
+        "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
+      ],
+      "contracts": [
+        "contracts/receipt-journal.v1.json",
+        "contracts/receipt.v1.schema.json",
+        "contracts/browser-actor.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-session-core/tests/lease_admission.rs",
+        "crates/hepta-session-core/tests/state_space.rs",
+        "tests/test_verify_receipt_journal.py"
+      ],
+      "workflows": [
+        ".github/workflows/receipt-journal.yml",
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": [],
+      "documentation": "crates/hepta-session-core/README.md"
+    },
+    {
+      "id": "hepta-workspace-composition",
+      "package": "hepta-workspace-composition",
+      "path": "crates/hepta-workspace-composition",
+      "kind": "library",
+      "status": "headed_host_candidate_model",
+      "claim_ceiling": "engine-neutral trusted-workspace state and invariant model; no window, Servo instance, frame, clipboard, AgentPort, or external effect",
+      "owner_class": "trusted-workspace",
+      "architecture": [
+        "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md",
+        "docs/architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md",
+        "docs/architecture/D2I_INTEGRATED_IMAGE.md"
+      ],
+      "contracts": [
+        "contracts/workspace-composition.v1.json",
+        "contracts/d2i-integrated-image.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-workspace-composition/src/tests.rs",
+        "crates/hepta-workspace-composition/src/model.rs"
+      ],
+      "workflows": [
+        ".github/workflows/servo-headed-runtime.yml",
+        ".github/workflows/d2i-integrated-image.yml"
+      ],
+      "binaries": [],
+      "features": [],
+      "documentation": "crates/hepta-workspace-composition/README.md"
+    },
+    {
+      "id": "hepta-browser-actor",
+      "package": "hepta-browser-actor",
+      "path": "crates/hepta-browser-actor",
+      "kind": "library",
+      "status": "d3_source_candidate",
+      "claim_ceiling": "engine-neutral PageOwner/principal/dispatch/receipt core with deterministic local runtime; no promoted Servo adapter, production AgentPort, external effect, or integrated-image authority",
+      "owner_class": "browser-actor-security",
+      "architecture": [
+        "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
+        "docs/architecture/ATOMIC_SEMANTIC_RESOLVER.md",
+        "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
+      ],
+      "contracts": [
+        "contracts/browser-actor.v1.json",
+        "contracts/semantic-resolver.v1.json",
+        "contracts/receipt.v1.schema.json"
+      ],
+      "tests": [
+        "crates/hepta-browser-actor/src/lib.rs",
+        "experiments/d3-semantic-resolver-rust/src/lib.rs",
+        "tests/d3/test_semantic_resolver_reference.py"
+      ],
+      "workflows": [
+        ".github/workflows/d3-semantic-resolver-reference.yml",
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": [],
+      "documentation": "crates/hepta-browser-actor/README.md"
+    },
+    {
+      "id": "hepta-d3-development",
+      "package": "hepta-d3-development",
+      "path": "crates/hepta-d3-development",
+      "kind": "development-application",
+      "status": "d3_development_candidate",
+      "claim_ceiling": "explicit non-default development/qualification graph using deterministic fixture semantic resolution; no Servo, production activation, external effect, hardware, signing, or release authority",
+      "owner_class": "d3-development-security",
+      "architecture": [
+        "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
+        "docs/architecture/ATOMIC_SEMANTIC_RESOLVER.md",
+        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md"
+      ],
+      "contracts": [
+        "contracts/browser-actor.v1.json",
+        "contracts/semantic-resolver.v1.json",
+        "contracts/agent-port-custody.v1.json"
+      ],
+      "tests": [
+        "tests/test_validate_d3_development_profile.py",
+        "crates/hepta-d3-development/src/fixture/corpus.rs",
+        "crates/hepta-d3-development/src/sessiond/runtime.rs"
+      ],
+      "workflows": [
+        ".github/workflows/d3-semantic-resolver-reference.yml",
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [
+        {
+          "name": "hepta-agent-port-development-sessiond",
+          "path": "src/bin/sessiond.rs",
+          "required_features": [
+            "development"
+          ]
+        },
+        {
+          "name": "hepta-agent-d3-fixture",
+          "path": "src/bin/fixture.rs",
+          "required_features": [
+            "development"
+          ]
+        },
+        {
+          "name": "hepta-d3-journal-check",
+          "path": "src/bin/journal_check.rs",
+          "required_features": [
+            "development"
+          ]
+        }
+      ],
+      "features": [
+        "default",
+        "development"
+      ],
+      "documentation": "crates/hepta-d3-development/README.md"
+    }
+  ]
+}

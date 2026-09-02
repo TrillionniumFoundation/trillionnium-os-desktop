@@ -1,11 +1,15 @@
-.PHONY: validate truth custody late-stage fmt check-rust clippy test-python test self-check check
+.PHONY: validate truth module-docs custody late-stage fmt check-rust clippy test-python test self-check check
 
 validate:
 	python3 tools/validate_repository.py
+	python3 tools/validate_module_documentation.py
 	python3 -m unittest tests.test_validate_project_truth -v
 
 truth:
 	python3 tools/validate_project_truth.py
+
+module-docs:
+	python3 tools/validate_module_documentation.py
 
 custody:
 	python3 tools/verify_systemd_socket_custody.py

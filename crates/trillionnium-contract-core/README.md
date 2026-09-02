@@ -1,16 +1,16 @@
-# hepta-browser-codec
+# trillionnium-contract-core
 
-**Module registry ID:** `hepta-browser-codec`  
-**Workspace path:** `crates/hepta-browser-codec`  
-**Owner class:** `browser-contract-security`
+**Module registry ID:** `trillionnium-contract-core`  
+**Workspace path:** `crates/trillionnium-contract-core`  
+**Owner class:** `contract-foundation`
 
-Product-owned canonical Browser API v1 wire codec.
+Platform-neutral contract primitives shared by desktop crates.
 
 ## Status and claim ceiling
 
-**Current status:** `host_validated_contract_boundary`
+**Current status:** `integrated_contract_foundation`
 
-**Claim ceiling:** canonical Browser API parsing, validation, encoding, hashing, and effect classification only; no listener, authorization, or dispatch.
+**Claim ceiling:** platform-neutral bounded identifiers, digests, time and revision primitives only.
 
 The status above describes the strongest repository-local statement this module may
 make. It does not promote lower-tier source, host, headed-host, or QEMU evidence
@@ -18,18 +18,18 @@ into integrated-main, physical-hardware, signing-key-custody, or release facts.
 
 ## Responsibilities
 
-- Perform bounded UTF-8 JSON parsing with recursive duplicate-key rejection and signed-64-bit integer enforcement.
-- Convert exact request/response shapes, validate session/reference/URL fields, and require byte-for-byte canonical re-encoding.
-- Publish canonical SHA-256 inputs and classify operations as observation, local interaction, or potential external effect.
+- Define bounded identifiers, lowercase SHA-256 values, DNS labels, Unix time wrappers, revision clocks, and reference-freshness classification.
+- Provide deterministic validation errors with no transport, browser, policy, or operating-system side effects.
+- Keep shared primitives free of Android, ADB, root-shell, Servo, and product authority semantics.
 
 ## Non-responsibilities
 
-- Classification is not authorization. The codec does not grant a capability, map a principal, call a browser runtime, start a listener, or execute an effect.
-- Network namespace, resolver, redirect, peer-IP, credential, and reconciliation policy belong to later layers.
+- The crate does not serialize the Browser API, authenticate a peer, own a session, authorize an action, access the OS, or interpret product policy.
+- A valid primitive is necessary but never sufficient for admission or effect authority.
 
 ## Dependency and call direction
 
-Transport supplies opaque authenticated bytes; the codec returns typed validated values to AgentPort/BrowserActor. It must not depend on AgentPort, Servo, systemd, product policy, or operating-system authority.
+This is the bottom of the local contract graph and should remain dependency-light. Browser contracts, session core, BrowserActor, and product policy consume it. Reverse dependencies must not leak application-specific types into this crate.
 
 The authoritative workspace membership and review links are recorded in
 `manifests/modules.v1.json`. New reverse dependencies, cycles, or authority-bearing
@@ -37,7 +37,7 @@ dependencies require an explicit architecture/security review.
 
 ## Public API and binaries
 
-Primary APIs decode canonical requests/responses, encode canonical responses, validate typed models, and expose canonical digests/effect classes. Model modules separate requests, responses, shared types, errors, validation, and the bounded parser.
+Public types include `BoundedId`, request/session/lease aliases, `Sha256Hex`, `DnsLabel`, `UnixMillis`, `RevisionClock`, `RefFreshness`, and `classify_reference`. Constructors validate before values enter higher layers.
 
 Public types and executable names are compatibility surfaces. Rust source remains
 the API truth, while this document explains the intended boundary and correct use.
@@ -46,7 +46,7 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
-Byte size, depth, aggregate item, integer, URL, and canonicalization limits are source/contract constants. There are no runtime feature flags. A future version negotiator must not accept ambiguous v1 encodings.
+All size and character limits are compile-time contract constants. There are no Cargo features or environment inputs.
 
 All configuration inputs must be bounded, typed, documented, and included in the
 applicable gate's invalidation set. Missing configuration must fail closed rather
@@ -54,7 +54,7 @@ than select a broader profile.
 
 ## State, concurrency, and failure semantics
 
-The codec is deterministic and stateless per call. Parsing is ordered fail closed: byte/UTF-8 checks, bounded syntax, duplicate/integer limits, typed conversion, semantic validation, canonical encoding, exact byte equality, digest publication.
+Revision clocks advance distinct session, document, semantic snapshot, and mutation layers. Saturating behavior is explicit in current APIs; callers requiring overflow refusal must add a reviewed checked transition rather than assume it.
 
 Rejected transitions and failed validation must not leave partial authority,
 advanced revisions, committed responses, or invented receipt outcomes. Where a
@@ -63,7 +63,7 @@ documented reconciliation policy instead of retrying blindly.
 
 ## Security invariants
 
-Unknown fields, duplicate members, floats, non-canonical whitespace/order, BOM, trailing data, out-of-domain integers, malformed URLs, partial session binding, and stale reference shapes are rejected. Navigation and mutating UI operations remain potential effects.
+Reject empty, overlong, path-like, whitespace/control, uppercase digest, malformed DNS, and stale revision values before they reach authority layers. Keep validation deterministic and independent of locale or host state.
 
 The relevant contracts and architecture documents are listed in the module
 registry. A source-only self-check or fixture never proves enforcement by a booted
@@ -71,7 +71,7 @@ product image.
 
 ## Testing and evidence
 
-Run Rust tests, 27-vector independent Python reference, golden byte equality, hostile depth/item/integer/Unicode cases, and static cross-contract audit. Add fuzzing around parser resource limits and canonical round trips.
+Run unit tests for every boundary value, invalid character class, digest/DNS form, and revision transition. Higher-level schema/codec tests must cross-check these constraints.
 
 Minimum local verification:
 
@@ -91,7 +91,7 @@ current evidence.
 
 ## Operations and troubleshooting
 
-Log only typed error code, bounded location/classification, request digest, and source identity; do not log raw page text or credentials. A canonical mismatch is a client/protocol error, not a reason to normalize and accept attacker bytes.
+There is no runtime service. Failures should be returned as typed contract violations and mapped once by the owning protocol layer. Avoid logging rejected secret-bearing values.
 
 Troubleshooting must preserve the original files, journals, identities, and exact
 Git/build context needed for diagnosis. Do not make a gate pass by deleting a
@@ -100,7 +100,7 @@ fixture, or editing generated evidence by hand.
 
 ## Compatibility and change protocol
 
-Schema, Rust model, Python reference, golden vectors, error codes, and documentation must change atomically. Enum or field additions require an explicit version/unknown-field policy. v1 canonical bytes must remain stable.
+Changing a bound or character set is a wire/security change. Update dependent schemas, Rust types, Python references, golden vectors, documentation, and migration/version policy atomically.
 
 Every behavior-changing pull request must update, as applicable: implementation,
 contracts/schemas, golden vectors, tests, module registry, this README, architecture

@@ -14,6 +14,7 @@
 
    ```bash
    python3 tools/validate_repository.py
+   python3 tools/validate_module_documentation.py
    python3 tools/validate_project_truth.py
    cargo fmt --all --check
    cargo check --workspace --all-targets --locked
@@ -30,3 +31,9 @@
    not merge their own PR.
 10. Use focused commits. Generated evidence must be reproducible, bounded,
     privacy-reviewed, and linked to exact inputs.
+11. Every Cargo workspace member must be registered in
+    `manifests/modules.v1.json` and have a detailed `<member>/README.md`. A
+    change to a package name, binary, required feature, dependency/call
+    direction, contract, test, workflow, authority boundary, or operational
+    behavior must update the registry and module document in the same pull
+    request.

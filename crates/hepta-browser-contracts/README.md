@@ -1,16 +1,16 @@
-# hepta-browser-codec
+# hepta-browser-contracts
 
-**Module registry ID:** `hepta-browser-codec`  
-**Workspace path:** `crates/hepta-browser-codec`  
+**Module registry ID:** `hepta-browser-contracts`  
+**Workspace path:** `crates/hepta-browser-contracts`  
 **Owner class:** `browser-contract-security`
 
-Product-owned canonical Browser API v1 wire codec.
+Engine-neutral typed browser operations, targets, errors, and trust identities.
 
 ## Status and claim ceiling
 
-**Current status:** `host_validated_contract_boundary`
+**Current status:** `integrated_contract_foundation`
 
-**Claim ceiling:** canonical Browser API parsing, validation, encoding, hashing, and effect classification only; no listener, authorization, or dispatch.
+**Claim ceiling:** engine-neutral typed Browser API and risk/reference model; no wire parsing, browser runtime, capability, or effect authority.
 
 The status above describes the strongest repository-local statement this module may
 make. It does not promote lower-tier source, host, headed-host, or QEMU evidence
@@ -18,18 +18,18 @@ into integrated-main, physical-hardware, signing-key-custody, or release facts.
 
 ## Responsibilities
 
-- Perform bounded UTF-8 JSON parsing with recursive duplicate-key rejection and signed-64-bit integer enforcement.
-- Convert exact request/response shapes, validate session/reference/URL fields, and require byte-for-byte canonical re-encoding.
-- Publish canonical SHA-256 inputs and classify operations as observation, local interaction, or potential external effect.
+- Define typed profiles, trusted app identities, navigation targets, element references, observations, waits, page actions, operations, and Browser error codes.
+- Bind semantic references to layered revisions and classify action risk.
+- Provide synthetic trusted origin construction and fixture/external navigation shape checks.
 
 ## Non-responsibilities
 
-- Classification is not authorization. The codec does not grant a capability, map a principal, call a browser runtime, start a listener, or execute an effect.
-- Network namespace, resolver, redirect, peer-IP, credential, and reconciliation policy belong to later layers.
+- The crate does not parse canonical JSON, authenticate a connection, resolve a live DOM/accessibility node, issue a permit, execute a browser action, or perform network I/O.
+- String shape validation does not establish DNS, TLS, redirect, connected-peer, or publisher trust.
 
 ## Dependency and call direction
 
-Transport supplies opaque authenticated bytes; the codec returns typed validated values to AgentPort/BrowserActor. It must not depend on AgentPort, Servo, systemd, product policy, or operating-system authority.
+The crate builds only on platform-neutral contract primitives. Codec and BrowserActor consume it. It must not depend on transport, systemd, Servo, product services, or update/release code.
 
 The authoritative workspace membership and review links are recorded in
 `manifests/modules.v1.json`. New reverse dependencies, cycles, or authority-bearing
@@ -37,7 +37,7 @@ dependencies require an explicit architecture/security review.
 
 ## Public API and binaries
 
-Primary APIs decode canonical requests/responses, encode canonical responses, validate typed models, and expose canonical digests/effect classes. Model modules separate requests, responses, shared types, errors, validation, and the bounded parser.
+Public enums and structs model browser operations and errors. `ElementRef::freshness`, `PageAction::interaction_risk`, navigation validation, trusted synthetic origin construction, and freshness-to-error mapping are key helpers.
 
 Public types and executable names are compatibility surfaces. Rust source remains
 the API truth, while this document explains the intended boundary and correct use.
@@ -46,7 +46,7 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
-Byte size, depth, aggregate item, integer, URL, and canonicalization limits are source/contract constants. There are no runtime feature flags. A future version negotiator must not accept ambiguous v1 encodings.
+There are no features or runtime configuration. Protocol limits and operation sets are versioned through the contracts and codec rather than environment flags.
 
 All configuration inputs must be bounded, typed, documented, and included in the
 applicable gate's invalidation set. Missing configuration must fail closed rather
@@ -54,7 +54,7 @@ than select a broader profile.
 
 ## State, concurrency, and failure semantics
 
-The codec is deterministic and stateless per call. Parsing is ordered fail closed: byte/UTF-8 checks, bounded syntax, duplicate/integer limits, typed conversion, semantic validation, canonical encoding, exact byte equality, digest publication.
+Types are immutable values; layered revisions distinguish stale session, document, and semantic snapshot. Mutating actions are never labelled read-only. BrowserActor must re-resolve action targets atomically before execution.
 
 Rejected transitions and failed validation must not leave partial authority,
 advanced revisions, committed responses, or invented receipt outcomes. Where a
@@ -63,7 +63,7 @@ documented reconciliation policy instead of retrying blindly.
 
 ## Security invariants
 
-Unknown fields, duplicate members, floats, non-canonical whitespace/order, BOM, trailing data, out-of-domain integers, malformed URLs, partial session binding, and stale reference shapes are rejected. Navigation and mutating UI operations remain potential effects.
+Trusted and untrusted navigation classes stay distinct. Local HTTP is loopback fixture only; external navigation is HTTPS-shaped but still requires D6 policy. Unknown/ambiguous target behavior is fail closed in higher layers.
 
 The relevant contracts and architecture documents are listed in the module
 registry. A source-only self-check or fixture never proves enforcement by a booted
@@ -71,7 +71,7 @@ product image.
 
 ## Testing and evidence
 
-Run Rust tests, 27-vector independent Python reference, golden byte equality, hostile depth/item/integer/Unicode cases, and static cross-contract audit. Add fuzzing around parser resource limits and canonical round trips.
+Run unit tests for origin uniqueness, URL classes, action risk, freshness, errors, and all schema operation/error mappings. Codec and semantic resolver corpora provide cross-layer conformance.
 
 Minimum local verification:
 
@@ -91,7 +91,7 @@ current evidence.
 
 ## Operations and troubleshooting
 
-Log only typed error code, bounded location/classification, request digest, and source identity; do not log raw page text or credentials. A canonical mismatch is a client/protocol error, not a reason to normalize and accept attacker bytes.
+No service is operated. Typed errors should be preserved through codec and response construction without weakening retry directives. Do not log target names/text unless privacy policy permits.
 
 Troubleshooting must preserve the original files, journals, identities, and exact
 Git/build context needed for diagnosis. Do not make a gate pass by deleting a
@@ -100,7 +100,7 @@ fixture, or editing generated evidence by hand.
 
 ## Compatibility and change protocol
 
-Schema, Rust model, Python reference, golden vectors, error codes, and documentation must change atomically. Enum or field additions require an explicit version/unknown-field policy. v1 canonical bytes must remain stable.
+Rust operations and error codes must remain synchronized with JSON schemas, canonical codec, reference models, and golden vectors. Breaking enum changes require a new protocol version or explicit migration.
 
 Every behavior-changing pull request must update, as applicable: implementation,
 contracts/schemas, golden vectors, tests, module registry, this README, architecture

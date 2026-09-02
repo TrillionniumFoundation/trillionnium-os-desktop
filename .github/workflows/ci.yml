@@ -34,6 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 tools/validate_repository.py
+          python3 tools/validate_module_documentation.py
           python3 tools/validate_project_truth.py
           python3 tools/validate_agent_port_path_custody.py
           python3 tools/validate_late_stage_source_packages.py
