@@ -2,10 +2,10 @@
 """Stable facade for the D0T-03 source-contract validator.
 
 The complete reviewed implementation remains in
-``_validate_d0t03_source_impl``.  This facade extends its exact required-
-workflow registry with the D3 semantic-resolver reference gate while retaining
-the implementation's strict path, CODEOWNERS, workflow, and claim-ceiling
-checks.
+``_validate_d0t03_source_impl``. This facade extends its exact required-
+workflow registry with the D3 semantic-resolver and integrated-runtime evidence
+gates while retaining the implementation's strict path, CODEOWNERS, workflow,
+and claim-ceiling checks.
 """
 
 from __future__ import annotations
@@ -27,11 +27,20 @@ _impl = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = _impl
 _SPEC.loader.exec_module(_impl)
 
-_D3_WORKFLOW = ".github/workflows/d3-semantic-resolver-reference.yml"
-if _D3_WORKFLOW in _impl.EXPECTED_REQUIRED_WORKFLOW_REGISTRY:
-    raise RuntimeError("D3 semantic-resolver workflow is already registered upstream")
+_D3_WORKFLOWS = frozenset(
+    {
+        ".github/workflows/d3-semantic-resolver-reference.yml",
+        ".github/workflows/d3-integrated-runtime-evidence.yml",
+    }
+)
+_ALREADY_REGISTERED = _D3_WORKFLOWS & _impl.EXPECTED_REQUIRED_WORKFLOW_REGISTRY
+if _ALREADY_REGISTERED:
+    raise RuntimeError(
+        "D3 workflows are already registered upstream: "
+        + ", ".join(sorted(_ALREADY_REGISTERED))
+    )
 _impl.EXPECTED_REQUIRED_WORKFLOW_REGISTRY = frozenset(
-    {*_impl.EXPECTED_REQUIRED_WORKFLOW_REGISTRY, _D3_WORKFLOW}
+    {*_impl.EXPECTED_REQUIRED_WORKFLOW_REGISTRY, *_D3_WORKFLOWS}
 )
 
 
