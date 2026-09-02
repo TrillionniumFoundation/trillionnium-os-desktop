@@ -13,57 +13,21 @@ concurrency:
   group: d3-servo-source-snapshot-${{ github.ref }}
   cancel-in-progress: true
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
-  snapshot-rog:
-    runs-on: [self-hosted, linux, x64, rog]
+  snapshot:
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 30
     steps:
-      - name: Verify isolated ROG lab invocation
+      - name: Verify isolated known-runner invocation
+        shell: bash
         run: |
           set -euo pipefail
           test "$GITHUB_REF" = refs/heads/lab/d3-servo-retained-node-v1
-          test "$RUNNER_NAME" = rog
-      - name: Check out exact Servo source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          repository: servo/servo
-          ref: 670ae8a70801b162e186f81cbb5bdd2d59c39108
-          path: servo
-          fetch-depth: 1
-          persist-credentials: false
-      - name: Verify and package immutable source
-        run: |
-          set -euo pipefail
-          test "$(git -C servo rev-parse HEAD)" = 670ae8a70801b162e186f81cbb5bdd2d59c39108
-          test -z "$(git -C servo status --porcelain=v1)"
-          tar --exclude=.git -czf servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz -C servo .
-          sha256sum servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz > servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
-      - name: Upload exact source snapshot
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: servo-source-670ae8a70801b162e186f81cbb5bdd2d59c39108-rog
-          path: |
-            servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz
-            servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
-          if-no-files-found: error
-          retention-days: 1
-      - name: Clean persistent workspace
-        if: always()
-        run: rm -rf servo servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
+          case "$RUNNER_NAME" in
+            desktop|rog|pocket4) ;;
+            *) printf 'unexpected runner: %s\n' "$RUNNER_NAME" >&2; exit 1 ;;
+          esac
 
-  snapshot-pocket4:
-    runs-on: [self-hosted, linux, x64, pocket4]
-    timeout-minutes: 30
-    steps:
-      - name: Verify isolated Pocket4 lab invocation
-        run: |
-          set -euo pipefail
-          test "$GITHUB_REF" = refs/heads/lab/d3-servo-retained-node-v1
-          test "$RUNNER_NAME" = pocket4
       - name: Check out exact Servo source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -72,22 +36,27 @@ jobs:
           path: servo
           fetch-depth: 1
           persist-credentials: false
+
       - name: Verify and package immutable source
+        shell: bash
         run: |
           set -euo pipefail
           test "$(git -C servo rev-parse HEAD)" = 670ae8a70801b162e186f81cbb5bdd2d59c39108
           test -z "$(git -C servo status --porcelain=v1)"
           tar --exclude=.git -czf servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz -C servo .
           sha256sum servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz > servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
+
       - name: Upload exact source snapshot
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: servo-source-670ae8a70801b162e186f81cbb5bdd2d59c39108-pocket4
+          name: servo-source-670ae8a70801b162e186f81cbb5bdd2d59c39108-${{ runner.name }}
           path: |
             servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz
             servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
           if-no-files-found: error
           retention-days: 1
+
       - name: Clean persistent workspace
         if: always()
+        shell: bash
         run: rm -rf servo servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
