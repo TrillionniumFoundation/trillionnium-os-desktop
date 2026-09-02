@@ -1,0 +1,42 @@
+name: codex-pr66-source-snapshot
+
+on:
+  push:
+    branches:
+      - codex/audit-pr66-source-snapshot-v1
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out audit branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Bind parent source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          parent="$(git rev-parse HEAD^)"
+          test "$parent" = "1bd79f8cee45271a79cfea26768d5b10df3b6f00"
+          printf '%s\n' "$parent" > /tmp/pr66-source-head.txt
+          git archive --format=tar.gz --output=/tmp/trillionnium-os-desktop-pr66-source.tar.gz "$parent"
+          sha256sum /tmp/trillionnium-os-desktop-pr66-source.tar.gz > /tmp/trillionnium-os-desktop-pr66-source.tar.gz.sha256
+
+      - name: Upload immutable source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr66-source-1bd79f8cee45271a79cfea26768d5b10df3b6f00
+          path: |
+            /tmp/trillionnium-os-desktop-pr66-source.tar.gz
+            /tmp/trillionnium-os-desktop-pr66-source.tar.gz.sha256
+            /tmp/pr66-source-head.txt
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
