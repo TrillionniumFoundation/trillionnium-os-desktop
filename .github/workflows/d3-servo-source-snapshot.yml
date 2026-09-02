@@ -1,0 +1,48 @@
+name: d3-servo-source-snapshot
+
+on:
+  push:
+    branches: ["lab/d3-servo-retained-node-v1"]
+    paths:
+      - ".github/workflows/d3-servo-source-snapshot.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d3-servo-source-snapshot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact Servo source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+          path: servo
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify and package immutable source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = 670ae8a70801b162e186f81cbb5bdd2d59c39108
+          git -C servo status --porcelain=v1 | test ! -s /dev/stdin
+          tar --exclude=.git -czf servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz -C servo .
+          sha256sum servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz > servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
+
+      - name: Upload exact source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: servo-source-670ae8a70801b162e186f81cbb5bdd2d59c39108
+          path: |
+            servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz
+            servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 1
