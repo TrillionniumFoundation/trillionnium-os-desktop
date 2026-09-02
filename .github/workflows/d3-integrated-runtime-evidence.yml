@@ -13,6 +13,9 @@ on:
       - "tests/d3/test_d3_integrated_runtime_evidence.py"
       - "tests/test_validator_loader_stability.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_d3_development_profile.py"
+      - "tools/_validate_d3_development_profile_impl.py"
+      - "tests/test_validate_d3_development_profile.py"
       - "tests/test_validate_project_truth.py"
       - "tools/validate_governance_integrity.py"
       - "tools/validate_repository.py"
@@ -31,6 +34,9 @@ on:
       - "tests/d3/test_d3_integrated_runtime_evidence.py"
       - "tests/test_validator_loader_stability.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_d3_development_profile.py"
+      - "tools/_validate_d3_development_profile_impl.py"
+      - "tests/test_validate_d3_development_profile.py"
       - "tests/test_validate_project_truth.py"
       - "tools/validate_governance_integrity.py"
       - "tools/validate_repository.py"
@@ -65,6 +71,8 @@ jobs:
             tools/d3_integrated_runtime_fixture.py \
             tests/d3/test_d3_integrated_runtime_evidence.py \
             tests/test_validator_loader_stability.py \
+            tools/validate_d3_development_profile.py \
+            tests/test_validate_d3_development_profile.py \
             tools/validate_project_truth.py \
             tests/test_validate_project_truth.py
 
@@ -73,6 +81,7 @@ jobs:
           set -euo pipefail
           python3 -m unittest tests.d3.test_d3_integrated_runtime_evidence -v
           python3 -m unittest tests.test_validator_loader_stability -v
+          python3 -m unittest tests.test_validate_d3_development_profile -v
 
       - name: Require deterministic source-only self-test
         run: |
@@ -105,3 +114,4 @@ jobs:
           python3 tools/validate_project_truth.py
           python3 tools/validate_governance_integrity.py
           python3 tools/validate_module_documentation.py
+          python3 tools/validate_d3_development_profile.py
