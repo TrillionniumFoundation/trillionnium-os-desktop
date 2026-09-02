@@ -4,7 +4,8 @@
 The complete reviewed implementation and exact workflow registry live in
 ``_validate_d0t03_source_impl``. This facade imports that implementation
 normally and preserves mutable test-fixture synchronization without source
-rewriting or policy injection.
+rewriting or policy injection. The implementation, facade, and hostile corpus
+are all digest-bound inputs of the D0T-03 source-evidence workflow.
 """
 
 from __future__ import annotations
