@@ -7,8 +7,7 @@ on:
       - ".github/workflows/d3-servo-source-snapshot.yml"
   workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: d3-servo-source-snapshot-${{ github.ref }}
@@ -16,9 +15,17 @@ concurrency:
 
 jobs:
   snapshot:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, rog]
     timeout-minutes: 30
     steps:
+      - name: Verify isolated ROG lab invocation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_EVENT_NAME" = push
+          test "$GITHUB_REF" = refs/heads/lab/d3-servo-retained-node-v1
+          test "$RUNNER_NAME" = rog
+
       - name: Check out exact Servo source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -33,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git -C servo rev-parse HEAD)" = 670ae8a70801b162e186f81cbb5bdd2d59c39108
-          git -C servo status --porcelain=v1 | test ! -s /dev/stdin
+          test -z "$(git -C servo status --porcelain=v1)"
           tar --exclude=.git -czf servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz -C servo .
           sha256sum servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz > servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
 
