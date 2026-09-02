@@ -3,10 +3,10 @@
 
 The reviewed validator implementation remains in
 ``_validate_repository_impl``. This facade extends the exact workspace and
-required-path registries for the isolated D3 persistent development package
-without weakening any existing dependency, path, lock, evidence, or claim
-checks. Mutable module globals remain compatible with the adversarial test
-fixtures used by the original single-file implementation.
+required-path registries for the isolated D3 development and evidence-verifier
+packages without weakening dependency, path, lock, evidence, or claim checks.
+Mutable module globals remain compatible with the adversarial test fixtures
+used by the original single-file implementation.
 """
 
 from __future__ import annotations
@@ -53,6 +53,15 @@ _impl.REQUIRED_PATHS = [
     "tools/_validate_d3_development_profile_impl.001.part",
     "tools/_validate_d3_development_profile_impl.002.part",
     "tests/test_validate_d3_development_profile.py",
+    ".github/workflows/d3-integrated-runtime-evidence.yml",
+    "contracts/d3-integrated-runtime-evidence.v1.json",
+    "docs/architecture/D3_INTEGRATED_RUNTIME_QUALIFICATION.md",
+    "tools/verify_d3_integrated_runtime_evidence.py",
+    "tools/d3_integrated_runtime_common.py",
+    "tools/d3_integrated_runtime_verify.py",
+    "tools/d3_integrated_runtime_fixture.py",
+    "tests/d3/test_d3_integrated_runtime_evidence.py",
+    "tests/test_validator_loader_stability.py",
 ]
 
 _CANONICAL_ROOT = _impl.ROOT

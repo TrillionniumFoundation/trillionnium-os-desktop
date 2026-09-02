@@ -2,8 +2,8 @@
 """Stable facade for the strict governance validator.
 
 The reviewed implementation remains in ``_validate_governance_integrity_impl``.
-This facade registers the D3 semantic-resolver workflow and the module
-technical-documentation validator as executable source inputs without weakening
+This facade registers the D3 source-reference workflow, the integrated-runtime
+evidence-verifier workflow, and their reviewed local scripts without weakening
 the exact workflow inventory or read-only workflow policy. It also preserves
 the validator's historical test contract: regression tests may replace mutable
 policy globals with temporary fixtures and every proxied helper synchronizes
@@ -29,12 +29,21 @@ _impl = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = _impl
 _SPEC.loader.exec_module(_impl)
 
-_D3_WORKFLOW = ".github/workflows/d3-semantic-resolver-reference.yml"
-if _D3_WORKFLOW in _impl.EXPECTED_REQUIRED_WORKFLOWS:
-    raise RuntimeError("D3 semantic-resolver workflow is already registered upstream")
+_ADDITIONAL_WORKFLOWS = (
+    ".github/workflows/d3-semantic-resolver-reference.yml",
+    ".github/workflows/d3-integrated-runtime-evidence.yml",
+)
+_already_registered_workflows = sorted(
+    set(_ADDITIONAL_WORKFLOWS).intersection(_impl.EXPECTED_REQUIRED_WORKFLOWS)
+)
+if _already_registered_workflows:
+    raise RuntimeError(
+        "facade workflows are already registered upstream: "
+        + ", ".join(_already_registered_workflows)
+    )
 _impl.EXPECTED_REQUIRED_WORKFLOWS = (
     *_impl.EXPECTED_REQUIRED_WORKFLOWS[:12],
-    _D3_WORKFLOW,
+    *_ADDITIONAL_WORKFLOWS,
     *_impl.EXPECTED_REQUIRED_WORKFLOWS[12:],
 )
 
@@ -42,6 +51,12 @@ _ADDITIONAL_REVIEWED_LOCAL_SCRIPTS = {
     "tools/semantic_resolver_reference.py",
     "tests/d3/test_semantic_resolver_reference.py",
     "tools/validate_module_documentation.py",
+    "tools/verify_d3_integrated_runtime_evidence.py",
+    "tools/d3_integrated_runtime_common.py",
+    "tools/d3_integrated_runtime_verify.py",
+    "tools/d3_integrated_runtime_fixture.py",
+    "tests/d3/test_d3_integrated_runtime_evidence.py",
+    "tests/test_validator_loader_stability.py",
 }
 _already_registered = sorted(
     _ADDITIONAL_REVIEWED_LOCAL_SCRIPTS.intersection(_impl.REVIEWED_LOCAL_SCRIPTS)
@@ -63,8 +78,7 @@ _CANONICAL_REVIEWED_LOCAL_SCRIPTS = frozenset(_impl.REVIEWED_LOCAL_SCRIPTS)
 _MUTABLE_UPPERCASE_GLOBALS = tuple(
     name
     for name in vars(_impl)
-    if name.isupper()
-    and name not in {"ROOT", "WORKFLOW_ROOT", "CONTRACT_PATH"}
+    if name.isupper() and name not in {"ROOT", "WORKFLOW_ROOT", "CONTRACT_PATH"}
 )
 
 
@@ -94,12 +108,6 @@ def _sync_globals() -> None:
         root / "contracts" / "repository-governance.v1.json",
         root,
     )
-
-    # The original single-module validator exposed its policy constants as
-    # mutable module globals. Several adversarial regression tests deliberately
-    # replace those constants to build tiny fixture repositories. Mirror every
-    # uppercase implementation global so the facade remains behaviorally
-    # equivalent instead of silently restoring the production registry.
     for name in _MUTABLE_UPPERCASE_GLOBALS:
         if name in globals():
             setattr(_impl, name, globals()[name])
