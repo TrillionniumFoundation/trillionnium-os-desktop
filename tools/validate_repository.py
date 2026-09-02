@@ -52,6 +52,8 @@ _impl.REQUIRED_PATHS = [
     "tools/_validate_d3_development_profile_impl.py",
     "tests/test_validate_d3_development_profile.py",
     ".github/workflows/d3-integrated-runtime-evidence.yml",
+    ".github/workflows/self-hosted-desktop-availability.yml",
+    ".github/workflows/self-hosted-fleet-availability.yml",
     "contracts/d3-integrated-runtime-evidence.v1.json",
     "docs/architecture/D3_INTEGRATED_RUNTIME_QUALIFICATION.md",
     "tools/verify_d3_integrated_runtime_evidence.py",

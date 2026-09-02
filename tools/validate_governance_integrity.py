@@ -32,6 +32,8 @@ _SPEC.loader.exec_module(_impl)
 _ADDITIONAL_WORKFLOWS = (
     ".github/workflows/d3-semantic-resolver-reference.yml",
     ".github/workflows/d3-integrated-runtime-evidence.yml",
+    ".github/workflows/self-hosted-desktop-availability.yml",
+    ".github/workflows/self-hosted-fleet-availability.yml",
 )
 _already_registered_workflows = sorted(
     set(_ADDITIONAL_WORKFLOWS).intersection(_impl.EXPECTED_REQUIRED_WORKFLOWS)

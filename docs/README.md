@@ -28,6 +28,7 @@ implementation, tests, packaging, and release evidence.
 - [`security/THREAT_MODEL_V2.md`](security/THREAT_MODEL_V2.md)
 - [`security/SECURITY_CONTROL_MATRIX.md`](security/SECURITY_CONTROL_MATRIX.md)
 - [`release/RELEASE_SECURITY_AND_QUALIFICATION.md`](release/RELEASE_SECURITY_AND_QUALIFICATION.md)
+- [`operations/SELF_HOSTED_QUALIFICATION_LANES.md`](operations/SELF_HOSTED_QUALIFICATION_LANES.md)
 
 The previous d5 and d4 plans remain recoverable history. They must not override
 d6 project, process, authority, evidence, revision, network, update, or release

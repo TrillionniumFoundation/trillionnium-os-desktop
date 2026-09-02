@@ -63,6 +63,8 @@ EXPECTED_REQUIRED_WORKFLOW_REGISTRY = frozenset(
         ".github/workflows/d8-hardware-promotion-policy.yml",
         ".github/workflows/d8-hardware-qualification.yml",
         ".github/workflows/d9-release-promotion.yml",
+        ".github/workflows/self-hosted-desktop-availability.yml",
+        ".github/workflows/self-hosted-fleet-availability.yml",
     }
 )
 _O_CLOEXEC = getattr(os, "O_CLOEXEC", 0)

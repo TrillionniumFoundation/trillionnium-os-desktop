@@ -1,0 +1,66 @@
+name: Self-hosted ROG and Pocket4 availability
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why this bounded runner probe is being requested
+        required: false
+        default: operator-check
+        type: string
+
+# This is a connectivity probe only: it never checks out repository code and
+# has no token permissions. It is intended for a trusted main/manual lane.
+permissions: {}
+
+jobs:
+  rog:
+    name: ROG runner probe
+    runs-on: [self-hosted, linux, x64, rog]
+    timeout-minutes: 10
+    steps:
+      - name: Verify trusted main invocation on ROG
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$GITHUB_REF" = refs/heads/main
+          test "$RUNNER_NAME" = rog
+          printf 'runner=%s\nos=%s\narch=%s\nref=%s\nreason=%s\n' \
+            "$RUNNER_NAME" "$RUNNER_OS" "$RUNNER_ARCH" "$GITHUB_REF" \
+            '${{ inputs.reason }}'
+      - name: Read-only browser snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          uname -a
+          if command -v google-chrome >/dev/null 2>&1; then
+            google-chrome --version || true
+          elif command -v google-chrome-stable >/dev/null 2>&1; then
+            google-chrome-stable --version || true
+          elif command -v chromium >/dev/null 2>&1; then
+            chromium --version || true
+          elif command -v chromium-browser >/dev/null 2>&1; then
+            chromium-browser --version || true
+          fi
+
+  pocket4:
+    name: Pocket4 runner probe
+    runs-on: [self-hosted, linux, x64, pocket4]
+    timeout-minutes: 10
+    steps:
+      - name: Verify trusted main invocation on Pocket4
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$GITHUB_REF" = refs/heads/main
+          test "$RUNNER_NAME" = pocket4
+          printf 'runner=%s\nos=%s\narch=%s\nref=%s\nreason=%s\n' \
+            "$RUNNER_NAME" "$RUNNER_OS" "$RUNNER_ARCH" "$GITHUB_REF" \
+            '${{ inputs.reason }}'
+      - name: Read-only capability snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          uname -a
