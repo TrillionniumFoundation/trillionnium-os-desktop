@@ -7,7 +7,8 @@ on:
       - ".github/workflows/d3-servo-source-snapshot.yml"
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
 
 concurrency:
   group: d3-servo-source-snapshot-${{ github.ref }}
@@ -15,18 +16,14 @@ concurrency:
 
 jobs:
   snapshot:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - name: Verify isolated known-runner invocation
+      - name: Verify isolated lab invocation
         shell: bash
         run: |
           set -euo pipefail
           test "$GITHUB_REF" = refs/heads/lab/d3-servo-retained-node-v1
-          case "$RUNNER_NAME" in
-            desktop|rog|pocket4) ;;
-            *) printf 'unexpected runner: %s\n' "$RUNNER_NAME" >&2; exit 1 ;;
-          esac
 
       - name: Check out exact Servo source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -49,14 +46,9 @@ jobs:
       - name: Upload exact source snapshot
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: servo-source-670ae8a70801b162e186f81cbb5bdd2d59c39108-${{ runner.name }}
+          name: servo-source-670ae8a70801b162e186f81cbb5bdd2d59c39108
           path: |
             servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz
             servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
           if-no-files-found: error
           retention-days: 1
-
-      - name: Clean persistent workspace
-        if: always()
-        shell: bash
-        run: rm -rf servo servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz servo-670ae8a70801b162e186f81cbb5bdd2d59c39108.tar.gz.sha256
