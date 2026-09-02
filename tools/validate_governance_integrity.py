@@ -2,12 +2,12 @@
 """Stable facade for the strict governance validator.
 
 The reviewed implementation remains in ``_validate_governance_integrity_impl``.
-This facade registers the D3 semantic-resolver workflow and its executable
-source inputs without weakening the exact workflow inventory or read-only
-workflow policy. It also preserves the validator's historical test contract:
-regression tests may replace mutable policy globals with temporary fixtures and
-every proxied helper synchronizes those values before entering the
-implementation module.
+This facade registers the D3 semantic-resolver workflow and the module
+technical-documentation validator as executable source inputs without weakening
+the exact workflow inventory or read-only workflow policy. It also preserves
+the validator's historical test contract: regression tests may replace mutable
+policy globals with temporary fixtures and every proxied helper synchronizes
+those values before entering the implementation module.
 """
 
 from __future__ import annotations
@@ -37,12 +37,22 @@ _impl.EXPECTED_REQUIRED_WORKFLOWS = (
     _D3_WORKFLOW,
     *_impl.EXPECTED_REQUIRED_WORKFLOWS[12:],
 )
+
+_ADDITIONAL_REVIEWED_LOCAL_SCRIPTS = {
+    "tools/semantic_resolver_reference.py",
+    "tests/d3/test_semantic_resolver_reference.py",
+    "tools/validate_module_documentation.py",
+}
+_already_registered = sorted(
+    _ADDITIONAL_REVIEWED_LOCAL_SCRIPTS.intersection(_impl.REVIEWED_LOCAL_SCRIPTS)
+)
+if _already_registered:
+    raise RuntimeError(
+        "facade-reviewed local scripts are already registered upstream: "
+        + ", ".join(_already_registered)
+    )
 _impl.REVIEWED_LOCAL_SCRIPTS = frozenset(
-    {
-        *_impl.REVIEWED_LOCAL_SCRIPTS,
-        "tools/semantic_resolver_reference.py",
-        "tests/d3/test_semantic_resolver_reference.py",
-    }
+    {*_impl.REVIEWED_LOCAL_SCRIPTS, *_ADDITIONAL_REVIEWED_LOCAL_SCRIPTS}
 )
 
 _CANONICAL_ROOT = _impl.ROOT
