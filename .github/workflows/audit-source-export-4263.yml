@@ -1,0 +1,38 @@
+name: audit-source-export-4263
+
+on:
+  push:
+    branches:
+      - codex/audit-current-4263a716
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact audit object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Export tracked source
+        run: |
+          set -euo pipefail
+          git archive --format=tar HEAD | gzip -n > trillionnium-os-desktop-4263.tar.gz
+          git rev-parse HEAD > SOURCE_HEAD
+          git rev-parse 'HEAD^{tree}' > SOURCE_TREE
+
+      - name: Upload read-only audit snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: audit-source-${{ github.sha }}
+          path: |
+            trillionnium-os-desktop-4263.tar.gz
+            SOURCE_HEAD
+            SOURCE_TREE
+          if-no-files-found: error
+          retention-days: 1
