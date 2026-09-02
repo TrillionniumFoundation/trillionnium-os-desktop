@@ -12,14 +12,14 @@ evidence tier.
 ## Current convergence identity
 
 PR #64 on `codex/full-gap-closure-execution-v1` is the single active source
-convergence surface. It contains the cumulative accepted source lineage from
-PRs #60 through #63 plus the ordinary-module D3 validator-loader repair. Its
-live head, tree, base, prospective merge, review state, and checks must be read
-from GitHub; copied historical identities are not promotion evidence.
+convergence surface and targets `main` directly. It contains the cumulative
+accepted source lineage from PRs #60 through #63 plus the ordinary-module D3
+validator-loader repair. Its live head, tree, base, prospective merge, review
+state, and checks must be read from GitHub; copied historical identities are
+not promotion evidence.
 
 PRs #60, #61, #62, and #63 are retained as review and implementation
-provenance only after #64 is retargeted directly to `main`. They must not remain
-parallel merge surfaces.
+provenance only. They are not parallel merge surfaces.
 
 ## Gate ledger
 
