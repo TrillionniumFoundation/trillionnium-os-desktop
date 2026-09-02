@@ -174,6 +174,26 @@ class D0T03SourceValidatorTests(unittest.TestCase):
             self.manifest["main_branch"]["required_workflows"],
         )
 
+    def test_required_workflow_registry_has_one_implementation_truth(self) -> None:
+        implementation_spec = importlib.util.spec_from_file_location(
+            "validate_d0t03_source_impl_under_test",
+            ROOT / "tools/_validate_d0t03_source_impl.py",
+        )
+        assert implementation_spec is not None
+        assert implementation_spec.loader is not None
+        implementation = importlib.util.module_from_spec(implementation_spec)
+        implementation_spec.loader.exec_module(implementation)
+
+        expected = frozenset(self.manifest["main_branch"]["required_workflows"])
+        self.assertEqual(
+            implementation.EXPECTED_REQUIRED_WORKFLOW_REGISTRY,
+            expected,
+        )
+        self.assertEqual(
+            VALIDATOR.EXPECTED_REQUIRED_WORKFLOW_REGISTRY,
+            expected,
+        )
+
     def test_source_evidence_binds_pull_request_identity(self) -> None:
         workflow = (self.fixture_root / ".github/workflows/d0t03-source-contract.yml").read_text(
             encoding="utf-8"

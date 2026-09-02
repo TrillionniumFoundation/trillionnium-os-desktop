@@ -48,6 +48,8 @@ EXPECTED_REQUIRED_WORKFLOW_REGISTRY = frozenset(
         ".github/workflows/d0t03-source-contract.yml",
         ".github/workflows/d1-final-qualification.yml",
         ".github/workflows/d2i-integrated-image.yml",
+        ".github/workflows/d3-semantic-resolver-reference.yml",
+        ".github/workflows/d3-integrated-runtime-evidence.yml",
         ".github/workflows/governance-integrity.yml",
         ".github/workflows/receipt-journal.yml",
         ".github/workflows/servo-exact-pin.yml",
@@ -129,6 +131,7 @@ def _validate_workflow_strict(text: str) -> None:
         "python3 tools/validate_project_truth.py",
         "python3 tools/validate_d0t03_source.py",
         "python3 tools/validate_governance_integrity.py",
+        "python3 -m unittest tests.test_d0t03_source -v",
     )
     missing = [
         command

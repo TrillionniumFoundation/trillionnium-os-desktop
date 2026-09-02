@@ -26,13 +26,14 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Validate repository and governance source contract
+      - name: Validate repository, governance source contract, and hostile corpus
         run: |
           set -euo pipefail
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/validate_d0t03_source.py
           python3 tools/validate_governance_integrity.py
+          python3 -m unittest tests.test_d0t03_source -v
 
       - name: Emit bounded source-only evidence
         env:
@@ -100,7 +101,9 @@ jobs:
               Path('contracts/repository-governance.v1.json'),
               Path('manifests/repository-governance.v1.json'),
               Path('tools/validate_governance_integrity.py'),
+              Path('tools/_validate_d0t03_source_impl.py'),
               Path('tools/validate_d0t03_source.py'),
+              Path('tests/test_d0t03_source.py'),
               Path('docs/security/D0T03_REPOSITORY_GOVERNANCE.md'),
               Path('docs/release/D0T03_GOVERNANCE_BOOTSTRAP.md'),
           ]
