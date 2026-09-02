@@ -11,13 +11,12 @@ implementation, tests, packaging, and release evidence.
   single machine project status
 - [`../manifests/gates.v1.json`](../manifests/gates.v1.json) — work-package,
   evidence-tier, review, and invalidation registry
-- [`../manifests/modules.v1.json`](../manifests/modules.v1.json) — exact Cargo
-  module, documentation, feature, binary, owner, contract, test, and workflow
-  inventory
 - [`DESKTOP_PLAN.md`](DESKTOP_PLAN.md) — stable plan index
 - [`DESKTOP_PLAN-2026-08-29-d6.md`](DESKTOP_PLAN-2026-08-29-d6.md) — active plan
 - [`CURRENT_STATE.md`](CURRENT_STATE.md) — human-readable integrated state
 - [`MANIFEST.json`](MANIFEST.json) — documentation status and evidence links
+- [`modules/README.md`](modules/README.md) — complete Cargo module development-document index
+- [`../manifests/modules.v1.json`](../manifests/modules.v1.json) — machine module, binary, feature, contract, test, and workflow inventory
 
 ## d6 annexes
 
@@ -39,3 +38,20 @@ The Android/mobile company repository
 directory, workspace member, submodule, or default build dependency. The exact
 reviewed reference and rejected mobile authorities are recorded in
 `manifests/upstream-reference-review.v1.json`.
+
+## Module documentation gate
+
+Every root Cargo workspace member must carry a detailed module README with a
+status and claim ceiling, dependency/call direction, public APIs and binaries,
+configuration/features, state and failure semantics, security invariants,
+testing/evidence, operations, and compatibility protocol. Run:
+
+```bash
+python3 tools/validate_module_documentation.py
+```
+
+The validator rejects missing or short documents, workspace/registry drift,
+binary or feature drift, missing references, duplicate JSON members, and
+symlinked module/document/reference paths. Documentation completeness is a
+source-quality gate only and never promotes runtime, hardware, signing, or
+release authority.
