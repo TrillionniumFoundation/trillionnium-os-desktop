@@ -17,6 +17,7 @@
    python3 tools/validate_module_documentation.py
    python3 tools/validate_project_truth.py
    python3 tools/verify_d3_integrated_runtime_evidence.py --self-test
+   python3 -m unittest discover -s tests -t . -p 'test_*.py'
    cargo fmt --all --check
    cargo check --workspace --all-targets --locked
    cargo clippy --workspace --all-targets --locked -- -D warnings
@@ -39,3 +40,11 @@
     direction, contract, test, workflow, authority boundary, or operational
     behavior must update the registry and module document in the same pull
     request.
+12. The top-level Python test command is authoritative only when
+    `tests/test_discovery_inventory.py` proves every nested `test_*.py` module
+    and test case is imported. Every nested test directory must contain a real
+    `__init__.py`; a silently omitted suite is a failed gate, not a pass.
+13. Values from `workflow_dispatch` or any other Actions expression are data,
+    not shell source. Bind them through a fixed environment variable, enforce
+    byte limits before logging, use escaped one-line output, and never execute
+    a dynamically selected command, `eval`, or device-enumeration path.
