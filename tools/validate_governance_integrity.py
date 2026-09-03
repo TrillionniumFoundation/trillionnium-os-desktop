@@ -59,6 +59,9 @@ _ADDITIONAL_REVIEWED_LOCAL_SCRIPTS = {
     "tools/d3_integrated_runtime_fixture.py",
     "tests/d3/test_d3_integrated_runtime_evidence.py",
     "tests/test_validator_loader_stability.py",
+    "tests/d7/test_effect_journal_hardening.py",
+    "tests/test_discovery_inventory.py",
+    "tests/test_self_hosted_probe_safety.py",
 }
 _already_registered = sorted(
     _ADDITIONAL_REVIEWED_LOCAL_SCRIPTS.intersection(_impl.REVIEWED_LOCAL_SCRIPTS)
