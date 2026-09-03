@@ -62,6 +62,16 @@ _impl.REQUIRED_PATHS = [
     "tools/d3_integrated_runtime_fixture.py",
     "tests/d3/test_d3_integrated_runtime_evidence.py",
     "tests/test_validator_loader_stability.py",
+    "tests/d3/__init__.py",
+    "tests/d4/__init__.py",
+    "tests/d5/__init__.py",
+    "tests/d6/__init__.py",
+    "tests/d7/__init__.py",
+    "tests/d7/test_effect_journal_hardening.py",
+    "tests/d8/__init__.py",
+    "tests/d9/__init__.py",
+    "tests/test_discovery_inventory.py",
+    "tests/test_self_hosted_probe_safety.py",
 ]
 
 _CANONICAL_ROOT = _impl.ROOT
