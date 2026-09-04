@@ -1,0 +1,58 @@
+name: pr66-source-export-v2
+
+on:
+  push:
+    branches:
+      - codex/pr66-source-export-v2
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr66-source-export-v2
+  cancel-in-progress: false
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      EXPECTED_SOURCE_SHA: ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e
+    steps:
+      - name: Check out exact PR source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.EXPECTED_SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build deterministic tracked-file export
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          rm -rf /tmp/trillionnium-os-desktop-pr66-source
+          mkdir -p /tmp/trillionnium-os-desktop-pr66-source
+          git ls-files -z \
+            | tar --null --files-from=- -cf - \
+            | tar -xf - -C /tmp/trillionnium-os-desktop-pr66-source
+          test ! -e /tmp/trillionnium-os-desktop-pr66-source/.git
+          printf '%s\n' "$EXPECTED_SOURCE_SHA" \
+            > /tmp/trillionnium-os-desktop-pr66-source/SOURCE-COMMIT.txt
+          git rev-parse 'HEAD^{tree}' \
+            > /tmp/trillionnium-os-desktop-pr66-source/SOURCE-TREE.txt
+          find -P /tmp/trillionnium-os-desktop-pr66-source -type f \
+            ! -name SOURCE-SHA256SUMS.txt -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > /tmp/trillionnium-os-desktop-pr66-source/SOURCE-SHA256SUMS.txt
+
+      - name: Upload exact tracked-source export
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr66-source-export-${{ env.EXPECTED_SOURCE_SHA }}
+          path: /tmp/trillionnium-os-desktop-pr66-source
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 6
+          include-hidden-files: true
