@@ -10,6 +10,8 @@
 
 Current status: `canonical_runtime_pointer_no_duplicate_implementation`.
 
+`runtime_internal_injector: false`
+
 **Claim ceiling:** source-boundary documentation identifying the canonical Servo runtime and external crash injector only; no additional runtime implementation.
 
 This component is interpreted under the repository's evidence-tier and

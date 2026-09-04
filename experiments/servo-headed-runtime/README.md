@@ -24,6 +24,7 @@ applicable gate records independently bound evidence.
 - Forward bounded native pointer, button, wheel, keyboard, and IME events to one WebView.
 - Capture trusted/full/content pixels and causal process-topology evidence.
 - Survive an externally supervised generation-1 content-child SIGKILL and create generation 2 while trusted chrome remains alive.
+- The runtime may surface `notify_crashed` as an observer, but that callback is not required for the external systemd fault injector or its causal proof.
 
 The component must keep these responsibilities explicit enough that reviewers
 can identify the exact authority boundary, inputs, outputs, failure modes, and
