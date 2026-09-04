@@ -1,0 +1,129 @@
+name: dispatch-d8-live-lanes-v1
+
+on:
+  push:
+    branches:
+      - codex/dispatch-d8-live-lanes-v1
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: dispatch-d8-live-lanes-v1
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      TARGET_REF: codex/d6-gap-closure-v1
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Dispatch bounded live availability lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/d8-live-lane-dispatch
+          mkdir -p /tmp/d8-live-lane-dispatch
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import datetime as dt
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+          from pathlib import Path
+
+          repository = os.environ['GITHUB_REPOSITORY']
+          token = os.environ['GH_TOKEN']
+          target_ref = os.environ['TARGET_REF']
+          workflows = (
+              'self-hosted-desktop-availability.yml',
+              'self-hosted-fleet-availability.yml',
+          )
+          output = Path('/tmp/d8-live-lane-dispatch/dispatch-report.json')
+          report = {
+              'schema': 'trillionnium.desktop.live-lane-dispatch.v1',
+              'generated_at': dt.datetime.now(dt.timezone.utc).isoformat(),
+              'repository': repository,
+              'control_ref': os.environ.get('GITHUB_REF'),
+              'control_sha': os.environ.get('GITHUB_SHA'),
+              'target_ref': target_ref,
+              'claim_ceiling': 'workflow-dispatch-receipt-only_not_runner-availability_not_hardware-qualification',
+              'results': [],
+          }
+          failed = False
+          for workflow in workflows:
+              url = (
+                  f'https://api.github.com/repos/{repository}/actions/'
+                  f'workflows/{workflow}/dispatches'
+              )
+              request = urllib.request.Request(
+                  url,
+                  data=json.dumps({'ref': target_ref}).encode('utf-8'),
+                  method='POST',
+                  headers={
+                      'Authorization': f'Bearer {token}',
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'Content-Type': 'application/json',
+                      'User-Agent': 'trillionnium-d8-live-lane-dispatch-v1',
+                  },
+              )
+              response_tail = ''
+              try:
+                  with urllib.request.urlopen(request, timeout=45) as response:
+                      status = response.status
+                      response_tail = response.read().decode('utf-8', errors='replace')[-500:]
+              except urllib.error.HTTPError as error:
+                  status = error.code
+                  response_tail = error.read().decode('utf-8', errors='replace')[-500:]
+              except Exception as error:
+                  status = 'TRANSPORT_ERROR'
+                  response_tail = type(error).__name__
+              report['results'].append(
+                  {
+                      'workflow': workflow,
+                      'http_status': status,
+                      'response_tail': response_tail,
+                  }
+              )
+              if status != 204:
+                  failed = True
+          output.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          print(json.dumps(report, indent=2, sort_keys=True))
+          if failed:
+              raise SystemExit('one or more workflow dispatches failed closed')
+          PY
+
+      - name: Publish dispatch summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=/tmp/d8-live-lane-dispatch/dispatch-report.json
+          if test -f "$report"; then
+            {
+              echo '## D8 bounded live-lane dispatch'
+              echo
+              echo 'This proves dispatch receipt only; it is not runner, BOM, endurance, power-loss, or hardware evidence.'
+              echo
+              echo '```json'
+              cat "$report"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload immutable dispatch receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d8-live-lane-dispatch-${{ github.sha }}
+          path: /tmp/d8-live-lane-dispatch
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 6
+          include-hidden-files: true
