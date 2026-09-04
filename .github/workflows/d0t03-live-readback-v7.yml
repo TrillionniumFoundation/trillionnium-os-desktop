@@ -1,0 +1,477 @@
+name: d0t03-live-readback-v7
+
+on:
+  push:
+    branches:
+      - codex/d0t03-live-readback-v7
+
+permissions:
+  actions: read
+  contents: read
+  deployments: read
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: d0t03-live-readback-v7
+  cancel-in-progress: false
+
+jobs:
+  readback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      ADMIN_TOKEN: ${{ secrets.TRILLIONNIUM_GITHUB_ADMIN_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      PULL_REQUEST_NUMBER: "66"
+      EXPECTED_HEAD: 1e9ec3ce5746db0bafe5faf51fbcc0434b6dbca5
+      EXPECTED_BASE: addaf73a48bae65f19f6bfe91c6264fd2ddb85a1
+      EXPECTED_MERGE: 1b29149e9987b72daf13f9ca698b5ba2c6d3d8c5
+      TARGET_BRANCH: main
+    steps:
+      - name: Capture live governance and review readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/d0t03-live-readback-v7
+          mkdir -p /tmp/d0t03-live-readback-v7
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import base64
+          import datetime as dt
+          import json
+          import os
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+          from typing import Any
+
+          repository = os.environ['GITHUB_REPOSITORY']
+          owner, repo_name = repository.split('/', 1)
+          admin_token = os.environ.get('ADMIN_TOKEN', '').strip()
+          workflow_token = os.environ['GH_TOKEN'].strip()
+          token = admin_token or workflow_token
+          token_source = 'TRILLIONNIUM_GITHUB_ADMIN_TOKEN' if admin_token else 'GITHUB_TOKEN_FALLBACK'
+          pr_number = int(os.environ['PULL_REQUEST_NUMBER'])
+          expected_head = os.environ['EXPECTED_HEAD']
+          expected_base = os.environ['EXPECTED_BASE']
+          expected_merge = os.environ['EXPECTED_MERGE']
+          target_branch = os.environ['TARGET_BRANCH']
+          output = Path('/tmp/d0t03-live-readback-v7/readback-report.json')
+
+          report: dict[str, Any] = {
+              'schema': 'trillionnium.desktop.d0t03-live-readback.v7',
+              'generated_at': dt.datetime.now(dt.timezone.utc).isoformat(),
+              'repository': repository,
+              'pull_request': pr_number,
+              'expected_head': expected_head,
+              'expected_base': expected_base,
+              'expected_merge': expected_merge,
+              'target_branch': target_branch,
+              'token_source': token_source,
+              'claim_ceiling': 'live_readback_only_no_setting_mutation_no_human_approval_no_merge_no_release_authority',
+              'requests': [],
+              'readback': {},
+              'blockers': [],
+              'status': 'STARTED',
+          }
+
+          def api(
+              method: str,
+              path: str,
+              payload: Any | None = None,
+              *,
+              expected: tuple[int, ...] = (200,),
+          ) -> tuple[int, Any]:
+              url = f'https://api.github.com/{path.lstrip("/")}'
+              data = None if payload is None else json.dumps(payload).encode('utf-8')
+              request = urllib.request.Request(
+                  url,
+                  data=data,
+                  method=method,
+                  headers={
+                      'Authorization': f'Bearer {token}',
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'Content-Type': 'application/json',
+                      'User-Agent': 'trillionnium-d0t03-live-readback-v7',
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=45) as response:
+                      status = response.status
+                      raw = response.read()
+              except urllib.error.HTTPError as error:
+                  status = error.code
+                  raw = error.read()
+              text = raw.decode('utf-8', errors='replace')
+              try:
+                  body: Any = json.loads(text) if text else None
+              except json.JSONDecodeError:
+                  body = {'unparsed_tail': text[-1000:]}
+              record: dict[str, Any] = {'method': method, 'path': path, 'status': status}
+              if status not in expected:
+                  if isinstance(body, dict):
+                      record['message'] = body.get('message')
+                  else:
+                      record['response_type'] = type(body).__name__
+              report['requests'].append(record)
+              return status, body
+
+          def graphql(query: str, variables: dict[str, Any]) -> tuple[int, Any]:
+              return api('POST', 'graphql', {'query': query, 'variables': variables})
+
+          pr_status, pr = api('GET', f'repos/{repository}/pulls/{pr_number}')
+          if pr_status != 200 or not isinstance(pr, dict):
+              report['blockers'].append('Cannot read PR #66.')
+              pr = {}
+          else:
+              if pr.get('state') != 'open':
+                  report['blockers'].append('PR #66 is not open.')
+              if pr.get('draft') is not True:
+                  report['blockers'].append('PR #66 is not Draft while governance remains open.')
+              if pr.get('head', {}).get('sha') != expected_head:
+                  report['blockers'].append('PR head moved from the frozen object.')
+              if pr.get('base', {}).get('sha') != expected_base:
+                  report['blockers'].append('PR base moved from the frozen object.')
+              if pr.get('merge_commit_sha') != expected_merge:
+                  report['blockers'].append('Prospective merge moved from the frozen object.')
+
+          compare_status, comparison = api(
+              'GET', f'repos/{repository}/compare/{expected_base}...{expected_head}'
+          )
+          source_identities: set[str] = set()
+          if compare_status == 200 and isinstance(comparison, dict):
+              for commit in comparison.get('commits') or []:
+                  for role in ('author', 'committer'):
+                      login = (commit.get(role) or {}).get('login')
+                      if isinstance(login, str) and login:
+                          source_identities.add(login.casefold())
+          pr_author = ((pr.get('user') or {}).get('login')) if isinstance(pr, dict) else None
+          if isinstance(pr_author, str) and pr_author:
+              source_identities.add(pr_author.casefold())
+
+          query = '''
+          query($owner:String!, $name:String!, $number:Int!) {
+            repository(owner:$owner, name:$name) {
+              pullRequest(number:$number) {
+                reviewThreads(first:100) {
+                  totalCount
+                  nodes { isResolved isOutdated }
+                }
+                reviews(first:100) {
+                  totalCount
+                  nodes {
+                    state
+                    submittedAt
+                    author { login }
+                    commit { oid }
+                  }
+                }
+                reviewRequests(first:100) {
+                  totalCount
+                  nodes {
+                    requestedReviewer {
+                      ... on User { login }
+                      ... on Team { slug }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          '''
+          graph_status, graph = graphql(
+              query,
+              {'owner': owner, 'name': repo_name, 'number': pr_number},
+          )
+          threads: list[dict[str, Any]] = []
+          reviews: list[dict[str, Any]] = []
+          requests: list[dict[str, Any]] = []
+          if graph_status == 200 and isinstance(graph, dict) and not graph.get('errors'):
+              pull = (((graph.get('data') or {}).get('repository') or {}).get('pullRequest') or {})
+              threads = (pull.get('reviewThreads') or {}).get('nodes') or []
+              reviews = (pull.get('reviews') or {}).get('nodes') or []
+              requests = (pull.get('reviewRequests') or {}).get('nodes') or []
+          else:
+              report['blockers'].append('GraphQL review/thread readback failed.')
+
+          unresolved_threads = sum(1 for item in threads if not item.get('isResolved'))
+          fresh_approvals: list[str] = []
+          for review in reviews:
+              login = ((review.get('author') or {}).get('login'))
+              commit_oid = ((review.get('commit') or {}).get('oid'))
+              if (
+                  review.get('state') == 'APPROVED'
+                  and isinstance(login, str)
+                  and commit_oid == expected_head
+                  and login.casefold() not in source_identities
+              ):
+                  fresh_approvals.append(login)
+          fresh_approvals = sorted(set(fresh_approvals), key=str.casefold)
+          requested_reviewers: list[str] = []
+          for item in requests:
+              reviewer = item.get('requestedReviewer') or {}
+              value = reviewer.get('login') or reviewer.get('slug')
+              if isinstance(value, str):
+                  requested_reviewers.append(value)
+
+          branch_encoded = urllib.parse.quote(target_branch, safe='')
+          protection_status, protection = api(
+              'GET', f'repos/{repository}/branches/{branch_encoded}/protection'
+          )
+          rulesets_status, rulesets = api('GET', f'repos/{repository}/rulesets')
+          workflow_permissions_status, workflow_permissions = api(
+              'GET', f'repos/{repository}/actions/permissions/workflow'
+          )
+          repo_status, repo = api('GET', f'repos/{repository}')
+          environments_status, environments = api('GET', f'repos/{repository}/environments')
+          collaborators_status, collaborators = api(
+              'GET', f'repos/{repository}/collaborators?affiliation=all&per_page=100'
+          )
+          teams_status, teams = api('GET', f'orgs/{owner}/teams?per_page=100')
+          codeowners_status, codeowners = api(
+              'GET', f'repos/{repository}/contents/.github/CODEOWNERS?ref={expected_head}'
+          )
+          codeowners_text = None
+          if codeowners_status == 200 and isinstance(codeowners, dict):
+              encoded = codeowners.get('content')
+              if isinstance(encoded, str):
+                  try:
+                      codeowners_text = base64.b64decode(encoded).decode('utf-8')
+                  except Exception:
+                      codeowners_text = None
+
+          required_contexts = sorted([
+              'desktop-ci / repository-contracts',
+              'desktop-ci / rust',
+              'governance-integrity / governance-integrity',
+          ])
+          protection_ok = False
+          if protection_status == 200 and isinstance(protection, dict):
+              checks = protection.get('required_status_checks') or {}
+              reviews_config = protection.get('required_pull_request_reviews') or {}
+              bypass = reviews_config.get('bypass_pull_request_allowances') or {}
+              def enabled(value: Any) -> bool:
+                  return value.get('enabled') is True if isinstance(value, dict) else value is True
+              protection_ok = all([
+                  checks.get('strict') is True,
+                  sorted(checks.get('contexts') or []) == required_contexts,
+                  enabled(protection.get('enforce_admins')),
+                  reviews_config.get('dismiss_stale_reviews') is True,
+                  reviews_config.get('require_code_owner_reviews') is True,
+                  reviews_config.get('required_approving_review_count') == 2,
+                  reviews_config.get('require_last_push_approval') is True,
+                  not (bypass.get('users') or []),
+                  not (bypass.get('teams') or []),
+                  not (bypass.get('apps') or []),
+                  enabled(protection.get('required_linear_history')),
+                  enabled(protection.get('required_conversation_resolution')),
+                  not enabled(protection.get('allow_force_pushes')),
+                  not enabled(protection.get('allow_deletions')),
+              ])
+
+          actions_ok = bool(
+              workflow_permissions_status == 200
+              and isinstance(workflow_permissions, dict)
+              and workflow_permissions.get('default_workflow_permissions') == 'read'
+              and workflow_permissions.get('can_approve_pull_request_reviews') is False
+          )
+          merge_policy_ok = bool(
+              repo_status == 200
+              and isinstance(repo, dict)
+              and repo.get('allow_merge_commit') is False
+              and repo.get('allow_rebase_merge') is False
+              and repo.get('allow_squash_merge') is True
+              and repo.get('allow_auto_merge') is False
+          )
+          production_environment = None
+          environment_names: list[str] = []
+          if environments_status == 200 and isinstance(environments, dict):
+              environment_rows = environments.get('environments') or []
+              environment_names = [
+                  item.get('name') for item in environment_rows if isinstance(item, dict)
+              ]
+              production_environment = next(
+                  (item for item in environment_rows if item.get('name') == 'production'),
+                  None,
+              )
+          environment_ok = bool(
+              isinstance(production_environment, dict)
+              and production_environment.get('protection_rules')
+          )
+          ruleset_count = len(rulesets) if isinstance(rulesets, list) else None
+          team_names = [
+              {'name': item.get('name'), 'slug': item.get('slug')}
+              for item in teams
+              if isinstance(teams, list) and isinstance(item, dict)
+          ] if isinstance(teams, list) else []
+          eligible_collaborators = []
+          if isinstance(collaborators, list):
+              for item in collaborators:
+                  if not isinstance(item, dict):
+                      continue
+                  login = item.get('login')
+                  permissions = item.get('permissions') or {}
+                  if (
+                      isinstance(login, str)
+                      and login.casefold() not in source_identities
+                      and any(permissions.get(key) is True for key in ('push', 'maintain', 'admin'))
+                  ):
+                      eligible_collaborators.append(login)
+
+          report['readback'] = {
+              'pr': {
+                  'state': pr.get('state'),
+                  'draft': pr.get('draft'),
+                  'author': pr_author,
+                  'base_sha': (pr.get('base') or {}).get('sha'),
+                  'head_sha': (pr.get('head') or {}).get('sha'),
+                  'merge_commit_sha': pr.get('merge_commit_sha'),
+                  'mergeable': pr.get('mergeable'),
+                  'mergeable_state': pr.get('mergeable_state'),
+              },
+              'source_identities_excluded_from_independence': sorted(source_identities),
+              'review': {
+                  'thread_count': len(threads),
+                  'unresolved_thread_count': unresolved_threads,
+                  'fresh_independent_approvals': fresh_approvals,
+                  'fresh_independent_approval_count': len(fresh_approvals),
+                  'required_approval_count': 2,
+                  'requested_reviewers_or_teams': sorted(set(requested_reviewers)),
+              },
+              'branch_protection': {
+                  'http_status': protection_status,
+                  'matches_contract': protection_ok,
+                  'value': protection if protection_status == 200 else None,
+              },
+              'rulesets': {
+                  'http_status': rulesets_status,
+                  'count': ruleset_count,
+                  'value': rulesets if rulesets_status == 200 else None,
+              },
+              'actions_permissions': {
+                  'http_status': workflow_permissions_status,
+                  'matches_contract': actions_ok,
+                  'value': workflow_permissions if workflow_permissions_status == 200 else None,
+              },
+              'merge_policy': {
+                  'http_status': repo_status,
+                  'matches_contract': merge_policy_ok,
+                  'value': {
+                      'allow_merge_commit': repo.get('allow_merge_commit'),
+                      'allow_rebase_merge': repo.get('allow_rebase_merge'),
+                      'allow_squash_merge': repo.get('allow_squash_merge'),
+                      'allow_auto_merge': repo.get('allow_auto_merge'),
+                  } if isinstance(repo, dict) else None,
+              },
+              'environments': {
+                  'http_status': environments_status,
+                  'names': environment_names,
+                  'production_matches_contract': environment_ok,
+                  'production': production_environment,
+              },
+              'collaborators': {
+                  'http_status': collaborators_status,
+                  'eligible_independent_write_or_higher': sorted(set(eligible_collaborators)),
+              },
+              'organization_teams': {
+                  'http_status': teams_status,
+                  'teams': team_names,
+              },
+              'codeowners': {
+                  'http_status': codeowners_status,
+                  'contains_desktop_maintainers_team': bool(
+                      isinstance(codeowners_text, str)
+                      and '@TrillionniumFoundation/desktop-maintainers' in codeowners_text
+                  ),
+              },
+          }
+
+          if unresolved_threads:
+              report['blockers'].append(f'{unresolved_threads} review thread(s) remain unresolved.')
+          if len(fresh_approvals) < 2:
+              report['blockers'].append(
+                  f'Only {len(fresh_approvals)}/2 fresh independent approvals are bound to the exact head.'
+              )
+          if not protection_ok:
+              report['blockers'].append('Protected-main readback does not match the D0T-03 contract.')
+          if not actions_ok:
+              report['blockers'].append('Actions default permission readback does not match the D0T-03 contract.')
+          if not merge_policy_ok:
+              report['blockers'].append('Repository merge policy does not match the D0T-03 contract.')
+          if not environment_ok:
+              report['blockers'].append('Protected production environment is absent or incomplete.')
+          if ruleset_count == 0:
+              report['blockers'].append('No repository ruleset is present.')
+          if teams_status != 200:
+              report['blockers'].append('Organization-team readback is unavailable to the selected token.')
+          if collaborators_status != 200:
+              report['blockers'].append('Collaborator/independent-maintainer readback is unavailable to the selected token.')
+
+          controls_ok = all([
+              protection_ok,
+              actions_ok,
+              merge_policy_ok,
+              environment_ok,
+              unresolved_threads == 0,
+              len(fresh_approvals) >= 2,
+          ])
+          report['status'] = 'PASS_D0T03_LIVE_READBACK' if controls_ok else 'BLOCKED_LIVE_READBACK'
+          output.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          summary = [
+              '## D0T-03 live readback v7',
+              '',
+              f'- Frozen head: `{expected_head}`',
+              f'- Status: **{report["status"]}**',
+              f'- Review threads unresolved: **{unresolved_threads}**',
+              f'- Fresh independent approvals: **{len(fresh_approvals)}/2**',
+              f'- Protected-main contract: **{"PASS" if protection_ok else "OPEN"}**',
+              f'- Actions defaults contract: **{"PASS" if actions_ok else "OPEN"}**',
+              f'- Merge-policy contract: **{"PASS" if merge_policy_ok else "OPEN"}**',
+              f'- Production-environment contract: **{"PASS" if environment_ok else "OPEN"}**',
+              f'- Repository rulesets observed: **{ruleset_count if ruleset_count is not None else "unreadable"}**',
+              '',
+              'This is immutable readback only. It performs no setting mutation, approval, merge, signing, or release action.',
+          ]
+          if report['blockers']:
+              summary.extend(['', 'Current blockers:'])
+              summary.extend(f'- {item}' for item in report['blockers'])
+          api(
+              'POST',
+              f'repos/{repository}/issues/{pr_number}/comments',
+              {'body': '\n'.join(summary)},
+              expected=(201,),
+          )
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
+      - name: Publish readback summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=/tmp/d0t03-live-readback-v7/readback-report.json
+          if test -f "$report"; then
+            {
+              echo '## D0T-03 immutable live readback v7'
+              echo
+              echo '```json'
+              cat "$report"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload immutable live readback
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d0t03-live-readback-v7-${{ github.sha }}
+          path: /tmp/d0t03-live-readback-v7
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
+          include-hidden-files: true
