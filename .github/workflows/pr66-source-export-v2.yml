@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      EXPECTED_SOURCE_SHA: ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e
+      EXPECTED_SOURCE_SHA: 1e9ec3ce5746db0bafe5faf51fbcc0434b6dbca5
     steps:
       - name: Check out exact PR source head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -26,33 +26,26 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Build deterministic tracked-file export
+      - name: Export immutable source and history without executing repository code
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
-          rm -rf /tmp/trillionnium-os-desktop-pr66-source
-          mkdir -p /tmp/trillionnium-os-desktop-pr66-source
-          git ls-files -z \
-            | tar --null --files-from=- -cf - \
-            | tar -xf - -C /tmp/trillionnium-os-desktop-pr66-source
-          test ! -e /tmp/trillionnium-os-desktop-pr66-source/.git
-          printf '%s\n' "$EXPECTED_SOURCE_SHA" \
-            > /tmp/trillionnium-os-desktop-pr66-source/SOURCE-COMMIT.txt
-          git rev-parse 'HEAD^{tree}' \
-            > /tmp/trillionnium-os-desktop-pr66-source/SOURCE-TREE.txt
-          find -P /tmp/trillionnium-os-desktop-pr66-source -type f \
-            ! -name SOURCE-SHA256SUMS.txt -print0 \
-            | sort -z \
-            | xargs -0 sha256sum \
-            > /tmp/trillionnium-os-desktop-pr66-source/SOURCE-SHA256SUMS.txt
+          export_dir="$(mktemp -d /tmp/desktop-source-export.XXXXXXXX)"
+          git archive --format=tar HEAD > "$export_dir/source.tar"
+          git bundle create "$export_dir/source.bundle" HEAD
+          git bundle verify "$export_dir/source.bundle"
+          printf '%s\n' "$EXPECTED_SOURCE_SHA" > "$export_dir/SOURCE-COMMIT.txt"
+          git rev-parse 'HEAD^{tree}' > "$export_dir/SOURCE-TREE.txt"
+          (cd "$export_dir" && sha256sum source.tar source.bundle SOURCE-COMMIT.txt SOURCE-TREE.txt > SHA256SUMS)
+          printf 'EXPORT_DIR=%s\n' "$export_dir" >> "$GITHUB_ENV"
 
-      - name: Upload exact tracked-source export
+      - name: Upload exact source export
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: pr66-source-export-${{ env.EXPECTED_SOURCE_SHA }}
-          path: /tmp/trillionnium-os-desktop-pr66-source
+          path: ${{ env.EXPORT_DIR }}
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 2
           compression-level: 6
           include-hidden-files: true
