@@ -1,0 +1,52 @@
+name: temporary-source-snapshot
+
+on:
+  push:
+    branches: ["codex/d6-full-gap-closure-v2"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temporary-source-snapshot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build tracked-file-only snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/codex/d6-full-gap-closure-v2
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          rm -rf /tmp/trillionnium-os-desktop-source
+          mkdir -p /tmp/trillionnium-os-desktop-source
+          git ls-files -z \
+            | tar --null --files-from=- -cf - \
+            | tar -xf - -C /tmp/trillionnium-os-desktop-source
+          test ! -e /tmp/trillionnium-os-desktop-source/.git
+          find -P /tmp/trillionnium-os-desktop-source -type f -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > /tmp/trillionnium-os-desktop-source/SOURCE-SHA256SUMS.txt
+          printf '%s\n' "$GITHUB_SHA" \
+            > /tmp/trillionnium-os-desktop-source/SOURCE-COMMIT.txt
+
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: temporary-source-snapshot-${{ github.sha }}
+          path: /tmp/trillionnium-os-desktop-source
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 6
+          include-hidden-files: true
