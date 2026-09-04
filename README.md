@@ -18,6 +18,9 @@ Passing a lower tier never implies a higher one.
 - Integrated-main stage: `D0R_D0C06_D0A01_COMPILE_VALIDATED`
 - Machine truth: [`manifests/project-state.v1.json`](manifests/project-state.v1.json)
 - Gate registry: [`manifests/gates.v1.json`](manifests/gates.v1.json)
+- Cargo module registry: [`manifests/modules.v1.json`](manifests/modules.v1.json)
+- Non-Cargo component registry: [`manifests/components.v1.json`](manifests/components.v1.json)
+- Component documentation index: [`docs/components/README.md`](docs/components/README.md)
 - Current state: [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md)
 - Blocker ledger: [`docs/plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md`](docs/plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md)
 
@@ -27,35 +30,36 @@ GitHub at decision time.
 
 ## Current convergence candidate
 
-Draft PR **#60**, branch `codex/d6-gap-closure-v1`, is the single active
-convergence surface. Its committed pre-truth-refresh evidence snapshot is:
+Draft PR **#66**, branch `codex/d6-gap-closure-v1`, is the single active convergence surface.
+The committed pre-truth-refresh snapshot observed at `2026-09-04T17:45:12Z` is:
 
 ```text
-base main:       78888fac3bee7974138ab1c5e4807511bee7fcbb
-source head:     e87c63f257c9f660bc0fc104633efb39bcaca320
-source tree:     e3fae0714a12b2876a07e8d332d82bb51907b750
-synthetic merge: 56f7a021bddbc3f9349c9afd2206670a7765853c
+base main:              addaf73a48bae65f19f6bfe91c6264fd2ddb85a1
+source head:            ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e
+source tree:            f5e5cc16dcd6c088dcef6ed6c3793bd7808b4aa8
+prospective merge:      8d9c1de8b3af62eb32f5cd2bca1a0230afc30115
+prospective merge tree: f5e5cc16dcd6c088dcef6ed6c3793bd7808b4aa8
 ```
 
-That snapshot removed every self-modifying closure bootstrap workflow, restored
-a fixed review object, made session transitions transactional, closed retained
-human-lease Agent-admission paths, added bounded state-space exploration, and
-made authenticated transport fail-stop after wire/protocol failure.
+At that exact object, all 22 permanent pull-request workflows were terminal
+success, all 22 review threads were resolved, and one current-head independent
+non-author approval was present. The governance contract requires two such
+approvals. This truth-refresh commit changes the source head, so that matrix and
+approval are historical inputs and must be reacquired on the new exact head.
 
-It passed the repository/Rust/codec/transport/receipt/custody and D4-D9
-source/verifier checks. It also produced candidate-only evidence for:
+Live GitHub readback at the same observation time showed `main` unprotected,
+with no required status contexts and no repository rulesets. The fail-closed
+D0T-03 control transaction (run `33901170417`) executed zero administration
+operations and stopped with `ADMIN_TOKEN_MISSING`; it did not partially modify
+repository settings. See
+[`docs/evidence/2026-09-05-pr66-live-closure-checkpoint.md`](docs/evidence/2026-09-05-pr66-live-closure-checkpoint.md).
 
-- exact-pin Servo compile compatibility;
-- headed-host Servo local-fixture input and causal content-process recovery;
-- two byte-identical D1 builds plus Q35/TCG PID 1, Wayland placeholder,
-  default-disabled qualification AgentPort, negative peer cases, recovery, and
-  clean shutdown;
-- one byte-identical D2I integrated QEMU image with no network device and the
-  bounded local-fixture claim ceiling.
-
-The snapshot and its artifacts are **not integrated-main evidence**. Any later
-truth or source commit changes the exact head and therefore requires a fresh
-exact-head matrix before independent review and promotion.
+The candidate contains the cumulative source closure for transactional session
+arbitration, fail-stop transport, canonical codec, request-bound AgentPort,
+durable receipts, D0A/D1/D2I candidate lanes, PageOwner/BrowserActor source,
+D4-D9 policy/reference implementations, and machine-validated documentation.
+Candidate and verifier success remains bounded by each gate's claim ceiling and
+is not integrated-main, installed-product, hardware, or signed-release evidence.
 
 ## Integrated foundation
 
@@ -98,7 +102,7 @@ crash corpus inside the exact integrated image.
 
 ## Open authority and external-evidence blockers
 
-PR #60 cannot close the following through source authorship alone:
+PR #66 cannot close the following through source authorship alone:
 
 - protected `main`, required checks, organization-team CODEOWNERS, latest-push
   non-author approval, no self-merge, and independent release authority;
@@ -115,7 +119,7 @@ PR #60 cannot close the following through source authorship alone:
 
 The repository does not currently claim that:
 
-- PR #60 has been independently approved or merged;
+- PR #66 has obtained the required two current-head independent approvals or been merged;
 - its candidate evidence has passed an exact-main rerun;
 - a production AgentPort, external navigation, credentials, capabilities, or
   external effects are enabled;
@@ -133,6 +137,8 @@ The D0A-02 headed-host ceiling explicitly retains:
 ```bash
 python3 tools/validate_repository.py
 python3 tools/validate_project_truth.py
+python3 tools/validate_module_documentation.py
+python3 tools/validate_component_documentation.py
 cargo fmt --all --check
 cargo check --workspace --all-targets --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings

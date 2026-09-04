@@ -11,6 +11,7 @@ is used.
 from __future__ import annotations
 
 import functools
+from datetime import datetime
 import importlib.util
 import inspect
 from pathlib import Path
@@ -27,19 +28,192 @@ _impl = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = _impl
 _SPEC.loader.exec_module(_impl)
 
-D0A02_SUPERSEDED_BY_PR = 60
+D0A02_SUPERSEDED_BY_PR = 66
 D0A02_STALE_REASON = (
     "D0A-02 headed-host evidence is bound to historical source head "
-    f"{_impl.D0A02_HISTORICAL_HEAD}; PR #60 supersedes the PR #33 candidate "
-    "and this snapshot. Rerun servo-headed-runtime on the exact candidate "
-    "head for PR #60 before promotion."
+    f"{_impl.D0A02_HISTORICAL_HEAD}; PR #66 supersedes the PR #60 and PR #33 "
+    "convergence candidates and this snapshot. Rerun servo-headed-runtime on "
+    "the exact candidate head for PR #66 before promotion."
 )
 _impl.D0A02_STALE_REASON = D0A02_STALE_REASON
 _impl.D0A02_SUPERSEDED_BY_PR = D0A02_SUPERSEDED_BY_PR
 
+D3_DEVELOPMENT_BLOCKER = (
+    "Servo-owned retained-node semantic action forwarding, exact integrated-image "
+    "principal/dispatch/receipt evidence, and independent security review remain "
+    "required before live activation"
+)
+D3_ACTIVATION_TRUTH = dict(_impl.D3_ACTIVATION_TRUTH)
+D3_ACTIVATION_TRUTH["development_blocker"] = D3_DEVELOPMENT_BLOCKER
+_impl.D3_ACTIVATION_TRUTH = D3_ACTIVATION_TRUTH
+
+CANDIDATE_SNAPSHOT_SOURCE = "github_api_committed_snapshot_before_truth_refresh"
+CANDIDATE_SNAPSHOT_FIELDS = {
+    "observed_at",
+    "observed_main_sha",
+    "observed_candidate_pr",
+    "observed_candidate_branch",
+    "observed_candidate_head_sha",
+    "observed_candidate_tree_sha",
+    "source",
+    "live_pr_or_ci_state_must_be_read_from_github",
+}
+
+
+def candidate_snapshot_alignment_errors(
+    project: object,
+    docs: object,
+    repository: object,
+) -> list[str]:
+    """Reject copied snapshot drift and stale active-candidate bindings."""
+
+    errors: list[str] = []
+    projections = {
+        "project-state": project,
+        "docs manifest": docs,
+        "repository-state": repository,
+    }
+    snapshots: dict[str, dict[str, Any]] = {}
+    for label, projection in projections.items():
+        if not isinstance(projection, dict):
+            errors.append(f"{label} must be an object for candidate snapshot checks")
+            continue
+        snapshot = projection.get("candidate_state_snapshot")
+        if not isinstance(snapshot, dict):
+            errors.append(f"{label} candidate_state_snapshot must be an object")
+            continue
+        snapshots[label] = snapshot
+
+    project_snapshot = snapshots.get("project-state")
+    if project_snapshot is None:
+        return errors
+
+    for label in ("docs manifest", "repository-state"):
+        snapshot = snapshots.get(label)
+        if snapshot is not None and snapshot != project_snapshot:
+            errors.append(
+                f"{label} candidate_state_snapshot disagrees with project-state"
+            )
+
+    missing = sorted(CANDIDATE_SNAPSHOT_FIELDS - set(project_snapshot))
+    unknown = sorted(set(project_snapshot) - CANDIDATE_SNAPSHOT_FIELDS)
+    if missing:
+        errors.append(f"candidate_state_snapshot is missing required fields: {missing}")
+    if unknown:
+        errors.append(f"candidate_state_snapshot has unknown fields: {unknown}")
+
+    observed_at = project_snapshot.get("observed_at")
+    if not isinstance(observed_at, str):
+        errors.append("candidate_state_snapshot.observed_at must be a UTC timestamp")
+    else:
+        try:
+            datetime.strptime(observed_at, "%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            errors.append(
+                "candidate_state_snapshot.observed_at must use YYYY-MM-DDTHH:MM:SSZ"
+            )
+
+    for field in (
+        "observed_main_sha",
+        "observed_candidate_head_sha",
+        "observed_candidate_tree_sha",
+    ):
+        value = project_snapshot.get(field)
+        if (
+            not isinstance(value, str)
+            or _impl.SHA40.fullmatch(value) is None
+            or set(value) == {"0"}
+        ):
+            errors.append(
+                f"candidate_state_snapshot.{field} is not a lowercase 40-hex SHA"
+            )
+
+    observed_pr = project_snapshot.get("observed_candidate_pr")
+    if (
+        not isinstance(observed_pr, int)
+        or isinstance(observed_pr, bool)
+        or not 1 <= observed_pr <= 2_000_000_000
+    ):
+        errors.append("candidate_state_snapshot.observed_candidate_pr is invalid")
+
+    observed_branch = project_snapshot.get("observed_candidate_branch")
+    if (
+        not isinstance(observed_branch, str)
+        or _impl.BRANCH_NAME.fullmatch(observed_branch) is None
+        or ".." in observed_branch
+        or "//" in observed_branch
+        or observed_branch.endswith(("/", "."))
+        or any(segment.startswith(".") for segment in observed_branch.split("/"))
+    ):
+        errors.append(
+            "candidate_state_snapshot.observed_candidate_branch is unsafe or malformed"
+        )
+
+    if project_snapshot.get("source") != CANDIDATE_SNAPSHOT_SOURCE:
+        errors.append(
+            "candidate_state_snapshot.source must identify the GitHub API "
+            "pre-truth-refresh snapshot"
+        )
+    if project_snapshot.get("live_pr_or_ci_state_must_be_read_from_github") is not True:
+        errors.append(
+            "candidate_state_snapshot must require live PR/CI state to be read from GitHub"
+        )
+
+    candidates = (
+        project.get("source_candidate_work_packages")
+        if isinstance(project, dict)
+        else None
+    )
+    if not isinstance(candidates, list) or not candidates:
+        errors.append(
+            "project-state source_candidate_work_packages must be a non-empty "
+            "list for snapshot alignment"
+        )
+        return errors
+
+    expected = {
+        "branch": project_snapshot.get("observed_candidate_branch"),
+        "pr": project_snapshot.get("observed_candidate_pr"),
+        "base_sha": project_snapshot.get("observed_main_sha"),
+        "candidate_head_sha": project_snapshot.get("observed_candidate_head_sha"),
+    }
+    for index, candidate in enumerate(candidates):
+        if not isinstance(candidate, dict):
+            continue
+        package = candidate.get("id", f"index {index}")
+        for field, expected_value in expected.items():
+            if candidate.get(field) != expected_value:
+                errors.append(
+                    f"active candidate {package!r} {field} disagrees with "
+                    "candidate_state_snapshot"
+                )
+    return errors
+
+
+_ORIGINAL_CHECK_TRUTH_ALIGNMENT = _impl.check_truth_alignment
+
+
+def check_truth_alignment() -> None:
+    """Run frozen truth checks plus current PR-66 snapshot policy."""
+
+    _ORIGINAL_CHECK_TRUTH_ALIGNMENT()
+    project = _impl.load_json("manifests/project-state.v1.json")
+    docs = _impl.load_json("docs/MANIFEST.json")
+    repository = _impl.load_json("manifests/repository-state.json")
+    for error in candidate_snapshot_alignment_errors(project, docs, repository):
+        _impl.fail(error)
+    _impl.require_text(
+        "docs/CURRENT_STATE.md",
+        [_impl.PLAN_REVISION, _impl.INTEGRATED_STAGE, "PR #66"],
+    )
+    _impl.require_text(
+        "README.md",
+        [_impl.PLAN_REVISION, _impl.INTEGRATED_STAGE, "PR **#66**"],
+    )
+
 
 def _check_d0a02_stale_record(record: object, label: str) -> None:
-    """Require historical D0A-02 evidence to advertise PR-60 staleness."""
+    """Require historical D0A-02 evidence to advertise PR-66 staleness."""
 
     if not isinstance(record, dict):
         _impl.fail(f"{label} must be an object")
@@ -51,7 +225,7 @@ def _check_d0a02_stale_record(record: object, label: str) -> None:
         )
     if record.get("stale_reason") != D0A02_STALE_REASON:
         _impl.fail(
-            f"{label}.stale_reason must equal the canonical PR #60 exact-head rerun reason"
+            f"{label}.stale_reason must equal the canonical PR #66 exact-head rerun reason"
         )
     promotion = record.get("promotion")
     if not isinstance(promotion, dict):
@@ -74,7 +248,7 @@ def _check_d0a02_stale_record(record: object, label: str) -> None:
 def check_d0a02_evidence_lifecycle(
     project: dict[str, Any], docs: dict[str, Any], repository: dict[str, Any]
 ) -> None:
-    """Synchronize historical evidence with the active PR-60 D0A-02 claim."""
+    """Synchronize historical evidence with the active PR-66 D0A-02 claim."""
 
     for relative in (
         "docs/evidence/generated/d0a02-headed-runtime-evidence.json",
@@ -102,7 +276,7 @@ def check_d0a02_evidence_lifecycle(
             if entry.get("merge_ready") is not False:
                 _impl.fail("repository-state D0A-02 evidence must not be merge-ready")
             if entry.get("superseded_by_pr") != D0A02_SUPERSEDED_BY_PR:
-                _impl.fail("repository-state D0A-02 evidence must retain PR #60 supersession")
+                _impl.fail("repository-state D0A-02 evidence must retain PR #66 supersession")
             if entry.get("stale_reason") != D0A02_STALE_REASON:
                 _impl.fail(
                     "repository-state D0A-02 entry lacks the canonical exact-head rerun reason"
@@ -126,7 +300,7 @@ def check_d0a02_evidence_lifecycle(
             if entry.get("merge_ready") is not False:
                 _impl.fail("docs manifest D0A-02 evidence must not be merge-ready")
             if entry.get("superseded_by_pr") != D0A02_SUPERSEDED_BY_PR:
-                _impl.fail("docs manifest D0A-02 evidence must retain PR #60 supersession")
+                _impl.fail("docs manifest D0A-02 evidence must retain PR #66 supersession")
             if entry.get("stale_reason") != D0A02_STALE_REASON:
                 _impl.fail(
                     "docs manifest D0A-02 entry lacks the canonical exact-head rerun reason"
@@ -147,9 +321,9 @@ def check_d0a02_evidence_lifecycle(
     else:
         candidate = active[0]
         if candidate.get("pr") != D0A02_SUPERSEDED_BY_PR:
-            _impl.fail("active D0A-02 source candidate must be bound to PR #60")
+            _impl.fail("active D0A-02 source candidate must be bound to PR #66")
         if candidate.get("status") != "MODULE_CLOSED_CANDIDATE":
-            _impl.fail("active PR #60 D0A-02 candidate must retain MODULE_CLOSED_CANDIDATE status")
+            _impl.fail("active PR #66 D0A-02 candidate must retain MODULE_CLOSED_CANDIDATE status")
         claim = candidate.get("claim_ceiling")
         if not isinstance(claim, str) or not claim.startswith(
             "headed_host_local_fixture_only"
@@ -164,6 +338,7 @@ def check_d0a02_evidence_lifecycle(
 # definitions as direct facade calls.
 _impl._check_d0a02_stale_record = _check_d0a02_stale_record
 _impl.check_d0a02_evidence_lifecycle = check_d0a02_evidence_lifecycle
+_impl.check_truth_alignment = check_truth_alignment
 
 _CANONICAL_ROOT = _impl.ROOT
 _MUTABLE_UPPERCASE_GLOBALS = tuple(
@@ -179,8 +354,10 @@ def _sync_globals() -> None:
             setattr(_impl, name, globals()[name])
     _impl.D0A02_STALE_REASON = D0A02_STALE_REASON
     _impl.D0A02_SUPERSEDED_BY_PR = D0A02_SUPERSEDED_BY_PR
+    _impl.D3_ACTIVATION_TRUTH = D3_ACTIVATION_TRUTH
     _impl._check_d0a02_stale_record = _check_d0a02_stale_record
     _impl.check_d0a02_evidence_lifecycle = check_d0a02_evidence_lifecycle
+    _impl.check_truth_alignment = check_truth_alignment
 
 
 def _proxy(function: Callable[..., Any]) -> Callable[..., Any]:

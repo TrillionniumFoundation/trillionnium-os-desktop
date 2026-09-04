@@ -53,6 +53,8 @@ _ADDITIONAL_REVIEWED_LOCAL_SCRIPTS = {
     "tools/semantic_resolver_reference.py",
     "tests/d3/test_semantic_resolver_reference.py",
     "tools/validate_module_documentation.py",
+    "tools/validate_component_documentation.py",
+    "tests/test_component_documentation.py",
     "tools/verify_d3_integrated_runtime_evidence.py",
     "tools/d3_integrated_runtime_common.py",
     "tools/d3_integrated_runtime_verify.py",

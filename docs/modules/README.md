@@ -80,3 +80,7 @@ A new Cargo member is rejected until it has:
 Removing or renaming a module requires updating all reverse references and
 retained evidence readers. Historical evidence must remain interpretable and
 must never be silently rebound to the new path.
+
+## Non-Cargo components
+
+Non-Cargo repository, packaging, experiment, evidence, and boundary components are governed separately by [`manifests/components.v1.json`](../../manifests/components.v1.json) and [`docs/components/README.md`](../components/README.md).

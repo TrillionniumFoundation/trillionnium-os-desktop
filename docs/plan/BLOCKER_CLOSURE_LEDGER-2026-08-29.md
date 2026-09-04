@@ -1,7 +1,7 @@
 # TrillionniumOS Desktop — blocker closure ledger
 
-**Plan:** `2026-08-29-d6`  
-**Updated:** 2026-09-02  
+**Plan:** `2026-08-29-d6`
+**Updated:** 2026-09-05
 **Integrated-main stage:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`
 
 This ledger separates source closure, candidate evidence, integrated-main
@@ -21,6 +21,25 @@ promotion evidence.
 PRs #60-#64 are historical implementation and review provenance only. They are
 not parallel merge surfaces, and their old approvals or workflow packets cannot
 be inherited by the final PR #66 object.
+
+## 2026-09-05 live closure checkpoint
+
+The pre-truth-refresh PR #66 object `ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e` / tree `f5e5cc16dcd6c088dcef6ed6c3793bd7808b4aa8` had 22/22
+permanent workflows at terminal success, all 22 review threads resolved, and
+one current-head independent non-author approval. Two approvals are required.
+Live GitHub readback reported `main` at `addaf73a48bae65f19f6bfe91c6264fd2ddb85a1` with protection disabled,
+no required contexts, and no repository rulesets.
+
+The fail-closed D0T-03 transaction at control commit
+`f6304383a45bfa8b17019972f19c9330da1ae7c7` (run `33901170417`) executed zero
+administration operations and recorded `ADMIN_TOKEN_MISSING`; neither the
+workflow secret nor the installed GitHub connection supplied Administration
+authority. The immutable readback is summarized in
+`docs/evidence/2026-09-05-pr66-live-closure-checkpoint.md`.
+
+This truth-refresh change invalidates the prior exact-head matrix and approval.
+No source field may mark D0T-03, governed merge, exact-main, D3 exact-image,
+D4-D7 installed-product, D8 hardware, or D9 HSM gates closed.
 
 ## Gate ledger
 

@@ -1,9 +1,9 @@
 # TrillionniumOS Desktop — current state
 
-**Updated:** 2026-09-01  
-**Canonical plan:** `2026-08-29-d6`  
-**Repository mode:** `FULL_PRODUCT_REPOSITORY`  
-**Integrated implementation stage:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`  
+**Updated:** 2026-09-05
+**Canonical plan:** `2026-08-29-d6`
+**Repository mode:** `FULL_PRODUCT_REPOSITORY`
+**Integrated implementation stage:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`
 **Machine truth:** `manifests/project-state.v1.json`
 
 ## 1. Integrated-main truth
@@ -16,31 +16,34 @@ durable non-replaying receipt facts, and exact-pin Servo compile compatibility.
 
 It does not imply a promoted headed runtime, Debian/QEMU product image,
 BrowserActor activation, external network/effect authority, hardware beta, or
-signed release. The recorded `main` head is
-`78888fac3bee7974138ab1c5e4807511bee7fcbb`; `main` remains unprotected, so
-D0T-03 remains `REPOSITORY_SETTING_REQUIRED`.
+signed release. The live `main` head observed at `2026-09-04T17:45:12Z` was
+`addaf73a48bae65f19f6bfe91c6264fd2ddb85a1`. GitHub reported branch protection disabled, no required status
+contexts, and no repository rulesets, so D0T-03 remains
+`REPOSITORY_SETTING_REQUIRED`.
 
-## 2. Single convergence candidate — PR #60
+## 2. Single convergence candidate — PR #66
 
-Draft PR #60 on `codex/d6-gap-closure-v1` supersedes active development surfaces
-PR #32, PR #33, PR #35, and unstable aggregate PR #59. The committed machine
-snapshot records the last source object before the truth-refresh series:
+Draft PR #66 on `codex/d6-gap-closure-v1` is the single direct-to-`main` convergence surface.
+PRs #60 through #64 are historical implementation/review provenance, not
+parallel promotion objects. The committed snapshot immediately before this
+truth-refresh change is:
 
 ```text
-base SHA:       78888fac3bee7974138ab1c5e4807511bee7fcbb
-candidate SHA:  e87c63f257c9f660bc0fc104633efb39bcaca320
-candidate tree: e3fae0714a12b2876a07e8d332d82bb51907b750
-tested merge:   56f7a021bddbc3f9349c9afd2206670a7765853c
+base SHA:              addaf73a48bae65f19f6bfe91c6264fd2ddb85a1
+candidate SHA:         ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e
+candidate tree:        f5e5cc16dcd6c088dcef6ed6c3793bd7808b4aa8
+prospective merge:     8d9c1de8b3af62eb32f5cd2bca1a0230afc30115
+prospective merge tree:f5e5cc16dcd6c088dcef6ed6c3793bd7808b4aa8
 ```
 
-The candidate is an ordinary Git object. Workflows have read-only repository
-permissions, checkout does not persist write credentials, and the four
-self-modifying `closure-overlay-bootstrap-v2` through `v5` workflows were
-removed. No workflow is allowed to manufacture and push a future review object.
-Live head and check state must be read from GitHub rather than inferred from the
-snapshot above.
+The source object was exported independently by run `33901522952`; artifact
+`9947810361` has digest
+`sha256:cbf0c1ca5671ffd71bbb35f58dfdfdd4726f982b388f655e6912798bd8d481c4`,
+and the tracked-file checksum audit found no mismatch. Live head and check state
+must always be read from GitHub rather than inferred from this committed
+pre-truth-refresh snapshot.
 
-## 3. Core fixes completed in the candidate
+## 3. Repository-controlled closure present in the candidate
 
 ### Session arbitration
 
@@ -48,148 +51,116 @@ snapshot above.
 partially advanced revisions, ownership, navigation source, or lease state.
 Every Agent observation, mutation, and navigation admission requires
 `Ready + Idle + no human lease`; Human/System source labels cannot relabel
-active Agent work. Navigation, cancellation, recovery, and close transitions
-maintain explicit ownership invariants.
+active Agent work. The bounded state-space corpus checks both public and hidden
+state after rejection.
 
-A bounded integration test explores 31 event forms to depth seven, checks public
-ownership invariants after every accepted transition, and compares both the
-public snapshot and hidden behavioural signature after every rejected
-transition.
-
-### Authenticated transport
+### Authenticated transport and AgentPort
 
 The raw framed carrier is private behind a fail-stop facade. Any frame I/O,
 deadline, digest, nonce, kind, challenge, or sequence error drops the owned
-carrier and permanently poisons the public connection. Later calls return a
-stable broken-pipe transport error without attempting byte-stream
-resynchronization. Pure local preflight failures do not poison because no byte
-has been consumed or emitted.
+carrier and permanently poisons the public connection. The canonical browser
+codec, exactly-one request lifecycle, systemd socket/path custody, development
+static attestation, and durable requested/dispatched/terminal receipt facts are
+implemented with production, development, qualification, and fixture authority
+physically separated.
 
-## 4. Candidate-only evidence at the recorded source snapshot
+### Documentation and truth controls
 
-### D0A-01 exact-pin Servo
+Cargo and non-Cargo components are machine registered and mapped to technical
+documentation. Project truth, gate status, candidate snapshots, evidence
+freshness, action pins, and invalidation inputs are checked fail closed. The
+candidate-snapshot validator now rejects cross-file snapshot drift and rejects
+any active work-package branch, PR, base, or head that disagrees with the
+canonical committed snapshot.
 
-Workflow `33454164032`, artifact `9781017648`, digest
-`sha256:1766545a1c872c112c0e46f36133541a3d44735998fad194f05aa8c6bfc11ec6`
-passed against the exact Servo lock. This remains compile compatibility only.
+## 4. Exact-head candidate evidence at the observed snapshot
 
-### D0A-02 headed host
+The unchanged `ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e` object had terminal success for all 22 permanent
+pull-request workflows, including repository/Rust, governance, transport,
+codec, custody, receipts, Servo exact-pin and headed-host, D1, D2I, D3
+reference/verifier, and D4-D9 source/policy lanes. Exact run identities are in
+`docs/evidence/generated/pr66-live-closure-checkpoint.json`.
 
-Workflow `33454164056`, artifact `9781038860`, digest
-`sha256:8f027ec3ebebfb0364ccee4f5e72de874903c2386d3c3dab5cba3166f1d4e65f`
-reported `PASS_CAUSAL_HEADED_HOST_ONLY`. It bound base/head/tested-merge/tree,
-observed the exact generation-1 content PID receive `SIGKILL`, retained trusted
-chrome, and produced a distinct generation-2 content process. Its explicit
-non-claims include `no_native_clipboard` and `no_clean_teardown`, as well as no
-AgentPort, BrowserActor, Debian/QEMU, external-effect, hardware, or release
-promotion.
+That matrix proves only the declared candidate/source/verifier ceilings. It does
+not promote D3-D9 or become exact-main evidence. The D0A-02 headed-host result
+retains the explicit non-claims `no_native_clipboard` and `no_clean_teardown`;
+neither limitation is promoted away by source, host, or candidate-image success.
+All 22 review threads were
+resolved and one independent non-author approval was present; two are required.
+This truth-refresh commit invalidates the observed matrix and approval, so the
+new head requires a complete exact-head rerun and fresh current-head review.
 
-### D1 QEMU substrate
+## 5. D0T-03 live governance status
 
-Workflow `33454164165`, artifact `9781049604`, digest
-`sha256:9609711473c622301c285468e1f3c5a66c0ac2ea2675c375f157a5d371a5577e`
-reported `PASS`. Two independent builds produced identical rootfs tar,
-rootfs manifest, ext4, kernel, initrd, and package lock. Q35/TCG booted systemd
-PID 1, udev, D-Bus, logind, and the supervised Wayland placeholder without a
-network device. The qualification-only AgentPort proved default-disabled state,
-authorized and unauthorized cases, per-connection teardown, connection-kill
-recovery, marker/socket removal, and clean poweroff. It did not start Servo or
-create a visible product window.
+A one-shot fail-closed transaction attempted to install strict protected-main
+checks, stale-review dismissal, latest-push approval, two approvals, code-owner
+review, conversation resolution, no bypass, read-only Actions defaults,
+squash-only merging, an organization review team, and a protected `production`
+environment.
 
-### D2I integrated image
+Run `33901170417` stopped before any administration API operation because the
+repository secret `TRILLIONNIUM_GITHUB_ADMIN_TOKEN` was absent or unavailable.
+The installed GitHub connection also lacks repository Administration scope.
+Artifact `9947679279`, digest
+`sha256:b97280c17a569b1cf45ba84aa251e3378c72d94163443680a6f2146f14a9d183`,
+records `ADMIN_TOKEN_MISSING` and an empty operation list. No partial setting
+change is claimed.
 
-Workflow `33454164136`, artifact `9781160555`, digest
-`sha256:b840c33e30fcbb1bf267967a88af17c6681daa0fdd89111593900ca0b60274b2`
-reported `PASS_CANDIDATE_REQUIRES_REVIEW_AND_EXACT_MAIN`. It rebuilt the D1
-substrate, built the exact Servo runtime, prepared the integrated image twice
-with byte equality, and booted Q35/TCG without a network device. The guest
-reached the local Servo fixture, verified page input and basic IME, retained
-trusted chrome after an externally selected generation-1 content PID received
-`SIGKILL`, and created a distinct generation-2 replacement.
+## 6. D3 source state and executable blocker
 
-The strict field `actual_content_process_crash_currently_proven` remains false
-because no Servo pipeline-panic callback was observed. Product AgentPort,
-external effects, hardware, Secure Boot, and release remain false.
+The candidate contains typed PageOwner/BrowserActor source, TaskFlow principal
+binding, bounded queues, revision/stale-target checks, cancellation/deadline
+paths, a durable receipt observer, a local-fixture runtime, and explicit
+development-profile AgentPort wiring. The cross-UID `/proc/<pid>/exe` source
+blocker is closed without `CAP_SYS_PTRACE`: the compiled, root-owned,
+non-symlink `/usr/libexec/hepta-agent` path is opened and hashed while live
+PID/UID/GID, pidfd liveness, start time, cgroup, and systemd-unit checks remain.
 
-All artifacts above are PR synthetic-merge evidence with
-`promotion_authoritative: false`. A truth-refresh or source commit changes the
-exact head and requires a new exact-head run.
+Live activation remains fail closed because the pinned Servo integration does
+not yet expose a reviewed Servo-owned retained-node semantic-action forwarding
+boundary, the exact integrated image has not executed the complete principal,
+attestation, dispatch, receipt, cancellation, deadline, crash, recovery,
+stale-reference, and indeterminate-outcome corpus, and independent security
+review has not promoted that authority.
 
-## 5. D3 source state and remaining executable blocker
+## 7. Later-stage source versus product evidence
 
-The candidate contains the typed PageOwner/BrowserActor core, TaskFlow principal
-binding, bounded queues, revision and stale-target checks, cancellation/deadline
-paths, durable receipt observer, local-fixture runtime, and an explicitly
-selected development-profile AgentPort binary.
+D4-D9 source/reference workflows implement bounded policy and verification
+surfaces, but they do not close their product gates:
 
-The cross-UID `/proc/<pid>/exe` source blocker is closed without granting
-`CAP_SYS_PTRACE`. The explicit development graph uses the reviewed
-`development-static-attestation` path: it opens and hashes the compiled,
-root-owned, non-symlink `/usr/libexec/hepta-agent` path while retaining live
-PID/UID/GID, pidfd liveness, start time, cgroup, and systemd-unit checks. The
-same trusted path is reopened and re-hashed before BrowserActor dispatch, so a
-static admission cannot silently fall back to the forbidden cross-UID procfs
-executable read.
-
-Machine truth records:
-
-```text
-development_live_activation_status: SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE
-development_static_attestation_available: true
-development_static_attestation_scope: explicit_development_profile_only
-development_cross_uid_procfs_required: false
-```
-
-Live development activation nevertheless remains fail closed. The exact D2I
-image has not yet executed the complete D3 principal, attestation, dispatch,
-receipt, cancellation, deadline, crash, recovery, and indeterminate-outcome
-corpus, and independent security review has not promoted that authority.
-
-D3 closure therefore requires:
-
-1. independent security review of the static trusted-path plus live process
-   binding;
-2. a Servo-owned atomic semantic resolver for `page_act`;
-3. the full D3 corpus inside the exact promoted integrated image.
-
-## 6. Later-stage source versus product evidence
-
-D4-D9 source/reference workflows pass their bounded contracts and deliberately
-retain negative promotion results. They do not close their product gates:
-
-- D4 still depends on a promoted D3 same-PageOwner runtime corpus;
-- D5 needs signed-app runtime integration and persistent storage/service-worker
-  enforcement;
-- D6 needs installed network namespace, resolver, proxy, redirect, connected
-  peer-IP, portal, and bypass controls;
-- D7 needs a real persistent effect executor, boot/update slots, rollback
-  counter, recovery media, and power-loss evidence;
-- D8 needs independent fixed-BOM hardware, 24/72-hour stability, and repeated
-  power-loss evidence;
-- D9 needs protected release governance, offline HSM custody, independent
+- D4 requires a promoted D3 same-PageOwner native interaction corpus;
+- D5 requires installed signed-app, origin/storage/service-worker, revocation,
+  and publisher enforcement;
+- D6 requires installed namespace, resolver, proxy, redirect, peer-IP, portal,
+  and bypass controls;
+- D7 requires a real persistent effect executor, update slots, rollback state,
+  recovery media, and power-loss qualification;
+- D8 requires independent fixed-BOM 24/72-hour and repeated physical power-loss
+  evidence;
+- D9 requires protected release governance, offline HSM custody, separated
   signers/attestors/promoter, signed immutable artifacts, anti-rollback, and
   controlled publication.
 
-## 7. Historical provenance
+## 8. Historical provenance
 
 PR #27 remains historical headed-host provenance. PR #23, PR #29, and PR #32
-are historical D1 attempts. PR #33 and PR #35 are superseded candidate
-surfaces. PR #59 is superseded because its head and review identity were
-unstable and it contained workflows capable of writing future source objects.
-None substitutes for final PR #60 exact-head, independent-review, merge, and
+are historical D1 attempts. PR #33, PR #35, and unstable PR #59 are superseded
+candidate surfaces. PRs #60-#64 are the immediate cumulative implementation and
+review lineage that converged into PR #66. None substitutes for final PR #66
+exact-head evidence, two independent current-head approvals, governed merge, or
 exact-main evidence.
 
-## 8. Promotion sequence
+## 9. Promotion sequence
 
-1. Pass every workflow on one final exact PR #60 head.
-2. Freeze that head and publish its exact source/base/tree/tested-merge and
-   artifact identities in the PR record.
-3. Configure protected-main/ruleset/CODEOWNERS/environment controls and capture
-   reviewed settings evidence.
-4. Obtain latest-push independent non-author approval; no self-approval,
-   self-merge, or administrator bypass.
-5. Merge only after all required checks pass, then rerun exact main and update
-   integrated machine truth.
-6. Run and independently review the exact-image D3 corpus and Servo semantic
-   resolver.
-7. Continue D4 through D9 strictly in prerequisite order.
+1. Re-run every permanent workflow on one final exact PR #66 head.
+2. Freeze and publish its source/base/tree/prospective-merge and artifact
+   identities.
+3. Apply and independently read back protected-main, required-check, team
+   CODEOWNERS, no-bypass, Actions-permission, and protected-environment controls.
+4. Complete bounded positive and negative governance probes.
+5. Obtain two latest-head independent non-author approvals; do not self-approve,
+   self-merge, auto-merge, or use administrator bypass.
+6. Merge normally, rerun exact `refs/heads/main`, and only then promote machine
+   truth.
+7. Execute and independently review the real Servo-owned D3 exact-image corpus.
+8. Continue D4 through D9 strictly in prerequisite and evidence-tier order.

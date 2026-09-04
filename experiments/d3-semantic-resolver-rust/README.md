@@ -1,16 +1,16 @@
-# servo-embedder-probe
+# d3-semantic-resolver-experiment
 
-**Component registry ID:** `servo-embedder-probe`
-**Component path:** `experiments/servo-embedder-probe`
-**Owner class:** `servo-integration`
+**Component registry ID:** `d3-semantic-resolver-experiment`
+**Component path:** `experiments/d3-semantic-resolver-rust`
+**Owner class:** `browser-actor-security`
 **Plan revision:** `2026-08-29-d6`
 **Registry:** `manifests/components.v1.json`
 
 ## Status and claim ceiling
 
-Current status: `exact_pin_compile_probe`.
+Current status: `deterministic_reference_not_servo_adapter`.
 
-**Claim ceiling:** compile compatibility against the pinned Servo public API only; no execution, visible frame, input delivery, recovery, image, or release claim.
+**Claim ceiling:** mutex-protected local-fixture semantic resolution reference only; no Servo retained-node forwarding, product BrowserActor authority, or exact-image promotion.
 
 This component is interpreted under the repository's evidence-tier and
 invalidation rules. Source completeness and passing local tests establish only
@@ -20,10 +20,10 @@ applicable gate records independently bound evidence.
 
 ## Responsibilities
 
-- Compile a minimal external embedder against the exact pinned Servo checkout.
-- Detect API drift in builder, event-loop, WebView, input, screenshot, popup, crash, and accessibility surfaces.
-- Bind qualification output to Servo commit, lockfile, toolchain, probe source, and workflow identity.
-- Provide an early compatibility sentinel before expensive headed/image qualification.
+- Model the D3 semantic target table and atomic resolve-and-act behavior in isolated Rust.
+- Exercise role, accessible name, visibility, structure, uniqueness, principal, and revision constraints.
+- Provide deterministic fixtures for verifier and BrowserActor integration design.
+- Demonstrate stale-reference and ambiguity rejection without granting engine authority.
 
 The component must keep these responsibilities explicit enough that reviewers
 can identify the exact authority boundary, inputs, outputs, failure modes, and
@@ -31,16 +31,16 @@ evidence producer without inferring behavior from filenames alone.
 
 ## Non-responsibilities
 
-- The executable is not run by D0A-01 and therefore proves no pixels, input, IME, process topology, or recovery.
-- It does not establish trusted chrome composition or navigation policy.
-- It does not make a Servo API production-supported or independently reviewed.
+- It does not receive Servo accessibility/tree updates or retain real engine node handles.
+- It does not forward pointer, keyboard, navigation, or form actions into a live WebView.
+- It does not prove D3 exact-image process, dispatch, receipt, cancellation, or crash behavior.
 
 These exclusions are normative. A downstream caller, workflow, fixture, or
 document may not widen the component by relabeling a lower-tier result.
 
 ## Dependency and call direction
 
-The workflow fetches the exact Servo input, verifies lock and patch identities, copies this source into Servo as a reviewed example target, and builds with Servo’s own toolchain and lockfile. Build metadata is packaged into a bounded evidence envelope; no runtime path is invoked.
+A test caller supplies a principal-bound semantic request to a local table. The experiment locks the table, identifies the only eligible node under the expected document/frame revision, validates the requested action, applies the bounded state transition, and returns a deterministic result. No network, socket, browser, or external effect is involved.
 
 The allowed direction is from higher-level trusted policy into this bounded
 mechanism and back through typed results. Reverse dependencies that let a lower
@@ -52,16 +52,18 @@ new reviewed contract explicitly introduces that authority.
 
 Registered entrypoints:
 
-- `experiments/servo-embedder-probe/src/main.rs`
+- `experiments/d3-semantic-resolver-rust/Cargo.toml`
+- `experiments/d3-semantic-resolver-rust/src/lib.rs`
 
 Architecture references:
 
-- `docs/architecture/SERVO_EMBEDDER_COMPATIBILITY.md`
-- `docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md`
+- `docs/architecture/ATOMIC_SEMANTIC_RESOLVER.md`
+- `docs/architecture/D3_INTEGRATED_RUNTIME_QUALIFICATION.md`
 
 Contract references:
 
-- `contracts/workspace-composition.v1.json`
+- `contracts/semantic-resolver.v1.json`
+- `contracts/browser-actor.v1.json`
 
 Only registered entrypoints and versioned contracts are reviewable public
 surfaces. An unregistered executable, workflow, package path, service unit, or
@@ -79,7 +81,7 @@ production.
 
 ## State, concurrency, and failure semantics
 
-The probe has no persistent runtime state. Its meaningful state is the immutable input tuple and compiler result. A change to the Servo pin, patch ledger, Rust channel, Cargo lock, probe source, workflow, or evidence tool invalidates the prior compile packet.
+The reference table is protected by a single synchronization boundary so resolve and act cannot observe different generations. Revisions and node identity are explicit. Poison, ambiguity, stale revision, missing target, or unsupported action returns a terminal error and does not apply a partial mutation.
 
 Partial completion is never upgraded to success. Timeout, cancellation,
 infrastructure failure, product failure, stale evidence, and indeterminate
@@ -89,9 +91,9 @@ failure packet.
 
 ## Security invariants
 
-- Servo source, Cargo lock, and Rust toolchain identities are exact inputs
-- the compile probe is never reclassified as headed or product evidence
-- mutable upstream refs and local patch drift fail closed
+- selection, validation, and action occur under one caller-bound atomic operation
+- ambiguous, invisible, stale, or multiply matched targets fail closed
+- the experiment never advertises itself as a Servo-owned adapter
 
 In addition, repository-relative paths must be canonical and read without
 following symlinks where they influence authority or evidence. Structured data
@@ -103,12 +105,11 @@ specific bounded fields.
 
 Registered tests:
 
-- `tests/test_servo_exact_pin_identity.py`
-- `tests/test_servo_exact_pin_workflow.py`
+- `tests/d3/test_semantic_resolver_reference.py`
 
 Registered workflows:
 
-- `.github/workflows/servo-exact-pin.yml`
+- `.github/workflows/d3-semantic-resolver-reference.yml`
 
 Tests must include positive behavior and hostile boundary cases. Evidence must
 record exact source/base/tree or image/input identities, workflow and artifact
@@ -118,7 +119,7 @@ producer generated authentic higher-tier evidence.
 
 ## Operations and troubleshooting
 
-Diagnose failures by comparing the pinned Servo commit and compiler diagnostics rather than loosening API expectations. Keep patches in the reviewed patch ledger. Never switch to a branch/tag or bypass Servo’s lockfile to make the probe green.
+Run the dedicated Python/Rust reference corpus and inspect rejected-case coverage. A passing reference workflow means the algorithm and contract agree; it does not mean Servo exposes the necessary retained-node API. Any attempt to use this crate in production must first introduce an explicit reviewed engine adapter and exact-image evidence.
 
 Operational diagnosis starts from the first failed invariant and the exact
 input object. Do not make a gate green by broadening permissions, accepting
@@ -127,7 +128,7 @@ disabling negative cases, or rewriting expected evidence after the fact.
 
 ## Compatibility and change protocol
 
-Every selected Servo API must be justified in the compatibility architecture document and covered by exact-pin tests. Removing a surface requires updating the requirements manifest and downstream runtime plan. Adding a surface is a source compatibility change, not proof that the headed product uses it correctly.
+Changes to matching semantics, target uniqueness, revision comparison, action taxonomy, or locking require synchronized contract, architecture, tests, workflow, and claim-ceiling updates. The boundary must remain isolated until a pinned Servo API supplies atomic retained-node action forwarding.
 
 Every change must also update `manifests/components.v1.json` when paths,
 entrypoints, ownership, references, status, security invariants, or claim

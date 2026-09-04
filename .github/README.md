@@ -1,16 +1,16 @@
-# servo-embedder-probe
+# repository-automation
 
-**Component registry ID:** `servo-embedder-probe`
-**Component path:** `experiments/servo-embedder-probe`
-**Owner class:** `servo-integration`
+**Component registry ID:** `repository-automation`
+**Component path:** `.github`
+**Owner class:** `repository-governance`
 **Plan revision:** `2026-08-29-d6`
 **Registry:** `manifests/components.v1.json`
 
 ## Status and claim ceiling
 
-Current status: `exact_pin_compile_probe`.
+Current status: `source_policy_active_live_governance_external`.
 
-**Claim ceiling:** compile compatibility against the pinned Servo public API only; no execution, visible frame, input delivery, recovery, image, or release claim.
+**Claim ceiling:** immutable CI orchestration and source-policy verification only; no human approval, repository administration, production signing, or release authority.
 
 This component is interpreted under the repository's evidence-tier and
 invalidation rules. Source completeness and passing local tests establish only
@@ -20,10 +20,10 @@ applicable gate records independently bound evidence.
 
 ## Responsibilities
 
-- Compile a minimal external embedder against the exact pinned Servo checkout.
-- Detect API drift in builder, event-loop, WebView, input, screenshot, popup, crash, and accessibility surfaces.
-- Bind qualification output to Servo commit, lockfile, toolchain, probe source, and workflow identity.
-- Provide an early compatibility sentinel before expensive headed/image qualification.
+- Run repository, Python, Rust, Servo, image, governance, and late-stage source gates against an exact Git object.
+- Record bounded evidence identities while preserving each workflow claim ceiling.
+- Keep concurrency, timeouts, action pins, checkout credential handling, and workflow inventory reviewable.
+- Route security-sensitive paths through CODEOWNERS and the D0T-03 source contract.
 
 The component must keep these responsibilities explicit enough that reviewers
 can identify the exact authority boundary, inputs, outputs, failure modes, and
@@ -31,16 +31,16 @@ evidence producer without inferring behavior from filenames alone.
 
 ## Non-responsibilities
 
-- The executable is not run by D0A-01 and therefore proves no pixels, input, IME, process topology, or recovery.
-- It does not establish trusted chrome composition or navigation policy.
-- It does not make a Servo API production-supported or independently reviewed.
+- It cannot create an independent human approval or count an author/bot review as independent.
+- It cannot configure branch protection, organization teams, rulesets, environments, or secrets without separately granted Administration authority.
+- It cannot manufacture physical hardware, elapsed endurance time, HSM custody, or production signatures.
 
 These exclusions are normative. A downstream caller, workflow, fixture, or
 document may not widen the component by relabeling a lower-tier result.
 
 ## Dependency and call direction
 
-The workflow fetches the exact Servo input, verifies lock and patch identities, copies this source into Servo as a reviewed example target, and builds with Servo’s own toolchain and lockfile. Build metadata is packaged into a bounded evidence envelope; no runtime path is invoked.
+A GitHub push or pull-request event selects one immutable commit. Checkout runs with persisted credentials disabled, then each workflow invokes fixed local entrypoints and pinned third-party actions. Results flow outward as check runs and immutable artifacts; no workflow is permitted to write a replacement source head or silently widen a gate.
 
 The allowed direction is from higher-level trusted policy into this bounded
 mechanism and back through typed results. Reverse dependencies that let a lower
@@ -52,16 +52,18 @@ new reviewed contract explicitly introduces that authority.
 
 Registered entrypoints:
 
-- `experiments/servo-embedder-probe/src/main.rs`
+- `.github/CODEOWNERS`
+- `.github/workflows/ci.yml`
+- `.github/workflows/governance-integrity.yml`
 
 Architecture references:
 
-- `docs/architecture/SERVO_EMBEDDER_COMPATIBILITY.md`
-- `docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md`
+- `docs/security/D0T03_REPOSITORY_GOVERNANCE.md`
+- `docs/plan/GATE_CONTRACTS_AND_INVALIDATION.md`
 
 Contract references:
 
-- `contracts/workspace-composition.v1.json`
+- `contracts/repository-governance.v1.json`
 
 Only registered entrypoints and versioned contracts are reviewable public
 surfaces. An unregistered executable, workflow, package path, service unit, or
@@ -79,7 +81,7 @@ production.
 
 ## State, concurrency, and failure semantics
 
-The probe has no persistent runtime state. Its meaningful state is the immutable input tuple and compiler result. A change to the Servo pin, patch ledger, Rust channel, Cargo lock, probe source, workflow, or evidence tool invalidates the prior compile packet.
+Workflow state is external GitHub Actions state plus immutable artifacts. Jobs are bounded by explicit timeouts and concurrency groups. Cancellation, runner unavailability, and infrastructure failure are distinct from product failure. A cancelled or skipped job is never normalized to success, and a later source/base movement invalidates the earlier packet.
 
 Partial completion is never upgraded to success. Timeout, cancellation,
 infrastructure failure, product failure, stale evidence, and indeterminate
@@ -89,9 +91,9 @@ failure packet.
 
 ## Security invariants
 
-- Servo source, Cargo lock, and Rust toolchain identities are exact inputs
-- the compile probe is never reclassified as headed or product evidence
-- mutable upstream refs and local patch drift fail closed
+- all external actions are pinned to reviewed 40-hex commits
+- pull-request workflows are read-only and cannot approve or merge pull requests
+- candidate evidence never substitutes for independent review or exact-main evidence
 
 In addition, repository-relative paths must be canonical and read without
 following symlinks where they influence authority or evidence. Structured data
@@ -103,12 +105,14 @@ specific bounded fields.
 
 Registered tests:
 
-- `tests/test_servo_exact_pin_identity.py`
-- `tests/test_servo_exact_pin_workflow.py`
+- `tests/test_validate_governance_integrity.py`
+- `tests/test_d0t03_source.py`
 
 Registered workflows:
 
-- `.github/workflows/servo-exact-pin.yml`
+- `.github/workflows/ci.yml`
+- `.github/workflows/governance-integrity.yml`
+- `.github/workflows/d0t03-source-contract.yml`
 
 Tests must include positive behavior and hostile boundary cases. Evidence must
 record exact source/base/tree or image/input identities, workflow and artifact
@@ -118,7 +122,7 @@ producer generated authentic higher-tier evidence.
 
 ## Operations and troubleshooting
 
-Diagnose failures by comparing the pinned Servo commit and compiler diagnostics rather than loosening API expectations. Keep patches in the reviewed patch ledger. Never switch to a branch/tag or bypass Servo’s lockfile to make the probe green.
+Operators inspect the exact run, job, head SHA, tree SHA, artifact digest, and claim ceiling. A queued self-hosted job is availability information only. Administration failures must be captured before retrying; credentials are never printed. Temporary diagnostic workflows belong on isolated branches and must not become a second convergence surface.
 
 Operational diagnosis starts from the first failed invariant and the exact
 input object. Do not make a gate green by broadening permissions, accepting
@@ -127,7 +131,7 @@ disabling negative cases, or rewriting expected evidence after the fact.
 
 ## Compatibility and change protocol
 
-Every selected Servo API must be justified in the compatibility architecture document and covered by exact-pin tests. Removing a surface requires updating the requirements manifest and downstream runtime plan. Adding a surface is a source compatibility change, not proof that the headed product uses it correctly.
+Adding or renaming a workflow requires updates to the governance contract, repository-governance manifest, action-pin manifest, gate invalidation paths, tests, this component registry, and this document. Any permission increase, pull_request_target use, source-writing step, mutable action ref, or dynamic shell execution is a security-boundary change requiring independent review.
 
 Every change must also update `manifests/components.v1.json` when paths,
 entrypoints, ownership, references, status, security invariants, or claim

@@ -9,12 +9,12 @@
     "promotion_requires_exact_head_and_exact_main_evidence": true
   },
   "candidate_state_snapshot": {
-    "observed_at": "2026-09-01T00:26:03Z",
-    "observed_main_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
-    "observed_candidate_pr": 60,
+    "observed_at": "2026-09-04T17:45:12Z",
+    "observed_main_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
+    "observed_candidate_pr": 66,
     "observed_candidate_branch": "codex/d6-gap-closure-v1",
-    "observed_candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
-    "observed_candidate_tree_sha": "e3fae0714a12b2876a07e8d332d82bb51907b750",
+    "observed_candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+    "observed_candidate_tree_sha": "f5e5cc16dcd6c088dcef6ed6c3793bd7808b4aa8",
     "source": "github_api_committed_snapshot_before_truth_refresh",
     "live_pr_or_ci_state_must_be_read_from_github": true
   },
@@ -68,7 +68,7 @@
   "development_static_attestation_scope": "explicit_development_profile_only",
   "development_service_user": "hepta-browserd",
   "development_expected_peer_user": "hepta-agent",
-  "development_blocker": "exact integrated-image principal/dispatch/receipt evidence and independent security review remain required before live activation",
+  "development_blocker": "Servo-owned retained-node semantic action forwarding, exact integrated-image principal/dispatch/receipt evidence, and independent security review remain required before live activation",
   "profiles": {
     "development": {
       "agent_port": "explicit_profile_only",
@@ -114,7 +114,7 @@
       "id": "D0A-02",
       "pr": 27,
       "status": "MERGED_HISTORICAL",
-      "superseded_by_pr": 60
+      "superseded_by_pr": 66
     },
     {
       "branch": "codex/d0a02-proof-soundness-v4",
@@ -123,7 +123,7 @@
       "id": "D0A-02",
       "pr": 33,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 60
+      "superseded_by_pr": 66
     },
     {
       "branch": "codex/d1-01-current-main-v2",
@@ -132,7 +132,7 @@
       "id": "D1-01",
       "pr": 32,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 60
+      "superseded_by_pr": 66
     },
     {
       "branch": "codex/d2i-current-main-v1",
@@ -141,7 +141,7 @@
       "id": "D2I-01",
       "pr": 35,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 60
+      "superseded_by_pr": 66
     },
     {
       "branch": "codex/d4-d9-gap-closure-v1",
@@ -150,7 +150,7 @@
       "id": "D4-D9",
       "pr": 59,
       "status": "SUPERSEDED_UNSTABLE_REVIEW_SURFACE",
-      "superseded_by_pr": 60
+      "superseded_by_pr": 66
     },
     {
       "branch": "codex/d1-01-d6-replay-v1",
@@ -159,7 +159,7 @@
       "id": "D1-01",
       "pr": 29,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 60
+      "superseded_by_pr": 66
     },
     {
       "branch": "codex/d1-01-reproducible-qemu-substrate",
@@ -168,108 +168,108 @@
       "id": "D1-01",
       "pr": 23,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 60
+      "superseded_by_pr": 66
     }
   ],
   "schema": "trillionnium.desktop.project-state.v1",
   "source_candidate_work_packages": [
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "source_contract_only_repository_settings_and_independent_review_required",
       "id": "D0T-03",
-      "pr": 60,
+      "pr": 66,
       "status": "REPOSITORY_SETTING_REQUIRED"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "headed_host_local_fixture_only_no_native_clipboard_no_clean_teardown_no_integrated_main",
       "id": "D0A-02",
-      "pr": 60,
+      "pr": 66,
       "status": "MODULE_CLOSED_CANDIDATE"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "qemu_image_candidate_only_no_servo_promotion_no_hardware_no_release",
       "id": "D1-01",
-      "pr": 60,
+      "pr": 66,
       "status": "MODULE_CLOSED_CANDIDATE"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "integrated_qemu_local_fixture_candidate_only_no_hardware_no_release",
       "id": "D2I-01",
-      "pr": 60,
+      "pr": 66,
       "status": "MODULE_CLOSED_CANDIDATE"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
-      "claim_ceiling": "source_wiring_only_cross_uid_attestation_and_integrated_corpus_required",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "claim_ceiling": "source_wiring_only_servo_retained_node_adapter_exact_integrated_corpus_and_independent_review_required",
       "id": "D3-01",
-      "pr": 60,
+      "pr": 66,
       "status": "BLOCKED_UPSTREAM"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "source_reference_only_prerequisite_gate_open_no_promotion",
       "id": "D4-01",
-      "pr": 60,
+      "pr": 66,
       "status": "BLOCKED_UPSTREAM"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "source_reference_only_prerequisite_gate_open_no_promotion",
       "id": "D5-01",
-      "pr": 60,
+      "pr": 66,
       "status": "BLOCKED_UPSTREAM"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "source_reference_only_prerequisite_gate_open_no_promotion",
       "id": "D6-01",
-      "pr": 60,
+      "pr": 66,
       "status": "BLOCKED_UPSTREAM"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "source_reference_only_prerequisite_gate_open_no_promotion",
       "id": "D7-01",
-      "pr": 60,
+      "pr": 66,
       "status": "BLOCKED_UPSTREAM"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "source_verifier_only_fixed_hardware_lab_evidence_required",
       "id": "D8-01",
-      "pr": 60,
+      "pr": 66,
       "status": "BLOCKED_UPSTREAM"
     },
     {
-      "base_sha": "78888fac3bee7974138ab1c5e4807511bee7fcbb",
+      "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
       "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "e87c63f257c9f660bc0fc104633efb39bcaca320",
+      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
       "claim_ceiling": "source_verifier_only_independent_hsm_release_ceremony_required",
       "id": "D9-01",
-      "pr": 60,
+      "pr": 66,
       "status": "BLOCKED_UPSTREAM"
     }
   ],
