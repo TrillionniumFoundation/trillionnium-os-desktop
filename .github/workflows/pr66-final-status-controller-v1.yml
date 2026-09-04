@@ -1,0 +1,402 @@
+name: pr66-final-status-controller-v1
+
+on:
+  push:
+    branches:
+      - codex/pr66-final-status-controller-v1
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: pr66-final-status-controller-v1
+  cancel-in-progress: false
+
+jobs:
+  attest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: TrillionniumFoundation/trillionnium-os-desktop
+      PR_NUMBER: "66"
+      EXPECTED_HEAD: 1e9ec3ce5746db0bafe5faf51fbcc0434b6dbca5
+      EXPECTED_BASE: main
+      SOURCE_AUTHOR: ProfHepta
+      PR_AUTHOR: Franksudoman
+      REQUESTED_REVIEWER: Tomasrgbsf
+    steps:
+      - name: Query, attest, comment, and request review
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/pr66-final-status-v1
+          mkdir -p /tmp/pr66-final-status-v1
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import datetime as dt
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+          from typing import Any
+
+          token = os.environ['GH_TOKEN']
+          repo = os.environ['REPOSITORY']
+          owner, name = repo.split('/', 1)
+          pr_number = int(os.environ['PR_NUMBER'])
+          expected_head = os.environ['EXPECTED_HEAD']
+          expected_base = os.environ['EXPECTED_BASE']
+          excluded_reviewers = {
+              os.environ['SOURCE_AUTHOR'].casefold(),
+              os.environ['PR_AUTHOR'].casefold(),
+          }
+          requested_reviewer = os.environ['REQUESTED_REVIEWER']
+          output = Path('/tmp/pr66-final-status-v1')
+          marker = '<!-- pr66-final-status-controller-v1 -->'
+          api = 'https://api.github.com'
+
+          expected_workflows = [
+              'desktop-ci',
+              'servo-exact-pin',
+              'servo-headed-runtime',
+              'd0t03-source-contract',
+              'd7-recovery-update',
+              'agent-transport-reference',
+              'd8-hardware-qualification',
+              'd5-trusted-app',
+              'agent-port-path-custody',
+              'd4-collaboration',
+              'd3-integrated-runtime-evidence-verifier',
+              'd3-semantic-resolver-reference',
+              'browser-codec-reference-and-rust-gate',
+              'd6-capability-egress',
+              'governance-integrity',
+              'd8-hardware-promotion-policy',
+              'agent-port-custody',
+              'receipt-journal',
+              'd9-release-promotion',
+              'd4-d9-source-suite',
+              'd2i-integrated-image',
+              'd1-final-qualification',
+          ]
+
+          operations: list[dict[str, Any]] = []
+
+          def request(
+              method: str,
+              path: str,
+              payload: Any | None = None,
+              *,
+              expected: tuple[int, ...] = (200,),
+              optional: bool = False,
+          ) -> tuple[int, Any]:
+              url = api + '/' + path.lstrip('/')
+              data = None if payload is None else json.dumps(payload).encode('utf-8')
+              headers = {
+                  'Authorization': f'Bearer {token}',
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+                  'User-Agent': 'trillionnium-pr66-final-status-v1',
+              }
+              if data is not None:
+                  headers['Content-Type'] = 'application/json'
+              req = urllib.request.Request(url, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req, timeout=45) as response:
+                      status = response.status
+                      raw = response.read()
+              except urllib.error.HTTPError as exc:
+                  status = exc.code
+                  raw = exc.read()
+              body: Any
+              text = raw.decode('utf-8', errors='replace')
+              try:
+                  body = json.loads(text) if text else None
+              except json.JSONDecodeError:
+                  body = {'unparsed_tail': text[-1000:]}
+              operations.append({'method': method, 'path': path, 'status': status})
+              if status not in expected and not optional:
+                  raise RuntimeError(f'{method} {path}: HTTP {status}: {body}')
+              return status, body
+
+          def graphql(query: str, variables: dict[str, Any]) -> Any:
+              url = 'https://api.github.com/graphql'
+              data = json.dumps({'query': query, 'variables': variables}).encode('utf-8')
+              req = urllib.request.Request(
+                  url,
+                  data=data,
+                  headers={
+                      'Authorization': f'Bearer {token}',
+                      'Content-Type': 'application/json',
+                      'User-Agent': 'trillionnium-pr66-final-status-v1',
+                  },
+                  method='POST',
+              )
+              with urllib.request.urlopen(req, timeout=45) as response:
+                  body = json.loads(response.read().decode('utf-8'))
+              operations.append({'method': 'POST', 'path': 'graphql/reviewThreads', 'status': 200})
+              if body.get('errors'):
+                  raise RuntimeError(f'GraphQL errors: {body["errors"]}')
+              return body['data']
+
+          _, pr = request('GET', f'repos/{repo}/pulls/{pr_number}')
+          observed_head = pr.get('head', {}).get('sha')
+          observed_base = pr.get('base', {}).get('ref')
+          if pr.get('state') != 'open':
+              raise RuntimeError('PR #66 is not open')
+          if observed_head != expected_head:
+              raise RuntimeError(
+                  f'PR #66 head changed: expected {expected_head}, observed {observed_head}'
+              )
+          if observed_base != expected_base:
+              raise RuntimeError(
+                  f'PR #66 base changed: expected {expected_base}, observed {observed_base}'
+              )
+
+          encoded_head = urllib.parse.quote(expected_head, safe='')
+          _, run_page = request(
+              'GET',
+              f'repos/{repo}/actions/runs?head_sha={encoded_head}&per_page=100',
+          )
+          runs = run_page.get('workflow_runs', []) if isinstance(run_page, dict) else []
+          selected: dict[str, dict[str, Any]] = {}
+          for run in runs:
+              workflow = run.get('name')
+              if workflow not in expected_workflows:
+                  continue
+              previous = selected.get(workflow)
+              if previous is None or int(run.get('id', 0)) > int(previous.get('id', 0)):
+                  selected[workflow] = run
+
+          workflow_rows: list[dict[str, Any]] = []
+          for workflow in expected_workflows:
+              run = selected.get(workflow)
+              workflow_rows.append({
+                  'workflow': workflow,
+                  'run_id': run.get('id') if run else None,
+                  'status': run.get('status') if run else 'missing',
+                  'conclusion': run.get('conclusion') if run else None,
+                  'url': run.get('html_url') if run else None,
+              })
+          workflows_all_success = all(
+              row['status'] == 'completed' and row['conclusion'] == 'success'
+              for row in workflow_rows
+          )
+
+          _, reviews = request(
+              'GET',
+              f'repos/{repo}/pulls/{pr_number}/reviews?per_page=100',
+          )
+          latest_decision: dict[str, dict[str, Any]] = {}
+          for review in reviews if isinstance(reviews, list) else []:
+              login = str(review.get('user', {}).get('login', ''))
+              if not login:
+                  continue
+              previous = latest_decision.get(login.casefold())
+              if previous is None or int(review.get('id', 0)) > int(previous.get('id', 0)):
+                  latest_decision[login.casefold()] = review
+          independent_approvers = sorted(
+              review.get('user', {}).get('login')
+              for login, review in latest_decision.items()
+              if login not in excluded_reviewers
+              and not login.endswith('[bot]')
+              and review.get('state') == 'APPROVED'
+              and review.get('commit_id') == expected_head
+          )
+
+          thread_data = graphql(
+              '''
+              query($owner: String!, $name: String!, $number: Int!) {
+                repository(owner: $owner, name: $name) {
+                  pullRequest(number: $number) {
+                    reviewThreads(first: 100) {
+                      totalCount
+                      nodes { isResolved }
+                    }
+                  }
+                }
+              }
+              ''',
+              {'owner': owner, 'name': name, 'number': pr_number},
+          )
+          threads = thread_data['repository']['pullRequest']['reviewThreads']
+          unresolved_threads = sum(
+              node.get('isResolved') is not True for node in threads.get('nodes', [])
+          )
+
+          main_status, main = request('GET', f'repos/{repo}/branches/main')
+          protection_status, protection = request(
+              'GET', f'repos/{repo}/branches/main/protection',
+              expected=(200,), optional=True,
+          )
+          rulesets_status, rulesets = request(
+              'GET', f'repos/{repo}/rulesets?per_page=100',
+              expected=(200,), optional=True,
+          )
+          actions_status, actions_permissions = request(
+              'GET', f'repos/{repo}/actions/permissions/workflow',
+              expected=(200,), optional=True,
+          )
+          environment_status, environment = request(
+              'GET', f'repos/{repo}/environments/production',
+              expected=(200,), optional=True,
+          )
+
+          protected_main = bool(main.get('protected')) and protection_status == 200
+          ruleset_count = len(rulesets) if rulesets_status == 200 and isinstance(rulesets, list) else 0
+          production_environment_present = environment_status == 200
+          actions_read_only = bool(
+              actions_status == 200
+              and isinstance(actions_permissions, dict)
+              and actions_permissions.get('default_workflow_permissions') == 'read'
+              and actions_permissions.get('can_approve_pull_request_reviews') is False
+          )
+
+          request_status, request_body = request(
+              'POST',
+              f'repos/{repo}/pulls/{pr_number}/requested_reviewers',
+              {'reviewers': [requested_reviewer]},
+              expected=(201,),
+              optional=True,
+          )
+
+          report = {
+              'schema': 'trillionnium.desktop.pr66-final-status.v1',
+              'generated_at': dt.datetime.now(dt.timezone.utc).isoformat(),
+              'repository': repo,
+              'pull_request': pr_number,
+              'head_sha': expected_head,
+              'base_ref': expected_base,
+              'draft': pr.get('draft'),
+              'mergeable': pr.get('mergeable'),
+              'mergeable_state': pr.get('mergeable_state'),
+              'workflow_summary': {
+                  'expected': len(expected_workflows),
+                  'present': sum(row['run_id'] is not None for row in workflow_rows),
+                  'successful': sum(row['conclusion'] == 'success' for row in workflow_rows),
+                  'failed': sum(row['conclusion'] == 'failure' for row in workflow_rows),
+                  'cancelled': sum(row['conclusion'] == 'cancelled' for row in workflow_rows),
+                  'non_terminal': sum(row['status'] not in {'completed', 'missing'} for row in workflow_rows),
+                  'all_success': workflows_all_success,
+              },
+              'workflows': workflow_rows,
+              'review': {
+                  'independent_current_head_approvers': independent_approvers,
+                  'independent_current_head_approval_count': len(independent_approvers),
+                  'required_count': 2,
+                  'review_thread_total': threads.get('totalCount'),
+                  'unresolved_review_threads': unresolved_threads,
+                  'review_request_status': request_status,
+              },
+              'governance': {
+                  'main_sha': main.get('commit', {}).get('sha'),
+                  'main_protected': protected_main,
+                  'branch_protection_http_status': protection_status,
+                  'repository_ruleset_count': ruleset_count,
+                  'actions_read_only': actions_read_only,
+                  'production_environment_present': production_environment_present,
+              },
+              'claim_ceiling': {
+                  'exact_head_workflow_matrix_complete': workflows_all_success,
+                  'independent_review_complete': len(independent_approvers) >= 2,
+                  'review_threads_resolved': unresolved_threads == 0,
+                  'live_governance_complete': all([
+                      protected_main,
+                      ruleset_count >= 1,
+                      actions_read_only,
+                      production_environment_present,
+                  ]),
+                  'merge_authorized': False,
+                  'exact_main_proven': False,
+                  'd3_d9_product_evidence_complete': False,
+              },
+              'operations': operations,
+          }
+          (output / 'report.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+
+          lines = [
+              marker,
+              '## PR #66 exact-head closure controller',
+              '',
+              f'Generated: `{report["generated_at"]}`',
+              f'Head: `{expected_head}`',
+              '',
+              '| Workflow | Run | Status | Conclusion |',
+              '| --- | ---: | --- | --- |',
+          ]
+          for row in workflow_rows:
+              run_link = f'[{row["run_id"]}]({row["url"]})' if row['url'] else 'missing'
+              lines.append(
+                  f'| `{row["workflow"]}` | {run_link} | `{row["status"]}` | `{row["conclusion"]}` |'
+              )
+          lines.extend([
+              '',
+              '### Machine summary',
+              '',
+              '```json',
+              json.dumps({
+                  'workflow_summary': report['workflow_summary'],
+                  'independent_current_head_approvers': independent_approvers,
+                  'unresolved_review_threads': unresolved_threads,
+                  'governance': report['governance'],
+                  'claim_ceiling': report['claim_ceiling'],
+              }, indent=2, sort_keys=True),
+              '```',
+              '',
+              'This controller does not approve, merge, bypass governance, or promote D3-D9 evidence.',
+          ])
+          comment_body = '\n'.join(lines)
+
+          _, comments = request(
+              'GET', f'repos/{repo}/issues/{pr_number}/comments?per_page=100'
+          )
+          existing = next(
+              (
+                  comment for comment in comments
+                  if isinstance(comment, dict) and marker in str(comment.get('body', ''))
+              ),
+              None,
+          )
+          if existing is None:
+              request(
+                  'POST', f'repos/{repo}/issues/{pr_number}/comments',
+                  {'body': comment_body}, expected=(201,)
+              )
+          else:
+              request(
+                  'PATCH', f'repos/{repo}/issues/comments/{existing["id"]}',
+                  {'body': comment_body}
+              )
+
+          print(json.dumps(report, indent=2, sort_keys=True))
+          if not workflows_all_success:
+              raise SystemExit(10)
+          if unresolved_threads != 0:
+              raise SystemExit(11)
+          if len(independent_approvers) < 2:
+              raise SystemExit(12)
+          if not report['claim_ceiling']['live_governance_complete']:
+              raise SystemExit(13)
+          PY
+
+      - name: Upload immutable final-status readback
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr66-final-status-v1-${{ github.sha }}
+          path: /tmp/pr66-final-status-v1
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 6
+          include-hidden-files: true
