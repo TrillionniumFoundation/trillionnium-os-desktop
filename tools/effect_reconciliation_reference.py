@@ -10,6 +10,7 @@ not an authenticity proof.
 from __future__ import annotations
 
 import copy
+from dataclasses import asdict, dataclass
 import hashlib
 import json
 import math
@@ -131,31 +132,62 @@ def require_reason(value: Any) -> None:
 
 
 ALLOWED_TRANSITIONS = {
-    "REQUESTED": {"prepared", "cancelled_before_dispatch"},
-    "PREPARED": {"dispatched", "cancelled_before_dispatch"},
-    "DISPATCHED": {"terminal_success", "terminal_failure", "indeterminate"},
-    "INDETERMINATE": {
+    "requested": {"prepared", "cancelled_before_dispatch"},
+    "prepared": {"dispatched", "cancelled_before_dispatch"},
+    "dispatched": {
+        "terminal_success",
+        "terminal_failure",
+        "indeterminate",
+        "reconciled_applied",
+        "reconciled_not_applied",
+        "manual_required",
+    },
+    "indeterminate": {
+        "terminal_success",
+        "terminal_failure",
         "reconciled_applied",
         "reconciled_not_applied",
         "manual_required",
     },
 }
 TERMINAL_STATES = {
-    "TERMINAL_SUCCESS",
-    "TERMINAL_FAILURE",
-    "CANCELLED_BEFORE_DISPATCH",
-    "RECONCILED_APPLIED",
-    "RECONCILED_NOT_APPLIED",
-    "MANUAL_REQUIRED",
+    "terminal_success",
+    "terminal_failure",
+    "cancelled_before_dispatch",
+    "reconciled_applied",
+    "reconciled_not_applied",
+    "manual_required",
 }
+RECONCILIATION_EVENTS = {
+    "reconciled_applied",
+    "reconciled_not_applied",
+    "manual_required",
+}
+
+
+@dataclass
+class EffectOperation:
+    operation_id: str
+    idempotency_key: str
+    effect_kind: str
+    payload_sha256: str
+    permit_sha256: str
+    subject_sha256: str
+    state: str = "requested"
+    dispatch_token_sha256: str | None = None
+    provider_receipt_sha256: str | None = None
+    retry_requires_new_authorization: bool = False
 
 
 class EffectJournal:
     def __init__(self) -> None:
         self.records: list[dict[str, Any]] = []
-        self.operations: dict[str, dict[str, Any]] = {}
-        self.idempotency: dict[str, str] = {}
+        self.operations: dict[str, EffectOperation] = {}
+        self.idempotency_keys: dict[str, str] = {}
+        # Keep the hardened implementation's public alias for compatibility.
+        self.idempotency = self.idempotency_keys
         self.discarded_torn_tail = False
+        self._serialized_bytes = 0
 
     @staticmethod
     def _event_hash(sequence: int, previous: str, event: dict[str, Any]) -> str:
@@ -168,7 +200,7 @@ class EffectJournal:
             }
         )
 
-    def _record_for(self, event: dict[str, Any]) -> dict[str, Any]:
+    def _record_for(self, event: dict[str, Any]) -> tuple[dict[str, Any], bytes]:
         sequence = len(self.records) + 1
         if sequence > MAX_RECORDS:
             fail("EFFECT_JOURNAL_TOO_MANY_RECORDS")
@@ -183,18 +215,23 @@ class EffectJournal:
         encoded = canonical(record)
         if len(encoded) > MAX_RECORD_BYTES:
             fail("EFFECT_JOURNAL_RECORD_TOO_LARGE")
-        if sum(len(canonical(item)) for item in self.records) + len(encoded) > MAX_JOURNAL_BYTES:
+        if self._serialized_bytes + len(encoded) > MAX_JOURNAL_BYTES:
             fail("EFFECT_JOURNAL_TOO_LARGE")
-        return record
+        return record, encoded
 
-    def _append(self, event: dict[str, Any]) -> None:
-        record = self._record_for(event)
+    def _append(self, event: dict[str, Any]) -> dict[str, Any]:
+        # Encoding, bounds, and semantic validation all complete against copies
+        # before any externally visible state changes.
+        record, encoded = self._record_for(event)
         candidate_operations = copy.deepcopy(self.operations)
-        candidate_idempotency = copy.deepcopy(self.idempotency)
+        candidate_idempotency = copy.deepcopy(self.idempotency_keys)
         self._apply_event(event, candidate_operations, candidate_idempotency)
         self.operations = candidate_operations
-        self.idempotency = candidate_idempotency
+        self.idempotency_keys = candidate_idempotency
+        self.idempotency = self.idempotency_keys
         self.records.append(record)
+        self._serialized_bytes += len(encoded)
+        return copy.deepcopy(record)
 
     def request(
         self,
@@ -204,7 +241,7 @@ class EffectJournal:
         payload_sha256: str,
         permit_sha256: str,
         subject_sha256: str,
-    ) -> None:
+    ) -> dict[str, Any]:
         for field, value in (
             ("OPERATION_ID", operation_id),
             ("IDEMPOTENCY_KEY", idempotency_key),
@@ -219,9 +256,9 @@ class EffectJournal:
             require_digest(value, field)
         if operation_id in self.operations:
             fail("DUPLICATE_OPERATION_ID")
-        if idempotency_key in self.idempotency:
+        if idempotency_key in self.idempotency_keys:
             fail("DUPLICATE_IDEMPOTENCY_KEY")
-        self._append(
+        return self._append(
             {
                 "kind": "requested",
                 "operation_id": operation_id,
@@ -233,29 +270,51 @@ class EffectJournal:
             }
         )
 
-    def prepare(self, operation_id: str) -> None:
-        self._transition(operation_id, "prepared")
+    def prepare(self, operation_id: str) -> dict[str, Any]:
+        return self._transition(operation_id, "prepared")
 
-    def dispatch(self, operation_id: str, dispatch_token_sha256: str) -> None:
+    def dispatch(self, operation_id: str, dispatch_token_sha256: str) -> dict[str, Any]:
         require_digest(dispatch_token_sha256, "DISPATCH_TOKEN_SHA256")
-        self._transition(operation_id, "dispatched", dispatch_token_sha256=dispatch_token_sha256)
+        return self._transition(
+            operation_id,
+            "dispatched",
+            dispatch_token_sha256=dispatch_token_sha256,
+        )
 
-    def terminal(self, operation_id: str, outcome: Any, provider_receipt_sha256: str) -> None:
+    def terminal(
+        self,
+        operation_id: str,
+        outcome: Any,
+        provider_receipt_sha256: str,
+    ) -> dict[str, Any]:
         if not isinstance(outcome, str) or outcome not in {"success", "failure"}:
             fail("INVALID_TERMINAL_OUTCOME")
         require_digest(provider_receipt_sha256, "PROVIDER_RECEIPT_SHA256")
-        self._transition(
+        return self._transition(
             operation_id,
             f"terminal_{outcome}",
             provider_receipt_sha256=provider_receipt_sha256,
         )
 
-    def mark_indeterminate(self, operation_id: str, reason: Any) -> None:
+    def indeterminate(self, operation_id: str, reason: Any) -> dict[str, Any]:
         require_reason(reason)
-        self._transition(operation_id, "indeterminate", reason=reason)
+        return self._transition(operation_id, "indeterminate", reason=reason)
 
-    def reconcile(self, operation_id: str, result: Any, provider_receipt_sha256: str) -> None:
-        if not isinstance(result, str) or result not in {"applied", "not_applied", "unknown"}:
+    def mark_indeterminate(self, operation_id: str, reason: Any) -> dict[str, Any]:
+        """Compatibility alias retained for the hardened source candidate."""
+        return self.indeterminate(operation_id, reason)
+
+    def reconcile(
+        self,
+        operation_id: str,
+        result: Any,
+        provider_receipt_sha256: str,
+    ) -> dict[str, Any]:
+        if not isinstance(result, str) or result not in {
+            "applied",
+            "not_applied",
+            "unknown",
+        }:
             fail("INVALID_RECONCILIATION_RESULT")
         require_digest(provider_receipt_sha256, "PROVIDER_RECEIPT_SHA256")
         event = {
@@ -263,29 +322,54 @@ class EffectJournal:
             "not_applied": "reconciled_not_applied",
             "unknown": "manual_required",
         }[result]
-        self._transition(
+        return self._transition(
             operation_id,
             event,
             provider_receipt_sha256=provider_receipt_sha256,
         )
 
-    def cancel(self, operation_id: str, reason: Any) -> None:
+    def cancel(self, operation_id: str, reason: Any) -> dict[str, Any]:
         require_reason(reason)
-        self._transition(operation_id, "cancelled_before_dispatch", reason=reason)
+        return self._transition(
+            operation_id,
+            "cancelled_before_dispatch",
+            reason=reason,
+        )
 
-    def _transition(self, operation_id: str, event_kind: str, **fields: Any) -> None:
+    def _transition(
+        self,
+        operation_id: str,
+        event_kind: str,
+        **fields: Any,
+    ) -> dict[str, Any]:
         require_text(operation_id, "OPERATION_ID")
         operation = self.operations.get(operation_id)
         if operation is None:
             fail("UNKNOWN_OPERATION")
-        if event_kind not in ALLOWED_TRANSITIONS.get(operation["state"], set()):
+        self._require_transition(operation.state, event_kind)
+        return self._append(
+            {"kind": event_kind, "operation_id": operation_id, **fields}
+        )
+
+    @staticmethod
+    def _require_transition(state: str, event_kind: str) -> None:
+        if event_kind == "cancelled_before_dispatch" and state not in {
+            "requested",
+            "prepared",
+        }:
+            fail("CANCEL_AFTER_DISPATCH_FORBIDDEN")
+        if event_kind in RECONCILIATION_EVENTS and state not in {
+            "dispatched",
+            "indeterminate",
+        }:
+            fail("RECONCILIATION_NOT_ALLOWED")
+        if event_kind not in ALLOWED_TRANSITIONS.get(state, set()):
             fail("INVALID_EFFECT_TRANSITION")
-        self._append({"kind": event_kind, "operation_id": operation_id, **fields})
 
     @staticmethod
     def _apply_event(
         event: dict[str, Any],
-        operations: dict[str, dict[str, Any]],
+        operations: dict[str, EffectOperation],
         idempotency: dict[str, str],
     ) -> None:
         if not isinstance(event, dict):
@@ -309,26 +393,38 @@ class EffectJournal:
                 fail("REQUESTED_FIELD_SET_MISMATCH")
             require_text(event["idempotency_key"], "IDEMPOTENCY_KEY")
             require_text(event["effect_kind"], "EFFECT_KIND")
-            for field in ("payload_sha256", "permit_sha256", "subject_sha256"):
+            for field in (
+                "payload_sha256",
+                "permit_sha256",
+                "subject_sha256",
+            ):
                 require_digest(event[field], field.upper())
             if operation_id in operations:
                 fail("DUPLICATE_OPERATION_ID")
             if event["idempotency_key"] in idempotency:
                 fail("DUPLICATE_IDEMPOTENCY_KEY")
-            operation = copy.deepcopy(event)
-            operation["state"] = "REQUESTED"
-            operations[operation_id] = operation
+            operations[operation_id] = EffectOperation(
+                operation_id=operation_id,
+                idempotency_key=event["idempotency_key"],
+                effect_kind=event["effect_kind"],
+                payload_sha256=event["payload_sha256"],
+                permit_sha256=event["permit_sha256"],
+                subject_sha256=event["subject_sha256"],
+            )
             idempotency[event["idempotency_key"]] = operation_id
             return
+
         operation = operations.get(operation_id)
         if operation is None:
             fail("UNKNOWN_OPERATION")
-        if kind not in ALLOWED_TRANSITIONS.get(operation["state"], set()):
-            fail("INVALID_EFFECT_TRANSITION")
+        EffectJournal._require_transition(operation.state, kind)
         expected = {"kind", "operation_id"}
         if kind == "dispatched":
             expected.add("dispatch_token_sha256")
-            require_digest(event.get("dispatch_token_sha256"), "DISPATCH_TOKEN_SHA256")
+            require_digest(
+                event.get("dispatch_token_sha256"),
+                "DISPATCH_TOKEN_SHA256",
+            )
         elif kind in {
             "terminal_success",
             "terminal_failure",
@@ -337,40 +433,74 @@ class EffectJournal:
             "manual_required",
         }:
             expected.add("provider_receipt_sha256")
-            require_digest(event.get("provider_receipt_sha256"), "PROVIDER_RECEIPT_SHA256")
+            require_digest(
+                event.get("provider_receipt_sha256"),
+                "PROVIDER_RECEIPT_SHA256",
+            )
         elif kind in {"indeterminate", "cancelled_before_dispatch"}:
             expected.add("reason")
             require_reason(event.get("reason"))
         if set(event) != expected:
             fail("EVENT_FIELD_SET_MISMATCH")
-        operation["state"] = kind.upper()
-        operation.update(
-            {key: value for key, value in event.items() if key not in {"kind", "operation_id"}}
-        )
+
+        operation.state = kind
+        if kind == "dispatched":
+            operation.dispatch_token_sha256 = event["dispatch_token_sha256"]
+        elif kind in {
+            "terminal_success",
+            "terminal_failure",
+            "reconciled_applied",
+            "reconciled_not_applied",
+            "manual_required",
+        }:
+            operation.provider_receipt_sha256 = event[
+                "provider_receipt_sha256"
+            ]
+        if kind == "reconciled_not_applied":
+            operation.retry_requires_new_authorization = True
 
     def operation(self, operation_id: str) -> dict[str, Any]:
-        if operation_id not in self.operations:
+        operation = self.operations.get(operation_id)
+        if operation is None:
             fail("UNKNOWN_OPERATION")
-        return copy.deepcopy(self.operations[operation_id])
+        return copy.deepcopy(asdict(operation))
 
     def may_execute_external_effect(self, operation_id: str) -> bool:
-        return self.operation(operation_id)["state"] == "PREPARED"
+        return self.operation(operation_id)["state"] == "prepared"
 
     def requires_reconciliation(self, operation_id: str) -> bool:
-        return self.operation(operation_id)["state"] == "INDETERMINATE"
+        return self.operation(operation_id)["state"] in {
+            "dispatched",
+            "indeterminate",
+        }
 
     def automatic_replay_allowed(self, operation_id: str) -> bool:
         self.operation(operation_id)
         return False
 
+    def recovery_action(self, operation_id: str) -> str:
+        state = self.operation(operation_id)["state"]
+        if state in {"requested", "prepared"}:
+            return "PRE_EFFECT_SAFE_TO_CANCEL_OR_REPREPARE"
+        if state in {"dispatched", "indeterminate"}:
+            return "RECONCILE_ONLY_NEVER_AUTOMATICALLY_REPLAY"
+        if state == "manual_required":
+            return "MANUAL_ACTION_REQUIRED"
+        if state in TERMINAL_STATES:
+            return "NO_ACTION_TERMINAL"
+        fail("UNKNOWN_EFFECT_STATE")
+
     def snapshot(self) -> dict[str, Any]:
         return {
             "schema": "trillionnium.desktop.effect-journal-snapshot.v1",
             "operations": {
-                key: copy.deepcopy(self.operations[key]) for key in sorted(self.operations)
+                key: asdict(self.operations[key])
+                for key in sorted(self.operations)
             },
             "record_count": len(self.records),
-            "head_record_sha256": self.records[-1]["record_sha256"] if self.records else ZERO,
+            "head_record_sha256": (
+                self.records[-1]["record_sha256"] if self.records else ZERO
+            ),
             "discarded_torn_tail": self.discarded_torn_tail,
             "journal_executes_operations": False,
             "automatic_replay_after_dispatch": False,
@@ -394,7 +524,9 @@ class EffectJournal:
             fail("JOURNAL_BYTES_REQUIRED")
         if len(data) > MAX_JOURNAL_BYTES:
             fail("EFFECT_JOURNAL_TOO_LARGE")
-        if (expected_record_count is None) != (expected_head_record_sha256 is None):
+        if (expected_record_count is None) != (
+            expected_head_record_sha256 is None
+        ):
             fail("EFFECT_JOURNAL_CHECKPOINT_INCOMPLETE")
         if expected_record_count is not None:
             if (
@@ -410,6 +542,8 @@ class EffectJournal:
         complete = data
         if complete and not complete.endswith(b"\n"):
             boundary = complete.rfind(b"\n")
+            if len(complete) - boundary - 1 > MAX_RECORD_BYTES:
+                fail("EFFECT_JOURNAL_RECORD_TOO_LARGE")
             complete = complete[: boundary + 1] if boundary >= 0 else b""
             journal.discarded_torn_tail = True
         lines = complete.splitlines(keepends=True)
@@ -430,22 +564,37 @@ class EffectJournal:
                 fail("EFFECT_JOURNAL_RECORD_FIELD_SET_MISMATCH")
             if record["schema"] != SCHEMA_RECORD:
                 fail("EFFECT_JOURNAL_RECORD_SCHEMA_MISMATCH")
-            if type(record["sequence"]) is not int or record["sequence"] != expected_sequence:
+            if (
+                type(record["sequence"]) is not int
+                or record["sequence"] != expected_sequence
+            ):
                 fail("EFFECT_JOURNAL_SEQUENCE_MISMATCH")
             if record["previous_record_sha256"] != previous:
                 fail("EFFECT_JOURNAL_PREVIOUS_HASH_MISMATCH")
             expected_hash = cls._event_hash(
-                expected_sequence, previous, record["event"]
+                expected_sequence,
+                previous,
+                record["event"],
             )
             if record["record_sha256"] != expected_hash:
                 fail("EFFECT_JOURNAL_RECORD_HASH_MISMATCH")
             if canonical(record) != line:
                 fail("EFFECT_JOURNAL_NONCANONICAL_RECORD")
-            cls._apply_event(record["event"], journal.operations, journal.idempotency)
+            cls._apply_event(
+                record["event"],
+                journal.operations,
+                journal.idempotency_keys,
+            )
             journal.records.append(copy.deepcopy(record))
+            journal._serialized_bytes += len(line)
             previous = expected_hash
+        journal.idempotency = journal.idempotency_keys
         if expected_record_count is not None:
-            actual_head = journal.records[-1]["record_sha256"] if journal.records else ZERO
+            actual_head = (
+                journal.records[-1]["record_sha256"]
+                if journal.records
+                else ZERO
+            )
             if (
                 len(journal.records) != expected_record_count
                 or actual_head != expected_head_record_sha256
@@ -460,13 +609,30 @@ def self_test() -> dict[str, Any]:
     subject = hashlib.sha256(b"fixture subject").hexdigest()
 
     journal = EffectJournal()
-    journal.request("op-1", "idempotency-1", "fixture-write", payload, permit, subject)
+    journal.request(
+        "op-1",
+        "idempotency-1",
+        "fixture-write",
+        payload,
+        permit,
+        subject,
+    )
     journal.prepare("op-1")
-    journal.dispatch("op-1", hashlib.sha256(b"fixture dispatch token").hexdigest())
+    journal.dispatch(
+        "op-1",
+        hashlib.sha256(b"fixture dispatch token").hexdigest(),
+    )
     journal.mark_indeterminate("op-1", "connection lost after write")
-    if journal.automatic_replay_allowed("op-1") or not journal.requires_reconciliation("op-1"):
+    if (
+        journal.automatic_replay_allowed("op-1")
+        or not journal.requires_reconciliation("op-1")
+    ):
         fail("RECONCILIATION_INVARIANT_FAILED")
-    journal.reconcile("op-1", "applied", hashlib.sha256(b"fixture provider receipt").hexdigest())
+    journal.reconcile(
+        "op-1",
+        "applied",
+        hashlib.sha256(b"fixture provider receipt").hexdigest(),
+    )
     encoded = journal.serialize()
     recovered = EffectJournal.recover(
         encoded,
@@ -477,17 +643,31 @@ def self_test() -> dict[str, Any]:
         fail("RECOVERY_MISMATCH")
 
     negative = EffectJournal()
-    negative.request("op-2", "idempotency-2", "fixture-write", payload, permit, subject)
+    negative.request(
+        "op-2",
+        "idempotency-2",
+        "fixture-write",
+        payload,
+        permit,
+        subject,
+    )
     negative.prepare("op-2")
     negative.dispatch("op-2", hashlib.sha256(b"dispatch-2").hexdigest())
-    negative.mark_indeterminate("op-2", "provider returned no durable receipt")
-    negative.reconcile("op-2", "not_applied", hashlib.sha256(b"not-applied").hexdigest())
+    negative.mark_indeterminate(
+        "op-2",
+        "provider returned no durable receipt",
+    )
+    negative.reconcile(
+        "op-2",
+        "not_applied",
+        hashlib.sha256(b"not-applied").hexdigest(),
+    )
 
     return {
         "schema": "trillionnium.desktop.effect-reconciliation-self-test.v1",
         "status": "PASS_EFFECT_RECONCILIATION_REFERENCE",
-        "applied_state": journal.operation("op-1")["state"],
-        "not_applied_state": negative.operation("op-2")["state"],
+        "applied_state": journal.operations["op-1"].state.upper(),
+        "not_applied_state": negative.operations["op-2"].state.upper(),
         "automatic_replay_after_dispatch": False,
         "external_effects_executed": False,
         "persistent_journal_integrated": False,
