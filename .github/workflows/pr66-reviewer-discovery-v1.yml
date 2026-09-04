@@ -1,0 +1,292 @@
+name: pr66-reviewer-discovery-v1
+
+on:
+  push:
+    branches:
+      - codex/pr66-reviewer-discovery-v1
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: pr66-reviewer-discovery-v1
+  cancel-in-progress: false
+
+jobs:
+  discover-and-request:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PULL_REQUEST_NUMBER: "66"
+      EXPECTED_HEAD: 1e9ec3ce5746db0bafe5faf51fbcc0434b6dbca5
+      EXPECTED_BASE: addaf73a48bae65f19f6bfe91c6264fd2ddb85a1
+    steps:
+      - name: Discover and request only eligible independent identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/pr66-reviewer-discovery
+          mkdir -p /tmp/pr66-reviewer-discovery
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import datetime as dt
+          import json
+          import os
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+          from typing import Any
+
+          repository = os.environ['GITHUB_REPOSITORY']
+          owner, _ = repository.split('/', 1)
+          token = os.environ['GH_TOKEN']
+          pr_number = int(os.environ['PULL_REQUEST_NUMBER'])
+          expected_head = os.environ['EXPECTED_HEAD']
+          expected_base = os.environ['EXPECTED_BASE']
+          output = Path('/tmp/pr66-reviewer-discovery/report.json')
+
+          report: dict[str, Any] = {
+              'schema': 'trillionnium.desktop.pr66-reviewer-discovery.v1',
+              'generated_at': dt.datetime.now(dt.timezone.utc).isoformat(),
+              'repository': repository,
+              'pull_request': pr_number,
+              'expected_head': expected_head,
+              'expected_base': expected_base,
+              'claim_ceiling': 'review-request-routing-only_no_approval_no_independence-claim_no_merge',
+              'requests': [],
+              'source_identities_excluded': [],
+              'candidate_identities': [],
+              'eligible_by_permission_readback': [],
+              'successfully_requested': [],
+              'rejected_or_unavailable': [],
+              'status': 'STARTED',
+          }
+
+          def api(
+              method: str,
+              path: str,
+              payload: Any | None = None,
+              expected: tuple[int, ...] = (200,),
+          ) -> tuple[int, Any]:
+              data = None if payload is None else json.dumps(payload).encode('utf-8')
+              request = urllib.request.Request(
+                  f'https://api.github.com/{path.lstrip("/")}',
+                  data=data,
+                  method=method,
+                  headers={
+                      'Authorization': f'Bearer {token}',
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'Content-Type': 'application/json',
+                      'User-Agent': 'trillionnium-pr66-reviewer-discovery-v1',
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=45) as response:
+                      status = response.status
+                      raw = response.read()
+              except urllib.error.HTTPError as error:
+                  status = error.code
+                  raw = error.read()
+              text = raw.decode('utf-8', errors='replace')
+              try:
+                  body: Any = json.loads(text) if text else None
+              except json.JSONDecodeError:
+                  body = {'unparsed_tail': text[-500:]}
+              record: dict[str, Any] = {'method': method, 'path': path, 'status': status}
+              if status not in expected and isinstance(body, dict):
+                  record['message'] = body.get('message')
+              report['requests'].append(record)
+              return status, body
+
+          pr_status, pr = api('GET', f'repos/{repository}/pulls/{pr_number}')
+          if pr_status != 200 or not isinstance(pr, dict):
+              raise SystemExit('cannot read PR #66')
+          if pr.get('state') != 'open' or pr.get('draft') is not True:
+              raise SystemExit('PR #66 is not open Draft')
+          if pr.get('head', {}).get('sha') != expected_head:
+              raise SystemExit('PR #66 head moved')
+          if pr.get('base', {}).get('sha') != expected_base:
+              raise SystemExit('PR #66 base moved')
+
+          excluded: set[str] = set()
+          pr_author = ((pr.get('user') or {}).get('login'))
+          if isinstance(pr_author, str):
+              excluded.add(pr_author.casefold())
+          compare_status, comparison = api(
+              'GET', f'repos/{repository}/compare/{expected_base}...{expected_head}'
+          )
+          if compare_status == 200 and isinstance(comparison, dict):
+              for commit in comparison.get('commits') or []:
+                  for role in ('author', 'committer'):
+                      login = ((commit.get(role) or {}).get('login'))
+                      if isinstance(login, str) and login:
+                          excluded.add(login.casefold())
+          excluded.update({'github-actions[bot]', 'dependabot[bot]', 'renovate[bot]'})
+          report['source_identities_excluded'] = sorted(excluded)
+
+          candidates: dict[str, set[str]] = {}
+          def add(login: Any, source: str) -> None:
+              if not isinstance(login, str) or not login:
+                  return
+              normalized = login.casefold()
+              if normalized in excluded or normalized.endswith('[bot]'):
+                  return
+              candidates.setdefault(login, set()).add(source)
+
+          org_status, org_members = api('GET', f'orgs/{owner}/members?per_page=100')
+          if org_status == 200 and isinstance(org_members, list):
+              for item in org_members:
+                  if isinstance(item, dict):
+                      add(item.get('login'), 'organization_member')
+
+          collaborator_status, collaborators = api(
+              'GET', f'repos/{repository}/collaborators?affiliation=all&per_page=100'
+          )
+          if collaborator_status == 200 and isinstance(collaborators, list):
+              for item in collaborators:
+                  if isinstance(item, dict):
+                      add(item.get('login'), 'repository_collaborator')
+
+          contributor_status, contributors = api(
+              'GET', f'repos/{repository}/contributors?anon=0&per_page=100'
+          )
+          if contributor_status == 200 and isinstance(contributors, list):
+              for item in contributors:
+                  if isinstance(item, dict):
+                      add(item.get('login'), 'repository_contributor')
+
+          report['candidate_identities'] = [
+              {'login': login, 'sources': sorted(sources)}
+              for login, sources in sorted(candidates.items(), key=lambda item: item[0].casefold())
+          ]
+
+          eligible: list[str] = []
+          public_org_logins = {
+              item.get('login').casefold()
+              for item in org_members
+              if org_status == 200 and isinstance(org_members, list)
+              and isinstance(item, dict) and isinstance(item.get('login'), str)
+          } if isinstance(org_members, list) else set()
+
+          for login in sorted(candidates, key=str.casefold):
+              encoded = urllib.parse.quote(login, safe='')
+              permission_status, permission = api(
+                  'GET', f'repos/{repository}/collaborators/{encoded}/permission'
+              )
+              permission_name = (
+                  permission.get('permission') if isinstance(permission, dict) else None
+              )
+              has_permission = permission_status == 200 and permission_name in {
+                  'admin', 'maintain', 'write'
+              }
+              is_public_org_member = login.casefold() in public_org_logins
+              if has_permission:
+                  eligible.append(login)
+                  report['eligible_by_permission_readback'].append(
+                      {'login': login, 'permission': permission_name}
+                  )
+              elif not is_public_org_member:
+                  report['rejected_or_unavailable'].append(
+                      {
+                          'login': login,
+                          'reason': 'no_write_or_higher_permission_readback_and_not_public_org_member',
+                          'permission_http_status': permission_status,
+                          'permission': permission_name,
+                      }
+                  )
+                  continue
+
+              request_status, request_body = api(
+                  'POST',
+                  f'repos/{repository}/pulls/{pr_number}/requested_reviewers',
+                  {'reviewers': [login]},
+                  expected=(201,),
+              )
+              if request_status == 201:
+                  report['successfully_requested'].append(login)
+              else:
+                  message = request_body.get('message') if isinstance(request_body, dict) else None
+                  report['rejected_or_unavailable'].append(
+                      {
+                          'login': login,
+                          'reason': 'github_rejected_review_request',
+                          'http_status': request_status,
+                          'message': message,
+                      }
+                  )
+
+          team_status, team_body = api(
+              'POST',
+              f'repos/{repository}/pulls/{pr_number}/requested_reviewers',
+              {'team_reviewers': ['desktop-maintainers']},
+              expected=(201,),
+          )
+          report['desktop_maintainers_team_request_status'] = team_status
+          if team_status != 201:
+              report['desktop_maintainers_team_request_message'] = (
+                  team_body.get('message') if isinstance(team_body, dict) else None
+              )
+
+          report['successfully_requested'] = sorted(
+              set(report['successfully_requested']), key=str.casefold
+          )
+          report['status'] = (
+              'REQUESTED_ELIGIBLE_REVIEWERS'
+              if report['successfully_requested'] or team_status == 201
+              else 'NO_ADDITIONAL_ELIGIBLE_REVIEWER_REQUESTED'
+          )
+          output.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          lines = [
+              '## PR #66 independent reviewer discovery',
+              '',
+              f'- Frozen head: `{expected_head}`',
+              f'- Status: **{report["status"]}**',
+              f'- Source/author identities excluded: `{", ".join(report["source_identities_excluded"])}`',
+              '- Successfully requested eligible users: '
+              + (', '.join(f'@{login}' for login in report['successfully_requested']) or 'none'),
+              f'- `desktop-maintainers` team request HTTP status: `{team_status}`',
+              '',
+              'This task requests review only. It does not submit an approval, claim independence, change Draft state, merge, or bypass governance.',
+          ]
+          api(
+              'POST',
+              f'repos/{repository}/issues/{pr_number}/comments',
+              {'body': '\n'.join(lines)},
+              expected=(201,),
+          )
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
+      - name: Publish reviewer discovery report
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=/tmp/pr66-reviewer-discovery/report.json
+          if test -f "$report"; then
+            {
+              echo '## PR #66 reviewer discovery'
+              echo
+              echo '```json'
+              cat "$report"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload immutable reviewer discovery report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr66-reviewer-discovery-${{ github.sha }}
+          path: /tmp/pr66-reviewer-discovery
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
+          include-hidden-files: true
