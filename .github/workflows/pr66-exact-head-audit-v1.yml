@@ -1,0 +1,258 @@
+name: pr66-exact-head-audit-v1
+
+on:
+  push:
+    branches:
+      - codex/pr66-exact-head-audit-v1
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: pr66-exact-head-audit-v1
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      EXPECTED_HEAD: 1e9ec3ce5746db0bafe5faf51fbcc0434b6dbca5
+      EXPECTED_BASE: addaf73a48bae65f19f6bfe91c6264fd2ddb85a1
+      EXPECTED_TREE: c922e84bbe68455040189ac2e16bee42aa1692fc
+      EXPECTED_MERGE: 1b29149e9987b72daf13f9ca698b5ba2c6d3d8c5
+      PULL_REQUEST_NUMBER: "66"
+    steps:
+      - name: Audit exact immutable workflow matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/pr66-exact-head-audit
+          mkdir -p /tmp/pr66-exact-head-audit
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import datetime as dt
+          import json
+          import os
+          import time
+          import urllib.error
+          import urllib.request
+          from pathlib import Path
+          from typing import Any
+
+          repository = os.environ['GITHUB_REPOSITORY']
+          token = os.environ['GH_TOKEN']
+          expected_head = os.environ['EXPECTED_HEAD']
+          expected_base = os.environ['EXPECTED_BASE']
+          expected_tree = os.environ['EXPECTED_TREE']
+          expected_merge = os.environ['EXPECTED_MERGE']
+          pr_number = int(os.environ['PULL_REQUEST_NUMBER'])
+          output = Path('/tmp/pr66-exact-head-audit/audit-report.json')
+          run_ids = {
+              'servo-headed-runtime': 33909202199,
+              'd4-d9-source-suite': 33909202433,
+              'd3-semantic-resolver-reference': 33909202307,
+              'd1-final-qualification': 33909202226,
+              'agent-port-path-custody': 33909202240,
+              'd0t03-source-contract': 33909202297,
+              'd3-integrated-runtime-evidence-verifier': 33909202178,
+              'd8-hardware-qualification': 33909202147,
+              'd2i-integrated-image': 33909202257,
+              'receipt-journal': 33909202182,
+              'servo-exact-pin': 33909202232,
+              'desktop-ci': 33909202227,
+              'governance-integrity': 33909202454,
+              'browser-codec-reference-and-rust-gate': 33909202198,
+              'd8-hardware-promotion-policy': 33909202390,
+              'd6-capability-egress': 33909202633,
+              'agent-transport-reference': 33909202216,
+              'd4-collaboration': 33909202394,
+              'd5-trusted-app': 33909202209,
+              'agent-port-custody': 33909202211,
+              'd7-recovery-update': 33909202181,
+              'd9-release-promotion': 33909202712,
+          }
+
+          def request(method: str, path: str, payload: Any | None = None) -> Any:
+              data = None if payload is None else json.dumps(payload).encode('utf-8')
+              req = urllib.request.Request(
+                  f'https://api.github.com/{path.lstrip("/")}',
+                  data=data,
+                  method=method,
+                  headers={
+                      'Authorization': f'Bearer {token}',
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'Content-Type': 'application/json',
+                      'User-Agent': 'trillionnium-pr66-exact-head-audit-v1',
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=45) as response:
+                      raw = response.read()
+              except urllib.error.HTTPError as error:
+                  tail = error.read().decode('utf-8', errors='replace')[-1000:]
+                  raise RuntimeError(f'{method} {path}: HTTP {error.code}: {tail}') from error
+              return json.loads(raw.decode('utf-8')) if raw else None
+
+          report: dict[str, Any] = {
+              'schema': 'trillionnium.desktop.pr66-exact-head-audit.v1',
+              'generated_at': dt.datetime.now(dt.timezone.utc).isoformat(),
+              'repository': repository,
+              'pull_request': pr_number,
+              'expected_base': expected_base,
+              'expected_head': expected_head,
+              'expected_tree': expected_tree,
+              'expected_merge': expected_merge,
+              'expected_workflow_count': len(run_ids),
+              'claim_ceiling': 'exact_pull_request_candidate_workflow_matrix_only_no_governance_merge_exact-main_product_hardware_or_release_promotion',
+              'runs': [],
+              'blockers': [],
+              'status': 'STARTED',
+          }
+
+          pr = request('GET', f'repos/{repository}/pulls/{pr_number}')
+          if pr.get('state') != 'open':
+              report['blockers'].append('PR #66 is not open.')
+          if pr.get('base', {}).get('sha') != expected_base:
+              report['blockers'].append('PR base SHA moved.')
+          if pr.get('head', {}).get('sha') != expected_head:
+              report['blockers'].append('PR head SHA moved.')
+          if pr.get('merge_commit_sha') != expected_merge:
+              report['blockers'].append('Prospective merge SHA moved.')
+
+          head_commit = request('GET', f'repos/{repository}/git/commits/{expected_head}')
+          if head_commit.get('tree', {}).get('sha') != expected_tree:
+              report['blockers'].append('Expected head tree does not match GitHub readback.')
+
+          pending: set[str] = set(run_ids)
+          observations: dict[str, dict[str, Any]] = {}
+          for attempt in range(40):
+              pending.clear()
+              for expected_name, run_id in run_ids.items():
+                  run = request('GET', f'repos/{repository}/actions/runs/{run_id}')
+                  observed = {
+                      'expected_name': expected_name,
+                      'run_id': run_id,
+                      'name': run.get('name'),
+                      'head_sha': run.get('head_sha'),
+                      'event': run.get('event'),
+                      'status': run.get('status'),
+                      'conclusion': run.get('conclusion'),
+                      'run_attempt': run.get('run_attempt'),
+                      'created_at': run.get('created_at'),
+                      'updated_at': run.get('updated_at'),
+                  }
+                  observations[expected_name] = observed
+                  if run.get('status') != 'completed':
+                      pending.add(expected_name)
+              if not pending:
+                  break
+              time.sleep(15)
+
+          report['runs'] = [observations[name] for name in run_ids]
+          if pending:
+              report['blockers'].append(
+                  'Non-terminal workflows after bounded polling: ' + ', '.join(sorted(pending))
+              )
+
+          for row in report['runs']:
+              expected_name = row['expected_name']
+              if row['name'] != expected_name:
+                  report['blockers'].append(
+                      f'{expected_name}: workflow name mismatch ({row["name"]!r}).'
+                  )
+              if row['head_sha'] != expected_head:
+                  report['blockers'].append(f'{expected_name}: head SHA mismatch.')
+              if row['status'] != 'completed':
+                  continue
+              if row['conclusion'] != 'success':
+                  report['blockers'].append(
+                      f'{expected_name}: terminal conclusion is {row["conclusion"]!r}.'
+                  )
+              jobs = request('GET', f'repos/{repository}/actions/runs/{row["run_id"]}/jobs?per_page=100')
+              job_rows = jobs.get('jobs') if isinstance(jobs, dict) else None
+              if not isinstance(job_rows, list) or not job_rows:
+                  report['blockers'].append(f'{expected_name}: workflow has no jobs.')
+                  continue
+              row['job_count'] = len(job_rows)
+              row['successful_job_count'] = sum(
+                  1 for job in job_rows if job.get('conclusion') == 'success'
+              )
+              bad_jobs = [
+                  str(job.get('name'))
+                  for job in job_rows
+                  if job.get('status') == 'completed'
+                  and job.get('conclusion') not in {'success', 'skipped'}
+              ]
+              if bad_jobs:
+                  report['blockers'].append(
+                      f'{expected_name}: non-success jobs: ' + ', '.join(bad_jobs)
+                  )
+              if row['successful_job_count'] < 1:
+                  report['blockers'].append(f'{expected_name}: no successful job.')
+
+          report['terminal_success_count'] = sum(
+              1
+              for row in report['runs']
+              if row['status'] == 'completed' and row['conclusion'] == 'success'
+          )
+          report['status'] = 'PASS_EXACT_HEAD_22_OF_22' if not report['blockers'] else 'FAIL_CLOSED'
+          output.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          summary = [
+              '## PR #66 exact-head audit',
+              '',
+              f'- Head: `{expected_head}`',
+              f'- Tree: `{expected_tree}`',
+              f'- Prospective merge: `{expected_merge}`',
+              f'- Status: **{report["status"]}**',
+              f'- Terminal successes: **{report["terminal_success_count"]}/{len(run_ids)}**',
+              '',
+              'This audit proves the bounded candidate workflow matrix only. It does not prove live D0T-03 governance, independent approvals, governed merge, exact-main, installed product, physical hardware, HSM custody, signing, publication, or release.',
+          ]
+          if report['blockers']:
+              summary.extend(['', 'Blockers:'])
+              summary.extend(f'- {item}' for item in report['blockers'])
+          comment = '\n'.join(summary)
+          request(
+              'POST',
+              f'repos/{repository}/issues/{pr_number}/comments',
+              {'body': comment},
+          )
+          print(json.dumps(report, indent=2, sort_keys=True))
+          if report['blockers']:
+              raise SystemExit('exact-head audit failed closed')
+          PY
+
+      - name: Publish immutable audit summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=/tmp/pr66-exact-head-audit/audit-report.json
+          if test -f "$report"; then
+            {
+              echo '## PR #66 exact-head immutable audit'
+              echo
+              echo '```json'
+              cat "$report"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload exact-head audit report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr66-exact-head-audit-${{ github.sha }}
+          path: /tmp/pr66-exact-head-audit
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
+          include-hidden-files: true
