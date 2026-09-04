@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   snapshot:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, desktop]
     timeout-minutes: 15
     steps:
       - name: Check out exact source
@@ -27,6 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$GITHUB_REF" = refs/heads/codex/d6-full-gap-closure-v2
+          test "$RUNNER_NAME" = desktop
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           rm -rf /tmp/trillionnium-os-desktop-source
           mkdir -p /tmp/trillionnium-os-desktop-source
