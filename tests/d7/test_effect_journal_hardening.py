@@ -36,7 +36,7 @@ class EffectJournalHardeningTests(unittest.TestCase):
         variants = (
             raw.replace(b'"sequence":1', b'"sequence":2,"sequence":1'),
             raw.replace(b'"operation_id":"op-1"', b'"operation_id":"other","operation_id":"op-1"'),
-            raw.replace(b'"operation_id":"op-1"', b'"operation\u005fid":"other","operation_id":"op-1"'),
+            raw.replace(b'"operation_id":"op-1"', b'"operation\\u005fid":"other","operation_id":"op-1"'),
         )
         for value in variants:
             with self.subTest(value=value[:80]):
@@ -54,7 +54,7 @@ class EffectJournalHardeningTests(unittest.TestCase):
             json.dumps(requested().records[0]).encode() + b"\n",
             raw.replace(b'"sequence":1', b'"sequence" : 1'),
             raw.replace(b"\n", b"\r\n"),
-            raw.replace(b"op-1", b"op-\u0031"),
+            raw.replace(b"op-1", b"op-\\u0031"),
         )
         for value in variants:
             with self.subTest(value=value[:80]):
