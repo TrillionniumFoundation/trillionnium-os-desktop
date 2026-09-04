@@ -16,7 +16,7 @@ permissions: {}
 jobs:
   runner-probe:
     name: Desktop runner probe
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, linux, x64, desktop]
     timeout-minutes: 10
     steps:
       - name: Verify trusted manual main invocation

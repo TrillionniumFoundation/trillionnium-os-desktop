@@ -65,6 +65,24 @@ class SelfHostedProbeSafetyTests(unittest.TestCase):
                 self.assertNotIn("upload-artifact", lowered)
                 self.assertNotIn("git push", lowered)
 
+    def test_scheduler_routes_each_probe_to_a_dedicated_runner_label(self) -> None:
+        expected = {
+            "self-hosted-desktop-availability.yml": (
+                "runs-on: [self-hosted, linux, x64, desktop]",
+            ),
+            "self-hosted-fleet-availability.yml": (
+                "runs-on: [self-hosted, linux, x64, rog]",
+                "runs-on: [self-hosted, linux, x64, pocket4]",
+            ),
+        }
+        generic_only = "runs-on: [self-hosted, linux, x64]"
+        for path in WORKFLOWS:
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(path=path.name):
+                self.assertNotIn(generic_only, text)
+                for route in expected[path.name]:
+                    self.assertIn(route, text)
+
     def test_event_ref_and_exact_runner_checks_precede_reason_logging(self) -> None:
         expected = {
             "self-hosted-desktop-availability.yml": ("desktop",),
@@ -75,8 +93,16 @@ class SelfHostedProbeSafetyTests(unittest.TestCase):
             for runner in expected[path.name]:
                 with self.subTest(path=path.name, runner=runner):
                     runner_index = text.index(f'test "$RUNNER_NAME" = {runner}')
-                    event_index = text.rfind('test "$GITHUB_EVENT_NAME" = workflow_dispatch', 0, runner_index)
-                    ref_index = text.rfind('test "$GITHUB_REF" = refs/heads/main', 0, runner_index)
+                    event_index = text.rfind(
+                        'test "$GITHUB_EVENT_NAME" = workflow_dispatch',
+                        0,
+                        runner_index,
+                    )
+                    ref_index = text.rfind(
+                        'test "$GITHUB_REF" = refs/heads/main',
+                        0,
+                        runner_index,
+                    )
                     reason_index = text.index("reason=%q", runner_index)
                     self.assertGreaterEqual(event_index, 0)
                     self.assertGreaterEqual(ref_index, 0)
