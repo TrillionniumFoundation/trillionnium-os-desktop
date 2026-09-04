@@ -1,0 +1,499 @@
+name: d0t03-live-governance-transaction-v6
+
+on:
+  push:
+    branches:
+      - codex/d0t03-live-governance-v6
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d0t03-live-governance-transaction-v6
+  cancel-in-progress: false
+
+jobs:
+  apply-and-attest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      ADMIN_TOKEN: ${{ secrets.TRILLIONNIUM_GITHUB_ADMIN_TOKEN }}
+      EXPECTED_PRODUCT_HEAD: ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e
+      EXPECTED_CONTROL_BRANCH: codex/d0t03-live-governance-v6
+      TARGET_BRANCH: main
+      PULL_REQUEST_NUMBER: "66"
+      SOURCE_AUTHOR: ProfHepta
+      CODEOWNER_TEAM_NAME: Desktop Maintainers
+      CODEOWNER_TEAM_SLUG: desktop-maintainers
+    steps:
+      - name: Apply and read back D0T-03 controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/d0t03-live-governance-v6
+          mkdir -p /tmp/d0t03-live-governance-v6
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import datetime as dt
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+          from typing import Any
+
+          OUT = Path('/tmp/d0t03-live-governance-v6')
+          OUT.mkdir(parents=True, exist_ok=True)
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          owner, repo_name = repo.split('/', 1)
+          token = os.environ.get('ADMIN_TOKEN', '').strip()
+          expected_product_head = os.environ['EXPECTED_PRODUCT_HEAD']
+          expected_control_branch = os.environ['EXPECTED_CONTROL_BRANCH']
+          target_branch = os.environ['TARGET_BRANCH']
+          pr_number = int(os.environ['PULL_REQUEST_NUMBER'])
+          source_author = os.environ['SOURCE_AUTHOR'].casefold()
+          team_name = os.environ['CODEOWNER_TEAM_NAME']
+          team_slug = os.environ['CODEOWNER_TEAM_SLUG']
+          api_root = 'https://api.github.com'
+
+          report: dict[str, Any] = {
+              'schema': 'trillionnium.desktop.d0t03-live-governance-transaction.v6',
+              'generated_at': dt.datetime.now(dt.timezone.utc).isoformat(),
+              'repository': repo,
+              'control_ref': os.environ.get('GITHUB_REF'),
+              'control_sha': os.environ.get('GITHUB_SHA'),
+              'expected_product_head': expected_product_head,
+              'pull_request': pr_number,
+              'target_branch': target_branch,
+              'status': 'STARTED',
+              'operations': [],
+              'readback': {},
+              'eligible_existing_org_collaborators': [],
+              'independent_existing_org_collaborators': [],
+              'blockers': [],
+              'dynamic_acceptance': {
+                  'direct_push_rejected': 'NOT_EXECUTED_DESTRUCTIVE_PROBE',
+                  'force_push_rejected': 'NOT_EXECUTED_DESTRUCTIVE_PROBE',
+                  'branch_delete_rejected': 'NOT_EXECUTED_DESTRUCTIVE_PROBE',
+                  'author_self_approval_not_counted': 'NOT_EXECUTED_IDENTITY_REQUIRED',
+                  'failing_required_workflow_blocks_merge': 'NOT_EXECUTED_SYNTHETIC_FAILURE_REQUIRED',
+                  'approval_dismissed_after_new_push': 'NOT_EXECUTED_WOULD_INVALIDATE_CURRENT_HEAD',
+                  'unresolved_conversation_blocks_merge': 'NOT_EXECUTED_REVIEW_THREAD_REQUIRED',
+                  'independently_approved_green_pull_request_can_merge': 'NOT_EXECUTED_NORMAL_MERGER_REQUIRED',
+                  'production_environment_requires_independent_approval': 'PARTIAL_NATIVE_ONE_OF_N_REVIEW_SEMANTICS',
+              },
+              'claim_ceiling': {
+                  'source_modified': False,
+                  'pull_request_merged': False,
+                  'independent_human_review_created': False,
+                  'dynamic_acceptance_complete': False,
+                  'release_signing_custody_proven': False,
+                  'd0t03_closed': False,
+              },
+          }
+
+          def persist() -> None:
+              (OUT / 'governance-report.json').write_text(
+                  json.dumps(report, indent=2, sort_keys=True) + '\n',
+                  encoding='utf-8',
+              )
+
+          class ApiFailure(RuntimeError):
+              pass
+
+          def request(
+              method: str,
+              path: str,
+              payload: Any | None = None,
+              expected: tuple[int, ...] = (200,),
+              *,
+              optional: bool = False,
+          ) -> tuple[int, Any]:
+              url = api_root + '/' + path.lstrip('/')
+              data = None
+              if payload is not None:
+                  data = json.dumps(payload, separators=(',', ':')).encode('utf-8')
+              headers = {
+                  'Authorization': f'Bearer {token}',
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+                  'User-Agent': 'trillionnium-d0t03-governance-v6',
+              }
+              if data is not None:
+                  headers['Content-Type'] = 'application/json'
+              req = urllib.request.Request(url, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req, timeout=45) as response:
+                      status = response.status
+                      raw = response.read()
+              except urllib.error.HTTPError as exc:
+                  status = exc.code
+                  raw = exc.read()
+              except Exception as exc:  # network and protocol failures fail closed
+                  report['operations'].append({
+                      'method': method,
+                      'path': path,
+                      'status': 'TRANSPORT_ERROR',
+                      'error': type(exc).__name__,
+                  })
+                  raise ApiFailure(f'{method} {path}: {type(exc).__name__}') from exc
+
+              text = raw.decode('utf-8', errors='replace')
+              try:
+                  body: Any = json.loads(text) if text else None
+              except json.JSONDecodeError:
+                  body = {'unparsed_tail': text[-2000:]}
+              op = {'method': method, 'path': path, 'status': status}
+              if status not in expected:
+                  op['response'] = body
+              report['operations'].append(op)
+              if status not in expected and not optional:
+                  raise ApiFailure(f'{method} {path}: HTTP {status}')
+              return status, body
+
+          def bool_enabled(value: Any) -> bool:
+              if isinstance(value, dict):
+                  return value.get('enabled') is True
+              return value is True
+
+          def active_org_membership(login: str) -> bool:
+              quoted = urllib.parse.quote(login, safe='')
+              status, body = request(
+                  'GET',
+                  f'orgs/{owner}/memberships/{quoted}',
+                  expected=(200,),
+                  optional=True,
+              )
+              return status == 200 and isinstance(body, dict) and body.get('state') == 'active'
+
+          try:
+              if not token:
+                  report['status'] = 'ADMIN_TOKEN_MISSING'
+                  report['blockers'].append(
+                      'Repository secret TRILLIONNIUM_GITHUB_ADMIN_TOKEN is absent or unavailable to this push workflow.'
+                  )
+                  persist()
+                  raise ApiFailure('administration-capable token unavailable')
+
+              expected_ref = f'refs/heads/{expected_control_branch}'
+              if os.environ.get('GITHUB_REF') != expected_ref:
+                  raise ApiFailure(f'unexpected control ref: {os.environ.get("GITHUB_REF")}')
+
+              _, control_commit = request('GET', f'repos/{repo}/commits/{os.environ["GITHUB_SHA"]}')
+              parents = [item.get('sha') for item in control_commit.get('parents', [])]
+              if parents != [expected_product_head]:
+                  raise ApiFailure(
+                      f'control commit must have exactly the frozen product head as parent; observed {parents}'
+                  )
+
+              _, pr = request('GET', f'repos/{repo}/pulls/{pr_number}')
+              if pr.get('state') != 'open':
+                  raise ApiFailure('convergence pull request is not open')
+              if pr.get('head', {}).get('sha') != expected_product_head:
+                  raise ApiFailure('convergence pull request head changed; refusing stale governance transaction')
+              if pr.get('base', {}).get('ref') != target_branch:
+                  raise ApiFailure('convergence pull request no longer targets main')
+
+              required_contexts = [
+                  'desktop-ci / repository-contracts',
+                  'desktop-ci / rust',
+                  'governance-integrity / governance-integrity',
+              ]
+              protection_request = {
+                  'required_status_checks': {
+                      'strict': True,
+                      'contexts': required_contexts,
+                  },
+                  'enforce_admins': True,
+                  'required_pull_request_reviews': {
+                      'dismiss_stale_reviews': True,
+                      'require_code_owner_reviews': True,
+                      'required_approving_review_count': 2,
+                      'require_last_push_approval': True,
+                      'bypass_pull_request_allowances': {
+                          'users': [],
+                          'teams': [],
+                          'apps': [],
+                      },
+                  },
+                  'restrictions': None,
+                  'required_linear_history': True,
+                  'allow_force_pushes': False,
+                  'allow_deletions': False,
+                  'block_creations': False,
+                  'required_conversation_resolution': True,
+                  'lock_branch': False,
+                  'allow_fork_syncing': False,
+              }
+              request(
+                  'PUT',
+                  f'repos/{repo}/branches/{urllib.parse.quote(target_branch, safe="")}/protection',
+                  protection_request,
+              )
+
+              request(
+                  'PUT',
+                  f'repos/{repo}/actions/permissions/workflow',
+                  {
+                      'default_workflow_permissions': 'read',
+                      'can_approve_pull_request_reviews': False,
+                  },
+                  expected=(204,),
+              )
+
+              request(
+                  'PATCH',
+                  f'repos/{repo}',
+                  {
+                      'allow_merge_commit': False,
+                      'allow_rebase_merge': False,
+                      'allow_squash_merge': True,
+                      'allow_auto_merge': False,
+                      'delete_branch_on_merge': True,
+                  },
+              )
+
+              _, collaborators = request(
+                  'GET',
+                  f'repos/{repo}/collaborators?affiliation=all&per_page=100',
+              )
+              existing_org_collaborators: list[dict[str, Any]] = []
+              for item in collaborators:
+                  if item.get('type') != 'User':
+                      continue
+                  login = str(item.get('login', ''))
+                  if not login or login.casefold().endswith('[bot]'):
+                      continue
+                  permissions = item.get('permissions') or {}
+                  role_name = str(item.get('role_name', '')).casefold()
+                  has_write = any(permissions.get(key) is True for key in ('push', 'maintain', 'admin'))
+                  has_write = has_write or role_name in {'write', 'maintain', 'admin'}
+                  if not has_write or not active_org_membership(login):
+                      continue
+                  existing_org_collaborators.append({'login': login, 'id': item.get('id')})
+
+              existing_org_collaborators.sort(key=lambda item: item['login'].casefold())
+              independent = [
+                  item for item in existing_org_collaborators
+                  if item['login'].casefold() != source_author
+              ]
+              report['eligible_existing_org_collaborators'] = existing_org_collaborators
+              report['independent_existing_org_collaborators'] = independent
+
+              _, teams = request('GET', f'orgs/{owner}/teams?per_page=100')
+              team = next((item for item in teams if item.get('slug') == team_slug), None)
+              if team is None:
+                  _, team = request(
+                      'POST',
+                      f'orgs/{owner}/teams',
+                      {
+                          'name': team_name,
+                          'description': 'Independent source custody and review for TrillionniumOS Desktop',
+                          'privacy': 'closed',
+                          'notification_setting': 'notifications_enabled',
+                      },
+                      expected=(201,),
+                  )
+                  team_slug = str(team['slug'])
+
+              request(
+                  'PUT',
+                  f'orgs/{owner}/teams/{urllib.parse.quote(team_slug, safe="")}/repos/{owner}/{repo_name}',
+                  {'permission': 'push'},
+                  expected=(204,),
+              )
+              for member in existing_org_collaborators:
+                  request(
+                      'PUT',
+                      f'orgs/{owner}/teams/{urllib.parse.quote(team_slug, safe="")}/memberships/'
+                      f'{urllib.parse.quote(member["login"], safe="")}',
+                      {'role': 'member'},
+                  )
+
+              environment_configured = False
+              if len(independent) >= 2:
+                  reviewers = [
+                      {'type': 'User', 'id': member['id']}
+                      for member in independent[:6]
+                      if isinstance(member.get('id'), int)
+                  ]
+                  if len(reviewers) >= 2:
+                      request(
+                          'PUT',
+                          f'repos/{repo}/environments/production',
+                          {
+                              'wait_timer': 0,
+                              'prevent_self_review': True,
+                              'reviewers': reviewers,
+                              'deployment_branch_policy': {
+                                  'protected_branches': True,
+                                  'custom_branch_policies': False,
+                              },
+                          },
+                      )
+                      environment_configured = True
+              if not environment_configured:
+                  report['blockers'].append(
+                      'Fewer than two existing active non-author organization collaborators with write-or-higher access are available for production reviewers.'
+                  )
+
+              _, protection = request(
+                  'GET',
+                  f'repos/{repo}/branches/{urllib.parse.quote(target_branch, safe="")}/protection',
+              )
+              _, workflow_permissions = request(
+                  'GET',
+                  f'repos/{repo}/actions/permissions/workflow',
+              )
+              _, repository = request('GET', f'repos/{repo}')
+              _, team_members = request(
+                  'GET',
+                  f'orgs/{owner}/teams/{urllib.parse.quote(team_slug, safe="")}/members?role=all&per_page=100',
+              )
+              environment = None
+              if environment_configured:
+                  _, environment = request('GET', f'repos/{repo}/environments/production')
+
+              reviews = protection.get('required_pull_request_reviews') or {}
+              checks = protection.get('required_status_checks') or {}
+              bypass = reviews.get('bypass_pull_request_allowances') or {}
+              observed_contexts = sorted(checks.get('contexts') or [])
+              protection_ok = all([
+                  checks.get('strict') is True,
+                  observed_contexts == sorted(required_contexts),
+                  bool_enabled(protection.get('enforce_admins')),
+                  reviews.get('dismiss_stale_reviews') is True,
+                  reviews.get('require_code_owner_reviews') is True,
+                  reviews.get('required_approving_review_count') == 2,
+                  reviews.get('require_last_push_approval') is True,
+                  not (bypass.get('users') or []),
+                  not (bypass.get('teams') or []),
+                  not (bypass.get('apps') or []),
+                  bool_enabled(protection.get('required_linear_history')),
+                  not bool_enabled(protection.get('allow_force_pushes')),
+                  not bool_enabled(protection.get('allow_deletions')),
+                  bool_enabled(protection.get('required_conversation_resolution')),
+              ])
+              actions_ok = (
+                  workflow_permissions.get('default_workflow_permissions') == 'read'
+                  and workflow_permissions.get('can_approve_pull_request_reviews') is False
+              )
+              merge_policy_ok = all([
+                  repository.get('allow_merge_commit') is False,
+                  repository.get('allow_rebase_merge') is False,
+                  repository.get('allow_squash_merge') is True,
+                  repository.get('allow_auto_merge') is False,
+              ])
+              team_logins = sorted(item.get('login') for item in team_members if item.get('login'))
+              team_ok = len(team_logins) >= 2
+              environment_ok = bool(
+                  environment_configured
+                  and isinstance(environment, dict)
+                  and environment.get('protection_rules')
+                  and len(independent) >= 2
+              )
+
+              report['readback'] = {
+                  'branch_protection': protection,
+                  'workflow_permissions': workflow_permissions,
+                  'repository_merge_policy': {
+                      'allow_merge_commit': repository.get('allow_merge_commit'),
+                      'allow_rebase_merge': repository.get('allow_rebase_merge'),
+                      'allow_squash_merge': repository.get('allow_squash_merge'),
+                      'allow_auto_merge': repository.get('allow_auto_merge'),
+                      'delete_branch_on_merge': repository.get('delete_branch_on_merge'),
+                  },
+                  'codeowner_team': {
+                      'name': team.get('name'),
+                      'slug': team_slug,
+                      'id': team.get('id'),
+                      'members': team_logins,
+                  },
+                  'production_environment': environment,
+                  'checks': {
+                      'protection_ok': protection_ok,
+                      'actions_ok': actions_ok,
+                      'merge_policy_ok': merge_policy_ok,
+                      'team_ok': team_ok,
+                      'environment_ok': environment_ok,
+                  },
+              }
+
+              if not protection_ok:
+                  report['blockers'].append('Strict protected-main readback does not match the D0T-03 contract.')
+              if not actions_ok:
+                  report['blockers'].append('Actions default permissions readback is not read-only with PR approval disabled.')
+              if not merge_policy_ok:
+                  report['blockers'].append('Repository merge policy readback is not squash-only with auto-merge disabled.')
+              if not team_ok:
+                  report['blockers'].append('Desktop Maintainers has fewer than two existing organization members.')
+              if not environment_ok:
+                  report['blockers'].append('Production environment did not read back with the requested independent reviewer set.')
+
+              controls_ok = protection_ok and actions_ok and merge_policy_ok and team_ok and environment_ok
+              report['status'] = 'LIVE_CONTROLS_APPLIED' if controls_ok else 'LIVE_CONTROLS_PARTIAL'
+              report['claim_ceiling']['live_repository_controls_applied'] = controls_ok
+              report['claim_ceiling']['organization_team_created_or_reused'] = team_ok
+              report['claim_ceiling']['production_environment_configured'] = environment_ok
+              report['claim_ceiling']['d0t03_closed'] = False
+              persist()
+              if not controls_ok:
+                  raise ApiFailure('one or more live governance controls remain incomplete')
+
+          except Exception as exc:
+              if report['status'] == 'STARTED':
+                  report['status'] = 'FAILED_CLOSED'
+              message = str(exc)
+              if message and message not in report['blockers']:
+                  report['blockers'].append(message)
+              persist()
+              raise
+          finally:
+              persist()
+          PY
+
+      - name: Publish transaction summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=/tmp/d0t03-live-governance-v6/governance-report.json
+          if test -f "$report"; then
+            {
+              echo '## D0T-03 live governance transaction v6'
+              echo
+              echo '```json'
+              python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('/tmp/d0t03-live-governance-v6/governance-report.json')
+          value = json.loads(path.read_text())
+          print(json.dumps({
+              'status': value.get('status'),
+              'control_sha': value.get('control_sha'),
+              'expected_product_head': value.get('expected_product_head'),
+              'blockers': value.get('blockers'),
+              'checks': value.get('readback', {}).get('checks'),
+              'team': value.get('readback', {}).get('codeowner_team'),
+              'claim_ceiling': value.get('claim_ceiling'),
+          }, indent=2, sort_keys=True))
+          PY
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload immutable governance readback
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d0t03-live-governance-v6-${{ github.sha }}
+          path: /tmp/d0t03-live-governance-v6
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 6
+          include-hidden-files: true
