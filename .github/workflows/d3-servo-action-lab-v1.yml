@@ -1,0 +1,66 @@
+name: d3-servo-action-lab-v1
+
+on:
+  push:
+    branches:
+      - lab/d3-servo-action-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d3-servo-action-lab-v1
+  cancel-in-progress: true
+
+env:
+  SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+
+jobs:
+  export-servo-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out laboratory control source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Check out exact Servo source pin
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.SERVO_COMMIT }}
+          path: servo-source
+          fetch-depth: 1
+          submodules: false
+          persist-credentials: false
+
+      - name: Build deterministic tracked-source export
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo-source rev-parse HEAD)" = "$SERVO_COMMIT"
+          test -z "$(git -C servo-source status --porcelain=v1)"
+          rm -rf /tmp/servo-source-export
+          mkdir -p /tmp/servo-source-export
+          git -C servo-source ls-files -z \
+            | tar --null --files-from=- -C servo-source -cf - \
+            | tar -xf - -C /tmp/servo-source-export
+          printf '%s\n' "$SERVO_COMMIT" > /tmp/servo-source-export/SOURCE-COMMIT.txt
+          git -C servo-source rev-parse 'HEAD^{tree}' > /tmp/servo-source-export/SOURCE-TREE.txt
+          find -P /tmp/servo-source-export -type f \
+            ! -name SOURCE-SHA256SUMS.txt -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > /tmp/servo-source-export/SOURCE-SHA256SUMS.txt
+
+      - name: Upload exact Servo tracked source
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: servo-source-${{ env.SERVO_COMMIT }}
+          path: /tmp/servo-source-export
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 6
+          include-hidden-files: true
