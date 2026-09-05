@@ -1,0 +1,11 @@
+name: publish-v14-control
+on:
+  push:
+    branches: [codex/v14-object-import-3c73e5a2]
+permissions:
+  contents: read
+jobs:
+  control:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo control
