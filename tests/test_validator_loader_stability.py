@@ -78,6 +78,11 @@ class ValidatorLoaderStabilityTests(unittest.TestCase):
             "**Cúrrent status:** `production_ready`",  # composed accent
             "**C\u0338urrent status:** `production_ready`",  # combining overlay
             "**Currⅇnt status:** `production_ready`",  # compatibility confusable
+            "**\u202esutats tnerruC\u202c:** `production_ready`",  # RLO visual reversal
+            "**\u202egniliec mialC\u202c:** production release ready.",  # RLO visual reversal
+            "**&#x202E;sutats tnerruC&#x202C;:** `production_ready`",  # entity-decoded RLO
+            "**CurX\bent status:** `production_ready`",  # control-character erasure shape
+            "**\x1b[31mCurrent status:** `production_ready`",  # ANSI control prefix
         )
         for kind in ("module", "component"):
             for declaration in declarations:
@@ -93,6 +98,7 @@ class ValidatorLoaderStabilityTests(unittest.TestCase):
             "Résumé and ελληνική documentation remain ordinary prose.",
             "状态说明：本段不声明机器权威。",
             "The current lifecycle remains described without a declaration delimiter.",
+            "\u2067مرحبا بالعالم\u2069: نص توضيحي عادي.",
         )
         for kind in ("module", "component"):
             with self.subTest(kind=kind), projection_tests.fixture_for(kind) as (fixture, path, _, _):

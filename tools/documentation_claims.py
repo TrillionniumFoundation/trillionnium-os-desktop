@@ -79,13 +79,17 @@ def _bounded_edit_distance(left: str, right: str, limit: int) -> int:
     return previous[-1]
 
 
-def _non_ascii_claim_like_prefix(line: str) -> bool:
-    """Reject visually claim-like declaration labels outside the ASCII grammar.
+def _unsafe_claim_like_prefix(line: str) -> bool:
+    """Reject disguised declaration labels outside the exact ASCII grammar.
 
-    Exact accepted declarations are ASCII.  This check is deliberately scoped
+    Exact accepted declarations are ASCII. This check is deliberately scoped
     to the prefix before ``:``/``=`` so ordinary multilingual prose remains
-    valid.  Known homoglyphs map to a focused skeleton; unknown non-ASCII
+    valid. Known homoglyphs map to a focused skeleton; unknown non-ASCII
     letters fail closed when deleting them leaves a near-authority label.
+    Unicode controls are also examined. In particular, a bidi override can
+    render a reversed stored label as an authority label, so both logical and
+    reversed detection candidates are compared without ever accepting a
+    normalized replacement.
     """
     normalized = unicodedata.normalize("NFKC", html.unescape(line)).casefold()
     delimiters = [
@@ -96,12 +100,17 @@ def _non_ascii_claim_like_prefix(line: str) -> bool:
     if not delimiters:
         return False
     prefix = normalized[:min(delimiters)]
-    if not any(
+    has_non_ascii_letter_or_mark = any(
         not character.isascii()
         and (unicodedata.category(character).startswith("L")
              or unicodedata.category(character).startswith("M"))
         for character in prefix
-    ):
+    )
+    has_control = any(
+        unicodedata.category(character).startswith("C")
+        for character in prefix
+    )
+    if not has_non_ascii_letter_or_mark and not has_control:
         return False
 
     skeleton = _detection_text(prefix)
@@ -110,19 +119,23 @@ def _non_ascii_claim_like_prefix(line: str) -> bool:
         for character in _normalized_characters(prefix)
         if character.isascii() and character.isalnum()
     )
+    candidates = {skeleton, ascii_only}
+    if has_control:
+        # Bidi embedding/override controls can display a logically reversed
+        # label. Other terminal/rendering controls can erase or decorate a
+        # near-authority prefix. Acceptance still uses only the original exact
+        # line; these variants are detection-only.
+        candidates.update(candidate[::-1] for candidate in tuple(candidates))
+
     for authority in _AUTHORITY_LABELS:
-        if skeleton == authority:
-            return True
         limit = 1 if authority == "status" else 2
-        # Markdown markers carry no letters, so declaration prefixes normally
-        # reduce to the label itself.  A bounded suffix also catches blockquote
-        # or list prose without treating arbitrary Unicode paragraphs as claims.
-        for candidate in (skeleton, ascii_only):
+        for candidate in candidates:
             if not candidate:
                 continue
             windows = {candidate}
             maximum = len(authority) + limit
             if len(candidate) > maximum:
+                windows.add(candidate[:maximum])
                 windows.add(candidate[-maximum:])
             if any(
                 _bounded_edit_distance(window, authority, limit) <= limit
@@ -209,8 +222,8 @@ def validate_claim_projection(
     prefix_end = max(authority_positions, default=-1)
     confusable_reported = False
     for index, line in enumerate(lines):
-        if not confusable_reported and _non_ascii_claim_like_prefix(line):
-            errors.append(f"{label} non-ASCII confusable authority declaration")
+        if not confusable_reported and _unsafe_claim_like_prefix(line):
+            errors.append(f"{label} confusable or control-shaped authority declaration")
             confusable_reported = True
         if index <= prefix_end:
             if "<" in line or re.match(r"^ {0,3}(?:`{3,}|~{3,})", line):

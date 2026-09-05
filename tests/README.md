@@ -103,7 +103,7 @@ failure packet.
 
 - every nested Python test module and case is discoverable from the authoritative command
 - fixtures cannot be mistaken for product binaries, production keys, hardware, or independent attestations
-- hostile tests target fail-open paths, duplicate keys, symlinks, traversal, stale state, and authority confusion
+- hostile tests target fail-open paths, duplicate keys, symlinks, traversal, stale state, Unicode/bidi/control rendering ambiguity, and authority confusion
 
 In addition, repository-relative paths must be canonical and read without
 following symlinks where they influence authority or evidence. Structured data

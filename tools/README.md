@@ -156,7 +156,9 @@ Rust matrix before requesting independent review.
 The repository-owned `tools/documentation_claims.py` helper is imported by both
 module and component documentation validators. It checks exact registry values
 and rejects conflicting or disguised duplicate metadata without normalizing
-untrusted statements into accepted claims. It has no standalone activation or
+untrusted statements into accepted claims. Detection also treats Unicode bidi
+and control characters as hostile when a declaration prefix can render as an
+authority label, while leaving non-claim multilingual prose valid. It has no standalone activation or
 promotion entrypoint. See `docs/architecture/DOCUMENTATION_CLAIM_PROJECTIONS.md`
 and `tests/test_documentation_claim_projection.py` for the format and corpus.
 
