@@ -1,0 +1,16 @@
+[Unit]
+Description=TrillionniumOS D2I external Servo content-process crash proof
+Requires=trillionnium-d2i-runtime.service
+After=trillionnium-d2i-runtime.service
+Before=trillionnium-d2i-acceptance.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/trillionnium-d2i-content-crash-proof
+TimeoutStartSec=8min
+RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=trillionnium-d2i-acceptance.target

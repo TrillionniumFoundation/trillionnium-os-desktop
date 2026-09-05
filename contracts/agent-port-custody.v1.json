@@ -1,6 +1,10 @@
 {
   "schema": "trillionnium.desktop.agent-port-custody.v1",
   "status": "HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER",
+  "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+  "evidence_freshness": "STALE_EVIDENCE",
+  "merge_ready": false,
+  "stale_reason": "D0C-05 host result 7be7121b1d2593a0e708ec9ade189ef84ab245da was recorded before the current candidate tree. Rerun agent-port-custody on the exact candidate head, then update the bound evidence and merge_ready flag under independent review.",
   "work_package": "D0C-05",
   "socket": {
     "address_family": "AF_UNIX",
@@ -10,11 +14,27 @@
     "owner": "hepta-browserd",
     "group": "hepta-agent",
     "mode": "0660",
+    "directory_owner": "root",
+    "directory_group": "hepta-agent-socket",
     "directory_mode": "0750",
     "accept_per_connection": true,
     "backlog": 8,
     "maximum_connections": 8,
     "remove_on_stop": true
+  },
+  "path_custody": {
+    "socket_inode_owner": "hepta-browserd",
+    "socket_inode_group": "hepta-agent",
+    "directory_owner": "root",
+    "directory_group": "hepta-agent-socket",
+    "directory_mode": "0750",
+    "agent_client_enrolled_in_directory_group": true,
+    "browser_service_in_directory_group": false,
+    "browser_service_socket_directory_access": "read_only_mount_and_no_dac_traversal",
+    "browser_service_socket_path_mutation_authority": false,
+    "product_socket_dropin": "packaging/debian/systemd/hepta-browserd-agent.socket.d/10-root-path-custody.conf",
+    "product_service_dropin": "packaging/debian/systemd/hepta-browserd-agent@.service.d/10-root-path-custody.conf",
+    "development_profile_in_production_install_map": false
   },
   "activation": {
     "preset": "disable",
@@ -33,7 +53,11 @@
     "restart": "no",
     "user": "hepta-browserd",
     "group": "hepta-browserd",
-    "supplementary_group": "hepta-agent",
+    "legacy_account_group": "hepta-agent",
+    "effective_explicit_supplementary_groups": [],
+    "directory_custody_group": "hepta-agent-socket",
+    "member_of_directory_custody_group": false,
+    "socket_path_mutation_authority": false,
     "private_network": true,
     "address_families": [
       "AF_UNIX"
@@ -81,6 +105,11 @@
     "external_effect_authority": false
   },
   "host_validation": {
+    "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+    "evidence_freshness": "STALE_EVIDENCE",
+    "merge_ready": false,
+    "reason": "The recorded systemd custody host result is a historical baseline. Static custody and claim-ceiling checks remain available, but the exact-head custody gate must be rerun before promotion.",
+    "stale_reason": "D0C-05 host result 7be7121b1d2593a0e708ec9ade189ef84ab245da was recorded before the current candidate tree. Rerun agent-port-custody on the exact candidate head, then update the bound evidence and merge_ready flag under independent review.",
     "validated_source_head": "7be7121b1d2593a0e708ec9ade189ef84ab245da",
     "runner": "ubuntu-24.04",
     "rust_version": "1.93.0",
@@ -105,12 +134,15 @@
     "project_truth_validator_pass",
     "systemd_unit_static_audit_pass",
     "systemd_analyze_verify_pass",
+    "root_owned_socket_parent_custody_pass",
+    "browser_uid_not_in_parent_custody_group",
     "rust_1_93_fmt_pass",
     "rust_1_93_clippy_pass",
     "rust_1_93_workspace_tests_pass",
     "product_binary_self_check_pass",
     "fixture_feature_self_check_pass",
-    "production_install_graph_excludes_fixture"
+    "production_install_graph_excludes_fixture",
+    "qemu_effective_dropin_runtime_negative_test_pass"
   ],
   "remaining_activation_gate": "qemu_pid1_activation_evidence_before_product_enable"
 }

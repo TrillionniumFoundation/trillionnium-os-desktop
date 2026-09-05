@@ -75,6 +75,28 @@ fn inherited_stream_from_stdin() -> Result<UnixStream, ServiceError> {
 }
 
 fn verify_stream_socket(fd: libc::c_int) -> Result<(), ServiceError> {
+    let mut socket_domain: libc::c_int = 0;
+    let mut domain_length = std::mem::size_of::<libc::c_int>() as libc::socklen_t;
+    // SAFETY: the output pointers refer to initialized writable storage for
+    // the call and getsockopt retains neither pointer.
+    let domain_status = unsafe {
+        libc::getsockopt(
+            fd,
+            libc::SOL_SOCKET,
+            libc::SO_DOMAIN,
+            std::ptr::addr_of_mut!(socket_domain).cast(),
+            std::ptr::addr_of_mut!(domain_length),
+        )
+    };
+    if domain_status != 0 {
+        return Err(ServiceError::Io(io::Error::last_os_error()));
+    }
+    if usize::try_from(domain_length).ok() != Some(std::mem::size_of::<libc::c_int>())
+        || socket_domain != libc::AF_UNIX
+    {
+        return Err(ServiceError::WrongInheritedDescriptor);
+    }
+
     let mut socket_type: libc::c_int = 0;
     let mut length = std::mem::size_of::<libc::c_int>() as libc::socklen_t;
     // SAFETY: the output pointers refer to initialized writable storage for
@@ -222,6 +244,20 @@ mod tests {
             verify_local_socket_path(&left, Path::new(AGENT_SOCKET_PATH)),
             Err(ServiceError::UnnamedInheritedSocket)
         ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn inherited_descriptor_requires_unix_domain() {
+        // A same-type AF_INET stream must not be accepted as an inherited
+        // AgentPort descriptor even when its SO_TYPE is SOCK_STREAM.
+        let fd = unsafe { libc::socket(libc::AF_INET, libc::SOCK_STREAM, 0) };
+        assert!(fd >= 0, "AF_INET socket creation failed");
+        assert!(matches!(
+            verify_stream_socket(fd),
+            Err(ServiceError::WrongInheritedDescriptor)
+        ));
+        unsafe { libc::close(fd) };
     }
 
     #[test]

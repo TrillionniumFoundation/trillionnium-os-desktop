@@ -11,11 +11,23 @@ not admit a request, drive Servo, authorize a capability, execute an operation,
 or replay anything. The product may bind it to BrowserActor only after this
 standalone durability gate passes.
 
+In the current D3 development profile, the observer persists a logical
+monotonic sequence in the `*_monotonic_ms` fields. The sequence is strictly
+ordered across reopen and rotation and is suitable for lifecycle ordering; it
+is not a claim about wall-clock elapsed duration. A runtime integration that
+needs physical elapsed timing must bind and attest its monotonic clock before
+raising the claim ceiling.
+
 Every segment is a private `0600` regular file. A sidecar writer lease is
-created atomically and binds the current Linux boot ID, PID, and `/proc` start
-time. A crash leaves a stale lease; reopening requires the explicit crash
-recovery policy and verifies that the recorded process identity is no longer
-live before removing it.
+created atomically, held with an advisory descriptor lock, and binds the
+current Linux boot ID, PID, and `/proc` start time. A clean teardown keeps the
+sidecar inode and writes a `released=1` marker while holding the lock; this
+avoids a check-then-unlink rename race and lets the next opener safely reuse
+the same inode. A crash leaves the identity payload stale; reopening requires
+the explicit crash-recovery policy and verifies that the recorded process
+identity is no longer live before replacing the payload in place. Malformed or
+unreadable lease state is never treated as stale, and a replacement lock inode
+is never removed by an old writer.
 
 ## Format and chain
 
@@ -32,11 +44,23 @@ The prefix binds:
 - payload length and payload digest.
 
 Rotated segments bind the previous complete segment digest and last record
-digest. Rotation is refused while any receipt is unresolved, so recovery of an
-individual segment never needs hidden lifecycle state from an unavailable
-predecessor.
+digest. Rotation is refused while any receipt is unresolved. The in-memory
+successor carries terminal receipt progress, and `inspect_chain` replays
+lifecycle/effect-class validation across every supplied segment, so a receipt
+identifier cannot be admitted again after rotation. A writer must now call
+`ReceiptJournal::open_chain` with the complete ordered chain and expected journal
+ID; `open` accepts segment one only. Read-only inspection is not a substitute
+for importing predecessor progress under pinned inode locks. See
+[`D3_JOURNAL_CHAIN_RECOVERY.md`](D3_JOURNAL_CHAIN_RECOVERY.md) for transaction,
+resource limits, development configuration, privacy, and residual risks.
 
 ## Commit and recovery
+
+All facts in one lifecycle now share immutable admission identity, request
+hash and privacy class, not only effect class. The same helper checks writer,
+reader, complete-chain and export paths. Correctly rehashed identity drift is
+hard corruption; no record-format change or authenticity claim is implied.
+See [the admission identity contract](RECEIPT_ADMISSION_IDENTITY.md).
 
 Append order is:
 
@@ -63,10 +87,31 @@ receipt lifecycle.
 
 ## Privacy, export, rotation, and retention
 
-`secret_redacted` records cannot persist a detail field. Redacted JSONL export
-omits detail for `sensitive` and `secret_redacted` records. Retention planning
-returns only old, inactive segments whose sealed digest exactly matches the
-source digest recorded by a completed export; it never deletes files itself.
+`secret_redacted` records cannot persist a detail field. The public
+`export_redacted_jsonl` entry point now emits one canonical
+`trillionnium.desktop.receipt.v1` envelope per receipt ID: requested and
+dispatched records are aggregated with their terminal completed,
+interrupted, or indeterminate fact. It validates the envelope field set and
+status/error-code rule before atomically committing the JSONL. An unresolved
+receipt is rejected rather than exported with an invented status. The
+journal-level fields (sequence, record digest, lifecycle, effect/privacy
+class, and request/response digests) remain available through
+`export_journal_redacted_jsonl` for forensic consumers; that format is not a
+receipt.v1 envelope. Retention planning returns only old, inactive segments
+whose sealed digest exactly matches the source digest recorded by a completed
+export; it never deletes files itself. Full-chain reopen currently requires all
+predecessors: a retention candidate is not permission to remove an ancestor of
+an active chain. Trusted archival checkpoints and automatic head selection remain
+unimplemented, and reaching the bounded chain size must fail closed.
+
+The observer emits only fields it owns at this lifecycle boundary. Optional
+producer-owned fields in the receipt.v1 schema—such as package-lock and
+normalized-target digests, final URL/redirect evidence, challenge and
+snapshot evidence, receipt-chain digests, and signing-key identity—are
+intentionally omitted until their owning producer supplies them. Omission is
+not a negative assertion: consumers must treat an absent optional field as
+“not supplied by this observer,” never as proof that the fact is empty, false,
+or unavailable.
 
 ## Promotion evidence
 
@@ -87,3 +132,12 @@ journal fault corpus covering:
 
 Passing this gate does not claim BrowserActor, Servo, an enabled AgentPort, or
 an authorized external effect.
+
+## Managed directory mode
+
+[Managed receipt storage](MANAGED_RECEIPT_STORE.md) adds an opt-in complete-head
+selection and pending-header publication protocol while retaining v1 receipt
+bytes. It holds a private directory lock rather than per-file PID leases and
+rejects legacy writer entrypoints on managed segments. Its bounded recovery
+and development-service rotation do not authorize replay or prove physical
+power-loss durability. Existing explicit-path journals remain supported.

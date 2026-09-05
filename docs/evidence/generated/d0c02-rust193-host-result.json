@@ -1,6 +1,10 @@
 {
   "schema": "trillionnium.desktop.d0c02-rust193-host-result.v1",
   "status": "PASS_HOST_VALIDATED_NO_LISTENER",
+  "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+  "evidence_freshness": "STALE_EVIDENCE",
+  "merge_ready": false,
+  "stale_reason": "Host result 786debc12aa8d790b231397c1a3341fbf89de080 was recorded before the current candidate tree. Run agent-transport-reference on the exact candidate head, then update the bound evidence and merge_ready flag under independent review.",
   "candidate_head": "786debc12aa8d790b231397c1a3341fbf89de080",
   "workflow": {
     "name": "desktop-ci",
@@ -51,7 +55,9 @@
   "claim": {
     "work_package": "D0C-02",
     "promotion": "HOST_VALIDATED_CARRIER_CORE",
-    "merge_ready": true,
+    "evidence_freshness": "STALE_EVIDENCE",
+    "merge_ready": false,
+    "stale_reason": "Host result 786debc12aa8d790b231397c1a3341fbf89de080 was recorded before the current candidate tree. Run agent-transport-reference on the exact candidate head, then update the bound evidence and merge_ready flag under independent review.",
     "does_not_claim": [
       "product Agent listener",
       "canonical Browser API codec",

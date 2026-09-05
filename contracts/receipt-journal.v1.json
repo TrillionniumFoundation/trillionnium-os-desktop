@@ -2,6 +2,11 @@
   "schema": "trillionnium.desktop.receipt-journal-contract.v1",
   "status": "SOURCE_CANDIDATE_NO_BROWSER_DISPATCH",
   "owner": "hepta-session-core::receipt_journal",
+  "receipt_envelope_schema": {
+    "path": "contracts/receipt.v1.schema.json",
+    "sha256": "8610d2e9dd8ccc72b9803b2a51704aa282ccd96f50d19ac33074060e8cfc0eed",
+    "version_policy": "active_2026-08-29-d6_plus_historical_2026-08-28-d5_only"
+  },
   "format": {
     "byte_order": "big_endian",
     "segment_magic_ascii": "HPTJRNL1",
@@ -20,7 +25,22 @@
     "record_link": "previous_record_sha256",
     "segment_link": "previous_segment_sha256",
     "first_segment_requires_zero_predecessors": true,
-    "rotation_requires_quiescent_no_unresolved_receipts": true
+    "rotation_requires_quiescent_no_unresolved_receipts": true,
+    "complete_writer_reopen": {
+      "api": "ReceiptJournal::open_chain",
+      "standalone_open_requires_segment_one": true,
+      "expected_journal_id_required": true,
+      "maximum_segments": 64,
+      "maximum_total_bytes": 134217728,
+      "maximum_total_records": 131072,
+      "all_predecessor_inode_locks_held_until_drop": true,
+      "global_receipt_progress_imported": true,
+      "global_logical_clock_imported": true,
+      "only_active_torn_tail_repairable_after_complete_validation": true,
+      "authoritative_head_selected_by_trusted_caller": true,
+      "automatic_pruning_or_head_discovery": false,
+      "independent_exact_image_qualified": false
+    }
   },
   "lifecycle": {
     "states": [
@@ -42,10 +62,46 @@
       "completed",
       "indeterminate",
       "interrupted"
-    ]
+    ],
+    "admission_binding": {
+      "version": "receipt-admission-binding.v1",
+      "immutable_fields": [
+        "receipt_id",
+        "plan_revision",
+        "image_id",
+        "servo_commit",
+        "browserd_version",
+        "session_id",
+        "operation",
+        "session_generation",
+        "document_generation",
+        "semantic_snapshot_revision",
+        "mutation_epoch",
+        "source",
+        "effect_class",
+        "privacy_class",
+        "request_sha256"
+      ],
+      "internal_commitment": "sha256(domain || length_prefixed_identity_strings || big_endian_u64_revisions || enum_bytes || request_sha256)",
+      "domain_hex": "68657074612e726563656970742e61646d697373696f6e2d62696e64696e672e763100",
+      "enforced_at": [
+        "append",
+        "recover_bytes",
+        "inspect_chain",
+        "open_chain",
+        "ReceiptEnvelope::from_records",
+        "export_journal_redacted_jsonl"
+      ],
+      "mismatch_before_append": "InvalidInput_without_write_or_progress_change",
+      "mismatch_on_recovery": "Corruption_never_tail_repaired",
+      "disk_format_version": 1,
+      "legacy_inconsistent_complete_record": "reject_preserve_original_no_automatic_migration",
+      "timestamps": "retain_existing_multiclock_observations_and_maximum_logical_clock",
+      "cryptographic_authentication_claim": false
+    }
   },
   "durability": {
-    "single_writer": "atomic_writer_lease_bound_to_boot_id_pid_and_proc_start_time",
+    "single_writer": "unmanaged_boot_pid_lease_or_managed_directory_lock_with_all_segment_inode_locks",
     "file_mode": "0600",
     "append": "write_all_then_sync_data_before_in_memory_commit",
     "create_and_export": "sync_file_then_sync_parent_directory",
@@ -71,6 +127,13 @@
     "redacted_export_includes_sensitive_detail": false,
     "retention_deletes_unexported_segments": false
   },
+  "exports": {
+    "public_receipt_envelope": "export_redacted_jsonl",
+    "public_receipt_envelope_schema": "contracts/receipt.v1.schema.json",
+    "public_receipt_envelope_lifecycle": "requested_and_dispatched_are_aggregated_into_one_terminal_envelope",
+    "public_receipt_envelope_unresolved": "fail_closed_until_interrupted_or_indeterminate_terminal_record",
+    "forensic_lifecycle_export": "export_journal_redacted_jsonl"
+  },
   "claim_ceiling": {
     "browser_actor_bound": false,
     "servo_called": false,
@@ -78,5 +141,75 @@
     "external_effect_authorized": false,
     "automatic_replay_available": false,
     "product_ready": false
+  },
+  "managed_store": {
+    "schema": "trillionnium.desktop.managed-receipt-store.v1",
+    "opt_in": true,
+    "directory_mode": "0700",
+    "file_mode": "0600",
+    "marker_name": "store.v1",
+    "marker_magic_ascii": "HPTSTR01",
+    "marker_bytes": 56,
+    "marker_encoding": "magic8 || journal_id16 || sha256(magic8 || journal_id16)",
+    "segment_name": "segment-{number:016}.journal",
+    "pending_name": "next.pending",
+    "head_selection": "entire_closed_contiguous_directory_inventory",
+    "single_writer": "pinned_directory_inode_advisory_lock_plus_all_segment_inode_locks",
+    "commit_order": [
+      "quiescent_full_chain",
+      "write_complete_pending_header",
+      "sync_pending",
+      "atomic_rename_to_next_canonical_name",
+      "sync_directory",
+      "admit_next_writer"
+    ],
+    "pending_recovery": "explicit_policy_complete_linked_empty_header_only_after_strict_full_chain_validation",
+    "partial_or_corrupt_pending": "reject_and_preserve_no_automatic_cleanup",
+    "unmanaged_write_api": "reject_managed_directory_marker",
+    "automatic_rotation_threshold_bytes": 4194304,
+    "maximum_segments": 64,
+    "maximum_total_bytes": 134217728,
+    "maximum_total_records": 131072,
+    "service_configuration": "HEPTA_D3_RECEIPT_STORE",
+    "configuration_conflicts": [
+      "HEPTA_D3_RECEIPT_JOURNAL",
+      "HEPTA_D3_RECEIPT_PREDECESSORS"
+    ],
+    "automatic_migration": false,
+    "automatic_pruning": false,
+    "authenticated_offline_rollback_protection": false,
+    "independent_exact_image_qualified": false,
+    "physical_power_loss_qualified": false,
+    "reopen_durability_order": [
+      "validate_full_chain_and_pinned_identity",
+      "sync_active_file",
+      "sync_directory",
+      "revalidate_full_inventory_and_pinned_identity",
+      "return_writer"
+    ],
+    "reopen_barrier_failure": "no_writer_returned_preserve_complete_facts",
+    "persistence_fault_corpus": {
+      "control_boundary": "private_cfg_test_only_no_product_switch",
+      "process_harness": "isolated_custom_test_compiles_exact_journal_source",
+      "process_cut_cases": 64,
+      "injected_io_case_combinations": 128,
+      "injected_errno": [
+        5,
+        28
+      ],
+      "incomplete_write": "real_prefix_write_before_injected_error_or_sigkill",
+      "covered_operations": [
+        "initialize",
+        "rotate",
+        "reopen",
+        "complete_pending",
+        "append",
+        "repair_tail"
+      ],
+      "storage_failure_simulation": true,
+      "physical_power_loss_qualified": false,
+      "in_kernel_syscall_interruption_qualified": false,
+      "automatic_replay_available": false
+    }
   }
 }

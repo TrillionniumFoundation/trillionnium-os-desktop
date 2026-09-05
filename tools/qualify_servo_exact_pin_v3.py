@@ -25,13 +25,17 @@ def validate_source_surface(
     servo_root: Path,
     requirements: dict[str, Any],
 ) -> dict[str, list[str]]:
-    webview = (servo_root / "components/servo/webview.rs").read_text(encoding="utf-8")
-    delegate = (servo_root / "components/servo/webview_delegate.rs").read_text(
-        encoding="utf-8"
+    webview = qualifier.read_text_file(
+        servo_root / "components/servo/webview.rs", "Servo WebView source"
     )
-    lib = (servo_root / "components/servo/lib.rs").read_text(encoding="utf-8")
-    minimal = (servo_root / "components/servo/examples/winit_minimal.rs").read_text(
-        encoding="utf-8"
+    delegate = qualifier.read_text_file(
+        servo_root / "components/servo/webview_delegate.rs",
+        "Servo WebView delegate source",
+    )
+    lib = qualifier.read_text_file(servo_root / "components/servo/lib.rs", "Servo lib source")
+    minimal = qualifier.read_text_file(
+        servo_root / "components/servo/examples/winit_minimal.rs",
+        "Servo official winit example",
     )
 
     explicit_exports = {

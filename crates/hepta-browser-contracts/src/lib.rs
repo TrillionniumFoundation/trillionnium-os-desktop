@@ -4,6 +4,9 @@
 //! Wire serialization is defined by the JSON schemas under `/contracts` and
 //! will be bound to the authenticated UDS carrier in D0C-2/D3.
 
+use std::net::Ipv6Addr;
+use std::str::FromStr;
+
 use trillionnium_contract_core::{
     BoundedId, ContractViolation, DnsLabel, RefFreshness, RevisionClock, Sha256Hex,
     classify_reference,
@@ -11,6 +14,12 @@ use trillionnium_contract_core::{
 
 pub const BROWSER_API_PROTOCOL: &str = "trillionnium.desktop.browser-api.v1";
 pub const TRUSTED_SHELL_ORIGIN: &str = "https://shell.system.hepta.invalid";
+
+// Keep the legacy, engine-neutral contract bound in lockstep with the
+// canonical browser codec.  This type is used by a few callers before a wire
+// request is built, so accepting a URL here that the codec/actor later reject
+// would create a policy-validation gap.
+const MAX_URL_BYTES: usize = 8_192;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UiMode {
@@ -61,14 +70,11 @@ impl NavigationTarget {
     pub fn validate(&self) -> Result<(), ContractViolation> {
         match self {
             Self::TrustedShell | Self::TrustedApp(_) => Ok(()),
-            Self::ExternalHttps(url) if url.starts_with("https://") => Ok(()),
+            Self::ExternalHttps(url) if validate_navigation_url(url, UrlPolicy::ExternalHttps) => {
+                Ok(())
+            }
             Self::LocalHttpFixture(url)
-                if url.starts_with("http://127.0.0.1/")
-                    || url.starts_with("http://127.0.0.1:")
-                    || url.starts_with("http://localhost/")
-                    || url.starts_with("http://localhost:")
-                    || url.starts_with("http://[::1]/")
-                    || url.starts_with("http://[::1]:") =>
+                if validate_navigation_url(url, UrlPolicy::LoopbackHttp) =>
             {
                 Ok(())
             }
@@ -85,6 +91,95 @@ impl NavigationTarget {
             Self::ExternalHttps(_) | Self::LocalHttpFixture(_) => None,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum UrlPolicy {
+    ExternalHttps,
+    LoopbackHttp,
+}
+
+/// Validate the URL authority using the same grammar as the canonical codec.
+///
+/// This intentionally does not resolve DNS or make a network request.  The
+/// loopback policy is an exact host allow-list; in particular, a host prefix
+/// such as `127.0.0.1.evil.example` is not a loopback address.  Userinfo and
+/// backslashes are rejected before host parsing so authority smuggling cannot
+/// reach a later browser parser with a different interpretation.
+fn validate_navigation_url(value: &str, policy: UrlPolicy) -> bool {
+    if value.is_empty()
+        || value.len() > MAX_URL_BYTES
+        || value.contains('\0')
+        || value
+            .chars()
+            .any(|character| character <= '\u{001f}' || character == '\u{007f}')
+    {
+        return false;
+    }
+
+    let remainder = match policy {
+        UrlPolicy::ExternalHttps => value.strip_prefix("https://"),
+        UrlPolicy::LoopbackHttp => value.strip_prefix("http://"),
+    };
+    let Some(remainder) = remainder else {
+        return false;
+    };
+
+    let authority_end = remainder.find(['/', '?', '#']).unwrap_or(remainder.len());
+    let authority = &remainder[..authority_end];
+    if authority.is_empty() || authority.contains(['@', '\\']) {
+        return false;
+    }
+
+    let Some(host) = parse_navigation_authority_host(authority) else {
+        return false;
+    };
+    !matches!(policy, UrlPolicy::LoopbackHttp)
+        || matches!(host.as_str(), "localhost" | "127.0.0.1" | "::1")
+}
+
+fn parse_navigation_authority_host(authority: &str) -> Option<String> {
+    if let Some(rest) = authority.strip_prefix('[') {
+        let close = rest.find(']')?;
+        let host = &rest[..close];
+        Ipv6Addr::from_str(host).ok()?;
+        validate_navigation_port_suffix(&rest[close + 1..])?;
+        return Some(host.to_ascii_lowercase());
+    }
+
+    if authority.matches(':').count() > 1 {
+        return None;
+    }
+    let (host, port) = match authority.rsplit_once(':') {
+        Some((host, port)) => (host, Some(port)),
+        None => (authority, None),
+    };
+    if host.is_empty()
+        || host
+            .chars()
+            .any(|character| character.is_whitespace() || matches!(character, '/' | '?' | '#'))
+    {
+        return None;
+    }
+    if let Some(port) = port {
+        validate_navigation_port(port)?;
+    }
+    Some(host.to_ascii_lowercase())
+}
+
+fn validate_navigation_port_suffix(suffix: &str) -> Option<()> {
+    if suffix.is_empty() {
+        Some(())
+    } else {
+        validate_navigation_port(suffix.strip_prefix(':')?)
+    }
+}
+
+fn validate_navigation_port(port: &str) -> Option<()> {
+    if port.is_empty() || port.len() > 5 || !port.bytes().all(|byte| byte.is_ascii_digit()) {
+        return None;
+    }
+    port.parse::<u16>().ok().map(|_| ())
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -295,6 +390,98 @@ mod tests {
                 .validate()
                 .is_err()
         );
+    }
+
+    #[test]
+    fn navigation_urls_reject_authority_smuggling_and_invalid_ports() {
+        for url in [
+            "https://example.com",
+            "https://EXAMPLE.COM/path",
+            "https://example.com:443/path",
+            "https://[::1]:443/",
+        ] {
+            assert!(
+                NavigationTarget::ExternalHttps(url.into())
+                    .validate()
+                    .is_ok(),
+                "expected valid external URL: {url}"
+            );
+        }
+        for url in [
+            "https://",
+            "https://example.com:abc/",
+            "https://example.com:",
+            "https://example.com:65536/",
+            "https://example.com:000000/",
+            "https://example.com:443@evil.example/",
+            "https://example.com\\@evil.example/",
+            "https://exa mple.com/",
+            "https://[::1",
+            "https://[::1%25lo]/",
+            "https://[v1.fe]/",
+            "https://[::1]not-a-port/",
+        ] {
+            assert!(
+                NavigationTarget::ExternalHttps(url.into())
+                    .validate()
+                    .is_err(),
+                "unsafe external URL was accepted: {url}"
+            );
+        }
+
+        for url in [
+            "http://localhost",
+            "http://LOCALHOST:8080/fixture",
+            "http://127.0.0.1?ready=1",
+            "http://[::1]:8080/fixture",
+        ] {
+            assert!(
+                NavigationTarget::LocalHttpFixture(url.into())
+                    .validate()
+                    .is_ok(),
+                "expected valid loopback URL: {url}"
+            );
+        }
+        for url in [
+            "http://127.0.0.1.evil.example/",
+            "http://localhost.evil.example/",
+            "http://127.0.0.1:80@evil.example/",
+            "http://localhost@evil.example/",
+            "http://localhost:abc/",
+            "http://localhost:65536/",
+            "http://localhost:80:90/",
+            "http://localhost\\evil.example/",
+            "http://[::1]not-a-port/",
+            "http://[::1]:80@evil.example/",
+            "http://::1/",
+        ] {
+            assert!(
+                NavigationTarget::LocalHttpFixture(url.into())
+                    .validate()
+                    .is_err(),
+                "unsafe loopback URL was accepted: {url}"
+            );
+        }
+    }
+
+    #[test]
+    fn navigation_urls_enforce_bounded_text_and_control_character_rules() {
+        let oversized = format!("https://example.com/{}", "a".repeat(MAX_URL_BYTES));
+        assert!(
+            NavigationTarget::ExternalHttps(oversized)
+                .validate()
+                .is_err()
+        );
+        for url in ["https://example.com/\u{0000}", "http://localhost/\u{001f}"] {
+            assert!(
+                match url.starts_with("https://") {
+                    true => NavigationTarget::ExternalHttps(url.into()).validate(),
+                    false => NavigationTarget::LocalHttpFixture(url.into()).validate(),
+                }
+                .is_err(),
+                "control-containing URL was accepted: {url:?}"
+            );
+        }
     }
 
     #[test]

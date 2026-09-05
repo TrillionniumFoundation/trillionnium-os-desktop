@@ -1,4 +1,8 @@
 {
+  "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+  "evidence_freshness": "STALE_EVIDENCE",
+  "merge_ready": false,
+  "stale_reason": "D0A-02 headed-host evidence is bound to historical source head fe0ea6169127ce1f7950618b55374d83834a462c; PR #66 supersedes the PR #60 and PR #33 convergence candidates and this snapshot. Rerun servo-headed-runtime on the exact candidate head for PR #66 before promotion.",
   "artifacts": {
     "content-generation-1.png": {
       "bytes": 28088,
@@ -112,5 +116,13 @@
   "synthetic_ime_composition_events": 3,
   "trusted_chrome_separate_from_content": true,
   "trusted_window_survived_content_crash": true,
-  "window_created": true
+  "window_created": true,
+  "promotion": {
+    "evidence_freshness": "STALE_EVIDENCE",
+    "merge_ready": false,
+    "superseded_by_pr": 66,
+    "stale_reason": "D0A-02 headed-host evidence is bound to historical source head fe0ea6169127ce1f7950618b55374d83834a462c; PR #66 supersedes the PR #60 and PR #33 convergence candidates and this snapshot. Rerun servo-headed-runtime on the exact candidate head for PR #66 before promotion.",
+    "exact_head_rerun_required": true,
+    "exact_main_rerun_required_after_merge": true
+  }
 }

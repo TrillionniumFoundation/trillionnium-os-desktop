@@ -1,0 +1,109 @@
+name: d4-collaboration
+
+on:
+  pull_request:
+    branches:
+      - main
+      - codex/d2i-current-main-v1
+  push:
+    branches:
+      - main
+      - codex/d4-collaboration-state-machine-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d4-collaboration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  collaboration_reference:
+    name: d4-collaboration-reference
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact candidate without write credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record exact Git identity
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+          git show -s --format='%P' HEAD
+
+      - name: Compile the dependency-free reference implementation
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/d4_collaboration_reference.py \
+            tests/d4/test_collaboration_reference.py
+
+      - name: Run D4 invariant and trace-replay corpus
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover \
+            -s tests/d4 \
+            -p 'test_*.py' \
+            -v
+
+      - name: Generate bounded source-only evidence
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/d4-collaboration
+          python3 tools/d4_collaboration_reference.py \
+            --contract contracts/human-agent-collaboration.v1.json \
+            --write-result artifacts/d4-collaboration/reference-result.json \
+            | tee artifacts/d4-collaboration/reference-result.stdout.json
+          cmp \
+            artifacts/d4-collaboration/reference-result.json \
+            artifacts/d4-collaboration/reference-result.stdout.json
+
+      - name: Validate repository and committed project truth
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+
+      - name: Enforce D4 source-only claim ceiling
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          contract = json.loads(Path('contracts/human-agent-collaboration.v1.json').read_text())
+          result = json.loads(Path('artifacts/d4-collaboration/reference-result.json').read_text())
+          assert contract['status'] == 'SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D3'
+          assert contract['claim_ceiling']['pure_reference_state_machine'] is True
+          for key in [
+              'browser_actor_runtime_integrated',
+              'native_input_integrated',
+              'system_clipboard_integrated',
+              'desktop_drag_drop_integrated',
+              'external_navigation_enabled',
+              'external_effects_enabled',
+              'hardware_qualified',
+              'release_ready',
+          ]:
+              assert contract['claim_ceiling'][key] is False, key
+          assert result['status'] == 'PASS_SOURCE_REFERENCE_ONLY'
+          assert result['browser_actor_runtime_integrated'] is False
+          assert result['native_input_integrated'] is False
+          assert result['system_clipboard_integrated'] is False
+          assert result['external_effects_enabled'] is False
+          assert result['release_ready'] is False
+          PY
+
+      - name: Upload exact-head source evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d4-collaboration-${{ github.sha }}
+          path: artifacts/d4-collaboration
+          if-no-files-found: warn
+          retention-days: 30

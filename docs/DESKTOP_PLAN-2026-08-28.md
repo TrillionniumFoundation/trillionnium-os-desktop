@@ -2,14 +2,15 @@
 
 **Canonical name:** TrillionniumOS Desktop  
 **Document revision:** 2026-08-28-d4  
-**Status:** DESIGN BASELINE — canonical desktop documentation; implementation has not yet started  
+**Status:** `SUPERSEDED_HISTORICAL` — design provenance only; not active or normative<br>
+**Active successor:** [`DESKTOP_PLAN-2026-08-29-d6.md`](DESKTOP_PLAN-2026-08-29-d6.md)<br>
 **Product relationship:** sibling lane of the Android/mobile TrillionniumOS  
 **Canonical desktop document root:** `/data/toshiba-dev/TrillionniumOS/rootfs/home/qian-qi/.openclaw/workspace/docs/trillionnium-os-desktop/`
 
-> This document is normative for the desktop lane. The Android/mobile
-> canonical plan remains normative for the mobile lane. Neither lane may
-> silently change the other lane's product graph, image, authority model or
-> release claim.
+> This d4 document is retained for historical provenance only. The active
+> normative desktop plan is d6. The Android/mobile canonical plan remains
+> normative for the mobile lane; neither lane may silently change the other
+> lane's product graph, image, authority model or release claim.
 
 ## 0. Executive decision
 

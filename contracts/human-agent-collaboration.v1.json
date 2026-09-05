@@ -1,0 +1,103 @@
+{
+  "schema": "trillionnium.desktop.human-agent-collaboration.v1",
+  "work_package": "D4-01",
+  "status": "SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D3",
+  "prerequisites": [
+    "D0T-03",
+    "D2I-01",
+    "D3-01"
+  ],
+  "authority": {
+    "single_page_owner": true,
+    "human_and_agent_share_page_owner": true,
+    "hidden_page_allowed": false,
+    "public_listener_allowed": false,
+    "ambient_clipboard_authority": false,
+    "ambient_drag_drop_authority": false,
+    "external_effect_authority": false
+  },
+  "identity": {
+    "target_reference_fields": [
+      "session_id",
+      "page_owner_id",
+      "surface_generation",
+      "document_generation",
+      "semantic_revision",
+      "target_id"
+    ],
+    "stale_reference_policy": "reject",
+    "ambiguous_reference_policy": "reject",
+    "navigation_invalidates_document_references": true,
+    "content_crash_invalidates_surface_and_document_references": true
+  },
+  "human_lease": {
+    "bounded": true,
+    "monotonic_deadline_required": true,
+    "human_input_preempts_agent": true,
+    "agent_may_act_during_active_human_lease": false,
+    "lease_epoch_bound": true
+  },
+  "ime": {
+    "single_owner": true,
+    "ownership_values": [
+      "none",
+      "human",
+      "agent"
+    ],
+    "navigation_clears_owner": true,
+    "crash_clears_owner": true,
+    "modal_scope_required": true
+  },
+  "clipboard": {
+    "mediated_only": true,
+    "explicit_actor_authority_required": true,
+    "version_bound_reads": true,
+    "system_clipboard_access_proven": false
+  },
+  "drag_drop": {
+    "single_active_drag": true,
+    "source_and_destination_reference_bound": true,
+    "navigation_cancels_drag": true,
+    "crash_cancels_drag": true
+  },
+  "modal": {
+    "topmost_scope_only": true,
+    "background_target_action_allowed": false,
+    "navigation_clears_stack": true,
+    "crash_clears_stack": true
+  },
+  "receipts": {
+    "one_receipt_per_admitted_or_rejected_operation": true,
+    "hash_chained": true,
+    "canonical_state_hash": true,
+    "trace_replay_required": true,
+    "journal_executes_or_replays_external_effects": false
+  },
+  "required_corpus": [
+    "human_lease_blocks_agent",
+    "human_input_preempts_agent",
+    "expired_lease_does_not_block_agent",
+    "stale_target_rejected_after_navigation",
+    "stale_target_rejected_after_crash",
+    "ambiguous_target_rejected",
+    "modal_background_target_rejected",
+    "ime_is_single_owner",
+    "clipboard_version_mismatch_rejected",
+    "drag_cancelled_by_navigation",
+    "drag_cancelled_by_crash",
+    "minimize_does_not_create_hidden_page",
+    "trace_replay_is_identical",
+    "receipt_chain_detects_tampering"
+  ],
+  "claim_ceiling": {
+    "pure_reference_state_machine": true,
+    "browser_actor_runtime_integrated": false,
+    "native_input_integrated": false,
+    "system_clipboard_integrated": false,
+    "desktop_drag_drop_integrated": false,
+    "external_navigation_enabled": false,
+    "external_effects_enabled": false,
+    "hardware_qualified": false,
+    "release_ready": false
+  }
+}

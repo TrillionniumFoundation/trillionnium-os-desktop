@@ -108,3 +108,12 @@ Structured events must bind:
 
 Logs must not contain secrets, raw credentials, private page content, or
 unredacted sensitive receipt detail.
+
+## Optional in-process engine-thread dispatch
+
+[ENGINE_THREAD_DISPATCH.md](ENGINE_THREAD_DISPATCH.md) defines the bounded
+actor-to-engine scheduling mechanism and real connected-stream/receipt host
+corpus. Its engine remains a fixture in tests; the mechanism is not installed
+in the product, does not implement cross-process IPC, and does not prove live
+Servo node resolution, native input or exact-image D3. Existing topology,
+authority and promotion requirements remain unchanged.

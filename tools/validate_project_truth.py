@@ -1,314 +1,394 @@
 #!/usr/bin/env python3
-"""Validate canonical project truth, gate identities, and immutable CI inputs."""
+"""Stable facade for the canonical project-truth validator.
+
+The reviewed implementation is imported as Python code without rewriting its
+source text.  Candidate-supersession policy that changed after the historical
+implementation was frozen is expressed below as ordinary, reviewable Python
+functions and constants.  No ``exec``, ``compile`` or source-string replacement
+is used.
+"""
 
 from __future__ import annotations
 
-import json
-import re
-import sys
+import functools
+from datetime import datetime
+import importlib.util
+import inspect
 from pathlib import Path
-from typing import Any
+import sys
+from typing import Any, Callable
 
-ROOT = Path(__file__).resolve().parents[1]
-ERRORS: list[str] = []
-ACTION_REF = re.compile(r"^\s*uses:\s*([^#\s]+)\s*$")
-IMMUTABLE_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
-PLAN_REVISION = "2026-08-29-d6"
-PLAN_PATH = "docs/DESKTOP_PLAN-2026-08-29-d6.md"
-INTEGRATED_STAGE = "D0R_D0C06_D0A01_COMPILE_VALIDATED"
+_IMPL_PATH = Path(__file__).with_name("_validate_project_truth_impl.py")
+_SPEC = importlib.util.spec_from_file_location(
+    "_trillionnium_validate_project_truth_impl", _IMPL_PATH
+)
+if _SPEC is None or _SPEC.loader is None:
+    raise RuntimeError(f"cannot load project-truth validator implementation: {_IMPL_PATH}")
+_impl = importlib.util.module_from_spec(_SPEC)
+sys.modules[_SPEC.name] = _impl
+_SPEC.loader.exec_module(_impl)
+
+D0A02_SUPERSEDED_BY_PR = 66
+D0A02_STALE_REASON = (
+    "D0A-02 headed-host evidence is bound to historical source head "
+    f"{_impl.D0A02_HISTORICAL_HEAD}; PR #66 supersedes the PR #60 and PR #33 "
+    "convergence candidates and this snapshot. Rerun servo-headed-runtime on "
+    "the exact candidate head for PR #66 before promotion."
+)
+_impl.D0A02_STALE_REASON = D0A02_STALE_REASON
+_impl.D0A02_SUPERSEDED_BY_PR = D0A02_SUPERSEDED_BY_PR
+
+D3_DEVELOPMENT_BLOCKER = (
+    "Servo-owned retained-node semantic action forwarding, exact integrated-image "
+    "principal/dispatch/receipt evidence, and independent security review remain "
+    "required before live activation"
+)
+D3_ACTIVATION_TRUTH = dict(_impl.D3_ACTIVATION_TRUTH)
+D3_ACTIVATION_TRUTH["development_blocker"] = D3_DEVELOPMENT_BLOCKER
+_impl.D3_ACTIVATION_TRUTH = D3_ACTIVATION_TRUTH
+
+CANDIDATE_SNAPSHOT_SOURCE = "github_api_committed_snapshot_before_truth_refresh"
+CANDIDATE_SNAPSHOT_FIELDS = {
+    "observed_at",
+    "observed_main_sha",
+    "observed_candidate_pr",
+    "observed_candidate_branch",
+    "observed_candidate_head_sha",
+    "observed_candidate_tree_sha",
+    "source",
+    "live_pr_or_ci_state_must_be_read_from_github",
+}
 
 
-def fail(message: str) -> None:
-    ERRORS.append(message)
+def candidate_snapshot_alignment_errors(
+    project: object,
+    docs: object,
+    repository: object,
+) -> list[str]:
+    """Reject copied snapshot drift and stale active-candidate bindings."""
+
+    errors: list[str] = []
+    projections = {
+        "project-state": project,
+        "docs manifest": docs,
+        "repository-state": repository,
+    }
+    snapshots: dict[str, dict[str, Any]] = {}
+    for label, projection in projections.items():
+        if not isinstance(projection, dict):
+            errors.append(f"{label} must be an object for candidate snapshot checks")
+            continue
+        snapshot = projection.get("candidate_state_snapshot")
+        if not isinstance(snapshot, dict):
+            errors.append(f"{label} candidate_state_snapshot must be an object")
+            continue
+        snapshots[label] = snapshot
+
+    project_snapshot = snapshots.get("project-state")
+    if project_snapshot is None:
+        return errors
+
+    for label in ("docs manifest", "repository-state"):
+        snapshot = snapshots.get(label)
+        if snapshot is not None and snapshot != project_snapshot:
+            errors.append(
+                f"{label} candidate_state_snapshot disagrees with project-state"
+            )
+
+    missing = sorted(CANDIDATE_SNAPSHOT_FIELDS - set(project_snapshot))
+    unknown = sorted(set(project_snapshot) - CANDIDATE_SNAPSHOT_FIELDS)
+    if missing:
+        errors.append(f"candidate_state_snapshot is missing required fields: {missing}")
+    if unknown:
+        errors.append(f"candidate_state_snapshot has unknown fields: {unknown}")
+
+    observed_at = project_snapshot.get("observed_at")
+    if not isinstance(observed_at, str):
+        errors.append("candidate_state_snapshot.observed_at must be a UTC timestamp")
+    else:
+        try:
+            datetime.strptime(observed_at, "%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            errors.append(
+                "candidate_state_snapshot.observed_at must use YYYY-MM-DDTHH:MM:SSZ"
+            )
+
+    for field in (
+        "observed_main_sha",
+        "observed_candidate_head_sha",
+        "observed_candidate_tree_sha",
+    ):
+        value = project_snapshot.get(field)
+        if (
+            not isinstance(value, str)
+            or _impl.SHA40.fullmatch(value) is None
+            or set(value) == {"0"}
+        ):
+            errors.append(
+                f"candidate_state_snapshot.{field} is not a lowercase 40-hex SHA"
+            )
+
+    observed_pr = project_snapshot.get("observed_candidate_pr")
+    if (
+        not isinstance(observed_pr, int)
+        or isinstance(observed_pr, bool)
+        or not 1 <= observed_pr <= 2_000_000_000
+    ):
+        errors.append("candidate_state_snapshot.observed_candidate_pr is invalid")
+
+    observed_branch = project_snapshot.get("observed_candidate_branch")
+    if (
+        not isinstance(observed_branch, str)
+        or _impl.BRANCH_NAME.fullmatch(observed_branch) is None
+        or ".." in observed_branch
+        or "//" in observed_branch
+        or observed_branch.endswith(("/", "."))
+        or any(segment.startswith(".") for segment in observed_branch.split("/"))
+    ):
+        errors.append(
+            "candidate_state_snapshot.observed_candidate_branch is unsafe or malformed"
+        )
+
+    if project_snapshot.get("source") != CANDIDATE_SNAPSHOT_SOURCE:
+        errors.append(
+            "candidate_state_snapshot.source must identify the GitHub API "
+            "pre-truth-refresh snapshot"
+        )
+    if project_snapshot.get("live_pr_or_ci_state_must_be_read_from_github") is not True:
+        errors.append(
+            "candidate_state_snapshot must require live PR/CI state to be read from GitHub"
+        )
+
+    candidates = (
+        project.get("source_candidate_work_packages")
+        if isinstance(project, dict)
+        else None
+    )
+    if not isinstance(candidates, list) or not candidates:
+        errors.append(
+            "project-state source_candidate_work_packages must be a non-empty "
+            "list for snapshot alignment"
+        )
+        return errors
+
+    expected = {
+        "branch": project_snapshot.get("observed_candidate_branch"),
+        "pr": project_snapshot.get("observed_candidate_pr"),
+        "base_sha": project_snapshot.get("observed_main_sha"),
+        "candidate_head_sha": project_snapshot.get("observed_candidate_head_sha"),
+    }
+    for index, candidate in enumerate(candidates):
+        if not isinstance(candidate, dict):
+            continue
+        package = candidate.get("id", f"index {index}")
+        for field, expected_value in expected.items():
+            if candidate.get(field) != expected_value:
+                errors.append(
+                    f"active candidate {package!r} {field} disagrees with "
+                    "candidate_state_snapshot"
+                )
+    return errors
 
 
-def load_json(relative: str) -> dict[str, Any]:
-    path = ROOT / relative
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        fail(f"invalid JSON {relative}: {error}")
-        return {}
-    if not isinstance(value, dict):
-        fail(f"expected object in {relative}")
-        return {}
-    return value
-
-
-def require_text(relative: str, needles: list[str]) -> str:
-    path = ROOT / relative
-    try:
-        text = path.read_text(encoding="utf-8")
-    except OSError as error:
-        fail(f"cannot read {relative}: {error}")
-        return ""
-    for needle in needles:
-        if needle not in text:
-            fail(f"{relative} is missing canonical marker {needle!r}")
-    return text
+_ORIGINAL_CHECK_TRUTH_ALIGNMENT = _impl.check_truth_alignment
 
 
 def check_truth_alignment() -> None:
-    project = load_json("manifests/project-state.v1.json")
-    gates = load_json("manifests/gates.v1.json")
-    docs = load_json("docs/MANIFEST.json")
-    repository = load_json("manifests/repository-state.json")
+    """Run frozen truth checks plus current PR-66 snapshot policy."""
 
-    expected = {
-        "active_plan": PLAN_PATH,
-        "active_plan_revision": PLAN_REVISION,
-        "integrated_implementation_stage": INTEGRATED_STAGE,
-    }
-    for key, value in expected.items():
-        if project.get(key) != value:
-            fail(f"project-state {key} must be {value!r}")
+    _ORIGINAL_CHECK_TRUTH_ALIGNMENT()
+    project = _impl.load_json("manifests/project-state.v1.json")
+    docs = _impl.load_json("docs/MANIFEST.json")
+    repository = _impl.load_json("manifests/repository-state.json")
+    for error in candidate_snapshot_alignment_errors(project, docs, repository):
+        _impl.fail(error)
+    _impl.require_text(
+        "docs/CURRENT_STATE.md",
+        [_impl.PLAN_REVISION, _impl.INTEGRATED_STAGE, "PR #66"],
+    )
+    _impl.require_text(
+        "README.md",
+        [_impl.PLAN_REVISION, _impl.INTEGRATED_STAGE, "PR **#66**"],
+    )
 
-    if docs.get("active_plan") != Path(PLAN_PATH).name:
-        fail("docs manifest active_plan disagrees with project-state")
-    if docs.get("active_plan_revision") != PLAN_REVISION:
-        fail("docs manifest revision disagrees with project-state")
-    if docs.get("implementation_stage") != INTEGRATED_STAGE:
-        fail("docs manifest implementation_stage disagrees with project-state")
-    if docs.get("project_state") != "../manifests/project-state.v1.json":
-        fail("docs manifest does not point to project-state")
-    if docs.get("gate_registry") != "../manifests/gates.v1.json":
-        fail("docs manifest does not point to gate registry")
 
-    if repository.get("active_plan") != PLAN_PATH:
-        fail("repository-state active_plan disagrees with project-state")
-    if repository.get("active_plan_revision") != PLAN_REVISION:
-        fail("repository-state revision disagrees with project-state")
-    if repository.get("implementation_stage") != INTEGRATED_STAGE:
-        fail("repository-state implementation_stage disagrees with project-state")
-    if repository.get("project_state") != "manifests/project-state.v1.json":
-        fail("repository-state does not point to project-state")
-    if repository.get("gate_registry") != "manifests/gates.v1.json":
-        fail("repository-state does not point to gate registry")
+def _check_d0a02_stale_record(record: object, label: str) -> None:
+    """Require historical D0A-02 evidence to advertise PR-66 staleness."""
 
-    completed = project.get("integrated_completed_work_packages")
-    if not isinstance(completed, list) or any(not isinstance(item, str) for item in completed):
-        fail("project-state completed package set is invalid")
-        completed = []
-    if len(completed) != len(set(completed)):
-        fail("project-state completed package set has duplicates")
-    if set(repository.get("completed_work_packages", [])) != set(completed):
-        fail("repository-state completed package set disagrees with project-state")
+    if not isinstance(record, dict):
+        _impl.fail(f"{label} must be an object")
+        return
+    if record.get("evidence_lifecycle") != _impl.D0A02_EVIDENCE_LIFECYCLE:
+        _impl.fail(
+            f"{label}.evidence_lifecycle must be "
+            f"{_impl.D0A02_EVIDENCE_LIFECYCLE!r}"
+        )
+    if record.get("stale_reason") != D0A02_STALE_REASON:
+        _impl.fail(
+            f"{label}.stale_reason must equal the canonical PR #66 exact-head rerun reason"
+        )
+    promotion = record.get("promotion")
+    if not isinstance(promotion, dict):
+        _impl.fail(f"{label}.promotion must be an object with stale merge state")
+        return
+    if promotion.get("evidence_freshness") != "STALE_EVIDENCE":
+        _impl.fail(f"{label}.promotion.evidence_freshness must be 'STALE_EVIDENCE'")
+    if promotion.get("merge_ready") is not False:
+        _impl.fail(f"{label}.promotion.merge_ready must be false for stale evidence")
+    if promotion.get("superseded_by_pr") != D0A02_SUPERSEDED_BY_PR:
+        _impl.fail(
+            f"{label}.promotion.superseded_by_pr must be PR #{D0A02_SUPERSEDED_BY_PR}"
+        )
+    if promotion.get("stale_reason") != D0A02_STALE_REASON:
+        _impl.fail(
+            f"{label}.promotion.stale_reason must equal the canonical exact-head rerun reason"
+        )
 
-    if gates.get("plan_revision") != PLAN_REVISION:
-        fail("gate registry revision disagrees with project-state")
-    vocabulary = set(gates.get("status_vocabulary", []))
-    gate_list = gates.get("gates", [])
-    if not isinstance(gate_list, list):
-        fail("gate registry gates is not a list")
-        gate_list = []
-    gate_ids: list[str] = []
-    for entry in gate_list:
-        if not isinstance(entry, dict):
-            fail("gate registry contains a non-object gate")
-            continue
-        gate_id = entry.get("id")
-        status = entry.get("status")
-        if not isinstance(gate_id, str):
-            fail("gate registry entry has no string id")
-            continue
-        gate_ids.append(gate_id)
-        if status not in vocabulary:
-            fail(f"gate {gate_id} has unknown status {status!r}")
-        for key in (
-            "evidence_tier",
-            "prerequisites",
-            "invalidation_paths",
-            "claim_ceiling",
-            "review_class",
+
+def check_d0a02_evidence_lifecycle(
+    project: dict[str, Any], docs: dict[str, Any], repository: dict[str, Any]
+) -> None:
+    """Synchronize historical evidence with the active PR-66 D0A-02 claim."""
+
+    for relative in (
+        "docs/evidence/generated/d0a02-headed-runtime-evidence.json",
+        "docs/evidence/generated/d0a02-headed-runtime-result.json",
+    ):
+        _check_d0a02_stale_record(_impl.load_json(relative), relative)
+
+    repository_entries = repository.get("qualification_work_packages")
+    if not isinstance(repository_entries, list):
+        _impl.fail("repository-state qualification_work_packages must be a list")
+    else:
+        matches = [
+            entry
+            for entry in repository_entries
+            if isinstance(entry, dict) and entry.get("id") == "D0A-02"
+        ]
+        if len(matches) != 1:
+            _impl.fail(
+                "repository-state must contain exactly one D0A-02 qualification evidence entry"
+            )
+        else:
+            entry = matches[0]
+            if entry.get("evidence_lifecycle") != _impl.D0A02_EVIDENCE_LIFECYCLE:
+                _impl.fail("repository-state D0A-02 evidence lifecycle is not stale")
+            if entry.get("merge_ready") is not False:
+                _impl.fail("repository-state D0A-02 evidence must not be merge-ready")
+            if entry.get("superseded_by_pr") != D0A02_SUPERSEDED_BY_PR:
+                _impl.fail("repository-state D0A-02 evidence must retain PR #66 supersession")
+            if entry.get("stale_reason") != D0A02_STALE_REASON:
+                _impl.fail(
+                    "repository-state D0A-02 entry lacks the canonical exact-head rerun reason"
+                )
+
+    checkpoint_entries = docs.get("implementation_checkpoints")
+    if not isinstance(checkpoint_entries, list):
+        _impl.fail("docs manifest implementation_checkpoints must be a list")
+    else:
+        matches = [
+            entry
+            for entry in checkpoint_entries
+            if isinstance(entry, dict) and entry.get("id") == "TOS-D0A-02"
+        ]
+        if len(matches) != 1:
+            _impl.fail("docs manifest must contain exactly one TOS-D0A-02 checkpoint")
+        else:
+            entry = matches[0]
+            if entry.get("evidence_lifecycle") != _impl.D0A02_EVIDENCE_LIFECYCLE:
+                _impl.fail("docs manifest D0A-02 evidence lifecycle is not stale")
+            if entry.get("merge_ready") is not False:
+                _impl.fail("docs manifest D0A-02 evidence must not be merge-ready")
+            if entry.get("superseded_by_pr") != D0A02_SUPERSEDED_BY_PR:
+                _impl.fail("docs manifest D0A-02 evidence must retain PR #66 supersession")
+            if entry.get("stale_reason") != D0A02_STALE_REASON:
+                _impl.fail(
+                    "docs manifest D0A-02 entry lacks the canonical exact-head rerun reason"
+                )
+
+    candidates = project.get("source_candidate_work_packages")
+    active = (
+        [
+            entry
+            for entry in candidates
+            if isinstance(entry, dict) and entry.get("id") == "D0A-02"
+        ]
+        if isinstance(candidates, list)
+        else []
+    )
+    if len(active) != 1:
+        _impl.fail("project-state must contain exactly one active D0A-02 source candidate")
+    else:
+        candidate = active[0]
+        if candidate.get("pr") != D0A02_SUPERSEDED_BY_PR:
+            _impl.fail("active D0A-02 source candidate must be bound to PR #66")
+        if candidate.get("status") != "MODULE_CLOSED_CANDIDATE":
+            _impl.fail("active PR #66 D0A-02 candidate must retain MODULE_CLOSED_CANDIDATE status")
+        claim = candidate.get("claim_ceiling")
+        if not isinstance(claim, str) or not claim.startswith(
+            "headed_host_local_fixture_only"
         ):
-            if key not in entry:
-                fail(f"gate {gate_id} is missing {key}")
-    if len(gate_ids) != len(set(gate_ids)):
-        fail("gate registry contains duplicate ids")
-
-    gate_id_set = set(gate_ids)
-    for package in completed:
-        if package not in gate_id_set:
-            fail(f"completed package {package} is absent from gate registry")
-    gate_status_by_id = {
-        entry["id"]: entry.get("status")
-        for entry in gate_list
-        if isinstance(entry, dict) and isinstance(entry.get("id"), str)
-    }
-    for package in completed:
-        if gate_status_by_id.get(package) != "INTEGRATED_AND_EXACT_MAIN_VALIDATED":
-            fail(f"completed package {package} is not integrated-and-main-validated in gate registry")
-
-    candidates = project.get("source_candidate_work_packages", [])
-    if not isinstance(candidates, list):
-        fail("project-state source candidates is not a list")
-        candidates = []
-    candidate_view: list[dict[str, Any]] = []
-    for candidate in candidates:
-        if not isinstance(candidate, dict):
-            fail("project-state contains a non-object source candidate")
-            continue
-        package = candidate.get("id")
-        status = candidate.get("status")
-        if package not in gate_id_set:
-            fail(f"candidate package {package!r} is absent from gate registry")
-        if status not in vocabulary:
-            fail(f"candidate package {package!r} has unknown status {status!r}")
-        if gate_status_by_id.get(package) != status:
-            fail(f"candidate package {package!r} status disagrees with gate registry")
-        if package in completed:
-            fail(f"candidate package {package} is also listed as integrated complete")
-        candidate_view.append({
-            "id": package,
-            "branch": candidate.get("branch"),
-            "pr": candidate.get("pr"),
-            "status": status,
-        })
-
-    repository_candidates = repository.get("source_candidate_work_packages", [])
-    if repository_candidates != candidates:
-        fail("repository-state source candidates disagree with project-state")
-    docs_candidates = docs.get("active_candidates", [])
-    if docs_candidates != candidate_view:
-        fail("docs manifest active candidates disagree with project-state")
-
-    required_nonclaims = {
-        "headed_servo_integrated",
-        "debian_image_built",
-        "qemu_pid1_wayland_boot",
-        "browser_actor_dispatch",
-        "external_navigation_or_effects",
-        "production_release",
-    }
-    nonclaims = set(project.get("not_claimed", []))
-    missing = sorted(required_nonclaims - nonclaims)
-    if missing:
-        fail(f"project-state is missing required non-claims: {missing}")
-    if set(repository.get("not_claimed", [])) != nonclaims:
-        fail("repository-state non-claims disagree with project-state")
-
-    policy = project.get("evidence_binding_policy", {})
-    if not isinstance(policy, dict) or not policy or any(value is not True for value in policy.values()):
-        fail("project-state evidence binding policy is not fully fail-closed")
-
-    require_text(PLAN_PATH, [PLAN_REVISION, INTEGRATED_STAGE, "D1", "D0A-02", "D9"])
-    require_text("docs/DESKTOP_PLAN.md", [Path(PLAN_PATH).name, PLAN_REVISION, INTEGRATED_STAGE])
-    require_text("docs/CURRENT_STATE.md", [PLAN_REVISION, INTEGRATED_STAGE, "PR #23", "PR #27"])
-    require_text("README.md", [PLAN_REVISION, INTEGRATED_STAGE, "project-state.v1.json"])
-    require_text("apps/hepta-browserd/src/lib.rs", [PLAN_REVISION, INTEGRATED_STAGE])
+            _impl.fail(
+                "active D0A-02 candidate claim ceiling must remain headed-host/local-fixture-only"
+            )
 
 
-def check_upstream_boundary() -> None:
-    boundary = load_json("manifests/product-boundary.json")
-    review = load_json("manifests/upstream-reference-review.v1.json")
-    mobile = boundary.get("mobile_reference", {})
-    if not isinstance(mobile, dict):
-        fail("product boundary mobile_reference is invalid")
-        return
-    if mobile.get("repository") != "TrillionniumFoundation/trillionnium-os":
-        fail("product boundary points to the wrong sibling repository")
-    if mobile.get("commit") != review.get("reviewed_company_main_sha"):
-        fail("product boundary sibling commit disagrees with upstream review")
-    if mobile.get("relationship") != "company_sibling_reference_not_build_dependency":
-        fail("product boundary weakens the sibling/build boundary")
-    if review.get("mobile_authority_imported") is not False:
-        fail("upstream review imports mobile authority")
-    rejected = set(review.get("explicitly_rejected_default_authorities", []))
-    for authority in ("adb", "root_linux", "direct_shell", "owner_open_root_execution"):
-        if authority not in rejected:
-            fail(f"upstream review does not reject {authority}")
+# Install the explicit policy functions into the implementation namespace so
+# calls originating inside implementation functions resolve the same reviewed
+# definitions as direct facade calls.
+_impl._check_d0a02_stale_record = _check_d0a02_stale_record
+_impl.check_d0a02_evidence_lifecycle = check_d0a02_evidence_lifecycle
+_impl.check_truth_alignment = check_truth_alignment
+
+_CANONICAL_ROOT = _impl.ROOT
+_MUTABLE_UPPERCASE_GLOBALS = tuple(
+    name for name in vars(_impl) if name.isupper() and name != "ROOT"
+)
 
 
-def check_workflow_action_pins() -> None:
-    pins = load_json("manifests/ci-action-pins.v1.json").get("actions", {})
-    if not isinstance(pins, dict):
-        fail("CI action pin manifest is invalid")
-        pins = {}
-    workflows = sorted((ROOT / ".github/workflows").glob("*.yml"))
-    if not workflows:
-        fail("no GitHub workflows found")
-        return
-    for path in workflows:
-        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            match = ACTION_REF.match(line)
-            if not match:
-                continue
-            action = match.group(1).strip("\"'")
-            if action.startswith("./"):
-                continue
-            if not IMMUTABLE_ACTION.fullmatch(action):
-                fail(
-                    f"{path.relative_to(ROOT)}:{line_number} uses mutable action ref {action!r}"
-                )
-                continue
-            name, sha = action.rsplit("@", 1)
-            expected = pins.get(name)
-            if expected != sha:
-                fail(
-                    f"{path.relative_to(ROOT)}:{line_number} action {name!r} "
-                    f"is not bound to the reviewed pin manifest"
-                )
+def _sync_globals() -> None:
+    root_value = globals().get("ROOT", _CANONICAL_ROOT)
+    _impl.ROOT = root_value if isinstance(root_value, Path) else Path(root_value)
+    for name in _MUTABLE_UPPERCASE_GLOBALS:
+        if name in globals():
+            setattr(_impl, name, globals()[name])
+    _impl.D0A02_STALE_REASON = D0A02_STALE_REASON
+    _impl.D0A02_SUPERSEDED_BY_PR = D0A02_SUPERSEDED_BY_PR
+    _impl.D3_ACTIVATION_TRUTH = D3_ACTIVATION_TRUTH
+    _impl._check_d0a02_stale_record = _check_d0a02_stale_record
+    _impl.check_d0a02_evidence_lifecycle = check_d0a02_evidence_lifecycle
+    _impl.check_truth_alignment = check_truth_alignment
 
 
-def check_command_baseline() -> None:
-    makefile = require_text(
-        "Makefile",
-        [
-            "python3 tools/validate_project_truth.py",
-            "cargo check --workspace --all-targets --locked",
-            "cargo clippy --workspace --all-targets --locked -- -D warnings",
-            "cargo test --workspace --all-targets --locked",
-            "cargo run --locked -p hepta-browserd -- --self-check",
-        ],
-    )
-    ci = require_text(
-        ".github/workflows/ci.yml",
-        [
-            "runs-on: ubuntu-24.04",
-            "python3 tools/validate_project_truth.py",
-            "cargo check --workspace --all-targets --locked",
-            "cargo clippy --workspace --all-targets --locked -- -D warnings",
-            "cargo test --workspace --all-targets --locked",
-            "cargo run --locked -p hepta-browserd -- --self-check",
-        ],
-    )
-    for text, label in ((makefile, "Makefile"), (ci, "CI")):
-        if "cargo test --workspace\n" in text:
-            fail(f"{label} contains an unlocked/non-all-targets workspace test")
+def _proxy(function: Callable[..., Any]) -> Callable[..., Any]:
+    @functools.wraps(function)
+    def invoke(*args: Any, **kwargs: Any) -> Any:
+        _sync_globals()
+        return function(*args, **kwargs)
+
+    return invoke
 
 
-def main() -> int:
-    required = [
-        "manifests/project-state.v1.json",
-        "manifests/gates.v1.json",
-        "manifests/upstream-reference-review.v1.json",
-        "contracts/project-state.v1.schema.json",
-        "contracts/gate-evidence-envelope.v1.schema.json",
-        "manifests/ci-action-pins.v1.json",
-        PLAN_PATH,
-        "docs/plan/PROJECT_TRUTH_AND_EVIDENCE.md",
-        "docs/plan/GATE_CONTRACTS_AND_INVALIDATION.md",
-        "docs/architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md",
-        "docs/security/THREAT_MODEL_V2.md",
-        "docs/security/SECURITY_CONTROL_MATRIX.md",
-        "docs/release/RELEASE_SECURITY_AND_QUALIFICATION.md",
-    ]
-    for relative in required:
-        if not (ROOT / relative).is_file():
-            fail(f"required d6 path is missing: {relative}")
+_EXCLUDED_EXPORTS = {
+    "__builtins__",
+    "__cached__",
+    "__file__",
+    "__loader__",
+    "__name__",
+    "__package__",
+    "__spec__",
+}
+for _name, _value in vars(_impl).items():
+    if _name in _EXCLUDED_EXPORTS:
+        continue
+    if inspect.isfunction(_value) and _value.__module__ in {_impl.__name__, __name__}:
+        globals()[_name] = _proxy(_value)
+    else:
+        globals()[_name] = _value
 
-    check_truth_alignment()
-    check_upstream_boundary()
-    check_workflow_action_pins()
-    check_command_baseline()
-
-    if ERRORS:
-        for error in ERRORS:
-            print(f"ERROR: {error}", file=sys.stderr)
-        print(f"project truth validation failed with {len(ERRORS)} error(s)", file=sys.stderr)
-        return 1
-    print("project truth validation passed")
-    return 0
+ROOT = _CANONICAL_ROOT
+D0A02_STALE_REASON = D0A02_STALE_REASON
+D0A02_SUPERSEDED_BY_PR = D0A02_SUPERSEDED_BY_PR
 
 
 if __name__ == "__main__":
