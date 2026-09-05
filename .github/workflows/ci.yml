@@ -83,5 +83,11 @@ jobs:
           cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
           cargo test --workspace --all-targets --all-features --locked
 
+      - name: Engine owner thread-affinity compile-fail contracts
+        run: cargo test --locked -p hepta-browser-actor --doc
+
+      - name: Request peer custody non-clone contract
+        run: cargo test --locked -p hepta-peer-attestation --doc
+
       - name: D0 browserd self-check
         run: cargo run --locked -p hepta-browserd -- --self-check

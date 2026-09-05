@@ -46,6 +46,12 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
+Cargo binary auto-discovery and package build scripts are disabled explicitly
+with `autobins = false` and `build = false`. Only registered `[[bin]]` targets
+may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
+entrypoint, or `build.rs` without a reviewed inventory change fails the module
+gate; this does not disable integration-test discovery.
+
 There are no features or runtime configuration. Protocol limits and operation sets are versioned through the contracts and codec rather than environment flags.
 
 All configuration inputs must be bounded, typed, documented, and included in the
@@ -107,3 +113,14 @@ contracts/schemas, golden vectors, tests, module registry, this README, architec
 and threat documentation, gate invalidation paths, evidence, and explicit
 non-claims. Exact-head review and exact-main reruns remain separate promotion
 transactions.
+
+## D5 origin conformance
+
+Trusted-app origins include separate app and publisher DNS labels under
+`apps.hepta.invalid`. Serialization has no trailing slash. The compiled D5
+policy delegates to `TrustedAppIdentity`; shared vectors at
+`contracts/golden/trusted-app-origins.v1.tsv` are executed by this module's
+`tests/trusted_app_origins.rs` and the Python D5 verifier. D5 manifest and
+publisher-evidence payloads are v2; legacy app-only origins and v1 payloads are
+rejected rather than aliased. See ADR 0005. This is source conformance only,
+not proof of installed storage, routing, trusted chrome, or publisher custody.

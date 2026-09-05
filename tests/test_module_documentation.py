@@ -37,6 +37,8 @@ resolver = "3"
         (self.root / "crates/example/Cargo.toml").write_text(
             """[package]
 name = "example"
+autobins = false
+build = false
 version = "0.1.0"
 edition = "2024"
 
@@ -67,13 +69,18 @@ required-features = ["development"]
             "**Workspace path:** `crates/example`  ",
             "**Owner class:** `test-owner`",
             "",
-            "**Claim ceiling:** test source only.",
             "",
             "The registry is `manifests/modules.v1.json`.",
             "",
         ]
         for heading in VALIDATOR.REQUIRED_SECTIONS:
             body.extend([heading, "", "Detailed bounded module information. " * 18, ""])
+            if heading == "## Status and claim ceiling":
+                body.extend([
+                    "**Current status:** `source_candidate`",
+                    "**Claim ceiling:** test source only.",
+                    "",
+                ])
         (self.root / "crates/example/README.md").write_text(
             "\n".join(body), encoding="utf-8"
         )
@@ -87,6 +94,8 @@ required-features = ["development"]
                 "minimum_readme_bytes": VALIDATOR.MINIMUM_README_BYTES,
                 "required_sections": list(VALIDATOR.REQUIRED_SECTIONS),
                 "binary_inventory_must_match_cargo": True,
+                "explicit_binary_targets_only": True,
+                "build_scripts_forbidden": True,
                 "feature_inventory_must_match_cargo": True,
                 "references_must_exist": True,
                 "symlink_paths_forbidden": True,
@@ -151,6 +160,42 @@ required-features = ["development"]
         (self.root / "manifests/modules.v1.json").write_text(
             json.dumps(registry, indent=2) + "\n", encoding="utf-8"
         )
+
+    def test_implicit_binary_discovery_is_disabled(self) -> None:
+        path = self.root / "crates/example/Cargo.toml"
+        original = path.read_text()
+        for replacement in ("", "autobins = true\n"):
+            with self.subTest(replacement=replacement):
+                path.write_text(original.replace("autobins = false\n", replacement))
+                self.assertTrue(any("autobins" in error for error in self.validate()))
+        path.write_text(original)
+
+    def test_build_script_execution_is_disabled(self) -> None:
+        path = self.root / "crates/example/Cargo.toml"
+        original = path.read_text()
+        for replacement in ("", "build = true\n", 'build = "custom.rs"\n'):
+            with self.subTest(replacement=replacement):
+                path.write_text(original.replace("build = false\n", replacement))
+                self.assertTrue(any("build = false" in error for error in self.validate()))
+        path.write_text(original)
+
+    def test_orphan_build_script_is_rejected(self) -> None:
+        (self.root / "crates/example/build.rs").write_text("fn main() {}\n")
+        self.assertTrue(any("build script" in error for error in self.validate()))
+
+    def test_unregistered_conventional_binary_files_are_rejected(self) -> None:
+        for relative in ("src/bin/orphan.rs", "src/bin/orphan/main.rs"):
+            with self.subTest(relative=relative):
+                path = self.root / "crates/example" / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("fn main() {}\n")
+                self.assertTrue(any("unregistered conventional binary" in error for error in self.validate()))
+                path.unlink()
+
+    def test_symlinked_binary_discovery_directory_is_rejected(self) -> None:
+        source = self.root / "crates/example/src"
+        (source / "bin").symlink_to(source, target_is_directory=True)
+        self.assertTrue(any("symlink" in error for error in self.validate()))
 
     def test_valid_fixture_passes(self) -> None:
         self.assertEqual(self.validate(), [])

@@ -22,7 +22,9 @@
     "feature_inventory_must_match_cargo": true,
     "references_must_exist": true,
     "symlink_paths_forbidden": true,
-    "lower_tier_never_implies_higher_tier": true
+    "lower_tier_never_implies_higher_tier": true,
+    "explicit_binary_targets_only": true,
+    "build_scripts_forbidden": true
   },
   "modules": [
     {
@@ -37,19 +39,24 @@
         "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
         "docs/architecture/HUMAN_AGENT_COLLABORATION.md",
         "docs/architecture/CAPABILITY_AND_CONTROLLED_EGRESS.md",
-        "docs/architecture/RECOVERY_UPDATE_AND_EFFECT_RECONCILIATION.md"
+        "docs/architecture/RECOVERY_UPDATE_AND_EFFECT_RECONCILIATION.md",
+        "docs/adr/0005-d5-publisher-qualified-origin-alignment.md",
+        "docs/adr/0006-d6-versioned-permit-and-transaction-boundary.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
         "contracts/human-agent-collaboration.v1.json",
         "contracts/capability-egress.v1.json",
-        "contracts/recovery-update-reconciliation.v1.json"
+        "contracts/recovery-update-reconciliation.v1.json",
+        "contracts/golden/trusted-app-origins.v1.tsv",
+        "contracts/capability-permit.v2.schema.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
         "apps/hepta-browserd/src/product_policy.rs",
         "apps/hepta-browserd/src/authority_coordinator.rs",
-        "apps/hepta-browserd/src/product_runtime.rs"
+        "apps/hepta-browserd/src/product_runtime.rs",
+        "apps/hepta-browserd/tests/trusted_app_origins.rs"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
@@ -77,17 +84,24 @@
         "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
         "docs/architecture/AGENT_PORT_PRODUCT_QUALIFICATION_SEPARATION.md",
         "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
-        "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md"
+        "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
+        "docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md",
+        "docs/architecture/D3_SESSION_ENGINE_RUNNER.md",
+        "docs/architecture/SESSION_INCARNATION.md"
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
         "contracts/agent-port-bridge.v1.json",
-        "contracts/browser-actor.v1.json"
+        "contracts/browser-actor.v1.json",
+        "contracts/d3-session-engine-runner.v1.json",
+        "contracts/session-incarnation.v1.json"
       ],
       "tests": [
         "apps/hepta-agent-portd/src/main.rs",
         "apps/hepta-agent-portd/src/bin/hepta-agent-port-qualificationd.rs",
-        "apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs"
+        "apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs",
+        "tests/test_d3_session_engine_runner.py",
+        "tests/test_session_incarnation.py"
       ],
       "workflows": [
         ".github/workflows/agent-port-custody.yml",
@@ -233,15 +247,19 @@
       "architecture": [
         "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
         "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
-        "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md"
+        "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
+        "docs/architecture/REQUEST_PEER_CUSTODY.md"
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
-        "contracts/browser-actor.v1.json"
+        "contracts/browser-actor.v1.json",
+        "contracts/request-peer-custody.v1.json"
       ],
       "tests": [
         "crates/hepta-peer-attestation/src/lib.rs",
-        "tests/test_validate_d3_development_profile.py"
+        "tests/test_validate_d3_development_profile.py",
+        "tests/test_request_peer_custody.py",
+        "crates/hepta-peer-attestation/src/request_lease.rs"
       ],
       "workflows": [
         ".github/workflows/agent-port-custody.yml",
@@ -293,16 +311,19 @@
       "architecture": [
         "docs/architecture/CANONICAL_BROWSER_CODEC.md",
         "docs/architecture/ATOMIC_SEMANTIC_RESOLVER.md",
-        "docs/architecture/TRUSTED_APP_BUNDLES.md"
+        "docs/architecture/TRUSTED_APP_BUNDLES.md",
+        "docs/adr/0005-d5-publisher-qualified-origin-alignment.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
         "contracts/error-codes.v1.json",
-        "contracts/semantic-resolver.v1.json"
+        "contracts/semantic-resolver.v1.json",
+        "contracts/golden/trusted-app-origins.v1.tsv"
       ],
       "tests": [
         "crates/hepta-browser-contracts/src/lib.rs",
-        "tests/d3/test_semantic_resolver_reference.py"
+        "tests/d3/test_semantic_resolver_reference.py",
+        "crates/hepta-browser-contracts/tests/trusted_app_origins.rs"
       ],
       "workflows": [
         ".github/workflows/browser-codec-reference.yml",
@@ -322,17 +343,35 @@
       "owner_class": "session-and-receipt-security",
       "architecture": [
         "docs/architecture/SESSION_STATE_MACHINE.md",
-        "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
+        "docs/architecture/DURABLE_RECEIPT_JOURNAL.md",
+        "docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md",
+        "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md",
+        "docs/architecture/MANAGED_RECEIPT_STORE.md",
+        "docs/architecture/RECEIPT_PERSISTENCE_FAULT_MODEL.md",
+        "docs/architecture/LEGACY_RECEIPT_MIGRATION.md"
       ],
       "contracts": [
         "contracts/receipt-journal.v1.json",
         "contracts/receipt.v1.schema.json",
-        "contracts/browser-actor.v1.json"
+        "contracts/browser-actor.v1.json",
+        "contracts/legacy-receipt-migration.v1.json"
       ],
       "tests": [
         "crates/hepta-session-core/tests/lease_admission.rs",
         "crates/hepta-session-core/tests/state_space.rs",
-        "tests/test_verify_receipt_journal.py"
+        "tests/test_verify_receipt_journal.py",
+        "crates/hepta-session-core/tests/journal_chain_reopen.rs",
+        "crates/hepta-session-core/tests/journal_chain_process_recovery.rs",
+        "crates/hepta-session-core/tests/support/journal_chain_fixture.rs",
+        "crates/hepta-session-core/src/receipt_journal/binding_tests.rs",
+        "crates/hepta-session-core/tests/journal_managed_store.rs",
+        "crates/hepta-session-core/tests/journal_managed_process_recovery.rs",
+        "crates/hepta-session-core/src/receipt_journal/persistence_tests.rs",
+        "crates/hepta-session-core/tests/journal_persistence_process.rs",
+        "tests/test_receipt_persistence_cuts.py",
+        "crates/hepta-session-core/src/receipt_journal/migration_tests.rs",
+        "crates/hepta-session-core/tests/journal_migration_process.rs",
+        "tests/test_receipt_migration.py"
       ],
       "workflows": [
         ".github/workflows/receipt-journal.yml",
@@ -382,17 +421,43 @@
       "architecture": [
         "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
         "docs/architecture/ATOMIC_SEMANTIC_RESOLVER.md",
-        "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
+        "docs/architecture/DURABLE_RECEIPT_JOURNAL.md",
+        "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md",
+        "docs/architecture/MANAGED_RECEIPT_STORE.md",
+        "docs/architecture/ENGINE_THREAD_DISPATCH.md",
+        "docs/architecture/D3_SESSION_ENGINE_RUNNER.md",
+        "docs/architecture/REQUEST_PEER_CUSTODY.md",
+        "docs/architecture/SESSION_INCARNATION.md",
+        "docs/architecture/EVENT_LOOP_COMPLETION.md",
+        "docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
         "contracts/semantic-resolver.v1.json",
-        "contracts/receipt.v1.schema.json"
+        "contracts/receipt.v1.schema.json",
+        "contracts/engine-thread-dispatch.v1.json",
+        "contracts/d3-session-engine-runner.v1.json",
+        "contracts/request-peer-custody.v1.json",
+        "contracts/session-incarnation.v1.json",
+        "contracts/event-loop-completion.v1.json",
+        "contracts/d3-callback-service-runner.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-actor/src/lib.rs",
         "experiments/d3-semantic-resolver-rust/src/lib.rs",
-        "tests/d3/test_semantic_resolver_reference.py"
+        "tests/d3/test_semantic_resolver_reference.py",
+        "crates/hepta-browser-actor/src/engine_dispatch/tests.rs",
+        "crates/hepta-browser-actor/src/engine_dispatch/transport_tests.rs",
+        "tests/test_engine_thread_dispatch_contract.py",
+        "tests/test_d3_session_engine_runner.py",
+        "tests/test_request_peer_custody.py",
+        "crates/hepta-browser-actor/src/engine_dispatch/authority_tests.rs",
+        "tests/test_session_incarnation.py",
+        "crates/hepta-browser-actor/src/incarnation_tests.rs",
+        "crates/hepta-browser-actor/src/engine_dispatch/event_loop_tests.rs",
+        "crates/hepta-browser-actor/src/engine_dispatch/event_loop_transport_tests.rs",
+        "tests/test_event_loop_completion.py",
+        "tests/test_callback_service_runner.py"
       ],
       "workflows": [
         ".github/workflows/d3-semantic-resolver-reference.yml",
@@ -413,17 +478,38 @@
       "architecture": [
         "docs/architecture/PAGE_OWNER_BROWSER_ACTOR.md",
         "docs/architecture/ATOMIC_SEMANTIC_RESOLVER.md",
-        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md"
+        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
+        "docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md",
+        "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md",
+        "docs/architecture/MANAGED_RECEIPT_STORE.md",
+        "docs/architecture/D3_SESSION_ENGINE_RUNNER.md",
+        "docs/architecture/REQUEST_PEER_CUSTODY.md",
+        "docs/architecture/SESSION_INCARNATION.md",
+        "docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
         "contracts/semantic-resolver.v1.json",
-        "contracts/agent-port-custody.v1.json"
+        "contracts/agent-port-custody.v1.json",
+        "contracts/d3-session-engine-runner.v1.json",
+        "contracts/request-peer-custody.v1.json",
+        "contracts/session-incarnation.v1.json",
+        "contracts/d3-callback-service-runner.v1.json"
       ],
       "tests": [
         "tests/test_validate_d3_development_profile.py",
         "crates/hepta-d3-development/src/fixture/corpus.rs",
-        "crates/hepta-d3-development/src/sessiond/runtime.rs"
+        "crates/hepta-d3-development/src/sessiond/runtime.rs",
+        "crates/hepta-d3-development/src/sessiond/storage_tests.rs",
+        "crates/hepta-d3-development/src/sessiond/runtime_atomic_tests.rs",
+        "crates/hepta-d3-development/src/sessiond/service_managed_tests.rs",
+        "tests/test_d3_session_engine_runner.py",
+        "crates/hepta-d3-development/src/sessiond/engine_tests.rs",
+        "crates/hepta-d3-development/src/sessiond/service_threaded_tests.rs",
+        "tests/test_request_peer_custody.py",
+        "tests/test_session_incarnation.py",
+        "tests/test_callback_service_runner.py",
+        "crates/hepta-d3-development/src/sessiond/callback_runner_tests.rs"
       ],
       "workflows": [
         ".github/workflows/d3-semantic-resolver-reference.yml",

@@ -3,6 +3,34 @@ name: d3-integrated-runtime-evidence-verifier
 on:
   pull_request:
     paths:
+      - "docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md"
+      - "contracts/d3-callback-service-runner.v1.json"
+      - "tests/test_callback_service_runner.py"
+      - "tools/audit_callback_service.py"
+      - "crates/hepta-d3-development/src/sessiond/callback_runner.rs"
+      - "crates/hepta-d3-development/src/sessiond/callback_runner_tests.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/immediate_callbacks.rs"
+      - "docs/architecture/EVENT_LOOP_COMPLETION.md"
+      - "contracts/event-loop-completion.v1.json"
+      - "tests/test_event_loop_completion.py"
+      - "tools/audit_event_loop_completion.py"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop_tests.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop_transport_tests.rs"
+      - "docs/architecture/SESSION_INCARNATION.md"
+      - "contracts/session-incarnation.v1.json"
+      - "tests/test_session_incarnation.py"
+      - "docs/architecture/REQUEST_PEER_CUSTODY.md"
+      - "contracts/request-peer-custody.v1.json"
+      - "tests/test_request_peer_custody.py"
+      - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-browser-actor/**"
+      - "contracts/d3-session-engine-runner.v1.json"
+      - "docs/architecture/D3_SESSION_ENGINE_RUNNER.md"
+      - "tests/test_d3_session_engine_runner.py"
+      - "tools/verify_receipt_journal.py"
+      - "crates/hepta-d3-development/**"
+      - "crates/hepta-browser-actor/**"
       - ".github/workflows/d3-integrated-runtime-evidence.yml"
       - "contracts/d3-integrated-runtime-evidence.v1.json"
       - "tools/verify_d3_integrated_runtime_evidence.py"
@@ -24,6 +52,34 @@ on:
   push:
     branches: [main, "codex/**"]
     paths:
+      - "docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md"
+      - "contracts/d3-callback-service-runner.v1.json"
+      - "tests/test_callback_service_runner.py"
+      - "tools/audit_callback_service.py"
+      - "crates/hepta-d3-development/src/sessiond/callback_runner.rs"
+      - "crates/hepta-d3-development/src/sessiond/callback_runner_tests.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/immediate_callbacks.rs"
+      - "docs/architecture/EVENT_LOOP_COMPLETION.md"
+      - "contracts/event-loop-completion.v1.json"
+      - "tests/test_event_loop_completion.py"
+      - "tools/audit_event_loop_completion.py"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop_tests.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop_transport_tests.rs"
+      - "docs/architecture/SESSION_INCARNATION.md"
+      - "contracts/session-incarnation.v1.json"
+      - "tests/test_session_incarnation.py"
+      - "docs/architecture/REQUEST_PEER_CUSTODY.md"
+      - "contracts/request-peer-custody.v1.json"
+      - "tests/test_request_peer_custody.py"
+      - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-browser-actor/**"
+      - "contracts/d3-session-engine-runner.v1.json"
+      - "docs/architecture/D3_SESSION_ENGINE_RUNNER.md"
+      - "tests/test_d3_session_engine_runner.py"
+      - "tools/verify_receipt_journal.py"
+      - "crates/hepta-d3-development/**"
+      - "crates/hepta-browser-actor/**"
       - ".github/workflows/d3-integrated-runtime-evidence.yml"
       - "contracts/d3-integrated-runtime-evidence.v1.json"
       - "tools/verify_d3_integrated_runtime_evidence.py"
@@ -82,6 +138,9 @@ jobs:
           python3 -m unittest tests.d3.test_d3_integrated_runtime_evidence -v
           python3 -m unittest tests.test_validator_loader_stability -v
           python3 -m unittest tests.test_validate_d3_development_profile -v
+          python3 -m unittest tests.test_d3_session_engine_runner -v
+          python3 -m unittest tests.test_callback_service_runner -v
+          python3 -m unittest tests.test_request_peer_custody -v
 
       - name: Require deterministic source-only self-test
         run: |

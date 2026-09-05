@@ -10,6 +10,11 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
+# Resolve only the repository-owned helper for both CLI and importlib test use.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools.documentation_claims import validate_claim_projection
+
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = "manifests/modules.v1.json"
 EXPECTED_SCHEMA = "trillionnium.desktop.modules.v1"
@@ -194,6 +199,51 @@ def _cargo_bins(cargo: dict[str, Any], errors: list[str], label: str) -> list[di
     return result
 
 
+def _validate_binary_source_inventory(
+    root: Path, module_path: str, cargo: dict[str, Any], errors: list[str],
+) -> None:
+    """Deny Cargo's implicit binary/build execution paths, including orphans."""
+    package = cargo.get("package", {})
+    if not isinstance(package, dict):
+        return
+    if package.get("autobins") is not False:
+        errors.append(f"{module_path} package must set autobins = false")
+    if package.get("build") is not False:
+        errors.append(f"{module_path} package must set build = false")
+    directory = root / module_path
+    if (directory / "build.rs").exists() or (directory / "build.rs").is_symlink():
+        errors.append(f"{module_path} unregistered build script is forbidden")
+    registered = {item["path"] for item in _cargo_bins(cargo, errors, module_path)}
+    candidates: list[Path] = []
+    if (directory / "src").is_symlink():
+        errors.append(f"{module_path} source directory traverses a symlink")
+        return
+    main = directory / "src/main.rs"
+    if main.exists() or main.is_symlink():
+        candidates.append(main)
+    bindir = directory / "src/bin"
+    if bindir.is_symlink():
+        errors.append(f"{module_path} binary discovery directory traverses a symlink")
+        return
+    if bindir.exists():
+        if not bindir.is_dir():
+            errors.append(f"{module_path} src/bin is not a directory")
+            return
+        for entry in sorted(bindir.iterdir()):
+            if entry.is_symlink():
+                errors.append(f"{module_path} binary source traverses a symlink: {entry.name}")
+            elif entry.is_file() and entry.suffix == ".rs":
+                candidates.append(entry)
+            elif entry.is_dir() and ((entry / "main.rs").exists() or (entry / "main.rs").is_symlink()):
+                candidates.append(entry / "main.rs")
+    for candidate in candidates:
+        relative = candidate.relative_to(directory).as_posix()
+        if candidate.is_symlink() or not candidate.is_file():
+            errors.append(f"{module_path} binary source must be a regular non-symlink file: {relative}")
+        elif relative not in registered:
+            errors.append(f"{module_path} unregistered conventional binary source: {relative}")
+
+
 def _registry_bins(value: object, label: str, errors: list[str]) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         errors.append(f"{label} binaries must be a list")
@@ -249,6 +299,8 @@ def _validate_policy(registry: dict[str, Any], errors: list[str]) -> None:
         "workspace_members_must_match_exactly",
         "module_readme_required",
         "binary_inventory_must_match_cargo",
+        "explicit_binary_targets_only",
+        "build_scripts_forbidden",
         "feature_inventory_must_match_cargo",
         "references_must_exist",
         "symlink_paths_forbidden",
@@ -392,6 +444,7 @@ def validate(root: Path = ROOT, *, integration_checks: bool = True) -> list[str]
             continue
 
         module_cargo = _load_toml(cargo_file, errors)
+        _validate_binary_source_inventory(root, module_path, module_cargo, errors)
         package_table = module_cargo.get("package")
         if not isinstance(package_table, dict) or package_table.get("name") != package:
             errors.append(f"{label} package does not match {cargo_file}")
@@ -402,6 +455,10 @@ def validate(root: Path = ROOT, *, integration_checks: bool = True) -> list[str]
             errors.append(f"cannot read {documentation}: {error}")
             readme_text = ""
             readme_bytes = b""
+        errors.extend(validate_claim_projection(
+            readme_text, entry.get("status"), entry.get("claim_ceiling"),
+            kind="module", label=str(documentation),
+        ))
         if len(readme_bytes) < MINIMUM_README_BYTES:
             errors.append(
                 f"{documentation} is too short: {len(readme_bytes)} < {MINIMUM_README_BYTES}"

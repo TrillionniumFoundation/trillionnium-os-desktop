@@ -46,6 +46,12 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
+Cargo binary auto-discovery and package build scripts are disabled explicitly
+with `autobins = false` and `build = false`. Only registered `[[bin]]` targets
+may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
+entrypoint, or `build.rs` without a reviewed inventory change fails the module
+gate; this does not disable integration-test discovery.
+
 Runtime/profile policy and identity expectations are injected. No ambient browser handle, credentials, external URL allowlist, or production activation is discovered from environment. Development configuration is owned by the separate D3 app.
 
 All configuration inputs must be bounded, typed, documented, and included in the
@@ -53,6 +59,13 @@ applicable gate's invalidation set. Missing configuration must fail closed rathe
 than select a broader profile.
 
 ## State, concurrency, and failure semantics
+
+Duplicate Requested callbacks are rejected without replacing the first
+in-flight admission coordinates, even if PageOwner has changed meanwhile.
+The journal binds all later lifecycle facts to that first identity and request
+hash. The `duplicate_requested_preserves_admission_coordinates_across_owner_change`
+regression exercises the observer's real callbacks. The implementation and
+failure contract are in `docs/architecture/RECEIPT_ADMISSION_IDENTITY.md`.
 
 Every operation validates principal, session, generation, phase/control, cancellation, and deadline before runtime work. Observation/mutation/navigation acquire explicit control and release on all terminal paths. Close performs local terminal cleanup even if runtime acknowledgement fails.
 
@@ -107,3 +120,83 @@ contracts/schemas, golden vectors, tests, module registry, this README, architec
 and threat documentation, gate invalidation paths, evidence, and explicit
 non-claims. Exact-head review and exact-main reruns remain separate promotion
 transactions.
+
+## Managed observer rotation
+
+`ReceiptLifecycleObserver::managed_rotation_due` requires no in-flight request
+and a quiescent managed journal. `rotate_managed` consumes an idle observer,
+retains PageOwner sharing, principal/image identity and logical time, and
+returns no observer on uncertain storage failure. It executes no browser action.
+See [`MANAGED_RECEIPT_STORE.md`](../../docs/architecture/MANAGED_RECEIPT_STORE.md)
+and the executable `managed_observer` regressions for the ownership contract.
+
+## Optional engine-thread scheduler
+
+`engine_dispatch::engine_thread_pair` creates a non-cloneable actor port and a
+non-Send/non-Sync engine owner on its creating thread. It owns no listener or
+thread and is not automatically installed in either daemon. `pump_one` invokes
+at most one backend hook. Original monotonic controls, private one-shot replies,
+permanent closure after abandonment, strict local-only input bounds, and atomic
+PageAct-only routing are specified in
+[`ENGINE_THREAD_DISPATCH.md`](../../docs/architecture/ENGINE_THREAD_DISPATCH.md).
+The matching contract is `contracts/engine-thread-dispatch.v1.json`.
+
+The host corpus includes real connected Unix streams, canonical codec, actor,
+thread-affine fixture engine and disk receipts. The fixture does not prove real
+Servo node resolution, native input, service attestation or an integrated image.
+Run `cargo test --locked -p hepta-browser-actor --doc` in addition to all-target
+tests to preserve negative Send/Sync compile tests. The existing module status,
+claim ceiling and D3 promotion requirements are unchanged.
+
+## Request-scoped identity across queueing
+
+`AttestedPeer::request_custody` retains the original pidfd and identity source for
+one handler lifecycle. All queued RequestControl copies share a revocable
+verifier; original attestor selection, engine entry/return and final actor return
+are rechecked. Identity loss never becomes a confirmed success or replayable
+refusal after an uncertain effect. See
+`docs/architecture/REQUEST_PEER_CUSTODY.md` and
+`contracts/request-peer-custody.v1.json` for APIs, configuration, failure and
+resource limits. No production activation or actual Servo proof is introduced.
+
+## Session reconstruction isolation
+
+Actor creation now lazily obtains an OS-sourced incarnation at the first valid
+SessionCreate; session/WebView tokens are namespaced across actor reconstruction.
+The atomic fixture scopes frame identity by session and WebView before publishing
+a target. Entropy failure has no predictable fallback; deadlines and bounded
+opaque Browser API v1 fields remain enforced. No old PageOwner is resurrected
+from receipts and no operation is replayed. See
+`docs/architecture/SESSION_INCARNATION.md` and
+`contracts/session-incarnation.v1.json` for APIs, failure ordering, compatibility,
+regressions and limits. This is source/host evidence, not actual Servo, systemd,
+image, hardware, anti-rollback, production activation or release proof.
+
+## Callback-shaped engine scheduling
+
+The optional `callback_engine_pair` / `CallbackEngineOwner` path starts an
+operation on its creator thread and accepts a single-use `EngineCompletion`
+from a later callback. The application continues native events between pumps;
+its timer follows the original deadline and bounded cancellation-check schedule.
+Ordinary Act never substitutes for the dedicated atomic semantic hook. The
+existing request endpoint now wakes on abandonment and Drop as well as enqueue.
+Wakes may be coalesced and are not a count of dispatched operations.
+See `docs/architecture/EVENT_LOOP_COMPLETION.md` and
+`contracts/event-loop-completion.v1.json` for APIs, ordering, tests and limits.
+This is source/host fixture evidence only: no Servo/native event loop, process
+IPC, installed image or product authority is added. The development daemon
+continues selecting its synchronous fixture backend; no activation changes.
+
+
+## Callback development service integration
+
+The persistent development service now uses the callback owner with an explicit
+ImmediateCallbacks bridge for its existing deterministic fixture. The main
+runner waits on a private notification predicate; worker completion is published
+before wake and errors retire before join. This does not implement Servo, winit,
+systemd activation or an installed image. See
+`docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md` and
+`contracts/d3-callback-service-runner.v1.json`; the source regression guard is
+`tools/audit_callback_service.py`, tested by
+`tests/test_callback_service_runner.py`. Existing controls and promotion limits
+remain unchanged. The immediate bridge does not make a blocking backend async.

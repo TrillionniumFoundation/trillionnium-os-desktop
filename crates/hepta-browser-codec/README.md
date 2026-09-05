@@ -46,6 +46,12 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
+Cargo binary auto-discovery and package build scripts are disabled explicitly
+with `autobins = false` and `build = false`. Only registered `[[bin]]` targets
+may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
+entrypoint, or `build.rs` without a reviewed inventory change fails the module
+gate; this does not disable integration-test discovery.
+
 Byte size, depth, aggregate item, integer, URL, and canonicalization limits are source/contract constants. There are no runtime feature flags. A future version negotiator must not accept ambiguous v1 encodings.
 
 All configuration inputs must be bounded, typed, documented, and included in the

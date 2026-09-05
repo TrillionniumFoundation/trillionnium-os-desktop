@@ -74,14 +74,16 @@ effects are recorded as `indeterminate`; recovery never automatically replays
 them. Journal failure is fail closed. Transport evidence separately records
 whether the response frame was committed.
 
-The D3 development adapter currently opens a single active journal segment. If
-the core journal has been rotated, reopening a successor segment without its
-ordered predecessors would lose the global receipt-progress map and could
-admit a replayed receipt identifier. `hepta-agent-port-developmentd` therefore
-rejects any segment whose header number is greater than one with a fail-closed
-error. Rotation remains available to the core journal, but a future
-development-service implementation must call the complete-chain
-inspection/import API before serving requests from a rotated store.
+The persistent `hepta-agent-port-development-sessiond` storage path now accepts
+an explicit complete predecessor list and calls the lock-owning
+`ReceiptJournal::open_chain` API. It restores global receipt IDs and logical
+ordering before active-tail repair or recovery classification, preserving secret
+redaction and never replaying an action. The older per-connection
+`hepta-agent-port-developmentd` still has no chain-list configuration and rejects
+isolated successors before any repair. See
+[`D3_JOURNAL_CHAIN_RECOVERY.md`](D3_JOURNAL_CHAIN_RECOVERY.md) for the bounded
+configuration, disk-backed tests, and remaining authoritative-head/retention
+limitations. This source integration does not promote the exact-image gate.
 
 ## Explicit development activation
 
@@ -135,3 +137,73 @@ principal binding, cancellation/deadline propagation, local-fixture policy, and
 receipt lifecycle. It does not by itself prove a live Servo BrowserActor inside
 the D2I image, production activation, controlled external egress, signed apps,
 updates, hardware qualification, or release readiness.
+
+## Receipt admission and response preparation
+
+Duplicate Requested callbacks preserve the original in-flight coordinates.
+Journal facts are bound to admission identity, not a later PageOwner snapshot.
+The local atomic fixture prepares fallible response fields before committing
+consumption. These source-level rules and their negative tests are specified in
+[RECEIPT_ADMISSION_IDENTITY.md](RECEIPT_ADMISSION_IDENTITY.md); no Servo or
+integrated-image capability is promoted.
+
+## Optional in-process engine-thread dispatch
+
+[ENGINE_THREAD_DISPATCH.md](ENGINE_THREAD_DISPATCH.md) defines the bounded
+actor-to-engine scheduling mechanism and real connected-stream/receipt host
+corpus. Its engine remains a fixture in tests; the mechanism is not installed
+in the product, does not implement cross-process IPC, and does not prove live
+Servo node resolution, native input or exact-image D3. Existing topology,
+authority and promotion requirements remain unchanged.
+
+## Persistent development engine-thread runner
+
+The persistent `hepta-agent-port-development-sessiond` now uses the main-thread
+AtomicFixtureRuntime through EngineThreadRuntime. Its single scoped connection
+worker owns the actor and receipt observer, retains the first complete attested
+process snapshot (including start_time_ticks), and refuses later identity drift.
+Engine retirement stops accept polling and is never an implicit engine restart.
+No new configuration, production listener, executable, dependency or Servo API
+is added. The old single-connection binary remains unchanged. See
+`docs/architecture/D3_SESSION_ENGINE_RUNNER.md` and
+`contracts/d3-session-engine-runner.v1.json` for lifecycle, bounds, failure and
+source-test evidence. This remains a local fixture, not an installed Servo claim.
+
+## Request-scoped identity across queueing
+
+`AttestedPeer::request_custody` retains the original pidfd and identity source for
+one handler lifecycle. All queued RequestControl copies share a revocable
+verifier; original attestor selection, engine entry/return and final actor return
+are rechecked. Identity loss never becomes a confirmed success or replayable
+refusal after an uncertain effect. See
+`docs/architecture/REQUEST_PEER_CUSTODY.md` and
+`contracts/request-peer-custody.v1.json` for APIs, configuration, failure and
+resource limits. No production activation or actual Servo proof is introduced.
+
+## Session reconstruction isolation
+
+Actor creation now lazily obtains an OS-sourced incarnation at the first valid
+SessionCreate; session/WebView tokens are namespaced across actor reconstruction.
+The atomic fixture scopes frame identity by session and WebView before publishing
+a target. Entropy failure has no predictable fallback; deadlines and bounded
+opaque Browser API v1 fields remain enforced. No old PageOwner is resurrected
+from receipts and no operation is replayed. See
+`docs/architecture/SESSION_INCARNATION.md` and
+`contracts/session-incarnation.v1.json` for APIs, failure ordering, compatibility,
+regressions and limits. This is source/host evidence, not actual Servo, systemd,
+image, hardware, anti-rollback, production activation or release proof.
+
+## Callback-shaped engine scheduling
+
+The optional `callback_engine_pair` / `CallbackEngineOwner` path starts an
+operation on its creator thread and accepts a single-use `EngineCompletion`
+from a later callback. The application continues native events between pumps;
+its timer follows the original deadline and bounded cancellation-check schedule.
+Ordinary Act never substitutes for the dedicated atomic semantic hook. The
+existing request endpoint now wakes on abandonment and Drop as well as enqueue.
+Wakes may be coalesced and are not a count of dispatched operations.
+See `docs/architecture/EVENT_LOOP_COMPLETION.md` and
+`contracts/event-loop-completion.v1.json` for APIs, ordering, tests and limits.
+This is source/host fixture evidence only: no Servo/native event loop, process
+IPC, installed image or product authority is added. The development daemon
+continues selecting its synchronous fixture backend; no activation changes.

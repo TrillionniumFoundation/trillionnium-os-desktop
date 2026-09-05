@@ -84,3 +84,21 @@ must never be silently rebound to the new path.
 ## Non-Cargo components
 
 Non-Cargo repository, packaging, experiment, evidence, and boundary components are governed separately by [`manifests/components.v1.json`](../../manifests/components.v1.json) and [`docs/components/README.md`](../components/README.md).
+
+## Exact status and claim projections
+
+Both documentation gates now call `tools/documentation_claims.py`. The README
+must contain one exact registry status and one exact claim-ceiling projection
+inside its canonical section. Missing, conflicting, repeated, disguised, or
+stale values fail closed; matching prose does not promote a gate. The format,
+negative corpus, and limitations are specified in
+[`DOCUMENTATION_CLAIM_PROJECTIONS.md`](../architecture/DOCUMENTATION_CLAIM_PROJECTIONS.md).
+
+## Executable inventory hardening
+
+Workspace packages disable binary auto-discovery and automatic build scripts.
+The module gate rejects unregistered conventional binaries, symlinked binary
+source directories, orphan build scripts, and missing `autobins = false` or
+`build = false`. It leaves integration-test discovery enabled. See
+`docs/architecture/DOCUMENTATION_CLAIM_PROJECTIONS.md` for the shared authority
+projection contract and rendering-safe metadata format.

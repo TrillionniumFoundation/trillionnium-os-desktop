@@ -64,3 +64,13 @@ integrated-image or product-agent evidence.
 
 No marker, development binary, or development unit is installed by
 `packaging/debian/hepta-agent-portd.install`.
+
+## Managed journal option
+
+A reviewed development configuration may set
+`HEPTA_D3_RECEIPT_STORE=/var/lib/hepta-browserd/development/managed-v1`. Both
+`HEPTA_D3_RECEIPT_JOURNAL` and `HEPTA_D3_RECEIPT_PREDECESSORS` must then be absent,
+not merely empty. Existing state is never silently adopted or reset. The
+current profile/marker/peer requirements and `Restart=no` remain unchanged.
+This repository does not enable this option or ship an activation marker. See
+[`MANAGED_RECEIPT_STORE.md`](../../../docs/architecture/MANAGED_RECEIPT_STORE.md).

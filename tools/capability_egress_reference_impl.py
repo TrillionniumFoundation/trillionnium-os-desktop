@@ -15,6 +15,7 @@ import ipaddress
 import json
 import re
 import sys
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
@@ -24,7 +25,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 from trusted_app_bundle import (  # noqa: E402
-    canonical_json,
     ed25519_public_from_seed,
     ed25519_sign_fixture,
     ed25519_verify,
@@ -36,6 +36,8 @@ TOKEN_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 HOST_LABEL = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
 MAX_URL_BYTES = 8192
 MAX_TEXT_BYTES = 65536
+MAX_JSON_BYTES = 4 * 1024 * 1024
+PERMIT_SCHEMA = "trillionnium.desktop.capability-permit.v2"
 SUBJECT_FIELDS = {
     "taskflow_principal",
     "mechanism_uid",
@@ -84,11 +86,44 @@ def sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def canonical_json(value: Any) -> bytes:
+    """Canonical signed/receipt data: no non-finite or non-JSON values."""
+    try:
+        return (json.dumps(value, sort_keys=True, separators=(",", ":"),
+                           ensure_ascii=False, allow_nan=False) + "\n").encode("utf-8")
+    except (TypeError, ValueError, UnicodeError, RecursionError) as error:
+        raise PolicyError("NON_CANONICAL_JSON", type(error).__name__) from error
+
+
+def _no_duplicate_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, item in pairs:
+        if key in result:
+            fail("JSON_DUPLICATE_MEMBER", key)
+        result[key] = item
+    return result
+
+
 def load_json(path: Path) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        with path.open("rb") as source:
+            raw = source.read(MAX_JSON_BYTES + 1)
+        if len(raw) > MAX_JSON_BYTES:
+            fail("JSON_BYTE_BOUND_EXCEEDED")
+        value = json.loads(
+            raw.decode("utf-8"), object_pairs_hook=_no_duplicate_members,
+            parse_constant=lambda _value: fail("JSON_NONFINITE_NUMBER"),
+        )
+    except (UnicodeError, json.JSONDecodeError, RecursionError) as error:
+        raise PolicyError("INVALID_JSON", type(error).__name__) from error
     if not isinstance(value, dict):
         fail("JSON_OBJECT_REQUIRED", str(path))
     return value
+
+
+def is_integer(value: Any) -> bool:
+    # Python bool subclasses int; protocol integer fields must not accept it.
+    return type(value) is int
 
 
 def decode_b64(value: Any, size: int, reason: str) -> bytes:
@@ -121,7 +156,7 @@ def canonical_subject(value: Any) -> dict[str, Any]:
     }
     for key, item in result.items():
         if key == "mechanism_uid":
-            if not isinstance(item, int) or item < 0:
+            if not is_integer(item) or item < 0:
                 fail("INVALID_SUBJECT_UID")
         elif not isinstance(item, str) or not item or len(item.encode("utf-8")) > 256:
             fail("INVALID_SUBJECT_FIELD", key)
@@ -172,6 +207,8 @@ def canonical_host(host: str) -> tuple[str, ipaddress._BaseAddress | None]:
 def split_url(value: Any, allowed_schemes: Iterable[str]) -> tuple[SplitResult, str, int, str]:
     if not isinstance(value, str) or not value or len(value.encode("utf-8")) > MAX_URL_BYTES:
         fail("INVALID_URL")
+    if any(ord(character) <= 0x20 or ord(character) == 0x7F or character.isspace() for character in value) or "\\" in value:
+        fail("URL_NON_CANONICAL_CHARACTER")
     try:
         parsed = urlsplit(value)
         port = parsed.port
@@ -181,7 +218,7 @@ def split_url(value: Any, allowed_schemes: Iterable[str]) -> tuple[SplitResult, 
         fail("SCHEME_NOT_AUTHORIZED", parsed.scheme)
     if parsed.username is not None or parsed.password is not None:
         fail("URL_USERINFO_FORBIDDEN")
-    if parsed.fragment:
+    if "#" in value:
         fail("URL_FRAGMENT_FORBIDDEN")
     if not parsed.hostname:
         fail("URL_HOST_REQUIRED")
@@ -194,6 +231,9 @@ def split_url(value: Any, allowed_schemes: Iterable[str]) -> tuple[SplitResult, 
         rendered_host = f"[{host}]" if address.version == 6 else host
     else:
         rendered_host = host
+    expected_authority = rendered_host if port is None else f"{rendered_host}:{port}"
+    if not value.startswith(f"{parsed.scheme}://") or parsed.netloc != expected_authority:
+        fail("NON_CANONICAL_URL_AUTHORITY")
     origin = f"{parsed.scheme}://{rendered_host}:{effective_port}"
     return parsed, host, effective_port, origin
 
@@ -258,9 +298,9 @@ def issuer_public_key(trust: dict[str, Any], issuer_id: str, key_id: str, now_ep
         fail("ISSUER_KEY_FIELD_SET_MISMATCH")
     if record["status"] != "active":
         fail("ISSUER_KEY_NOT_ACTIVE", key_id)
-    if not isinstance(record["not_before_epoch"], int) or not isinstance(record["expires_at_epoch"], int):
+    if not is_integer(record["not_before_epoch"]) or not is_integer(record["expires_at_epoch"]):
         fail("ISSUER_KEY_TIME_INVALID")
-    if not record["not_before_epoch"] <= now_epoch <= record["expires_at_epoch"]:
+    if not 0 <= record["not_before_epoch"] <= now_epoch <= record["expires_at_epoch"]:
         fail("ISSUER_KEY_OUTSIDE_VALIDITY")
     return decode_b64(record["public_key_base64"], 32, "INVALID_ISSUER_PUBLIC_KEY")
 
@@ -273,9 +313,11 @@ def verify_permit(
     *,
     now_epoch: int,
 ) -> dict[str, Any]:
+    if not is_integer(now_epoch) or now_epoch < 0:
+        fail("RUNTIME_TIME_INVALID")
     if not isinstance(permit, dict) or set(permit) != PERMIT_FIELDS:
         fail("PERMIT_FIELD_SET_MISMATCH")
-    if permit.get("schema") != contract["permit"]["schema"]:
+    if contract["permit"]["schema"] != PERMIT_SCHEMA or permit.get("schema") != PERMIT_SCHEMA:
         fail("PERMIT_SCHEMA_MISMATCH")
     for key in ("permit_id", "issuer_id", "issuer_key_id", "nonce", "audience"):
         if not isinstance(permit.get(key), str) or not TOKEN_ID.fullmatch(permit[key]):
@@ -286,9 +328,9 @@ def verify_permit(
     issued = permit.get("issued_at_epoch")
     not_before = permit.get("not_before_epoch")
     expires = permit.get("expires_at_epoch")
-    if not all(isinstance(item, int) for item in (issued, not_before, expires)):
+    if not all(is_integer(item) for item in (issued, not_before, expires)):
         fail("PERMIT_TIME_FIELDS_REQUIRED")
-    if not issued <= not_before <= expires:
+    if not 0 <= issued <= not_before <= expires:
         fail("PERMIT_TIME_ORDER_INVALID")
     if expires - issued > int(contract["permit"]["maximum_lifetime_seconds"]):
         fail("PERMIT_LIFETIME_TOO_LONG")
@@ -297,7 +339,7 @@ def verify_permit(
     if now_epoch > expires:
         fail("PERMIT_EXPIRED")
     maximum_uses = permit.get("maximum_uses")
-    if not isinstance(maximum_uses, int) or not 1 <= maximum_uses <= int(contract["permit"]["maximum_uses"]):
+    if not is_integer(maximum_uses) or not 1 <= maximum_uses <= int(contract["permit"]["maximum_uses"]):
         fail("INVALID_MAXIMUM_USES")
     actions = permit.get("actions")
     if not isinstance(actions, list) or not actions or not all(isinstance(item, str) and TOKEN_ID.fullmatch(item) for item in actions):
@@ -325,13 +367,24 @@ def verify_permit(
 
 @dataclass
 class DecisionLedger:
+    """In-memory source model; commit is transactional and serialized.
+
+    Preliminary availability is advisory. The commit lock rechecks all limits
+    and publishes counters plus receipt only after every encoding/copy succeeds.
+    This does not provide durable storage or authorize an external operation.
+    """
     uses: dict[str, int] = field(default_factory=dict)
     receipts: list[dict[str, Any]] = field(default_factory=list)
+    _lock: Any = field(default_factory=threading.RLock, repr=False, compare=False)
 
     def available(self, permit: dict[str, Any]) -> None:
-        used = self.uses.get(permit["permit_id"], 0)
-        if used >= permit["maximum_uses"]:
-            fail("PERMIT_REPLAY_LIMIT_REACHED", permit["permit_id"])
+        with self._lock:
+            used = self.uses.get(permit["permit_id"], 0)
+            maximum = permit.get("maximum_uses")
+            if not is_integer(used) or used < 0 or not is_integer(maximum) or maximum < 1:
+                fail("INVALID_MAXIMUM_USES")
+            if used >= maximum:
+                fail("PERMIT_REPLAY_LIMIT_REACHED", permit["permit_id"])
 
     def commit(
         self,
@@ -340,27 +393,37 @@ class DecisionLedger:
         details: dict[str, Any],
         now_epoch: int,
     ) -> dict[str, Any]:
-        for permit in permits:
-            self.available(permit)
-        for permit in permits:
-            permit_id = permit["permit_id"]
-            self.uses[permit_id] = self.uses.get(permit_id, 0) + 1
-        previous = self.receipts[-1]["receipt_sha256"] if self.receipts else "0" * 64
-        receipt: dict[str, Any] = {
-            "schema": "trillionnium.desktop.capability-decision-receipt.v1",
-            "sequence": len(self.receipts) + 1,
-            "previous_receipt_sha256": previous,
-            "decision": "ADMIT",
-            "now_epoch": now_epoch,
-            "permit_ids": [permit["permit_id"] for permit in permits],
-            "permit_sha256": [sha256(canonical_json(permit)) for permit in permits],
-            "request_sha256": sha256(canonical_json(request)),
-            "details": copy.deepcopy(details),
-            "external_effect_executed": False,
-        }
-        receipt["receipt_sha256"] = sha256(canonical_json(receipt))
-        self.receipts.append(receipt)
-        return copy.deepcopy(receipt)
+        with self._lock:
+            if not is_integer(now_epoch) or now_epoch < 0:
+                fail("RUNTIME_TIME_INVALID")
+            if not permits:
+                fail("PERMIT_REQUIRED")
+            identities = [permit["permit_id"] for permit in permits]
+            if len(set(identities)) != len(identities):
+                fail("DUPLICATE_PERMIT_ID")
+            next_uses = dict(self.uses)
+            for permit in permits:
+                self.available(permit)
+                permit_id = permit["permit_id"]
+                next_uses[permit_id] = next_uses.get(permit_id, 0) + 1
+            previous = self.receipts[-1]["receipt_sha256"] if self.receipts else "0" * 64
+            receipt: dict[str, Any] = {
+                "schema": "trillionnium.desktop.capability-decision-receipt.v1",
+                "sequence": len(self.receipts) + 1,
+                "previous_receipt_sha256": previous,
+                "decision": "ADMIT",
+                "now_epoch": now_epoch,
+                "permit_ids": identities,
+                "permit_sha256": [sha256(canonical_json(permit)) for permit in permits],
+                "request_sha256": sha256(canonical_json(request)),
+                "details": copy.deepcopy(details),
+                "external_effect_executed": False,
+            }
+            receipt["receipt_sha256"] = sha256(canonical_json(receipt))
+            returned = copy.deepcopy(receipt)
+            next_receipts = self.receipts + [receipt]
+            self.uses, self.receipts = next_uses, next_receipts
+            return returned
 
     @staticmethod
     def verify_receipts(receipts: Iterable[dict[str, Any]]) -> None:
@@ -368,10 +431,12 @@ class DecisionLedger:
         for sequence, original in enumerate(receipts, start=1):
             receipt = copy.deepcopy(original)
             claimed = receipt.pop("receipt_sha256", None)
-            if receipt.get("sequence") != sequence:
+            if not is_integer(receipt.get("sequence")) or receipt["sequence"] != sequence:
                 fail("DECISION_RECEIPT_SEQUENCE_MISMATCH")
             if receipt.get("previous_receipt_sha256") != previous:
                 fail("DECISION_RECEIPT_CHAIN_MISMATCH")
+            if receipt.get("decision") != "ADMIT" or receipt.get("external_effect_executed") is not False:
+                fail("DECISION_RECEIPT_CLAIM_MISMATCH")
             actual = sha256(canonical_json(receipt))
             if claimed != actual:
                 fail("DECISION_RECEIPT_HASH_MISMATCH")
@@ -395,11 +460,14 @@ def authorize_file(
     resource = permit["resource"]
     if set(resource) != {"kind", "handle_id", "maximum_bytes"} or resource.get("kind") != "opaque_file_handle":
         fail("FILE_RESOURCE_FIELD_SET_MISMATCH")
+    if any(not isinstance(value, str) or not TOKEN_ID.fullmatch(value)
+           for value in (request.get("handle_id"), resource.get("handle_id"))):
+        fail("FILE_HANDLE_MISMATCH")
     if request.get("handle_id") != resource.get("handle_id"):
         fail("FILE_HANDLE_MISMATCH")
     byte_count = request.get("bytes")
     maximum = resource.get("maximum_bytes")
-    if not isinstance(byte_count, int) or byte_count < 0 or not isinstance(maximum, int) or maximum < 0:
+    if not is_integer(byte_count) or byte_count < 0 or not is_integer(maximum) or maximum < 0:
         fail("FILE_BYTE_BOUND_INVALID")
     if byte_count > maximum:
         fail("FILE_BYTE_LIMIT_EXCEEDED")
@@ -413,10 +481,18 @@ def authorize_notification(permit: dict[str, Any], request: dict[str, Any]) -> d
     resource = permit["resource"]
     if set(resource) != {"kind", "channel_id", "maximum_text_bytes"} or resource.get("kind") != "notification_channel":
         fail("NOTIFICATION_RESOURCE_FIELD_SET_MISMATCH")
+    if any(not isinstance(value, str) or not TOKEN_ID.fullmatch(value)
+           for value in (request.get("channel_id"), resource.get("channel_id"))):
+        fail("NOTIFICATION_CHANNEL_MISMATCH")
     if request.get("channel_id") != resource.get("channel_id"):
         fail("NOTIFICATION_CHANNEL_MISMATCH")
-    total = sum(len(str(request.get(key, "")).encode("utf-8")) for key in ("title", "body"))
-    if total > min(int(resource["maximum_text_bytes"]), MAX_TEXT_BYTES):
+    if any(not isinstance(request.get(key), str) for key in ("title", "body")):
+        fail("NOTIFICATION_TEXT_TYPE_INVALID")
+    maximum = resource["maximum_text_bytes"]
+    if not is_integer(maximum) or maximum < 0:
+        fail("NOTIFICATION_TEXT_BOUND_INVALID")
+    total = sum(len(request[key].encode("utf-8")) for key in ("title", "body"))
+    if total > min(maximum, MAX_TEXT_BYTES):
         fail("NOTIFICATION_TEXT_LIMIT_EXCEEDED")
     return {"portal": "notification", "channel_id": resource["channel_id"], "text_bytes": total}
 
@@ -428,11 +504,16 @@ def authorize_audio(permit: dict[str, Any], request: dict[str, Any]) -> dict[str
     resource = permit["resource"]
     if set(resource) != {"kind", "stream_id", "maximum_duration_ms", "maximum_gain_millibel"} or resource.get("kind") != "audio_stream":
         fail("AUDIO_RESOURCE_FIELD_SET_MISMATCH")
+    if any(not isinstance(value, str) or not TOKEN_ID.fullmatch(value)
+           for value in (request.get("stream_id"), resource.get("stream_id"))):
+        fail("AUDIO_STREAM_MISMATCH")
     if request.get("stream_id") != resource.get("stream_id"):
         fail("AUDIO_STREAM_MISMATCH")
     duration = request.get("duration_ms")
     gain = request.get("gain_millibel")
-    if not isinstance(duration, int) or not isinstance(gain, int):
+    if not all(is_integer(item) for item in (
+        duration, gain, resource["maximum_duration_ms"], resource["maximum_gain_millibel"],
+    )):
         fail("AUDIO_BOUND_TYPE_INVALID")
     if duration < 0 or duration > resource["maximum_duration_ms"]:
         fail("AUDIO_DURATION_LIMIT_EXCEEDED")
@@ -465,20 +546,20 @@ def network_resource(permit: dict[str, Any], contract: dict[str, Any]) -> dict[s
     if len(canonical) != len(set(canonical)) or canonical != origins:
         fail("NETWORK_ORIGIN_SET_NON_CANONICAL")
     contexts = resource.get("contexts")
-    if not isinstance(contexts, list) or not contexts or len(contexts) != len(set(contexts)):
+    if not isinstance(contexts, list) or not contexts or any(not isinstance(item, str) for item in contexts) or len(contexts) != len(set(contexts)):
         fail("NETWORK_CONTEXT_SET_INVALID")
     if any(item not in contract["request_contexts"] for item in contexts):
         fail("NETWORK_CONTEXT_UNKNOWN")
     methods = resource.get("methods")
-    if not isinstance(methods, list) or not methods or len(methods) != len(set(methods)):
+    if not isinstance(methods, list) or not methods or any(not isinstance(item, str) for item in methods) or len(methods) != len(set(methods)):
         fail("NETWORK_METHOD_SET_INVALID")
-    if any(not isinstance(item, str) or item.upper() != item for item in methods):
+    if any(re.fullmatch(r"[A-Z]+", item) is None for item in methods):
         fail("NETWORK_METHOD_NON_CANONICAL")
     maximum_redirects = resource.get("maximum_redirects")
-    if not isinstance(maximum_redirects, int) or not 0 <= maximum_redirects <= int(contract["network"]["maximum_redirects"]):
+    if not is_integer(maximum_redirects) or not 0 <= maximum_redirects <= int(contract["network"]["maximum_redirects"]):
         fail("NETWORK_REDIRECT_BOUND_INVALID")
     for key in ("maximum_dns_ttl_seconds", "maximum_request_bytes", "maximum_response_bytes"):
-        if not isinstance(resource.get(key), int) or resource[key] < 0:
+        if not is_integer(resource.get(key)) or resource[key] < 0:
             fail("NETWORK_NUMERIC_BOUND_INVALID", key)
     for key in ("resolver_id", "proxy_id"):
         if not isinstance(resource.get(key), str) or not TOKEN_ID.fullmatch(resource[key]):
@@ -509,9 +590,9 @@ def validate_dns(
         fail("DNS_QUERY_NAME_MISMATCH")
     ttl = dns.get("ttl_seconds")
     observed = dns.get("observed_at_epoch")
-    if not isinstance(ttl, int) or not 1 <= ttl <= resource["maximum_dns_ttl_seconds"]:
+    if not is_integer(ttl) or not 1 <= ttl <= resource["maximum_dns_ttl_seconds"]:
         fail("DNS_TTL_BOUND_VIOLATION")
-    if not isinstance(observed, int) or not observed <= now_epoch <= observed + ttl:
+    if not is_integer(observed) or not 0 <= observed <= now_epoch <= observed + ttl:
         fail("DNS_EVIDENCE_EXPIRED_OR_FUTURE")
     chain = dns.get("cname_chain")
     if not isinstance(chain, list) or len(chain) > int(contract["network"]["maximum_cname_depth"]):
@@ -578,10 +659,10 @@ def authorize_network(
         ("expected_response_bytes", "maximum_response_bytes"),
     ):
         value = request.get(key)
-        if not isinstance(value, int) or value < 0 or value > resource[maximum_key]:
+        if not is_integer(value) or value < 0 or value > resource[maximum_key]:
             fail("NETWORK_BYTE_BOUND_EXCEEDED", key)
     redirects = request.get("redirect_count")
-    if not isinstance(redirects, int) or not 0 <= redirects <= resource["maximum_redirects"]:
+    if not is_integer(redirects) or not 0 <= redirects <= resource["maximum_redirects"]:
         fail("REDIRECT_BUDGET_EXCEEDED")
     previous_url = request.get("previous_url")
     if redirects == 0:
@@ -633,7 +714,7 @@ def authorize_network(
         fail("CONNECTION_EVIDENCE_FIELD_SET_MISMATCH")
     if connection.get("proxy_id") != resource["proxy_id"]:
         fail("CONNECTION_PROXY_ID_MISMATCH")
-    if not isinstance(connection.get("observed_at_epoch"), int) or connection["observed_at_epoch"] > now_epoch:
+    if not is_integer(connection.get("observed_at_epoch")) or not request["dns"]["observed_at_epoch"] <= connection["observed_at_epoch"] <= now_epoch:
         fail("CONNECTION_TIME_INVALID")
     peer = validate_public_ip(connection.get("peer_ip")).compressed.lower()
     if peer not in approved:
@@ -746,7 +827,7 @@ def build_fixture_permit(
     issuer_key_id: str = "fixture-key-1",
 ) -> tuple[dict[str, Any], bytes]:
     permit: dict[str, Any] = {
-        "schema": "trillionnium.desktop.capability-permit.v1",
+        "schema": PERMIT_SCHEMA,
         "permit_id": permit_id,
         "issuer_id": issuer_id,
         "issuer_key_id": issuer_key_id,

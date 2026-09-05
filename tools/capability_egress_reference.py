@@ -83,6 +83,8 @@ def authorize(
         _impl.verify_permit(item, trust, runtime_subject, contract, now_epoch=now_epoch)
         for item in permits
     ]
+    if len({item["permit_id"] for item in verified}) != len(verified):
+        _impl.fail("DUPLICATE_PERMIT_ID")
     for item in verified:
         ledger.available(item)
 
@@ -133,6 +135,8 @@ def authorize(
     else:
         _impl.fail("UNKNOWN_PORTAL_REQUEST")
 
+    if len(consumed) != len(verified):
+        _impl.fail("UNUSED_PERMIT_FORBIDDEN")
     return ledger.commit(consumed, request, details, now_epoch)
 
 

@@ -15,6 +15,7 @@ import json
 import math
 import os
 import re
+import shutil
 import stat
 import sys
 import tempfile
@@ -717,10 +718,24 @@ def fixture_bom() -> dict[str, Any]:
     }
 
 
+def _reset_fixture_root(root: Path) -> None:
+    """Create an empty fixture directory without following stale symlinks."""
+    if root.is_symlink():
+        fail("FIXTURE_ROOT_SYMLINK_REJECTED", str(root))
+    if root.exists() and not root.is_dir():
+        fail("FIXTURE_ROOT_NOT_DIRECTORY", str(root))
+    root.mkdir(parents=True, exist_ok=True)
+    for child in list(root.iterdir()):
+        if child.is_symlink() or not child.is_dir():
+            child.unlink()
+        else:
+            shutil.rmtree(child)
+
+
 def create_fixture_bundle(
     contract: dict[str, Any], root: Path, seed: bytes
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    root.mkdir(parents=True, exist_ok=True)
+    _reset_fixture_root(root)
     roles = contract["required_artifact_roles"]
     metrics_path = root / "metrics.jsonl"
     metrics_records = [
@@ -857,6 +872,16 @@ def create_fixture_bundle(
     evidence["signature"]["value_base64"] = base64.b64encode(
         ed25519_sign_fixture(seed, signed_payload(evidence))
     ).decode("ascii")
+    thresholds = contract["thresholds"]
+    fixture_key_expires_at = (
+        100
+        + max(
+            thresholds["preliminary_stability_seconds_min"],
+            thresholds["final_stability_seconds_min"],
+        )
+        + thresholds["maximum_sample_gap_seconds"]
+        + 3600
+    )
     trust = {
         "schema": "trillionnium.desktop.hardware-lab-trust.v1",
         "labs": {
@@ -867,7 +892,7 @@ def create_fixture_bundle(
                         "signer_role": "fixture_only",
                         "public_key_base64": base64.b64encode(public).decode("ascii"),
                         "not_before_epoch": 1,
-                        "expires_at_epoch": 1000,
+                        "expires_at_epoch": fixture_key_expires_at,
                         "production_enrolled": False,
                     }
                 }

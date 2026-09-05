@@ -30,6 +30,27 @@ class ValidateRepositoryHardeningTests(unittest.TestCase):
         VALIDATOR.EXPECTED_WORKSPACE_MEMBERS = self.original_members
         VALIDATOR.ERRORS.clear()
 
+    def test_json_schema_inventory_checks_identity_and_path_not_just_count(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            VALIDATOR.ROOT = root
+            for schema_id, relative in VALIDATOR.EXPECTED_JSON_SCHEMAS.items():
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps({"$id": schema_id}))
+            VALIDATOR.check_json_files()
+            self.assertEqual(VALIDATOR.ERRORS, [])
+            path = root / "contracts/capability-permit.v2.schema.json"
+            original = path.read_text()
+            path.write_text(json.dumps({"$id": "https://invalid.example/unregistered"}))
+            VALIDATOR.check_json_files()
+            self.assertTrue(any("identity/path inventory" in error for error in VALIDATOR.ERRORS))
+            VALIDATOR.ERRORS.clear()
+            path.write_text(original)
+            path.rename(root / "contracts/wrong-name.json")
+            VALIDATOR.check_json_files()
+            self.assertTrue(any("identity/path inventory" in error for error in VALIDATOR.ERRORS))
+
     def test_checksum_requires_lowercase_64_hex(self) -> None:
         self.assertTrue(VALIDATOR.is_sha256_hex("a" * 64))
         for value in ("A" * 64, "a" * 63, "a" * 65, "g" * 64, None, 1):

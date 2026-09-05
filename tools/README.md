@@ -132,6 +132,15 @@ input object. Do not make a gate green by broadening permissions, accepting
 missing fields, following symlinks, selecting a different process/device,
 disabling negative cases, or rewriting expected evidence after the fact.
 
+Deterministic hardware fixtures own their temporary root: each rebuild removes
+stale regular files, real directories, and symlinks without following the
+symlink target. The fixture signing-key validity window is derived from the D8
+stability thresholds so negative physical-shaped cases reach the intended
+policy invariant; the key remains fixture-only and not production-enrolled.
+Evidence facades that import sibling implementation modules establish that
+module path from their own file location and must load correctly without a
+previous test mutating ``sys.path``.
+
 ## Compatibility and change protocol
 
 New tools require a documented owner, bounded input/output contract, hostile tests, workflow pinning/inventory, component registration, and gate invalidation coverage. Changing parser, path, subprocess, signing, or evidence semantics requires security review and exact-head reruns for every consuming gate.
@@ -141,3 +150,71 @@ entrypoints, ownership, references, status, security invariants, or claim
 ceilings move. Run `python3 tools/validate_component_documentation.py`, the
 project/repository validators, authoritative Python discovery, and the locked
 Rust matrix before requesting independent review.
+
+## Shared claim projection mechanism
+
+The repository-owned `tools/documentation_claims.py` helper is imported by both
+module and component documentation validators. It checks exact registry values
+and rejects conflicting or disguised duplicate metadata without normalizing
+untrusted statements into accepted claims. It has no standalone activation or
+promotion entrypoint. See `docs/architecture/DOCUMENTATION_CLAIM_PROJECTIONS.md`
+and `tests/test_documentation_claim_projection.py` for the format and corpus.
+
+The D5 reference verifier consumes manifest v2 and publisher-qualified origins;
+its identity vectors are shared with the compiled Rust contract and D5 policy.
+Historical v1 source fixtures remain historical and cannot be silently aliased.
+
+## D6 boundary regression and compatibility references
+
+The candidate permit v2 schema and ADR 0006 describe the structured subject and
+second-based time contract separately from historical v1. The source reference
+regressions in `tests/d6/test_capability_boundary_hardening.py` cover typed input,
+canonical URLs and transactional use/receipt publication. These references do
+not change this component's capability or evidence tier.
+
+## Receipt persistence-cut regression
+
+The managed reopen path re-establishes file and directory durability before it
+returns a writer. Development and maintenance details are in
+`docs/architecture/RECEIPT_PERSISTENCE_FAULT_MODEL.md`. The private cfg(test)
+library corpus exercises 128 injected I/O-error combinations; the separate
+`journal_persistence_process` Cargo test target executes 64 actual SIGKILL
+cutpoint cases over the exact journal source. Neither is physical power loss
+or a product fault-control interface. Run both focused targets plus the full
+workspace/default/all-feature and Python discovery matrices. The independent
+process test has a custom harness; libtest name filters should use `--lib`.
+Module/component registration and `tests/test_receipt_persistence_cuts.py` guard
+source wiring, conditional compilation, durability order and claim ceilings.
+
+## Callback-shaped engine scheduling
+
+The optional `callback_engine_pair` / `CallbackEngineOwner` path starts an
+operation on its creator thread and accepts a single-use `EngineCompletion`
+from a later callback. The application continues native events between pumps;
+its timer follows the original deadline and bounded cancellation-check schedule.
+Ordinary Act never substitutes for the dedicated atomic semantic hook. The
+existing request endpoint now wakes on abandonment and Drop as well as enqueue.
+Wakes may be coalesced and are not a count of dispatched operations.
+See `docs/architecture/EVENT_LOOP_COMPLETION.md` and
+`contracts/event-loop-completion.v1.json` for APIs, ordering, tests and limits.
+This is source/host fixture evidence only: no Servo/native event loop, process
+IPC, installed image or product authority is added. The development daemon
+continues selecting its synchronous fixture backend; no activation changes.
+
+
+## Callback development service integration
+
+The persistent development service now uses the callback owner with an explicit
+ImmediateCallbacks bridge for its existing deterministic fixture. The main
+runner waits on a private notification predicate; worker completion is published
+before wake and errors retire before join. This does not implement Servo, winit,
+systemd activation or an installed image. See
+`docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md` and
+`contracts/d3-callback-service-runner.v1.json`; the source regression guard is
+`tools/audit_callback_service.py`, tested by
+`tests/test_callback_service_runner.py`. Existing controls and promotion limits
+remain unchanged. The immediate bridge does not make a blocking backend async.
+
+## Legacy copy source audit
+
+`audit_receipt_migration.py` is called by `verify_receipt_journal.py`; it cross-checks strict source admission, read-only file opens, staged marker commit ordering, the complete source/fault inventories and non-claims. It performs no migration or deployment and is not a formal proof. The actual library API is documented in `docs/architecture/LEGACY_RECEIPT_MIGRATION.md`.

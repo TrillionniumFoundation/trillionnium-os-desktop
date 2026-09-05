@@ -13,14 +13,16 @@
       "executable_sha256"
     ],
     "exact_match_required": true,
-    "peer_drift": "fail_closed_before_dispatch"
+    "peer_drift": "fail_closed_before_dispatch",
+    "persistent_connection_continuity": "first_complete_peer_runtime_snapshot_including_process_start_time"
   },
   "page_owner": {
     "logical_webview_limit": 1,
     "session_binding_required": true,
     "session_generation_required": true,
     "stale_reference_policy": "fail_closed",
-    "human_and_agent_state_machine": "hepta-session-core"
+    "human_and_agent_state_machine": "hepta-session-core",
+    "incarnation_contract": "contracts/session-incarnation.v1.json"
   },
   "browser_actor": {
     "typed_operations": [
@@ -67,7 +69,9 @@
       "deterministic_local_runtime_page_act": "unsupported",
       "independent_reference_model": "contracts/semantic-resolver.v1.json",
       "promotion_requires_servo_resolver": true
-    }
+    },
+    "engine_thread_dispatch": "contracts/engine-thread-dispatch.v1.json",
+    "event_loop_completion": "contracts/event-loop-completion.v1.json"
   },
   "receipts": {
     "journal": "contracts/receipt-journal.v1.json",
@@ -76,7 +80,9 @@
     "terminal_response_digest_bound": true,
     "potential_external_effect_interruption": "indeterminate_never_automatic_replay",
     "service_restart_reconciliation": "requested_to_interrupted_dispatched_effect_to_indeterminate",
-    "observer_failure": "fail_closed"
+    "observer_failure": "fail_closed",
+    "duplicate_requested": "reject_without_replacing_original_admission_coordinates",
+    "admission_identity_binding": "contracts/receipt-journal.v1.json#/lifecycle/admission_binding"
   },
   "activation": {
     "product_agent_port_enabled": false,
@@ -108,6 +114,7 @@
     "development_semantic_resolver_blocker": "Servo-owned atomic semantic resolver remains required before PageAct promotion",
     "development_binary_in_production_install_map": false,
     "listener_created_by_actor_crate": false,
-    "production_release_authorized": false
+    "production_release_authorized": false,
+    "development_engine_runner": "contracts/d3-session-engine-runner.v1.json"
   }
 }

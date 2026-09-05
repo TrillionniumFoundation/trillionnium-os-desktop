@@ -10,6 +10,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# Resolve only the repository-owned helper for both CLI and importlib test use.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools.documentation_claims import validate_claim_projection
+
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = "manifests/components.v1.json"
 INDEX_PATH = "docs/components/README.md"
@@ -252,6 +257,12 @@ def _validate_policy(registry: dict[str, Any], errors: list[str]) -> None:
 
 def validate(root: Path = ROOT, *, expected_paths: set[str] | None = None) -> list[str]:
     errors: list[str] = []
+    try:
+        metadata = root.lstat()
+    except OSError as error:
+        return [f"repository root is unavailable: {error}"]
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+        return ["repository root must be a real directory, not a symlink"]
     registry_path = _path_without_symlinks(
         root, REGISTRY_PATH, "component registry", errors, expected="file"
     )
@@ -332,15 +343,24 @@ def validate(root: Path = ROOT, *, expected_paths: set[str] | None = None) -> li
             except (OSError, UnicodeError) as error:
                 errors.append(f"cannot read {component_id} documentation: {error}")
             else:
+                errors.extend(validate_claim_projection(
+                    text, component.get("status"), component.get("claim_ceiling"),
+                    kind="component", label=component_id,
+                ))
                 if len(raw) < MINIMUM_DOCUMENTATION_BYTES:
                     errors.append(
                         f"{component_id} documentation is too short: {len(raw)} bytes"
                     )
+                lines = text.splitlines()
+                positions: list[int] = []
                 for heading in REQUIRED_SECTIONS:
-                    if heading not in text:
+                    if lines.count(heading) != 1:
                         errors.append(
-                            f"{component_id} documentation is missing {heading!r}"
+                            f"{component_id} documentation must contain {heading!r} exactly once"
                         )
+                    positions.append(lines.index(heading) if heading in lines else -1)
+                if all(position >= 0 for position in positions) and positions != sorted(positions):
+                    errors.append(f"{component_id} required sections are out of order")
                 markers = (
                     f"**Component registry ID:** `{component_id}`",
                     f"**Component path:** `{path_text}`",

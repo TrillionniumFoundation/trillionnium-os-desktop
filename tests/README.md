@@ -84,6 +84,13 @@ production.
 
 Tests should be hermetic and reset mutable globals, temporary roots, sockets, journals, and fixtures. Persistent evidence belongs outside test state and is bound to exact inputs. Timeouts, process exits, partial files, and infrastructure errors are surfaced separately from assertion failures.
 
+Every test module must also pass when loaded first in a fresh interpreter. A
+leading module may not monkey-patch shared helpers to make later modules pass.
+The D8 fixture-isolation regressions therefore exercise the real factory, and
+the Servo evidence loader regression removes ambient ``tools/`` path state
+before importing the facade. Run both focused modules and authoritative
+discovery when loader or fixture construction changes.
+
 Partial completion is never upgraded to success. Timeout, cancellation,
 infrastructure failure, product failure, stale evidence, and indeterminate
 external outcome remain distinct states. A retry must bind to the same exact
@@ -139,3 +146,59 @@ entrypoints, ownership, references, status, security invariants, or claim
 ceilings move. Run `python3 tools/validate_component_documentation.py`, the
 project/repository validators, authoritative Python discovery, and the locked
 Rust matrix before requesting independent review.
+
+## Receipt persistence-cut regression
+
+The managed reopen path re-establishes file and directory durability before it
+returns a writer. Development and maintenance details are in
+`docs/architecture/RECEIPT_PERSISTENCE_FAULT_MODEL.md`. The private cfg(test)
+library corpus exercises 128 injected I/O-error combinations; the separate
+`journal_persistence_process` Cargo test target executes 64 actual SIGKILL
+cutpoint cases over the exact journal source. Neither is physical power loss
+or a product fault-control interface. Run both focused targets plus the full
+workspace/default/all-feature and Python discovery matrices. The independent
+process test has a custom harness; libtest name filters should use `--lib`.
+Module/component registration and `tests/test_receipt_persistence_cuts.py` guard
+source wiring, conditional compilation, durability order and claim ceilings.
+
+## Engine-thread host boundary
+
+`tests/test_engine_thread_dispatch_contract.py` checks the scheduler contract,
+registered sources, documentation and Cargo/rustdoc CI wiring. Real connected
+AF_UNIX/codec/actor/fixture-engine/receipt tests live in
+`crates/hepta-browser-actor/src/engine_dispatch/transport_tests.rs`. Thread
+affinity, cancellation and late-reply cases live alongside in `tests.rs`.
+These are host mechanism tests, not real Servo or image evidence.
+
+## Callback-shaped engine scheduling
+
+The optional `callback_engine_pair` / `CallbackEngineOwner` path starts an
+operation on its creator thread and accepts a single-use `EngineCompletion`
+from a later callback. The application continues native events between pumps;
+its timer follows the original deadline and bounded cancellation-check schedule.
+Ordinary Act never substitutes for the dedicated atomic semantic hook. The
+existing request endpoint now wakes on abandonment and Drop as well as enqueue.
+Wakes may be coalesced and are not a count of dispatched operations.
+See `docs/architecture/EVENT_LOOP_COMPLETION.md` and
+`contracts/event-loop-completion.v1.json` for APIs, ordering, tests and limits.
+This is source/host fixture evidence only: no Servo/native event loop, process
+IPC, installed image or product authority is added. The development daemon
+continues selecting its synchronous fixture backend; no activation changes.
+
+
+## Callback development service integration
+
+The persistent development service now uses the callback owner with an explicit
+ImmediateCallbacks bridge for its existing deterministic fixture. The main
+runner waits on a private notification predicate; worker completion is published
+before wake and errors retire before join. This does not implement Servo, winit,
+systemd activation or an installed image. See
+`docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md` and
+`contracts/d3-callback-service-runner.v1.json`; the source regression guard is
+`tools/audit_callback_service.py`, tested by
+`tests/test_callback_service_runner.py`. Existing controls and promotion limits
+remain unchanged. The immediate bridge does not make a blocking backend async.
+
+## Legacy receipt migration verification
+
+`tests/test_receipt_migration.py` checks the source/contract, fault case inventory and CI links for the explicit offline copy. Rust migration tests and the separately compiled `journal_migration_process` target use real private files and process termination. These tests do not qualify installed-service cutover, physical power loss or anti-rollback storage.

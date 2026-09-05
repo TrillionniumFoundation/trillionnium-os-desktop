@@ -82,12 +82,49 @@ class ReceiptJournalAuditTests(unittest.TestCase):
         public_api = (ROOT / "crates/hepta-session-core/src/lib.rs").read_text(
             encoding="utf-8"
         )
-        VALIDATOR.audit_source(source, public_api)
+        chain_source = VALIDATOR.CHAIN_SOURCE.read_text(encoding="utf-8")
+        VALIDATOR.audit_source(source, public_api, chain_source, VALIDATOR.BINDING_SOURCE.read_text(encoding="utf-8"), VALIDATOR.BINDING_TESTS.read_text(encoding="utf-8"))
         self.assertEqual(VALIDATOR.ERRORS, [])
 
         VALIDATOR.ERRORS.clear()
-        VALIDATOR.audit_source(source.replace("pub fn inspect_chain", "// pub fn inspect_chain", 1), public_api)
+        VALIDATOR.audit_source(source.replace("pub fn inspect_chain", "// pub fn inspect_chain", 1), public_api, chain_source, VALIDATOR.BINDING_SOURCE.read_text(encoding="utf-8"), VALIDATOR.BINDING_TESTS.read_text(encoding="utf-8"))
         self.assertTrue(any("inspect_chain API" in error for error in VALIDATOR.ERRORS))
+
+    def test_chain_helper_must_be_wired_into_both_read_and_write_paths(self) -> None:
+        source = VALIDATOR.SOURCE.read_text(encoding="utf-8")
+        api = VALIDATOR.PUBLIC_API.read_text(encoding="utf-8")
+        chain = VALIDATOR.CHAIN_SOURCE.read_text(encoding="utf-8")
+        for token in ("mod chain;", "chain::inspect(paths)", "Self::open_chain_impl([path], None, policy, true)"):
+            with self.subTest(token=token):
+                self.assertIn(token, source)
+                VALIDATOR.ERRORS.clear()
+                VALIDATOR.audit_source(source.replace(token, "/* removed */", 1), api, chain, VALIDATOR.BINDING_SOURCE.read_text(encoding="utf-8"), VALIDATOR.BINDING_TESTS.read_text(encoding="utf-8"))
+                self.assertTrue(VALIDATOR.ERRORS)
+
+    def test_chain_helper_comparisons_cannot_be_replaced_by_comments(self) -> None:
+        source = VALIDATOR.SOURCE.read_text(encoding="utf-8")
+        api = VALIDATOR.PUBLIC_API.read_text(encoding="utf-8")
+        chain = VALIDATOR.CHAIN_SOURCE.read_text(encoding="utf-8")
+        for token in ("previous_segment_sha256 != *previous_digest",
+                      "previous_record_sha256 != previous.last_record_sha256",
+                      "report.header.journal_id != expected"):
+            with self.subTest(token=token):
+                self.assertIn(token, chain)
+                VALIDATOR.ERRORS.clear()
+                VALIDATOR.audit_source(source, api, chain.replace(token, "/* " + token + " */ true"), VALIDATOR.BINDING_SOURCE.read_text(encoding="utf-8"), VALIDATOR.BINDING_TESTS.read_text(encoding="utf-8"))
+                self.assertTrue(VALIDATOR.ERRORS)
+
+    def test_chain_helper_must_restore_progress_and_keep_all_bounds(self) -> None:
+        source = VALIDATOR.SOURCE.read_text(encoding="utf-8")
+        api = VALIDATOR.PUBLIC_API.read_text(encoding="utf-8")
+        chain = VALIDATOR.CHAIN_SOURCE.read_text(encoding="utf-8")
+        for token in ("validate_reports(&inspected, policy.repair_torn_tail)",
+                      "MAX_CHAIN_SEGMENTS", "MAX_CHAIN_BYTES", "MAX_CHAIN_RECORDS", "lock_file(&file)"):
+            with self.subTest(token=token):
+                self.assertIn(token, chain)
+                VALIDATOR.ERRORS.clear()
+                VALIDATOR.audit_source(source, api, chain.replace(token, "removed_invariant"), VALIDATOR.BINDING_SOURCE.read_text(encoding="utf-8"), VALIDATOR.BINDING_TESTS.read_text(encoding="utf-8"))
+                self.assertTrue(VALIDATOR.ERRORS)
 
     def test_comments_and_literals_cannot_satisfy_forbidden_authority_check(self) -> None:
         masked = VALIDATOR.mask_rust_non_code(
@@ -137,6 +174,97 @@ class ReceiptJournalAuditTests(unittest.TestCase):
             any("input_hashes.Cargo.lock" in error for error in VALIDATOR.ERRORS)
         )
 
+
+    def audit_binding_inputs(self, source=None, chain=None, binding=None, tests=None):
+        VALIDATOR.audit_source(
+            VALIDATOR.SOURCE.read_text(encoding="utf-8") if source is None else source,
+            VALIDATOR.PUBLIC_API.read_text(encoding="utf-8"),
+            VALIDATOR.CHAIN_SOURCE.read_text(encoding="utf-8") if chain is None else chain,
+            VALIDATOR.BINDING_SOURCE.read_text(encoding="utf-8") if binding is None else binding,
+            VALIDATOR.BINDING_TESTS.read_text(encoding="utf-8") if tests is None else tests,
+        )
+
+    def test_binding_contract_cannot_omit_fields_or_promote_authenticity(self):
+        contract = json.loads(VALIDATOR.CONTRACT.read_text(encoding="utf-8"))
+        policy = contract["lifecycle"]["admission_binding"]
+        for field in policy["immutable_fields"]:
+            with self.subTest(field=field):
+                changed = json.loads(json.dumps(contract))
+                changed["lifecycle"]["admission_binding"]["immutable_fields"].remove(field)
+                VALIDATOR.ERRORS.clear()
+                VALIDATOR.audit_contract(changed)
+                self.assertIn("receipt immutable admission binding contract drift", VALIDATOR.ERRORS)
+        policy["cryptographic_authentication_claim"] = True
+        VALIDATOR.ERRORS.clear()
+        VALIDATOR.audit_contract(contract)
+        self.assertIn("receipt immutable admission binding contract drift", VALIDATOR.ERRORS)
+
+    def test_every_admission_digest_field_must_remain_executable(self):
+        original = VALIDATOR.BINDING_SOURCE.read_text(encoding="utf-8")
+        for field in VALIDATOR.EXPECTED_ADMISSION_BINDING["immutable_fields"]:
+            with self.subTest(field=field):
+                token = "event." + field
+                self.assertIn(token, original)
+                VALIDATOR.ERRORS.clear()
+                self.audit_binding_inputs(binding=original.replace(token, "/* " + token + " */ omitted"))
+                self.assertIn("admission binding omits immutable " + field, VALIDATOR.ERRORS)
+
+    def test_all_four_parent_paths_require_the_shared_binding(self):
+        original = VALIDATOR.SOURCE.read_text(encoding="utf-8")
+        positions = [m.start() for m in re.finditer(r"ReceiptProgress::advance", original)]
+        self.assertEqual(len(positions), 4)
+        for pos in positions:
+            with self.subTest(offset=pos):
+                changed = original[:pos] + original[pos:].replace("ReceiptProgress::advance", "Unchecked::advance", 1)
+                VALIDATOR.ERRORS.clear()
+                self.audit_binding_inputs(source=changed)
+                self.assertTrue(any("bypasses immutable admission binding" in e for e in VALIDATOR.ERRORS))
+        chain = VALIDATOR.CHAIN_SOURCE.read_text(encoding="utf-8")
+        VALIDATOR.ERRORS.clear()
+        self.audit_binding_inputs(chain=chain.replace("ReceiptProgress::advance", "Unchecked::advance"))
+        self.assertTrue(any("chain validation bypasses" in e for e in VALIDATOR.ERRORS))
+
+    def test_binding_equality_and_module_wiring_cannot_be_comments(self):
+        binding = VALIDATOR.BINDING_SOURCE.read_text(encoding="utf-8")
+        token = "previous.admission_sha256 != admission_sha256"
+        self.assertIn(token, binding)
+        self.audit_binding_inputs(binding=binding.replace(token, "/* " + token + " */ false"))
+        self.assertTrue(any("lost executable validation" in e for e in VALIDATOR.ERRORS))
+        for token in ("mod binding;", "mod binding_tests;"):
+            VALIDATOR.ERRORS.clear()
+            source = VALIDATOR.SOURCE.read_text(encoding="utf-8")
+            self.assertIn(token, source)
+            self.audit_binding_inputs(source=source.replace(token, "/* " + token + " */"))
+            self.assertTrue(VALIDATOR.ERRORS)
+
+    def test_binding_module_cannot_gain_hidden_execution_authority(self):
+        binding = VALIDATOR.BINDING_SOURCE.read_text(encoding="utf-8")
+        self.audit_binding_inputs(binding=binding + "\nfn hidden() { std::process::Command::new(\"x\"); }\n")
+        self.assertIn("receipt journal contains process execution authority", VALIDATOR.ERRORS)
+
+    def test_binding_regressions_cannot_be_removed_or_commented(self):
+        tests = VALIDATOR.BINDING_TESTS.read_text(encoding="utf-8")
+        token = "fn lifecycle_binding_checks_identity_again_after_reopen"
+        self.assertIn(token, tests)
+        self.audit_binding_inputs(tests=tests.replace(token, "// " + token))
+        self.assertTrue(any("lacks executable" in e for e in VALIDATOR.ERRORS))
+
+    def test_json_inputs_reject_duplicate_keys_and_non_finite_constants(self):
+        for text in ('{"a":1,"a":2}', '{"x":{"privacy":true,"privacy":false}}',
+                     '{"x":NaN}', '{"x":Infinity}', '{"x":-Infinity}'):
+            with self.subTest(text=text), self.assertRaises(ValueError):
+                VALIDATOR.strict_json(text)
+        self.assertEqual(VALIDATOR.strict_json('{"a":{"b":0},"x":[false]}'),
+                         {"a":{"b":0},"x":[False]})
+
+    def test_admission_contract_rejects_boolean_integer_aliases(self):
+        for key, value in (("disk_format_version", True),
+                           ("cryptographic_authentication_claim", 0)):
+            contract = json.loads(VALIDATOR.CONTRACT.read_text(encoding="utf-8"))
+            contract["lifecycle"]["admission_binding"][key] = value
+            VALIDATOR.ERRORS.clear()
+            VALIDATOR.audit_contract(contract)
+            self.assertIn("receipt immutable admission binding contract drift", VALIDATOR.ERRORS)
 
 if __name__ == "__main__":
     unittest.main()

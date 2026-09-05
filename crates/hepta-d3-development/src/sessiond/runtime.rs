@@ -12,7 +12,7 @@ use hepta_browser_actor::{
 };
 use hepta_browser_codec::{ElementReference, JsonObject, JsonValue, PageAction};
 
-const FRAME_ID: &str = "frame-main";
+const LOCAL_FRAME_KEY: &str = "main";
 const BACKEND_NODE_KEY: &str = "submit-primary";
 const ROLE: &str = "button";
 const ACCESSIBLE_NAME_SHA256: &str =
@@ -115,11 +115,7 @@ impl PageRuntime for AtomicFixtureRuntime {
                         "semantic snapshot revision exhausted before publication".to_owned(),
                     )
                 })?;
-            let target = semantic_target(&coordinates);
-            self.semantic_snapshot = Some(SemanticSnapshot {
-                coordinates: coordinates.clone(),
-                target: target.clone(),
-            });
+            let target = semantic_target(&coordinates)?;
             reply.result.insert(
                 "semantic_target".to_owned(),
                 JsonValue::Object(reference_json(&target)?),
@@ -138,6 +134,13 @@ impl PageRuntime for AtomicFixtureRuntime {
             reply
                 .result
                 .insert("servo_adapter_exercised".to_owned(), JsonValue::Bool(false));
+            // A failed response conversion must not publish an unusable target.
+            // The previous observation was invalidated at entry, deliberately.
+            control.ensure_active()?;
+            self.semantic_snapshot = Some(SemanticSnapshot {
+                coordinates,
+                target,
+            });
         }
 
         if reports_extract && let Some(JsonValue::Object(value)) = reply.result.get_mut("value") {
@@ -181,22 +184,12 @@ impl PageRuntime for AtomicFixtureRuntime {
             RuntimeFailure::Internal("mutation epoch exhausted before atomic action".to_owned())
         })?;
 
-        // This second control check is intentionally adjacent to the commit.
-        // No target lookup, await point, callback, or externally visible effect
-        // occurs between it and the exactly-once state mutation below.
-        control.ensure_active()?;
-        self.applied_action_count = next_action_count;
-        self.semantic_snapshot = None;
-
         let mut result = JsonObject::new();
         result.insert(
             "action".to_owned(),
             JsonValue::String(action_name(&action).to_owned()),
         );
-        result.insert(
-            "action_count".to_owned(),
-            json_u64(self.applied_action_count)?,
-        );
+        result.insert("action_count".to_owned(), json_u64(next_action_count)?);
         result.insert(
             "atomic_semantic_resolver_exercised".to_owned(),
             JsonValue::Bool(true),
@@ -232,24 +225,34 @@ impl PageRuntime for AtomicFixtureRuntime {
         );
         result.insert("servo_adapter_exercised".to_owned(), JsonValue::Bool(false));
 
-        Ok(RuntimeReply {
+        let reply = RuntimeReply {
             result,
             current_url: Some(current.current_url),
-        })
+        };
+        // All fallible result preparation precedes this final admission check.
+        // No lookup, yield, callback or fallible conversion follows the commit.
+        control.ensure_active()?;
+        self.applied_action_count = next_action_count;
+        self.semantic_snapshot = None;
+        Ok(reply)
     }
 }
 
-fn semantic_target(coordinates: &RuntimeCoordinates) -> ElementReference {
-    ElementReference {
+fn semantic_target(coordinates: &RuntimeCoordinates) -> Result<ElementReference, RuntimeFailure> {
+    Ok(ElementReference {
         session_generation: coordinates.session_generation,
         document_generation: coordinates.document_generation,
         semantic_snapshot_revision: coordinates.semantic_snapshot_revision,
-        frame_id: FRAME_ID.to_owned(),
+        frame_id: hepta_browser_actor::scoped_frame_id(
+            &coordinates.session_id,
+            &coordinates.webview_token,
+            LOCAL_FRAME_KEY,
+        )?,
         backend_node_key: Some(BACKEND_NODE_KEY.to_owned()),
         role: Some(ROLE.to_owned()),
         accessible_name_sha256: Some(ACCESSIBLE_NAME_SHA256.to_owned()),
         structural_fingerprint: STRUCTURAL_FINGERPRINT.to_owned(),
-    }
+    })
 }
 
 fn validate_binding(
@@ -351,7 +354,7 @@ mod tests {
     fn snapshot() -> SemanticSnapshot {
         let coordinates = coordinates();
         SemanticSnapshot {
-            target: semantic_target(&coordinates),
+            target: semantic_target(&coordinates).unwrap(),
             coordinates,
         }
     }
@@ -413,3 +416,7 @@ mod tests {
         ));
     }
 }
+
+#[cfg(test)]
+#[path = "runtime_atomic_tests.rs"]
+mod atomic_tests;

@@ -875,6 +875,15 @@ class GovernanceModelTests(unittest.TestCase):
         with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
             VALIDATOR.assert_source_inventory()
 
+    def test_empty_unregistered_root_file_is_not_a_noop(self) -> None:
+        for name in VALIDATOR.EXPECTED_ROOT_FILES:
+            (self.root / name).write_text("fixture", encoding="utf-8")
+        (self.root / "nonexistent").write_bytes(b"")
+        with redirect_stderr(io.StringIO()), self.assertRaisesRegex(
+            SystemExit, "unregistered file: nonexistent"
+        ):
+            VALIDATOR.assert_source_inventory()
+
     def test_codeowners_required_paths_and_identities_are_fail_closed(self) -> None:
         (self.root / ".github").mkdir()
         (self.root / "manifests").mkdir()

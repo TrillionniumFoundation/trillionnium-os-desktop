@@ -37,6 +37,19 @@ class ReceiptJournalWorkflowTests(unittest.TestCase):
                 f"unregistered={sorted(paths - self.registry_paths)}",
             )
 
+    def test_managed_service_inputs_are_registered(self) -> None:
+        """Removing both registry and trigger entries must still fail."""
+        required = {
+            "docs/architecture/MANAGED_RECEIPT_STORE.md",
+            "tests/test_managed_receipt_store.py",
+            "crates/hepta-browser-actor/**",
+            "crates/hepta-d3-development/**",
+            "packaging/debian/systemd/hepta-browserd-agent-development.service",
+        }
+        self.assertTrue(required <= self.registry_paths)
+        for event in ("pull_request", "push"):
+            self.assertTrue(required <= trigger_paths(self.workflow_text, event))
+
     def test_validator_and_toolchain_inputs_are_registered(self) -> None:
         required = {
             "rust-toolchain.toml",

@@ -7,6 +7,9 @@
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
+mod request_lease;
+pub use request_lease::{PeerRequestCustody, PeerRequestVerifier};
+
 use hepta_agent_transport::PeerIdentity;
 use sha2::{Digest as _, Sha256};
 use std::ffi::{CStr, CString};
@@ -407,6 +410,7 @@ impl ProcfsPeerAttestor {
             snapshot: after,
             pidfd,
             executable_source: executable_source.clone(),
+            attestor: self.clone(),
         })
     }
 }
@@ -416,6 +420,7 @@ pub struct AttestedPeer {
     snapshot: PeerRuntimeSnapshot,
     pidfd: OwnedFd,
     executable_source: ExecutableSource,
+    attestor: ProcfsPeerAttestor,
 }
 
 impl AttestedPeer {
@@ -435,6 +440,9 @@ impl AttestedPeer {
         &self,
         attestor: &ProcfsPeerAttestor,
     ) -> Result<PeerRuntimeSnapshot, AttestationError> {
+        if attestor.proc_root != self.attestor.proc_root {
+            return Err(AttestationError::AttestorSourceChanged);
+        }
         self.ensure_alive()?;
         let refreshed =
             attestor.read_snapshot_with_source(self.snapshot.pid, &self.executable_source)?;
@@ -1044,6 +1052,8 @@ pub enum AttestationError {
     },
     ProcessIdentityChanged,
     PeerProcessExited,
+    RequestCustodyRevoked,
+    AttestorSourceChanged,
     Pidfd(io::Error),
     InvalidPidfd,
     InvalidAccountName,
@@ -1139,6 +1149,8 @@ impl fmt::Display for AttestationError {
             Self::ProcessIdentityChanged => {
                 formatter.write_str("peer process identity changed during attestation")
             }
+            Self::AttestorSourceChanged => formatter.write_str("attestation source changed"),
+            Self::RequestCustodyRevoked => formatter.write_str("request peer custody revoked"),
             Self::PeerProcessExited => formatter.write_str("peer process exited"),
             Self::Pidfd(source) => write!(formatter, "pidfd operation failed: {source}"),
             Self::InvalidPidfd => formatter.write_str("pidfd value cannot be represented as an fd"),

@@ -35,3 +35,12 @@ python3 tools/validate_component_documentation.py
 The validator rejects missing discovery coverage, duplicate IDs or paths,
 short/missing documents, missing required sections, unsafe or symlinked
 paths, missing references, and missing CI/contributor integration.
+
+## Exact status and claim projections
+
+Both documentation gates now call `tools/documentation_claims.py`. The README
+must contain one exact registry status and one exact claim-ceiling projection
+inside its canonical section. Missing, conflicting, repeated, disguised, or
+stale values fail closed; matching prose does not promote a gate. The format,
+negative corpus, and limitations are specified in
+[`DOCUMENTATION_CLAIM_PROJECTIONS.md`](../architecture/DOCUMENTATION_CLAIM_PROJECTIONS.md).

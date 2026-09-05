@@ -7,6 +7,8 @@
 
 #[path = "../sessiond/activation.rs"]
 mod activation;
+#[path = "../sessiond/engine.rs"]
+mod engine;
 #[path = "../sessiond/runtime.rs"]
 mod runtime;
 #[path = "../sessiond/service.rs"]
@@ -55,6 +57,11 @@ fn self_check(arguments: &[String]) -> Result<String, AnyError> {
             "\"listener_created\":false,\"accept_mode\":\"accept_no\",",
             "\"persistent_actor\":true,\"one_request_per_connection\":true,",
             "\"same_peer_pid_required\":true,\"receipt_recovery_wired\":true,",
+            "\"same_peer_process_birth_required\":true,",
+            "\"engine_thread_dispatch_wired\":true,",
+            "\"callback_service_runner_wired\":true,",
+            "\"callback_service_runner_exercised\":false,",
+            "\"engine_thread_dispatch_exercised\":false,",
             "\"static_attestation_wired\":true,",
             "\"cross_uid_procfs_required\":false,",
             "\"atomic_semantic_page_act_wired\":true,",

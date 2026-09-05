@@ -10,7 +10,7 @@
     "D5-01"
   ],
   "permit": {
-    "schema": "trillionnium.desktop.capability-permit.v1",
+    "schema": "trillionnium.desktop.capability-permit.v2",
     "signature_algorithm": "Ed25519",
     "required_bindings": [
       "permit_id",
@@ -34,7 +34,12 @@
     "revoked_issuer_policy": "reject",
     "expired_policy": "reject",
     "not_yet_valid_policy": "reject",
-    "replay_policy": "reject_after_maximum_uses"
+    "replay_policy": "reject_after_maximum_uses",
+    "schema_path": "contracts/capability-permit.v2.schema.json",
+    "legacy_v1_accepted": false,
+    "boolean_integer_coercion_allowed": false,
+    "decision_commit_transactional": true,
+    "duplicate_permit_ids_allowed": false
   },
   "subject": {
     "required_fields": [
@@ -116,7 +121,8 @@
     "captive_portal_origin_change_allowed": false,
     "tls_interception_allowed": false,
     "quic_allowed": false,
-    "webtransport_allowed": false
+    "webtransport_allowed": false,
+    "raw_url_control_characters_allowed": false
   },
   "request_contexts": [
     "top_level",

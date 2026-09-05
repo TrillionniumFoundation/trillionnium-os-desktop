@@ -46,6 +46,12 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
+Cargo binary auto-discovery and package build scripts are disabled explicitly
+with `autobins = false` and `build = false`. Only registered `[[bin]]` targets
+may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
+entrypoint, or `build.rs` without a reviewed inventory change fails the module
+gate; this does not disable integration-test discovery.
+
 Frame and request bounds come from transport/codec contracts. Handler deadline ceilings are explicit inputs. There are no ambient listener addresses, credentials, or retry toggles.
 
 All configuration inputs must be bounded, typed, documented, and included in the

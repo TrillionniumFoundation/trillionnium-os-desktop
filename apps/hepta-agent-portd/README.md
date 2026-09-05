@@ -46,6 +46,12 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
+Cargo binary auto-discovery and package build scripts are disabled explicitly
+with `autobins = false` and `build = false`. Only registered `[[bin]]` targets
+may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
+entrypoint, or `build.rs` without a reviewed inventory change fails the module
+gate; this does not disable integration-test discovery.
+
 Systemd owns socket paths and process identities. Development activation additionally requires the documented marker/profile and expected executable SHA-256. Configuration values must be exact, bounded, and absent by default. Test markers and override units must be audited out of production images.
 
 All configuration inputs must be bounded, typed, documented, and included in the
@@ -91,6 +97,8 @@ current evidence.
 
 ## Operations and troubleshooting
 
+The older per-connection development binary continues to reject rotated journals before tail repair; only the separate persistent session daemon supports an explicit predecessor list. See `docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md`.
+
 For activation failures inspect the inherited descriptor, local pathname, service user/group, expected peer unit/cgroup, marker presence, executable digest, and journal directory in that order. Do not add capabilities or broaden procfs access to make an identity check pass.
 
 Troubleshooting must preserve the original files, journals, identities, and exact
@@ -107,3 +115,29 @@ contracts/schemas, golden vectors, tests, module registry, this README, architec
 and threat documentation, gate invalidation paths, evidence, and explicit
 non-claims. Exact-head review and exact-main reruns remain separate promotion
 transactions.
+
+## Persistent development engine-thread runner
+
+The persistent `hepta-agent-port-development-sessiond` now uses the main-thread
+AtomicFixtureRuntime through EngineThreadRuntime. Its single scoped connection
+worker owns the actor and receipt observer, retains the first complete attested
+process snapshot (including start_time_ticks), and refuses later identity drift.
+Engine retirement stops accept polling and is never an implicit engine restart.
+No new configuration, production listener, executable, dependency or Servo API
+is added. The old single-connection binary remains unchanged. See
+`docs/architecture/D3_SESSION_ENGINE_RUNNER.md` and
+`contracts/d3-session-engine-runner.v1.json` for lifecycle, bounds, failure and
+source-test evidence. This remains a local fixture, not an installed Servo claim.
+
+## Session reconstruction isolation
+
+Actor creation now lazily obtains an OS-sourced incarnation at the first valid
+SessionCreate; session/WebView tokens are namespaced across actor reconstruction.
+The atomic fixture scopes frame identity by session and WebView before publishing
+a target. Entropy failure has no predictable fallback; deadlines and bounded
+opaque Browser API v1 fields remain enforced. No old PageOwner is resurrected
+from receipts and no operation is replayed. See
+`docs/architecture/SESSION_INCARNATION.md` and
+`contracts/session-incarnation.v1.json` for APIs, failure ordering, compatibility,
+regressions and limits. This is source/host evidence, not actual Servo, systemd,
+image, hardware, anti-rollback, production activation or release proof.

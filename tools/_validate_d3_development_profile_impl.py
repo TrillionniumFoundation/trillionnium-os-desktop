@@ -254,6 +254,7 @@ def check_session_daemon() -> None:
         "crates/hepta-d3-development/src/bin/sessiond.rs",
         "crates/hepta-d3-development/src/sessiond/activation.rs",
         "crates/hepta-d3-development/src/sessiond/service.rs",
+        "crates/hepta-d3-development/src/sessiond/engine.rs",
         "crates/hepta-d3-development/src/sessiond/storage.rs",
     )
     source = _joined_sources(relatives)
@@ -264,7 +265,7 @@ def check_session_daemon() -> None:
         "SO_ACCEPTCONN",
         "UnixListener::from_raw_fd",
         "listener.accept()",
-        "BrowserActor<DeterministicLocalRuntime>",
+        "BrowserActor<EngineThreadRuntime>",
         "ReceiptLifecycleObserver",
         "serve_one_with_observer",
         "attest_with_static_executable_digest",

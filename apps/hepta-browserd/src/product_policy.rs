@@ -1002,21 +1002,12 @@ pub struct TrustedAppInstall {
 pub struct TrustedAppPolicy;
 
 impl TrustedAppPolicy {
-    pub fn derived_origin(app_id: &str) -> Result<String, PolicyError> {
-        let bytes = app_id.as_bytes();
-        let edge_valid = |byte: u8| byte.is_ascii_lowercase() || byte.is_ascii_digit();
-        let valid = !bytes.is_empty()
-            && bytes.len() <= 128
-            && edge_valid(bytes[0])
-            && edge_valid(bytes[bytes.len() - 1])
-            && bytes.iter().all(|byte| {
-                byte.is_ascii_lowercase() || byte.is_ascii_digit() || matches!(byte, b'.' | b'-')
-            })
-            && !app_id.contains("..");
-        if !valid {
-            return Err(PolicyError::Invalid("INVALID_TRUSTED_APP_ID"));
-        }
-        Ok(format!("https://{app_id}.trusted.invalid/"))
+    pub fn derived_origin(app_id: &str, publisher_id: &str) -> Result<String, PolicyError> {
+        let app = trillionnium_contract_core::DnsLabel::parse(app_id)
+            .map_err(|_| PolicyError::Invalid("INVALID_TRUSTED_APP_ID"))?;
+        let publisher = trillionnium_contract_core::DnsLabel::parse(publisher_id)
+            .map_err(|_| PolicyError::Invalid("INVALID_TRUSTED_APP_PUBLISHER"))?;
+        Ok(hepta_browser_contracts::TrustedAppIdentity::new(publisher, app).synthetic_origin())
     }
 
     fn rotation_payload_sha256(
@@ -1046,7 +1037,7 @@ impl TrustedAppPolicy {
             manifest_evidence,
             EvidenceExpectation {
                 role: VerifierRole::Publisher,
-                subject: "trusted-app-manifest.v1",
+                subject: "trusted-app-manifest.v2",
                 payload_sha256: &payload_sha256,
                 key_id: Some(&manifest.publisher_key_sha256),
                 now_epoch,
@@ -1055,7 +1046,7 @@ impl TrustedAppPolicy {
         if manifest.revoked {
             return Err(PolicyError::Denied("TRUSTED_APP_REVOKED"));
         }
-        let expected_origin = Self::derived_origin(&manifest.app_id)?;
+        let expected_origin = Self::derived_origin(&manifest.app_id, &manifest.publisher_id)?;
         if manifest.origin != expected_origin {
             return Err(PolicyError::Denied("TRUSTED_APP_ORIGIN_MISMATCH"));
         }
@@ -1386,7 +1377,7 @@ impl CapabilityLedger {
             &permit.evidence,
             EvidenceExpectation {
                 role: VerifierRole::CapabilityIssuer,
-                subject: "capability-permit.v1",
+                subject: "capability-permit.v2",
                 payload_sha256: &permit_sha256,
                 key_id: None,
                 now_epoch,
@@ -2780,7 +2771,7 @@ fn network_fixture_bundle(registry: &TrustedVerifierRegistry) -> NetworkFixtureB
     let placeholder_evidence = issue_fixture(
         registry,
         "fixture-capability-issuer",
-        "capability-permit.v1",
+        "capability-permit.v2",
         &placeholder,
         "placeholder-capability",
     );
@@ -2803,7 +2794,7 @@ fn network_fixture_bundle(registry: &TrustedVerifierRegistry) -> NetworkFixtureB
     permit.evidence = issue_fixture(
         registry,
         "fixture-capability-issuer",
-        "capability-permit.v1",
+        "capability-permit.v2",
         &permit_sha256,
         "capability-self-check",
     );
@@ -2910,7 +2901,7 @@ pub fn run_self_check() -> Result<ProductPolicySelfCheck, PolicyError> {
         publisher_id: "trillionnium".to_owned(),
         publisher_key_sha256: "a".repeat(64),
         version: 1,
-        origin: "https://calculator.trusted.invalid/".to_owned(),
+        origin: "https://calculator.trillionnium.apps.hepta.invalid".to_owned(),
         content_root_sha256: "6".repeat(64),
         csp: ClosedCsp::strict(),
         service_worker_scope: Some("/app/".to_owned()),
@@ -2923,7 +2914,7 @@ pub fn run_self_check() -> Result<ProductPolicySelfCheck, PolicyError> {
         role: VerifierRole::Publisher,
         trust_generation: 1,
         revocation_generation: 1,
-        subject: "trusted-app-manifest.v1".to_owned(),
+        subject: "trusted-app-manifest.v2".to_owned(),
         payload_sha256: manifest_payload,
         not_before_epoch: 90,
         expires_at_epoch: 120,
@@ -3089,7 +3080,7 @@ mod tests {
         let valid = evidence(
             &registry,
             "fixture-publisher",
-            "trusted-app-manifest.v1",
+            "trusted-app-manifest.v2",
             &payload,
             "evidence-valid",
         );
@@ -3099,7 +3090,7 @@ mod tests {
                 &valid,
                 EvidenceExpectation {
                     role: VerifierRole::Publisher,
-                    subject: "trusted-app-manifest.v1",
+                    subject: "trusted-app-manifest.v2",
                     payload_sha256: &payload,
                     key_id: Some(&publisher_key_id),
                     now_epoch: 100,
@@ -3115,7 +3106,7 @@ mod tests {
                     &tampered,
                     EvidenceExpectation {
                         role: VerifierRole::Publisher,
-                        subject: "trusted-app-manifest.v1",
+                        subject: "trusted-app-manifest.v2",
                         payload_sha256: &"3".repeat(64),
                         key_id: None,
                         now_epoch: 100,
@@ -3149,7 +3140,7 @@ mod tests {
                     &stale_generation,
                     EvidenceExpectation {
                         role: VerifierRole::Publisher,
-                        subject: "trusted-app-manifest.v1",
+                        subject: "trusted-app-manifest.v2",
                         payload_sha256: &payload,
                         key_id: None,
                         now_epoch: 100,
@@ -3165,7 +3156,7 @@ mod tests {
                     &valid,
                     EvidenceExpectation {
                         role: VerifierRole::Publisher,
-                        subject: "trusted-app-manifest.v1",
+                        subject: "trusted-app-manifest.v2",
                         payload_sha256: &payload,
                         key_id: None,
                         now_epoch: 121,
@@ -3185,7 +3176,7 @@ mod tests {
             publisher_id: "publisher".to_owned(),
             publisher_key_sha256: fixture_key_id(&registry, "fixture-publisher"),
             version: 1,
-            origin: "https://notes.trusted.invalid/".to_owned(),
+            origin: "https://notes.publisher.apps.hepta.invalid".to_owned(),
             content_root_sha256: "2".repeat(64),
             csp: ClosedCsp::strict(),
             service_worker_scope: None,
@@ -3194,7 +3185,7 @@ mod tests {
         let initial_evidence = evidence(
             &registry,
             "fixture-publisher",
-            "trusted-app-manifest.v1",
+            "trusted-app-manifest.v2",
             &initial.payload_sha256().expect("payload"),
             "initial-manifest",
         );
@@ -3211,7 +3202,7 @@ mod tests {
         let rotated_evidence = evidence(
             &registry,
             "fixture-publisher-next",
-            "trusted-app-manifest.v1",
+            "trusted-app-manifest.v2",
             &rotated.payload_sha256().expect("rotated payload"),
             "rotated-manifest",
         );

@@ -136,3 +136,11 @@ entrypoints, ownership, references, status, security invariants, or claim
 ceilings move. Run `python3 tools/validate_component_documentation.py`, the
 project/repository validators, authoritative Python discovery, and the locked
 Rust matrix before requesting independent review.
+
+## D6 boundary regression and compatibility references
+
+The candidate permit v2 schema and ADR 0006 describe the structured subject and
+second-based time contract separately from historical v1. The source reference
+regressions in `tests/d6/test_capability_boundary_hardening.py` cover typed input,
+canonical URLs and transactional use/receipt publication. These references do
+not change this component's capability or evidence tier.

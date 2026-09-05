@@ -428,23 +428,24 @@ fn validate_journal_directory(
 }
 
 fn open_existing_journal(path: &Path) -> Result<ReceiptJournal, ServiceError> {
-    let mut journal = ReceiptJournal::open(path, JournalOpenPolicy::RECOVER_CRASH)
-        .map_err(ServiceError::Journal)?;
-    let report = journal.inspect().map_err(ServiceError::Journal)?;
-    if report.header.journal_id != JOURNAL_ID {
+    // Preserve the legacy service's friendly refusal, without truncating a
+    // rotated tail before finding out that the configured chain is incomplete.
+    let inspected =
+        hepta_session_core::inspect_receipt_journal(path).map_err(ServiceError::Journal)?;
+    if inspected.header.journal_id != JOURNAL_ID {
         return Err(ServiceError::JournalIdentityMismatch);
     }
-    // A rotated segment cannot be safely reopened in isolation: the
-    // ReceiptJournal in-memory progress map would not contain predecessor
-    // receipt IDs, allowing a fresh Requested record to replay an operation.
-    // Until this development service is given an ordered chain-open API that
-    // imports predecessor progress, fail closed rather than silently serving
-    // a partial journal namespace.
-    if report.header.segment_number > 1 {
+    if inspected.header.segment_number > 1 {
         return Err(ServiceError::JournalRotationRequiresCompleteChain(
-            report.header.segment_number,
+            inspected.header.segment_number,
         ));
     }
+    // The lock-owning API repeats identity validation on the pinned descriptor;
+    // the prior diagnostic read is not authorization for a changed pathname.
+    let mut journal =
+        ReceiptJournal::open_chain([path], JOURNAL_ID, JournalOpenPolicy::RECOVER_CRASH)
+            .map_err(ServiceError::Journal)?;
+    let report = journal.inspect().map_err(ServiceError::Journal)?;
     if !report.unresolved.is_empty() {
         return Err(ServiceError::JournalHasUnresolvedReceipts(
             report.unresolved.len(),

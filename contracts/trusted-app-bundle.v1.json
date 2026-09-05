@@ -9,7 +9,7 @@
     "D4-01"
   ],
   "format": {
-    "manifest_schema": "trillionnium.desktop.trusted-app-manifest.v1",
+    "manifest_schema": "trillionnium.desktop.trusted-app-manifest.v2",
     "signature_algorithm": "Ed25519",
     "canonical_encoding": "UTF-8 canonical JSON with sorted keys and compact separators plus newline",
     "content_digest": "SHA-256",
@@ -19,11 +19,20 @@
   },
   "origin": {
     "scheme": "https",
-    "host_suffix": ".trusted.invalid",
-    "host_is_derived_from_app_id": true,
+    "host_suffix": ".apps.hepta.invalid",
     "external_dns_resolution_allowed": false,
     "certificate_authority_is_product_internal": true,
-    "product_internal_certificate_runtime_proven": false
+    "product_internal_certificate_runtime_proven": false,
+    "host_identity_fields": [
+      "app_id",
+      "publisher_id"
+    ],
+    "identity_encoding": "two_lowercase_dns_labels_each_1_to_63_bytes",
+    "serialization": "https://<app-id>.<publisher-id>.apps.hepta.invalid",
+    "trailing_slash_allowed": false,
+    "legacy_app_only_origin_allowed": false,
+    "golden_vectors": "contracts/golden/trusted-app-origins.v1.tsv",
+    "host_is_derived_from_app_and_publisher_ids": true
   },
   "manifest_required_fields": [
     "schema",

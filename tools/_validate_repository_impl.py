@@ -375,6 +375,17 @@ def check_d0c06_generated_evidence() -> None:
         fail("D0C-06 generated evidence authority must remain all false")
 
 
+EXPECTED_JSON_SCHEMAS = {
+    "https://schemas.trillionnium.org/desktop/app-manifest.v1.schema.json": "contracts/app-manifest.v1.schema.json",
+    "https://schemas.trillionnium.org/desktop/browser-api.v1.schema.json": "contracts/browser-api.v1.schema.json",
+    "https://schemas.trillionnium.org/desktop/browser-response.v1.schema.json": "contracts/browser-response.v1.schema.json",
+    "https://schemas.trillionnium.org/desktop/browser-wire.v1.schema.json": "contracts/browser-wire.v1.schema.json",
+    "https://schemas.trillionnium.org/desktop/capability-permit.v1.schema.json": "contracts/capability-permit.v1.schema.json",
+    "https://schemas.trillionnium.org/desktop/capability-permit.v2.schema.json": "contracts/capability-permit.v2.schema.json",
+    "https://schemas.trillionnium.org/desktop/receipt.v1.schema.json": "contracts/receipt.v1.schema.json",
+}
+
+
 def check_json_files() -> None:
     schema_ids: dict[str, Path] = {}
     for path in sorted(ROOT.rglob("*.json")):
@@ -390,8 +401,9 @@ def check_json_files() -> None:
                 )
             else:
                 schema_ids[schema_id] = path
-    if len(schema_ids) != 6:
-        fail(f"expected 6 JSON schemas, found {len(schema_ids)}")
+    actual = {key: path.relative_to(ROOT).as_posix() for key, path in schema_ids.items()}
+    if actual != EXPECTED_JSON_SCHEMAS:
+        fail("JSON schema identity/path inventory mismatch")
 
 
 def check_plan_and_manifests() -> None:

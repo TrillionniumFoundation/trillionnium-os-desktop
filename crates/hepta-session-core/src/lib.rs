@@ -15,13 +15,14 @@ pub use admission::SessionMachine;
 pub use machine::SessionSnapshot;
 pub use queue::{ArbiterQueue, QueueError};
 pub use receipt_journal::{
-    ArchivedSegment, CommittedRecord, Digest, EffectClass as ReceiptEffectClass, JournalError,
-    JournalId, LifecycleState as ReceiptLifecycleState, OpenPolicy as JournalOpenPolicy,
-    PrivacyClass, ReceiptEnvelope, ReceiptEvent, ReceiptJournal, ReceiptOutcome, ReceiptSource,
-    ReceiptStatus, RecoveredRecord, RecoveryReport, ReplayDirective, SegmentHeader, SegmentSeal,
-    TailStatus, UnresolvedReceipt, export_journal_redacted_jsonl, export_receipt_envelopes_jsonl,
-    export_redacted_jsonl, hex_digest, inspect_chain, inspect_path as inspect_receipt_journal,
-    retention_candidates,
+    ArchivedSegment, CommittedRecord, CopiedReceiptSegment, Digest,
+    EffectClass as ReceiptEffectClass, JournalError, JournalId,
+    LifecycleState as ReceiptLifecycleState, ManagedOpenPolicy, OpenPolicy as JournalOpenPolicy,
+    PrivacyClass, ReceiptEnvelope, ReceiptEvent, ReceiptJournal, ReceiptMigrationReport,
+    ReceiptOutcome, ReceiptSource, ReceiptStatus, RecoveredRecord, RecoveryReport, ReplayDirective,
+    SegmentHeader, SegmentSeal, TailStatus, UnresolvedReceipt, export_journal_redacted_jsonl,
+    export_receipt_envelopes_jsonl, export_redacted_jsonl, hex_digest, inspect_chain,
+    inspect_path as inspect_receipt_journal, retention_candidates,
 };
 pub use types::{
     ControlSource, ControlState, DEFAULT_HUMAN_LEASE_TTL_MS, HumanLease, MAX_HUMAN_LEASE_TTL_MS,

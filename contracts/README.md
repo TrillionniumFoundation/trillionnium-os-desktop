@@ -139,3 +139,40 @@ entrypoints, ownership, references, status, security invariants, or claim
 ceilings move. Run `python3 tools/validate_component_documentation.py`, the
 project/repository validators, authoritative Python discovery, and the locked
 Rust matrix before requesting independent review.
+
+## D6 boundary regression and compatibility references
+
+The candidate permit v2 schema and ADR 0006 describe the structured subject and
+second-based time contract separately from historical v1. The source reference
+regressions in `tests/d6/test_capability_boundary_hardening.py` cover typed input,
+canonical URLs and transactional use/receipt publication. These references do
+not change this component's capability or evidence tier.
+
+## Callback-shaped engine scheduling
+
+The optional `callback_engine_pair` / `CallbackEngineOwner` path starts an
+operation on its creator thread and accepts a single-use `EngineCompletion`
+from a later callback. The application continues native events between pumps;
+its timer follows the original deadline and bounded cancellation-check schedule.
+Ordinary Act never substitutes for the dedicated atomic semantic hook. The
+existing request endpoint now wakes on abandonment and Drop as well as enqueue.
+Wakes may be coalesced and are not a count of dispatched operations.
+See `docs/architecture/EVENT_LOOP_COMPLETION.md` and
+`contracts/event-loop-completion.v1.json` for APIs, ordering, tests and limits.
+This is source/host fixture evidence only: no Servo/native event loop, process
+IPC, installed image or product authority is added. The development daemon
+continues selecting its synchronous fixture backend; no activation changes.
+
+
+## Callback development service integration
+
+The persistent development service now uses the callback owner with an explicit
+ImmediateCallbacks bridge for its existing deterministic fixture. The main
+runner waits on a private notification predicate; worker completion is published
+before wake and errors retire before join. This does not implement Servo, winit,
+systemd activation or an installed image. See
+`docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md` and
+`contracts/d3-callback-service-runner.v1.json`; the source regression guard is
+`tools/audit_callback_service.py`, tested by
+`tests/test_callback_service_runner.py`. Existing controls and promotion limits
+remain unchanged. The immediate bridge does not make a blocking backend async.

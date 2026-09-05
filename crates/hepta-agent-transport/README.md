@@ -46,6 +46,12 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
+Cargo binary auto-discovery and package build scripts are disabled explicitly
+with `autobins = false` and `build = false`. Only registered `[[bin]]` targets
+may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
+entrypoint, or `build.rs` without a reviewed inventory change fails the module
+gate; this does not disable integration-test discovery.
+
 Maximum payload, header shape, nonce size, sequence rules, and deadline semantics are contract constants, not environment configuration. Any limit change requires a protocol/version review and cross-implementation vectors.
 
 All configuration inputs must be bounded, typed, documented, and included in the

@@ -69,3 +69,62 @@ accessibility node into this contract and the exact integrated image proves:
 
 A passing source/reference workflow is a prerequisite, not a substitute for
 that runtime evidence or independent security review.
+
+## Development fixture failure atomicity
+
+The isolated D3 fixture now checks response representability before applying a
+local action or publishing an observed target. This closes an error-after-state-
+change path at the u64/i64 JSON boundary without making the fixture an engine
+adapter. [RECEIPT_ADMISSION_IDENTITY.md](RECEIPT_ADMISSION_IDENTITY.md) specifies
+its commit ordering and failure cases. All Servo promotion requirements above
+remain unchanged.
+
+## Optional in-process engine-thread dispatch
+
+[ENGINE_THREAD_DISPATCH.md](ENGINE_THREAD_DISPATCH.md) defines the bounded
+actor-to-engine scheduling mechanism and real connected-stream/receipt host
+corpus. Its engine remains a fixture in tests; the mechanism is not installed
+in the product, does not implement cross-process IPC, and does not prove live
+Servo node resolution, native input or exact-image D3. Existing topology,
+authority and promotion requirements remain unchanged.
+
+## Persistent development engine-thread runner
+
+The persistent `hepta-agent-port-development-sessiond` now uses the main-thread
+AtomicFixtureRuntime through EngineThreadRuntime. Its single scoped connection
+worker owns the actor and receipt observer, retains the first complete attested
+process snapshot (including start_time_ticks), and refuses later identity drift.
+Engine retirement stops accept polling and is never an implicit engine restart.
+No new configuration, production listener, executable, dependency or Servo API
+is added. The old single-connection binary remains unchanged. See
+`docs/architecture/D3_SESSION_ENGINE_RUNNER.md` and
+`contracts/d3-session-engine-runner.v1.json` for lifecycle, bounds, failure and
+source-test evidence. This remains a local fixture, not an installed Servo claim.
+
+## Session reconstruction isolation
+
+Actor creation now lazily obtains an OS-sourced incarnation at the first valid
+SessionCreate; session/WebView tokens are namespaced across actor reconstruction.
+The atomic fixture scopes frame identity by session and WebView before publishing
+a target. Entropy failure has no predictable fallback; deadlines and bounded
+opaque Browser API v1 fields remain enforced. No old PageOwner is resurrected
+from receipts and no operation is replayed. See
+`docs/architecture/SESSION_INCARNATION.md` and
+`contracts/session-incarnation.v1.json` for APIs, failure ordering, compatibility,
+regressions and limits. This is source/host evidence, not actual Servo, systemd,
+image, hardware, anti-rollback, production activation or release proof.
+
+## Callback-shaped engine scheduling
+
+The optional `callback_engine_pair` / `CallbackEngineOwner` path starts an
+operation on its creator thread and accepts a single-use `EngineCompletion`
+from a later callback. The application continues native events between pumps;
+its timer follows the original deadline and bounded cancellation-check schedule.
+Ordinary Act never substitutes for the dedicated atomic semantic hook. The
+existing request endpoint now wakes on abandonment and Drop as well as enqueue.
+Wakes may be coalesced and are not a count of dispatched operations.
+See `docs/architecture/EVENT_LOOP_COMPLETION.md` and
+`contracts/event-loop-completion.v1.json` for APIs, ordering, tests and limits.
+This is source/host fixture evidence only: no Servo/native event loop, process
+IPC, installed image or product authority is added. The development daemon
+continues selecting its synchronous fixture backend; no activation changes.

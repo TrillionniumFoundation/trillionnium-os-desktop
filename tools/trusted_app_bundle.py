@@ -29,7 +29,7 @@ L = 2**252 + 27742317777372353535851937790883648493
 D = (-121665 * pow(121666, Q - 2, Q)) % Q
 I = pow(2, (Q - 1) // 4, Q)
 IDENTITY = (0, 1)
-APP_ID = re.compile(r"^[a-z0-9](?:[a-z0-9.-]{0,126}[a-z0-9])?$")
+DNS_LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\Z")
 HEX_64 = re.compile(r"^[0-9a-f]{64}$")
 MAX_MANIFEST_BYTES = 4 * 1024 * 1024
 
@@ -253,10 +253,16 @@ def content_root(entries: Iterable[dict[str, Any]]) -> str:
     return nodes[0].hex()
 
 
-def derived_origin(app_id: str) -> str:
-    if not APP_ID.fullmatch(app_id) or ".." in app_id or app_id.startswith(".") or app_id.endswith("."):
-        raise VerificationError("INVALID_APP_ID", app_id)
-    return f"https://{app_id}.trusted.invalid/"
+def derived_origin(app_id: str, publisher_id: str) -> str:
+    """ADR 0004 tuple origin: two distinct bounded DNS labels; never public DNS.
+
+    No normalization, publisher omission, legacy alias, or trailing slash is
+    accepted. A root URL may append '/' only after origin authorization.
+    """
+    for value, reason in ((app_id, "INVALID_APP_ID"), (publisher_id, "INVALID_PUBLISHER_ID")):
+        if not isinstance(value, str) or DNS_LABEL.fullmatch(value) is None:
+            raise VerificationError(reason)
+    return f"https://{app_id}.{publisher_id}.apps.hepta.invalid"
 
 
 def signed_manifest_payload(manifest: dict[str, Any]) -> bytes:
@@ -430,7 +436,7 @@ def verify_bundle(
         raise VerificationError("MANIFEST_IDENTITY_FIELDS_REQUIRED")
     if not isinstance(version, int) or version < 1:
         raise VerificationError("INVALID_APP_VERSION")
-    if manifest.get("synthetic_origin") != derived_origin(app_id):
+    if manifest.get("synthetic_origin") != derived_origin(app_id, publisher_id):
         raise VerificationError("SYNTHETIC_ORIGIN_MISMATCH")
 
     revocation_epoch = trust_store.get("revocation_epoch")
@@ -610,8 +616,8 @@ def build_fixture_manifest(
     content: dict[str, bytes],
     *,
     seed: bytes,
-    app_id: str = "org.trillionnium.notes",
-    publisher_id: str = "trillionnium.fixture.publisher",
+    app_id: str = "notes",
+    publisher_id: str = "trillionnium-fixture",
     key_id: str = "fixture-key-1",
     version: int = 1,
     key_transition: dict[str, Any] | None = None,
@@ -625,7 +631,7 @@ def build_fixture_manifest(
         "publisher_id": publisher_id,
         "publisher_key_id": key_id,
         "entrypoint": "index.html",
-        "synthetic_origin": derived_origin(app_id),
+        "synthetic_origin": derived_origin(app_id, publisher_id),
         "content_root_sha256": content_root(entries),
         "content": entries,
         "csp": fixture_csp(contract),

@@ -46,6 +46,12 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
+Cargo binary auto-discovery and package build scripts are disabled explicitly
+with `autobins = false` and `build = false`. Only registered `[[bin]]` targets
+may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
+entrypoint, or `build.rs` without a reviewed inventory change fails the module
+gate; this does not disable integration-test discovery.
+
 Surface count and trust topology are invariant, not runtime options. Geometry and generation values are explicit inputs. Additional windows/content surfaces require a new architecture decision and threat model.
 
 All configuration inputs must be bounded, typed, documented, and included in the

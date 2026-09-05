@@ -9,6 +9,10 @@
 //! the AgentPort observer boundary. It creates no listener and grants no
 //! external network or production-release authority.
 
+pub mod engine_dispatch;
+mod incarnation;
+pub use incarnation::scoped_frame_id;
+
 use hepta_agent_port::{
     AgentPortError, BrowserRequestHandler, DispatchContext, HandlerOutcome,
     OperationLifecycleObserver,
@@ -19,6 +23,7 @@ use hepta_browser_codec::{
     EffectClass, ElementReference, JsonObject, JsonValue, NavigationTarget, ObservationField,
     PageAction, ProfilePersistence, ProfileSpec, WaitCondition,
 };
+use hepta_peer_attestation::PeerRequestVerifier;
 use hepta_session_core::{
     ControlSource, ControlState, JournalError, PrivacyClass, ReceiptEffectClass, ReceiptEvent,
     ReceiptJournal, ReceiptLifecycleState, ReceiptOutcome, ReceiptSource, SessionEvent,
@@ -413,6 +418,7 @@ pub struct RequestControl {
     pub deadline: Instant,
     cancelled: bool,
     cancellation: CancellationToken,
+    authority: Option<PeerRequestVerifier>,
 }
 
 impl RequestControl {
@@ -423,7 +429,25 @@ impl RequestControl {
         if Instant::now() >= self.deadline {
             return Err(RuntimeFailure::DeadlineExceeded);
         }
+        if let Some(authority) = &self.authority {
+            authority
+                .ensure_alive()
+                .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        }
         Ok(())
+    }
+
+    /// Revalidate request-scoped process identity at an engine/effect boundary.
+    /// Unattested compatibility calls have no identity lease; this method does
+    /// not turn those calls into authenticated or authorized ones.
+    pub fn ensure_current_peer(&self) -> Result<(), RuntimeFailure> {
+        self.ensure_active()?;
+        if let Some(authority) = &self.authority {
+            authority
+                .verify_current()
+                .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        }
+        self.ensure_active()
     }
 
     /// Return a clone of the shared cancellation state for an adapter that
@@ -500,6 +524,7 @@ pub enum RuntimeFailure {
     Cancelled,
     DeadlineExceeded,
     BrowserCrashed,
+    PeerIdentityRevoked,
     Internal(String),
 }
 
@@ -510,6 +535,7 @@ impl fmt::Display for RuntimeFailure {
             Self::Unsupported(message) => write!(formatter, "runtime unsupported: {message}"),
             Self::Cancelled => formatter.write_str("runtime request cancelled"),
             Self::DeadlineExceeded => formatter.write_str("runtime deadline exceeded"),
+            Self::PeerIdentityRevoked => formatter.write_str("runtime request identity revoked"),
             Self::BrowserCrashed => formatter.write_str("runtime browser crashed"),
             Self::Internal(message) => write!(formatter, "runtime failed: {message}"),
         }
@@ -712,6 +738,7 @@ pub struct BrowserActor<R> {
     binding: PrincipalBinding,
     runtime: R,
     page: Option<PageOwner>,
+    incarnation: incarnation::ActorIncarnation,
     session_counter: u64,
     webview_counter: u64,
     cancelled_requests: BTreeSet<String>,
@@ -724,7 +751,20 @@ pub struct BrowserActor<R> {
     /// is reset for each synchronous request and lets the final deadline gate
     /// distinguish an expired pure preflight from an expired runtime effect.
     runtime_dispatch_started: bool,
+    request_authority: Rc<RefCell<Option<PeerRequestVerifier>>>,
     shared: Rc<RefCell<SharedActorState>>,
+}
+
+// Restore the actor-local slot on every exit, including unwinding. A verifier
+// may outlive this slot, but its non-cloneable custody owner cannot be bypassed.
+struct RequestAuthorityScope {
+    slot: Rc<RefCell<Option<PeerRequestVerifier>>>,
+    previous: Option<PeerRequestVerifier>,
+}
+impl Drop for RequestAuthorityScope {
+    fn drop(&mut self) {
+        *self.slot.borrow_mut() = self.previous.take();
+    }
 }
 
 impl<R: PageRuntime> BrowserActor<R> {
@@ -733,12 +773,14 @@ impl<R: PageRuntime> BrowserActor<R> {
             binding,
             runtime,
             page: None,
+            incarnation: incarnation::ActorIncarnation::default(),
             session_counter: 0,
             webview_counter: 0,
             cancelled_requests: BTreeSet::new(),
             cancellation_tokens: BTreeMap::new(),
             runtime_unavailable: false,
             runtime_dispatch_started: false,
+            request_authority: Rc::new(RefCell::new(None)),
             shared: Rc::new(RefCell::new(SharedActorState { page: None })),
         }
     }
@@ -756,8 +798,9 @@ impl<R: PageRuntime> BrowserActor<R> {
     /// should call this method instead: it checks the pidfd, reads a fresh
     /// bounded snapshot through the original live-procfs or trusted-path
     /// source, and verifies start-time/cgroup/unit/executable continuity before
-    /// runtime work begins.  The attested peer should be scoped to one
-    /// request/connection and dropped immediately afterwards.
+    /// runtime work begins. Request-scoped custody then follows queued runtime
+    /// controls and is revoked on return or unwind. The attested peer should
+    /// be scoped to one request/connection and dropped immediately afterwards.
     pub fn handle_attested(
         &mut self,
         context: &DispatchContext,
@@ -802,7 +845,53 @@ impl<R: PageRuntime> BrowserActor<R> {
                 &format!("peer attestation continuity rejected dispatch: {error}"),
             ));
         }
-        self.handle_inner(context, request)
+        let custody = match attested.request_custody() {
+            Ok(custody) => custody,
+            Err(_) => {
+                return Ok(failure(
+                    BrowserErrorCode::PolicyDenied,
+                    "request peer custody unavailable",
+                ));
+            }
+        };
+        let verifier = custody.verifier();
+        let _scope = RequestAuthorityScope {
+            previous: self
+                .request_authority
+                .borrow_mut()
+                .replace(verifier.clone()),
+            slot: self.request_authority.clone(),
+        };
+        let page_was_present = self.page.is_some();
+        let outcome = self.handle_inner(context, request);
+        // A runtime or a queue must not turn stale identity into a confirmed
+        // outcome. Keep uncertain effects indeterminate, never merely Refused.
+        self.check_attested_return_deadline(context, request, page_was_present)?;
+        if verifier.verify_current().is_err() {
+            self.runtime_unavailable = true;
+            self.reconcile_indeterminate_page_effect(context);
+            return Ok(failure(
+                BrowserErrorCode::Indeterminate,
+                "request peer identity was revoked; runtime retired",
+            ));
+        }
+        self.check_attested_return_deadline(context, request, page_was_present)?;
+        outcome
+    }
+
+    /// A final full peer refresh can itself exhaust the original budget. Use
+    /// the same late-effect reconciliation as the ordinary handler gate.
+    fn check_attested_return_deadline(
+        &mut self,
+        context: &DispatchContext,
+        request: &BrowserRequest,
+        page_was_present: bool,
+    ) -> Result<(), AgentPortError> {
+        if let Err(error) = context.remaining() {
+            self.reconcile_after_final_deadline(context, request, page_was_present);
+            return Err(error);
+        }
+        Ok(())
     }
 
     pub fn page_owner(&self) -> Option<PageOwnerSnapshot> {
@@ -968,6 +1057,7 @@ impl<R: PageRuntime> BrowserActor<R> {
             deadline: context.effective_deadline,
             cancelled,
             cancellation,
+            authority: self.request_authority.borrow().clone(),
         };
         // A cancellation/deadline observed before entering the adapter is a
         // harmless preflight rejection: no remote effect could have started,
@@ -1021,6 +1111,7 @@ impl<R: PageRuntime> BrowserActor<R> {
                     RuntimeFailure::Cancelled
                         | RuntimeFailure::DeadlineExceeded
                         | RuntimeFailure::BrowserCrashed
+                        | RuntimeFailure::PeerIdentityRevoked
                         | RuntimeFailure::Internal(_)
                 );
                 Err(RuntimeDispatchError {
@@ -1175,6 +1266,7 @@ impl<R: PageRuntime> BrowserActor<R> {
             deadline,
             cancelled: false,
             cancellation: CancellationToken::new(),
+            authority: self.request_authority.borrow().clone(),
         };
         let owner = PageOwnerSnapshot {
             session_id: session_id.to_owned(),
@@ -1215,6 +1307,7 @@ impl<R: PageRuntime> BrowserActor<R> {
             deadline,
             cancelled: false,
             cancellation: CancellationToken::new(),
+            authority: self.request_authority.borrow().clone(),
         };
         let closed = self
             .runtime
@@ -1563,17 +1656,28 @@ impl<R: PageRuntime> BrowserActor<R> {
                             "WebView identity counter exhausted",
                         ));
                     };
-                    self.session_counter = next_session_counter;
-                    self.webview_counter = next_webview_counter;
+                    // Counters are only actor-local: after process/actor
+                    // reconstruction they restart. Bind both identities to
+                    // fresh OS entropy, never PID/UID/time or request fields.
+                    // Reserve before runtime dispatch, and check the original
+                    // deadline again after the entropy read. Errors never
+                    // advance counters or yield a predictable fallback ID.
+                    context.remaining()?;
+                    let namespace = self.incarnation.namespace()?;
+                    context.remaining()?;
                     let session_id = format!(
-                        "session-{}-{}",
-                        self.binding.mechanism.peer.uid, self.session_counter
+                        "session-{}-{}-{}",
+                        self.binding.mechanism.peer.uid, namespace, next_session_counter
                     );
-                    let webview_token = format!("webview-{}", self.webview_counter);
+                    let webview_token = format!("webview-{}-{}", namespace, next_webview_counter);
                     validate_token("session_id", &session_id, 128)
                         .map_err(|error| AgentPortError::Handler(error.to_string()))?;
                     validate_token("webview_token", &webview_token, MAX_WEBVIEW_TOKEN_BYTES)
                         .map_err(|error| AgentPortError::Handler(error.to_string()))?;
+                    // From here a dispatched or failed create consumes its
+                    // ordinal. Never reissue an ID exposed to the backend.
+                    self.session_counter = next_session_counter;
+                    self.webview_counter = next_webview_counter;
                     let reply = match self.runtime_dispatch_status(
                         request,
                         context,
@@ -2027,6 +2131,22 @@ pub struct ReceiptLifecycleObserver {
 }
 
 impl ReceiptLifecycleObserver {
+    pub fn managed_rotation_due(&self) -> bool {
+        self.inflight.is_empty() && self.journal.managed_rotation_due()
+    }
+
+    /// Consume only an idle observer; failure requires storage recovery, not
+    /// reusing an observer whose durable rotation outcome could be uncertain.
+    pub fn rotate_managed(self, now_unix_ms: u64) -> Result<Self, JournalError> {
+        if !self.inflight.is_empty() {
+            return Err(JournalError::InvalidInput(
+                "observer rotation requires no in-flight request".into(),
+            ));
+        }
+        let (_, journal) = self.journal.rotate_managed(now_unix_ms)?;
+        Ok(Self { journal, ..self })
+    }
+
     pub fn inspect(&mut self) -> Result<hepta_session_core::RecoveryReport, JournalError> {
         self.journal.inspect()
     }
@@ -2126,14 +2246,17 @@ impl OperationLifecycleObserver for ReceiptLifecycleObserver {
         request: &BrowserRequest,
     ) -> Result<(), AgentPortError> {
         let coordinates = self.coordinates(request);
-        if self
-            .inflight
-            .insert(request.request_id.clone(), coordinates)
-            .is_some()
-        {
-            return Err(AgentPortError::Handler(
-                "duplicate in-flight receipt identifier".to_owned(),
-            ));
+        match self.inflight.entry(request.request_id.clone()) {
+            std::collections::btree_map::Entry::Occupied(_) => {
+                // Refusing a duplicate must not replace the admission snapshot
+                // retained for the original in-flight lifecycle.
+                return Err(AgentPortError::Handler(
+                    "duplicate in-flight receipt identifier".to_owned(),
+                ));
+            }
+            std::collections::btree_map::Entry::Vacant(entry) => {
+                entry.insert(coordinates);
+            }
         }
         // Roll back the in-memory admission marker when the durable first
         // record cannot be written.  The observer may be reused by a caller
@@ -2276,6 +2399,10 @@ fn runtime_failure(error: RuntimeFailure) -> HandlerOutcome {
         RuntimeFailure::BrowserCrashed => {
             failure(BrowserErrorCode::BrowserCrashed, "browser runtime crashed")
         }
+        RuntimeFailure::PeerIdentityRevoked => failure(
+            BrowserErrorCode::Indeterminate,
+            "request peer identity was revoked; runtime retired",
+        ),
         RuntimeFailure::Internal(message) => failure(BrowserErrorCode::Internal, &message),
     }
 }
@@ -4280,6 +4407,94 @@ mod tests {
     }
 
     #[test]
+    fn attested_return_deadline_reconciles_unconfirmed_create() {
+        let peer = PeerIdentity {
+            pid: Some(670),
+            uid: 1000,
+            gid: 1001,
+        };
+        let close_calls = Rc::new(Cell::new(0));
+        let mut actor = BrowserActor::new(
+            binding(peer),
+            DelayedCreateRuntime {
+                close_calls: close_calls.clone(),
+                create_delay: Duration::ZERO,
+            },
+        );
+        create_page_with_runtime(&mut actor, peer, "attested-final-create");
+        actor.runtime_dispatch_started = true;
+        let request = BrowserRequest {
+            request_id: "attested-final-create".into(),
+            session_id: None,
+            session_generation: None,
+            deadline_unix_ms: None,
+            operation: BrowserOperation::SessionCreate {
+                profile: ProfileSpec {
+                    profile_id: "fixture".into(),
+                    persistence: ProfilePersistence::Ephemeral,
+                },
+                ui_mode: "headed".into(),
+            },
+        };
+        let mut expired = context(peer, EffectClass::LocalInteraction);
+        expired.effective_deadline = expired.accepted_at;
+        assert!(
+            actor
+                .check_attested_return_deadline(&expired, &request, false)
+                .is_err()
+        );
+        assert_eq!(close_calls.get(), 1);
+        assert!(actor.page_owner().is_none());
+    }
+
+    #[test]
+    fn attested_return_deadline_reconciles_effect_but_not_pure_preflight() {
+        let peer = PeerIdentity {
+            pid: Some(671),
+            uid: 1000,
+            gid: 1001,
+        };
+        let mut actor = BrowserActor::new(
+            binding(peer),
+            DelayedCreateRuntime {
+                close_calls: Rc::new(Cell::new(0)),
+                create_delay: Duration::ZERO,
+            },
+        );
+        let (session_id, generation) =
+            create_page_with_runtime(&mut actor, peer, "attested-final-page");
+        let request = BrowserRequest {
+            request_id: "attested-final-navigation".into(),
+            session_id: Some(session_id),
+            session_generation: Some(generation),
+            deadline_unix_ms: None,
+            operation: BrowserOperation::PageNavigate {
+                target: NavigationTarget::LocalHttpFixture {
+                    url: "http://127.0.0.1/fixture".into(),
+                },
+                expected_document_generation: 1,
+            },
+        };
+        let mut expired = context(peer, EffectClass::PotentialExternalEffect);
+        expired.effective_deadline = expired.accepted_at;
+        actor.runtime_dispatch_started = false;
+        let before = actor.page_owner().unwrap();
+        assert!(
+            actor
+                .check_attested_return_deadline(&expired, &request, true)
+                .is_err()
+        );
+        assert_eq!(actor.page_owner().unwrap(), before);
+        actor.runtime_dispatch_started = true;
+        assert!(
+            actor
+                .check_attested_return_deadline(&expired, &request, true)
+                .is_err()
+        );
+        assert!(actor.page_is_recovering());
+    }
+
+    #[test]
     fn final_deadline_after_confirmed_close_does_not_poison_runtime() {
         let peer = PeerIdentity {
             pid: Some(68),
@@ -4947,4 +5162,143 @@ mod tests {
         drop(observer);
         let _ = fs::remove_dir_all(directory);
     }
+    #[test]
+    fn duplicate_requested_preserves_admission_coordinates_across_owner_change() {
+        let peer = PeerIdentity {
+            pid: Some(71),
+            uid: 1000,
+            gid: 1001,
+        };
+        let directory = std::env::temp_dir().join(format!(
+            "hepta-duplicate-inflight-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&directory).unwrap();
+        let path = directory.join("journal.hjr");
+        let journal = ReceiptJournal::create(&path, JournalId([0x48; 16]), 1).unwrap();
+        let mut actor = BrowserActor::new(binding(peer), DeterministicLocalRuntime::default());
+        let mut observer = actor.receipt_observer(journal, "duplicate-admission-test");
+        let request = BrowserRequest {
+            request_id: "duplicate-admission".into(),
+            session_id: None,
+            session_generation: None,
+            deadline_unix_ms: None,
+            operation: BrowserOperation::Health,
+        };
+        let ctx = context(peer, EffectClass::Observation);
+        observer.requested(&ctx, &request).unwrap();
+        let before = fs::read(&path).unwrap();
+        assert_eq!(
+            observer.inflight[&request.request_id].session_id,
+            "pre-session"
+        );
+        create_page_with_runtime(&mut actor, peer, "subsequent-owner");
+        assert!(observer.requested(&ctx, &request).is_err());
+        assert_eq!(
+            observer.inflight[&request.request_id].session_id, "pre-session",
+            "rejected duplicate replaced original admission coordinates"
+        );
+        assert_eq!(fs::read(&path).unwrap(), before);
+        observer.dispatched(&ctx, &request).unwrap();
+        let report = observer.inspect().unwrap();
+        assert_eq!(
+            report.records[0].event.session_id,
+            report.records[1].event.session_id
+        );
+        drop(observer);
+        fs::remove_dir_all(directory).unwrap();
+    }
+    #[test]
+    fn managed_observer_rotation_preserves_page_binding_and_request_namespace() {
+        let peer = PeerIdentity {
+            pid: Some(71),
+            uid: 1000,
+            gid: 1001,
+        };
+        let directory = std::env::temp_dir().join(format!(
+            "hepta-managed-observer-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let journal = ReceiptJournal::create_managed(&directory, JournalId([0x48; 16]), 1).unwrap();
+        let mut actor = BrowserActor::new(binding(peer), DeterministicLocalRuntime::default());
+        let mut observer = actor.receipt_observer(journal, "managed-observer");
+        let request = BrowserRequest {
+            request_id: "prior".into(),
+            session_id: None,
+            session_generation: None,
+            deadline_unix_ms: None,
+            operation: BrowserOperation::Health,
+        };
+        let ctx = context(peer, EffectClass::Observation);
+        observer.requested(&ctx, &request).unwrap();
+        observer
+            .interrupted(&ctx, &request, &AgentPortError::DeadlineExceeded)
+            .unwrap();
+        let clock = observer.logical_clock;
+        let shared = observer.shared.clone();
+        observer = observer.rotate_managed(2).unwrap();
+        assert!(Rc::ptr_eq(&shared, &observer.shared));
+        assert_eq!(observer.logical_clock, clock);
+        assert_eq!(observer.principal_id, "taskflow-test");
+        assert_eq!(observer.image_id, "managed-observer");
+        assert!(observer.requested(&ctx, &request).is_err());
+        create_page_with_runtime(&mut actor, peer, "create-owner");
+        let request = BrowserRequest {
+            request_id: "new".into(),
+            ..request
+        };
+        observer.requested(&ctx, &request).unwrap();
+        let report = observer.inspect().unwrap();
+        assert_ne!(report.records[0].event.session_id, "pre-session");
+        drop(observer);
+        fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn managed_observer_rotation_rejects_inflight_before_any_publication() {
+        let peer = PeerIdentity {
+            pid: Some(72),
+            uid: 1000,
+            gid: 1001,
+        };
+        let directory = std::env::temp_dir().join(format!(
+            "hepta-managed-inflight-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let journal = ReceiptJournal::create_managed(&directory, JournalId([0x49; 16]), 1).unwrap();
+        let actor = BrowserActor::new(binding(peer), DeterministicLocalRuntime::default());
+        let mut observer = actor.receipt_observer(journal, "managed-observer");
+        let request = BrowserRequest {
+            request_id: "pending".into(),
+            session_id: None,
+            session_generation: None,
+            deadline_unix_ms: None,
+            operation: BrowserOperation::Health,
+        };
+        observer
+            .requested(&context(peer, EffectClass::Observation), &request)
+            .unwrap();
+        let path = observer.journal_path().to_owned();
+        let before = fs::read(&path).unwrap();
+        assert!(!observer.managed_rotation_due());
+        assert!(observer.rotate_managed(2).is_err());
+        assert!(!directory.join("next.pending").exists());
+        assert_eq!(fs::read(path).unwrap(), before);
+        fs::remove_dir_all(directory).unwrap();
+    }
 }
+
+#[cfg(test)]
+mod incarnation_tests;

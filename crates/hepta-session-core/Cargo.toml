@@ -1,4 +1,7 @@
 [package]
+# Executable boundaries are explicit and machine-registered.
+autobins = false
+build = false
 name = "hepta-session-core"
 version.workspace = true
 edition.workspace = true
@@ -13,3 +16,15 @@ sha2 = "=0.10.9"
 
 [lib]
 path = "src/lib.rs"
+
+# Independent custom test harness: private fault cutpoints are cfg(test)-only.
+[[test]]
+name = "journal_persistence_process"
+path = "tests/journal_persistence_process.rs"
+harness = false
+
+# Independent process interruption tests for opt-in legacy copy, never installed.
+[[test]]
+name = "journal_migration_process"
+path = "tests/journal_migration_process.rs"
+harness = false

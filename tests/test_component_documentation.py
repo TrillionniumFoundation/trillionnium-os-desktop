@@ -58,7 +58,6 @@ class ComponentDocumentationValidatorTests(unittest.TestCase):
             "**Component registry ID:** `validation-toolchain`  ",
             "**Component path:** `tools`  ",
             "**Owner class:** `repository-maintainers`  ",
-            "**Claim ceiling:** source validation only; no runtime promotion.",
             "",
             "The machine registry is `manifests/components.v1.json`.",
             "",
@@ -76,6 +75,12 @@ class ComponentDocumentationValidatorTests(unittest.TestCase):
                     "",
                 ]
             )
+            if heading == "## Status and claim ceiling":
+                body.extend([
+                    "Current status: `source_policy_active`.",
+                    "**Claim ceiling:** source validation only.",
+                    "",
+                ])
         (self.root / "tools/README.md").write_text(
             "\n".join(body), encoding="utf-8"
         )

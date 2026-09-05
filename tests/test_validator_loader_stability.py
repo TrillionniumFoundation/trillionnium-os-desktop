@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import sys
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -43,6 +45,25 @@ class ValidatorLoaderStabilityTests(unittest.TestCase):
         self.assertIn(
             "python3 tools/validate_d3_development_profile.py", workflow
         )
+
+    def test_servo_evidence_facade_loads_without_ambient_tools_path(self) -> None:
+        path = ROOT / "tools/qualify_servo_exact_pin_evidence.py"
+        tools = str(path.parent)
+        clean_path = [entry for entry in sys.path if entry != tools]
+        with patch.object(sys, "path", clean_path), patch.dict(
+            sys.modules, {"qualify_servo_exact_pin_evidence_impl": None}
+        ):
+            # A ``None`` cache entry makes a bare import fail unless the facade
+            # first establishes its sibling module search path. Remove it after
+            # creating the module so normal import resolution can proceed.
+            del sys.modules["qualify_servo_exact_pin_evidence_impl"]
+            spec = importlib.util.spec_from_file_location(
+                "servo_evidence_loader_isolation", path
+            )
+            assert spec is not None and spec.loader is not None
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+        self.assertEqual(module.SERVO_PIN, "670ae8a70801b162e186f81cbb5bdd2d59c39108")
 
     def test_facade_exports_explicit_pr66_policy(self) -> None:
         path = ROOT / "tools/validate_project_truth.py"

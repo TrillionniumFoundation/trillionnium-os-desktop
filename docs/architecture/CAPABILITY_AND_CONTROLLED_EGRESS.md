@@ -12,6 +12,14 @@ operating system has applied those controls.
 
 ## Capability permit
 
+The source-candidate wire contract is
+`contracts/capability-permit.v2.schema.json`, with schema identifier
+`trillionnium.desktop.capability-permit.v2`. The retained v1 string-subject and
+Unix-millisecond format is not an alias for this structured-subject,
+second-based contract; v1 objects are rejected. See ADR 0006 for migration and
+claim boundaries. A schema-valid object still needs signature, runtime-subject,
+portal-resource, current-time, DNS/peer, and replay validation.
+
 Every permit is an Ed25519-signed canonical object binding:
 
 - permit, issuer, and issuer-key identities;
@@ -125,3 +133,27 @@ image and then fixed hardware:
 - durable PageOwner/permit/operation receipts.
 
 No source-model result may be promoted as that runtime evidence.
+
+## Input and decision transaction hardening
+
+Integer fields accept actual integers, never booleans or floating-point values.
+JSON readers reject duplicate members recursively, non-finite numbers, malformed
+UTF-8, excessive nesting, and inputs beyond the fixed byte bound. Raw URL control
+characters, whitespace, backslashes, empty fragments, and noncanonical authority
+spellings are rejected before a parser can silently normalize them. A connected
+peer observation cannot predate the DNS evidence it is asserted to bind.
+
+The in-memory decision ledger serializes commits. It rechecks availability,
+rejects duplicate permit IDs and unused extra permits, prepares all canonical
+hashes and a detached result, and publishes use counts plus receipt only after
+all preparation succeeds. Encoding failure or exhaustion of any required permit
+leaves both counters and receipts unchanged. Concurrent single-use requests
+admit at most one commit. These are reference-model guarantees, not durable
+multi-process storage, real portal execution, or external exactly-once claims.
+
+`tests/d6/test_capability_boundary_hardening.py` covers the public authorization
+facade, validly signed malformed permits, URL variants, typed bounds, duplicate
+JSON, serialization fault injection, concurrent commits, result aliasing, legacy
+schema rejection, and schema field-set agreement. Rust's verifier subject is
+versioned in the source candidate; exact-head Rust/CI and independent review are
+still required before accepting this compatibility change.

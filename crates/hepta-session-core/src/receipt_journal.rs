@@ -13,6 +13,24 @@ use std::io::{self, Read, Seek, SeekFrom, Write};
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Component, Path, PathBuf};
 
+#[path = "receipt_journal/binding.rs"]
+mod binding;
+#[path = "receipt_journal/binding_tests.rs"]
+#[cfg(test)]
+mod binding_tests;
+#[path = "receipt_journal/chain.rs"]
+mod chain;
+#[path = "receipt_journal/managed.rs"]
+mod managed;
+#[path = "receipt_journal/persistence_tests.rs"]
+#[cfg(test)]
+pub(crate) mod persistence_tests;
+pub use chain::{MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS};
+pub use managed::{
+    CopiedReceiptSegment, MANAGED_ROTATION_THRESHOLD_BYTES, ManagedOpenPolicy,
+    ReceiptMigrationReport,
+};
+
 pub type Digest = [u8; 32];
 
 const SEGMENT_MAGIC: &[u8; 8] = b"HPTJRNL1";
@@ -194,32 +212,12 @@ impl ReceiptEnvelope {
             )));
         }
 
-        let mut previous_lifecycle = None;
-        // Identity and operation metadata are part of the evidence binding.
-        // Do not silently choose one value if a malformed/corrupt report has
-        // mixed metadata across lifecycle records.
+        // The same admission binding is enforced on write, restart and export.
+        // A caller-supplied RecoveryReport is not authenticated merely by being
+        // well-typed; do not discard changes to request identity or privacy.
+        let mut progress = None;
         for record in records {
-            let event = &record.event;
-            event.validate()?;
-            validate_transition(&event.receipt_id, previous_lifecycle, event.lifecycle)?;
-            previous_lifecycle = Some(event.lifecycle);
-            if event.plan_revision != first_event.plan_revision
-                || event.image_id != first_event.image_id
-                || event.servo_commit != first_event.servo_commit
-                || event.browserd_version != first_event.browserd_version
-                || event.session_id != first_event.session_id
-                || event.session_generation != first_event.session_generation
-                || event.document_generation != first_event.document_generation
-                || event.semantic_snapshot_revision != first_event.semantic_snapshot_revision
-                || event.mutation_epoch != first_event.mutation_epoch
-                || event.source != first_event.source
-                || event.operation != first_event.operation
-            {
-                return Err(JournalError::InvalidInput(format!(
-                    "receipt {} changes identity or operation metadata across lifecycle",
-                    first_event.receipt_id
-                )));
-            }
+            progress = Some(ReceiptProgress::advance(progress.as_ref(), &record.event)?);
         }
 
         let terminal = &records[terminal_index].event;
@@ -795,6 +793,7 @@ impl From<io::Error> for JournalError {
 struct ReceiptProgress {
     last_state: LifecycleState,
     effect_class: EffectClass,
+    admission_sha256: Digest,
 }
 
 #[derive(Debug)]
@@ -1002,7 +1001,9 @@ fn process_identity_from_file(file: &mut File) -> Result<ProcessIdentity, Journa
 pub struct ReceiptJournal {
     path: PathBuf,
     file: File,
-    _lease: WriterLease,
+    _lease: Option<WriterLease>,
+    managed: Option<managed::ManagedDirectory>,
+    predecessors: Vec<chain::PinnedSegment>,
     header: SegmentHeader,
     next_sequence: u64,
     previous_record_sha256: Digest,
@@ -1024,6 +1025,7 @@ impl ReceiptJournal {
         journal_id: JournalId,
         created_wall_clock_unix_ms: u64,
     ) -> Result<Self, JournalError> {
+        managed::reject_unmanaged_access(path.as_ref())?;
         Self::create_segment(
             path.as_ref(),
             SegmentHeader {
@@ -1037,6 +1039,7 @@ impl ReceiptJournal {
             false,
             HashMap::new(),
             0,
+            true,
         )
     }
 
@@ -1046,23 +1049,38 @@ impl ReceiptJournal {
         recover_stale_writer_lease: bool,
         prior_progress: HashMap<String, ReceiptProgress>,
         prior_last_monotonic_ms: u64,
+        path_lease: bool,
     ) -> Result<Self, JournalError> {
         validate_new_path(path)?;
         validate_segment_header(&header)?;
-        let lease = WriterLease::acquire(path, recover_stale_writer_lease)?;
+        let lease = if path_lease {
+            Some(WriterLease::acquire(path, recover_stale_writer_lease)?)
+        } else {
+            None
+        };
+        #[cfg(test)]
+        persistence_tests::point("segment.before_create")?;
         let mut file = create_private_file(path, true)?;
+        #[cfg(test)]
+        persistence_tests::point("segment.after_create")?;
         // Lock the journal inode itself in addition to the pathname lease.
         // A hard-link alias has a different sidecar pathname but resolves to
         // this same inode; the advisory lock makes that alias fail closed.
         lock_file(&file)?;
         let encoded = encode_segment_header(&header)?;
         commit_bytes(&mut file, &encoded)?;
+        #[cfg(test)]
+        persistence_tests::point("segment.before_parent_sync")?;
         sync_parent(path)?;
+        #[cfg(test)]
+        persistence_tests::point("segment.after_parent_sync")?;
         let metadata = file.metadata().map_err(map_io_error)?;
         Ok(Self {
             path: path.to_owned(),
             file,
             _lease: lease,
+            managed: None,
+            predecessors: Vec::new(),
             next_sequence: header.first_sequence,
             previous_record_sha256: header.previous_record_sha256,
             // A rotated segment shares the journal's receipt namespace with
@@ -1079,70 +1097,20 @@ impl ReceiptJournal {
         })
     }
 
+    /// Open segment one only. Later segments require open_chain so receipt IDs
+    /// and logical timestamps from predecessors cannot disappear after restart.
     pub fn open(path: impl AsRef<Path>, policy: OpenPolicy) -> Result<Self, JournalError> {
-        let path = path.as_ref();
-        // Capture the no-follow pathname identity before opening.  A
-        // concurrent rename can otherwise replace A with a different regular
-        // file B between metadata validation and `open`; comparing the FD's
-        // device/inode against this snapshot rejects that substitution before
-        // any bytes are recovered or written.
-        let expected_identity = validate_existing_path_identity(path)?;
-        // Pin and lock the journal inode before touching the pathname
-        // sidecar.  Between metadata validation and a sidecar-only acquire,
-        // a same-user actor could rename a different regular file over this
-        // path; opening first lets us compare the path after lease admission
-        // and ensures all writes use the originally pinned descriptor.
-        let mut file = open_existing_file_checked(path, true, expected_identity)?;
-        let inode_metadata = file.metadata().map_err(map_io_error)?;
-        lock_file(&file)?;
-        let lease = WriterLease::acquire(path, policy.recover_stale_writer_lease)?;
-        if !path_matches_metadata(path, &inode_metadata)? {
-            return Err(JournalError::InsecurePath(
-                "journal path changed while acquiring writer lease".into(),
-            ));
-        }
-        let mut report = recover_file(&mut file)?;
-        if let TailStatus::TornTail { offset, .. } = report.tail {
-            if !policy.repair_torn_tail {
-                return Err(JournalError::TornTailNeedsRepair { offset });
-            }
-            file.set_len(report.last_complete_offset)
-                .map_err(map_io_error)?;
-            file.sync_data().map_err(map_io_error)?;
-            report = recover_file(&mut file)?;
-            if report.tail != TailStatus::Clean {
-                return Err(JournalError::Corruption {
-                    offset: report.last_complete_offset,
-                    reason: "torn-tail repair did not produce a clean segment".into(),
-                });
-            }
-        }
-        let progress = progress_from_records(&report.records)?;
-        let last_monotonic_ms = report
-            .records
-            .iter()
-            .map(|record| record.event.monotonic_ms)
-            .max()
-            .unwrap_or(0);
-        file.seek(SeekFrom::Start(report.last_complete_offset))
-            .map_err(map_io_error)?;
-        Ok(Self {
-            path: path.to_owned(),
-            file,
-            _lease: lease,
-            header: report.header,
-            next_sequence: report.next_sequence,
-            previous_record_sha256: report.last_record_sha256,
-            progress,
-            last_monotonic_ms,
-            end_offset: report.last_complete_offset,
-            file_device: inode_metadata.dev(),
-            file_inode: inode_metadata.ino(),
-            poisoned: false,
-        })
+        managed::reject_unmanaged_access(path.as_ref())?;
+        Self::open_chain_impl([path], None, policy, true)
     }
 
     fn verify_active_append_state(&self, expected_offset: u64) -> Result<(), JournalError> {
+        if let Some(managed) = &self.managed {
+            managed.verify_current()?;
+        }
+        for predecessor in &self.predecessors {
+            predecessor.verify_current()?;
+        }
         let expected = (self.file_device, self.file_inode);
         let file_metadata = self.file.metadata().map_err(map_io_error)?;
         if !metadata_matches_identity(&file_metadata, expected) {
@@ -1186,19 +1154,7 @@ impl ReceiptJournal {
             .next_sequence
             .checked_add(1)
             .ok_or_else(|| JournalError::InvalidInput("sequence overflow".into()))?;
-        event.validate()?;
-        let previous = self
-            .progress
-            .get(&event.receipt_id)
-            .map(|progress| progress.last_state);
-        validate_transition(&event.receipt_id, previous, event.lifecycle)?;
-        if let Some(progress) = self.progress.get(&event.receipt_id)
-            && progress.effect_class != event.effect_class
-        {
-            return Err(JournalError::InvalidInput(
-                "effect class cannot change within one receipt lifecycle".into(),
-            ));
-        }
+        let progress = ReceiptProgress::advance(self.progress.get(&event.receipt_id), &event)?;
         let (bytes, digest) =
             encode_record(self.next_sequence, self.previous_record_sha256, &event)?;
         let new_size = self
@@ -1208,6 +1164,7 @@ impl ReceiptJournal {
         if new_size > MAX_SEGMENT_BYTES {
             return Err(JournalError::SegmentTooLarge(new_size));
         }
+        chain::check_growth(&self.predecessors, new_size, self.next_sequence)?;
         self.file
             .seek(SeekFrom::Start(self.end_offset))
             .map_err(map_io_error)?;
@@ -1228,18 +1185,14 @@ impl ReceiptJournal {
         self.previous_record_sha256 = digest;
         self.end_offset = new_size;
         self.last_monotonic_ms = self.last_monotonic_ms.max(event.monotonic_ms);
-        self.progress.insert(
-            event.receipt_id,
-            ReceiptProgress {
-                last_state: event.lifecycle,
-                effect_class: event.effect_class,
-            },
-        );
+        self.progress.insert(event.receipt_id, progress);
         Ok(committed)
     }
 
     pub fn inspect(&mut self) -> Result<RecoveryReport, JournalError> {
+        self.check_live_state()?;
         let report = recover_file(&mut self.file)?;
+        self.check_live_state()?;
         self.last_monotonic_ms = self.last_monotonic_ms.max(
             report
                 .records
@@ -1252,10 +1205,12 @@ impl ReceiptJournal {
     }
 
     pub fn seal(&mut self) -> Result<SegmentSeal, JournalError> {
-        if self.poisoned {
-            return Err(JournalError::WriterPoisoned);
-        }
+        self.check_live_state()?;
+        #[cfg(test)]
+        persistence_tests::point("seal.before_sync")?;
         self.file.sync_all().map_err(map_io_error)?;
+        #[cfg(test)]
+        persistence_tests::point("seal.after_sync")?;
         let report = recover_file(&mut self.file)?;
         if report.tail != TailStatus::Clean {
             return Err(JournalError::TornTailNeedsRepair {
@@ -1263,6 +1218,7 @@ impl ReceiptJournal {
             });
         }
         let bytes = read_segment_bytes(&mut self.file)?;
+        self.check_live_state()?;
         Ok(SegmentSeal {
             segment_number: report.header.segment_number,
             bytes: bytes.len() as u64,
@@ -1273,9 +1229,24 @@ impl ReceiptJournal {
     }
 
     pub fn rotate(
-        mut self,
+        self,
         next_path: impl AsRef<Path>,
         created_wall_clock_unix_ms: u64,
+    ) -> Result<(SegmentSeal, Self), JournalError> {
+        if self.managed.is_some() {
+            return Err(JournalError::InvalidInput(
+                "managed journal requires rotate_managed".into(),
+            ));
+        }
+        managed::reject_unmanaged_access(next_path.as_ref())?;
+        self.rotate_impl(next_path.as_ref(), created_wall_clock_unix_ms, true)
+    }
+
+    fn rotate_impl(
+        mut self,
+        next_path: &Path,
+        created_wall_clock_unix_ms: u64,
+        path_lease: bool,
     ) -> Result<(SegmentSeal, Self), JournalError> {
         if self
             .progress
@@ -1318,9 +1289,19 @@ impl ReceiptJournal {
                 reason: "journal cursor disagrees with sealed records during rotation".into(),
             });
         }
-        let next =
+        if self.predecessors.len() + 2 > MAX_CHAIN_SEGMENTS {
+            return Err(JournalError::InvalidInput(
+                "segment chain rotation exceeds segment bound".into(),
+            ));
+        }
+        chain::check_growth(
+            &self.predecessors,
+            self.end_offset + SEGMENT_HEADER_LEN as u64,
+            self.next_sequence - 1,
+        )?;
+        let mut next =
             Self::create_segment(
-                next_path.as_ref(),
+                next_path,
                 SegmentHeader {
                     journal_id: self.header.journal_id,
                     segment_number: self.header.segment_number.checked_add(1).ok_or_else(|| {
@@ -1334,8 +1315,27 @@ impl ReceiptJournal {
                 false,
                 self.progress.clone(),
                 self.last_monotonic_ms,
+                path_lease,
             )?;
+        next.predecessors = std::mem::take(&mut self.predecessors);
+        next.predecessors.push(chain::PinnedSegment {
+            path: self.path,
+            file: self.file,
+            identity: (self.file_device, self.file_inode),
+            bytes: self.end_offset,
+        });
         Ok((seal, next))
+    }
+
+    fn check_live_state(&mut self) -> Result<(), JournalError> {
+        if self.poisoned {
+            return Err(JournalError::WriterPoisoned);
+        }
+        if let Err(error) = self.verify_active_append_state(self.end_offset) {
+            self.poisoned = true;
+            return Err(error);
+        }
+        Ok(())
     }
 
     pub fn path(&self) -> &Path {
@@ -1371,155 +1371,7 @@ where
     I: IntoIterator<Item = P>,
     P: AsRef<Path>,
 {
-    let paths: Vec<PathBuf> = paths
-        .into_iter()
-        .map(|path| path.as_ref().to_owned())
-        .collect();
-    if paths.is_empty() {
-        return Err(JournalError::InvalidInput(
-            "segment chain must contain at least one path".into(),
-        ));
-    }
-
-    let mut inspected = Vec::with_capacity(paths.len());
-    for (index, path) in paths.iter().enumerate() {
-        let expected_identity = validate_existing_path_identity(path)?;
-        let mut file = open_existing_file_checked(path, false, expected_identity).map_err(
-            |error| match error {
-                JournalError::InsecurePath(reason)
-                    if reason == "journal path changed before opening" =>
-                {
-                    JournalError::InsecurePath(format!(
-                        "segment chain entry {index} changed before opening"
-                    ))
-                }
-                other => other,
-            },
-        )?;
-        let bytes = read_segment_bytes(&mut file)?;
-        let digest = sha256(&bytes);
-        let report = recover_bytes(&bytes)?;
-        if report.tail != TailStatus::Clean {
-            return Err(JournalError::Corruption {
-                offset: report.last_complete_offset,
-                reason: format!(
-                    "segment chain entry {index} has a torn tail; repair before chain inspection"
-                ),
-            });
-        }
-        inspected.push((report, digest));
-    }
-
-    let first = &inspected[0].0;
-    if first.header.segment_number != 1 {
-        return Err(JournalError::Corruption {
-            offset: 0,
-            reason: "segment chain does not begin with segment one".into(),
-        });
-    }
-
-    for (index, window) in inspected.windows(2).enumerate() {
-        let (previous, previous_digest) = &window[0];
-        let (current, _) = &window[1];
-        if !previous.unresolved.is_empty() {
-            return Err(JournalError::Corruption {
-                offset: 0,
-                reason: format!(
-                    "segment chain predecessor at index {index} has unresolved receipts"
-                ),
-            });
-        }
-        if current.header.journal_id != first.header.journal_id {
-            return Err(JournalError::Corruption {
-                offset: 0,
-                reason: format!(
-                    "segment chain entry {} has a different journal ID",
-                    index + 1
-                ),
-            });
-        }
-        let expected_segment_number =
-            previous
-                .header
-                .segment_number
-                .checked_add(1)
-                .ok_or_else(|| JournalError::Corruption {
-                    offset: 0,
-                    reason: "segment number overflow in chain".into(),
-                })?;
-        if current.header.segment_number != expected_segment_number {
-            return Err(JournalError::Corruption {
-                offset: 0,
-                reason: format!(
-                    "segment number is not contiguous: expected {expected_segment_number}, found {}",
-                    current.header.segment_number
-                ),
-            });
-        }
-        if current.header.first_sequence != previous.next_sequence {
-            return Err(JournalError::Corruption {
-                offset: 0,
-                reason: format!(
-                    "first sequence is not contiguous: expected {}, found {}",
-                    previous.next_sequence, current.header.first_sequence
-                ),
-            });
-        }
-        if current.header.previous_segment_sha256 != *previous_digest {
-            return Err(JournalError::Corruption {
-                offset: 0,
-                reason: "previous-segment digest link mismatch".into(),
-            });
-        }
-        if current.header.previous_record_sha256 != previous.last_record_sha256 {
-            return Err(JournalError::Corruption {
-                offset: 0,
-                reason: "previous-record digest link across segments mismatch".into(),
-            });
-        }
-    }
-
-    // Lifecycle identity is global to a journal, not scoped to one segment.
-    // `ReceiptJournal::rotate` carries this map for the in-memory successor,
-    // but chain inspection must independently enforce the same rule when a
-    // process reopens archived segments.  Without this pass a completed
-    // receipt could be followed by a fresh `Requested` record with the same
-    // identifier in a later segment, defeating duplicate/admission guards and
-    // permitting a caller to replay an operation after rotation.
-    let mut chain_progress: HashMap<String, ReceiptProgress> = HashMap::new();
-    for (segment_index, (report, _)) in inspected.iter().enumerate() {
-        for record in &report.records {
-            let receipt_id = &record.event.receipt_id;
-            let previous = chain_progress.get(receipt_id).map(|item| item.last_state);
-            validate_transition(receipt_id, previous, record.event.lifecycle).map_err(|error| {
-                JournalError::Corruption {
-                    offset: 0,
-                    reason: format!(
-                        "segment chain entry {segment_index} has invalid cross-segment receipt lifecycle: {error}"
-                    ),
-                }
-            })?;
-            if let Some(item) = chain_progress.get(receipt_id)
-                && item.effect_class != record.event.effect_class
-            {
-                return Err(JournalError::Corruption {
-                    offset: 0,
-                    reason: format!(
-                        "segment chain entry {segment_index} changes effect class for receipt {receipt_id}"
-                    ),
-                });
-            }
-            chain_progress.insert(
-                receipt_id.clone(),
-                ReceiptProgress {
-                    last_state: record.event.lifecycle,
-                    effect_class: record.event.effect_class,
-                },
-            );
-        }
-    }
-
-    Ok(inspected.into_iter().map(|(report, _)| report).collect())
+    chain::inspect(paths)
 }
 
 /// Export canonical `receipt.v1` operation envelopes.
@@ -1575,8 +1427,13 @@ pub fn export_journal_redacted_jsonl(
     let destination = destination.as_ref();
     validate_new_path(destination)?;
     let mut bytes = Vec::new();
+    let mut progress = HashMap::new();
     for record in &report.records {
         let event = &record.event;
+        // Public RecoveryReport values may be caller-constructed. Forensic
+        // export allows unresolved facts, but never inconsistent admission.
+        let next = ReceiptProgress::advance(progress.get(&event.receipt_id), event)?;
+        progress.insert(event.receipt_id.clone(), next);
         let detail = match event.privacy_class {
             PrivacyClass::Public | PrivacyClass::Internal => event.detail.as_deref(),
             PrivacyClass::Sensitive | PrivacyClass::SecretRedacted => None,
@@ -1666,33 +1523,6 @@ fn replay_directive(state: LifecycleState, effect: EffectClass) -> ReplayDirecti
         }
         _ => ReplayDirective::NeverAutomatic,
     }
-}
-
-fn progress_from_records(
-    records: &[RecoveredRecord],
-) -> Result<HashMap<String, ReceiptProgress>, JournalError> {
-    let mut progress = HashMap::new();
-    for record in records {
-        let previous = progress
-            .get(&record.event.receipt_id)
-            .map(|item: &ReceiptProgress| item.last_state);
-        validate_transition(&record.event.receipt_id, previous, record.event.lifecycle)?;
-        if let Some(item) = progress.get(&record.event.receipt_id)
-            && item.effect_class != record.event.effect_class
-        {
-            return Err(JournalError::InvalidRecord(
-                "effect class changed within receipt lifecycle",
-            ));
-        }
-        progress.insert(
-            record.event.receipt_id.clone(),
-            ReceiptProgress {
-                last_state: record.event.lifecycle,
-                effect_class: record.event.effect_class,
-            },
-        );
-    }
-    Ok(progress)
 }
 
 fn validate_transition(
@@ -2156,33 +1986,13 @@ fn recover_bytes(bytes: &[u8]) -> Result<RecoveryReport, JournalError> {
                 reason: other.to_string(),
             },
         })?;
-        let previous_state = progress
-            .get(&record.event.receipt_id)
-            .map(|item| item.last_state);
-        validate_transition(
-            &record.event.receipt_id,
-            previous_state,
-            record.event.lifecycle,
-        )
-        .map_err(|error| JournalError::Corruption {
-            offset: offset as u64,
-            reason: error.to_string(),
-        })?;
-        if let Some(item) = progress.get(&record.event.receipt_id)
-            && item.effect_class != record.event.effect_class
-        {
-            return Err(JournalError::Corruption {
-                offset: offset as u64,
-                reason: "effect class changed within receipt lifecycle".into(),
-            });
-        }
-        progress.insert(
-            record.event.receipt_id.clone(),
-            ReceiptProgress {
-                last_state: record.event.lifecycle,
-                effect_class: record.event.effect_class,
-            },
-        );
+        let next_progress =
+            ReceiptProgress::advance(progress.get(&record.event.receipt_id), &record.event)
+                .map_err(|error| JournalError::Corruption {
+                    offset: offset as u64,
+                    reason: error.to_string(),
+                })?;
+        progress.insert(record.event.receipt_id.clone(), next_progress);
         expected_sequence =
             expected_sequence
                 .checked_add(1)
@@ -2230,8 +2040,17 @@ impl DurableWrite for File {
 }
 
 fn commit_bytes<W: DurableWrite>(writer: &mut W, bytes: &[u8]) -> Result<(), JournalError> {
+    #[cfg(test)]
+    persistence_tests::before_write("commit", writer, bytes)?;
     writer.write_all(bytes).map_err(map_io_error)?;
-    writer.durable_sync().map_err(map_io_error)
+    #[cfg(test)]
+    persistence_tests::point("commit.after_write")?;
+    #[cfg(test)]
+    persistence_tests::point("commit.before_sync")?;
+    writer.durable_sync().map_err(map_io_error)?;
+    #[cfg(test)]
+    persistence_tests::point("commit.after_sync")?;
+    Ok(())
 }
 
 fn read_segment_bytes(file: &mut File) -> Result<Vec<u8>, JournalError> {
@@ -3623,16 +3442,23 @@ mod tests {
             .expect("fresh receipt remains admissible");
         drop(next);
 
-        // A process that reopens only the new segment starts with no in-memory
-        // predecessor map.  Simulate that legacy/restarted writer: the
-        // duplicate can be appended to the segment itself, but chain
-        // inspection must independently carry progress across the boundary
-        // and reject it.
-        let mut reopened = ReceiptJournal::open(&second, OpenPolicy::STRICT).expect("reopen");
-        reopened
-            .append(event("replay-me", LifecycleState::Requested))
-            .expect("legacy writer can append duplicate locally");
-        drop(reopened);
+        // A restarted writer cannot open only the active segment. Forge bytes
+        // directly to preserve independent hostile-inspector coverage without
+        // using a public writer API that now correctly rejects partial chains.
+        assert!(ReceiptJournal::open(&second, OpenPolicy::STRICT).is_err());
+        let current = inspect_path(&second).expect("inspect active");
+        let (bytes, _) = encode_record(
+            current.next_sequence,
+            current.last_record_sha256,
+            &event("replay-me", LifecycleState::Requested),
+        )
+        .expect("encode hostile fixture");
+        OpenOptions::new()
+            .append(true)
+            .open(&second)
+            .expect("hostile file")
+            .write_all(&bytes)
+            .expect("forge replay fixture");
 
         assert!(matches!(
             inspect_chain([&first, &second]),

@@ -20,7 +20,7 @@ into integrated-main, physical-hardware, signing-key-custody, or release facts.
 
 - Provide a non-default `development` feature that links the D3 AgentPort, BrowserActor, semantic fixture runtime, peer attestation, and receipt journal without entering the default product graph.
 - Run a persistent systemd-owned development session service and deterministic hostile corpus for principal, revisions, atomic semantic resolution, receipts, cancellation, deadlines, and restart behavior.
-- Reject unsupported rotated journal stores until complete predecessor-chain import is available.
+- Restore explicitly configured complete journal chains through the core lock-owning API; reject partial chains and preserve secret redaction during recovery classification.
 
 ## Non-responsibilities
 
@@ -46,7 +46,17 @@ present in a non-production feature graph.
 
 ## Configuration and features
 
-Activation requires the explicit development feature/profile, systemd socket/service, administrator marker, fixed paths/ownership, and exact expected executable digest. Journal/session paths and fixture inputs are bounded. Missing or malformed configuration fails before serving.
+Cargo binary auto-discovery and package build scripts are disabled explicitly
+with `autobins = false` and `build = false`. Only registered `[[bin]]` targets
+may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
+entrypoint, or `build.rs` without a reviewed inventory change fails the module
+gate; this does not disable integration-test discovery.
+
+Activation requires the explicit development feature/profile, systemd socket/service, administrator marker, fixed paths/ownership, and exact expected executable digest. Journal/session paths and fixture inputs are bounded. The optional
+`HEPTA_D3_RECEIPT_PREDECESSORS` is an ordered colon-separated list of up to 63
+archived paths within the development journal root, excluding the active file.
+Omit it for single-segment stores; empty, duplicate or noncanonical lists fail.
+See `docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md` for the full contract. Missing or malformed configuration fails before serving.
 
 All configuration inputs must be bounded, typed, documented, and included in the
 applicable gate's invalidation set. Missing configuration must fail closed rather
@@ -54,7 +64,15 @@ than select a broader profile.
 
 ## State, concurrency, and failure semantics
 
-The session daemon preserves one actor/session/journal authority surface. The fixture runtime applies one bounded atomic semantic operation with revision/uniqueness/drift/action checks. Restart imports only supported complete journal state; unresolved effects remain non-replayable.
+The local atomic fixture prepares the complete i64-bounded JSON action result
+before its final control check and state mutation. Failed encoding does not
+consume the action count or target; failed Observe invalidates the old target
+and publishes no new unreturnable one. `sessiond/runtime_atomic_tests.rs` covers
+these boundaries through real PageRuntime entry points. This remains a fixture,
+not a Servo-owned retained-node implementation. See
+`docs/architecture/RECEIPT_ADMISSION_IDENTITY.md`.
+
+The session daemon preserves one actor/session/journal authority surface. The fixture runtime applies one bounded atomic semantic operation with revision/uniqueness/drift/action checks. Restart imports the validated complete chain and logical clock; unresolved effects remain non-replayable. Missing active files never become new empty chains. SecretRedacted recovery records retain no detail.
 
 Rejected transitions and failed validation must not leave partial authority,
 advanced revisions, committed responses, or invented receipt outcomes. Where a
@@ -107,3 +125,65 @@ contracts/schemas, golden vectors, tests, module registry, this README, architec
 and threat documentation, gate invalidation paths, evidence, and explicit
 non-claims. Exact-head review and exact-main reruns remain separate promotion
 transactions.
+
+## Opt-in managed receipt directory
+
+`HEPTA_D3_RECEIPT_STORE` selects a new private store under the development state
+root. Its presence conflicts with either legacy journal variable; no default
+changes, migration, production marker or network authority are introduced.
+The service opens the complete managed chain, reconciles facts without replay,
+and rotates idle/quiescent journals at the fixed 4 MiB threshold. Rotation
+errors terminate the service rather than replacing its writer or session.
+See [`MANAGED_RECEIPT_STORE.md`](../../docs/architecture/MANAGED_RECEIPT_STORE.md)
+for exact configuration, filename/identity rules, failure matrix and non-claims.
+
+## Persistent development engine-thread runner
+
+The persistent `hepta-agent-port-development-sessiond` now uses the main-thread
+AtomicFixtureRuntime through EngineThreadRuntime. Its single scoped connection
+worker owns the actor and receipt observer, retains the first complete attested
+process snapshot (including start_time_ticks), and refuses later identity drift.
+Engine retirement stops accept polling and is never an implicit engine restart.
+No new configuration, production listener, executable, dependency or Servo API
+is added. The old single-connection binary remains unchanged. See
+`docs/architecture/D3_SESSION_ENGINE_RUNNER.md` and
+`contracts/d3-session-engine-runner.v1.json` for lifecycle, bounds, failure and
+source-test evidence. This remains a local fixture, not an installed Servo claim.
+
+## Request-scoped identity across queueing
+
+`AttestedPeer::request_custody` retains the original pidfd and identity source for
+one handler lifecycle. All queued RequestControl copies share a revocable
+verifier; original attestor selection, engine entry/return and final actor return
+are rechecked. Identity loss never becomes a confirmed success or replayable
+refusal after an uncertain effect. See
+`docs/architecture/REQUEST_PEER_CUSTODY.md` and
+`contracts/request-peer-custody.v1.json` for APIs, configuration, failure and
+resource limits. No production activation or actual Servo proof is introduced.
+
+## Session reconstruction isolation
+
+Actor creation now lazily obtains an OS-sourced incarnation at the first valid
+SessionCreate; session/WebView tokens are namespaced across actor reconstruction.
+The atomic fixture scopes frame identity by session and WebView before publishing
+a target. Entropy failure has no predictable fallback; deadlines and bounded
+opaque Browser API v1 fields remain enforced. No old PageOwner is resurrected
+from receipts and no operation is replayed. See
+`docs/architecture/SESSION_INCARNATION.md` and
+`contracts/session-incarnation.v1.json` for APIs, failure ordering, compatibility,
+regressions and limits. This is source/host evidence, not actual Servo, systemd,
+image, hardware, anti-rollback, production activation or release proof.
+
+
+## Callback development service integration
+
+The persistent development service now uses the callback owner with an explicit
+ImmediateCallbacks bridge for its existing deterministic fixture. The main
+runner waits on a private notification predicate; worker completion is published
+before wake and errors retire before join. This does not implement Servo, winit,
+systemd activation or an installed image. See
+`docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md` and
+`contracts/d3-callback-service-runner.v1.json`; the source regression guard is
+`tools/audit_callback_service.py`, tested by
+`tests/test_callback_service_runner.py`. Existing controls and promotion limits
+remain unchanged. The immediate bridge does not make a blocking backend async.

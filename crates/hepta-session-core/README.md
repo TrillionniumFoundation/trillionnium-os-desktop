@@ -38,6 +38,12 @@ dependencies require an explicit architecture/security review.
 ## Public API and binaries
 
 `SessionAdmission` is the public transition owner; raw machine internals remain private. Public snapshots/effects/errors expose deterministic outcomes. `ReceiptJournal` APIs open/inspect/append/recover/rotate/export without executing operations.
+`open_chain(paths, expected_journal_id, policy)` pins the complete predecessor
+chain and restores its global receipt namespace; standalone `open` accepts
+segment one only. The unchanged binary format has explicit aggregate limits
+(64 segments, 128 MiB and 131072 records). See
+`docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md` for remaining head-selection
+and retention limits; inode locks do not authenticate an offline snapshot.
 
 Public types and executable names are compatibility surfaces. Rust source remains
 the API truth, while this document explains the intended boundary and correct use.
@@ -45,6 +51,12 @@ Callers must not infer authority from a type being constructible or a binary bei
 present in a non-production feature graph.
 
 ## Configuration and features
+
+Cargo binary auto-discovery and package build scripts are disabled explicitly
+with `autobins = false` and `build = false`. Only registered `[[bin]]` targets
+may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
+entrypoint, or `build.rs` without a reviewed inventory change fails the module
+gate; this does not disable integration-test discovery.
 
 Human lease bounds, queue limits, record/segment/detail sizes, file modes, and format versions are constants or explicit open policies. Time is supplied as monotonic/wall observations; no hidden clock reads are allowed in admission logic.
 
@@ -62,6 +74,14 @@ result may be indeterminate, the caller must preserve that state and follow the
 documented reconciliation policy instead of retrying blindly.
 
 ## Security invariants
+
+All lifecycle facts keep the admission request digest, session/revisions,
+operation/build identity, source, effect and privacy classification immutable.
+One shared helper verifies append, restart, complete-chain recovery and both
+export paths; a rehashed complete-record mismatch is corruption, not a torn
+tail to repair. Existing multiclock observations remain supported. See
+`docs/architecture/RECEIPT_ADMISSION_IDENTITY.md` for encoding, migration limits
+and executable negative tests.
 
 Reject stale/mismatched leases, non-Ready interaction, revision races, illegal receipt lifecycle changes, duplicate IDs, chain/digest/sequence corruption, symlink/non-regular paths, unsafe permissions, and automatic replay of unresolved potential effects.
 
@@ -107,3 +127,35 @@ contracts/schemas, golden vectors, tests, module registry, this README, architec
 and threat documentation, gate invalidation paths, evidence, and explicit
 non-claims. Exact-head review and exact-main reruns remain separate promotion
 transactions.
+
+## Managed receipt storage
+
+The opt-in `ReceiptJournal::create_managed`, `open_managed` and consuming
+`rotate_managed` APIs select a complete chain from a closed private directory
+inventory and publish only a synced linked header by atomic rename plus
+directory sync. `ManagedOpenPolicy` separates pending completion from tail
+repair. The fixed 4 MiB idle rotation trigger does not change chain bounds.
+Unmanaged writer APIs reject managed segments. Legacy explicit-path behavior
+remains unchanged outside a managed root. See
+[`MANAGED_RECEIPT_STORE.md`](../../docs/architecture/MANAGED_RECEIPT_STORE.md)
+for format, recovery matrix, threat assumptions, tests and deployment. This is
+source/local storage behavior, not installed-image, physical power-loss or
+authenticated offline rollback evidence.
+
+## Receipt persistence-cut regression
+
+The managed reopen path re-establishes file and directory durability before it
+returns a writer. Development and maintenance details are in
+`docs/architecture/RECEIPT_PERSISTENCE_FAULT_MODEL.md`. The private cfg(test)
+library corpus exercises 128 injected I/O-error combinations; the separate
+`journal_persistence_process` Cargo test target executes 64 actual SIGKILL
+cutpoint cases over the exact journal source. Neither is physical power loss
+or a product fault-control interface. Run both focused targets plus the full
+workspace/default/all-feature and Python discovery matrices. The independent
+process test has a custom harness; libtest name filters should use `--lib`.
+Module/component registration and `tests/test_receipt_persistence_cuts.py` guard
+source wiring, conditional compilation, durability order and claim ceilings.
+
+## Explicit offline legacy copy
+
+`ReceiptJournal::copy_legacy_chain_to_managed` copies a strictly validated, read-only locked legacy chain into a new private managed directory without changing any original record or lease bytes. `ReceiptMigrationReport` records byte identities, not a service cutover or deletion permit. Interrupted staging remains refused, sources are never repaired, and unresolved effects are never replayed. See `docs/architecture/LEGACY_RECEIPT_MIGRATION.md` and `contracts/legacy-receipt-migration.v1.json`. The dedicated `journal_migration_process` test compiles the actual journal source; it is not an installed executable.

@@ -17,10 +17,26 @@ A trusted application is identified by:
 - publisher and publisher-key identifiers;
 - an exact signed content root;
 - a synthetic origin derived as
-  `https://<app-id>.trusted.invalid/`.
+  `https://<app-id>.<publisher-id>.apps.hepta.invalid`.
 
 The `.invalid` suffix is deliberate: the origin must be resolved by the product
 runtime and must never be resolved through external DNS.
+
+The active payload is `trillionnium.desktop.trusted-app-manifest.v2`. Both
+identity fields are distinct lowercase DNS labels of 1..63 ASCII bytes, matching
+`DnsLabel` and `TrustedAppIdentity` in the Rust contract. A serialized origin has
+no trailing slash; a root URL is constructed separately. Publisher IDs are not
+omitted, concatenated into an ambiguous label, or normalized from dotted names.
+
+The earlier app-only `.trusted.invalid` v1 prototype is rejected, not aliased.
+No installed v1 product is claimed. Historical evidence remains bound to its
+original source/contract; fixtures must be rebuilt and resigned as v2. Publisher
+key rotation preserves the publisher ID and origin; publisher identity changes
+require a separate application identity and storage authorization.
+
+`contracts/golden/trusted-app-origins.v1.tsv` is consumed by the Python verifier,
+Rust browser contracts, and Rust D5 policy tests. See ADR 0005 for migration and
+claim ceilings. This correction does not install an origin or grant authority.
 
 ## Offline signature verification
 

@@ -12,6 +12,12 @@ integrated-main SHA.
 from __future__ import annotations
 
 import os
+from pathlib import Path
+import sys
+
+TOOLS_DIR = Path(__file__).resolve().parent
+if str(TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(TOOLS_DIR))
 
 import qualify_servo_exact_pin_evidence_impl as _impl
 from qualify_servo_exact_pin_evidence_impl import *  # noqa: F401,F403
