@@ -88,8 +88,10 @@ Every test module must also pass when loaded first in a fresh interpreter. A
 leading module may not monkey-patch shared helpers to make later modules pass.
 The D8 fixture-isolation regressions therefore exercise the real factory, and
 the Servo evidence loader regression removes ambient ``tools/`` path state
-before importing the facade. Run both focused modules and authoritative
-discovery when loader or fixture construction changes.
+before importing the facade. Documentation claim regressions include
+Cyrillic/Greek homoglyphs, combining marks, and mixed-script declaration
+prefixes while retaining ordinary multilingual prose. Run the focused modules
+and authoritative discovery when loader, fixture, or claim parsing changes.
 
 Partial completion is never upgraded to success. Timeout, cancellation,
 infrastructure failure, product failure, stale evidence, and indeterminate

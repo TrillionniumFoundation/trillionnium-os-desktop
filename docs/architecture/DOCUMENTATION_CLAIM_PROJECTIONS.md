@@ -24,17 +24,24 @@ The exact lines and section cannot live in a code fence or HTML comment.
 
 `tools/documentation_claims.py` is shared by both documentation validators.
 It bounds documents and registry values, checks original lines exactly, and
-uses case folding, compatibility normalization, HTML entity decoding, and
+uses case folding, compatibility normalization, canonical decomposition,
+HTML entity decoding, a focused Greek/Cyrillic homoglyph skeleton, and
 whitespace/punctuation removal only to detect disguised duplicate labels.
-Normalization never repairs an invalid declaration into an accepted one.
+A declaration-shaped prefix containing an unmapped non-ASCII letter also fails
+closed when its ASCII remainder is within a bounded edit distance of an
+authority label. This rule applies only before `:` or `=`; ordinary multilingual
+prose remains valid. Normalization never repairs an invalid declaration into an
+accepted one.
 
 ## Tests
 
-`tests/test_documentation_claim_projection.py` invokes both real validator
-entrypoints against isolated fixtures. It rejects README-only and registry-only
+`tests/test_documentation_claim_projection.py` and
+`tests/test_validator_loader_stability.py` invoke both real validator entrypoints
+against isolated fixtures. They reject README-only and registry-only
 status/claim changes, missing and repeated values, contradictory declarations,
-case/space/tab/newline/fullwidth/zero-width/entity spelling, code fences,
-comments, and declarations moved outside the designated section. All 12 module
+case/space/tab/newline/fullwidth/zero-width/entity spelling, Cyrillic/Greek
+homoglyphs, combining marks, mixed-script labels, code fences, comments, and
+declarations moved outside the designated section. All 12 module
 and 14 component projections are checked against their committed registries.
 
 The older fixtures now contain the same exact metadata as real documentation;

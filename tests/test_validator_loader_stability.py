@@ -65,6 +65,40 @@ class ValidatorLoaderStabilityTests(unittest.TestCase):
             spec.loader.exec_module(module)
         self.assertEqual(module.SERVO_PIN, "670ae8a70801b162e186f81cbb5bdd2d59c39108")
 
+    def test_claim_projection_rejects_unicode_confusable_authority_labels(self) -> None:
+        from tests import test_documentation_claim_projection as projection_tests
+
+        declarations = (
+            "**Currеnt status:** `production_ready`",  # Cyrillic e
+            "**Сurrent status:** `production_ready`",  # Cyrillic Es
+            "**Claim ceіling:** production release ready.",  # Cyrillic i
+            "**Clаim ceιling:** production release ready.",  # Cyrillic a + Greek iota
+            "**Сurrеnt stаtus:** `production_ready`",  # mixed Cyrillic label
+            "**сяаιм сеιℓιηg:** production release ready.",  # cross-script skeleton
+            "**Cúrrent status:** `production_ready`",  # composed accent
+            "**C\u0338urrent status:** `production_ready`",  # combining overlay
+            "**Currⅇnt status:** `production_ready`",  # compatibility confusable
+        )
+        for kind in ("module", "component"):
+            for declaration in declarations:
+                with self.subTest(kind=kind, declaration=declaration), projection_tests.fixture_for(kind) as (fixture, path, _, _):
+                    self.assertEqual(fixture.validate(), [])
+                    path.write_text(path.read_text(encoding="utf-8") + "\n" + declaration + "\n", encoding="utf-8")
+                    self.assertTrue(fixture.validate(), "confusable authority declaration was accepted")
+
+    def test_claim_projection_allows_multilingual_non_authority_prose(self) -> None:
+        from tests import test_documentation_claim_projection as projection_tests
+
+        additions = (
+            "Résumé and ελληνική documentation remain ordinary prose.",
+            "状态说明：本段不声明机器权威。",
+            "The current lifecycle remains described without a declaration delimiter.",
+        )
+        for kind in ("module", "component"):
+            with self.subTest(kind=kind), projection_tests.fixture_for(kind) as (fixture, path, _, _):
+                path.write_text(path.read_text(encoding="utf-8") + "\n" + "\n".join(additions) + "\n", encoding="utf-8")
+                self.assertEqual(fixture.validate(), [])
+
     def test_facade_exports_explicit_pr66_policy(self) -> None:
         path = ROOT / "tools/validate_project_truth.py"
         spec = importlib.util.spec_from_file_location("validator_loader_test", path)

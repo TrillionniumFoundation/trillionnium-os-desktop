@@ -14,10 +14,122 @@ SECTION = "## Status and claim ceiling"
 MAX_DOCUMENT_BYTES = 1_048_576
 STATUS = re.compile(r"[a-z][a-z0-9_]{0,127}\Z")
 
+# Focused UTS #39-style skeleton for the two authority labels.  NFKC already
+# handles fullwidth and mathematical compatibility forms; this table covers
+# common Greek/Cyrillic/IPA homoglyphs that do not compatibility-normalize.
+# The fallback below rejects close declaration prefixes containing any other
+# non-ASCII letter, so the table is not treated as an exhaustive allow-list.
+_CONFUSABLE_ASCII = {
+    "а": "a", "α": "a", "ɑ": "a",
+    "с": "c", "ϲ": "c", "ᴄ": "c",
+    "е": "e", "ε": "e", "ɛ": "e",
+    "ɡ": "g", "ց": "g",
+    "һ": "h", "н": "h",
+    "і": "i", "ι": "i", "ı": "i", "ɩ": "i",
+    "ӏ": "l", "ⅼ": "l", "Ɩ": "l",
+    "м": "m", "μ": "m", "ᴍ": "m",
+    "п": "n", "η": "n", "ո": "n",
+    "о": "o", "ο": "o", "օ": "o",
+    "р": "p", "ρ": "p",
+    "г": "r", "ᴦ": "r",
+    "ѕ": "s", "ꜱ": "s",
+    "т": "t", "τ": "t", "ᴛ": "t",
+    "υ": "u", "ս": "u", "ᴜ": "u",
+    "х": "x", "χ": "x",
+    "у": "y", "γ": "y",
+}
+_AUTHORITY_LABELS = ("currentstatus", "claimceiling", "status")
+
+
+def _normalized_characters(text: str) -> str:
+    decoded = unicodedata.normalize("NFKC", html.unescape(text)).casefold()
+    # A second decomposition makes accents/combining overlays detection-only:
+    # ``Currént`` and ``C̸urrent`` cannot hide a competing authority label.
+    return unicodedata.normalize("NFKD", decoded)
+
 
 def _detection_text(text: str) -> str:
-    decoded = unicodedata.normalize("NFKC", html.unescape(text)).casefold()
-    return "".join(c for c in decoded if c.isascii() and (c.isalnum() or c in ":="))
+    output: list[str] = []
+    for character in _normalized_characters(text):
+        if unicodedata.category(character).startswith("M"):
+            continue
+        if character.isascii() and (character.isalnum() or character in ":="):
+            output.append(character)
+            continue
+        mapped = _CONFUSABLE_ASCII.get(character)
+        if mapped is not None:
+            output.append(mapped)
+    return "".join(output)
+
+
+def _bounded_edit_distance(left: str, right: str, limit: int) -> int:
+    """Return a bounded Levenshtein distance without unbounded allocation."""
+    if abs(len(left) - len(right)) > limit:
+        return limit + 1
+    previous = list(range(len(right) + 1))
+    for row, left_character in enumerate(left, 1):
+        current = [row]
+        for column, right_character in enumerate(right, 1):
+            current.append(min(
+                current[-1] + 1,
+                previous[column] + 1,
+                previous[column - 1] + (left_character != right_character),
+            ))
+        previous = current
+    return previous[-1]
+
+
+def _non_ascii_claim_like_prefix(line: str) -> bool:
+    """Reject visually claim-like declaration labels outside the ASCII grammar.
+
+    Exact accepted declarations are ASCII.  This check is deliberately scoped
+    to the prefix before ``:``/``=`` so ordinary multilingual prose remains
+    valid.  Known homoglyphs map to a focused skeleton; unknown non-ASCII
+    letters fail closed when deleting them leaves a near-authority label.
+    """
+    normalized = unicodedata.normalize("NFKC", html.unescape(line)).casefold()
+    delimiters = [
+        index
+        for index in (normalized.find(":"), normalized.find("="))
+        if index >= 0
+    ]
+    if not delimiters:
+        return False
+    prefix = normalized[:min(delimiters)]
+    if not any(
+        not character.isascii()
+        and (unicodedata.category(character).startswith("L")
+             or unicodedata.category(character).startswith("M"))
+        for character in prefix
+    ):
+        return False
+
+    skeleton = _detection_text(prefix)
+    ascii_only = "".join(
+        character
+        for character in _normalized_characters(prefix)
+        if character.isascii() and character.isalnum()
+    )
+    for authority in _AUTHORITY_LABELS:
+        if skeleton == authority:
+            return True
+        limit = 1 if authority == "status" else 2
+        # Markdown markers carry no letters, so declaration prefixes normally
+        # reduce to the label itself.  A bounded suffix also catches blockquote
+        # or list prose without treating arbitrary Unicode paragraphs as claims.
+        for candidate in (skeleton, ascii_only):
+            if not candidate:
+                continue
+            windows = {candidate}
+            maximum = len(authority) + limit
+            if len(candidate) > maximum:
+                windows.add(candidate[-maximum:])
+            if any(
+                _bounded_edit_distance(window, authority, limit) <= limit
+                for window in windows
+            ):
+                return True
+    return False
 
 
 def validate_claim_projection(
@@ -95,7 +207,11 @@ def validate_claim_projection(
     # The remaining document is unrestricted except for competing declarations.
     authority_positions = [i for i, line in enumerate(lines) if line in expected.values()]
     prefix_end = max(authority_positions, default=-1)
+    confusable_reported = False
     for index, line in enumerate(lines):
+        if not confusable_reported and _non_ascii_claim_like_prefix(line):
+            errors.append(f"{label} non-ASCII confusable authority declaration")
+            confusable_reported = True
         if index <= prefix_end:
             if "<" in line or re.match(r"^ {0,3}(?:`{3,}|~{3,})", line):
                 errors.append(f"{label} authority prefix cannot contain raw HTML or code fences")
