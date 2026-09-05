@@ -1,0 +1,141 @@
+name: import-v15-unicode-claim-patch
+
+on:
+  push:
+    branches:
+      - codex/v14-object-import-3c73e5a2
+    paths:
+      - ".github/workflows/import-v15-unicode-claim-patch.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: import-v15-unicode-claim-patch
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact published v14 tree
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 364503d41b6c02656e7361e948d78dfa5612ec30
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Reconstruct exact v15 patch and import immutable source objects
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PATCH_BLOB: 6059fed4dd88e502ed83b0b8c28c198e95ebb47b
+          PATCH_GZIP_SHA256: c6bf6eee42567c2ad8d1dbcabfae9a7a03c74b2d51394bc99e0acfbea74ca0a7
+          PATCH_SHA256: b650dd2ccf0de835a589319fdbce1187862d82cb0ee2e18b17526554a787c9fd
+          PATCH_BYTES: "10810"
+          BASE_COMMIT: 364503d41b6c02656e7361e948d78dfa5612ec30
+          BASE_TREE: 3c73e5a2e9c060b80fbc08f21afae4296d7843ea
+          TARGET_TREE: b8715491bef277a87207416fdaf00ddbb2d716bf
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import subprocess
+          import urllib.request
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          if repo != "TrillionniumFoundation/trillionnium-os-desktop":
+              raise SystemExit("wrong repository")
+          token = os.environ["GH_TOKEN"]
+          headers = {
+              "Authorization": "Bearer " + token,
+              "Accept": "application/vnd.github+json",
+              "Content-Type": "application/json",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "User-Agent": "trillionnium-v15-unicode-claim-import",
+          }
+
+          def require(condition, message):
+              if not condition:
+                  raise RuntimeError(message)
+
+          def api(path, payload=None):
+              request = urllib.request.Request(
+                  f"https://api.github.com/repos/{repo}/{path}",
+                  data=None if payload is None else json.dumps(payload).encode("utf-8"),
+                  method="GET" if payload is None else "POST",
+                  headers=headers,
+              )
+              with urllib.request.urlopen(request, timeout=60) as response:
+                  return json.load(response)
+
+          def git(*args, data=None):
+              return subprocess.run(
+                  ["git", *args], input=data, check=True, stdout=subprocess.PIPE
+              ).stdout
+
+          def blob_oid(data):
+              return hashlib.sha1(
+                  b"blob " + str(len(data)).encode("ascii") + b"\0" + data
+              ).hexdigest()
+
+          require(git("rev-parse", "HEAD").decode().strip() == os.environ["BASE_COMMIT"], "base commit drift")
+          require(git("rev-parse", "HEAD^{tree}").decode().strip() == os.environ["BASE_TREE"], "base tree drift")
+          item = api("git/blobs/" + os.environ["PATCH_BLOB"])
+          require(item.get("sha") == os.environ["PATCH_BLOB"], "patch blob identity mismatch")
+          require(item.get("encoding") == "base64", "patch blob encoding mismatch")
+          compressed = base64.b64decode("".join(item["content"].split()), validate=True)
+          require(blob_oid(compressed) == os.environ["PATCH_BLOB"], "patch Git object mismatch")
+          require(hashlib.sha256(compressed).hexdigest() == os.environ["PATCH_GZIP_SHA256"], "patch gzip digest mismatch")
+
+          import gzip
+          patch = gzip.decompress(compressed)
+          require(len(patch) == int(os.environ["PATCH_BYTES"]), "patch size mismatch")
+          require(hashlib.sha256(patch).hexdigest() == os.environ["PATCH_SHA256"], "patch digest mismatch")
+          git("apply", "--check", "--index", "--whitespace=error-all", "-", data=patch)
+          git("apply", "--index", "--whitespace=error-all", "-", data=patch)
+          require(git("write-tree").decode().strip() == os.environ["TARGET_TREE"], "v15 tree mismatch")
+
+          paths = git("diff", "--cached", "--name-only", "-z", "HEAD").split(b"\0")[:-1]
+          expected_paths = {
+              b"docs/architecture/DOCUMENTATION_CLAIM_PROJECTIONS.md",
+              b"tests/test_documentation_claim_projection.py",
+              b"tools/documentation_claims.py",
+          }
+          require(set(paths) == expected_paths and len(paths) == 3, "unexpected v15 path set")
+          index = {}
+          for raw in git("ls-files", "--stage", "-z").split(b"\0"):
+              if not raw:
+                  continue
+              metadata, path = raw.split(b"\t", 1)
+              mode, oid, stage = metadata.split()
+              require(stage == b"0", "unmerged index entry")
+              index[path] = (mode.decode(), oid.decode())
+
+          entries = []
+          for raw_path in sorted(paths):
+              mode, oid = index[raw_path]
+              data = git("cat-file", "blob", oid)
+              require(blob_oid(data) == oid, "local source object mismatch")
+              result = api("git/blobs", {
+                  "content": base64.b64encode(data).decode("ascii"),
+                  "encoding": "base64",
+              })
+              require(result.get("sha") == oid, "remote source object mismatch")
+              entries.append({
+                  "path": raw_path.decode("utf-8"),
+                  "mode": mode,
+                  "type": "blob",
+                  "sha": oid,
+              })
+              print(f"IMPORTED {raw_path.decode()} {oid}", flush=True)
+
+          tree = api("git/trees", {"base_tree": os.environ["BASE_TREE"], "tree": entries})
+          require(tree.get("sha") == os.environ["TARGET_TREE"], "remote v15 tree mismatch")
+          print("IMPORTED_V15_TREE=" + tree["sha"], flush=True)
+          PY
