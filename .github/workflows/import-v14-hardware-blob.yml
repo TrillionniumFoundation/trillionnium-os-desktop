@@ -1,0 +1,84 @@
+name: import-v14-hardware-blob
+
+on:
+  push:
+    branches:
+      - codex/v14-object-import-3c73e5a2
+    paths:
+      - ".github/workflows/import-v14-hardware-blob.yml"
+      - "transport/hardware-part-*.b64"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: import-v14-hardware-blob
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out isolated transport branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Reconstruct and import exact immutable Git blob
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_BLOB: 2ac52fa1aa96f96a6c3c1a83d9326ceac8daac0d
+          EXPECTED_GZIP_SHA256: 4d1f11694514e21efd6da56956d753e6f04643094233c49b718385070c1c9444
+          EXPECTED_SOURCE_SHA256: aafe3ee6ebd3d390ab713b1b652225087c6815447cd7298cfc40430d165189a3
+          EXPECTED_SOURCE_BYTES: "40289"
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "TrillionniumFoundation/trillionnium-os-desktop"
+          mkdir -p "$RUNNER_TEMP/v14-hardware"
+          cat transport/hardware-part-00.b64 \
+              transport/hardware-part-01.b64 \
+              transport/hardware-part-02.b64 \
+              transport/hardware-part-03.b64 \
+            | tr -d '\n\r' | base64 --decode > "$RUNNER_TEMP/v14-hardware/source.py.gz"
+          printf '%s  %s\n' "$EXPECTED_GZIP_SHA256" "$RUNNER_TEMP/v14-hardware/source.py.gz" \
+            | sha256sum --check --strict
+          gzip --decompress --stdout "$RUNNER_TEMP/v14-hardware/source.py.gz" \
+            > "$RUNNER_TEMP/v14-hardware/hardware_evidence_verifier.py"
+          test "$(wc -c < "$RUNNER_TEMP/v14-hardware/hardware_evidence_verifier.py")" = "$EXPECTED_SOURCE_BYTES"
+          printf '%s  %s\n' "$EXPECTED_SOURCE_SHA256" "$RUNNER_TEMP/v14-hardware/hardware_evidence_verifier.py" \
+            | sha256sum --check --strict
+          test "$(git hash-object "$RUNNER_TEMP/v14-hardware/hardware_evidence_verifier.py")" = "$EXPECTED_BLOB"
+          python3 - <<'PY'
+          import base64
+          import json
+          import os
+          import pathlib
+          import urllib.request
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          expected = os.environ["EXPECTED_BLOB"]
+          data = pathlib.Path(os.environ["RUNNER_TEMP"]) / "v14-hardware" / "hardware_evidence_verifier.py"
+          payload = json.dumps({
+              "content": base64.b64encode(data.read_bytes()).decode("ascii"),
+              "encoding": "base64",
+          }).encode("utf-8")
+          request = urllib.request.Request(
+              f"https://api.github.com/repos/{repo}/git/blobs",
+              data=payload,
+              method="POST",
+              headers={
+                  "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                  "Accept": "application/vnd.github+json",
+                  "Content-Type": "application/json",
+                  "X-GitHub-Api-Version": "2022-11-28",
+                  "User-Agent": "trillionnium-v14-exact-blob-import",
+              },
+          )
+          with urllib.request.urlopen(request, timeout=60) as response:
+              result = json.load(response)
+          if result.get("sha") != expected:
+              raise SystemExit(f"uploaded blob mismatch: {result!r}")
+          print(f"IMPORTED_BLOB={expected}")
+          PY
