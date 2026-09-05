@@ -1,0 +1,87 @@
+name: import-v14-exact
+
+on:
+  push:
+    branches:
+      - codex/v14-object-import-3c73e5a2
+
+permissions:
+  contents: write
+
+concurrency:
+  group: import-v14-exact
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the exact published PR baseline
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ff4fe3aa072fec521d0ed22dd63408f5bb38d0b5
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Verify v14 bundle and fast-forward the PR source branch
+        shell: bash
+        env:
+          ARCHIVE_URL: https://filebin.net/trillionnium-v14-3c73e5a2-20260905/desktop-gap-repair-v14-2026-09-05.zip
+          ARCHIVE_SHA256: 637be63550fe57f967f198d5aa1459078e1eb8969feb7e855303e49817a0d841
+          BASE_COMMIT: ff4fe3aa072fec521d0ed22dd63408f5bb38d0b5
+          BASE_TREE: c922e84bbe68455040189ac2e16bee42aa1692fc
+          LOCAL_V14_COMMIT: ca7d39656d657d1d27f21400b7bfdec785232fc1
+          TARGET_TREE: 3c73e5a2e9c060b80fbc08f21afae4296d7843ea
+          TARGET_BRANCH: codex/d6-gap-closure-v1
+        run: |
+          set -euo pipefail
+          umask 077
+          test "${GITHUB_REPOSITORY}" = "TrillionniumFoundation/trillionnium-os-desktop"
+          test "$(git rev-parse HEAD)" = "${BASE_COMMIT}"
+          test "$(git rev-parse HEAD^{tree})" = "${BASE_TREE}"
+          test -z "$(git status --porcelain)"
+
+          mkdir -p "$RUNNER_TEMP/v14-import"
+          archive="$RUNNER_TEMP/v14-import/v14.zip"
+          curl --fail --show-error --silent --location \
+            --proto '=https' --tlsv1.2 --max-time 180 \
+            "$ARCHIVE_URL" -o "$archive"
+          printf '%s  %s\n' "$ARCHIVE_SHA256" "$archive" | sha256sum --check --strict
+          unzip -q "$archive" -d "$RUNNER_TEMP/v14-import/unpacked"
+          bundle="$(find "$RUNNER_TEMP/v14-import/unpacked" -type f -name 'candidate-v14.bundle' -print -quit)"
+          test -n "$bundle"
+          git bundle verify "$bundle"
+          git fetch --no-tags "$bundle" "$LOCAL_V14_COMMIT"
+          test "$(git rev-parse "$LOCAL_V14_COMMIT^{tree}")" = "$TARGET_TREE"
+
+          remote_before="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$remote_before" = "$BASE_COMMIT"
+
+          export GIT_AUTHOR_NAME='Qian QI'
+          export GIT_AUTHOR_EMAIL='102159240+ProfHepta@users.noreply.github.com'
+          export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+          export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+          export GIT_AUTHOR_DATE='2026-09-05T14:30:00Z'
+          export GIT_COMMITTER_DATE='2026-09-05T14:30:00Z'
+          message="$RUNNER_TEMP/v14-import/message.txt"
+          cat > "$message" <<'EOF'
+          fix(desktop): publish cumulative d6 source repairs through v14
+
+          Publish the exact locally reviewed v14 source tree, including documentation
+          claim projection hardening, D5/D6 contract alignment, D3 actor/identity/event
+          loop work, receipt persistence/recovery/migration, and deterministic D8/Servo
+          validator isolation repairs.
+
+          Exact source tree: 3c73e5a2e9c060b80fbc08f21afae4296d7843ea
+
+          This source publication does not promote D2I-D9 product, physical hardware,
+          signing, release, branch-governance, independent-review or exact-main gates.
+          EOF
+          new_commit="$(git commit-tree "$TARGET_TREE" -p "$BASE_COMMIT" < "$message")"
+          test "$(git rev-parse "$new_commit^{tree}")" = "$TARGET_TREE"
+          test "$(git rev-parse "$new_commit^")" = "$BASE_COMMIT"
+          git push origin "$new_commit:refs/heads/$TARGET_BRANCH"
+          remote_after="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$remote_after" = "$new_commit"
+          printf 'PUBLISHED_HEAD=%s\nPUBLISHED_TREE=%s\n' "$new_commit" "$TARGET_TREE" | tee -a "$GITHUB_STEP_SUMMARY"
