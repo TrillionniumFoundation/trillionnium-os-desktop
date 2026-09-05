@@ -1,0 +1,191 @@
+name: v13-source-object-import
+
+on:
+  push:
+    branches:
+      - codex/v13-object-import-823c6a08
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v13-source-object-import-823c6a08
+  cancel-in-progress: false
+
+jobs:
+  import-exact-tree:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Check out isolated transport branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify and import immutable source objects
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import concurrent.futures
+          import hashlib
+          import json
+          import lzma
+          import os
+          from pathlib import Path
+          import subprocess
+          import urllib.error
+          import urllib.request
+
+          REPOSITORY = "TrillionniumFoundation/trillionnium-os-desktop"
+          BASE_COMMIT = "ff4fe3aa072fec521d0ed22dd63408f5bb38d0b5"
+          BASE_TREE = "c922e84bbe68455040189ac2e16bee42aa1692fc"
+          TARGET_TREE = "823c6a082b2b998229c49ce883669a7b47eae8e2"
+          PATCH_SIZE = 1042824
+          PATCH_SHA256 = "0e5a1c0e0ea5186ee0ea4287634f5fdf343085a04bd055af3c0689b08c4d6297"
+          XZ_SIZE = 173588
+          XZ_SHA256 = "db44ac6750a575b42dacbd111b7ec6447fb12bac70ba7f50d232df2c857ea305"
+          PARTS = [
+              ("part-00.bin", 12288, "d30a694d362702f85a8c66b305d04750ceb8ed07"),
+              ("part-01.bin", 12288, "0855cb88fb683d812916eba3879c6136d21f5bf6"),
+              ("part-02.bin", 12288, "e658c0a64fa40b482e60b64c793849079ef891cc"),
+              ("part-03.bin", 12288, "9a9e5dafd8092e83aa7edc62b333af6de1403c98"),
+              ("part-04.bin", 12288, "fd76a27710fbd2d0e041e07970ae21aa4eb194ba"),
+              ("part-05.bin", 12288, "d80fd84f06d81c6157b69049df4460ab8875ae0a"),
+              ("part-06.bin", 12288, "65aa3e30cb010fe55784da1550658fefbca1f498"),
+              ("part-07.bin", 12288, "619dacea48799ea2ce54d42629a71e49a789ff8f"),
+              ("part-08.bin", 12288, "773fde414f57cbbf9dd4f5c4df555313bae4dad1"),
+              ("part-09.bin", 12288, "940f92ae2997ac34ffbc179bafc46d871f20943f"),
+              ("part-10.bin", 12288, "7f2668c47039bed7aaaf9a6190db7ec4a0896617"),
+              ("part-11.bin", 12288, "df6c3cdfbd3eb9d4ccf6a4fb2b1f572679950dca"),
+              ("part-12.bin", 12288, "20f77cc92ff0ffda46fdf3e90c48dcb24b5a8902"),
+              ("part-13.bin", 12288, "3429070865a6e3d883f651ca5957e3acfd8c8e2d"),
+              ("part-14.bin", 1556, "69201dbc1ff69b99f1cf508c6966aff81edf6689"),
+          ]
+
+          def require(condition, message):
+              if not condition:
+                  raise RuntimeError(message)
+
+          def git(*args, data=None):
+              return subprocess.run(
+                  ["git", *args], input=data, check=True,
+                  stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+              ).stdout
+
+          def git_blob_sha(data):
+              header = b"blob " + str(len(data)).encode("ascii") + b"\0"
+              return hashlib.sha1(header + data).hexdigest()
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  raise RuntimeError("unexpected GitHub API redirect")
+
+          opener = urllib.request.build_opener(NoRedirect())
+
+          def api(path, payload=None):
+              require(path == "git/trees" or path == "git/blobs", "immutable Git object endpoint required")
+              body = None if payload is None else json.dumps(payload, separators=(",", ":")).encode("utf-8")
+              request = urllib.request.Request(
+                  "https://api.github.com/repos/" + REPOSITORY + "/" + path,
+                  data=body,
+                  method="GET" if payload is None else "POST",
+                  headers={
+                      "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                      "Accept": "application/vnd.github+json",
+                      "Content-Type": "application/json",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "User-Agent": "trillionnium-v13-immutable-object-import",
+                  },
+              )
+              try:
+                  with opener.open(request, timeout=90) as response:
+                      raw = response.read(8 * 1024 * 1024 + 1)
+              except urllib.error.HTTPError as error:
+                  detail = error.read(65536).decode("utf-8", "replace")
+                  raise RuntimeError(f"GitHub API {error.code}: {detail}") from error
+              require(len(raw) <= 8 * 1024 * 1024, "GitHub API response too large")
+              return json.loads(raw)
+
+          require(os.environ.get("GITHUB_REPOSITORY") == REPOSITORY, "wrong repository")
+          transport = Path(".github/v13-import")
+          chunks = []
+          for name, expected_size, expected_oid in PARTS:
+              data = (transport / name).read_bytes()
+              require(len(data) == expected_size, f"transport size mismatch: {name}")
+              require(git_blob_sha(data) == expected_oid, f"transport object mismatch: {name}")
+              chunks.append(data)
+              print(f"verified transport {name} {expected_oid}", flush=True)
+
+          compressed = b"".join(chunks)
+          require(len(compressed) == XZ_SIZE, "compressed size mismatch")
+          require(hashlib.sha256(compressed).hexdigest() == XZ_SHA256, "compressed digest mismatch")
+          decoder = lzma.LZMADecompressor(format=lzma.FORMAT_XZ, memlimit=256 * 1024 * 1024)
+          patch = decoder.decompress(compressed, max_length=PATCH_SIZE + 1)
+          require(decoder.eof and not decoder.unused_data, "compressed stream incomplete or trailing")
+          require(len(patch) == PATCH_SIZE, "patch size mismatch")
+          require(hashlib.sha256(patch).hexdigest() == PATCH_SHA256, "patch digest mismatch")
+
+          git("checkout", "--detach", BASE_COMMIT)
+          require(git("rev-parse", "HEAD").decode().strip() == BASE_COMMIT, "base commit drift")
+          require(git("rev-parse", "HEAD^{tree}").decode().strip() == BASE_TREE, "base tree drift")
+          require(not git("status", "--porcelain"), "base checkout is not clean")
+          git("apply", "--check", "--cached", "--unidiff-zero", "--whitespace=error-all", "-", data=patch)
+          git("apply", "--cached", "--unidiff-zero", "--whitespace=error-all", "-", data=patch)
+          require(git("write-tree").decode().strip() == TARGET_TREE, "local target tree mismatch")
+
+          changed = [item for item in git("diff", "--cached", "--name-only", "-z", "HEAD").split(b"\0") if item]
+          require(len(changed) == 153, "changed path count mismatch")
+          index = {}
+          for item in git("ls-files", "--stage", "-z").split(b"\0"):
+              if not item:
+                  continue
+              metadata, path = item.split(b"\t", 1)
+              mode, oid, stage = metadata.split()
+              require(stage == b"0", "unmerged index entry")
+              index[path] = (mode.decode("ascii"), oid.decode("ascii"))
+
+          entries = []
+          for raw_path in changed:
+              require(raw_path in index, "unexpected source deletion")
+              mode, oid = index[raw_path]
+              require(mode in ("100644", "100755"), "unexpected source mode")
+              entries.append({
+                  "path": raw_path.decode("utf-8"),
+                  "mode": mode,
+                  "type": "blob",
+                  "sha": oid,
+              })
+
+          def import_blob(entry):
+              data = git("cat-file", "blob", entry["sha"])
+              require(git_blob_sha(data) == entry["sha"], "local source object mismatch")
+              result = api("git/blobs", {
+                  "content": base64.b64encode(data).decode("ascii"),
+                  "encoding": "base64",
+              })
+              require(result.get("sha") == entry["sha"], "remote source object mismatch")
+              print(f"imported {entry['path']} {entry['sha']}", flush=True)
+
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+              list(executor.map(import_blob, entries))
+
+          result = api("git/trees", {"base_tree": BASE_TREE, "tree": entries})
+          require(result.get("sha") == TARGET_TREE, "remote target tree mismatch")
+          print("IMPORTED_SOURCE_TREE=" + TARGET_TREE, flush=True)
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              Path(summary).write_text(
+                  "## Exact v13 immutable source objects imported\n\n"
+                  f"Tree: `{TARGET_TREE}`\n\n"
+                  "153 source objects were digest-checked and imported. No source ref, pull request, "
+                  "approval, merge, product gate, hardware evidence, or release state was changed.\n",
+                  encoding="utf-8",
+              )
+          PY
