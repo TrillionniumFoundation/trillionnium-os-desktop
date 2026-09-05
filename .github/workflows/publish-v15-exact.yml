@@ -1,0 +1,85 @@
+name: publish-v15-exact
+
+on:
+  push:
+    branches:
+      - codex/v15-exact-publish-4b5e0146-v2
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-v15-exact-4b5e0146
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out immutable transport controls
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: control
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Check out exact PR source baseline
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: c0ec859dcc016c87637a3ea7998bc63e0a35f852
+          path: source
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Reconstruct, verify, test and fast-forward v15
+        shell: bash
+        env:
+          BASE_COMMIT: c0ec859dcc016c87637a3ea7998bc63e0a35f852
+          BASE_TREE: 3c73e5a2e9c060b80fbc08f21afae4296d7843ea
+          TARGET_TREE: 4b5e0146e83432ffdea9019a6ab3807afc37bd85
+          PATCH_SHA256: 0deb78f4fc68d0879054269b5aaf8d7af575a090de730c10106d31f8c30dd77b
+          XZ_SHA256: d0aa352471e59294a629f56179192e3416f788a3b80bd236ca5c7f9eff48907a
+          TARGET_BRANCH: codex/d6-gap-closure-v1
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$GITHUB_REPOSITORY" = "TrillionniumFoundation/trillionnium-os-desktop"
+
+          cat control/transport/v15-chunk-00.txt \
+              control/transport/v15-chunk-01.txt \
+              control/transport/v15-chunk-02.txt \
+            | base64 --decode > "$RUNNER_TEMP/v15.patch.xz"
+          printf '%s  %s\n' "$XZ_SHA256" "$RUNNER_TEMP/v15.patch.xz" \
+            | sha256sum --check --strict
+          xz --decompress --stdout "$RUNNER_TEMP/v15.patch.xz" > "$RUNNER_TEMP/v15.patch"
+          printf '%s  %s\n' "$PATCH_SHA256" "$RUNNER_TEMP/v15.patch" \
+            | sha256sum --check --strict
+
+          cd source
+          test "$(git rev-parse HEAD)" = "$BASE_COMMIT"
+          test "$(git rev-parse HEAD^{tree})" = "$BASE_TREE"
+          test -z "$(git status --porcelain)"
+          git apply --check --index --whitespace=error-all "$RUNNER_TEMP/v15.patch"
+          git apply --index --whitespace=error-all "$RUNNER_TEMP/v15.patch"
+          test "$(git write-tree)" = "$TARGET_TREE"
+
+          python3 -m unittest tests.test_documentation_claim_projection
+          test "$(git write-tree)" = "$TARGET_TREE"
+          test -z "$(git status --porcelain --untracked-files=no | grep -v '^M  ' || true)"
+
+          git config user.name 'Qian QI'
+          git config user.email '102159240+ProfHepta@users.noreply.github.com'
+          git commit -m 'fix(docs): reject Unicode-confusable authority labels' \
+            -m 'Reject Cyrillic/Greek homoglyphs, combining-mark disguises, and close non-ASCII declaration prefixes for Current status and Claim ceiling projections. Keep accepted authority lines exact ASCII and preserve ordinary multilingual prose.'
+          new_commit="$(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD^{tree})" = "$TARGET_TREE"
+          test "$(git rev-parse HEAD^)" = "$BASE_COMMIT"
+
+          remote_before="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$remote_before" = "$BASE_COMMIT"
+          git push origin "HEAD:refs/heads/$TARGET_BRANCH"
+          remote_after="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$remote_after" = "$new_commit"
+          printf 'PUBLISHED_HEAD=%s\nPUBLISHED_TREE=%s\n' "$new_commit" "$TARGET_TREE" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
