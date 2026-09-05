@@ -1,0 +1,33 @@
+name: v13-source-object-import-22
+
+on:
+  push:
+    branches:
+      - codex/v13-object-import-823c6a08
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v13-source-object-import-22-823c6a08
+  cancel-in-progress: false
+
+jobs:
+  import-exact-tree-22:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Check out isolated transport branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify and import immutable source objects
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 .github/v13-import/import_v13_objects.py
