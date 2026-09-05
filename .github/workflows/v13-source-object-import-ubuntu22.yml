@@ -1,0 +1,47 @@
+name: v13-source-object-import-ubuntu22
+
+on:
+  push:
+    branches:
+      - codex/v13-object-import-v2
+
+permissions:
+  contents: read
+
+jobs:
+  import-reviewed-tree-ubuntu22:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: Read the reviewed import program from the isolated helper branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/v13-object-import-v2
+          path: _helper
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Check out exact published PR baseline
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ff4fe3aa072fec521d0ed22dd63408f5bb38d0b5
+          path: source
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Execute the same hash-bound import program
+        working-directory: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('../_helper/.github/workflows/v13-source-object-import-v2.yml').read_text(encoding='utf-8').splitlines()
+          start = source.index("          python3 - <<'PY'") + 1
+          end = source.index('          PY', start)
+          program = '\n'.join(line[10:] for line in source[start:end]) + '\n'
+          Path('/tmp/v13-import.py').write_text(program, encoding='utf-8')
+          PY
+          python3 /tmp/v13-import.py
