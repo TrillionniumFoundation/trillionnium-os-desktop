@@ -1,0 +1,132 @@
+name: publish-v14-exact
+
+on:
+  push:
+    branches:
+      - codex/v14-publish-finalize-3c73e5a2
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: publish-v14-exact
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact published baseline
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ff4fe3aa072fec521d0ed22dd63408f5bb38d0b5
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Verify bundle and fast-forward PR branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCHIVE_URL: https://filebin.net/trillionnium-v14-3c73e5a2-20260905/desktop-gap-repair-v14-2026-09-05.zip
+          ARCHIVE_SHA256: 637be63550fe57f967f198d5aa1459078e1eb8969feb7e855303e49817a0d841
+          BASE_COMMIT: ff4fe3aa072fec521d0ed22dd63408f5bb38d0b5
+          BASE_TREE: c922e84bbe68455040189ac2e16bee42aa1692fc
+          LOCAL_V14_COMMIT: ca7d39656d657d1d27f21400b7bfdec785232fc1
+          TARGET_TREE: 3c73e5a2e9c060b80fbc08f21afae4296d7843ea
+          TARGET_BRANCH: codex/d6-gap-closure-v1
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$GITHUB_REPOSITORY" = "TrillionniumFoundation/trillionnium-os-desktop"
+          test "$(git rev-parse HEAD)" = "$BASE_COMMIT"
+          test "$(git rev-parse HEAD^{tree})" = "$BASE_TREE"
+          test -z "$(git status --porcelain)"
+
+          work="$RUNNER_TEMP/v14-publish"
+          mkdir -p "$work/unpacked"
+          curl --fail --show-error --silent --location --proto '=https' --tlsv1.2 --max-time 180 \
+            "$ARCHIVE_URL" -o "$work/v14.zip"
+          printf '%s  %s\n' "$ARCHIVE_SHA256" "$work/v14.zip" | sha256sum --check --strict
+          unzip -q "$work/v14.zip" -d "$work/unpacked"
+          bundle="$(find "$work/unpacked" -type f -name 'candidate-v14.bundle' -print -quit)"
+          test -n "$bundle"
+          git bundle verify "$bundle"
+          git fetch --no-tags "$bundle" "$LOCAL_V14_COMMIT"
+          test "$(git rev-parse "$LOCAL_V14_COMMIT^{tree}")" = "$TARGET_TREE"
+
+          remote_head="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          if [ "$remote_head" = "$BASE_COMMIT" ]; then
+            export GIT_AUTHOR_NAME='Qian QI'
+            export GIT_AUTHOR_EMAIL='102159240+ProfHepta@users.noreply.github.com'
+            export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+            export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+            export GIT_AUTHOR_DATE='2026-09-05T14:45:00Z'
+            export GIT_COMMITTER_DATE='2026-09-05T14:45:00Z'
+            cat > "$work/message.txt" <<'EOF'
+          fix(desktop): publish cumulative d6 source repairs through v14
+
+          Publish the exact locally reviewed v14 source tree, including documentation
+          claim projection hardening, D5/D6 contract alignment, D3 actor/identity/event
+          loop work, receipt persistence/recovery/migration, and deterministic D8/Servo
+          validator isolation repairs.
+
+          Exact source tree: 3c73e5a2e9c060b80fbc08f21afae4296d7843ea
+
+          This source publication does not promote D2I-D9 product, physical hardware,
+          signing, release, branch-governance, independent-review or exact-main gates.
+          EOF
+            published_head="$(git commit-tree "$TARGET_TREE" -p "$BASE_COMMIT" < "$work/message.txt")"
+            test "$(git rev-parse "$published_head^{tree}")" = "$TARGET_TREE"
+            test "$(git rev-parse "$published_head^")" = "$BASE_COMMIT"
+            git push origin "$published_head:refs/heads/$TARGET_BRANCH"
+          else
+            git fetch --no-tags origin "$TARGET_BRANCH"
+            test "$(git rev-parse FETCH_HEAD^{tree})" = "$TARGET_TREE"
+            published_head="$remote_head"
+          fi
+          test "$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')" = "$published_head"
+
+          python3 - "$published_head" <<'PY'
+          import json, os, sys, urllib.request
+          head = sys.argv[1]
+          tree = os.environ['TARGET_TREE']
+          token = os.environ['GH_TOKEN']
+          repo = 'TrillionniumFoundation/trillionnium-os-desktop'
+          def api(path, method, payload):
+              req = urllib.request.Request(
+                  'https://api.github.com/repos/' + repo + '/' + path,
+                  data=json.dumps(payload).encode(), method=method,
+                  headers={'Authorization': 'Bearer ' + token,
+                           'Accept': 'application/vnd.github+json',
+                           'Content-Type': 'application/json',
+                           'X-GitHub-Api-Version': '2022-11-28',
+                           'User-Agent': 'trillionnium-v14-publisher'})
+              with urllib.request.urlopen(req, timeout=60) as response:
+                  response.read()
+          body = f'''## v14 cumulative source candidate — published, Draft, no product promotion
+
+```text
+plan:              2026-08-29-d6
+base main:         addaf73a48bae65f19f6bfe91c6264fd2ddb85a1
+source head:       {head}
+source tree:       {tree}
+```
+
+The exact locally reviewed v14 tree is now ordinary repository source. Local verification bound to `{tree}` covered 698 Python tests; Rust 1.93.0 default/all-feature format, check, Clippy and tests; persistence/migration SIGKILL cases; and documentation, repository, project-truth, source-governance and packaging validators.
+
+These are source/host results, not installed-product, physical-hardware, signing or release evidence. New exact-head GitHub Actions and a fresh independent non-author review are required for this immutable head.
+
+Keep Draft. Actual protected-main/ruleset/environment enforcement, normal governed merge and exact-main reruns remain open. D2I exact image; D3 real Servo-owned retained nodes/native event loop/attested IPC; installed D4-D7 services; D8 fixed-BOM physical endurance/raw power loss; D9 offline/HSM dual control and protected publication also remain separate gates.
+
+`all_gaps_closed=false`.
+'''
+          api('pulls/66', 'PATCH', {'body': body})
+          api('issues/66/comments', 'POST', {'body':
+              '## v14 source publication\n\nPublished exact head `' + head + '` and tree `' + tree + '`. '
+              'New exact-head CI is now authoritative. No merge, product, hardware, signing or release claim is made.'})
+          PY
+
+          printf 'Published head `%s` with tree `%s`.\n' "$published_head" "$TARGET_TREE" >> "$GITHUB_STEP_SUMMARY"
