@@ -1,0 +1,203 @@
+name: qualify-v14-current-head
+
+on:
+  push:
+    branches:
+      - codex/v14-publish-finalize-3c73e5a2
+
+permissions:
+  contents: read
+  actions: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: qualify-v14-current-head
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Qualify the current immutable v14 PR head
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_TREE: 3c73e5a2e9c060b80fbc08f21afae4296d7843ea
+          TARGET_BRANCH: codex/d6-gap-closure-v1
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import datetime as dt
+          import json
+          import os
+          import time
+          import traceback
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          repo = 'TrillionniumFoundation/trillionnium-os-desktop'
+          target_tree = os.environ['TARGET_TREE']
+          branch = os.environ['TARGET_BRANCH']
+          token = os.environ['GH_TOKEN']
+          workflows = {
+              'governance-integrity': 345999554,
+              'd1-final-qualification': 345184204,
+              'd4-collaboration': 346008923,
+              'd3-integrated-runtime-evidence-verifier': 348056356,
+              'agent-port-path-custody': 346449095,
+              'browser-codec-reference-and-rust-gate': 344376769,
+              'servo-exact-pin': 344789766,
+              'd2i-integrated-image': 345469373,
+              'd3-semantic-resolver-reference': 347121542,
+              'd0t03-source-contract': 345901145,
+              'd8-hardware-qualification': 346023885,
+              'receipt-journal': 345122885,
+              'servo-headed-runtime': 345149581,
+              'd8-hardware-promotion-policy': 346026000,
+              'd5-trusted-app': 346013180,
+              'agent-port-custody': 344335327,
+              'desktop-ci': 344297852,
+              'agent-transport-reference': 344365935,
+              'd4-d9-source-suite': 346441160,
+              'd7-recovery-update': 346019680,
+              'd6-capability-egress': 346016275,
+              'd9-release-promotion': 346030603,
+          }
+
+          def request(path, method='GET', payload=None, allowed=()):
+              body = None if payload is None else json.dumps(payload).encode('utf-8')
+              req = urllib.request.Request(
+                  'https://api.github.com/repos/' + repo + '/' + path,
+                  data=body,
+                  method=method,
+                  headers={
+                      'Authorization': 'Bearer ' + token,
+                      'Accept': 'application/vnd.github+json',
+                      'Content-Type': 'application/json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'User-Agent': 'trillionnium-v14-current-head-qualifier',
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=60) as response:
+                      raw = response.read(8 * 1024 * 1024)
+                  return response.status, (json.loads(raw) if raw else {})
+              except urllib.error.HTTPError as exc:
+                  raw = exc.read(1024 * 1024).decode('utf-8', 'replace')
+                  if exc.code in allowed:
+                      return exc.code, raw
+                  raise RuntimeError(f'{method} {path} -> {exc.code}: {raw}') from exc
+
+          diagnostic = {'target_tree': target_tree, 'branch': branch}
+          success = False
+          try:
+              _, pr = request('pulls/66')
+              head = pr['head']['sha']
+              base = pr['base']['sha']
+              diagnostic.update({'head': head, 'base': base, 'draft': pr.get('draft')})
+              _, commit = request('git/commits/' + head)
+              actual_tree = commit['tree']['sha']
+              diagnostic['actual_tree'] = actual_tree
+              if actual_tree != target_tree:
+                  raise RuntimeError(f'PR head tree mismatch: {actual_tree} != {target_tree}')
+
+              dispatched_at = dt.datetime.now(dt.timezone.utc)
+              dispatch_failures = []
+              for name, workflow_id in workflows.items():
+                  status, payload = request(
+                      f'actions/workflows/{workflow_id}/dispatches',
+                      'POST', {'ref': branch}, allowed=(404, 422),
+                  )
+                  if status != 204:
+                      dispatch_failures.append({'name': name, 'status': status, 'body': str(payload)[:500]})
+                  else:
+                      print('dispatched', name, workflow_id, flush=True)
+              diagnostic['dispatch_failures'] = dispatch_failures
+
+              selected = {}
+              deadline = time.monotonic() + 1500
+              while time.monotonic() < deadline:
+                  for name, workflow_id in workflows.items():
+                      if name in selected and selected[name].get('status') == 'completed':
+                          continue
+                      query = urllib.parse.urlencode({
+                          'branch': branch,
+                          'event': 'workflow_dispatch',
+                          'per_page': 20,
+                      })
+                      _, payload = request(f'actions/workflows/{workflow_id}/runs?{query}')
+                      candidates = []
+                      for run in payload.get('workflow_runs', []):
+                          if run.get('head_sha') != head or run.get('event') != 'workflow_dispatch':
+                              continue
+                          created = dt.datetime.fromisoformat(run['created_at'].replace('Z', '+00:00'))
+                          if created >= dispatched_at - dt.timedelta(seconds=30):
+                              candidates.append(run)
+                      if candidates:
+                          selected[name] = max(candidates, key=lambda r: (r.get('run_attempt', 0), r['id']))
+                  if len(selected) == len(workflows) and all(
+                      run.get('status') == 'completed' for run in selected.values()
+                  ):
+                      break
+                  time.sleep(15)
+
+              rows = []
+              for name in sorted(workflows):
+                  run = selected.get(name, {})
+                  rows.append({
+                      'name': name,
+                      'workflow_id': workflows[name],
+                      'run_id': run.get('id'),
+                      'status': run.get('status', 'missing'),
+                      'conclusion': run.get('conclusion'),
+                  })
+              diagnostic['runs'] = rows
+              all_green = not dispatch_failures and all(
+                  row['status'] == 'completed' and row['conclusion'] == 'success'
+                  for row in rows
+              )
+              diagnostic['all_green'] = all_green
+
+              body = f'''## v14 cumulative source candidate — exact current head, Draft
+
+```text
+plan:              2026-08-29-d6
+base main:         {base}
+source head:       {head}
+source tree:       {target_tree}
+```
+
+The exact locally reviewed v14 tree is now ordinary repository source. Local verification bound to `{target_tree}` covered 698 Python tests; Rust 1.93.0 default/all-feature formatting, checks, Clippy and tests; persistence/migration SIGKILL cases; and documentation, repository, project-truth, source-governance and packaging validators.
+
+Explicit exact-head workflow-dispatch matrix: `{len(selected)}/22`; all terminal success: `{str(all_green).lower()}`. Any source, base or prospective-merge movement invalidates this packet.
+
+Keep Draft. Require a fresh independent non-author review, actual protected-main/ruleset/environment enforcement with authenticated positive/negative readback, normal governed merge and exact-main reruns.
+
+D2I exact image; D3 real Servo-owned retained nodes/native event loop/attested IPC; installed D4-D7 services; D8 fixed-BOM 24/72-hour physical and raw power-loss evidence; D9 offline/HSM dual control and protected publication remain separate open gates. Legacy cutover, partial initialization repair, archival/pruning and external trusted anti-rollback also remain open.
+
+`all_gaps_closed=false`.
+'''
+              request('pulls/66', 'PATCH', {'body': body})
+              if all_green:
+                  request('pulls/66/requested_reviewers', 'POST', {'reviewers': ['Tomasrgbsf']})
+              success = all_green
+          except Exception as exc:
+              diagnostic['exception'] = repr(exc)
+              diagnostic['traceback'] = traceback.format_exc()[-8000:]
+          finally:
+              request('issues/66/comments', 'POST', {'body':
+                  '## v14 exact-current-head qualification checkpoint\n\n'
+                  '```json\n' + json.dumps(diagnostic, indent=2, sort_keys=True) + '\n```\n\n'
+                  'No merge, product, hardware, signing or release claim is made.'})
+              summary = os.environ.get('GITHUB_STEP_SUMMARY')
+              if summary:
+                  with open(summary, 'a', encoding='utf-8') as out:
+                      out.write('## v14 current-head qualification\n\n```json\n')
+                      out.write(json.dumps(diagnostic, indent=2, sort_keys=True))
+                      out.write('\n```\n')
+          if not success:
+              raise SystemExit('v14 exact-current-head matrix is not green')
+          PY
