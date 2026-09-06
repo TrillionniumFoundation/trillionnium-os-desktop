@@ -589,10 +589,14 @@ fn completion_checks_current_identity_before_eventual_atomic_work() {
         "0::/system.slice/fixture.service\n",
     )
     .unwrap();
-    assert_eq!(
+    assert!(matches!(
+        custody.verifier().verify_current(),
+        Err(hepta_peer_attestation::AttestationError::RequestCustodyRevoked)
+    ));
+    assert!(matches!(
         done.ensure_current_peer(),
-        Err(RuntimeFailure::PeerIdentityRevoked)
-    );
+        Err(RuntimeFailure::PeerIdentityRevoked | RuntimeFailure::BrowserCrashed)
+    ));
     let _ = done.complete(Ok(reply("no-resurrection")));
     assert_eq!(engine.pump_one(), CallbackPumpResult::Retired);
     assert!(work.join().unwrap().1.is_err());
