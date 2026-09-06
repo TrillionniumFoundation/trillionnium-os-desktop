@@ -54,7 +54,7 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
         for relative in error_wrappers:
             source = (ROOT / relative).read_text(encoding="utf-8")
             self.assertIn(
-                'Self::Attestation(_) => formatter.write_str("peer attestation failed")',
+                'Self::Attestation => formatter.write_str("peer attestation failed")',
                 source,
                 relative,
             )
@@ -84,6 +84,35 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
             "hepta-agent-port-development-sessiond: {error}",
             process_source,
         )
+
+
+    def test_process_error_boundaries_emit_only_constant_diagnostics(self) -> None:
+        expectations = (
+            (
+                "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs",
+                'eprintln!("hepta-agent-d1-fixture: request validation failed")',
+                'hepta-agent-d1-fixture: {error}',
+            ),
+            (
+                "apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs",
+                'eprintln!("hepta-agent-port-developmentd: request validation failed")',
+                'hepta-agent-port-developmentd: {error}',
+            ),
+            (
+                "apps/hepta-agent-portd/src/bin/hepta-agent-port-qualificationd.rs",
+                'eprintln!("hepta-agent-port-qualificationd: request validation failed")',
+                'hepta-agent-port-qualificationd: {error}',
+            ),
+        )
+        for relative, constant_sink, tainted_sink in expectations:
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            self.assertIn(constant_sink, source, relative)
+            self.assertNotIn(tainted_sink, source, relative)
+            self.assertIn("Attestation,", source, relative)
+            self.assertIn("Self::Attestation => None", source, relative)
+            self.assertIn("fn from(_: AttestationError) -> Self", source, relative)
+            self.assertNotIn("Attestation(AttestationError)", source, relative)
+            self.assertNotIn("Self::Attestation(error)", source, relative)
 
 
 if __name__ == "__main__":

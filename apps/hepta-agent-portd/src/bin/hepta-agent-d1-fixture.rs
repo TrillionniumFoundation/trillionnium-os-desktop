@@ -44,8 +44,8 @@ fn main() {
             }
             println!("{}", result.json);
         }
-        Err(error) => {
-            eprintln!("hepta-agent-d1-fixture: {error}");
+        Err(_) => {
+            eprintln!("hepta-agent-d1-fixture: request validation failed");
             std::process::exit(1);
         }
     }
@@ -357,7 +357,7 @@ enum FixtureError {
     Transport(hepta_agent_transport::TransportError),
     Codec(hepta_browser_codec::CodecError),
     AgentPort(hepta_agent_port::AgentPortError),
-    Attestation(AttestationError),
+    Attestation,
     WrongInheritedDescriptor,
     UnnamedInheritedSocket,
     SocketPathMismatch { expected: PathBuf, actual: PathBuf },
@@ -372,7 +372,7 @@ impl fmt::Display for FixtureError {
             Self::Transport(error) => write!(formatter, "transport failed: {error}"),
             Self::Codec(error) => write!(formatter, "codec failed: {error}"),
             Self::AgentPort(error) => write!(formatter, "AgentPort failed: {error}"),
-            Self::Attestation(_) => formatter.write_str("peer attestation failed"),
+            Self::Attestation => formatter.write_str("peer attestation failed"),
             Self::WrongInheritedDescriptor => {
                 formatter.write_str("standard input is not an AF_UNIX stream socket")
             }
@@ -398,7 +398,7 @@ impl std::error::Error for FixtureError {
             Self::Transport(error) => Some(error),
             Self::Codec(error) => Some(error),
             Self::AgentPort(error) => Some(error),
-            Self::Attestation(error) => Some(error),
+            Self::Attestation => None,
             _ => None,
         }
     }
@@ -429,8 +429,8 @@ impl From<hepta_agent_port::AgentPortError> for FixtureError {
 }
 
 impl From<AttestationError> for FixtureError {
-    fn from(error: AttestationError) -> Self {
-        Self::Attestation(error)
+    fn from(_: AttestationError) -> Self {
+        Self::Attestation
     }
 }
 

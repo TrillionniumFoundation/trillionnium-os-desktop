@@ -93,8 +93,8 @@ fn main() {
         serve_inherited_connection(&arguments)
             .map(|evidence| println!("{}", evidence_json(&evidence)))
     };
-    if let Err(error) = outcome {
-        eprintln!("hepta-agent-port-developmentd: {error}");
+    if outcome.is_err() {
+        eprintln!("hepta-agent-port-developmentd: request validation failed");
         std::process::exit(1);
     }
 }
@@ -571,7 +571,7 @@ fn escape_json(value: &str) -> String {
 enum ServiceError {
     Io(io::Error),
     Transport(hepta_agent_transport::TransportError),
-    Attestation(AttestationError),
+    Attestation,
     AgentPort(AgentPortError),
     Binding(PrincipalBindingError),
     Journal(JournalError),
@@ -612,7 +612,7 @@ impl fmt::Display for ServiceError {
         match self {
             Self::Io(error) => write!(formatter, "I/O failed: {error}"),
             Self::Transport(error) => write!(formatter, "transport failed: {error}"),
-            Self::Attestation(_) => formatter.write_str("peer attestation failed"),
+            Self::Attestation => formatter.write_str("peer attestation failed"),
             Self::AgentPort(error) => write!(formatter, "AgentPort failed: {error}"),
             Self::Binding(error) => write!(formatter, "principal binding failed: {error}"),
             Self::Journal(error) => write!(formatter, "receipt journal failed: {error}"),
@@ -712,7 +712,7 @@ impl std::error::Error for ServiceError {
         match self {
             Self::Io(error) => Some(error),
             Self::Transport(error) => Some(error),
-            Self::Attestation(error) => Some(error),
+            Self::Attestation => None,
             Self::AgentPort(error) => Some(error),
             Self::Binding(error) => Some(error),
             Self::Journal(error) => Some(error),
@@ -734,8 +734,8 @@ impl From<hepta_agent_transport::TransportError> for ServiceError {
 }
 
 impl From<AttestationError> for ServiceError {
-    fn from(error: AttestationError) -> Self {
-        Self::Attestation(error)
+    fn from(_: AttestationError) -> Self {
+        Self::Attestation
     }
 }
 

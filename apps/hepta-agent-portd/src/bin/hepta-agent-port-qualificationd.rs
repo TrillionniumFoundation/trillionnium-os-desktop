@@ -33,8 +33,8 @@ fn main() {
     } else {
         serve_inherited_connection().map(|evidence| println!("{}", evidence_json(&evidence)))
     };
-    if let Err(error) = outcome {
-        eprintln!("hepta-agent-port-qualificationd: {error}");
+    if outcome.is_err() {
+        eprintln!("hepta-agent-port-qualificationd: request validation failed");
         std::process::exit(1);
     }
 }
@@ -216,7 +216,7 @@ enum ServiceError {
     Io(io::Error),
     Transport(hepta_agent_transport::TransportError),
     AgentPort(hepta_agent_port::AgentPortError),
-    Attestation(AttestationError),
+    Attestation,
     WrongInheritedDescriptor,
     UnnamedInheritedSocket,
     SocketPathMismatch {
@@ -232,7 +232,7 @@ impl fmt::Display for ServiceError {
             Self::Io(error) => write!(formatter, "inherited socket I/O failed: {error}"),
             Self::Transport(error) => write!(formatter, "transport failed: {error}"),
             Self::AgentPort(error) => write!(formatter, "AgentPort failed: {error}"),
-            Self::Attestation(_) => formatter.write_str("peer attestation failed"),
+            Self::Attestation => formatter.write_str("peer attestation failed"),
             Self::WrongInheritedDescriptor => {
                 formatter.write_str("standard input is not an AF_UNIX stream socket")
             }
@@ -256,7 +256,7 @@ impl std::error::Error for ServiceError {
             Self::Io(error) => Some(error),
             Self::Transport(error) => Some(error),
             Self::AgentPort(error) => Some(error),
-            Self::Attestation(error) => Some(error),
+            Self::Attestation => None,
             _ => None,
         }
     }
@@ -281,8 +281,8 @@ impl From<hepta_agent_port::AgentPortError> for ServiceError {
 }
 
 impl From<AttestationError> for ServiceError {
-    fn from(error: AttestationError) -> Self {
-        Self::Attestation(error)
+    fn from(_: AttestationError) -> Self {
+        Self::Attestation
     }
 }
 
