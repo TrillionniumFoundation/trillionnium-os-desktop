@@ -65,6 +65,110 @@ def _strip_html_rendering_markup(text: str) -> tuple[str, bool]:
     return "".join(output), saw_markup
 
 
+
+def _matching_pairs(text: str, opener: str, closer: str) -> dict[int, int]:
+    """Index balanced delimiters in one pass while honoring backslash escapes."""
+    stack: list[int] = []
+    pairs: dict[int, int] = {}
+    index = 0
+    while index < len(text):
+        character = text[index]
+        if character == "\\" and index + 1 < len(text):
+            index += 2
+            continue
+        if character == opener:
+            stack.append(index)
+        elif character == closer and stack:
+            pairs[stack.pop()] = index
+        index += 1
+    return pairs
+
+
+def _matching_round_pairs(text: str) -> dict[int, int]:
+    """Index link-target parentheses, ignoring quoted and angle destinations."""
+    stack: list[dict[str, object]] = []
+    pairs: dict[int, int] = {}
+    index = 0
+    while index < len(text):
+        character = text[index]
+        if character == "\\" and index + 1 < len(text):
+            index += 2
+            continue
+        if not stack:
+            if character == "(":
+                stack.append({"start": index, "quote": None, "angle": False})
+            index += 1
+            continue
+        frame = stack[-1]
+        quote = frame["quote"]
+        if quote is not None:
+            if character == quote:
+                frame["quote"] = None
+            index += 1
+            continue
+        if frame["angle"]:
+            if character == ">":
+                frame["angle"] = False
+            index += 1
+            continue
+        if character in "'\"":
+            frame["quote"] = character
+        elif character == "<":
+            frame["angle"] = True
+        elif character == "(":
+            stack.append({"start": index, "quote": None, "angle": False})
+        elif character == ")":
+            start = int(frame["start"])
+            pairs[start] = index
+            stack.pop()
+        index += 1
+    return pairs
+
+
+def _strip_markdown_link_destinations(text: str) -> tuple[str, bool]:
+    """Keep rendered link/alt labels while removing explicit link targets."""
+    square_pairs = _matching_pairs(text, "[", "]")
+    round_pairs = _matching_round_pairs(text)
+    links: dict[int, tuple[int, int]] = {}
+    for label_start, label_end in square_pairs.items():
+        target_start = label_end + 1
+        if target_start in round_pairs:
+            links[label_start] = (label_end, round_pairs[target_start])
+        elif target_start in square_pairs:
+            links[label_start] = (label_end, square_pairs[target_start])
+
+    output: list[str] = []
+    index = 0
+    saw_markup = False
+    while index < len(text):
+        image = text[index] == "!" and index + 1 in links
+        label_start = index + 1 if image else index
+        link = links.get(label_start)
+        if link is None:
+            output.append(text[index])
+            index += 1
+            continue
+        label_end, target_end = link
+        output.append(text[label_start + 1:label_end])
+        saw_markup = True
+        index = target_end + 1
+    return "".join(output), saw_markup
+
+def _rendered_markup_projection(text: str) -> tuple[str, bool]:
+    """Build visible text and whether HTML may have hidden a leading prefix."""
+    rendered, suffix_sensitive = _strip_html_rendering_markup(text)
+    # Two fixed passes cover link labels that contain bounded HTML or another
+    # explicit link. Markdown targets are invisible but do not hide a visible
+    # prefix, so they must not enable the HTML-only suffix heuristic.
+    for _ in range(2):
+        rendered, saw_links = _strip_markdown_link_destinations(rendered)
+        rendered, saw_html = _strip_html_rendering_markup(rendered)
+        suffix_sensitive = suffix_sensitive or saw_html
+        if not saw_links and not saw_html:
+            break
+    return rendered, suffix_sensitive
+
+
 def _near_suffix(candidate: str, authority: str, limit: int) -> bool:
     minimum = max(1, len(authority) - limit)
     maximum = min(len(candidate), len(authority) + limit)
@@ -98,7 +202,7 @@ def _unsafe_rendered_authority_text(text: str) -> bool:
         paragraphs.append(" ".join(current))
 
     for paragraph in paragraphs:
-        rendered, saw_markup = _strip_html_rendering_markup(paragraph)
+        rendered, saw_markup = _rendered_markup_projection(paragraph)
         skeleton: list[str] = []
         ascii_only: list[str] = []
         for character in rendered:

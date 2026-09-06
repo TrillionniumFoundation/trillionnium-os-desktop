@@ -22,6 +22,18 @@ ATTACKS = (
     "<a" * 5000 + "Current status: `production_ready`",
     "\u200b" * 300 + "Currrent status: `production_ready`",
     "Currrent sta\ntus: `production_ready`",
+    "[Cur](https://example.invalid/a)[rent status](https://example.invalid/b): `production_ready`",
+    "[Claim](https://example.invalid/a) [ceiling](https://example.invalid/b): production release ready.",
+    "Cur[](https://example.invalid)rent status: `production_ready`",
+    "C[urr](https://example.invalid)ent status: `production_ready`",
+    "Cl[aim](https://example.invalid) ceiling: production release ready.",
+    "[Cur][a][rent status][b]: `production_ready`\n\n[a]: https://example.invalid/a\n[b]: https://example.invalid/b",
+    "[Claim][a] [ceiling][b]: production release ready.\n\n[a]: https://example.invalid/a\n[b]: https://example.invalid/b",
+    "&#91;Cur&#93;(https://example.invalid/a)&#91;rent status&#93;(https://example.invalid/b): `production_ready`",
+    "[Cur<span></span>](https://example.invalid/a)[rent status](https://example.invalid/b): `production_ready`",
+    "[Cur](<https://example.invalid/(>)[rent status](https://example.invalid/b): `production_ready`",
+    "[Claim](<https://example.invalid/(>) [ceiling](https://example.invalid/b): production release ready.",
+    "[Cur](https://example.invalid/a_(b))[rent status](https://example.invalid/b): `production_ready`",
 )
 
 SAFE_PROSE = (
@@ -36,6 +48,11 @@ SAFE_PROSE = (
     "<strong>Status quo</strong>: unchanged.",
     "<em>The current state of the prototype</em>: unchanged.",
     "\u200b" * 300 + "Current statistics: source-only explanatory prose.",
+    "[Current statistics](https://example.invalid/stats): source-only explanatory prose.",
+    "[The current state](https://example.invalid/state): unchanged.",
+    "[Claim estimates](https://example.invalid/estimates): explanatory prose.",
+    "Cur[ignored](https://example.invalid)rent status: explanatory prose.",
+    "[documentation](https://example.invalid/docs): explanatory prose.",
 )
 
 
