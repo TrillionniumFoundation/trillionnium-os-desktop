@@ -94,12 +94,12 @@ fn reconstructed_actor_does_not_reissue_session_or_webview_identity() {
     drop(first);
     let (mut second, _) = actor();
     let new = create_owner(&mut second, "second");
-    assert_ne!(
-        old.session_id, new.session_id,
+    assert!(
+        old.session_id != new.session_id,
         "actor reconstruction reused a PageOwner identity"
     );
-    assert_ne!(
-        old.webview_token, new.webview_token,
+    assert!(
+        old.webview_token != new.webview_token,
         "actor reconstruction reused a WebView identity"
     );
 }
@@ -127,7 +127,7 @@ fn previous_incarnation_snapshot_is_rejected_before_dispatch() {
                 ..
             })
         ),
-        "stale actor incarnation was admitted: {outcome:?}"
+        "stale actor incarnation was admitted"
     );
     assert_eq!(calls.get(), 1, "stale session reached the runtime");
 }
@@ -299,9 +299,9 @@ fn namespaced_maximum_ordinal_remains_a_valid_opaque_v1_token() {
         operation: BrowserOperation::SessionSnapshot,
     };
     let encoded = hepta_browser_codec::encode_request(&request).unwrap();
-    assert_eq!(
-        hepta_browser_codec::decode_request(&encoded).unwrap().value,
-        request
+    assert!(
+        hepta_browser_codec::decode_request(&encoded).unwrap().value == request,
+        "opaque session request did not round-trip"
     );
 }
 
@@ -403,6 +403,10 @@ fn ordinary_runtime_refusal_never_reissues_reserved_session_identity() {
         HandlerOutcome::Success(_)
     ));
     assert_eq!(ids.borrow().len(), 2);
-    assert_ne!(ids.borrow()[0], ids.borrow()[1]);
+    let observed_ids = ids.borrow();
+    assert!(
+        observed_ids[0] != observed_ids[1],
+        "a refused session identity was reissued"
+    );
     assert_eq!(current.session_counter, 2);
 }

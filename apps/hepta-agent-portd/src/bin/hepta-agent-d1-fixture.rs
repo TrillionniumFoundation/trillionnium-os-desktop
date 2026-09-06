@@ -291,31 +291,26 @@ fn run_self_check() -> Result<String, FixtureError> {
     if resolve_user_id("root")? != 0 || resolve_group_id("root")? != 0 {
         return Err(FixtureError::Invariant("root account resolution changed"));
     }
-    Ok(format!(
-        concat!(
-            "{{\"schema\":\"trillionnium.desktop.d1-agent-fixture-self-check.v1\",",
-            "\"status\":\"PASS\",\"qualification_only\":true,",
-            "\"listener_created\":false,\"product_handler_connected\":false,",
-            "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{}}}"
-        ),
-        snapshot.pid, snapshot.uid, snapshot.gid
-    ))
+    Ok(concat!(
+        "{\"schema\":\"trillionnium.desktop.d1-agent-fixture-self-check.v2\",",
+        "\"status\":\"PASS\",\"qualification_only\":true,",
+        "\"listener_created\":false,\"product_handler_connected\":false,",
+        "\"peer_credentials_verified\":true,\"peer_identity_redacted\":true}"
+    )
+    .to_owned())
 }
 
 fn server_evidence_json(evidence: &ServiceEvidence) -> String {
     format!(
         concat!(
-            "{{\"schema\":\"trillionnium.desktop.d1-agent-server-result.v1\",",
+            "{{\"schema\":\"trillionnium.desktop.d1-agent-server-result.v2\",",
             "\"status\":\"PASS\",\"qualification_only\":true,",
             "\"product_handler_connected\":false,\"listener_created\":false,",
-            "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{},",
+            "\"peer_credentials_verified\":true,\"peer_identity_redacted\":true,",
             "\"transport_sequence\":{},\"request_id\":\"{}\",",
             "\"request_sha256\":\"{}\",\"response_sha256\":\"{}\",",
             "\"response_ok\":{},\"response_committed\":{}}}"
         ),
-        evidence.peer.pid.unwrap_or_default(),
-        evidence.peer.uid,
-        evidence.peer.gid,
         evidence.transport_sequence,
         escape_json(&evidence.request_id),
         evidence.request_sha256,
@@ -487,5 +482,10 @@ mod tests {
         assert!(encoded.contains("\"qualification_only\":true"));
         assert!(encoded.contains("\"product_handler_connected\":false"));
         assert!(encoded.contains("\"request_id\":\"request:one\""));
+        assert!(encoded.contains("\"peer_credentials_verified\":true"));
+        assert!(encoded.contains("\"peer_identity_redacted\":true"));
+        assert!(!encoded.contains("\"peer_pid\""));
+        assert!(!encoded.contains("\"peer_uid\""));
+        assert!(!encoded.contains("\"peer_gid\""));
     }
 }

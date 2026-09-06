@@ -532,16 +532,14 @@ fn verify_local_socket_path(stream: &UnixStream, expected: &Path) -> Result<(), 
 fn evidence_json(evidence: &ServiceEvidence) -> String {
     format!(
         concat!(
-            "{{\"schema\":\"trillionnium.desktop.agent-port-development-result.v1\",",
-            "\"profile\":\"{}\",\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{},",
-            "\"transport_sequence\":{},\"request_id\":\"{}\",",
-            "\"request_sha256\":\"{}\",\"response_sha256\":\"{}\",",
-            "\"response_ok\":{},\"response_committed\":true}}"
+            "{{\"schema\":\"trillionnium.desktop.agent-port-development-result.v2\",",
+            "\"profile\":\"{}\",\"peer_credentials_verified\":true,",
+            "\"peer_identity_redacted\":true,\"transport_sequence\":{},",
+            "\"request_id\":\"{}\",\"request_sha256\":\"{}\",",
+            "\"response_sha256\":\"{}\",\"response_ok\":{},",
+            "\"response_committed\":true}}"
         ),
         DEVELOPMENT_PROFILE,
-        evidence.peer.pid.unwrap_or_default(),
-        evidence.peer.uid,
-        evidence.peer.gid,
         evidence.transport_sequence,
         escape_json(&evidence.request_id),
         evidence.request_sha256,

@@ -274,16 +274,13 @@ fn same_peer(left: PeerIdentity, right: PeerIdentity) -> bool {
 fn evidence_json(evidence: &ServiceEvidence) -> String {
     format!(
         concat!(
-            "{{\"schema\":\"trillionnium.desktop.d3-sessiond-request.v1\",",
-            "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{},",
+            "{{\"schema\":\"trillionnium.desktop.d3-sessiond-request.v2\",",
+            "\"peer_credentials_verified\":true,\"peer_identity_redacted\":true,",
             "\"transport_sequence\":{},\"request_id\":\"{}\",",
             "\"request_sha256\":\"{}\",\"response_sha256\":\"{}\",",
             "\"response_ok\":{},\"response_committed\":{},",
             "\"persistent_actor\":true}}"
         ),
-        evidence.peer.pid.unwrap_or_default(),
-        evidence.peer.uid,
-        evidence.peer.gid,
         evidence.transport_sequence,
         escape_json(&evidence.request_id),
         evidence.request_sha256,

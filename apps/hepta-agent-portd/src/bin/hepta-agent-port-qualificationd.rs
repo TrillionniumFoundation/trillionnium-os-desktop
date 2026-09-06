@@ -150,15 +150,12 @@ fn verify_local_socket_path(stream: &UnixStream, expected: &Path) -> Result<(), 
 fn evidence_json(evidence: &ServiceEvidence) -> String {
     format!(
         concat!(
-            "{{\"schema\":\"trillionnium.desktop.agent-portd-result.v1\",",
-            "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{},",
+            "{{\"schema\":\"trillionnium.desktop.agent-portd-result.v2\",",
+            "\"peer_credentials_verified\":true,\"peer_identity_redacted\":true,",
             "\"transport_sequence\":{},\"request_id\":\"{}\",",
             "\"request_sha256\":\"{}\",\"response_sha256\":\"{}\",",
             "\"response_ok\":{},\"response_committed\":{}}}"
         ),
-        evidence.peer.pid.unwrap_or_default(),
-        evidence.peer.uid,
-        evidence.peer.gid,
         evidence.transport_sequence,
         escape_json(&evidence.request_id),
         evidence.request_sha256,
@@ -205,12 +202,12 @@ fn self_check() -> Result<String, ServiceError> {
     }
     Ok(format!(
         concat!(
-            "{{\"schema\":\"trillionnium.desktop.agent-portd-self-check.v1\",",
+            "{{\"schema\":\"trillionnium.desktop.agent-portd-self-check.v2\",",
             "\"ok\":true,\"listener_created\":false,",
             "\"expected_product_socket\":\"{}\",",
-            "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{}}}"
+            "\"peer_credentials_verified\":true,\"peer_identity_redacted\":true}}"
         ),
-        AGENT_SOCKET_PATH, snapshot.pid, snapshot.uid, snapshot.gid,
+        AGENT_SOCKET_PATH,
     ))
 }
 

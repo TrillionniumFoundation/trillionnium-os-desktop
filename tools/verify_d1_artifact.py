@@ -157,7 +157,7 @@ RESULT_SCHEMAS = {
     "evidence/e2fsprogs-host-tool-result.json": "trillionnium.desktop.e2fsprogs-host-tool-result.v1",
     "evidence/host-toolchain.json": "trillionnium.desktop.d1-host-toolchain.v1",
     "evidence/product-daemon-self-check-host.json": "trillionnium.desktop.agent-portd-self-check.v2",
-    "evidence/d1-qualification-self-check-host.json": "trillionnium.desktop.d1-agent-fixture-self-check.v1",
+    "evidence/d1-qualification-self-check-host.json": "trillionnium.desktop.d1-agent-fixture-self-check.v2",
 }
 
 REPRO_ARTIFACT_NAMES = frozenset(
