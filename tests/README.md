@@ -89,8 +89,10 @@ leading module may not monkey-patch shared helpers to make later modules pass.
 The D8 fixture-isolation regressions therefore exercise the real factory, and
 the Servo evidence loader regression removes ambient ``tools/`` path state
 before importing the facade. Documentation claim regressions include
-Cyrillic/Greek homoglyphs, combining marks, and mixed-script declaration
-prefixes while retaining ordinary multilingual prose. Run the focused modules
+Cyrillic/Greek homoglyphs, combining marks, mixed-script declaration prefixes,
+close ASCII misspellings, confusable delimiters, cross-line bidi state, and
+terminal/ANSI/OSC controls while retaining ordinary multilingual prose. Run the
+focused modules
 and authoritative discovery when loader, fixture, or claim parsing changes.
 
 Partial completion is never upgraded to success. Timeout, cancellation,

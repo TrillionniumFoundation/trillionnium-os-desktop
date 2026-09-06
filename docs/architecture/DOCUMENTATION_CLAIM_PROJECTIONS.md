@@ -31,10 +31,14 @@ A declaration-shaped prefix containing an unmapped non-ASCII letter also fails
 closed when its ASCII remainder is within a bounded edit distance of an
 authority label. Unicode format and control characters are detection inputs as
 well: logical and reversed prefix candidates are checked so bidi overrides,
-entity-encoded controls, terminal erasure characters, or ANSI-style decoration
-cannot display a competing authority label that differs from stored text. This
-rule applies only before `:` or `=`; ordinary multilingual prose, including RTL
-text inside bidi isolates, remains valid when it is not claim-like. Normalization
+entity-encoded controls, terminal erasure characters, ANSI/OSC decoration,
+confusable declaration delimiters, or close ASCII label misspellings cannot
+display a competing authority label that differs from stored text. Explicit bidi
+state is tracked across source lines and must be balanced. Detection is scoped
+to a bounded prefix before a declaration-shaped punctuation or symbol boundary;
+the only accepted projection still uses the exact ASCII colon grammar. Ordinary
+multilingual prose, including RTL text inside bidi isolates, remains valid when
+it is not claim-like. Normalization
 never repairs an invalid declaration into an accepted one.
 
 ## Tests
@@ -44,8 +48,9 @@ never repairs an invalid declaration into an accepted one.
 against isolated fixtures. They reject README-only and registry-only
 status/claim changes, missing and repeated values, contradictory declarations,
 case/space/tab/newline/fullwidth/zero-width/entity spelling, Cyrillic/Greek
-homoglyphs, combining marks, mixed-script labels, bidi reversal and isolate
-controls, entity-encoded controls, terminal/ANSI control prefixes, code fences,
+homoglyphs, combining marks, mixed-script labels, close ASCII misspellings,
+confusable colon/equality delimiters, inline and cross-line bidi reversal/isolate
+controls, entity-encoded controls, terminal/ANSI/OSC control prefixes, code fences,
 comments, and declarations moved outside the designated section. Ordinary RTL
 multilingual prose remains an explicit positive case. All 12 module
 and 14 component projections are checked against their committed registries.

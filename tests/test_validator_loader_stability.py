@@ -78,11 +78,27 @@ class ValidatorLoaderStabilityTests(unittest.TestCase):
             "**Cúrrent status:** `production_ready`",  # composed accent
             "**C\u0338urrent status:** `production_ready`",  # combining overlay
             "**Currⅇnt status:** `production_ready`",  # compatibility confusable
+            "**Currrent status:** `production_ready`",  # close ASCII insertion
+            "**Current stauts:** `production_ready`",  # close ASCII transposition
+            "**Claim cieling:** production release ready.",  # close ASCII transposition
+            "**Current status∶** `production_ready`",  # ratio-colon declaration delimiter
+            "**Claim ceiling∶** production release ready.",  # ratio-colon declaration delimiter
+            "**Current status꞉** `production_ready`",  # modifier-letter colon delimiter
+            "**Current statusꓽ** `production_ready`",  # Lisu colon-like letter delimiter
+            "**Current status;** `production_ready`",  # punctuation declaration delimiter
+            "**Current status׃** `production_ready`",  # Hebrew colon-like delimiter
             "**\u202esutats tnerruC\u202c:** `production_ready`",  # RLO visual reversal
             "**\u202egniliec mialC\u202c:** production release ready.",  # RLO visual reversal
             "**&#x202E;sutats tnerruC&#x202C;:** `production_ready`",  # entity-decoded RLO
+            "\u202e\n**sutats tnerruC:** `production_ready`\n\u202c",  # cross-line RLO
+            "&#x202E;\n**sutats tnerruC:** `production_ready`\n&#x202C;",  # entity cross-line RLO
             "**CurX\bent status:** `production_ready`",  # control-character erasure shape
             "**\x1b[31mCurrent status:** `production_ready`",  # ANSI control prefix
+            "**Cur\x1b]8;;https://example.invalid\x07rent\x1b]8;;\x07 status:** `production_ready`",  # OSC hyperlink controls
+            "\u202eordinary prose without a matching PDF",  # unbalanced bidi formatting
+            "\u202cstray PDF formatting close",  # unmatched embedding close
+            "\u2069stray PDI formatting close",  # unmatched isolate close
+            "\u2067isolate\u202c\u2069: malformed nested close",  # PDF crosses isolate
         )
         for kind in ("module", "component"):
             for declaration in declarations:
@@ -98,7 +114,13 @@ class ValidatorLoaderStabilityTests(unittest.TestCase):
             "Résumé and ελληνική documentation remain ordinary prose.",
             "状态说明：本段不声明机器权威。",
             "The current lifecycle remains described without a declaration delimiter.",
+            "Current statistics: source-only explanatory prose.",
+            "Status quo: unchanged.",
+            "The current state of the prototype: unchanged.",
+            "Claim estimates: explanatory prose.",
+            "The ratio a∶b remains illustrative.",
             "\u2067مرحبا بالعالم\u2069: نص توضيحي عادي.",
+            "מצב המערכת: טקסט הסברי רגיל.",
         )
         for kind in ("module", "component"):
             with self.subTest(kind=kind), projection_tests.fixture_for(kind) as (fixture, path, _, _):
