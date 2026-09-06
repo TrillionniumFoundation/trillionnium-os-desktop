@@ -232,7 +232,7 @@ impl fmt::Display for ServiceError {
             Self::Io(error) => write!(formatter, "inherited socket I/O failed: {error}"),
             Self::Transport(error) => write!(formatter, "transport failed: {error}"),
             Self::AgentPort(error) => write!(formatter, "AgentPort failed: {error}"),
-            Self::Attestation(error) => write!(formatter, "peer attestation failed: {error}"),
+            Self::Attestation(_) => formatter.write_str("peer attestation failed"),
             Self::WrongInheritedDescriptor => {
                 formatter.write_str("standard input is not an AF_UNIX stream socket")
             }

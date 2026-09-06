@@ -45,5 +45,46 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
         self.assertIn('"stale actor incarnation was admitted"', source)
 
 
+    def test_public_error_paths_do_not_render_attestation_identity(self) -> None:
+        error_wrappers = (
+            "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs",
+            "apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs",
+            "apps/hepta-agent-portd/src/bin/hepta-agent-port-qualificationd.rs",
+        )
+        for relative in error_wrappers:
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            self.assertIn(
+                'Self::Attestation(_) => formatter.write_str("peer attestation failed")',
+                source,
+                relative,
+            )
+            self.assertNotIn(
+                'peer attestation failed: {error}',
+                source,
+                relative,
+            )
+
+        connection_source = (
+            ROOT / "crates/hepta-d3-development/src/sessiond/service.rs"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            'Err(_) => eprintln!("d3 connection rejected: request validation failed")',
+            connection_source,
+        )
+        self.assertNotIn("d3 connection rejected: {error}", connection_source)
+
+        process_source = (
+            ROOT / "crates/hepta-d3-development/src/bin/sessiond.rs"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            'eprintln!("hepta-agent-port-development-sessiond: request validation failed")',
+            process_source,
+        )
+        self.assertNotIn(
+            "hepta-agent-port-development-sessiond: {error}",
+            process_source,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

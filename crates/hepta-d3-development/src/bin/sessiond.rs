@@ -41,8 +41,8 @@ fn main() {
     } else {
         service::run_service(&arguments)
     };
-    if let Err(error) = result {
-        eprintln!("hepta-agent-port-development-sessiond: {error}");
+    if result.is_err() {
+        eprintln!("hepta-agent-port-development-sessiond: request validation failed");
         std::process::exit(1);
     }
 }

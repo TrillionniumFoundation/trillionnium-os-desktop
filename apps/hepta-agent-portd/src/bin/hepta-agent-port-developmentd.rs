@@ -612,7 +612,7 @@ impl fmt::Display for ServiceError {
         match self {
             Self::Io(error) => write!(formatter, "I/O failed: {error}"),
             Self::Transport(error) => write!(formatter, "transport failed: {error}"),
-            Self::Attestation(error) => write!(formatter, "peer attestation failed: {error}"),
+            Self::Attestation(_) => formatter.write_str("peer attestation failed"),
             Self::AgentPort(error) => write!(formatter, "AgentPort failed: {error}"),
             Self::Binding(error) => write!(formatter, "principal binding failed: {error}"),
             Self::Journal(error) => write!(formatter, "receipt journal failed: {error}"),

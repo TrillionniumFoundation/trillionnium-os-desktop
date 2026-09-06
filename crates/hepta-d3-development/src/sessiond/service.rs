@@ -137,7 +137,7 @@ fn run_connections(
             &mut state,
         ) {
             Ok(evidence) => println!("{}", evidence_json(&evidence)),
-            Err(error) => eprintln!("d3 connection rejected: {error}"),
+            Err(_) => eprintln!("d3 connection rejected: request validation failed"),
         }
         stop.ensure_active()?;
         // Rotation errors exit the service. A consumed/uncertain writer must

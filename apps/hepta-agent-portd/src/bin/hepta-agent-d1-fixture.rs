@@ -372,7 +372,7 @@ impl fmt::Display for FixtureError {
             Self::Transport(error) => write!(formatter, "transport failed: {error}"),
             Self::Codec(error) => write!(formatter, "codec failed: {error}"),
             Self::AgentPort(error) => write!(formatter, "AgentPort failed: {error}"),
-            Self::Attestation(error) => write!(formatter, "peer attestation failed: {error}"),
+            Self::Attestation(_) => formatter.write_str("peer attestation failed"),
             Self::WrongInheritedDescriptor => {
                 formatter.write_str("standard input is not an AF_UNIX stream socket")
             }
