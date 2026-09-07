@@ -94,7 +94,6 @@ fn main() {
             .map(|evidence| println!("{}", evidence_json(&evidence)))
     };
     if outcome.is_err() {
-        eprintln!("hepta-agent-port-developmentd: request validation failed");
         std::process::exit(1);
     }
 }

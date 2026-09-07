@@ -37,17 +37,13 @@ fn main() {
     match run() {
         Ok(result) => {
             if let Some(path) = result.output
-                && let Err(error) = write_result(&path, &result.json)
+                && write_result(&path, &result.json).is_err()
             {
-                eprintln!("hepta-agent-d1-fixture: failed to write result: {error}");
                 std::process::exit(1);
             }
             println!("{}", result.json);
         }
-        Err(_) => {
-            eprintln!("hepta-agent-d1-fixture: request validation failed");
-            std::process::exit(1);
-        }
+        Err(_) => std::process::exit(1),
     }
 }
 

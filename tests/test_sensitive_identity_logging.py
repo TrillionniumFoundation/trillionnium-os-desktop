@@ -6,6 +6,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_EVIDENCE_SOURCES = (
+    "apps/hepta-agent-portd/src/main.rs",
     "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs",
     "apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs",
     "apps/hepta-agent-portd/src/bin/hepta-agent-port-qualificationd.rs",
@@ -36,83 +37,73 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
             self.assertIn(schema, combined)
 
     def test_sensitive_actor_assertions_do_not_render_identity_values(self) -> None:
-        source = (
+        incarnation = (
             ROOT / "crates/hepta-browser-actor/src/incarnation_tests.rs"
         ).read_text(encoding="utf-8")
-        self.assertNotIn("{outcome:?}", source)
-        self.assertNotIn("assert_ne!(\n        old.session_id", source)
-        self.assertNotIn("assert_ne!(ids.borrow()[0], ids.borrow()[1])", source)
-        self.assertIn('"stale actor incarnation was admitted"', source)
+        actor = (ROOT / "crates/hepta-browser-actor/src/lib.rs").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn("{outcome:?}", incarnation)
+        self.assertNotIn("create failed: {outcome:?}", actor)
+        self.assertNotIn("missing session id: {other:?}", actor)
+        self.assertNotIn("missing session generation: {other:?}", actor)
+        self.assertIn('panic!("create failed")', actor)
+        self.assertIn('"stale actor incarnation was admitted"', incarnation)
 
+    def test_identity_derived_failures_have_no_public_log_sink(self) -> None:
+        forbidden = {
+            "apps/hepta-agent-portd/src/main.rs": (
+                "hepta-agent-portd: {error}",
+                "eprintln!(\"hepta-agent-portd:",
+            ),
+            "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs": (
+                "hepta-agent-d1-fixture: request validation failed",
+                "hepta-agent-d1-fixture: failed to write result:",
+            ),
+            "apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs": (
+                "hepta-agent-port-developmentd: request validation failed",
+            ),
+            "apps/hepta-agent-portd/src/bin/hepta-agent-port-qualificationd.rs": (
+                "hepta-agent-port-qualificationd: request validation failed",
+            ),
+            "crates/hepta-d3-development/src/bin/sessiond.rs": (
+                "hepta-agent-port-development-sessiond: request validation failed",
+            ),
+            "crates/hepta-d3-development/src/sessiond/service.rs": (
+                "d3 connection rejected:",
+            ),
+        }
+        for relative, needles in forbidden.items():
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            for needle in needles:
+                self.assertNotIn(needle, source, relative)
 
-    def test_public_error_paths_do_not_render_attestation_identity(self) -> None:
-        error_wrappers = (
+    def test_attestation_wrappers_cannot_retain_identity_values(self) -> None:
+        wrappers = (
+            "apps/hepta-agent-portd/src/main.rs",
             "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs",
             "apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs",
             "apps/hepta-agent-portd/src/bin/hepta-agent-port-qualificationd.rs",
         )
-        for relative in error_wrappers:
+        for relative in wrappers:
             source = (ROOT / relative).read_text(encoding="utf-8")
-            self.assertIn(
-                'Self::Attestation => formatter.write_str("peer attestation failed")',
-                source,
-                relative,
-            )
-            self.assertNotIn(
-                'peer attestation failed: {error}',
-                source,
-                relative,
-            )
-
-        connection_source = (
-            ROOT / "crates/hepta-d3-development/src/sessiond/service.rs"
-        ).read_text(encoding="utf-8")
-        self.assertIn(
-            'Err(_) => eprintln!("d3 connection rejected: request validation failed")',
-            connection_source,
-        )
-        self.assertNotIn("d3 connection rejected: {error}", connection_source)
-
-        process_source = (
-            ROOT / "crates/hepta-d3-development/src/bin/sessiond.rs"
-        ).read_text(encoding="utf-8")
-        self.assertIn(
-            'eprintln!("hepta-agent-port-development-sessiond: request validation failed")',
-            process_source,
-        )
-        self.assertNotIn(
-            "hepta-agent-port-development-sessiond: {error}",
-            process_source,
-        )
-
-
-    def test_process_error_boundaries_emit_only_constant_diagnostics(self) -> None:
-        expectations = (
-            (
-                "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs",
-                'eprintln!("hepta-agent-d1-fixture: request validation failed")',
-                'hepta-agent-d1-fixture: {error}',
-            ),
-            (
-                "apps/hepta-agent-portd/src/bin/hepta-agent-port-developmentd.rs",
-                'eprintln!("hepta-agent-port-developmentd: request validation failed")',
-                'hepta-agent-port-developmentd: {error}',
-            ),
-            (
-                "apps/hepta-agent-portd/src/bin/hepta-agent-port-qualificationd.rs",
-                'eprintln!("hepta-agent-port-qualificationd: request validation failed")',
-                'hepta-agent-port-qualificationd: {error}',
-            ),
-        )
-        for relative, constant_sink, tainted_sink in expectations:
-            source = (ROOT / relative).read_text(encoding="utf-8")
-            self.assertIn(constant_sink, source, relative)
-            self.assertNotIn(tainted_sink, source, relative)
             self.assertIn("Attestation,", source, relative)
-            self.assertIn("Self::Attestation => None", source, relative)
+            self.assertIn(
+                'formatter.write_str("peer attestation failed")', source, relative
+            )
             self.assertIn("fn from(_: AttestationError) -> Self", source, relative)
             self.assertNotIn("Attestation(AttestationError)", source, relative)
             self.assertNotIn("Self::Attestation(error)", source, relative)
+
+    def test_cryptographic_fixture_nonces_are_not_fixed_literals(self) -> None:
+        source = (ROOT / "apps/hepta-browserd/src/product_policy.rs").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("fn nonproduction_nonce() -> String", source)
+        self.assertIn("let nonce = nonproduction_nonce();", source)
+        self.assertIn("nonce: &nonce", source)
+        self.assertIn("_scenario: &str", source)
+        self.assertNotRegex(source, r'nonce:\s*"[^"\n]+"\.to_owned\(\),')
 
 
 if __name__ == "__main__":

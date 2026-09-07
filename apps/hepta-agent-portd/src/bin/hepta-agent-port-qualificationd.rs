@@ -34,7 +34,6 @@ fn main() {
         serve_inherited_connection().map(|evidence| println!("{}", evidence_json(&evidence)))
     };
     if outcome.is_err() {
-        eprintln!("hepta-agent-port-qualificationd: request validation failed");
         std::process::exit(1);
     }
 }

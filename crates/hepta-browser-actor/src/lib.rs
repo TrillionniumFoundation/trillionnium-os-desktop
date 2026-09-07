@@ -3097,17 +3097,17 @@ mod tests {
             .handle(&context(peer, EffectClass::LocalInteraction), &request)
             .expect("create handle");
         let HandlerOutcome::Success(result) = outcome else {
-            panic!("create failed: {outcome:?}");
+            panic!("create failed");
         };
         let session_id = match result.get("session_id") {
             Some(JsonValue::String(value)) => value.clone(),
-            other => panic!("missing session id: {other:?}"),
+            _ => panic!("missing session id"),
         };
         let session_generation = match result.get("session_generation") {
             Some(JsonValue::Integer(value)) => {
                 u64::try_from(*value).expect("session generation must be positive")
             }
-            other => panic!("missing session generation: {other:?}"),
+            _ => panic!("missing session generation"),
         };
         (session_id, session_generation)
     }
@@ -3352,7 +3352,7 @@ mod tests {
         };
         let session_id = match created.get("session_id") {
             Some(JsonValue::String(value)) => value.clone(),
-            other => panic!("missing session id: {other:?}"),
+            _ => panic!("missing session id"),
         };
         let generation = match created.get("session_generation") {
             Some(JsonValue::Integer(value)) => *value as u64,
@@ -4784,11 +4784,11 @@ mod tests {
         };
         let session_id = match created.get("session_id") {
             Some(JsonValue::String(value)) => value.clone(),
-            other => panic!("missing session id: {other:?}"),
+            _ => panic!("missing session id"),
         };
         let session_generation = match created.get("session_generation") {
             Some(JsonValue::Integer(value)) => *value as u64,
-            other => panic!("missing session generation: {other:?}"),
+            _ => panic!("missing session generation"),
         };
         let wait = BrowserRequest {
             request_id: "wait-stale".to_owned(),

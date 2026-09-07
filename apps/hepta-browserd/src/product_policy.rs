@@ -19,6 +19,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::str::FromStr;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub const MAX_HUMAN_LEASE_MS: u64 = 30_000;
 pub const MAX_PERMIT_LIFETIME_SECONDS: u64 = 3_600;
@@ -98,6 +100,25 @@ fn sha256_hex(value: &[u8]) -> String {
         output.push(HEX[usize::from(byte & 0x0f)] as char);
     }
     output
+}
+
+/// Runtime-unique nonce for closed self-check and test-only evidence.
+///
+/// This is deliberately not a production entropy source and never grants
+/// authority. It prevents deterministic fixture labels from becoming fixed
+/// values in cryptographic nonce fields.
+fn nonproduction_nonce() -> String {
+    static NEXT: AtomicU64 = AtomicU64::new(1);
+    let sequence = NEXT.fetch_add(1, Ordering::Relaxed);
+    let elapsed = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let mut material = Vec::with_capacity(28);
+    material.extend_from_slice(&elapsed.to_be_bytes());
+    material.extend_from_slice(&sequence.to_be_bytes());
+    material.extend_from_slice(&std::process::id().to_be_bytes());
+    sha256_hex(&material)
 }
 
 fn valid_token(value: &str, maximum: usize) -> bool {
@@ -2751,8 +2772,9 @@ fn issue_fixture(
     verifier_id: &str,
     subject: &str,
     payload_sha256: &str,
-    nonce: &str,
+    _scenario: &str,
 ) -> EvidenceEnvelope {
+    let nonce = nonproduction_nonce();
     registry
         .issue(EvidenceIssue {
             verifier_id,
@@ -2760,7 +2782,7 @@ fn issue_fixture(
             payload_sha256,
             not_before_epoch: 90,
             expires_at_epoch: 120,
-            nonce,
+            nonce: &nonce,
         })
         .expect("internal fixture evidence is valid")
 }
@@ -2783,7 +2805,7 @@ fn network_fixture_bundle(registry: &TrustedVerifierRegistry) -> NetworkFixtureB
         action: "http_request".to_owned(),
         not_before_epoch: 90,
         expires_at_epoch: 120,
-        nonce: "nonce-self-check".to_owned(),
+        nonce: nonproduction_nonce(),
         maximum_uses: 2,
         revoked: false,
         evidence: placeholder_evidence,
@@ -2918,7 +2940,7 @@ pub fn run_self_check() -> Result<ProductPolicySelfCheck, PolicyError> {
         payload_sha256: manifest_payload,
         not_before_epoch: 90,
         expires_at_epoch: 120,
-        nonce: "closed-registry-self-check".to_owned(),
+        nonce: nonproduction_nonce(),
         signature: [1_u8; 64],
     })?;
     if TrustedAppPolicy::admit(&closed_registry, &manifest, &untrusted, None, None, 100).is_ok() {
@@ -2986,7 +3008,7 @@ pub fn run_self_check() -> Result<ProductPolicySelfCheck, PolicyError> {
         payload_sha256: update_manifest.manifest_sha256().to_owned(),
         not_before_epoch: 90,
         expires_at_epoch: 120,
-        nonce: "closed-update-self-check".to_owned(),
+        nonce: nonproduction_nonce(),
         signature: [1_u8; 64],
     })?;
     let mut update = UpdateController::new(UpdateSlot::A, 1, 1, 2)?;
@@ -3026,6 +3048,15 @@ mod tests {
             .key_id(verifier_id)
             .expect("fixture verifier is enrolled")
             .to_owned()
+    }
+
+    #[test]
+    fn nonproduction_nonces_are_unique_and_canonical() {
+        let first = nonproduction_nonce();
+        let second = nonproduction_nonce();
+        assert_ne!(first, second);
+        validate_digest(&first).expect("first non-production nonce");
+        validate_digest(&second).expect("second non-production nonce");
     }
 
     #[test]

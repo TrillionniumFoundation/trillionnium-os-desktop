@@ -123,7 +123,7 @@ fn run_connections(
 
     loop {
         let stream = engine::accept_next(&listener, stop)?;
-        match serve_connection(
+        if let Ok(evidence) = serve_connection(
             stream,
             &attestor,
             &policy,
@@ -136,8 +136,7 @@ fn run_connections(
             &mut runtime,
             &mut state,
         ) {
-            Ok(evidence) => println!("{}", evidence_json(&evidence)),
-            Err(_) => eprintln!("d3 connection rejected: request validation failed"),
+            println!("{}", evidence_json(&evidence));
         }
         stop.ensure_active()?;
         // Rotation errors exit the service. A consumed/uncertain writer must

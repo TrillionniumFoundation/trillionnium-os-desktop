@@ -35,10 +35,7 @@ fn main() {
                 println!("{report}");
             }
         }
-        Err(error) => {
-            eprintln!("hepta-agent-portd: {error}");
-            std::process::exit(1);
-        }
+        Err(_) => std::process::exit(1),
     }
 }
 
@@ -156,9 +153,10 @@ fn self_check() -> Result<String, ServiceError> {
             "\"product_handler_connected\":false,",
             "\"fixture_handler_linked\":false,",
             "\"activation_fail_closed\":true,",
-            "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{}}}"
+            "\"peer_credentials_verified\":true,",
+            "\"peer_identity_redacted\":true}}"
         ),
-        AGENT_SOCKET_PATH, snapshot.pid, snapshot.uid, snapshot.gid,
+        AGENT_SOCKET_PATH,
     ))
 }
 
@@ -166,7 +164,7 @@ fn self_check() -> Result<String, ServiceError> {
 enum ServiceError {
     Io(io::Error),
     Transport(hepta_agent_transport::TransportError),
-    Attestation(AttestationError),
+    Attestation,
     WrongInheritedDescriptor,
     UnnamedInheritedSocket,
     SocketPathMismatch {
@@ -182,7 +180,7 @@ impl fmt::Display for ServiceError {
         match self {
             Self::Io(error) => write!(formatter, "inherited socket I/O failed: {error}"),
             Self::Transport(error) => write!(formatter, "transport failed: {error}"),
-            Self::Attestation(error) => write!(formatter, "peer attestation failed: {error}"),
+            Self::Attestation => formatter.write_str("peer attestation failed"),
             Self::WrongInheritedDescriptor => {
                 formatter.write_str("standard input is not an AF_UNIX stream socket")
             }
@@ -208,7 +206,7 @@ impl std::error::Error for ServiceError {
         match self {
             Self::Io(error) => Some(error),
             Self::Transport(error) => Some(error),
-            Self::Attestation(error) => Some(error),
+            Self::Attestation => None,
             _ => None,
         }
     }
@@ -227,8 +225,8 @@ impl From<hepta_agent_transport::TransportError> for ServiceError {
 }
 
 impl From<AttestationError> for ServiceError {
-    fn from(error: AttestationError) -> Self {
-        Self::Attestation(error)
+    fn from(_: AttestationError) -> Self {
+        Self::Attestation
     }
 }
 
@@ -268,6 +266,11 @@ mod tests {
         assert!(report.contains("\"product_handler_connected\":false"));
         assert!(report.contains("\"fixture_handler_linked\":false"));
         assert!(report.contains("\"activation_fail_closed\":true"));
+        assert!(report.contains("\"peer_credentials_verified\":true"));
+        assert!(report.contains("\"peer_identity_redacted\":true"));
+        assert!(!report.contains("\"peer_pid\""));
+        assert!(!report.contains("\"peer_uid\""));
+        assert!(!report.contains("\"peer_gid\""));
     }
 
     #[test]

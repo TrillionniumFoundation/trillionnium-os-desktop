@@ -42,7 +42,6 @@ fn main() {
         service::run_service(&arguments)
     };
     if result.is_err() {
-        eprintln!("hepta-agent-port-development-sessiond: request validation failed");
         std::process::exit(1);
     }
 }
