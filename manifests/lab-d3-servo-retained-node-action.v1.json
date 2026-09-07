@@ -53,6 +53,7 @@
       "components/script/event_loop/script_thread.rs",
       "components/script/messaging.rs",
       "components/servo/lib.rs",
+      "components/servo/tests/accessibility.rs",
       "components/servo/webview.rs",
       "components/shared/constellation/Cargo.toml",
       "components/shared/constellation/lib.rs",
@@ -62,11 +63,24 @@
       "ports/servoshell/desktop/headed_window.rs"
     ]
   },
+  "hardening": {
+    "format": "ordered_unified_diff_parts",
+    "sha256": "db20836414d87d6444000a72ab8c09560e6882f8555fa373bc5d798c77f029fd",
+    "parts": [
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/007.patch",
+        "sha256": "db20836414d87d6444000a72ab8c09560e6882f8555fa373bc5d798c77f029fd"
+      }
+    ],
+    "purpose": "bind dispatch to the action advertised by the exact retained AccessKit node and add real Servo behavior regressions"
+  },
   "source_invariants": [
     "route a non-root AccessKit TreeId to exactly one current WebView",
     "bind the request again to the WebView current active top-level PipelineId",
     "reject root, stale, missing, ambiguous, inactive, unsupported, disabled and non-rendered targets",
     "resolve NodeId only from the current retained AccessibilityTree at the active embedder epoch",
+    "advertise Click only for the initial reviewed native button surface",
+    "require the exact retained AccessKit node to advertise the requested action before dispatch",
     "refresh the retained tree and resolve the DOM node inside one script-thread task",
     "dispatch only one untrusted click event to the resolved node",
     "never fall back to coordinates, JavaScript evaluation, WebDriver or text search",
@@ -75,17 +89,20 @@
   "qualification": {
     "workflow": ".github/workflows/d3-integrated-runtime-evidence.yml",
     "job": "servo-retained-node-source",
+    "behavior_workflow": ".github/workflows/d3-retained-node-behavior.yml",
+    "behavior_job": "real-servo-behavior",
     "required": [
       "exact upstream commit and AccessKit ABI verification",
-      "patch-part and aggregate digest verification",
+      "base-patch, hardening-patch and combined digest verification",
       "exact pre-format changed-path equality",
       "clean patch dry-run and application",
       "forbidden-fallback static guard",
       "changed-file-only rustfmt normalization",
       "no post-format path outside the allowlist",
       "core semantic files remain changed",
-      "locked servoshell dependency-graph cargo check"
+      "locked servoshell dependency-graph cargo check",
+      "real Servo retained-node valid-click, unadvertised-action, stale-node, stale-tree, disabled, hidden, non-element, unsupported-data and dropped-callback regressions"
     ]
   },
-  "claim_ceiling": "A green workflow proves only that this patch applies, formats and compiles on the exact Servo pin. It does not prove an installed Trillionnium runtime, independent replay, release eligibility, physical hardware, protected-environment approval or HSM signing."
+  "claim_ceiling": "A green source workflow proves that this patch applies, formats and compiles on the exact Servo pin. A green behavior workflow additionally proves the bounded retained-node corpus in Servo's real test harness. Neither proves an installed Trillionnium image, product BrowserActor/receipt integration, independent replay, release eligibility, physical hardware, protected-environment approval or HSM signing."
 }

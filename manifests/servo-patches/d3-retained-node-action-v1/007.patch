@@ -1,0 +1,509 @@
+diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessibility_tree.rs
+--- a/components/layout/accessibility_tree.rs
++++ b/components/layout/accessibility_tree.rs
+@@ -10,3 +10,3 @@
+-use accesskit::{NodeId, Role};
++use accesskit::{Action, NodeId, Role};
+ use app_units::Au;
+ use bitflags::bitflags;
+@@ -510,6 +510,16 @@
+-    /// Return the DOM identity retained for an AccessKit node in the most recently finalized tree.
+-    pub(crate) fn opaque_node_for_id(&self, node_id: NodeId) -> Option<OpaqueNode> {
+-        self.id_to_opaque_node.get(&node_id).copied()
++    /// Resolve an action target from the exact retained AccessKit node in the most recently
++    /// finalized tree. The boolean reports whether that node advertised the requested action.
++    pub(crate) fn action_target_for_id(
++        &self,
++        node_id: NodeId,
++        action: Action,
++    ) -> Option<(OpaqueNode, bool)> {
++        let node = self.nodes.get(&node_id)?;
++        let node = node.borrow();
++        Some((
++            node.opaque_node?,
++            node.accesskit_node.supports_action(action),
++        ))
+     }
+ 
+     /// Assert that the tree is a tree without any dangling references or orphaned nodes.
+@@ -820,3 +820,4 @@
+         local_damage.insert(self.set_role(role_from_dom_node(dom_node)));
++        self.set_action_supported(Action::Click, click_action_supported(dom_node));
+         if dom_node.type_id() == Some(LayoutNodeType::Text) {
+             let text_content = dom_node.text_content();
+@@ -990,3 +990,15 @@
++    fn set_action_supported(&mut self, action: Action, supported: bool) {
++        if self.accesskit_node.supports_action(action) == supported {
++            return;
++        }
++        if supported {
++            self.accesskit_node.add_action(action);
++        } else {
++            self.accesskit_node.remove_action(action);
++        }
++        self.dirty_state |= DirtyState::Updated;
++    }
++
+     fn label(&self) -> Option<&str> {
+         self.accesskit_node.label()
+     }
+@@ -1320,5 +1320,6 @@
+         (local_name!("article"), Role::Article),
+         (local_name!("aside"), Role::Complementary),
+         (local_name!("body"), Role::RootWebArea),
++        (local_name!("button"), Role::Button),
+         (local_name!("footer"), Role::ContentInfo),
+         (local_name!("h1"), Role::Heading),
+@@ -1510,2 +1510,8 @@
++fn click_action_supported(dom_node: &ServoLayoutNode<'_>) -> bool {
++    dom_node
++        .as_element()
++        .is_some_and(|element| element.local_name() == &local_name!("button"))
++}
++
+ fn role_from_dom_node(dom_node: &ServoLayoutNode<'_>) -> Role {
+     if let Some(dom_element) = dom_node.as_element() {
+@@ -1580,2 +1580,2 @@
+ static NAME_FROM_CONTENTS_ROLES: LazyLock<FxHashSet<Role>> =
+-    LazyLock::new(|| [(Role::Heading)].into_iter().collect());
++    LazyLock::new(|| [(Role::Button), (Role::Heading)].into_iter().collect());
+diff --git a/components/shared/layout/lib.rs b/components/shared/layout/lib.rs
+--- a/components/shared/layout/lib.rs
++++ b/components/shared/layout/lib.rs
+@@ -285,4 +285,21 @@
+     fn create(&self, config: LayoutConfig) -> Box<dyn Layout>;
+ }
+ 
++/// Result of resolving an AccessKit action target against one retained document tree.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub enum AccessibilityNodeAddressResult {
++    /// The node exists in the current retained tree. `action_advertised` is copied from that
++    /// exact retained AccessKit node and must be checked again before dispatch.
++    Resolved {
++        /// DOM address retained for this exact accessibility node.
++        address: UntrustedNodeAddress,
++        /// Whether the exact retained node advertised the requested action.
++        action_advertised: bool,
++    },
++    /// The tree or embedder epoch is no longer current.
++    StaleTree,
++    /// The node is not present in the current retained tree or has no DOM identity.
++    StaleNode,
++}
++
+ pub trait Layout {
+@@ -420,7 +420,8 @@
+         &self,
+         tree_id: accesskit::TreeId,
+         node_id: accesskit::NodeId,
++        action: accesskit::Action,
+         epoch: Epoch,
+-    ) -> Option<UntrustedNodeAddress>;
++    ) -> AccessibilityNodeAddressResult;
+ 
+     /// Returns whether accessibility is active for this Layout.
+diff --git a/components/layout/layout_impl.rs b/components/layout/layout_impl.rs
+--- a/components/layout/layout_impl.rs
++++ b/components/layout/layout_impl.rs
+@@ -755,18 +755,28 @@
+         &self,
+         tree_id: accesskit::TreeId,
+         node_id: accesskit::NodeId,
++        action: accesskit::Action,
+         epoch: Epoch,
+-    ) -> Option<UntrustedNodeAddress> {
++    ) -> layout_api::AccessibilityNodeAddressResult {
+         if tree_id != self.id.into() {
+-            return None;
++            return layout_api::AccessibilityNodeAddressResult::StaleTree;
+         }
+         let accessibility_tree = self.accessibility_tree.borrow();
+-        let accessibility_tree = accessibility_tree.as_ref()?;
++        let Some(accessibility_tree) = accessibility_tree.as_ref() else {
++            return layout_api::AccessibilityNodeAddressResult::StaleNode;
++        };
+         if accessibility_tree.embedder_epoch() != epoch {
+-            return None;
++            return layout_api::AccessibilityNodeAddressResult::StaleTree;
+         }
+-        let opaque_node = accessibility_tree.opaque_node_for_id(node_id)?;
+-        Some(UntrustedNodeAddress(opaque_node.0 as *const c_void))
++        let Some((opaque_node, action_advertised)) =
++            accessibility_tree.action_target_for_id(node_id, action)
++        else {
++            return layout_api::AccessibilityNodeAddressResult::StaleNode;
++        };
++        layout_api::AccessibilityNodeAddressResult::Resolved {
++            address: UntrustedNodeAddress(opaque_node.0 as *const c_void),
++            action_advertised,
++        }
+     }
+ 
+     fn accessibility_active(&self) -> bool {
+diff --git a/components/script/event_loop/script_thread.rs b/components/script/event_loop/script_thread.rs
+--- a/components/script/event_loop/script_thread.rs
++++ b/components/script/event_loop/script_thread.rs
+@@ -3900,9 +3900,21 @@
+-        let Some(address) = window.layout().accessibility_node_address(
+-            request.target_tree,
+-            request.target_node,
+-            epoch,
+-        ) else {
+-            respond(AccessibilityActionResult::StaleNode);
+-            return;
+-        };
++        let (address, action_advertised) =
++            match window.layout().accessibility_node_address(
++                request.target_tree,
++                request.target_node,
++                request.action,
++                epoch,
++            ) {
++                layout_api::AccessibilityNodeAddressResult::Resolved {
++                    address,
++                    action_advertised,
++                } => (address, action_advertised),
++                layout_api::AccessibilityNodeAddressResult::StaleTree => {
++                    respond(AccessibilityActionResult::StaleTree);
++                    return;
++                },
++                layout_api::AccessibilityNodeAddressResult::StaleNode => {
++                    respond(AccessibilityActionResult::StaleNode);
++                    return;
++                },
++            };
+         let node = unsafe { crate::dom::node::from_untrusted_node_address(address) };
+@@ -3955,5 +3955,9 @@
+             respond(AccessibilityActionResult::TargetNotRendered);
+             return;
+         }
++        if !action_advertised {
++            respond(AccessibilityActionResult::ActionNotAdvertised);
++            return;
++        }
+ 
+         node.fire_synthetic_pointer_event_not_trusted(cx, atom!("click"));
+diff --git a/components/shared/constellation/lib.rs b/components/shared/constellation/lib.rs
+--- a/components/shared/constellation/lib.rs
++++ b/components/shared/constellation/lib.rs
+@@ -140,4 +140,6 @@
+     /// The requested AccessKit node is not retained in the current tree.
+     StaleNode,
+-    /// The action or its action data is outside the initial click-only scope.
++    /// The exact retained AccessKit node does not advertise the requested action.
++    ActionNotAdvertised,
++    /// The action type or its action data is outside the initial click-only scope.
+     UnsupportedAction,
+diff --git a/components/servo/tests/accessibility.rs b/components/servo/tests/accessibility.rs
+--- a/components/servo/tests/accessibility.rs
++++ b/components/servo/tests/accessibility.rs
+@@ -7,4 +7,5 @@
+ use std::collections::VecDeque;
+ use std::rc::Rc;
++use std::sync::{Arc, Mutex};
+ 
+-use accesskit::{NodeId, Rect, Role, TreeId, TreeUpdate};
++use accesskit::{Action, ActionData, ActionRequest, NodeId, Rect, Role, TreeId, TreeUpdate};
+@@ -15,4 +15,5 @@
+     DiagnosticsLoggingOption, LoadStatus, Opts, Preferences, Scroll, WebViewBuilder, WebViewPoint,
+     WebViewVector,
+ };
++use servo::{AccessibilityActionResult, GenericCallback};
+ use url::Url;
+@@ -1100,3 +1100,296 @@
++#[test]
++fn test_retained_accessibility_click_dispatches_exactly_once() {
++    let url = r#"data:text/html,<!DOCTYPE html>
++        <button onclick='let count=document.getElementById("count");
++                         let next=Number(count.dataset.value||"0")+1;
++                         count.dataset.value=String(next);
++                         count.textContent="Click count "+next'>
++          Action target
++        </button>
++        <h1 id='count' data-value='0'>Click count 0</h1>"#;
++    let (servo_test, delegate, webview, mut tree) = build_webview_and_tree(url);
++    let button = find_labeled_node(&tree, Role::Button, "Action target");
++    assert!(button.data().supports_action(Action::Click));
++
++    let result = perform_retained_action(
++        &servo_test,
++        &webview,
++        action_request(button, Action::Click, None),
++    );
++    assert_eq!(result, AccessibilityActionResult::Dispatched);
++
++    apply_updates(
++        &mut tree,
++        wait_for_min_updates(&servo_test, delegate.clone(), 1),
++    );
++    let count = find_labeled_node(&tree, Role::Heading, "Click count 1");
++    assert_eq!(count.label().as_deref(), Some("Click count 1"));
++    assert!(
++        find_optional_labeled_node(&tree, Role::Heading, "Click count 2").is_none(),
++        "one retained action must not dispatch twice"
++    );
++}
++
++#[test]
++fn test_retained_accessibility_rejects_unadvertised_and_unsupported_requests() {
++    let url = r#"data:text/html,<!DOCTYPE html>
++        <h1>Not clickable</h1>
++        <button>Supported target</button>"#;
++    let (servo_test, _delegate, webview, tree) = build_webview_and_tree(url);
++    let plain = find_labeled_node(&tree, Role::Heading, "Not clickable");
++    let button = find_labeled_node(&tree, Role::Button, "Supported target");
++    assert!(!plain.data().supports_action(Action::Click));
++    assert!(button.data().supports_action(Action::Click));
++
++    assert_eq!(
++        perform_retained_action(
++            &servo_test,
++            &webview,
++            action_request(plain, Action::Click, None),
++        ),
++        AccessibilityActionResult::ActionNotAdvertised
++    );
++    assert_eq!(
++        perform_retained_action(
++            &servo_test,
++            &webview,
++            action_request(button, Action::Focus, None),
++        ),
++        AccessibilityActionResult::UnsupportedAction
++    );
++    assert_eq!(
++        perform_retained_action(
++            &servo_test,
++            &webview,
++            action_request(
++                button,
++                Action::Click,
++                Some(ActionData::Value("unexpected".into())),
++            ),
++        ),
++        AccessibilityActionResult::UnsupportedAction
++    );
++}
++
++#[test]
++fn test_retained_accessibility_rejects_replaced_node_identity() {
++    let url = r#"data:text/html,<!DOCTYPE html>
++        <button id='target'>Original target</button>
++        <button onclick='let target=document.getElementById("target");
++                         let replacement=document.createElement("button");
++                         replacement.id="target";
++                         replacement.textContent="Replacement target";
++                         target.replaceWith(replacement)'>
++          Replace target
++        </button>"#;
++    let (servo_test, delegate, webview, mut tree) = build_webview_and_tree(url);
++    let original = find_labeled_node(&tree, Role::Button, "Original target");
++    let original_location = original.locate();
++    let original_request = action_request(original, Action::Click, None);
++    let replacer = find_labeled_node(&tree, Role::Button, "Replace target");
++
++    assert_eq!(
++        perform_retained_action(
++            &servo_test,
++            &webview,
++            action_request(replacer, Action::Click, None),
++        ),
++        AccessibilityActionResult::Dispatched
++    );
++    assert_eq!(
++        perform_retained_action(&servo_test, &webview, original_request),
++        AccessibilityActionResult::StaleNode
++    );
++
++    apply_updates(
++        &mut tree,
++        wait_for_min_updates(&servo_test, delegate.clone(), 1),
++    );
++    let replacement = find_labeled_node(&tree, Role::Button, "Replacement target");
++    assert_ne!(
++        replacement.locate(),
++        original_location,
++        "replacing a DOM element must not recycle its retained action identity"
++    );
++}
++
++#[test]
++fn test_retained_accessibility_rejects_inactive_and_stale_tree() {
++    let url = "data:text/html,<!DOCTYPE html><button>Old target</button>";
++    let (servo_test, _delegate, webview, tree) = build_webview_and_tree(url);
++    let target = find_labeled_node(&tree, Role::Button, "Old target");
++    let request = action_request(target, Action::Click, None);
++
++    webview.set_accessibility_active(false);
++    assert_eq!(
++        perform_retained_action(&servo_test, &webview, request.clone()),
++        AccessibilityActionResult::AccessibilityInactive
++    );
++
++    webview.set_accessibility_active(true);
++    let new_url =
++        Url::parse("data:text/html,<!DOCTYPE html><button>New target</button>")
++            .expect("valid fixed data URL");
++    let load_webview = webview.clone();
++    webview.load(new_url.clone());
++    servo_test.spin(move || {
++        load_webview.url() != Some(new_url.clone()) ||
++            load_webview.load_status() != LoadStatus::Complete
++    });
++    assert_eq!(
++        perform_retained_action(&servo_test, &webview, request),
++        AccessibilityActionResult::StaleTree
++    );
++}
++
++#[test]
++fn test_retained_accessibility_rejects_disabled_hidden_and_non_element_targets() {
++    let url = r#"data:text/html,<!DOCTYPE html>
++        <button id='disabled-target' disabled>Disabled target</button>
++        <button id='hidden-target' style='display:contents'>Hidden target</button>
++        <p>Text child</p>"#;
++    let (servo_test, _delegate, webview, tree) = build_webview_and_tree(url);
++    let disabled_target = find_labeled_node(&tree, Role::Button, "Disabled target");
++    let hidden_target = find_labeled_node(&tree, Role::Button, "Hidden target");
++    let root = assert_tree_structure_and_get_root_web_area(&tree);
++    let text_node = find_first_matching_node(root, |node| {
++        node.role() == Role::TextRun && node.value().as_deref() == Some("Text child")
++    })
++    .expect("document should contain the paragraph text-run node");
++
++    assert_eq!(
++        perform_retained_action(
++            &servo_test,
++            &webview,
++            action_request(disabled_target, Action::Click, None),
++        ),
++        AccessibilityActionResult::TargetDisabled
++    );
++
++    assert_eq!(
++        perform_retained_action(
++            &servo_test,
++            &webview,
++            action_request(hidden_target, Action::Click, None),
++        ),
++        AccessibilityActionResult::TargetNotRendered
++    );
++
++    assert_eq!(
++        perform_retained_action(
++            &servo_test,
++            &webview,
++            action_request(text_node, Action::Click, None),
++        ),
++        AccessibilityActionResult::TargetNotElement
++    );
++}
++
++#[test]
++fn test_retained_accessibility_dropped_callback_does_not_duplicate_dispatch() {
++    let url = r#"data:text/html,<!DOCTYPE html>
++        <button onclick='let count=document.getElementById("count");
++                         count.textContent="Callback click count 1"'>
++          Callback target
++        </button>
++        <h1 id='count'>Callback click count 0</h1>"#;
++    let (servo_test, delegate, webview, mut tree) = build_webview_and_tree(url);
++    let button = find_labeled_node(&tree, Role::Button, "Callback target");
++    let (callback, receiver) =
++        GenericCallback::new_blocking().expect("blocking callback must be constructible");
++    drop(receiver);
++
++    webview.perform_accessibility_action(
++        action_request(button, Action::Click, None),
++        callback,
++    );
++
++    apply_updates(
++        &mut tree,
++        wait_for_min_updates(&servo_test, delegate.clone(), 1),
++    );
++    let count = find_labeled_node(&tree, Role::Heading, "Callback click count 1");
++    assert_eq!(count.label().as_deref(), Some("Callback click count 1"));
++}
++
++fn action_request(
++    node: accesskit_consumer::Node<'_>,
++    action: Action,
++    data: Option<ActionData>,
++) -> ActionRequest {
++    let (target_node, target_tree) = node.locate();
++    ActionRequest {
++        action,
++        target_tree,
++        target_node,
++        data,
++    }
++}
++
++fn perform_retained_action(
++    servo_test: &ServoTest,
++    webview: &servo::WebView,
++    request: ActionRequest,
++) -> AccessibilityActionResult {
++    let responses = Arc::new(Mutex::new(Vec::new()));
++    let callback_responses = responses.clone();
++    let callback = GenericCallback::new(move |result| {
++        callback_responses
++            .lock()
++            .expect("response mutex must not be poisoned")
++            .push(result.expect("retained action callback transport must succeed"));
++    })
++    .expect("retained action callback must be constructible");
++
++    webview.perform_accessibility_action(request, callback);
++    let pending_responses = responses.clone();
++    servo_test.spin(move || {
++        pending_responses
++            .lock()
++            .expect("response mutex must not be poisoned")
++            .is_empty()
++    });
++
++    for _ in 0..8 {
++        servo_test.servo.spin_event_loop();
++    }
++
++    let responses = responses
++        .lock()
++        .expect("response mutex must not be poisoned");
++    assert_eq!(
++        responses.len(),
++        1,
++        "one request must complete exactly one callback"
++    );
++    responses[0]
++}
++
++fn apply_updates(tree: &mut accesskit_consumer::Tree, updates: Vec<TreeUpdate>) {
++    for update in updates {
++        tree.update_and_process_changes(update, &mut NoOpChangeHandler);
++    }
++}
++
++fn find_labeled_node<'tree>(
++    tree: &'tree accesskit_consumer::Tree,
++    role: Role,
++    label: &str,
++) -> accesskit_consumer::Node<'tree> {
++    find_optional_labeled_node(tree, role, label)
++        .unwrap_or_else(|| panic!("tree should contain {role:?} with label {label:?}"))
++}
++
++fn find_optional_labeled_node<'tree>(
++    tree: &'tree accesskit_consumer::Tree,
++    role: Role,
++    label: &str,
++) -> Option<accesskit_consumer::Node<'tree>> {
++    let root = assert_tree_structure_and_get_root_web_area(tree);
++    find_first_matching_node(root, |node| {
++        node.role() == role && node.label().as_deref() == Some(label)
++    })
++}
+ // ************************************************************************************************
+ // If you're adding a new test here, consider adding a matching test in
+ // tests/wpt/mozilla/tests/accessibility-tree/

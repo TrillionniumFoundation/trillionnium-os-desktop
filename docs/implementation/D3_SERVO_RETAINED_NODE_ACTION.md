@@ -2,36 +2,131 @@
 
 ## Status and claim boundary
 
-This document describes the source-qualified candidate carried by `codex/d3-servo-retained-node-action-v4` for blocker D3-01. The patch targets Servo commit `670ae8a70801b162e186f81cbb5bdd2d59c39108` exactly. A green `servo-retained-node-source` job in the governed D3 workflow proves only that the patch applies, passes the static policy guards, is normalized within its reviewed path boundary, and compiles through the locked `servoshell` dependency graph at that pin. It is not installed-runtime evidence and does not replace the independent exact-image packet required by the release plan.
+This document describes the source-qualified candidate carried by
+`codex/d3-servo-retained-node-action-v4` for blocker D3-01. The patch targets
+Servo commit `670ae8a70801b162e186f81cbb5bdd2d59c39108` exactly.
+
+The governed source job proves apply, static-policy, formatting and locked
+compile compatibility. The separate `d3-retained-node-behavior` workflow runs
+the retained-node corpus in Servo's real `components/servo/tests/accessibility.rs`
+test harness. Neither result is installed-runtime evidence, product receipt
+evidence, independent image replay, hardware qualification or release evidence.
 
 ## Problem
 
-At the pinned Servo revision, AccessKit delivers `ActionRequested` events to servoshell, but non-root document-tree requests stop at `TODO(#4344)`. The missing path means an observed AccessKit `TreeId` and `NodeId` cannot be forwarded to the DOM node retained by Servo's accessibility tree. Falling back to screen coordinates, JavaScript evaluation, WebDriver, text search, or a second selector pass would break D3's same-node requirement.
+At the pinned Servo revision, AccessKit delivers `ActionRequested` events to
+servoshell, but non-root document-tree requests stop at `TODO(#4344)`. The
+missing path means an observed AccessKit `TreeId` and `NodeId` cannot be
+forwarded to the DOM node retained by Servo's accessibility tree. Falling back
+to screen coordinates, JavaScript evaluation, WebDriver, text search, or a
+second selector pass would break D3's same-node requirement.
+
+The initial source candidate also accepted `Action::Click` without proving that
+the exact retained AccessKit node advertised Click. That allowed a caller to
+attempt semantic click dispatch against a generic rendered element. The
+hardening patch closes this confused-capability boundary.
 
 ## End-to-end route
 
-1. `HeadedWindow` receives an AccessKit request. Root-tree actions remain owned by the embedder GUI. For a non-root tree it enumerates current webviews and accepts only an exact, unique match for the active grafted document `TreeId`.
-2. `WebView::perform_accessibility_action` sends the original `ActionRequest` and a typed callback to the Constellation.
-3. The Constellation rebinds the request to the webview's current active top-level `PipelineId`. It independently checks accessibility activation, exact `TreeId::from(PipelineId)`, click-only scope, and absence of action data.
-4. Script receives the webview id, pipeline id, active-document epoch, original request, and callback. It repeats the tree/action checks, rejects stale or inactive documents, and runs an `UpdateTheRendering` reflow inside the current script task.
-5. Layout resolves `NodeId` only through the current `AccessibilityTree::id_to_opaque_node` map and only when the tree id and embedder epoch still match.
-6. Script converts that retained opaque identity back to the DOM node, verifies that it is connected, belongs to the same webview, is an element, is enabled, and still has a CSS layout box. It then fires one untrusted synthetic click event directly at that node.
-7. The callback receives one terminal `AccessibilityActionResult`. `Dispatched` means only that the click dispatch returned; it does not assert an external side effect or receipt.
+1. `HeadedWindow` receives an AccessKit request. Root-tree actions remain owned
+   by the embedder GUI. For a non-root tree it enumerates current webviews and
+   accepts only an exact, unique match for the active grafted document `TreeId`.
+2. `WebView::perform_accessibility_action` sends the original `ActionRequest`
+   and a typed callback to the Constellation.
+3. The Constellation rebinds the request to the webview's current active
+   top-level `PipelineId`. It independently checks accessibility activation,
+   exact `TreeId::from(PipelineId)`, click-only scope, and absence of action
+   data.
+4. Script receives the webview id, pipeline id, active-document epoch, original
+   request, and callback. It repeats the tree/action checks, rejects stale or
+   inactive documents, and runs an `UpdateTheRendering` reflow inside the
+   current script task.
+5. Layout resolves `NodeId` only through the exact current retained
+   `AccessibilityTree` node and the current embedder epoch. The resolution
+   returns both its retained DOM identity and whether that exact AccessKit node
+   advertised the requested action.
+6. Script converts the retained opaque identity back to the DOM node, verifies
+   that it is connected, belongs to the same webview, is an element, is
+   enabled, still has a CSS layout box, and advertised Click. Only then does it
+   fire one untrusted synthetic click.
+7. The callback receives one terminal `AccessibilityActionResult`.
+   `Dispatched` means only that DOM event dispatch returned; it does not assert
+   an external effect or a product receipt.
+
+## Initial advertised action surface
+
+The pinned Servo accessibility tree did not advertise actions for native
+controls. This candidate adds the minimum reviewed surface required for the
+behavior proof:
+
+- native HTML `button` maps to AccessKit `Role::Button`;
+- its accessible name is derived from its content;
+- the retained AccessKit node advertises only `Action::Click`;
+- all non-button nodes remain unadvertised for Click;
+- disabled and non-rendered state is rechecked on the live retained DOM element
+  immediately before dispatch.
+
+Links, inputs, custom ARIA widgets and other AccessKit actions remain outside
+this initial patch and fail closed.
 
 ## Fail-closed outcomes
 
-The API distinguishes inactive accessibility, stale webview, stale document, stale tree, stale node, unsupported action, non-element target, disabled target, and non-rendered target. Missing or ambiguous `TreeId` ownership is rejected in servoshell before dispatch. Navigation and tree-generation races are rejected again in Constellation and layout through the current pipeline and epoch.
+The API distinguishes inactive accessibility, stale webview, stale document,
+stale tree, stale node, unsupported action or action data, an action not
+advertised by the retained node, a non-element target, a disabled target, and a
+non-rendered target. Missing or ambiguous `TreeId` ownership is rejected in
+servoshell before dispatch. Navigation and tree-generation races are rejected
+again in Constellation, script and layout.
 
 ## Security invariants
 
-The action target is the retained node identity from the accessibility tree. No coordinate lookup, JavaScript evaluation, WebDriver command, selector retry, text search, or role/name reselection exists in the added path. Only `Action::Click` with no `ActionData` is accepted. The script-thread handler performs the final lookup and dispatch without allowing a page-script task to interleave between them.
+The action target is the retained node identity from the accessibility tree.
+No coordinate lookup, JavaScript evaluation, WebDriver command, selector
+retry, text search, or role/name reselection exists in the dispatch path. Only
+`Action::Click` with no `ActionData` is accepted. The exact retained node must
+advertise Click. The script-thread handler performs final refresh, lookup,
+capability recheck and dispatch without allowing a page-script task to
+interleave between them.
 
 ## Governed source qualification
 
-`.github/workflows/d3-integrated-runtime-evidence.yml`, job `servo-retained-node-source`, checks out the carrier repository and immutable Servo commit, validates the pinned AccessKit ABI, reassembles the ordered and individually hashed unified-diff parts, verifies the aggregate patch digest and exact changed-path allowlist, runs a clean dry-run, applies the patch, enforces the forbidden-fallback policy, normalizes only patch-owned Rust files, rejects every post-format path outside the allowlist, requires the core semantic files to remain changed, and executes a locked `cargo check -p servoshell`.
+`.github/workflows/d3-integrated-runtime-evidence.yml`, job
+`servo-retained-node-source`, checks out the carrier repository and immutable
+Servo commit, validates the pinned AccessKit ABI, reassembles the ordered and
+individually hashed base and hardening patch parts, verifies their digests and
+exact changed-path allowlist, runs a clean dry-run, applies the patch, enforces
+the forbidden-fallback policy, normalizes only patch-owned Rust files, rejects
+every post-format path outside the allowlist, requires the core semantic files
+to remain changed, and executes a locked `cargo check -p servoshell`.
 
-The job's external actions are bound to full commit SHAs in `manifests/ci-action-pins.v1.json`. Any workflow/action-pin mismatch is rejected by `tools/validate_project_truth.py`. The job uploads a machine-readable evidence packet even on failure, including verification, formatting and compile outcomes plus file digests.
+## Real Servo behavior qualification
 
-## Remaining integration work after source qualification
+`.github/workflows/d3-retained-node-behavior.yml` applies the same immutable
+combined patch and runs the filtered integration tests in Servo itself. The
+corpus covers:
 
-The Trillionnium browser adapter must translate its guarded `ElementReference` and action receipt lifecycle into this Servo API, bind product-side document and session revisions before dispatch, and exercise the path on the exact installed image. Independent replay must demonstrate success, stale-node rejection, navigation-race rejection, disabled-target rejection, unsupported-action rejection, and no fallback behavior. Those are separate gates and must not be inferred from source CI.
+- a valid retained native-button click;
+- one request producing exactly one terminal callback and one DOM dispatch;
+- rejection of a rendered node that does not advertise Click;
+- unsupported action and unexpected `ActionData`;
+- removed/replaced node identity;
+- accessibility deactivation and navigation/tree change;
+- disabled, hidden and non-element targets;
+- a dropped callback receiver without duplicate dispatch;
+- regression coverage for the pinned accessibility role mapping.
+
+The workflow emits a bounded digest manifest and keeps
+`installed_runtime_proven`, product receipt integration, independent replay,
+hardware, protected-environment approval and HSM signing explicitly false.
+
+## Remaining integration work
+
+The Trillionnium browser adapter must translate its guarded
+`ElementReference` and action receipt lifecycle into this Servo API, bind
+product-side session/document revisions before dispatch, install the exact
+patched Servo artifact into the exact D2I image, and exercise the path through
+the installed AgentPort → principal → BrowserActor → receipt journal chain.
+
+That installed corpus must bind the image digest, process identities, request,
+dispatch and terminal receipt facts, and repeat the stale/recovery cases. It is
+a separate gate and must not be inferred from source or Servo test-harness CI.
