@@ -91,7 +91,7 @@ class D3SessionEngineRunnerTests(unittest.TestCase):
                 self.assertIn(contract_path, gate["invalidation_paths"])
                 self.assertIn("tests/test_d3_session_engine_runner.py", gate["invalidation_paths"])
         d3 = next(g for g in gates if g["id"] == "D3-01")
-        self.assertEqual(d3["status"], "BLOCKED_UPSTREAM")
+        self.assertEqual(d3["status"], "SOURCE_CANDIDATE")
 
     def test_workflow_triggers_include_runner_and_audit_inputs(self):
         from tests.test_agent_port_custody_workflow import trigger_paths
