@@ -11,7 +11,7 @@
   },
   "patch": {
     "format": "ordered_unified_diff_parts",
-    "sha256": "d48118ffc8140a2d8c36db2ea4956ed88162cf0e0e14135e461b9e28da23a709",
+    "sha256": "fcfaef691f38c56082bb8ebf3ae7713bbcc20c4c6e306589ccd39b1098e417d9",
     "parts": [
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/000.patch",
@@ -28,9 +28,14 @@
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/003.patch",
         "sha256": "f468a92efbbfd8e4a5da7b7c298ba986d91ba02a55b7fdeeea9706886197466f"
+      },
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/004.patch",
+        "sha256": "655b159c952e53cc7040a0ffaa7ac0d4d1a0c00838eef14d8e9fb9c167cbcc61"
       }
     ],
     "allowed_paths": [
+      "Cargo.lock",
       "components/constellation/constellation.rs",
       "components/constellation/tracing.rs",
       "components/layout/accessibility_tree.rs",
