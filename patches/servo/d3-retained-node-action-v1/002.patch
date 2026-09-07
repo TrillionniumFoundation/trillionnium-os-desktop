@@ -1,0 +1,140 @@
++    }
++
+     /// Handle a "navigate an iframe" message from the constellation.
+     fn handle_navigate_iframe(
+         &self,
+diff --git a/components/script/messaging.rs b/components/script/messaging.rs
+index e6fd889e7893c6fc42fb610ef14232013b320fcf..7ab3eaecf9a65fd9a1dce737eeb51b7f1e950f1b 100644
+--- a/components/script/messaging.rs
++++ b/components/script/messaging.rs
+@@ -111,6 +111,7 @@ impl MixedMessage {
+                 ScriptThreadMessage::DestroyUserContentManager(..) => None,
+                 ScriptThreadMessage::UpdatePinchZoomInfos(id, _) => Some(*id),
+                 ScriptThreadMessage::SetAccessibilityActive(..) => None,
++                ScriptThreadMessage::PerformAccessibilityAction(_, id, ..) => Some(*id),
+                 ScriptThreadMessage::TriggerGarbageCollection => None,
+             },
+             MixedMessage::FromScript(inner_msg) => match inner_msg {
+diff --git a/components/servo/lib.rs b/components/servo/lib.rs
+index f7a33d88ca3fdb68e0984cff95101c4df98df1da..f67a61eeee4b055935c744672a9e01783815f570 100644
+--- a/components/servo/lib.rs
++++ b/components/servo/lib.rs
+@@ -85,9 +85,10 @@ pub use profile_traits;
+ // This should be replaced with an API on ServoBuilder.
+ // See <https://github.com/servo/servo/issues/40950>.
+ pub use resources;
+-pub use servo_base::generic_channel::GenericSender;
++pub use servo_base::generic_channel::{GenericCallback, GenericSender};
+ pub use servo_base::id::WebViewId;
+ pub use servo_config::opts::{DiagnosticsLogging, DiagnosticsLoggingOption, Opts, OutputOptions};
++pub use servo_constellation_traits::AccessibilityActionResult;
+ pub use servo_config::prefs::{PrefValue, Preferences, UserAgentPlatform};
+ pub use servo_config::{opts, pref, prefs};
+ pub use servo_geometry::{
+diff --git a/components/servo/webview.rs b/components/servo/webview.rs
+index 3778a43c365fd0d770e72565eb1153c3ef1603c6..abf80980e8bbe3aa4bd55159c1b886bf0be958bd 100644
+--- a/components/servo/webview.rs
++++ b/components/servo/webview.rs
+@@ -7,7 +7,8 @@ use std::hash::Hash;
+ use std::rc::{Rc, Weak};
+ 
+ use accesskit::{
+-    Affine as AccesskitAffine, Node as AccesskitNode, NodeId, Rect as AccesskitRect, Role, Tree,
++    ActionRequest, Affine as AcccesskitAffine, Node as AccesskitNode, NodeId,
++    Rect as AccesskitRect, Role, Tree,
+     TreeId, TreeUpdate, Uuid as AccesskitUuid,
+};
+ use dpi::PhysicalSize;
+@@ -23,11 +24,11 @@ use log::debug;
+ use paint_api::WebViewTrait;
+ use paint_api::rendering_context::RenderingContext;
+ use servo_base::Epoch;
+-use servo_base::generic_channel::GenericSender;
++use servo_base::generic_channel::{GenericCallback, GenericSender};
+ use servo_base::id::WebViewId;
+ use servo_config::pref;
+ use servo_constellation_traits::{
+-    EmbedderToConstellationMessage, HistoryTraversalSource, SessionHistoryTraversalRequest,
++    AccessibilityActionResult, EmbedderToConstellationMessage, HistoryTraversalSource, SessionHistoryTraversalRequest,
+     TraversalDirection,
+ };
+ use servo_geometry::DeviceIndependentPixel;
+@@ -905,6 +906,29 @@ impl WebView {
+         self.inner().accesskit_tree_id
+     }
+ 
++    /// Return the AccessKit tree id of the active top-level document grafted into this webview.
++    pub fn active_document_accesskit_tree_id(&self) -> Option<TreeId> {
++        self.inner().grafted_accesskit_tree_id
++    }
++
++    /// Perform one retained-node accessibility action and return a typed terminal result.
++    ///
++    /// The initial supported scope is a click action with no action data. Servo rejects stale
++    /// trees, stale nodes, inactive documents, disabled targets, and all unsupported actions.
++    pub fn perform_accessibility_action(
++        &self,
++        request: ActionRequest,
++        response: GenericCallback<AccessibilityActionResult>,
++    ) {
++        self.inner().servo.constellation_proxy().send(
++            EmbedderToConstellationMessage::PerformAccessibilityAction(
++                self.id(),
++                request,
++                response,
++            ),
++        );
++    }
++
+     /// Activate or deactivate accessibility features for this [`WebView`], returning the
+     /// AccessKit subtree id if accessibility is now active.
+     ///
+diff --git a/components/shared/constellation/Cargo.toml b/components/shared/constellation/Cargo.toml
+index 7041f6aec61ede5f746524f8d48c8de46d51cc84..24d7eaad6ba5673b95da86e82d113cf9eb3c0f1e 100644
+--- a/components/shared/constellation/Cargo.toml
++++ b/components/shared/constellation/Cargo.toml
+@@ -20,6 +20,7 @@ webgpu = ["dep:webgpu_traits", "dep:wgpu-core"]
+ webgl = []
+ 
+ [dependencies]
++accesskit = { workspace = true }
+ base64 = { workspace = true }
+ content-security-policy = { workspace = true }
+ devtools_traits = { workspace = true }
+diff --git a/components/shared/constellation/lib.rs b/components/shared/constellation/lib.rs
+index 2dcb20e73777a70a0c6e6d87ba8321c6de6172b4..bc23b89a8c4fda1c4161fee12791314d96daa559 100644
+--- a/components/shared/constellation/lib.rs
++++ b/components/shared/constellation/lib.rs
+@@ -114,6 +114,41 @@ pub enum EmbedderToConstellationMessage {
+     UpdatePinchZoomInfos(PipelineId, PinchZoomInfos),
+     /// Activate or deactivate accessibility features for the given `WebView`.
+     SetAccessibilityActive(WebViewId, bool),
++    /// Perform one bounded accessibility action against the active document tree of the given
++    /// `WebView`. The callback is completed exactly once by the constellation or script thread.
++    PerformAccessibilityAction(
++        WebViewId,
++        accesskit::ActionRequest,
++        GenericCallback<AccessibilityActionResult>,
++    ),
++}
++
++/// Terminal result for one retained accessibility-node action request.
++///
++/// `Dispatched` means that script synchronously revalidated the current retained node and
++/// dispatched one click event. It does not claim that page script completed an external effect.
++#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
++pub enum AccessibilityActionResult {
++    /// One supported action was dispatched to the retained DOM node.
++    Dispatched,
++    /// Accessibility is disabled or inactive for the selected webview/document.
++    AccessibilityInactive,
++    /// The webview no longer exists.
++    StaleWebView,
++    /// The selected document is missing, inactive, or no longer belongs to the webview.
++    StaleDocument,
++    /// The requested AccessKit tree is not the active top-level document tree.
++    StaleTree,
++    /// The requested AccessKit node is not retained in the current tree.
++    StaleNode,
++    /// The action or its action data is outside the initial click-only scope.
++    UnsupportedAction,

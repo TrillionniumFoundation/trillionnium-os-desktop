@@ -1,0 +1,199 @@
+name: lab-d3-servo-retained-node-v4
+
+'on':
+  push:
+    branches:
+      - codex/d3-servo-retained-node-action-v4
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lab-d3-servo-retained-node-v4-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+  MANIFEST_PATH: manifests/lab-d3-servo-retained-node-action.v1.json
+
+jobs:
+  qualify-exact-pin-patch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Check out carrier repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          path: carrier
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Check out exact Servo pin
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.SERVO_COMMIT }}
+          path: servo
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify immutable inputs and patch policy
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = "$SERVO_COMMIT"
+          test -z "$(git -C servo status --porcelain=v1)"
+          test "$(jq -r '.carrier_branch' "carrier/$MANIFEST_PATH")" = \
+            "${GITHUB_REF_NAME}"
+          test "$(jq -r '.carrier_base_commit' "carrier/$MANIFEST_PATH")" = \
+            "3a35ac470435edc4514cf4826cd5de817562f465"
+          python3 carrier/scripts/verify_d3_servo_patch.py \
+            --manifest "carrier/$MANIFEST_PATH" \
+            --root carrier \
+            --output "$RUNNER_TEMP/d3-servo.patch" \
+            | tee "$RUNNER_TEMP/d3-patch-verification.json"
+          git -C servo apply --check "$RUNNER_TEMP/d3-servo.patch"
+          git -C servo apply "$RUNNER_TEMP/d3-servo.patch"
+          test -n "$(git -C servo status --porcelain=v1)"
+          git -C servo diff --name-only | sort > "$RUNNER_TEMP/d3-changed-before-format.txt"
+          jq -r '.patch.allowed_paths[]' "carrier/$MANIFEST_PATH" | sort \
+            > "$RUNNER_TEMP/d3-allowed-paths.txt"
+          cmp "$RUNNER_TEMP/d3-allowed-paths.txt" \
+            "$RUNNER_TEMP/d3-changed-before-format.txt"
+          ! grep -R -F "TODO(#4344): Forward action to Servo" \
+            servo/ports/servoshell/desktop/headed_window.rs
+          git -C servo diff --check
+          printf 'VERIFY_OUTCOME=success\n' >> "$GITHUB_ENV"
+
+      - name: Set Linux build environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> "$GITHUB_ENV"
+
+      - name: Set up Servo Python environment
+        uses: ./servo/.github/actions/setup-python
+        with:
+          python-version-file-path: servo/.python-version
+
+      - name: Bootstrap exact Servo dependencies and toolchain
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -qy tshark shellcheck
+          ./mach bootstrap --yes --skip-lints --skip-nextest
+          rustc --version --verbose | tee "$RUNNER_TEMP/d3-rustc-version.txt"
+          cargo --version --verbose | tee "$RUNNER_TEMP/d3-cargo-version.txt"
+          test "$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)" = "1.97.1"
+
+      - name: Normalize and verify canonical formatting
+        id: format
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          cargo fmt --all
+          cargo fmt --all -- --check
+          git diff --check
+          git diff --name-only | sort > "$RUNNER_TEMP/d3-changed-after-format.txt"
+          cmp "$RUNNER_TEMP/d3-allowed-paths.txt" \
+            "$RUNNER_TEMP/d3-changed-after-format.txt"
+          git diff --binary > "$RUNNER_TEMP/d3-servo-formatted.patch"
+          test -s "$RUNNER_TEMP/d3-servo-formatted.patch"
+          sha256sum "$RUNNER_TEMP/d3-servo-formatted.patch" \
+            | tee "$RUNNER_TEMP/d3-servo-formatted.patch.sha256"
+          printf 'FORMAT_OUTCOME=success\n' >> "$GITHUB_ENV"
+
+      - name: Compile exact patched dependency graph
+        id: compile
+        shell: bash
+        working-directory: servo
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: -D warnings
+        run: |
+          set -o pipefail
+          cargo check --locked \
+            -p servoshell \
+            --no-default-features \
+            --features bundled,gamepad,js_jit,max_log_level \
+            2>&1 | tee "$RUNNER_TEMP/d3-cargo-check.log"
+          printf 'COMPILE_OUTCOME=success\n' >> "$GITHUB_ENV"
+
+      - name: Export bounded exact-pin source and evidence
+        if: always()
+        shell: bash
+        env:
+          VERIFY_STEP_OUTCOME: ${{ steps.verify.outcome }}
+          FORMAT_STEP_OUTCOME: ${{ steps.format.outcome }}
+          COMPILE_STEP_OUTCOME: ${{ steps.compile.outcome }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/d3-servo-evidence"
+          mkdir -p "$evidence"
+          cp "carrier/$MANIFEST_PATH" "$evidence/manifest.json"
+          for file in \
+            d3-servo.patch \
+            d3-servo-formatted.patch \
+            d3-servo-formatted.patch.sha256 \
+            d3-patch-verification.json \
+            d3-changed-before-format.txt \
+            d3-changed-after-format.txt \
+            d3-allowed-paths.txt \
+            d3-rustc-version.txt \
+            d3-cargo-version.txt \
+            d3-cargo-check.log; do
+            test ! -f "$RUNNER_TEMP/$file" || cp "$RUNNER_TEMP/$file" "$evidence/$file"
+          done
+          printf '%s\n' "$SERVO_COMMIT" > "$evidence/SERVO_COMMIT.txt"
+          printf '%s\n' "$GITHUB_SHA" > "$evidence/CARRIER_COMMIT.txt"
+          git -C servo status --porcelain=v1 > "$evidence/servo-status.txt" || true
+          git -C servo diff --stat > "$evidence/servo-diff-stat.txt" || true
+          python3 - "$evidence/evidence.json" <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          output = Path(sys.argv[1])
+          formatted = Path(os.environ["RUNNER_TEMP"]) / "d3-servo-formatted.patch"
+          import hashlib
+          formatted_sha = hashlib.sha256(formatted.read_bytes()).hexdigest() if formatted.exists() else None
+          evidence = {
+              "schema": "trillionnium.desktop.d3-servo-retained-node.v1",
+              "claim_ceiling": "exact-pin-source-apply-format-and-compile-only",
+              "carrier_commit": os.environ["GITHUB_SHA"],
+              "servo_commit": os.environ["SERVO_COMMIT"],
+              "verify_outcome": os.environ.get("VERIFY_STEP_OUTCOME"),
+              "format_outcome": os.environ.get("FORMAT_STEP_OUTCOME"),
+              "compile_outcome": os.environ.get("COMPILE_STEP_OUTCOME"),
+              "formatted_patch_sha256": formatted_sha,
+              "accesskit_action_target_field": "target_node",
+              "typed_terminal_result_implemented": True,
+              "retained_node_lookup_implemented": True,
+              "same_script_task_lookup_and_dispatch": True,
+              "coordinate_javascript_webdriver_or_text_fallback": False,
+              "installed_runtime_proven": False,
+              "independent_replay_proven": False,
+              "protected_environment_approval_proven": False,
+              "physical_hardware_proven": False,
+              "hsm_signing_proven": False,
+              "d3_promoted": False,
+          }
+          output.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+          find "$evidence" -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+            | sort -z | xargs -0 sha256sum > "$evidence/SHA256SUMS"
+
+      - name: Upload exact-pin qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d3-servo-retained-node-v4-${{ github.sha }}
+          path: ${{ runner.temp }}/d3-servo-evidence
+          if-no-files-found: error
+          retention-days: 14

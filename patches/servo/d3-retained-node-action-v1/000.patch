@@ -1,0 +1,140 @@
+diff --git a/components/constellation/constellation.rs b/components/constellation/constellation.rs
+index a56d0caa7efcc1f778e1c6518676f4885b8297f6..00ab3ecab73f4fa4f46b899b9a1d051424da31d2 100644
+--- a/components/constellation/constellation.rs
++++ b/components/constellation/constellation.rs
+@@ -95,6 +95,7 @@ use std::sync::Arc;
+ use std::thread::JoinHandle;
+ use std::{process, thread};
+ 
++use accesskit::{Action, TreeId};
+ use background_hang_monitor_api::{
+     BackgroundHangMonitorControlMsg, BackgroundHangMonitorRegister, HangAlert,
+ };
+@@ -158,7 +159,7 @@ use servo_canvas_traits::ConstellationCanvasMsg;
+ use servo_canvas_traits::canvas::{CanvasId, CanvasMsg};
+ use servo_config::{opts, pref};
+ use servo_constellation_traits::{
+-    AuxiliaryWebViewCreationRequest, AuxiliaryWebViewCreationResponse, ConstellationInterest,
++    AccessibilityActionResult, AuxiliaryWebViewCreationRequest, AuxiliaryWebViewCreationResponse, ConstellationInterest,
+     EmbedderToConstellationMessage, HistoryTraversalSource, IFrameLoadInfo, IFrameLoadInfoWithData,
+     IFrameSizeMsg, LoadData, LogEntry, MessagePortMsg, NavigationHistoryBehavior, PaintMetricEvent,
+     PortMessageTask, PortTransferInfo, RemoteFocusOperation, SWManagerSenders,
+@@ -1468,6 +1469,13 @@ where
+             EmbedderToConstellationMessage::SetAccessibilityActive(webview_id, active) => {
+                 self.set_accessibility_active(webview_id, active);
+             },
++            EmbedderToConstellationMessage::PerformAccessibilityAction(
++                webview_id,
++                request,
++                response,
++            ) => {
++                self.perform_accessibility_action(webview_id, request, response);
++            },
+         }
+     }
+ 
+@@ -3202,6 +3210,61 @@ where
+         );
+     }
+ 
++    fn perform_accessibility_action(
++        &mut self,
++        webview_id: WebViewId,
++        request: accesskit::ActionRequest,
++        response: GenericCallback<AccessibilityActionResult>,
++    ) {
++        let reject = |result| {
++            if let Err(error) = response.send(result) {
++                warn!("Could not return accessibility action result: {error:?}");
++            }
++        };
++
++        if !pref!(accessibility_enabled) {
++            reject(AccessibilityActionResult::AccessibilityInactive);
++            return;
++        }
++        let Some(webview) = self.webviews.get(&webview_id) else {
++            reject(AccessibilityActionResult::StaleWebView);
++            return;
++        };
++        if !webview.accessibility_active {
++            reject(AccessibilityActionResult::AccessibilityInactive);
++            return;
++        }
++        let Some(pipeline_id) = webview.active_top_level_pipeline_id else {
++            reject(AccessibilityActionResult::StaleDocument);
++            return;
++        };
++        if request.target_tree == TreeId::ROOT || request.target_tree != TreeId::from(pipeline_id) {
++            reject(AccessibilityActionResult::StaleTree);
++            return;
++        }
++        if request.action != Action::Click || request.data.is_some() {
++            reject(AccessibilityActionResult::UnsupportedAction);
++            return;
++        }
++        let epoch = webview.active_top_level_pipeline_epoch;
++        let message = ScriptThreadMessage::PerformAccessibilityAction(
++            webview_id,
++            pipeline_id,
++            epoch,
++            request,
++            response.clone(),
++        );
++        let send_result = self
++            .pipelines
++            .get(&pipeline_id)
++            .ok_or(SendError::Disconnected)
++            .and_then(|pipeline| pipeline.event_loop.send(message));
++        if let Err(error) = send_result {
++            self.handle_send_error(pipeline_id, error);
++            reject(AccessibilityActionResult::StaleDocument);
++        }
++    }
++
+     fn forward_input_event(
+         &mut self,
+         webview_id: WebViewId,
+diff --git a/components/constellation/tracing.rs b/components/constellation/tracing.rs
+index bf944e55973dd2d05a8a885a9f622b98e175a2ca..16bf2e6c1b5d2d43fbc3e62efb1ea3773694d891 100644
+--- a/components/constellation/tracing.rs
++++ b/components/constellation/tracing.rs
+@@ -82,6 +82,9 @@ mod from_embedder {
+                 Self::UserContentManagerAction(..) => target!("UserContentManagerAction"),
+                 Self::UpdatePinchZoomInfos(..) => target!("UpdatePinchZoomInfos"),
+                 Self::SetAccessibilityActive(..) => target!("SetAccessibilityActive"),
++                Self::PerformAccessibilityAction(..) => {
++                    target!("PerformAccessibilityAction")
++                },
+             }
+         }
+     }
+diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessibility_tree.rs
+index 117b8d09e4460d271a10a48bc003ac3b6dcfb6ee..01f48b6f6c530c8cd9d7a651fb940ce14b88c132 100644
+--- a/components/layout/accessibility_tree.rs
++++ b/components/layout/accessibility_tree.rs
+@@ -510,6 +510,11 @@ impl AccessibilityTree {
+         self.embedder_epoch
+     }
+ 
++    /// Return the DOM identity retained for an AccessKit node in the most recently finalized tree.
++    pub(crate) fn opaque_node_for_id(&self, node_id: NodeId) -> Option<OpaqueNode> {
++        self.id_to_opaque_node.get(&node_id).copied()
++    }
++
+     /// Assert that the tree is a tree without any dangling references or orphaned nodes.
+     ///
+     /// For accessibility tests only, because it’s expensive.
+diff --git a/components/layout/layout_impl.rs b/components/layout/layout_impl.rs
+index fbca832253bc14a3f3f6d9328db0b04b556d7c76..196910cdb71f372cc3ec1a9d235c4c672e75de34 100644
+--- a/components/layout/layout_impl.rs
++++ b/components/layout/layout_impl.rs
+@@ -753,6 +753,24 @@ impl Layout for LayoutThread {
+         *accessibility_tree = Some(AccessibilityTree::new(self.id.into(), epoch));
+     }
+ 
++    fn accessibility_node_address(
++        &self,
++        tree_id: accesskit::TreeId,
++        node_id: accesskit::NodeId,
++        epoch: Epoch,
