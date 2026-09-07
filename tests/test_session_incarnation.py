@@ -72,7 +72,7 @@ class SessionIncarnationTests(unittest.TestCase):
         for g in gates:
             if g['id'] in ('D0C-05','D0C-06','D3-01'):
                 for path in required:self.assertIn(path,g['invalidation_paths'])
-        self.assertEqual(next(g for g in gates if g['id']=='D3-01')['status'],'BLOCKED_UPSTREAM')
+        self.assertEqual(next(g for g in gates if g['id']=='D3-01')['status'],'SOURCE_CANDIDATE')
         text=(ROOT/doc).read_text()
         for h in ('## Scope and non-claims','## Identity allocation and failure sequence','## Scoped frame identity API',
                   '## Durable receipts and service reconstruction','## Compatibility and operational diagnosis','## Residual risks and remaining gates'):
