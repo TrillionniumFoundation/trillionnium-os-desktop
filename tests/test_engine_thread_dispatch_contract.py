@@ -110,7 +110,7 @@ class EngineThreadDispatchContractTests(unittest.TestCase):
 
     def test_d3_evidence_invalidation_retains_new_inputs(self):
         gate = next(g for g in read_json("manifests/gates.v1.json")["gates"] if g["id"] == "D3-01")
-        self.assertEqual(gate["status"], "BLOCKED_UPSTREAM")
+        self.assertEqual(gate["status"], "SOURCE_CANDIDATE")
         for name in [CONTRACT, DOCUMENT, "tests/test_engine_thread_dispatch_contract.py", "crates/**", ".github/workflows/**"]:
             self.assertIn(name, gate["invalidation_paths"])
         self.assertEqual(gate["evidence_tier"], "integrated_qemu_image")
