@@ -58,13 +58,17 @@
     "return one typed terminal result through a GenericCallback"
   ],
   "qualification": {
-    "workflow": ".github/workflows/lab-d3-servo-retained-node-v4.yml",
+    "workflow": ".github/workflows/d3-integrated-runtime-evidence.yml",
+    "job": "servo-retained-node-source",
     "required": [
-      "exact upstream commit verification",
-      "patch digest and changed-path verification",
-      "clean git apply check",
+      "exact upstream commit and AccessKit ABI verification",
+      "patch-part and aggregate digest verification",
+      "exact pre-format changed-path equality",
+      "clean patch dry-run and application",
       "forbidden-fallback static guard",
-      "canonical rustfmt normalization with bounded changed paths",
+      "changed-file-only rustfmt normalization",
+      "no post-format path outside the allowlist",
+      "core semantic files remain changed",
       "locked servoshell dependency-graph cargo check"
     ]
   },
