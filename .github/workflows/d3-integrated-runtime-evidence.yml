@@ -325,7 +325,7 @@ jobs:
             --features bundled,gamepad,js_jit,max_log_level \
             2>&1 | tee "$RUNNER_TEMP/d3-cargo-check.log"
 
-      - name: Export bounded source qualification evidence
+      - name: Collect bounded source qualification diagnostic artifacts
         if: always()
         shell: bash
         env:
