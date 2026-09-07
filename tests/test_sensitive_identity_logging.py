@@ -64,6 +64,17 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
                 f"fn {renderer}(evidence: &ServiceEvidence)", source, relative
             )
 
+    def test_service_evidence_cannot_retain_peer_identity(self) -> None:
+        source = (ROOT / "crates/hepta-agent-port/src/lib.rs").read_text(
+            encoding="utf-8"
+        )
+        dispatch = source.split("pub struct DispatchContext {", 1)[1].split("}", 1)[0]
+        evidence = source.split("pub struct ServiceEvidence {", 1)[1].split("}", 1)[0]
+        constructor = source.split("Ok(ServiceEvidence {", 1)[1].split("})", 1)[0]
+        self.assertIn("pub peer: PeerIdentity", dispatch)
+        self.assertNotIn("peer", evidence)
+        self.assertNotRegex(constructor, r"(?m)^\s*peer,\s*$")
+
     def test_sensitive_actor_assertions_do_not_render_identity_values(self) -> None:
         incarnation = (
             ROOT / "crates/hepta-browser-actor/src/incarnation_tests.rs"

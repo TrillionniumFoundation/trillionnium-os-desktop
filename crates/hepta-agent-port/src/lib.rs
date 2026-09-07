@@ -113,7 +113,6 @@ impl OperationLifecycleObserver for NoopOperationLifecycleObserver {}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServiceEvidence {
-    pub peer: PeerIdentity,
     pub transport_sequence: u64,
     pub request_id: String,
     pub session_id: Option<String>,
@@ -290,7 +289,6 @@ where
     connection.send_response(request_frame.sequence, encoded, context.remaining()?)?;
 
     Ok(ServiceEvidence {
-        peer,
         transport_sequence: request_frame.sequence,
         request_id: request.request_id,
         session_id: request.session_id,

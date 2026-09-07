@@ -322,11 +322,6 @@ mod tests {
     #[test]
     fn evidence_json_is_request_bound() {
         let evidence = ServiceEvidence {
-            peer: PeerIdentity {
-                pid: Some(42),
-                uid: 1000,
-                gid: 1001,
-            },
             transport_sequence: 1,
             request_id: "request:one".to_owned(),
             session_id: None,
