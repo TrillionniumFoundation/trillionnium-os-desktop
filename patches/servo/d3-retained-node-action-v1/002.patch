@@ -40,10 +40,10 @@ index 3778a43c365fd0d770e72565eb1153c3ef1603c6..abf80980e8bbe3aa4bd55159c1b886bf
  
  use accesskit::{
 -    Affine as AccesskitAffine, Node as AccesskitNode, NodeId, Rect as AccesskitRect, Role, Tree,
-+    ActionRequest, Affine as AcccesskitAffine, Node as AccesskitNode, NodeId,
++    ActionRequest, Affine as AccesskitAffine, Node as AccesskitNode, NodeId,
 +    Rect as AccesskitRect, Role, Tree,
      TreeId, TreeUpdate, Uuid as AccesskitUuid,
-};
+ };
  use dpi::PhysicalSize;
 @@ -23,11 +24,11 @@ use log::debug;
  use paint_api::WebViewTrait;
