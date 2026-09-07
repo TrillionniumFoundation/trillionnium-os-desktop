@@ -73,11 +73,19 @@ jobs:
             --manifest "$D3_SERVO_MANIFEST" \
             --root . \
             --output "$RUNNER_TEMP/d3-servo.patch" \
+            --base-output "$RUNNER_TEMP/d3-servo-base.patch" \
+            --hardening-output "$RUNNER_TEMP/d3-servo-hardening.patch" \
             | tee "$RUNNER_TEMP/d3-patch-verification.json"
           patch --dry-run --batch --forward -d servo -p1 \
-            < "$RUNNER_TEMP/d3-servo.patch"
+            < "$RUNNER_TEMP/d3-servo-base.patch"
           patch --batch --forward -d servo -p1 \
-            < "$RUNNER_TEMP/d3-servo.patch"
+            < "$RUNNER_TEMP/d3-servo-base.patch"
+          patch --dry-run --batch --forward -d servo -p1 \
+            < "$RUNNER_TEMP/d3-servo-hardening.patch"
+          patch --batch --forward -d servo -p1 \
+            < "$RUNNER_TEMP/d3-servo-hardening.patch"
+          git -C servo diff --binary --full-index \
+            > "$RUNNER_TEMP/d3-servo-squashed.patch"
           git -C servo diff --name-only | sort > "$RUNNER_TEMP/d3-changed.txt"
           jq -r '.patch.allowed_paths[]' "$D3_SERVO_MANIFEST" | sort \
             > "$RUNNER_TEMP/d3-allowed.txt"
@@ -169,6 +177,9 @@ jobs:
           cp "$D3_SERVO_MANIFEST" "$evidence/manifest.json"
           for file in \
             d3-servo.patch \
+            d3-servo-base.patch \
+            d3-servo-hardening.patch \
+            d3-servo-squashed.patch \
             d3-patch-verification.json \
             d3-changed.txt \
             d3-changed-formatted.txt \

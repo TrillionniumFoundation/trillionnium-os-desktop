@@ -104,6 +104,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--manifest", required=True, type=Path)
     parser.add_argument("--root", required=True, type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--base-output", type=Path)
+    parser.add_argument("--hardening-output", type=Path)
     args = parser.parse_args(argv)
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
@@ -155,6 +157,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.output:
         args.output.write_bytes(patch_bytes)
+    if args.base_output:
+        args.base_output.write_bytes(base_bytes)
+    if args.hardening_output:
+        if not hardening_bytes:
+            raise ValueError("--hardening-output requires manifest.hardening")
+        args.hardening_output.write_bytes(hardening_bytes)
 
     print(
         json.dumps(
