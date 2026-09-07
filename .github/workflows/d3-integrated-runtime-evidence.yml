@@ -47,6 +47,10 @@ on:
       - "tests/test_validate_project_truth.py"
       - "tools/validate_governance_integrity.py"
       - "tools/validate_repository.py"
+      - "tools/verify_d3_servo_patch.py"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
       - "Makefile"
       - "docs/architecture/D3_INTEGRATED_RUNTIME_QUALIFICATION.md"
   push:
@@ -96,6 +100,10 @@ on:
       - "tests/test_validate_project_truth.py"
       - "tools/validate_governance_integrity.py"
       - "tools/validate_repository.py"
+      - "tools/verify_d3_servo_patch.py"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
       - "Makefile"
       - "docs/architecture/D3_INTEGRATED_RUNTIME_QUALIFICATION.md"
   workflow_dispatch:
@@ -106,6 +114,10 @@ permissions:
 concurrency:
   group: d3-integrated-runtime-evidence-verifier-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+
+env:
+  D3_SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+  D3_SERVO_MANIFEST: manifests/lab-d3-servo-retained-node-action.v1.json
 
 jobs:
   source-verifier:
@@ -130,7 +142,8 @@ jobs:
             tools/validate_d3_development_profile.py \
             tests/test_validate_d3_development_profile.py \
             tools/validate_project_truth.py \
-            tests/test_validate_project_truth.py
+            tests/test_validate_project_truth.py \
+            tools/verify_d3_servo_patch.py
 
       - name: Run adversarial verifier and loader corpus
         run: |
@@ -174,3 +187,193 @@ jobs:
           python3 tools/validate_governance_integrity.py
           python3 tools/validate_module_documentation.py
           python3 tools/validate_d3_development_profile.py
+
+  servo-retained-node-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Check out exact carrier
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Check out exact Servo source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.D3_SERVO_COMMIT }}
+          path: servo
+          persist-credentials: false
+
+      - name: Verify and apply immutable retained-node patch
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = "$D3_SERVO_COMMIT"
+          test -z "$(git -C servo status --porcelain=v1)"
+          test "$(jq -r '.carrier_base_commit' "$D3_SERVO_MANIFEST")" = \
+            "3a35ac470435edc4514cf4826cd5de817562f465"
+          python3 - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          lock = tomllib.loads(Path('servo/Cargo.lock').read_text(encoding='utf-8'))
+          versions = sorted(
+              package['version']
+              for package in lock['package']
+              if package['name'] == 'accesskit'
+          )
+          if versions != ['0.24.0']:
+              raise SystemExit(f'unexpected AccessKit versions: {versions}')
+          PY
+          python3 tools/verify_d3_servo_patch.py \
+            --manifest "$D3_SERVO_MANIFEST" \
+            --root . \
+            --output "$RUNNER_TEMP/d3-servo.patch" \
+            | tee "$RUNNER_TEMP/d3-patch-verification.json"
+          patch --dry-run --batch --forward -d servo -p1 \
+            < "$RUNNER_TEMP/d3-servo.patch"
+          patch --batch --forward -d servo -p1 \
+            < "$RUNNER_TEMP/d3-servo.patch"
+          git -C servo diff --name-only | sort > "$RUNNER_TEMP/d3-changed.txt"
+          jq -r '.patch.allowed_paths[]' "$D3_SERVO_MANIFEST" | sort \
+            > "$RUNNER_TEMP/d3-allowed.txt"
+          cmp "$RUNNER_TEMP/d3-allowed.txt" "$RUNNER_TEMP/d3-changed.txt"
+          ! grep -R -F "TODO(#4344): Forward action to Servo" \
+            servo/ports/servoshell/desktop/headed_window.rs
+          git -C servo diff --check
+
+      - name: Set up pinned Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version-file: servo/.python-version
+
+      - name: Set up pinned uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        with:
+          version: 0.11.16
+
+      - name: Bootstrap exact Servo dependencies and toolchain
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -qy patch tshark shellcheck
+          ./mach bootstrap --yes --skip-lints --skip-nextest
+          rustc --version --verbose | tee "$RUNNER_TEMP/d3-rustc-version.txt"
+          cargo --version --verbose | tee "$RUNNER_TEMP/d3-cargo-version.txt"
+          test "$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)" = "1.97.1"
+
+      - name: Normalize only patch-owned Rust files
+        id: format
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          mapfile -t rust_files < <(grep -E '\.rs$' "$RUNNER_TEMP/d3-changed.txt")
+          test "${#rust_files[@]}" -gt 0
+          rustfmt --edition 2024 "${rust_files[@]}"
+          rustfmt --edition 2024 --check "${rust_files[@]}"
+          git diff --check
+          git diff --name-only | sort > "$RUNNER_TEMP/d3-changed-formatted.txt"
+          comm -23 \
+            "$RUNNER_TEMP/d3-changed-formatted.txt" \
+            "$RUNNER_TEMP/d3-allowed.txt" \
+            > "$RUNNER_TEMP/d3-unexpected-formatted.txt"
+          test ! -s "$RUNNER_TEMP/d3-unexpected-formatted.txt"
+          for required in \
+            components/layout/accessibility_tree.rs \
+            components/script/event_loop/script_thread.rs \
+            components/shared/constellation/lib.rs \
+            ports/servoshell/desktop/headed_window.rs; do
+            grep -Fxq "$required" "$RUNNER_TEMP/d3-changed-formatted.txt"
+          done
+          git diff --binary > "$RUNNER_TEMP/d3-servo-formatted.patch"
+          test -s "$RUNNER_TEMP/d3-servo-formatted.patch"
+          sha256sum "$RUNNER_TEMP/d3-servo-formatted.patch" \
+            | tee "$RUNNER_TEMP/d3-servo-formatted.patch.sha256"
+
+      - name: Compile exact patched servoshell dependency graph
+        id: compile
+        shell: bash
+        working-directory: servo
+        env:
+          CARGO_INCREMENTAL: '0'
+          LIBCLANG_PATH: /usr/lib/llvm-14/lib
+          RUSTFLAGS: -D warnings
+        run: |
+          set -euo pipefail
+          cargo check --locked \
+            -p servoshell \
+            --no-default-features \
+            --features bundled,gamepad,js_jit,max_log_level \
+            2>&1 | tee "$RUNNER_TEMP/d3-cargo-check.log"
+
+      - name: Export bounded source qualification evidence
+        if: always()
+        shell: bash
+        env:
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          FORMAT_OUTCOME: ${{ steps.format.outcome }}
+          COMPILE_OUTCOME: ${{ steps.compile.outcome }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/d3-servo-evidence"
+          mkdir -p "$evidence"
+          cp "$D3_SERVO_MANIFEST" "$evidence/manifest.json"
+          for file in \
+            d3-servo.patch \
+            d3-servo-formatted.patch \
+            d3-servo-formatted.patch.sha256 \
+            d3-patch-verification.json \
+            d3-changed.txt \
+            d3-changed-formatted.txt \
+            d3-unexpected-formatted.txt \
+            d3-allowed.txt \
+            d3-rustc-version.txt \
+            d3-cargo-version.txt \
+            d3-cargo-check.log; do
+            test ! -f "$RUNNER_TEMP/$file" || \
+              cp "$RUNNER_TEMP/$file" "$evidence/$file"
+          done
+          git -C servo status --porcelain=v1 > "$evidence/servo-status.txt" || true
+          git -C servo diff --stat > "$evidence/servo-diff-stat.txt" || true
+          jq -n \
+            --arg carrier "$GITHUB_SHA" \
+            --arg servo "$D3_SERVO_COMMIT" \
+            --arg verify "$VERIFY_OUTCOME" \
+            --arg format "$FORMAT_OUTCOME" \
+            --arg compile "$COMPILE_OUTCOME" \
+            '{
+              schema:"trillionnium.desktop.d3-servo-retained-node.v1",
+              claim_ceiling:"exact-pin-source-apply-format-and-compile-only",
+              carrier_commit:$carrier,
+              servo_commit:$servo,
+              verify_outcome:$verify,
+              format_outcome:$format,
+              compile_outcome:$compile,
+              accesskit_action_target_field:"target_node",
+              typed_terminal_result_implemented:true,
+              retained_node_lookup_implemented:true,
+              same_script_task_lookup_and_dispatch:true,
+              coordinate_javascript_webdriver_or_text_fallback:false,
+              installed_runtime_proven:false,
+              independent_replay_proven:false,
+              protected_environment_approval_proven:false,
+              physical_hardware_proven:false,
+              hsm_signing_proven:false,
+              d3_promoted:false
+            }' > "$evidence/evidence.json"
+          find "$evidence" -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+            | sort -z | xargs -0 sha256sum > "$evidence/SHA256SUMS"
+
+      - name: Upload exact-pin source qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d3-servo-retained-node-${{ github.sha }}
+          path: ${{ runner.temp }}/d3-servo-evidence
+          if-no-files-found: error
+          retention-days: 30
