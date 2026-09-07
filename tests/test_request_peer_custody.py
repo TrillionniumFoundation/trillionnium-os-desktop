@@ -86,6 +86,6 @@ class RequestPeerCustodyTests(unittest.TestCase):
         for g in gates:
             if g['id'] in ('D0C-05','D0C-06','D3-01'):
                 for item in required[:3]:self.assertIn(item,g['invalidation_paths'])
-        self.assertEqual(next(g for g in gates if g['id']=='D3-01')['status'],'BLOCKED_UPSTREAM')
+        self.assertEqual(next(g for g in gates if g['id']=='D3-01')['status'],'SOURCE_CANDIDATE')
 
 if __name__=='__main__':unittest.main()
