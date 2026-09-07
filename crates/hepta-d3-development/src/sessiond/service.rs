@@ -136,7 +136,8 @@ fn run_connections(
             &mut runtime,
             &mut state,
         ) {
-            println!("{}", evidence_json(&evidence));
+            let public_evidence = PublicServiceEvidence::from(evidence);
+            println!("{}", evidence_json(&public_evidence));
         }
         stop.ensure_active()?;
         // Rotation errors exit the service. A consumed/uncertain writer must
@@ -270,7 +271,38 @@ fn same_peer(left: PeerIdentity, right: PeerIdentity) -> bool {
     left.pid == right.pid && left.uid == right.uid && left.gid == right.gid
 }
 
-fn evidence_json(evidence: &ServiceEvidence) -> String {
+struct PublicServiceEvidence {
+    transport_sequence: u64,
+    request_id: String,
+    request_sha256: String,
+    response_sha256: String,
+    response_ok: bool,
+    response_committed: bool,
+}
+
+impl From<ServiceEvidence> for PublicServiceEvidence {
+    fn from(evidence: ServiceEvidence) -> Self {
+        let ServiceEvidence {
+            transport_sequence,
+            request_id,
+            request_sha256,
+            response_sha256,
+            response_ok,
+            response_committed,
+            ..
+        } = evidence;
+        Self {
+            transport_sequence,
+            request_id,
+            request_sha256,
+            response_sha256,
+            response_ok,
+            response_committed,
+        }
+    }
+}
+
+fn evidence_json(evidence: &PublicServiceEvidence) -> String {
     format!(
         concat!(
             "{{\"schema\":\"trillionnium.desktop.d3-sessiond-request.v2\",",

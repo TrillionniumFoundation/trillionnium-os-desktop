@@ -133,6 +133,13 @@ grep -q '"product_handler_connected":false' "$product_self_check" \
   || fail product_handler_unexpectedly_connected
 grep -q '"fixture_handler_linked":false' "$product_self_check" \
   || fail product_daemon_contains_fixture
+grep -q '"peer_credentials_verified":true' "$product_self_check" \
+  || fail product_peer_credentials_not_verified
+grep -q '"peer_identity_redacted":true' "$product_self_check" \
+  || fail product_peer_identity_not_redacted
+if grep -Eq '"peer_(pid|uid|gid)"' "$product_self_check"; then
+  fail product_peer_identity_leaked
+fi
 systemctl cat hepta-browserd-agent@.service > "$qualification_unit" \
   || fail qualification_unit_unreadable
 grep -q 'ExecStart=/usr/libexec/hepta-agent-portd' "$qualification_unit" \

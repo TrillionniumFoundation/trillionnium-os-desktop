@@ -24,18 +24,13 @@ const EXPECTED_PEER_GROUP: &str = "hepta-agent";
 const EXPECTED_PEER_UNIT: &str = "hepta-agent.service";
 
 fn main() {
-    let outcome = if std::env::args().any(|argument| argument == "--self-check") {
-        self_check()
-    } else {
-        refuse_unconnected_product_handler().map(|()| String::new())
-    };
-    match outcome {
-        Ok(report) => {
-            if !report.is_empty() {
-                println!("{report}");
-            }
+    if std::env::args().any(|argument| argument == "--self-check") {
+        if self_check().is_err() {
+            std::process::exit(1);
         }
-        Err(_) => std::process::exit(1),
+        println!("{}", self_check_report());
+    } else if refuse_unconnected_product_handler().is_err() {
+        std::process::exit(1);
     }
 }
 
@@ -132,7 +127,7 @@ fn verify_local_socket_path(stream: &UnixStream, expected: &Path) -> Result<(), 
     Ok(())
 }
 
-fn self_check() -> Result<String, ServiceError> {
+fn self_check() -> Result<(), ServiceError> {
     let (left, _right) = UnixStream::pair().map_err(ServiceError::Io)?;
     verify_stream_socket(left.as_raw_fd())?;
     let peer = PeerIdentity::from_stream(&left)?;
@@ -145,7 +140,11 @@ fn self_check() -> Result<String, ServiceError> {
     if resolve_user_id("root")? != 0 || resolve_group_id("root")? != 0 {
         return Err(ServiceError::Invariant("root account resolution changed"));
     }
-    Ok(format!(
+    Ok(())
+}
+
+fn self_check_report() -> String {
+    format!(
         concat!(
             "{{\"schema\":\"trillionnium.desktop.agent-portd-self-check.v2\",",
             "\"ok\":true,\"listener_created\":false,",
@@ -157,7 +156,7 @@ fn self_check() -> Result<String, ServiceError> {
             "\"peer_identity_redacted\":true}}"
         ),
         AGENT_SOCKET_PATH,
-    ))
+    )
 }
 
 #[derive(Debug)]
@@ -260,7 +259,8 @@ mod tests {
 
     #[test]
     fn product_self_check_reports_fixture_separation_and_closed_activation() {
-        let report = self_check().expect("self-check");
+        self_check().expect("self-check");
+        let report = self_check_report();
         assert!(report.contains("\"ok\":true"));
         assert!(report.contains("\"listener_created\":false"));
         assert!(report.contains("\"product_handler_connected\":false"));

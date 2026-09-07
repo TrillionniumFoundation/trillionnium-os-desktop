@@ -68,9 +68,8 @@ EXPECTED_KEYS = {
     "product_handler_connected",
     "fixture_handler_linked",
     "activation_fail_closed",
-    "peer_pid",
-    "peer_uid",
-    "peer_gid",
+    "peer_credentials_verified",
+    "peer_identity_redacted",
 }
 EXPECTED_STABLE = {
     "schema": "trillionnium.desktop.agent-portd-self-check.v2",
@@ -80,6 +79,8 @@ EXPECTED_STABLE = {
     "product_handler_connected": False,
     "fixture_handler_linked": False,
     "activation_fail_closed": True,
+    "peer_credentials_verified": True,
+    "peer_identity_redacted": True,
 }
 
 
@@ -102,10 +103,9 @@ def load_report(path: Path) -> dict[str, Any]:
     for key, expected in EXPECTED_STABLE.items():
         if type(value[key]) is not type(expected) or value[key] != expected:
             raise SystemExit(f"unexpected product self-check field {key}: {path}")
-    for key in ("peer_pid", "peer_uid", "peer_gid"):
-        item = value[key]
-        if type(item) is not int or item < (1 if key == "peer_pid" else 0):
-            raise SystemExit(f"invalid product self-check identity {key}: {path}")
+    for forbidden in ("peer_pid", "peer_uid", "peer_gid"):
+        if forbidden in value:
+            raise SystemExit(f"raw product self-check identity leaked: {path}")
     return value
 
 

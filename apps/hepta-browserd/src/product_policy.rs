@@ -2772,7 +2772,6 @@ fn issue_fixture(
     verifier_id: &str,
     subject: &str,
     payload_sha256: &str,
-    _scenario: &str,
 ) -> EvidenceEnvelope {
     let nonce = nonproduction_nonce();
     registry
@@ -2795,7 +2794,6 @@ fn network_fixture_bundle(registry: &TrustedVerifierRegistry) -> NetworkFixtureB
         "fixture-capability-issuer",
         "capability-permit.v2",
         &placeholder,
-        "placeholder-capability",
     );
     let mut permit = CapabilityPermit {
         permit_id: "permit-self-check".to_owned(),
@@ -2818,7 +2816,6 @@ fn network_fixture_bundle(registry: &TrustedVerifierRegistry) -> NetworkFixtureB
         "fixture-capability-issuer",
         "capability-permit.v2",
         &permit_sha256,
-        "capability-self-check",
     );
     let request = NetworkRequest {
         subject: permit.subject.clone(),
@@ -2845,7 +2842,6 @@ fn network_fixture_bundle(registry: &TrustedVerifierRegistry) -> NetworkFixtureB
         "fixture-network-observer",
         "network-observation.v1",
         &placeholder,
-        "placeholder-observation",
     );
     let mut observation = NetworkObservation {
         request_sha256,
@@ -2870,7 +2866,6 @@ fn network_fixture_bundle(registry: &TrustedVerifierRegistry) -> NetworkFixtureB
         "fixture-network-observer",
         "network-observation.v1",
         &observation_sha256,
-        "observation-self-check",
     );
     NetworkFixtureBundle {
         permit,
@@ -3038,9 +3033,8 @@ mod tests {
         verifier_id: &str,
         subject: &str,
         payload_sha256: &str,
-        nonce: &str,
     ) -> EvidenceEnvelope {
-        issue_fixture(registry, verifier_id, subject, payload_sha256, nonce)
+        issue_fixture(registry, verifier_id, subject, payload_sha256)
     }
 
     fn fixture_key_id(registry: &TrustedVerifierRegistry, verifier_id: &str) -> String {
@@ -3113,7 +3107,6 @@ mod tests {
             "fixture-publisher",
             "trusted-app-manifest.v2",
             &payload,
-            "evidence-valid",
         );
         let publisher_key_id = fixture_key_id(&registry, "fixture-publisher");
         registry
@@ -3218,7 +3211,6 @@ mod tests {
             "fixture-publisher",
             "trusted-app-manifest.v2",
             &initial.payload_sha256().expect("payload"),
-            "initial-manifest",
         );
         let installed =
             TrustedAppPolicy::admit(&registry, &initial, &initial_evidence, None, None, 100)
@@ -3235,7 +3227,6 @@ mod tests {
             "fixture-publisher-next",
             "trusted-app-manifest.v2",
             &rotated.payload_sha256().expect("rotated payload"),
-            "rotated-manifest",
         );
         assert_eq!(
             TrustedAppPolicy::admit(
@@ -3256,7 +3247,6 @@ mod tests {
             "fixture-publisher",
             "trusted-app-key-rotation.v1",
             &rotation_payload,
-            "rotation-proof",
         );
         TrustedAppPolicy::admit(
             &registry,
@@ -3414,7 +3404,6 @@ mod tests {
             "fixture-update-manifest",
             "update-manifest.v1",
             manifest.manifest_sha256(),
-            "update-manifest",
         );
         let activation = UpdateActivation::new(UpdateActivationParts {
             target: UpdateSlot::B,
@@ -3430,7 +3419,6 @@ mod tests {
             "fixture-update-boot",
             "update-boot-measurement.v1",
             activation.payload_sha256(),
-            "update-activation",
         );
         let health = UpdateHealthClaim::new(UpdateHealthClaimParts {
             target: UpdateSlot::B,
@@ -3446,7 +3434,6 @@ mod tests {
             "fixture-update-health",
             "update-health.v1",
             health.payload_sha256(),
-            "update-health",
         );
         (
             manifest,

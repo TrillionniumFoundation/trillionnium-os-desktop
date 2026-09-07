@@ -118,6 +118,10 @@ class D1EvidenceSoundnessTests(unittest.TestCase):
             self.assertIn(required, verifier)
         with self.assertRaises(ValueError):
             verify_d1_artifact.safe_relative("../escape", "test path")
+        self.assertIn(
+            "tools/run_d1_product_image_qualification.sh",
+            verify_d1_artifact.REQUIRED_SOURCE_PATHS,
+        )
         with self.assertRaises(ValueError):
             verify_d1_artifact.require_sha256("A" * 64, "test digest")
 

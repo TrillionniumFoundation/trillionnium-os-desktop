@@ -187,6 +187,35 @@ class D1VerifierBindingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             verify_d1_artifact.validate_build_bindings(self.root, self.results)
 
+    @staticmethod
+    def product_self_check() -> dict[str, object]:
+        return {
+            "schema": "trillionnium.desktop.agent-portd-self-check.v2",
+            "ok": True,
+            "listener_created": False,
+            "expected_product_socket": "/run/hepta/browserd/agent.sock",
+            "product_handler_connected": False,
+            "fixture_handler_linked": False,
+            "activation_fail_closed": True,
+            "peer_credentials_verified": True,
+            "peer_identity_redacted": True,
+        }
+
+    def test_product_self_check_contract_accepts_redacted_report(self) -> None:
+        verify_d1_artifact.validate_product_self_check(self.product_self_check())
+
+    def test_product_self_check_contract_rejects_raw_identity(self) -> None:
+        report = self.product_self_check()
+        report["peer_pid"] = 42
+        with self.assertRaises(ValueError):
+            verify_d1_artifact.validate_product_self_check(report)
+
+    def test_product_self_check_contract_rejects_false_redaction_claim(self) -> None:
+        report = self.product_self_check()
+        report["peer_identity_redacted"] = False
+        with self.assertRaises(ValueError):
+            verify_d1_artifact.validate_product_self_check(report)
+
 
 if __name__ == "__main__":
     unittest.main()

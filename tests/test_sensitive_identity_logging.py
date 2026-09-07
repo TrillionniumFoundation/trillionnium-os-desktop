@@ -36,6 +36,34 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
         for schema in EXPECTED_V2_SCHEMAS:
             self.assertIn(schema, combined)
 
+    def test_public_renderers_accept_only_identity_free_values(self) -> None:
+        product = (ROOT / "apps/hepta-agent-portd/src/main.rs").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("fn self_check() -> Result<(), ServiceError>", product)
+        self.assertIn("fn self_check_report() -> String", product)
+        self.assertIn('println!("{}", self_check_report())', product)
+        self.assertNotIn('println!("{report}")', product)
+
+        for relative, renderer in (
+            (
+                "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs",
+                "server_evidence_json",
+            ),
+            (
+                "crates/hepta-d3-development/src/sessiond/service.rs",
+                "evidence_json",
+            ),
+        ):
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            self.assertIn("struct PublicServiceEvidence", source, relative)
+            self.assertIn(
+                f"fn {renderer}(evidence: &PublicServiceEvidence)", source, relative
+            )
+            self.assertNotIn(
+                f"fn {renderer}(evidence: &ServiceEvidence)", source, relative
+            )
+
     def test_sensitive_actor_assertions_do_not_render_identity_values(self) -> None:
         incarnation = (
             ROOT / "crates/hepta-browser-actor/src/incarnation_tests.rs"
@@ -54,7 +82,7 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
         forbidden = {
             "apps/hepta-agent-portd/src/main.rs": (
                 "hepta-agent-portd: {error}",
-                "eprintln!(\"hepta-agent-portd:",
+                'eprintln!("hepta-agent-portd:',
             ),
             "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs": (
                 "hepta-agent-d1-fixture: request validation failed",
@@ -95,14 +123,15 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
             self.assertNotIn("Attestation(AttestationError)", source, relative)
             self.assertNotIn("Self::Attestation(error)", source, relative)
 
-    def test_cryptographic_fixture_nonces_are_not_fixed_literals(self) -> None:
+    def test_cryptographic_fixture_nonces_have_no_literal_helper_input(self) -> None:
         source = (ROOT / "apps/hepta-browserd/src/product_policy.rs").read_text(
             encoding="utf-8"
         )
         self.assertIn("fn nonproduction_nonce() -> String", source)
         self.assertIn("let nonce = nonproduction_nonce();", source)
         self.assertIn("nonce: &nonce", source)
-        self.assertIn("_scenario: &str", source)
+        self.assertNotIn("_scenario: &str", source)
+        self.assertNotIn("payload_sha256: &str,\n        nonce: &str,", source)
         self.assertNotRegex(source, r'nonce:\s*"[^"\n]+"\.to_owned\(\),')
 
 

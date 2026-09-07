@@ -107,6 +107,7 @@ REQUIRED_SOURCE_PATHS = frozenset(
         "tools/resolve_debian_snapshot.py",
         "tools/resolve_debian_snapshot_with_pinned_keys.py",
         "tools/run_d1_final_qualification.sh",
+        "tools/run_d1_product_image_qualification.sh",
         "tools/verify_d1_artifact.py",
     }
 )
@@ -774,12 +775,37 @@ def validate_gate_envelope(
         raise ValueError(f"gate envelope artifact coverage mismatch (missing={missing}, extra={extra})")
 
 
+def validate_product_self_check(document: dict[str, Any]) -> None:
+    expected = {
+        "schema": "trillionnium.desktop.agent-portd-self-check.v2",
+        "ok": True,
+        "listener_created": False,
+        "expected_product_socket": "/run/hepta/browserd/agent.sock",
+        "product_handler_connected": False,
+        "fixture_handler_linked": False,
+        "activation_fail_closed": True,
+        "peer_credentials_verified": True,
+        "peer_identity_redacted": True,
+    }
+    if set(document) != set(expected):
+        raise ValueError("product self-check field set is malformed")
+    for key, wanted in expected.items():
+        value = document[key]
+        if type(value) is not type(wanted) or value != wanted:
+            raise ValueError(f"product self-check field {key} is malformed")
+    for forbidden in ("peer_pid", "peer_uid", "peer_gid"):
+        if forbidden in document:
+            raise ValueError("product self-check leaked raw peer identity")
+
+
 def validate_canonical_results(root: Path) -> dict[str, dict[str, Any]]:
     results: dict[str, dict[str, Any]] = {}
     for relative, schema in RESULT_SCHEMAS.items():
         document = load_json(root / Path(*PurePosixPath(relative).parts), relative)
         if document.get("schema") != schema:
             raise ValueError(f"{relative} has unexpected schema")
+        if relative == "evidence/product-daemon-self-check-host.json":
+            validate_product_self_check(document)
         results[relative] = document
     return results
 

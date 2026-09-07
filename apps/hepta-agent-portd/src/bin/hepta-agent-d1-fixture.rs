@@ -83,7 +83,16 @@ fn run() -> Result<FixtureResult, FixtureError> {
         "health" => run_health()?,
         "expect-denied" => run_expect_denied()?,
         "hold" => run_hold()?,
-        "self-check" => run_self_check()?,
+        "self-check" => {
+            run_self_check()?;
+            concat!(
+                "{\"schema\":\"trillionnium.desktop.d1-agent-fixture-self-check.v2\",",
+                "\"status\":\"PASS\",\"qualification_only\":true,",
+                "\"listener_created\":false,\"product_handler_connected\":false,",
+                "\"peer_credentials_verified\":true,\"peer_identity_redacted\":true}"
+            )
+            .to_owned()
+        }
         _ => return Err(FixtureError::Usage("unsupported mode")),
     };
     Ok(FixtureResult { json, output })
@@ -123,7 +132,7 @@ fn run_server() -> Result<String, FixtureError> {
             "qualification server did not dispatch exactly once",
         ));
     }
-    Ok(server_evidence_json(&evidence))
+    Ok(server_evidence_json(&PublicServiceEvidence::from(evidence)))
 }
 
 fn inherited_stream_from_stdin() -> Result<UnixStream, FixtureError> {
@@ -273,7 +282,7 @@ fn run_hold() -> Result<String, FixtureError> {
     .to_owned())
 }
 
-fn run_self_check() -> Result<String, FixtureError> {
+fn run_self_check() -> Result<(), FixtureError> {
     hepta_agent_port::self_check()?;
     let (left, _right) = UnixStream::pair().map_err(FixtureError::Io)?;
     verify_stream_socket(left.as_raw_fd())?;
@@ -287,16 +296,41 @@ fn run_self_check() -> Result<String, FixtureError> {
     if resolve_user_id("root")? != 0 || resolve_group_id("root")? != 0 {
         return Err(FixtureError::Invariant("root account resolution changed"));
     }
-    Ok(concat!(
-        "{\"schema\":\"trillionnium.desktop.d1-agent-fixture-self-check.v2\",",
-        "\"status\":\"PASS\",\"qualification_only\":true,",
-        "\"listener_created\":false,\"product_handler_connected\":false,",
-        "\"peer_credentials_verified\":true,\"peer_identity_redacted\":true}"
-    )
-    .to_owned())
+    Ok(())
 }
 
-fn server_evidence_json(evidence: &ServiceEvidence) -> String {
+struct PublicServiceEvidence {
+    transport_sequence: u64,
+    request_id: String,
+    request_sha256: String,
+    response_sha256: String,
+    response_ok: bool,
+    response_committed: bool,
+}
+
+impl From<ServiceEvidence> for PublicServiceEvidence {
+    fn from(evidence: ServiceEvidence) -> Self {
+        let ServiceEvidence {
+            transport_sequence,
+            request_id,
+            request_sha256,
+            response_sha256,
+            response_ok,
+            response_committed,
+            ..
+        } = evidence;
+        Self {
+            transport_sequence,
+            request_id,
+            request_sha256,
+            response_sha256,
+            response_ok,
+            response_committed,
+        }
+    }
+}
+
+fn server_evidence_json(evidence: &PublicServiceEvidence) -> String {
     format!(
         concat!(
             "{{\"schema\":\"trillionnium.desktop.d1-agent-server-result.v2\",",
@@ -458,19 +492,11 @@ mod tests {
 
     #[test]
     fn server_evidence_marks_the_qualification_boundary() {
-        let evidence = ServiceEvidence {
-            peer: PeerIdentity {
-                pid: Some(42),
-                uid: 1000,
-                gid: 1001,
-            },
+        let evidence = PublicServiceEvidence {
             transport_sequence: 1,
             request_id: "request:one".to_owned(),
-            session_id: None,
-            session_generation: None,
             request_sha256: "a".repeat(64),
             response_sha256: "b".repeat(64),
-            effect_class: hepta_browser_codec::EffectClass::Observation,
             response_ok: true,
             response_committed: true,
         };

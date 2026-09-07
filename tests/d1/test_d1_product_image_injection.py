@@ -55,14 +55,23 @@ class D1ProductImageBindingTests(unittest.TestCase):
             source,
         )
 
-    def test_self_check_comparison_is_strict_but_pid_independent(self) -> None:
+    def test_self_check_comparison_is_strict_and_identity_redacted(self) -> None:
         source = (
             ROOT / "tools/run_d1_product_image_qualification.sh"
         ).read_text(encoding="utf-8")
 
         self.assertIn("object_pairs_hook=reject_duplicates", source)
         self.assertIn("set(value) != EXPECTED_KEYS", source)
-        self.assertIn('type(item) is not int', source)
+        self.assertIn('"peer_credentials_verified": True', source)
+        self.assertIn('"peer_identity_redacted": True', source)
+        expected_keys = source.split("EXPECTED_KEYS = {", 1)[1].split("}", 1)[0]
+        for forbidden in ('"peer_pid"', '"peer_uid"', '"peer_gid"'):
+            self.assertNotIn(forbidden, expected_keys)
+        self.assertIn(
+            'for forbidden in ("peer_pid", "peer_uid", "peer_gid"):',
+            source,
+        )
+        self.assertNotIn('type(item) is not int', source)
         self.assertNotIn('cmp --silent -- "$self_check"', source)
 
     def test_guest_product_claim_matches_effective_image_binary(self) -> None:
@@ -97,6 +106,18 @@ class D1ProductImageBindingTests(unittest.TestCase):
         )
         self.assertIn(
             '"product_handler_connected":false',
+            acceptance,
+        )
+        self.assertIn(
+            '"peer_credentials_verified":true',
+            acceptance,
+        )
+        self.assertIn(
+            '"peer_identity_redacted":true',
+            acceptance,
+        )
+        self.assertIn(
+            "product_peer_identity_leaked",
             acceptance,
         )
         self.assertIn(
