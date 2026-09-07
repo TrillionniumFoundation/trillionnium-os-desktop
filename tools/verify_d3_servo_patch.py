@@ -73,12 +73,12 @@ def load_patch(manifest: dict[str, object], root: Path) -> bytes:
     return b"".join(chunks)
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", required=True, type=Path)
     parser.add_argument("--root", required=True, type=Path)
     parser.add_argument("--output", type=Path)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     patch_bytes = load_patch(manifest, args.root)
