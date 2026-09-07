@@ -39,9 +39,10 @@ _impl.D0A02_STALE_REASON = D0A02_STALE_REASON
 _impl.D0A02_SUPERSEDED_BY_PR = D0A02_SUPERSEDED_BY_PR
 
 D3_DEVELOPMENT_BLOCKER = (
-    "Servo-owned retained-node semantic action forwarding, exact integrated-image "
-    "principal/dispatch/receipt evidence, and independent security review remain "
-    "required before live activation"
+    "Source-qualified Servo retained-node boundary exists; exact installed-image "
+    "integration, product BrowserActor invocation, integrated principal/dispatch/"
+    "receipt evidence, and independent security review remain required before "
+    "live activation"
 )
 D3_ACTIVATION_TRUTH = dict(_impl.D3_ACTIVATION_TRUTH)
 D3_ACTIVATION_TRUTH["development_blocker"] = D3_DEVELOPMENT_BLOCKER

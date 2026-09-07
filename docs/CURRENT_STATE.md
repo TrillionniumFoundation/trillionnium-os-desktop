@@ -76,9 +76,12 @@ are present. Cross-UID executable identity is bound to a root-owned trusted path
 plus live PID/UID/GID, pidfd, start-time, cgroup and unit revalidation without
 granting `CAP_SYS_PTRACE`.
 
-D3 remains blocked on a reviewed Servo-owned retained-node semantic-action
-forwarding boundary, exact integrated-image runtime evidence and independent
-security review.
+The Servo-owned retained-node semantic-action boundary is now a
+`SOURCE_CANDIDATE`: its immutable patch applies, formats and compiles through
+the locked `servoshell` graph at the exact Servo pin under `-D warnings`. D3
+is not product-closed; it remains blocked on exact installed-image integration,
+product BrowserActor invocation, immutable integrated-runtime evidence and
+independent security review.
 
 The D0A-02 headed-host claim ceiling remains explicit: `no_native_clipboard` and `no_clean_teardown`.
 

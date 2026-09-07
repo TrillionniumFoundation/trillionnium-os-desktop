@@ -2,7 +2,7 @@
 
 ## Status and claim boundary
 
-This document describes the isolated source candidate carried by `codex/d3-servo-retained-node-action-v4` for blocker D3-01. The patch targets Servo commit `670ae8a70801b162e186f81cbb5bdd2d59c39108` exactly. A green `servo-retained-node-source` job in the governed D3 workflow proves only that the patch applies, passes the static policy guards, is normalized within its reviewed path boundary, and compiles through the locked `servoshell` dependency graph at that pin. It is not installed-runtime evidence and does not replace the independent exact-image packet required by the release plan.
+This document describes the source-qualified candidate carried by `codex/d3-servo-retained-node-action-v4` for blocker D3-01. The patch targets Servo commit `670ae8a70801b162e186f81cbb5bdd2d59c39108` exactly. A green `servo-retained-node-source` job in the governed D3 workflow proves only that the patch applies, passes the static policy guards, is normalized within its reviewed path boundary, and compiles through the locked `servoshell` dependency graph at that pin. It is not installed-runtime evidence and does not replace the independent exact-image packet required by the release plan.
 
 ## Problem
 
