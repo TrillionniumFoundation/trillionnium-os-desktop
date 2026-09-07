@@ -18,9 +18,6 @@ Passing a lower tier never implies a higher one.
 - Integrated-main stage: `D0R_D0C06_D0A01_COMPILE_VALIDATED`
 - Machine truth: [`manifests/project-state.v1.json`](manifests/project-state.v1.json)
 - Gate registry: [`manifests/gates.v1.json`](manifests/gates.v1.json)
-- Cargo module registry: [`manifests/modules.v1.json`](manifests/modules.v1.json)
-- Non-Cargo component registry: [`manifests/components.v1.json`](manifests/components.v1.json)
-- Component documentation index: [`docs/components/README.md`](docs/components/README.md)
 - Current state: [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md)
 - Blocker ledger: [`docs/plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md`](docs/plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md)
 
@@ -30,45 +27,32 @@ GitHub at decision time.
 
 ## Current convergence candidate
 
-Draft PR **#66**, branch `codex/d6-gap-closure-v1`, is the single active convergence surface.
-The committed pre-truth-refresh snapshot observed at `2026-09-04T17:45:12Z` is:
+Draft PR **#73**, branch `codex/d6-sensitive-log-redaction-v1`, is the sole active direct-to-`main`
+convergence surface. PR **#66** is closed and unmerged; its source, CI and review
+records are historical provenance only and do not transfer.
+
+The exact clean object immediately before this truth refresh was:
 
 ```text
-base main:              addaf73a48bae65f19f6bfe91c6264fd2ddb85a1
-source head:            ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e
-source tree:            f5e5cc16dcd6c088dcef6ed6c3793bd7808b4aa8
-prospective merge:      8d9c1de8b3af62eb32f5cd2bca1a0230afc30115
-prospective merge tree: f5e5cc16dcd6c088dcef6ed6c3793bd7808b4aa8
+base main:          addaf73a48bae65f19f6bfe91c6264fd2ddb85a1
+pre-refresh head:   ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b
+pre-refresh tree:   3a7d7025011c5393f9eac04f2522817a8e89090e
+prospective merge:  afcab92e6a06ff58afde83a96b56893b0e334d3e
+observed at:        2026-09-07T05:07:35Z
 ```
 
-At that exact object, all 22 permanent pull-request workflows were terminal
-success, all 22 review threads were resolved, and one current-head independent
-non-author approval was present. The governance contract requires two such
-approvals. This truth-refresh commit changes the source head, so that matrix and
-approval are historical inputs and must be reacquired on the new exact head.
-
-Live GitHub readback at the same observation time showed `main` unprotected,
-with no required status contexts and no repository rulesets. The fail-closed
-D0T-03 control transaction (run `33901170417`) executed zero administration
-operations and stopped with `ADMIN_TOKEN_MISSING`; it did not partially modify
-repository settings. See
-[`docs/evidence/2026-09-05-pr66-live-closure-checkpoint.md`](docs/evidence/2026-09-05-pr66-live-closure-checkpoint.md).
-
-The candidate contains the cumulative source closure for transactional session
-arbitration, fail-stop transport, canonical codec, request-bound AgentPort,
-durable receipts, D0A/D1/D2I candidate lanes, PageOwner/BrowserActor source,
-D4-D9 policy/reference implementations, and machine-validated documentation.
-Candidate and verifier success remains bounded by each gate's claim ceiling and
-is not integrated-main, installed-product, hardware, or signed-release evidence.
+This truth-refresh commit necessarily creates a new head, tree and prospective
+merge object. It therefore invalidates every pre-refresh exact-head check and
+review packet. The final object must complete all permanent workflows, CodeQL,
+independent review, governed merge and exact-main reruns without inheriting an
+earlier result.
 
 ## Integrated foundation
 
 Integrated `main` still claims only the D0 foundation and exact-pin Servo
-compile baseline represented by `D0R_D0C06_D0A01_COMPILE_VALIDATED`. The source
-repository contains substantially more candidate code, including PageOwner,
-BrowserActor, trusted-app, capability/egress, update/reconciliation, hardware
-qualification, and release-promotion models, but those later gates remain
-unpromoted until their prerequisite evidence tiers are met.
+compile baseline represented by `D0R_D0C06_D0A01_COMPILE_VALIDATED`. The
+candidate contains substantially more source, but it is not integrated product,
+hardware, signing, promotion, or release evidence.
 
 The local control path is designed as:
 
@@ -84,53 +68,43 @@ systemd-owned AF_UNIX connection
 ```
 
 The production AgentPort remains default-disabled and fails closed without a
-real promoted BrowserActor binding. Test, qualification, development, and
-production binaries are physically separated.
+promoted BrowserActor binding. Test, qualification, development, and production
+binaries remain physically separated.
 
-## D3 development identity boundary
+## Candidate source closure
 
-The cross-UID `/proc/<pid>/exe` source blocker is closed without adding
-`CAP_SYS_PTRACE`. The explicit development profile binds the compiled,
-root-owned, non-symlink `/usr/libexec/hepta-agent` path and reopens and re-hashes
-it at admission and dispatch, while retaining live PID/UID/GID, pidfd liveness,
-start time, cgroup, and systemd-unit checks. This mechanism is development-only
-and is not production authority.
+The cumulative candidate includes transactional PageOwner arbitration,
+authenticated fail-stop transport, strict canonical codec, AgentPort custody,
+durable non-replaying receipt facts, bounded D0A/D1/D2I qualification lanes,
+D3 principal/dispatch source, D4-D9 policy and verifier surfaces, and hostile
+identity-redaction regressions. Each result remains bounded by its declared
+evidence tier and invalidation inputs.
 
-D3 remains blocked on independent security review, a Servo-owned atomic
-semantic resolver, and the complete principal/dispatch/receipt/cancellation/
-crash corpus inside the exact integrated image.
+## Remaining hard gates
 
-## Open authority and external-evidence blockers
+PR #73 cannot close the following through source authorship alone:
 
-PR #66 cannot close the following through source authorship alone:
-
-- protected `main`, required checks, organization-team CODEOWNERS, latest-push
-  non-author approval, no self-merge, and independent release authority;
-- independent review and exact integrated-image qualification of the D3 static
-  trusted-path plus live process-identity binding;
-- a Servo-owned atomic semantic resolver and exact integrated-image D3
-  principal/dispatch/receipt corpus;
-- fixed-BOM independent hardware qualification, including long-duration and
-  power-loss testing;
-- offline HSM key custody, independent release promotion, signed artifacts,
-  anti-rollback metadata, and publication controls.
+- live protected `main`, strict required checks, organization-team CODEOWNERS,
+  current-push independent approvals, no-bypass rules and protected release
+  environments;
+- a reviewed Servo-owned retained-node semantic action path and the complete
+  exact integrated-image D3 runtime corpus;
+- installed D4-D7 native/OS adapters and their image, network, fault, update and
+  recovery qualification environments;
+- fixed-BOM independently signed 24/72-hour hardware and raw power-loss corpus;
+- offline/HSM dual-control key custody, separated signer/attestor/promoter roles,
+  anti-rollback state and protected publication.
 
 ## Explicit non-claims
 
-The repository does not currently claim that:
+The repository does not claim that PR #73 has final exact-head evidence,
+obtained the required independent approvals, passed governed merge or exact-main
+reruns, qualified fixed hardware, established production signing custody, or
+published a signed release. Production activation, external effects, hardware,
+signing, promotion and release authority remain closed.
 
-- PR #66 has obtained the required two current-head independent approvals or been merged;
-- its candidate evidence has passed an exact-main rerun;
-- a production AgentPort, external navigation, credentials, capabilities, or
-  external effects are enabled;
-- D3 through D9 are integrated product gates;
-- fixed hardware has been qualified;
-- production signing keys or a signed release exist.
-
-The D0A-02 headed-host ceiling explicitly retains:
-
-- `no_native_clipboard`;
-- `no_clean_teardown`.
+The D0A-02 headed-host ceiling still retains `no_native_clipboard` and
+`no_clean_teardown`.
 
 ## Local verification
 
@@ -145,6 +119,3 @@ cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --all-targets --locked
 cargo run --locked -p hepta-browserd -- --self-check
 ```
-
-Higher evidence tiers are produced only by the dedicated immutable GitHub
-Actions workflows and must be interpreted under their recorded claim ceilings.

@@ -127,14 +127,14 @@ class ValidatorLoaderStabilityTests(unittest.TestCase):
                 path.write_text(path.read_text(encoding="utf-8") + "\n" + "\n".join(additions) + "\n", encoding="utf-8")
                 self.assertEqual(fixture.validate(), [])
 
-    def test_facade_exports_explicit_pr66_policy(self) -> None:
+    def test_facade_exports_explicit_pr73_policy(self) -> None:
         path = ROOT / "tools/validate_project_truth.py"
         spec = importlib.util.spec_from_file_location("validator_loader_test", path)
         assert spec is not None and spec.loader is not None
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        self.assertEqual(module.D0A02_SUPERSEDED_BY_PR, 66)
-        self.assertIn("PR #66 supersedes", module.D0A02_STALE_REASON)
+        self.assertEqual(module.D0A02_SUPERSEDED_BY_PR, 73)
+        self.assertIn("PR #73 supersedes", module.D0A02_STALE_REASON)
 
 
 if __name__ == "__main__":

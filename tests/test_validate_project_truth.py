@@ -1,7 +1,7 @@
-"""Run the canonical project-truth tests with explicit PR-66 expectations.
+"""Run the canonical project-truth tests with explicit PR-73 expectations.
 
 The historical test module is imported normally.  The two tests whose policy
-subject changed from PR #33 to PR #66 are replaced with ordinary Python methods;
+subject changed from PR #33 to PR #73 are replaced with ordinary Python methods;
 no source text is rewritten or executed dynamically.
 """
 
@@ -45,13 +45,13 @@ def _generated_headed_evidence_is_explicitly_stale(self: object) -> None:
             assert isinstance(promotion, dict)
             self.assertEqual(promotion.get("evidence_freshness"), "STALE_EVIDENCE")
             self.assertFalse(promotion.get("merge_ready"))
-            self.assertEqual(promotion.get("superseded_by_pr"), 66)
+            self.assertEqual(promotion.get("superseded_by_pr"), 73)
             self.assertEqual(
                 promotion.get("stale_reason"), _suite.VALIDATOR.D0A02_STALE_REASON
             )
 
 
-def _manifest_entries_preserve_pr66_claim_ceiling_without_readiness(
+def _manifest_entries_preserve_pr73_claim_ceiling_without_readiness(
     self: object,
 ) -> None:
     docs = json.loads((_suite.ROOT / "docs/MANIFEST.json").read_text(encoding="utf-8"))
@@ -78,7 +78,7 @@ def _manifest_entries_preserve_pr66_claim_ceiling_without_readiness(
                 _suite.VALIDATOR.D0A02_EVIDENCE_LIFECYCLE,
             )
             self.assertFalse(entry.get("merge_ready"))
-            self.assertEqual(entry.get("superseded_by_pr"), 66)
+            self.assertEqual(entry.get("superseded_by_pr"), 73)
             self.assertEqual(
                 entry.get("stale_reason"), _suite.VALIDATOR.D0A02_STALE_REASON
             )
@@ -88,7 +88,7 @@ def _manifest_entries_preserve_pr66_claim_ceiling_without_readiness(
         for item in project["source_candidate_work_packages"]
         if item.get("id") == "D0A-02"
     )
-    self.assertEqual(candidate.get("pr"), 66)
+    self.assertEqual(candidate.get("pr"), 73)
     self.assertEqual(candidate.get("status"), "MODULE_CLOSED_CANDIDATE")
     self.assertTrue(
         candidate.get("claim_ceiling", "").startswith(
@@ -101,7 +101,7 @@ _suite.D0A02EvidenceLifecycleTests.test_generated_headed_evidence_is_explicitly_
     _generated_headed_evidence_is_explicitly_stale
 )
 _suite.D0A02EvidenceLifecycleTests.test_manifest_entries_preserve_pr33_claim_ceiling_without_readiness = (
-    _manifest_entries_preserve_pr66_claim_ceiling_without_readiness
+    _manifest_entries_preserve_pr73_claim_ceiling_without_readiness
 )
 
 for _name, _value in vars(_suite).items():

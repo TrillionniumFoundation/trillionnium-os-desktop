@@ -28,12 +28,12 @@ _impl = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = _impl
 _SPEC.loader.exec_module(_impl)
 
-D0A02_SUPERSEDED_BY_PR = 66
+D0A02_SUPERSEDED_BY_PR = 73
 D0A02_STALE_REASON = (
     "D0A-02 headed-host evidence is bound to historical source head "
-    f"{_impl.D0A02_HISTORICAL_HEAD}; PR #66 supersedes the PR #60 and PR #33 "
+    f"{_impl.D0A02_HISTORICAL_HEAD}; PR #73 supersedes the PR #60 and PR #33 "
     "convergence candidates and this snapshot. Rerun servo-headed-runtime on "
-    "the exact candidate head for PR #66 before promotion."
+    "the exact candidate head for PR #73 before promotion."
 )
 _impl.D0A02_STALE_REASON = D0A02_STALE_REASON
 _impl.D0A02_SUPERSEDED_BY_PR = D0A02_SUPERSEDED_BY_PR
@@ -194,7 +194,7 @@ _ORIGINAL_CHECK_TRUTH_ALIGNMENT = _impl.check_truth_alignment
 
 
 def check_truth_alignment() -> None:
-    """Run frozen truth checks plus current PR-66 snapshot policy."""
+    """Run frozen truth checks plus current PR-73 snapshot policy."""
 
     _ORIGINAL_CHECK_TRUTH_ALIGNMENT()
     project = _impl.load_json("manifests/project-state.v1.json")
@@ -204,7 +204,7 @@ def check_truth_alignment() -> None:
         _impl.fail(error)
     _impl.require_text(
         "docs/CURRENT_STATE.md",
-        [_impl.PLAN_REVISION, _impl.INTEGRATED_STAGE, "PR #66"],
+        [_impl.PLAN_REVISION, _impl.INTEGRATED_STAGE, "PR #73"],
     )
     _impl.require_text(
         "README.md",
@@ -213,7 +213,7 @@ def check_truth_alignment() -> None:
 
 
 def _check_d0a02_stale_record(record: object, label: str) -> None:
-    """Require historical D0A-02 evidence to advertise PR-66 staleness."""
+    """Require historical D0A-02 evidence to advertise PR-73 staleness."""
 
     if not isinstance(record, dict):
         _impl.fail(f"{label} must be an object")
@@ -225,7 +225,7 @@ def _check_d0a02_stale_record(record: object, label: str) -> None:
         )
     if record.get("stale_reason") != D0A02_STALE_REASON:
         _impl.fail(
-            f"{label}.stale_reason must equal the canonical PR #66 exact-head rerun reason"
+            f"{label}.stale_reason must equal the canonical PR #73 exact-head rerun reason"
         )
     promotion = record.get("promotion")
     if not isinstance(promotion, dict):
@@ -248,7 +248,7 @@ def _check_d0a02_stale_record(record: object, label: str) -> None:
 def check_d0a02_evidence_lifecycle(
     project: dict[str, Any], docs: dict[str, Any], repository: dict[str, Any]
 ) -> None:
-    """Synchronize historical evidence with the active PR-66 D0A-02 claim."""
+    """Synchronize historical evidence with the active PR-73 D0A-02 claim."""
 
     for relative in (
         "docs/evidence/generated/d0a02-headed-runtime-evidence.json",
@@ -276,7 +276,7 @@ def check_d0a02_evidence_lifecycle(
             if entry.get("merge_ready") is not False:
                 _impl.fail("repository-state D0A-02 evidence must not be merge-ready")
             if entry.get("superseded_by_pr") != D0A02_SUPERSEDED_BY_PR:
-                _impl.fail("repository-state D0A-02 evidence must retain PR #66 supersession")
+                _impl.fail("repository-state D0A-02 evidence must retain PR #73 supersession")
             if entry.get("stale_reason") != D0A02_STALE_REASON:
                 _impl.fail(
                     "repository-state D0A-02 entry lacks the canonical exact-head rerun reason"
@@ -300,7 +300,7 @@ def check_d0a02_evidence_lifecycle(
             if entry.get("merge_ready") is not False:
                 _impl.fail("docs manifest D0A-02 evidence must not be merge-ready")
             if entry.get("superseded_by_pr") != D0A02_SUPERSEDED_BY_PR:
-                _impl.fail("docs manifest D0A-02 evidence must retain PR #66 supersession")
+                _impl.fail("docs manifest D0A-02 evidence must retain PR #73 supersession")
             if entry.get("stale_reason") != D0A02_STALE_REASON:
                 _impl.fail(
                     "docs manifest D0A-02 entry lacks the canonical exact-head rerun reason"
@@ -321,9 +321,9 @@ def check_d0a02_evidence_lifecycle(
     else:
         candidate = active[0]
         if candidate.get("pr") != D0A02_SUPERSEDED_BY_PR:
-            _impl.fail("active D0A-02 source candidate must be bound to PR #66")
+            _impl.fail("active D0A-02 source candidate must be bound to PR #73")
         if candidate.get("status") != "MODULE_CLOSED_CANDIDATE":
-            _impl.fail("active PR #66 D0A-02 candidate must retain MODULE_CLOSED_CANDIDATE status")
+            _impl.fail("active PR #73 D0A-02 candidate must retain MODULE_CLOSED_CANDIDATE status")
         claim = candidate.get("claim_ceiling")
         if not isinstance(claim, str) or not claim.startswith(
             "headed_host_local_fixture_only"

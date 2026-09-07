@@ -9,12 +9,12 @@
     "promotion_requires_exact_head_and_exact_main_evidence": true
   },
   "candidate_state_snapshot": {
-    "observed_at": "2026-09-04T17:45:12Z",
+    "observed_at": "2026-09-07T05:07:35Z",
     "observed_main_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-    "observed_candidate_pr": 66,
-    "observed_candidate_branch": "codex/d6-gap-closure-v1",
-    "observed_candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
-    "observed_candidate_tree_sha": "f5e5cc16dcd6c088dcef6ed6c3793bd7808b4aa8",
+    "observed_candidate_pr": 73,
+    "observed_candidate_branch": "codex/d6-sensitive-log-redaction-v1",
+    "observed_candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
+    "observed_candidate_tree_sha": "3a7d7025011c5393f9eac04f2522817a8e89090e",
     "source": "github_api_committed_snapshot_before_truth_refresh",
     "live_pr_or_ci_state_must_be_read_from_github": true
   },
@@ -114,7 +114,7 @@
       "id": "D0A-02",
       "pr": 27,
       "status": "MERGED_HISTORICAL",
-      "superseded_by_pr": 66
+      "superseded_by_pr": 73
     },
     {
       "branch": "codex/d0a02-proof-soundness-v4",
@@ -123,7 +123,7 @@
       "id": "D0A-02",
       "pr": 33,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 66
+      "superseded_by_pr": 73
     },
     {
       "branch": "codex/d1-01-current-main-v2",
@@ -132,7 +132,7 @@
       "id": "D1-01",
       "pr": 32,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 66
+      "superseded_by_pr": 73
     },
     {
       "branch": "codex/d2i-current-main-v1",
@@ -141,7 +141,7 @@
       "id": "D2I-01",
       "pr": 35,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 66
+      "superseded_by_pr": 73
     },
     {
       "branch": "codex/d4-d9-gap-closure-v1",
@@ -150,7 +150,7 @@
       "id": "D4-D9",
       "pr": 59,
       "status": "SUPERSEDED_UNSTABLE_REVIEW_SURFACE",
-      "superseded_by_pr": 66
+      "superseded_by_pr": 73
     },
     {
       "branch": "codex/d1-01-d6-replay-v1",
@@ -159,7 +159,7 @@
       "id": "D1-01",
       "pr": 29,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 66
+      "superseded_by_pr": 73
     },
     {
       "branch": "codex/d1-01-reproducible-qemu-substrate",
@@ -168,108 +168,108 @@
       "id": "D1-01",
       "pr": 23,
       "status": "SUPERSEDED_HISTORICAL",
-      "superseded_by_pr": 66
+      "superseded_by_pr": 73
     }
   ],
   "schema": "trillionnium.desktop.project-state.v1",
   "source_candidate_work_packages": [
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "source_contract_only_repository_settings_and_independent_review_required",
       "id": "D0T-03",
-      "pr": 66,
+      "pr": 73,
       "status": "REPOSITORY_SETTING_REQUIRED"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "headed_host_local_fixture_only_no_native_clipboard_no_clean_teardown_no_integrated_main",
       "id": "D0A-02",
-      "pr": 66,
+      "pr": 73,
       "status": "MODULE_CLOSED_CANDIDATE"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "qemu_image_candidate_only_no_servo_promotion_no_hardware_no_release",
       "id": "D1-01",
-      "pr": 66,
+      "pr": 73,
       "status": "MODULE_CLOSED_CANDIDATE"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "integrated_qemu_local_fixture_candidate_only_no_hardware_no_release",
       "id": "D2I-01",
-      "pr": 66,
+      "pr": 73,
       "status": "MODULE_CLOSED_CANDIDATE"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "source_wiring_only_servo_retained_node_adapter_exact_integrated_corpus_and_independent_review_required",
       "id": "D3-01",
-      "pr": 66,
+      "pr": 73,
       "status": "BLOCKED_UPSTREAM"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "source_reference_only_prerequisite_gate_open_no_promotion",
       "id": "D4-01",
-      "pr": 66,
+      "pr": 73,
       "status": "BLOCKED_UPSTREAM"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "source_reference_only_prerequisite_gate_open_no_promotion",
       "id": "D5-01",
-      "pr": 66,
+      "pr": 73,
       "status": "BLOCKED_UPSTREAM"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "source_reference_only_prerequisite_gate_open_no_promotion",
       "id": "D6-01",
-      "pr": 66,
+      "pr": 73,
       "status": "BLOCKED_UPSTREAM"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "source_reference_only_prerequisite_gate_open_no_promotion",
       "id": "D7-01",
-      "pr": 66,
+      "pr": 73,
       "status": "BLOCKED_UPSTREAM"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "source_verifier_only_fixed_hardware_lab_evidence_required",
       "id": "D8-01",
-      "pr": 66,
+      "pr": 73,
       "status": "BLOCKED_UPSTREAM"
     },
     {
       "base_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
-      "branch": "codex/d6-gap-closure-v1",
-      "candidate_head_sha": "ecb8c2ac0ec0e58277b64a5056a10a8262e8e63e",
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "candidate_head_sha": "ddaf10d6e0172f9c17c04752d0b6d27ebf89a14b",
       "claim_ceiling": "source_verifier_only_independent_hsm_release_ceremony_required",
       "id": "D9-01",
-      "pr": 66,
+      "pr": 73,
       "status": "BLOCKED_UPSTREAM"
     }
   ],
