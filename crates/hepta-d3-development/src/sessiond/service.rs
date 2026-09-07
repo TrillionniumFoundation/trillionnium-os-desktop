@@ -2,9 +2,10 @@ use crate::runtime::AtomicFixtureRuntime;
 use crate::storage;
 use crate::{AnyError, PEER_EXECUTABLE, PEER_GROUP, PEER_UNIT, PEER_USER, REQUEST_BUDGET, invalid};
 use crate::{activation, engine};
+#[cfg(test)]
+use hepta_agent_port::ServiceEvidence;
 use hepta_agent_port::{
-    AgentPortError, BrowserRequestHandler, DispatchContext, HandlerOutcome, ServiceEvidence,
-    serve_one_with_observer,
+    AgentPortError, BrowserRequestHandler, DispatchContext, HandlerOutcome, serve_one_with_observer,
 };
 use hepta_agent_transport::{PeerIdentity, PeerPolicy};
 use hepta_browser_actor::engine_dispatch::EngineThreadRuntime;
@@ -123,7 +124,7 @@ fn run_connections(
 
     loop {
         let stream = engine::accept_next(&listener, stop)?;
-        if let Ok(evidence) = serve_connection(
+        let _request_completed = serve_connection(
             stream,
             &attestor,
             &policy,
@@ -135,10 +136,8 @@ fn run_connections(
             &mut journal,
             &mut runtime,
             &mut state,
-        ) {
-            let public_evidence = PublicServiceEvidence::from(evidence);
-            println!("{}", evidence_json(&public_evidence));
-        }
+        )
+        .is_ok();
         stop.ensure_active()?;
         // Rotation errors exit the service. A consumed/uncertain writer must
         // not be retried against a guessed old segment or a replacement log.
@@ -177,7 +176,7 @@ fn serve_connection(
     journal: &mut Option<ReceiptJournal>,
     runtime: &mut Option<EngineThreadRuntime>,
     state: &mut Option<SessionState>,
-) -> Result<ServiceEvidence, AnyError> {
+) -> Result<(), AnyError> {
     activation::verify_stream_path(&stream)?;
     let peer = PeerIdentity::from_stream(&stream)?;
     let attested = attestor.attest_with_static_executable_digest(peer, policy, executable)?;
@@ -220,7 +219,7 @@ fn serve_connection(
         attestor,
         attested: &attested,
     };
-    let evidence = serve_one_with_observer(
+    serve_one_with_observer(
         stream,
         PeerPolicy {
             expected_pid: peer.pid,
@@ -232,7 +231,7 @@ fn serve_connection(
         &mut current.observer,
     )?;
     attested.ensure_alive()?;
-    Ok(evidence)
+    Ok(())
 }
 
 fn attach_session(
@@ -271,6 +270,7 @@ fn same_peer(left: PeerIdentity, right: PeerIdentity) -> bool {
     left.pid == right.pid && left.uid == right.uid && left.gid == right.gid
 }
 
+#[cfg(test)]
 struct PublicServiceEvidence {
     transport_sequence: u64,
     request_id: String,
@@ -280,6 +280,7 @@ struct PublicServiceEvidence {
     response_committed: bool,
 }
 
+#[cfg(test)]
 impl From<ServiceEvidence> for PublicServiceEvidence {
     fn from(evidence: ServiceEvidence) -> Self {
         let ServiceEvidence {
@@ -302,6 +303,7 @@ impl From<ServiceEvidence> for PublicServiceEvidence {
     }
 }
 
+#[cfg(test)]
 fn evidence_json(evidence: &PublicServiceEvidence) -> String {
     format!(
         concat!(
@@ -321,6 +323,7 @@ fn evidence_json(evidence: &PublicServiceEvidence) -> String {
     )
 }
 
+#[cfg(test)]
 fn escape_json(value: &str) -> String {
     value
         .replace('\\', "\\\\")
@@ -356,6 +359,24 @@ mod tests {
     fn receipt_recovery_terminal_vocabulary_is_available() {
         assert!(ReceiptLifecycleState::Indeterminate.is_terminal());
         assert!(ReceiptLifecycleState::Interrupted.is_terminal());
+    }
+
+    #[test]
+    fn test_only_public_renderer_contains_no_peer_identity() {
+        let evidence = PublicServiceEvidence {
+            transport_sequence: 1,
+            request_id: "request:one".to_owned(),
+            request_sha256: "a".repeat(64),
+            response_sha256: "b".repeat(64),
+            response_ok: true,
+            response_committed: true,
+        };
+        let encoded = evidence_json(&evidence);
+        assert!(encoded.contains("\"peer_credentials_verified\":true"));
+        assert!(encoded.contains("\"peer_identity_redacted\":true"));
+        assert!(!encoded.contains("\"peer_pid\""));
+        assert!(!encoded.contains("\"peer_uid\""));
+        assert!(!encoded.contains("\"peer_gid\""));
     }
 }
 

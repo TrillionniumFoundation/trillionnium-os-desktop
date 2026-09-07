@@ -9,7 +9,9 @@
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
-use hepta_agent_port::{D0FixtureHandler, ServiceEvidence, serve_one};
+#[cfg(test)]
+use hepta_agent_port::ServiceEvidence;
+use hepta_agent_port::{D0FixtureHandler, serve_one};
 use hepta_agent_transport::{ClientConnection, PeerIdentity, PeerPolicy};
 use hepta_browser_codec::{BrowserOperation, BrowserRequest, decode_response, encode_request};
 use hepta_peer_attestation::{
@@ -34,20 +36,21 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 const SERVER_CEILING: Duration = Duration::from_secs(20);
 
 fn main() {
-    match run() {
-        Ok(result) => {
-            if let Some(path) = result.output
-                && write_result(&path, &result.json).is_err()
-            {
-                std::process::exit(1);
-            }
-            println!("{}", result.json);
-        }
+    let command = match parse_command() {
+        Ok(command) => command,
         Err(_) => std::process::exit(1),
+    };
+    if execute(command).is_err() {
+        std::process::exit(1);
     }
 }
 
-fn run() -> Result<FixtureResult, FixtureError> {
+struct Command {
+    mode: String,
+    output: Option<PathBuf>,
+}
+
+fn parse_command() -> Result<Command, FixtureError> {
     let mut mode = None;
     let mut output = None;
     let mut arguments = env::args().skip(1);
@@ -77,28 +80,86 @@ fn run() -> Result<FixtureResult, FixtureError> {
         }
     }
 
-    let mode = mode.ok_or(FixtureError::Usage("--mode is required"))?;
-    let json = match mode.as_str() {
-        "server" => run_server()?,
-        "health" => run_health()?,
-        "expect-denied" => run_expect_denied()?,
-        "hold" => run_hold()?,
-        "self-check" => {
-            run_self_check()?;
-            concat!(
-                "{\"schema\":\"trillionnium.desktop.d1-agent-fixture-self-check.v2\",",
-                "\"status\":\"PASS\",\"qualification_only\":true,",
-                "\"listener_created\":false,\"product_handler_connected\":false,",
-                "\"peer_credentials_verified\":true,\"peer_identity_redacted\":true}"
-            )
-            .to_owned()
-        }
-        _ => return Err(FixtureError::Usage("unsupported mode")),
-    };
-    Ok(FixtureResult { json, output })
+    Ok(Command {
+        mode: mode.ok_or(FixtureError::Usage("--mode is required"))?,
+        output,
+    })
 }
 
-fn run_server() -> Result<String, FixtureError> {
+fn execute(command: Command) -> Result<(), FixtureError> {
+    match command.mode.as_str() {
+        "server" => {
+            if command.output.is_some() {
+                return Err(FixtureError::Usage(
+                    "server mode does not emit a public result",
+                ));
+            }
+            run_server()
+        }
+        "health" => {
+            run_health()?;
+            emit_static_report(health_report(), command.output.as_deref())
+        }
+        "expect-denied" => {
+            run_expect_denied()?;
+            emit_static_report(expect_denied_report(), command.output.as_deref())
+        }
+        "hold" => {
+            run_hold()?;
+            emit_static_report(hold_report(), command.output.as_deref())
+        }
+        "self-check" => {
+            run_self_check()?;
+            emit_static_report(self_check_report(), command.output.as_deref())
+        }
+        _ => Err(FixtureError::Usage("unsupported mode")),
+    }
+}
+
+fn emit_static_report(report: &'static str, output: Option<&Path>) -> Result<(), FixtureError> {
+    if let Some(path) = output {
+        write_result(path, report)?;
+    }
+    println!("{report}");
+    Ok(())
+}
+
+fn health_report() -> &'static str {
+    concat!(
+        "{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v2\",",
+        "\"status\":\"PASS\",\"mode\":\"health\",",
+        "\"qualification_only\":true,\"product_handler_connected\":false,",
+        "\"request_id\":\"d1-agent-port-health:1\",",
+        "\"response_verified\":true}"
+    )
+}
+
+fn expect_denied_report() -> &'static str {
+    concat!(
+        "{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v2\",",
+        "\"status\":\"PASS\",\"mode\":\"expect-denied\",",
+        "\"qualification_only\":true,\"connection_admitted\":false}"
+    )
+}
+
+fn hold_report() -> &'static str {
+    concat!(
+        "{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v2\",",
+        "\"status\":\"PASS\",\"mode\":\"hold\",",
+        "\"qualification_only\":true}"
+    )
+}
+
+fn self_check_report() -> &'static str {
+    concat!(
+        "{\"schema\":\"trillionnium.desktop.d1-agent-fixture-self-check.v2\",",
+        "\"status\":\"PASS\",\"qualification_only\":true,",
+        "\"listener_created\":false,\"product_handler_connected\":false,",
+        "\"peer_credentials_verified\":true,\"peer_identity_redacted\":true}"
+    )
+}
+
+fn run_server() -> Result<(), FixtureError> {
     let stream = inherited_stream_from_stdin()?;
     verify_local_socket_path(&stream, Path::new(AGENT_SOCKET_PATH))?;
 
@@ -125,14 +186,14 @@ fn run_server() -> Result<String, FixtureError> {
         expected_gid: Some(expected_gid),
     };
     let mut handler = D0FixtureHandler::default();
-    let evidence = serve_one(stream, transport_policy, SERVER_CEILING, &mut handler)?;
+    serve_one(stream, transport_policy, SERVER_CEILING, &mut handler)?;
     attested.ensure_alive()?;
     if handler.invocation_count != 1 {
         return Err(FixtureError::Invariant(
             "qualification server did not dispatch exactly once",
         ));
     }
-    Ok(server_evidence_json(&PublicServiceEvidence::from(evidence)))
+    Ok(())
 }
 
 fn inherited_stream_from_stdin() -> Result<UnixStream, FixtureError> {
@@ -210,7 +271,7 @@ fn verify_local_socket_path(stream: &UnixStream, expected: &Path) -> Result<(), 
     Ok(())
 }
 
-fn run_health() -> Result<String, FixtureError> {
+fn run_health() -> Result<(), FixtureError> {
     let stream = UnixStream::connect(AGENT_SOCKET_PATH).map_err(FixtureError::Io)?;
     let server = PeerIdentity::from_stream(&stream)?;
     let mut connection =
@@ -237,19 +298,10 @@ fn run_health() -> Result<String, FixtureError> {
         ));
     }
 
-    Ok(format!(
-        concat!(
-            "{{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v2\",",
-            "\"status\":\"PASS\",\"mode\":\"health\",",
-            "\"qualification_only\":true,\"product_handler_connected\":false,",
-            "\"request_id\":\"{}\",\"transport_sequence\":{},",
-            "\"response_sha256\":\"{}\"}}"
-        ),
-        request.request_id, sequence, decoded.canonical_sha256
-    ))
+    Ok(())
 }
 
-fn run_expect_denied() -> Result<String, FixtureError> {
+fn run_expect_denied() -> Result<(), FixtureError> {
     match UnixStream::connect(AGENT_SOCKET_PATH) {
         Err(error)
             if matches!(
@@ -257,12 +309,7 @@ fn run_expect_denied() -> Result<String, FixtureError> {
                 io::ErrorKind::PermissionDenied | io::ErrorKind::NotFound
             ) =>
         {
-            Ok(concat!(
-                "{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v2\",",
-                "\"status\":\"PASS\",\"mode\":\"expect-denied\",",
-                "\"qualification_only\":true,\"connection_admitted\":false}"
-            )
-            .to_owned())
+            Ok(())
         }
         Err(error) => Err(FixtureError::Io(error)),
         Ok(_) => Err(FixtureError::Invariant(
@@ -271,15 +318,10 @@ fn run_expect_denied() -> Result<String, FixtureError> {
     }
 }
 
-fn run_hold() -> Result<String, FixtureError> {
+fn run_hold() -> Result<(), FixtureError> {
     let _stream = UnixStream::connect(AGENT_SOCKET_PATH).map_err(FixtureError::Io)?;
     std::thread::sleep(Duration::from_secs(120));
-    Ok(concat!(
-        "{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v2\",",
-        "\"status\":\"PASS\",\"mode\":\"hold\",",
-        "\"qualification_only\":true}"
-    )
-    .to_owned())
+    Ok(())
 }
 
 fn run_self_check() -> Result<(), FixtureError> {
@@ -299,6 +341,7 @@ fn run_self_check() -> Result<(), FixtureError> {
     Ok(())
 }
 
+#[cfg(test)]
 struct PublicServiceEvidence {
     transport_sequence: u64,
     request_id: String,
@@ -308,6 +351,7 @@ struct PublicServiceEvidence {
     response_committed: bool,
 }
 
+#[cfg(test)]
 impl From<ServiceEvidence> for PublicServiceEvidence {
     fn from(evidence: ServiceEvidence) -> Self {
         let ServiceEvidence {
@@ -330,6 +374,7 @@ impl From<ServiceEvidence> for PublicServiceEvidence {
     }
 }
 
+#[cfg(test)]
 fn server_evidence_json(evidence: &PublicServiceEvidence) -> String {
     format!(
         concat!(
@@ -350,6 +395,7 @@ fn server_evidence_json(evidence: &PublicServiceEvidence) -> String {
     )
 }
 
+#[cfg(test)]
 fn escape_json(value: &str) -> String {
     let mut output = String::with_capacity(value.len());
     for character in value.chars() {
@@ -374,11 +420,6 @@ fn write_result(path: &Path, json: &str) -> Result<(), io::Error> {
         fs::create_dir_all(parent)?;
     }
     fs::write(path, format!("{json}\n"))
-}
-
-struct FixtureResult {
-    json: String,
-    output: Option<PathBuf>,
 }
 
 #[derive(Debug)]

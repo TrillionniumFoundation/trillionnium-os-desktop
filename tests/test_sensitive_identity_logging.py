@@ -45,6 +45,15 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
         self.assertIn('println!("{}", self_check_report())', product)
         self.assertNotIn('println!("{report}")', product)
 
+        d1 = (
+            ROOT / "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs"
+        ).read_text(encoding="utf-8")
+        self.assertIn("fn emit_static_report(report: &'static str", d1)
+        self.assertIn("fn run_server() -> Result<(), FixtureError>", d1)
+        self.assertIn("fn run_health() -> Result<(), FixtureError>", d1)
+        self.assertNotIn('println!("{}", result.json)', d1)
+        self.assertNotIn("struct FixtureResult", d1)
+
         for relative, renderer in (
             (
                 "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs",
@@ -63,6 +72,13 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
             self.assertNotIn(
                 f"fn {renderer}(evidence: &ServiceEvidence)", source, relative
             )
+
+        d3 = (
+            ROOT / "crates/hepta-d3-development/src/sessiond/service.rs"
+        ).read_text(encoding="utf-8")
+        self.assertIn("let _request_completed = serve_connection(", d3)
+        self.assertIn(") -> Result<(), AnyError> {", d3)
+        self.assertNotIn('println!("{}", evidence_json', d3)
 
     def test_service_evidence_cannot_retain_peer_identity(self) -> None:
         source = (ROOT / "crates/hepta-agent-port/src/lib.rs").read_text(
@@ -110,6 +126,7 @@ class SensitiveIdentityLoggingTests(unittest.TestCase):
             ),
             "crates/hepta-d3-development/src/sessiond/service.rs": (
                 "d3 connection rejected:",
+                'println!("{}", evidence_json',
             ),
         }
         for relative, needles in forbidden.items():
