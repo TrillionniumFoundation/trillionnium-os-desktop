@@ -251,27 +251,27 @@ jobs:
             servo/ports/servoshell/desktop/headed_window.rs
           git -C servo diff --check
 
-      - name: Set up pinned Python
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
-        with:
-          python-version-file: servo/.python-version
-
-      - name: Set up pinned uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
-        with:
-          version: 0.11.16
-
-      - name: Bootstrap exact Servo dependencies and toolchain
+      - name: Install exact Servo dependencies and Rust toolchain
         shell: bash
         working-directory: servo
         run: |
           set -euo pipefail
+          sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' \
+            python/servo/platform/linux_packages/apt/apt_common.txt \
+            python/servo/platform/linux_packages/apt/apt_ubuntu_only.txt \
+            | sort -u > "$RUNNER_TEMP/d3-servo-packages.txt"
           sudo apt-get update
-          sudo apt-get install -qy patch tshark shellcheck
-          ./mach bootstrap --yes --skip-lints --skip-nextest
+          xargs -r sudo apt-get install -y --no-install-recommends \
+            < "$RUNNER_TEMP/d3-servo-packages.txt"
+          sudo apt-get install -y --no-install-recommends patch tshark shellcheck
+          sudo apt-get purge -y fonts-droid-fallback || true
+          servo_rust_channel="$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)"
+          test "$servo_rust_channel" = "1.97.1"
+          rustup toolchain install "$servo_rust_channel" --profile minimal
+          rustup component add rustfmt --toolchain "$servo_rust_channel"
           rustc --version --verbose | tee "$RUNNER_TEMP/d3-rustc-version.txt"
           cargo --version --verbose | tee "$RUNNER_TEMP/d3-cargo-version.txt"
-          test "$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)" = "1.97.1"
+          rustfmt --version | tee "$RUNNER_TEMP/d3-rustfmt-version.txt"
 
       - name: Normalize only patch-owned Rust files
         id: format
@@ -316,7 +316,6 @@ jobs:
         working-directory: servo
         env:
           CARGO_INCREMENTAL: '0'
-          LIBCLANG_PATH: /usr/lib/llvm-14/lib
           RUSTFLAGS: -D warnings
         run: |
           set -euo pipefail
@@ -347,8 +346,10 @@ jobs:
             d3-changed-formatted.txt \
             d3-unexpected-formatted.txt \
             d3-allowed.txt \
+            d3-servo-packages.txt \
             d3-rustc-version.txt \
             d3-cargo-version.txt \
+            d3-rustfmt-version.txt \
             d3-cargo-check.log; do
             test ! -f "$RUNNER_TEMP/$file" || \
               cp "$RUNNER_TEMP/$file" "$evidence/$file"
