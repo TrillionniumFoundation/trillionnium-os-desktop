@@ -47,7 +47,10 @@ on:
       - "tests/test_validate_project_truth.py"
       - "tools/validate_governance_integrity.py"
       - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
       - "tools/verify_d3_servo_patch.py"
+      - "manifests/ci-action-pins.v1.json"
       - "manifests/lab-d3-servo-retained-node-action.v1.json"
       - "manifests/servo-patches/d3-retained-node-action-v1/**"
       - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
@@ -100,7 +103,10 @@ on:
       - "tests/test_validate_project_truth.py"
       - "tools/validate_governance_integrity.py"
       - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
       - "tools/verify_d3_servo_patch.py"
+      - "manifests/ci-action-pins.v1.json"
       - "manifests/lab-d3-servo-retained-node-action.v1.json"
       - "manifests/servo-patches/d3-retained-node-action-v1/**"
       - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
@@ -143,6 +149,7 @@ jobs:
             tests/test_validate_d3_development_profile.py \
             tools/validate_project_truth.py \
             tests/test_validate_project_truth.py \
+            tools/qualify_servo_exact_pin_v3.py \
             tools/verify_d3_servo_patch.py
 
       - name: Run adversarial verifier and loader corpus
@@ -227,7 +234,7 @@ jobs:
           if versions != ['0.24.0']:
               raise SystemExit(f'unexpected AccessKit versions: {versions}')
           PY
-          python3 tools/verify_d3_servo_patch.py \
+          python3 tools/qualify_servo_exact_pin_v3.py verify-d3-patch \
             --manifest "$D3_SERVO_MANIFEST" \
             --root . \
             --output "$RUNNER_TEMP/d3-servo.patch" \
@@ -274,8 +281,16 @@ jobs:
           set -euo pipefail
           mapfile -t rust_files < <(grep -E '\.rs$' "$RUNNER_TEMP/d3-changed.txt")
           test "${#rust_files[@]}" -gt 0
-          rustfmt --edition 2024 "${rust_files[@]}"
-          rustfmt --edition 2024 --check "${rust_files[@]}"
+          index=0
+          for file in "${rust_files[@]}"; do
+            formatted="$RUNNER_TEMP/d3-rustfmt-$index.rs"
+            checked="$RUNNER_TEMP/d3-rustfmt-$index.check.rs"
+            rustfmt --edition 2024 --emit stdout < "$file" > "$formatted"
+            cat "$formatted" > "$file"
+            rustfmt --edition 2024 --emit stdout < "$file" > "$checked"
+            cmp "$file" "$checked"
+            index=$((index + 1))
+          done
           git diff --check
           git diff --name-only | sort > "$RUNNER_TEMP/d3-changed-formatted.txt"
           comm -23 \
