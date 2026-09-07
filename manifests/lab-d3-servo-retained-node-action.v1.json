@@ -14,19 +14,19 @@
     "sha256": "d48118ffc8140a2d8c36db2ea4956ed88162cf0e0e14135e461b9e28da23a709",
     "parts": [
       {
-        "path": "patches/servo/d3-retained-node-action-v1/000.patch",
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/000.patch",
         "sha256": "71e5c51585bf2cc2991e0c4bda1464fb8bf261c8292fee5db5d1f0ed08e2e838"
       },
       {
-        "path": "patches/servo/d3-retained-node-action-v1/001.patch",
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/001.patch",
         "sha256": "e9316310a6daba1ad4d133a725a67362809c58782ca866f425b1e25ba44a8100"
       },
       {
-        "path": "patches/servo/d3-retained-node-action-v1/002.patch",
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/002.patch",
         "sha256": "cb0be5fc09d5c06b13b34e0ec9f66d0b6da1dd11ad778a022b7c46ebcf4b6b7e"
       },
       {
-        "path": "patches/servo/d3-retained-node-action-v1/003.patch",
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/003.patch",
         "sha256": "f468a92efbbfd8e4a5da7b7c298ba986d91ba02a55b7fdeeea9706886197466f"
       }
     ],
@@ -65,9 +65,8 @@
       "clean git apply check",
       "forbidden-fallback static guard",
       "canonical rustfmt normalization with bounded changed paths",
-      "locked servoshell dependency-graph cargo check",
-      "machine-readable evidence with source-only claim ceiling"
+      "locked servoshell dependency-graph cargo check"
     ]
   },
-  "claim_ceiling": "A green workflow proves only that this patch applies, formats and compiles on the exact Servo pin. It does not prove an installed Trillionnium runtime, independent replay, release eligibility, physical hardware, protected-environment approval or HOM signing."
+  "claim_ceiling": "A green workflow proves only that this patch applies, formats and compiles on the exact Servo pin. It does not prove an installed Trillionnium runtime, independent replay, release eligibility, physical hardware, protected-environment approval or HSM signing."
 }
