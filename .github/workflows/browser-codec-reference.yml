@@ -6,17 +6,14 @@ on:
       - ".github/workflows/browser-codec-reference.yml"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "rust-toolchain.toml"
       - "apps/hepta-browserd/**"
       - "crates/hepta-browser-codec/**"
       - "crates/hepta-browser-contracts/**"
       - "crates/trillionnium-contract-core/**"
       - "crates/hepta-session-core/**"
       - "crates/hepta-workspace-composition/**"
-      - "contracts/browser-api.v1.schema.json"
-      - "contracts/browser-codec.v1.json"
-      - "contracts/browser-wire.v1.schema.json"
-      - "contracts/browser-response.v1.schema.json"
-      - "contracts/error-codes.v1.json"
+      - "contracts/browser-*.json"
       - "contracts/workspace-composition.v1.json"
       - "contracts/golden/*.wire.json"
       - "contracts/golden/trusted-app-origins.v1.tsv"
@@ -25,31 +22,23 @@ on:
       - "tools/validate_rust_browser_codec.py"
       - "tools/validate_repository.py"
       - "tools/validate_project_truth.py"
-      - "tools/structured_status.py"
-      - "tools/structured_status_model.py"
-      - "tools/validate_status_authority_singleton.py"
-      - "docs/status-documents.v1.json"
-      - "docs/CURRENT_STATE.md"
-      - "manifests/project-state.v1.json"
-      - "manifests/gates.v1.json"
+      - "tests/test_validate_rust_browser_codec.py"
       - "docs/evidence/generated/d0c03-*.json"
+      - "manifests/**"
   push:
     branches: [main]
     paths:
       - ".github/workflows/browser-codec-reference.yml"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "rust-toolchain.toml"
       - "apps/hepta-browserd/**"
       - "crates/hepta-browser-codec/**"
       - "crates/hepta-browser-contracts/**"
       - "crates/trillionnium-contract-core/**"
       - "crates/hepta-session-core/**"
       - "crates/hepta-workspace-composition/**"
-      - "contracts/browser-api.v1.schema.json"
-      - "contracts/browser-codec.v1.json"
-      - "contracts/browser-wire.v1.schema.json"
-      - "contracts/browser-response.v1.schema.json"
-      - "contracts/error-codes.v1.json"
+      - "contracts/browser-*.json"
       - "contracts/workspace-composition.v1.json"
       - "contracts/golden/*.wire.json"
       - "contracts/golden/trusted-app-origins.v1.tsv"
@@ -58,14 +47,9 @@ on:
       - "tools/validate_rust_browser_codec.py"
       - "tools/validate_repository.py"
       - "tools/validate_project_truth.py"
-      - "tools/structured_status.py"
-      - "tools/structured_status_model.py"
-      - "tools/validate_status_authority_singleton.py"
-      - "docs/status-documents.v1.json"
-      - "docs/CURRENT_STATE.md"
-      - "manifests/project-state.v1.json"
-      - "manifests/gates.v1.json"
+      - "tests/test_validate_rust_browser_codec.py"
       - "docs/evidence/generated/d0c03-*.json"
+      - "manifests/**"
 
 permissions:
   contents: read
@@ -75,14 +59,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  exact-source:
-    name: exact-source-${{ matrix.lane }}
+  exact-source-reference:
+    name: exact-source-reference-and-static-audit
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        lane: [reference-and-static-audit, rust]
     steps:
       - name: Check out exact source head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -90,101 +70,87 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
           persist-credentials: false
-
       - name: Assert exact source identity
         env:
           EXPECTED_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
           git rev-parse HEAD^{tree}
-
-      - name: Compile reference and audit modules
-        if: ${{ matrix.lane == 'reference-and-static-audit' }}
-        run: >-
-          python3 -m py_compile
-          tools/browser_codec_reference.py
-          tools/browser_codec_reference/*.py
-          tools/validate_rust_browser_codec.py
-          tools/validate_project_truth.py
-
-      - name: Validate repository and project truth
+      - name: Compile validators and run project gates
         run: |
           set -euo pipefail
+          python3 -m py_compile tools/browser_codec_reference.py tools/browser_codec_reference/*.py tools/validate_rust_browser_codec.py tools/validate_project_truth.py tests/test_validate_rust_browser_codec.py
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
-
-      - name: Regenerate reference, audit, and golden vectors
-        if: ${{ matrix.lane == 'reference-and-static-audit' }}
-        shell: bash
+          python3 -m unittest tests.test_validate_rust_browser_codec -v
+      - name: Regenerate and compare codec evidence
         run: |
           set -euo pipefail
           mkdir -p /tmp/d0c03-golden
-          python3 tools/browser_codec_reference.py \
-            --self-test \
-            --contract contracts/browser-codec.v1.json \
-            --write-result /tmp/d0c03-browser-codec-reference-result.json \
-            --write-golden-dir /tmp/d0c03-golden \
-            >/tmp/d0c03-browser-codec.stdout.json
-          python3 tools/validate_rust_browser_codec.py \
-            --write-result /tmp/d0c03-rust-source-audit-result.json \
-            >/tmp/d0c03-rust-source-audit.stdout.json
-          cmp /tmp/d0c03-browser-codec-reference-result.json \
-            docs/evidence/generated/d0c03-browser-codec-reference-result.json
-          cmp /tmp/d0c03-rust-source-audit-result.json \
-            docs/evidence/generated/d0c03-rust-source-audit-result.json
-          for fixture in contracts/golden/golden-*.wire.json; do
-            cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
-          done
-
-      - name: Verify historical host evidence and claim ceiling
-        if: ${{ matrix.lane == 'reference-and-static-audit' }}
-        shell: bash
+          python3 tools/browser_codec_reference.py --self-test --contract contracts/browser-codec.v1.json --write-result /tmp/d0c03-browser-codec-reference-result.json --write-golden-dir /tmp/d0c03-golden >/tmp/d0c03-browser-codec.stdout.json
+          python3 tools/validate_rust_browser_codec.py --write-result /tmp/d0c03-rust-source-audit-result.json >/tmp/d0c03-rust-source-audit.stdout.json
+          cmp /tmp/d0c03-browser-codec-reference-result.json docs/evidence/generated/d0c03-browser-codec-reference-result.json
+          cmp /tmp/d0c03-rust-source-audit-result.json docs/evidence/generated/d0c03-rust-source-audit-result.json
+          for fixture in contracts/golden/golden-*.wire.json; do cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"; done
+      - name: Enforce historical-host evidence ceiling
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json
           from pathlib import Path
-
+          import sys
+          sys.path.insert(0, str(Path("tools").resolve()))
+          from validate_rust_browser_codec import load_json_nofollow, repo_path
           source_sha = "4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb"
-          contract = json.loads(Path("contracts/browser-codec.v1.json").read_text())
-          reference = json.loads(Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json").read_text())
-          audit = json.loads(Path("docs/evidence/generated/d0c03-rust-source-audit-result.json").read_text())
-          host = json.loads(Path(contract["rust_host_result"]).read_text())
-          assert contract["validation"]["python_reference"] == "PASS_27_OF_27"
-          assert contract["validation"]["rust_source_audit"] == "PASS"
-          assert contract["validation"]["rust_fmt"] == "PASS"
-          assert contract["validation"]["rust_clippy"] == "PASS"
-          assert contract["validation"]["rust_tests"] == "PASS"
-          assert contract["validation"]["browserd_self_check"] == "PASS"
-          assert contract["validation"]["merge_ready"] is True
-          assert host["status"] == "PASS"
-          assert host["validated_source_sha"] == source_sha
+          contract = load_json_nofollow(Path("contracts/browser-codec.v1.json"), label="codec contract")
+          reference = load_json_nofollow(Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json"), label="codec reference result")
+          audit = load_json_nofollow(Path("docs/evidence/generated/d0c03-rust-source-audit-result.json"), label="codec source audit result")
+          host = load_json_nofollow(repo_path(contract.get("rust_host_result"), label="rust_host_result"), label="Rust host result")
+          assert contract["status"] == "HOST_VALIDATED_RUST_1_93_NO_DISPATCH"
+          assert contract["evidence_lifecycle"] == "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN"
+          assert contract["evidence_freshness"] == "STALE_EVIDENCE"
+          assert contract["merge_ready"] is False
+          assert contract["validation"]["evidence_freshness"] == "STALE_EVIDENCE"
+          assert contract["validation"]["merge_ready"] is False
+          assert "exact candidate head" in contract["validation"]["stale_reason"]
+          assert host["status"] == "PASS" and host["validated_source_sha"] == source_sha
           assert reference["status"] == "PASS" and reference["test_count"] == 27
           assert audit["status"] == "PASS" and audit["check_count"] >= 99
-          assert reference["product_listener_created"] is False
-          assert audit["product_listener_created"] is False
-          assert reference["external_effect_authorized"] is False
-          assert host["product_listener_created"] is False
+          for record in (reference, audit, host):
+              assert record["product_listener_created"] is False
+              assert record["external_effect_authorized"] is False
           assert host["browser_actor_dispatched"] is False
           assert host["servo_called"] is False
-          assert host["external_effect_authorized"] is False
           PY
 
+  exact-source-rust:
+    name: exact-source-rust
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Assert exact source identity
+        env:
+          EXPECTED_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          git rev-parse HEAD^{tree}
       - name: Install exact Rust toolchain
-        if: ${{ matrix.lane == 'rust' }}
-        shell: bash
         run: |
           set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
-
       - name: Run locked Rust matrix
-        if: ${{ matrix.lane == 'rust' }}
-        shell: bash
         run: |
           set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
           cargo fmt --all --check
           cargo check --workspace --all-targets --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings
@@ -193,126 +159,118 @@ jobs:
           test ! -S /run/hepta/browserd/agent.sock
           test ! -e /etc/hepta/enable-agent-port
 
-  prospective-merge:
-    name: prospective-merge-${{ matrix.lane }}
+  prospective-merge-reference:
+    name: prospective-merge-reference-and-static-audit
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        lane: [reference-and-static-audit, rust]
     steps:
-      - name: Check out current prospective merge object
+      - name: Check out live prospective merge
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
           fetch-depth: 2
           persist-credentials: false
-
-      - name: Bind merge object to live base and PR-head refs
+      - name: Bind merge parents to live refs
         env:
           BASE_REF: ${{ github.base_ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        shell: bash
         run: |
           set -euo pipefail
           git check-ref-format --branch "$BASE_REF"
           test "$PR_NUMBER" -gt 0
-          git fetch --no-tags --prune --depth=1 origin \
-            "+refs/heads/${BASE_REF}:refs/remotes/origin/pr-base" \
-            "+refs/pull/${PR_NUMBER}/head:refs/remotes/pull/pr-head"
+          base_sha=$(git ls-remote --exit-code origin "refs/heads/${BASE_REF}" | awk 'NR == 1 {print $1}')
+          head_sha=$(git ls-remote --exit-code origin "refs/pull/${PR_NUMBER}/head" | awk 'NR == 1 {print $1}')
+          test -n "$base_sha" && test -n "$head_sha"
           test "$(git rev-list --parents -n1 HEAD | awk '{print NF - 1}')" -eq 2
-          test "$(git rev-parse HEAD^1)" = "$(git rev-parse refs/remotes/origin/pr-base)"
-          test "$(git rev-parse HEAD^2)" = "$(git rev-parse refs/remotes/pull/pr-head)"
+          test "$(git rev-parse HEAD^1)" = "$base_sha"
+          test "$(git rev-parse HEAD^2)" = "$head_sha"
           git rev-parse HEAD
           git rev-parse HEAD^{tree}
-
-      - name: Compile reference and audit modules
-        if: ${{ matrix.lane == 'reference-and-static-audit' }}
-        run: >-
-          python3 -m py_compile
-          tools/browser_codec_reference.py
-          tools/browser_codec_reference/*.py
-          tools/validate_rust_browser_codec.py
-          tools/validate_project_truth.py
-
-      - name: Validate repository and project truth
+      - name: Compile validators and run project gates
         run: |
           set -euo pipefail
+          python3 -m py_compile tools/browser_codec_reference.py tools/browser_codec_reference/*.py tools/validate_rust_browser_codec.py tools/validate_project_truth.py tests/test_validate_rust_browser_codec.py
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
-
-      - name: Regenerate reference, audit, and golden vectors
-        if: ${{ matrix.lane == 'reference-and-static-audit' }}
-        shell: bash
+          python3 -m unittest tests.test_validate_rust_browser_codec -v
+      - name: Regenerate and compare codec evidence
         run: |
           set -euo pipefail
           mkdir -p /tmp/d0c03-golden
-          python3 tools/browser_codec_reference.py \
-            --self-test \
-            --contract contracts/browser-codec.v1.json \
-            --write-result /tmp/d0c03-browser-codec-reference-result.json \
-            --write-golden-dir /tmp/d0c03-golden \
-            >/tmp/d0c03-browser-codec.stdout.json
-          python3 tools/validate_rust_browser_codec.py \
-            --write-result /tmp/d0c03-rust-source-audit-result.json \
-            >/tmp/d0c03-rust-source-audit.stdout.json
-          cmp /tmp/d0c03-browser-codec-reference-result.json \
-            docs/evidence/generated/d0c03-browser-codec-reference-result.json
-          cmp /tmp/d0c03-rust-source-audit-result.json \
-            docs/evidence/generated/d0c03-rust-source-audit-result.json
-          for fixture in contracts/golden/golden-*.wire.json; do
-            cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
-          done
-
-      - name: Verify historical host evidence and claim ceiling
-        if: ${{ matrix.lane == 'reference-and-static-audit' }}
-        shell: bash
+          python3 tools/browser_codec_reference.py --self-test --contract contracts/browser-codec.v1.json --write-result /tmp/d0c03-browser-codec-reference-result.json --write-golden-dir /tmp/d0c03-golden >/tmp/d0c03-browser-codec.stdout.json
+          python3 tools/validate_rust_browser_codec.py --write-result /tmp/d0c03-rust-source-audit-result.json >/tmp/d0c03-rust-source-audit.stdout.json
+          cmp /tmp/d0c03-browser-codec-reference-result.json docs/evidence/generated/d0c03-browser-codec-reference-result.json
+          cmp /tmp/d0c03-rust-source-audit-result.json docs/evidence/generated/d0c03-rust-source-audit-result.json
+          for fixture in contracts/golden/golden-*.wire.json; do cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"; done
+      - name: Enforce historical-host evidence ceiling
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json
           from pathlib import Path
-
+          import sys
+          sys.path.insert(0, str(Path("tools").resolve()))
+          from validate_rust_browser_codec import load_json_nofollow, repo_path
           source_sha = "4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb"
-          contract = json.loads(Path("contracts/browser-codec.v1.json").read_text())
-          reference = json.loads(Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json").read_text())
-          audit = json.loads(Path("docs/evidence/generated/d0c03-rust-source-audit-result.json").read_text())
-          host = json.loads(Path(contract["rust_host_result"]).read_text())
-          assert contract["validation"]["python_reference"] == "PASS_27_OF_27"
-          assert contract["validation"]["rust_source_audit"] == "PASS"
-          assert contract["validation"]["rust_fmt"] == "PASS"
-          assert contract["validation"]["rust_clippy"] == "PASS"
-          assert contract["validation"]["rust_tests"] == "PASS"
-          assert contract["validation"]["browserd_self_check"] == "PASS"
-          assert contract["validation"]["merge_ready"] is True
-          assert host["status"] == "PASS"
-          assert host["validated_source_sha"] == source_sha
+          contract = load_json_nofollow(Path("contracts/browser-codec.v1.json"), label="codec contract")
+          reference = load_json_nofollow(Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json"), label="codec reference result")
+          audit = load_json_nofollow(Path("docs/evidence/generated/d0c03-rust-source-audit-result.json"), label="codec source audit result")
+          host = load_json_nofollow(repo_path(contract.get("rust_host_result"), label="rust_host_result"), label="Rust host result")
+          assert contract["status"] == "HOST_VALIDATED_RUST_1_93_NO_DISPATCH"
+          assert contract["evidence_lifecycle"] == "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN"
+          assert contract["evidence_freshness"] == "STALE_EVIDENCE"
+          assert contract["merge_ready"] is False
+          assert contract["validation"]["evidence_freshness"] == "STALE_EVIDENCE"
+          assert contract["validation"]["merge_ready"] is False
+          assert "exact candidate head" in contract["validation"]["stale_reason"]
+          assert host["status"] == "PASS" and host["validated_source_sha"] == source_sha
           assert reference["status"] == "PASS" and reference["test_count"] == 27
           assert audit["status"] == "PASS" and audit["check_count"] >= 99
-          assert reference["product_listener_created"] is False
-          assert audit["product_listener_created"] is False
-          assert reference["external_effect_authorized"] is False
-          assert host["product_listener_created"] is False
+          for record in (reference, audit, host):
+              assert record["product_listener_created"] is False
+              assert record["external_effect_authorized"] is False
           assert host["browser_actor_dispatched"] is False
           assert host["servo_called"] is False
-          assert host["external_effect_authorized"] is False
           PY
 
+  prospective-merge-rust:
+    name: prospective-merge-rust
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out live prospective merge
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind merge parents to live refs
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git check-ref-format --branch "$BASE_REF"
+          test "$PR_NUMBER" -gt 0
+          base_sha=$(git ls-remote --exit-code origin "refs/heads/${BASE_REF}" | awk 'NR == 1 {print $1}')
+          head_sha=$(git ls-remote --exit-code origin "refs/pull/${PR_NUMBER}/head" | awk 'NR == 1 {print $1}')
+          test -n "$base_sha" && test -n "$head_sha"
+          test "$(git rev-list --parents -n1 HEAD | awk '{print NF - 1}')" -eq 2
+          test "$(git rev-parse HEAD^1)" = "$base_sha"
+          test "$(git rev-parse HEAD^2)" = "$head_sha"
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
       - name: Install exact Rust toolchain
-        if: ${{ matrix.lane == 'rust' }}
-        shell: bash
         run: |
           set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
-
       - name: Run locked Rust matrix
-        if: ${{ matrix.lane == 'rust' }}
-        shell: bash
         run: |
           set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
           cargo fmt --all --check
           cargo check --workspace --all-targets --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings

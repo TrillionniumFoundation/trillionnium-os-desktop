@@ -2,7 +2,8 @@
 
 **Checkpoint:** `TOS-D0C-03`  
 **Product crate:** `crates/hepta-browser-codec`  
-**Status:** source implemented; trusted Rust execution pending
+**Status:** current source audit is green; recorded Rust host result is
+`STALE_EVIDENCE` until an exact-head rerun; no listener or dispatch
 
 ## Boundary
 
@@ -46,17 +47,22 @@ six byte-exact golden request/response vectors. The reference now also rejects
 integers outside the signed 64-bit domain, bringing its numeric contract into
 line with the product parser.
 
-Current demonstrated evidence:
+Current source/reference checks:
 
 ```text
 Python reference:        27/27 PASS
 Python py_compile:       PASS
-Rust static source audit: 96/96 PASS
-Rust fmt:                UNEXECUTED
-Rust Clippy:             UNEXECUTED
-Rust tests:              UNEXECUTED
-browserd self-check:     UNEXECUTED
+Rust static source audit: 107/107 PASS
+Rust fmt:                PASS
+Rust Clippy:             PASS
+Rust tests:              PASS
+browserd self-check:     PASS
 ```
 
-Static or reference evidence does not imply that the Rust crate compiles. The
-PR remains draft and non-merge-ready until all exact-head Rust commands pass.
+The checked-in Rust 1.93 host result is a historical baseline bound to
+`4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb`; it is explicitly marked
+`STALE_EVIDENCE` because the current candidate changed codec source, contract,
+and validation inputs. A fresh exact-head CI run and independent evidence
+promotion are required before setting `merge_ready`. None of this implies a
+listener, BrowserActor conversion or Servo dispatch; those remain later-stage
+gates.
