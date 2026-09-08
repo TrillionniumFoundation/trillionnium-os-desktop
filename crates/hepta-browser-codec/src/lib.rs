@@ -22,6 +22,14 @@ pub const BROWSER_API_PROTOCOL: &str = "trillionnium.desktop.browser-api.v1";
 pub const MAX_MESSAGE_BYTES: usize = 262_144;
 pub const MAX_JSON_DEPTH: usize = 32;
 pub const MAX_CONTAINER_ITEMS: usize = 20_000;
+/// Maximum UTF-8 byte length of a generic JSON string value.
+///
+/// Typed Browser API fields apply their own (usually narrower) limits.  This
+/// bound protects the public `JsonValue` encoder when callers construct result
+/// or detail objects directly.
+pub const MAX_JSON_STRING_BYTES: usize = 131_072;
+/// Maximum UTF-8 byte length of a generic JSON object key.
+pub const MAX_JSON_KEY_BYTES: usize = 128;
 
 pub use model::{decode_request, decode_response, encode_request, encode_response, self_check};
 
