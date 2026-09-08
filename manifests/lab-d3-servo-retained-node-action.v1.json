@@ -1,0 +1,89 @@
+{
+  "schema": "trillionnium.lab.servo-patch.v1",
+  "blocker": "D3-01",
+  "status": "bounded_successor_source_and_test_harness_candidate",
+  "carrier_branch": "codex/s07-servo-retained-node-v2",
+  "carrier_base_commit": "88071c23583f5f78f97a1d6a840634363408d11e",
+  "extracted_from": {
+    "pull_request": 73,
+    "commit": "62004b70385dc70557190bd7c0a72b40239cb078"
+  },
+  "upstream": {
+    "repository": "servo/servo",
+    "commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+    "issue": 4344
+  },
+  "patch": {
+    "format": "ordered_unified_diff_parts",
+    "sha256": "c3ea9275dccd5f7cdc685e1185d7ee53faee5e6d759fd67364f240b1f0311a1a",
+    "parts": [
+      {"path": "manifests/servo-patches/d3-retained-node-action-v1/000.patch", "sha256": "447ade7456274cb523bb2577b1066d925ff3642d8b1c43236e3c88878b83097a"},
+      {"path": "manifests/servo-patches/d3-retained-node-action-v1/001.patch", "sha256": "6c47e70ba0164ce25483662fc31329b8e9bf4bf3f0a9e589f4471428eb9f8346"},
+      {"path": "manifests/servo-patches/d3-retained-node-action-v1/002.patch", "sha256": "a9306a9ede6a77ed88ba65a7282e59b4c9443a6a731b481b6f170b71719888c9"},
+      {"path": "manifests/servo-patches/d3-retained-node-action-v1/003.patch", "sha256": "1cb83bd67e1abe8e9b944fefa3570b12b72f76574c057aa8cc207187da845a91"},
+      {"path": "manifests/servo-patches/d3-retained-node-action-v1/004.patch", "sha256": "75639e41c9fb8a811905e7dafcc5de0fc9d5ab0b0343bdbc23d56e7ddb7be7f7"},
+      {"path": "manifests/servo-patches/d3-retained-node-action-v1/005.patch", "sha256": "a4ba10f027ae51446c6c4a3c3cf2585ac617e185074ee4ceaeeec051d90c5f37"},
+      {"path": "manifests/servo-patches/d3-retained-node-action-v1/006.patch", "sha256": "c908fe2b037cb10bdfe490eb3d91079ee4d2f57374c2d9ac84b2b2199bbf4f7d"}
+    ],
+    "allowed_paths": [
+      "Cargo.lock",
+      "components/constellation/constellation.rs",
+      "components/constellation/tracing.rs",
+      "components/layout/accessibility_tree.rs",
+      "components/layout/layout_impl.rs",
+      "components/paint/painter.rs",
+      "components/script/Cargo.toml",
+      "components/script/event_loop/script_thread.rs",
+      "components/script/messaging.rs",
+      "components/servo/lib.rs",
+      "components/servo/tests/accessibility.rs",
+      "components/servo/webview.rs",
+      "components/shared/constellation/Cargo.toml",
+      "components/shared/constellation/lib.rs",
+      "components/shared/layout/Cargo.toml",
+      "components/shared/layout/lib.rs",
+      "components/shared/script/lib.rs",
+      "ports/servoshell/desktop/headed_window.rs"
+    ]
+  },
+  "hardening": {
+    "format": "ordered_unified_diff_parts",
+    "sha256": "bbce8668299e2a1acb0b0ad7c42c488f2185682bb8d365bc5762539c3e80e11a",
+    "parts": [
+      {"path": "manifests/servo-patches/d3-retained-node-action-v1/007.patch", "sha256": "bbce8668299e2a1acb0b0ad7c42c488f2185682bb8d365bc5762539c3e80e11a"}
+    ],
+    "purpose": "real Servo retained-node behavior regressions on a file-disjoint test-only patch stage; production action-advertisement enforcement is contained in the base stage"
+  },
+  "source_invariants": [
+    "route a non-root AccessKit TreeId to exactly one current WebView",
+    "bind the request again to the WebView current active top-level PipelineId",
+    "reject root, stale, missing, ambiguous, inactive, unsupported, disabled and retained nodes without finalized layout bounds",
+    "resolve NodeId only from the current retained AccessibilityTree at the active embedder epoch",
+    "advertise Click only for the initial reviewed native button surface",
+    "require the exact retained AccessKit node to advertise the requested action before dispatch",
+    "refresh the retained tree and resolve the DOM node inside one script-thread task",
+    "dispatch only one untrusted click event to the resolved node",
+    "never fall back to coordinates, JavaScript evaluation, WebDriver or text search",
+    "return one typed terminal result through a GenericCallback"
+  ],
+  "qualification": {
+    "workflow": ".github/workflows/s07-servo-retained-node.yml",
+    "exact_head_job": "exact-head-real-servo-behavior",
+    "prospective_merge_job": "prospective-merge-patch-package",
+    "required": [
+      "explicit exact-head checkout and SHA assertion",
+      "separately identified prospective-merge checkout and parent-order assertion",
+      "exact upstream commit and AccessKit ABI verification",
+      "base-patch, hardening-patch and combined digest verification",
+      "production verify-d3-patch CLI invocation executed by the repository regression suite",
+      "exact pre-format changed-path equality",
+      "clean patch dry-run and application",
+      "forbidden-fallback static guard",
+      "changed-file-only rustfmt normalization",
+      "no post-format path outside the allowlist",
+      "core semantic files remain changed",
+      "real Servo retained-node positive, stale, disabled, hidden, non-element, unsupported-data and dropped-callback regressions"
+    ]
+  },
+  "claim_ceiling": "A green exact-head workflow proves clean application and the bounded retained-node corpus in Servo's real test harness. A green prospective-merge job proves only that the synthetic merge retains the same valid package. Neither proves an installed Trillionnium image, product BrowserActor/receipt integration, independent image replay, release eligibility, physical hardware, protected-environment approval or HSM signing."
+}
