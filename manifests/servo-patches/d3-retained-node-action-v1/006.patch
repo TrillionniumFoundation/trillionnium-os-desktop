@@ -1,0 +1,68 @@
+diff --git a/ports/servoshell/desktop/headed_window.rs b/ports/servoshell/desktop/headed_window.rs
+index 40104c5480f004c996303826fa5a5cac9efb3748..dadeda0e1725bfcf7f333a45cd0cf6106c73e8db 100644
+--- a/ports/servoshell/desktop/headed_window.rs
++++ b/ports/servoshell/desktop/headed_window.rs
+@@ -16,6 +16,7 @@ use keyboard_types::ShortcutMatcher;
+ use log::{debug, info};
+ use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawWindowHandle};
+ use servo::{
++    AccessibilityActionResult, GenericCallback,
+     AuthenticationRequest, BluetoothDeviceSelectionRequest, Cursor, DeviceIndependentIntRect,
+     DeviceIndependentPixel, DeviceIntPoint, DeviceIntRect, DeviceIntSize, DevicePixel, DevicePoint,
+     EmbedderControl, EmbedderControlId, ImeEvent, InputEvent, InputEventId, InputEventResult,
+@@ -774,7 +775,38 @@ impl HeadedWindow {
+                 },
+                 egui_winit::accesskit_winit::WindowEvent::ActionRequested(req) => {
+                     if req.target_tree != accesskit::TreeId::ROOT {
+-                        // TODO(#4344): Forward action to Servo
++                        let matching_webviews: Vec<_> = state
++                            .windows()
++                            .values()
++                            .flat_map(|window| window.webviews())
++                            .filter_map(|(_, webview)| {
++                                (webview.active_document_accesskit_tree_id() ==
++                                    Some(req.target_tree))
++                                .then_some(webview)
++                            })
++                            .collect();
++                        if let [webview] = matching_webviews.as_slice() {
++                            let response = GenericCallback::new(|result| match result {
++                                Ok(AccessibilityActionResult::Dispatched) => {},
++                                Ok(result) => {
++                                    log::debug!(
++                                        "Accessibility action rejected by Servo: {result:?}"
++                                    );
++                                },
++                                Err(error) => {
++                                    log::warn!(
++                                        "Accessibility action callback failed: {error}"
++                                    );
++                                },
++                            })
++                            .expect("Could not create accessibility action callback");
++                            webview.perform_accessibility_action(req.clone(), response);
++                        } else {
++                            log::warn!(
++                                "Rejecting accessibility action for missing or ambiguous tree {:?}",
++                                req.target_tree
++                            );
++                        }
+                     }
+                 },
+                 egui_winit::accesskit_winit::WindowEvent::AccessibilityDeactivated => {
+diff --git a/components/paint/painter.rs b/components/paint/painter.rs
+--- a/components/paint/painter.rs
++++ b/components/paint/painter.rs
+@@ -21,9 +21,11 @@ use paint_api::largest_contentful_paint_candidate::LCPCandidate;
+ use paint_api::rendering_context::RenderingContext;
+ use paint_api::viewport_description::ViewportDescription;
+ use paint_api::{
+     ImageUpdate, PipelineExitSource, SendableFrameTree, SerializableDisplayListPayload,
+-    SerializableImageData, WebRenderExternalImageHandlers, WebRenderImageHandlerType, WebViewTrait,
++    SerializableImageData, WebRenderExternalImageHandlers, WebViewTrait,
+ };
++#[cfg(any(feature = "webgl", feature = "webgpu"))]
++use paint_api::WebRenderImageHandlerType;
+ use profile_traits::time::{ProfilerCategory, ProfilerChan};
+ use profile_traits::time_profile;
+ use rustc_hash::{FxHashMap, FxHashSet};
