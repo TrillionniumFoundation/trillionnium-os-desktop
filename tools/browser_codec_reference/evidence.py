@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import hashlib, json
 from pathlib import Path
-from .canonical import CodecError, MAX_BYTES, MAX_DEPTH, PROTOCOL, canonical
+from .canonical import CodecError, MAX_BYTES, MAX_DEPTH, PROTOCOL, canonical, safe_url
 from .request import decode_request
 from .response import decode_response
 
@@ -28,8 +28,25 @@ def self_test():
         try: function()
         except CodecError: tests.append(name); return
         raise AssertionError(f"{name} did not fail closed")
+    def reject_url_set(urls, external):
+        """Require every URL in a parity corpus to fail the same policy."""
+        for url in urls:
+            try:
+                safe_url(url, external)
+            except CodecError:
+                continue
+            raise AssertionError(f"unsafe URL accepted: {url}")
+        # Make the enclosing ``rejects`` recorder mark the grouped corpus as
+        # one deterministic test without inflating the established 27-vector
+        # evidence count.
+        raise CodecError("all URL parity cases rejected")
     health, _, navigate, click = fixtures()
-    passes("canonical-roundtrip", lambda: decode_request(canonical(health)))
+    passes("canonical-roundtrip", lambda: (decode_request(canonical(health)), [
+        safe_url("https://example.test/path", True),
+        safe_url("http://LOCALHOST:00000/fixture", False),
+        safe_url("http://127.0.0.1?ready=1", False),
+        safe_url("http://[::1]#fixture", False),
+    ]))
     rejects("whitespace", lambda: decode_request(b'{ "operation":{"type":"health"},"protocol":"trillionnium.desktop.browser-api.v1","request_id":"x"}'))
     rejects("duplicate-top", lambda: decode_request(b'{"protocol":"x","protocol":"y","request_id":"x","operation":{"type":"health"}}'))
     rejects("duplicate-nested", lambda: decode_request(b'{"operation":{"type":"health","type":"health"},"protocol":"trillionnium.desktop.browser-api.v1","request_id":"x"}'))
@@ -44,10 +61,25 @@ def self_test():
     rejects("snapshot-zero", lambda: decode_request(canonical(stale)))
     bad = json.loads(json.dumps(navigate)); bad["operation"]["target"]["url"] = "http://example.test/"
     rejects("external-http", lambda: decode_request(canonical(bad)))
-    bad = json.loads(json.dumps(navigate)); bad["operation"]["target"]["url"] = "https://user@example.test/"
-    rejects("external-userinfo", lambda: decode_request(canonical(bad)))
+    rejects("external-userinfo", lambda: reject_url_set([
+        "https://user@example.test/",
+        "https://example.com\\evil",
+        "https://exa mple.com/",
+        "https://example.com:",
+        "https://example.com:000000/",
+        "https://[::1%25lo]/",
+        "https://[v1.fe]/",
+    ], True))
     local = json.loads(json.dumps(navigate)); local["operation"]["target"] = {"type": "local_http_fixture", "url": "http://192.168.1.2/"}
-    rejects("fixture-private-lan", lambda: decode_request(canonical(local)))
+    rejects("fixture-private-lan", lambda: reject_url_set([
+        local["operation"]["target"]["url"],
+        "http://localhost:",
+        "http://localhost:000000/",
+        "http://localhost:65536/",
+        "http://localhost\\evil.example/",
+        "http://[::1%25lo]/",
+        "http://[v1.fe]/",
+    ], False))
     passes("navigate-effect", lambda: None if decode_request(canonical(navigate))[1] == "potential_external_effect" else (_ for _ in ()).throw(AssertionError()))
     passes("click-effect", lambda: None if decode_request(canonical(click))[1] == "potential_external_effect" else (_ for _ in ()).throw(AssertionError()))
     scroll = json.loads(json.dumps(click)); scroll["operation"]["action"] = {"type": "scroll", "delta_x": 0, "delta_y": 1}

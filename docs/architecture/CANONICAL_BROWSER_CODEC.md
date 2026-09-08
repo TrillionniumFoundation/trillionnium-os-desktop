@@ -1,6 +1,7 @@
 # Canonical Browser API codec boundary
 
-Status: **D0C-03 executable reference complete; Rust product codec pending**
+Status: **D0C-03 executable reference and current source audit; recorded Rust
+host evidence is stale; no dispatch**
 
 ## Position in the request path
 
@@ -73,8 +74,13 @@ cannot weaken `never_automatic` or invent a retry policy.
 
 ## Current implementation ceiling
 
-The checked-in Python standard-library reference and 26-vector corpus provide
-an executable second implementation of the contract. They prove reference
-behavior only. A Rust 1.93 product crate, exact-head format/Clippy/tests,
-transport composition, BrowserActor conversion and Servo dispatch remain
-unimplemented and must not be inferred from this checkpoint.
+The checked-in Python standard-library reference and 27-vector corpus provide
+an executable second implementation of the contract. A recorded Rust 1.93
+host-validation baseline passed format, Clippy, workspace tests and browserd
+self-check, but it is bound to the historical source commit
+`4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb` and is marked `STALE_EVIDENCE` for
+the current candidate. The generated source audit is refreshed for each tree;
+an exact-head CI run and independent promotion are required before merge
+readiness can be claimed. This remains a no-listener, no-transport-dispatch
+checkpoint: BrowserActor conversion, Servo dispatch and external effects are
+not demonstrated here.

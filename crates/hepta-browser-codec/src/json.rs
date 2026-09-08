@@ -1,7 +1,10 @@
 use std::collections::BTreeMap;
 use std::fmt;
 
-use crate::{MAX_CONTAINER_ITEMS, MAX_JSON_DEPTH, MAX_MESSAGE_BYTES};
+use crate::{
+    MAX_CONTAINER_ITEMS, MAX_JSON_DEPTH, MAX_JSON_KEY_BYTES, MAX_JSON_STRING_BYTES,
+    MAX_MESSAGE_BYTES,
+};
 
 pub type JsonObject = BTreeMap<String, JsonValue>;
 
@@ -17,53 +20,133 @@ pub enum JsonValue {
 
 impl JsonValue {
     pub fn canonical_bytes(&self) -> Result<Vec<u8>, JsonError> {
-        let mut output = Vec::new();
-        self.write_canonical(&mut output)?;
-        if output.is_empty() || output.len() > MAX_MESSAGE_BYTES {
+        let mut encoder = Encoder::new();
+        encoder.write_value(self, 0)?;
+        if encoder.output.is_empty() {
             return Err(JsonError::MessageSize {
-                length: output.len(),
+                length: encoder.output.len(),
                 maximum: MAX_MESSAGE_BYTES,
             });
         }
-        Ok(output)
+        Ok(encoder.output)
+    }
+}
+
+struct Encoder {
+    output: Vec<u8>,
+    item_count: usize,
+}
+
+impl Encoder {
+    fn new() -> Self {
+        Self {
+            output: Vec::new(),
+            item_count: 0,
+        }
     }
 
-    fn write_canonical(&self, output: &mut Vec<u8>) -> Result<(), JsonError> {
-        match self {
-            Self::Null => output.extend_from_slice(b"null"),
-            Self::Bool(true) => output.extend_from_slice(b"true"),
-            Self::Bool(false) => output.extend_from_slice(b"false"),
-            Self::Integer(value) => output.extend_from_slice(value.to_string().as_bytes()),
-            Self::String(value) => write_string(value, output),
-            Self::Array(values) => {
-                output.push(b'[');
+    fn write_value(&mut self, value: &JsonValue, depth: usize) -> Result<(), JsonError> {
+        if depth > MAX_JSON_DEPTH {
+            return Err(JsonError::NestingDepth {
+                maximum: MAX_JSON_DEPTH,
+            });
+        }
+        match value {
+            JsonValue::Null => self.push_bytes(b"null")?,
+            JsonValue::Bool(true) => self.push_bytes(b"true")?,
+            JsonValue::Bool(false) => self.push_bytes(b"false")?,
+            JsonValue::Integer(value) => {
+                let encoded = value.to_string();
+                self.push_bytes(encoded.as_bytes())?;
+            }
+            JsonValue::String(value) => self.write_string(value, MAX_JSON_STRING_BYTES)?,
+            JsonValue::Array(values) => {
+                self.push_byte(b'[')?;
                 for (index, value) in values.iter().enumerate() {
                     if index != 0 {
-                        output.push(b',');
+                        self.push_byte(b',')?;
                     }
-                    value.write_canonical(output)?;
+                    self.note_item()?;
+                    self.write_value(value, depth + 1)?;
                 }
-                output.push(b']');
+                self.push_byte(b']')?;
             }
-            Self::Object(values) => {
-                output.push(b'{');
+            JsonValue::Object(values) => {
+                self.push_byte(b'{')?;
                 for (index, (key, value)) in values.iter().enumerate() {
                     if index != 0 {
-                        output.push(b',');
+                        self.push_byte(b',')?;
                     }
-                    write_string(key, output);
-                    output.push(b':');
-                    value.write_canonical(output)?;
+                    self.note_item()?;
+                    self.write_string(key, MAX_JSON_KEY_BYTES)?;
+                    self.push_byte(b':')?;
+                    self.write_value(value, depth + 1)?;
                 }
-                output.push(b'}');
+                self.push_byte(b'}')?;
             }
         }
-        if output.len() > MAX_MESSAGE_BYTES {
+
+        Ok(())
+    }
+
+    fn write_string(&mut self, value: &str, maximum: usize) -> Result<(), JsonError> {
+        if value.len() > maximum {
             return Err(JsonError::MessageSize {
-                length: output.len(),
+                length: value.len(),
+                maximum,
+            });
+        }
+        self.push_byte(b'"')?;
+        for character in value.chars() {
+            match character {
+                '"' => self.push_bytes(br#"\""#)?,
+                '\\' => self.push_bytes(br#"\\"#)?,
+                '\u{0008}' => self.push_bytes(br"\b")?,
+                '\u{000c}' => self.push_bytes(br"\f")?,
+                '\n' => self.push_bytes(br"\n")?,
+                '\r' => self.push_bytes(br"\r")?,
+                '\t' => self.push_bytes(br"\t")?,
+                character if character <= '\u{001f}' => {
+                    let escaped = format!("\\u{:04x}", character as u32);
+                    self.push_bytes(escaped.as_bytes())?;
+                }
+                character => {
+                    let mut encoded = [0_u8; 4];
+                    self.push_bytes(character.encode_utf8(&mut encoded).as_bytes())?;
+                }
+            }
+        }
+        self.push_byte(b'"')
+    }
+
+    fn note_item(&mut self) -> Result<(), JsonError> {
+        self.item_count = self
+            .item_count
+            .checked_add(1)
+            .ok_or(JsonError::ContainerItems {
+                maximum: MAX_CONTAINER_ITEMS,
+            })?;
+        if self.item_count > MAX_CONTAINER_ITEMS {
+            return Err(JsonError::ContainerItems {
+                maximum: MAX_CONTAINER_ITEMS,
+            });
+        }
+        Ok(())
+    }
+
+    fn push_byte(&mut self, byte: u8) -> Result<(), JsonError> {
+        self.push_bytes(std::slice::from_ref(&byte))
+    }
+
+    fn push_bytes(&mut self, bytes: &[u8]) -> Result<(), JsonError> {
+        let length = self.output.len().saturating_add(bytes.len());
+        if length > MAX_MESSAGE_BYTES {
+            return Err(JsonError::MessageSize {
+                length,
                 maximum: MAX_MESSAGE_BYTES,
             });
         }
+        self.output.extend_from_slice(bytes);
         Ok(())
     }
 }
@@ -87,30 +170,6 @@ pub fn decode_unique(encoded: &[u8]) -> Result<JsonValue, JsonError> {
         return Err(JsonError::TrailingData);
     }
     Ok(value)
-}
-
-fn write_string(value: &str, output: &mut Vec<u8>) {
-    output.push(b'"');
-    for character in value.chars() {
-        match character {
-            '"' => output.extend_from_slice(br#"\""#),
-            '\\' => output.extend_from_slice(br#"\\"#),
-            '\u{0008}' => output.extend_from_slice(br"\b"),
-            '\u{000c}' => output.extend_from_slice(br"\f"),
-            '\n' => output.extend_from_slice(br"\n"),
-            '\r' => output.extend_from_slice(br"\r"),
-            '\t' => output.extend_from_slice(br"\t"),
-            character if character <= '\u{001f}' => {
-                let escaped = format!("\\u{:04x}", character as u32);
-                output.extend_from_slice(escaped.as_bytes());
-            }
-            character => {
-                let mut encoded = [0_u8; 4];
-                output.extend_from_slice(character.encode_utf8(&mut encoded).as_bytes());
-            }
-        }
-    }
-    output.push(b'"');
 }
 
 struct Parser<'a> {
@@ -148,7 +207,16 @@ impl<'a> Parser<'a> {
                 self.expect_keyword(b"false")?;
                 Ok(JsonValue::Bool(false))
             }
-            Some(b'"') => Ok(JsonValue::String(self.parse_string()?)),
+            Some(b'"') => {
+                let value = self.parse_string()?;
+                if value.len() > MAX_JSON_STRING_BYTES {
+                    return Err(JsonError::MessageSize {
+                        length: value.len(),
+                        maximum: MAX_JSON_STRING_BYTES,
+                    });
+                }
+                Ok(JsonValue::String(value))
+            }
             Some(b'[') => self.parse_array(depth),
             Some(b'{') => self.parse_object(depth),
             Some(byte) if byte == b'-' || byte.is_ascii_digit() => self.parse_integer(),
@@ -190,6 +258,12 @@ impl<'a> Parser<'a> {
                 return Err(JsonError::ObjectKeyExpected(self.position));
             }
             let key = self.parse_string()?;
+            if key.len() > MAX_JSON_KEY_BYTES {
+                return Err(JsonError::MessageSize {
+                    length: key.len(),
+                    maximum: MAX_JSON_KEY_BYTES,
+                });
+            }
             self.skip_whitespace();
             self.expect_byte(b':')?;
             let value = self.parse_value(depth + 1)?;

@@ -1,0 +1,20 @@
+{
+  "schema": "trillionnium.desktop.browser-codec-resource-limits.v1",
+  "canonical_json": {
+    "max_container_items": 20000,
+    "max_json_key_utf8_bytes": 128,
+    "max_json_string_utf8_bytes": 131072,
+    "max_message_bytes": 262144,
+    "max_nesting_depth": 32
+  },
+  "typed_fields": {
+    "error_message_utf8_bytes_maximum": 1024,
+    "identifier_utf8_bytes_maximum": 128,
+    "select_utf8_bytes_maximum": 65536,
+    "text_utf8_bytes_maximum": 131072,
+    "url_utf8_bytes_maximum": 8192,
+    "wait_text_utf8_bytes_maximum": 65536
+  },
+  "units": "UTF-8 bytes",
+  "policy": "reject_before_dispatch_and_apply_the_same_budget_to_decode_and_encode"
+}
