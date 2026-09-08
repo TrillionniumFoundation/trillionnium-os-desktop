@@ -154,15 +154,29 @@ jobs:
           RUST_BACKTRACE: '1'
         run: |
           set -euo pipefail
-          # This lane qualifies the repository-owned patch against the exact
-          # upstream Servo revision. Do not promote unrelated warnings in
-          # unmodified upstream modules to hard errors; patch-owned files are
-          # bounded above and normalized independently.
+          # Servo initializes process-global options when a Servo instance is
+          # built. The upstream integration tests therefore require one test
+          # process per independently constructed ServoTest. A broad filter
+          # runs several tests in one process and produces false
+          # "Already initialized" failures after the first valid instance.
+          retained_tests=(
+            test_retained_accessibility_click_dispatches_exactly_once
+            test_retained_accessibility_rejects_unadvertised_and_unsupported_requests
+            test_retained_accessibility_rejects_replaced_node_identity
+            test_retained_accessibility_rejects_inactive_and_stale_tree
+            test_retained_accessibility_rejects_disabled_hidden_and_non_element_targets
+            test_retained_accessibility_dropped_callback_does_not_duplicate_dispatch
+          )
+          : > "$RUNNER_TEMP/d3-retained-node-behavior.log"
+          for test_name in "${retained_tests[@]}"; do
+            printf '\n=== %s ===\n' "$test_name" \
+              | tee -a "$RUNNER_TEMP/d3-retained-node-behavior.log"
+            cargo test --locked -p servo --test accessibility \
+              "$test_name" -- --exact --nocapture \
+              2>&1 | tee -a "$RUNNER_TEMP/d3-retained-node-behavior.log"
+          done
           cargo test --locked -p servo --test accessibility \
-            retained_accessibility_ -- --nocapture \
-            2>&1 | tee "$RUNNER_TEMP/d3-retained-node-behavior.log"
-          cargo test --locked -p servo --test accessibility \
-            accessibility_basic_mapping -- --nocapture \
+            accessibility_basic_mapping -- --exact --nocapture \
             2>&1 | tee "$RUNNER_TEMP/d3-accessibility-regression.log"
 
       - name: Collect bounded behavior evidence
