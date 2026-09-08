@@ -1,8 +1,10 @@
 # TrillionniumOS Desktop — integrated state
 
 **Updated:** 2026-09-08  
+**Canonical plan:** `2026-08-29-d6`  
 **Canonical subject:** `main` at `addaf73a48bae65f19f6bfe91c6264fd2ddb85a1`  
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`  
+**Integrated implementation stage:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`  
 **Status scope:** integrated `main` facts only
 
 This file intentionally excludes unmerged candidate implementation and candidate-only qualification. Candidate work is tracked separately in [`CANDIDATE_STATUS.md`](CANDIDATE_STATUS.md).
@@ -61,6 +63,8 @@ At this snapshot, GitHub reports `main` as unprotected, with required status-che
 ## Unmerged candidate
 
 PR #73 is a frozen Draft convergence branch. It is not part of the integrated state and is not merge-ready. Its former cumulative evidence cannot be transferred to a later head or to successor PRs.
+
+Historical candidate references **PR #23** and **PR #27** are retained only as repository archaeology required by the current validation baseline. They are not active candidates, current evidence, or authorization to widen an integrated claim.
 
 ## Immediate integrated-state priorities
 
