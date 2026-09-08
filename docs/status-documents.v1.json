@@ -1,0 +1,105 @@
+{
+  "schema": "trillionnium.desktop.status-documents.v1",
+  "project_state": "manifests/project-state.v1.json",
+  "documents": {
+    "repository_entry": {
+      "path": "README.md",
+      "scope": "repository_entry"
+    },
+    "integrated": {
+      "path": "docs/CURRENT_STATE.md",
+      "scope": "integrated_main"
+    },
+    "candidate": {
+      "path": "docs/CANDIDATE_STATUS.md",
+      "scope": "candidate_snapshot_and_live_api"
+    },
+    "non_claims": {
+      "path": "docs/NON_CLAIMS.md",
+      "scope": "not_claimed"
+    },
+    "decomposition": {
+      "path": "docs/plan/PR73_DECOMPOSITION.md",
+      "scope": "planning_only"
+    }
+  },
+  "integrated_state": {
+    "schema": "trillionnium.desktop.integrated-state.v1",
+    "updated": "2026-09-08",
+    "repository_mode": "FULL_PRODUCT_REPOSITORY",
+    "workspace_members": [
+      "apps/hepta-browserd",
+      "apps/hepta-agent-portd",
+      "crates/hepta-agent-transport",
+      "crates/hepta-browser-codec",
+      "crates/hepta-agent-port",
+      "crates/hepta-peer-attestation",
+      "crates/trillionnium-contract-core",
+      "crates/hepta-browser-contracts",
+      "crates/hepta-session-core",
+      "crates/hepta-workspace-composition"
+    ],
+    "capabilities": [
+      "product_boundary_and_dependency_locks",
+      "bounded_contract_primitives",
+      "authenticated_connected_unix_framing",
+      "canonical_bounded_browser_api",
+      "exactly_one_request_agent_port",
+      "local_linux_peer_identity",
+      "durable_non_replaying_receipts",
+      "deterministic_workspace_composition",
+      "default_disabled_agent_port",
+      "bounded_servo_compile_qualification"
+    ],
+    "governance_observation": {
+      "kind": "github_repository_settings_snapshot",
+      "source": "github_rest_api",
+      "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+      "branch": "main",
+      "observed_at": "2026-09-08T03:15:06Z",
+      "observed_main_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
+      "branch_protected": false,
+      "required_status_checks": "disabled",
+      "validity": "snapshot_only",
+      "invalidation": [
+        "main_ref_change",
+        "repository_settings_change"
+      ],
+      "tracking_issue": 76
+    },
+    "frozen_candidate": {
+      "kind": "pull_request",
+      "pull_request": 73,
+      "state": "draft_frozen",
+      "decomposition_issue": 78,
+      "merge_policy": "never_merge_as_one_unit"
+    },
+    "next_work": [
+      {
+        "type": "enable_repository_protection",
+        "issue": 76,
+        "target_branch": "main"
+      },
+      {
+        "type": "decompose_frozen_pull_request",
+        "issue": 78,
+        "target_pull_request": 73
+      },
+      {
+        "type": "qualify_successor_pull_requests",
+        "issue": 78,
+        "target_set": "bounded_successor_pull_requests"
+      },
+      {
+        "type": "complete_runtime_vertical_slice",
+        "issue": 86,
+        "target_component": "agentport_browseractor_servo_receipts"
+      },
+      {
+        "type": "qualify_installed_qemu_image",
+        "issue": 88,
+        "target_environment": "exact_installed_qemu_image"
+      }
+    ]
+  }
+}

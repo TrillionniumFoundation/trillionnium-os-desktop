@@ -117,8 +117,21 @@ def check_json_files() -> None:
                 )
             else:
                 schema_ids[schema_id] = path
-    if len(schema_ids) != 6:
-        fail(f"expected 6 JSON schemas, found {len(schema_ids)}")
+    expected_schema_ids = {
+        "https://schemas.trillionnium.org/desktop/app-manifest.v1.schema.json",
+        "https://schemas.trillionnium.org/desktop/browser-api.v1.schema.json",
+        "https://schemas.trillionnium.org/desktop/browser-response.v1.schema.json",
+        "https://schemas.trillionnium.org/desktop/browser-wire.v1.schema.json",
+        "https://schemas.trillionnium.org/desktop/capability-permit.v1.schema.json",
+        "https://schemas.trillionnium.org/desktop/receipt.v1.schema.json",
+    }
+    actual_schema_ids = set(schema_ids)
+    if actual_schema_ids != expected_schema_ids:
+        fail(
+            "JSON schema registry disagrees with the reviewed set: "
+            f"missing={sorted(expected_schema_ids - actual_schema_ids)}, "
+            f"unexpected={sorted(actual_schema_ids - expected_schema_ids)}"
+        )
 
 
 def check_plan_and_manifests() -> None:
