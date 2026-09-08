@@ -124,7 +124,6 @@ def check_json_files() -> None:
         "https://schemas.trillionnium.org/desktop/browser-wire.v1.schema.json",
         "https://schemas.trillionnium.org/desktop/capability-permit.v1.schema.json",
         "https://schemas.trillionnium.org/desktop/receipt.v1.schema.json",
-        "trillionnium.desktop.status-documents.v1",
     }
     actual_schema_ids = set(schema_ids)
     if actual_schema_ids != expected_schema_ids:

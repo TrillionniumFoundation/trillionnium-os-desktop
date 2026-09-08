@@ -37,7 +37,6 @@ class StatusProjectionTests(unittest.TestCase):
         self.registry = {
             "schema": MODULE.STATUS_REGISTRY_SCHEMA,
             "project_state": "manifests/project-state.v1.json",
-            "contract": MODULE.STATUS_REGISTRY_CONTRACT,
             "documents": {
                 "repository_entry": {
                     "path": "README.md",
@@ -64,7 +63,7 @@ class StatusProjectionTests(unittest.TestCase):
                 "schema": MODULE.INTEGRATED_STATE_SCHEMA,
                 "updated": "2026-09-08",
                 "repository_mode": "FULL_PRODUCT_REPOSITORY",
-                "workspace_members": ["crates/example"],
+                "workspace_members": list(MODULE.EXPECTED_WORKSPACE_MEMBERS),
                 "capabilities": ["bounded_contract_primitives"],
                 "governance_observation": None,
                 "frozen_candidate": {
@@ -179,7 +178,7 @@ class StatusProjectionTests(unittest.TestCase):
                 del broken[missing]
                 self.registry["integrated_state"]["governance_observation"] = broken
                 self.assertTrue(
-                    any("closed-schema compliant" in error for error in self.errors())
+                    any("closed-record compliant" in error for error in self.errors())
                 )
         self.registry["integrated_state"]["governance_observation"] = observation
 
@@ -230,6 +229,50 @@ class StatusProjectionTests(unittest.TestCase):
     def test_unknown_registry_fields_are_rejected(self) -> None:
         self.registry["unexpected"] = True
         self.assertTrue(any("unknown=['unexpected']" in error for error in self.errors()))
+
+    def test_unregistered_workspace_member_is_rejected(self) -> None:
+        self.registry["integrated_state"]["workspace_members"] = ["crates/example"]
+        self.assertTrue(
+            any("exact integrated workspace identity" in error for error in self.errors())
+        )
+
+    def test_registered_action_issue_is_not_retargetable(self) -> None:
+        self.registry["integrated_state"]["next_work"][0]["issue"] = 999
+        self.assertTrue(
+            any("exact registered action" in error for error in self.errors())
+        )
+
+    def test_governance_invalidation_rejects_duplicates(self) -> None:
+        self.registry["integrated_state"]["governance_observation"] = {
+            "kind": "github_repository_settings_snapshot",
+            "source": "github_rest_api",
+            "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+            "branch": "main",
+            "observed_at": "2026-09-08T03:15:06Z",
+            "observed_main_sha": "0123456789abcdef0123456789abcdef01234567",
+            "branch_protected": False,
+            "required_status_checks": "disabled",
+            "validity": "snapshot_only",
+            "invalidation": [
+                "main_ref_change",
+                "repository_settings_change",
+                "main_ref_change",
+            ],
+            "tracking_issue": 76,
+        }
+        self.assertTrue(any("exactly once" in error for error in self.errors()))
+
+    def test_valid_fixture_uses_the_same_production_model(self) -> None:
+        self.assertEqual(
+            MODULE.validate_integrated_state_record(
+                self.registry["integrated_state"]
+            ),
+            [],
+        )
+
+    def test_impossible_dates_are_rejected(self) -> None:
+        self.registry["integrated_state"]["updated"] = "2026-99-99"
+        self.assertTrue(any("real canonical date" in error for error in self.errors()))
 
 
 if __name__ == "__main__":

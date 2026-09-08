@@ -16,13 +16,12 @@ The following files separate facts that are often incorrectly conflated:
 - [`docs/CANDIDATE_STATUS.md`](docs/CANDIDATE_STATUS.md) — unmerged candidates and their evidence rules;
 - [`docs/NON_CLAIMS.md`](docs/NON_CLAIMS.md) — capabilities and qualification levels the project does not currently claim;
 - [`docs/status-documents.v1.json`](docs/status-documents.v1.json) — closed structured source for integrated-state projection, candidate freeze, governance observations, and bounded next actions;
-- [`contracts/status-documents.v1.schema.json`](contracts/status-documents.v1.schema.json) — closed JSON Schema enforced before the human-readable projection is accepted;
 - [`docs/DESKTOP_PLAN-2026-08-29-d6.md`](docs/DESKTOP_PLAN-2026-08-29-d6.md) — active product plan;
 - [`docs/plan/PR73_DECOMPOSITION.md`](docs/plan/PR73_DECOMPOSITION.md) — mandatory decomposition of the frozen convergence candidate.
 
 `docs/CURRENT_STATE.md` is generated deterministically from the structured status record. Free-form edits, synonymous self-merge instructions, unknown action types, or unbound governance observations fail repository validation rather than silently becoming project truth.
 
-The repository registry validator binds the exact reviewed schema `$id` set. Adding, removing, or substituting a schema therefore requires an explicit reviewed code change rather than changing a permissive count.
+`tools/structured_status.py` is the sole executable contract for this status record. It checks exact keys, exact workspace identity, fixed issue/target pairs, canonical timestamps and invalidation events, then requires the Markdown projection to match byte-for-byte. No unexecuted second schema is presented as authority.
 
 A source file, fixture, hosted CI run, QEMU result, or document is not evidence of a production installation unless the applicable gate explicitly binds the exact commit, build inputs, image digest, environment, review decision, and claim ceiling.
 

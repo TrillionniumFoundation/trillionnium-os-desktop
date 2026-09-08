@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run legacy project invariants plus the closed-schema status projection gate."""
+"""Run legacy project invariants plus the single closed status projection gate."""
 
 from __future__ import annotations
 
@@ -26,9 +26,9 @@ _BASE = _load("_validate_project_truth_base", TOOLS / "_validate_project_truth_b
 _STATUS = _load("structured_status", TOOLS / "structured_status.py")
 
 STATUS_REGISTRY_PATH = _STATUS.STATUS_REGISTRY_PATH
-STATUS_REGISTRY_CONTRACT = _STATUS.STATUS_REGISTRY_CONTRACT
 STATUS_REGISTRY_SCHEMA = _STATUS.STATUS_REGISTRY_SCHEMA
 INTEGRATED_STATE_SCHEMA = _STATUS.INTEGRATED_STATE_SCHEMA
+EXPECTED_WORKSPACE_MEMBERS = _STATUS.EXPECTED_WORKSPACE_MEMBERS
 status_projection_errors = _STATUS.status_projection_errors
 render_integrated_state = _STATUS.render_integrated_state
 validate_integrated_state_record = _STATUS.validate_integrated_state_record
@@ -36,7 +36,7 @@ validate_integrated_state_record = _STATUS.validate_integrated_state_record
 
 def main() -> int:
     # The legacy validator keeps every non-status invariant. Its old prose
-    # heuristic is deliberately disabled: the mandatory closed-schema gate
+    # heuristic is deliberately disabled: the mandatory closed-record gate
     # below is the sole authority for integrated status projection.
     _BASE.check_status_documents = lambda _project: None
     stdout = io.StringIO()
