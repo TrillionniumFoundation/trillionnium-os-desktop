@@ -151,10 +151,13 @@ jobs:
         working-directory: servo
         env:
           CARGO_INCREMENTAL: '0'
-          RUSTFLAGS: -D warnings
           RUST_BACKTRACE: '1'
         run: |
           set -euo pipefail
+          # This lane qualifies the repository-owned patch against the exact
+          # upstream Servo revision. Do not promote unrelated warnings in
+          # unmodified upstream modules to hard errors; patch-owned files are
+          # bounded above and normalized independently.
           cargo test --locked -p servo --test accessibility \
             retained_accessibility_ -- --nocapture \
             2>&1 | tee "$RUNNER_TEMP/d3-retained-node-behavior.log"
@@ -212,13 +215,19 @@ jobs:
               dependencies_outcome:$dependencies,
               format_outcome:$format,
               behavior_outcome:$behavior,
-              retained_node_valid_click_tested:true,
-              action_advertisement_enforced:true,
-              stale_node_and_tree_tested:true,
-              disabled_hidden_and_non_element_tested:true,
-              unsupported_action_and_data_tested:true,
-              dropped_callback_receiver_tested:true,
-              exact_callback_count_tested:true,
+              evidence_complete:(
+                $verify == "success" and
+                $dependencies == "success" and
+                $format == "success" and
+                $behavior == "success"
+              ),
+              retained_node_valid_click_tested:($behavior == "success"),
+              action_advertisement_enforced:($behavior == "success"),
+              stale_node_and_tree_tested:($behavior == "success"),
+              disabled_hidden_and_non_element_tested:($behavior == "success"),
+              unsupported_action_and_data_tested:($behavior == "success"),
+              dropped_callback_receiver_tested:($behavior == "success"),
+              exact_callback_count_tested:($behavior == "success"),
               coordinate_javascript_webdriver_or_text_fallback:false,
               installed_runtime_proven:false,
               product_browser_actor_receipts_proven:false,
