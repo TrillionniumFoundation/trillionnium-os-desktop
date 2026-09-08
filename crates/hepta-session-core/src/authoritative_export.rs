@@ -289,7 +289,7 @@ mod tests {
 
         assert!(matches!(
             export_receipt_envelopes_jsonl([&journal], &output),
-            Err(JournalError::InvalidInput(message)) if message.contains("torn tail")
+            Err(JournalError::TornTailNeedsRepair { .. })
         ));
         assert!(!output.exists());
         fs::remove_dir_all(directory).expect("cleanup");
