@@ -21,16 +21,25 @@ class S07ServoPatchPackageTests(unittest.TestCase):
         self.document = DOCUMENT.read_text(encoding="utf-8")
 
     def test_exact_successor_and_provenance_identity(self) -> None:
-        self.assertEqual(self.manifest["carrier_branch"], "codex/s07-servo-retained-node-v1")
+        self.assertEqual(
+            self.manifest["carrier_branch"],
+            "codex/s07-servo-retained-node-v1",
+        )
         self.assertEqual(self.manifest["carrier_base_commit"], EXPECTED_BASE)
-        self.assertEqual(self.manifest["extracted_from"], {"pull_request": 73, "commit": EXPECTED_SOURCE})
+        self.assertEqual(
+            self.manifest["extracted_from"],
+            {"pull_request": 73, "commit": EXPECTED_SOURCE},
+        )
         self.assertEqual(self.manifest["upstream"]["commit"], EXPECTED_SERVO)
 
     def test_ordered_parts_and_digests_are_exact(self) -> None:
         base = self.manifest["patch"]
         hardening = self.manifest["hardening"]
         entries = base["parts"] + hardening["parts"]
-        self.assertEqual([Path(entry["path"]).name for entry in entries], [f"{index:03d}.patch" for index in range(8)])
+        self.assertEqual(
+            [Path(entry["path"]).name for entry in entries],
+            [f"{index:03d}.patch" for index in range(8)],
+        )
         chunks: list[bytes] = []
         for entry in entries:
             path = ROOT / entry["path"]
@@ -38,8 +47,14 @@ class S07ServoPatchPackageTests(unittest.TestCase):
             data = path.read_bytes()
             self.assertEqual(hashlib.sha256(data).hexdigest(), entry["sha256"])
             chunks.append(data)
-        self.assertEqual(hashlib.sha256(b"".join(chunks[:7])).hexdigest(), base["sha256"])
-        self.assertEqual(hashlib.sha256(chunks[7]).hexdigest(), hardening["sha256"])
+        self.assertEqual(
+            hashlib.sha256(b"".join(chunks[:7])).hexdigest(),
+            base["sha256"],
+        )
+        self.assertEqual(
+            hashlib.sha256(chunks[7]).hexdigest(),
+            hardening["sha256"],
+        )
 
     def test_workflow_separates_head_and_merge_evidence(self) -> None:
         for token in (
@@ -69,6 +84,10 @@ class S07ServoPatchPackageTests(unittest.TestCase):
             self.assertIn(token, self.workflow)
 
     def test_document_preserves_non_claims(self) -> None:
+        # Markdown wrapping is not semantic. Normalize all runs of whitespace so
+        # line-width-only edits cannot turn a claim-ceiling assertion into a
+        # deterministic CI failure.
+        normalized_document = " ".join(self.document.split())
         for token in (
             "source/test-harness candidate",
             "forbidden",
@@ -77,7 +96,7 @@ class S07ServoPatchPackageTests(unittest.TestCase):
             "S08",
             "S10",
         ):
-            self.assertIn(token, self.document)
+            self.assertIn(token, normalized_document)
 
 
 if __name__ == "__main__":
