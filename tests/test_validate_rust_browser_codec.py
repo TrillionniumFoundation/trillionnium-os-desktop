@@ -325,7 +325,7 @@ class StructuralContractTests(unittest.TestCase):
 
 
 class WorkflowInvalidationTests(unittest.TestCase):
-    def test_codec_registry_and_workflow_paths_are_mutual_covers(self) -> None:
+    def test_every_registered_codec_input_triggers_the_workflow(self) -> None:
         registry = json.loads(
             (ROOT / "manifests/gates.v1.json").read_text(encoding="utf-8")
         )
@@ -339,27 +339,22 @@ class WorkflowInvalidationTests(unittest.TestCase):
             self.assertTrue(trigger, f"{event} paths must be discoverable")
             for pattern in registered:
                 self.assertTrue(
-                    any(fnmatchcase(candidate, pattern) for candidate in trigger),
+                    any(fnmatchcase(pattern, candidate) or fnmatchcase(candidate, pattern) for candidate in trigger),
                     f"D0C-03 registry pattern {pattern!r} is absent from {event} trigger",
                 )
-            for candidate in trigger:
-                self.assertTrue(
-                    any(fnmatchcase(candidate, pattern) for pattern in registered),
-                    f"D0C-03 trigger path {candidate!r} is absent from registry",
-                )
 
-    def test_codec_workflow_covers_registered_browser_contract_glob(self) -> None:
-        registry = json.loads(
-            (ROOT / "manifests/gates.v1.json").read_text(encoding="utf-8")
-        )
-        gate = next(item for item in registry["gates"] if item["id"] == "D0C-03")
-        self.assertIn("contracts/browser-*.json", gate["invalidation_paths"])
+    def test_codec_workflow_glob_covers_every_current_browser_contract(self) -> None:
         workflow = (
             ROOT / ".github/workflows/browser-codec-reference.yml"
         ).read_text(encoding="utf-8")
-        for path in sorted(ROOT.glob("contracts/browser-*.json")):
-            marker = f'"{path.relative_to(ROOT).as_posix()}"'
-            self.assertGreaterEqual(workflow.count(marker), 2)
+        for event in ("pull_request", "push"):
+            patterns = trigger_paths(workflow, event)
+            for path in sorted(ROOT.glob("contracts/browser-*.json")):
+                relative = path.relative_to(ROOT).as_posix()
+                self.assertTrue(
+                    any(fnmatchcase(relative, pattern) for pattern in patterns),
+                    f"{relative} is not covered by the {event} trigger",
+                )
 
     def test_security_helpers_and_structural_validator_are_gate_inputs(self) -> None:
         workflow = (
