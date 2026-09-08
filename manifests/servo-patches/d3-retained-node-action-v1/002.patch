@@ -64,7 +64,7 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
 +        };
 +
 +        if !pref!(accessibility_enabled) {
-+            respond(AcessibilityActionResult::AccessibilityInactive);
++            respond(AccessibilityActionResult::AccessibilityInactive);
 +            return;
 +        }
 +        if request.target_tree == accesskit::TreeId::ROOT ||
@@ -100,7 +100,7 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
 +                request.target_node,
 +                request.action,
 +                epoch,
-+             ) {
++            ) {
 +                layout_api::AccessibilityNodeAddressResult::Resolved {
 +                    address,
 +                    action_advertised,
