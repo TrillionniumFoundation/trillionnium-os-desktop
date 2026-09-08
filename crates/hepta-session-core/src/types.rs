@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use trillionnium_contract_core::LeaseId;
+use trillionnium_contract_core::{LeaseId, RevisionError};
 
 pub const DEFAULT_HUMAN_LEASE_TTL_MS: u64 = 5_000;
 pub const MAX_HUMAN_LEASE_TTL_MS: u64 = 30_000;
@@ -106,7 +106,14 @@ pub enum TransitionError {
     HumanLeaseRequired,
     PhaseConflict(SessionPhase),
     ControlConflict(ControlState),
+    RevisionExhausted(RevisionError),
     InvalidTransition(&'static str),
+}
+
+impl From<RevisionError> for TransitionError {
+    fn from(error: RevisionError) -> Self {
+        Self::RevisionExhausted(error)
+    }
 }
 
 impl fmt::Display for TransitionError {
@@ -119,6 +126,9 @@ impl fmt::Display for TransitionError {
             Self::PhaseConflict(phase) => write!(formatter, "session phase conflict: {phase:?}"),
             Self::ControlConflict(control) => {
                 write!(formatter, "session control conflict: {control:?}")
+            }
+            Self::RevisionExhausted(error) => {
+                write!(formatter, "session revision transition failed: {error}")
             }
             Self::InvalidTransition(message) => formatter.write_str(message),
         }
