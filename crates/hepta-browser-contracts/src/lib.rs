@@ -323,7 +323,7 @@ mod tests {
     #[test]
     fn element_reference_uses_layered_revision_freshness() {
         let mut clock = RevisionClock::new();
-        clock.on_semantic_snapshot();
+        clock.on_semantic_snapshot().unwrap();
         let element = ElementRef {
             session_generation: clock.session_generation,
             document_generation: clock.document_generation,
@@ -335,9 +335,9 @@ mod tests {
             structural_fingerprint: digest(),
         };
         assert_eq!(element.freshness(clock), RefFreshness::Current);
-        clock.on_dom_commit();
+        clock.on_dom_commit().unwrap();
         assert_eq!(element.freshness(clock), RefFreshness::Current);
-        clock.on_semantic_snapshot();
+        clock.on_semantic_snapshot().unwrap();
         assert_eq!(element.freshness(clock), RefFreshness::StaleSnapshot);
     }
 }

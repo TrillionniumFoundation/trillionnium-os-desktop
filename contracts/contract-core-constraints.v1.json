@@ -1,0 +1,30 @@
+{
+  "schema": "trillionnium.desktop.contract-core-constraints.v1",
+  "bounded_identifiers": {
+    "allowed_ascii": "A-Z a-z 0-9 . _ : -",
+    "lease_id_max_utf8_bytes": 128,
+    "request_id_max_utf8_bytes": 128,
+    "session_id_max_utf8_bytes": 128
+  },
+  "dns_label": {
+    "max_ascii_bytes": 63,
+    "pattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$"
+  },
+  "revision_clock": {
+    "counter_type": "u64",
+    "initial": {
+      "document_generation": 1,
+      "mutation_epoch": 0,
+      "semantic_snapshot_revision": 0,
+      "session_generation": 1
+    },
+    "overflow_policy": "error_before_any_state_change"
+  },
+  "sha256_hex": {
+    "alphabet": "0123456789abcdef",
+    "length_ascii_bytes": 64
+  },
+  "unix_millis": {
+    "rust_type": "i64"
+  }
+}
