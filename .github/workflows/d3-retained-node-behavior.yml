@@ -155,10 +155,10 @@ jobs:
         run: |
           set -euo pipefail
           # Servo initializes process-global options when a Servo instance is
-          # built. The upstream integration tests therefore require one test
-          # process per independently constructed ServoTest. A broad filter
-          # runs several tests in one process and produces false
-          # "Already initialized" failures after the first valid instance.
+          # built. Run one filtered test per Cargo process. Do not use the
+          # harness --exact switch: these integration-test names are decorated
+          # by Servo's test macros, so --exact selects zero tests. Every log is
+          # parsed below and must prove that exactly one test ran and passed.
           retained_tests=(
             test_retained_accessibility_click_dispatches_exactly_once
             test_retained_accessibility_rejects_unadvertised_and_unsupported_requests
@@ -167,17 +167,76 @@ jobs:
             test_retained_accessibility_rejects_disabled_hidden_and_non_element_targets
             test_retained_accessibility_dropped_callback_does_not_duplicate_dispatch
           )
-          : > "$RUNNER_TEMP/d3-retained-node-behavior.log"
+          aggregate="$RUNNER_TEMP/d3-retained-node-behavior.log"
+          : > "$aggregate"
           for test_name in "${retained_tests[@]}"; do
-            printf '\n=== %s ===\n' "$test_name" \
-              | tee -a "$RUNNER_TEMP/d3-retained-node-behavior.log"
+            case_log="$RUNNER_TEMP/d3-${test_name}.log"
+            printf '\n=== %s ===\n' "$test_name" | tee -a "$aggregate"
             cargo test --locked -p servo --test accessibility \
-              "$test_name" -- --exact --nocapture \
-              2>&1 | tee -a "$RUNNER_TEMP/d3-retained-node-behavior.log"
+              "$test_name" -- --nocapture \
+              2>&1 | tee "$case_log" | tee -a "$aggregate"
+            python3 - "$case_log" "$test_name" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          path = Path(sys.argv[1])
+          requested = sys.argv[2]
+          text = path.read_text(encoding="utf-8", errors="replace")
+          running = re.findall(r"(?m)^running (\d+) tests?$", text)
+          passed = re.findall(
+              r"(?m)^test result: ok\. (\d+) passed; (\d+) failed; "
+              r"(\d+) ignored; (\d+) measured; (\d+) filtered out;",
+              text,
+          )
+          if running != ["1"]:
+              raise SystemExit(
+                  f"{requested}: expected exactly one executed test, got running={running}"
+              )
+          if len(passed) != 1 or passed[0][0:4] != ("1", "0", "0", "0"):
+              raise SystemExit(
+                  f"{requested}: expected one passing terminal result, got {passed}"
+              )
+          if not re.search(rf"(?m)^test .*{re.escape(requested)}.* \.\.\. ok$", text):
+              raise SystemExit(
+                  f"{requested}: requested test identity absent from passing output"
+              )
+          PY
           done
+
+          regression=accessibility_basic_mapping
+          regression_log="$RUNNER_TEMP/d3-accessibility-regression.log"
           cargo test --locked -p servo --test accessibility \
-            accessibility_basic_mapping -- --exact --nocapture \
-            2>&1 | tee "$RUNNER_TEMP/d3-accessibility-regression.log"
+            "$regression" -- --nocapture \
+            2>&1 | tee "$regression_log"
+          python3 - "$regression_log" "$regression" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          path = Path(sys.argv[1])
+          requested = sys.argv[2]
+          text = path.read_text(encoding="utf-8", errors="replace")
+          running = re.findall(r"(?m)^running (\d+) tests?$", text)
+          passed = re.findall(
+              r"(?m)^test result: ok\. (\d+) passed; (\d+) failed; "
+              r"(\d+) ignored; (\d+) measured; (\d+) filtered out;",
+              text,
+          )
+          if running != ["1"]:
+              raise SystemExit(
+                  f"{requested}: expected exactly one executed regression test, "
+                  f"got running={running}"
+              )
+          if len(passed) != 1 or passed[0][0:4] != ("1", "0", "0", "0"):
+              raise SystemExit(
+                  f"{requested}: expected one passing regression result, got {passed}"
+              )
+          if not re.search(rf"(?m)^test .*{re.escape(requested)}.* \.\.\. ok$", text):
+              raise SystemExit(
+                  f"{requested}: regression identity absent from passing output"
+              )
+          PY
 
       - name: Collect bounded behavior evidence
         if: always()
