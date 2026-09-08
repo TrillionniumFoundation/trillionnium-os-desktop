@@ -33,6 +33,7 @@ jobs:
           set -euo pipefail
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
+          python3 -m unittest discover -s tests -p 'test_project_truth_status_documents.py'
 
   rust:
     runs-on: ubuntu-24.04

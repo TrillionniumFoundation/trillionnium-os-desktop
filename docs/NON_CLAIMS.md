@@ -1,8 +1,28 @@
 # TrillionniumOS Desktop — current non-claims
 
-**Updated:** 2026-09-08
+**Updated:** 2026-09-08  
+**Machine truth:** [`manifests/project-state.v1.json`](../manifests/project-state.v1.json)
 
-Unless a later signed release statement explicitly narrows or closes a listed item, this repository does not currently claim:
+Unless a later signed release statement explicitly closes an applicable gate, this repository does not currently claim the capabilities below.
+
+## Machine-aligned non-claim identifiers
+
+These identifiers are projected directly from `not_claimed` in the machine state:
+
+- `headed_servo_integrated`
+- `visible_product_first_frame`
+- `debian_image_built`
+- `qemu_pid1_wayland_boot`
+- `integrated_qemu_headed_runtime`
+- `product_agent_port_enabled`
+- `taskflow_semantic_principal_bound`
+- `browser_actor_dispatch`
+- `external_navigation_or_effects`
+- `signed_app_runtime`
+- `controlled_egress`
+- `signed_update_and_rollback`
+- `fixed_hardware_beta`
+- `production_release`
 
 ## Product integration
 

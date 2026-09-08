@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate canonical project truth, gate identities, and immutable CI inputs."""
+"""Validate canonical project truth, gate identities, status projections, and CI inputs."""
 
 from __future__ import annotations
 
@@ -16,6 +16,21 @@ IMMUTABLE_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
 PLAN_REVISION = "2026-08-29-d6"
 PLAN_PATH = "docs/DESKTOP_PLAN-2026-08-29-d6.md"
 INTEGRATED_STAGE = "D0R_D0C06_D0A01_COMPILE_VALIDATED"
+STATUS_REGISTRY_PATH = "docs/status-documents.v1.json"
+STATUS_REGISTRY_SCHEMA = "trillionnium.desktop.status-documents.v1"
+STATUS_ROLES = (
+    "repository_entry",
+    "integrated",
+    "candidate",
+    "non_claims",
+    "decomposition",
+)
+FORBIDDEN_CLOSURE_MARKERS = (
+    "all_gaps_closed=true",
+    "merge_permitted=true",
+    "production_release=true",
+    "protected_main=true",
+)
 
 
 def fail(message: str) -> None:
@@ -46,6 +61,204 @@ def require_text(relative: str, needles: list[str]) -> str:
         if needle not in text:
             fail(f"{relative} is missing canonical marker {needle!r}")
     return text
+
+
+def status_projection_errors(
+    project: dict[str, Any],
+    registry: dict[str, Any],
+    documents: dict[str, str],
+) -> list[str]:
+    """Return semantic projection errors without reading global repository state."""
+
+    errors: list[str] = []
+    if registry.get("schema") != STATUS_REGISTRY_SCHEMA:
+        errors.append(
+            f"{STATUS_REGISTRY_PATH} schema must be {STATUS_REGISTRY_SCHEMA!r}"
+        )
+    if registry.get("project_state") != "manifests/project-state.v1.json":
+        errors.append(
+            f"{STATUS_REGISTRY_PATH} must reference manifests/project-state.v1.json"
+        )
+
+    raw_roles = registry.get("documents")
+    if not isinstance(raw_roles, dict):
+        return errors + [f"{STATUS_REGISTRY_PATH} documents must be an object"]
+
+    role_paths: dict[str, str] = {}
+    for role in STATUS_ROLES:
+        entry = raw_roles.get(role)
+        if not isinstance(entry, dict):
+            errors.append(f"{STATUS_REGISTRY_PATH} is missing document role {role!r}")
+            continue
+        path = entry.get("path")
+        scope = entry.get("scope")
+        if not isinstance(path, str) or not path:
+            errors.append(f"status document role {role!r} has no path")
+            continue
+        if not isinstance(scope, str) or not scope:
+            errors.append(f"status document role {role!r} has no scope")
+        role_paths[role] = path
+        if path not in documents:
+            errors.append(f"status document does not exist or cannot be read: {path}")
+
+    if len(role_paths.values()) != len(set(role_paths.values())):
+        errors.append("status document roles must use distinct paths")
+    if any(role not in role_paths for role in STATUS_ROLES):
+        return errors
+
+    def text(role: str) -> str:
+        return documents.get(role_paths[role], "")
+
+    repository_entry = text("repository_entry")
+    integrated = text("integrated")
+    candidate = text("candidate")
+    non_claims = text("non_claims")
+    decomposition = text("decomposition")
+
+    plan_revision = project.get("active_plan_revision")
+    stage = project.get("integrated_implementation_stage")
+    for label, value in (
+        ("active plan revision", plan_revision),
+        ("integrated implementation stage", stage),
+    ):
+        if not isinstance(value, str) or not value:
+            errors.append(f"project-state has no {label}")
+            continue
+        for role, projection in (
+            ("repository_entry", repository_entry),
+            ("integrated", integrated),
+        ):
+            if value not in projection:
+                errors.append(
+                    f"{role_paths[role]} does not project project-state {label} {value!r}"
+                )
+
+    for target_role in ("integrated", "candidate", "non_claims"):
+        target = role_paths[target_role]
+        if target not in repository_entry:
+            errors.append(
+                f"{role_paths['repository_entry']} does not link status role "
+                f"{target_role!r} at {target}"
+            )
+
+    if Path(role_paths["candidate"]).name not in integrated:
+        errors.append(
+            f"{role_paths['integrated']} does not link the candidate projection"
+        )
+    if Path(role_paths["non_claims"]).name not in integrated:
+        errors.append(
+            f"{role_paths['integrated']} does not link the non-claims projection"
+        )
+    if Path(role_paths["integrated"]).name not in candidate:
+        errors.append(
+            f"{role_paths['candidate']} does not link the integrated projection"
+        )
+    if Path(role_paths["non_claims"]).name not in candidate:
+        errors.append(
+            f"{role_paths['candidate']} does not link the non-claims projection"
+        )
+
+    completed = project.get("integrated_completed_work_packages")
+    if not isinstance(completed, list) or any(
+        not isinstance(item, str) for item in completed
+    ):
+        errors.append("project-state integrated package identifiers are invalid")
+        completed = []
+    for package in completed:
+        if f"`{package}`" not in integrated:
+            errors.append(
+                f"{role_paths['integrated']} does not project integrated package {package!r}"
+            )
+
+    candidates = project.get("source_candidate_work_packages")
+    if not isinstance(candidates, list):
+        errors.append("project-state source candidate list is invalid")
+        candidates = []
+    for item in candidates:
+        if not isinstance(item, dict):
+            errors.append("project-state contains a non-object source candidate")
+            continue
+        package = item.get("id")
+        branch = item.get("branch")
+        pr = item.get("pr")
+        status = item.get("status")
+        tokens = (
+            f"`{package}`" if isinstance(package, str) else None,
+            f"`{branch}`" if isinstance(branch, str) else None,
+            f"PR #{pr}" if isinstance(pr, int) else None,
+            f"`{status}`" if isinstance(status, str) else None,
+        )
+        if any(token is None for token in tokens):
+            errors.append(f"source candidate projection fields are incomplete: {item!r}")
+            continue
+        for token in tokens:
+            assert token is not None
+            if token not in candidate:
+                errors.append(
+                    f"{role_paths['candidate']} does not project candidate token {token!r}"
+                )
+
+    not_claimed = project.get("not_claimed")
+    if not isinstance(not_claimed, list) or any(
+        not isinstance(item, str) for item in not_claimed
+    ):
+        errors.append("project-state non-claim identifiers are invalid")
+        not_claimed = []
+    for identifier in not_claimed:
+        if f"`{identifier}`" not in non_claims:
+            errors.append(
+                f"{role_paths['non_claims']} does not project non-claim {identifier!r}"
+            )
+
+    candidate_policy = project.get("candidate_state_policy")
+    if (
+        not isinstance(candidate_policy, dict)
+        or not candidate_policy
+        or any(value is not True for value in candidate_policy.values())
+    ):
+        errors.append("project-state candidate-state policy is not fully fail-closed")
+    for marker in ("live GitHub state", "exact final head"):
+        if marker not in candidate:
+            errors.append(
+                f"{role_paths['candidate']} is missing candidate freshness marker "
+                f"{marker!r}"
+            )
+
+    if "PR #73" not in decomposition or "never merged as one unit" not in decomposition:
+        errors.append(
+            f"{role_paths['decomposition']} does not preserve the frozen PR #73 "
+            "decomposition rule"
+        )
+
+    for role in ("repository_entry", "integrated", "candidate"):
+        projection = text(role).lower()
+        for marker in FORBIDDEN_CLOSURE_MARKERS:
+            if marker in projection:
+                errors.append(
+                    f"{role_paths[role]} contains forbidden unproven closure marker "
+                    f"{marker!r}"
+                )
+
+    return errors
+
+
+def check_status_documents(project: dict[str, Any]) -> None:
+    registry = load_json(STATUS_REGISTRY_PATH)
+    raw_roles = registry.get("documents", {})
+    documents: dict[str, str] = {}
+    if isinstance(raw_roles, dict):
+        for entry in raw_roles.values():
+            if not isinstance(entry, dict):
+                continue
+            path = entry.get("path")
+            if not isinstance(path, str):
+                continue
+            try:
+                documents[path] = (ROOT / path).read_text(encoding="utf-8")
+            except OSError:
+                pass
+    for message in status_projection_errors(project, registry, documents):
+        fail(message)
 
 
 def check_truth_alignment() -> None:
@@ -86,7 +299,9 @@ def check_truth_alignment() -> None:
         fail("repository-state does not point to gate registry")
 
     completed = project.get("integrated_completed_work_packages")
-    if not isinstance(completed, list) or any(not isinstance(item, str) for item in completed):
+    if not isinstance(completed, list) or any(
+        not isinstance(item, str) for item in completed
+    ):
         fail("project-state completed package set is invalid")
         completed = []
     if len(completed) != len(set(completed)):
@@ -137,7 +352,10 @@ def check_truth_alignment() -> None:
     }
     for package in completed:
         if gate_status_by_id.get(package) != "INTEGRATED_AND_EXACT_MAIN_VALIDATED":
-            fail(f"completed package {package} is not integrated-and-main-validated in gate registry")
+            fail(
+                f"completed package {package} is not "
+                "integrated-and-main-validated in gate registry"
+            )
 
     candidates = project.get("source_candidate_work_packages", [])
     if not isinstance(candidates, list):
@@ -158,12 +376,14 @@ def check_truth_alignment() -> None:
             fail(f"candidate package {package!r} status disagrees with gate registry")
         if package in completed:
             fail(f"candidate package {package} is also listed as integrated complete")
-        candidate_view.append({
-            "id": package,
-            "branch": candidate.get("branch"),
-            "pr": candidate.get("pr"),
-            "status": status,
-        })
+        candidate_view.append(
+            {
+                "id": package,
+                "branch": candidate.get("branch"),
+                "pr": candidate.get("pr"),
+                "status": status,
+            }
+        )
 
     repository_candidates = repository.get("source_candidate_work_packages", [])
     if repository_candidates != candidates:
@@ -188,13 +408,19 @@ def check_truth_alignment() -> None:
         fail("repository-state non-claims disagree with project-state")
 
     policy = project.get("evidence_binding_policy", {})
-    if not isinstance(policy, dict) or not policy or any(value is not True for value in policy.values()):
+    if (
+        not isinstance(policy, dict)
+        or not policy
+        or any(value is not True for value in policy.values())
+    ):
         fail("project-state evidence binding policy is not fully fail-closed")
 
     require_text(PLAN_PATH, [PLAN_REVISION, INTEGRATED_STAGE, "D1", "D0A-02", "D9"])
-    require_text("docs/DESKTOP_PLAN.md", [Path(PLAN_PATH).name, PLAN_REVISION, INTEGRATED_STAGE])
-    require_text("docs/CURRENT_STATE.md", [PLAN_REVISION, INTEGRATED_STAGE, "PR #23", "PR #27"])
-    require_text("README.md", [PLAN_REVISION, INTEGRATED_STAGE, "project-state.v1.json"])
+    require_text(
+        "docs/DESKTOP_PLAN.md",
+        [Path(PLAN_PATH).name, PLAN_REVISION, INTEGRATED_STAGE],
+    )
+    check_status_documents(project)
     require_text("apps/hepta-browserd/src/lib.rs", [PLAN_REVISION, INTEGRATED_STAGE])
 
 
@@ -229,7 +455,9 @@ def check_workflow_action_pins() -> None:
         fail("no GitHub workflows found")
         return
     for path in workflows:
-        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        for line_number, line in enumerate(
+            path.read_text(encoding="utf-8").splitlines(), 1
+        ):
             match = ACTION_REF.match(line)
             if not match:
                 continue
@@ -238,7 +466,8 @@ def check_workflow_action_pins() -> None:
                 continue
             if not IMMUTABLE_ACTION.fullmatch(action):
                 fail(
-                    f"{path.relative_to(ROOT)}:{line_number} uses mutable action ref {action!r}"
+                    f"{path.relative_to(ROOT)}:{line_number} uses mutable "
+                    f"action ref {action!r}"
                 )
                 continue
             name, sha = action.rsplit("@", 1)
@@ -246,7 +475,7 @@ def check_workflow_action_pins() -> None:
             if expected != sha:
                 fail(
                     f"{path.relative_to(ROOT)}:{line_number} action {name!r} "
-                    f"is not bound to the reviewed pin manifest"
+                    "is not bound to the reviewed pin manifest"
                 )
 
 
@@ -255,6 +484,8 @@ def check_command_baseline() -> None:
         "Makefile",
         [
             "python3 tools/validate_project_truth.py",
+            "python3 -m unittest discover -s tests "
+            "-p 'test_project_truth_status_documents.py'",
             "cargo check --workspace --all-targets --locked",
             "cargo clippy --workspace --all-targets --locked -- -D warnings",
             "cargo test --workspace --all-targets --locked",
@@ -266,6 +497,8 @@ def check_command_baseline() -> None:
         [
             "runs-on: ubuntu-24.04",
             "python3 tools/validate_project_truth.py",
+            "python3 -m unittest discover -s tests "
+            "-p 'test_project_truth_status_documents.py'",
             "cargo check --workspace --all-targets --locked",
             "cargo clippy --workspace --all-targets --locked -- -D warnings",
             "cargo test --workspace --all-targets --locked",
@@ -286,6 +519,7 @@ def main() -> int:
         "contracts/gate-evidence-envelope.v1.schema.json",
         "manifests/ci-action-pins.v1.json",
         PLAN_PATH,
+        STATUS_REGISTRY_PATH,
         "docs/plan/PROJECT_TRUTH_AND_EVIDENCE.md",
         "docs/plan/GATE_CONTRACTS_AND_INVALIDATION.md",
         "docs/architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md",
@@ -305,7 +539,10 @@ def main() -> int:
     if ERRORS:
         for error in ERRORS:
             print(f"ERROR: {error}", file=sys.stderr)
-        print(f"project truth validation failed with {len(ERRORS)} error(s)", file=sys.stderr)
+        print(
+            f"project truth validation failed with {len(ERRORS)} error(s)",
+            file=sys.stderr,
+        )
         return 1
     print("project truth validation passed")
     return 0

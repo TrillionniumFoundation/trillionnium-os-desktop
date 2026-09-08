@@ -5,6 +5,7 @@ validate:
 
 truth:
 	python3 tools/validate_project_truth.py
+	python3 -m unittest discover -s tests -p 'test_project_truth_status_documents.py'
 
 fmt:
 	cargo fmt --all --check
