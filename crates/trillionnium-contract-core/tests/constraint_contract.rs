@@ -2,19 +2,13 @@ use trillionnium_contract_core::{
     DnsLabel, LeaseId, RequestId, RevisionClock, RevisionError, SessionId, Sha256Hex, UnixMillis,
 };
 
-fn assert_unchanged_after_navigation_error(
-    mut clock: RevisionClock,
-    expected: RevisionError,
-) {
+fn assert_unchanged_after_navigation_error(mut clock: RevisionClock, expected: RevisionError) {
     let before = clock;
     assert_eq!(clock.on_navigation_commit(), Err(expected));
     assert_eq!(clock, before);
 }
 
-fn assert_unchanged_after_recovery_error(
-    mut clock: RevisionClock,
-    expected: RevisionError,
-) {
+fn assert_unchanged_after_recovery_error(mut clock: RevisionClock, expected: RevisionError) {
     let before = clock;
     assert_eq!(clock.on_process_recovery(), Err(expected));
     assert_eq!(clock, before);
