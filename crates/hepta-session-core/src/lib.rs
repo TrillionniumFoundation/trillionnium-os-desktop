@@ -9,8 +9,21 @@ mod admission;
 mod authoritative_export;
 mod machine;
 mod queue;
-mod receipt_journal;
+#[path = "receipt_journal.rs"]
+mod receipt_journal_impl;
 mod types;
+
+/// Compatibility namespace for bounded chain limits only.
+///
+/// The journal implementation is intentionally not public as a module because
+/// its historical report-based export functions accept caller-constructible
+/// recovery data. Evidence-bearing export is available only through the
+/// path-verified crate-root functions.
+pub mod receipt_journal {
+    pub use super::receipt_journal_impl::{
+        MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS,
+    };
+}
 
 pub use admission::SessionMachine;
 pub use authoritative_export::{
@@ -18,7 +31,7 @@ pub use authoritative_export::{
 };
 pub use machine::SessionSnapshot;
 pub use queue::{ArbiterQueue, QueueError};
-pub use receipt_journal::{
+pub use receipt_journal_impl::{
     ArchivedSegment, CommittedRecord, CopiedReceiptSegment, Digest,
     EffectClass as ReceiptEffectClass, JournalError, JournalId,
     LifecycleState as ReceiptLifecycleState, MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS,
