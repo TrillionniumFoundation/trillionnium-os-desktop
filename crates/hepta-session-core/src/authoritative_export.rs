@@ -51,7 +51,10 @@ where
     I: IntoIterator<Item = P>,
     P: AsRef<Path>,
 {
-    export_receipt_envelopes_jsonl(source_chain, destination)
+    let reports = receipt_journal::inspect_chain(source_chain)?;
+    validate_complete_reports(&reports)?;
+    let combined = combine_verified_reports(reports)?;
+    receipt_journal::export_redacted_jsonl(&combined, destination)
 }
 
 /// Export a forensic prefix from an already decoded report.
@@ -186,9 +189,10 @@ fn combine_verified_reports(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::receipt_journal::{
-        EffectClass, JournalId, LifecycleState, PrivacyClass, ReceiptEvent, ReceiptJournal,
-        ReceiptOutcome, ReceiptSource,
+    use crate::{
+        JournalId, PrivacyClass, ReceiptEffectClass as EffectClass, ReceiptEvent, ReceiptJournal,
+        ReceiptLifecycleState as LifecycleState, ReceiptOutcome, ReceiptSource,
+        inspect_receipt_journal,
     };
     use std::fs::{self, OpenOptions};
     use std::io::Write;
@@ -317,7 +321,7 @@ mod tests {
         let journal = directory.join("journal.bin");
         let forensic = directory.join("forensic.jsonl");
         complete_journal(&journal);
-        let mut report = receipt_journal::inspect_path(&journal).expect("inspect");
+        let mut report = inspect_receipt_journal(&journal).expect("inspect");
         report.records[0].sequence = 900;
         report.records[0].record_sha256 = digest(99);
 
