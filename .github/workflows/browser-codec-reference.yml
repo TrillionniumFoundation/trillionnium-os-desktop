@@ -75,10 +75,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  exact-source-reference-and-static-audit:
-    name: exact-source-reference-and-static-audit
+  exact-source:
+    name: exact-source-${{ matrix.lane }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [reference-and-static-audit, rust]
     steps:
       - name: Check out exact source head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -96,7 +100,8 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
           git rev-parse HEAD^{tree}
 
-      - name: Compile standard-library references and audits
+      - name: Compile reference and audit modules
+        if: ${{ matrix.lane == 'reference-and-static-audit' }}
         run: >-
           python3 -m py_compile
           tools/browser_codec_reference.py
@@ -110,7 +115,9 @@ jobs:
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
 
-      - name: Regenerate reference, audit and golden vectors
+      - name: Regenerate reference, audit, and golden vectors
+        if: ${{ matrix.lane == 'reference-and-static-audit' }}
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/d0c03-golden
@@ -131,7 +138,8 @@ jobs:
             cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
           done
 
-      - name: Verify historical host evidence and current claim ceiling
+      - name: Verify historical host evidence and claim ceiling
+        if: ${{ matrix.lane == 'reference-and-static-audit' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -144,7 +152,6 @@ jobs:
           reference = json.loads(Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json").read_text())
           audit = json.loads(Path("docs/evidence/generated/d0c03-rust-source-audit-result.json").read_text())
           host = json.loads(Path(contract["rust_host_result"]).read_text())
-
           assert contract["validation"]["python_reference"] == "PASS_27_OF_27"
           assert contract["validation"]["rust_source_audit"] == "PASS"
           assert contract["validation"]["rust_fmt"] == "PASS"
@@ -165,80 +172,64 @@ jobs:
           assert host["external_effect_authorized"] is False
           PY
 
-  exact-source-rust:
-    name: exact-source-rust
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    steps:
-      - name: Check out exact source head
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Assert exact source identity
-        env:
-          EXPECTED_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
-          git rev-parse HEAD^{tree}
-
       - name: Install exact Rust toolchain
+        if: ${{ matrix.lane == 'rust' }}
+        shell: bash
         run: |
           set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
 
-      - name: Validate repository and project truth
-        run: |
-          set -euo pipefail
-          python3 tools/validate_repository.py
-          python3 tools/validate_project_truth.py
-
-      - run: cargo fmt --all --check
-      - run: cargo check --workspace --all-targets --locked
-      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - run: cargo test --workspace --all-targets --locked
-      - run: cargo run --locked -p hepta-browserd -- --self-check
-
-      - name: Confirm no listener or activation marker
+      - name: Run locked Rust matrix
+        if: ${{ matrix.lane == 'rust' }}
         shell: bash
         run: |
           set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
           test ! -S /run/hepta/browserd/agent.sock
           test ! -e /etc/hepta/enable-agent-port
 
-  prospective-merge-reference-and-static-audit:
-    name: prospective-merge-reference-and-static-audit
+  prospective-merge:
+    name: prospective-merge-${{ matrix.lane }}
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [reference-and-static-audit, rust]
     steps:
-      - name: Check out prospective merge object
+      - name: Check out current prospective merge object
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
           fetch-depth: 2
           persist-credentials: false
 
-      - name: Assert prospective merge identity and parents
+      - name: Bind merge object to live base and PR-head refs
         env:
-          EXPECTED_MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-          EXPECTED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_MERGE_SHA"
+          git check-ref-format --branch "$BASE_REF"
+          test "$PR_NUMBER" -gt 0
+          git fetch --no-tags --prune --depth=1 origin \
+            "+refs/heads/${BASE_REF}:refs/remotes/origin/pr-base" \
+            "+refs/pull/${PR_NUMBER}/head:refs/remotes/pull/pr-head"
           test "$(git rev-list --parents -n1 HEAD | awk '{print NF - 1}')" -eq 2
-          test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE_SHA"
-          test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD_SHA"
+          test "$(git rev-parse HEAD^1)" = "$(git rev-parse refs/remotes/origin/pr-base)"
+          test "$(git rev-parse HEAD^2)" = "$(git rev-parse refs/remotes/pull/pr-head)"
+          git rev-parse HEAD
           git rev-parse HEAD^{tree}
 
-      - name: Compile standard-library references and audits
+      - name: Compile reference and audit modules
+        if: ${{ matrix.lane == 'reference-and-static-audit' }}
         run: >-
           python3 -m py_compile
           tools/browser_codec_reference.py
@@ -252,7 +243,9 @@ jobs:
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
 
-      - name: Regenerate reference, audit and golden vectors
+      - name: Regenerate reference, audit, and golden vectors
+        if: ${{ matrix.lane == 'reference-and-static-audit' }}
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/d0c03-golden
@@ -273,7 +266,8 @@ jobs:
             cmp "$fixture" "/tmp/d0c03-golden/$(basename "$fixture")"
           done
 
-      - name: Verify historical host evidence and current claim ceiling
+      - name: Verify historical host evidence and claim ceiling
+        if: ${{ matrix.lane == 'reference-and-static-audit' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -286,7 +280,6 @@ jobs:
           reference = json.loads(Path("docs/evidence/generated/d0c03-browser-codec-reference-result.json").read_text())
           audit = json.loads(Path("docs/evidence/generated/d0c03-rust-source-audit-result.json").read_text())
           host = json.loads(Path(contract["rust_host_result"]).read_text())
-
           assert contract["validation"]["python_reference"] == "PASS_27_OF_27"
           assert contract["validation"]["rust_source_audit"] == "PASS"
           assert contract["validation"]["rust_fmt"] == "PASS"
@@ -307,54 +300,23 @@ jobs:
           assert host["external_effect_authorized"] is False
           PY
 
-  prospective-merge-rust:
-    name: prospective-merge-rust
-    if: ${{ github.event_name == 'pull_request' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    steps:
-      - name: Check out prospective merge object
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
-          fetch-depth: 2
-          persist-credentials: false
-
-      - name: Assert prospective merge identity and parents
-        env:
-          EXPECTED_MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-          EXPECTED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_MERGE_SHA"
-          test "$(git rev-list --parents -n1 HEAD | awk '{print NF - 1}')" -eq 2
-          test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE_SHA"
-          test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD_SHA"
-          git rev-parse HEAD^{tree}
-
       - name: Install exact Rust toolchain
+        if: ${{ matrix.lane == 'rust' }}
+        shell: bash
         run: |
           set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
 
-      - name: Validate repository and project truth
-        run: |
-          set -euo pipefail
-          python3 tools/validate_repository.py
-          python3 tools/validate_project_truth.py
-
-      - run: cargo fmt --all --check
-      - run: cargo check --workspace --all-targets --locked
-      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - run: cargo test --workspace --all-targets --locked
-      - run: cargo run --locked -p hepta-browserd -- --self-check
-
-      - name: Confirm no listener or activation marker
+      - name: Run locked Rust matrix
+        if: ${{ matrix.lane == 'rust' }}
         shell: bash
         run: |
           set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+          cargo run --locked -p hepta-browserd -- --self-check
           test ! -S /run/hepta/browserd/agent.sock
           test ! -e /etc/hepta/enable-agent-port
