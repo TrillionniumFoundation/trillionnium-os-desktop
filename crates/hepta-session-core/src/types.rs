@@ -119,7 +119,9 @@ impl fmt::Display for TransitionError {
             Self::LeaseMismatch => formatter.write_str("human lease id does not match"),
             Self::HumanLeaseRequired => formatter.write_str("an active human lease is required"),
             Self::TimeOverflow => formatter.write_str("session monotonic time overflowed"),
-            Self::RevisionExhausted(error) => write!(formatter, "revision transition failed: {error}"),
+            Self::RevisionExhausted(error) => {
+                write!(formatter, "revision transition failed: {error}")
+            }
             Self::PhaseConflict(phase) => write!(formatter, "session phase conflict: {phase:?}"),
             Self::ControlConflict(control) => {
                 write!(formatter, "session control conflict: {control:?}")
