@@ -64,7 +64,7 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
 +        };
 +
 +        if !pref!(accessibility_enabled) {
-+            respond(AccessibilityActionResult::AccessibilityInactive);
++            respond(AcessibilityActionResult::AccessibilityInactive);
 +            return;
 +        }
 +        if request.target_tree == accesskit::TreeId::ROOT ||
@@ -100,7 +100,7 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
 +                request.target_node,
 +                request.action,
 +                epoch,
-+            ) {
++             ) {
 +                layout_api::AccessibilityNodeAddressResult::Resolved {
 +                    address,
 +                    action_advertised,
@@ -115,10 +115,6 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
 +                    return;
 +                },
 +            };
-+        if !has_accessible_bounds {
-+            respond(AccessibilityActionResult::TargetNotRendered);
-+            return;
-+        }
 +        let node = unsafe { crate::dom::node::from_untrusted_node_address(address) };
 +        if !node.is_connected() || node.owner_doc().webview_id() != webview_id {
 +            respond(AccessibilityActionResult::TargetNotRendered);
@@ -128,6 +124,10 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
 +            respond(AccessibilityActionResult::TargetNotElement);
 +            return;
 +        };
++        if !has_accessible_bounds {
++            respond(AccessibilityActionResult::TargetNotRendered);
++            return;
++        }
 +        if element.is_actually_disabled() {
 +            respond(AccessibilityActionResult::TargetDisabled);
 +            return;
