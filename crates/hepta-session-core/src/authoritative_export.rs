@@ -123,9 +123,7 @@ fn validate_complete_reports(reports: &[RecoveryReport]) -> Result<(), JournalEr
                 .or_default()
                 .push(record.clone());
             expected_sequence = expected_sequence.checked_add(1).ok_or_else(|| {
-                JournalError::InvalidInput(
-                    "authoritative export record sequence overflow".into(),
-                )
+                JournalError::InvalidInput("authoritative export record sequence overflow".into())
             })?;
         }
 
@@ -167,9 +165,7 @@ fn combine_verified_reports(
         last_complete_offset = last_complete_offset
             .checked_add(report.last_complete_offset)
             .ok_or_else(|| {
-                JournalError::InvalidInput(
-                    "authoritative export complete-offset overflow".into(),
-                )
+                JournalError::InvalidInput("authoritative export complete-offset overflow".into())
             })?;
         next_sequence = report.next_sequence;
         last_record_sha256 = report.last_record_sha256;
@@ -282,7 +278,8 @@ mod tests {
             .append(true)
             .open(&journal)
             .expect("open journal");
-        file.write_all(b"HPTREC01partial").expect("append torn suffix");
+        file.write_all(b"HPTREC01partial")
+            .expect("append torn suffix");
         file.sync_data().expect("sync torn suffix");
         drop(file);
 
