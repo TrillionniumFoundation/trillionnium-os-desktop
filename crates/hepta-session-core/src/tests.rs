@@ -1,8 +1,30 @@
 use super::*;
-use trillionnium_contract_core::LeaseId;
+use trillionnium_contract_core::{LeaseId, RevisionClock, RevisionError};
 
 fn lease() -> LeaseId {
     LeaseId::parse("lease_id", "lease-fixture").unwrap()
+}
+
+fn snapshot_with(
+    revisions: RevisionClock,
+    phase: SessionPhase,
+    control: ControlState,
+    human_lease: Option<HumanLease>,
+) -> SessionSnapshot {
+    SessionSnapshot {
+        control,
+        phase,
+        revisions,
+        human_lease,
+    }
+}
+
+fn active_lease() -> HumanLease {
+    HumanLease {
+        lease_id: lease(),
+        acquired_at_ms: 10,
+        expires_at_ms: 1_000,
+    }
 }
 
 #[test]
@@ -126,4 +148,168 @@ fn close_is_terminal() {
         machine.apply(SessionEvent::BeginAgentObservation, 1),
         Err(TransitionError::Closed)
     );
+}
+
+#[test]
+fn dom_exhaustion_is_atomic_and_emits_no_success_effect() {
+    let before = snapshot_with(
+        RevisionClock {
+            mutation_epoch: u64::MAX,
+            ..RevisionClock::new()
+        },
+        SessionPhase::Ready,
+        ControlState::HumanActive,
+        Some(active_lease()),
+    );
+    let mut machine = SessionMachine::from_snapshot_for_test(before.clone());
+
+    assert_eq!(
+        machine.apply(SessionEvent::DomCommitted, 20),
+        Err(TransitionError::RevisionExhausted(
+            RevisionError::MutationEpochExhausted
+        ))
+    );
+    assert_eq!(machine.snapshot(), before);
+}
+
+#[test]
+fn semantic_snapshot_exhaustion_is_atomic_and_emits_no_success_effect() {
+    let before = snapshot_with(
+        RevisionClock {
+            semantic_snapshot_revision: u64::MAX,
+            ..RevisionClock::new()
+        },
+        SessionPhase::Ready,
+        ControlState::HumanActive,
+        Some(active_lease()),
+    );
+    let mut machine = SessionMachine::from_snapshot_for_test(before.clone());
+
+    assert_eq!(
+        machine.apply(SessionEvent::SemanticSnapshotPublished, 20),
+        Err(TransitionError::RevisionExhausted(
+            RevisionError::SemanticSnapshotExhausted
+        ))
+    );
+    assert_eq!(machine.snapshot(), before);
+}
+
+#[test]
+fn navigation_exhaustion_preserves_phase_control_lease_and_all_revisions() {
+    let cases = [
+        (
+            RevisionClock {
+                document_generation: u64::MAX,
+                ..RevisionClock::new()
+            },
+            RevisionError::DocumentGenerationExhausted,
+        ),
+        (
+            RevisionClock {
+                semantic_snapshot_revision: u64::MAX,
+                ..RevisionClock::new()
+            },
+            RevisionError::SemanticSnapshotExhausted,
+        ),
+        (
+            RevisionClock {
+                mutation_epoch: u64::MAX,
+                ..RevisionClock::new()
+            },
+            RevisionError::MutationEpochExhausted,
+        ),
+    ];
+
+    for (revisions, error) in cases {
+        let before = snapshot_with(
+            revisions,
+            SessionPhase::NavigationPending,
+            ControlState::HumanActive,
+            Some(active_lease()),
+        );
+        let mut machine = SessionMachine::from_snapshot_for_test(before.clone());
+
+        assert_eq!(
+            machine.apply(SessionEvent::NavigationCommitted, 20),
+            Err(TransitionError::RevisionExhausted(error))
+        );
+        assert_eq!(machine.snapshot(), before);
+    }
+}
+
+#[test]
+fn crash_exhaustion_preserves_phase_control_lease_and_all_revisions() {
+    let cases = [
+        (
+            RevisionClock {
+                session_generation: u64::MAX,
+                ..RevisionClock::new()
+            },
+            RevisionError::SessionGenerationExhausted,
+        ),
+        (
+            RevisionClock {
+                document_generation: u64::MAX,
+                ..RevisionClock::new()
+            },
+            RevisionError::DocumentGenerationExhausted,
+        ),
+        (
+            RevisionClock {
+                semantic_snapshot_revision: u64::MAX,
+                ..RevisionClock::new()
+            },
+            RevisionError::SemanticSnapshotExhausted,
+        ),
+        (
+            RevisionClock {
+                mutation_epoch: u64::MAX,
+                ..RevisionClock::new()
+            },
+            RevisionError::MutationEpochExhausted,
+        ),
+    ];
+
+    for (revisions, error) in cases {
+        let before = snapshot_with(
+            revisions,
+            SessionPhase::ModalBlocked,
+            ControlState::HumanActive,
+            Some(active_lease()),
+        );
+        let mut machine = SessionMachine::from_snapshot_for_test(before.clone());
+
+        assert_eq!(
+            machine.apply(SessionEvent::BrowserCrashed, 20),
+            Err(TransitionError::RevisionExhausted(error))
+        );
+        assert_eq!(machine.snapshot(), before);
+    }
+}
+
+#[test]
+fn authority_bearing_session_machine_never_calls_infallible_revision_wrappers() {
+    let source = include_str!("machine.rs");
+    for forbidden in [
+        ".on_dom_commit()",
+        ".on_semantic_snapshot()",
+        ".on_navigation_commit()",
+        ".on_process_recovery()",
+    ] {
+        assert!(
+            !source.contains(forbidden),
+            "authority-bearing SessionMachine must not call {forbidden}"
+        );
+    }
+    for required in [
+        ".try_on_dom_commit()?",
+        ".try_on_semantic_snapshot()?",
+        ".try_on_navigation_commit()?",
+        ".try_on_process_recovery()?",
+    ] {
+        assert!(
+            source.contains(required),
+            "authority-bearing SessionMachine must call {required}"
+        );
+    }
 }
