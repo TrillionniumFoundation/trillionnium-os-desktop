@@ -1,0 +1,48 @@
+name: s05-receipt-recovery
+
+on:
+  pull_request:
+    paths:
+      - "crates/hepta-session-core/**"
+      - "contracts/receipt*.json"
+      - "contracts/legacy-receipt-migration.v1.json"
+      - "docs/architecture/*RECEIPT*.md"
+      - "docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md"
+      - "tests/test_s05_receipt_recovery.py"
+      - ".github/workflows/s05-receipt-recovery.yml"
+  push:
+    branches: [main, "codex/s05-**"]
+    paths:
+      - "crates/hepta-session-core/**"
+      - "contracts/receipt*.json"
+      - "contracts/legacy-receipt-migration.v1.json"
+      - "docs/architecture/*RECEIPT*.md"
+      - "docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md"
+      - "tests/test_s05_receipt_recovery.py"
+      - ".github/workflows/s05-receipt-recovery.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+      - run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_receipt_journal.py
+          python3 -m unittest tests.test_s05_receipt_recovery -v
+      - run: cargo fmt --all --check
+      - run: cargo check --locked -p hepta-session-core --all-targets
+      - run: cargo clippy --locked -p hepta-session-core --all-targets -- -D warnings
+      - run: cargo test --locked -p hepta-session-core --all-targets
