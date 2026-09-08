@@ -6,12 +6,14 @@
 //! adapter must translate native/compositor and Servo events into this state
 //! machine while preserving its single-content-surface and trust invariants.
 
+mod hardened;
 mod model;
 
+pub use hardened::WorkspaceState;
 pub use model::{
     CompositionError, CompositionFrame, ContentLifecycle, ContentSurfaceId, InputOwner, PixelSize,
     Rect, SurfaceTarget, TRUSTED_CHROME_ORIGIN, WorkspaceConfig, WorkspaceEffect, WorkspaceEvent,
-    WorkspaceSnapshot, WorkspaceState,
+    WorkspaceSnapshot,
 };
 
 #[cfg(test)]
