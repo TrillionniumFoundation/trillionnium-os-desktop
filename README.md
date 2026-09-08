@@ -2,6 +2,10 @@
 
 > **Current maturity:** architecture and source-qualification prototype. This repository does **not** yet contain a production-qualified, physically tested, signed desktop operating-system release.
 
+**Canonical plan:** `2026-08-29-d6`  
+**Integrated implementation stage:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`  
+**Machine truth:** [`manifests/project-state.v1.json`](manifests/project-state.v1.json)
+
 This repository develops the desktop runtime, trust boundaries, contracts, qualification tooling, packaging, and release controls for TrillionniumOS Desktop. The design centers on a trusted native shell, a separately controlled browser runtime, authenticated local AgentPort transport, explicit capabilities, durable receipts, and fail-closed recovery.
 
 ## Read project status before using the code
