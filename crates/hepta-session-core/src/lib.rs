@@ -23,6 +23,13 @@ pub mod receipt_journal {
     pub use super::receipt_journal_impl::{
         MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS,
     };
+
+    pub(crate) use super::receipt_journal_impl::{
+        Digest, EffectClass, JournalError, JournalId, LifecycleState, PrivacyClass,
+        ReceiptEnvelope, ReceiptEvent, ReceiptJournal, ReceiptOutcome, ReceiptSource,
+        RecoveredRecord, RecoveryReport, TailStatus, export_journal_redacted_jsonl,
+        export_receipt_envelopes_jsonl, inspect_chain, inspect_path,
+    };
 }
 
 pub use admission::SessionMachine;
