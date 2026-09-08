@@ -20,9 +20,7 @@ mod types;
 /// recovery data. Evidence-bearing export is available only through the
 /// path-verified crate-root functions.
 pub mod receipt_journal {
-    pub use super::receipt_journal_impl::{
-        MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS,
-    };
+    pub use super::receipt_journal_impl::{MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS};
 
     pub(crate) use super::receipt_journal_impl::{
         Digest, EffectClass, JournalError, JournalId, LifecycleState, PrivacyClass,
