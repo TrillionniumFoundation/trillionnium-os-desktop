@@ -31,7 +31,8 @@
     },
     "plan_revision": {
       "type": "string",
-      "pattern": "^2026-08-28-d[0-9]+$"
+      "description": "The active d6 revision is emitted by ReceiptLifecycleObserver; the exact d5 revision remains accepted only for historical receipts and fixtures. A future plan revision requires an explicit schema update.",
+      "pattern": "^(?:2026-08-28-d5|2026-08-29-d6)$"
     },
     "image_id": {
       "type": "string",

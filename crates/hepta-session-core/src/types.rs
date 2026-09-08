@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use trillionnium_contract_core::{LeaseId, RevisionError};
+use trillionnium_contract_core::LeaseId;
 
 pub const DEFAULT_HUMAN_LEASE_TTL_MS: u64 = 5_000;
 pub const MAX_HUMAN_LEASE_TTL_MS: u64 = 30_000;
@@ -13,6 +13,12 @@ pub enum ControlState {
     Idle,
     AgentObserving,
     AgentMutating,
+    /// A top-level Agent navigation owns the PageOwner while the document
+    /// transition is pending.  Keeping navigation as an explicit control
+    /// state prevents a human lease (or another Agent operation) from being
+    /// admitted in the gap between `NavigationStarted` and its terminal
+    /// event.
+    AgentNavigating,
     HumanActive,
     HumanImeComposing,
 }
@@ -106,14 +112,11 @@ pub enum TransitionError {
     HumanLeaseRequired,
     PhaseConflict(SessionPhase),
     ControlConflict(ControlState),
-    RevisionExhausted(RevisionError),
+    /// A revision identity layer cannot advance without wrapping.  The
+    /// session remains unchanged and callers must fail closed rather than
+    /// emitting a partially invalidated transition.
+    RevisionExhausted,
     InvalidTransition(&'static str),
-}
-
-impl From<RevisionError> for TransitionError {
-    fn from(error: RevisionError) -> Self {
-        Self::RevisionExhausted(error)
-    }
 }
 
 impl fmt::Display for TransitionError {
@@ -127,9 +130,7 @@ impl fmt::Display for TransitionError {
             Self::ControlConflict(control) => {
                 write!(formatter, "session control conflict: {control:?}")
             }
-            Self::RevisionExhausted(error) => {
-                write!(formatter, "session revision transition failed: {error}")
-            }
+            Self::RevisionExhausted => formatter.write_str("session revision clock exhausted"),
             Self::InvalidTransition(message) => formatter.write_str(message),
         }
     }
