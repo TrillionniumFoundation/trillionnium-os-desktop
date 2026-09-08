@@ -23,7 +23,7 @@ def _load(name: str, path: Path):
 
 
 _BASE = _load("_validate_project_truth_base", TOOLS / "_validate_project_truth_base.py")
-_STATUS = _load("structured_status", TOOLS / "structured_status.py")
+_STATUS = _load("structured_status", TOOLS / "structured_status_repository.py")
 
 STATUS_REGISTRY_PATH = _STATUS.STATUS_REGISTRY_PATH
 STATUS_REGISTRY_SCHEMA = _STATUS.STATUS_REGISTRY_SCHEMA
@@ -32,6 +32,9 @@ EXPECTED_WORKSPACE_MEMBERS = _STATUS.EXPECTED_WORKSPACE_MEMBERS
 status_projection_errors = _STATUS.status_projection_errors
 render_integrated_state = _STATUS.render_integrated_state
 validate_integrated_state_record = _STATUS.validate_integrated_state_record
+SOURCE_STATE_PATH = _STATUS.SOURCE_STATE_PATH
+SOURCE_STATE_SCHEMA = _STATUS.SOURCE_STATE_SCHEMA
+validate_source_state_record = _STATUS.validate_source_state_record
 
 
 def main() -> int:
