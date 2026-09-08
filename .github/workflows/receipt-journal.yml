@@ -82,7 +82,7 @@ jobs:
           cargo fmt --all --check
           cargo check --workspace --all-targets --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings
-          cargo test --locked -p hepta-session-core receipt_journal::tests:: -- --nocapture
+          cargo test --locked -p hepta-session-core --lib receipt_journal::tests:: -- --nocapture
           cargo test --workspace --all-targets --locked
       - name: Reconfirm non-authorizing recovery ceiling
         shell: bash
@@ -147,7 +147,7 @@ jobs:
           cargo fmt --all --check
           cargo check --workspace --all-targets --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings
-          cargo test --locked -p hepta-session-core receipt_journal::tests:: -- --nocapture
+          cargo test --locked -p hepta-session-core --lib receipt_journal::tests:: -- --nocapture
           cargo test --workspace --all-targets --locked
       - name: Reconfirm non-authorizing recovery ceiling
         shell: bash
