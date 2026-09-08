@@ -22,6 +22,8 @@ The following files separate facts that are often incorrectly conflated:
 
 `docs/CURRENT_STATE.md` is generated deterministically from the structured status record. Free-form edits, synonymous self-merge instructions, unknown action types, or unbound governance observations fail repository validation rather than silently becoming project truth.
 
+The repository registry validator binds the exact reviewed schema `$id` set. Adding, removing, or substituting a schema therefore requires an explicit reviewed code change rather than changing a permissive count.
+
 A source file, fixture, hosted CI run, QEMU result, or document is not evidence of a production installation unless the applicable gate explicitly binds the exact commit, build inputs, image digest, environment, review decision, and claim ceiling.
 
 ## What is present on `main`
