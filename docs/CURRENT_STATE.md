@@ -31,7 +31,7 @@ An identifier being integrated does not widen its recorded claim ceiling.
 
 ## Integrated repository foundation
 
-The current `main` branch contains a ten-member Rust workspace:
+The integrated `main` state contains a ten-member Rust workspace:
 
 ```text
 apps/hepta-browserd
@@ -76,9 +76,16 @@ This path does not by itself establish semantic principal authority, production 
 
 The production AgentPort is not enabled by default. Until a promoted BrowserActor and installed runtime are bound through the applicable gates, product activation must fail closed rather than substitute a fixture or broaden authority.
 
-## Repository governance state
+## Repository governance observation
 
-At this snapshot, live GitHub readback reports `main` as unprotected with required-status enforcement disabled. CODEOWNERS source exists, but source files alone do not enforce approvals or no-bypass policy. Administrative branch protection, active rulesets, protected environments, and independent review separation remain open controls under issue #76.
+**Observation source:** GitHub REST API  
+**Observed at:** `2026-09-08T03:15:06Z`  
+**Observed main SHA:** `addaf73a48bae65f19f6bfe91c6264fd2ddb85a1`  
+**Observation validity:** snapshot only; it is not live authorization after the observed `main` ref or repository settings change
+
+At this identity-bound observation, live GitHub readback reported `main` as unprotected with required-status enforcement disabled. CODEOWNERS source existed, but source files alone did not enforce approvals or no-bypass policy. Administrative branch protection, active rulesets, protected environments, and independent review separation therefore remained open controls under issue #76.
+
+Operational merge and release decisions must read live GitHub state rather than infer it from this snapshot. A later `main` movement or settings change requires a dedicated exact-main status update before this section may describe the newer state.
 
 ## Unmerged work
 
@@ -86,14 +93,13 @@ PR #73 is a frozen Draft convergence branch. It is not part of the integrated st
 
 The structured manifest still contains a committed candidate snapshot from an earlier repository state. That snapshot is rendered and qualified in `CANDIDATE_STATUS.md`; it is not silently promoted into this integrated projection.
 
-## Immediate integrated-state priorities
+## Next bounded work
 
-1. review and merge the repository-truth bootstrap on its exact final head;
-2. enable and independently verify branch protection and rulesets;
-3. decompose PR #73 into bounded successor PRs;
-4. qualify every successor on its own exact final head;
-5. complete a real AgentPort → BrowserActor → Servo → durable-receipt vertical slice;
-6. prove that slice in an exact installed QEMU image before hardware or release claims.
+1. enable and independently verify branch protection and rulesets;
+2. decompose PR #73 into bounded successor PRs;
+3. qualify every successor on its own exact final head;
+4. complete a real AgentPort → BrowserActor → Servo → durable-receipt vertical slice;
+5. prove that slice in an exact installed QEMU image before hardware or release claims.
 
 ## Interpretation
 

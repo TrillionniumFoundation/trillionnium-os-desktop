@@ -13,6 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 ERRORS: list[str] = []
 ACTION_REF = re.compile(r"^\s*uses:\s*([^#\s]+)\s*$")
 IMMUTABLE_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
+COMMIT_SHA = re.compile(r"^[0-9a-f]{40}$")
+UTC_OBSERVATION = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+PENDING_MERGE_ACTION = re.compile(
+    r"(?im)^\s*(?:[-*]|\d+\.)\s+(?:review|approve)\s+(?:and\s+)?merge\b"
+)
 PLAN_REVISION = "2026-08-29-d6"
 PLAN_PATH = "docs/DESKTOP_PLAN-2026-08-29-d6.md"
 INTEGRATED_STAGE = "D0R_D0C06_D0A01_COMPILE_VALIDATED"
@@ -61,6 +66,14 @@ def require_text(relative: str, needles: list[str]) -> str:
         if needle not in text:
             fail(f"{relative} is missing canonical marker {needle!r}")
     return text
+
+
+def markdown_backtick_fact(text: str, label: str) -> str | None:
+    match = re.search(
+        rf"(?m)^\*\*{re.escape(label)}:\*\*\s*`([^`]+)`[ \t]*$",
+        text,
+    )
+    return match.group(1) if match else None
 
 
 def status_projection_errors(
@@ -229,6 +242,34 @@ def status_projection_errors(
             f"{role_paths['decomposition']} does not preserve the frozen PR #73 "
             "decomposition rule"
         )
+
+    if PENDING_MERGE_ACTION.search(integrated):
+        errors.append(
+            f"{role_paths['integrated']} contains a pre-integration review/merge action"
+        )
+
+    if "live GitHub readback" in integrated:
+        observed_at = markdown_backtick_fact(integrated, "Observed at")
+        observed_main_sha = markdown_backtick_fact(integrated, "Observed main SHA")
+        if observed_at is None or not UTC_OBSERVATION.fullmatch(observed_at):
+            errors.append(
+                f"{role_paths['integrated']} live GitHub snapshot lacks a valid "
+                "Observed at UTC identity"
+            )
+        if (
+            observed_main_sha is None
+            or not COMMIT_SHA.fullmatch(observed_main_sha)
+            or set(observed_main_sha) == {"0"}
+        ):
+            errors.append(
+                f"{role_paths['integrated']} live GitHub snapshot lacks a valid "
+                "Observed main SHA identity"
+            )
+        if "snapshot only" not in integrated:
+            errors.append(
+                f"{role_paths['integrated']} live GitHub observation must declare "
+                "snapshot-only validity"
+            )
 
     for role in ("repository_entry", "integrated", "candidate"):
         projection = text(role).lower()

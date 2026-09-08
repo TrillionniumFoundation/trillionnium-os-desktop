@@ -59,12 +59,13 @@ class StatusProjectionTests(unittest.TestCase):
                 },
             },
         }
+        self.integrated_path = "docs/CURRENT_STATE.md"
         self.documents = {
             "README.md": (
                 "plan-v1 FOUNDATION manifests/project-state.v1.json "
                 "docs/CURRENT_STATE.md docs/CANDIDATE_STATUS.md docs/NON_CLAIMS.md"
             ),
-            "docs/CURRENT_STATE.md": (
+            self.integrated_path: (
                 "plan-v1 FOUNDATION CANDIDATE_STATUS.md NON_CLAIMS.md `D0-01`"
             ),
             "docs/CANDIDATE_STATUS.md": (
@@ -103,6 +104,30 @@ class StatusProjectionTests(unittest.TestCase):
         self.assertTrue(
             any("forbidden unproven closure marker" in error for error in self.errors())
         )
+
+    def test_integrated_projection_rejects_its_own_pending_merge_action(self) -> None:
+        self.documents[self.integrated_path] += (
+            "\n1. review and merge the repository-truth bootstrap on its final head"
+        )
+        self.assertTrue(
+            any("pre-integration review/merge action" in error for error in self.errors())
+        )
+
+    def test_live_governance_snapshot_requires_observed_identity(self) -> None:
+        self.documents[self.integrated_path] += (
+            "\nlive GitHub readback reported main as unprotected; snapshot only"
+        )
+        errors = self.errors()
+        self.assertTrue(any("Observed at UTC identity" in error for error in errors))
+        self.assertTrue(any("Observed main SHA identity" in error for error in errors))
+
+    def test_live_governance_snapshot_accepts_bound_identity(self) -> None:
+        self.documents[self.integrated_path] += (
+            "\n**Observed at:** `2026-09-08T03:15:06Z`"
+            "\n**Observed main SHA:** `0123456789abcdef0123456789abcdef01234567`"
+            "\nlive GitHub readback reported main as unprotected; snapshot only"
+        )
+        self.assertEqual(self.errors(), [])
 
 
 if __name__ == "__main__":
