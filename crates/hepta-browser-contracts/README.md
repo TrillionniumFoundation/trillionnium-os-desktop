@@ -1,16 +1,16 @@
-# hepta-workspace-composition
+# hepta-browser-contracts
 
-**Module registry ID:** `hepta-workspace-composition`  
-**Workspace path:** `crates/hepta-workspace-composition`  
-**Owner class:** `trusted-workspace`
+**Module registry ID:** `hepta-browser-contracts`  
+**Workspace path:** `crates/hepta-browser-contracts`  
+**Owner class:** `browser-contract-security`
 
-Deterministic composition model for trusted chrome and one untrusted content surface.
+Engine-neutral typed browser operations, targets, errors, and trust identities.
 
 ## Status and claim ceiling
 
-**Current status:** `headed_host_candidate_model`
+**Current status:** `integrated_contract_foundation`
 
-**Claim ceiling:** engine-neutral trusted-workspace state and invariant model; no window, Servo instance, frame, clipboard, AgentPort, or external effect.
+**Claim ceiling:** engine-neutral typed Browser API and risk/reference model; no wire parsing, browser runtime, capability, or effect authority.
 
 The status above describes the strongest repository-local statement this module may
 make. It does not promote lower-tier source, host, headed-host, or QEMU evidence
@@ -18,18 +18,18 @@ into integrated-main, physical-hardware, signing-key-custody, or release facts.
 
 ## Responsibilities
 
-- Model one compositor/native-owned trusted chrome surface and exactly one logical untrusted content surface.
-- Own geometry, focus, pointer/keyboard/IME routing, frame publication, popup refusal, crash placeholder, and replacement generation invariants.
-- Fail closed while replacement content is recovering and prevent stale frames or input owners from becoming authoritative.
+- Define typed profiles, trusted app identities, navigation targets, element references, observations, waits, page actions, operations, and Browser error codes.
+- Bind semantic references to layered revisions and classify action risk.
+- Provide synthetic trusted origin construction and fixture/external navigation shape checks.
 
 ## Non-responsibilities
 
-- The crate does not create a native window, start Servo, render pixels, access the system clipboard, inject OS input, create an Agent listener, or navigate externally.
-- Model tests do not prove headed-host, QEMU, hardware, or product integration.
+- The crate does not parse canonical JSON, authenticate a connection, resolve a live DOM/accessibility node, issue a permit, execute a browser action, or perform network I/O.
+- String shape validation does not establish DNS, TLS, redirect, connected-peer, or publisher trust.
 
 ## Dependency and call direction
 
-This is an engine-neutral model used by the Servo qualification adapter and later trusted shell. It should remain independent of Servo/winit/X11/Wayland and operating-system services.
+The crate builds only on platform-neutral contract primitives. Codec and BrowserActor consume it. It must not depend on transport, systemd, Servo, product services, or update/release code.
 
 The authoritative workspace membership and review links are recorded in
 `manifests/modules.v1.json`. New reverse dependencies, cycles, or authority-bearing
@@ -37,7 +37,7 @@ dependencies require an explicit architecture/security review.
 
 ## Public API and binaries
 
-Public model operations apply deterministic workspace events and expose snapshots/refusals/effects. Callers must translate real engine/window callbacks into these events and obey returned ownership/generation decisions.
+Public enums and structs model browser operations and errors. `ElementRef::freshness`, `PageAction::interaction_risk`, navigation validation, trusted synthetic origin construction, and freshness-to-error mapping are key helpers.
 
 Public types and executable names are compatibility surfaces. Rust source remains
 the API truth, while this document explains the intended boundary and correct use.
@@ -52,7 +52,7 @@ may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
 entrypoint, or `build.rs` without a reviewed inventory change fails the module
 gate; this does not disable integration-test discovery.
 
-Surface count and trust topology are invariant, not runtime options. Geometry and generation values are explicit inputs. Additional windows/content surfaces require a new architecture decision and threat model.
+There are no features or runtime configuration. Protocol limits and operation sets are versioned through the contracts and codec rather than environment flags.
 
 All configuration inputs must be bounded, typed, documented, and included in the
 applicable gate's invalidation set. Missing configuration must fail closed rather
@@ -60,7 +60,7 @@ than select a broader profile.
 
 ## State, concurrency, and failure semantics
 
-Trusted chrome survives content failure. Content crash clears content input/IME, withdraws the old frame, publishes a trusted placeholder, advances generation, and requires an explicit new non-zero generation plus fresh frame before routing resumes.
+Types are immutable values; layered revisions distinguish stale session, document, and semantic snapshot. Mutating actions are never labelled read-only. BrowserActor must re-resolve action targets atomically before execution.
 
 Rejected transitions and failed validation must not leave partial authority,
 advanced revisions, committed responses, or invented receipt outcomes. Where a
@@ -69,7 +69,7 @@ documented reconciliation policy instead of retrying blindly.
 
 ## Security invariants
 
-Untrusted content cannot overlap/replace trusted identity, share its DOM trust realm, open a second content surface, retain input after crash/navigation, or promote stale pixels. Popup/new-window/external replacement requests fail closed.
+Trusted and untrusted navigation classes stay distinct. Local HTTP is loopback fixture only; external navigation is HTTPS-shaped but still requires D6 policy. Unknown/ambiguous target behavior is fail closed in higher layers.
 
 The relevant contracts and architecture documents are listed in the module
 registry. A source-only self-check or fixture never proves enforcement by a booted
@@ -77,7 +77,7 @@ product image.
 
 ## Testing and evidence
 
-Run deterministic policy tests, rollback tests, all input owner transitions, crash/recovery and stale-frame cases, plus the headed Servo and D2I runtime corpora that prove real callbacks/pixels/process topology.
+Run unit tests for origin uniqueness, URL classes, action risk, freshness, errors, and all schema operation/error mappings. Codec and semantic resolver corpora provide cross-layer conformance.
 
 Minimum local verification:
 
@@ -97,7 +97,7 @@ current evidence.
 
 ## Operations and troubleshooting
 
-When composition stalls, inspect current generation, content lifecycle, presentable frame, placeholder, focus/input owner, and last refusal. Do not route input or reuse a frame merely to restore liveness.
+No service is operated. Typed errors should be preserved through codec and response construction without weakening retry directives. Do not log target names/text unless privacy policy permits.
 
 Troubleshooting must preserve the original files, journals, identities, and exact
 Git/build context needed for diagnosis. Do not make a gate pass by deleting a
@@ -106,10 +106,21 @@ fixture, or editing generated evidence by hand.
 
 ## Compatibility and change protocol
 
-Changing trust topology, surface count, input ownership, or crash generation semantics requires an ADR, contract update, model/property tests, headed runtime evidence, and exact-main rerun.
+Rust operations and error codes must remain synchronized with JSON schemas, canonical codec, reference models, and golden vectors. Breaking enum changes require a new protocol version or explicit migration.
 
 Every behavior-changing pull request must update, as applicable: implementation,
 contracts/schemas, golden vectors, tests, module registry, this README, architecture
 and threat documentation, gate invalidation paths, evidence, and explicit
 non-claims. Exact-head review and exact-main reruns remain separate promotion
 transactions.
+
+## D5 origin conformance
+
+Trusted-app origins include separate app and publisher DNS labels under
+`apps.hepta.invalid`. Serialization has no trailing slash. The compiled D5
+policy delegates to `TrustedAppIdentity`; shared vectors at
+`contracts/golden/trusted-app-origins.v1.tsv` are executed by this module's
+`tests/trusted_app_origins.rs` and the Python D5 verifier. D5 manifest and
+publisher-evidence payloads are v2; legacy app-only origins and v1 payloads are
+rejected rather than aliased. See ADR 0005. This is source conformance only,
+not proof of installed storage, routing, trusted chrome, or publisher custody.
