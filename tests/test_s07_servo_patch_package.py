@@ -98,7 +98,7 @@ class ServoPatchPackageTests(unittest.TestCase):
                 f"stdout={completed.stdout}\nstderr={completed.stderr}",
             )
             result = json.loads(completed.stdout)
-            self.assertEqual(result["status"], "PASS")
+            self.assertIs(result["ok"], True)
             self.assertEqual(result["base_sha256"], self.manifest["patch"]["sha256"])
             self.assertEqual(
                 result["hardening_sha256"], self.manifest["hardening"]["sha256"]
@@ -107,10 +107,15 @@ class ServoPatchPackageTests(unittest.TestCase):
             self.assertEqual(
                 digest(hardening.read_bytes()), result["hardening_sha256"]
             )
+            self.assertEqual(digest(combined.read_bytes()), result["sha256"])
+            separator = b"" if base.read_bytes().endswith(b"\n") else b"\n"
             self.assertEqual(
-                digest(combined.read_bytes()), result["combined_sha256"]
+                combined.read_bytes(),
+                base.read_bytes() + separator + hardening.read_bytes(),
             )
-            self.assertEqual(combined.read_bytes(), base.read_bytes() + hardening.read_bytes())
+            self.assertEqual(
+                result["changed_paths"], sorted(self.manifest["patch"]["allowed_paths"])
+            )
 
     def test_original_exact_pin_cli_remains_available(self) -> None:
         completed = subprocess.run(
@@ -152,8 +157,14 @@ class ServoPatchPackageTests(unittest.TestCase):
         self.assertIn('sys.argv[1] == "verify-d3-patch"', dispatcher)
         self.assertIn("from verify_d3_servo_patch import main", dispatcher)
         self.assertIn("from _qualify_servo_exact_pin_v3_impl import main", dispatcher)
-        self.assertIn("_require_exact_keys", verifier)
-        self.assertIn("O_NOFOLLOW", verifier)
+        for required in (
+            "load_patch_section",
+            "verify_digest",
+            "FORBIDDEN_ADDED_PATTERNS",
+            "root.resolve() not in path.parents",
+            "changed-path mismatch",
+        ):
+            self.assertIn(required, verifier)
         self.assertNotIn("subprocess", verifier)
 
     def test_claim_ceiling_remains_below_product_or_release(self) -> None:
