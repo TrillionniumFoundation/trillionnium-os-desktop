@@ -49,6 +49,16 @@ impl SessionMachine {
         }
     }
 
+    #[cfg(test)]
+    pub(crate) fn from_snapshot_for_test(snapshot: SessionSnapshot) -> Self {
+        Self {
+            control: snapshot.control,
+            phase: snapshot.phase,
+            revisions: snapshot.revisions,
+            human_lease: snapshot.human_lease,
+        }
+    }
+
     pub fn validate_element_ref(&self, element: &ElementRef) -> Result<(), BrowserErrorCode> {
         match error_for_freshness(element.freshness(self.revisions)) {
             Some(error) => Err(error),
@@ -147,11 +157,11 @@ impl SessionMachine {
                 self.control = ControlState::HumanActive;
             }
             SessionEvent::DomCommitted => {
-                self.revisions.on_dom_commit();
+                self.revisions.try_on_dom_commit()?;
                 effects.push(SessionEffect::MutationEpochAdvanced);
             }
             SessionEvent::SemanticSnapshotPublished => {
-                self.revisions.on_semantic_snapshot();
+                self.revisions.try_on_semantic_snapshot()?;
                 effects.push(SessionEffect::SemanticSnapshotAdvanced);
             }
             SessionEvent::NavigationStarted { .. } => {
@@ -162,7 +172,7 @@ impl SessionMachine {
                 if self.phase != SessionPhase::NavigationPending {
                     return Err(TransitionError::PhaseConflict(self.phase));
                 }
-                self.revisions.on_navigation_commit();
+                self.revisions.try_on_navigation_commit()?;
                 self.phase = SessionPhase::Ready;
                 self.control = ControlState::Idle;
                 effects.push(SessionEffect::DocumentGenerationAdvanced);
@@ -208,7 +218,7 @@ impl SessionMachine {
                 self.control = ControlState::Idle;
             }
             SessionEvent::BrowserCrashed => {
-                self.revisions.on_process_recovery();
+                self.revisions.try_on_process_recovery()?;
                 self.phase = SessionPhase::Recovering;
                 self.control = ControlState::Idle;
                 self.human_lease = None;
