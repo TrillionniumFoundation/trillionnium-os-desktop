@@ -1,0 +1,39 @@
+name: internal-s06-source-export
+
+on:
+  push:
+    branches:
+      - codex/s06-browser-actor-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Archive exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          git archive --format=zip --output="$RUNNER_TEMP/s06-source.zip" HEAD
+          sha256sum "$RUNNER_TEMP/s06-source.zip" > "$RUNNER_TEMP/s06-source.zip.sha256"
+
+      - name: Upload exact source archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: s06-source-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/s06-source.zip
+            ${{ runner.temp }}/s06-source.zip.sha256
+          if-no-files-found: error
+          retention-days: 1
