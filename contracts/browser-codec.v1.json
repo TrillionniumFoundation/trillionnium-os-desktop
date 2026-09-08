@@ -51,7 +51,7 @@
   "max_message_bytes": 262144,
   "max_nesting_depth": 32,
   "operation_schema": {
-    "git_blob_sha1": "92e630584b9ca37fa60f2757b617cacd37921443",
+    "git_blob_sha1": "f601cb778d0aa6a8bd829dd9686ab002048d1407",
     "path": "contracts/browser-api.v1.schema.json"
   },
   "protocol": "trillionnium.desktop.browser-api.v1",
@@ -78,6 +78,10 @@
       "localhost",
       "::1"
     ],
+    "local_http_fixture.host_case": "ASCII_case_insensitive",
+    "local_http_fixture.control_characters": "forbidden",
+    "local_http_fixture.port": "optional_decimal_u16_0_to_65535",
+    "local_http_fixture.empty_port": "forbidden",
     "local_http_fixture.userinfo": "forbidden",
     "select_utf8_bytes_maximum": 65536,
     "text_utf8_bytes_maximum": 131072,
@@ -105,15 +109,21 @@
     ]
   },
   "status": "HOST_VALIDATED_RUST_1_93_NO_DISPATCH",
+  "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+  "evidence_freshness": "STALE_EVIDENCE",
+  "merge_ready": false,
+  "stale_reason": "Host result 4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb was recorded before the current candidate tree. Run browser-codec-reference-and-rust-gate on the exact candidate head, then update the bound evidence and merge_ready flag under independent review.",
   "validation": {
     "browserd_self_check": "PASS",
-    "merge_ready": true,
+    "evidence_freshness": "STALE_EVIDENCE",
+    "merge_ready": false,
     "python_py_compile": "PASS",
     "python_reference": "PASS_27_OF_27",
-    "reason": "The exact tested-source commit passed Rust 1.93.0 formatting, Clippy with warnings denied, all workspace tests, browserd self-check, repository validation and the independent reference corpus.",
+    "reason": "The recorded Rust 1.93.0 host result is a historical baseline. The current candidate has changed codec source, contract, and validation inputs; its static audit and independent reference remain green, but exact-head host evidence must be rerun before promotion.",
     "rust_clippy": "PASS",
     "rust_fmt": "PASS",
     "rust_source_audit": "PASS",
-    "rust_tests": "PASS"
+    "rust_tests": "PASS",
+    "stale_reason": "Host result 4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb was recorded before the current candidate tree. Run browser-codec-reference-and-rust-gate on the exact candidate head, then update the bound evidence and merge_ready flag under independent review."
   }
 }

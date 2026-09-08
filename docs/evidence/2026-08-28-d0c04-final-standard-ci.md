@@ -1,5 +1,11 @@
 # D0C-04 final standard-CI trigger
 
+> **HISTORICAL BASELINE / STALE_EVIDENCE:** This trigger record is bound to
+> source commit `5abd71db79b75e400c1c1d7cb0eac85a68041cae`. Changes to the
+> workspace and AgentPort integration inputs invalidate its host result for the
+> current candidate; rerun the permanent gate on the exact candidate head
+> before promotion.
+
 **Date:** 2026-08-28  
 **Work package:** `TOS-D0C-04`  
 **Purpose:** trigger the repository's permanent `desktop-ci` workflow after the

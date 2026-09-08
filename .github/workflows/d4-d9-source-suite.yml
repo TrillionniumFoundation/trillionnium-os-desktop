@@ -1,0 +1,203 @@
+name: d4-d9-source-suite
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "codex/**"
+  push:
+    branches:
+      - main
+      - "codex/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d4-d9-source-suite-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source_suite:
+    name: d4-d9-source-suite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out exact candidate without write credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record exact Git identity
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+          git show -s --format='%P' HEAD
+
+      - name: Validate repository and committed project truth
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+
+      - name: D4 collaboration source reference
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/d4_collaboration_reference.py tests/d4/test_collaboration_reference.py
+          python3 -m unittest discover -s tests/d4 -p 'test_*.py' -v
+          mkdir -p artifacts/d4-d9-source-suite/d4
+          python3 tools/d4_collaboration_reference.py \
+            --contract contracts/human-agent-collaboration.v1.json \
+            --write-result artifacts/d4-d9-source-suite/d4/result.json \
+            | tee artifacts/d4-d9-source-suite/d4/stdout.json
+          cmp artifacts/d4-d9-source-suite/d4/result.json artifacts/d4-d9-source-suite/d4/stdout.json
+
+      - name: D5 trusted-app source verifier
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/trusted_app_bundle.py tools/trusted_app_indicator.py tests/d5/test_trusted_app_bundle.py
+          python3 -m unittest discover -s tests/d5 -p 'test_*.py' -v
+          mkdir -p artifacts/d4-d9-source-suite/d5
+          python3 tools/trusted_app_bundle.py self-test \
+            --contract contracts/trusted-app-bundle.v1.json \
+            --write-result artifacts/d4-d9-source-suite/d5/result.json \
+            | tee artifacts/d4-d9-source-suite/d5/stdout.json
+          cmp artifacts/d4-d9-source-suite/d5/result.json artifacts/d4-d9-source-suite/d5/stdout.json
+
+      - name: D6 capability and controlled-egress source reference
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/capability_egress_reference.py tests/d6/test_capability_egress_reference.py
+          python3 -m unittest discover -s tests/d6 -p 'test_*.py' -v
+          mkdir -p artifacts/d4-d9-source-suite/d6
+          python3 tools/capability_egress_reference.py \
+            --contract contracts/capability-egress.v1.json \
+            --write-result artifacts/d4-d9-source-suite/d6/result.json \
+            | tee artifacts/d4-d9-source-suite/d6/stdout.json
+          cmp artifacts/d4-d9-source-suite/d6/result.json artifacts/d4-d9-source-suite/d6/stdout.json
+
+      - name: D7 effect reconciliation and A/B update source references
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/effect_reconciliation_reference.py \
+            tools/ab_update_reference.py \
+            tests/d7/test_effect_reconciliation_reference.py \
+            tests/d7/test_ab_update_reference.py
+          python3 -m unittest discover -s tests/d7 -p 'test_*.py' -v
+          mkdir -p artifacts/d4-d9-source-suite/d7
+          python3 tools/effect_reconciliation_reference.py \
+            --contract contracts/recovery-update-reconciliation.v1.json \
+            --write-result artifacts/d4-d9-source-suite/d7/effect-result.json \
+            | tee artifacts/d4-d9-source-suite/d7/effect-stdout.json
+          cmp artifacts/d4-d9-source-suite/d7/effect-result.json artifacts/d4-d9-source-suite/d7/effect-stdout.json
+          python3 tools/ab_update_reference.py \
+            --contract contracts/recovery-update-reconciliation.v1.json \
+            --write-result artifacts/d4-d9-source-suite/d7/update-result.json \
+            | tee artifacts/d4-d9-source-suite/d7/update-stdout.json
+          cmp artifacts/d4-d9-source-suite/d7/update-result.json artifacts/d4-d9-source-suite/d7/update-stdout.json
+
+      - name: D8 hardware evidence and promotion-policy source verifiers
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/hardware_evidence_verifier.py \
+            tools/hardware_verification_receipt.py \
+            tools/hardware_promotion_gate.py \
+            tests/d8/test_000_fixture_isolation.py \
+            tests/d8/test_hardware_evidence_verifier.py \
+            tests/d8/test_hardware_promotion_gate.py
+          python3 -m unittest discover -s tests/d8 -p 'test_*.py' -v
+          mkdir -p artifacts/d4-d9-source-suite/d8
+          python3 tools/hardware_evidence_verifier.py self-test \
+            --contract contracts/hardware-beta-qualification.v1.json \
+            --write-result artifacts/d4-d9-source-suite/d8/evidence-result.json \
+            | tee artifacts/d4-d9-source-suite/d8/evidence-stdout.json
+          cmp artifacts/d4-d9-source-suite/d8/evidence-result.json artifacts/d4-d9-source-suite/d8/evidence-stdout.json
+          python3 tools/hardware_promotion_gate.py self-test \
+            --contract contracts/hardware-beta-qualification.v1.json \
+            --write-result artifacts/d4-d9-source-suite/d8/policy-result.json \
+            | tee artifacts/d4-d9-source-suite/d8/policy-stdout.json
+          cmp artifacts/d4-d9-source-suite/d8/policy-result.json artifacts/d4-d9-source-suite/d8/policy-stdout.json
+
+      - name: D9 signed-release source verifier
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/release_promotion_verifier.py tests/d9/test_release_promotion_verifier.py
+          python3 -m unittest discover -s tests/d9 -p 'test_*.py' -v
+          mkdir -p artifacts/d4-d9-source-suite/d9
+          python3 tools/release_promotion_verifier.py self-test \
+            --contract contracts/signed-release-promotion.v1.json \
+            --write-result artifacts/d4-d9-source-suite/d9/result.json \
+            | tee artifacts/d4-d9-source-suite/d9/stdout.json
+          cmp artifacts/d4-d9-source-suite/d9/result.json artifacts/d4-d9-source-suite/d9/stdout.json
+
+      - name: Enforce closed source-package claim ceilings
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('artifacts/d4-d9-source-suite')
+          load = lambda path: json.loads(Path(path).read_text(encoding='utf-8'))
+
+          contracts = {
+              'd4': load('contracts/human-agent-collaboration.v1.json'),
+              'd5': load('contracts/trusted-app-bundle.v1.json'),
+              'd6': load('contracts/capability-egress.v1.json'),
+              'd7': load('contracts/recovery-update-reconciliation.v1.json'),
+              'd8': load('contracts/hardware-beta-qualification.v1.json'),
+              'd9': load('contracts/signed-release-promotion.v1.json'),
+          }
+          assert contracts['d4']['status'] == 'SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D3'
+          assert contracts['d5']['status'] == 'SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D4'
+          assert contracts['d6']['status'] == 'SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D5'
+          assert contracts['d7']['status'] == 'SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D6'
+          assert contracts['d8']['status'] == 'SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D7'
+          assert contracts['d9']['status'] == 'SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D8'
+
+          d4 = load(root / 'd4/result.json')
+          d5 = load(root / 'd5/result.json')
+          d6 = load(root / 'd6/result.json')
+          d7_effect = load(root / 'd7/effect-result.json')
+          d7_update = load(root / 'd7/update-result.json')
+          d8_evidence = load(root / 'd8/evidence-result.json')
+          d8_policy = load(root / 'd8/policy-result.json')
+          d9 = load(root / 'd9/result.json')
+
+          for result in (d4, d5, d6, d7_effect, d7_update, d8_evidence, d8_policy, d9):
+              assert result['status'] == 'PASS_SOURCE_REFERENCE_ONLY'
+              assert result.get('release_ready', False) is False
+
+          assert d4['browser_actor_runtime_integrated'] is False
+          assert d4['external_effects_enabled'] is False
+          assert d5['production_signing_key_custody_proven'] is False
+          assert d5['product_origin_integrated'] is False
+          assert d6['network_access_executed'] is False
+          assert d6['external_effects_enabled'] is False
+          assert d7_effect['automatic_replay_after_dispatch'] is False
+          assert d7_effect['external_effect_executor_integrated'] is False
+          assert d7_update['bootloader_slot_switch_integrated'] is False
+          assert d7_update['production_update_key_enrolled'] is False
+          assert d8_evidence['fixture_policy_eligible'] is False
+          assert d8_evidence['physical_hardware_run_completed'] is False
+          assert d8_policy['fixture_policy_eligible'] is False
+          assert d8_policy['hardware_beta_promoted'] is False
+          assert d9['fixture_policy_eligible'] is False
+          assert d9['source_gate_obtained_human_approvals'] is False
+          assert d9['source_gate_accessed_signing_keys'] is False
+          assert d9['production_release_promoted'] is False
+          PY
+
+      - name: Upload exact-head source evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d4-d9-source-suite-${{ github.sha }}
+          path: artifacts/d4-d9-source-suite
+          if-no-files-found: warn
+          retention-days: 30

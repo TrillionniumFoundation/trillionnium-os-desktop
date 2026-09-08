@@ -1,0 +1,120 @@
+{
+  "schema": "trillionnium.desktop.browser-actor.v1",
+  "work_package": "D3-01",
+  "status": "SOURCE_CANDIDATE",
+  "principal_binding": {
+    "semantic_principal": "TaskFlowPrincipal",
+    "mechanism_identity_fields": [
+      "pid",
+      "uid",
+      "gid",
+      "systemd_unit",
+      "unified_cgroup_v2_path",
+      "executable_sha256"
+    ],
+    "exact_match_required": true,
+    "peer_drift": "fail_closed_before_dispatch",
+    "persistent_connection_continuity": "first_complete_peer_runtime_snapshot_including_process_start_time"
+  },
+  "page_owner": {
+    "logical_webview_limit": 1,
+    "session_binding_required": true,
+    "session_generation_required": true,
+    "stale_reference_policy": "fail_closed",
+    "human_and_agent_state_machine": "hepta-session-core",
+    "incarnation_contract": "contracts/session-incarnation.v1.json"
+  },
+  "browser_actor": {
+    "typed_operations": [
+      "health",
+      "session_create",
+      "session_snapshot",
+      "session_close",
+      "page_navigate",
+      "page_observe",
+      "page_act",
+      "page_wait",
+      "page_extract"
+    ],
+    "deadline_propagation": true,
+    "cancellation_checked_before_runtime_dispatch": true,
+    "agent_operation_control_gate": {
+      "observations": [
+        "session_snapshot",
+        "page_observe",
+        "page_wait",
+        "page_extract"
+      ],
+      "mutations": [
+        "page_navigate",
+        "page_act"
+      ],
+      "phase_and_control_checked_before_runtime": true,
+      "session_close_terminal_cleanup": true
+    },
+    "cancellation_state_policy": {
+      "human_lease_revoked_on_cancel_requested": true,
+      "human_events_during_cancelling": "fail_closed_phase_conflict",
+      "old_lease_usable_after_cancel_completed": false
+    },
+    "deterministic_local_fixture_only": true,
+    "external_https_enabled": false,
+    "trusted_app_runtime_enabled": false,
+    "external_effect_authority": false,
+    "semantic_reference_resolution": {
+      "required_for_page_act": true,
+      "runtime_hook": "PageRuntime::dispatch_page_act",
+      "atomic_resolve_and_act": true,
+      "default_without_resolver": "unsupported",
+      "deterministic_local_runtime_page_act": "unsupported",
+      "independent_reference_model": "contracts/semantic-resolver.v1.json",
+      "promotion_requires_servo_resolver": true
+    },
+    "engine_thread_dispatch": "contracts/engine-thread-dispatch.v1.json",
+    "event_loop_completion": "contracts/event-loop-completion.v1.json"
+  },
+  "receipts": {
+    "journal": "contracts/receipt-journal.v1.json",
+    "requested_before_dispatch": true,
+    "dispatched_before_runtime_call": true,
+    "terminal_response_digest_bound": true,
+    "potential_external_effect_interruption": "indeterminate_never_automatic_replay",
+    "service_restart_reconciliation": "requested_to_interrupted_dispatched_effect_to_indeterminate",
+    "observer_failure": "fail_closed",
+    "duplicate_requested": "reject_without_replacing_original_admission_coordinates",
+    "admission_identity_binding": "contracts/receipt-journal.v1.json#/lifecycle/admission_binding"
+  },
+  "activation": {
+    "product_agent_port_enabled": false,
+    "development_profile_requires_explicit_selection": true,
+    "development_binary": "hepta-agent-port-development-sessiond",
+    "development_fixture_binary": "hepta-agent-d3-fixture",
+    "development_journal_checker": "hepta-d3-journal-check",
+    "development_cargo_package": "hepta-d3-development",
+    "development_marker": "/etc/hepta/enable-agent-port-development",
+    "development_socket": "/run/hepta/browserd/agent-development.sock",
+    "development_profile_argument": "--profile development",
+    "development_requires_expected_executable_sha256": true,
+    "development_live_activation_status": "SOURCE_IMPLEMENTED_AWAITING_D2I_EVIDENCE",
+    "development_source_wiring_only": true,
+    "development_static_attestation_available": true,
+    "development_static_attestation_scope": "explicit_development_profile_only",
+    "development_service_user": "hepta-browserd",
+    "development_expected_peer_user": "hepta-agent",
+    "development_trusted_executable_path": "/usr/libexec/hepta-agent",
+    "development_cross_uid_procfs_required": false,
+    "development_attestation_refresh_uses_original_source": true,
+    "development_listener_owner": "systemd",
+    "development_socket_accept_mode": "accept_no_persistent_service",
+    "development_actor_lifetime": "persistent_across_one_request_connections",
+    "development_same_peer_pid_required": true,
+    "development_one_request_per_connection": true,
+    "development_restart_reconciles_unresolved_receipts": true,
+    "development_blocker": "exact integrated-image principal/dispatch/receipt evidence and independent security review remain required before live activation",
+    "development_semantic_resolver_blocker": "Servo-owned atomic semantic resolver remains required before PageAct promotion",
+    "development_binary_in_production_install_map": false,
+    "listener_created_by_actor_crate": false,
+    "production_release_authorized": false,
+    "development_engine_runner": "contracts/d3-session-engine-runner.v1.json"
+  }
+}

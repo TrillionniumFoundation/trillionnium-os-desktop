@@ -1,0 +1,90 @@
+name: d3-semantic-resolver-reference
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/d3-semantic-resolver-reference.yml"
+      - "contracts/semantic-resolver.v1.json"
+      - "tools/semantic_resolver_reference.py"
+      - "tests/d3/test_semantic_resolver_reference.py"
+      - "docs/architecture/ATOMIC_SEMANTIC_RESOLVER.md"
+      - "tools/validate_repository.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/gates.v1.json"
+      - "manifests/project-state.v1.json"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/d3-semantic-resolver-reference.yml"
+      - "contracts/semantic-resolver.v1.json"
+      - "tools/semantic_resolver_reference.py"
+      - "tests/d3/test_semantic_resolver_reference.py"
+      - "docs/architecture/ATOMIC_SEMANTIC_RESOLVER.md"
+      - "tools/validate_repository.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/gates.v1.json"
+      - "manifests/project-state.v1.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d3-semantic-resolver-reference-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reference-conformance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Compile source and run adversarial corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/semantic_resolver_reference.py \
+            tests/d3/test_semantic_resolver_reference.py
+          python3 -m unittest \
+            tests.d3.test_semantic_resolver_reference -v
+
+      - name: Require deterministic non-promoting evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/semantic_resolver_reference.py \
+            --contract contracts/semantic-resolver.v1.json \
+            --write-result /tmp/d3-semantic-resolver-a.json \
+            >/tmp/d3-semantic-resolver-a.stdout
+          python3 tools/semantic_resolver_reference.py \
+            --contract contracts/semantic-resolver.v1.json \
+            --write-result /tmp/d3-semantic-resolver-b.json \
+            >/tmp/d3-semantic-resolver-b.stdout
+          cmp /tmp/d3-semantic-resolver-a.json /tmp/d3-semantic-resolver-b.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path('/tmp/d3-semantic-resolver-a.json').read_text())
+          assert result['status'] == 'PASS_SOURCE_REFERENCE_ONLY'
+          assert result['passed_case_count'] >= 16
+          assert result['atomic_action_count'] == 1
+          assert result['servo_adapter_exercised'] is False
+          assert result['browser_actor_product_dispatch_exercised'] is False
+          assert result['production_agent_port_enabled'] is False
+          assert result['external_effects_performed'] is False
+          assert result['promotion_authoritative'] is False
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Validate repository truth ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py

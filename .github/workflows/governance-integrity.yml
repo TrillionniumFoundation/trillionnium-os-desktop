@@ -1,0 +1,71 @@
+name: governance-integrity
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: governance-integrity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  governance_integrity:
+    name: governance-integrity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact repository object without write credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate workflow authority and required-check identity
+        run: |
+          set -euo pipefail
+          python3 tools/validate_governance_integrity.py
+
+      - name: Validate repository and committed project truth
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+
+      - name: Install exact Rust toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+
+      - name: Enforce formatting, compilation, warnings, and tests
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --all-targets --locked
+
+      - name: Reconfirm governance claim ceiling
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          contract = json.loads(Path('contracts/repository-governance.v1.json').read_text())
+          assert contract['status'] == 'SOURCE_BOOTSTRAP_READY_REPOSITORY_SETTINGS_REQUIRED'
+          assert set(contract['claim_ceiling']) == {
+              'source_contract_proves_live_repository_settings',
+              'source_contract_proves_independent_human_review',
+              'source_contract_proves_signing_key_custody',
+              'source_contract_proves_release_readiness',
+          }
+          assert all(value is False for value in contract['claim_ceiling'].values())
+          PY

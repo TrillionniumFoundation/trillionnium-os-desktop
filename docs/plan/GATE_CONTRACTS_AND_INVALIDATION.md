@@ -79,8 +79,11 @@ inferred.
 
 The machine registry is the minimum closure. A gate implementation may add more
 inputs but may not remove listed inputs without a plan revision and review.
-The truth validator checks that all active workflows and machine manifests are
-included in their own invalidation sets.
+The truth validator fail-closes when any immediate
+`.github/workflows/*.yml` or `*.yaml` and `manifests/*.json` machine input is
+not covered by at least one safe, repository-relative invalidation glob. Human
+README files are not targets of this generic coverage check and remain
+explicit gate inputs where required.
 
 ## Promotion review classes
 

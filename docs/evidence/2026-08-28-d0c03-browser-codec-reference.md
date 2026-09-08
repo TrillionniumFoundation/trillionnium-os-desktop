@@ -1,5 +1,10 @@
 # D0C-03 Browser codec executable reference evidence
 
+> **SUPERSEDED_HISTORICAL:** This reference snapshot predates the Rust product
+> codec host validation. The executable corpus remains useful historical
+> evidence; current status is recorded in
+> `docs/architecture/CANONICAL_BROWSER_CODEC.md` and the generated result.
+
 **Date:** 2026-08-28  
 **Scope:** canonical JSON, Browser API shape, session binding and effect classification  
 **Product listener:** not created  

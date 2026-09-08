@@ -1,0 +1,22 @@
+[Unit]
+Description=TrillionniumOS Desktop persistent D3 development AgentPort socket
+Documentation=https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+ConditionPathExists=/etc/hepta/enable-agent-port-development
+Conflicts=hepta-browserd-agent.socket
+
+[Socket]
+ListenStream=/run/hepta/browserd/agent-development.sock
+SocketUser=hepta-browserd
+SocketGroup=hepta-agent
+SocketMode=0660
+DirectoryMode=0750
+Accept=no
+Service=hepta-browserd-agent-development.service
+FileDescriptorName=agent-development
+Backlog=8
+RemoveOnStop=yes
+
+[Install]
+# No preset enables this unit. An administrator must select the development
+# profile and create the root-owned marker explicitly.
+WantedBy=sockets.target

@@ -1,15 +1,17 @@
 # TrillionniumOS Desktop — canonical development plan
 
 **Revision:** `2026-08-28-d5`
-**Status:** ACTIVE — implementation-ready product plan
+**Status:** `SUPERSEDED_HISTORICAL` — provenance only; not active or normative
+**Active successor:** [`DESKTOP_PLAN-2026-08-29-d6.md`](DESKTOP_PLAN-2026-08-29-d6.md)
 **Repository:** `TrillionniumFoundation/trillionnium-os-desktop`
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`
 **Supersedes:** `2026-08-28-d4`
 
-This revision converts the desktop repository from a documentation-only design
-baseline into the canonical product tree. Code, contracts, tests, packaging,
-manifests, documentation, and release evidence are versioned together. Local
-absolute paths are development inventory only and never define product
+This revision is retained as historical provenance for the desktop repository.
+The active normative plan is d6; this d5 text does not override d6 truth,
+contracts, evidence, or claim ceilings. Code, contracts, tests, packaging,
+manifests, documentation, and release evidence remain versioned together.
+Local absolute paths are development inventory only and never define product
 identity.
 
 ## 0. Executive implementation lock

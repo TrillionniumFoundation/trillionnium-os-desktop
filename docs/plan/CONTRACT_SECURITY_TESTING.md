@@ -1,13 +1,14 @@
 # TrillionniumOS Desktop d5 contracts, security, and testing
 
 **Plan revision:** `2026-08-28-d5`
-**Status:** normative component of the active canonical plan
+**Status:** `SUPERSEDED_HISTORICAL` — d5 provenance only; not an active normative component
+**Active successor:** [`../DESKTOP_PLAN-2026-08-29-d6.md`](../DESKTOP_PLAN-2026-08-29-d6.md)
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`
 
-This annex is versioned and reviewed atomically with
-[`../DESKTOP_PLAN-2026-08-28-d5.md`](../DESKTOP_PLAN-2026-08-28-d5.md). If an
-annex conflicts with the executive lock in the main plan, the executive lock
-wins until the plan and annex are updated together.
+This historical annex is retained for provenance and was versioned with
+[`../DESKTOP_PLAN-2026-08-28-d5.md`](../DESKTOP_PLAN-2026-08-28-d5.md). The
+active normative plan is d6; this annex does not override its executive lock,
+machine truth, or claim ceilings.
 
 ## 4. Contract and transport architecture
 
@@ -72,6 +73,15 @@ Every admitted operation eventually produces a receipt conforming to
 `contracts/receipt.v1.schema.json`. A receipt records plan/image/Servo/browserd
 identity, layered revisions, source, normalized operation, monotonic timing,
 status, error/challenge class, redirect evidence, and optional chained digest.
+In the D3 source-only development profile, the journal observer supplies a
+persisted logical monotonic sequence for the `*_monotonic_ms` fields. It proves
+strict lifecycle ordering across reopen/rotation, not physical elapsed time;
+an attested runtime clock is required before making that stronger claim.
+The durable journal may hold several append-only lifecycle facts for one
+operation (`requested`, `dispatched`, then a terminal fact); its canonical
+`export_redacted_jsonl` projection aggregates those facts into one envelope
+and fails closed while the lifecycle is unresolved. Journal-only forensic
+JSONL is exposed separately and is not a receipt.v1 envelope.
 
 D0 schemas do not yet prove cryptographic journal durability. Before D7, the
 implementation must define canonical serialization, hash and signing algorithm,
@@ -120,6 +130,7 @@ Orthogonal control states:
 Idle
 AgentObserving
 AgentMutating
+AgentNavigating
 HumanActive
 HumanImeComposing
 ```
@@ -143,7 +154,10 @@ only after snapshot consistency and privacy tests demonstrate safety.
 Human focus uses a bounded monotonic lease. Human focus may interrupt Agent work
 and invalidates any assumption that a mutation completed uninterrupted. IME
 composition explicitly owns text input. Modal, navigation, capability, cancel,
-and recovery states block incompatible mutations with typed failures.
+and recovery states block incompatible mutations with typed failures. A
+`CancelRequested` transition is also a hard ownership boundary: it revokes any
+human lease immediately, refuses new human focus/input/IME events until
+`CancelCompleted`, and leaves no old lease usable after completion.
 
 The queue is bounded FIFO. Overflow returns `queue_full`; it does not allocate
 without limit, drop an older request, or silently execute outside ordering.

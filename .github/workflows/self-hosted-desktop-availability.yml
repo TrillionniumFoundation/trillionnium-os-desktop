@@ -9,33 +9,35 @@ on:
         default: operator-check
         type: string
 
-# This probe intentionally does not check out repository code. It only proves
-# that the selected, trusted main/manual lane can acquire the desktop runner.
+# Connectivity only. No checkout, token, device enumeration, qualification,
+# evidence promotion, or release operation is permitted.
 permissions: {}
 
 jobs:
   runner-probe:
     name: Desktop runner probe
-    runs-on:
-      - self-hosted
-      - linux
-      - x64
+    runs-on: [self-hosted, linux, x64, desktop]
     timeout-minutes: 10
     steps:
       - name: Verify trusted manual main invocation
         shell: bash
+        env:
+          LC_ALL: C
+          PROBE_REASON: ${{ inputs.reason }}
         run: |
           set -euo pipefail
           test "$GITHUB_EVENT_NAME" = workflow_dispatch
           test "$GITHUB_REF" = refs/heads/main
           test "$RUNNER_NAME" = desktop
-          printf 'runner=%s\nos=%s\narch=%s\nref=%s\nreason=%s\n' \
+          test "${#PROBE_REASON}" -le 512
+          printf 'runner=%q\nos=%q\narch=%q\nref=%q\nreason=%q\n' \
             "$RUNNER_NAME" "$RUNNER_OS" "$RUNNER_ARCH" "$GITHUB_REF" \
-            '${{ inputs.reason }}'
-      - name: Read-only capability snapshot
+            "$PROBE_REASON"
+      - name: Read-only host snapshot
         shell: bash
         run: |
           set -euo pipefail
           uname -a
-          if command -v adb >/dev/null 2>&1; then adb devices -l || true; fi
-          if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=name --format=csv,noheader || true; fi
+          if command -v nvidia-smi >/dev/null 2>&1; then
+            nvidia-smi --query-gpu=name --format=csv,noheader || true
+          fi

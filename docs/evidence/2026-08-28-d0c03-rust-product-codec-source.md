@@ -1,8 +1,26 @@
 # D0C-03 Rust product codec source checkpoint
 
+> **HISTORICAL BASELINE / STALE_EVIDENCE:** The recorded Rust host result is
+> bound to `4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb`. Current source/reference
+> checks remain green, but exact-head CI must rerun before promotion.
+
+> **SUPERSEDED_HISTORICAL:** The source-only snapshot below predates the exact-head
+> Rust 1.93 host validation. Current status is recorded in
+> `docs/architecture/RUST_BROWSER_CODEC.md` and
+> `generated/d0c03-rust-source-audit-result.json`; the historical claims are
+> retained for auditability.
+
 **Date:** 2026-08-28
 **Evidence level:** source/static plus independent executable reference
 **Merge-ready:** no
+**Evidence lifecycle:** `STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN`
+**Evidence freshness:** `STALE_EVIDENCE`
+**Merge-ready machine flag:** `false`
+**Stale reason:** Host result `4cfebbe6a40ebbec32d9d1bcbfca1d513b510ebb` was
+recorded before the current candidate tree; run
+`browser-codec-reference-and-rust-gate` on the exact candidate head before
+promotion.
+
 
 ## Implemented
 

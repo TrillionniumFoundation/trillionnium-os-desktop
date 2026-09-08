@@ -1,9 +1,23 @@
 # D0C-05 default-disabled systemd socket custody
 
+> **HISTORICAL BASELINE / STALE_EVIDENCE:** This host result is bound to
+> source head `7be7121b1d2593a0e708ec9ade189ef84ab245da`. Declared D0C-05
+> invalidation inputs changed after that run; rerun the permanent custody gate
+> on the exact current candidate head before any current promotion claim.
+
 **Date:** 2026-08-29  
 **Branch:** `codex/d0c05-systemd-custody-v2`  
 **Validated source head:** `7be7121b1d2593a0e708ec9ade189ef84ab245da`  
 **Status:** `HOST_VALIDATED_DEFAULT_DISABLED_NO_PRODUCT_LISTENER`
+
+**Evidence lifecycle:** `STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN`
+
+The `host_validation` status above records the historical source capability;
+it is not a current promotion claim. The contract and generated artifact set
+`evidence_freshness: STALE_EVIDENCE` and `merge_ready: false`, bound to the
+historical head above. A current claim requires rerunning the permanent
+`agent-port-custody` workflow on the exact candidate head and reviewing the
+refreshed evidence.
 
 ## Implemented source
 
@@ -19,7 +33,7 @@
 
 ## Exact-head validation
 
-The source head passed the following independent GitHub Actions runs on
+The historical source head passed the following independent GitHub Actions runs on
 Ubuntu 24.04 using Rust 1.93.0:
 
 | Gate | Run | Result |
@@ -45,6 +59,8 @@ claim-ceiling recheck
 
 Machine evidence is
 `docs/evidence/generated/d0c05-rust193-host-result.json`.
+That artifact is retained for provenance and is stale for the current
+candidate until the exact-head custody gate is rerun.
 
 ## What the host evidence proves
 

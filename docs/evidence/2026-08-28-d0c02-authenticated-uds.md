@@ -1,10 +1,23 @@
 # D0C-02 authenticated UDS carrier evidence
 
+> **HISTORICAL BASELINE / STALE_EVIDENCE:** This checkpoint records the D0C-02
+> host result at its bound source head. The current candidate changed declared
+> invalidation inputs after that run; perform a fresh exact-head Rust 1.93 run
+> before any merge-readiness or integrated-main claim.
+
 **Date:** 2026-08-28  
 **Claim level:** exact-head Rust 1.93 host validation  
+**Evidence lifecycle:** `STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN`
+**Evidence freshness:** `STALE_EVIDENCE`
+**Merge-ready:** `false`
+**Stale reason:** Host result `786debc12aa8d790b231397c1a3341fbf89de080` was
+recorded before the current candidate tree; run `agent-transport-reference` on
+the exact candidate head, then update the bound evidence before promotion.
+
 **Candidate head:** `786debc12aa8d790b231397c1a3341fbf89de080`  
 **Workflow run:** `33167838644`  
-**Merge readiness:** merge-ready for the D0C-02 connected-stream carrier core
+**Merge readiness:** historical host result only; exact-head evidence is
+required for current promotion.
 
 ## Implemented boundary
 
@@ -27,7 +40,7 @@ host x86_64-unknown-linux-gnu
 runner image ubuntu-24.04@20260823.283.1
 ```
 
-The exact candidate head passed:
+The historical candidate head recorded above passed:
 
 ```text
 python3 tools/validate_repository.py
@@ -41,9 +54,10 @@ Rust tests: 25 passed, 0 failed. Browserd returned an `ok=true` D0 self-check
 with eight checks and final revisions `2/3/3/3`. Machine evidence is
 `docs/evidence/generated/d0c02-rust193-host-result.json`.
 
-Historical note: the earlier candidate state was labelled `UNEXECUTED` and
-`not merge-ready`; those labels are superseded by the successful exact-head
-run above.
+Those results remain a bounded historical baseline. Because the current
+candidate changed D0C-02 invalidation inputs, they are stale for promotion;
+rerun the permanent gate on the exact current candidate head before treating
+the carrier as current evidence.
 
 ## Independent implementation
 

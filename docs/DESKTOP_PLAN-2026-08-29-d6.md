@@ -1,10 +1,10 @@
 # TrillionniumOS Desktop canonical development plan — d6
 
 **Plan revision:** `2026-08-29-d6`  
-**Status:** active normative plan candidate  
+**Status:** active normative plan<br>
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`  
 **Integrated implementation stage at the d6 baseline:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`  
-**Baseline main commit:** `d878fff0d809413e1f3048a87e0a8247b97d99b9`
+**Baseline main commit:** `bf6bba2ea1c49b36e11754bf27dc0c56e3da3bd1`
 
 This revision supersedes d5 as the execution plan after merge. It does not promote
 candidate D1 or D2 work and it does not widen production, external-effect,
@@ -176,13 +176,19 @@ The candidate must prove on one exact source head:
 - one native trusted workspace;
 - exactly one logical Servo content WebView;
 - deterministic local-fixture first frame;
-- native pointer, button, wheel, keyboard, clipboard, and basic IME paths;
+- native pointer, button, wheel, keyboard, and basic IME paths;
 - popup/new-window and external-navigation refusal;
 - trusted chrome surviving content-process termination;
 - replacement content generation and stale-reference invalidation;
 - process topology and bounded screenshot/hash evidence;
 - no WebDriver, AgentPort activation, persistent credentials, or external
   mutation.
+
+Clipboard is intentionally outside the D0A-02 claim ceiling. Native clipboard
+ownership, lease/preemption, and drag/drop are validated by D4's human/Agent
+collaboration gate; D0A-02 evidence must retain `no_native_clipboard` and must
+not include executable clipboard proof as a D0A claim. This preserves the
+independent D4 clipboard requirements after the headed runtime gate.
 
 **Exit:** permanent workflow pass on candidate head, evidence promotion commit,
 then exact-main rerun after merge.
@@ -217,6 +223,9 @@ Debian/QEMU image and repeat:
 - content-process crash/recovery;
 - AgentPort default-disabled state;
 - no external network device;
+- deterministic ext4 metadata normalization bound to the committed source
+  epoch in the inclusive ext4-safe range `1..4294967295`, followed by a
+  passing read-only filesystem check;
 - bounded evidence export.
 
 **Exit:** one exact image digest satisfies the combined gate.
@@ -229,6 +238,9 @@ Debian/QEMU image and repeat:
   identity;
 - enable AgentPort only in an explicitly selected development profile;
 - integrate D0C-06 requested/dispatched/terminal or indeterminate receipts;
+- emit the active `2026-08-29-d6` receipt plan revision (while accepting only
+  the historical `2026-08-28-d5` fixture revision); changing this version
+  policy requires an explicit receipt-schema update;
 - implement cancellation and deadline propagation;
 - support deterministic local fixtures only.
 

@@ -3,7 +3,9 @@
 
 The compile work remains in qualify_servo_exact_pin.py. This entry point
 replaces only its brittle variable-name-sensitive source sentinel with checks
-for the same public embedder flow at Servo's immutable pin.
+for the same public embedder flow at Servo's immutable pin. It also owns the
+reviewed D3 retained-node patch-verification subcommand so workflow policy does
+not cross an unregistered executable boundary.
 """
 
 from __future__ import annotations
@@ -25,13 +27,17 @@ def validate_source_surface(
     servo_root: Path,
     requirements: dict[str, Any],
 ) -> dict[str, list[str]]:
-    webview = (servo_root / "components/servo/webview.rs").read_text(encoding="utf-8")
-    delegate = (servo_root / "components/servo/webview_delegate.rs").read_text(
-        encoding="utf-8"
+    webview = qualifier.read_text_file(
+        servo_root / "components/servo/webview.rs", "Servo WebView source"
     )
-    lib = (servo_root / "components/servo/lib.rs").read_text(encoding="utf-8")
-    minimal = (servo_root / "components/servo/examples/winit_minimal.rs").read_text(
-        encoding="utf-8"
+    delegate = qualifier.read_text_file(
+        servo_root / "components/servo/webview_delegate.rs",
+        "Servo WebView delegate source",
+    )
+    lib = qualifier.read_text_file(servo_root / "components/servo/lib.rs", "Servo lib source")
+    minimal = qualifier.read_text_file(
+        servo_root / "components/servo/examples/winit_minimal.rs",
+        "Servo official winit example",
     )
 
     explicit_exports = {
@@ -98,7 +104,17 @@ def validate_source_surface(
     }
 
 
+def run_d3_patch_verifier(arguments: list[str]) -> int:
+    """Delegate D3 patch verification through this reviewed executable path."""
+
+    import verify_d3_servo_patch
+
+    return verify_d3_servo_patch.main(arguments)
+
+
 def main() -> int:
+    if sys.argv[1:2] == ["verify-d3-patch"]:
+        return run_d3_patch_verifier(sys.argv[2:])
     qualifier.validate_source_surface = validate_source_surface
     return qualifier.main()
 

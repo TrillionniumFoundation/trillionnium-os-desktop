@@ -4,35 +4,149 @@ name: receipt-journal
 on:
   pull_request:
     paths:
+      - "crates/hepta-session-core/src/receipt_journal/migration.rs"
+      - "crates/hepta-session-core/src/receipt_journal/migration_tests.rs"
+      - "crates/hepta-session-core/tests/journal_migration_process.rs"
+      - "docs/architecture/LEGACY_RECEIPT_MIGRATION.md"
+      - "contracts/legacy-receipt-migration.v1.json"
+      - "tools/audit_receipt_migration.py"
+      - "tests/test_receipt_migration.py"
+      - "docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md"
+      - "contracts/d3-callback-service-runner.v1.json"
+      - "tests/test_callback_service_runner.py"
+      - "tools/audit_callback_service.py"
+      - "crates/hepta-d3-development/src/sessiond/callback_runner.rs"
+      - "crates/hepta-d3-development/src/sessiond/callback_runner_tests.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/immediate_callbacks.rs"
+      - "docs/architecture/EVENT_LOOP_COMPLETION.md"
+      - "contracts/event-loop-completion.v1.json"
+      - "tests/test_event_loop_completion.py"
+      - "tools/audit_event_loop_completion.py"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop_tests.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop_transport_tests.rs"
+      - "docs/architecture/SESSION_INCARNATION.md"
+      - "contracts/session-incarnation.v1.json"
+      - "tests/test_session_incarnation.py"
+      - "docs/architecture/REQUEST_PEER_CUSTODY.md"
+      - "contracts/request-peer-custody.v1.json"
+      - "tests/test_request_peer_custody.py"
+      - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-browser-actor/**"
+      - "contracts/d3-session-engine-runner.v1.json"
+      - "docs/architecture/D3_SESSION_ENGINE_RUNNER.md"
+      - "tests/test_d3_session_engine_runner.py"
+      - "tools/validate_d3_development_profile.py"
+      - "tools/_validate_d3_development_profile_impl.py"
       - ".github/workflows/receipt-journal.yml"
       - "Cargo.toml"
       - "Cargo.lock"
       - "crates/hepta-session-core/**"
       - "contracts/receipt-journal.v1.json"
+      - "contracts/receipt.v1.schema.json"
       - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
+      - "docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md"
+      - "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md"
+      - "docs/architecture/RECEIPT_PERSISTENCE_FAULT_MODEL.md"
+      - "tests/test_receipt_persistence_cuts.py"
+      - "docs/architecture/MANAGED_RECEIPT_STORE.md"
+      - "crates/hepta-browser-actor/**"
+      - "crates/hepta-d3-development/**"
+      - "packaging/debian/systemd/hepta-browserd-agent-development.service"
+      - "tests/test_managed_receipt_store.py"
       - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
+      - "docs/evidence/generated/d0c06-rust193-host-result.json"
       - "manifests/cargo-external-allowlist.json"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/repository-state.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "docs/plan/**"
       - "tools/verify_receipt_journal.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_verify_receipt_journal.py"
+      - "rust-toolchain.toml"
   push:
     branches:
       - main
       - codex/d0c06-durable-receipt-journal
     paths:
+      - "crates/hepta-session-core/src/receipt_journal/migration.rs"
+      - "crates/hepta-session-core/src/receipt_journal/migration_tests.rs"
+      - "crates/hepta-session-core/tests/journal_migration_process.rs"
+      - "docs/architecture/LEGACY_RECEIPT_MIGRATION.md"
+      - "contracts/legacy-receipt-migration.v1.json"
+      - "tools/audit_receipt_migration.py"
+      - "tests/test_receipt_migration.py"
+      - "docs/architecture/D3_CALLBACK_SERVICE_RUNNER.md"
+      - "contracts/d3-callback-service-runner.v1.json"
+      - "tests/test_callback_service_runner.py"
+      - "tools/audit_callback_service.py"
+      - "crates/hepta-d3-development/src/sessiond/callback_runner.rs"
+      - "crates/hepta-d3-development/src/sessiond/callback_runner_tests.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/immediate_callbacks.rs"
+      - "docs/architecture/EVENT_LOOP_COMPLETION.md"
+      - "contracts/event-loop-completion.v1.json"
+      - "tests/test_event_loop_completion.py"
+      - "tools/audit_event_loop_completion.py"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop_tests.rs"
+      - "crates/hepta-browser-actor/src/engine_dispatch/event_loop_transport_tests.rs"
+      - "docs/architecture/SESSION_INCARNATION.md"
+      - "contracts/session-incarnation.v1.json"
+      - "tests/test_session_incarnation.py"
+      - "docs/architecture/REQUEST_PEER_CUSTODY.md"
+      - "contracts/request-peer-custody.v1.json"
+      - "tests/test_request_peer_custody.py"
+      - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-browser-actor/**"
+      - "contracts/d3-session-engine-runner.v1.json"
+      - "docs/architecture/D3_SESSION_ENGINE_RUNNER.md"
+      - "tests/test_d3_session_engine_runner.py"
+      - "tools/validate_d3_development_profile.py"
+      - "tools/_validate_d3_development_profile_impl.py"
       - ".github/workflows/receipt-journal.yml"
       - "Cargo.toml"
       - "Cargo.lock"
       - "crates/hepta-session-core/**"
       - "contracts/receipt-journal.v1.json"
+      - "contracts/receipt.v1.schema.json"
       - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
+      - "docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md"
+      - "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md"
+      - "docs/architecture/RECEIPT_PERSISTENCE_FAULT_MODEL.md"
+      - "tests/test_receipt_persistence_cuts.py"
+      - "docs/architecture/MANAGED_RECEIPT_STORE.md"
+      - "crates/hepta-browser-actor/**"
+      - "crates/hepta-d3-development/**"
+      - "packaging/debian/systemd/hepta-browserd-agent-development.service"
+      - "tests/test_managed_receipt_store.py"
       - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
+      - "docs/evidence/generated/d0c06-rust193-host-result.json"
       - "manifests/cargo-external-allowlist.json"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
+      - "manifests/repository-state.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/product-boundary.json"
+      - "manifests/upstream-reference-review.v1.json"
+      - "manifests/ci-action-pins.v1.json"
+      - "docs/MANIFEST.json"
+      - "docs/DESKTOP_PLAN-2026-08-29-d6.md"
+      - "docs/plan/**"
       - "tools/verify_receipt_journal.py"
       - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/qualify_servo_exact_pin_evidence.py"
+      - "tests/test_verify_receipt_journal.py"
+      - "rust-toolchain.toml"
   workflow_dispatch:
 
 permissions:
@@ -49,6 +163,8 @@ jobs:
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
 
       - name: Install exact Rust toolchain
         run: |
@@ -61,6 +177,7 @@ jobs:
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/verify_receipt_journal.py
+          python3 -m unittest tests.test_verify_receipt_journal tests.test_managed_receipt_store tests.test_receipt_persistence_cuts -v
 
       - name: Enforce formatting, all targets, and warnings
         run: |
@@ -70,7 +187,9 @@ jobs:
 
       - name: Run durable journal fault corpus and complete regression
         run: |
-          cargo test --locked -p hepta-session-core receipt_journal::tests:: -- --nocapture
+          cargo test --locked -p hepta-session-core --lib receipt_journal::tests:: -- --nocapture
+          cargo test --locked -p hepta-session-core --lib receipt_journal::persistence_tests:: -- --nocapture
+          cargo test --locked -p hepta-session-core --test journal_persistence_process
           cargo test --workspace --all-targets --locked
 
       - name: Reconfirm closed authority boundary

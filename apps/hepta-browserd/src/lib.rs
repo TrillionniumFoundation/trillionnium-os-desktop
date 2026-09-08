@@ -1,165 +1,72 @@
 #![forbid(unsafe_code)]
 
-//! D0 browser daemon scaffold. This is a deterministic contract, transport,
-//! codec, connected AgentPort, durable-receipt, and session self-check only:
-//! it does not start Servo, bind a listener, dispatch a BrowserActor, or
-//! perform an external network operation.
+//! TrillionniumOS browser daemon control core.
+//!
+//! The historical D0-D3 self-check remains isolated in `legacy`. The compiled
+//! D4-D7 policy, deterministic authority coordinator, and explicitly injected
+//! product-authority runtime are exercised through the public self-check as
+//! side-effect-free source integrations. No integrated-image, hardware,
+//! signing, external-network, or release authority is implied.
 
-use hepta_browser_contracts::BROWSER_API_PROTOCOL;
-use hepta_session_core::{
-    ControlSource, ControlState, DEFAULT_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent,
-    SessionMachine, SessionPhase,
-};
-use trillionnium_contract_core::LeaseId;
+pub mod authority_coordinator;
+mod legacy;
+pub mod product_policy;
+pub mod product_runtime;
 
+pub use legacy::SelfCheckReport;
+
+// Canonical machine-truth anchors retained at the public crate entry point.
+// Additional source compilation widens tested coverage, not the promoted
+// implementation or release claim represented by these two values.
 pub const ACTIVE_PLAN_REVISION: &str = "2026-08-29-d6";
 pub const IMPLEMENTATION_STAGE: &str = "D0R_D0C06_D0A01_COMPILE_VALIDATED";
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SelfCheckReport {
-    pub ok: bool,
-    pub protocol: &'static str,
-    pub plan_revision: &'static str,
-    pub implementation_stage: &'static str,
-    pub checks_run: u32,
-    pub final_session_generation: u64,
-    pub final_document_generation: u64,
-    pub final_snapshot_revision: u64,
-    pub final_mutation_epoch: u64,
-}
-
-impl SelfCheckReport {
-    pub fn to_json(&self) -> String {
-        format!(
-            concat!(
-                "{{\"schema\":\"trillionnium.desktop.browserd-self-check.v1\",",
-                "\"ok\":{},\"protocol\":\"{}\",\"plan_revision\":\"{}\",",
-                "\"implementation_stage\":\"{}\",\"checks_run\":{},",
-                "\"final_revisions\":{{\"session_generation\":{},",
-                "\"document_generation\":{},\"semantic_snapshot_revision\":{},",
-                "\"mutation_epoch\":{}}}}}"
-            ),
-            self.ok,
-            self.protocol,
-            self.plan_revision,
-            self.implementation_stage,
-            self.checks_run,
-            self.final_session_generation,
-            self.final_document_generation,
-            self.final_snapshot_revision,
-            self.final_mutation_epoch,
-        )
-    }
-}
+pub const PRODUCT_POLICY_SOURCE_STAGE: &str = "D4_D7_COMPILED_SIDE_EFFECT_FREE_POLICY_CORE";
+pub const AUTHORITY_RUNTIME_SOURCE_STAGE: &str =
+    "D4_D7_EXPLICIT_AUTHORITY_COORDINATION_SOURCE_CORE";
 
 pub fn run_self_check() -> Result<SelfCheckReport, String> {
-    let mut checks_run = 0_u32;
+    let mut report = legacy::run_self_check()?;
 
-    hepta_agent_transport::self_check().map_err(|error| error.to_string())?;
-    checks_run += 1;
+    // Reassert the AgentPort invariant at the public browserd boundary. The
+    // legacy check covers the historical path; this invocation makes the
+    // exported composition statically auditable after module refactors.
+    hepta_agent_port::self_check().map_err(|error| error.to_string())?;
+    report.checks_run = report
+        .checks_run
+        .checked_add(1)
+        .ok_or_else(|| "self-check counter overflow".to_owned())?;
 
     hepta_browser_codec::self_check().map_err(|error| error.to_string())?;
-    checks_run += 1;
+    report.checks_run = report
+        .checks_run
+        .checked_add(1)
+        .ok_or_else(|| "self-check counter overflow".to_owned())?;
 
-    hepta_agent_port::self_check().map_err(|error| error.to_string())?;
-    checks_run += 1;
+    let policy = product_policy::run_self_check().map_err(|error| error.to_string())?;
+    let coordinator = authority_coordinator::run_self_check().map_err(|error| error.to_string())?;
+    let runtime = product_runtime::run_self_check().map_err(|error| error.to_string())?;
 
-    let mut machine = SessionMachine::new();
+    let additional_checks = policy
+        .checks_run
+        .checked_add(coordinator.checks_run)
+        .and_then(|value| value.checked_add(runtime.checks_run))
+        .ok_or_else(|| "self-check counter overflow".to_owned())?;
+    report.checks_run = report
+        .checks_run
+        .checked_add(additional_checks)
+        .ok_or_else(|| "self-check counter overflow".to_owned())?;
 
-    machine
-        .apply(SessionEvent::BeginAgentMutation, 0)
-        .map_err(|error| error.to_string())?;
-    checks_run += 1;
-
-    let lease_id =
-        LeaseId::parse("lease_id", "self-check-human").map_err(|error| error.to_string())?;
-    let effects = machine
-        .apply(
-            SessionEvent::HumanFocusGained {
-                lease_id: lease_id.clone(),
-                ttl_ms: DEFAULT_HUMAN_LEASE_TTL_MS,
-            },
-            10,
-        )
-        .map_err(|error| error.to_string())?;
-    if !effects.contains(&SessionEffect::InterruptAgentWork) {
-        return Err("human focus did not interrupt Agent work".into());
+    if policy.external_effect_authority
+        || policy.private_key_authority
+        || policy.hardware_qualified
+        || policy.release_ready
+        || coordinator.external_effect_authority
+        || runtime.authority_available
+        || runtime.external_effect_executed
+    {
+        return Err("D4-D7 source self-check widened authority".to_owned());
     }
-    checks_run += 1;
-
-    machine
-        .apply(
-            SessionEvent::ImeStarted {
-                lease_id: lease_id.clone(),
-            },
-            11,
-        )
-        .map_err(|error| error.to_string())?;
-    if machine.snapshot().control != ControlState::HumanImeComposing {
-        return Err("IME state was not entered".into());
-    }
-    checks_run += 1;
-
-    machine
-        .apply(SessionEvent::DomCommitted, 12)
-        .map_err(|error| error.to_string())?;
-    machine
-        .apply(SessionEvent::SemanticSnapshotPublished, 13)
-        .map_err(|error| error.to_string())?;
-    checks_run += 1;
-
-    machine
-        .apply(
-            SessionEvent::ImeEnded {
-                lease_id: lease_id.clone(),
-            },
-            14,
-        )
-        .map_err(|error| error.to_string())?;
-    machine
-        .apply(SessionEvent::HumanFocusReleased { lease_id }, 15)
-        .map_err(|error| error.to_string())?;
-    checks_run += 1;
-
-    machine
-        .apply(
-            SessionEvent::NavigationStarted {
-                source: ControlSource::Agent,
-            },
-            20,
-        )
-        .map_err(|error| error.to_string())?;
-    machine
-        .apply(SessionEvent::NavigationCommitted, 21)
-        .map_err(|error| error.to_string())?;
-    if machine.snapshot().revisions.document_generation != 2 {
-        return Err("navigation did not advance document generation".into());
-    }
-    checks_run += 1;
-
-    machine
-        .apply(SessionEvent::BrowserCrashed, 30)
-        .map_err(|error| error.to_string())?;
-    if machine.snapshot().phase != SessionPhase::Recovering {
-        return Err("crash did not enter recovery".into());
-    }
-    machine
-        .apply(SessionEvent::Recovered, 31)
-        .map_err(|error| error.to_string())?;
-    checks_run += 1;
-
-    let snapshot = machine.snapshot();
-    Ok(SelfCheckReport {
-        ok: true,
-        protocol: BROWSER_API_PROTOCOL,
-        plan_revision: ACTIVE_PLAN_REVISION,
-        implementation_stage: IMPLEMENTATION_STAGE,
-        checks_run,
-        final_session_generation: snapshot.revisions.session_generation,
-        final_document_generation: snapshot.revisions.document_generation,
-        final_snapshot_revision: snapshot.revisions.semantic_snapshot_revision,
-        final_mutation_epoch: snapshot.revisions.mutation_epoch,
-    })
+    Ok(report)
 }
 
 #[cfg(test)]
@@ -167,12 +74,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn self_check_exercises_transport_codec_agent_port_preemption_revision_and_recovery() {
-        let report = run_self_check().expect("self-check must pass");
+    fn public_self_check_includes_agent_port_and_d4_d7_layers_without_authority_widening() {
+        let report = run_self_check().expect("integrated source self-check must pass");
         assert!(report.ok);
-        assert!(report.checks_run >= 10);
-        assert_eq!(report.final_session_generation, 2);
-        assert!(report.final_document_generation >= 3);
+        assert!(report.checks_run >= 21);
         assert!(report.to_json().contains(ACTIVE_PLAN_REVISION));
+        assert_eq!(
+            PRODUCT_POLICY_SOURCE_STAGE,
+            "D4_D7_COMPILED_SIDE_EFFECT_FREE_POLICY_CORE"
+        );
+        assert_eq!(
+            AUTHORITY_RUNTIME_SOURCE_STAGE,
+            "D4_D7_EXPLICIT_AUTHORITY_COORDINATION_SOURCE_CORE"
+        );
     }
 }

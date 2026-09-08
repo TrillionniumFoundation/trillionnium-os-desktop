@@ -1,0 +1,323 @@
+name: d3-retained-node-behavior
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/d3-retained-node-behavior.yml"
+      - "tools/verify_d3_servo_patch.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
+  push:
+    branches: [main, "codex/**"]
+    paths:
+      - ".github/workflows/d3-retained-node-behavior.yml"
+      - "tools/verify_d3_servo_patch.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d3-retained-node-behavior-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  D3_SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+  D3_SERVO_MANIFEST: manifests/lab-d3-servo-retained-node-action.v1.json
+
+jobs:
+  real-servo-behavior:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Check out exact carrier
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Check out exact Servo source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.D3_SERVO_COMMIT }}
+          path: servo
+          persist-credentials: false
+
+      - name: Verify and apply immutable retained-node patch
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = "$D3_SERVO_COMMIT"
+          test -z "$(git -C servo status --porcelain=v1)"
+          python3 - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          lock = tomllib.loads(Path('servo/Cargo.lock').read_text(encoding='utf-8'))
+          versions = sorted(
+              package['version']
+              for package in lock['package']
+              if package['name'] == 'accesskit'
+          )
+          if versions != ['0.24.0']:
+              raise SystemExit(f'unexpected AccessKit versions: {versions}')
+          PY
+          python3 tools/qualify_servo_exact_pin_v3.py verify-d3-patch \
+            --manifest "$D3_SERVO_MANIFEST" \
+            --root . \
+            --output "$RUNNER_TEMP/d3-servo.patch" \
+            --base-output "$RUNNER_TEMP/d3-servo-base.patch" \
+            --hardening-output "$RUNNER_TEMP/d3-servo-hardening.patch" \
+            | tee "$RUNNER_TEMP/d3-patch-verification.json"
+          patch --dry-run --batch --forward -d servo -p1 \
+            < "$RUNNER_TEMP/d3-servo-base.patch"
+          patch --batch --forward -d servo -p1 \
+            < "$RUNNER_TEMP/d3-servo-base.patch"
+          patch --dry-run --batch --forward -d servo -p1 \
+            < "$RUNNER_TEMP/d3-servo-hardening.patch"
+          patch --batch --forward -d servo -p1 \
+            < "$RUNNER_TEMP/d3-servo-hardening.patch"
+          git -C servo diff --binary --full-index \
+            > "$RUNNER_TEMP/d3-servo-squashed.patch"
+          git -C servo diff --name-only | sort > "$RUNNER_TEMP/d3-changed.txt"
+          jq -r '.patch.allowed_paths[]' "$D3_SERVO_MANIFEST" | sort \
+            > "$RUNNER_TEMP/d3-allowed.txt"
+          cmp "$RUNNER_TEMP/d3-allowed.txt" "$RUNNER_TEMP/d3-changed.txt"
+          ! grep -R -F "TODO(#4344): Forward action to Servo" \
+            servo/ports/servoshell/desktop/headed_window.rs
+          git -C servo diff --check
+
+      - name: Install exact Servo dependencies and Rust toolchain
+        id: dependencies
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' \
+            python/servo/platform/linux_packages/apt/apt_common.txt \
+            python/servo/platform/linux_packages/apt/apt_ubuntu_only.txt \
+            | sort -u > "$RUNNER_TEMP/d3-servo-packages.txt"
+          sudo apt-get update
+          xargs -r sudo apt-get install -y --no-install-recommends \
+            < "$RUNNER_TEMP/d3-servo-packages.txt"
+          sudo apt-get install -y --no-install-recommends patch
+          sudo apt-get purge -y fonts-droid-fallback || true
+          servo_rust_channel="$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)"
+          test "$servo_rust_channel" = "1.97.1"
+          rustup toolchain install "$servo_rust_channel" --profile minimal
+          rustup component add rustfmt --toolchain "$servo_rust_channel"
+          rustc --version --verbose | tee "$RUNNER_TEMP/d3-rustc-version.txt"
+          cargo --version --verbose | tee "$RUNNER_TEMP/d3-cargo-version.txt"
+          rustfmt --version | tee "$RUNNER_TEMP/d3-rustfmt-version.txt"
+
+      - name: Normalize only patch-owned Rust files
+        id: format
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          mapfile -t rust_files < <(grep -E '\.rs$' "$RUNNER_TEMP/d3-changed.txt")
+          test "${#rust_files[@]}" -gt 0
+          index=0
+          for file in "${rust_files[@]}"; do
+            formatted="$RUNNER_TEMP/d3-rustfmt-$index.rs"
+            checked="$RUNNER_TEMP/d3-rustfmt-$index.check.rs"
+            rustfmt --edition 2024 --emit stdout < "$file" > "$formatted"
+            cat "$formatted" > "$file"
+            rustfmt --edition 2024 --emit stdout < "$file" > "$checked"
+            cmp "$file" "$checked"
+            index=$((index + 1))
+          done
+          git diff --check
+          git diff --name-only | sort > "$RUNNER_TEMP/d3-changed-formatted.txt"
+          comm -23 \
+            "$RUNNER_TEMP/d3-changed-formatted.txt" \
+            "$RUNNER_TEMP/d3-allowed.txt" \
+            > "$RUNNER_TEMP/d3-unexpected-formatted.txt"
+          test ! -s "$RUNNER_TEMP/d3-unexpected-formatted.txt"
+          grep -Fxq components/servo/tests/accessibility.rs \
+            "$RUNNER_TEMP/d3-changed-formatted.txt"
+
+      - name: Run real Servo retained-node behavior corpus
+        id: behavior
+        shell: bash
+        working-directory: servo
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUST_BACKTRACE: '1'
+        run: |
+          set -euo pipefail
+          # Servo initializes process-global options when a Servo instance is
+          # built. Run one filtered test per Cargo process. Do not use the
+          # harness --exact switch: these integration-test names are decorated
+          # by Servo's test macros, so --exact selects zero tests. Every log is
+          # parsed below and must prove that exactly one test ran and passed.
+          retained_tests=(
+            test_retained_accessibility_click_dispatches_exactly_once
+            test_retained_accessibility_rejects_unadvertised_and_unsupported_requests
+            test_retained_accessibility_rejects_replaced_node_identity
+            test_retained_accessibility_rejects_inactive_and_stale_tree
+            test_retained_accessibility_rejects_disabled_hidden_and_non_element_targets
+            test_retained_accessibility_dropped_callback_does_not_duplicate_dispatch
+          )
+          aggregate="$RUNNER_TEMP/d3-retained-node-behavior.log"
+          : > "$aggregate"
+          for test_name in "${retained_tests[@]}"; do
+            case_log="$RUNNER_TEMP/d3-${test_name}.log"
+            printf '\n=== %s ===\n' "$test_name" | tee -a "$aggregate"
+            cargo test --locked -p servo --test accessibility \
+              "$test_name" -- --nocapture \
+              2>&1 | tee "$case_log" | tee -a "$aggregate"
+            python3 - "$case_log" "$test_name" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          path = Path(sys.argv[1])
+          requested = sys.argv[2]
+          text = path.read_text(encoding="utf-8", errors="replace")
+          running = re.findall(r"(?m)^running (\d+) tests?$", text)
+          passed = re.findall(
+              r"(?m)^test result: ok\. (\d+) passed; (\d+) failed; "
+              r"(\d+) ignored; (\d+) measured; (\d+) filtered out;",
+              text,
+          )
+          if running != ["1"]:
+              raise SystemExit(
+                  f"{requested}: expected exactly one executed test, got running={running}"
+              )
+          if len(passed) != 1 or passed[0][0:4] != ("1", "0", "0", "0"):
+              raise SystemExit(
+                  f"{requested}: expected one passing terminal result, got {passed}"
+              )
+          if not re.search(rf"(?m)^test .*{re.escape(requested)}.* \.\.\. ok$", text):
+              raise SystemExit(
+                  f"{requested}: requested test identity absent from passing output"
+              )
+          PY
+          done
+
+          regression=accessibility_basic_mapping
+          regression_log="$RUNNER_TEMP/d3-accessibility-regression.log"
+          cargo test --locked -p servo --test accessibility \
+            "$regression" -- --nocapture \
+            2>&1 | tee "$regression_log"
+          python3 - "$regression_log" "$regression" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          path = Path(sys.argv[1])
+          requested = sys.argv[2]
+          text = path.read_text(encoding="utf-8", errors="replace")
+          running = re.findall(r"(?m)^running (\d+) tests?$", text)
+          passed = re.findall(
+              r"(?m)^test result: ok\. (\d+) passed; (\d+) failed; "
+              r"(\d+) ignored; (\d+) measured; (\d+) filtered out;",
+              text,
+          )
+          if running != ["1"]:
+              raise SystemExit(
+                  f"{requested}: expected exactly one executed regression test, "
+                  f"got running={running}"
+              )
+          if len(passed) != 1 or passed[0][0:4] != ("1", "0", "0", "0"):
+              raise SystemExit(
+                  f"{requested}: expected one passing regression result, got {passed}"
+              )
+          if not re.search(rf"(?m)^test .*{re.escape(requested)}.* \.\.\. ok$", text):
+              raise SystemExit(
+                  f"{requested}: regression identity absent from passing output"
+              )
+          PY
+
+      - name: Collect bounded behavior evidence
+        if: always()
+        shell: bash
+        env:
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
+          FORMAT_OUTCOME: ${{ steps.format.outcome }}
+          BEHAVIOR_OUTCOME: ${{ steps.behavior.outcome }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/d3-retained-node-behavior-evidence"
+          mkdir -p "$evidence"
+          cp "$D3_SERVO_MANIFEST" "$evidence/manifest.json"
+          for file in \
+            d3-servo.patch \
+            d3-servo-base.patch \
+            d3-servo-hardening.patch \
+            d3-servo-squashed.patch \
+            d3-patch-verification.json \
+            d3-changed.txt \
+            d3-changed-formatted.txt \
+            d3-unexpected-formatted.txt \
+            d3-allowed.txt \
+            d3-servo-packages.txt \
+            d3-rustc-version.txt \
+            d3-cargo-version.txt \
+            d3-rustfmt-version.txt \
+            d3-retained-node-behavior.log \
+            d3-accessibility-regression.log; do
+            test ! -f "$RUNNER_TEMP/$file" || \
+              cp "$RUNNER_TEMP/$file" "$evidence/$file"
+          done
+          git -C servo status --porcelain=v1 > "$evidence/servo-status.txt" || true
+          git -C servo diff --stat > "$evidence/servo-diff-stat.txt" || true
+          jq -n \
+            --arg carrier "$GITHUB_SHA" \
+            --arg servo "$D3_SERVO_COMMIT" \
+            --arg verify "$VERIFY_OUTCOME" \
+            --arg dependencies "$DEPENDENCIES_OUTCOME" \
+            --arg format "$FORMAT_OUTCOME" \
+            --arg behavior "$BEHAVIOR_OUTCOME" \
+            '{
+              schema:"trillionnium.desktop.d3-retained-node-behavior.v1",
+              claim_ceiling:"exact-pin-real-servo-test-harness-no-installed-image",
+              carrier_commit:$carrier,
+              servo_commit:$servo,
+              verify_outcome:$verify,
+              dependencies_outcome:$dependencies,
+              format_outcome:$format,
+              behavior_outcome:$behavior,
+              evidence_complete:(
+                $verify == "success" and
+                $dependencies == "success" and
+                $format == "success" and
+                $behavior == "success"
+              ),
+              retained_node_valid_click_tested:($behavior == "success"),
+              action_advertisement_enforced:($behavior == "success"),
+              stale_node_and_tree_tested:($behavior == "success"),
+              disabled_hidden_and_non_element_tested:($behavior == "success"),
+              unsupported_action_and_data_tested:($behavior == "success"),
+              dropped_callback_receiver_tested:($behavior == "success"),
+              exact_callback_count_tested:($behavior == "success"),
+              coordinate_javascript_webdriver_or_text_fallback:false,
+              installed_runtime_proven:false,
+              product_browser_actor_receipts_proven:false,
+              independent_replay_proven:false,
+              protected_environment_approval_proven:false,
+              physical_hardware_proven:false,
+              hsm_signing_proven:false,
+              d3_promoted:false
+            }' > "$evidence/evidence.json"
+          find "$evidence" -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+            | sort -z | xargs -0 sha256sum > "$evidence/SHA256SUMS"
+
+      - name: Upload exact-pin behavior evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d3-retained-node-behavior-${{ github.sha }}
+          path: ${{ runner.temp }}/d3-retained-node-behavior-evidence
+          if-no-files-found: error
+          retention-days: 30

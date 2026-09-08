@@ -1,0 +1,113 @@
+name: d9-release-promotion
+
+on:
+  pull_request:
+    branches:
+      - main
+      - codex/d8-hardware-qualification-verifier-v1
+  push:
+    branches:
+      - main
+      - codex/d9-signed-release-promotion-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d9-release-promotion-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release_promotion_reference:
+    name: d9-release-promotion-verifier
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact candidate without write credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record exact Git identity
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+          git show -s --format='%P' HEAD
+
+      - name: Compile dependency-free release verifier and corpus
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/trusted_app_bundle.py \
+            tools/release_promotion_verifier.py \
+            tests/d9/test_release_promotion_verifier.py
+
+      - name: Run release identity, approval, custody, and artifact attack corpus
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover \
+            -s tests/d9 \
+            -p 'test_*.py' \
+            -v
+
+      - name: Generate bounded fixture-only source evidence
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/d9-release-promotion
+          python3 tools/release_promotion_verifier.py self-test \
+            --contract contracts/signed-release-promotion.v1.json \
+            --write-result artifacts/d9-release-promotion/reference-result.json \
+            | tee artifacts/d9-release-promotion/reference-result.stdout.json
+          cmp \
+            artifacts/d9-release-promotion/reference-result.json \
+            artifacts/d9-release-promotion/reference-result.stdout.json
+
+      - name: Validate repository and committed project truth
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+
+      - name: Enforce D9 source-only claim ceiling
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          contract = json.loads(Path('contracts/signed-release-promotion.v1.json').read_text())
+          result = json.loads(Path('artifacts/d9-release-promotion/reference-result.json').read_text())
+          assert contract['status'] == 'SOURCE_CANDIDATE_BLOCKED_UPSTREAM_D8'
+          assert contract['claim_ceiling']['release_evidence_format_and_verifier'] is True
+          for key in [
+              'protected_release_commit_integrated',
+              'production_release_signatures_obtained',
+              'production_key_custody_proven',
+              'independent_release_approvals_obtained',
+              'protected_environment_approval_obtained',
+              'signed_update_metadata_published',
+              'signed_recovery_metadata_published',
+              'release_artifacts_published',
+              'production_release_promoted',
+          ]:
+              assert contract['claim_ceiling'][key] is False, key
+          assert result['status'] == 'PASS_SOURCE_REFERENCE_ONLY'
+          assert result['fixture_verification_status'] == 'PASS_FIXTURE_FORMAT_ONLY'
+          assert result['fixture_policy_eligible'] is False
+          assert result['source_gate_protected_branch_or_tag'] is False
+          assert result['source_gate_obtained_human_approvals'] is False
+          assert result['source_gate_accessed_signing_keys'] is False
+          assert result['source_gate_published_artifacts'] is False
+          assert result['production_release_promoted'] is False
+          PY
+
+      - name: Upload exact-head source evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d9-release-promotion-${{ github.sha }}
+          path: artifacts/d9-release-promotion
+          if-no-files-found: warn
+          retention-days: 30

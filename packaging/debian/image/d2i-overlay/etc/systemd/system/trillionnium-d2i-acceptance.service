@@ -1,0 +1,16 @@
+[Unit]
+Description=TrillionniumOS D2I integrated-image acceptance and poweroff
+Requires=trillionnium-d2i-runtime.service
+Requires=trillionnium-d2i-content-crash-proof.service
+After=trillionnium-d2i-runtime.service trillionnium-d2i-content-crash-proof.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /usr/local/libexec/trillionnium-d2i-acceptance
+TimeoutStartSec=60s
+RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=trillionnium-d2i-acceptance.target

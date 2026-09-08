@@ -1,5 +1,10 @@
 # D0A-01 exact-pin Servo qualification
 
+> **HISTORICAL BASELINE / STALE_EVIDENCE:** This qualification is bound to
+> candidate head `01d02d692c573ccde7a99d990f2a63235d9bc69f`. D0A-01 declared
+> inputs changed after that run; rerun the exact-pin workflow on the current
+> candidate head before using this result for a current qualification claim.
+
 **Date:** 2026-08-29  
 **Servo commit:** `670ae8a70801b162e186f81cbb5bdd2d59c39108`  
 **Candidate head:** `01d02d692c573ccde7a99d990f2a63235d9bc69f`  
@@ -9,9 +14,16 @@
 **Artifact digest:** `sha256:aad3c47a4151b0ecaf96c4e0dd16680cc498667e155391c53b4a6e489a57501b`  
 **Status:** `PASS_COMPILE_COMPATIBILITY_ONLY`
 
+**Evidence lifecycle:** `STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN`
+**Evidence freshness:** `STALE_EVIDENCE`
+**Merge-ready:** `false`
+**Stale reason:** The compile result is bound to historical source head
+`01d02d692c573ccde7a99d990f2a63235d9bc69f`; rerun `servo-exact-pin` on the
+exact candidate head before promotion.
+
 ## Exact-head gate
 
-The successful workflow checked out the exact upstream Servo commit into a clean
+The historical successful workflow checked out the exact upstream Servo commit into a clean
 working tree, enforced the zero-delta patch ledger, used Servo's declared Rust
 `1.97.1` channel and locked Cargo graph, and compiled all four qualification
 steps:
@@ -31,6 +43,8 @@ silently change repository validation scope.
 
 Machine evidence is committed at
 `docs/evidence/generated/d0a01-servo-qualification-result.json`.
+It remains a historical baseline and is stale for the current candidate until
+the exact-pin workflow is rerun at the current head.
 
 ## Qualified source surface for D0A-02
 

@@ -1,7 +1,15 @@
 # systemd AgentPort custody
 
 **Checkpoint:** `D0C-05`  
-**Status:** source candidate; product activation remains closed
+**Status:** custody source is host-validated historically; evidence is
+`STALE_EVIDENCE` until the exact candidate head is rerun; product activation
+remains closed
+
+The contract keeps `host_validation` as a source-capability fact. Its bound
+host result is not current promotion evidence: `host_validation.evidence_lifecycle`
+is `STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN` and
+`host_validation.merge_ready` is `false` until the permanent custody workflow
+reruns on the exact candidate head.
 
 ## Boundary
 
@@ -16,9 +24,11 @@ hepta-browserd:hepta-agent / 0660
 
 The socket uses `Accept=yes`; each accepted stream starts one short-lived
 `hepta-browserd-agent@.service`. The process authenticates and dispatches one
-request through the already host-validated D0C-02/D0C-03/D0C-04 stack, emits a
-request-bound mechanism result, and exits. There is no multi-request hidden
-control channel.
+request through the historically host-validated D0C-02/D0C-03/D0C-04 source
+stack, emits a request-bound mechanism result, and exits. The current
+candidate must rerun the exact-head D0C-03/D0C-04 host gates before those
+historical results can be promoted. There is no multi-request hidden control
+channel.
 
 ## Default-disabled activation
 
@@ -47,6 +57,12 @@ connection the service verifies:
 
 UID/GID numbers are resolved from the package-created account names at runtime;
 no distribution-specific numeric allocation is embedded in the protocol.
+
+The executable digest is a D3 principal-binding requirement, not a D0C-05
+source gate. The D1 qualification fixture has an explicit static-digest path
+for its cross-UID QEMU service pair; production and development daemons use
+the strict live-procfs digest path and fail closed when that evidence is not
+readable.
 
 ## Service sandbox
 
