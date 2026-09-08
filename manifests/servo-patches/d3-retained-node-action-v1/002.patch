@@ -43,7 +43,7 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
              ScriptThreadMessage::TriggerGarbageCollection => unsafe {
                  JS_GC(cx, GCReason::API);
              },
-@@ -3873,6 +3889,99 @@ impl ScriptThread {
+@@ -3873,6 +3889,104 @@ impl ScriptThread {
              .set_accessibility_active(active, epoch);
      }
  
@@ -94,7 +94,7 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
 +        // Update and query the retained tree inside this script task. Page script cannot interleave
 +        // between the node lookup and dispatch below.
 +        window.reflow(cx, ReflowGoal::UpdateTheRendering);
-+        let (address, action_advertised) =
++        let (address, action_advertised, has_accessible_bounds) =
 +            match window.layout().accessibility_node_address(
 +                request.target_tree,
 +                request.target_node,
@@ -104,7 +104,8 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
 +                layout_api::AccessibilityNodeAddressResult::Resolved {
 +                    address,
 +                    action_advertised,
-+                } => (address, action_advertised),
++                    has_accessible_bounds,
++                } => (address, action_advertised, has_accessible_bounds),
 +                layout_api::AccessibilityNodeAddressResult::StaleTree => {
 +                    respond(AccessibilityActionResult::StaleTree);
 +                    return;
@@ -114,6 +115,10 @@ index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536
 +                    return;
 +                },
 +            };
++        if !has_accessible_bounds {
++            respond(AccessibilityActionResult::TargetNotRendered);
++            return;
++        }
 +        let node = unsafe { crate::dom::node::from_untrusted_node_address(address) };
 +        if !node.is_connected() || node.owner_doc().webview_id() != webview_id {
 +            respond(AccessibilityActionResult::TargetNotRendered);

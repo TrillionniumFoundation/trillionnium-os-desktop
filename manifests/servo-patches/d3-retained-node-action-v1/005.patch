@@ -2,20 +2,22 @@ diff --git a/components/shared/layout/lib.rs b/components/shared/layout/lib.rs
 index 95776711f86be301c7444c3cbdc217d88a9043bc..27a4bcbb4ca55bfcde80f9c65ed095a2c272391c 100644
 --- a/components/shared/layout/lib.rs
 +++ b/components/shared/layout/lib.rs
-@@ -280,6 +280,23 @@ pub trait LayoutFactory: Send + Sync {
+@@ -280,6 +280,25 @@ pub trait LayoutFactory: Send + Sync {
      fn create(&self, config: LayoutConfig) -> Box<dyn Layout>;
  }
  
 +/// Result of resolving an AccessKit action target against one retained document tree.
 +#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 +pub enum AccessibilityNodeAddressResult {
-+    /// The node exists in the current retained tree. `action_advertised` is copied from that
-+    /// exact retained AccessKit node and must be checked again before dispatch.
++    /// The node exists in the current retained tree. Action support and bounds are copied from
++    /// that exact retained AccessKit node and must be checked again before dispatch.
 +    Resolved {
 +        /// DOM address retained for this exact accessibility node.
 +        address: UntrustedNodeAddress,
 +        /// Whether the exact retained node advertised the requested action.
 +        action_advertised: bool,
++        /// Whether the exact retained node had finalized layout bounds.
++        has_accessible_bounds: bool,
 +    },
 +    /// The tree or embedder epoch is no longer current.
 +    StaleTree,

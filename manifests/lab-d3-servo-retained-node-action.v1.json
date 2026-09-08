@@ -11,7 +11,7 @@
   },
   "patch": {
     "format": "ordered_unified_diff_parts",
-    "sha256": "b8eaaafa161061dd35c58775ea56c7b79b15606345d79fde46290d9acde003a2",
+    "sha256": "44ff3aa260568e991efab1bf18f2165a74174035aae85044cc15d9a157e78ffc",
     "parts": [
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/000.patch",
@@ -19,11 +19,11 @@
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/001.patch",
-        "sha256": "e1bb10c11c9cb2183f105f34a6185b2c24a140019cbffd970b13e18646e0b035"
+        "sha256": "6c47e70ba0164ce25483662fc31329b8e9bf4bf3f0a9e589f4471428eb9f8346"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/002.patch",
-        "sha256": "457ce8e00627d7626b4c5b0af89e9d491f72ff9cc08463718aecb0b420d131c9"
+        "sha256": "837c2ba2ee29c82f885f6d07cf5f7b43412dd510c4e85f81aa5ebcd376dd5e70"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/003.patch",
@@ -35,7 +35,7 @@
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/005.patch",
-        "sha256": "773b8fd183156563f6695e5f50cd123c69fd7a7a422c2793255dbe33514f3613"
+        "sha256": "a4ba10f027ae51446c6c4a3c3cf2585ac617e185074ee4ceaeeec051d90c5f37"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/006.patch",
@@ -77,7 +77,7 @@
   "source_invariants": [
     "route a non-root AccessKit TreeId to exactly one current WebView",
     "bind the request again to the WebView current active top-level PipelineId",
-    "reject root, stale, missing, ambiguous, inactive, unsupported, disabled and non-rendered targets",
+    "reject root, stale, missing, ambiguous, inactive, unsupported, disabled and retained nodes without finalized layout bounds",
     "resolve NodeId only from the current retained AccessibilityTree at the active embedder epoch",
     "advertise Click only for the initial reviewed native button surface",
     "require the exact retained AccessKit node to advertise the requested action before dispatch",
