@@ -1,0 +1,71 @@
+{
+  "schema": "trillionnium.desktop.status-facts.v1",
+  "document_updated": "2026-09-08",
+  "projection_subject": {
+    "role": "integrated_main",
+    "source_candidate": {
+      "pull_request": 75,
+      "branch": "codex/repository-truth-bootstrap"
+    }
+  },
+  "workspace_members": [
+    "apps/hepta-browserd",
+    "apps/hepta-agent-portd",
+    "crates/hepta-agent-transport",
+    "crates/hepta-browser-codec",
+    "crates/hepta-agent-port",
+    "crates/hepta-peer-attestation",
+    "crates/trillionnium-contract-core",
+    "crates/hepta-browser-contracts",
+    "crates/hepta-session-core",
+    "crates/hepta-workspace-composition"
+  ],
+  "governance_observations": [
+    {
+      "id": "github-main-protection-2026-09-08T03:15:06Z",
+      "kind": "github_repository_protection",
+      "source": "github_rest_api",
+      "observed_at": "2026-09-08T03:15:06Z",
+      "observed_main_sha": "addaf73a48bae65f19f6bfe91c6264fd2ddb85a1",
+      "validity": "snapshot_only",
+      "main_protected": false,
+      "required_status_enforcement": "off",
+      "tracking_issue": 76
+    }
+  ],
+  "unmerged_candidates": [
+    {
+      "kind": "pull_request",
+      "number": 73,
+      "branch": "codex/d6-sensitive-log-redaction-v1",
+      "state": "frozen_draft",
+      "merge_policy": "must_decompose_never_merge_as_unit"
+    }
+  ],
+  "pending_actions": [
+    {
+      "id": "protect-main",
+      "kind": "external_control",
+      "target": {"kind": "issue", "number": 76},
+      "summary": "Enable and independently verify branch protection and rulesets."
+    },
+    {
+      "id": "decompose-pr73",
+      "kind": "successor_train",
+      "target": {"kind": "issue", "number": 78},
+      "summary": "Decompose frozen PR #73 into bounded successor pull requests."
+    },
+    {
+      "id": "runtime-vertical-slice",
+      "kind": "runtime_integration",
+      "target": {"kind": "issue", "number": 86},
+      "summary": "Complete a real AgentPort to BrowserActor to Servo to durable-receipt vertical slice."
+    },
+    {
+      "id": "qemu-installed-image",
+      "kind": "installed_image",
+      "target": {"kind": "issue", "number": 88},
+      "summary": "Prove the vertical slice in an exact installed QEMU image before hardware or release claims."
+    }
+  ]
+}
