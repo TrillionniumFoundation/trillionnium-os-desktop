@@ -50,6 +50,7 @@ EXPECTED_REQUIRED_WORKFLOW_REGISTRY = frozenset(
         ".github/workflows/d2i-integrated-image.yml",
         ".github/workflows/d3-semantic-resolver-reference.yml",
         ".github/workflows/d3-integrated-runtime-evidence.yml",
+        ".github/workflows/d3-retained-node-behavior.yml",
         ".github/workflows/governance-integrity.yml",
         ".github/workflows/receipt-journal.yml",
         ".github/workflows/servo-exact-pin.yml",
