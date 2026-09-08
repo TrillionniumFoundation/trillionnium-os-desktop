@@ -41,6 +41,7 @@ jobs:
           python3 tools/validate_project_truth.py
           python3 -m unittest discover -s tests -p 'test_project_truth_status_documents.py'
           python3 -m unittest discover -s tests -p 'test_status_authority_singleton.py'
+          python3 -m unittest discover -s tests -p 'test_source_state_workspace.py'
 
   rust:
     runs-on: ubuntu-24.04
@@ -112,6 +113,7 @@ jobs:
           python3 tools/validate_project_truth.py
           python3 -m unittest discover -s tests -p 'test_project_truth_status_documents.py'
           python3 -m unittest discover -s tests -p 'test_status_authority_singleton.py'
+          python3 -m unittest discover -s tests -p 'test_source_state_workspace.py'
 
   rust-prospective-merge:
     if: github.event_name == 'pull_request'
