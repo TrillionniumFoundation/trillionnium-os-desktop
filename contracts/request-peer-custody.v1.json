@@ -1,0 +1,38 @@
+{
+  "schema": "trillionnium.desktop.request-peer-custody.v1",
+  "work_package": "D3-01",
+  "status": "SOURCE_CANDIDATE",
+  "scope": "in_process_request_identity_continuity_only",
+  "custody_owners": 1,
+  "pidfd_duplicates_per_request": 1,
+  "original_attestor_source_pinned": true,
+  "original_executable_source_preserved": true,
+  "custody_drop_revokes": true,
+  "failure_latches_revocation": true,
+  "full_refresh_boundaries": [
+    "request_admission",
+    "engine_entry",
+    "engine_return",
+    "actor_return"
+  ],
+  "wait_loop_check": "revocation_and_pidfd_only_no_image_hash",
+  "post_dispatch_identity_loss": "indeterminate_never_automatic",
+  "request_ids_can_extend_custody": false,
+  "unattested_compatibility_calls_are_attested": false,
+  "hard_realtime_bound": false,
+  "atomic_with_process_exit_or_exec": false,
+  "servo_adapter": false,
+  "exact_image_qualified": false,
+  "production_listener_enabled": false,
+  "external_effect_authority": false,
+  "promotion_authoritative": false,
+  "document": "docs/architecture/REQUEST_PEER_CUSTODY.md",
+  "required_sources": [
+    "crates/hepta-peer-attestation/src/lib.rs",
+    "crates/hepta-peer-attestation/src/request_lease.rs",
+    "crates/hepta-browser-actor/src/lib.rs",
+    "crates/hepta-browser-actor/src/engine_dispatch.rs",
+    "crates/hepta-browser-actor/src/engine_dispatch/authority_tests.rs",
+    "crates/hepta-d3-development/src/sessiond/service.rs"
+  ]
+}
