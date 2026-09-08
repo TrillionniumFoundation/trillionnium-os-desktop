@@ -23,10 +23,9 @@ pub mod receipt_journal {
     pub use super::receipt_journal_impl::{MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS};
 
     pub(crate) use super::receipt_journal_impl::{
-        Digest, EffectClass, JournalError, JournalId, LifecycleState, PrivacyClass,
-        ReceiptEnvelope, ReceiptEvent, ReceiptJournal, ReceiptOutcome, ReceiptSource,
-        RecoveredRecord, RecoveryReport, TailStatus, export_journal_redacted_jsonl,
-        export_receipt_envelopes_jsonl, inspect_chain, inspect_path,
+        Digest, JournalError, ReceiptEnvelope, RecoveredRecord, RecoveryReport, TailStatus,
+        export_journal_redacted_jsonl, export_receipt_envelopes_jsonl, export_redacted_jsonl,
+        inspect_chain,
     };
 }
 
@@ -39,11 +38,11 @@ pub use queue::{ArbiterQueue, QueueError};
 pub use receipt_journal_impl::{
     ArchivedSegment, CommittedRecord, CopiedReceiptSegment, Digest,
     EffectClass as ReceiptEffectClass, JournalError, JournalId,
-    LifecycleState as ReceiptLifecycleState, MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS,
-    MAX_CHAIN_SEGMENTS, ManagedOpenPolicy, OpenPolicy as JournalOpenPolicy, PrivacyClass,
-    ReceiptEnvelope, ReceiptEvent, ReceiptJournal, ReceiptMigrationReport, ReceiptOutcome,
-    ReceiptSource, ReceiptStatus, RecoveredRecord, RecoveryReport, ReplayDirective, SegmentHeader,
-    SegmentSeal, TailStatus, UnresolvedReceipt, hex_digest, inspect_chain,
+    LifecycleState as ReceiptLifecycleState, MANAGED_ROTATION_THRESHOLD_BYTES, MAX_CHAIN_BYTES,
+    MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS, ManagedOpenPolicy, OpenPolicy as JournalOpenPolicy,
+    PrivacyClass, ReceiptEnvelope, ReceiptEvent, ReceiptJournal, ReceiptMigrationReport,
+    ReceiptOutcome, ReceiptSource, ReceiptStatus, RecoveredRecord, RecoveryReport, ReplayDirective,
+    SegmentHeader, SegmentSeal, TailStatus, UnresolvedReceipt, hex_digest, inspect_chain,
     inspect_path as inspect_receipt_journal, retention_candidates,
 };
 pub use types::{
