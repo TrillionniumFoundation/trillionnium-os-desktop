@@ -1,16 +1,16 @@
-# hepta-workspace-composition
+# trillionnium-contract-core
 
-**Module registry ID:** `hepta-workspace-composition`  
-**Workspace path:** `crates/hepta-workspace-composition`  
-**Owner class:** `trusted-workspace`
+**Module registry ID:** `trillionnium-contract-core`  
+**Workspace path:** `crates/trillionnium-contract-core`  
+**Owner class:** `contract-foundation`
 
-Deterministic composition model for trusted chrome and one untrusted content surface.
+Platform-neutral contract primitives shared by desktop crates.
 
 ## Status and claim ceiling
 
-**Current status:** `headed_host_candidate_model`
+**Current status:** `integrated_contract_foundation`
 
-**Claim ceiling:** engine-neutral trusted-workspace state and invariant model; no window, Servo instance, frame, clipboard, AgentPort, or external effect.
+**Claim ceiling:** platform-neutral bounded identifiers, digests, time and revision primitives only.
 
 The status above describes the strongest repository-local statement this module may
 make. It does not promote lower-tier source, host, headed-host, or QEMU evidence
@@ -18,18 +18,18 @@ into integrated-main, physical-hardware, signing-key-custody, or release facts.
 
 ## Responsibilities
 
-- Model one compositor/native-owned trusted chrome surface and exactly one logical untrusted content surface.
-- Own geometry, focus, pointer/keyboard/IME routing, frame publication, popup refusal, crash placeholder, and replacement generation invariants.
-- Fail closed while replacement content is recovering and prevent stale frames or input owners from becoming authoritative.
+- Define bounded identifiers, lowercase SHA-256 values, DNS labels, Unix time wrappers, revision clocks, and reference-freshness classification.
+- Provide deterministic validation errors with no transport, browser, policy, or operating-system side effects.
+- Keep shared primitives free of Android, ADB, root-shell, Servo, and product authority semantics.
 
 ## Non-responsibilities
 
-- The crate does not create a native window, start Servo, render pixels, access the system clipboard, inject OS input, create an Agent listener, or navigate externally.
-- Model tests do not prove headed-host, QEMU, hardware, or product integration.
+- The crate does not serialize the Browser API, authenticate a peer, own a session, authorize an action, access the OS, or interpret product policy.
+- A valid primitive is necessary but never sufficient for admission or effect authority.
 
 ## Dependency and call direction
 
-This is an engine-neutral model used by the Servo qualification adapter and later trusted shell. It should remain independent of Servo/winit/X11/Wayland and operating-system services.
+This is the bottom of the local contract graph and should remain dependency-light. Browser contracts, session core, BrowserActor, and product policy consume it. Reverse dependencies must not leak application-specific types into this crate.
 
 The authoritative workspace membership and review links are recorded in
 `manifests/modules.v1.json`. New reverse dependencies, cycles, or authority-bearing
@@ -37,7 +37,7 @@ dependencies require an explicit architecture/security review.
 
 ## Public API and binaries
 
-Public model operations apply deterministic workspace events and expose snapshots/refusals/effects. Callers must translate real engine/window callbacks into these events and obey returned ownership/generation decisions.
+Public types include `BoundedId`, request/session/lease aliases, `Sha256Hex`, `DnsLabel`, `UnixMillis`, `RevisionClock`, `RefFreshness`, and `classify_reference`. Constructors validate before values enter higher layers.
 
 Public types and executable names are compatibility surfaces. Rust source remains
 the API truth, while this document explains the intended boundary and correct use.
@@ -52,7 +52,7 @@ may execute as module binaries. Adding a conventional `src/main.rs`, `src/bin`
 entrypoint, or `build.rs` without a reviewed inventory change fails the module
 gate; this does not disable integration-test discovery.
 
-Surface count and trust topology are invariant, not runtime options. Geometry and generation values are explicit inputs. Additional windows/content surfaces require a new architecture decision and threat model.
+All size and character limits are compile-time contract constants. There are no Cargo features or environment inputs.
 
 All configuration inputs must be bounded, typed, documented, and included in the
 applicable gate's invalidation set. Missing configuration must fail closed rather
@@ -60,7 +60,7 @@ than select a broader profile.
 
 ## State, concurrency, and failure semantics
 
-Trusted chrome survives content failure. Content crash clears content input/IME, withdraws the old frame, publishes a trusted placeholder, advances generation, and requires an explicit new non-zero generation plus fresh frame before routing resumes.
+Revision clocks advance distinct session, document, semantic snapshot, and mutation layers. Saturating behavior is explicit in current APIs; callers requiring overflow refusal must add a reviewed checked transition rather than assume it.
 
 Rejected transitions and failed validation must not leave partial authority,
 advanced revisions, committed responses, or invented receipt outcomes. Where a
@@ -69,7 +69,7 @@ documented reconciliation policy instead of retrying blindly.
 
 ## Security invariants
 
-Untrusted content cannot overlap/replace trusted identity, share its DOM trust realm, open a second content surface, retain input after crash/navigation, or promote stale pixels. Popup/new-window/external replacement requests fail closed.
+Reject empty, overlong, path-like, whitespace/control, uppercase digest, malformed DNS, and stale revision values before they reach authority layers. Keep validation deterministic and independent of locale or host state.
 
 The relevant contracts and architecture documents are listed in the module
 registry. A source-only self-check or fixture never proves enforcement by a booted
@@ -77,7 +77,7 @@ product image.
 
 ## Testing and evidence
 
-Run deterministic policy tests, rollback tests, all input owner transitions, crash/recovery and stale-frame cases, plus the headed Servo and D2I runtime corpora that prove real callbacks/pixels/process topology.
+Run unit tests for every boundary value, invalid character class, digest/DNS form, and revision transition. Higher-level schema/codec tests must cross-check these constraints.
 
 Minimum local verification:
 
@@ -97,7 +97,7 @@ current evidence.
 
 ## Operations and troubleshooting
 
-When composition stalls, inspect current generation, content lifecycle, presentable frame, placeholder, focus/input owner, and last refusal. Do not route input or reuse a frame merely to restore liveness.
+There is no runtime service. Failures should be returned as typed contract violations and mapped once by the owning protocol layer. Avoid logging rejected secret-bearing values.
 
 Troubleshooting must preserve the original files, journals, identities, and exact
 Git/build context needed for diagnosis. Do not make a gate pass by deleting a
@@ -106,7 +106,7 @@ fixture, or editing generated evidence by hand.
 
 ## Compatibility and change protocol
 
-Changing trust topology, surface count, input ownership, or crash generation semantics requires an ADR, contract update, model/property tests, headed runtime evidence, and exact-main rerun.
+Changing a bound or character set is a wire/security change. Update dependent schemas, Rust types, Python references, golden vectors, documentation, and migration/version policy atomically.
 
 Every behavior-changing pull request must update, as applicable: implementation,
 contracts/schemas, golden vectors, tests, module registry, this README, architecture

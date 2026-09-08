@@ -210,27 +210,128 @@ impl RevisionClock {
         }
     }
 
+    /// Advance the mutation epoch, failing before any state is changed when
+    /// the identity space is exhausted.
+    pub fn try_on_dom_commit(&mut self) -> Result<(), RevisionError> {
+        let next = self
+            .mutation_epoch
+            .checked_add(1)
+            .ok_or(RevisionError::MutationEpochExhausted)?;
+        self.mutation_epoch = next;
+        Ok(())
+    }
+
+    /// Advance the semantic snapshot revision atomically, failing closed on
+    /// exhaustion.
+    pub fn try_on_semantic_snapshot(&mut self) -> Result<(), RevisionError> {
+        let next = self
+            .semantic_snapshot_revision
+            .checked_add(1)
+            .ok_or(RevisionError::SemanticSnapshotExhausted)?;
+        self.semantic_snapshot_revision = next;
+        Ok(())
+    }
+
+    /// Advance every layer invalidated by a committed navigation as one
+    /// atomic operation.  No field changes if any successor cannot be
+    /// represented.
+    pub fn try_on_navigation_commit(&mut self) -> Result<(), RevisionError> {
+        let document_generation = self
+            .document_generation
+            .checked_add(1)
+            .ok_or(RevisionError::DocumentGenerationExhausted)?;
+        let semantic_snapshot_revision = self
+            .semantic_snapshot_revision
+            .checked_add(1)
+            .ok_or(RevisionError::SemanticSnapshotExhausted)?;
+        let mutation_epoch = self
+            .mutation_epoch
+            .checked_add(1)
+            .ok_or(RevisionError::MutationEpochExhausted)?;
+        self.document_generation = document_generation;
+        self.semantic_snapshot_revision = semantic_snapshot_revision;
+        self.mutation_epoch = mutation_epoch;
+        Ok(())
+    }
+
+    /// Advance all identity layers after process recovery atomically.  A
+    /// failed preflight leaves the prior clock intact so callers cannot emit a
+    /// recovery event that only partially invalidates references.
+    pub fn try_on_process_recovery(&mut self) -> Result<(), RevisionError> {
+        let session_generation = self
+            .session_generation
+            .checked_add(1)
+            .ok_or(RevisionError::SessionGenerationExhausted)?;
+        let document_generation = self
+            .document_generation
+            .checked_add(1)
+            .ok_or(RevisionError::DocumentGenerationExhausted)?;
+        let semantic_snapshot_revision = self
+            .semantic_snapshot_revision
+            .checked_add(1)
+            .ok_or(RevisionError::SemanticSnapshotExhausted)?;
+        let mutation_epoch = self
+            .mutation_epoch
+            .checked_add(1)
+            .ok_or(RevisionError::MutationEpochExhausted)?;
+        self.session_generation = session_generation;
+        self.document_generation = document_generation;
+        self.semantic_snapshot_revision = semantic_snapshot_revision;
+        self.mutation_epoch = mutation_epoch;
+        Ok(())
+    }
+
+    /// Backwards-compatible infallible wrapper.  Existing callers that do
+    /// not inspect transition errors retain their API; once exhausted, the
+    /// clock remains at its terminal value and `classify_reference` rejects
+    /// references carrying that value instead of treating them as current.
     pub fn on_dom_commit(&mut self) {
-        self.mutation_epoch = self.mutation_epoch.saturating_add(1);
+        let _ = self.try_on_dom_commit();
     }
 
+    /// Backwards-compatible infallible wrapper around
+    /// [`Self::try_on_semantic_snapshot`].
     pub fn on_semantic_snapshot(&mut self) {
-        self.semantic_snapshot_revision = self.semantic_snapshot_revision.saturating_add(1);
+        let _ = self.try_on_semantic_snapshot();
     }
 
+    /// Backwards-compatible infallible wrapper around
+    /// [`Self::try_on_navigation_commit`].
     pub fn on_navigation_commit(&mut self) {
-        self.document_generation = self.document_generation.saturating_add(1);
-        self.semantic_snapshot_revision = self.semantic_snapshot_revision.saturating_add(1);
-        self.mutation_epoch = self.mutation_epoch.saturating_add(1);
+        let _ = self.try_on_navigation_commit();
     }
 
+    /// Backwards-compatible infallible wrapper around
+    /// [`Self::try_on_process_recovery`].
     pub fn on_process_recovery(&mut self) {
-        self.session_generation = self.session_generation.saturating_add(1);
-        self.document_generation = self.document_generation.saturating_add(1);
-        self.semantic_snapshot_revision = self.semantic_snapshot_revision.saturating_add(1);
-        self.mutation_epoch = self.mutation_epoch.saturating_add(1);
+        let _ = self.try_on_process_recovery();
     }
 }
+
+/// A revision layer reached the terminal representable value.  Advancing it
+/// would wrap and could make a stale reference numerically equal to a fresh
+/// one, so transitions must fail closed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RevisionError {
+    SessionGenerationExhausted,
+    DocumentGenerationExhausted,
+    SemanticSnapshotExhausted,
+    MutationEpochExhausted,
+}
+
+impl fmt::Display for RevisionError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let field = match self {
+            Self::SessionGenerationExhausted => "session generation",
+            Self::DocumentGenerationExhausted => "document generation",
+            Self::SemanticSnapshotExhausted => "semantic snapshot revision",
+            Self::MutationEpochExhausted => "mutation epoch",
+        };
+        write!(formatter, "{field} exhausted")
+    }
+}
+
+impl std::error::Error for RevisionError {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RefFreshness {
@@ -246,11 +347,25 @@ pub fn classify_reference(
     document_generation: u64,
     semantic_snapshot_revision: u64,
 ) -> RefFreshness {
-    if current.session_generation != session_generation {
+    // MAX is a terminal sentinel, not a usable identity.  Treating a caller
+    // carrying MAX as current would allow old references to survive after a
+    // saturating counter hit its boundary.  Reject the current side too so a
+    // freshly minted value at the boundary cannot be mistaken for a valid
+    // reference.
+    if current.session_generation != session_generation
+        || current.session_generation == u64::MAX
+        || session_generation == u64::MAX
+    {
         RefFreshness::StaleSession
-    } else if current.document_generation != document_generation {
+    } else if current.document_generation != document_generation
+        || current.document_generation == u64::MAX
+        || document_generation == u64::MAX
+    {
         RefFreshness::StaleDocument
-    } else if current.semantic_snapshot_revision != semantic_snapshot_revision {
+    } else if current.semantic_snapshot_revision != semantic_snapshot_revision
+        || current.semantic_snapshot_revision == u64::MAX
+        || semantic_snapshot_revision == u64::MAX
+    {
         RefFreshness::StaleSnapshot
     } else {
         RefFreshness::Current
@@ -333,5 +448,68 @@ mod tests {
             ),
             RefFreshness::StaleSession
         );
+    }
+
+    #[test]
+    fn checked_revision_advancement_is_atomic_at_exhaustion() {
+        let mut clock = RevisionClock::new();
+        clock.mutation_epoch = u64::MAX;
+        let before = clock;
+        assert_eq!(
+            clock.try_on_dom_commit(),
+            Err(RevisionError::MutationEpochExhausted)
+        );
+        assert_eq!(clock, before);
+
+        let mut clock = RevisionClock {
+            document_generation: u64::MAX,
+            ..RevisionClock::new()
+        };
+        let before = clock;
+        assert_eq!(
+            clock.try_on_navigation_commit(),
+            Err(RevisionError::DocumentGenerationExhausted)
+        );
+        assert_eq!(
+            clock, before,
+            "compound transition must not partially advance"
+        );
+
+        let mut clock = RevisionClock {
+            session_generation: u64::MAX,
+            ..RevisionClock::new()
+        };
+        let before = clock;
+        assert_eq!(
+            clock.try_on_process_recovery(),
+            Err(RevisionError::SessionGenerationExhausted)
+        );
+        assert_eq!(clock, before, "recovery preflight must be atomic");
+    }
+
+    #[test]
+    fn exhausted_revision_values_are_never_classified_current() {
+        let mut cases = Vec::new();
+        let mut session = RevisionClock::new();
+        session.session_generation = u64::MAX;
+        cases.push((session, RefFreshness::StaleSession));
+        let mut document = RevisionClock::new();
+        document.document_generation = u64::MAX;
+        cases.push((document, RefFreshness::StaleDocument));
+        let mut snapshot = RevisionClock::new();
+        snapshot.semantic_snapshot_revision = u64::MAX;
+        cases.push((snapshot, RefFreshness::StaleSnapshot));
+
+        for (clock, expected) in cases {
+            assert_eq!(
+                classify_reference(
+                    clock,
+                    clock.session_generation,
+                    clock.document_generation,
+                    clock.semantic_snapshot_revision,
+                ),
+                expected
+            );
+        }
     }
 }
