@@ -1,16 +1,75 @@
-diff --git a/components/paint/painter.rs b/components/paint/painter.rs
---- a/components/paint/painter.rs
-+++ b/components/paint/painter.rs
-@@ -21,9 +21,11 @@ use paint_api::largest_contentful_paint_candidate::LCPCandidate;
- use paint_api::rendering_context::RenderingContext;
- use paint_api::viewport_description::ViewportDescription;
- use paint_api::{
-     ImageUpdate, PipelineExitSource, SendableFrameTree, SerializableDisplayListPayload,
--    SerializableImageData, WebRenderExternalImageHandlers, WebRenderImageHandlerType, WebViewTrait,
-+    SerializableImageData, WebRenderExternalImageHandlers, WebViewTrait,
+diff --git a/components/shared/layout/lib.rs b/components/shared/layout/lib.rs
+index 95776711f86be301c7444c3cbdc217d88a9043bc..27a4bcbb4ca55bfcde80f9c65ed095a2c272391c 100644
+--- a/components/shared/layout/lib.rs
++++ b/components/shared/layout/lib.rs
+@@ -280,6 +280,23 @@ pub trait LayoutFactory: Send + Sync {
+     fn create(&self, config: LayoutConfig) -> Box<dyn Layout>;
+ }
+ 
++/// Result of resolving an AccessKit action target against one retained document tree.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub enum AccessibilityNodeAddressResult {
++    /// The node exists in the current retained tree. `action_advertised` is copied from that
++    /// exact retained AccessKit node and must be checked again before dispatch.
++    Resolved {
++        /// DOM address retained for this exact accessibility node.
++        address: UntrustedNodeAddress,
++        /// Whether the exact retained node advertised the requested action.
++        action_advertised: bool,
++    },
++    /// The tree or embedder epoch is no longer current.
++    StaleTree,
++    /// The node is not present in the current retained tree or has no DOM identity.
++    StaleNode,
++}
++
+ pub trait Layout {
+     /// Get a reference to this Layout's Stylo `Device` used to handle media queries and
+     /// resolve font metrics.
+@@ -417,6 +434,16 @@ pub trait Layout {
+     /// This should be called by the embedder when accessibility is requested by the user.
+     fn set_accessibility_active(&self, enabled: bool, epoch: Epoch);
+ 
++    /// Resolve a retained accessibility node to its DOM address only when the tree identity and
++    /// embedder epoch still match the caller's active-document snapshot.
++    fn accessibility_node_address(
++        &self,
++        tree_id: accesskit::TreeId,
++        node_id: accesskit::NodeId,
++        action: accesskit::Action,
++        epoch: Epoch,
++    ) -> AccessibilityNodeAddressResult;
++
+     /// Returns whether accessibility is active for this Layout.
+     fn accessibility_active(&self) -> bool;
+ 
+diff --git a/components/shared/script/lib.rs b/components/shared/script/lib.rs
+index 0a53e57fc1dfb7e01c7160397b5db074153f0445..6da07f234b80f05e091c15c65764c94dd32d9c1b 100644
+--- a/components/shared/script/lib.rs
++++ b/components/shared/script/lib.rs
+@@ -46,7 +46,8 @@ use servo_bluetooth_traits::BluetoothRequest;
+ use servo_canvas_traits::webgl::WebGLPipeline;
+ use servo_config::prefs::PrefValue;
+ use servo_constellation_traits::{
+-    KeyboardScroll, LoadData, NavigationHistoryBehavior, RemoteFocusOperation,
++    AccessibilityActionResult, KeyboardScroll, LoadData, NavigationHistoryBehavior,
++    RemoteFocusOperation,
+     ScriptToConstellationSender, ScrollStateUpdate, StructuredSerializedData, TargetSnapshotParams,
+     WindowSizeType,
  };
-+#[cfg(any(feature = "webgl", feature = "webgpu"))]
-+use paint_api::WebRenderImageHandlerType;
- use profile_traits::time::{ProfilerCategory, ProfilerChan};
- use profile_traits::time_profile;
- use rustc_hash::{FxHashMap, FxHashSet};
+@@ -341,6 +342,15 @@ pub enum ScriptThreadMessage {
+     /// may be split across multiple script threads, and the pipelines in a script thread may belong
+     /// to multiple webviews. So the simplest approach is to activate it for one pipeline at a time.
+     SetAccessibilityActive(PipelineId, bool, Epoch),
++    /// Atomically resolve and dispatch one accessibility action against a retained node in the
++    /// current accessibility tree.
++    PerformAccessibilityAction(
++        WebViewId,
++        PipelineId,
++        Epoch,
++        accesskit::ActionRequest,
++        GenericCallback<AccessibilityActionResult>,
++    ),
+     /// Force a garbage collection in this script thread.
+     TriggerGarbageCollection,
+ }

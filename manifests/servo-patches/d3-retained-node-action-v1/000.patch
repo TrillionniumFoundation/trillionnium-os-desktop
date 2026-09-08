@@ -1,3 +1,31 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 98153f983ae56812b71fb5a183940e6f8da0ca6f..3d0edc8f43066524568e917d55749bcc72d5fa62 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -8030,6 +8030,7 @@ dependencies = [
+ name = "servo-constellation-traits"
+ version = "0.5.0"
+ dependencies = [
++ "accesskit",
+  "base64 0.23.1",
+  "content-security-policy",
+  "encoding_rs",
+@@ -8352,6 +8353,7 @@ dependencies = [
+ name = "servo-layout-api"
+ version = "0.5.0"
+ dependencies = [
++ "accesskit",
+  "app_units",
+  "atomic_refcell",
+  "bitflags 2.13.1",
+@@ -8910,6 +8912,7 @@ dependencies = [
+ name = "servo-script"
+ version = "0.5.0"
+ dependencies = [
++ "accesskit",
+  "aes",
+  "aes-gcm",
+  "aes-kw",
 diff --git a/components/constellation/constellation.rs b/components/constellation/constellation.rs
 index a56d0caa7efcc1f778e1c6518676f4885b8297f6..00ab3ecab73f4fa4f46b899b9a1d051424da31d2 100644
 --- a/components/constellation/constellation.rs
@@ -109,32 +137,3 @@ index bf944e55973dd2d05a8a885a9f622b98e175a2ca..16bf2e6c1b5d2d43fbc3e62efb1ea377
              }
          }
      }
-diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessibility_tree.rs
-index 117b8d09e4460d271a10a48bc003ac3b6dcfb6ee..01f48b6f6c530c8cd9d7a651fb940ce14b88c132 100644
---- a/components/layout/accessibility_tree.rs
-+++ b/components/layout/accessibility_tree.rs
-@@ -510,6 +510,11 @@ impl AccessibilityTree {
-         self.embedder_epoch
-     }
- 
-+    /// Return the DOM identity retained for an AccessKit node in the most recently finalized tree.
-+    pub(crate) fn opaque_node_for_id(&self, node_id: NodeId) -> Option<OpaqueNode> {
-+        self.id_to_opaque_node.get(&node_id).copied()
-+    }
-+
-     /// Assert that the tree is a tree without any dangling references or orphaned nodes.
-     ///
-     /// For accessibility tests only, because it’s expensive.
-diff --git a/components/layout/layout_impl.rs b/components/layout/layout_impl.rs
-index fbca832253bc14a3f3f6d9328db0b04b556d7c76..196910cdb71f372cc3ec1a9d235c4c672e75de34 100644
---- a/components/layout/layout_impl.rs
-+++ b/components/layout/layout_impl.rs
-@@ -753,6 +753,24 @@ impl Layout for LayoutThread {
-         *accessibility_tree = Some(AccessibilityTree::new(self.id.into(), epoch));
-     }
- 
-+    fn accessibility_node_address(
-+        &self,
-+        tree_id: accesskit::TreeId,
-+        node_id: accesskit::NodeId,
-+        epoch: Epoch,

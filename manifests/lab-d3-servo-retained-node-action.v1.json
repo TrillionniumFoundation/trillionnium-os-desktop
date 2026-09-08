@@ -11,35 +11,35 @@
   },
   "patch": {
     "format": "ordered_unified_diff_parts",
-    "sha256": "485d54dae38d1cf8aa05fd945731811b2ad929602fcba4726392c0adf8698301",
+    "sha256": "b8eaaafa161061dd35c58775ea56c7b79b15606345d79fde46290d9acde003a2",
     "parts": [
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/000.patch",
-        "sha256": "71e5c51585bf2cc2991e0c4bda1464fb8bf261c8292fee5db5d1f0ed08e2e838"
+        "sha256": "447ade7456274cb523bb2577b1066d925ff3642d8b1c43236e3c88878b83097a"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/001.patch",
-        "sha256": "e9316310a6daba1ad4d133a725a67362809c58782ca866f425b1e25ba44a8100"
+        "sha256": "e1bb10c11c9cb2183f105f34a6185b2c24a140019cbffd970b13e18646e0b035"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/002.patch",
-        "sha256": "cb0be5fc09d5c06b13b34e0ec9f66d0b6da1dd11ad778a022b7c46ebcf4b6b7e"
+        "sha256": "457ce8e00627d7626b4c5b0af89e9d491f72ff9cc08463718aecb0b420d131c9"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/003.patch",
-        "sha256": "f468a92efbbfd8e4a5da7b7c298ba986d91ba02a55b7fdeeea9706886197466f"
+        "sha256": "1cb83bd67e1abe8e9b944fefa3570b12b72f76574c057aa8cc207187da845a91"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/004.patch",
-        "sha256": "655b159c952e53cc7040a0ffaa7ac0d4d1a0c00838eef14d8e9fb9c167cbcc61"
+        "sha256": "75639e41c9fb8a811905e7dafcc5de0fc9d5ab0b0343bdbc23d56e7ddb7be7f7"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/005.patch",
-        "sha256": "f36ae6a945a4ce0c6678874768b55c1b6e0112ae94c4440e0b4415cc2a66e1dd"
+        "sha256": "773b8fd183156563f6695e5f50cd123c69fd7a7a422c2793255dbe33514f3613"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/006.patch",
-        "sha256": "5fa6f4946755b952a23392e9670b3b7a06f8c7d45fd19443d2036ecbf96b9b02"
+        "sha256": "c908fe2b037cb10bdfe490eb3d91079ee4d2f57374c2d9ac84b2b2199bbf4f7d"
       }
     ],
     "allowed_paths": [
@@ -65,14 +65,14 @@
   },
   "hardening": {
     "format": "ordered_unified_diff_parts",
-    "sha256": "db20836414d87d6444000a72ab8c09560e6882f8555fa373bc5d798c77f029fd",
+    "sha256": "bbce8668299e2a1acb0b0ad7c42c488f2185682bb8d365bc5762539c3e80e11a",
     "parts": [
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/007.patch",
-        "sha256": "db20836414d87d6444000a72ab8c09560e6882f8555fa373bc5d798c77f029fd"
+        "sha256": "bbce8668299e2a1acb0b0ad7c42c488f2185682bb8d365bc5762539c3e80e11a"
       }
     ],
-    "purpose": "bind dispatch to the action advertised by the exact retained AccessKit node and add real Servo behavior regressions"
+    "purpose": "real Servo retained-node behavior regressions on a file-disjoint test-only patch stage; production action-advertisement enforcement is contained in the base stage"
   },
   "source_invariants": [
     "route a non-root AccessKit TreeId to exactly one current WebView",

@@ -1,3 +1,143 @@
+diff --git a/components/script/event_loop/script_thread.rs b/components/script/event_loop/script_thread.rs
+index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..aee178ec7dc0877ab8126e7a4e4ef536478346fa 100644
+--- a/components/script/event_loop/script_thread.rs
++++ b/components/script/event_loop/script_thread.rs
+@@ -57,7 +57,7 @@ use js::jsapi::{GCReason, JSContext as UnsafeJSContext};
+ use js::jsval::UndefinedValue;
+ use js::rust::ParentRuntime;
+ use js::rust::wrappers2::{JS_AddInterruptCallback, JS_GC, SetWindowProxyClass};
+-use layout_api::{LayoutConfig, LayoutFactory, RestyleReason, ScriptThreadFactory};
++use layout_api::{LayoutConfig, LayoutFactory, ReflowGoal, RestyleReason, ScriptThreadFactory};
+ use media::WindowGLContext;
+ use metrics::MAX_TASK_NS;
+ use net_traits::image_cache::{ImageCacheFactory, ImageCacheResponseMessage};
+@@ -93,7 +93,7 @@ use servo_canvas_traits::webgl::WebGLPipeline;
+ use servo_config::opts::{self, DiagnosticsLoggingOption};
+ use servo_config::{pref, prefs};
+ use servo_constellation_traits::{
+-    HistoryTraversalSource, LoadData, LoadOrigin, NavigationHistoryBehavior, RemoteFocusOperation,
++    AccessibilityActionResult, HistoryTraversalSource, LoadData, LoadOrigin, NavigationHistoryBehavior, RemoteFocusOperation,
+     ScreenshotReadinessResponse, ScriptToConstellationChan, ScriptToConstellationMessage,
+     ScrollStateUpdate, SessionHistoryTraversalRequest, StructuredSerializedData,
+     TargetSnapshotParams, TraversalDirection, WindowSizeType,
+@@ -1959,6 +1959,22 @@ impl ScriptThread {
+             ScriptThreadMessage::SetAccessibilityActive(pipeline_id, active, epoch) => {
+                 self.set_accessibility_active(pipeline_id, active, epoch);
+             },
++            ScriptThreadMessage::PerformAccessibilityAction(
++                webview_id,
++                pipeline_id,
++                epoch,
++                request,
++                response,
++            ) => {
++                self.perform_accessibility_action(
++                    cx,
++                    webview_id,
++                    pipeline_id,
++                    epoch,
++                    request,
++                    response,
++                );
++            },
+             ScriptThreadMessage::TriggerGarbageCollection => unsafe {
+                 JS_GC(cx, GCReason::API);
+             },
+@@ -3873,6 +3889,99 @@ impl ScriptThread {
+             .set_accessibility_active(active, epoch);
+     }
+ 
++    #[expect(unsafe_code)]
++    fn perform_accessibility_action(
++        &self,
++        cx: &mut JSContext,
++        webview_id: WebViewId,
++        pipeline_id: PipelineId,
++        epoch: Epoch,
++        request: accesskit::ActionRequest,
++        response: generic_channel::GenericCallback<AccessibilityActionResult>,
++    ) {
++        let respond = |result| {
++            if let Err(error) = response.send(result) {
++                warn!("Could not return accessibility action result: {error:?}");
++            }
++        };
++
++        if !pref!(accessibility_enabled) {
++            respond(AccessibilityActionResult::AccessibilityInactive);
++            return;
++        }
++        if request.target_tree == accesskit::TreeId::ROOT ||
++            request.target_tree != accesskit::TreeId::from(pipeline_id)
++        {
++            respond(AccessibilityActionResult::StaleTree);
++            return;
++        }
++        if request.action != accesskit::Action::Click || request.data.is_some() {
++            respond(AccessibilityActionResult::UnsupportedAction);
++            return;
++        }
++        let Some(document) = self.documents.borrow().find_document(pipeline_id) else {
++            respond(AccessibilityActionResult::StaleDocument);
++            return;
++        };
++        if document.webview_id() != webview_id || !document.is_fully_active() {
++            respond(AccessibilityActionResult::StaleDocument);
++            return;
++        }
++        let window = document.window();
++        if !window.layout().accessibility_active() {
++            respond(AccessibilityActionResult::AccessibilityInactive);
++            return;
++        }
++
++        // Update and query the retained tree inside this script task. Page script cannot interleave
++        // between the node lookup and dispatch below.
++        window.reflow(cx, ReflowGoal::UpdateTheRendering);
++        let (address, action_advertised) =
++            match window.layout().accessibility_node_address(
++                request.target_tree,
++                request.target_node,
++                request.action,
++                epoch,
++            ) {
++                layout_api::AccessibilityNodeAddressResult::Resolved {
++                    address,
++                    action_advertised,
++                } => (address, action_advertised),
++                layout_api::AccessibilityNodeAddressResult::StaleTree => {
++                    respond(AccessibilityActionResult::StaleTree);
++                    return;
++                },
++                layout_api::AccessibilityNodeAddressResult::StaleNode => {
++                    respond(AccessibilityActionResult::StaleNode);
++                    return;
++                },
++            };
++        let node = unsafe { crate::dom::node::from_untrusted_node_address(address) };
++        if !node.is_connected() || node.owner_doc().webview_id() != webview_id {
++            respond(AccessibilityActionResult::TargetNotRendered);
++            return;
++        }
++        let Some(element) = node.downcast::<Element>() else {
++            respond(AccessibilityActionResult::TargetNotElement);
++            return;
++        };
++        if element.is_actually_disabled() {
++            respond(AccessibilityActionResult::TargetDisabled);
++            return;
++        }
++        if !element.has_css_layout_box() {
++            respond(AccessibilityActionResult::TargetNotRendered);
++            return;
++        }
++        if !action_advertised {
++            respond(AccessibilityActionResult::ActionNotAdvertised);
++            return;
++        }
++
++        node.fire_synthetic_pointer_event_not_trusted(cx, atom!("click"));
++        respond(AccessibilityActionResult::Dispatched);
 +    }
 +
      /// Handle a "navigate an iframe" message from the constellation.
@@ -31,110 +171,3 @@ index f7a33d88ca3fdb68e0984cff95101c4df98df1da..f67a61eeee4b055935c744672a9e0178
  pub use servo_config::prefs::{PrefValue, Preferences, UserAgentPlatform};
  pub use servo_config::{opts, pref, prefs};
  pub use servo_geometry::{
-diff --git a/components/servo/webview.rs b/components/servo/webview.rs
-index 3778a43c365fd0d770e72565eb1153c3ef1603c6..abf80980e8bbe3aa4bd55159c1b886bf0be958bd 100644
---- a/components/servo/webview.rs
-+++ b/components/servo/webview.rs
-@@ -7,7 +7,8 @@ use std::hash::Hash;
- use std::rc::{Rc, Weak};
- 
- use accesskit::{
--    Affine as AccesskitAffine, Node as AccesskitNode, NodeId, Rect as AccesskitRect, Role, Tree,
-+    ActionRequest, Affine as AccesskitAffine, Node as AccesskitNode, NodeId,
-+    Rect as AccesskitRect, Role, Tree,
-     TreeId, TreeUpdate, Uuid as AccesskitUuid,
- };
- use dpi::PhysicalSize;
-@@ -23,11 +24,11 @@ use log::debug;
- use paint_api::WebViewTrait;
- use paint_api::rendering_context::RenderingContext;
- use servo_base::Epoch;
--use servo_base::generic_channel::GenericSender;
-+use servo_base::generic_channel::{GenericCallback, GenericSender};
- use servo_base::id::WebViewId;
- use servo_config::pref;
- use servo_constellation_traits::{
--    EmbedderToConstellationMessage, HistoryTraversalSource, SessionHistoryTraversalRequest,
-+    AccessibilityActionResult, EmbedderToConstellationMessage, HistoryTraversalSource, SessionHistoryTraversalRequest,
-     TraversalDirection,
- };
- use servo_geometry::DeviceIndependentPixel;
-@@ -905,6 +906,29 @@ impl WebView {
-         self.inner().accesskit_tree_id
-     }
- 
-+    /// Return the AccessKit tree id of the active top-level document grafted into this webview.
-+    pub fn active_document_accesskit_tree_id(&self) -> Option<TreeId> {
-+        self.inner().grafted_accesskit_tree_id
-+    }
-+
-+    /// Perform one retained-node accessibility action and return a typed terminal result.
-+    ///
-+    /// The initial supported scope is a click action with no action data. Servo rejects stale
-+    /// trees, stale nodes, inactive documents, disabled targets, and all unsupported actions.
-+    pub fn perform_accessibility_action(
-+        &self,
-+        request: ActionRequest,
-+        response: GenericCallback<AccessibilityActionResult>,
-+    ) {
-+        self.inner().servo.constellation_proxy().send(
-+            EmbedderToConstellationMessage::PerformAccessibilityAction(
-+                self.id(),
-+                request,
-+                response,
-+            ),
-+        );
-+    }
-+
-     /// Activate or deactivate accessibility features for this [`WebView`], returning the
-     /// AccessKit subtree id if accessibility is now active.
-     ///
-diff --git a/components/shared/constellation/Cargo.toml b/components/shared/constellation/Cargo.toml
-index 7041f6aec61ede5f746524f8d48c8de46d51cc84..24d7eaad6ba5673b95da86e82d113cf9eb3c0f1e 100644
---- a/components/shared/constellation/Cargo.toml
-+++ b/components/shared/constellation/Cargo.toml
-@@ -20,6 +20,7 @@ webgpu = ["dep:webgpu_traits", "dep:wgpu-core"]
- webgl = []
- 
- [dependencies]
-+accesskit = { workspace = true }
- base64 = { workspace = true }
- content-security-policy = { workspace = true }
- devtools_traits = { workspace = true }
-diff --git a/components/shared/constellation/lib.rs b/components/shared/constellation/lib.rs
-index 2dcb20e73777a70a0c6e6d87ba8321c6de6172b4..bc23b89a8c4fda1c4161fee12791314d96daa559 100644
---- a/components/shared/constellation/lib.rs
-+++ b/components/shared/constellation/lib.rs
-@@ -114,6 +114,41 @@ pub enum EmbedderToConstellationMessage {
-     UpdatePinchZoomInfos(PipelineId, PinchZoomInfos),
-     /// Activate or deactivate accessibility features for the given `WebView`.
-     SetAccessibilityActive(WebViewId, bool),
-+    /// Perform one bounded accessibility action against the active document tree of the given
-+    /// `WebView`. The callback is completed exactly once by the constellation or script thread.
-+    PerformAccessibilityAction(
-+        WebViewId,
-+        accesskit::ActionRequest,
-+        GenericCallback<AccessibilityActionResult>,
-+    ),
-+}
-+
-+/// Terminal result for one retained accessibility-node action request.
-+///
-+/// `Dispatched` means that script synchronously revalidated the current retained node and
-+/// dispatched one click event. It does not claim that page script completed an external effect.
-+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
-+pub enum AccessibilityActionResult {
-+    /// One supported action was dispatched to the retained DOM node.
-+    Dispatched,
-+    /// Accessibility is disabled or inactive for the selected webview/document.
-+    AccessibilityInactive,
-+    /// The webview no longer exists.
-+    StaleWebView,
-+    /// The selected document is missing, inactive, or no longer belongs to the webview.
-+    StaleDocument,
-+    /// The requested AccessKit tree is not the active top-level document tree.
-+    StaleTree,
-+    /// The requested AccessKit node is not retained in the current tree.
-+    StaleNode,
-+    /// The action or its action data is outside the initial click-only scope.
-+    UnsupportedAction,

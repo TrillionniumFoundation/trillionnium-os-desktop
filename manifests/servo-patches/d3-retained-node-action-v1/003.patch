@@ -1,123 +1,70 @@
-+    /// The retained accessibility node does not resolve to a DOM element.
-+    TargetNotElement,
-+    /// The resolved element is disabled.
-+    TargetDisabled,
-+    /// The resolved element is not connected or has no current CSS layout box.
-+    TargetNotRendered,
- }
+diff --git a/components/servo/webview.rs b/components/servo/webview.rs
+index 3778a43c365fd0d770e72565eb1153c3ef1603c6..abf80980e8bbe3aa4bd55159c1b886bf0be958bd 100644
+--- a/components/servo/webview.rs
++++ b/components/servo/webview.rs
+@@ -7,7 +7,8 @@ use std::hash::Hash;
+ use std::rc::{Rc, Weak};
  
- pub enum UserContentManagerAction {
-diff --git a/components/shared/layout/Cargo.toml b/components/shared/layout/Cargo.toml
-index 50bfa211d1a837b4d779c394f06e6a9adfb7d571..31bdc999d1309507523c8eedf1e5177e840a3f04 100644
---- a/components/shared/layout/Cargo.toml
-+++ b/components/shared/layout/Cargo.toml
-@@ -14,6 +14,7 @@ name = "layout_api"
- path = "lib.rs"
+ use accesskit::{
+-    Affine as AccesskitAffine, Node as AccesskitNode, NodeId, Rect as AccesskitRect, Role, Tree,
++    ActionRequest, Affine as AccesskitAffine, Node as AccesskitNode, NodeId,
++    Rect as AccesskitRect, Role, Tree,
+     TreeId, TreeUpdate, Uuid as AccesskitUuid,
+ };
+ use dpi::PhysicalSize;
+@@ -23,11 +24,11 @@ use log::debug;
+ use paint_api::WebViewTrait;
+ use paint_api::rendering_context::RenderingContext;
+ use servo_base::Epoch;
+-use servo_base::generic_channel::GenericSender;
++use servo_base::generic_channel::{GenericCallback, GenericSender};
+ use servo_base::id::WebViewId;
+ use servo_config::pref;
+ use servo_constellation_traits::{
+-    EmbedderToConstellationMessage, HistoryTraversalSource, SessionHistoryTraversalRequest,
++    AccessibilityActionResult, EmbedderToConstellationMessage, HistoryTraversalSource, SessionHistoryTraversalRequest,
+     TraversalDirection,
+ };
+ use servo_geometry::DeviceIndependentPixel;
+@@ -905,6 +906,29 @@ impl WebView {
+         self.inner().accesskit_tree_id
+     }
+ 
++    /// Return the AccessKit tree id of the active top-level document grafted into this webview.
++    pub fn active_document_accesskit_tree_id(&self) -> Option<TreeId> {
++        self.inner().grafted_accesskit_tree_id
++    }
++
++    /// Perform one retained-node accessibility action and return a typed terminal result.
++    ///
++    /// The initial supported scope is a click action with no action data. Servo rejects stale
++    /// trees, stale nodes, inactive documents, disabled targets, and all unsupported actions.
++    pub fn perform_accessibility_action(
++        &self,
++        request: ActionRequest,
++        response: GenericCallback<AccessibilityActionResult>,
++    ) {
++        self.inner().servo.constellation_proxy().send(
++            EmbedderToConstellationMessage::PerformAccessibilityAction(
++                self.id(),
++                request,
++                response,
++            ),
++        );
++    }
++
+     /// Activate or deactivate accessibility features for this [`WebView`], returning the
+     /// AccessKit subtree id if accessibility is now active.
+     ///
+diff --git a/components/shared/constellation/Cargo.toml b/components/shared/constellation/Cargo.toml
+index 7041f6aec61ede5f746524f8d48c8de46d51cc84..24d7eaad6ba5673b95da86e82d113cf9eb3c0f1e 100644
+--- a/components/shared/constellation/Cargo.toml
++++ b/components/shared/constellation/Cargo.toml
+@@ -20,6 +20,7 @@ webgpu = ["dep:webgpu_traits", "dep:wgpu-core"]
+ webgl = []
  
  [dependencies]
 +accesskit = { workspace = true }
- app_units = { workspace = true }
- atomic_refcell = { workspace = true }
- bitflags = { workspace = true }
-diff --git a/components/shared/layout/lib.rs b/components/shared/layout/lib.rs
-index 95776711f86be301c7444c3cbdc217d88a9043bc..0e2243da71cc3cc9549d07094ec41198ce96bb23 100644
---- a/components/shared/layout/lib.rs
-+++ b/components/shared/layout/lib.rs
-@@ -417,6 +417,15 @@ pub trait Layout {
-     /// This should be called by the embedder when accessibility is requested by the user.
-     fn set_accessibility_active(&self, enabled: bool, epoch: Epoch);
- 
-+    /// Resolve a retained accessibility node to its DOM address only when the tree identity and
-+    /// embedder epoch still match the caller's active-document snapshot.
-+    fn accessibility_node_address(
-+        &self,
-+        tree_id: accesskit::TreeId,
-+        node_id: accesskit::NodeId,
-+        epoch: Epoch,
-+    ) -> Option<UntrustedNodeAddress>;
-+
-     /// Returns whether accessibility is active for this Layout.
-     fn accessibility_active(&self) -> bool;
- 
-diff --git a/components/shared/script/lib.rs b/components/shared/script/lib.rs
-index 0a53e57fc1dfb7e01c7160397b5db074153f0445..6da07f234b80f05e091c15c65764c94dd32d9c1b 100644
---- a/components/shared/script/lib.rs
-+++ b/components/shared/script/lib.rs
-@@ -46,7 +46,8 @@ use servo_bluetooth_traits::BluetoothRequest;
- use servo_canvas_traits::webgl::WebGLPipeline;
- use servo_config::prefs::PrefValue;
- use servo_constellation_traits::{
--    KeyboardScroll, LoadData, NavigationHistoryBehavior, RemoteFocusOperation,
-+    AccessibilityActionResult, KeyboardScroll, LoadData, NavigationHistoryBehavior,
-+    RemoteFocusOperation,
-     ScriptToConstellationSender, ScrollStateUpdate, StructuredSerializedData, TargetSnapshotParams,
-     WindowSizeType,
- };
-@@ -341,6 +342,15 @@ pub enum ScriptThreadMessage {
-     /// may be split across multiple script threads, and the pipelines in a script thread may belong
-     /// to multiple webviews. So the simplest approach is to activate it for one pipeline at a time.
-     SetAccessibilityActive(PipelineId, bool, Epoch),
-+    /// Atomically resolve and dispatch one accessibility action against a retained node in the
-+    /// current accessibility tree.
-+    PerformAccessibilityAction(
-+        WebViewId,
-+        PipelineId,
-+        Epoch,
-+        accesskit::ActionRequest,
-+        GenericCallback<AccessibilityActionResult>,
-+    ),
-     /// Force a garbage collection in this script thread.
-     TriggerGarbageCollection,
- }
-diff --git a/ports/servoshell/desktop/headed_window.rs b/ports/servoshell/desktop/headed_window.rs
-index 40104c5480f004c996303826fa5a5cac9efb3748..dadeda0e1725bfcf7f333a45cd0cf6106c73e8db 100644
---- a/ports/servoshell/desktop/headed_window.rs
-+++ b/ports/servoshell/desktop/headed_window.rs
-@@ -16,6 +16,7 @@ use keyboard_types::ShortcutMatcher;
- use log::{debug, info};
- use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawWindowHandle};
- use servo::{
-+    AccessibilityActionResult, GenericCallback,
-     AuthenticationRequest, BluetoothDeviceSelectionRequest, Cursor, DeviceIndependentIntRect,
-     DeviceIndependentPixel, DeviceIntPoint, DeviceIntRect, DeviceIntSize, DevicePixel, DevicePoint,
-     EmbedderControl, EmbedderControlId, ImeEvent, InputEvent, InputEventId, InputEventResult,
-@@ -774,7 +775,38 @@ impl HeadedWindow {
-                 },
-                 egui_winit::accesskit_winit::WindowEvent::ActionRequested(req) => {
-                     if req.target_tree != accesskit::TreeId::ROOT {
--                        // TODO(#4344): Forward action to Servo
-+                        let matching_webviews: Vec<_> = state
-+                            .windows()
-+                            .values()
-+                            .flat_map(|window| window.webviews())
-+                            .filter_map(|(_, webview)| {
-+                                (webview.active_document_accesskit_tree_id() ==
-+                                    Some(req.target_tree))
-+                                .then_some(webview)
-+                            })
-+                            .collect();
-+                        if let [webview] = matching_webviews.as_slice() {
-+                            let response = GenericCallback::new(|result| match result {
-+                                Ok(AccessibilityActionResult::Dispatched) => {},
-+                                Ok(result) => {
-+                                    log::debug!(
-+                                        "Accessibility action rejected by Servo: {result:?}"
-+                                    );
-+                                },
-+                                Err(error) => {
-+                                    log::warn!(
-+                                        "Accessibility action callback failed: {error}"
-+                                    );
-+                                },
-+                            })
-+                            .expect("Could not create accessibility action callback");
-+                            webview.perform_accessibility_action(req.clone(), response);
-+                        } else {
-+                            log::warn!(
-+                                "Rejecting accessibility action for missing or ambiguous tree {:?}",
-+                                req.target_tree
-+                            );
-+                        }
-                     }
-                 },
-                 egui_winit::accesskit_winit::WindowEvent::AccessibilityDeactivated => {
+ base64 = { workspace = true }
+ content-security-policy = { workspace = true }
+ devtools_traits = { workspace = true }

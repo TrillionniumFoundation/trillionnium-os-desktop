@@ -1,216 +1,30 @@
-diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessibility_tree.rs
---- a/components/layout/accessibility_tree.rs
-+++ b/components/layout/accessibility_tree.rs
-@@ -10,3 +10,3 @@
--use accesskit::{NodeId, Role};
-+use accesskit::{Action, NodeId, Role};
- use app_units::Au;
- use bitflags::bitflags;
-@@ -510,6 +510,16 @@
--    /// Return the DOM identity retained for an AccessKit node in the most recently finalized tree.
--    pub(crate) fn opaque_node_for_id(&self, node_id: NodeId) -> Option<OpaqueNode> {
--        self.id_to_opaque_node.get(&node_id).copied()
-+    /// Resolve an action target from the exact retained AccessKit node in the most recently
-+    /// finalized tree. The boolean reports whether that node advertised the requested action.
-+    pub(crate) fn action_target_for_id(
-+        &self,
-+        node_id: NodeId,
-+        action: Action,
-+    ) -> Option<(OpaqueNode, bool)> {
-+        let node = self.nodes.get(&node_id)?;
-+        let node = node.borrow();
-+        Some((
-+            node.opaque_node?,
-+            node.accesskit_node.supports_action(action),
-+        ))
-     }
- 
-     /// Assert that the tree is a tree without any dangling references or orphaned nodes.
-@@ -820,3 +820,4 @@
-         local_damage.insert(self.set_role(role_from_dom_node(dom_node)));
-+        self.set_action_supported(Action::Click, click_action_supported(dom_node));
-         if dom_node.type_id() == Some(LayoutNodeType::Text) {
-             let text_content = dom_node.text_content();
-@@ -990,3 +990,15 @@
-+    fn set_action_supported(&mut self, action: Action, supported: bool) {
-+        if self.accesskit_node.supports_action(action) == supported {
-+            return;
-+        }
-+        if supported {
-+            self.accesskit_node.add_action(action);
-+        } else {
-+            self.accesskit_node.remove_action(action);
-+        }
-+        self.dirty_state |= DirtyState::Updated;
-+    }
-+
-     fn label(&self) -> Option<&str> {
-         self.accesskit_node.label()
-     }
-@@ -1320,5 +1320,6 @@
-         (local_name!("article"), Role::Article),
-         (local_name!("aside"), Role::Complementary),
-         (local_name!("body"), Role::RootWebArea),
-+        (local_name!("button"), Role::Button),
-         (local_name!("footer"), Role::ContentInfo),
-         (local_name!("h1"), Role::Heading),
-@@ -1510,2 +1510,8 @@
-+fn click_action_supported(dom_node: &ServoLayoutNode<'_>) -> bool {
-+    dom_node
-+        .as_element()
-+        .is_some_and(|element| element.local_name() == &local_name!("button"))
-+}
-+
- fn role_from_dom_node(dom_node: &ServoLayoutNode<'_>) -> Role {
-     if let Some(dom_element) = dom_node.as_element() {
-@@ -1580,2 +1580,2 @@
- static NAME_FROM_CONTENTS_ROLES: LazyLock<FxHashSet<Role>> =
--    LazyLock::new(|| [(Role::Heading)].into_iter().collect());
-+    LazyLock::new(|| [(Role::Button), (Role::Heading)].into_iter().collect());
-diff --git a/components/shared/layout/lib.rs b/components/shared/layout/lib.rs
---- a/components/shared/layout/lib.rs
-+++ b/components/shared/layout/lib.rs
-@@ -285,4 +285,21 @@
-     fn create(&self, config: LayoutConfig) -> Box<dyn Layout>;
- }
- 
-+/// Result of resolving an AccessKit action target against one retained document tree.
-+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-+pub enum AccessibilityNodeAddressResult {
-+    /// The node exists in the current retained tree. `action_advertised` is copied from that
-+    /// exact retained AccessKit node and must be checked again before dispatch.
-+    Resolved {
-+        /// DOM address retained for this exact accessibility node.
-+        address: UntrustedNodeAddress,
-+        /// Whether the exact retained node advertised the requested action.
-+        action_advertised: bool,
-+    },
-+    /// The tree or embedder epoch is no longer current.
-+    StaleTree,
-+    /// The node is not present in the current retained tree or has no DOM identity.
-+    StaleNode,
-+}
-+
- pub trait Layout {
-@@ -420,7 +420,8 @@
-         &self,
-         tree_id: accesskit::TreeId,
-         node_id: accesskit::NodeId,
-+        action: accesskit::Action,
-         epoch: Epoch,
--    ) -> Option<UntrustedNodeAddress>;
-+    ) -> AccessibilityNodeAddressResult;
- 
-     /// Returns whether accessibility is active for this Layout.
-diff --git a/components/layout/layout_impl.rs b/components/layout/layout_impl.rs
---- a/components/layout/layout_impl.rs
-+++ b/components/layout/layout_impl.rs
-@@ -755,18 +755,28 @@
-         &self,
-         tree_id: accesskit::TreeId,
-         node_id: accesskit::NodeId,
-+        action: accesskit::Action,
-         epoch: Epoch,
--    ) -> Option<UntrustedNodeAddress> {
-+    ) -> layout_api::AccessibilityNodeAddressResult {
-         if tree_id != self.id.into() {
--            return None;
-+            return layout_api::AccessibilityNodeAddressResult::StaleTree;
-         }
-         let accessibility_tree = self.accessibility_tree.borrow();
--        let accessibility_tree = accessibility_tree.as_ref()?;
-+        let Some(accessibility_tree) = accessibility_tree.as_ref() else {
-+            return layout_api::AccessibilityNodeAddressResult::StaleNode;
-+        };
-         if accessibility_tree.embedder_epoch() != epoch {
--            return None;
-+            return layout_api::AccessibilityNodeAddressResult::StaleTree;
-         }
--        let opaque_node = accessibility_tree.opaque_node_for_id(node_id)?;
--        Some(UntrustedNodeAddress(opaque_node.0 as *const c_void))
-+        let Some((opaque_node, action_advertised)) =
-+            accessibility_tree.action_target_for_id(node_id, action)
-+        else {
-+            return layout_api::AccessibilityNodeAddressResult::StaleNode;
-+        };
-+        layout_api::AccessibilityNodeAddressResult::Resolved {
-+            address: UntrustedNodeAddress(opaque_node.0 as *const c_void),
-+            action_advertised,
-+        }
-     }
- 
-     fn accessibility_active(&self) -> bool {
-diff --git a/components/script/event_loop/script_thread.rs b/components/script/event_loop/script_thread.rs
---- a/components/script/event_loop/script_thread.rs
-+++ b/components/script/event_loop/script_thread.rs
-@@ -3900,9 +3900,21 @@
--        let Some(address) = window.layout().accessibility_node_address(
--            request.target_tree,
--            request.target_node,
--            epoch,
--        ) else {
--            respond(AccessibilityActionResult::StaleNode);
--            return;
--        };
-+        let (address, action_advertised) =
-+            match window.layout().accessibility_node_address(
-+                request.target_tree,
-+                request.target_node,
-+                request.action,
-+                epoch,
-+            ) {
-+                layout_api::AccessibilityNodeAddressResult::Resolved {
-+                    address,
-+                    action_advertised,
-+                } => (address, action_advertised),
-+                layout_api::AccessibilityNodeAddressResult::StaleTree => {
-+                    respond(AccessibilityActionResult::StaleTree);
-+                    return;
-+                },
-+                layout_api::AccessibilityNodeAddressResult::StaleNode => {
-+                    respond(AccessibilityActionResult::StaleNode);
-+                    return;
-+                },
-+            };
-         let node = unsafe { crate::dom::node::from_untrusted_node_address(address) };
-@@ -3955,5 +3955,9 @@
-             respond(AccessibilityActionResult::TargetNotRendered);
-             return;
-         }
-+        if !action_advertised {
-+            respond(AccessibilityActionResult::ActionNotAdvertised);
-+            return;
-+        }
- 
-         node.fire_synthetic_pointer_event_not_trusted(cx, atom!("click"));
-diff --git a/components/shared/constellation/lib.rs b/components/shared/constellation/lib.rs
---- a/components/shared/constellation/lib.rs
-+++ b/components/shared/constellation/lib.rs
-@@ -140,4 +140,6 @@
-     /// The requested AccessKit node is not retained in the current tree.
-     StaleNode,
--    /// The action or its action data is outside the initial click-only scope.
-+    /// The exact retained AccessKit node does not advertise the requested action.
-+    ActionNotAdvertised,
-+    /// The action type or its action data is outside the initial click-only scope.
-     UnsupportedAction,
 diff --git a/components/servo/tests/accessibility.rs b/components/servo/tests/accessibility.rs
+index 4b1389ea0b619aba8557cb9090212bf8baa6afda..1bb26929ce0e5c554ec387e41f78cdca1b3fedf2 100644
 --- a/components/servo/tests/accessibility.rs
 +++ b/components/servo/tests/accessibility.rs
-@@ -7,4 +7,5 @@
+@@ -7,14 +7,16 @@ mod common;
+ 
  use std::collections::VecDeque;
  use std::rc::Rc;
 +use std::sync::{Arc, Mutex};
  
 -use accesskit::{NodeId, Rect, Role, TreeId, TreeUpdate};
 +use accesskit::{Action, ActionData, ActionRequest, NodeId, Rect, Role, TreeId, TreeUpdate};
-@@ -15,4 +15,5 @@
+ use accesskit_consumer::TreeChangeHandler;
+ use euclid::Scale;
+ use servo::{
      DiagnosticsLoggingOption, LoadStatus, Opts, Preferences, Scroll, WebViewBuilder, WebViewPoint,
      WebViewVector,
  };
 +use servo::{AccessibilityActionResult, GenericCallback};
  use url::Url;
-@@ -1100,3 +1100,296 @@
+ use webrender_api::units::{DevicePoint, DeviceVector2D};
+ 
+@@ -944,6 +946,300 @@ fn test_accessibility_unchanged_bounds_are_not_resent() {
+     );
+ }
+ 
++// The action path must not fall back to the legacy opaque_node_for_id lookup.
 +#[test]
 +fn test_retained_accessibility_click_dispatches_exactly_once() {
 +    let url = r#"data:text/html,<!DOCTYPE html>

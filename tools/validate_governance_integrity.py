@@ -3,7 +3,8 @@
 
 The reviewed implementation remains in ``_validate_governance_integrity_impl``.
 This facade registers the D3 source-reference workflow, the integrated-runtime
-evidence-verifier workflow, and their reviewed local scripts without weakening
+evidence-verifier workflow, the retained-node behavior workflow, and their
+reviewed local scripts without weakening
 the exact workflow inventory or read-only workflow policy. It also preserves
 the validator's historical test contract: regression tests may replace mutable
 policy globals with temporary fixtures and every proxied helper synchronizes
@@ -32,6 +33,7 @@ _SPEC.loader.exec_module(_impl)
 _ADDITIONAL_WORKFLOWS = (
     ".github/workflows/d3-semantic-resolver-reference.yml",
     ".github/workflows/d3-integrated-runtime-evidence.yml",
+    ".github/workflows/d3-retained-node-behavior.yml",
     ".github/workflows/self-hosted-desktop-availability.yml",
     ".github/workflows/self-hosted-fleet-availability.yml",
 )

@@ -1,140 +1,140 @@
-+    ) -> Option<UntrustedNodeAddress> {
+diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessibility_tree.rs
+index 117b8d09e4460d271a10a48bc003ac3b6dcfb6ee..3ca8d240f8e25bbb6c23a5b8169a8e531a8b2ced 100644
+--- a/components/layout/accessibility_tree.rs
++++ b/components/layout/accessibility_tree.rs
+@@ -8,7 +8,7 @@ use std::iter::repeat;
+ use std::sync::atomic::AtomicU64;
+ use std::sync::{LazyLock, atomic};
+ 
+-use accesskit::{NodeId, Role};
++use accesskit::{Action, NodeId, Role};
+ use app_units::Au;
+ use bitflags::bitflags;
+ use euclid::Rect;
+@@ -510,6 +510,21 @@ impl AccessibilityTree {
+         self.embedder_epoch
+     }
+ 
++    /// Resolve an action target from the exact retained AccessKit node in the most recently
++    /// finalized tree. The boolean reports whether that node advertised the requested action.
++    pub(crate) fn action_target_for_id(
++        &self,
++        node_id: NodeId,
++        action: Action,
++    ) -> Option<(OpaqueNode, bool)> {
++        let node = self.nodes.get(&node_id)?;
++        let node = node.borrow();
++        Some((
++            node.opaque_node?,
++            node.accesskit_node.supports_action(action),
++        ))
++    }
++
+     /// Assert that the tree is a tree without any dangling references or orphaned nodes.
+     ///
+     /// For accessibility tests only, because it’s expensive.
+@@ -568,6 +583,12 @@ fn role_from_role_attribute(dom_element: &ServoLayoutElement<'_>) -> Option<Role
+         .cloned()
+ }
+ 
++fn click_action_supported(dom_node: &ServoLayoutNode<'_>) -> bool {
++    dom_node
++        .as_element()
++        .is_some_and(|element| element.local_name() == &local_name!("button"))
++}
++
+ fn role_from_dom_node(dom_node: &ServoLayoutNode<'_>) -> Role {
+     if let Some(dom_element) = dom_node.as_element() {
+         role_from_role_attribute(&dom_element).unwrap_or_else(|| {
+@@ -827,6 +848,7 @@ impl AccessibilityNode {
+             return local_damage;
+         }
+         local_damage.insert(self.set_role(role_from_dom_node(dom_node)));
++        self.set_action_supported(Action::Click, click_action_supported(dom_node));
+         if dom_node.type_id() == Some(LayoutNodeType::Text) {
+             let text_content = dom_node.text_content();
+             trace!("node text content = {text_content:?}");
+@@ -975,6 +997,18 @@ impl AccessibilityNode {
+         LocalAccessibilityDamage::RoleChanged
+     }
+ 
++    fn set_action_supported(&mut self, action: Action, supported: bool) {
++        if self.accesskit_node.supports_action(action) == supported {
++            return;
++        }
++        if supported {
++            self.accesskit_node.add_action(action);
++        } else {
++            self.accesskit_node.remove_action(action);
++        }
++        self.dirty_state |= DirtyState::Updated;
++    }
++
+     fn label(&self) -> Option<&str> {
+         self.accesskit_node.label()
+     }
+@@ -1343,6 +1377,7 @@ static HTML_ELEMENT_ROLE_MAPPINGS: LazyLock<FxHashMap<LocalName, Role>> = LazyLo
+         (local_name!("article"), Role::Article),
+         (local_name!("aside"), Role::Complementary),
+         (local_name!("body"), Role::RootWebArea),
++        (local_name!("button"), Role::Button),
+         (local_name!("footer"), Role::ContentInfo),
+         (local_name!("h1"), Role::Heading),
+         (local_name!("h2"), Role::Heading),
+@@ -1411,4 +1446,4 @@ static SUPPORTED_ARIA_ROLES: LazyLock<FxHashMap<Atom, Role>> = LazyLock::new(||
+ 
+ /// <https://w3c.github.io/aria/#namefromcontent>
+ static NAME_FROM_CONTENTS_ROLES: LazyLock<FxHashSet<Role>> =
+-    LazyLock::new(|| [(Role::Heading)].into_iter().collect());
++    LazyLock::new(|| [(Role::Button), (Role::Heading)].into_iter().collect());
+diff --git a/components/layout/layout_impl.rs b/components/layout/layout_impl.rs
+index fbca832253bc14a3f3f6d9328db0b04b556d7c76..3340f65a9aacc7e876f1c70f727f64a6eed27b8c 100644
+--- a/components/layout/layout_impl.rs
++++ b/components/layout/layout_impl.rs
+@@ -753,6 +753,34 @@ impl Layout for LayoutThread {
+         *accessibility_tree = Some(AccessibilityTree::new(self.id.into(), epoch));
+     }
+ 
++    fn accessibility_node_address(
++        &self,
++        tree_id: accesskit::TreeId,
++        node_id: accesskit::NodeId,
++        action: accesskit::Action,
++        epoch: Epoch,
++    ) -> layout_api::AccessibilityNodeAddressResult {
 +        if tree_id != self.id.into() {
-+            return None;
++            return layout_api::AccessibilityNodeAddressResult::StaleTree;
 +        }
 +        let accessibility_tree = self.accessibility_tree.borrow();
-+        let accessibility_tree = accessibility_tree.as_ref()?;
++        let Some(accessibility_tree) = accessibility_tree.as_ref() else {
++            return layout_api::AccessibilityNodeAddressResult::StaleNode;
++        };
 +        if accessibility_tree.embedder_epoch() != epoch {
-+            return None;
++            return layout_api::AccessibilityNodeAddressResult::StaleTree;
 +        }
-+        let opaque_node = accessibility_tree.opaque_node_for_id(node_id)?;
-+        Some(UntrustedNodeAddress(opaque_node.0 as *const c_void))
++        let Some((opaque_node, action_advertised)) =
++            accessibility_tree.action_target_for_id(node_id, action)
++        else {
++            return layout_api::AccessibilityNodeAddressResult::StaleNode;
++        };
++        layout_api::AccessibilityNodeAddressResult::Resolved {
++            address: UntrustedNodeAddress(opaque_node.0 as *const c_void),
++            action_advertised,
++        }
 +    }
 +
      fn accessibility_active(&self) -> bool {
          self.accessibility_active.get()
      }
-diff --git a/components/script/event_loop/script_thread.rs b/components/script/event_loop/script_thread.rs
-index c7357b03cb7bfa8db5cfaef64233f67c11edd2d9..220d51811e91a99cc488f0696857fd47316f161d 100644
---- a/components/script/event_loop/script_thread.rs
-+++ b/components/script/event_loop/script_thread.rs
-@@ -57,7 +57,7 @@ use js::jsapi::{GCReason, JSContext as UnsafeJSContext};
- use js::jsval::UndefinedValue;
- use js::rust::ParentRuntime;
- use js::rust::wrappers2::{JS_AddInterruptCallback, JS_GC, SetWindowProxyClass};
--use layout_api::{LayoutConfig, LayoutFactory, RestyleReason, ScriptThreadFactory};
-+use layout_api::{LayoutConfig, LayoutFactory, ReflowGoal, RestyleReason, ScriptThreadFactory};
- use media::WindowGLContext;
- use metrics::MAX_TASK_NS;
- use net_traits::image_cache::{ImageCacheFactory, ImageCacheResponseMessage};
-@@ -93,7 +93,7 @@ use servo_canvas_traits::webgl::WebGLPipeline;
- use servo_config::opts::{self, DiagnosticsLoggingOption};
- use servo_config::{pref, prefs};
- use servo_constellation_traits::{
--    HistoryTraversalSource, LoadData, LoadOrigin, NavigationHistoryBehavior, RemoteFocusOperation,
-+    AccessibilityActionResult, HistoryTraversalSource, LoadData, LoadOrigin, NavigationHistoryBehavior, RemoteFocusOperation,
-     ScreenshotReadinessResponse, ScriptToConstellationChan, ScriptToConstellationMessage,
-     ScrollStateUpdate, SessionHistoryTraversalRequest, StructuredSerializedData,
-     TargetSnapshotParams, TraversalDirection, WindowSizeType,
-@@ -1959,6 +1959,22 @@ impl ScriptThread {
-             ScriptThreadMessage::SetAccessibilityActive(pipeline_id, active, epoch) => {
-                 self.set_accessibility_active(pipeline_id, active, epoch);
-             },
-+            ScriptThreadMessage::PerformAccessibilityAction(
-+                webview_id,
-+                pipeline_id,
-+                epoch,
-+                request,
-+                response,
-+            ) => {
-+                self.perform_accessibility_action(
-+                    cx,
-+                    webview_id,
-+                    pipeline_id,
-+                    epoch,
-+                    request,
-+                    response,
-+                );
-+            },
-             ScriptThreadMessage::TriggerGarbageCollection => unsafe {
-                 JS_GC(cx, GCReason::API);
-             },
-@@ -3873,6 +3889,83 @@ impl ScriptThread {
-             .set_accessibility_active(active, epoch);
-     }
+diff --git a/components/script/Cargo.toml b/components/script/Cargo.toml
+index 3c71ce76f936a613e8276f7099653b8fda80fab7..1a2bf8ceffa57a6dec65f4c0b397ef778df5633b 100644
+--- a/components/script/Cargo.toml
++++ b/components/script/Cargo.toml
+@@ -82,6 +82,7 @@ webxr = ["webgl", "gamepad", "webxr-api", "script_bindings/webxr"]
+ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(crown)'] }
  
-+    #[expect(unsafe_code)]
-+    fn perform_accessibility_action(
-+        &self,
-+        cx: &mut JSContext,
-+        webview_id: WebViewId,
-+        pipeline_id: PipelineId,
-+        epoch: Epoch,
-+        request: accesskit::ActionRequest,
-+        response: generic_channel::GenericCallback<AccessibilityActionResult>,
-+    ) {
-+        let respond = |result| {
-+            if let Err(error) = response.send(result) {
-+                warn!("Could not return accessibility action result: {error:?}");
-+            }
-+        };
-+
-+        if !pref!(accessibility_enabled) {
-+            respond(AccessibilityActionResult::AccessibilityInactive);
-+            return;
-+        }
-+        if request.target_tree == accesskit::TreeId::ROOT ||
-+            request.target_tree != accesskit::TreeId::from(pipeline_id)
-+        {
-+            respond(AccessibilityActionResult::StaleTree);
-+            return;
-+        }
-+        if request.action != accesskit::Action::Click || request.data.is_some() {
-+            respond(AccessibilityActionResult::UnsupportedAction);
-+            return;
-+        }
-+        let Some(document) = self.documents.borrow().find_document(pipeline_id) else {
-+            respond(AccessibilityActionResult::StaleDocument);
-+            return;
-+        };
-+        if document.webview_id() != webview_id || !document.is_fully_active() {
-+            respond(AccessibilityActionResult::StaleDocument);
-+            return;
-+        }
-+        let window = document.window();
-+        if !window.layout().accessibility_active() {
-+            respond(AccessibilityActionResult::AccessibilityInactive);
-+            return;
-+        }
-+
-+        // Update and query the retained tree inside this script task. Page script cannot interleave
-+        // between the node lookup and dispatch below.
-+        window.reflow(cx, ReflowGoal::UpdateTheRendering);
-+        let Some(address) = window.layout().accessibility_node_address(
-+            request.target_tree,
-+            request.target_node,
-+            epoch,
-+        ) else {
-+            respond(AccessibilityActionResult::StaleNode);
-+            return;
-+        };
-+        let node = unsafe { crate::dom::node::from_untrusted_node_address(address) };
-+        if !node.is_connected() || node.owner_doc().webview_id() != webview_id {
-+            respond(AccessibilityActionResult::TargetNotRendered);
-+            return;
-+        }
-+        let Some(element) = node.downcast::<Element>() else {
-+            respond(AccessibilityActionResult::TargetNotElement);
-+            return;
-+        };
-+        if element.is_actually_disabled() {
-+            respond(AccessibilityActionResult::TargetDisabled);
-+            return;
-+        }
-+        if !element.has_css_layout_box() {
-+            respond(AccessibilityActionResult::TargetNotRendered);
-+            return;
-+        }
-+
-+        node.fire_synthetic_pointer_event_not_trusted(cx, atom!("click"));
-+        respond(AccessibilityActionResult::Dispatched);
+ [dependencies]
++accesskit = { workspace = true }
+ aes = { workspace = true, optional = true }
+ aes-gcm = { workspace = true, optional = true }
+ aes-kw = { workspace = true, optional = true }
