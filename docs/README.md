@@ -1,37 +1,25 @@
 # TrillionniumOS Desktop documentation
 
-This directory is the normative documentation entry point for the desktop
-product implemented by this repository. The repository itself—not a separate
-local documentation tree—is the canonical source for plans, contracts,
-implementation, tests, packaging, and release evidence.
+This directory is the normative documentation entry point for the desktop product implemented by this repository. The repository itself—not a separate local tree—is the canonical source for plans, contracts, implementation, tests, packaging, and evidence definitions.
 
-## Canonical truth
+## Project truth
 
-- [`../manifests/project-state.v1.json`](../manifests/project-state.v1.json) —
-  single machine project status
-- [`../manifests/gates.v1.json`](../manifests/gates.v1.json) — work-package,
-  evidence-tier, review, and invalidation registry
-- [`DESKTOP_PLAN.md`](DESKTOP_PLAN.md) — stable plan index
-- [`DESKTOP_PLAN-2026-08-29-d6.md`](DESKTOP_PLAN-2026-08-29-d6.md) — active plan
-- [`CURRENT_STATE.md`](CURRENT_STATE.md) — human-readable integrated state
-- [`MANIFEST.json`](MANIFEST.json) — documentation status and evidence links
+- [`CURRENT_STATE.md`](CURRENT_STATE.md) — facts integrated on `main`;
+- [`CANDIDATE_STATUS.md`](CANDIDATE_STATUS.md) — unmerged candidate state and evidence freshness rules;
+- [`NON_CLAIMS.md`](NON_CLAIMS.md) — authoritative current limits;
+- [`../manifests/project-state.v1.json`](../manifests/project-state.v1.json) — machine project-state registry;
+- [`../manifests/gates.v1.json`](../manifests/gates.v1.json) — work-package, evidence-tier, review, and invalidation registry;
+- [`DESKTOP_PLAN-2026-08-29-d6.md`](DESKTOP_PLAN-2026-08-29-d6.md) — active product plan;
+- [`MANIFEST.json`](MANIFEST.json) — documentation and evidence-definition metadata.
 
-## d6 annexes
+When machine state, prose, a PR description, or a historical artifact disagree, no broader claim is allowed automatically. Resolve the conflict and apply the narrower claim until exact evidence is regenerated.
+
+## Execution and governance
 
 - [`plan/PROJECT_TRUTH_AND_EVIDENCE.md`](plan/PROJECT_TRUTH_AND_EVIDENCE.md)
 - [`plan/GATE_CONTRACTS_AND_INVALIDATION.md`](plan/GATE_CONTRACTS_AND_INVALIDATION.md)
-- [`plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md`](plan/BLOCKER_CLOSURE_LEDGER-2026-08-29.md)
-- [`architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md`](architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md)
-- [`security/THREAT_MODEL_V2.md`](security/THREAT_MODEL_V2.md)
+- [`plan/PR73_DECOMPOSITION.md`](plan/PR73_DECOMPOSITION.md)
+- [`governance/BRANCH_PROTECTION_REQUIRED.md`](governance/BRANCH_PROTECTION_REQUIRED.md)
 - [`security/SECURITY_CONTROL_MATRIX.md`](security/SECURITY_CONTROL_MATRIX.md)
-- [`release/RELEASE_SECURITY_AND_QUALIFICATION.md`](release/RELEASE_SECURITY_AND_QUALIFICATION.md)
 
-The previous d5 and d4 plans remain recoverable history. They must not override
-d6 project, process, authority, evidence, revision, network, update, or release
-decisions.
-
-The Android/mobile company repository
-`TrillionniumFoundation/trillionnium-os` is a sibling reference, not a source
-directory, workspace member, submodule, or default build dependency. The exact
-reviewed reference and rejected mobile authorities are recorded in
-`manifests/upstream-reference-review.v1.json`.
+Historical plans and evidence remain useful for archaeology, but they must not override current `main`, current exact-head evidence, active policy, or a narrower claim ceiling.
