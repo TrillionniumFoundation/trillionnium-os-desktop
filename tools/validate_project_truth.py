@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Run legacy project invariants plus the single closed status projection gate."""
+"""Run non-status invariants plus the sole closed status projection gate."""
 
 from __future__ import annotations
 
-import contextlib
 import importlib.util
-import io
 import sys
 from pathlib import Path
 
@@ -22,7 +20,10 @@ def _load(name: str, path: Path):
     return module
 
 
-_BASE = _load("_validate_project_truth_base", TOOLS / "_validate_project_truth_base.py")
+_NON_STATUS = _load(
+    "non_status_project_truth",
+    TOOLS / "non_status_project_truth.py",
+)
 _STATUS = _load("structured_status", TOOLS / "structured_status_repository.py")
 
 STATUS_REGISTRY_PATH = _STATUS.STATUS_REGISTRY_PATH
@@ -38,24 +39,18 @@ validate_source_state_record = _STATUS.validate_source_state_record
 
 
 def main() -> int:
-    # The legacy validator keeps every non-status invariant. Its old prose
-    # heuristic is deliberately disabled: the mandatory closed-record gate
-    # below is the sole authority for integrated status projection.
-    _BASE.check_status_documents = lambda _project: None
-    stdout = io.StringIO()
-    stderr = io.StringIO()
-    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-        base_result = _BASE.main()
-
+    non_status_errors = _NON_STATUS.validate_non_status_repository(ROOT)
     status_errors = _STATUS.validate_repository(ROOT)
-    if base_result != 0:
-        sys.stderr.write(stderr.getvalue())
+
+    for error in non_status_errors:
+        print(f"ERROR: {error}", file=sys.stderr)
     for error in status_errors:
         print(f"ERROR: {error}", file=sys.stderr)
-    if base_result != 0 or status_errors:
+    if non_status_errors or status_errors:
         print(
             "project truth validation failed "
-            f"(legacy={base_result}, structured_status={len(status_errors)})",
+            f"(non_status={len(non_status_errors)}, "
+            f"structured_status={len(status_errors)})",
             file=sys.stderr,
         )
         return 1
