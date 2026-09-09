@@ -1,4 +1,4 @@
-# repair-retry: 10
+# repair-retry: 11
 name: s05-authoritative-export-autofix
 
 on:
@@ -35,11 +35,18 @@ jobs:
 
           journal = Path('crates/hepta-session-core/src/receipt_journal.rs')
           text = journal.read_text(encoding='utf-8')
-          old_doc = 'or its compatibility alias\n/// [`export_redacted_jsonl`]).'
-          new_doc = 'or the crate-root compatibility alias\n/// [`crate::export_redacted_jsonl`]).'
-          if text.count(old_doc) != 1:
-              raise SystemExit(f'compatibility documentation: expected one match, found {text.count(old_doc)}')
-          text = text.replace(old_doc, new_doc, 1)
+          replacements = {
+              'or its compatibility alias\n/// [`export_redacted_jsonl`]).':
+                  'or the crate-root compatibility alias\n/// [`crate::export_redacted_jsonl`]).',
+              'journal parent contains a symlink or non-directory component':
+                  'journal parent must be a real directory, not a symlink or non-directory component',
+              'journal parent is group/other writable without trusted sticky-root custody':
+                  'journal parent must not be group/other writable without trusted sticky-root custody',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'compatibility replacement {old!r}: expected one match, found {text.count(old)}')
+              text = text.replace(old, new, 1)
           marker = 'pub fn export_redacted_jsonl(\n'
           if text.count(marker) != 1:
               raise SystemExit(f'test-only compatibility alias: expected one match, found {text.count(marker)}')
