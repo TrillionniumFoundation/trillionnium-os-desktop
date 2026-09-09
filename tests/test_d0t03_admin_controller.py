@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 import unittest
 from pathlib import Path
 
@@ -10,7 +11,12 @@ MODULE_PATH = ROOT / "tools/d0t03_admin_controller.py"
 spec = importlib.util.spec_from_file_location("d0t03_admin_controller", MODULE_PATH)
 assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
+sys.modules[spec.name] = module
+try:
+    spec.loader.exec_module(module)
+except BaseException:
+    sys.modules.pop(spec.name, None)
+    raise
 
 
 class D0T03ControllerTests(unittest.TestCase):
