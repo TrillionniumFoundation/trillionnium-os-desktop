@@ -1,0 +1,161 @@
+name: s07-reconstruct-one-shot
+
+on:
+  push:
+    branches: [codex/s07-servo-retained-node-closure-v1]
+    paths: [".github/workflows/s07-reconstruct.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  reconstruct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    env:
+      S06_HEAD: f0e947e5e7267a3fcdd0a7d5437c0ae00c09ebfe
+      OLD_S06_HEAD: e2004e4949efda039b3b9badff9f716bbf433d4b
+      OLD_S07_HEAD: 4e14d2bdac1a489859c05ef8014e659c4453ddb4
+      D3_SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+      D3_SERVO_MANIFEST: manifests/lab-d3-servo-retained-node-action.v1.json
+    steps:
+      - name: Check out exact clean S07 carrier
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/s07-servo-retained-node-closure-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Bind final S06 and extract only the old S07 file set
+        env:
+          TRIGGER_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TRIGGER_SHA"
+          git config user.name "Trillionnium gap-closure bot"
+          git config user.email "102159240+ProfHepta@users.noreply.github.com"
+          git fetch --no-tags origin "$S06_HEAD" "$OLD_S06_HEAD" "$OLD_S07_HEAD"
+          git merge --no-ff --no-commit "$S06_HEAD"
+          test "$(git rev-parse MERGE_HEAD)" = "$S06_HEAD"
+          git diff --binary --full-index "$OLD_S06_HEAD" "$OLD_S07_HEAD" -- \
+            .github/workflows/s07-servo-retained-node.yml \
+            docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md \
+            manifests/lab-d3-servo-retained-node-action.v1.json \
+            manifests/servo-patches/d3-retained-node-action-v1/000.patch \
+            manifests/servo-patches/d3-retained-node-action-v1/001.patch \
+            manifests/servo-patches/d3-retained-node-action-v1/002.patch \
+            manifests/servo-patches/d3-retained-node-action-v1/003.patch \
+            manifests/servo-patches/d3-retained-node-action-v1/004.patch \
+            manifests/servo-patches/d3-retained-node-action-v1/005.patch \
+            manifests/servo-patches/d3-retained-node-action-v1/006.patch \
+            manifests/servo-patches/d3-retained-node-action-v1/007.patch \
+            tests/test_s07_servo_patch_package.py \
+            tools/_qualify_servo_exact_pin_v3_impl.py \
+            tools/qualify_servo_exact_pin_v3.py \
+            tools/verify_d3_servo_patch.py \
+            > "$RUNNER_TEMP/s07-source.patch"
+          test -s "$RUNNER_TEMP/s07-source.patch"
+          git apply --index --3way "$RUNNER_TEMP/s07-source.patch"
+
+      - name: Repair carrier identity, workflow coverage, and evidence binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/s07_successor_autofix.py
+          rm -f \
+            tools/s07_successor_autofix.py \
+            .github/workflows/s07-reconstruct.yml
+          git add -A
+          git diff --cached --check
+          git diff --cached --name-only | tee "$RUNNER_TEMP/carrier-paths.txt"
+          for required in \
+            .github/workflows/s07-servo-retained-node.yml \
+            docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md \
+            manifests/lab-d3-servo-retained-node-action.v1.json \
+            manifests/servo-patches/d3-retained-node-action-v1/000.patch \
+            manifests/servo-patches/d3-retained-node-action-v1/007.patch \
+            tests/test_s07_servo_patch_package.py \
+            tools/_qualify_servo_exact_pin_v3_impl.py \
+            tools/qualify_servo_exact_pin_v3.py \
+            tools/verify_d3_servo_patch.py; do
+            grep -Fxq "$required" "$RUNNER_TEMP/carrier-paths.txt"
+          done
+          test ! -e tools/s07_successor_autofix.py
+          test ! -e .github/workflows/s07-reconstruct.yml
+          test "$(jq -r '.carrier_base_commit' "$D3_SERVO_MANIFEST")" = "$S06_HEAD"
+          test "$(jq -r '.carrier_branch' "$D3_SERVO_MANIFEST")" = \
+            codex/s07-servo-retained-node-closure-v1
+
+      - name: Install exact carrier Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+
+      - name: Validate carrier source and package contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 -m unittest tests.test_s07_servo_patch_package -v
+          python3 tools/qualify_servo_exact_pin_v3.py verify-d3-patch \
+            --manifest "$D3_SERVO_MANIFEST" \
+            --root . \
+            --output "$RUNNER_TEMP/s07-combined.patch" \
+            --base-output "$RUNNER_TEMP/s07-base.patch" \
+            --hardening-output "$RUNNER_TEMP/s07-hardening.patch"
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Check out the exact Servo source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.D3_SERVO_COMMIT }}
+          path: servo
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Apply the complete package to the exact Servo pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = "$D3_SERVO_COMMIT"
+          python3 - <<'PY'
+          import tomllib
+          from pathlib import Path
+          lock = tomllib.loads(Path('servo/Cargo.lock').read_text(encoding='utf-8'))
+          versions = sorted(
+              package['version']
+              for package in lock['package']
+              if package['name'] == 'accesskit'
+          )
+          if versions != ['0.24.0']:
+              raise SystemExit(f'unexpected AccessKit versions: {versions}')
+          PY
+          patch --dry-run --batch --forward -d servo -p1 < "$RUNNER_TEMP/s07-base.patch"
+          patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/s07-base.patch"
+          patch --dry-run --batch --forward -d servo -p1 < "$RUNNER_TEMP/s07-hardening.patch"
+          patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/s07-hardening.patch"
+          git -C servo diff --name-only | sort > "$RUNNER_TEMP/s07-servo-paths.txt"
+          jq -r '.patch.allowed_paths[]' "$D3_SERVO_MANIFEST" | sort \
+            > "$RUNNER_TEMP/s07-allowed-paths.txt"
+          cmp "$RUNNER_TEMP/s07-allowed-paths.txt" "$RUNNER_TEMP/s07-servo-paths.txt"
+          git -C servo diff --check
+          rm -rf servo
+
+      - name: Publish the repaired S07 merge object
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse MERGE_HEAD)" = "$S06_HEAD"
+          test -z "$(git status --porcelain=v1 | grep '^?? servo/' || true)"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat(s07): bind complete retained-node evidence to final S06"
+          git push origin HEAD:codex/s07-servo-retained-node-closure-v1
