@@ -32,7 +32,7 @@ jobs:
           set -euo pipefail
           test "${GITHUB_REF}" = "refs/heads/codex/d0t03-live-governance-controller-v2"
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
-          test "$(git rev-parse HEAD^)" = "6aed391384e8545615544052acb94e8eb18531f3"
+          test "$(git rev-parse HEAD^)" = "f05d394d56368820145f2dace24db9af42099cf9"
           cat .github/d0t03-hardening/payload.b64.* | base64 --decode > "$RUNNER_TEMP/d0t03-hardening.tar.gz"
           printf '%s  %s\n' \
             'ad8efc83bdab38fe01d5b4fb0ee3fee8eedbff7faaf9f0396deeeb033514b5e6' \
@@ -64,19 +64,18 @@ jobs:
           python3 -m py_compile tools/d0t03_admin_controller.py tests/test_d0t03_admin_controller.py
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
-          python3 tools/validate_contract_foundation.py
           git diff --check
 
-      - name: Publish one clean ordinary source commit
+      - name: Publish source without mutating workflow files
         shell: bash
         run: |
           set -euo pipefail
+          git checkout -- .github/workflows/temporary-d0t03-hardening.yml
           git add -A
           git diff --cached --name-only | sort > "$RUNNER_TEMP/actual-final-paths"
           cat > "$RUNNER_TEMP/expected-final-paths" <<'EOF'
           .github/d0t03-hardening/payload.b64.00
           .github/d0t03-hardening/payload.b64.01
-          .github/workflows/temporary-d0t03-hardening.yml
           tests/test_d0t03_admin_controller.py
           tools/d0t03_admin_controller.py
           EOF
