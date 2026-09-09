@@ -22,13 +22,13 @@ pub mod receipt_journal {
 
     pub(crate) use super::receipt_journal_impl::{
         Digest, JournalError, ReceiptEnvelope, RecoveredRecord, RecoveryReport, TailStatus,
-        export_journal_redacted_jsonl, export_receipt_envelopes_jsonl, export_redacted_jsonl,
-        inspect_chain,
+        export_journal_redacted_jsonl, export_receipt_envelopes_jsonl,
     };
 }
 
 pub use authoritative_export::{
-    export_forensic_prefix_jsonl, export_receipt_envelopes_jsonl, export_redacted_jsonl,
+    export_forensic_prefix_jsonl, export_managed_receipt_envelopes_jsonl,
+    export_managed_redacted_jsonl, export_receipt_envelopes_jsonl, export_redacted_jsonl,
 };
 pub use machine::{SessionMachine, SessionSnapshot};
 pub use queue::{ArbiterQueue, QueueError};

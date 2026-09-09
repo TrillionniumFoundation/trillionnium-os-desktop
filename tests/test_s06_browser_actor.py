@@ -84,6 +84,9 @@ class BrowserActorAuthorityBoundaryTests(unittest.TestCase):
             "PageRuntime,",
             "RequestControl,",
             "RuntimeReply,",
+            "pub use hepta_session_core::{ReceiptJournal, SessionEvent",
+            "pub fn apply_session_event(",
+            ".apply_session_event(event, now_ms)",
             "pub fn new(",
             "BrowserRequestHandler for BrowserActor",
             "pub use hepta_browser_actor_simulation::PrincipalBinding",
@@ -94,7 +97,7 @@ class BrowserActorAuthorityBoundaryTests(unittest.TestCase):
             "tokio::spawn",
         ):
             self.assertNotIn(forbidden, source)
-        self.assertGreaterEqual(source.count("```compile_fail"), 3)
+        self.assertGreaterEqual(source.count("```compile_fail"), 4)
 
     def test_closed_contract_requires_attestation_custody_and_owned_runtime(self) -> None:
         contract = json.loads(
@@ -122,6 +125,12 @@ class BrowserActorAuthorityBoundaryTests(unittest.TestCase):
         self.assertFalse(authority["runtime_trait_publicly_exported"])
         self.assertFalse(authority["request_control_publicly_exported"])
         self.assertFalse(authority["deferred_work_after_terminal_success_representable"])
+        self.assertFalse(authority["raw_session_event_type_publicly_exported"])
+        self.assertFalse(
+            authority["unauthenticated_session_event_mutation_publicly_exported"]
+        )
+        self.assertTrue(authority["authority_changing_state_requires_attested_request"])
+        self.assertTrue(authority["cancellation_helpers_are_revocation_only"])
         self.assertEqual(
             contract["principal_binding"]["source"],
             "opaque_AttestedPeer_refresh_only",
@@ -133,6 +142,25 @@ class BrowserActorAuthorityBoundaryTests(unittest.TestCase):
             contract["browser_actor"]["final_success_released_after_peer_revalidation"]
         )
         self.assertFalse(contract["browser_actor"]["generic_runtime_injection"])
+        self.assertFalse(contract["browser_actor"]["generic_session_event_ingress"])
+        self.assertEqual(
+            contract["browser_actor"]["product_state_transition_entry"],
+            "handle_attested_request_only",
+        )
+        self.assertFalse(
+            contract["browser_actor"]["caller_can_release_human_or_ime_control"]
+        )
+        self.assertFalse(
+            contract["browser_actor"]["caller_can_resolve_capability_or_recovery"]
+        )
+        self.assertFalse(
+            contract["browser_actor"]["caller_can_synthesize_navigation_completion"]
+        )
+        self.assertTrue(
+            contract["browser_actor"][
+                "unauthenticated_helpers_can_only_revoke_or_observe"
+            ]
+        )
         self.assertTrue(
             contract["browser_actor"][
                 "agent_navigation_requires_idle_control_before_runtime"
@@ -184,6 +212,11 @@ class BrowserActorAuthorityBoundaryTests(unittest.TestCase):
             self.assertIn("custody", text.lower())
             self.assertIn("BrowserRequestHandler", text)
         self.assertIn("actor-owned", wrapper)
+        self.assertIn("no raw", wrapper.lower())
+        self.assertIn("non-generic", architecture.lower())
+        self.assertIn("handle_attested", architecture)
+        self.assertNotIn("BrowserActor<R>", architecture)
+        self.assertNotIn("a bounded `PageRuntime` adapter", architecture)
         self.assertIn("implementation-internal", simulation)
         self.assertIn("not a product entry point", simulation)
 

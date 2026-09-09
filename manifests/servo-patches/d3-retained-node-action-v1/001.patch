@@ -1,0 +1,144 @@
+diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessibility_tree.rs
+index 117b8d09e4460d271a10a48bc003ac3b6dcfb6ee..3ca8d240f8e25bbb6c23a5b8169a8e531a8b2ced 100644
+--- a/components/layout/accessibility_tree.rs
++++ b/components/layout/accessibility_tree.rs
+@@ -8,7 +8,7 @@ use std::iter::repeat;
+ use std::sync::atomic::AtomicU64;
+ use std::sync::{LazyLock, atomic};
+
+-use accesskit::{NodeId, Role};
++use accesskit::{Action, NodeId, Role};
+ use app_units::Au;
+ use bitflags::bitflags;
+ use euclid::Rect;
+@@ -510,6 +510,24 @@ impl AccessibilityTree {
+         self.embedder_epoch
+     }
+
++    /// Resolve an action target from the exact retained AccessKit node in the most recently
++    /// finalized tree. The booleans report whether that node advertised the requested action and
++    /// whether the finalized retained node has layout bounds. A node without bounds must not be
++    /// dispatched even when its DOM element reports a CSS layout box.
++    pub(crate) fn action_target_for_id(
++        &self,
++        node_id: NodeId,
++        action: Action,
++    ) -> Option<(OpaqueNode, bool, bool)> {
++        let node = self.nodes.get(&node_id)?;
++        let node = node.borrow();
++        Some((
++            node.opaque_node?,
++            node.accesskit_node.supports_action(action),
++            node.accesskit_node.bounds().is_some(),
++        ))
++    }
++
+     /// Assert that the tree is a tree without any dangling references or orphaned nodes.
+     ///
+     /// For accessibility tests only, because it’s expensive.
+@@ -568,6 +583,12 @@ fn role_from_role_attribute(dom_element: &ServoLayoutElement<'_>) -> Option<Role
+         .cloned()
+ }
+
++fn click_action_supported(dom_node: &ServoLayoutNode<'_>) -> bool {
++    dom_node
++        .as_element()
++        .is_some_and(|element| element.local_name() == &local_name!("button"))
++}
++
+ fn role_from_dom_node(dom_node: &ServoLayoutNode<'_>) -> Role {
+     if let Some(dom_element) = dom_node.as_element() {
+         role_from_role_attribute(&dom_element).unwrap_or_else(|| {
+@@ -827,6 +848,7 @@ impl AccessibilityNode {
+             return local_damage;
+         }
+         local_damage.insert(self.set_role(role_from_dom_node(dom_node)));
++        self.set_action_supported(Action::Click, click_action_supported(dom_node));
+         if dom_node.type_id() == Some(LayoutNodeType::Text) {
+             let text_content = dom_node.text_content();
+             trace!("node text content = {text_content:?}");
+@@ -975,6 +997,18 @@ impl AccessibilityNode {
+         LocalAccessibilityDamage::RoleChanged
+     }
+
++    fn set_action_supported(&mut self, action: Action, supported: bool) {
++        if self.accesskit_node.supports_action(action) == supported {
++            return;
++        }
++        if supported {
++            self.accesskit_node.add_action(action);
++        } else {
++            self.accesskit_node.remove_action(action);
++        }
++        self.dirty_state |= DirtyState::Updated;
++    }
++
+     fn label(&self) -> Option<&str> {
+         self.accesskit_node.label()
+     }
+@@ -1343,6 +1377,7 @@ static HTML_ELEMENT_ROLE_MAPPINGS: LazyLock<FxHashMap<LocalName, Role>> = LazyLo
+         (local_name!("article"), Role::Article),
+         (local_name!("aside"), Role::Complementary),
+         (local_name!("body"), Role::RootWebArea),
++        (local_name!("button"), Role::Button),
+         (local_name!("footer"), Role::ContentInfo),
+         (local_name!("h1"), Role::Heading),
+         (local_name!("h2"), Role::Heading),
+@@ -1411,4 +1446,4 @@ static SUPPORTED_ARIA_ROLES: LazyLock<FxHashMap<Atom, Role>> = LazyLock::new(||
+
+ /// <https://w3c.github.io/aria/#namefromcontent>
+ static NAME_FROM_CONTENTS_ROLES: LazyLock<FxHashSet<Role>> =
+-    LazyLock::new(|| [(Role::Heading)].into_iter().collect());
++    LazyLock::new(|| [(Role::Button), (Role::Heading)].into_iter().collect());
+diff --git a/components/layout/layout_impl.rs b/components/layout/layout_impl.rs
+index fbca832253bc14a3f3f6d9328db0b04b556d7c76..3340f65a9aacc7e876f1c70f727f64a6eed27b8c 100644
+--- a/components/layout/layout_impl.rs
++++ b/components/layout/layout_impl.rs
+@@ -753,6 +753,35 @@ impl Layout for LayoutThread {
+         *accessibility_tree = Some(AccessibilityTree::new(self.id.into(), epoch));
+     }
+
++    fn accessibility_node_address(
++        &self,
++        tree_id: accesskit::TreeId,
++        node_id: accesskit::NodeId,
++        action: accesskit::Action,
++        epoch: Epoch,
++    ) -> layout_api::AccessibilityNodeAddressResult {
++        if tree_id != self.id.into() {
++            return layout_api::AccessibilityNodeAddressResult::StaleTree;
++        }
++        let accessibility_tree = self.accessibility_tree.borrow();
++        let Some(accessibility_tree) = accessibility_tree.as_ref() else {
++            return layout_api::AccessibilityNodeAddressResult::StaleNode;
++        };
++        if accessibility_tree.embedder_epoch() != epoch {
++            return layout_api::AccessibilityNodeAddressResult::StaleTree;
++        }
++        let Some((opaque_node, action_advertised, has_accessible_bounds)) =
++            accessibility_tree.action_target_for_id(node_id, action)
++        else {
++            return layout_api::AccessibilityNodeAddressResult::StaleNode;
++        };
++        layout_api::AccessibilityNodeAddressResult::Resolved {
++            address: UntrustedNodeAddress(opaque_node.0 as *const c_void),
++            action_advertised,
++            has_accessible_bounds,
++        }
++    }
++
+     fn accessibility_active(&self) -> bool {
+         self.accessibility_active.get()
+     }
+diff --git a/components/script/Cargo.toml b/components/script/Cargo.toml
+index 3c71ce76f936a613e8276f7099653b8fda80fab7..1a2bf8ceffa57a6dec65f4c0b397ef778df5633b 100644
+--- a/components/script/Cargo.toml
++++ b/components/script/Cargo.toml
+@@ -82,6 +82,7 @@ webxr = ["webgl", "gamepad", "webxr-api", "script_bindings/webxr"]
+ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(crown)'] }
+
+ [dependencies]
++accesskit = { workspace = true }
+ aes = { workspace = true, optional = true }
+ aes-gcm = { workspace = true, optional = true }
+ aes-kw = { workspace = true, optional = true }

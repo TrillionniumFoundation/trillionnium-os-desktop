@@ -104,11 +104,13 @@
     "single_writer": "unmanaged_boot_pid_lease_or_managed_directory_lock_with_all_segment_inode_locks",
     "file_mode": "0600",
     "append": "write_all_then_sync_data_before_in_memory_commit",
-    "create_and_export": "sync_file_then_sync_parent_directory",
+    "create_and_export": "same_directory_private_stage_write_sync_all_verify_atomic_no_replace_publish_then_directory_sync",
     "failed_append": "writer_poisoned_until_reopen_and_recovery",
     "torn_tail": "typed_and_repairable_only_to_last_complete_record",
     "midstream_corruption": "hard_failure_never_auto_repaired",
-    "storage_full": "typed_storage_full_never_completion"
+    "storage_full": "typed_storage_full_never_completion",
+    "export_partial_final_name_observable": false,
+    "export_post_publish_failure": "typed_PublicationUncertain_no_overwrite_retry"
   },
   "effect_recovery": {
     "potential_external_effect": "never_automatic",
@@ -132,7 +134,14 @@
     "public_receipt_envelope_schema": "contracts/receipt.v1.schema.json",
     "public_receipt_envelope_lifecycle": "requested_and_dispatched_are_aggregated_into_one_terminal_envelope",
     "public_receipt_envelope_unresolved": "fail_closed_until_interrupted_or_indeterminate_terminal_record",
-    "forensic_lifecycle_export": "export_journal_redacted_jsonl"
+    "forensic_lifecycle_export": "export_journal_redacted_jsonl",
+    "authoritative_legacy_chain": "locked_writer_lease_plus_every_segment_inode_lock",
+    "authoritative_managed_api": "export_managed_receipt_envelopes_jsonl",
+    "authoritative_managed_inventory": "closed_directory_inventory_under_pinned_directory_lock",
+    "managed_explicit_segment_shortcut": "rejected",
+    "active_writer": "fail_closed_WriterBusy",
+    "locks_held_through_publication": true,
+    "destination_publication": "synced_private_stage_atomic_no_replace_hard_link_directory_sync"
   },
   "claim_ceiling": {
     "browser_actor_bound": false,
@@ -210,6 +219,11 @@
       "physical_power_loss_qualified": false,
       "in_kernel_syscall_interruption_qualified": false,
       "automatic_replay_available": false
-    }
+    },
+    "trusted_ancestor_owners": [
+      "root",
+      "effective_service_uid"
+    ],
+    "attacker_owned_0755_ancestor": "reject"
   }
 }

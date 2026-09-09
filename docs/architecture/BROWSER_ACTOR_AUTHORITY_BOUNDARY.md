@@ -2,95 +2,122 @@
 
 ## Purpose
 
-S06 introduces the request owner that translates a validated Browser API request into one bounded runtime operation while preserving session, cancellation, peer-custody, and receipt invariants. The security objective is not merely to offer a safer helper: the weaker dispatch path must be absent from the product-facing type system.
+S06 introduces the concrete product request owner that translates one validated
+Browser API request into one bounded local-fixture runtime operation while
+preserving session, cancellation, peer-custody, and receipt invariants. The weak
+paths are absent from the product-facing type system rather than merely
+conventionally discouraged.
 
-## Crate split
+## Product crate: `hepta-browser-actor`
 
-### `hepta-browser-actor`
+The product API exposes one **non-generic** `BrowserActor`. Its
+`from_attested` constructor accepts only:
 
-This is the only product-facing API. It exports a narrow `BrowserActor<R>` wrapper, runtime data/traits needed by adapters, and non-authorizing state/cancellation/receipt helpers.
+1. a policy-selected `TaskFlowPrincipal`;
+2. the kernel-derived `PeerIdentity` of the connected stream;
+3. the `ProcfsPeerAttestor` or reviewed trusted-path source used at admission;
+4. an opaque pidfd-backed `AttestedPeer` retaining the admitted process.
 
-It does not export:
+The constructor refreshes process start time, UID, GID, cgroup v2 path, systemd
+unit, and executable digest, creates the private principal/mechanism binding, and
+installs the bounded `DeterministicLocalRuntime` internally. It accepts no
+`PageRuntime`, callback backend, thread handle, generic type parameter, or
+caller-written mechanism identity.
 
-- `PrincipalBinding`;
-- `MechanismIdentity`;
-- an ordinary `BrowserRequestHandler` implementation;
-- an ordinary `handle` method;
-- a constructor accepting caller-written mechanism facts;
-- a listener or installable binary.
+The product crate does not export `PrincipalBinding`, `MechanismIdentity`,
+`PageRuntime`, `RequestControl`, `RuntimeReply`, or a raw session event type. It
+does not implement `BrowserRequestHandler`, expose an ordinary `handle`, create a
+listener, or define an installable binary.
 
-### `hepta-browser-actor-simulation`
+## Per-request authority
 
-This unpublished implementation crate retains the complete mechanism and hostile regression corpus. It contains compatibility APIs needed by its internal tests, but repository policy permits only the product wrapper to depend on it directly. It is neither an application nor an authority that may be wired into AgentPort.
-
-The split preserves deep testing without allowing a simulation convenience path to become the product call path.
-
-## Construction protocol
-
-`BrowserActor::from_attested` requires:
-
-1. a `TaskFlowPrincipal` selected by higher policy;
-2. the kernel-derived `PeerIdentity` for the connected stream;
-3. an opaque `AttestedPeer` that owns the admitted process pidfd;
-4. the `ProcfsPeerAttestor` or reviewed trusted-path source used at admission;
-5. a bounded `PageRuntime` adapter.
-
-The constructor refreshes the attested process and binds PID, UID, GID, process start time, cgroup v2 path, systemd unit, and executable digest. A mismatch or unreadable source fails construction. The binding stays private inside the wrapper.
-
-## Per-request protocol
-
-Every request enters through `handle_attested`:
+Every authority-changing product operation enters through `handle_attested`:
 
 1. reject an expired absolute deadline before identity work;
 2. refresh the same admitted identity source;
 3. compare all mechanism facts to the private binding;
 4. mint one non-cloneable request custody owner from the `AttestedPeer`;
-5. propagate only its verifier through `RequestControl` and engine callbacks;
+5. propagate only its verifier through internal runtime controls and callbacks;
 6. verify current custody at runtime/effect boundaries;
 7. verify again before releasing a terminal success;
-8. on post-dispatch revocation, retire the runtime and classify possible effects as indeterminate;
+8. on post-dispatch revocation, retire the runtime and classify possible effects
+   as indeterminate;
 9. drop the custody owner on normal return or unwind.
 
-A peer tuple alone, a copied runtime snapshot, a caller-written executable digest, or a semantic principal cannot invoke the product actor.
+A peer tuple, copied runtime snapshot, semantic principal, caller-written digest,
+or ordinary `BrowserActor` holder cannot invoke an alternate dispatch path.
 
-## Session and human control
+## State-ingress boundary
 
-The actor owns one logical page and uses `hepta-session-core` for:
+The product wrapper exports no `SessionEvent`, `TransitionError`, or
+`apply_session_event`. This prevents an ordinary caller from synthesizing human
+focus release, IME completion, navigation completion/failure, modal closure,
+capability resolution, recovery, or session closure outside the attested request
+path. Human and IME exclusion therefore cannot be cleared before a later
+attested navigation by mutating the actor directly.
 
-- Agent observation versus mutation control;
-- human focus and bounded leases;
-- IME composition exclusion;
-- navigation/modal/capability/cancellation phases;
-- generation and semantic-reference invalidation;
-- fail-closed revision exhaustion.
+The public cancellation helpers are revocation-only: they may cancel or observe
+one in-flight request but cannot grant Agent control or mark an operation
+successful. `principal` and `page_owner` return bounded observations.
+`receipt_observer` records lifecycle facts and never authorizes execution.
 
-State transitions occur before success effects are emitted. Cancellation does not claim rollback of an operation that may already have crossed an effect boundary.
+## Implementation crate: `hepta-browser-actor-simulation`
 
-## Engine-thread completion
+The unpublished implementation-internal crate retains the generic runtime,
+state machine, callback bridge, deterministic fixtures, fault injection, and
+hostile test corpus. Repository validation permits only the product wrapper to
+depend on it directly. Its compatibility APIs and raw state-machine methods are
+not product entry points and cannot be wired directly into AgentPort.
 
-A runtime adapter receives a `RequestControl` with the same absolute deadline, shared cancellation token, and peer verifier. Queue admission is not execution. Callback loss, panic, timeout, duplicate completion, or peer revocation cannot be converted into durable success. Ambiguous cleanup poisons and retires the runtime pair.
+## Internal runtime and completion
+
+The actor-owned local runtime receives an internal `RequestControl` carrying the
+same absolute deadline, shared cancellation token, and request peer verifier.
+Queue admission is not execution. Callback loss, panic, timeout, duplicate
+completion, or peer revocation cannot be converted into success. Ambiguous
+cleanup poisons and retires the runtime pair. Semantic page action remains a
+single runtime-owned resolve-and-act hook and the local fixture defaults closed.
+
+A later Servo product adapter must be introduced as a distinct concrete reviewed
+type. It must preserve the same custody and completion invariants and must not
+reopen a public generic runtime injection point.
 
 ## Receipt lifecycle
 
-A receipt observer may record requested, dispatched, and terminal facts. It cannot authorize execution. Interrupted potential external effects are reconciled to indeterminate and are never automatically replayed. Storage uncertainty requires recovery before reuse.
+Requested, dispatched, and terminal facts may be written to the S05 durable
+journal. Journal recovery and export do not authorize execution. Interrupted
+potential external effects become indeterminate and are never automatically
+replayed. Storage or publication uncertainty requires inspection/recovery before
+reuse.
 
 ## Negative guarantees
 
 The S06 gate rejects:
 
-- any direct repository dependency on the simulation crate except the wrapper;
-- reintroduction of `PrincipalBinding`, `MechanismIdentity`, `new`, ordinary `handle`, or `BrowserRequestHandler` on the product wrapper;
-- workspace/source-state drift;
-- actor-owned TCP/Unix listeners or automatic binaries;
-- contract fields that make attestation/custody optional;
-- a receipt journal that authorizes or automatically replays work.
+- a product actor parameterized by a caller runtime or constructor accepting a runtime value;
+- public `PageRuntime`, `RequestControl`, `PrincipalBinding`, or mechanism facts;
+- public raw session events or an unauthenticated session-state mutator;
+- ordinary `BrowserRequestHandler` or `handle` dispatch;
+- dependencies on the simulation crate outside the product wrapper;
+- actor-owned TCP/Unix listeners, spawned product workers, or automatic binaries;
+- optional attestation/custody or a receipt journal that authorizes work.
 
-Compile-fail doctests additionally prove that the weak binding types are not importable and that the wrapper does not satisfy `BrowserRequestHandler`.
+Compile-fail doctests prove that weak binding types, generic runtime injection,
+ordinary handler use, and raw session-state synthesis are unavailable. Python
+surface tests and the complete Rust simulation corpus enforce the same boundary.
 
-## Rollback
+## Exact-object qualification
 
-Revert the bounded S06 commit before any Servo/runtime successor. The slice adds no listener, installed service, state migration, or external effect. Existing S05 receipt data remains readable because no receipt format is changed.
+The permanent S06 workflow must execute on the exact source head and on the live
+two-parent prospective merge object. A workflow-generated push that is suppressed
+or marked `action_required` is not transferred as evidence; an explicit source
+push must create non-empty jobs whose checkout assertions bind the immutable head
+and current S05 parent before review.
 
-## Evidence and claim ceiling
+## Rollback and claim ceiling
 
-Exact-source and prospective-merge jobs separately verify repository truth, the complete locked Rust graph, hostile Python tests, simulation unit tests, and product compile-fail documentation. Success proves only a source/test API in which attested request custody is structurally mandatory. It does not prove product activation, Servo execution, installed-image integration, physical hardware, HSM custody, publication, or release readiness.
+Revert the bounded S06 merge before any Servo/runtime successor. The slice adds
+no listener, installed service, state migration, external HTTPS authority,
+physical hardware evidence, signing, publication, or release authority. A green
+exact-source and live prospective-merge gate proves only the reviewed source/test
+API on its exact S05 parent.

@@ -236,3 +236,17 @@ legacy APIs, bounds and production activation defaults are unchanged.
 ## Explicit legacy-copy entry point
 
 The separately documented `ReceiptJournal::copy_legacy_chain_to_managed` API stages a validated byte-preserving copy and publishes `store.v1` only after data sync. `migration.pending` is not a rotation head and is never accepted by automatic recovery. Legacy writers also refuse a parent containing it. See [Legacy receipt migration](LEGACY_RECEIPT_MIGRATION.md). Default service selection, automatic migration and pruning remain disabled.
+
+## Authoritative read snapshot
+
+Managed authoritative export never accepts a segment list. It locks the pinned
+store directory, validates the marker, derives the full contiguous inventory,
+locks every segment, and holds those locks through an atomic no-replace JSONL
+publication. Explicit-path APIs reject managed segments so omitting a later
+canonical segment cannot masquerade as a complete export. A concurrently open
+writer is a `WriterBusy` failure.
+
+Path custody requires each non-root ancestor to be owned by the effective
+service UID. Root-owned ancestors are trusted, and only root-owned sticky
+directories may be group/other writable. An attacker-owned `0755` ancestor is
+not trusted even though its mode has no group/other write bit.

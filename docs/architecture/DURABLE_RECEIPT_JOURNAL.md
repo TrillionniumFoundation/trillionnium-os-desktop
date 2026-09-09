@@ -141,3 +141,27 @@ bytes. It holds a private directory lock rather than per-file PID leases and
 rejects legacy writer entrypoints on managed segments. Its bounded recovery
 and development-service rotation do not authorize replay or prove physical
 power-loss durability. Existing explicit-path journals remain supported.
+
+## Locked authoritative export and atomic publication
+
+Authoritative output never accepts a caller-constructed recovery report. A
+legacy explicit chain is opened under the normal writer lease and every segment
+inode lock; managed segment paths are rejected from that API. Managed export
+uses `export_managed_receipt_envelopes_jsonl`, which acquires the pinned managed
+directory lock, derives the entire closed canonical inventory, and retains the
+directory and every segment lock through validation and publication. A live
+writer therefore fails closed instead of producing a stale prefix.
+
+The canonical JSONL name is installed only after a private same-directory inode
+has been fully written, `sync_all`'d, reread, length/digest verified, and linked
+atomically with no replacement. The directory is then synchronized. Failures
+before the link leave no canonical output; failures after the link return the
+typed `PublicationUncertain` result and callers must inspect the destination
+without overwriting or blindly retrying it. Forensic report export uses the same
+atomic publication primitive but remains non-authoritative because its input is
+caller-constructible.
+
+Every mutable non-root ancestor of journal or export paths must be owned by the
+effective service UID; root-owned ancestors are accepted, with a root-owned
+sticky directory as the only group/other-writable exception. An attacker-owned
+`0755` ancestor is rejected because its owner can replace child entries.

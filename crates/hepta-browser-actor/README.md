@@ -53,3 +53,18 @@ This module establishes only a source/test product API with structurally
 mandatory attested custody and an actor-owned local fixture runtime. It does not
 establish a listener, product activation, Servo adapter, installed image,
 physical hardware, signing, publication, or release readiness.
+
+## State-ingress boundary
+
+The product crate exports no raw `SessionEvent`, `TransitionError`, or generic
+state mutator. An ordinary holder of `BrowserActor` cannot manufacture human
+focus release, IME completion, navigation completion, capability resolution,
+crash recovery, or session closure. Authority-changing state enters only through
+`handle_attested`, which carries the bound request context and live peer custody.
+
+`cancel_request`, `cancellation_token`, and `active_cancellation_token` can only
+revoke or observe an in-flight request; they cannot grant control, clear a human
+lease, mark navigation complete, or make an indeterminate effect successful.
+`page_owner`, `principal`, and `receipt_observer` are read/record helpers and do
+not provide a hidden state-transition path. There is no raw product state
+injection API.

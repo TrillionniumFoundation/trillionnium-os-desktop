@@ -1,8 +1,9 @@
-//! Evidence-bearing receipt export from an exact, complete journal chain.
+//! Evidence-bearing receipt export from a locked, complete journal snapshot.
 //!
-//! Public callers cannot supply a `RecoveryReport` to the authoritative API.
-//! Reports remain useful for forensic inspection, but they are ordinary public
-//! data structures and therefore are not authentication capabilities.
+//! Managed exports derive the full canonical inventory while holding the
+//! managed directory and every segment lock. Legacy explicit chains acquire
+//! the same writer lease and inode locks as a writer and reject managed segment
+//! paths. Locks remain held through atomic no-replace publication.
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -10,21 +11,14 @@ use std::path::Path;
 use crate::receipt_journal::{
     self, Digest, JournalError, RecoveredRecord, RecoveryReport, TailStatus,
 };
+use crate::receipt_journal_impl::{JournalId, ManagedOpenPolicy, ReceiptJournal};
 
-/// Export canonical operation envelopes from an ordered, complete journal chain.
+/// Export canonical envelopes from a locked caller-selected legacy chain.
 ///
-/// Each source path is reopened and decoded by `inspect_chain`; segment one is
-/// mandatory and cross-segment IDs, numbers, sequence continuity, predecessor
-/// digests, and record digests are verified from the stored bytes. Every
-/// segment must have a clean tail and every receipt must have a terminal fact.
-/// A caller-constructed `RecoveryReport` cannot enter this interface.
-///
-/// ```compile_fail
-/// use hepta_session_core::{RecoveryReport, export_receipt_envelopes_jsonl};
-/// fn fabricated(report: &RecoveryReport) {
-///     let _ = export_receipt_envelopes_jsonl(report, "/tmp/evidence.jsonl");
-/// }
-/// ```
+/// Managed segment paths are rejected; use
+/// [`export_managed_receipt_envelopes_jsonl`] so the complete current inventory
+/// is derived under the pinned directory lock. A live writer makes this call
+/// fail closed instead of yielding a stale prefix.
 pub fn export_receipt_envelopes_jsonl<I, P>(
     source_chain: I,
     destination: impl AsRef<Path>,
@@ -33,16 +27,25 @@ where
     I: IntoIterator<Item = P>,
     P: AsRef<Path>,
 {
-    let reports = receipt_journal::inspect_chain(source_chain)?;
-    validate_complete_reports(&reports)?;
-    let combined = combine_verified_reports(reports)?;
-    receipt_journal::export_receipt_envelopes_jsonl(&combined, destination)
+    let mut journal = ReceiptJournal::open_authoritative_chain(source_chain)?;
+    export_locked_envelopes(&mut journal, destination.as_ref())
 }
 
-/// Compatibility name for canonical public receipt envelopes.
+/// Export canonical envelopes from the complete current managed inventory.
 ///
-/// Unlike the retired report-based function, this alias also requires an
-/// ordered complete source chain and reopens the journal bytes itself.
+/// The root directory lock and every segment inode lock are retained through
+/// validation and publication. An active writer, pending/corrupt inventory,
+/// unresolved receipt, or changed source fails closed.
+pub fn export_managed_receipt_envelopes_jsonl(
+    root: impl AsRef<Path>,
+    journal_id: JournalId,
+    destination: impl AsRef<Path>,
+) -> Result<Digest, JournalError> {
+    let mut journal = ReceiptJournal::open_managed(root, journal_id, ManagedOpenPolicy::STRICT)?;
+    export_locked_envelopes(&mut journal, destination.as_ref())
+}
+
+/// Compatibility alias for the locked legacy-chain envelope export.
 pub fn export_redacted_jsonl<I, P>(
     source_chain: I,
     destination: impl AsRef<Path>,
@@ -51,23 +54,40 @@ where
     I: IntoIterator<Item = P>,
     P: AsRef<Path>,
 {
-    let reports = receipt_journal::inspect_chain(source_chain)?;
-    validate_complete_reports(&reports)?;
-    let combined = combine_verified_reports(reports)?;
-    receipt_journal::export_redacted_jsonl(&combined, destination)
+    export_receipt_envelopes_jsonl(source_chain, destination)
 }
 
-/// Export a forensic prefix from an already decoded report.
+/// Compatibility alias for the complete managed-root envelope export.
+pub fn export_managed_redacted_jsonl(
+    root: impl AsRef<Path>,
+    journal_id: JournalId,
+    destination: impl AsRef<Path>,
+) -> Result<Digest, JournalError> {
+    export_managed_receipt_envelopes_jsonl(root, journal_id, destination)
+}
+
+/// Export a forensic prefix from caller-supplied decoded data.
 ///
-/// This output is deliberately **non-authoritative**. The report may be
-/// caller-constructed and may represent a clean prefix before a torn tail. It
-/// must not be used as admission, terminal-lifecycle, cutover, or release
-/// evidence.
+/// This is deliberately non-authoritative. Publication is atomic/no-replace,
+/// but the supplied report is not an authenticated complete-chain snapshot.
 pub fn export_forensic_prefix_jsonl(
     report: &RecoveryReport,
     destination: impl AsRef<Path>,
 ) -> Result<Digest, JournalError> {
     receipt_journal::export_journal_redacted_jsonl(report, destination)
+}
+
+fn export_locked_envelopes(
+    journal: &mut ReceiptJournal,
+    destination: &Path,
+) -> Result<Digest, JournalError> {
+    let reports = journal.authoritative_reports()?;
+    validate_complete_reports(&reports)?;
+    let combined = combine_verified_reports(reports)?;
+    journal.revalidate_authoritative_snapshot()?;
+    let digest = receipt_journal::export_receipt_envelopes_jsonl(&combined, destination)?;
+    journal.revalidate_authoritative_snapshot()?;
+    Ok(digest)
 }
 
 fn validate_complete_reports(reports: &[RecoveryReport]) -> Result<(), JournalError> {
@@ -189,8 +209,9 @@ fn combine_verified_reports(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::receipt_journal_impl::persistence_tests::{Action, Armed};
     use crate::{
-        JournalId, PrivacyClass, ReceiptEffectClass as EffectClass, ReceiptEvent, ReceiptJournal,
+        PrivacyClass, ReceiptEffectClass as EffectClass, ReceiptEvent,
         ReceiptLifecycleState as LifecycleState, ReceiptOutcome, ReceiptSource,
         inspect_receipt_journal,
     };
@@ -243,23 +264,27 @@ mod tests {
         }
     }
 
-    fn complete_journal(path: &Path) {
-        let mut journal =
-            ReceiptJournal::create(path, JournalId([7; 16]), 1).expect("create journal");
+    fn append_complete(journal: &mut ReceiptJournal, receipt_id: &str) {
         journal
-            .append(event("receipt-1", LifecycleState::Requested))
+            .append(event(receipt_id, LifecycleState::Requested))
             .expect("append requested");
         journal
-            .append(event("receipt-1", LifecycleState::Dispatched))
+            .append(event(receipt_id, LifecycleState::Dispatched))
             .expect("append dispatched");
-        let mut completed = event("receipt-1", LifecycleState::Completed);
+        let mut completed = event(receipt_id, LifecycleState::Completed);
         completed.outcome = Some(ReceiptOutcome::Succeeded);
         completed.response_sha256 = Some(digest(2));
         journal.append(completed).expect("append completed");
     }
 
+    fn complete_journal(path: &Path) {
+        let mut journal =
+            ReceiptJournal::create(path, JournalId([7; 16]), 1).expect("create journal");
+        append_complete(&mut journal, "receipt-1");
+    }
+
     #[test]
-    fn exact_clean_complete_chain_exports() {
+    fn exact_clean_complete_legacy_chain_exports_under_locks() {
         let directory = temp_dir("clean");
         let journal = directory.join("journal.bin");
         let output = directory.join("receipt.jsonl");
@@ -268,6 +293,88 @@ mod tests {
         let result = export_receipt_envelopes_jsonl([&journal], &output);
         assert!(result.is_ok());
         let text = fs::read_to_string(&output).expect("read export");
+        assert!(text.contains("\"status\":\"succeeded\""));
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn live_legacy_writer_is_busy_and_emits_no_authoritative_artifact() {
+        let directory = temp_dir("busy");
+        let journal_path = directory.join("journal.bin");
+        let output = directory.join("receipt.jsonl");
+        let mut writer =
+            ReceiptJournal::create(&journal_path, JournalId([9; 16]), 1).expect("create journal");
+        append_complete(&mut writer, "receipt-busy");
+        let result = export_receipt_envelopes_jsonl([&journal_path], &output);
+        assert!(matches!(result, Err(JournalError::WriterBusy)));
+        assert!(!output.exists());
+        drop(writer);
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn managed_export_uses_closed_inventory_and_rejects_segment_shortcuts() {
+        let directory = temp_dir("managed");
+        let root = directory.join("store");
+        let output = directory.join("receipt.jsonl");
+        let id = JournalId([10; 16]);
+        let mut writer = ReceiptJournal::create_managed(&root, id, 1).expect("create store");
+        append_complete(&mut writer, "receipt-first");
+        let (_, mut writer) = writer.rotate_managed(2).expect("rotate store");
+        append_complete(&mut writer, "receipt-second");
+        drop(writer);
+
+        let first = root.join("segment-0000000000000001.journal");
+        let shortcut = directory.join("shortcut.jsonl");
+        assert!(matches!(
+            export_receipt_envelopes_jsonl([&first], &shortcut),
+            Err(JournalError::InvalidInput(message)) if message.contains("managed")
+        ));
+        assert!(!shortcut.exists());
+
+        export_managed_receipt_envelopes_jsonl(&root, id, &output)
+            .expect("managed authoritative export");
+        let text = fs::read_to_string(&output).expect("read managed export");
+        assert!(text.contains("receipt-first"));
+        assert!(text.contains("receipt-second"));
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn prepublication_failure_leaves_no_final_or_stage_file() {
+        let directory = temp_dir("prepublish-failure");
+        let journal = directory.join("journal.bin");
+        let output = directory.join("receipt.jsonl");
+        complete_journal(&journal);
+        let armed = Armed::new("export.before_publish", Action::Error(5));
+        let result = export_receipt_envelopes_jsonl([&journal], &output);
+        drop(armed);
+        assert!(result.is_err());
+        assert!(!output.exists());
+        let leftovers: Vec<_> = fs::read_dir(&directory)
+            .expect("read directory")
+            .map(|entry| entry.expect("entry").file_name())
+            .filter(|name| name.to_string_lossy().contains("receipt-export-stage"))
+            .collect();
+        assert!(
+            leftovers.is_empty(),
+            "unpublished stage leaked: {leftovers:?}"
+        );
+        fs::remove_dir_all(directory).expect("cleanup");
+    }
+
+    #[test]
+    fn postpublication_failure_is_typed_and_final_name_is_never_partial() {
+        let directory = temp_dir("postpublish-failure");
+        let journal = directory.join("journal.bin");
+        let output = directory.join("receipt.jsonl");
+        complete_journal(&journal);
+        let armed = Armed::new("export.after_publish", Action::Error(5));
+        let result = export_receipt_envelopes_jsonl([&journal], &output);
+        drop(armed);
+        assert!(matches!(result, Err(JournalError::PublicationUncertain)));
+        let text = fs::read_to_string(&output).expect("published complete output");
+        assert!(text.ends_with('\n'));
         assert!(text.contains("\"status\":\"succeeded\""));
         fs::remove_dir_all(directory).expect("cleanup");
     }
@@ -327,8 +434,6 @@ mod tests {
 
         assert!(export_forensic_prefix_jsonl(&report, &forensic).is_ok());
         assert!(forensic.exists());
-        // There is intentionally no authoritative API that accepts `report`;
-        // the compile-fail example on the public function locks that boundary.
         fs::remove_dir_all(directory).expect("cleanup");
     }
 }
