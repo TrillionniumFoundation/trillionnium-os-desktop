@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom, Write};
-use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
+use std::os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Component, Path, PathBuf};
 
 #[path = "receipt_journal/binding.rs"]
@@ -732,6 +732,10 @@ pub enum JournalError {
         to: LifecycleState,
     },
     SegmentTooLarge(u64),
+    /// The final export name may have crossed the atomic publication boundary,
+    /// but a following directory/cleanup barrier did not complete. Callers must
+    /// inspect the destination and must never retry by overwriting it.
+    PublicationUncertain,
     WriterPoisoned,
 }
 
@@ -767,6 +771,9 @@ impl fmt::Display for JournalError {
             Self::SegmentTooLarge(bytes) => {
                 write!(formatter, "journal segment exceeds bound: {bytes} bytes")
             }
+            Self::PublicationUncertain => formatter.write_str(
+                "receipt export publication is uncertain; inspect the no-replace destination before retrying",
+            ),
             Self::WriterPoisoned => formatter.write_str(
                 "journal writer is poisoned after an interrupted append; reopen and recover",
             ),
@@ -1406,11 +1413,7 @@ pub fn export_receipt_envelopes_jsonl(
         bytes.extend_from_slice(envelope.to_canonical_json()?.as_bytes());
         bytes.push(b'\n');
     }
-    let digest = sha256(&bytes);
-    let mut file = create_private_file(destination, true)?;
-    commit_bytes(&mut file, &bytes)?;
-    sync_parent(destination)?;
-    Ok(digest)
+    publish_private_bytes(destination, &bytes)
 }
 
 /// Export the append-level lifecycle facts in the historical journal format.
@@ -1418,8 +1421,8 @@ pub fn export_receipt_envelopes_jsonl(
 /// This is retained for forensic/debug consumers that need sequence, record
 /// digest, lifecycle, effect class, privacy class, and request/response
 /// digest fields.  Public operation evidence should use
-/// [`export_receipt_envelopes_jsonl`] (or its compatibility alias
-/// [`export_redacted_jsonl`]).
+/// [`export_receipt_envelopes_jsonl`] (or the crate-root compatibility alias
+/// [`crate::export_redacted_jsonl`]).
 pub fn export_journal_redacted_jsonl(
     report: &RecoveryReport,
     destination: impl AsRef<Path>,
@@ -1459,11 +1462,7 @@ pub fn export_journal_redacted_jsonl(
         );
         bytes.extend_from_slice(line.as_bytes());
     }
-    let digest = sha256(&bytes);
-    let mut file = create_private_file(destination, true)?;
-    commit_bytes(&mut file, &bytes)?;
-    sync_parent(destination)?;
-    Ok(digest)
+    publish_private_bytes(destination, &bytes)
 }
 
 /// Compatibility entry point for public redacted receipt export.
@@ -1471,6 +1470,7 @@ pub fn export_journal_redacted_jsonl(
 /// Prior versions emitted journal-internal lifecycle objects from this name,
 /// which could not satisfy `contracts/receipt.v1.schema.json`.  Keep the API
 /// stable while making its output the canonical operation envelope.
+#[cfg(test)]
 pub fn export_redacted_jsonl(
     report: &RecoveryReport,
     destination: impl AsRef<Path>,
@@ -2053,6 +2053,88 @@ fn commit_bytes<W: DurableWrite>(writer: &mut W, bytes: &[u8]) -> Result<(), Jou
     Ok(())
 }
 
+/// Read an exact inode snapshot without changing the writer's file offset.
+fn read_locked_segment(file: &File, expected_len: u64) -> Result<Vec<u8>, JournalError> {
+    if expected_len > MAX_SEGMENT_BYTES {
+        return Err(JournalError::SegmentTooLarge(expected_len));
+    }
+    let len = usize::try_from(expected_len).map_err(|_| {
+        JournalError::InvalidInput("journal segment length is not addressable".into())
+    })?;
+    let mut bytes = vec![0_u8; len];
+    let mut offset = 0_usize;
+    while offset < len {
+        let read = file
+            .read_at(&mut bytes[offset..], offset as u64)
+            .map_err(map_io_error)?;
+        if read == 0 {
+            return Err(JournalError::Corruption {
+                offset: offset as u64,
+                reason: "locked journal segment shortened during snapshot".into(),
+            });
+        }
+        offset = offset
+            .checked_add(read)
+            .ok_or_else(|| JournalError::InvalidInput("journal snapshot offset overflow".into()))?;
+    }
+    if file.metadata().map_err(map_io_error)?.len() != expected_len {
+        return Err(JournalError::Corruption {
+            offset: expected_len,
+            reason: "locked journal segment length changed during snapshot".into(),
+        });
+    }
+    Ok(bytes)
+}
+
+impl ReceiptJournal {
+    /// Open a caller-selected legacy chain under the same nonblocking writer
+    /// lease and inode locks as a writer. Managed segments are rejected because
+    /// only their pinned directory inventory can prove a complete current head.
+    pub(crate) fn open_authoritative_chain<I, P>(paths: I) -> Result<Self, JournalError>
+    where
+        I: IntoIterator<Item = P>,
+        P: AsRef<Path>,
+    {
+        let paths = chain::bounded_paths(paths)?;
+        for path in &paths {
+            managed::reject_unmanaged_access(path)?;
+        }
+        Self::open_chain_impl(paths, None, OpenPolicy::STRICT, true)
+    }
+
+    /// Decode the complete chain while every source inode and, for managed
+    /// stores, the closed directory inventory remain locked and pinned.
+    pub(crate) fn authoritative_reports(&mut self) -> Result<Vec<RecoveryReport>, JournalError> {
+        self.check_live_state()?;
+        let mut inspected = Vec::with_capacity(self.predecessors.len() + 1);
+        for predecessor in &self.predecessors {
+            predecessor.verify_current()?;
+            let bytes = read_locked_segment(&predecessor.file, predecessor.bytes)?;
+            inspected.push((recover_bytes(&bytes)?, sha256(&bytes)));
+        }
+
+        let active_identity = (self.file_device, self.file_inode);
+        let active_metadata = self.file.metadata().map_err(map_io_error)?;
+        if !metadata_matches_identity(&active_metadata, active_identity)
+            || active_metadata.len() != self.end_offset
+        {
+            return Err(JournalError::Corruption {
+                offset: self.end_offset,
+                reason: "active journal identity or length changed during snapshot".into(),
+            });
+        }
+        let active_bytes = read_locked_segment(&self.file, self.end_offset)?;
+        inspected.push((recover_bytes(&active_bytes)?, sha256(&active_bytes)));
+        chain::validate_reports(&inspected, false)?;
+        self.check_live_state()?;
+        Ok(inspected.into_iter().map(|(report, _)| report).collect())
+    }
+
+    pub(crate) fn revalidate_authoritative_snapshot(&mut self) -> Result<(), JournalError> {
+        self.check_live_state()
+    }
+}
+
 fn read_segment_bytes(file: &mut File) -> Result<Vec<u8>, JournalError> {
     let length = file.metadata().map_err(map_io_error)?.len();
     if length > MAX_SEGMENT_BYTES {
@@ -2067,6 +2149,142 @@ fn read_segment_bytes(file: &mut File) -> Result<Vec<u8>, JournalError> {
         return Err(JournalError::SegmentTooLarge(bytes.len() as u64));
     }
     Ok(bytes)
+}
+
+static EXPORT_STAGE_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
+fn remove_unpublished_stage(path: &Path) {
+    let _ = fs::remove_file(path);
+    let _ = sync_parent(path);
+}
+
+/// Publish complete bytes without ever exposing a partial canonical filename.
+///
+/// The same-directory private inode is fully written, sync_all'd and reread
+/// before an atomic no-replace hard link installs the final name. Any error
+/// after that link is conservatively classified as publication uncertainty;
+/// callers may inspect but must never overwrite or blindly retry the final
+/// path.
+fn publish_private_bytes(destination: &Path, bytes: &[u8]) -> Result<Digest, JournalError> {
+    validate_new_path(destination)?;
+    let parent = destination
+        .parent()
+        .ok_or_else(|| JournalError::InsecurePath("export destination has no parent".into()))?;
+    let name = destination
+        .file_name()
+        .and_then(|value| value.to_str())
+        .ok_or_else(|| JournalError::InsecurePath("export filename must be UTF-8".into()))?;
+
+    #[cfg(test)]
+    persistence_tests::point("export.before_stage_create")?;
+    let mut selected = None;
+    for _ in 0..32 {
+        let sequence = EXPORT_STAGE_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let stage = parent.join(format!(
+            ".{name}.receipt-export-stage-{}-{sequence}",
+            std::process::id()
+        ));
+        match create_private_file(&stage, true) {
+            Ok(file) => {
+                selected = Some((stage, file));
+                break;
+            }
+            Err(JournalError::Io(error)) if error.kind() == io::ErrorKind::AlreadyExists => {}
+            Err(error) => return Err(error),
+        }
+    }
+    let (stage, mut file) = selected.ok_or_else(|| {
+        JournalError::InvalidInput("could not allocate a unique export staging inode".into())
+    })?;
+    #[cfg(test)]
+    if let Err(error) = persistence_tests::point("export.after_stage_create") {
+        drop(file);
+        remove_unpublished_stage(&stage);
+        return Err(error);
+    }
+
+    if let Err(error) = commit_bytes(&mut file, bytes) {
+        drop(file);
+        remove_unpublished_stage(&stage);
+        return Err(error);
+    }
+    if let Err(error) = file.sync_all().map_err(map_io_error) {
+        drop(file);
+        remove_unpublished_stage(&stage);
+        return Err(error);
+    }
+    #[cfg(test)]
+    if let Err(error) = persistence_tests::point("export.after_stage_sync") {
+        drop(file);
+        remove_unpublished_stage(&stage);
+        return Err(error);
+    }
+
+    let expected_digest = sha256(bytes);
+    let verified = read_locked_segment(&file, bytes.len() as u64);
+    match verified {
+        Ok(ref observed) if observed.as_slice() == bytes && sha256(observed) == expected_digest => {
+        }
+        Ok(_) => {
+            drop(file);
+            remove_unpublished_stage(&stage);
+            return Err(JournalError::Corruption {
+                offset: 0,
+                reason: "export staging verification mismatch".into(),
+            });
+        }
+        Err(error) => {
+            drop(file);
+            remove_unpublished_stage(&stage);
+            return Err(error);
+        }
+    }
+    drop(file);
+
+    #[cfg(test)]
+    if let Err(error) = persistence_tests::point("export.before_publish") {
+        remove_unpublished_stage(&stage);
+        return Err(error);
+    }
+    if let Err(error) = fs::hard_link(&stage, destination) {
+        remove_unpublished_stage(&stage);
+        return Err(map_io_error(error));
+    }
+    #[cfg(test)]
+    if persistence_tests::point("export.after_publish").is_err() {
+        return Err(JournalError::PublicationUncertain);
+    }
+    #[cfg(test)]
+    if persistence_tests::point("export.before_directory_sync").is_err() {
+        return Err(JournalError::PublicationUncertain);
+    }
+    if sync_parent(destination).is_err() {
+        return Err(JournalError::PublicationUncertain);
+    }
+    #[cfg(test)]
+    if persistence_tests::point("export.after_directory_sync").is_err() {
+        return Err(JournalError::PublicationUncertain);
+    }
+    if fs::remove_file(&stage).is_err() {
+        return Err(JournalError::PublicationUncertain);
+    }
+    if sync_parent(destination).is_err() {
+        return Err(JournalError::PublicationUncertain);
+    }
+    Ok(expected_digest)
+}
+
+#[cfg(test)]
+mod authoritative_path_tests {
+    use super::*;
+
+    #[test]
+    fn ancestor_ownership_accepts_only_root_or_effective_service_uid() {
+        assert!(ancestor_owner_is_trusted(0, 1000));
+        assert!(ancestor_owner_is_trusted(1000, 1000));
+        assert!(!ancestor_owner_is_trusted(1001, 1000));
+        assert!(!ancestor_owner_is_trusted(u32::MAX, 1000));
+    }
 }
 
 fn create_private_file(path: &Path, create_new: bool) -> Result<File, JournalError> {
@@ -2189,48 +2407,66 @@ fn metadata_matches_identity(metadata: &fs::Metadata, identity: (u64, u64)) -> b
 /// from renaming entries owned by the journal user.  Ownership is otherwise
 /// intentionally not constrained: the D3 service's private directory is
 /// owned by `hepta-browserd`, not root.
+fn effective_service_uid() -> Result<u32, JournalError> {
+    // The product is Linux-only and already depends on procfs for peer
+    // attestation. `/proc/self` is owned by the effective process identity,
+    // avoiding an unsafe libc call while still failing closed if procfs is not
+    // available in the execution environment.
+    Ok(fs::metadata("/proc/self").map_err(map_io_error)?.uid())
+}
+
+fn ancestor_owner_is_trusted(owner: u32, effective_uid: u32) -> bool {
+    owner == 0 || owner == effective_uid
+}
+
 fn validate_parent_components(path: &Path) -> Result<(), JournalError> {
     if path
         .components()
         .any(|component| matches!(component, Component::ParentDir))
     {
         return Err(JournalError::InsecurePath(
-            "journal path must not contain '..'".into(),
+            "parent traversal is not permitted".into(),
         ));
     }
-
-    let mut parent = path
+    let parent = path
         .parent()
-        .ok_or_else(|| JournalError::InsecurePath("journal path has no parent directory".into()))?;
-    loop {
-        // `Path::parent` returns an empty path for a single relative
-        // component.  The existing path validators will reject that case;
-        // there is no directory component left for this helper to inspect.
-        if parent.as_os_str().is_empty() {
-            break;
+        .ok_or_else(|| JournalError::InsecurePath("path has no parent directory".into()))?;
+    let effective_uid = effective_service_uid()?;
+    let mut current = PathBuf::new();
+    for component in parent.components() {
+        match component {
+            Component::RootDir => current.push(Path::new("/")),
+            Component::CurDir => continue,
+            Component::Normal(value) => current.push(value),
+            Component::ParentDir | Component::Prefix(_) => {
+                return Err(JournalError::InsecurePath(
+                    "unsupported parent path component".into(),
+                ));
+            }
         }
-        let metadata = fs::symlink_metadata(parent).map_err(map_io_error)?;
+        if current.as_os_str().is_empty() {
+            continue;
+        }
+        let metadata = fs::symlink_metadata(&current).map_err(map_io_error)?;
         if metadata.file_type().is_symlink() || !metadata.is_dir() {
-            return Err(JournalError::InsecurePath(format!(
-                "journal parent {} must be a real directory",
-                parent.display()
-            )));
+            return Err(JournalError::InsecurePath(
+                "journal parent must be a real directory, not a symlink or non-directory component"
+                    .into(),
+            ));
         }
         let mode = metadata.permissions().mode();
-        let root_owned_sticky = metadata.uid() == 0 && mode & 0o1000 != 0;
-        if mode & 0o022 != 0 && !root_owned_sticky {
-            return Err(JournalError::InsecurePath(format!(
-                "journal parent {} must not be group/other writable",
-                parent.display()
-            )));
+        let owner = metadata.uid();
+        if !ancestor_owner_is_trusted(owner, effective_uid) {
+            return Err(JournalError::InsecurePath(
+                "journal parent is owned by an untrusted uid".into(),
+            ));
         }
-        let Some(next) = parent.parent() else {
-            break;
-        };
-        if next == parent {
-            break;
+        let sticky_root_directory = owner == 0 && mode & 0o1000 != 0;
+        if mode & 0o022 != 0 && !sticky_root_directory {
+            return Err(JournalError::InsecurePath(
+                "journal parent must not be group/other writable without trusted sticky-root custody".into(),
+            ));
         }
-        parent = next;
     }
     Ok(())
 }

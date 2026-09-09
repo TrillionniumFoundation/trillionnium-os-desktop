@@ -14,6 +14,17 @@
 //! use hepta_browser_actor::PrincipalBinding;
 //! ```
 //!
+//! Raw session-state synthesis is not part of the product API. If both the
+//! generic event type and the untrusted mutator were ever reintroduced, this
+//! compile-fail guard would unexpectedly compile:
+//!
+//! ```compile_fail
+//! use hepta_browser_actor::{BrowserActor, SessionEvent};
+//! fn forge_state(actor: &mut BrowserActor, event: SessionEvent) {
+//!     actor.apply_session_event(event, 0).unwrap();
+//! }
+//! ```
+//!
 //! Arbitrary runtime injection is not representable:
 //!
 //! ```compile_fail
@@ -41,7 +52,7 @@ pub use hepta_browser_codec::{
     ObservationField, PageAction, ProfilePersistence, ProfileSpec, WaitCondition,
 };
 pub use hepta_peer_attestation::{AttestedPeer, ProcfsPeerAttestor};
-pub use hepta_session_core::{ReceiptJournal, SessionEvent, TransitionError};
+pub use hepta_session_core::ReceiptJournal;
 pub use simulation::{
     CancellationToken, PageOwnerSnapshot, ReceiptLifecycleObserver, TaskFlowPrincipal,
     executable_sha256, scoped_frame_id,
@@ -121,15 +132,6 @@ impl BrowserActor {
     /// Return an existing active cancellation token without creating authority.
     pub fn active_cancellation_token(&self, request_id: &str) -> Option<CancellationToken> {
         self.inner.active_cancellation_token(request_id)
-    }
-
-    /// Apply one explicit session state-machine event.
-    pub fn apply_session_event(
-        &mut self,
-        event: SessionEvent,
-        now_ms: u64,
-    ) -> Result<(), TransitionError> {
-        self.inner.apply_session_event(event, now_ms)
     }
 
     /// Create a receipt observer. Receipt facts never authorize execution.

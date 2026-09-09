@@ -21,7 +21,11 @@
     "runtime_trait_publicly_exported": false,
     "request_control_publicly_exported": false,
     "product_runtime_type": "actor_owned_deterministic_local_runtime",
-    "deferred_work_after_terminal_success_representable": false
+    "deferred_work_after_terminal_success_representable": false,
+    "raw_session_event_type_publicly_exported": false,
+    "unauthenticated_session_event_mutation_publicly_exported": false,
+    "authority_changing_state_requires_attested_request": true,
+    "cancellation_helpers_are_revocation_only": true
   },
   "principal_binding": {
     "semantic_principal": "TaskFlowPrincipal",
@@ -104,7 +108,13 @@
     "human_focus_navigation_result": "human_control_active",
     "ime_navigation_result": "ime_composition_active",
     "other_agent_control_navigation_result": "internal_fail_closed",
-    "terminal_revision_reference_is_never_current": true
+    "terminal_revision_reference_is_never_current": true,
+    "generic_session_event_ingress": false,
+    "product_state_transition_entry": "handle_attested_request_only",
+    "caller_can_release_human_or_ime_control": false,
+    "caller_can_resolve_capability_or_recovery": false,
+    "caller_can_synthesize_navigation_completion": false,
+    "unauthenticated_helpers_can_only_revoke_or_observe": true
   },
   "receipts": {
     "journal": "contracts/receipt-journal.v1.json",
@@ -137,6 +147,7 @@
     "signing_key_custody_proven": false,
     "publication_authorized": false,
     "production_release": false,
-    "caller_supplied_runtime_authority": false
+    "caller_supplied_runtime_authority": false,
+    "raw_product_state_mutation_authority": false
   }
 }
