@@ -64,5 +64,45 @@ class ReceiptRecoverySliceTests(unittest.TestCase):
         self.assertNotIn("shell_command", encoded)
 
 
+    def test_authoritative_export_is_locked_complete_and_atomic(self) -> None:
+        contract = json.loads(
+            (ROOT / "contracts/receipt-journal.v1.json").read_text(encoding="utf-8")
+        )
+        exports = contract["exports"]
+        self.assertEqual(
+            exports["authoritative_managed_api"],
+            "export_managed_receipt_envelopes_jsonl",
+        )
+        self.assertEqual(exports["managed_explicit_segment_shortcut"], "rejected")
+        self.assertEqual(exports["active_writer"], "fail_closed_WriterBusy")
+        self.assertIs(exports["locks_held_through_publication"], True)
+        self.assertIs(
+            contract["durability"]["export_partial_final_name_observable"], False
+        )
+        self.assertEqual(
+            contract["durability"]["export_post_publish_failure"],
+            "typed_PublicationUncertain_no_overwrite_retry",
+        )
+        self.assertEqual(
+            contract["managed_store"]["attacker_owned_0755_ancestor"], "reject"
+        )
+
+        source = (
+            ROOT / "crates/hepta-session-core/src/receipt_journal.rs"
+        ).read_text(encoding="utf-8")
+        authority = (
+            ROOT / "crates/hepta-session-core/src/authoritative_export.rs"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "open_authoritative_chain",
+            "authoritative_reports",
+            "export_managed_receipt_envelopes_jsonl",
+            "fs::hard_link(&stage, destination)",
+            "PublicationUncertain",
+            "ancestor_owner_is_trusted",
+        ):
+            self.assertIn(required, source + authority)
+
+
 if __name__ == "__main__":
     unittest.main()
