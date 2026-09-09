@@ -1,4 +1,4 @@
-# reconstruct-retry: 4
+# reconstruct-retry: 5
 name: s07-reconstruct-one-shot
 
 on:
@@ -66,11 +66,9 @@ jobs:
           python3 tools/s07_test_escape_bootstrap.py
           python3 tools/s07_patch_normalize.py
           python3 tools/s07_successor_autofix.py
-          rm -f \
-            tools/s07_test_escape_bootstrap.py \
-            tools/s07_patch_normalize.py \
-            tools/s07_successor_autofix.py \
-            .github/workflows/s07-reconstruct.yml
+          test -s .github/workflows/s07-servo-retained-node.yml
+          cp .github/workflows/s07-servo-retained-node.yml \
+            "$RUNNER_TEMP/s07-servo-retained-node.yml"
           git add -A
           git diff --cached --check
           git diff --cached --name-only | tee "$RUNNER_TEMP/carrier-paths.txt"
@@ -86,13 +84,12 @@ jobs:
             tools/verify_d3_servo_patch.py; do
             grep -Fxq "$required" "$RUNNER_TEMP/carrier-paths.txt"
           done
-          test ! -e tools/s07_test_escape_bootstrap.py
-          test ! -e tools/s07_patch_normalize.py
-          test ! -e tools/s07_successor_autofix.py
-          test ! -e .github/workflows/s07-reconstruct.yml
           test "$(jq -r '.carrier_base_commit' "$D3_SERVO_MANIFEST")" = "$S06_HEAD"
           test "$(jq -r '.carrier_branch' "$D3_SERVO_MANIFEST")" = \
             codex/s07-servo-retained-node-closure-v1
+          grep -Fq 'codex/s07-servo-retained-node-closure-v1' \
+            "$RUNNER_TEMP/s07-servo-retained-node.yml"
+          grep -Fq "$S06_HEAD" "$RUNNER_TEMP/s07-servo-retained-node.yml"
 
       - name: Install exact carrier Rust toolchain
         shell: bash
@@ -156,13 +153,31 @@ jobs:
           git -C servo diff --check
           rm -rf servo
 
-      - name: Publish the repaired S07 merge object
+      - name: Preserve permanent workflow for privileged installation
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: s07-permanent-workflow-${{ github.sha }}
+          path: ${{ runner.temp }}/s07-servo-retained-node.yml
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish only non-workflow repaired S07 source
+        env:
+          TRIGGER_SHA: ${{ github.sha }}
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse MERGE_HEAD)" = "$S06_HEAD"
           test -z "$(git status --porcelain=v1 | grep '^?? servo/' || true)"
+          git restore --source="$TRIGGER_SHA" --staged --worktree -- \
+            .github/workflows/s07-reconstruct.yml \
+            tools/s07_patch_normalize.py \
+            tools/s07_successor_autofix.py \
+            tools/s07_test_escape_bootstrap.py
+          rm -f .github/workflows/s07-servo-retained-node.yml
           git add -A
           git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          test -z "$(git diff --cached --name-only | grep '^\.github/workflows/' || true)"
           git commit -m "feat(s07): bind complete retained-node evidence to final S06"
           git push origin HEAD:codex/s07-servo-retained-node-closure-v1
