@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Verify trigger and apply only bounded S05 commits
+      - name: Verify trigger and apply only the receipt boundary
         shell: bash
         env:
           TRIGGER_SHA: ${{ github.sha }}
@@ -28,17 +28,93 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$TRIGGER_SHA"
           git fetch --no-tags origin \
-            79ace92f44942687566a2167390d00e4d3cd6e5d \
+            201391fb7be2b6a2ce63e391f7ad6d4e7e6b55df \
             ceadc2b79f6383fe57fb1ce49937ed9092520e4f
-          git cherry-pick --no-commit 79ace92f44942687566a2167390d00e4d3cd6e5d
-          git cherry-pick --no-commit ceadc2b79f6383fe57fb1ce49937ed9092520e4f
-          git restore --source="$TRIGGER_SHA" --staged --worktree \
-            .github/workflows/receipt-journal.yml
-          test ! -e .git/CHERRY_PICK_HEAD
+          git diff --binary --full-index \
+            201391fb7be2b6a2ce63e391f7ad6d4e7e6b55df \
+            ceadc2b79f6383fe57fb1ce49937ed9092520e4f -- . \
+            ':(exclude).github/workflows/receipt-journal.yml' \
+            ':(exclude)crates/hepta-session-core/src/admission.rs' \
+            ':(exclude)crates/hepta-session-core/src/lib.rs' \
+            ':(exclude)crates/hepta-session-core/src/machine.rs' \
+            ':(exclude)crates/hepta-session-core/src/tests.rs' \
+            ':(exclude)crates/hepta-session-core/src/types.rs' \
+            ':(exclude)crates/hepta-session-core/tests/lease_admission.rs' \
+            ':(exclude)crates/hepta-session-core/tests/state_space.rs' \
+            > /tmp/s05-receipt.patch
+          test -s /tmp/s05-receipt.patch
+          git apply --index --3way /tmp/s05-receipt.patch
+
+          cat > crates/hepta-session-core/src/lib.rs <<'RUST'
+          #![forbid(unsafe_code)]
+
+          //! Deterministic session ownership, revision, bounded queueing, Agent/human
+          //! arbitration, and durable receipt lifecycle core. No Servo object, socket,
+          //! clock source, or policy authority is owned by this crate; adapters inject
+          //! events, monotonic timestamps, and receipt facts.
+
+          mod authoritative_export;
+          mod machine;
+          mod queue;
+          #[path = "receipt_journal.rs"]
+          mod receipt_journal_impl;
+          mod types;
+
+          /// Compatibility namespace for bounded chain limits only.
+          ///
+          /// The implementation module is private because historical report-based
+          /// exporters accept caller-constructible forensic data. Authoritative export
+          /// is available only through the path-verified crate-root functions.
+          pub mod receipt_journal {
+              pub use super::receipt_journal_impl::{
+                  MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS,
+              };
+
+              pub(crate) use super::receipt_journal_impl::{
+                  Digest, JournalError, ReceiptEnvelope, RecoveredRecord, RecoveryReport, TailStatus,
+                  export_journal_redacted_jsonl, export_receipt_envelopes_jsonl,
+                  export_redacted_jsonl, inspect_chain,
+              };
+          }
+
+          pub use authoritative_export::{
+              export_forensic_prefix_jsonl, export_receipt_envelopes_jsonl, export_redacted_jsonl,
+          };
+          pub use machine::{SessionMachine, SessionSnapshot};
+          pub use queue::{ArbiterQueue, QueueError};
+          pub use receipt_journal_impl::{
+              ArchivedSegment, CommittedRecord, CopiedReceiptSegment, Digest,
+              EffectClass as ReceiptEffectClass, JournalError, JournalId,
+              LifecycleState as ReceiptLifecycleState, MANAGED_ROTATION_THRESHOLD_BYTES,
+              MAX_CHAIN_BYTES, MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS, ManagedOpenPolicy,
+              OpenPolicy as JournalOpenPolicy, PrivacyClass, ReceiptEnvelope, ReceiptEvent,
+              ReceiptJournal, ReceiptMigrationReport, ReceiptOutcome, ReceiptSource, ReceiptStatus,
+              RecoveredRecord, RecoveryReport, ReplayDirective, SegmentHeader, SegmentSeal,
+              TailStatus, UnresolvedReceipt, hex_digest, inspect_chain,
+              inspect_path as inspect_receipt_journal, retention_candidates,
+          };
+          pub use types::{
+              ControlSource, ControlState, DEFAULT_HUMAN_LEASE_TTL_MS, HumanLease,
+              MAX_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent, SessionPhase, TransitionError,
+          };
+
+          #[cfg(test)]
+          mod tests;
+          RUST
+          sed -i 's/^          //' crates/hepta-session-core/src/lib.rs
+          git add crates/hepta-session-core/src/lib.rs
+
           git diff --cached --name-only | tee /tmp/s05-paths.txt
           test -s /tmp/s05-paths.txt
-          test "$(grep -cv '^\.github/workflows/' /tmp/s05-paths.txt)" -eq \
-            "$(wc -l < /tmp/s05-paths.txt)"
+          test -z "$(grep '^\.github/workflows/' /tmp/s05-paths.txt || true)"
+          for forbidden in \
+            crates/hepta-session-core/src/admission.rs \
+            crates/hepta-session-core/src/machine.rs \
+            crates/hepta-session-core/src/types.rs \
+            crates/hepta-session-core/tests/lease_admission.rs \
+            crates/hepta-session-core/tests/state_space.rs; do
+            ! grep -Fxq "$forbidden" /tmp/s05-paths.txt
+          done
 
       - name: Install exact Rust toolchain
         shell: bash
@@ -76,7 +152,10 @@ jobs:
               Path('contracts/receipt-journal.v1.json').read_text(encoding='utf-8'),
               parse_constant=reject_constant,
           )
-          assert all(type(value) is bool and value is False for value in contract['claim_ceiling'].values())
+          assert all(
+              type(value) is bool and value is False
+              for value in contract['claim_ceiling'].values()
+          )
           assert contract['effect_recovery']['potential_external_effect'] == 'never_automatic'
           assert contract['effect_recovery']['journal_executes_or_replays_operations'] is False
           PY
