@@ -24,21 +24,13 @@ const EXPECTED_PEER_GROUP: &str = "hepta-agent";
 const EXPECTED_PEER_UNIT: &str = "hepta-agent.service";
 
 fn main() {
-    let outcome = if std::env::args().any(|argument| argument == "--self-check") {
-        self_check()
-    } else {
-        refuse_unconnected_product_handler().map(|()| String::new())
-    };
-    match outcome {
-        Ok(report) => {
-            if !report.is_empty() {
-                println!("{report}");
-            }
-        }
-        Err(error) => {
-            eprintln!("hepta-agent-portd: {error}");
+    if std::env::args().any(|argument| argument == "--self-check") {
+        if self_check().is_err() {
             std::process::exit(1);
         }
+        println!("{}", self_check_report());
+    } else if refuse_unconnected_product_handler().is_err() {
+        std::process::exit(1);
     }
 }
 
@@ -75,6 +67,28 @@ fn inherited_stream_from_stdin() -> Result<UnixStream, ServiceError> {
 }
 
 fn verify_stream_socket(fd: libc::c_int) -> Result<(), ServiceError> {
+    let mut socket_domain: libc::c_int = 0;
+    let mut domain_length = std::mem::size_of::<libc::c_int>() as libc::socklen_t;
+    // SAFETY: the output pointers refer to initialized writable storage for
+    // the call and getsockopt retains neither pointer.
+    let domain_status = unsafe {
+        libc::getsockopt(
+            fd,
+            libc::SOL_SOCKET,
+            libc::SO_DOMAIN,
+            std::ptr::addr_of_mut!(socket_domain).cast(),
+            std::ptr::addr_of_mut!(domain_length),
+        )
+    };
+    if domain_status != 0 {
+        return Err(ServiceError::Io(io::Error::last_os_error()));
+    }
+    if usize::try_from(domain_length).ok() != Some(std::mem::size_of::<libc::c_int>())
+        || socket_domain != libc::AF_UNIX
+    {
+        return Err(ServiceError::WrongInheritedDescriptor);
+    }
+
     let mut socket_type: libc::c_int = 0;
     let mut length = std::mem::size_of::<libc::c_int>() as libc::socklen_t;
     // SAFETY: the output pointers refer to initialized writable storage for
@@ -113,7 +127,7 @@ fn verify_local_socket_path(stream: &UnixStream, expected: &Path) -> Result<(), 
     Ok(())
 }
 
-fn self_check() -> Result<String, ServiceError> {
+fn self_check() -> Result<(), ServiceError> {
     let (left, _right) = UnixStream::pair().map_err(ServiceError::Io)?;
     verify_stream_socket(left.as_raw_fd())?;
     let peer = PeerIdentity::from_stream(&left)?;
@@ -126,7 +140,11 @@ fn self_check() -> Result<String, ServiceError> {
     if resolve_user_id("root")? != 0 || resolve_group_id("root")? != 0 {
         return Err(ServiceError::Invariant("root account resolution changed"));
     }
-    Ok(format!(
+    Ok(())
+}
+
+fn self_check_report() -> String {
+    format!(
         concat!(
             "{{\"schema\":\"trillionnium.desktop.agent-portd-self-check.v2\",",
             "\"ok\":true,\"listener_created\":false,",
@@ -134,17 +152,18 @@ fn self_check() -> Result<String, ServiceError> {
             "\"product_handler_connected\":false,",
             "\"fixture_handler_linked\":false,",
             "\"activation_fail_closed\":true,",
-            "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{}}}"
+            "\"peer_credentials_verified\":true,",
+            "\"peer_identity_redacted\":true}}"
         ),
-        AGENT_SOCKET_PATH, snapshot.pid, snapshot.uid, snapshot.gid,
-    ))
+        AGENT_SOCKET_PATH,
+    )
 }
 
 #[derive(Debug)]
 enum ServiceError {
     Io(io::Error),
     Transport(hepta_agent_transport::TransportError),
-    Attestation(AttestationError),
+    Attestation,
     WrongInheritedDescriptor,
     UnnamedInheritedSocket,
     SocketPathMismatch {
@@ -160,7 +179,7 @@ impl fmt::Display for ServiceError {
         match self {
             Self::Io(error) => write!(formatter, "inherited socket I/O failed: {error}"),
             Self::Transport(error) => write!(formatter, "transport failed: {error}"),
-            Self::Attestation(error) => write!(formatter, "peer attestation failed: {error}"),
+            Self::Attestation => formatter.write_str("peer attestation failed"),
             Self::WrongInheritedDescriptor => {
                 formatter.write_str("standard input is not an AF_UNIX stream socket")
             }
@@ -186,7 +205,7 @@ impl std::error::Error for ServiceError {
         match self {
             Self::Io(error) => Some(error),
             Self::Transport(error) => Some(error),
-            Self::Attestation(error) => Some(error),
+            Self::Attestation => None,
             _ => None,
         }
     }
@@ -205,8 +224,8 @@ impl From<hepta_agent_transport::TransportError> for ServiceError {
 }
 
 impl From<AttestationError> for ServiceError {
-    fn from(error: AttestationError) -> Self {
-        Self::Attestation(error)
+    fn from(_: AttestationError) -> Self {
+        Self::Attestation
     }
 }
 
@@ -224,14 +243,34 @@ mod tests {
         ));
     }
 
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn inherited_descriptor_requires_unix_domain() {
+        // A same-type AF_INET stream must not be accepted as an inherited
+        // AgentPort descriptor even when its SO_TYPE is SOCK_STREAM.
+        let fd = unsafe { libc::socket(libc::AF_INET, libc::SOCK_STREAM, 0) };
+        assert!(fd >= 0, "AF_INET socket creation failed");
+        assert!(matches!(
+            verify_stream_socket(fd),
+            Err(ServiceError::WrongInheritedDescriptor)
+        ));
+        unsafe { libc::close(fd) };
+    }
+
     #[test]
     fn product_self_check_reports_fixture_separation_and_closed_activation() {
-        let report = self_check().expect("self-check");
+        self_check().expect("self-check");
+        let report = self_check_report();
         assert!(report.contains("\"ok\":true"));
         assert!(report.contains("\"listener_created\":false"));
         assert!(report.contains("\"product_handler_connected\":false"));
         assert!(report.contains("\"fixture_handler_linked\":false"));
         assert!(report.contains("\"activation_fail_closed\":true"));
+        assert!(report.contains("\"peer_credentials_verified\":true"));
+        assert!(report.contains("\"peer_identity_redacted\":true"));
+        assert!(!report.contains("\"peer_pid\""));
+        assert!(!report.contains("\"peer_uid\""));
+        assert!(!report.contains("\"peer_gid\""));
     }
 
     #[test]

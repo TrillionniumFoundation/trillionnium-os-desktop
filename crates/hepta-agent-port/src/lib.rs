@@ -7,13 +7,13 @@
 //! monotonic deadline, and returns.
 //!
 //! It deliberately does not bind a socket path, create a listener, map a peer
-//! to semantic authority, dispatch Servo, grant a capability, or authorize an
-//! external effect.
+//! to semantic authority, dispatch Servo, grant a capability, authorize an
+//! external effect, or expose a deterministic transport nonce source.
 
 #![forbid(unsafe_code)]
 
 use hepta_agent_transport::{
-    NonceSource, OsNonceSource, PeerIdentity, PeerPolicy, ServerConnection, TransportError,
+    ClientConnection, PeerIdentity, PeerPolicy, ServerConnection, TransportError,
 };
 use hepta_browser_codec::{
     BrowserErrorCode, BrowserOperation, BrowserRequest, BrowserResponse, BrowserWireError,
@@ -61,9 +61,58 @@ pub trait BrowserRequestHandler {
     ) -> Result<HandlerOutcome, AgentPortError>;
 }
 
+/// Durable lifecycle hook around one admitted BrowserActor operation.
+///
+/// `requested` and `dispatched` run before the handler. `completed` runs only
+/// after a bounded canonical response has been constructed and hashed, but
+/// before transport commit. Any observer failure is fail-closed. If execution
+/// may have started and no terminal record can be written, recovery sees the
+/// last durable `dispatched` event and must not automatically replay a
+/// potential external effect.
+pub trait OperationLifecycleObserver {
+    fn requested(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+
+    fn dispatched(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+
+    fn completed(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+        _response: &BrowserResponse,
+        _canonical_response_sha256: &str,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+
+    fn interrupted(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+        _error: &AgentPortError,
+    ) -> Result<(), AgentPortError> {
+        Ok(())
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct NoopOperationLifecycleObserver;
+
+impl OperationLifecycleObserver for NoopOperationLifecycleObserver {}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServiceEvidence {
-    pub peer: PeerIdentity,
     pub transport_sequence: u64,
     pub request_id: String,
     pub session_id: Option<String>,
@@ -81,19 +130,26 @@ pub fn serve_one<H: BrowserRequestHandler>(
     server_ceiling: Duration,
     handler: &mut H,
 ) -> Result<ServiceEvidence, AgentPortError> {
-    serve_one_with_nonce_source(stream, peer_policy, OsNonceSource, server_ceiling, handler)
+    let mut observer = NoopOperationLifecycleObserver;
+    serve_one_with_observer(
+        stream,
+        peer_policy,
+        server_ceiling,
+        handler,
+        &mut observer,
+    )
 }
 
-pub fn serve_one_with_nonce_source<S, H>(
+pub fn serve_one_with_observer<H, O>(
     stream: UnixStream,
     peer_policy: PeerPolicy,
-    nonce_source: S,
     server_ceiling: Duration,
     handler: &mut H,
+    observer: &mut O,
 ) -> Result<ServiceEvidence, AgentPortError>
 where
-    S: NonceSource,
     H: BrowserRequestHandler,
+    O: OperationLifecycleObserver,
 {
     if server_ceiling.is_zero() {
         return Err(AgentPortError::DeadlineExceeded);
@@ -111,10 +167,12 @@ where
         .checked_add(server_ceiling)
         .ok_or(AgentPortError::DeadlineExceeded)?;
 
-    let mut connection = ServerConnection::accept_with_nonce_source(
+    // The public transport API has one production admission path: OS entropy.
+    // No caller-controlled nonce source is accepted here or by the transport
+    // facade.
+    let mut connection = ServerConnection::accept(
         stream,
         peer_policy,
-        nonce_source,
         remaining_until(server_deadline)?,
     )?;
     let peer = connection.peer_identity();
@@ -134,19 +192,56 @@ where
     };
 
     context.remaining()?;
-    let outcome = handler.handle(&context, &request)?;
+    observer.requested(&context, &request)?;
+    if let Err(error) = context.remaining() {
+        observer.interrupted(&context, &request, &error)?;
+        return Err(error);
+    }
+    observer.dispatched(&context, &request)?;
+    if let Err(error) = context.remaining() {
+        observer.interrupted(&context, &request, &error)?;
+        return Err(error);
+    }
+
+    let outcome = match handler.handle(&context, &request) {
+        Ok(outcome) => outcome,
+        Err(error) => {
+            observer.interrupted(&context, &request, &error)?;
+            return Err(error);
+        }
+    };
 
     // A synchronous handler may return after its budget. Such a result is
     // discarded and no response frame is committed.
-    context.remaining()?;
-    let response = bind_response(&request, outcome)?;
+    if let Err(error) = context.remaining() {
+        observer.interrupted(&context, &request, &error)?;
+        return Err(error);
+    }
+    let response = match bind_response(&request, outcome) {
+        Ok(response) => response,
+        Err(error) => {
+            observer.interrupted(&context, &request, &error)?;
+            return Err(error);
+        }
+    };
     let response_ok = response.outcome.is_ok();
-    let encoded = encode_response(&response)?;
+    let encoded = match encode_response(&response) {
+        Ok(encoded) => encoded,
+        Err(error) => {
+            let error = AgentPortError::Codec(error);
+            observer.interrupted(&context, &request, &error)?;
+            return Err(error);
+        }
+    };
     let response_sha256 = sha256_hex(&encoded);
+
+    // A terminal fact must be durable before response publication. If the
+    // observer fails here, the client receives no success and recovery sees
+    // the last durable pre-terminal state.
+    observer.completed(&context, &request, &response, &response_sha256)?;
     connection.send_response(request_frame.sequence, encoded, context.remaining()?)?;
 
     Ok(ServiceEvidence {
-        peer,
         transport_sequence: request_frame.sequence,
         request_id: request.request_id,
         session_id: request.session_id,
@@ -304,7 +399,6 @@ fn sha256_hex(encoded: &[u8]) -> String {
     output
 }
 
-#[derive(Debug)]
 pub enum AgentPortError {
     Transport(TransportError),
     Codec(CodecError),
@@ -328,7 +422,9 @@ impl fmt::Display for AgentPortError {
             Self::InvalidHandlerResult(reason) => {
                 write!(formatter, "AgentPort handler result is invalid: {reason}")
             }
-            Self::Handler(message) => write!(formatter, "AgentPort handler failed: {message}"),
+            // Handler-provided text may contain user/page data. It is retained
+            // for the direct caller but never formatted into logs by this type.
+            Self::Handler(_) => formatter.write_str("AgentPort handler failed"),
             Self::SelfCheckThreadPanicked => {
                 formatter.write_str("AgentPort self-check thread panicked")
             }
@@ -336,6 +432,12 @@ impl fmt::Display for AgentPortError {
                 write!(formatter, "AgentPort self-check invariant failed: {reason}")
             }
         }
+    }
+}
+
+impl fmt::Debug for AgentPortError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self, formatter)
     }
 }
 
@@ -375,7 +477,12 @@ impl BrowserRequestHandler for D0FixtureHandler {
         context: &DispatchContext,
         request: &BrowserRequest,
     ) -> Result<HandlerOutcome, AgentPortError> {
-        self.invocation_count = self.invocation_count.saturating_add(1);
+        self.invocation_count = self
+            .invocation_count
+            .checked_add(1)
+            .ok_or(AgentPortError::SelfCheckInvariant(
+                "fixture invocation counter exhausted",
+            ))?;
         if context.effect_class == EffectClass::PotentialExternalEffect {
             return Ok(HandlerOutcome::Failure(BrowserWireError {
                 code: BrowserErrorCode::PolicyDenied,
@@ -402,8 +509,6 @@ impl BrowserRequestHandler for D0FixtureHandler {
 }
 
 pub fn self_check() -> Result<(), AgentPortError> {
-    use hepta_agent_transport::{ClientConnection, FixedNonceSource, NONCE_BYTES};
-
     let timeout = Duration::from_secs(2);
     let (client_stream, server_stream) = UnixStream::pair().map_err(TransportError::from)?;
     let client_policy = PeerPolicy::exact(PeerIdentity::from_stream(&client_stream)?);
@@ -411,13 +516,7 @@ pub fn self_check() -> Result<(), AgentPortError> {
     let server = std::thread::spawn(
         move || -> Result<(ServiceEvidence, usize), AgentPortError> {
             let mut handler = D0FixtureHandler::default();
-            let evidence = serve_one_with_nonce_source(
-                server_stream,
-                server_policy,
-                FixedNonceSource([0x2a; NONCE_BYTES]),
-                timeout,
-                &mut handler,
-            )?;
+            let evidence = serve_one(server_stream, server_policy, timeout, &mut handler)?;
             Ok((evidence, handler.invocation_count))
         },
     );
@@ -461,7 +560,6 @@ pub fn self_check() -> Result<(), AgentPortError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hepta_agent_transport::{ClientConnection, FixedNonceSource, NONCE_BYTES};
     use hepta_browser_codec::{NavigationTarget, decode_response, encode_request};
     use std::sync::Arc;
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -494,14 +592,8 @@ mod tests {
         let server_policy = policy(&server_stream);
         let server = thread::spawn(move || {
             let mut handler = D0FixtureHandler::default();
-            let evidence = serve_one_with_nonce_source(
-                server_stream,
-                server_policy,
-                FixedNonceSource([0x33; NONCE_BYTES]),
-                timeout,
-                &mut handler,
-            )
-            .expect("serve navigation");
+            let evidence = serve_one(server_stream, server_policy, timeout, &mut handler)
+                .expect("serve navigation");
             (evidence, handler.invocation_count)
         });
         let request = BrowserRequest {
@@ -549,6 +641,107 @@ mod tests {
         }
     }
 
+    struct DeadlineObserver {
+        wait_after_requested: bool,
+        events: Vec<&'static str>,
+    }
+
+    impl DeadlineObserver {
+        fn wait_for_expiry(&self, context: &DispatchContext) {
+            while context.remaining().is_ok() {
+                thread::yield_now();
+            }
+        }
+    }
+
+    impl OperationLifecycleObserver for DeadlineObserver {
+        fn requested(
+            &mut self,
+            context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<(), AgentPortError> {
+            self.events.push("requested");
+            if self.wait_after_requested {
+                self.wait_for_expiry(context);
+            }
+            Ok(())
+        }
+
+        fn dispatched(
+            &mut self,
+            context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<(), AgentPortError> {
+            self.events.push("dispatched");
+            if !self.wait_after_requested {
+                self.wait_for_expiry(context);
+            }
+            Ok(())
+        }
+
+        fn interrupted(
+            &mut self,
+            _context: &DispatchContext,
+            _request: &BrowserRequest,
+            error: &AgentPortError,
+        ) -> Result<(), AgentPortError> {
+            assert!(matches!(error, AgentPortError::DeadlineExceeded));
+            self.events.push("interrupted");
+            Ok(())
+        }
+    }
+
+    fn assert_deadline_interrupts_after_lifecycle_event(wait_after_requested: bool) {
+        let server_ceiling = Duration::from_millis(50);
+        let client_timeout = Duration::from_secs(2);
+        let (client_stream, server_stream) = UnixStream::pair().expect("socketpair");
+        let client_policy = policy(&client_stream);
+        let server_policy = policy(&server_stream);
+        let server = thread::spawn(move || {
+            let counter = Arc::new(AtomicUsize::new(0));
+            let mut handler = CountingHandler(Arc::clone(&counter));
+            let mut observer = DeadlineObserver {
+                wait_after_requested,
+                events: Vec::new(),
+            };
+            let result = serve_one_with_observer(
+                server_stream,
+                server_policy,
+                server_ceiling,
+                &mut handler,
+                &mut observer,
+            );
+            (result, observer.events, counter.load(Ordering::SeqCst))
+        });
+        let mut client = ClientConnection::connect(client_stream, client_policy, client_timeout)
+            .expect("client connect");
+        client
+            .send_request(
+                encode_request(&health_request()).expect("encode"),
+                client_timeout,
+            )
+            .expect("send request");
+        drop(client);
+        let (result, events, invocation_count) = server.join().expect("server join");
+        assert!(matches!(result, Err(AgentPortError::DeadlineExceeded)));
+        assert_eq!(invocation_count, 0);
+        if wait_after_requested {
+            assert_eq!(events, ["requested", "interrupted"]);
+        } else {
+            assert_eq!(events, ["requested", "dispatched", "interrupted"]);
+        }
+    }
+
+    #[test]
+    fn deadline_after_requested_is_recorded_as_interrupted() {
+        assert_deadline_interrupts_after_lifecycle_event(true);
+    }
+
+    #[test]
+    fn deadline_after_dispatched_is_recorded_as_interrupted() {
+        assert_deadline_interrupts_after_lifecycle_event(false);
+    }
+
     #[test]
     fn noncanonical_request_fails_before_handler_invocation() {
         let timeout = Duration::from_secs(2);
@@ -559,13 +752,7 @@ mod tests {
         let server_count = Arc::clone(&count);
         let server = thread::spawn(move || {
             let mut handler = CountingHandler(server_count);
-            serve_one_with_nonce_source(
-                server_stream,
-                server_policy,
-                FixedNonceSource([0x44; NONCE_BYTES]),
-                timeout,
-                &mut handler,
-            )
+            serve_one(server_stream, server_policy, timeout, &mut handler)
         });
         let canonical = encode_request(&health_request()).expect("encode health");
         let mut noncanonical = b" ".to_vec();
@@ -603,23 +790,21 @@ mod tests {
     #[test]
     fn late_handler_result_is_not_committed() {
         let ceiling = Duration::from_millis(10);
+        let client_timeout = Duration::from_secs(1);
         let (client_stream, server_stream) = UnixStream::pair().expect("socketpair");
         let client_policy = policy(&client_stream);
         let server_policy = policy(&server_stream);
         let server = thread::spawn(move || {
             let mut handler = SlowHandler;
-            serve_one_with_nonce_source(
-                server_stream,
-                server_policy,
-                FixedNonceSource([0x55; NONCE_BYTES]),
-                ceiling,
-                &mut handler,
-            )
+            serve_one(server_stream, server_policy, ceiling, &mut handler)
         });
-        let mut client = ClientConnection::connect(client_stream, client_policy, ceiling)
+        let mut client = ClientConnection::connect(client_stream, client_policy, client_timeout)
             .expect("client connect");
         client
-            .send_request(encode_request(&health_request()).expect("encode"), ceiling)
+            .send_request(
+                encode_request(&health_request()).expect("encode"),
+                client_timeout,
+            )
             .expect("send request");
         let error = server
             .join()
@@ -642,5 +827,17 @@ mod tests {
             validate_handler_object(&object),
             Err(AgentPortError::InvalidHandlerResult(_))
         ));
+    }
+
+    #[test]
+    fn handler_error_text_is_not_formatted_into_logs() {
+        let error = AgentPortError::Handler(
+            "secret page text and credential material must stay private".to_owned(),
+        );
+        for rendered in [error.to_string(), format!("{error:?}")] {
+            assert_eq!(rendered, "AgentPort handler failed");
+            assert!(!rendered.contains("secret"));
+            assert!(!rendered.contains("credential"));
+        }
     }
 }

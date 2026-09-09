@@ -1,6 +1,10 @@
 {
   "schema": "trillionnium.desktop.agent-transport.v1",
   "status": "HOST_VALIDATED_NO_LISTENER",
+  "evidence_lifecycle": "STALE_EVIDENCE_REQUIRES_EXACT_HEAD_RERUN",
+  "evidence_freshness": "STALE_EVIDENCE",
+  "merge_ready": false,
+  "stale_reason": "The recorded host result predates this S04 API and redaction tree. Run the exact-head transport reference, full Rust gate, source-policy gate, independent review, protected merge, and exact-main rerun before promotion.",
   "carrier": "AF_UNIX_STREAM",
   "protocol_magic_ascii": "HEPTA001",
   "protocol_version": 1,
@@ -14,22 +18,73 @@
     "close": 5
   },
   "header_layout": [
-    {"field": "magic", "offset": 0, "bytes": 8},
-    {"field": "version_be", "offset": 8, "bytes": 2},
-    {"field": "kind", "offset": 10, "bytes": 1},
-    {"field": "reserved_flags_zero", "offset": 11, "bytes": 1},
-    {"field": "sequence_be", "offset": 12, "bytes": 8},
-    {"field": "payload_length_be", "offset": 20, "bytes": 4},
-    {"field": "session_nonce", "offset": 24, "bytes": 32},
-    {"field": "payload_sha256", "offset": 56, "bytes": 32}
+    {
+      "field": "magic",
+      "offset": 0,
+      "bytes": 8
+    },
+    {
+      "field": "version_be",
+      "offset": 8,
+      "bytes": 2
+    },
+    {
+      "field": "kind",
+      "offset": 10,
+      "bytes": 1
+    },
+    {
+      "field": "reserved_flags_zero",
+      "offset": 11,
+      "bytes": 1
+    },
+    {
+      "field": "sequence_be",
+      "offset": 12,
+      "bytes": 8
+    },
+    {
+      "field": "payload_length_be",
+      "offset": 20,
+      "bytes": 4
+    },
+    {
+      "field": "session_nonce",
+      "offset": 24,
+      "bytes": 32
+    },
+    {
+      "field": "payload_sha256",
+      "offset": 56,
+      "bytes": 32
+    }
   ],
   "authentication": {
-    "peer_credentials": ["pid", "uid", "gid"],
+    "peer_credentials": [
+      "pid",
+      "uid",
+      "gid"
+    ],
     "peer_policy": "expected_uid_required_expected_gid_and_pid_optional",
     "session_nonce_bytes": 32,
-    "nonce_source": "/dev/urandom",
+    "product_nonce_source": "operating_system_entropy_only",
+    "deterministic_nonce_injection": "private_wire_tests_only",
     "request_sequence": "strictly_increasing_from_1_per_connection",
     "payload_binding": "sha256"
+  },
+  "public_api": {
+    "connected_stream_only": true,
+    "listener_type_exposed": false,
+    "raw_frame_types_exposed": false,
+    "session_nonce_value_exposed": false,
+    "nonce_source_trait_exposed": false,
+    "deterministic_nonce_source_exposed": false,
+    "server_acceptance": "operating_system_entropy_only",
+    "peer_identity_debug": "redacted",
+    "peer_policy_debug": "redacted",
+    "connection_debug_and_display": "redacted",
+    "unauthorized_peer_error_formatting": "redacted",
+    "handler_error_text_formatting": "redacted_by_agent_port"
   },
   "deadline": "one_absolute_monotonic_deadline_per_complete_frame",
   "payload_semantics": "opaque_bytes_canonical_browser_codec_is_a_higher_layer",
@@ -38,29 +93,35 @@
     "enforced_by": "D0C-04 AgentPort bridge",
     "transport_core_pipelining_authority": false
   },
-  "listener": {"enabled": false, "socket_path": null, "public_network": false},
+  "listener": {
+    "enabled": false,
+    "socket_path": null,
+    "public_network": false
+  },
   "dependency_lock": "manifests/cargo-external-allowlist.json",
   "validation": {
-    "source_and_static_repository_validation": "PASS",
-    "cargo_fmt": "PASS",
-    "cargo_clippy": "PASS_D_WARNINGS_ALL_TARGETS",
-    "cargo_test": "PASS_25_RUST_TESTS",
-    "browserd_self_check": "PASS",
+    "source_and_static_repository_validation": "PASS_HISTORICAL_BASELINE",
+    "cargo_fmt": "PASS_HISTORICAL_BASELINE",
+    "cargo_clippy": "PASS_HISTORICAL_BASELINE",
+    "cargo_test": "PASS_HISTORICAL_BASELINE",
+    "browserd_self_check": "PASS_HISTORICAL_BASELINE",
     "exact_head": "786debc12aa8d790b231397c1a3341fbf89de080",
     "workflow_run_id": 33167838644,
     "runner_image": "ubuntu-24.04@20260823.283.1",
     "rustc": "1.93.0 (254b59607 2026-01-19)",
-    "merge_ready": true,
-    "python_reference_unit_tests": "PASS_15_OF_15",
-    "python_reference_self_check": "PASS"
+    "evidence_freshness": "STALE_EVIDENCE",
+    "merge_ready": false,
+    "reason": "The recorded Rust host result is a historical baseline. The changed public API, redaction implementation and exact parent require a new exact-head run and independent review.",
+    "python_reference_unit_tests": "PASS_15_OF_15_HISTORICAL_BASELINE",
+    "python_reference_self_check": "PASS_HISTORICAL_BASELINE",
+    "stale_reason": "The exact S04 candidate must regenerate the independent result and pass source-policy and Rust gates on its final head."
   },
   "remaining_gates": [
-    "dedicated_agent_and_browserd_service_uids",
-    "systemd_socket_unit_and_path_ownership",
-    "cgroup_or_unit_identity_binding",
-    "canonical_json_codec_and_duplicate_key_rejection",
-    "TaskFlow_principal_to_peer_mapping",
-    "listener_lifecycle_and_crash_recovery"
+    "independent_current_head_security_review",
+    "protected_merge_and_exact_main_rerun",
+    "booted_systemd_socket_activation_and_negative_peer_corpus",
+    "semantic_principal_to_peer_mapping",
+    "browser_actor_dispatch_and_receipt_integration"
   ],
   "independent_reference": {
     "implementation": "tools/agent_transport_reference.py",
@@ -68,10 +129,17 @@
     "golden_vector": "contracts/golden/agent-transport-request.v1.json",
     "result": "docs/evidence/generated/d0c02-agent-transport-reference-result.json",
     "runtime": "python_standard_library_only",
-    "status": "PASS",
+    "status": "PASS_REQUIRES_EXACT_HEAD_REGENERATION",
     "test_count": 15,
     "product_listener_created": false,
     "browser_payload_interpreted": false
   },
-  "host_evidence": "docs/evidence/generated/d0c02-rust193-host-result.json"
+  "host_evidence": "docs/evidence/generated/d0c02-rust193-host-result.json",
+  "failure_semantics": {
+    "wire_or_protocol_error": "public_connection_facade_drops_private_carrier_and_becomes_poisoned",
+    "subsequent_operation": "stable_io_broken_pipe_poisoned_error_without_additional_io",
+    "local_preflight_error": "connection_remains_usable_when_no_bytes_were_read_or_written",
+    "raw_carrier_visibility": "private_module_not_reexported",
+    "resynchronization": false
+  }
 }
