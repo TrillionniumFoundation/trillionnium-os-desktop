@@ -41,6 +41,7 @@ jobs:
             .github/workflows/s06-browser-actor.yml
           python3 tools/s06_review_autofix.py
           python3 tools/s06_compat_autofix.py
+          python3 tools/s06_contract_compat_autofix.py
           git add -A
           git diff --cached --name-only | tee /tmp/s06-paths.txt
           test -s /tmp/s06-paths.txt
@@ -50,10 +51,12 @@ jobs:
             contracts/browser-actor.v1.json \
             contracts/engine-thread-dispatch.v1.json \
             contracts/event-loop-completion.v1.json \
+            contracts/session-incarnation.v1.json \
             crates/hepta-browser-actor/src/lib.rs \
             crates/hepta-browser-actor-simulation/src/lib.rs \
             docs/architecture/ENGINE_THREAD_DISPATCH.md \
             docs/architecture/EVENT_LOOP_COMPLETION.md \
+            docs/architecture/SESSION_INCARNATION.md \
             tests/test_s06_browser_actor.py \
             tests/test_s06_contract_paths.py; do
             grep -Fxq "$required" /tmp/s06-paths.txt
@@ -136,6 +139,7 @@ jobs:
           rm -f \
             tools/s06_review_autofix.py \
             tools/s06_compat_autofix.py \
+            tools/s06_contract_compat_autofix.py \
             tools/s06_browser_actor_workflow.yml
           git add -A
           git reset \
