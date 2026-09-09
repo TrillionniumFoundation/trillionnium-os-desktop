@@ -1,4 +1,4 @@
-# repair-retry: 9
+# repair-retry: 10
 name: s05-authoritative-export-autofix
 
 on:
@@ -35,17 +35,16 @@ jobs:
 
           journal = Path('crates/hepta-session-core/src/receipt_journal.rs')
           text = journal.read_text(encoding='utf-8')
-          text = text.replace(
-              'or its compatibility alias\n/// [`export_redacted_jsonl`]).',
-              'or the crate-root compatibility alias\n/// [`crate::export_redacted_jsonl`]).',
-          )
-          start_marker = '/// Compatibility entry point for public redacted receipt export.\n'
-          end_marker = 'pub fn retention_candidates('
-          if text.count(start_marker) != 1 or text.count(end_marker) != 1:
-              raise SystemExit('could not isolate redundant internal export alias')
-          start = text.index(start_marker)
-          end = text.index(end_marker, start)
-          journal.write_text(text[:start] + text[end:], encoding='utf-8')
+          old_doc = 'or its compatibility alias\n/// [`export_redacted_jsonl`]).'
+          new_doc = 'or the crate-root compatibility alias\n/// [`crate::export_redacted_jsonl`]).'
+          if text.count(old_doc) != 1:
+              raise SystemExit(f'compatibility documentation: expected one match, found {text.count(old_doc)}')
+          text = text.replace(old_doc, new_doc, 1)
+          marker = 'pub fn export_redacted_jsonl(\n'
+          if text.count(marker) != 1:
+              raise SystemExit(f'test-only compatibility alias: expected one match, found {text.count(marker)}')
+          text = text.replace(marker, '#[cfg(test)]\n' + marker, 1)
+          journal.write_text(text, encoding='utf-8')
 
           lib = Path('crates/hepta-session-core/src/lib.rs')
           lines = lib.read_text(encoding='utf-8').splitlines()
@@ -66,7 +65,7 @@ jobs:
               output.append(line)
           if removed_alias != 1:
               raise SystemExit(
-                  f'internal export_redacted_jsonl import: expected one removal, found {removed_alias}'
+                  f'private compatibility alias import: expected one removal, found {removed_alias}'
               )
           lib.write_text('\n'.join(output) + '\n', encoding='utf-8')
           PY
