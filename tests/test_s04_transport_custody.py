@@ -81,14 +81,17 @@ class PublicApiMutationTest(unittest.TestCase):
             "NonceSource",
             "SessionNonce",
             "FrameKind",
-            "pub struct Frame",
+            "Frame",
         ):
             with self.subTest(token=token):
                 mutated = root + f"\npub use facade::{token};\n"
                 errors = VALIDATOR.validate_transport_sources(
                     mutated, facade, agent, manifest, contract
                 )
-                self.assertTrue(any(token in error for error in errors), errors)
+                self.assertIn(
+                    f"{VALIDATOR.PUBLIC_SURFACE_FINDING}:{token}",
+                    errors,
+                )
 
     def test_missing_custom_redaction_impl_is_rejected(self) -> None:
         root, facade, agent, manifest, contract = sources()
@@ -139,7 +142,54 @@ class PublicApiMutationTest(unittest.TestCase):
             errors = VALIDATOR.validate_transport_sources(
                 root, facade, agent, manifest, candidate
             )
-            self.assertTrue(any("public_api" in error for error in errors), errors)
+            self.assertTrue(
+                any(error.startswith(VALIDATOR.PUBLIC_API_FINDING + ":") for error in errors),
+                errors,
+            )
+
+    def test_every_public_api_field_is_type_and_value_bound(self) -> None:
+        root, facade, agent, manifest, contract = sources()
+        expected = VALIDATOR.EXPECTED_TRANSPORT_PUBLIC_API
+        self.assertEqual(contract["public_api"], expected)
+        for key, value in expected.items():
+            with self.subTest(key=key, mutation="missing"):
+                candidate = copy.deepcopy(contract)
+                del candidate["public_api"][key]
+                errors = VALIDATOR.validate_transport_sources(
+                    root, facade, agent, manifest, candidate
+                )
+                self.assertIn(
+                    f"{VALIDATOR.PUBLIC_API_FINDING}:agent-transport.public_api:missing:{key}",
+                    errors,
+                )
+            with self.subTest(key=key, mutation="type"):
+                candidate = copy.deepcopy(contract)
+                candidate["public_api"][key] = 1 if isinstance(value, bool) else False
+                errors = VALIDATOR.validate_transport_sources(
+                    root, facade, agent, manifest, candidate
+                )
+                self.assertTrue(
+                    any(
+                        error.startswith(
+                            f"{VALIDATOR.PUBLIC_API_FINDING}:agent-transport.public_api:type:{key}:"
+                        )
+                        for error in errors
+                    ),
+                    errors,
+                )
+            with self.subTest(key=key, mutation="value"):
+                candidate = copy.deepcopy(contract)
+                if isinstance(value, bool):
+                    candidate["public_api"][key] = not value
+                else:
+                    candidate["public_api"][key] = value + "-mutated"
+                errors = VALIDATOR.validate_transport_sources(
+                    root, facade, agent, manifest, candidate
+                )
+                self.assertIn(
+                    f"{VALIDATOR.PUBLIC_API_FINDING}:agent-transport.public_api:value:{key}",
+                    errors,
+                )
 
 
 if __name__ == "__main__":

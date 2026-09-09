@@ -51,6 +51,51 @@ def _require(condition: bool, message: str, errors: list[str]) -> None:
         errors.append(message)
 
 
+PUBLIC_API_FINDING = "S04-PUBLIC-API-CONTRACT"
+PUBLIC_SURFACE_FINDING = "S04-PUBLIC-API-EXPOSES"
+EXPECTED_TRANSPORT_PUBLIC_API: dict[str, object] = {
+    "connected_stream_only": True,
+    "listener_type_exposed": False,
+    "raw_frame_types_exposed": False,
+    "session_nonce_value_exposed": False,
+    "nonce_source_trait_exposed": False,
+    "deterministic_nonce_source_exposed": False,
+    "server_acceptance": "operating_system_entropy_only",
+    "peer_identity_debug": "redacted",
+    "peer_policy_debug": "redacted",
+    "connection_debug_and_display": "redacted",
+    "unauthorized_peer_error_formatting": "redacted",
+    "handler_error_text_formatting": "redacted_by_agent_port",
+}
+
+
+def _require_exact_typed_object(
+    value: object,
+    expected: dict[str, object],
+    label: str,
+    errors: list[str],
+) -> None:
+    if not isinstance(value, dict):
+        errors.append(f"{PUBLIC_API_FINDING}:{label}:not-an-object")
+        return
+    actual_keys = set(value)
+    expected_keys = set(expected)
+    for key in sorted(expected_keys - actual_keys):
+        errors.append(f"{PUBLIC_API_FINDING}:{label}:missing:{key}")
+    for key in sorted(actual_keys - expected_keys):
+        errors.append(f"{PUBLIC_API_FINDING}:{label}:unexpected:{key}")
+    for key in sorted(actual_keys & expected_keys):
+        actual = value[key]
+        wanted = expected[key]
+        if type(actual) is not type(wanted):
+            errors.append(
+                f"{PUBLIC_API_FINDING}:{label}:type:{key}:"
+                f"{type(actual).__name__}!={type(wanted).__name__}"
+            )
+        elif actual != wanted:
+            errors.append(f"{PUBLIC_API_FINDING}:{label}:value:{key}")
+
+
 def _impl_body(source: str, type_name: str) -> str:
     code = strip_rust_noncode(source)
     match = re.search(rf"\bimpl\s+{re.escape(type_name)}\s*\{{", code)
@@ -129,19 +174,19 @@ def validate_transport_sources(
     ):
         _require(
             not _public_definition_or_export(public_surface, forbidden),
-            f"public transport surface exposes {forbidden}",
+            f"{PUBLIC_SURFACE_FINDING}:{forbidden}",
             errors,
         )
     _require(
         re.search(r"\bpub\s+fn\s+accept_with_nonce_source\s*\(", public_surface)
         is None,
-        "public transport surface exposes accept_with_nonce_source",
+        f"{PUBLIC_SURFACE_FINDING}:accept_with_nonce_source",
         errors,
     )
     _require(
         re.search(r"\bpub\s+(?:const\s+)?fn\s+session_nonce\s*\(", public_surface)
         is None,
-        "public transport surface exposes session nonce material",
+        f"{PUBLIC_SURFACE_FINDING}:session_nonce",
         errors,
     )
 
@@ -245,23 +290,10 @@ def validate_transport_sources(
     )
 
     public_api = contract.get("public_api")
-    expected_public_api = {
-        "connected_stream_only": True,
-        "listener_type_exposed": False,
-        "raw_frame_types_exposed": False,
-        "session_nonce_value_exposed": False,
-        "nonce_source_trait_exposed": False,
-        "deterministic_nonce_source_exposed": False,
-        "server_acceptance": "operating_system_entropy_only",
-        "peer_identity_debug": "redacted",
-        "peer_policy_debug": "redacted",
-        "connection_debug_and_display": "redacted",
-        "unauthorized_peer_error_formatting": "redacted",
-        "handler_error_text_formatting": "redacted_by_agent_port",
-    }
-    _require(
-        public_api == expected_public_api,
-        "agent-transport public_api contract drifted",
+    _require_exact_typed_object(
+        public_api,
+        EXPECTED_TRANSPORT_PUBLIC_API,
+        "agent-transport.public_api",
         errors,
     )
     authentication = contract.get("authentication")

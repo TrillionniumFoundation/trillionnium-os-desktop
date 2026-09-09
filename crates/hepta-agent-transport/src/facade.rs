@@ -15,13 +15,7 @@ use std::io;
 use std::os::unix::net::UnixStream;
 use std::time::Duration;
 
-pub const DIGEST_BYTES: usize = wire::DIGEST_BYTES;
-pub const NONCE_BYTES: usize = wire::NONCE_BYTES;
-pub const PROTOCOL_MAGIC: [u8; 8] = *b"HEPTA001";
-pub const PROTOCOL_VERSION: u16 = 1;
-pub const HEADER_BYTES: usize = 88;
 pub const MAX_PAYLOAD_BYTES: usize = 262_144;
-pub const DEFAULT_OPERATION_TIMEOUT: Duration = Duration::from_secs(20);
 
 const POISONED_CONNECTION_MESSAGE: &str =
     "Agent transport connection is poisoned after a wire or protocol failure";
@@ -46,14 +40,6 @@ impl PeerIdentity {
             pid: value.pid,
             uid: value.uid,
             gid: value.gid,
-        }
-    }
-
-    const fn into_wire(self) -> wire::PeerIdentity {
-        wire::PeerIdentity {
-            pid: self.pid,
-            uid: self.uid,
-            gid: self.gid,
         }
     }
 }

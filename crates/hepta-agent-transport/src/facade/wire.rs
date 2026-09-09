@@ -22,7 +22,6 @@ pub const HEADER_BYTES: usize = 88;
 pub const NONCE_BYTES: usize = 32;
 pub const DIGEST_BYTES: usize = 32;
 pub const MAX_PAYLOAD_BYTES: usize = 262_144;
-pub const DEFAULT_OPERATION_TIMEOUT: Duration = Duration::from_secs(20);
 const CHALLENGE_PAYLOAD: &[u8] = b"trillionnium.desktop.agent-transport.v1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -117,6 +116,7 @@ pub struct PeerPolicy {
 }
 
 impl PeerPolicy {
+    #[cfg(test)]
     pub const fn new(expected_uid: u32) -> Self {
         Self {
             expected_pid: None,
@@ -125,6 +125,7 @@ impl PeerPolicy {
         }
     }
 
+    #[cfg(test)]
     pub const fn exact(identity: PeerIdentity) -> Self {
         Self {
             expected_pid: identity.pid,
@@ -166,9 +167,11 @@ impl NonceSource for OsNonceSource {
     }
 }
 
+#[cfg(test)]
 #[derive(Debug, Clone, Copy)]
 pub struct FixedNonceSource(pub [u8; NONCE_BYTES]);
 
+#[cfg(test)]
 impl NonceSource for FixedNonceSource {
     fn next_nonce(&mut self) -> Result<[u8; NONCE_BYTES], TransportError> {
         Ok(self.0)
@@ -223,10 +226,6 @@ impl ServerConnection {
 
     pub const fn peer_identity(&self) -> PeerIdentity {
         self.peer
-    }
-
-    pub const fn session_nonce(&self) -> SessionNonce {
-        self.binding
     }
 
     pub fn receive_request(
@@ -300,6 +299,7 @@ impl ClientConnection {
         self.peer
     }
 
+    #[cfg(test)]
     pub const fn session_nonce(&self) -> SessionNonce {
         self.binding
     }
@@ -680,6 +680,7 @@ impl From<io::Error> for TransportError {
     }
 }
 
+#[cfg(test)]
 pub fn self_check() -> Result<(), TransportError> {
     let timeout = Duration::from_secs(2);
     let (client_stream, server_stream) = UnixStream::pair().map_err(TransportError::Io)?;
