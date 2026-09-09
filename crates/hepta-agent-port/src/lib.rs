@@ -131,13 +131,7 @@ pub fn serve_one<H: BrowserRequestHandler>(
     handler: &mut H,
 ) -> Result<ServiceEvidence, AgentPortError> {
     let mut observer = NoopOperationLifecycleObserver;
-    serve_one_with_observer(
-        stream,
-        peer_policy,
-        server_ceiling,
-        handler,
-        &mut observer,
-    )
+    serve_one_with_observer(stream, peer_policy, server_ceiling, handler, &mut observer)
 }
 
 pub fn serve_one_with_observer<H, O>(
@@ -155,9 +149,6 @@ where
         return Err(AgentPortError::DeadlineExceeded);
     }
 
-    // Wall and monotonic clocks are sampled once at acceptance. Transport,
-    // decode, handler execution and response commit all consume the same
-    // server budget. Later wall-clock movement cannot extend the deadline.
     let accepted_at = Instant::now();
     let accepted_unix_ms = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -167,14 +158,8 @@ where
         .checked_add(server_ceiling)
         .ok_or(AgentPortError::DeadlineExceeded)?;
 
-    // The public transport API has one production admission path: OS entropy.
-    // No caller-controlled nonce source is accepted here or by the transport
-    // facade.
-    let mut connection = ServerConnection::accept(
-        stream,
-        peer_policy,
-        remaining_until(server_deadline)?,
-    )?;
+    let mut connection =
+        ServerConnection::accept(stream, peer_policy, remaining_until(server_deadline)?)?;
     let peer = connection.peer_identity();
     let request_frame = connection.receive_request(remaining_until(server_deadline)?)?;
     let decoded = decode_request(&request_frame.payload)?;
@@ -211,8 +196,6 @@ where
         }
     };
 
-    // A synchronous handler may return after its budget. Such a result is
-    // discarded and no response frame is committed.
     if let Err(error) = context.remaining() {
         observer.interrupted(&context, &request, &error)?;
         return Err(error);
@@ -235,9 +218,6 @@ where
     };
     let response_sha256 = sha256_hex(&encoded);
 
-    // A terminal fact must be durable before response publication. If the
-    // observer fails here, the client receives no success and recovery sees
-    // the last durable pre-terminal state.
     observer.completed(&context, &request, &response, &response_sha256)?;
     connection.send_response(request_frame.sequence, encoded, context.remaining()?)?;
 
@@ -422,8 +402,6 @@ impl fmt::Display for AgentPortError {
             Self::InvalidHandlerResult(reason) => {
                 write!(formatter, "AgentPort handler result is invalid: {reason}")
             }
-            // Handler-provided text may contain user/page data. It is retained
-            // for the direct caller but never formatted into logs by this type.
             Self::Handler(_) => formatter.write_str("AgentPort handler failed"),
             Self::SelfCheckThreadPanicked => {
                 formatter.write_str("AgentPort self-check thread panicked")
@@ -463,9 +441,6 @@ impl From<CodecError> for AgentPortError {
     }
 }
 
-/// Fail-closed D0 fixture handler. It succeeds only for health, refuses every
-/// potential external effect, and reports browser-dependent operations as
-/// unsupported. It is not the future BrowserActor.
 #[derive(Debug, Default)]
 pub struct D0FixtureHandler {
     pub invocation_count: usize,
@@ -477,12 +452,12 @@ impl BrowserRequestHandler for D0FixtureHandler {
         context: &DispatchContext,
         request: &BrowserRequest,
     ) -> Result<HandlerOutcome, AgentPortError> {
-        self.invocation_count = self
-            .invocation_count
-            .checked_add(1)
-            .ok_or(AgentPortError::SelfCheckInvariant(
-                "fixture invocation counter exhausted",
-            ))?;
+        self.invocation_count =
+            self.invocation_count
+                .checked_add(1)
+                .ok_or(AgentPortError::SelfCheckInvariant(
+                    "fixture invocation counter exhausted",
+                ))?;
         if context.effect_class == EffectClass::PotentialExternalEffect {
             return Ok(HandlerOutcome::Failure(BrowserWireError {
                 code: BrowserErrorCode::PolicyDenied,
