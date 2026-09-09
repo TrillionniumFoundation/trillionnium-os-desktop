@@ -1,0 +1,138 @@
+name: s06-reconstruct-one-shot
+
+on:
+  push:
+    branches: [codex/s06-browser-actor-closure-v1]
+    paths: [".github/workflows/s06-reconstruct.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  reconstruct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out exact clean S05 base branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/s06-browser-actor-closure-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Verify trigger and apply only the bounded S06 delta
+        shell: bash
+        env:
+          TRIGGER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TRIGGER_SHA"
+          git fetch --no-tags origin \
+            79ace92f44942687566a2167390d00e4d3cd6e5d \
+            87760710c00ff3983c4256aed4fb2beec5e77b9c
+          git diff --binary --full-index \
+            79ace92f44942687566a2167390d00e4d3cd6e5d \
+            87760710c00ff3983c4256aed4fb2beec5e77b9c -- . \
+            ':(exclude).github/workflows/s06-browser-actor.yml' \
+            > /tmp/s06-actor.patch
+          test -s /tmp/s06-actor.patch
+          git apply --index --3way /tmp/s06-actor.patch
+          python3 tools/s06_review_autofix.py
+          git add -A
+          git diff --cached --name-only | tee /tmp/s06-paths.txt
+          test -s /tmp/s06-paths.txt
+          test -z "$(grep '^\.github/workflows/' /tmp/s06-paths.txt || true)"
+          for required in \
+            contracts/browser-actor.v1.json \
+            contracts/engine-thread-dispatch.v1.json \
+            contracts/event-loop-completion.v1.json \
+            crates/hepta-browser-actor/src/lib.rs \
+            crates/hepta-browser-actor-simulation/src/lib.rs \
+            docs/architecture/ENGINE_THREAD_DISPATCH.md \
+            docs/architecture/EVENT_LOOP_COMPLETION.md \
+            tests/test_s06_browser_actor.py \
+            tests/test_s06_contract_paths.py; do
+            grep -Fxq "$required" /tmp/s06-paths.txt
+          done
+
+      - name: Install exact Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+
+      - name: Format and validate authority contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 -m unittest \
+            tests.test_s06_browser_actor \
+            tests.test_s06_contract_paths \
+            -v
+
+      - name: Enforce complete locked Rust graph and product API compile failures
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          listed="$(cargo test --locked -p hepta-browser-actor-simulation --lib -- --list 2>/dev/null | grep -c ': test$' || true)"
+          test "$listed" -gt 0
+          printf 'actor_simulation_lib_tests=%s\n' "$listed" >> "$GITHUB_STEP_SUMMARY"
+          cargo test --locked -p hepta-browser-actor-simulation --lib -- --nocapture
+          cargo test --locked -p hepta-browser-actor --doc
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Prove no product runtime injection or activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def reject_duplicate(pairs):
+              output = {}
+              for key, value in pairs:
+                  if key in output:
+                      raise ValueError(key)
+                  output[key] = value
+              return output
+
+          def reject_constant(value):
+              raise ValueError(value)
+
+          contract = json.loads(
+              Path('contracts/browser-actor.v1.json').read_text(encoding='utf-8'),
+              object_pairs_hook=reject_duplicate,
+              parse_constant=reject_constant,
+          )
+          authority = contract['authority_boundary']
+          assert authority['product_actor_generic_over_runtime'] is False
+          assert authority['caller_supplied_runtime_adapter'] is False
+          assert authority['runtime_trait_publicly_exported'] is False
+          assert authority['request_control_publicly_exported'] is False
+          assert authority['deferred_work_after_terminal_success_representable'] is False
+          assert contract['activation']['product_agent_port_enabled'] is False
+          assert contract['activation']['servo_adapter_included'] is False
+          assert contract['activation']['production_release_authorized'] is False
+          PY
+
+      - name: Publish verified non-workflow S06 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Trillionnium gap-closure bot"
+          git config user.email "102159240+ProfHepta@users.noreply.github.com"
+          git add -A
+          git reset .github/workflows/s06-reconstruct.yml tools/s06_review_autofix.py
+          git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          test -z "$(git diff --cached --name-only | grep '^\.github/workflows/' || true)"
+          git commit -m "feat(s06): seal BrowserActor runtime and bind custody contracts"
+          git push origin HEAD:codex/s06-browser-actor-closure-v1
