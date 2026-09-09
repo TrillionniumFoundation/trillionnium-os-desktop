@@ -1,4 +1,4 @@
-# Permanent exact-head qualification for the D0C-06 receipt substrate.
+# Exact-head and live prospective-merge qualification for the durable receipt substrate.
 name: receipt-journal
 
 on:
@@ -7,79 +7,220 @@ on:
       - ".github/workflows/receipt-journal.yml"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "rust-toolchain.toml"
       - "crates/hepta-session-core/**"
-      - "contracts/receipt-journal.v1.json"
-      - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
-      - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
-      - "manifests/cargo-external-allowlist.json"
-      - "manifests/project-state.v1.json"
-      - "manifests/gates.v1.json"
+      - "contracts/receipt*.json"
+      - "contracts/legacy-receipt-migration.v1.json"
+      - "docs/architecture/*RECEIPT*.md"
+      - "docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md"
+      - "tests/test_s05_receipt_recovery.py"
       - "tools/verify_receipt_journal.py"
+      - "tools/validate_repository.py"
       - "tools/validate_project_truth.py"
   push:
-    branches:
-      - main
-      - codex/d0c06-durable-receipt-journal
+    branches: [main, "codex/**"]
     paths:
       - ".github/workflows/receipt-journal.yml"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "rust-toolchain.toml"
       - "crates/hepta-session-core/**"
-      - "contracts/receipt-journal.v1.json"
-      - "docs/architecture/DURABLE_RECEIPT_JOURNAL.md"
-      - "docs/evidence/2026-08-29-d0c06-durable-receipts.md"
-      - "manifests/cargo-external-allowlist.json"
-      - "manifests/project-state.v1.json"
-      - "manifests/gates.v1.json"
+      - "contracts/receipt*.json"
+      - "contracts/legacy-receipt-migration.v1.json"
+      - "docs/architecture/*RECEIPT*.md"
+      - "docs/architecture/D3_JOURNAL_CHAIN_RECOVERY.md"
+      - "tests/test_s05_receipt_recovery.py"
       - "tools/verify_receipt_journal.py"
+      - "tools/validate_repository.py"
       - "tools/validate_project_truth.py"
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: receipt-journal-${{ github.ref }}
+  group: receipt-journal-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  qualify:
+  exact-source:
+    name: exact-source-receipt-journal
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 40
+    env:
+      EXPECTED_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
     steps:
-      - name: Check out exact candidate
+      - name: Check out exact source head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Assert exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          subject_tree="$(git rev-parse 'HEAD^{tree}')"
+          test -n "$subject_tree"
+          printf 'evidence_class=exact_head\nsubject_sha=%s\nsubject_tree=%s\n' \
+            "$EXPECTED_SOURCE_SHA" "$subject_tree" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install exact Rust toolchain
+        shell: bash
         run: |
           set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
 
-      - name: Audit contract and repository
+      - name: Validate contracts, repository, and hostile source corpus
+        shell: bash
         run: |
+          set -euo pipefail
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/verify_receipt_journal.py
+          python3 -m unittest tests.test_s05_receipt_recovery -v
 
-      - name: Enforce formatting, all targets, and warnings
+      - name: Enforce complete locked Rust graph and nonzero receipt corpus
+        shell: bash
         run: |
+          set -euo pipefail
           cargo fmt --all --check
-          cargo check --workspace --all-targets --locked
-          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          listed="$(cargo test --locked -p hepta-session-core --lib -- --list 2>/dev/null | grep -c ': test$' || true)"
+          test "$listed" -gt 0
+          printf 'hepta_session_core_lib_tests=%s\n' "$listed" >> "$GITHUB_STEP_SUMMARY"
+          cargo test --locked -p hepta-session-core --lib -- --nocapture
+          cargo test --workspace --all-targets --all-features --locked
 
-      - name: Run durable journal fault corpus and complete regression
+      - name: Reconfirm strict non-authorizing recovery ceiling
+        shell: bash
         run: |
-          cargo test --locked -p hepta-session-core receipt_journal::tests:: -- --nocapture
-          cargo test --workspace --all-targets --locked
-
-      - name: Reconfirm closed authority boundary
-        run: |
+          set -euo pipefail
           python3 - <<'PY'
           import json
           from pathlib import Path
-          contract = json.loads(Path('contracts/receipt-journal.v1.json').read_text())
-          assert all(value is False for value in contract['claim_ceiling'].values())
-          assert contract['effect_recovery']['potential_external_effect'] == 'never_automatic'
-          assert contract['effect_recovery']['journal_executes_or_replays_operations'] is False
+
+          def reject_duplicate(pairs):
+              output = {}
+              for key, value in pairs:
+                  if key in output:
+                      raise ValueError(f"duplicate key: {key}")
+                  output[key] = value
+              return output
+
+          def reject_constant(value):
+              raise ValueError(f"non-JSON constant: {value}")
+
+          contract = json.loads(
+              Path("contracts/receipt-journal.v1.json").read_text(encoding="utf-8"),
+              object_pairs_hook=reject_duplicate,
+              parse_constant=reject_constant,
+          )
+          assert all(
+              type(value) is bool and value is False
+              for value in contract["claim_ceiling"].values()
+          )
+          assert contract["effect_recovery"]["potential_external_effect"] == "never_automatic"
+          assert contract["effect_recovery"]["journal_executes_or_replays_operations"] is False
+          PY
+
+  prospective-merge:
+    name: prospective-merge-receipt-journal
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Check out live prospective merge
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Bind merge parents to live remote refs
+        shell: bash
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git check-ref-format --branch "$BASE_REF"
+          test "$PR_NUMBER" -gt 0
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
+          live_base="$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | awk 'NR == 1 {print $1}')"
+          live_head="$(git ls-remote --exit-code origin "refs/pull/$PR_NUMBER/head" | awk 'NR == 1 {print $1}')"
+          test -n "$live_base"
+          test -n "$live_head"
+          test "$live_head" = "$EVENT_HEAD"
+          test "$(git rev-parse HEAD^1)" = "$live_base"
+          test "$(git rev-parse HEAD^2)" = "$live_head"
+          merge_tree="$(git rev-parse 'HEAD^{tree}')"
+          printf 'evidence_class=prospective_merge\nsubject_sha=%s\nsubject_tree=%s\nbase_ref=%s\nbase_sha=%s\nhead_sha=%s\n' \
+            "$(git rev-parse HEAD)" "$merge_tree" "$BASE_REF" "$live_base" "$live_head" \
+            >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install exact Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+
+      - name: Validate contracts, repository, and hostile source corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/verify_receipt_journal.py
+          python3 -m unittest tests.test_s05_receipt_recovery -v
+
+      - name: Enforce complete locked Rust graph and nonzero receipt corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          listed="$(cargo test --locked -p hepta-session-core --lib -- --list 2>/dev/null | grep -c ': test$' || true)"
+          test "$listed" -gt 0
+          printf 'hepta_session_core_lib_tests=%s\n' "$listed" >> "$GITHUB_STEP_SUMMARY"
+          cargo test --locked -p hepta-session-core --lib -- --nocapture
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Reconfirm strict non-authorizing recovery ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def reject_duplicate(pairs):
+              output = {}
+              for key, value in pairs:
+                  if key in output:
+                      raise ValueError(f"duplicate key: {key}")
+                  output[key] = value
+              return output
+
+          def reject_constant(value):
+              raise ValueError(f"non-JSON constant: {value}")
+
+          contract = json.loads(
+              Path("contracts/receipt-journal.v1.json").read_text(encoding="utf-8"),
+              object_pairs_hook=reject_duplicate,
+              parse_constant=reject_constant,
+          )
+          assert all(
+              type(value) is bool and value is False
+              for value in contract["claim_ceiling"].values()
+          )
+          assert contract["effect_recovery"]["potential_external_effect"] == "never_automatic"
+          assert contract["effect_recovery"]["journal_executes_or_replays_operations"] is False
           PY
