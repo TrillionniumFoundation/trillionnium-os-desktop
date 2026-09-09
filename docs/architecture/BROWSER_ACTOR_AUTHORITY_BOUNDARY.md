@@ -106,6 +106,14 @@ Compile-fail doctests prove that weak binding types, generic runtime injection,
 ordinary handler use, and raw session-state synthesis are unavailable. Python
 surface tests and the complete Rust simulation corpus enforce the same boundary.
 
+## Exact-object qualification
+
+The permanent S06 workflow must execute on the exact source head and on the live
+two-parent prospective merge object. A workflow-generated push that is suppressed
+or marked `action_required` is not transferred as evidence; an explicit source
+push must create non-empty jobs whose checkout assertions bind the immutable head
+and current S05 parent before review.
+
 ## Rollback and claim ceiling
 
 Revert the bounded S06 merge before any Servo/runtime successor. The slice adds
