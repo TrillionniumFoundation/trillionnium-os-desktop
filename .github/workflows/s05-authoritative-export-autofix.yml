@@ -1,4 +1,4 @@
-# repair-retry: 3
+# repair-retry: 4
 name: s05-authoritative-export-autofix
 
 on:
@@ -31,6 +31,15 @@ jobs:
           python3 tools/s05_autofix_bootstrap.py
           python3 tools/s05_authoritative_export_autofix.py
           cargo fmt --all
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in (
+              'docs/architecture/DURABLE_RECEIPT_JOURNAL.md',
+              'docs/architecture/MANAGED_RECEIPT_STORE.md',
+          ):
+              path = Path(name)
+              path.write_text(path.read_text(encoding='utf-8').rstrip() + '\n', encoding='utf-8')
+          PY
           git diff --check
           git diff --name-only | tee "$RUNNER_TEMP/changed.txt"
           for required in \
