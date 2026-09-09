@@ -27,6 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$TRIGGER_SHA"
+          python3 tools/s05_autofix_bootstrap.py
           python3 tools/s05_authoritative_export_autofix.py
           cargo fmt --all
           git diff --check
@@ -72,7 +73,8 @@ jobs:
           git add -A
           git reset \
             .github/workflows/s05-authoritative-export-autofix.yml \
-            tools/s05_authoritative_export_autofix.py
+            tools/s05_authoritative_export_autofix.py \
+            tools/s05_autofix_bootstrap.py
           git diff --cached --check
           test -n "$(git diff --cached --name-only)"
           test -z "$(git diff --cached --name-only | grep '^\.github/workflows/' || true)"
