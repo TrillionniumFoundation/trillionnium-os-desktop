@@ -42,6 +42,7 @@ jobs:
           python3 tools/s06_review_autofix.py
           python3 tools/s06_compat_autofix.py
           python3 tools/s06_contract_compat_autofix.py
+          python3 tools/s06_behavior_compat_autofix.py
           git add -A
           git diff --cached --name-only | tee /tmp/s06-paths.txt
           test -s /tmp/s06-paths.txt
@@ -140,6 +141,7 @@ jobs:
             tools/s06_review_autofix.py \
             tools/s06_compat_autofix.py \
             tools/s06_contract_compat_autofix.py \
+            tools/s06_behavior_compat_autofix.py \
             tools/s06_browser_actor_workflow.yml
           git add -A
           git reset \
