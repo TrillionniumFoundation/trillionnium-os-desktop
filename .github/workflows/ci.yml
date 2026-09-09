@@ -37,6 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 tools/validate_status_authority_singleton.py
+          python3 tools/validate_module_documentation.py
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/validate_contract_foundation.py
@@ -44,6 +45,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_status_authority_singleton.py'
           python3 -m unittest discover -s tests -p 'test_source_state_workspace.py'
           python3 -m unittest discover -s tests -p 'test_contract_foundation.py'
+          python3 -m unittest discover -s tests -p 'test_module_documentation.py'
 
   rust:
     runs-on: ubuntu-24.04
@@ -111,6 +113,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 tools/validate_status_authority_singleton.py
+          python3 tools/validate_module_documentation.py
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/validate_contract_foundation.py
@@ -118,6 +121,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_status_authority_singleton.py'
           python3 -m unittest discover -s tests -p 'test_source_state_workspace.py'
           python3 -m unittest discover -s tests -p 'test_contract_foundation.py'
+          python3 -m unittest discover -s tests -p 'test_module_documentation.py'
 
   rust-prospective-merge:
     if: github.event_name == 'pull_request'

@@ -60,14 +60,14 @@ class SourceStateWorkspaceTests(unittest.TestCase):
         root = self.make_root()
         record = self.source_state(root)
         members = record["workspace_members"]
-        members.append("crates/hepta-browser-actor")
+        members.append("crates/hepta-future-candidate")
         self.write_source_state(root, record)
         self.write_workspace(root, members)
 
         self.assertEqual(MODULE.validate_repository(root), [])
         registry = json.loads((root / "docs/status-documents.v1.json").read_text())
         self.assertNotIn(
-            "crates/hepta-browser-actor",
+            "crates/hepta-future-candidate",
             registry["integrated_state"]["workspace_members"],
         )
 

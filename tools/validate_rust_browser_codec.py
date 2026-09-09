@@ -10,6 +10,13 @@ before delegating to the historical projection.
 from __future__ import annotations
 
 import sys
+from pathlib import Path
+
+# Direct script execution places tools/ rather than the repository root first.
+# Prepend the reviewed repository root so `from tools ...` cannot resolve an
+# unrelated ambient namespace package.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 try:
     from tools import browser_codec_reference_legacy_audit as _legacy

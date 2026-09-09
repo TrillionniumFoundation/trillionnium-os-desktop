@@ -1,105 +1,104 @@
-# hepta-browser-codec
+# `hepta-browser-codec` technical development contract
 
-**Work package:** S03 / D0C-03  
-**Claim ceiling:** canonical Browser API v1 parsing, validation, encoding,
-hashing, and effect classification only. No listener, principal mapping,
-authorization, BrowserActor, Servo dispatch, network permission, or external
-effect authority.
+The codec is the sole boundary allowed to turn untrusted Browser API bytes into typed requests and responses. It owns a strict JSON implementation, closed operation shapes, canonical re-encoding, semantic-reference and URL validation, stable error/retry taxonomy and canonical SHA-256 inputs for later receipts.
+
+This document is normative for source maintenance at the recorded claim ceiling. It does not replace `manifests/project-state.v1.json`, the gate registry, live GitHub state, exact-head evidence, installed-image qualification, or an authorized release record.
+
+## Status and claim ceiling
+
+Status: `candidate_canonical_browser_wire_boundary`  
+Claim ceiling: `bounded canonical Browser API parsing, validation, encoding, hashing and risk classification only; no listener, peer authorization, BrowserActor dispatch, Servo execution, external effect, installed image, hardware, signing, publication, or release authority`
+
+A narrower machine-state, gate or non-claim always wins. Source presence and documentation completeness do not promote runtime or release authority.
 
 ## Responsibilities
 
-The codec is the first layer allowed to interpret authenticated payload bytes.
-It owns:
+- Reject invalid UTF-8, BOMs, duplicate members, floats, non-canonical key order, unknown fields and trailing bytes.
+- Apply equal byte, depth, item, key and string limits to decoded input and programmatically constructed output.
+- Validate request/session generations, semantic references, action fields, timeouts and URL authorities.
+- Classify operations as observation, local interaction or potential external effect without authorizing them.
+- Produce byte-for-byte canonical JSON and its digest.
 
-- bounded UTF-8 JSON parsing;
-- recursive duplicate-member rejection;
-- signed 64-bit integer-only JSON;
-- exact request and response shapes with unknown-field refusal;
-- paired session identity and layered semantic-reference validation;
-- typed navigation and action validation;
-- deterministic canonical encoding and SHA-256 publication;
-- effect classification without authorization.
+## Non-responsibilities
 
-## Canonical byte contract
+- Do not create sockets, select a peer/principal, start Servo, dispatch BrowserActor or grant a capability.
+- Do not treat HTTPS syntax as proof of resolver, redirect, connected-peer or TLS trust.
+- Do not provide raw JavaScript evaluation or permissive unknown-field compatibility.
 
-Accepted input must already equal the codec's canonical re-encoding. The codec
-does not normalize attacker-selected whitespace, key order, duplicate keys,
-number spelling, escapes, or trailing bytes and then accept the normalized
-result.
+## Dependency and call direction
 
-The public `JsonValue` encoder and the decoder apply the same maximum message,
-nesting, aggregate-item, generic-string, and object-key budgets. Typed fields
-apply their own narrower UTF-8 byte limits. The machine-readable limits live in
-`contracts/browser-codec-resource-limits.v1.json`.
+Transport hands opaque bytes to this crate only after mechanism admission. AgentPort consumes the resulting typed request and copies validated identity into the response. BrowserActor may consume only decoded types. The codec depends only on exact `sha2`; it must not depend on applications, network stacks or Servo.
 
-## URL boundary
+Relevant architecture:
 
-The codec recognizes only two URL classes:
+- `docs/architecture/CANONICAL_BROWSER_CODEC.md`
+- `docs/architecture/RUST_BROWSER_CODEC.md`
 
-- external HTTPS-shaped targets;
-- local HTTP fixtures whose host is `localhost`, `127.0.0.1`, or `::1`.
+The dependency direction is one-way. Lower-level mechanism and contract crates must not import application, profile, image, hardware, signing, or publication authority.
 
-It rejects userinfo, control characters, backslashes, malformed bracketed IPv6,
-zone identifiers, empty ports, ports above 65535, and ambiguous authorities.
-This remains shape validation. DNS answers, redirects, TLS identity, connected
-peer addresses, proxy bypass, credentials, and network policy belong to the
-controlled-egress layer.
+## Public API and binaries
 
-## Session and reference binding
+- `decode_request`, `decode_response`, `encode_request`, `encode_response` and `self_check` are the primary entry points.
+- `BrowserRequest`, `BrowserOperation`, `BrowserResponse`, `BrowserWireError`, `ElementReference`, `NavigationTarget`, `PageAction` and `WaitCondition` are wire-domain types.
+- `JsonValue` and `JsonObject` are bounded canonical values, not general JSON containers.
+- Resource constants are mirrored by `browser-codec-resource-limits.v1.json`.
 
-All operations except `health` and `session_create` require paired `session_id`
-and non-zero `session_generation`. An element reference additionally requires a
-non-zero document generation and a published semantic snapshot revision of at
-least one. `browser-wire.v1.schema.json` records the wire-envelope tightening;
-the Rust codec remains the executable authority for canonical bytes and UTF-8
-byte limits.
+This library registers no binary target. Cargo binary auto-discovery and package build scripts are disabled.
 
-## Effect classification
+## Configuration and features
 
-Observation, local interaction, and potential external effect are mechanism
-classes. Navigation, click, type, press, and select are potential effects.
-Classification never grants permission and never makes retry safe. A caller
-must preserve an indeterminate result and must not blindly replay an operation
-that may already have executed.
+The crate has no features or runtime configuration. All limits are compile-time reviewed constants. External URLs are credential-free HTTPS syntax; fixture URLs are loopback HTTP only. Network access remains disabled elsewhere until controlled egress is implemented.
 
-## Dependencies and build boundary
+Registered Cargo features: none.
 
-The crate depends only on exact `sha2=0.10.9`. Cargo binary auto-discovery and
-package build scripts are disabled. It must not depend on transport listeners,
-AgentPort, BrowserActor, Servo, systemd, policy, storage, update, or release
-code.
+## State, concurrency, and failure semantics
 
-## Verification
+Codec operations are pure with respect to product state. Parsing uses bounded recursive accounting; encoding revalidates constructed values so internal callers cannot bypass parser limits. Failures return typed `CodecError` and produce no partially validated request.
 
-```bash
-python3 tools/browser_codec_reference.py --self-test \
-  --contract contracts/browser-codec.v1.json
-python3 tools/validate_rust_browser_codec.py
-python3 -m unittest tests.test_validate_rust_browser_codec -v
-cargo fmt --all --check
-cargo check --workspace --all-targets --locked
-cargo clippy --workspace --all-targets --locked -- -D warnings
-cargo test --workspace --all-targets --locked
-```
+Failures must preserve the last truthful state. A timeout, crash, peer loss, storage ambiguity or unsupported operation cannot be converted into successful completion by a caller, retry loop, fixture, log message or evidence generator.
 
-The Python reference is an independent standard-library implementation. Golden
-wire examples must round-trip byte-for-byte. Tests cover malformed Unicode,
-integers, nesting, item budgets, generic key/string budgets, URL authority
-parity, session binding, stale references, error retry binding, and response
-shape.
+## Security invariants
 
-## Versioning
+- Received bytes must equal canonical re-encoding; attacker-selected formatting is never hashed as authority.
+- Recursive duplicate-key rejection and signed-64-bit numeric rules must remain aligned with the independent Python reference.
+- URL validation rejects userinfo, backslashes, control characters, invalid ports, ambiguous IPv6 and non-loopback fixtures.
+- Semantic actions require non-zero published revisions; the engine must still re-resolve atomically.
+- Every navigation/click/type/press/select remains a potential external effect.
 
-Canonical v1 bytes are stable. Adding a field or enum variant, changing a bound,
-accepted URL grammar, number representation, error retry meaning, or operation
-risk class requires a new compatible proof or a new protocol version. Unknown
-fields and unknown variants are rejected; they are never mapped to a nearby
-known value.
+Every invariant above is a review condition, not merely commentary. Weakening one requires a new threat analysis, hostile regression and explicit claim-ceiling decision.
 
-## Evidence status
+## Testing and evidence
 
-The checked-in historical Rust host result remains provenance for its recorded
-source only. A changed codec tree requires exact-head Rust and reference runs,
-fresh independent review, protected merge, and exact-main rerun before its
-machine state may be promoted. Source or hosted CI does not prove a listener,
-browser runtime, installed image, hardware, signing custody, or release.
+Primary source or test references:
+
+- `crates/hepta-browser-codec/src/tests.rs`
+- `tests/test_validate_rust_browser_codec.py`
+
+Applicable workflows:
+
+- `.github/workflows/browser-codec-reference.yml`
+- `.github/workflows/ci.yml`
+
+Contract references:
+
+- `contracts/browser-codec.v1.json`
+- `contracts/browser-codec-resource-limits.v1.json`
+- `contracts/browser-api.v1.schema.json`
+- `contracts/browser-wire.v1.schema.json`
+
+A passing unit or hosted-CI test proves only the evidence tier named by its gate. Any source, workflow, dependency, base, head or claim change invalidates earlier evidence according to `manifests/gates.v1.json`.
+
+## Operations and troubleshooting
+
+- Run the codec workflow, Rust tests, Python differential/reference tests and source audit.
+- Execute the validator with `PYTHONPATH=.` or as `python3 -m tools.validate_rust_browser_codec`; direct-script behavior is also regression-tested.
+- A golden mismatch requires regenerating only through the deterministic reference tool and reviewing the semantic change.
+- Do not edit checked evidence to make an old host result appear current.
+
+Operational diagnosis must retain bounded/redacted evidence and must not weaken admission, limits, ownership, sync, isolation or default-disabled controls simply to make a test pass.
+
+## Compatibility and change protocol
+
+Wire changes require a versioned schema/contract and explicit compatibility window. Unknown fields remain rejected. Any divergence between Rust, Python reference, JSON schemas, golden vectors or resource manifest is a release blocker.
+
+Required change sequence: update implementation and Cargo metadata; update machine contracts and hostile tests; update this README and `manifests/modules.v1.json`; run module, repository, project-truth and Rust checks; obtain independent review on the immutable final head; then perform the required exact-main or higher-tier rerun after protected promotion.

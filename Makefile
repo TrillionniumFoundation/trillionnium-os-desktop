@@ -1,11 +1,13 @@
 .PHONY: validate truth fmt check-rust check-rust-features clippy clippy-features test test-features self-check check
 
 validate:
+	python3 tools/validate_module_documentation.py
 	python3 tools/validate_repository.py
 	python3 tools/validate_contract_foundation.py
 	python3 tools/validate_s04_transport_custody.py
 	python3 -m unittest discover -s tests -p 'test_contract_foundation.py'
 	python3 -m unittest discover -s tests -p 'test_s04_transport_custody.py'
+	python3 -m unittest discover -s tests -p 'test_module_documentation.py'
 
 truth:
 	python3 tools/validate_project_truth.py
