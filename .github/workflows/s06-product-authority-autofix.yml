@@ -1,3 +1,4 @@
+# repair-retry: 2
 name: s06-product-authority-autofix
 
 on:
@@ -40,8 +41,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 tools/s06_doc_test_bootstrap.py
           python3 tools/s06_product_authority_autofix.py
           rm -f \
+            tools/s06_doc_test_bootstrap.py \
             tools/s06_product_authority_autofix.py \
             .github/workflows/s06-product-authority-autofix.yml
           cargo fmt --all
@@ -56,6 +59,7 @@ jobs:
             tests/test_s06_browser_actor.py; do
             grep -Fxq "$required" "$RUNNER_TEMP/changed.txt"
           done
+          test ! -e tools/s06_doc_test_bootstrap.py
           test ! -e tools/s06_product_authority_autofix.py
           test ! -e .github/workflows/s06-product-authority-autofix.yml
           ! grep -n 'pub fn apply_session_event' crates/hepta-browser-actor/src/lib.rs
