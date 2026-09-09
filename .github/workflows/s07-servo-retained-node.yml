@@ -1,0 +1,423 @@
+name: s07-servo-retained-node
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/s07-servo-retained-node.yml"
+      - "tools/verify_d3_servo_patch.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
+      - "tools/_qualify_servo_exact_pin_v3_impl.py"
+      - "tools/qualify_servo_exact_pin.py"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
+      - "tests/test_s07_servo_patch_package.py"
+  push:
+    branches: ["codex/s07-servo-retained-node-closure-v1"]
+    paths:
+      - ".github/workflows/s07-servo-retained-node.yml"
+      - "tools/verify_d3_servo_patch.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
+      - "tools/_qualify_servo_exact_pin_v3_impl.py"
+      - "tools/qualify_servo_exact_pin.py"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
+      - "tests/test_s07_servo_patch_package.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s07-servo-retained-node-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  S06_HEAD: f0e947e5e7267a3fcdd0a7d5437c0ae00c09ebfe
+  D3_SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+  D3_SERVO_MANIFEST: manifests/lab-d3-servo-retained-node-action.v1.json
+
+jobs:
+  real-servo-behavior:
+    name: exact-head-real-servo-behavior
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Assert exact source identity and package contract
+        env:
+          EXPECTED_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          git rev-parse HEAD^{tree}
+          test "$(git merge-base HEAD "$S06_HEAD")" = "$S06_HEAD"
+          test "$(jq -r '.carrier_base_commit' "$D3_SERVO_MANIFEST")" = "$S06_HEAD"
+          test "$(jq -r '.carrier_branch' "$D3_SERVO_MANIFEST")" = "codex/s07-servo-retained-node-closure-v1"
+          python3 -m unittest discover -s tests -p 'test_s07_servo_patch_package.py' -v
+
+      - name: Check out exact Servo source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.D3_SERVO_COMMIT }}
+          path: servo
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify and apply immutable retained-node patch
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = "$D3_SERVO_COMMIT"
+          test -z "$(git -C servo status --porcelain=v1)"
+          python3 - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          lock = tomllib.loads(Path('servo/Cargo.lock').read_text(encoding='utf-8'))
+          versions = sorted(
+              package['version']
+              for package in lock['package']
+              if package['name'] == 'accesskit'
+          )
+          if versions != ['0.24.0']:
+              raise SystemExit(f'unexpected AccessKit versions: {versions}')
+          PY
+          python3 tools/qualify_servo_exact_pin_v3.py verify-d3-patch \
+            --manifest "$D3_SERVO_MANIFEST" \
+            --root . \
+            --output "$RUNNER_TEMP/d3-servo.patch" \
+            --base-output "$RUNNER_TEMP/d3-servo-base.patch" \
+            --hardening-output "$RUNNER_TEMP/d3-servo-hardening.patch" \
+            | tee "$RUNNER_TEMP/d3-patch-verification.json"
+          patch --dry-run --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-servo-base.patch"
+          patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-servo-base.patch"
+          patch --dry-run --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-servo-hardening.patch"
+          patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-servo-hardening.patch"
+          git -C servo diff --binary --full-index > "$RUNNER_TEMP/d3-servo-applied.patch"
+          git -C servo diff --name-only | sort > "$RUNNER_TEMP/d3-changed.txt"
+          jq -r '.patch.allowed_paths[]' "$D3_SERVO_MANIFEST" | sort > "$RUNNER_TEMP/d3-allowed.txt"
+          cmp "$RUNNER_TEMP/d3-allowed.txt" "$RUNNER_TEMP/d3-changed.txt"
+          ! grep -R -F "TODO(#4344): Forward action to Servo" servo/ports/servoshell/desktop/headed_window.rs
+          git -C servo diff --check
+
+      - name: Install exact Servo dependencies and Rust toolchain
+        id: dependencies
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' \
+            python/servo/platform/linux_packages/apt/apt_common.txt \
+            python/servo/platform/linux_packages/apt/apt_ubuntu_only.txt \
+            | sort -u > "$RUNNER_TEMP/d3-servo-packages.txt"
+          sudo apt-get update
+          xargs -r sudo apt-get install -y --no-install-recommends < "$RUNNER_TEMP/d3-servo-packages.txt"
+          sudo apt-get install -y --no-install-recommends patch jq
+          sudo apt-get purge -y fonts-droid-fallback || true
+          servo_rust_channel="$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)"
+          test "$servo_rust_channel" = "1.97.1"
+          rustup toolchain install "$servo_rust_channel" --profile minimal
+          rustup component add rustfmt --toolchain "$servo_rust_channel"
+          rustc --version --verbose | tee "$RUNNER_TEMP/d3-rustc-version.txt"
+          cargo --version --verbose | tee "$RUNNER_TEMP/d3-cargo-version.txt"
+          rustfmt --version | tee "$RUNNER_TEMP/d3-rustfmt-version.txt"
+
+      - name: Normalize only patch-owned Rust files
+        id: format
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          mapfile -t rust_files < <(grep -E '\.rs$' "$RUNNER_TEMP/d3-changed.txt")
+          test "${#rust_files[@]}" -gt 0
+          index=0
+          for file in "${rust_files[@]}"; do
+            formatted="$RUNNER_TEMP/d3-rustfmt-$index.rs"
+            checked="$RUNNER_TEMP/d3-rustfmt-$index.check.rs"
+            rustfmt --edition 2024 --emit stdout < "$file" > "$formatted"
+            cat "$formatted" > "$file"
+            rustfmt --edition 2024 --emit stdout < "$file" > "$checked"
+            cmp "$file" "$checked"
+            index=$((index + 1))
+          done
+          git diff --check
+          git diff --name-only | sort > "$RUNNER_TEMP/d3-changed-formatted.txt"
+          comm -23 "$RUNNER_TEMP/d3-changed-formatted.txt" "$RUNNER_TEMP/d3-allowed.txt" > "$RUNNER_TEMP/d3-unexpected-formatted.txt"
+          test ! -s "$RUNNER_TEMP/d3-unexpected-formatted.txt"
+          grep -Fxq components/servo/tests/accessibility.rs "$RUNNER_TEMP/d3-changed-formatted.txt"
+          git add -A
+          git diff --cached --binary --full-index > "$RUNNER_TEMP/d3-servo-tested.patch"
+          test -s "$RUNNER_TEMP/d3-servo-tested.patch"
+          sha256sum "$RUNNER_TEMP/d3-servo-tested.patch" > "$RUNNER_TEMP/d3-servo-tested.patch.sha256"
+          git write-tree > "$RUNNER_TEMP/d3-servo-tested-tree.txt"
+          test -s "$RUNNER_TEMP/d3-servo-tested-tree.txt"
+
+      - name: Run real Servo retained-node behavior corpus
+        id: behavior
+        shell: bash
+        working-directory: servo
+        env:
+          CARGO_INCREMENTAL: "0"
+          RUST_BACKTRACE: "1"
+        run: |
+          set -euo pipefail
+          retained_tests=(
+            test_retained_accessibility_click_dispatches_exactly_once
+            test_retained_accessibility_rejects_unadvertised_and_unsupported_requests
+            test_retained_accessibility_rejects_replaced_node_identity
+            test_retained_accessibility_rejects_inactive_and_stale_tree
+            test_retained_accessibility_rejects_disabled_hidden_and_non_element_targets
+            test_retained_accessibility_dropped_callback_does_not_duplicate_dispatch
+          )
+          aggregate="$RUNNER_TEMP/d3-retained-node-behavior.log"
+          : > "$aggregate"
+          for test_name in "${retained_tests[@]}"; do
+            case_log="$RUNNER_TEMP/d3-${test_name}.log"
+            printf '\n=== %s ===\n' "$test_name" | tee -a "$aggregate"
+            cargo test --locked -p servo --test accessibility "$test_name" -- --nocapture \
+              2>&1 | tee "$case_log" | tee -a "$aggregate"
+            python3 - "$case_log" "$test_name" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          text = Path(sys.argv[1]).read_text(encoding='utf-8', errors='replace')
+          requested = sys.argv[2]
+          running = re.findall(r'(?m)^running (\d+) tests?$', text)
+          passed = re.findall(
+              r'(?m)^test result: ok\. (\d+) passed; (\d+) failed; '
+              r'(\d+) ignored; (\d+) measured; (\d+) filtered out;',
+              text,
+          )
+          if running != ['1']:
+              raise SystemExit(f'{requested}: expected one executed test, got {running}')
+          if len(passed) != 1 or passed[0][0:4] != ('1', '0', '0', '0'):
+              raise SystemExit(f'{requested}: invalid terminal result {passed}')
+          if not re.search(rf'(?m)^test .*{re.escape(requested)}.* \.\.\. ok$', text):
+              raise SystemExit(f'{requested}: passing identity absent')
+          PY
+          done
+          regression=accessibility_basic_mapping
+          regression_log="$RUNNER_TEMP/d3-accessibility-regression.log"
+          cargo test --locked -p servo --test accessibility "$regression" -- --nocapture \
+            2>&1 | tee "$regression_log"
+          python3 - "$regression_log" "$regression" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          text = Path(sys.argv[1]).read_text(encoding='utf-8', errors='replace')
+          requested = sys.argv[2]
+          running = re.findall(r'(?m)^running (\d+) tests?$', text)
+          passed = re.findall(
+              r'(?m)^test result: ok\. (\d+) passed; (\d+) failed; '
+              r'(\d+) ignored; (\d+) measured; (\d+) filtered out;',
+              text,
+          )
+          if running != ['1']:
+              raise SystemExit(f'{requested}: expected one regression test, got {running}')
+          if len(passed) != 1 or passed[0][0:4] != ('1', '0', '0', '0'):
+              raise SystemExit(f'{requested}: invalid regression result {passed}')
+          if not re.search(rf'(?m)^test .*{re.escape(requested)}.* \.\.\. ok$', text):
+              raise SystemExit(f'{requested}: passing regression identity absent')
+          PY
+
+          git diff --cached --binary --full-index > "$RUNNER_TEMP/d3-servo-after-behavior.patch"
+          cmp "$RUNNER_TEMP/d3-servo-tested.patch" "$RUNNER_TEMP/d3-servo-after-behavior.patch"
+          test "$(git write-tree)" = "$(cat "$RUNNER_TEMP/d3-servo-tested-tree.txt")"
+          sha256sum -c "$RUNNER_TEMP/d3-servo-tested.patch.sha256"
+
+      - name: Collect bounded exact-head evidence
+        if: always()
+        shell: bash
+        env:
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
+          FORMAT_OUTCOME: ${{ steps.format.outcome }}
+          BEHAVIOR_OUTCOME: ${{ steps.behavior.outcome }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/s07-retained-node-evidence"
+          mkdir -p "$evidence"
+          cp "$D3_SERVO_MANIFEST" "$evidence/manifest.json"
+          for file in d3-servo.patch d3-servo-base.patch d3-servo-hardening.patch \
+            d3-servo-applied.patch d3-servo-tested.patch d3-servo-tested.patch.sha256 \
+            d3-servo-tested-tree.txt d3-servo-after-behavior.patch \
+            d3-patch-verification.json d3-changed.txt d3-changed-formatted.txt \
+            d3-unexpected-formatted.txt d3-allowed.txt \
+            d3-servo-packages.txt d3-rustc-version.txt d3-cargo-version.txt \
+            d3-rustfmt-version.txt d3-retained-node-behavior.log \
+            d3-accessibility-regression.log; do
+            test ! -f "$RUNNER_TEMP/$file" || cp "$RUNNER_TEMP/$file" "$evidence/$file"
+          done
+          carrier=$(git rev-parse HEAD)
+          carrier_tree=$(git rev-parse HEAD^{tree})
+          tested_patch_sha256=$(cut -d' ' -f1 "$RUNNER_TEMP/d3-servo-tested.patch.sha256")
+          tested_tree=$(cat "$RUNNER_TEMP/d3-servo-tested-tree.txt")
+          jq -n \
+            --arg carrier "$carrier" \
+            --arg carrier_tree "$carrier_tree" \
+            --arg carrier_base "$S06_HEAD" \
+            --arg servo "$D3_SERVO_COMMIT" \
+            --arg tested_patch_sha256 "$tested_patch_sha256" \
+            --arg tested_tree "$tested_tree" \
+            --arg verify "$VERIFY_OUTCOME" \
+            --arg dependencies "$DEPENDENCIES_OUTCOME" \
+            --arg format "$FORMAT_OUTCOME" \
+            --arg behavior "$BEHAVIOR_OUTCOME" \
+            '{
+              schema:"trillionnium.desktop.s07-retained-node.v1",
+              evidence_class:"exact_source_head_real_servo_test_harness",
+              claim_ceiling:"exact-pin-real-servo-test-harness-no-installed-image",
+              carrier_commit:$carrier,
+              carrier_tree:$carrier_tree,
+              carrier_base_commit:$carrier_base,
+              servo_commit:$servo,
+              tested_servo_patch_sha256:$tested_patch_sha256,
+              tested_servo_tree:$tested_tree,
+              source_tree_rechecked_after_behavior:($behavior == "success"),
+              verify_outcome:$verify,
+              dependencies_outcome:$dependencies,
+              format_outcome:$format,
+              behavior_outcome:$behavior,
+              evidence_complete:($verify == "success" and $dependencies == "success" and $format == "success" and $behavior == "success"),
+              retained_node_valid_click_tested:($behavior == "success"),
+              action_advertisement_enforced:($behavior == "success"),
+              stale_node_and_tree_tested:($behavior == "success"),
+              disabled_hidden_and_non_element_tested:($behavior == "success"),
+              unsupported_action_and_data_tested:($behavior == "success"),
+              dropped_callback_receiver_tested:($behavior == "success"),
+              exact_callback_count_tested:($behavior == "success"),
+              forbidden_fallback_used:false,
+              installed_runtime_proven:false,
+              product_browser_actor_receipts_proven:false,
+              independent_replay_proven:false,
+              physical_hardware_proven:false,
+              hsm_signing_proven:false,
+              d3_promoted:false
+            }' > "$evidence/evidence.json"
+          find "$evidence" -maxdepth 1 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > "$evidence/SHA256SUMS"
+
+      - name: Upload exact-head retained-node evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: s07-retained-node-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/s07-retained-node-evidence
+          if-no-files-found: error
+          retention-days: 30
+
+  prospective-merge-patch-package:
+    name: prospective-merge-patch-package
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out prospective merge object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Assert prospective merge identity and parent order
+        env:
+          EXPECTED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-list --parents -n1 HEAD | awk '{print NF - 1}')" -eq 2
+          test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE_SHA"
+          test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD_SHA"
+          python3 -m unittest discover -s tests -p 'test_s07_servo_patch_package.py' -v
+
+      - name: Check out exact Servo source for dry-run
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.D3_SERVO_COMMIT }}
+          path: servo
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify prospective merge patch package
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = "$D3_SERVO_COMMIT"
+          python3 tools/qualify_servo_exact_pin_v3.py verify-d3-patch \
+            --manifest "$D3_SERVO_MANIFEST" \
+            --root . \
+            --output "$RUNNER_TEMP/s07-combined.patch" \
+            --base-output "$RUNNER_TEMP/s07-base.patch" \
+            --hardening-output "$RUNNER_TEMP/s07-hardening.patch"
+          patch --dry-run --batch --forward -d servo -p1 < "$RUNNER_TEMP/s07-base.patch"
+          patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/s07-base.patch"
+          patch --dry-run --batch --forward -d servo -p1 < "$RUNNER_TEMP/s07-hardening.patch"
+          patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/s07-hardening.patch"
+          git -C servo diff --name-only | sort > "$RUNNER_TEMP/s07-changed.txt"
+          jq -r '.patch.allowed_paths[]' "$D3_SERVO_MANIFEST" | sort > "$RUNNER_TEMP/s07-allowed.txt"
+          cmp "$RUNNER_TEMP/s07-allowed.txt" "$RUNNER_TEMP/s07-changed.txt"
+          git -C servo diff --check
+          git -C servo add -A
+          git -C servo diff --cached --binary --full-index > "$RUNNER_TEMP/s07-tested.patch"
+          test -s "$RUNNER_TEMP/s07-tested.patch"
+          tested_patch_sha256=$(sha256sum "$RUNNER_TEMP/s07-tested.patch" | awk '{print $1}')
+          tested_tree=$(git -C servo write-tree)
+          merge_commit=$(git rev-parse HEAD)
+          merge_tree=$(git rev-parse HEAD^{tree})
+          base_commit=$(git rev-parse HEAD^1)
+          head_commit=$(git rev-parse HEAD^2)
+          jq -n \
+            --arg merge_commit "$merge_commit" \
+            --arg merge_tree "$merge_tree" \
+            --arg base_commit "$base_commit" \
+            --arg head_commit "$head_commit" \
+            --arg servo_commit "$D3_SERVO_COMMIT" \
+            --arg tested_patch_sha256 "$tested_patch_sha256" \
+            --arg tested_tree "$tested_tree" \
+            '{
+              schema:"trillionnium.desktop.s07-prospective-merge.v1",
+              merge_commit:$merge_commit,
+              merge_tree:$merge_tree,
+              base_commit:$base_commit,
+              head_commit:$head_commit,
+              servo_commit:$servo_commit,
+              complete_base_and_hardening_applied:true,
+              tested_patch_sha256:$tested_patch_sha256,
+              tested_servo_tree:$tested_tree,
+              changed_paths_equal_allowlist:true,
+              product_integration_proven:false,
+              release_authorized:false
+            }' > "$RUNNER_TEMP/s07-prospective-evidence.json"
+          {
+            echo "tested_patch_sha256=$tested_patch_sha256"
+            echo "tested_servo_tree=$tested_tree"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload prospective-merge package evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: s07-prospective-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ runner.temp }}/s07-prospective-evidence.json
+            ${{ runner.temp }}/s07-combined.patch
+            ${{ runner.temp }}/s07-base.patch
+            ${{ runner.temp }}/s07-hardening.patch
+            ${{ runner.temp }}/s07-tested.patch
+            ${{ runner.temp }}/s07-changed.txt
+            ${{ runner.temp }}/s07-allowed.txt
+          if-no-files-found: error
+          retention-days: 30
