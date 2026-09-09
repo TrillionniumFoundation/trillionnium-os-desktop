@@ -1,4 +1,4 @@
-# repair-retry: 5
+# repair-retry: 6
 name: s05-authoritative-export-autofix
 
 on:
@@ -42,15 +42,22 @@ jobs:
           authority.write_text(text.replace(old, new, 1), encoding='utf-8')
 
           lib = Path('crates/hepta-session-core/src/lib.rs')
-          text = lib.read_text(encoding='utf-8')
-          old = '''                  export_journal_redacted_jsonl, export_receipt_envelopes_jsonl, export_redacted_jsonl,
-                  inspect_chain,
-          '''
-          new = '''                  export_journal_redacted_jsonl, export_receipt_envelopes_jsonl, export_redacted_jsonl,
-          '''
-          if text.count(old) != 1:
-              raise SystemExit(f'stale inspect_chain import: expected one match, found {text.count(old)}')
-          lib.write_text(text.replace(old, new, 1), encoding='utf-8')
+          lines = lib.read_text(encoding='utf-8').splitlines()
+          output = []
+          in_private_reexport = False
+          removed = 0
+          for line in lines:
+              if line.strip() == 'pub(crate) use super::receipt_journal_impl::{':
+                  in_private_reexport = True
+              if in_private_reexport and line.strip() == 'inspect_chain,':
+                  removed += 1
+                  continue
+              output.append(line)
+              if in_private_reexport and line.strip() == '};':
+                  in_private_reexport = False
+          if removed != 1:
+              raise SystemExit(f'stale inspect_chain import: expected one removal, found {removed}')
+          lib.write_text('\n'.join(output) + '\n', encoding='utf-8')
           PY
           cargo fmt --all
           python3 - <<'PY'
