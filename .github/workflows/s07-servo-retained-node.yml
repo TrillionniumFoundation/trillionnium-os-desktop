@@ -313,7 +313,13 @@ jobs:
               hsm_signing_proven:false,
               d3_promoted:false
             }' > "$evidence/evidence.json"
-          find "$evidence" -maxdepth 1 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > "$evidence/SHA256SUMS"
+          (
+            cd "$evidence"
+            find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+              | LC_ALL=C sort -z \
+              | xargs -0 sha256sum > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
 
       - name: Upload exact-head retained-node evidence
         if: always()
