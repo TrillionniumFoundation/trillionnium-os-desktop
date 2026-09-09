@@ -37,12 +37,15 @@ jobs:
             > /tmp/s06-actor.patch
           test -s /tmp/s06-actor.patch
           git apply --index --3way /tmp/s06-actor.patch
+          cp tools/s06_browser_actor_workflow.yml \
+            .github/workflows/s06-browser-actor.yml
           python3 tools/s06_review_autofix.py
           git add -A
           git diff --cached --name-only | tee /tmp/s06-paths.txt
           test -s /tmp/s06-paths.txt
-          test -z "$(grep '^\.github/workflows/' /tmp/s06-paths.txt || true)"
+          test -z "$(git diff --cached --name-only | grep '^\.github/workflows/' | grep -v '^\.github/workflows/s06-browser-actor.yml$' || true)"
           for required in \
+            .github/workflows/s06-browser-actor.yml \
             contracts/browser-actor.v1.json \
             contracts/engine-thread-dispatch.v1.json \
             contracts/event-loop-completion.v1.json \
@@ -129,8 +132,11 @@ jobs:
           set -euo pipefail
           git config user.name "Trillionnium gap-closure bot"
           git config user.email "102159240+ProfHepta@users.noreply.github.com"
+          rm -f tools/s06_review_autofix.py tools/s06_browser_actor_workflow.yml
           git add -A
-          git reset .github/workflows/s06-reconstruct.yml tools/s06_review_autofix.py
+          git reset \
+            .github/workflows/s06-reconstruct.yml \
+            .github/workflows/s06-browser-actor.yml
           git diff --cached --check
           test -n "$(git diff --cached --name-only)"
           test -z "$(git diff --cached --name-only | grep '^\.github/workflows/' || true)"
