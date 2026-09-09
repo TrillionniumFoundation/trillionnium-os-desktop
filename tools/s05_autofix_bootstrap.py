@@ -12,7 +12,7 @@ text = text[:start] + text[end:]
 start = text.index("    text, count = parent_pattern.subn")
 end = text.index("\n\n    snapshot_impl = r'''", start)
 replacement = '''    function_start = text.index("fn validate_parent_components(")
-    function_end = text.index("fn validate_new_path(", function_start)
+    function_end = text.index("\\nfn ", function_start + 1) + 1
     text = text[:function_start] + parent_replacement + text[function_end:]
 '''
 text = text[:start] + replacement + text[end:]
