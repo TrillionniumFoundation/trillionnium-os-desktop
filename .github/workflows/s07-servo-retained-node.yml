@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 1
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Assert exact source identity and package contract
@@ -263,8 +263,14 @@ jobs:
           done
           carrier=$(git rev-parse HEAD)
           carrier_tree=$(git rev-parse HEAD^{tree})
-          tested_patch_sha256=$(cut -d' ' -f1 "$RUNNER_TEMP/d3-servo-tested.patch.sha256")
-          tested_tree=$(cat "$RUNNER_TEMP/d3-servo-tested-tree.txt")
+          tested_patch_sha256=""
+          tested_tree=""
+          if test -f "$RUNNER_TEMP/d3-servo-tested.patch.sha256"; then
+            tested_patch_sha256=$(cut -d' ' -f1 "$RUNNER_TEMP/d3-servo-tested.patch.sha256")
+          fi
+          if test -f "$RUNNER_TEMP/d3-servo-tested-tree.txt"; then
+            tested_tree=$(cat "$RUNNER_TEMP/d3-servo-tested-tree.txt")
+          fi
           jq -n \
             --arg carrier "$carrier" \
             --arg carrier_tree "$carrier_tree" \
@@ -291,7 +297,7 @@ jobs:
               dependencies_outcome:$dependencies,
               format_outcome:$format,
               behavior_outcome:$behavior,
-              evidence_complete:($verify == "success" and $dependencies == "success" and $format == "success" and $behavior == "success"),
+              evidence_complete:($verify == "success" and $dependencies == "success" and $format == "success" and $behavior == "success" and ($tested_patch_sha256|length) == 64 and ($tested_tree|length) == 40),
               retained_node_valid_click_tested:($behavior == "success"),
               action_advertisement_enforced:($behavior == "success"),
               stale_node_and_tree_tested:($behavior == "success"),
