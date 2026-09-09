@@ -78,6 +78,22 @@ def _test_functions(source: str) -> set[str]:
     )
 
 
+def _public_definition_or_export(code: str, identifier: str) -> bool:
+    return (
+        re.search(
+            rf"\bpub\s+(?:struct|enum|trait|type|const)\s+{re.escape(identifier)}\b",
+            code,
+        )
+        is not None
+        or re.search(
+            rf"\bpub\s+use\b[^;]*\b{re.escape(identifier)}\b[^;]*;",
+            code,
+            re.S,
+        )
+        is not None
+    )
+
+
 def validate_transport_sources(
     root_lib: str,
     facade: str,
@@ -109,21 +125,49 @@ def validate_transport_sources(
         "OsNonceSource",
         "SessionNonce",
         "FrameKind",
-        "pub struct Frame",
-        "accept_with_nonce_source",
-        "session_nonce(",
+        "Frame",
     ):
-        _require(forbidden not in public_surface, f"public transport surface exposes {forbidden}", errors)
-
-    for type_name in ("PeerIdentity", "PeerPolicy", "ServerConnection", "ClientConnection", "TransportError"):
         _require(
-            re.search(rf"\bimpl\s+fmt\s*::\s*Debug\s+for\s+{type_name}\b", facade_code) is not None,
+            not _public_definition_or_export(public_surface, forbidden),
+            f"public transport surface exposes {forbidden}",
+            errors,
+        )
+    _require(
+        re.search(r"\bpub\s+fn\s+accept_with_nonce_source\s*\(", public_surface)
+        is None,
+        "public transport surface exposes accept_with_nonce_source",
+        errors,
+    )
+    _require(
+        re.search(r"\bpub\s+(?:const\s+)?fn\s+session_nonce\s*\(", public_surface)
+        is None,
+        "public transport surface exposes session nonce material",
+        errors,
+    )
+
+    for type_name in (
+        "PeerIdentity",
+        "PeerPolicy",
+        "ServerConnection",
+        "ClientConnection",
+        "TransportError",
+    ):
+        _require(
+            re.search(
+                rf"\bimpl\s+fmt\s*::\s*Debug\s+for\s+{type_name}\b",
+                facade_code,
+            )
+            is not None,
             f"{type_name} lacks custom redacted Debug",
             errors,
         )
     for type_name in ("ServerConnection", "ClientConnection", "TransportError"):
         _require(
-            re.search(rf"\bimpl\s+fmt\s*::\s*Display\s+for\s+{type_name}\b", facade_code) is not None,
+            re.search(
+                rf"\bimpl\s+fmt\s*::\s*Display\s+for\s+{type_name}\b",
+                facade_code,
+            )
+            is not None,
             f"{type_name} lacks custom Display",
             errors,
         )
@@ -144,12 +188,17 @@ def validate_transport_sources(
             errors,
         )
 
+    facade_tests = _test_functions(facade)
     for required_test in (
         "public_identity_policy_connection_and_error_formatting_are_redacted",
         "unauthorized_peer_error_does_not_reveal_runtime_identity",
         "response_sequence_mismatch_permanently_poisoned_client",
     ):
-        _require(required_test in _test_functions(facade), f"missing transport test {required_test}", errors)
+        _require(
+            required_test in facade_tests,
+            f"missing transport test {required_test}",
+            errors,
+        )
 
     for forbidden in (
         "NonceSource",
@@ -158,19 +207,34 @@ def validate_transport_sources(
         "serve_one_with_nonce_source",
         "accept_with_nonce_source",
     ):
-        _require(forbidden not in agent_code, f"AgentPort exposes or consumes {forbidden}", errors)
+        _require(
+            re.search(rf"\b{re.escape(forbidden)}\b", agent_code) is None,
+            f"AgentPort exposes or consumes {forbidden}",
+            errors,
+        )
     _require(
-        len(re.findall(r"\bhandler\s*\.\s*handle\s*\(\s*&context\s*,\s*&request\s*\)", agent_code)) == 1,
+        len(
+            re.findall(
+                r"\bhandler\s*\.\s*handle\s*\(\s*&context\s*,\s*&request\s*\)",
+                agent_code,
+            )
+        )
+        == 1,
         "AgentPort handler invocation must occur exactly once",
         errors,
     )
     _require(
-        re.search(r"Self\s*::\s*Handler\s*\(\s*_\s*\)\s*=>", agent_code) is not None,
+        re.search(r"Self\s*::\s*Handler\s*\(\s*_\s*\)\s*=>", agent_code)
+        is not None,
         "AgentPort handler error formatting must discard handler text",
         errors,
     )
     _require(
-        re.search(r"\bimpl\s+fmt\s*::\s*Debug\s+for\s+AgentPortError\b", agent_code) is not None,
+        re.search(
+            r"\bimpl\s+fmt\s*::\s*Debug\s+for\s+AgentPortError\b",
+            agent_code,
+        )
+        is not None,
         "AgentPort error Debug must be custom and redacted",
         errors,
     )
@@ -195,40 +259,72 @@ def validate_transport_sources(
         "unauthorized_peer_error_formatting": "redacted",
         "handler_error_text_formatting": "redacted_by_agent_port",
     }
-    _require(public_api == expected_public_api, "agent-transport public_api contract drifted", errors)
+    _require(
+        public_api == expected_public_api,
+        "agent-transport public_api contract drifted",
+        errors,
+    )
     authentication = contract.get("authentication")
-    _require(isinstance(authentication, dict), "transport authentication contract is missing", errors)
+    _require(
+        isinstance(authentication, dict),
+        "transport authentication contract is missing",
+        errors,
+    )
     if isinstance(authentication, dict):
         _require(
-            authentication.get("product_nonce_source") == "operating_system_entropy_only",
+            authentication.get("product_nonce_source")
+            == "operating_system_entropy_only",
             "product nonce source is not OS-only",
             errors,
         )
         _require(
-            authentication.get("deterministic_nonce_injection") == "private_wire_tests_only",
+            authentication.get("deterministic_nonce_injection")
+            == "private_wire_tests_only",
             "deterministic nonce injection is not private-test-only",
             errors,
         )
-    _require(contract.get("evidence_freshness") == "STALE_EVIDENCE", "changed transport inherited fresh evidence", errors)
-    _require(contract.get("merge_ready") is False, "transport preclaims merge readiness", errors)
+    _require(
+        contract.get("evidence_freshness") == "STALE_EVIDENCE",
+        "changed transport inherited fresh evidence",
+        errors,
+    )
+    _require(
+        contract.get("merge_ready") is False,
+        "transport preclaims merge readiness",
+        errors,
+    )
     return errors
 
 
 def validate_attestation() -> list[str]:
     errors: list[str] = []
     lib = strip_rust_noncode(_read("crates/hepta-peer-attestation/src/lib.rs"))
-    lease = strip_rust_noncode(_read("crates/hepta-peer-attestation/src/request_lease.rs"))
+    lease = strip_rust_noncode(
+        _read("crates/hepta-peer-attestation/src/request_lease.rs")
+    )
     manifest = _toml("crates/hepta-peer-attestation/Cargo.toml")
     package = manifest.get("package", {})
-    _require(package.get("autobins") is False, "attestation autobins must be false", errors)
-    _require(package.get("build") is False, "attestation build script must be disabled", errors)
-    _require(manifest.get("dependencies", {}).get("sha2") == "=0.10.9", "attestation sha2 pin changed", errors)
+    _require(
+        package.get("autobins") is False,
+        "attestation autobins must be false",
+        errors,
+    )
+    _require(
+        package.get("build") is False,
+        "attestation build script must be disabled",
+        errors,
+    )
+    _require(
+        manifest.get("dependencies", {}).get("sha2") == "=0.10.9",
+        "attestation sha2 pin changed",
+        errors,
+    )
     for token in (
         "executable_sha256",
         "refresh_snapshot",
         "AttestorSourceChanged",
         "O_NOFOLLOW",
-        "NSpid",
+        "parse_nspid",
         "pidfd_open",
     ):
         _require(token in lib, f"attestation missing {token}", errors)
@@ -240,11 +336,28 @@ def validate_attestation() -> list[str]:
         "impl Drop for PeerRequestCustody",
     ):
         _require(token in lease, f"request custody missing {token}", errors)
-    _require("#[derive(Debug)]\npub struct PeerRequestCustody" in _read("crates/hepta-peer-attestation/src/request_lease.rs"), "custody owner became cloneable", errors)
+    _require(
+        "#[derive(Debug)]\npub struct PeerRequestCustody"
+        in _read("crates/hepta-peer-attestation/src/request_lease.rs"),
+        "custody owner became cloneable",
+        errors,
+    )
     contract = _json("contracts/request-peer-custody.v1.json")
-    _require(contract.get("browser_actor_integrated") is False, "S04 custody claims BrowserActor", errors)
-    _require(contract.get("production_listener_enabled") is False, "S04 custody claims listener", errors)
-    _require(contract.get("external_effect_authority") is False, "S04 custody claims effect authority", errors)
+    _require(
+        contract.get("browser_actor_integrated") is False,
+        "S04 custody claims BrowserActor",
+        errors,
+    )
+    _require(
+        contract.get("production_listener_enabled") is False,
+        "S04 custody claims listener",
+        errors,
+    )
+    _require(
+        contract.get("external_effect_authority") is False,
+        "S04 custody claims effect authority",
+        errors,
+    )
     _require(
         contract.get("required_sources")
         == [
@@ -305,13 +418,18 @@ def validate_product_graph_and_path_custody() -> list[str]:
         _read("apps/hepta-agent-portd/src/bin/hepta-agent-port-fixture.rs")
     )
     _require(
-        app_manifest.get("features") == {"default": [], "fixture": ["dep:hepta-agent-port"]},
+        app_manifest.get("features")
+        == {"default": [], "fixture": ["dep:hepta-agent-port"]},
         "product feature graph widened",
         errors,
     )
     dependencies = app_manifest.get("dependencies", {})
     for forbidden in ("hepta-browser-actor", "hepta-session-core", "servo"):
-        _require(forbidden not in dependencies, f"product graph contains {forbidden}", errors)
+        _require(
+            forbidden not in dependencies,
+            f"product graph contains {forbidden}",
+            errors,
+        )
     bins = app_manifest.get("bin", [])
     _require(
         [entry.get("name") for entry in bins]
@@ -319,54 +437,161 @@ def validate_product_graph_and_path_custody() -> list[str]:
         "unexpected AgentPort binary inventory",
         errors,
     )
-    _require("D0FixtureHandler" not in product, "product binary links fixture handler", errors)
-    _require("hepta_agent_port::" not in product, "product binary links fixture crate path", errors)
-    _require("ProductHandlerUnavailable" in product, "product binary no longer fails closed", errors)
-    _require("D0FixtureHandler" in fixture, "fixture binary lost explicit handler", errors)
+    _require(
+        "D0FixtureHandler" not in product,
+        "product binary links fixture handler",
+        errors,
+    )
+    _require(
+        "hepta_agent_port::" not in product,
+        "product binary links fixture crate path",
+        errors,
+    )
+    _require(
+        "ProductHandlerUnavailable" in product,
+        "product binary no longer fails closed",
+        errors,
+    )
+    _require(
+        "D0FixtureHandler" in fixture,
+        "fixture binary lost explicit handler",
+        errors,
+    )
 
     product_raw = _read("apps/hepta-agent-portd/src/main.rs")
     report_start = product_raw.index("fn self_check_report")
     report_end = product_raw.index("#[derive(Debug)]", report_start)
     report_source = product_raw[report_start:report_end]
-    _require("peer_identity_redacted" in report_source, "product self-check lacks redaction marker", errors)
+    _require(
+        "peer_identity_redacted" in report_source,
+        "product self-check lacks redaction marker",
+        errors,
+    )
     for secret in ("peer_pid", "peer_uid", "peer_gid"):
-        _require(secret not in report_source, f"product self-check exposes {secret}", errors)
+        _require(
+            secret not in report_source,
+            f"product self-check exposes {secret}",
+            errors,
+        )
 
-    socket = _parse_assignments("packaging/debian/systemd/hepta-browserd-agent.socket")
+    socket = _parse_assignments(
+        "packaging/debian/systemd/hepta-browserd-agent.socket"
+    )
     socket += _parse_assignments(
         "packaging/debian/systemd/hepta-browserd-agent.socket.d/10-root-path-custody.conf"
     )
-    service = _parse_assignments("packaging/debian/systemd/hepta-browserd-agent@.service")
+    service = _parse_assignments(
+        "packaging/debian/systemd/hepta-browserd-agent@.service"
+    )
     service += _parse_assignments(
         "packaging/debian/systemd/hepta-browserd-agent@.service.d/10-root-path-custody.conf"
     )
-    _require(_last_value(socket, "Unit", "ConditionPathExists") == "/etc/hepta/enable-agent-port", "activation marker changed", errors)
-    _require(_last_value(socket, "Socket", "ListenStream") == "/run/hepta/browserd/agent.sock", "socket path changed", errors)
-    _require(_last_value(socket, "Socket", "Accept") == "yes", "socket must use Accept=yes", errors)
-    _require(_last_value(socket, "Socket", "Backlog") == "8", "backlog is not bounded", errors)
-    _require(_last_value(socket, "Socket", "MaxConnections") == "8", "connection count is not bounded", errors)
-    _require(_list_value(service, "Service", "SupplementaryGroups") == [], "effective supplementary groups not cleared", errors)
-    _require(_list_value(service, "Service", "ReadWritePaths") == [], "effective writable paths not cleared", errors)
-    _require(_list_value(service, "Service", "ReadOnlyPaths") == ["/run/hepta/browserd"], "effective read-only path changed", errors)
+    _require(
+        _last_value(socket, "Unit", "ConditionPathExists")
+        == "/etc/hepta/enable-agent-port",
+        "activation marker changed",
+        errors,
+    )
+    _require(
+        _last_value(socket, "Socket", "ListenStream")
+        == "/run/hepta/browserd/agent.sock",
+        "socket path changed",
+        errors,
+    )
+    _require(
+        _last_value(socket, "Socket", "Accept") == "yes",
+        "socket must use Accept=yes",
+        errors,
+    )
+    _require(
+        _last_value(socket, "Socket", "Backlog") == "8",
+        "backlog is not bounded",
+        errors,
+    )
+    _require(
+        _last_value(socket, "Socket", "MaxConnections") == "8",
+        "connection count is not bounded",
+        errors,
+    )
+    _require(
+        _list_value(service, "Service", "SupplementaryGroups") == [],
+        "effective supplementary groups not cleared",
+        errors,
+    )
+    _require(
+        _list_value(service, "Service", "ReadWritePaths") == [],
+        "effective writable paths not cleared",
+        errors,
+    )
+    _require(
+        _list_value(service, "Service", "ReadOnlyPaths")
+        == ["/run/hepta/browserd"],
+        "effective read-only path changed",
+        errors,
+    )
 
     sysusers = _read("packaging/debian/sysusers.d/trillionnium-desktop.conf")
     tmpfiles = _read("packaging/debian/tmpfiles.d/trillionnium-desktop.conf")
     install = _read("packaging/debian/hepta-agent-portd.install")
     preset = _read("packaging/debian/systemd-preset/90-trillionnium-desktop.preset")
-    _require("m      hepta-agent      hepta-agent-socket" in sysusers, "Agent lacks parent traversal group", errors)
-    _require("m      hepta-browserd   hepta-agent-socket" not in sysusers, "browser mechanism gained parent custody group", errors)
-    _require("/run/hepta/browserd          0750 root            hepta-agent-socket" in tmpfiles, "root parent custody mapping changed", errors)
-    _require("hepta-agent-port-fixture" not in install, "production package installs fixture", errors)
-    _require("enable-agent-port" not in install, "production package installs activation marker", errors)
-    _require("disable hepta-browserd-agent.socket" in preset, "product socket is not disabled", errors)
+    _require(
+        "m      hepta-agent      hepta-agent-socket" in sysusers,
+        "Agent lacks parent traversal group",
+        errors,
+    )
+    _require(
+        "m      hepta-browserd   hepta-agent-socket" not in sysusers,
+        "browser mechanism gained parent custody group",
+        errors,
+    )
+    _require(
+        "/run/hepta/browserd          0750 root            hepta-agent-socket"
+        in tmpfiles,
+        "root parent custody mapping changed",
+        errors,
+    )
+    _require(
+        "hepta-agent-port-fixture" not in install,
+        "production package installs fixture",
+        errors,
+    )
+    _require(
+        "enable-agent-port" not in install,
+        "production package installs activation marker",
+        errors,
+    )
+    _require(
+        "disable hepta-browserd-agent.socket" in preset,
+        "product socket is not disabled",
+        errors,
+    )
 
     custody = _json("contracts/agent-port-custody.v1.json")
     bridge = _json("contracts/agent-port-bridge.v1.json")
     for label, contract in (("custody", custody), ("bridge", bridge)):
-        _require(contract.get("evidence_freshness") == "STALE_EVIDENCE", f"{label} inherited fresh evidence", errors)
-        _require(contract.get("merge_ready") is False, f"{label} preclaims merge readiness", errors)
-    _require(custody.get("activation", {}).get("enabled_by_default") is False, "custody enables product by default", errors)
-    _require(custody.get("path_custody", {}).get("browser_service_socket_path_mutation_authority") is False, "browser can mutate socket path", errors)
+        _require(
+            contract.get("evidence_freshness") == "STALE_EVIDENCE",
+            f"{label} inherited fresh evidence",
+            errors,
+        )
+        _require(
+            contract.get("merge_ready") is False,
+            f"{label} preclaims merge readiness",
+            errors,
+        )
+    _require(
+        custody.get("activation", {}).get("enabled_by_default") is False,
+        "custody enables product by default",
+        errors,
+    )
+    _require(
+        custody.get("path_custody", {}).get(
+            "browser_service_socket_path_mutation_authority"
+        )
+        is False,
+        "browser can mutate socket path",
+        errors,
+    )
     return errors
 
 
@@ -376,12 +601,31 @@ def validate_reference_binding() -> list[str]:
         ROOT / "contracts/agent-transport.v1.json",
         label="agent transport contract",
     )
-    result = _json("docs/evidence/generated/d0c02-agent-transport-reference-result.json")
+    result = _json(
+        "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+    )
     expected = hashlib.sha256(contract_bytes).hexdigest()
-    _require(result.get("contract_sha256") == expected, "transport reference result is not bound to the exact contract bytes", errors)
-    _require(result.get("status") == "PASS", "transport reference result is not PASS", errors)
-    _require(result.get("product_listener_created") is False, "transport reference claims a listener", errors)
-    _require(result.get("browser_payload_interpreted") is False, "transport reference interprets Browser payloads", errors)
+    actual = result.get("contract_sha256")
+    _require(
+        actual == expected,
+        f"transport reference result contract_sha256 must be {expected}, found {actual!r}",
+        errors,
+    )
+    _require(
+        result.get("status") == "PASS",
+        "transport reference result is not PASS",
+        errors,
+    )
+    _require(
+        result.get("product_listener_created") is False,
+        "transport reference claims a listener",
+        errors,
+    )
+    _require(
+        result.get("browser_payload_interpreted") is False,
+        "transport reference interprets Browser payloads",
+        errors,
+    )
     return errors
 
 
@@ -393,7 +637,11 @@ def validate_docs_and_lock() -> list[str]:
         for entry in lock.get("package", [])
         if entry.get("name") == "hepta-peer-attestation"
     ]
-    _require(len(packages) == 1, "peer attestation lock identity is missing or ambiguous", errors)
+    _require(
+        len(packages) == 1,
+        "peer attestation lock identity is missing or ambiguous",
+        errors,
+    )
     if len(packages) == 1:
         _require(
             set(packages[0].get("dependencies", []))
@@ -411,7 +659,11 @@ def validate_docs_and_lock() -> list[str]:
         "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md",
     ):
         text = _read(relative)
-        _require("Claim ceiling" in text or "claim ceiling" in text, f"{relative} lacks claim ceiling", errors)
+        _require(
+            "Claim ceiling" in text or "claim ceiling" in text,
+            f"{relative} lacks claim ceiling",
+            errors,
+        )
     return errors
 
 
@@ -436,7 +688,13 @@ def validate_root() -> list[str]:
 def main() -> int:
     try:
         errors = validate_root()
-    except (OSError, UnicodeError, ValueError, KeyError, tomllib.TOMLDecodeError) as error:
+    except (
+        OSError,
+        UnicodeError,
+        ValueError,
+        KeyError,
+        tomllib.TOMLDecodeError,
+    ) as error:
         errors = [str(error)]
     if errors:
         for error in errors:
