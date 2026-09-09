@@ -1,4 +1,4 @@
-# repair-retry: 7
+# repair-retry: 8
 name: s05-authoritative-export-autofix
 
 on:
@@ -33,23 +33,41 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          authority = Path('crates/hepta-session-core/src/authoritative_export.rs')
-          text = authority.read_text(encoding='utf-8')
-          old = 'receipt_journal::export_journal_redacted_jsonl(report, destination)'
-          new = 'receipt_journal::export_redacted_jsonl(report, destination)'
-          if text.count(old) != 1:
-              raise SystemExit(f'forensic alias use: expected one match, found {text.count(old)}')
-          authority.write_text(text.replace(old, new, 1), encoding='utf-8')
+          journal = Path('crates/hepta-session-core/src/receipt_journal.rs')
+          text = journal.read_text(encoding='utf-8')
+          text = text.replace(
+              'or its compatibility alias\n/// [`export_redacted_jsonl`]).',
+              'or the crate-root compatibility alias\n/// [`crate::export_redacted_jsonl`]).',
+          )
+          start_marker = '/// Compatibility entry point for public redacted receipt export.\n'
+          end_marker = 'pub fn retention_candidates('
+          if text.count(start_marker) != 1 or text.count(end_marker) != 1:
+              raise SystemExit('could not isolate redundant internal export alias')
+          start = text.index(start_marker)
+          end = text.index(end_marker, start)
+          journal.write_text(text[:start] + text[end:], encoding='utf-8')
 
           lib = Path('crates/hepta-session-core/src/lib.rs')
           lines = lib.read_text(encoding='utf-8').splitlines()
-          removed = sum(line.strip() == 'inspect_chain,' for line in lines)
-          if removed != 1:
-              raise SystemExit(f'stale standalone inspect_chain import: expected one removal, found {removed}')
-          lib.write_text(
-              '\n'.join(line for line in lines if line.strip() != 'inspect_chain,') + '\n',
-              encoding='utf-8',
-          )
+          removed_inspect = sum(line.strip() == 'inspect_chain,' for line in lines)
+          if removed_inspect != 1:
+              raise SystemExit(
+                  f'stale standalone inspect_chain import: expected one removal, found {removed_inspect}'
+              )
+          output = []
+          removed_alias = 0
+          for line in lines:
+              if line.strip() == 'inspect_chain,':
+                  continue
+              if 'export_redacted_jsonl,' in line and 'pub use authoritative_export' not in line:
+                  line, count = line.replace(' export_redacted_jsonl,', ''), line.count(' export_redacted_jsonl,')
+                  removed_alias += count
+              output.append(line)
+          if removed_alias != 1:
+              raise SystemExit(
+                  f'internal export_redacted_jsonl import: expected one removal, found {removed_alias}'
+              )
+          lib.write_text('\n'.join(output) + '\n', encoding='utf-8')
           PY
           cargo fmt --all
           python3 - <<'PY'
