@@ -1,3 +1,4 @@
+# reconstruct-retry: 2
 name: s07-reconstruct-one-shot
 
 on:
@@ -62,8 +63,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 tools/s07_patch_normalize.py
           python3 tools/s07_successor_autofix.py
           rm -f \
+            tools/s07_patch_normalize.py \
             tools/s07_successor_autofix.py \
             .github/workflows/s07-reconstruct.yml
           git add -A
@@ -81,6 +84,7 @@ jobs:
             tools/verify_d3_servo_patch.py; do
             grep -Fxq "$required" "$RUNNER_TEMP/carrier-paths.txt"
           done
+          test ! -e tools/s07_patch_normalize.py
           test ! -e tools/s07_successor_autofix.py
           test ! -e .github/workflows/s07-reconstruct.yml
           test "$(jq -r '.carrier_base_commit' "$D3_SERVO_MANIFEST")" = "$S06_HEAD"
