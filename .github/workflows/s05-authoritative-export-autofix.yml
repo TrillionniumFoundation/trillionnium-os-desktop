@@ -1,4 +1,4 @@
-# repair-retry: 4
+# repair-retry: 5
 name: s05-authoritative-export-autofix
 
 on:
@@ -30,6 +30,28 @@ jobs:
           test "$(git rev-parse HEAD)" = "$TRIGGER_SHA"
           python3 tools/s05_autofix_bootstrap.py
           python3 tools/s05_authoritative_export_autofix.py
+          python3 - <<'PY'
+          from pathlib import Path
+
+          authority = Path('crates/hepta-session-core/src/authoritative_export.rs')
+          text = authority.read_text(encoding='utf-8')
+          old = 'receipt_journal::export_journal_redacted_jsonl(report, destination)'
+          new = 'receipt_journal::export_redacted_jsonl(report, destination)'
+          if text.count(old) != 1:
+              raise SystemExit(f'forensic alias use: expected one match, found {text.count(old)}')
+          authority.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          lib = Path('crates/hepta-session-core/src/lib.rs')
+          text = lib.read_text(encoding='utf-8')
+          old = '''                  export_journal_redacted_jsonl, export_receipt_envelopes_jsonl, export_redacted_jsonl,
+                  inspect_chain,
+          '''
+          new = '''                  export_journal_redacted_jsonl, export_receipt_envelopes_jsonl, export_redacted_jsonl,
+          '''
+          if text.count(old) != 1:
+              raise SystemExit(f'stale inspect_chain import: expected one match, found {text.count(old)}')
+          lib.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
           cargo fmt --all
           python3 - <<'PY'
           from pathlib import Path
