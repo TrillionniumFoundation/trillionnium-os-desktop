@@ -1,4 +1,4 @@
-# repair-retry: 8
+# repair-retry: 9
 name: s05-authoritative-export-autofix
 
 on:
@@ -59,8 +59,9 @@ jobs:
           for line in lines:
               if line.strip() == 'inspect_chain,':
                   continue
-              if 'export_redacted_jsonl,' in line and 'pub use authoritative_export' not in line:
-                  line, count = line.replace(' export_redacted_jsonl,', ''), line.count(' export_redacted_jsonl,')
+              if 'export_journal_redacted_jsonl' in line:
+                  count = line.count(' export_redacted_jsonl,')
+                  line = line.replace(' export_redacted_jsonl,', '')
                   removed_alias += count
               output.append(line)
           if removed_alias != 1:
