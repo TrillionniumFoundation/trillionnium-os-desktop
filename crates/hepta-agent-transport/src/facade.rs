@@ -27,10 +27,6 @@ const POISONED_CONNECTION_MESSAGE: &str =
     "Agent transport connection is poisoned after a wire or protocol failure";
 const REDACTED_IDENTITY: &str = "<redacted-local-peer>";
 
-/// Kernel-provided local peer identity.
-///
-/// Fields remain available to the identity-attestation layer, but `Debug` and
-/// every transport error/display path deliberately redact them.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PeerIdentity {
     pub pid: Option<u32>,
@@ -68,7 +64,6 @@ impl fmt::Debug for PeerIdentity {
     }
 }
 
-/// Exact or partially constrained mechanism-level peer policy.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct PeerPolicy {
     pub expected_pid: Option<u32>,
@@ -128,7 +123,6 @@ pub struct ReceivedRequest {
     pub payload: Vec<u8>,
 }
 
-/// Public transport failures with identity- and nonce-safe formatting.
 pub enum TransportError {
     Io(io::Error),
     UnsupportedPlatform,
@@ -139,20 +133,14 @@ pub enum TransportError {
     UnknownFrameKind(u8),
     ReservedFlags(u8),
     InvalidSessionNonce,
-    FrameTooLarge {
-        length: usize,
-        maximum: usize,
-    },
+    FrameTooLarge { length: usize, maximum: usize },
     PayloadDigestMismatch,
     DeadlineExceeded,
     UnexpectedEof,
     InvalidChallenge,
     UnexpectedFrameKind,
     SessionNonceMismatch,
-    SequenceMismatch {
-        expected: u64,
-        actual: u64,
-    },
+    SequenceMismatch { expected: u64, actual: u64 },
     SequenceExhausted,
     SelfCheckThreadPanicked,
 }
@@ -165,9 +153,7 @@ impl From<wire::TransportError> for TransportError {
             wire::TransportError::InvalidPeerCredentials => Self::InvalidPeerCredentials,
             wire::TransportError::UnauthorizedPeer { .. } => Self::UnauthorizedPeer,
             wire::TransportError::InvalidMagic => Self::InvalidMagic,
-            wire::TransportError::UnsupportedVersion(version) => {
-                Self::UnsupportedVersion(version)
-            }
+            wire::TransportError::UnsupportedVersion(version) => Self::UnsupportedVersion(version),
             wire::TransportError::UnknownFrameKind(kind) => Self::UnknownFrameKind(kind),
             wire::TransportError::ReservedFlags(flags) => Self::ReservedFlags(flags),
             wire::TransportError::InvalidSessionNonce => Self::InvalidSessionNonce,
@@ -205,11 +191,7 @@ impl From<io::Error> for TransportError {
 impl fmt::Display for TransportError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Io(error) => write!(
-                formatter,
-                "Agent transport I/O failed ({:?})",
-                error.kind()
-            ),
+            Self::Io(error) => write!(formatter, "Agent transport I/O failed ({:?})", error.kind()),
             Self::UnsupportedPlatform => formatter
                 .write_str("Agent transport peer credentials are unsupported on this platform"),
             Self::InvalidPeerCredentials => {
@@ -220,7 +202,10 @@ impl fmt::Display for TransportError {
             }
             Self::InvalidMagic => formatter.write_str("Agent transport frame magic is invalid"),
             Self::UnsupportedVersion(version) => {
-                write!(formatter, "Agent transport version {version} is unsupported")
+                write!(
+                    formatter,
+                    "Agent transport version {version} is unsupported"
+                )
             }
             Self::UnknownFrameKind(kind) => {
                 write!(formatter, "Agent transport frame kind {kind} is unknown")
@@ -281,15 +266,12 @@ impl std::error::Error for TransportError {
     }
 }
 
-/// Server-side authenticated connection with fail-stop reuse semantics.
 pub struct ServerConnection {
     inner: Option<wire::ServerConnection>,
     peer: PeerIdentity,
 }
 
 impl ServerConnection {
-    /// Accept using the operating system entropy source. There is deliberately
-    /// no public nonce-source injection API.
     pub fn accept(
         stream: UnixStream,
         policy: PeerPolicy,
@@ -382,7 +364,6 @@ impl fmt::Debug for ServerConnection {
     }
 }
 
-/// Client-side authenticated connection with fail-stop reuse semantics.
 pub struct ClientConnection {
     inner: Option<wire::ClientConnection>,
     peer: PeerIdentity,
@@ -395,12 +376,8 @@ impl ClientConnection {
         timeout: Duration,
     ) -> Result<Self, TransportError> {
         reject_local_timeout(timeout)?;
-        let inner = wire::ClientConnection::connect(
-            stream,
-            server_policy.into_wire(),
-            timeout,
-        )
-        .map_err(TransportError::from)?;
+        let inner = wire::ClientConnection::connect(stream, server_policy.into_wire(), timeout)
+            .map_err(TransportError::from)?;
         let peer = PeerIdentity::from_wire(inner.peer_identity());
         Ok(Self {
             inner: Some(inner),
@@ -711,7 +688,12 @@ mod facade_tests {
         drop(left);
         let display = error.to_string();
         let debug = format!("{error:?}");
-        for value in [actual.pid.unwrap_or_default(), actual.uid, actual.gid, wrong_uid] {
+        for value in [
+            actual.pid.unwrap_or_default(),
+            actual.uid,
+            actual.gid,
+            wrong_uid,
+        ] {
             let token = value.to_string();
             assert!(!display.contains(&token));
             assert!(!debug.contains(&token));
