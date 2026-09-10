@@ -1,0 +1,224 @@
+name: s07-servo-first-hop-callback
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/s07-servo-first-hop-callback.yml"
+      - ".github/workflows/s07-servo-retained-node.yml"
+      - "tools/verify_d3_servo_patch.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "tests/test_s07_servo_patch_package.py"
+  push:
+    branches: ["codex/s07-servo-retained-node-closure-v1"]
+    paths:
+      - ".github/workflows/s07-servo-first-hop-callback.yml"
+      - ".github/workflows/s07-servo-retained-node.yml"
+      - "tools/verify_d3_servo_patch.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "tests/test_s07_servo_patch_package.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s07-servo-first-hop-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  D3_SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+  D3_SERVO_MANIFEST: manifests/lab-d3-servo-retained-node-action.v1.json
+
+jobs:
+  exact-head-first-hop-callback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Check out exact carrier head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Bind exact carrier identity and package
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse HEAD^{tree}
+          python3 -m unittest tests.test_s07_servo_patch_package -v
+
+      - name: Check out exact Servo source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.D3_SERVO_COMMIT }}
+          path: servo
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify and apply all ordered patch stages
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = "$D3_SERVO_COMMIT"
+          test -z "$(git -C servo status --porcelain=v1)"
+          python3 tools/qualify_servo_exact_pin_v3.py verify-d3-patch \
+            --manifest "$D3_SERVO_MANIFEST" \
+            --root . \
+            --output "$RUNNER_TEMP/d3-all.patch" \
+            --base-output "$RUNNER_TEMP/d3-base.patch" \
+            --hardening-output "$RUNNER_TEMP/d3-post-base.patch" \
+            --transport-hardening-output "$RUNNER_TEMP/d3-first-hop.patch" \
+            | tee "$RUNNER_TEMP/d3-first-hop-verification.json"
+          patch --dry-run --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-all.patch"
+          patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-all.patch"
+          git -C servo diff --name-only | sort > "$RUNNER_TEMP/d3-changed.txt"
+          jq -r '.patch.allowed_paths[]' "$D3_SERVO_MANIFEST" | sort > "$RUNNER_TEMP/d3-allowed.txt"
+          cmp "$RUNNER_TEMP/d3-allowed.txt" "$RUNNER_TEMP/d3-changed.txt"
+          grep -Fxq components/servo/proxies.rs "$RUNNER_TEMP/d3-changed.txt"
+          git -C servo diff --check
+
+      - name: Install exact Servo dependencies and Rust toolchain
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' \
+            python/servo/platform/linux_packages/apt/apt_common.txt \
+            python/servo/platform/linux_packages/apt/apt_ubuntu_only.txt \
+            | sort -u > "$RUNNER_TEMP/d3-servo-packages.txt"
+          sudo apt-get update
+          xargs -r sudo apt-get install -y --no-install-recommends < "$RUNNER_TEMP/d3-servo-packages.txt"
+          sudo apt-get install -y --no-install-recommends patch jq
+          sudo apt-get purge -y fonts-droid-fallback || true
+          channel="$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)"
+          test "$channel" = "1.97.1"
+          rustup toolchain install "$channel" --profile minimal --component rustfmt
+          rustc --version --verbose | tee "$RUNNER_TEMP/d3-rustc-version.txt"
+          cargo --version --verbose | tee "$RUNNER_TEMP/d3-cargo-version.txt"
+
+      - name: Normalize patch-owned Rust and bind tested tree
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          mapfile -t rust_files < <(grep -E '\.rs$' "$RUNNER_TEMP/d3-changed.txt")
+          test "${#rust_files[@]}" -gt 0
+          for file in "${rust_files[@]}"; do
+            rustfmt --edition 2024 "$file"
+          done
+          git diff --check
+          git add -A
+          git diff --cached --binary --full-index > "$RUNNER_TEMP/d3-tested.patch"
+          test -s "$RUNNER_TEMP/d3-tested.patch"
+          sha256sum "$RUNNER_TEMP/d3-tested.patch" > "$RUNNER_TEMP/d3-tested.patch.sha256"
+          git write-tree > "$RUNNER_TEMP/d3-tested-tree.txt"
+
+      - name: Run first-hop normal and disconnect corpus
+        shell: bash
+        working-directory: servo
+        env:
+          CARGO_INCREMENTAL: "0"
+          RUST_BACKTRACE: "1"
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/d3-first-hop-callback.log"
+          cargo test --locked -p servo --lib \
+            'proxies::tests::accessibility_action_' -- --nocapture \
+            2>&1 | tee "$log"
+          python3 - "$log" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          text = Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace")
+          expected = (
+              "accessibility_action_normal_enqueue_completes_once",
+              "accessibility_action_already_disconnected_completes_once",
+              "accessibility_action_receiver_drop_after_precheck_completes_once",
+              "accessibility_action_dropped_callback_receiver_does_not_panic",
+          )
+          running = re.findall(r"(?m)^running (\d+) tests?$", text)
+          terminals = re.findall(
+              r"(?m)^test result: ok\. (\d+) passed; (\d+) failed; "
+              r"(\d+) ignored; (\d+) measured; (\d+) filtered out;",
+              text,
+          )
+          if running != ["4"]:
+              raise SystemExit(f"expected four first-hop tests, got {running}")
+          if len(terminals) != 1 or terminals[0][:4] != ("4", "0", "0", "0"):
+              raise SystemExit(f"invalid first-hop terminal result: {terminals}")
+          for name in expected:
+              if not re.search(rf"(?m)^test .*{re.escape(name)}.* \.\.\. ok$", text):
+                  raise SystemExit(f"missing successful first-hop test: {name}")
+          PY
+          git diff --cached --binary --full-index > "$RUNNER_TEMP/d3-after-tests.patch"
+          cmp "$RUNNER_TEMP/d3-tested.patch" "$RUNNER_TEMP/d3-after-tests.patch"
+          test "$(git write-tree)" = "$(cat "$RUNNER_TEMP/d3-tested-tree.txt")"
+          sha256sum -c "$RUNNER_TEMP/d3-tested.patch.sha256"
+
+      - name: Build bounded exact-head evidence
+        if: always()
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/s07-first-hop-evidence"
+          mkdir -p "$evidence"
+          for file in d3-all.patch d3-base.patch d3-post-base.patch d3-first-hop.patch \
+            d3-first-hop-verification.json d3-changed.txt d3-allowed.txt \
+            d3-tested.patch d3-tested.patch.sha256 d3-tested-tree.txt \
+            d3-after-tests.patch d3-first-hop-callback.log \
+            d3-rustc-version.txt d3-cargo-version.txt; do
+            test ! -f "$RUNNER_TEMP/$file" || cp "$RUNNER_TEMP/$file" "$evidence/$file"
+          done
+          if test -f "$RUNNER_TEMP/d3-all.patch" && test -f "$RUNNER_TEMP/d3-tested-tree.txt"; then
+            jq -n \
+              --arg carrier "$EXPECTED_HEAD" \
+              --arg carrier_tree "$(git rev-parse HEAD^{tree})" \
+              --arg servo "$D3_SERVO_COMMIT" \
+              --arg patch_sha256 "$(sha256sum "$RUNNER_TEMP/d3-all.patch" | awk '{print $1}')" \
+              --arg tested_tree "$(cat "$RUNNER_TEMP/d3-tested-tree.txt")" \
+              '{
+                schema:"trillionnium.desktop.s07-first-hop.v1",
+                evidence_class:"exact_head_real_servo_unit_test",
+                carrier_commit:$carrier,
+                carrier_tree:$carrier_tree,
+                servo_commit:$servo,
+                complete_patch_sha256:$patch_sha256,
+                tested_servo_tree:$tested_tree,
+                normal_enqueue_tested:true,
+                disconnected_precheck_race_tested:true,
+                already_disconnected_tested:true,
+                dropped_callback_receiver_tested:true,
+                exact_terminal_callback_count_tested:true,
+                installed_runtime_proven:false,
+                product_browser_actor_receipts_proven:false,
+                physical_hardware_proven:false,
+                signing_proven:false,
+                release_authorized:false
+              }' > "$evidence/evidence.json"
+          fi
+          (
+            cd "$evidence"
+            find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+              | LC_ALL=C sort -z | xargs -0 -r sha256sum > SHA256SUMS
+            test ! -s SHA256SUMS || sha256sum -c SHA256SUMS
+          )
+
+      - name: Upload bounded first-hop evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: s07-first-hop-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/s07-first-hop-evidence
+          if-no-files-found: error
+          retention-days: 30
