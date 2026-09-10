@@ -1,5 +1,5 @@
 [package]
-# Executable boundaries are explicit; default product and fixture graphs remain distinct.
+# Executable boundaries are explicit; default product and qualification graphs remain distinct.
 autobins = false
 build = false
 name = "hepta-agent-portd"
@@ -12,11 +12,16 @@ publish = false
 
 [features]
 default = []
-fixture = ["dep:hepta-agent-port"]
+fixture = [
+  "dep:hepta-agent-port",
+  "dep:hepta-browser-codec",
+  "hepta-peer-attestation/qualification-static-attestation",
+]
 
 [dependencies]
 hepta-agent-port = { path = "../../crates/hepta-agent-port", optional = true }
 hepta-agent-transport = { path = "../../crates/hepta-agent-transport" }
+hepta-browser-codec = { path = "../../crates/hepta-browser-codec", optional = true }
 hepta-peer-attestation = { path = "../../crates/hepta-peer-attestation" }
 libc = "=0.2.186"
 
@@ -27,4 +32,9 @@ path = "src/main.rs"
 [[bin]]
 name = "hepta-agent-port-fixture"
 path = "src/bin/hepta-agent-port-fixture.rs"
+required-features = ["fixture"]
+
+[[example]]
+name = "hepta-agent-d1-fixture"
+path = "examples/hepta-agent-d1-fixture.rs"
 required-features = ["fixture"]

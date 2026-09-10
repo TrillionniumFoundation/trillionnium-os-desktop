@@ -1,0 +1,27 @@
+[Unit]
+Description=TrillionniumOS D1 headless Wayland acceptance compositor
+After=dbus.service systemd-logind.service systemd-udevd.service
+Wants=dbus.service systemd-logind.service systemd-udevd.service
+
+[Service]
+Type=simple
+User=hepta-desktop
+Group=hepta-desktop
+RuntimeDirectory=hepta-desktop
+RuntimeDirectoryMode=0700
+Environment=XDG_RUNTIME_DIR=/run/hepta-desktop
+Environment=WAYLAND_DISPLAY=wayland-0
+ExecStart=/usr/bin/weston --backend=headless-backend.so --socket=wayland-0 --idle-time=0 --log=/run/hepta-desktop/weston.log
+Restart=no
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=trillionnium-d1-acceptance.target
