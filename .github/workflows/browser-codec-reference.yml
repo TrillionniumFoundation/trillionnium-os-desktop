@@ -265,7 +265,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
       EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
     steps:
       - name: Check out prospective merge object
@@ -275,17 +274,23 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
-      - name: Verify prospective merge identity and parent order
+      - name: Verify live prospective merge identity and parent order
         shell: bash
         run: |
           set -euo pipefail
+          pr="${{ github.event.pull_request.number }}"
+          git fetch --force --no-tags --depth=2 origin \
+            "+refs/heads/${GITHUB_BASE_REF}:refs/remotes/origin/${GITHUB_BASE_REF}" \
+            "+refs/pull/${pr}/merge:refs/remotes/pull/${pr}/merge"
+          git checkout --detach "refs/remotes/pull/${pr}/merge"
+          live_base="$(git rev-parse "refs/remotes/origin/${GITHUB_BASE_REF}")"
           test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
-          test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE"
+          test "$(git rev-parse HEAD^1)" = "$live_base"
           test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD"
           merge_sha="$(git rev-parse HEAD)"
           merge_tree="$(git rev-parse 'HEAD^{tree}')"
           printf 'evidence_class=prospective_merge\nsubject_sha=%s\nsubject_tree=%s\nbase_parent=%s\nhead_parent=%s\n' \
-            "$merge_sha" "$merge_tree" "$EXPECTED_BASE" "$EXPECTED_HEAD" | tee /tmp/d0c03-subject.txt
+            "$merge_sha" "$merge_tree" "$live_base" "$EXPECTED_HEAD" | tee /tmp/d0c03-subject.txt
 
       - name: Compile standard-library references and audits
         run: >-
@@ -334,7 +339,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
       EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
     steps:
       - name: Check out prospective merge object
@@ -344,17 +348,23 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
-      - name: Verify prospective merge identity and parent order
+      - name: Verify live prospective merge identity and parent order
         shell: bash
         run: |
           set -euo pipefail
+          pr="${{ github.event.pull_request.number }}"
+          git fetch --force --no-tags --depth=2 origin \
+            "+refs/heads/${GITHUB_BASE_REF}:refs/remotes/origin/${GITHUB_BASE_REF}" \
+            "+refs/pull/${pr}/merge:refs/remotes/pull/${pr}/merge"
+          git checkout --detach "refs/remotes/pull/${pr}/merge"
+          live_base="$(git rev-parse "refs/remotes/origin/${GITHUB_BASE_REF}")"
           test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
-          test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE"
+          test "$(git rev-parse HEAD^1)" = "$live_base"
           test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD"
           merge_sha="$(git rev-parse HEAD)"
           merge_tree="$(git rev-parse 'HEAD^{tree}')"
           printf 'evidence_class=prospective_merge\nsubject_sha=%s\nsubject_tree=%s\nbase_parent=%s\nhead_parent=%s\n' \
-            "$merge_sha" "$merge_tree" "$EXPECTED_BASE" "$EXPECTED_HEAD" | tee -a "$GITHUB_STEP_SUMMARY"
+            "$merge_sha" "$merge_tree" "$live_base" "$EXPECTED_HEAD" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Install exact Rust toolchain
         run: |
