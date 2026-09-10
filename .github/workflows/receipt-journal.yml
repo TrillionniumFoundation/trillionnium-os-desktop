@@ -150,10 +150,14 @@ jobs:
           set -euo pipefail
           git check-ref-format --branch "$BASE_REF"
           test "$PR_NUMBER" -gt 0
-          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          git fetch --force --no-tags --depth=2 origin \
+            "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF" \
+            "+refs/pull/$PR_NUMBER/head:refs/remotes/pull/$PR_NUMBER/head" \
+            "+refs/pull/$PR_NUMBER/merge:refs/remotes/pull/$PR_NUMBER/merge"
+          git checkout --detach "refs/remotes/pull/$PR_NUMBER/merge"
           test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
-          live_base="$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | awk 'NR == 1 {print $1}')"
-          live_head="$(git ls-remote --exit-code origin "refs/pull/$PR_NUMBER/head" | awk 'NR == 1 {print $1}')"
+          live_base="$(git rev-parse "refs/remotes/origin/$BASE_REF")"
+          live_head="$(git rev-parse "refs/remotes/pull/$PR_NUMBER/head")"
           test -n "$live_base"
           test -n "$live_head"
           test "$live_head" = "$EVENT_HEAD"
