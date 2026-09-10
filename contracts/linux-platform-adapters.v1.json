@@ -11,9 +11,14 @@
         "exclusive_temp_create",
         "complete_write",
         "file_fsync",
-        "atomic_rename",
+        "atomic_noreplace_link",
+        "destination_readback",
+        "directory_fsync",
+        "staging_unlink",
         "directory_fsync"
       ],
+      "replacement_policy": "never_replace",
+      "post_publication_failure": "typed_indeterminate_reconcile_only",
       "implicit_parent_creation": false
     },
     "entropy": {
