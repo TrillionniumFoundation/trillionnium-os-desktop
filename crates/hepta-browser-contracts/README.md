@@ -1,96 +1,104 @@
-# hepta-browser-contracts
+# `hepta-browser-contracts` technical development contract
 
-**Work package:** S02 / D0C-01  
-**Claim ceiling:** engine-neutral typed Browser API and trust/risk model only; no
-wire parsing, peer authentication, live semantic resolution, browser runtime,
-capability issuance, external effect, image, hardware, signing, or release
-authority.
+This crate defines the engine-neutral domain vocabulary used by session and workspace logic. It distinguishes trusted shell/app, external HTTPS and loopback fixture targets; carries layered semantic-reference identity; and classifies page actions by risk without authorizing them.
+
+This document is normative for source maintenance at the recorded claim ceiling. It does not replace `manifests/project-state.v1.json`, the gate registry, live GitHub state, exact-head evidence, installed-image qualification, or an authorized release record.
+
+## Status and claim ceiling
+
+Status: `candidate_engine_neutral_browser_domain_contracts`  
+Claim ceiling: `engine-neutral typed browser operations, navigation targets, semantic references, risk classes and stable errors only; no wire parsing, listener, runtime, capability, external effect, installed image, hardware, signing, publication, or release authority`
+
+A narrower machine-state, gate or non-claim always wins. Source presence and documentation completeness do not promote runtime or release authority.
 
 ## Responsibilities
 
-This crate defines the engine-neutral domain vocabulary used by higher layers:
-
-- profiles and UI mode;
-- trusted application identity and synthetic origin construction;
-- trusted, external, and local-fixture navigation targets;
-- layered semantic element references;
-- observations, waits, page actions, and Browser operations;
-- interaction-risk classification;
-- stable Browser error codes and freshness-to-error mapping.
-
-The crate depends only on `trillionnium-contract-core`.
+- Define profile, UI, navigation, semantic element, observation, wait and page-action types.
+- Construct synthetic trusted-app tuple origins from validated publisher/app labels.
+- Bind element references to session, document and semantic snapshot revisions.
+- Classify actions as observation, local-only or potential external effect.
+- Expose stable browser error codes and stale-reference mapping.
 
 ## Non-responsibilities
 
-The types describe intent and boundaries. They do not prove URL reachability,
-DNS or TLS identity, publisher trust, live node identity, user consent,
-principal authority, capability admission, effect safety, or successful browser
-execution.
+- Do not parse or canonicalize untrusted JSON bytes; the codec owns wire admission.
+- Do not contact Servo, resolve DNS, validate TLS, grant capabilities or execute actions.
+- Do not let direct construction bypass validated URL/identifier types in future extensions.
 
-`NavigationTarget::ExternalHttps` is only a domain class. The canonical wire
-codec and later controlled-egress layer must perform stricter parsing and
-network enforcement.
+## Dependency and call direction
 
-## Reference and effect semantics
+The crate depends only on `trillionnium-contract-core`. Session state consumes its element and error types. The wire codec has a separate strict DTO representation and must convert through an explicit validated boundary; neither copy may silently drift.
 
-An `ElementRef` binds session, document, semantic snapshot, frame, and
-structural evidence. Higher layers must re-resolve and revalidate the target at
-the execution boundary. A stale or ambiguous target is rejected; it is never
-converted to coordinate, text-search, JavaScript, WebDriver, or cross-frame
-fallback.
+Relevant architecture:
 
-Click, type, press, select, and navigation can produce external effects.
-Classification is not authorization. No potentially completed effect may be
-blindly retried after timeout, crash, disconnect, stale identity, or an
-indeterminate result.
+- `docs/architecture/CANONICAL_BROWSER_CODEC.md`
+- `docs/architecture/SESSION_STATE_MACHINE.md`
 
-## Dependency and build boundary
+The dependency direction is one-way. Lower-level mechanism and contract crates must not import application, profile, image, hardware, signing, or publication authority.
 
-The crate has no operating-system, transport, Servo, storage, policy, update, or
-release dependency. Cargo binary auto-discovery and package build scripts are
-disabled. New dependencies require a contract-security review.
+## Public API and binaries
 
-## Testing
+- `ProfileSpec`, `ProfilePersistence`, `TrustedAppIdentity`, `NavigationTarget`, `ElementRef`, `PageAction`, `ObservationFields`, `WaitCondition`, `BrowserOperation`, `BrowserErrorCode` and `error_for_freshness` are the main types.
+- Trusted origin generation uses distinct `<app>.<publisher>.apps.hepta.invalid` tuple hosts.
+- Risk classification is descriptive and never a permit.
 
-Minimum checks:
+This library registers no binary target. Cargo binary auto-discovery and package build scripts are disabled.
 
-```bash
-python3 tools/validate_contract_foundation.py
-cargo test --locked -p hepta-browser-contracts
-cargo clippy --locked -p hepta-browser-contracts --all-targets -- -D warnings
-```
+## Configuration and features
 
-Tests cover synthetic-origin separation, navigation classes, action risk, and
-layered reference freshness. Canonical byte conformance belongs to S03 and must
-cross-check these domain constraints rather than silently redefine them.
+There are no Cargo features or runtime configuration. Synthetic origins and v1 operation vocabulary are compile-time contracts. Network behavior, credentials and trusted app bundle verification live in later gates.
 
-## Versioning and unknown values
+Registered Cargo features: none.
 
-The public operation and error enums are versioned compatibility surfaces.
-Unknown wire operation, action, persistence, target, wait-condition, and error
-values fail closed in the owning codec. They must not be mapped to a nearby
-known variant.
+## State, concurrency, and failure semantics
 
-Adding or changing an operation, error, retry meaning, field, trust class, or
-interaction-risk class requires either:
+Values are immutable caller-owned data. `ElementRef::freshness` compares all revision layers. No queue, clock, browser object or persistence is owned here. Validation failure must occur before higher layers enqueue work.
 
-- a backward-compatible change proven against the existing version; or
-- a new protocol/schema version with an explicit migration and downgrade rule.
+Failures must preserve the last truthful state. A timeout, crash, peer loss, storage ambiguity or unsupported operation cannot be converted into successful completion by a caller, retry loop, fixture, log message or evidence generator.
 
-Rust source is the domain-model authority for this crate. Wire shape,
-canonicalization, byte limits, and serialization are owned by the versioned
-schema/codec layer.
+## Security invariants
+
+- External and fixture URL semantics must remain aligned with the strict codec; prefix-only interpretations are forbidden.
+- Trusted shell/app origin values cannot be supplied by page content.
+- Every mutating UI action is a potential external effect.
+- Stale session/document/snapshot references map to distinct typed errors.
+- Domain constructors must not become an alternate weaker admission path.
+
+Every invariant above is a review condition, not merely commentary. Weakening one requires a new threat analysis, hostile regression and explicit claim-ceiling decision.
+
+## Testing and evidence
+
+Primary source or test references:
+
+- `crates/hepta-browser-contracts/src/lib.rs`
+- `tests/test_contract_foundation.py`
+
+Applicable workflows:
+
+- `.github/workflows/ci.yml`
+
+Contract references:
+
+- `contracts/browser-api.v1.schema.json`
+- `contracts/contract-core-constraints.v1.json`
+
+A passing unit or hosted-CI test proves only the evidence tier named by its gate. Any source, workflow, dependency, base, head or claim change invalidates earlier evidence according to `manifests/gates.v1.json`.
 
 ## Operations and troubleshooting
 
-There is no runtime process. Preserve typed errors across layers and avoid
-logging page text, accessible names, target values, or credentials unless an
-explicit privacy policy permits it.
+- Run contract-foundation tests and codec/domain parity tests after changing operations or URLs.
+- A mismatch between this crate and wire schemas is a blocker; do not patch at the adapter layer.
+- Document unsupported operations rather than accepting opaque extension maps.
+- No standalone service or file migration exists.
+
+Operational diagnosis must retain bounded/redacted evidence and must not weaken admission, limits, ownership, sync, isolation or default-disabled controls simply to make a test pass.
+
+## Versioning and unknown values
+
+The v1 operation and error vocabulary is closed. Unknown operation variants, fields, trust classes and retry meanings are rejected rather than stored as opaque extension data. A new value requires an explicit protocol/schema version, codec parity, migration/compatibility decision and hostile regression coverage.
 
 ## Compatibility and change protocol
 
-A behavior-changing change must update the domain types, schemas, codec,
-cross-language reference, golden vectors, tests, documentation, gate
-invalidation paths, and non-claims together. Passing unit tests does not prove a
-BrowserActor, a Servo runtime, an installed image, physical hardware, or a
-release.
+Operation variants, error codes, trusted origins and reference fields require explicit versioning and coordinated codec/schema changes. Removing or reclassifying an operation requires security review because retry/effect behavior may change.
+
+Required change sequence: update implementation and Cargo metadata; update machine contracts and hostile tests; update this README and `manifests/modules.v1.json`; run module, repository, project-truth and Rust checks; obtain independent review on the immutable final head; then perform the required exact-main or higher-tier rerun after protected promotion.

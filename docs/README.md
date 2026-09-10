@@ -11,6 +11,7 @@ This directory is the normative documentation entry point for the desktop produc
 - [`../manifests/gates.v1.json`](../manifests/gates.v1.json) — work-package, evidence-tier, review, and invalidation registry;
 - [`DESKTOP_PLAN-2026-08-29-d6.md`](DESKTOP_PLAN-2026-08-29-d6.md) — active product plan;
 - [`MANIFEST.json`](MANIFEST.json) — documentation and evidence-definition metadata.
+- [`modules/README.md`](modules/README.md) — one-to-one technical development contracts for every Cargo workspace member.
 
 When machine state, prose, a PR description, or a historical artifact disagree, no broader claim is allowed automatically. Resolve the conflict and apply the narrower claim until exact evidence is regenerated.
 
