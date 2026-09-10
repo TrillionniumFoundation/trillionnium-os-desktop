@@ -1,0 +1,73 @@
+{
+  "schema": "trillionnium.desktop.linux-platform-adapters.v1",
+  "stage": "S09",
+  "claim_ceiling": "host_linux_mechanism_adapters_only_no_installed_image_no_external_effect_no_hardware_no_release",
+  "adapters": {
+    "atomic_file_store": {
+      "maximum_bytes": 16777216,
+      "mode": "0600",
+      "path_walk": "descriptor_relative_no_follow",
+      "publication": [
+        "exclusive_temp_create",
+        "complete_write",
+        "file_fsync",
+        "atomic_rename",
+        "directory_fsync"
+      ],
+      "implicit_parent_creation": false
+    },
+    "entropy": {
+      "source": "getrandom",
+      "maximum_bytes": 4096,
+      "deterministic_fallback": false,
+      "all_zero_accepted": false
+    },
+    "monotonic_clock": {
+      "source": "time.monotonic_ns",
+      "regression": "fail_closed",
+      "deadline_overflow": "fail_closed"
+    },
+    "process_identity": {
+      "sources": ["proc_status", "proc_stat", "proc_cgroup_v2"],
+      "uniform_uid_gid_required": true,
+      "single_unified_cgroup_required": true,
+      "bounded_reads": true
+    },
+    "wayland_endpoint": {
+      "runtime_directory_owner_required": true,
+      "runtime_directory_other_access": false,
+      "endpoint_owner_required": true,
+      "endpoint_type": "descriptor_pinned_non_symlink_af_unix_socket",
+      "peer_credentials_required": true,
+      "window_or_frame_claim": false
+    },
+    "controlled_network": {
+      "scheme": "https",
+      "userinfo": false,
+      "unicode_hostname": false,
+      "maximum_url_bytes": 4096,
+      "maximum_redirects": 10,
+      "deny_address_classes": [
+        "private",
+        "loopback",
+        "link_local",
+        "multicast",
+        "unspecified",
+        "reserved",
+        "not_global"
+      ],
+      "connected_peer_must_match_dns_set": true,
+      "performs_dns_or_network_io": false
+    }
+  },
+  "non_claims": {
+    "browser_principal_authorized": false,
+    "capability_issued": false,
+    "external_effect_executed": false,
+    "wayland_window_created": false,
+    "input_or_ime_delivered": false,
+    "installed_image_qualified": false,
+    "hardware_qualified": false,
+    "release_authorized": false
+  }
+}

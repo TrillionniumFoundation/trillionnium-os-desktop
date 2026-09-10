@@ -1,0 +1,91 @@
+name: s09-linux-platform-adapters
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/s09-linux-platform-adapters.yml"
+      - "platform/linux/**"
+      - "contracts/linux-platform-adapters.v1.json"
+      - "tools/validate_linux_platform_adapters.py"
+      - "tests/test_linux_platform_adapters.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
+  push:
+    branches: [main, "codex/**"]
+    paths:
+      - ".github/workflows/s09-linux-platform-adapters.yml"
+      - "platform/linux/**"
+      - "contracts/linux-platform-adapters.v1.json"
+      - "tools/validate_linux_platform_adapters.py"
+      - "tests/test_linux_platform_adapters.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_project_truth.py"
+      - "manifests/project-state.v1.json"
+      - "manifests/gates.v1.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s09-linux-platform-adapters-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Assert exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$expected"
+          git rev-parse HEAD^{tree}
+      - name: Validate S09 source and hostile corpus
+        run: |
+          set -euo pipefail
+          python3 -m py_compile platform/linux/__init__.py platform/linux/adapters.py tools/validate_linux_platform_adapters.py tests/test_linux_platform_adapters.py
+          python3 tools/validate_linux_platform_adapters.py
+          python3 -m unittest tests.test_linux_platform_adapters -v
+          python3 tools/validate_module_documentation.py
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+
+  prospective-merge:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out live prospective merge
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Assert merge identity and parent order
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          test "$(git rev-list --parents -n1 HEAD | wc -w)" -eq 3
+          test "$(git rev-parse HEAD^1)" = "${{ github.event.pull_request.base.sha }}"
+          test "$(git rev-parse HEAD^2)" = "${{ github.event.pull_request.head.sha }}"
+          git rev-parse HEAD^{tree}
+      - name: Validate prospective S09 tree
+        run: |
+          set -euo pipefail
+          python3 -m py_compile platform/linux/__init__.py platform/linux/adapters.py tools/validate_linux_platform_adapters.py tests/test_linux_platform_adapters.py
+          python3 tools/validate_linux_platform_adapters.py
+          python3 -m unittest tests.test_linux_platform_adapters -v
+          python3 tools/validate_module_documentation.py
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
