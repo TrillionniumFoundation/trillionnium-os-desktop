@@ -161,7 +161,8 @@ class ModuleDocumentationTests(unittest.TestCase):
         ci_path = self.root / ".github/workflows/ci.yml"
         ci_path.write_text(
             ci_path.read_text().replace(
-                "          python3 tools/validate_module_documentation.py",
+                "        run: python3 tools/validate_module_documentation.py",
+                "        run: |\n"
                 "          # python3 tools/validate_module_documentation.py\n"
                 "          printf 'skipped\\n'",
             ),
