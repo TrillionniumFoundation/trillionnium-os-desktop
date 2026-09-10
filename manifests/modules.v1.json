@@ -340,8 +340,8 @@
       "package": "hepta-browser-actor",
       "path": "crates/hepta-browser-actor",
       "kind": "library",
-      "status": "candidate_sealed_product_browser_actor",
-      "claim_ceiling": "sealed product-facing BrowserActor with attested principal binding, request custody, deterministic local runtime and receipt observation only; no caller-injected runtime, product listener, real Servo adapter, external effect, installed image, hardware, signing, publication, or release authority",
+      "status": "candidate_exact_pin_real_servo_host_vertical_slice",
+      "claim_ceiling": "concrete non-generic ServoBrowserActor bridge plus exact-pin real-Servo host qualification candidate with attested AgentPort, request custody, durable receipts and stale-reference refusal; qualification-only mailbox; no production listener, external-effect authority, installed image, hardware, signing, publication, or release authority",
       "owner_class": "browser-actor-authority",
       "documentation": "crates/hepta-browser-actor/README.md",
       "architecture": [
@@ -349,20 +349,24 @@
         "docs/architecture/ENGINE_THREAD_DISPATCH.md",
         "docs/architecture/EVENT_LOOP_COMPLETION.md",
         "docs/architecture/SESSION_INCARNATION.md",
-        "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md"
+        "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md",
+        "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
         "contracts/engine-thread-dispatch.v1.json",
         "contracts/event-loop-completion.v1.json",
-        "contracts/session-incarnation.v1.json"
+        "contracts/session-incarnation.v1.json",
+        "contracts/s08-servo-runtime-bridge.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-actor/src/lib.rs",
-        "tests/test_s06_browser_actor.py"
+        "tests/test_s06_browser_actor.py",
+        "crates/hepta-browser-actor/tests/s08_servo_mailbox.rs"
       ],
       "workflows": [
-        ".github/workflows/s06-browser-actor.yml"
+        ".github/workflows/s06-browser-actor.yml",
+        ".github/workflows/s08-servo-vertical-slice.yml"
       ],
       "binaries": [],
       "features": []

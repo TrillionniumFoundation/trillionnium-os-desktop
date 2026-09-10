@@ -2,12 +2,16 @@
 
 validate:
 	/usr/bin/python3 -I tools/validate_module_documentation.py
+	python3 tools/validate_s08_servo_runtime.py
+	python3 tools/validate_s08_product_supervision.py
 	python3 tools/validate_repository.py
 	python3 tools/validate_contract_foundation.py
 	python3 tools/validate_s04_transport_custody.py
 	python3 -m unittest discover -s tests -p 'test_contract_foundation.py'
 	python3 -m unittest discover -s tests -p 'test_s04_transport_custody.py'
 	python3 -m unittest discover -s tests -p 'test_module_documentation*.py'
+	python3 -m unittest discover -s tests -p 'test_s08_servo_runtime.py'
+	python3 -m unittest discover -s tests -p 'test_s08_product_supervision.py'
 
 truth:
 	python3 tools/validate_project_truth.py
