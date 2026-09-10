@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use trillionnium_contract_core::LeaseId;
+use trillionnium_contract_core::{LeaseId, RevisionError};
 
 pub const DEFAULT_HUMAN_LEASE_TTL_MS: u64 = 5_000;
 pub const MAX_HUMAN_LEASE_TTL_MS: u64 = 30_000;
@@ -104,6 +104,8 @@ pub enum TransitionError {
     InvalidLeaseTtl,
     LeaseMismatch,
     HumanLeaseRequired,
+    TimeOverflow,
+    RevisionExhausted(RevisionError),
     PhaseConflict(SessionPhase),
     ControlConflict(ControlState),
     InvalidTransition(&'static str),
@@ -116,6 +118,10 @@ impl fmt::Display for TransitionError {
             Self::InvalidLeaseTtl => formatter.write_str("human lease ttl is invalid"),
             Self::LeaseMismatch => formatter.write_str("human lease id does not match"),
             Self::HumanLeaseRequired => formatter.write_str("an active human lease is required"),
+            Self::TimeOverflow => formatter.write_str("session monotonic time overflowed"),
+            Self::RevisionExhausted(error) => {
+                write!(formatter, "revision transition failed: {error}")
+            }
             Self::PhaseConflict(phase) => write!(formatter, "session phase conflict: {phase:?}"),
             Self::ControlConflict(control) => {
                 write!(formatter, "session control conflict: {control:?}")
@@ -125,4 +131,11 @@ impl fmt::Display for TransitionError {
     }
 }
 
-impl Error for TransitionError {}
+impl Error for TransitionError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::RevisionExhausted(error) => Some(error),
+            _ => None,
+        }
+    }
+}

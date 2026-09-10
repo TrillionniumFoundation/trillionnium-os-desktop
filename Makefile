@@ -2,6 +2,8 @@
 
 validate:
 	python3 tools/validate_repository.py
+	python3 tools/validate_contract_foundation.py
+	python3 -m unittest discover -s tests -p 'test_contract_foundation.py'
 
 truth:
 	python3 tools/validate_project_truth.py
