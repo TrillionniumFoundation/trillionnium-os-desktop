@@ -17,7 +17,9 @@ Ordinary hosted CI must run only `--check-config`. The `--apply` path is perform
 
 ## Required credential
 
-Authenticate the GitHub CLI through an organization-controlled identity with repository Administration permission. Production signing credentials must not be present. The administrator applying controls must not be counted as the independent source reviewer, signer, attestor, promoter, or publisher for the same release tuple.
+Authenticate through an organization-controlled identity with repository Administration permission. Production signing credentials must not be present. The administrator applying controls must not be counted as the independent source reviewer, signer, attestor, promoter, or publisher for the same release tuple.
+
+The connected ChatGPT GitHub App has repository contents, workflow, Actions, issue and pull-request write access, but no repository Administration mutation surface. Granting the assistant broad repository write permission therefore does not make `--apply` executable through this App. An organization administrator must use the reviewed controller from an independently authenticated administrative session; the resulting API readback and probes remain the evidence, not the administrator's assertion.
 
 ## Static validation
 
