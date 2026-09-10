@@ -33,11 +33,13 @@ jobs:
           test "$(git rev-parse HEAD)" = "$expected"
           git rev-parse HEAD^{tree}
 
+      - name: Validate module documentation contract
+        run: python3 tools/validate_module_documentation.py
+
       - name: Validate repository, project truth, contract foundation, and product boundary
         run: |
           set -euo pipefail
           python3 tools/validate_status_authority_singleton.py
-          python3 tools/validate_module_documentation.py
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/validate_contract_foundation.py
@@ -109,11 +111,13 @@ jobs:
           test "$(git rev-parse HEAD^2)" = "${{ github.event.pull_request.head.sha }}"
           git rev-parse HEAD^{tree}
 
+      - name: Validate module documentation contract
+        run: python3 tools/validate_module_documentation.py
+
       - name: Validate prospective merge repository contracts
         run: |
           set -euo pipefail
           python3 tools/validate_status_authority_singleton.py
-          python3 tools/validate_module_documentation.py
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/validate_contract_foundation.py
