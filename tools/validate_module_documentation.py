@@ -25,11 +25,38 @@ MIN_WORDS = 8
 HEADING_RE = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$")
 FENCE_RE = re.compile(r"^[ \t]*(`{3,}|~{3,}).*$")
 WORD_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:/+-]*|[\u3400-\u9fff]")
-FALSE_VALUES = {"false", "${{ false }}", "0", "no", "off"}
 POLICY_FIELDS = set(LEGACY.TRUE_POLICY_KEYS) | {
     "minimum_readme_bytes",
     "required_sections",
 }
+VALIDATOR_ARGV = (
+    "/usr/bin/python3",
+    "-I",
+    "tools/validate_module_documentation.py",
+)
+PINNED_CHECKOUT = "actions/checkout@11d5960a326750d5838078e36cf38b85af677262"
+ALLOWED_JOB_KEYS = {"name", "if", "runs-on", "timeout-minutes", "continue-on-error", "steps"}
+ALLOWED_JOB_IF = {
+    "github.event_name == 'pull_request'",
+    "${{ github.event_name == 'pull_request' }}",
+}
+ALLOWED_STEP_KEYS = {
+    "name",
+    "id",
+    "uses",
+    "with",
+    "run",
+    "shell",
+    "if",
+    "continue-on-error",
+    "timeout-minutes",
+    "working-directory",
+    "env",
+}
+MAPPING_RE = re.compile(
+    r"^(?P<indent> *)(?P<sequence>- )?"
+    r"(?P<key>[A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]*(?P<value>.*))?$"
+)
 
 
 def _duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -168,63 +195,104 @@ def _sections(text: str, label: str, errors: list[str]) -> dict[str, str]:
 
 def _exact_command(command: str) -> bool:
     try:
-        return shlex.split(command, comments=True, posix=True) == [
-            "python3",
-            "tools/validate_module_documentation.py",
-        ]
+        return tuple(shlex.split(command, comments=True, posix=True)) == VALIDATOR_ARGV
     except ValueError:
         return False
 
 
-def _make_commands(text: str, target: str) -> list[str]:
+def _make_target_executes(text: str, target: str) -> bool:
+    """Require the validator to be the first failure-propagating recipe command."""
     lines = text.splitlines()
+    if any("\t" in line[: len(line) - len(line.lstrip())] and not line.startswith("\t") for line in lines):
+        return False
+    for line in lines:
+        stripped = line.strip()
+        if re.match(r"^\.ONESHELL\s*:", stripped):
+            return False
+        if re.match(r"^\.IGNORE\s*:", stripped):
+            value = stripped.split(":", 1)[1].strip()
+            if not value or target in value.split():
+                return False
+        if re.match(r"^(?:override\s+)?(?:SHELL|\.SHELLFLAGS)\s*[:?+]?=", stripped):
+            return False
+
     start: int | None = None
     for index, line in enumerate(lines):
         if not line[:1].isspace() and re.match(rf"^{re.escape(target)}\s*:", line):
             start = index + 1
             break
     if start is None:
-        return []
-    commands: list[str] = []
+        return False
+
+    recipes: list[tuple[str, str]] = []
     for line in lines[start:]:
         if line and not line[0].isspace():
             break
-        if line.startswith("\t"):
-            command = line[1:].strip().lstrip("@+-").strip()
-            if command and not command.startswith("#"):
-                commands.append(command)
-    return commands
+        if not line.startswith("\t"):
+            continue
+        raw = line[1:].strip()
+        if not raw or raw.startswith("#"):
+            continue
+        prefix = ""
+        while raw[:1] in {"@", "-", "+"}:
+            prefix += raw[0]
+            raw = raw[1:].lstrip()
+        recipes.append((prefix, raw))
+    if not recipes:
+        return False
+    prefix, command = recipes[0]
+    return set(prefix) <= {"@"} and _exact_command(command)
 
 
 def _indent(line: str) -> int:
-    if "\t" in line[: len(line) - len(line.lstrip())]:
+    prefix = line[: len(line) - len(line.lstrip())]
+    if "\t" in prefix:
         return -1
-    return len(line) - len(line.lstrip(" "))
+    return len(prefix)
 
 
-def _yaml_value(line: str, key: str, *, sequence: bool = False) -> str | None:
-    stripped = line.strip()
-    if sequence and stripped.startswith("- "):
-        stripped = stripped[2:].lstrip()
-    prefix = f"{key}:"
-    if not stripped.startswith(prefix):
+def _unquote_scalar(value: str) -> str | None:
+    value = value.strip()
+    if not value:
+        return ""
+    if value[0] in {"'", '"'}:
+        if len(value) < 2 or value[-1] != value[0]:
+            return None
+        quote = value[0]
+        body = value[1:-1]
+        if quote == "'":
+            return body.replace("''", "'")
+        try:
+            decoded = json.loads(value)
+        except json.JSONDecodeError:
+            return None
+        return decoded if isinstance(decoded, str) else None
+    if " #" in value:
+        value = value.split(" #", 1)[0].rstrip()
+    return value
+
+
+def _mapping(line: str, *, expected_indent: int, sequence: bool | None = None) -> tuple[str, str] | None:
+    match = MAPPING_RE.match(line)
+    if match is None or len(match.group("indent")) != expected_indent:
         return None
-    return stripped[len(prefix) :].strip()
-
-
-def _constant_false_value(value: str | None) -> bool:
+    has_sequence = match.group("sequence") is not None
+    if sequence is not None and has_sequence != sequence:
+        return None
+    value = _unquote_scalar(match.group("value") or "")
     if value is None:
-        return False
-    return value.strip().strip("'\"").lower() in FALSE_VALUES
+        return None
+    return match.group("key"), value
 
 
 def _job_block(text: str, name: str) -> list[str] | None:
     lines = text.splitlines()
     pattern = re.compile(rf"^  {re.escape(name)}:\s*(?:#.*)?$")
-    next_job = re.compile(r"^  [A-Za-z0-9_-]+:\s*(?:#.*)?$")
-    start = next((i for i, line in enumerate(lines) if pattern.match(line)), None)
-    if start is None:
+    next_job = re.compile(r"^  [A-Za-z_][A-Za-z0-9_-]*:\s*(?:#.*)?$")
+    matches = [i for i, line in enumerate(lines) if pattern.match(line)]
+    if len(matches) != 1:
         return None
+    start = matches[0]
     end = len(lines)
     for index in range(start + 1, len(lines)):
         if next_job.match(lines[index]):
@@ -233,77 +301,202 @@ def _job_block(text: str, name: str) -> list[str] | None:
     return lines[start:end]
 
 
-def _job_executes(text: str, name: str) -> bool:
-    """Require one reachable standalone validator step in a named workflow job.
+def _workflow_context_safe(text: str) -> bool:
+    lines = text.splitlines()
+    if any(_indent(line) < 0 for line in lines):
+        return False
+    jobs = [i for i, line in enumerate(lines) if line.strip() == "jobs:" and _indent(line) == 0]
+    if len(jobs) != 1:
+        return False
+    for line in lines[: jobs[0]]:
+        mapping = _mapping(line, expected_indent=0, sequence=False)
+        if mapping and mapping[0] in {"defaults", "env"}:
+            return False
+        stripped = line.strip()
+        if stripped.startswith(("<<:", "&", "*", "!")):
+            return False
+    return True
 
-    This intentionally accepts only an inline ``run: python3 ...`` scalar. A block
-    shell program is not evidence because arbitrary control flow can make a matching
-    line unreachable. Job and step mapping order are irrelevant; constant-false
-    guards are inspected across the complete mapping.
+
+def _parse_job(block: list[str]) -> tuple[dict[str, str], list[tuple[dict[str, str], list[str]]]] | None:
+    if not block or _indent(block[0]) != 2:
+        return None
+    job: dict[str, str] = {}
+    steps_start: int | None = None
+    steps_end = len(block)
+
+    for index, line in enumerate(block[1:], start=1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        indent = _indent(line)
+        if indent < 0:
+            return None
+        if indent == 4:
+            item = _mapping(line, expected_indent=4, sequence=False)
+            if item is None:
+                return None
+            key, value = item
+            if key in job or key not in ALLOWED_JOB_KEYS:
+                return None
+            job[key] = value
+            if key == "steps":
+                if value or steps_start is not None:
+                    return None
+                steps_start = index + 1
+                continue
+            if steps_start is not None:
+                steps_end = index
+                break
+        elif steps_start is None and indent > 4:
+            return None
+
+    if steps_start is None or set(job) - ALLOWED_JOB_KEYS:
+        return None
+    if job.get("runs-on") != "ubuntu-24.04":
+        return None
+    condition = job.get("if")
+    if condition is not None and condition not in ALLOWED_JOB_IF:
+        return None
+    if "continue-on-error" in job and job["continue-on-error"] != "false":
+        return None
+
+    steps: list[tuple[dict[str, str], list[str]]] = []
+    current: dict[str, str] | None = None
+    current_nested: list[str] = []
+    for line in block[steps_start:steps_end]:
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        indent = _indent(line)
+        if indent < 0 or indent < 6:
+            return None
+        if indent == 6:
+            item = _mapping(line, expected_indent=6, sequence=True)
+            if item is None:
+                return None
+            if current is not None:
+                steps.append((current, current_nested))
+            current = {}
+            current_nested = []
+            key, value = item
+            if key not in ALLOWED_STEP_KEYS:
+                return None
+            current[key] = value
+        elif indent == 8:
+            if current is None:
+                return None
+            item = _mapping(line, expected_indent=8, sequence=False)
+            if item is None:
+                return None
+            key, value = item
+            if key in current or key not in ALLOWED_STEP_KEYS:
+                return None
+            current[key] = value
+        else:
+            if current is None:
+                return None
+            current_nested.append(line)
+    if current is not None:
+        steps.append((current, current_nested))
+    return job, steps
+
+
+def _checkout_step_safe(step: dict[str, str], nested: list[str]) -> bool:
+    if set(step) != {"name", "uses", "with"}:
+        return False
+    if step["uses"] != PINNED_CHECKOUT or step["with"] != "":
+        return False
+    values: dict[str, str] = {}
+    for line in nested:
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        item = _mapping(line, expected_indent=10, sequence=False)
+        if item is None:
+            return False
+        key, value = item
+        if key in values or key not in {"ref", "fetch-depth", "persist-credentials"}:
+            return False
+        values[key] = value
+    return (
+        bool(values.get("ref"))
+        and values.get("fetch-depth") in {"1", "2", "0"}
+        and values.get("persist-credentials") == "false"
+    )
+
+
+def _job_executes(text: str, name: str) -> bool:
+    """Require one closed, failure-propagating validator step in a named job.
+
+    The admitted job uses Ubuntu 24.04, has no workflow/job defaults or mutable
+    environment, and may use only the single pull-request condition used by the
+    prospective jobs. The validator must be the first command-bearing step,
+    immediately after a fully pinned credential-free checkout. Its step mapping
+    is closed to ``name`` plus an exact isolated absolute-Python command.
     """
+    if not _workflow_context_safe(text):
+        return False
     block = _job_block(text, name)
     if block is None:
         return False
-
-    for line in block[1:]:
-        if _indent(line) == 4 and _constant_false_value(_yaml_value(line, "if")):
-            return False
-
-    steps_markers = [i for i, line in enumerate(block) if _indent(line) == 4 and line.strip() == "steps:"]
-    if len(steps_markers) != 1:
+    parsed = _parse_job(block)
+    if parsed is None:
         return False
-    start = steps_markers[0] + 1
-    end = len(block)
-    for i in range(start, len(block)):
-        if block[i].strip() and _indent(block[i]) <= 4:
-            end = i
-            break
+    job, steps = parsed
+    condition = job.get("if")
+    if "prospective" in name:
+        if condition not in ALLOWED_JOB_IF:
+            return False
+    elif condition is not None:
+        return False
 
-    step_starts = [
-        i for i in range(start, end)
-        if _indent(block[i]) == 6 and block[i].lstrip().startswith("- ")
+    candidates = [
+        index
+        for index, (step, _nested) in enumerate(steps)
+        if "run" in step and _exact_command(step["run"])
     ]
-    for position, step_start in enumerate(step_starts):
-        step_end = step_starts[position + 1] if position + 1 < len(step_starts) else end
-        step = block[step_start:step_end]
-        disabled = False
-        run_values: list[str] = []
-        for offset, line in enumerate(step):
-            indent = _indent(line)
-            if indent < 0:
-                return False
-            sequence = offset == 0 and indent == 6 and line.lstrip().startswith("- ")
-            if (sequence or indent == 8) and _constant_false_value(
-                _yaml_value(line, "if", sequence=sequence)
-            ):
-                disabled = True
-            if sequence or indent == 8:
-                value = _yaml_value(line, "run", sequence=sequence)
-                if value is not None:
-                    run_values.append(value)
-        if disabled or len(run_values) != 1:
-            continue
-        run = run_values[0]
-        if run in {"", "|", ">", "|-", ">-", "|+", ">+"}:
-            continue
-        if _exact_command(run):
-            return True
-    return False
+    if candidates != [1] or len(steps) < 2:
+        return False
+    if not _checkout_step_safe(*steps[0]):
+        return False
+
+    step, nested = steps[1]
+    if nested:
+        return False
+    allowed_candidate_keys = {"name", "run"}
+    if step.get("continue-on-error") == "false":
+        allowed_candidate_keys.add("continue-on-error")
+    if set(step) != allowed_candidate_keys:
+        return False
+    if not _exact_command(step["run"]):
+        return False
+
+    for preceding, _nested in steps[:1]:
+        if "run" in preceding:
+            return False
+    return True
 
 
 def _integration(root: Path, errors: list[str]) -> None:
     try:
         makefile = (root / "Makefile").read_text(encoding="utf-8")
-        if not any(_exact_command(item) for item in _make_commands(makefile, "validate")):
-            errors.append("Makefile validate target does not execute the module documentation validator")
+        if not _make_target_executes(makefile, "validate"):
+            errors.append(
+                "Makefile validate target does not execute the isolated module "
+                "documentation validator as its first failure-propagating recipe"
+            )
         ci = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
         for job in ("repository-contracts", "repository-contracts-prospective-merge"):
             if not _job_executes(ci, job):
-                errors.append(f"CI job {job!r} does not execute a reachable standalone module documentation validator step")
-        dedicated = (root / ".github/workflows/module-documentation.yml").read_text(encoding="utf-8")
+                errors.append(
+                    f"CI job {job!r} does not contain the closed trusted validator execution shape"
+                )
+        dedicated = (root / ".github/workflows/module-documentation.yml").read_text(
+            encoding="utf-8"
+        )
         for job in ("exact-head", "prospective-merge"):
             if not _job_executes(dedicated, job):
-                errors.append(f"module-documentation job {job!r} does not execute a reachable standalone validator step")
+                errors.append(
+                    f"module-documentation job {job!r} does not contain the closed trusted validator execution shape"
+                )
     except (OSError, UnicodeError) as error:
         errors.append(f"cannot inspect validator integration: {error}")
 
@@ -352,9 +545,13 @@ def validate(root: Path = ROOT, *, integration_checks: bool = True) -> list[str]
             status = entry.get("status")
             claim = entry.get("claim_ceiling")
             if isinstance(status, str) and status_body.count(f"Status: `{status}`") != 1:
-                errors.append(f"{label} README visible status projection is missing, repeated, or stale")
+                errors.append(
+                    f"{label} README visible status projection is missing, repeated, or stale"
+                )
             if isinstance(claim, str) and status_body.count(f"Claim ceiling: `{claim}`") != 1:
-                errors.append(f"{label} README visible claim projection is missing, repeated, or stale")
+                errors.append(
+                    f"{label} README visible claim projection is missing, repeated, or stale"
+                )
     if integration_checks:
         _integration(root, errors)
     return errors
