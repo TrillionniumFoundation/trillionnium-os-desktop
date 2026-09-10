@@ -1,7 +1,7 @@
 .PHONY: validate truth fmt check-rust check-rust-features clippy clippy-features test test-features self-check check
 
 validate:
-	python3 tools/validate_module_documentation.py
+	/usr/bin/python3 -I tools/validate_module_documentation.py
 	python3 tools/validate_repository.py
 	python3 tools/validate_contract_foundation.py
 	python3 tools/validate_s04_transport_custody.py
