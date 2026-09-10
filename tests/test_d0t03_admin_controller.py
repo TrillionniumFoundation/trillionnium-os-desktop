@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
+import subprocess
 import sys
+import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,10 +22,6 @@ except BaseException:
     raise
 
 
-def closed_ruleset() -> dict:
-    return module.ruleset_payload()
-
-
 def closed_protection() -> tuple[dict, dict]:
     payload = module.branch_protection_payload()
     protection = {
@@ -33,6 +33,13 @@ def closed_protection() -> tuple[dict, dict]:
         "required_signatures": {"enabled": True},
     }
     return {"name": "main", "protected": True}, protection
+
+
+def closed_accounts() -> dict:
+    return {
+        login: {"login": login, "id": reviewer_id, "type": "User"}
+        for login, reviewer_id in module.REVIEWER_ACCOUNTS.items()
+    }
 
 
 def closed_environment(name: str) -> dict:
@@ -47,8 +54,15 @@ def closed_environment(name: str) -> dict:
                 "type": "required_reviewers",
                 "prevent_self_review": True,
                 "reviewers": [
-                    {"type": "User", "reviewer": {"id": reviewer}}
-                    for reviewer in module.REVIEWERS
+                    {
+                        "type": "User",
+                        "reviewer": {
+                            "id": reviewer_id,
+                            "login": login,
+                            "type": "User",
+                        },
+                    }
+                    for login, reviewer_id in module.REVIEWER_ACCOUNTS.items()
                 ],
             }
         ],
@@ -56,30 +70,46 @@ def closed_environment(name: str) -> dict:
 
 
 def closed_probe_packet(main_sha: str) -> dict:
-    expected = [
-        *[(probe, "rejected") for probe in module.REQUIRED_NEGATIVE_PROBES],
-        *[(probe, "succeeded") for probe in module.REQUIRED_POSITIVE_PROBES],
-    ]
+    roles = {
+        role: [{"id": 1000 + index, "login": f"{role}-identity"}]
+        for index, role in enumerate(module.SEPARATED_ROLES)
+    }
+    role_lookup = {role: values[0] for role, values in roles.items()}
+    probes = []
+    for index, (probe_id, (result, operation, role)) in enumerate(
+        module.PROBE_EXPECTATIONS.items()
+    ):
+        actor = role_lookup[role]
+        probes.append(
+            {
+                "id": probe_id,
+                "result": result,
+                "operation": operation,
+                "actor_id": actor["id"],
+                "actor_login": actor["login"],
+                "actor_role": role,
+                "observed_at": "2026-09-10T11:30:00Z",
+                "subject_sha": main_sha,
+                "evidence_api_url": (
+                    "https://api.github.com/repos/"
+                    "TrillionniumFoundation/trillionnium-os-desktop/"
+                    f"actions/runs/{10000 + index}/attempts/1"
+                ),
+                "evidence_sha256": f"{index + 1:064x}",
+            }
+        )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "repository": module.REPOSITORY,
         "main_sha": main_sha,
-        "observed_at": "2026-09-10T00:00:00Z",
-        "probes": [
-            {
-                "id": probe,
-                "result": result,
-                "actor_id": index + 100,
-                "actor_login": f"probe-{index}",
-                "observed_at": "2026-09-10T00:00:00Z",
-                "evidence_url": f"https://github.com/example/probe/{index}",
-            }
-            for index, (probe, result) in enumerate(expected)
-        ],
-        "role_identities": {
-            role: [1000 + index]
-            for index, role in enumerate(module.SEPARATED_ROLES)
+        "issued_at": "2026-09-10T12:00:00Z",
+        "attestor": {
+            "id": 999999,
+            "login": "independent-attestor",
+            "role": "independent_governance_attestor",
         },
+        "probes": probes,
+        "role_identities": roles,
     }
 
 
@@ -87,98 +117,212 @@ class D0T03ControllerTests(unittest.TestCase):
     def test_static_configuration_is_closed(self) -> None:
         self.assertEqual(module.static_configuration_errors(), [])
 
-    def test_ruleset_has_no_bypass_and_closed_pull_request_policy(self) -> None:
-        payload = module.ruleset_payload()
-        self.assertEqual(payload["bypass_actors"], [])
-        self.assertEqual(module.verify_ruleset(payload), [])
-        rules = {entry["type"]: entry for entry in payload["rules"]}
-        parameters = rules["pull_request"]["parameters"]
-        self.assertEqual(parameters["required_approving_review_count"], 2)
-        self.assertTrue(parameters["dismiss_stale_reviews_on_push"])
-        self.assertTrue(parameters["require_code_owner_review"])
-        self.assertTrue(parameters["require_last_push_approval"])
-        self.assertTrue(parameters["required_review_thread_resolution"])
-        self.assertEqual(parameters["allowed_merge_methods"], ["merge"])
-
-    def test_ruleset_verifier_reports_weakened_controls(self) -> None:
-        payload = closed_ruleset()
-        payload["enforcement"] = "disabled"
-        payload["bypass_actors"] = [{"actor_id": 1}]
-        payload["conditions"]["ref_name"]["include"] = []
-        payload["rules"] = []
-        errors = module.verify_ruleset(payload)
-        self.assertGreaterEqual(len(errors), 10)
-
-    def test_branch_payload_requires_strict_checks_and_two_current_approvals(self) -> None:
-        payload = module.branch_protection_payload()
-        self.assertTrue(payload["required_status_checks"]["strict"])
+    def test_required_checks_are_bound_to_github_actions_app(self) -> None:
+        rules = {item["type"]: item for item in module.ruleset_payload()["rules"]}
+        ruleset_checks = rules["required_status_checks"]["parameters"][
+            "required_status_checks"
+        ]
         self.assertEqual(
-            {entry["context"] for entry in payload["required_status_checks"]["checks"]},
-            set(module.REQUIRED_CHECKS),
+            {item["integration_id"] for item in ruleset_checks},
+            {module.GITHUB_ACTIONS_APP_ID},
         )
-        reviews = payload["required_pull_request_reviews"]
-        self.assertEqual(reviews["required_approving_review_count"], 2)
-        self.assertTrue(reviews["dismiss_stale_reviews"])
-        self.assertTrue(reviews["require_code_owner_reviews"])
-        self.assertTrue(reviews["require_last_push_approval"])
-        self.assertTrue(payload["enforce_admins"])
-        self.assertFalse(payload["allow_force_pushes"])
-        self.assertFalse(payload["allow_deletions"])
-        self.assertTrue(payload["required_conversation_resolution"])
+        classic = module.branch_protection_payload()["required_status_checks"]["checks"]
+        self.assertEqual(
+            {item["app_id"] for item in classic},
+            {module.GITHUB_ACTIONS_APP_ID},
+        )
+
+    def test_ruleset_rejects_missing_duplicate_wrong_and_unexpected_bindings(self) -> None:
+        for mutate in ("missing", "duplicate", "wrong_app", "unexpected"):
+            with self.subTest(mutate=mutate):
+                payload = module.ruleset_payload()
+                rules = {item["type"]: item for item in payload["rules"]}
+                checks = rules["required_status_checks"]["parameters"][
+                    "required_status_checks"
+                ]
+                if mutate == "missing":
+                    checks.pop()
+                elif mutate == "duplicate":
+                    checks.append(dict(checks[0]))
+                elif mutate == "wrong_app":
+                    checks[0]["integration_id"] = 7
+                else:
+                    checks.append(
+                        {
+                            "context": "attacker/check",
+                            "integration_id": module.GITHUB_ACTIONS_APP_ID,
+                        }
+                    )
+                self.assertTrue(module.verify_ruleset(payload))
 
     def test_protection_verifier_accepts_exact_closed_readback(self) -> None:
         branch, protection = closed_protection()
         self.assertEqual(module.verify_protection(branch, protection), [])
 
-    def test_protection_verifier_reports_every_weakened_control(self) -> None:
-        branch = {"name": "main", "protected": False}
-        protection = {
-            "required_status_checks": {"strict": False, "checks": []},
-            "required_pull_request_reviews": {
-                "dismiss_stale_reviews": False,
-                "require_code_owner_reviews": False,
-                "require_last_push_approval": False,
-                "required_approving_review_count": 1,
-            },
-            "enforce_admins": {"enabled": False},
-            "required_conversation_resolution": {"enabled": False},
-            "allow_force_pushes": {"enabled": True},
-            "allow_deletions": {"enabled": True},
-            "required_signatures": {"enabled": False},
-        }
+    def test_protection_rejects_legacy_context_only_and_wrong_app(self) -> None:
+        branch, protection = closed_protection()
+        protection["required_status_checks"].pop("checks")
+        protection["required_status_checks"]["contexts"] = list(module.REQUIRED_CHECKS)
         errors = module.verify_protection(branch, protection)
-        self.assertGreaterEqual(len(errors), 11)
+        self.assertTrue(any("bindings are absent" in error for error in errors))
+        branch, protection = closed_protection()
+        protection["required_status_checks"]["checks"][0]["app_id"] = -1
+        errors = module.verify_protection(branch, protection)
+        self.assertTrue(any("not GitHub Actions" in error for error in errors))
 
-    def test_environment_policy_and_readback_prevent_self_review(self) -> None:
-        payload = module.environment_payload()
-        self.assertTrue(payload["prevent_self_review"])
-        self.assertEqual([entry["id"] for entry in payload["reviewers"]], list(module.REVIEWERS))
+    def test_protection_rejects_absent_null_string_and_malformed_critical_controls(self) -> None:
+        for key, expected in (
+            ("required_signatures", True),
+            ("allow_force_pushes", False),
+            ("allow_deletions", False),
+        ):
+            for value in ("absent", None, "false", {}, {"other": expected}):
+                with self.subTest(key=key, value=value):
+                    branch, protection = closed_protection()
+                    if value == "absent":
+                        protection.pop(key)
+                    else:
+                        protection[key] = value
+                    self.assertTrue(module.verify_protection(branch, protection))
+
+    def test_environment_requires_exact_resolved_user_set(self) -> None:
+        accounts = closed_accounts()
         for name in module.ENVIRONMENTS:
-            self.assertEqual(module.verify_environment(name, closed_environment(name)), [])
+            self.assertEqual(
+                module.verify_environment(name, closed_environment(name), accounts),
+                [],
+            )
 
-    def test_environment_verifier_rejects_missing_reviewer_and_open_branch_policy(self) -> None:
-        environment = closed_environment("qualification")
-        environment["deployment_branch_policy"]["protected_branches"] = False
-        environment["protection_rules"][0]["prevent_self_review"] = False
-        environment["protection_rules"][0]["reviewers"].pop()
-        errors = module.verify_environment("qualification", environment)
-        self.assertGreaterEqual(len(errors), 3)
+    def test_environment_rejects_extra_duplicate_team_and_account_mismatch(self) -> None:
+        cases = []
+        extra = closed_environment("qualification")
+        extra["protection_rules"][0]["reviewers"].append(
+            {
+                "type": "User",
+                "reviewer": {"id": 7, "login": "attacker", "type": "User"},
+            }
+        )
+        cases.append(extra)
+        duplicate = closed_environment("qualification")
+        duplicate["protection_rules"][0]["reviewers"].append(
+            dict(duplicate["protection_rules"][0]["reviewers"][0])
+        )
+        cases.append(duplicate)
+        team = closed_environment("qualification")
+        team["protection_rules"][0]["reviewers"][0] = {
+            "type": "Team",
+            "reviewer": {"id": module.REVIEWERS[0], "login": "team", "type": "Team"},
+        }
+        cases.append(team)
+        for environment in cases:
+            with self.subTest(environment=environment):
+                self.assertTrue(
+                    module.verify_environment(
+                        "qualification", environment, closed_accounts()
+                    )
+                )
+        accounts = closed_accounts()
+        accounts["Franksudoman"]["id"] = 1
+        self.assertTrue(
+            module.verify_environment(
+                "qualification", closed_environment("qualification"), accounts
+            )
+        )
 
-    def test_probe_packet_requires_all_results_and_role_separation(self) -> None:
+    def test_probe_packet_requires_verified_external_signature(self) -> None:
         packet = closed_probe_packet("a" * 40)
-        self.assertEqual(module.validate_probe_evidence(packet, "a" * 40), [])
-        packet["probes"][0]["result"] = "succeeded"
-        packet["probes"].pop()
-        packet["role_identities"]["signer"] = packet["role_identities"]["author"]
-        errors = module.validate_probe_evidence(packet, "a" * 40)
-        self.assertTrue(any("result is not rejected" in error for error in errors))
-        self.assertTrue(any("required probe" in error for error in errors))
-        self.assertTrue(any("shared by roles" in error for error in errors))
+        errors = module.validate_probe_evidence(
+            packet,
+            "a" * 40,
+            now=datetime(2026, 9, 10, 12, 5, tzinfo=timezone.utc),
+        )
+        self.assertTrue(any("signature" in error for error in errors))
+        self.assertTrue(any("public-key digest" in error for error in errors))
+        self.assertEqual(
+            module.validate_probe_evidence(
+                packet,
+                "a" * 40,
+                signature_verified=True,
+                public_key_sha256="b" * 64,
+                now=datetime(2026, 9, 10, 12, 5, tzinfo=timezone.utc),
+            ),
+            [],
+        )
 
-    def test_probe_packet_rejects_stale_main_identity(self) -> None:
+    def test_probe_rejects_mutable_url_unrelated_subject_actor_role_and_stale_time(self) -> None:
+        mutations = ("url", "subject", "actor", "role", "stale")
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                packet = closed_probe_packet("a" * 40)
+                probe = packet["probes"][0]
+                if mutation == "url":
+                    probe["evidence_api_url"] = "https://github.com/example/issues/1"
+                elif mutation == "subject":
+                    probe["subject_sha"] = "c" * 40
+                elif mutation == "actor":
+                    probe["actor_id"] = 42
+                elif mutation == "role":
+                    probe["actor_role"] = "reviewer"
+                else:
+                    packet["issued_at"] = "2026-09-01T00:00:00Z"
+                errors = module.validate_probe_evidence(
+                    packet,
+                    "a" * 40,
+                    signature_verified=True,
+                    public_key_sha256="b" * 64,
+                    now=datetime(2026, 9, 10, 12, 5, tzinfo=timezone.utc),
+                )
+                self.assertTrue(errors)
+
+    def test_probe_rejects_attestor_role_overlap_and_extra_fields(self) -> None:
         packet = closed_probe_packet("a" * 40)
-        errors = module.validate_probe_evidence(packet, "b" * 40)
-        self.assertIn("probe packet is not bound to the current main SHA", errors)
+        packet["attestor"]["id"] = packet["role_identities"]["author"][0]["id"]
+        packet["forged"] = True
+        errors = module.validate_probe_evidence(
+            packet,
+            "a" * 40,
+            signature_verified=True,
+            public_key_sha256="b" * 64,
+            now=datetime(2026, 9, 10, 12, 5, tzinfo=timezone.utc),
+        )
+        self.assertTrue(any("top-level" in error for error in errors))
+        self.assertTrue(any("not independent" in error for error in errors))
+
+    def test_detached_signature_verifier_binds_external_key_digest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            packet = root / "packet.json"
+            signature = root / "packet.sig"
+            public_key = root / "probe.pub"
+            packet.write_text("{}\n", encoding="utf-8")
+            signature.write_bytes(b"signature")
+            public_key.write_bytes(b"public-key")
+            expected = hashlib.sha256(public_key.read_bytes()).hexdigest()
+            calls = []
+
+            def runner(command, **kwargs):
+                calls.append(command)
+                return subprocess.CompletedProcess(command, 0, "Verified OK", "")
+
+            self.assertEqual(
+                module.verify_detached_signature(
+                    packet,
+                    signature,
+                    public_key,
+                    expected,
+                    runner=runner,
+                ),
+                expected,
+            )
+            self.assertEqual(calls[0][0:3], ["openssl", "dgst", "-sha256"])
+            with self.assertRaises(module.GovernanceError):
+                module.verify_detached_signature(
+                    packet,
+                    signature,
+                    public_key,
+                    "0" * 64,
+                    runner=runner,
+                )
 
     def test_strict_json_rejects_duplicates_and_non_json_constants(self) -> None:
         with self.assertRaises(module.GovernanceError):
