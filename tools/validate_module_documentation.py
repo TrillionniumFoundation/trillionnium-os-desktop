@@ -133,18 +133,19 @@ def _sections(text: str, label: str, errors: list[str]) -> dict[str, str]:
         if match:
             headings.append((index, len(match.group(1)), match.group(2).strip()))
     result: dict[str, str] = {}
+    required_positions: list[int] = []
     for title in REQUIRED_TITLES:
         all_matches = [item for item in headings if item[2] == title]
         correct = [item for item in all_matches if item[1] == 2]
         if len(correct) != 1:
             errors.append(
-                f"{label} README must contain exactly one visible level-2 heading "
-                f"'## {title}'"
+                f"{label} README must contain exactly one visible level-2 heading '## {title}'"
             )
             continue
         if len(all_matches) != 1:
             errors.append(f"{label} README repeats required heading {title!r}")
         start = correct[0][0]
+        required_positions.append(start)
         end = len(lines)
         for index, level, _ in headings:
             if index > start and level <= 2:
@@ -158,9 +159,10 @@ def _sections(text: str, label: str, errors: list[str]) -> dict[str, str]:
         if byte_count < MIN_VISIBLE_BYTES or word_count < MIN_WORDS:
             errors.append(
                 f"{label} README section {title!r} is not substantive "
-                f"(visible_bytes={byte_count}, words={word_count}; require "
-                f"{MIN_VISIBLE_BYTES}/{MIN_WORDS})"
+                f"(visible_bytes={byte_count}, words={word_count}; require {MIN_VISIBLE_BYTES}/{MIN_WORDS})"
             )
+    if len(required_positions) == len(REQUIRED_TITLES) and required_positions != sorted(required_positions):
+        errors.append(f"{label} README required sections are out of normative order")
     return result
 
 
@@ -194,6 +196,28 @@ def _make_commands(text: str, target: str) -> list[str]:
     return commands
 
 
+def _indent(line: str) -> int:
+    if "\t" in line[: len(line) - len(line.lstrip())]:
+        return -1
+    return len(line) - len(line.lstrip(" "))
+
+
+def _yaml_value(line: str, key: str, *, sequence: bool = False) -> str | None:
+    stripped = line.strip()
+    if sequence and stripped.startswith("- "):
+        stripped = stripped[2:].lstrip()
+    prefix = f"{key}:"
+    if not stripped.startswith(prefix):
+        return None
+    return stripped[len(prefix) :].strip()
+
+
+def _constant_false_value(value: str | None) -> bool:
+    if value is None:
+        return False
+    return value.strip().strip("'\"").lower() in FALSE_VALUES
+
+
 def _job_block(text: str, name: str) -> list[str] | None:
     lines = text.splitlines()
     pattern = re.compile(rf"^  {re.escape(name)}:\s*(?:#.*)?$")
@@ -209,47 +233,60 @@ def _job_block(text: str, name: str) -> list[str] | None:
     return lines[start:end]
 
 
-def _constant_false(lines: list[str]) -> bool:
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("if:"):
-            value = stripped[3:].strip().strip("'\"").lower()
-            if value in FALSE_VALUES:
-                return True
-    return False
-
-
 def _job_executes(text: str, name: str) -> bool:
+    """Require one reachable standalone validator step in a named workflow job.
+
+    This intentionally accepts only an inline ``run: python3 ...`` scalar. A block
+    shell program is not evidence because arbitrary control flow can make a matching
+    line unreachable. Job and step mapping order are irrelevant; constant-false
+    guards are inspected across the complete mapping.
+    """
     block = _job_block(text, name)
-    if block is None or _constant_false(block[:8]):
+    if block is None:
         return False
-    for index, line in enumerate(block):
-        match = re.match(r"^(\s*)(?:-\s+)?run:\s*(.*)$", line)
-        if not match:
+
+    for line in block[1:]:
+        if _indent(line) == 4 and _constant_false_value(_yaml_value(line, "if")):
+            return False
+
+    steps_markers = [i for i, line in enumerate(block) if _indent(line) == 4 and line.strip() == "steps:"]
+    if len(steps_markers) != 1:
+        return False
+    start = steps_markers[0] + 1
+    end = len(block)
+    for i in range(start, len(block)):
+        if block[i].strip() and _indent(block[i]) <= 4:
+            end = i
+            break
+
+    step_starts = [
+        i for i in range(start, end)
+        if _indent(block[i]) == 6 and block[i].lstrip().startswith("- ")
+    ]
+    for position, step_start in enumerate(step_starts):
+        step_end = step_starts[position + 1] if position + 1 < len(step_starts) else end
+        step = block[step_start:step_end]
+        disabled = False
+        run_values: list[str] = []
+        for offset, line in enumerate(step):
+            indent = _indent(line)
+            if indent < 0:
+                return False
+            sequence = offset == 0 and indent == 6 and line.lstrip().startswith("- ")
+            if (sequence or indent == 8) and _constant_false_value(
+                _yaml_value(line, "if", sequence=sequence)
+            ):
+                disabled = True
+            if sequence or indent == 8:
+                value = _yaml_value(line, "run", sequence=sequence)
+                if value is not None:
+                    run_values.append(value)
+        if disabled or len(run_values) != 1:
             continue
-        indent = len(match.group(1))
-        inline = match.group(2).strip()
-        if inline and inline not in {"|", ">", "|-", ">-", "|+", ">+"}:
-            if _exact_command(inline):
-                return True
+        run = run_values[0]
+        if run in {"", "|", ">", "|-", ">-", "|+", ">+"}:
             continue
-        step_start = index
-        while step_start > 0:
-            previous = block[step_start - 1]
-            previous_indent = len(previous) - len(previous.lstrip())
-            if previous.lstrip().startswith("- ") and previous_indent < indent:
-                break
-            step_start -= 1
-        if _constant_false(block[step_start:index]):
-            continue
-        commands: list[str] = []
-        for body in block[index + 1 :]:
-            if body.strip() and len(body) - len(body.lstrip()) <= indent:
-                break
-            stripped = body.strip()
-            if stripped and not stripped.startswith("#"):
-                commands.append(stripped)
-        if any(_exact_command(command) for command in commands):
+        if _exact_command(run):
             return True
     return False
 
@@ -262,11 +299,11 @@ def _integration(root: Path, errors: list[str]) -> None:
         ci = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
         for job in ("repository-contracts", "repository-contracts-prospective-merge"):
             if not _job_executes(ci, job):
-                errors.append(f"CI job {job!r} does not execute the module documentation validator")
+                errors.append(f"CI job {job!r} does not execute a reachable standalone module documentation validator step")
         dedicated = (root / ".github/workflows/module-documentation.yml").read_text(encoding="utf-8")
         for job in ("exact-head", "prospective-merge"):
             if not _job_executes(dedicated, job):
-                errors.append(f"module-documentation job {job!r} does not execute the validator")
+                errors.append(f"module-documentation job {job!r} does not execute a reachable standalone validator step")
     except (OSError, UnicodeError) as error:
         errors.append(f"cannot inspect validator integration: {error}")
 
