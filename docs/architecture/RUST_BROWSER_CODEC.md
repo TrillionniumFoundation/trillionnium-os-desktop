@@ -2,61 +2,61 @@
 
 **Checkpoint:** `TOS-D0C-03`  
 **Product crate:** `crates/hepta-browser-codec`  
-**Status:** source implemented; trusted Rust execution pending
+**Candidate status:** exact-head qualification required; no listener or dispatch.
 
 ## Boundary
 
-The transport layer hands opaque bytes to this crate. No caller may dispatch a
-BrowserActor operation before `decode_request` succeeds. The decoder performs,
-in order:
+Authenticated transport hands opaque payload bytes to this crate. No caller may
+interpret or dispatch a Browser operation before `decode_request` succeeds.
+The codec never binds a socket, selects a principal, grants a capability, calls
+Servo, or authorizes an effect.
 
-1. byte-size and UTF-8/BOM checks;
-2. bounded JSON parsing with recursive duplicate-member rejection;
-3. integer-only, signed-64-bit, depth-32 and aggregate-item-20,000 checks;
-4. exact typed request or response conversion with unknown-field refusal;
-5. session ID/generation, semantic reference, URL and operation validation;
+## Ordered validation
+
+The decoder performs:
+
+1. total byte, UTF-8, and BOM checks;
+2. bounded integer-only JSON parsing;
+3. recursive duplicate-member, depth, item, generic key, and string checks;
+4. exact typed conversion with unknown-field refusal;
+5. session, reference, URL, operation, and error-policy validation;
 6. sorted-key compact canonical re-encoding;
 7. byte-for-byte equality with the received payload;
-8. canonical SHA-256 publication for later receipts.
+8. canonical SHA-256 publication.
 
-The parser is product-owned and uses only the already locked `sha2=0.10.9`
-external closure. It does not add a general-purpose JSON or URL dependency.
+The encoder applies the same generic depth, item, key, string, and total-byte
+budgets to programmatically constructed values. This prevents an internal
+caller from bypassing parser resource limits by constructing a deep or wide
+`JsonValue` directly.
 
-## Authority ceiling
+## Contract layering
 
-The crate classifies but never authorizes:
+`browser-api.v1.schema.json` defines operation shapes. `browser-wire.v1.schema.json`
+defines envelope/session rules and tightens semantic element references to a
+published snapshot revision. `browser-codec-resource-limits.v1.json` records
+UTF-8 byte budgets that standard JSON Schema cannot express directly.
+`browser-codec.v1.json` binds the operation-schema Git blob identity and the
+executable codec policy.
 
-```text
-observation
-local_interaction
-potential_external_effect
-```
+## URL parity
 
-Every navigation is a potential external effect. Click, type, press and select
-are also potential effects. Scroll is local interaction. The distinction is
-passed to D0C-04; it is not a permit.
+The Rust and Python implementations use deliberately isomorphic authority
+rules. Tests cover canonical schemes, case-insensitive `localhost`, IPv4/IPv6
+loopback, optional decimal ports, query/fragment forms, userinfo, backslashes,
+empty or oversized ports, zone identifiers, malformed IPv6, and private-LAN
+rejection.
 
-The crate has no `UnixListener`, `TcpListener`, WebDriver, Servo or BrowserActor
-dependency. It may be called only after peer-authenticated transport admission.
+These checks do not establish DNS, TLS, redirects, connected peer identity, or
+network permission.
 
-## Conformance
+## Evidence and promotion
 
-The same contract is exercised by the standard-library Python reference and
-six byte-exact golden request/response vectors. The reference now also rejects
-integers outside the signed 64-bit domain, bringing its numeric contract into
-line with the product parser.
+The current tree regenerates the independent 27-vector Python result and static
+source audit deterministically. The historical Rust 1.93 host result remains
+bound to its original source commit and is explicitly stale for changed source.
+A candidate becomes eligible for review only after exact-head format, check,
+Clippy, workspace tests, browserd self-check, reference regeneration, and static
+audit pass. Protected merge and exact-main rerun remain separate requirements.
 
-Current demonstrated evidence:
-
-```text
-Python reference:        27/27 PASS
-Python py_compile:       PASS
-Rust static source audit: 96/96 PASS
-Rust fmt:                UNEXECUTED
-Rust Clippy:             UNEXECUTED
-Rust tests:              UNEXECUTED
-browserd self-check:     UNEXECUTED
-```
-
-Static or reference evidence does not imply that the Rust crate compiles. The
-PR remains draft and non-merge-ready until all exact-head Rust commands pass.
+No source or hosted-CI result proves BrowserActor, Servo execution, an installed
+image, hardware, signing custody, or release readiness.

@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.trillionnium.org/desktop/browser-wire.v1.schema.json",
   "title": "TrillionniumOS Desktop canonical Browser API request envelope",
+  "$comment": "Canonical byte form and UTF-8 byte limits are enforced by browser-codec.v1.json and browser-codec-resource-limits.v1.json. JSON Schema maxLength counts characters, not encoded bytes.",
   "type": "object",
   "additionalProperties": false,
   "required": ["protocol", "request_id", "operation"],
@@ -49,6 +50,62 @@
       },
       "else": {
         "required": ["session_id", "session_generation"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "properties": {"type": {"const": "page_act"}},
+            "required": ["type"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "operation": {
+            "properties": {
+              "target": {
+                "properties": {
+                  "semantic_snapshot_revision": {"minimum": 1}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "properties": {
+              "type": {"const": "page_wait"},
+              "condition": {
+                "properties": {"type": {"const": "element_present"}},
+                "required": ["type"]
+              }
+            },
+            "required": ["type", "condition"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "operation": {
+            "properties": {
+              "condition": {
+                "properties": {
+                  "target": {
+                    "properties": {
+                      "semantic_snapshot_revision": {"minimum": 1}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   ]
