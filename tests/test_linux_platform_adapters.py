@@ -6,7 +6,22 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from tests._linux_platform_adapters_legacy import LinuxPlatformAdapterTests, adapters
+from tests import _linux_platform_adapters_legacy as legacy
+
+adapters = legacy.adapters
+
+
+class LinuxPlatformAdapterTests(legacy.LinuxPlatformAdapterTests):
+    """Retain the reviewed hostile corpus while extending publication coverage."""
+
+    def test_bounded_reader_rejects_fifo_without_blocking_and_reads_procfs(self) -> None:
+        super().test_bounded_reader_rejects_fifo_without_blocking_and_reads_procfs()
+
+    def test_wayland_connection_remains_bound_across_endpoint_replacement(self) -> None:
+        super().test_wayland_connection_remains_bound_across_endpoint_replacement()
+
+    def test_literal_url_policy_matches_connected_address_policy(self) -> None:
+        super().test_literal_url_policy_matches_connected_address_policy()
 
 
 class AtomicPublicationRegressionTests(unittest.TestCase):
