@@ -1,0 +1,18 @@
+[package]
+autobins = false
+build = false
+name = "hepta-browser-actor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+hepta-agent-port = { path = "../hepta-agent-port" }
+hepta-agent-transport = { path = "../hepta-agent-transport" }
+hepta-browser-actor-simulation = { path = "../hepta-browser-actor-simulation" }
+hepta-browser-codec = { path = "../hepta-browser-codec" }
+hepta-peer-attestation = { path = "../hepta-peer-attestation" }
+hepta-session-core = { path = "../hepta-session-core" }
