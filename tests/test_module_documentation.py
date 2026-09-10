@@ -153,17 +153,17 @@ class ModuleDocumentationTests(unittest.TestCase):
         makefile = self.root / "Makefile"
         makefile.write_text(
             makefile.read_text().replace(
-                "\tpython3 tools/validate_module_documentation.py",
-                "\t# python3 tools/validate_module_documentation.py\n\t@echo skipped",
+                "\t/usr/bin/python3 -I tools/validate_module_documentation.py",
+                "\t# /usr/bin/python3 -I tools/validate_module_documentation.py\n\t@echo skipped",
             ),
             encoding="utf-8",
         )
         ci_path = self.root / ".github/workflows/ci.yml"
         ci_path.write_text(
             ci_path.read_text().replace(
-                "        run: python3 tools/validate_module_documentation.py",
+                "        run: /usr/bin/python3 -I tools/validate_module_documentation.py",
                 "        run: |\n"
-                "          # python3 tools/validate_module_documentation.py\n"
+                "          # /usr/bin/python3 -I tools/validate_module_documentation.py\n"
                 "          printf 'skipped\\n'",
             ),
             encoding="utf-8",
