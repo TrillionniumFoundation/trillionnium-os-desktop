@@ -7,7 +7,7 @@ import ast
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "contracts/linux-platform-adapters.v1.json"
@@ -34,11 +34,15 @@ def strict_json(path: Path) -> dict[str, Any]:
     def reject_constant(value: str) -> None:
         raise ValueError(f"non-JSON numeric constant {value!r}")
 
+    def reject_float(value: str) -> None:
+        raise ValueError(f"floating JSON number is not permitted: {value!r}")
+
     try:
         value = json.loads(
             path.read_text(encoding="utf-8"),
             object_pairs_hook=reject_duplicates,
             parse_constant=reject_constant,
+            parse_float=reject_float,
         )
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
         fail(f"cannot decode {path.relative_to(ROOT)} strictly: {error}")
@@ -55,7 +59,10 @@ def exact_keys(value: object, expected: set[str], label: str) -> bool:
         return False
     actual = set(value)
     if actual != expected:
-        fail(f"{label} keys differ: missing={sorted(expected-actual)}, extra={sorted(actual-expected)}")
+        fail(
+            f"{label} keys differ: "
+            f"missing={sorted(expected - actual)}, extra={sorted(actual - expected)}"
+        )
         return False
     return True
 
@@ -68,16 +75,17 @@ def check_contract() -> None:
         "contract",
     ):
         return
-    if contract.get("schema") != "trillionnium.desktop.linux-platform-adapters.v1":
+    if contract["schema"] != "trillionnium.desktop.linux-platform-adapters.v1":
         fail("contract schema identity is invalid")
-    if contract.get("stage") != "S09":
+    if contract["stage"] != "S09":
         fail("contract stage is not S09")
-    if contract.get("claim_ceiling") != (
-        "host_linux_mechanism_adapters_only_no_installed_image_no_external_effect_no_hardware_no_release"
+    if contract["claim_ceiling"] != (
+        "host_linux_mechanism_adapters_only_no_installed_image_"
+        "no_external_effect_no_hardware_no_release"
     ):
         fail("contract claim ceiling widened or changed")
 
-    adapters = contract.get("adapters")
+    adapters = contract["adapters"]
     required = {
         "atomic_file_store",
         "entropy",
@@ -91,28 +99,36 @@ def check_contract() -> None:
     assert isinstance(adapters, dict)
 
     store = adapters["atomic_file_store"]
-    if exact_keys(
-        store,
-        {"maximum_bytes", "mode", "path_walk", "publication", "implicit_parent_creation"},
-        "atomic_file_store",
-    ):
-        if store["maximum_bytes"] != 16 * 1024 * 1024:
-            fail("atomic file maximum changed")
-        if store["mode"] != "0600":
-            fail("atomic files are not private")
-        if store["path_walk"] != "descriptor_relative_no_follow":
-            fail("atomic path walk is not descriptor relative and no-follow")
-        if store["implicit_parent_creation"] is not False:
-            fail("atomic store creates unreviewed parent directories")
-        expected_order = [
-            "exclusive_temp_create",
-            "complete_write",
-            "file_fsync",
-            "atomic_rename",
-            "directory_fsync",
-        ]
-        if store["publication"] != expected_order:
-            fail("atomic publication order changed")
+    store_keys = {
+        "maximum_bytes",
+        "mode",
+        "path_walk",
+        "publication",
+        "replacement_policy",
+        "post_publication_failure",
+        "implicit_parent_creation",
+    }
+    if exact_keys(store, store_keys, "atomic_file_store"):
+        expected_store = {
+            "maximum_bytes": 16 * 1024 * 1024,
+            "mode": "0600",
+            "path_walk": "descriptor_relative_no_follow",
+            "publication": [
+                "exclusive_temp_create",
+                "complete_write",
+                "file_fsync",
+                "atomic_noreplace_link",
+                "destination_readback",
+                "directory_fsync",
+                "staging_unlink",
+                "directory_fsync",
+            ],
+            "replacement_policy": "never_replace",
+            "post_publication_failure": "typed_indeterminate_reconcile_only",
+            "implicit_parent_creation": False,
+        }
+        if store != expected_store:
+            fail("atomic file-store contract changed")
 
     entropy = adapters["entropy"]
     if exact_keys(
@@ -129,7 +145,9 @@ def check_contract() -> None:
             fail("entropy policy changed")
 
     clock = adapters["monotonic_clock"]
-    if exact_keys(clock, {"source", "regression", "deadline_overflow"}, "monotonic_clock"):
+    if exact_keys(
+        clock, {"source", "regression", "deadline_overflow"}, "monotonic_clock"
+    ):
         if clock != {
             "source": "time.monotonic_ns",
             "regression": "fail_closed",
@@ -140,57 +158,58 @@ def check_contract() -> None:
     process = adapters["process_identity"]
     if exact_keys(
         process,
-        {"sources", "uniform_uid_gid_required", "single_unified_cgroup_required", "bounded_reads"},
+        {
+            "sources",
+            "uniform_uid_gid_required",
+            "single_unified_cgroup_required",
+            "bounded_reads",
+        },
         "process_identity",
     ):
         if process["sources"] != ["proc_status", "proc_stat", "proc_cgroup_v2"]:
             fail("process identity sources changed")
-        if any(process[key] is not True for key in (
-            "uniform_uid_gid_required",
-            "single_unified_cgroup_required",
-            "bounded_reads",
-        )):
+        if any(
+            process[key] is not True
+            for key in (
+                "uniform_uid_gid_required",
+                "single_unified_cgroup_required",
+                "bounded_reads",
+            )
+        ):
             fail("process identity fail-closed controls weakened")
 
     wayland = adapters["wayland_endpoint"]
-    if exact_keys(
-        wayland,
-        {
-            "runtime_directory_owner_required",
-            "runtime_directory_other_access",
-            "endpoint_owner_required",
-            "endpoint_type",
-            "peer_credentials_required",
-            "window_or_frame_claim",
-        },
-        "wayland_endpoint",
-    ):
-        expected = {
+    wayland_keys = {
+        "runtime_directory_owner_required",
+        "runtime_directory_other_access",
+        "endpoint_owner_required",
+        "endpoint_type",
+        "peer_credentials_required",
+        "window_or_frame_claim",
+    }
+    if exact_keys(wayland, wayland_keys, "wayland_endpoint"):
+        if wayland != {
             "runtime_directory_owner_required": True,
             "runtime_directory_other_access": False,
             "endpoint_owner_required": True,
             "endpoint_type": "descriptor_pinned_non_symlink_af_unix_socket",
             "peer_credentials_required": True,
             "window_or_frame_claim": False,
-        }
-        if wayland != expected:
+        }:
             fail("Wayland endpoint contract changed")
 
     network = adapters["controlled_network"]
-    if exact_keys(
-        network,
-        {
-            "scheme",
-            "userinfo",
-            "unicode_hostname",
-            "maximum_url_bytes",
-            "maximum_redirects",
-            "deny_address_classes",
-            "connected_peer_must_match_dns_set",
-            "performs_dns_or_network_io",
-        },
-        "controlled_network",
-    ):
+    network_keys = {
+        "scheme",
+        "userinfo",
+        "unicode_hostname",
+        "maximum_url_bytes",
+        "maximum_redirects",
+        "deny_address_classes",
+        "connected_peer_must_match_dns_set",
+        "performs_dns_or_network_io",
+    }
+    if exact_keys(network, network_keys, "controlled_network"):
         if network["scheme"] != "https" or network["userinfo"] is not False:
             fail("network URL boundary widened")
         if network["unicode_hostname"] is not False:
@@ -202,13 +221,18 @@ def check_contract() -> None:
         if network["performs_dns_or_network_io"] is not False:
             fail("policy adapter unexpectedly performs external network I/O")
         required_classes = {
-            "private", "loopback", "link_local", "multicast",
-            "unspecified", "reserved", "not_global",
+            "private",
+            "loopback",
+            "link_local",
+            "multicast",
+            "unspecified",
+            "reserved",
+            "not_global",
         }
         if set(network["deny_address_classes"]) != required_classes:
             fail("network deny classes changed")
 
-    non_claims = contract.get("non_claims")
+    non_claims = contract["non_claims"]
     expected_nonclaims = {
         "browser_principal_authorized",
         "capability_issued",
@@ -221,7 +245,7 @@ def check_contract() -> None:
     }
     if exact_keys(non_claims, expected_nonclaims, "non_claims"):
         assert isinstance(non_claims, dict)
-        if any(value is not False for value in non_claims.values()):
+        if any(type(value) is not bool or value for value in non_claims.values()):
             fail("a non-claim was promoted by the S09 mechanism contract")
 
 
@@ -232,6 +256,127 @@ def dotted_name(node: ast.AST) -> str | None:
         parent = dotted_name(node.value)
         return f"{parent}.{node.attr}" if parent else node.attr
     return None
+
+
+def source_segment(text: str, node: ast.AST) -> str:
+    return ast.get_source_segment(text, node) or ""
+
+
+def first_after(positions: Iterable[int], floor: int) -> int:
+    candidates = [position for position in positions if position > floor]
+    return min(candidates) if candidates else -1
+
+
+def check_atomic_write(text: str, tree: ast.Module) -> None:
+    store_classes = [
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "AtomicFileStore"
+    ]
+    if len(store_classes) != 1:
+        fail("AtomicFileStore must be defined exactly once")
+        return
+    methods = {
+        node.name: node
+        for node in store_classes[0].body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    write = methods.get("write")
+    reconcile = methods.get("reconcile")
+    if write is None:
+        fail("AtomicFileStore.write is missing")
+        return
+    if reconcile is None:
+        fail("AtomicFileStore.reconcile is missing")
+
+    calls: list[tuple[int, str, str, ast.Call]] = []
+    for node in ast.walk(write):
+        if isinstance(node, ast.Call):
+            calls.append(
+                (
+                    getattr(node, "lineno", -1) * 10000
+                    + getattr(node, "col_offset", 0),
+                    dotted_name(node.func) or "",
+                    source_segment(text, node),
+                    node,
+                )
+            )
+    calls.sort(key=lambda item: item[0])
+
+    def matching(name: str, token: str | None = None) -> list[int]:
+        return [
+            position
+            for position, call_name, segment, _ in calls
+            if call_name == name and (token is None or token in segment)
+        ]
+
+    open_positions = [
+        position
+        for position, name, segment, _ in calls
+        if name == "os.open"
+        and "temp_name" in segment
+        and "os.O_EXCL" in segment
+        and "os.O_NOFOLLOW" in segment
+    ]
+    write_positions = matching("os.write", "temp_fd")
+    temp_sync_positions = matching("os.fsync", "temp_fd")
+    link_positions = matching("os.link", "temp_name")
+    readback_positions = matching("self._read_destination")
+    parent_sync_positions = matching("os.fsync", "parent_fd")
+    unlink_positions = matching("os.unlink", "temp_name")
+
+    sequence: list[int] = []
+    floor = -1
+    for positions in (
+        open_positions,
+        write_positions,
+        temp_sync_positions,
+        link_positions,
+        readback_positions,
+        parent_sync_positions,
+        unlink_positions,
+        parent_sync_positions,
+    ):
+        position = first_after(positions, floor)
+        sequence.append(position)
+        floor = position
+    if any(position < 0 for position in sequence):
+        fail("no-replace publication operations are missing or out of order")
+
+    link_calls = [
+        node
+        for _, name, segment, node in calls
+        if name == "os.link" and "temp_name" in segment
+    ]
+    if len(link_calls) != 1:
+        fail("AtomicFileStore.write must contain exactly one publication link")
+    else:
+        keywords = {keyword.arg: keyword.value for keyword in link_calls[0].keywords}
+        follow = keywords.get("follow_symlinks")
+        if not isinstance(follow, ast.Constant) or follow.value is not False:
+            fail("publication link must explicitly disable symlink following")
+        for key in ("src_dir_fd", "dst_dir_fd"):
+            value = keywords.get(key)
+            if not isinstance(value, ast.Name) or value.id != "parent_fd":
+                fail(f"publication link must bind {key} to parent_fd")
+
+    write_text = source_segment(text, write)
+    for marker in (
+        "except FileExistsError",
+        "destination exists; replacement is not authorized",
+        "published = True",
+        "PublicationIndeterminate",
+        "self._destination_identity",
+    ):
+        if marker not in write_text:
+            fail(f"atomic write is missing fail-closed marker: {marker}")
+
+    if reconcile is not None:
+        reconcile_text = source_segment(text, reconcile)
+        if "self._read_destination" not in reconcile_text:
+            fail("reconcile does not read back the existing destination")
+        if ".write(" in reconcile_text or "self.write" in reconcile_text:
+            fail("reconcile must not replay or replace the publication")
 
 
 def check_source() -> None:
@@ -252,18 +397,22 @@ def check_source() -> None:
         "validate_redirect_chain",
     }
     functions = {
-        node.name: node
-        for node in ast.walk(tree)
+        node.name
+        for node in tree.body
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
     }
-    missing = sorted(required_functions - set(functions))
+    missing = sorted(required_functions - functions)
     if missing:
         fail(f"Linux adapter functions are missing: {missing}")
 
     required_classes = {
-        "MonotonicClock", "OsEntropy", "AtomicFileStore", "ProcessIdentity", "WaylandPeer"
+        "MonotonicClock",
+        "OsEntropy",
+        "AtomicFileStore",
+        "ProcessIdentity",
+        "WaylandPeer",
     }
-    classes = {node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)}
+    classes = {node.name for node in tree.body if isinstance(node, ast.ClassDef)}
     missing_classes = sorted(required_classes - classes)
     if missing_classes:
         fail(f"Linux adapter classes are missing: {missing_classes}")
@@ -292,8 +441,14 @@ def check_source() -> None:
         return None
 
     forbidden_calls = {
-        "eval", "exec", "compile", "os.system", "os.popen",
-        "socket.getaddrinfo", "socket.create_connection", "socket.gethostbyname",
+        "eval",
+        "exec",
+        "compile",
+        "os.system",
+        "os.popen",
+        "socket.getaddrinfo",
+        "socket.create_connection",
+        "socket.gethostbyname",
     }
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
@@ -301,25 +456,14 @@ def check_source() -> None:
         name = dotted_name(node.func)
         if name in forbidden_calls:
             fail(f"forbidden call in platform adapter: {name}")
-        if name and name.endswith(".connect") and owning_function(node) != "connect_wayland_endpoint":
+        if (
+            name
+            and name.endswith(".connect")
+            and owning_function(node) != "connect_wayland_endpoint"
+        ):
             fail("socket connect is permitted only for the local Wayland endpoint")
 
-    atomic_source = ast.get_source_segment(text, functions.get("write")) if "write" in functions else None
-    # The method is nested in a class and can be located from all function nodes.
-    writes = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef) and node.name == "write"]
-    if len(writes) != 1:
-        fail("AtomicFileStore must own exactly one write method")
-    else:
-        atomic_source = ast.get_source_segment(text, writes[0]) or ""
-        order = [
-            atomic_source.find("os.O_EXCL"),
-            atomic_source.find("os.write"),
-            atomic_source.find("os.fsync(temp_fd)"),
-            atomic_source.find("os.rename"),
-            atomic_source.find("os.fsync(parent_fd)"),
-        ]
-        if any(position < 0 for position in order) or order != sorted(order):
-            fail("atomic publication operations are missing or out of order")
+    check_atomic_write(text, tree)
 
     for marker in (
         "os.O_NOFOLLOW",
@@ -352,9 +496,28 @@ def check_docs_and_tests() -> None:
         ):
             if heading not in text:
                 fail(f"Linux adapter README is missing {heading}")
-        for token in ("S09", "no external effect", "installed image", "SO_PEERCRED"):
+        for token in (
+            "S09",
+            "no external effect",
+            "installed image",
+            "SO_PEERCRED",
+            "no-replace",
+            "PublicationIndeterminate",
+        ):
             if token.lower() not in text.lower():
                 fail(f"Linux adapter README is missing marker {token!r}")
+
+    if TEST.is_file():
+        test_text = TEST.read_text(encoding="utf-8")
+        for marker in (
+            "test_atomic_file_store_refuses_existing_destination",
+            "test_atomic_file_store_reports_post_publication_uncertainty",
+            "test_bounded_reader_rejects_fifo_without_blocking_and_reads_procfs",
+            "test_wayland_connection_remains_bound_across_endpoint_replacement",
+            "test_literal_url_policy_matches_connected_address_policy",
+        ):
+            if marker not in test_text:
+                fail(f"S09 hostile corpus is missing {marker}")
 
 
 def main() -> int:
@@ -364,7 +527,10 @@ def main() -> int:
     for error in ERRORS:
         print(f"ERROR: {error}", file=sys.stderr)
     if ERRORS:
-        print(f"S09 Linux adapter validation failed ({len(ERRORS)} errors)", file=sys.stderr)
+        print(
+            f"S09 Linux adapter validation failed ({len(ERRORS)} errors)",
+            file=sys.stderr,
+        )
         return 1
     print("S09 Linux adapter validation passed")
     return 0
