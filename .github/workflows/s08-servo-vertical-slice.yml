@@ -1,0 +1,347 @@
+name: s08-servo-vertical-slice
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/s08-servo-vertical-slice.yml"
+      - "crates/hepta-browser-actor/**"
+      - "crates/hepta-browser-actor-simulation/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/hepta-agent-transport/**"
+      - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-session-core/**"
+      - "crates/hepta-browser-codec/**"
+      - "contracts/s08-servo-runtime-bridge.v1.json"
+      - "experiments/servo-s08-runtime/**"
+      - "manifests/modules.v1.json"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "tools/validate_s08_servo_runtime.py"
+      - "tools/validate_module_documentation.py"
+      - "tests/test_s08_servo_runtime.py"
+      - "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md"
+  push:
+    branches: [main, "codex/**"]
+    paths:
+      - ".github/workflows/s08-servo-vertical-slice.yml"
+      - "crates/hepta-browser-actor/**"
+      - "crates/hepta-browser-actor-simulation/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/hepta-agent-transport/**"
+      - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-session-core/**"
+      - "crates/hepta-browser-codec/**"
+      - "contracts/s08-servo-runtime-bridge.v1.json"
+      - "experiments/servo-s08-runtime/**"
+      - "manifests/modules.v1.json"
+      - "manifests/lab-d3-servo-retained-node-action.v1.json"
+      - "manifests/servo-patches/d3-retained-node-action-v1/**"
+      - "tools/validate_s08_servo_runtime.py"
+      - "tools/validate_module_documentation.py"
+      - "tests/test_s08_servo_runtime.py"
+      - "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s08-servo-vertical-slice-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+  SERVO_MANIFEST: manifests/lab-d3-servo-retained-node-action.v1.json
+
+jobs:
+  exact-source:
+    name: Exact Source Head — real Servo AgentPort BrowserActor receipt chain
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Assert exact source identity
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse HEAD^{tree} | tee "$RUNNER_TEMP/source-tree.txt"
+          test ! -e .github/workflows/temporary-s08-base-export.yml
+      - name: Install product Rust 1.93
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+          test "$(rustc --version)" = "rustc 1.93.0 (254b59607 2026-01-19)"
+      - name: Qualify exact product source before Servo execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_module_documentation.py
+          python3 tools/validate_s08_servo_runtime.py
+          python3 -m unittest tests.test_module_documentation -v
+          python3 -m unittest tests.test_s08_servo_runtime -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          cargo test --locked -p hepta-browser-actor --test s08_servo_mailbox
+      - name: Check out exact Servo source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.SERVO_COMMIT }}
+          path: servo
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Verify retained-node patch and append reviewed S08 adapter
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = "$SERVO_COMMIT"
+          test -z "$(git -C servo status --porcelain=v1)"
+          python3 tools/qualify_servo_exact_pin_v3.py verify-d3-patch \
+            --manifest "$SERVO_MANIFEST" \
+            --root . \
+            --output "$RUNNER_TEMP/d3-servo.patch" \
+            --base-output "$RUNNER_TEMP/d3-servo-base.patch" \
+            --hardening-output "$RUNNER_TEMP/d3-servo-hardening.patch" \
+            | tee "$RUNNER_TEMP/d3-patch-verification.json"
+          patch --dry-run --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-servo-base.patch"
+          patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-servo-base.patch"
+          patch --dry-run --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-servo-hardening.patch"
+          patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/d3-servo-hardening.patch"
+          cat experiments/servo-s08-runtime/accessibility_server.rs \
+            >> servo/components/servo/tests/accessibility.rs
+          git -C servo diff --check
+      - name: Install exact Servo dependencies and toolchain
+        shell: bash
+        working-directory: servo
+        run: |
+          set -euo pipefail
+          sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' \
+            python/servo/platform/linux_packages/apt/apt_common.txt \
+            python/servo/platform/linux_packages/apt/apt_ubuntu_only.txt \
+            | sort -u > "$RUNNER_TEMP/s08-servo-packages.txt"
+          sudo apt-get update
+          xargs -r sudo apt-get install -y --no-install-recommends \
+            < "$RUNNER_TEMP/s08-servo-packages.txt"
+          sudo apt-get install -y --no-install-recommends patch jq
+          sudo apt-get purge -y fonts-droid-fallback || true
+          servo_rust_channel="$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)"
+          test "$servo_rust_channel" = "1.97.1"
+          rustup toolchain install "$servo_rust_channel" --profile minimal
+          rustup component add rustfmt --toolchain "$servo_rust_channel"
+          rustfmt +"$servo_rust_channel" --edition 2024 components/servo/tests/accessibility.rs
+          git diff --check
+          git diff --binary --full-index > "$RUNNER_TEMP/s08-tested-servo.patch"
+          sha256sum "$RUNNER_TEMP/s08-tested-servo.patch" \
+            | tee "$RUNNER_TEMP/s08-tested-servo.patch.sha256"
+      - name: Run exact-pin Servo and product vertical slice
+        shell: bash
+        env:
+          CARGO_INCREMENTAL: "0"
+          RUST_BACKTRACE: "1"
+        run: |
+          set -euo pipefail
+          mailbox="$RUNNER_TEMP/s08-mailbox"
+          install -d -m 0700 "$mailbox"
+          (
+            cd servo
+            HEPTA_S08_MAILBOX="$mailbox" \
+              cargo test --locked -p servo --test accessibility \
+                test_trillionnium_s08_mailbox_server -- --nocapture
+          ) > "$RUNNER_TEMP/s08-servo.log" 2>&1 &
+          servo_pid=$!
+          cleanup() {
+            kill "$servo_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          for _ in $(seq 1 7200); do
+            test -f "$mailbox/servo-ready" && break
+            kill -0 "$servo_pid" 2>/dev/null || {
+              cat "$RUNNER_TEMP/s08-servo.log"
+              exit 1
+            }
+            sleep 1
+          done
+          test -f "$mailbox/servo-ready"
+          HEPTA_S08_MAILBOX="$mailbox" \
+            cargo test --locked -p hepta-browser-actor --test s08_servo_mailbox \
+              real_servo_agent_port_browser_actor_receipt_chain -- --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/s08-product.log"
+          wait "$servo_pid"
+          trap - EXIT
+          cat "$RUNNER_TEMP/s08-servo.log"
+          test -f "$mailbox/s08-product-result.json"
+          test -f "$mailbox/s08-servo-result.json"
+          find "$mailbox/private-product-state/receipt-store" -type f -maxdepth 1 \
+            -exec sha256sum {} + | sort \
+            > "$RUNNER_TEMP/s08-receipt-files.sha256"
+          test -s "$RUNNER_TEMP/s08-receipt-files.sha256"
+      - name: Validate bounded S08 results
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/s08-mailbox" <<'PY'
+          import json
+          import math
+          import sys
+          from pathlib import Path
+
+          root = Path(sys.argv[1])
+          def duplicate(pairs):
+              out = {}
+              for key, value in pairs:
+                  if key in out:
+                      raise ValueError(f"duplicate result field {key}")
+                  out[key] = value
+              return out
+          def constant(value):
+              raise ValueError(f"non-JSON result constant {value}")
+          def load(name):
+              value = json.loads(
+                  (root / name).read_text(encoding="utf-8"),
+                  object_pairs_hook=duplicate,
+                  parse_constant=constant,
+              )
+              if not isinstance(value, dict):
+                  raise SystemExit(f"{name}: object required")
+              return value
+          product = load("s08-product-result.json")
+          servo = load("s08-servo-result.json")
+          expected_product = {
+              "schema": "trillionnium.desktop.s08-product-result.v1",
+              "status": "PASS_REAL_SERVO_AGENTPORT_BROWSERACTOR_RECEIPT_CHAIN",
+              "agent_port_requests": 10,
+              "servo_runtime_commands": 9,
+              "durable_receipt_records": 30,
+              "all_responses_committed": True,
+              "unresolved_receipts": 0,
+              "stale_document_rejected": True,
+              "retained_node_click_exactly_once": True,
+              "peer_identity_redacted": True,
+              "production_agent_port_enabled": False,
+              "installed_image_proven": False,
+              "physical_hardware_proven": False,
+              "release_proven": False,
+          }
+          if product != expected_product:
+              raise SystemExit(f"unexpected product result: {product!r}")
+          required_servo = {
+              "schema": "trillionnium.desktop.s08-servo-host-result.v1",
+              "status": "PASS_EXACT_PIN_REAL_SERVO",
+              "servo_commands": 9,
+              "servo_navigation_count": 2,
+              "retained_node_click_dispatched_exactly_once": True,
+              "external_navigation_enabled": False,
+              "installed_image_proven": False,
+              "physical_hardware_proven": False,
+              "release_proven": False,
+          }
+          if servo != required_servo:
+              raise SystemExit(f"unexpected Servo result: {servo!r}")
+          PY
+      - name: Collect exact-head evidence
+        if: always()
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/s08-evidence"
+          mkdir -p "$evidence"
+          for file in source-tree.txt d3-patch-verification.json \
+            s08-tested-servo.patch.sha256 s08-servo-packages.txt \
+            s08-servo.log s08-product.log s08-receipt-files.sha256; do
+            test ! -f "$RUNNER_TEMP/$file" || cp "$RUNNER_TEMP/$file" "$evidence/$file"
+          done
+          mailbox="$RUNNER_TEMP/s08-mailbox"
+          for file in s08-product-result.json s08-servo-result.json; do
+            test ! -f "$mailbox/$file" || cp "$mailbox/$file" "$evidence/$file"
+          done
+          jq -n \
+            --arg source_head "$EXPECTED_HEAD" \
+            --arg source_tree "$(cat "$RUNNER_TEMP/source-tree.txt" 2>/dev/null || true)" \
+            --arg servo_commit "$SERVO_COMMIT" \
+            '{
+              schema:"trillionnium.desktop.s08-evidence.v1",
+              evidence_class:"real_servo_agent_port_browser_actor_receipt_chain",
+              claim_ceiling:"exact-pin-host-integration-no-installed-image",
+              source_head:$source_head,
+              source_tree:$source_tree,
+              servo_commit:$servo_commit,
+              installed_image_proven:false,
+              physical_hardware_proven:false,
+              production_signing_proven:false,
+              release_proven:false
+            }' > "$evidence/evidence.json"
+          find "$evidence" -type f -maxdepth 1 -print0 \
+            | sort -z | xargs -0 sha256sum > "$evidence/SHA256SUMS"
+      - name: Upload exact-head S08 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: s08-exact-head-${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/s08-evidence
+          if-no-files-found: error
+          retention-days: 30
+
+  prospective-merge:
+    if: github.event_name == 'pull_request'
+    name: Prospective Merge — source and patch package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out live prospective merge
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Assert prospective merge identity and parent order
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          test "$(git rev-parse HEAD^1)" = "${{ github.event.pull_request.base.sha }}"
+          test "$(git rev-parse HEAD^2)" = "${{ github.event.pull_request.head.sha }}"
+          git rev-parse HEAD^{tree}
+      - name: Install Rust 1.93
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+          test "$(rustc --version)" = "rustc 1.93.0 (254b59607 2026-01-19)"
+      - name: Validate live merge source and dry-run exact patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_module_documentation.py
+          python3 tools/validate_s08_servo_runtime.py
+          python3 -m unittest tests.test_module_documentation -v
+          python3 -m unittest tests.test_s08_servo_runtime -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+          python3 tools/qualify_servo_exact_pin_v3.py verify-d3-patch \
+            --manifest "$SERVO_MANIFEST" \
+            --root . \
+            --output "$RUNNER_TEMP/d3-servo.patch" \
+            --base-output "$RUNNER_TEMP/d3-servo-base.patch" \
+            --hardening-output "$RUNNER_TEMP/d3-servo-hardening.patch"
+          test -s "$RUNNER_TEMP/d3-servo-base.patch"
+          test -s "$RUNNER_TEMP/d3-servo-hardening.patch"

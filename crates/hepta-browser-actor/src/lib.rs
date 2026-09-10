@@ -45,6 +45,14 @@
 
 use hepta_browser_actor_simulation as simulation;
 
+mod servo_runtime;
+
+pub use servo_runtime::{
+    ServoBrowserActor, ServoCompletionDelivery, ServoEventLoopWaker, ServoPumpResult,
+    ServoRuntimeCommand, ServoRuntimeCompletion, ServoRuntimeEndpoint, ServoRuntimeError,
+    ServoRuntimeOperation, ServoRuntimeOwner, servo_runtime_pair,
+};
+
 pub use hepta_agent_port::{AgentPortError, DispatchContext, HandlerOutcome};
 pub use hepta_agent_transport::PeerIdentity;
 pub use hepta_browser_codec::{

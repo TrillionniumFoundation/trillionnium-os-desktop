@@ -14,6 +14,7 @@
 
    ```bash
    python3 tools/validate_module_documentation.py
+   python3 tools/validate_s08_servo_runtime.py
    python3 tools/validate_repository.py
    python3 tools/validate_project_truth.py
    cargo fmt --all --check

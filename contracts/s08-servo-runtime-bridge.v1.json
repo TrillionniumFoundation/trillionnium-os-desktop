@@ -1,0 +1,72 @@
+{
+  "schema": "trillionnium.desktop.s08-servo-runtime-bridge.v1",
+  "work_package": "S08",
+  "status": "SOURCE_CANDIDATE_EXACT_PIN_HOST_QUALIFICATION_REQUIRED",
+  "scope": "attested_agentport_browseractor_exact_pin_servo_receipt_host_vertical_slice",
+  "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+  "product_bridge": {
+    "concrete_actor_type": "ServoBrowserActor",
+    "generic_runtime_injection_exposed": false,
+    "engine_owner_send": false,
+    "engine_owner_sync": false,
+    "commands_in_flight": 1,
+    "completion_use": "single",
+    "request_custody_rechecked_before_servo_dispatch": true,
+    "deadline_and_cancellation_bound": true
+  },
+  "qualified_operations": [
+    "health",
+    "session_create",
+    "page_navigate_loopback_fixture",
+    "page_observe_accessibility",
+    "page_wait_element_present",
+    "page_act_retained_accessibility_click",
+    "session_snapshot",
+    "session_close"
+  ],
+  "durability": {
+    "requested_before_dispatch": true,
+    "dispatched_before_runtime": true,
+    "completed_before_transport_commit": true,
+    "potential_effect_replay": "never_automatic",
+    "managed_receipt_store": true
+  },
+  "qualification_mailbox": {
+    "classification": "test_only_atomic_file_protocol",
+    "part_of_product_api": false,
+    "part_of_install_graph": false,
+    "maximum_record_bytes": 32768,
+    "absolute_private_directory_required": true,
+    "executes_downloaded_code": false
+  },
+  "required_proof": {
+    "exact_source_head": true,
+    "live_prospective_merge_source_validation": true,
+    "real_upstream_servo_webview": true,
+    "real_accesskit_retained_node": true,
+    "real_agentport_transport": true,
+    "pidfd_peer_custody": true,
+    "durable_receipt_chain": true,
+    "stale_reference_rejection_after_navigation": true,
+    "independent_non_author_review": true
+  },
+  "non_claims": {
+    "production_agent_port_enabled": false,
+    "external_navigation_or_effect_authority": false,
+    "installed_debian_image": false,
+    "qemu_pid1_wayland": false,
+    "physical_hardware": false,
+    "production_signing": false,
+    "publication": false,
+    "release": false
+  },
+  "required_paths": [
+    "crates/hepta-browser-actor/src/servo_runtime.rs",
+    "crates/hepta-browser-actor/tests/s08_servo_mailbox.rs",
+    "experiments/servo-s08-runtime/accessibility_server.rs",
+    "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md",
+    ".github/workflows/s08-servo-vertical-slice.yml",
+    "tools/validate_s08_servo_runtime.py",
+    "tests/test_s08_servo_runtime.py"
+  ]
+}
