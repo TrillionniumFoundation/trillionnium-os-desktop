@@ -15,6 +15,7 @@ on:
       - "manifests/modules.v1.json"
       - "tools/validate_module_documentation.py"
       - "tests/test_module_documentation.py"
+      - "tests/test_module_documentation_integration_hardening.py"
       - "CONTRIBUTING.md"
       - "Makefile"
   push:
@@ -32,6 +33,7 @@ on:
       - "manifests/modules.v1.json"
       - "tools/validate_module_documentation.py"
       - "tests/test_module_documentation.py"
+      - "tests/test_module_documentation_integration_hardening.py"
       - "CONTRIBUTING.md"
       - "Makefile"
 
@@ -65,7 +67,7 @@ jobs:
       - name: Run module hostile corpus and related repository validators
         run: |
           set -euo pipefail
-          python3 -m unittest tests.test_module_documentation -v
+          python3 -m unittest discover -s tests -p 'test_module_documentation*.py' -v
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/validate_rust_browser_codec.py >/tmp/codec-audit.json
@@ -94,6 +96,6 @@ jobs:
       - name: Validate prospective module graph
         run: |
           set -euo pipefail
-          python3 -m unittest tests.test_module_documentation -v
+          python3 -m unittest discover -s tests -p 'test_module_documentation*.py' -v
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
