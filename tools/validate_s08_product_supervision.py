@@ -112,7 +112,7 @@ def strip_rust_comments(text: str) -> str:
             out.append(char)
             state = "string"
             i += 1
-        elif char == "'":
+        elif char == "'" and re.match(r"'(?:\\.|[^\\'\n])'", text[i:]):
             out.append(char)
             state = "char"
             i += 1
@@ -231,6 +231,20 @@ def validate(root: Path) -> list[str]:
     elif "operation(" in reconcile_body or "dispatch(" in reconcile_body or "factory" in reconcile_body:
         errors.append("reconciliation must not dispatch, replay or reconstruct")
 
+    dispatch_body = function_body(source, "dispatch") or ""
+    latch = dispatch_body.find("self.replay_blocked = true;")
+    invoke = dispatch_body.find("operation(actor)")
+    if latch < 0 or invoke < 0 or latch > invoke:
+        errors.append("dispatch must latch uncertainty before invoking the operation")
+    if reconcile_body is not None and (
+        "self.replay_blocked = false" in reconcile_body
+        or "self.state =" in reconcile_body
+        or "ReconciliationEvidenceRequired" not in reconcile_body
+    ):
+        errors.append("unbound reconciliation must refuse without changing state")
+    if crash_body is not None and "RuntimeState::GenerationExhausted" not in crash_body:
+        errors.append("generation exhaustion must retire the runtime lifecycle")
+
     doc = visible_markdown(
         paths["docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md"].read_text("utf-8")
     )
@@ -263,6 +277,8 @@ def validate(root: Path) -> list[str]:
         "cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings",
         "cargo test --locked -p hepta-browserd --all-targets",
         "python3 tools/validate_s08_product_supervision.py",
+        "python3 -m unittest tests.test_s08_product_supervision",
+        "servo_product_runtime::tests::",
     ):
         if token not in workflow:
             errors.append(f"permanent S08 workflow omits executable gate token: {token}")

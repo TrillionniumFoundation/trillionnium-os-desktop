@@ -2,88 +2,176 @@ name: s08-product-servo-runtime
 
 on:
   push:
-    branches:
-      - codex/s08-vertical-slice-v1
+    branches: [main, "codex/**"]
   pull_request:
 
 permissions:
   contents: read
 
 concurrency:
-  group: s08-product-servo-runtime-${{ github.event.pull_request.number || github.ref }}
+  group: s08-product-servo-runtime-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   exact-head:
-    if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Check out exact source head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
           persist-credentials: false
-      - name: Verify exact source identity
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+      - name: Verify immutable source identity
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
       - name: Install locked Rust toolchain
         shell: bash
         run: |
           set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
-      - name: Qualify browserd product supervision
+      - name: Require executable supervisor and hostile source tests
         shell: bash
         run: |
           set -euo pipefail
-          cargo fmt --all --check
-          cargo check --locked -p hepta-browserd --all-targets
-          cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
-          cargo test --locked -p hepta-browserd --all-targets
+          python3 tools/validate_s08_product_supervision.py
+          python3 -m unittest tests.test_s08_product_supervision -v
           python3 tools/validate_module_documentation.py
+          python3 tools/render_module_index.py --check
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
-          git diff --check
+      - name: Check formatting
+        run: cargo fmt --all --check
+      - name: Compile and execute the supervisor, not just the scaffold
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo check --locked -p hepta-browserd --all-targets
+          cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
+          listed="$(cargo test --locked -p hepta-browserd --lib -- --list)"
+          count="$(printf '%s\n' "$listed" | grep -c '^servo_product_runtime::tests::' || true)"
+          test "$count" -ge 14
+          printf 'compiled_supervisor_tests=%s\nsource=%s\n' "$count" "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          cargo test --locked -p hepta-browserd --all-targets
+          git diff --exit-code
+      - name: Prepare bounded formatting diagnostics without modifying source
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/s08-format"
+          for name in lib servo_product_runtime; do
+            source="apps/hepta-browserd/src/$name.rs"
+            cp "$source" "$RUNNER_TEMP/s08-format/$name.rs"
+            rustfmt --edition 2024 --config skip_children=true "$RUNNER_TEMP/s08-format/$name.rs"
+            diff -u --label "a/$source" "$source" --label "b/$source" "$RUNNER_TEMP/s08-format/$name.rs" > "$RUNNER_TEMP/s08-format/$name.patch" || test "$?" -eq 1
+            rm "$RUNNER_TEMP/s08-format/$name.rs"
+          done
+          git rev-parse HEAD > "$RUNNER_TEMP/s08-format/source-sha.txt"
+          git diff --exit-code
+      - name: Preserve failure diagnostics, not qualification evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: s08-format-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/s08-format
+          if-no-files-found: error
+          retention-days: 7
 
   prospective-merge:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - name: Check out live prospective merge
+      - name: Check out immutable event merge
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          ref: ${{ github.sha }}
           fetch-depth: 2
           persist-credentials: false
-      - name: Verify merge parents
+      - name: Bind event and live parent identities
         shell: bash
         env:
-          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
-          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_MERGE: ${{ github.sha }}
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^1)" = "${EXPECTED_BASE}"
-          test "$(git rev-parse HEAD^2)" = "${EXPECTED_HEAD}"
+          git check-ref-format "refs/heads/$BASE_REF"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MERGE"
+          test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
+          test "$(git rev-parse HEAD^1)" = "$EVENT_BASE"
+          test "$(git rev-parse HEAD^2)" = "$EVENT_HEAD"
+          test "$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | cut -f1)" = "$EVENT_BASE"
+          test "$(git ls-remote --exit-code origin "refs/pull/$PR_NUMBER/head" | cut -f1)" = "$EVENT_HEAD"
       - name: Install locked Rust toolchain
         shell: bash
         run: |
           set -euo pipefail
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
-      - name: Qualify prospective browserd product runtime
+      - name: Require executable supervisor and hostile source tests
         shell: bash
         run: |
           set -euo pipefail
-          cargo fmt --all --check
-          cargo check --locked -p hepta-browserd --all-targets
-          cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
-          cargo test --locked -p hepta-browserd --all-targets
+          python3 tools/validate_s08_product_supervision.py
+          python3 -m unittest tests.test_s08_product_supervision -v
           python3 tools/validate_module_documentation.py
+          python3 tools/render_module_index.py --check
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
-          git diff --check
+      - name: Check formatting
+        run: cargo fmt --all --check
+      - name: Compile and execute the supervisor, not just the scaffold
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo check --locked -p hepta-browserd --all-targets
+          cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
+          listed="$(cargo test --locked -p hepta-browserd --lib -- --list)"
+          count="$(printf '%s\n' "$listed" | grep -c '^servo_product_runtime::tests::' || true)"
+          test "$count" -ge 14
+          printf 'compiled_supervisor_tests=%s\nsource=%s\n' "$count" "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          cargo test --locked -p hepta-browserd --all-targets
+          git diff --exit-code
+      - name: Prepare bounded formatting diagnostics without modifying source
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/s08-format"
+          for name in lib servo_product_runtime; do
+            source="apps/hepta-browserd/src/$name.rs"
+            cp "$source" "$RUNNER_TEMP/s08-format/$name.rs"
+            rustfmt --edition 2024 --config skip_children=true "$RUNNER_TEMP/s08-format/$name.rs"
+            diff -u --label "a/$source" "$source" --label "b/$source" "$RUNNER_TEMP/s08-format/$name.rs" > "$RUNNER_TEMP/s08-format/$name.patch" || test "$?" -eq 1
+            rm "$RUNNER_TEMP/s08-format/$name.rs"
+          done
+          git rev-parse HEAD > "$RUNNER_TEMP/s08-format/source-sha.txt"
+          git diff --exit-code
+      - name: Preserve failure diagnostics, not qualification evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: s08-format-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/s08-format
+          if-no-files-found: error
+          retention-days: 7
+      - name: Refuse movement during qualification
+        shell: bash
+        env:
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | cut -f1)" = "$EVENT_BASE"
+          test "$(git ls-remote --exit-code origin "refs/pull/$PR_NUMBER/head" | cut -f1)" = "$EVENT_HEAD"
