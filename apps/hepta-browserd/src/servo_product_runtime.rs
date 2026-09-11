@@ -375,7 +375,6 @@ where
         self.require_live_lifecycle()?;
         Err(ProductRuntimeError::ReconciliationEvidenceRequired)
     }
-
 }
 
 /// Product package binding to the concrete exact-pin Servo BrowserActor type.
@@ -400,7 +399,12 @@ mod tests {
     #[test]
     fn stale_reference_is_rejected_after_reconstruction() {
         let mut runtime = BrowserdRuntimeSupervisor::start(
-            |generation| Ok(TestActor { generation, calls: 0 }),
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
             policy(3),
         )
         .expect("start");
@@ -428,7 +432,10 @@ mod tests {
         let mut runtime = BrowserdRuntimeSupervisor::start(
             move |generation| {
                 observed.set(observed.get() + 1);
-                Ok(TestActor { generation, calls: 0 })
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
             },
             policy(4),
         )
@@ -443,7 +450,12 @@ mod tests {
     #[test]
     fn indeterminate_dispatch_refuses_unbound_reconciliation() {
         let mut runtime = BrowserdRuntimeSupervisor::start(
-            |generation| Ok(TestActor { generation, calls: 0 }),
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
             policy(3),
         )
         .expect("start");
@@ -472,7 +484,12 @@ mod tests {
     #[test]
     fn crash_loop_opens_at_configured_bound() {
         let mut runtime = BrowserdRuntimeSupervisor::start(
-            |generation| Ok(TestActor { generation, calls: 0 }),
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
             policy(2),
         )
         .expect("start");
@@ -480,13 +497,21 @@ mod tests {
         runtime.reconstruct().expect("first reconstruction");
         runtime.content_process_crashed().expect("second crash");
         assert_eq!(runtime.state(), RuntimeState::CrashLoopOpen);
-        assert_eq!(runtime.reconstruct(), Err(ProductRuntimeError::CrashLoopOpen));
+        assert_eq!(
+            runtime.reconstruct(),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
     }
 
     #[test]
     fn stable_cycle_resets_only_crash_counter() {
         let mut runtime = BrowserdRuntimeSupervisor::start(
-            |generation| Ok(TestActor { generation, calls: 0 }),
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
             policy(2),
         )
         .expect("start");
@@ -515,12 +540,24 @@ mod tests {
         let mut runtime = BrowserdRuntimeSupervisor::start(|_| Ok(()), policy(3)).unwrap();
         runtime.generation = RuntimeGeneration(u64::MAX);
         let reference = runtime.semantic_reference(1);
-        assert_eq!(runtime.content_process_crashed(), Err(ProductRuntimeError::GenerationExhausted));
+        assert_eq!(
+            runtime.content_process_crashed(),
+            Err(ProductRuntimeError::GenerationExhausted)
+        );
         assert!(runtime.actor.is_none());
         assert_eq!(runtime.state(), RuntimeState::GenerationExhausted);
-        assert_eq!(runtime.validate_reference(reference), Err(ProductRuntimeError::GenerationExhausted));
-        assert_eq!(runtime.reconstruct(), Err(ProductRuntimeError::GenerationExhausted));
-        assert_eq!(runtime.reconcile_indeterminate(), Err(ProductRuntimeError::GenerationExhausted));
+        assert_eq!(
+            runtime.validate_reference(reference),
+            Err(ProductRuntimeError::GenerationExhausted)
+        );
+        assert_eq!(
+            runtime.reconstruct(),
+            Err(ProductRuntimeError::GenerationExhausted)
+        );
+        assert_eq!(
+            runtime.reconcile_indeterminate(),
+            Err(ProductRuntimeError::GenerationExhausted)
+        );
         runtime.acknowledge_stable_cycle();
         assert_eq!(runtime.state(), RuntimeState::GenerationExhausted);
     }
@@ -535,8 +572,14 @@ mod tests {
         assert!(result.is_err());
         assert!(runtime.replay_blocked());
         assert_eq!(runtime.state(), RuntimeState::ReplayReconciliationRequired);
-        assert_eq!(runtime.reconstruct(), Err(ProductRuntimeError::IndeterminateAfterDispatch));
-        assert_eq!(runtime.dispatch(reference, |_| DispatchCompletion::Completed(())), Err(ProductRuntimeError::IndeterminateAfterDispatch));
+        assert_eq!(
+            runtime.reconstruct(),
+            Err(ProductRuntimeError::IndeterminateAfterDispatch)
+        );
+        assert_eq!(
+            runtime.dispatch(reference, |_| DispatchCompletion::Completed(())),
+            Err(ProductRuntimeError::IndeterminateAfterDispatch)
+        );
     }
 
     #[test]
@@ -544,8 +587,14 @@ mod tests {
         let mut runtime = BrowserdRuntimeSupervisor::start(|_| Ok(()), policy(1)).unwrap();
         runtime.content_process_crashed().unwrap();
         runtime.acknowledge_stable_cycle();
-        assert_eq!(runtime.reconcile_indeterminate(), Err(ProductRuntimeError::CrashLoopOpen));
-        assert_eq!(runtime.reconstruct(), Err(ProductRuntimeError::CrashLoopOpen));
+        assert_eq!(
+            runtime.reconcile_indeterminate(),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
+        assert_eq!(
+            runtime.reconstruct(),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
         assert_eq!(runtime.consecutive_crashes, 1);
     }
 
@@ -554,7 +603,10 @@ mod tests {
         let mut runtime = BrowserdRuntimeSupervisor::start(|_| Ok(()), policy(3)).unwrap();
         runtime.content_process_crashed().unwrap();
         let generation = runtime.generation();
-        assert_eq!(runtime.content_process_crashed(), Err(ProductRuntimeError::RuntimeUnavailable));
+        assert_eq!(
+            runtime.content_process_crashed(),
+            Err(ProductRuntimeError::RuntimeUnavailable)
+        );
         assert_eq!(runtime.generation(), generation);
         assert_eq!(runtime.consecutive_crashes, 1);
     }
@@ -563,7 +615,10 @@ mod tests {
     fn zero_revision_is_rejected_before_dispatch() {
         let mut runtime = BrowserdRuntimeSupervisor::start(|_| Ok(()), policy(3)).unwrap();
         let reference = runtime.semantic_reference(0);
-        assert_eq!(runtime.dispatch(reference, |_| panic!("must not execute")), Err::<(), _>(ProductRuntimeError::InvalidSemanticRevision));
+        assert_eq!(
+            runtime.dispatch(reference, |_| panic!("must not execute")),
+            Err::<(), _>(ProductRuntimeError::InvalidSemanticRevision)
+        );
         assert!(!runtime.replay_blocked());
     }
 
@@ -571,7 +626,10 @@ mod tests {
     fn proven_not_dispatched_does_not_latch_uncertainty() {
         let mut runtime = BrowserdRuntimeSupervisor::start(|_| Ok(()), policy(3)).unwrap();
         let reference = runtime.semantic_reference(1);
-        assert_eq!(runtime.dispatch(reference, |_| DispatchCompletion::<()>::NotDispatched), Err(ProductRuntimeError::RuntimeUnavailable));
+        assert_eq!(
+            runtime.dispatch(reference, |_| DispatchCompletion::<()>::NotDispatched),
+            Err(ProductRuntimeError::RuntimeUnavailable)
+        );
         assert!(!runtime.replay_blocked());
         assert_eq!(runtime.state(), RuntimeState::Ready);
     }
@@ -579,22 +637,38 @@ mod tests {
     #[test]
     fn failed_reconstruction_cannot_be_retried_in_same_lifecycle() {
         let mut attempts = 0;
-        let mut runtime = BrowserdRuntimeSupervisor::start(|_| {
-            attempts += 1;
-            if attempts == 1 { Ok(()) } else { Err(ProductRuntimeError::ReconstructionFailed) }
-        }, policy(3)).unwrap();
+        let mut runtime = BrowserdRuntimeSupervisor::start(
+            |_| {
+                attempts += 1;
+                if attempts == 1 {
+                    Ok(())
+                } else {
+                    Err(ProductRuntimeError::ReconstructionFailed)
+                }
+            },
+            policy(3),
+        )
+        .unwrap();
         runtime.content_process_crashed().unwrap();
-        assert_eq!(runtime.reconstruct(), Err(ProductRuntimeError::ReconstructionFailed));
-        assert_eq!(runtime.reconstruct(), Err(ProductRuntimeError::CrashLoopOpen));
+        assert_eq!(
+            runtime.reconstruct(),
+            Err(ProductRuntimeError::ReconstructionFailed)
+        );
+        assert_eq!(
+            runtime.reconstruct(),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
     }
 
     #[test]
     fn crash_count_exhaustion_retires_actor() {
         let mut runtime = BrowserdRuntimeSupervisor::start(|_| Ok(()), policy(u32::MAX)).unwrap();
         runtime.consecutive_crashes = u32::MAX;
-        assert_eq!(runtime.content_process_crashed(), Err(ProductRuntimeError::CrashLoopOpen));
+        assert_eq!(
+            runtime.content_process_crashed(),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
         assert!(runtime.actor.is_none());
         assert_eq!(runtime.state(), RuntimeState::CrashLoopOpen);
     }
-
 }
