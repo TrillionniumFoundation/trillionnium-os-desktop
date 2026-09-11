@@ -1,0 +1,214 @@
+diff --git a/components/servo/webview.rs b/components/servo/webview.rs
+--- a/components/servo/webview.rs
++++ b/components/servo/webview.rs
+@@ -922,13 +922,10 @@
+         request: ActionRequest,
+         response: GenericCallback<AccessibilityActionResult>,
+     ) {
+-        self.inner().servo.constellation_proxy().send(
+-            EmbedderToConstellationMessage::PerformAccessibilityAction(
+-                self.id(),
+-                request,
+-                response,
+-            ),
+-        );
++        self.inner()
++            .servo
++            .constellation_proxy()
++            .send_accessibility_action(self.id(), request, response);
+     }
+ 
+     /// Activate or deactivate accessibility features for this [`WebView`], returning the
+diff --git a/components/shared/constellation/lib.rs b/components/shared/constellation/lib.rs
+--- a/components/shared/constellation/lib.rs
++++ b/components/shared/constellation/lib.rs
+@@ -149,6 +149,8 @@
+     TargetDisabled,
+     /// The resolved element is not connected or has no current CSS layout box.
+     TargetNotRendered,
++    /// The embedder-to-constellation command channel closed before dispatch.
++    ConstellationDisconnected,
+ }
+ 
+ pub enum UserContentManagerAction {
+diff --git a/components/servo/proxies.rs b/components/servo/proxies.rs
+--- a/components/servo/proxies.rs
++++ b/components/servo/proxies.rs
+@@ -5,10 +5,15 @@
+ use std::sync::Arc;
+ use std::sync::atomic::{AtomicBool, Ordering};
+ 
++use accesskit::ActionRequest;
+ use crossbeam_channel::{Receiver, SendError, Sender, unbounded};
+ use log::warn;
++use servo_base::generic_channel::GenericCallback;
++use servo_base::id::WebViewId;
+ use servo_config::prefs::PrefValue;
+-use servo_constellation_traits::EmbedderToConstellationMessage;
++use servo_constellation_traits::{
++    AccessibilityActionResult, EmbedderToConstellationMessage,
++};
+ 
+ /// Sends messages to the Constellation, and allows checking if it has disconnected.
+ ///
+@@ -40,6 +45,31 @@
+         }
+     }
+ 
++    pub(crate) fn send_accessibility_action(
++        &self,
++        webview_id: WebViewId,
++        request: ActionRequest,
++        response: GenericCallback<AccessibilityActionResult>,
++    ) {
++        let message = EmbedderToConstellationMessage::PerformAccessibilityAction(
++            webview_id,
++            request,
++            response,
++        );
++        if let Err(SendError(message)) = self.try_send(message) {
++            warn!("Sending accessibility action to constellation failed.");
++            let EmbedderToConstellationMessage::PerformAccessibilityAction(
++                _,
++                _,
++                response,
++            ) = message
++            else {
++                unreachable!("accessibility send path returned a different message");
++            };
++            let _ = response.send(AccessibilityActionResult::ConstellationDisconnected);
++        }
++    }
++
+     fn try_send(
+         &self,
+         msg: EmbedderToConstellationMessage,
+@@ -61,3 +91,128 @@
+         self.send(EmbedderToConstellationMessage::SetPref(name, value));
+     }
+ }
++
++#[cfg(test)]
++mod tests {
++    use std::time::Duration;
++
++    use accesskit::{Action, ActionRequest, NodeId, TreeId};
++    use servo_base::generic_channel::{
++        GenericCallback, GenericReceiver, TryReceiveError,
++    };
++    use servo_base::id::{BrowsingContextId, WebViewId};
++    use servo_constellation_traits::{
++        AccessibilityActionResult, EmbedderToConstellationMessage,
++    };
++
++    use super::ConstellationProxy;
++
++    fn webview_id() -> WebViewId {
++        WebViewId::mock_for_testing(
++            BrowsingContextId::from_string("BrowsingContext(1,1)")
++                .expect("fixed browsing-context id must parse"),
++        )
++    }
++
++    fn request() -> ActionRequest {
++        ActionRequest {
++            action: Action::Click,
++            target_tree: TreeId::ROOT,
++            target_node: NodeId(1),
++            data: None,
++        }
++    }
++
++    fn assert_single_response(
++        receiver: &GenericReceiver<AccessibilityActionResult>,
++        expected: AccessibilityActionResult,
++    ) {
++        match receiver.try_recv_timeout(Duration::from_secs(1)) {
++            Ok(actual) => assert_eq!(actual, expected),
++            Err(_) => panic!("expected one terminal accessibility response"),
++        }
++        assert!(matches!(
++            receiver.try_recv_timeout(Duration::from_millis(20)),
++            Err(TryReceiveError::Empty)
++        ));
++    }
++
++    #[test]
++    fn accessibility_action_normal_enqueue_completes_once() {
++        let (proxy, messages) = ConstellationProxy::new();
++        let (callback, responses) =
++            GenericCallback::new_blocking().expect("callback must be constructible");
++        let expected_webview = webview_id();
++
++        proxy.send_accessibility_action(expected_webview, request(), callback);
++
++        let message = messages.recv().expect("message must be enqueued");
++        let EmbedderToConstellationMessage::PerformAccessibilityAction(
++            actual_webview,
++            actual_request,
++            callback,
++        ) = message
++        else {
++            panic!("unexpected message variant");
++        };
++        assert_eq!(actual_webview, expected_webview);
++        assert_eq!(actual_request.action, Action::Click);
++        assert_eq!(actual_request.target_tree, TreeId::ROOT);
++        assert_eq!(actual_request.target_node, NodeId(1));
++        assert!(actual_request.data.is_none());
++        assert!(callback.send(AccessibilityActionResult::Dispatched).is_ok());
++        assert_single_response(&responses, AccessibilityActionResult::Dispatched);
++    }
++
++    #[test]
++    fn accessibility_action_receiver_drop_after_precheck_completes_once() {
++        let (proxy, messages) = ConstellationProxy::new();
++        assert!(!proxy.disconnected());
++        drop(messages);
++        let (callback, responses) =
++            GenericCallback::new_blocking().expect("callback must be constructible");
++
++        proxy.send_accessibility_action(webview_id(), request(), callback);
++
++        assert!(proxy.disconnected());
++        assert_single_response(
++            &responses,
++            AccessibilityActionResult::ConstellationDisconnected,
++        );
++    }
++
++    #[test]
++    fn accessibility_action_already_disconnected_completes_once() {
++        let (proxy, messages) = ConstellationProxy::new();
++        drop(messages);
++        let (first_callback, first_responses) =
++            GenericCallback::new_blocking().expect("callback must be constructible");
++        proxy.send_accessibility_action(webview_id(), request(), first_callback);
++        assert_single_response(
++            &first_responses,
++            AccessibilityActionResult::ConstellationDisconnected,
++        );
++        assert!(proxy.disconnected());
++
++        let (second_callback, second_responses) =
++            GenericCallback::new_blocking().expect("callback must be constructible");
++        proxy.send_accessibility_action(webview_id(), request(), second_callback);
++        assert_single_response(
++            &second_responses,
++            AccessibilityActionResult::ConstellationDisconnected,
++        );
++    }
++
++    #[test]
++    fn accessibility_action_dropped_callback_receiver_does_not_panic() {
++        let (proxy, messages) = ConstellationProxy::new();
++        drop(messages);
++        let (callback, responses) =
++            GenericCallback::new_blocking().expect("callback must be constructible");
++        drop(responses);
++
++        proxy.send_accessibility_action(webview_id(), request(), callback);
++
++        assert!(proxy.disconnected());
++    }
++}

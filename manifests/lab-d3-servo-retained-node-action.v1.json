@@ -1,0 +1,117 @@
+{
+  "schema": "trillionnium.lab.servo-patch.v1",
+  "blocker": "D3-01",
+  "carrier_branch": "codex/s07-servo-retained-node-closure-v1",
+  "carrier_base_commit": "f0e947e5e7267a3fcdd0a7d5437c0ae00c09ebfe",
+  "carrier_parent_binding": "current S06 source object only",
+  "carrier_head_binding": "workflow binds exact source SHA/tree and real-upstream test output",
+  "upstream": {
+    "repository": "servo/servo",
+    "commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+    "accesskit": "0.24.0"
+  },
+  "extracted_from": {
+    "old_branch": "codex/s07-servo-current-s06-fresh-v1",
+    "old_head": "4e4baf32af4422d25a9781e2ae3dd6d4eb0490e8",
+    "old_base": "78ad8fa6ed7e049511c47df7b20fd83cdca4af53",
+    "range": "78ad8fa6ed7e049511c47df7b20fd83cdca4af53..4e4baf32af4422d25a9781e2ae3dd6d4eb0490e8"
+  },
+  "patch": {
+    "sha256": "f4d2bb65fda2ff270c270468804128b7357d7be3dab86acd7631820f393ad876",
+    "parts": [
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/000.patch",
+        "sha256": "24e61969f45248ecfd7567af20112ae7cc34722065dd5a03f66d8b886c3415eb"
+      },
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/001.patch",
+        "sha256": "373fc726be35a7af241ae3e9dc0880d51fa955f8f6dcd167479910a8402197c1"
+      },
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/002.patch",
+        "sha256": "4f00c09604e1928541123b60c90f47a8ce79194835e136893454353c4ae31a17"
+      },
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/003.patch",
+        "sha256": "b7b0b174284f66984801bd160f361a28d95944314587e9bd8da4d85885df9c74"
+      },
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/004.patch",
+        "sha256": "0066fbd093b52a55c30791eb38455a91dbe91be039be49e6c78b42b4c66908fb"
+      },
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/005.patch",
+        "sha256": "9f87e432eddd7564a9526299b814d07bde683d1b9ac01cb8435e5e9415ff7054"
+      },
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/006.patch",
+        "sha256": "c908fe2b037cb10bdfe490eb3d91079ee4d2f57374c2d9ac84b2b2199bbf4f7d"
+      }
+    ],
+    "allowed_paths": [
+      "Cargo.lock",
+      "components/constellation/constellation.rs",
+      "components/constellation/tracing.rs",
+      "components/layout/accessibility_tree.rs",
+      "components/layout/layout_impl.rs",
+      "components/paint/painter.rs",
+      "components/script/Cargo.toml",
+      "components/script/event_loop/script_thread.rs",
+      "components/script/messaging.rs",
+      "components/servo/lib.rs",
+      "components/servo/proxies.rs",
+      "components/servo/tests/accessibility.rs",
+      "components/servo/webview.rs",
+      "components/shared/constellation/Cargo.toml",
+      "components/shared/constellation/lib.rs",
+      "components/shared/layout/Cargo.toml",
+      "components/shared/layout/lib.rs",
+      "components/shared/script/lib.rs",
+      "ports/servoshell/desktop/headed_window.rs"
+    ],
+    "purpose": "retained node action delivery and typed outcomes"
+  },
+  "hardening": {
+    "sha256": "da1fa334a67ba580c8c5ab26c60b37070bb00aa24b61de79f621255404d01e31",
+    "parts": [
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/007.patch",
+        "sha256": "da1fa334a67ba580c8c5ab26c60b37070bb00aa24b61de79f621255404d01e31"
+      }
+    ],
+    "purpose": "file-disjoint real Servo behavior regressions applied only after the base patch"
+  },
+  "transport_hardening": {
+    "sha256": "ec16b7dcc7356d28fce2af7a3bbf45467a58e6bfc40082f4939024a1c2ec9398",
+    "parts": [
+      {
+        "path": "manifests/servo-patches/d3-retained-node-action-v1/008.patch",
+        "sha256": "ec16b7dcc7356d28fce2af7a3bbf45467a58e6bfc40082f4939024a1c2ec9398"
+      }
+    ],
+    "purpose": "response-aware first-hop transport closure and disconnect callback regressions"
+  },
+  "qualification": {
+    "required": [
+      "valid retained current node action succeeds",
+      "replaced or stale node id is rejected",
+      "unadvertised or unsupported action is rejected",
+      "inactive or stale accessibility tree is rejected",
+      "disabled, hidden, or non-element target is rejected",
+      "callback receiver drop does not duplicate dispatch",
+      "normal enqueue, already-disconnected, receiver-drop race, and dropped callback receiver are tested",
+      "constellation first-hop disconnect returns one typed terminal callback",
+      "generic accessibility regression remains green",
+      "exact tested Servo diff and tree remain unchanged after behavior",
+      "no local network fixture participates"
+    ],
+    "transitive_cli_sources": [
+      "tools/qualify_servo_exact_pin_v3.py",
+      "tools/_qualify_servo_exact_pin_v3_impl.py",
+      "tools/qualify_servo_exact_pin.py",
+      "tools/verify_d3_servo_patch.py"
+    ],
+    "prospective_merge_applies_complete_package": true
+  },
+  "claim_ceiling": "real-servo-test-harness-not-installed-product-runtime"
+}

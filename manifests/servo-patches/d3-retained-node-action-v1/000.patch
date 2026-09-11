@@ -1,0 +1,139 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 98153f983ae56812b71fb5a183940e6f8da0ca6f..3d0edc8f43066524568e917d55749bcc72d5fa62 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -8030,6 +8030,7 @@ dependencies = [
+ name = "servo-constellation-traits"
+ version = "0.5.0"
+ dependencies = [
++ "accesskit",
+  "base64 0.23.1",
+  "content-security-policy",
+  "encoding_rs",
+@@ -8352,6 +8353,7 @@ dependencies = [
+ name = "servo-layout-api"
+ version = "0.5.0"
+ dependencies = [
++ "accesskit",
+  "app_units",
+  "atomic_refcell",
+  "bitflags 2.13.1",
+@@ -8910,6 +8912,7 @@ dependencies = [
+ name = "servo-script"
+ version = "0.5.0"
+ dependencies = [
++ "accesskit",
+  "aes",
+  "aes-gcm",
+  "aes-kw",
+diff --git a/components/constellation/constellation.rs b/components/constellation/constellation.rs
+index a56d0caa7efcc1f778e1c6518676f4885b8297f6..00ab3ecab73f4fa4f46b899b9a1d051424da31d2 100644
+--- a/components/constellation/constellation.rs
++++ b/components/constellation/constellation.rs
+@@ -95,6 +95,7 @@ use std::sync::Arc;
+ use std::thread::JoinHandle;
+ use std::{process, thread};
+
++use accesskit::{Action, TreeId};
+ use background_hang_monitor_api::{
+     BackgroundHangMonitorControlMsg, BackgroundHangMonitorRegister, HangAlert,
+ };
+@@ -158,7 +159,7 @@ use servo_canvas_traits::ConstellationCanvasMsg;
+ use servo_canvas_traits::canvas::{CanvasId, CanvasMsg};
+ use servo_config::{opts, pref};
+ use servo_constellation_traits::{
+-    AuxiliaryWebViewCreationRequest, AuxiliaryWebViewCreationResponse, ConstellationInterest,
++    AccessibilityActionResult, AuxiliaryWebViewCreationRequest, AuxiliaryWebViewCreationResponse, ConstellationInterest,
+     EmbedderToConstellationMessage, HistoryTraversalSource, IFrameLoadInfo, IFrameLoadInfoWithData,
+     IFrameSizeMsg, LoadData, LogEntry, MessagePortMsg, NavigationHistoryBehavior, PaintMetricEvent,
+     PortMessageTask, PortTransferInfo, RemoteFocusOperation, SWManagerSenders,
+@@ -1468,6 +1469,13 @@ where
+             EmbedderToConstellationMessage::SetAccessibilityActive(webview_id, active) => {
+                 self.set_accessibility_active(webview_id, active);
+             },
++            EmbedderToConstellationMessage::PerformAccessibilityAction(
++                webview_id,
++                request,
++                response,
++            ) => {
++                self.perform_accessibility_action(webview_id, request, response);
++            },
+         }
+     }
+
+@@ -3202,6 +3210,61 @@ where
+         );
+     }
+
++    fn perform_accessibility_action(
++        &mut self,
++        webview_id: WebViewId,
++        request: accesskit::ActionRequest,
++        response: GenericCallback<AccessibilityActionResult>,
++    ) {
++        let reject = |result| {
++            if let Err(error) = response.send(result) {
++                warn!("Could not return accessibility action result: {error:?}");
++            }
++        };
++
++        if !pref!(accessibility_enabled) {
++            reject(AccessibilityActionResult::AccessibilityInactive);
++            return;
++        }
++        let Some(webview) = self.webviews.get(&webview_id) else {
++            reject(AccessibilityActionResult::StaleWebView);
++            return;
++        };
++        if !webview.accessibility_active {
++            reject(AccessibilityActionResult::AccessibilityInactive);
++            return;
++        }
++        let Some(pipeline_id) = webview.active_top_level_pipeline_id else {
++            reject(AccessibilityActionResult::StaleDocument);
++            return;
++        };
++        if request.target_tree == TreeId::ROOT || request.target_tree != TreeId::from(pipeline_id) {
++            reject(AccessibilityActionResult::StaleTree);
++            return;
++        }
++        if request.action != Action::Click || request.data.is_some() {
++            reject(AccessibilityActionResult::UnsupportedAction);
++            return;
++        }
++        let epoch = webview.active_top_level_pipeline_epoch;
++        let message = ScriptThreadMessage::PerformAccessibilityAction(
++            webview_id,
++            pipeline_id,
++            epoch,
++            request,
++            response.clone(),
++        );
++        let send_result = self
++            .pipelines
++            .get(&pipeline_id)
++            .ok_or(SendError::Disconnected)
++            .and_then(|pipeline| pipeline.event_loop.send(message));
++        if let Err(error) = send_result {
++            self.handle_send_error(pipeline_id, error);
++            reject(AccessibilityActionResult::StaleDocument);
++        }
++    }
++
+     fn forward_input_event(
+         &mut self,
+         webview_id: WebViewId,
+diff --git a/components/constellation/tracing.rs b/components/constellation/tracing.rs
+index bf944e55973dd2d05a8a885a9f622b98e175a2ca..16bf2e6c1b5d2d43fbc3e62efb1ea3773694d891 100644
+--- a/components/constellation/tracing.rs
++++ b/components/constellation/tracing.rs
+@@ -82,6 +82,9 @@ mod from_embedder {
+                 Self::UserContentManagerAction(..) => target!("UserContentManagerAction"),
+                 Self::UpdatePinchZoomInfos(..) => target!("UpdatePinchZoomInfos"),
+                 Self::SetAccessibilityActive(..) => target!("SetAccessibilityActive"),
++                Self::PerformAccessibilityAction(..) => {
++                    target!("PerformAccessibilityAction")
++                },
+             }
+         }
+     }

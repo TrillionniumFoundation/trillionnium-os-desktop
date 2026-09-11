@@ -1,0 +1,70 @@
+diff --git a/components/servo/webview.rs b/components/servo/webview.rs
+index 3778a43c365fd0d770e72565eb1153c3ef1603c6..abf80980e8bbe3aa4bd55159c1b886bf0be958bd 100644
+--- a/components/servo/webview.rs
++++ b/components/servo/webview.rs
+@@ -7,7 +7,8 @@ use std::hash::Hash;
+ use std::rc::{Rc, Weak};
+
+ use accesskit::{
+-    Affine as AccesskitAffine, Node as AccesskitNode, NodeId, Rect as AccesskitRect, Role, Tree,
++    ActionRequest, Affine as AccesskitAffine, Node as AccesskitNode, NodeId,
++    Rect as AccesskitRect, Role, Tree,
+     TreeId, TreeUpdate, Uuid as AccesskitUuid,
+ };
+ use dpi::PhysicalSize;
+@@ -23,11 +24,11 @@ use log::debug;
+ use paint_api::WebViewTrait;
+ use paint_api::rendering_context::RenderingContext;
+ use servo_base::Epoch;
+-use servo_base::generic_channel::GenericSender;
++use servo_base::generic_channel::{GenericCallback, GenericSender};
+ use servo_base::id::WebViewId;
+ use servo_config::pref;
+ use servo_constellation_traits::{
+-    EmbedderToConstellationMessage, HistoryTraversalSource, SessionHistoryTraversalRequest,
++    AccessibilityActionResult, EmbedderToConstellationMessage, HistoryTraversalSource, SessionHistoryTraversalRequest,
+     TraversalDirection,
+ };
+ use servo_geometry::DeviceIndependentPixel;
+@@ -905,6 +906,29 @@ impl WebView {
+         self.inner().accesskit_tree_id
+     }
+
++    /// Return the AccessKit tree id of the active top-level document grafted into this webview.
++    pub fn active_document_accesskit_tree_id(&self) -> Option<TreeId> {
++        self.inner().grafted_accesskit_tree_id
++    }
++
++    /// Perform one retained-node accessibility action and return a typed terminal result.
++    ///
++    /// The initial supported scope is a click action with no action data. Servo rejects stale
++    /// trees, stale nodes, inactive documents, disabled targets, and all unsupported actions.
++    pub fn perform_accessibility_action(
++        &self,
++        request: ActionRequest,
++        response: GenericCallback<AccessibilityActionResult>,
++    ) {
++        self.inner().servo.constellation_proxy().send(
++            EmbedderToConstellationMessage::PerformAccessibilityAction(
++                self.id(),
++                request,
++                response,
++            ),
++        );
++    }
++
+     /// Activate or deactivate accessibility features for this [`WebView`], returning the
+     /// AccessKit subtree id if accessibility is now active.
+     ///
+diff --git a/components/shared/constellation/Cargo.toml b/components/shared/constellation/Cargo.toml
+index 7041f6aec61ede5f746524f8d48c8de46d51cc84..24d7eaad6ba5673b95da86e82d113cf9eb3c0f1e 100644
+--- a/components/shared/constellation/Cargo.toml
++++ b/components/shared/constellation/Cargo.toml
+@@ -20,6 +20,7 @@ webgpu = ["dep:webgpu_traits", "dep:wgpu-core"]
+ webgl = []
+
+ [dependencies]
++accesskit = { workspace = true }
+ base64 = { workspace = true }
+ content-security-policy = { workspace = true }
+ devtools_traits = { workspace = true }
