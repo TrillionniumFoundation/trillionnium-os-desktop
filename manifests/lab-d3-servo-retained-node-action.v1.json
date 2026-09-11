@@ -17,60 +17,66 @@
     "range": "78ad8fa6ed7e049511c47df7b20fd83cdca4af53..4e4baf32af4422d25a9781e2ae3dd6d4eb0490e8"
   },
   "patch": {
-    "sha256": "8ec26d9a61b1959c1877b8fd550e295e9bdd0edfc89516870c9578a078bc20dc",
+    "sha256": "f4d2bb65fda2ff270c270468804128b7357d7be3dab86acd7631820f393ad876",
     "parts": [
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/000.patch",
-        "sha256": "dfe5fad1066cd2fc06ad0ebc19007ad2b90b0e5c07347d796b5e08270c1b847a"
+        "sha256": "24e61969f45248ecfd7567af20112ae7cc34722065dd5a03f66d8b886c3415eb"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/001.patch",
-        "sha256": "78397f0db5ffba4a43dbfc2188421d47ce61e9ce4bff6e694df2a40f33378a55"
+        "sha256": "373fc726be35a7af241ae3e9dc0880d51fa955f8f6dcd167479910a8402197c1"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/002.patch",
-        "sha256": "8db4cc281dc2e4a096063ec49c9bf09237b864fd2df1d396c5968488ce2b880f"
+        "sha256": "4f00c09604e1928541123b60c90f47a8ce79194835e136893454353c4ae31a17"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/003.patch",
-        "sha256": "637f48174f2c658155986914ea9486eecc14a17a1102eb5610c1989022ec8ad5"
+        "sha256": "b7b0b174284f66984801bd160f361a28d95944314587e9bd8da4d85885df9c74"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/004.patch",
-        "sha256": "79cb49693236895221774854156957385730196c4ed30a0d80470482760cab6f"
+        "sha256": "0066fbd093b52a55c30791eb38455a91dbe91be039be49e6c78b42b4c66908fb"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/005.patch",
-        "sha256": "a0c54fdac168fd5943ab246e175c3525a84a4e1d6bd7fe5a82ad296c6f3a18ac"
+        "sha256": "9f87e432eddd7564a9526299b814d07bde683d1b9ac01cb8435e5e9415ff7054"
       },
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/006.patch",
-        "sha256": "84a345a85d1f9c9e46605095548ad2b1bc5751f4c503b2e834ed55326a565260"
+        "sha256": "c908fe2b037cb10bdfe490eb3d91079ee4d2f57374c2d9ac84b2b2199bbf4f7d"
       }
     ],
     "allowed_paths": [
+      "Cargo.lock",
       "components/constellation/constellation.rs",
-      "components/constellation/pipeline.rs",
+      "components/constellation/tracing.rs",
       "components/layout/accessibility_tree.rs",
+      "components/layout/layout_impl.rs",
       "components/paint/painter.rs",
-      "components/script/script_thread.rs",
+      "components/script/Cargo.toml",
+      "components/script/event_loop/script_thread.rs",
+      "components/script/messaging.rs",
+      "components/servo/lib.rs",
       "components/servo/proxies.rs",
       "components/servo/tests/accessibility.rs",
       "components/servo/webview.rs",
       "components/shared/constellation/Cargo.toml",
       "components/shared/constellation/lib.rs",
       "components/shared/layout/Cargo.toml",
-      "ports/servoshell/desktop/headed_window.rs",
-      "ports/servoshell/webdriver.rs"
+      "components/shared/layout/lib.rs",
+      "components/shared/script/lib.rs",
+      "ports/servoshell/desktop/headed_window.rs"
     ],
     "purpose": "retained node action delivery and typed outcomes"
   },
   "hardening": {
-    "sha256": "e548db488813f4801a239171b7cd72b251a837caf8816e507650811e555bc542",
+    "sha256": "da1fa334a67ba580c8c5ab26c60b37070bb00aa24b61de79f621255404d01e31",
     "parts": [
       {
         "path": "manifests/servo-patches/d3-retained-node-action-v1/007.patch",
-        "sha256": "ed8386fd6579012cc4ec470d0eecc9c2e74b3606509ef64789bd42f0b72a127e"
+        "sha256": "da1fa334a67ba580c8c5ab26c60b37070bb00aa24b61de79f621255404d01e31"
       }
     ],
     "purpose": "file-disjoint real Servo behavior regressions applied only after the base patch"

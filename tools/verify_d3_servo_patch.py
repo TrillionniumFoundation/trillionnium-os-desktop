@@ -395,7 +395,7 @@ def verify_patch_contract(
     )
 
     constellation = code.get("components/constellation/constellation.rs", "")
-    script = code.get("components/script/script_thread.rs", "")
+    script = code.get("components/script/event_loop/script_thread.rs", "")
     tree_guard_code = constellation + "\n" + script
     _require(
         tree_guard_code,
