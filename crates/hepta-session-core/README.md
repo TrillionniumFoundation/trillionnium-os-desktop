@@ -91,7 +91,9 @@ A passing unit or hosted-CI test proves only the evidence tier named by its gate
 
 ## Operations and troubleshooting
 
-- Use a private 0600 journal directory and one writer.
+- Receipt store permissions: directories `0700`; files `0600`. Keep one writer.
+- Directory search permission is required; never apply file-only `0600` mode to a directory.
+- Provision the reviewed private directory as the service identity; do not recursively chmod an existing store or create a fresh store over damaged state.
 - On crash, reopen with explicit recovery policy, inspect the complete chain and handle unresolved receipts before rotation.
 - Treat disk full, sync failure or complete-record corruption as degraded mode, not success.
 - Run SIGKILL/cutpoint, torn-tail, tamper, rotation, migration and concurrent-reader corpora after storage changes.

@@ -1,13 +1,16 @@
 # TrillionniumOS Desktop d5 product architecture
 
-**Plan revision:** `2026-08-28-d5`
-**Status:** normative component of the active canonical plan
+**Source revision:** `2026-08-28-d5`
+**Applicable plan:** `2026-08-29-d6`
+**Status:** inherited requirements; subordinate to d6; not current implementation status
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`
 
-This annex is versioned and reviewed atomically with
-[`../DESKTOP_PLAN-2026-08-28-d5.md`](../DESKTOP_PLAN-2026-08-28-d5.md). If an
-annex conflicts with the executive lock in the main plan, the executive lock
-wins until the plan and annex are updated together.
+This annex retains the detailed d5 requirements under the explicit
+[d6 applicability and override table](ANNEX_APPLICABILITY.md). The current
+[d6 plan](../DESKTOP_PLAN-2026-08-29-d6.md), gate registry and decomposition
+ledger govern execution. Historical labels, examples and package statuses below
+are not assertions about current main or any candidate. Conflicting older
+activation or topology options do not widen the d6 authority ceiling.
 
 ## 1. Product and user promise
 

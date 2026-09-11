@@ -4,6 +4,7 @@ validate:
 	/usr/bin/python3 -I tools/validate_module_documentation.py
 	/usr/bin/python3 -I tools/render_module_index.py --check
 	python3 -m unittest discover -s tests -p 'test_module_index_projection.py'
+	python3 -m unittest discover -s tests -p 'test_development_documentation.py'
 	python3 tools/validate_s08_servo_runtime.py
 	python3 tools/validate_s08_product_supervision.py
 	python3 tools/validate_repository.py

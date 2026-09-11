@@ -1,13 +1,16 @@
 # TrillionniumOS Desktop d5 contracts, security, and testing
 
-**Plan revision:** `2026-08-28-d5`
-**Status:** normative component of the active canonical plan
+**Source revision:** `2026-08-28-d5`
+**Applicable plan:** `2026-08-29-d6`
+**Status:** inherited requirements; subordinate to d6; not current implementation status
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`
 
-This annex is versioned and reviewed atomically with
-[`../DESKTOP_PLAN-2026-08-28-d5.md`](../DESKTOP_PLAN-2026-08-28-d5.md). If an
-annex conflicts with the executive lock in the main plan, the executive lock
-wins until the plan and annex are updated together.
+This annex retains the detailed d5 requirements under the explicit
+[d6 applicability and override table](ANNEX_APPLICABILITY.md). The current
+[d6 plan](../DESKTOP_PLAN-2026-08-29-d6.md), gate registry and decomposition
+ledger govern execution. Historical labels, examples and package statuses below
+are not assertions about current main or any candidate. Conflicting older
+activation or topology options do not widen the d6 authority ceiling.
 
 ## 4. Contract and transport architecture
 
@@ -35,9 +38,11 @@ Every request contains a bounded request ID, optional session ID, absolute
 deadline, and exactly one typed operation. Unknown fields and unknown operation
 variants are rejected. Raw JavaScript evaluation is not in v1.
 
-### 4.2 Production AgentPort
+### 4.2 Development AgentPort and future product transport
 
-The D3 production transport is a local Unix-domain socket with:
+D3 permits explicitly selected development-profile activation only. Production
+activation remains closed until its separate gates pass. The local transport
+requirements are:
 
 - parent directory and socket ownership fixed by systemd;
 - `SO_PEERCRED` UID/GID/PID verification;
