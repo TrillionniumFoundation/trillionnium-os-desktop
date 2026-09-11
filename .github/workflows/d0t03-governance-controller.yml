@@ -1,0 +1,100 @@
+name: d0t03-governance-controller
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/d0t03-governance-controller.yml"
+      - "tools/d0t03_admin_controller.py"
+      - "tests/test_d0t03_admin_controller.py"
+      - "tests/test_d0t03_admin_controller_transaction.py"
+      - "docs/governance/D0T03_ADMIN_CONTROLLER.md"
+  push:
+    branches: [main, "codex/**"]
+    paths:
+      - ".github/workflows/d0t03-governance-controller.yml"
+      - "tools/d0t03_admin_controller.py"
+      - "tests/test_d0t03_admin_controller.py"
+      - "tests/test_d0t03_admin_controller_transaction.py"
+      - "docs/governance/D0T03_ADMIN_CONTROLLER.md"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d0t03-governance-controller-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Assert exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$expected"
+          git rev-parse HEAD^{tree}
+      - name: Validate closed administrative configuration
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/d0t03_admin_controller.py tests/test_d0t03_admin_controller*.py
+          python3 tools/d0t03_admin_controller.py --check-config
+          python3 -m unittest discover -s tests -p 'test_d0t03_admin_controller*.py' -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --check
+
+  prospective-merge:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out prospective merge object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Assert live prospective merge identity and parent order
+        shell: bash
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git check-ref-format --branch "$BASE_REF"
+          test "$PR_NUMBER" -gt 0
+          git fetch --force --no-tags --depth=2 origin \
+            "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF" \
+            "+refs/pull/$PR_NUMBER/head:refs/remotes/pull/$PR_NUMBER/head" \
+            "+refs/pull/$PR_NUMBER/merge:refs/remotes/pull/$PR_NUMBER/merge"
+          git checkout --detach "refs/remotes/pull/$PR_NUMBER/merge"
+          test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
+          live_base="$(git rev-parse "refs/remotes/origin/$BASE_REF")"
+          live_head="$(git rev-parse "refs/remotes/pull/$PR_NUMBER/head")"
+          test "$live_head" = "$EVENT_HEAD"
+          test "$(git rev-parse HEAD^1)" = "$live_base"
+          test "$(git rev-parse HEAD^2)" = "$live_head"
+          printf 'merge=%s\nbase=%s\nhead=%s\ntree=%s\n' \
+            "$(git rev-parse HEAD)" \
+            "$live_base" \
+            "$live_head" \
+            "$(git rev-parse HEAD^{tree})"
+      - name: Validate prospective controller tree
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/d0t03_admin_controller.py tests/test_d0t03_admin_controller*.py
+          python3 tools/d0t03_admin_controller.py --check-config
+          python3 -m unittest discover -s tests -p 'test_d0t03_admin_controller*.py' -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --check
