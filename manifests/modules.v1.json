@@ -39,7 +39,8 @@
       "architecture": [
         "docs/architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md",
         "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
-        "docs/architecture/SESSION_STATE_MACHINE.md"
+        "docs/architecture/SESSION_STATE_MACHINE.md",
+        "docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
@@ -47,11 +48,14 @@
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
-        "tests/test_s06_browser_actor.py"
+        "tests/test_s06_browser_actor.py",
+        "apps/hepta-browserd/src/servo_product_runtime.rs",
+        "tests/test_s08_product_supervision.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
-        ".github/workflows/s06-browser-actor.yml"
+        ".github/workflows/s06-browser-actor.yml",
+        ".github/workflows/s08-product-servo-runtime.yml"
       ],
       "binaries": [
         {

@@ -16,6 +16,7 @@ A narrower machine-state, gate or non-claim always wins. Source presence and doc
 - Publish the active plan revision and integrated implementation-stage constants used by repository truth checks.
 - Compose transport, canonical codec, AgentPort and session-state self-checks without widening their authority.
 - Expose one stable command-line surface for build information, deterministic verification and future supervised product startup.
+- Compile and test the S08 supervisor mechanism without starting a product runtime.
 - Remain the eventual owner of one PageOwner and one product browser runtime after the S08 gate is separately reviewed.
 
 ## Non-responsibilities
@@ -26,19 +27,22 @@ A narrower machine-state, gate or non-claim always wins. Source presence and doc
 
 ## Dependency and call direction
 
-`hepta-browserd` is an application-layer consumer of `hepta-agent-transport`, `hepta-browser-codec`, `hepta-agent-port`, `hepta-browser-contracts`, `hepta-session-core`, and `trillionnium-contract-core`. Those lower layers must never depend back on this application. The current self-check calls into each mechanism in dependency order and then exercises the engine-neutral session state machine. The future Servo adapter must remain a distinct concrete, reviewed path rather than a generic caller-injected runtime.
+`hepta-browserd` is an application-layer consumer of `hepta-browser-actor` and `hepta-agent-transport`, `hepta-browser-codec`, `hepta-agent-port`, `hepta-browser-contracts`, `hepta-session-core`, and `trillionnium-contract-core`. Those lower layers must never depend back on this application. The current self-check calls into each mechanism in dependency order and then exercises the engine-neutral session state machine. The future Servo adapter must remain a distinct concrete, reviewed path rather than a generic caller-injected runtime.
 
 Relevant architecture:
 
 - `docs/architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md`
 - `docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md`
 - `docs/architecture/SESSION_STATE_MACHINE.md`
+- `docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md`
 
 The dependency direction is one-way. Lower-level mechanism and contract crates must not import application, profile, image, hardware, signing, or publication authority.
 
 ## Public API and binaries
 
 - `ACTIVE_PLAN_REVISION` and `IMPLEMENTATION_STAGE` are immutable build-truth sentinels.
+- `BrowserdRuntimeSupervisor`, `ProductServoRuntime`, `RuntimeGeneration`, `SemanticReference`, `RestartPolicy`, `RuntimeState` and typed completion/error values expose the compiled supervisor mechanism.
+- `reconcile_indeterminate()` rejects unbound caller assertions; a journal-bound recovery API is not implemented and must not be simulated by clearing a flag.
 - `run_self_check()` returns a bounded `SelfCheckReport`; it is development evidence, not readiness.
 - Binary `hepta-browserd` supports `--self-check`, `--print-build-info`, and `--help`. Unknown arguments fail with exit status 2.
 
@@ -54,7 +58,7 @@ Registered Cargo features: none.
 
 ## State, concurrency, and failure semantics
 
-All current state is local to the self-check call. Session transitions use `SessionMachine`; navigation, human focus, IME, crash and recovery advance typed revisions. No background worker, global mutable runtime, persisted profile or retry loop exists. A future runtime supervisor must bound restart attempts, withdraw stale pixels and input ownership, and enter a visible degraded state rather than restart indefinitely.
+The executable remains a self-check scaffold. The separately compiled supervisor owns a bounded actor lifecycle: it latches uncertainty before invoking an adapter, retires on generation exhaustion or failed reconstruction, and never clears a crash loop through reconciliation. It creates no socket or window. All executable self-check state is local to the call. Session transitions use `SessionMachine`; navigation, human focus, IME, crash and recovery advance typed revisions. No background worker, global mutable runtime, persisted profile or retry loop exists. A future runtime supervisor must bound restart attempts, withdraw stale pixels and input ownership, and enter a visible degraded state rather than restart indefinitely.
 
 Failures must preserve the last truthful state. A timeout, crash, peer loss, storage ambiguity or unsupported operation cannot be converted into successful completion by a caller, retry loop, fixture, log message or evidence generator.
 
@@ -74,11 +78,14 @@ Primary source or test references:
 
 - `apps/hepta-browserd/src/lib.rs`
 - `tests/test_s06_browser_actor.py`
+- `apps/hepta-browserd/src/servo_product_runtime.rs`
+- `tests/test_s08_product_supervision.py`
 
 Applicable workflows:
 
 - `.github/workflows/ci.yml`
 - `.github/workflows/s06-browser-actor.yml`
+- `.github/workflows/s08-product-servo-runtime.yml`
 
 Contract references:
 

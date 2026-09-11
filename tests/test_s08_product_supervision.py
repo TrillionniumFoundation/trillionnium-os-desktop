@@ -107,6 +107,38 @@ class S08ProductSupervisionValidationTests(unittest.TestCase):
         path.write_text("name: decoy\n", encoding="utf-8")
         self.assertTrue(any("temporary S08 workflows" in error for error in self.errors()))
 
+    def test_unbound_reconciliation_cannot_clear_latch(self) -> None:
+        self.rewrite(
+            "apps/hepta-browserd/src/servo_product_runtime.rs",
+            "Err(ProductRuntimeError::ReconciliationEvidenceRequired)",
+            "self.replay_blocked = false; Err(ProductRuntimeError::ReconciliationEvidenceRequired)",
+        )
+        self.assertTrue(any("unbound reconciliation" in error for error in self.errors()))
+
+    def test_uncertainty_must_precede_operation(self) -> None:
+        self.rewrite(
+            "apps/hepta-browserd/src/servo_product_runtime.rs",
+            "self.replay_blocked = true;",
+            "/* removed latch */",
+        )
+        self.assertTrue(any("before invoking" in error for error in self.errors()))
+
+    def test_dormant_source_gate_is_rejected(self) -> None:
+        self.rewrite(
+            ".github/workflows/s08-product-servo-runtime.yml",
+            "python3 tools/validate_s08_product_supervision.py",
+            "python3 tools/validate_repository.py",
+        )
+        # The gate must execute in both exact and merge jobs. Remove the second too.
+        path = self.root / ".github/workflows/s08-product-servo-runtime.yml"
+        path.write_text(path.read_text().replace("python3 tools/validate_s08_product_supervision.py", "true"))
+        self.assertTrue(any("executable gate token" in error for error in self.errors()))
+
+    def test_lifetime_does_not_hide_following_comment(self) -> None:
+        text = "fn code() -> &'static str { \"x\" } // pub fn forbidden() {}\n"
+        stripped = VALIDATOR.strip_rust_comments(text)
+        self.assertNotIn("forbidden", stripped)
+
 
 if __name__ == "__main__":
     unittest.main()
