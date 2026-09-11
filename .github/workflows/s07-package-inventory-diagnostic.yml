@@ -1,0 +1,67 @@
+name: s07-package-inventory-diagnostic
+
+on:
+  push:
+    branches: ["codex/s07-servo-retained-node-closure-v1"]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Print exact package inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          root = Path.cwd()
+          manifest = json.loads(
+              (root / "manifests/lab-d3-servo-retained-node-action.v1.json").read_text()
+          )
+          section_bytes = []
+          report = {"head": "${{ github.sha }}", "sections": {}}
+          for name in ("patch", "hardening", "transport_hardening"):
+              chunks = []
+              parts = []
+              for record in manifest[name]["parts"]:
+                  data = (root / record["path"]).read_bytes()
+                  chunks.append(data)
+                  parts.append({
+                      "path": record["path"],
+                      "expected_sha256": record["sha256"],
+                      "actual_sha256": hashlib.sha256(data).hexdigest(),
+                  })
+              data = b"".join(chunks)
+              section_bytes.append(data)
+              report["sections"][name] = {
+                  "expected_sha256": manifest[name]["sha256"],
+                  "actual_sha256": hashlib.sha256(data).hexdigest(),
+                  "parts": parts,
+              }
+          combined = bytearray()
+          for index, data in enumerate(section_bytes):
+              if index and combined and not combined.endswith(b"\n"):
+                  combined.extend(b"\n")
+              combined.extend(data)
+          paths = sorted({
+              line[len("+++ b/"):]
+              for line in bytes(combined).decode("utf-8").splitlines()
+              if line.startswith("+++ b/") and line != "+++ /dev/null"
+          })
+          report["expected_allowed_paths"] = sorted(manifest["patch"]["allowed_paths"])
+          report["actual_changed_paths"] = paths
+          print("S07_PACKAGE_INVENTORY_BEGIN")
+          print(json.dumps(report, indent=2, sort_keys=True))
+          print("S07_PACKAGE_INVENTORY_END")
+          PY
