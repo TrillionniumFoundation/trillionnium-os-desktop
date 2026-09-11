@@ -10,33 +10,11 @@ import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-FORBIDDEN_ADDED_PATTERNS = (
-    "get_node_by_opaque_id",
-    "opaque_node_for_id",
-    "struct OpaqueNode",
-    "get_opaque_node",
-)
-MANDATORY_PATCH_TOKENS = (
-    "PerformAccessibilityAction(",
-    "AccessibilityActionResult",
-    "GenericCallback<AccessibilityActionResult>",
-    "target_tree: TreeId",
-    "target_node: NodeId",
-    "supports_action(Action::Click)",
-    "get_node_for_accesskit_id",
-    "is_connected()",
-    "has_css_layout_box()",
-    "send_accessibility_action",
-    "ConstellationDisconnected",
-    "accessibility_action_normal_enqueue_completes_once",
-    "accessibility_action_already_disconnected_completes_once",
-    "accessibility_action_receiver_drop_after_precheck_completes_once",
-    "accessibility_action_dropped_callback_receiver_does_not_panic",
-)
-MANDATORY_HEADLESS_TOKENS = (
-    "target_tree != accesskit::TreeId::ROOT",
-    "active_document_accesskit_tree_id()",
-    "perform_accessibility_action(",
+FORBIDDEN_CODE_PATTERNS = (
+    (r"\bget_node_by_opaque_id\b", "get_node_by_opaque_id"),
+    (r"\bopaque_node_for_id\b", "opaque_node_for_id"),
+    (r"\bstruct\s+OpaqueNode\b", "struct OpaqueNode"),
+    (r"\bget_opaque_node\b", "get_opaque_node"),
 )
 SECTION_NAMES = ("patch", "hardening", "transport_hardening")
 
@@ -103,8 +81,16 @@ def load_patch_section(
     section = manifest.get(name)
     if not isinstance(section, dict):
         raise ValueError(f"manifest section {name!r} must be an object")
-    if set(section) != {"sha256", "parts", "purpose"}:
-        raise ValueError(f"manifest section {name!r} has unexpected fields")
+    expected_fields = {"sha256", "parts", "purpose"}
+    if name == "patch":
+        expected_fields.add("allowed_paths")
+    if set(section) != expected_fields:
+        missing = sorted(expected_fields - set(section))
+        extra = sorted(set(section) - expected_fields)
+        raise ValueError(
+            f"manifest section {name!r} has unexpected fields: "
+            f"missing={missing!r}, extra={extra!r}"
+        )
     if not isinstance(section["purpose"], str) or not section["purpose"].strip():
         raise ValueError(f"manifest section {name!r} purpose must be non-empty")
     parts = section["parts"]
@@ -148,13 +134,128 @@ def changed_paths(patch: bytes) -> list[str]:
     return sorted(output)
 
 
-def added_lines(patch: bytes) -> str:
-    text = patch.decode("utf-8")
-    return "\n".join(
-        line[1:]
-        for line in text.splitlines()
-        if line.startswith("+") and not line.startswith("+++")
-    )
+def added_lines_by_path(patch: bytes) -> dict[str, str]:
+    """Return only added payload lines, grouped by the path that owns each hunk."""
+    try:
+        text = patch.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError(f"patch is not UTF-8: {error}") from error
+    current: str | None = None
+    grouped: dict[str, list[str]] = {}
+    for line in text.splitlines():
+        if line.startswith("+++ b/"):
+            current = line[len("+++ b/") :]
+            grouped.setdefault(current, [])
+            continue
+        if line.startswith("diff --git "):
+            current = None
+            continue
+        if current is not None and line.startswith("+") and not line.startswith("+++"):
+            grouped[current].append(line[1:])
+    return {path: "\n".join(lines) for path, lines in grouped.items()}
+
+
+def _raw_prefix(text: str, index: int) -> tuple[int, str] | None:
+    start = index
+    if text.startswith("br", index):
+        index += 2
+    elif index < len(text) and text[index] == "r":
+        index += 1
+    else:
+        return None
+    hashes = 0
+    while index < len(text) and text[index] == "#":
+        hashes += 1
+        index += 1
+    if index >= len(text) or text[index] != '"':
+        return None
+    return index - start + 1, '"' + ("#" * hashes)
+
+
+def strip_rust_comments(text: str) -> str:
+    """Strip Rust comments without treating comment markers in strings as comments."""
+    output: list[str] = []
+    index = 0
+    state = "code"
+    block_depth = 0
+    raw_end = ""
+    while index < len(text):
+        pair = text[index : index + 2]
+        char = text[index]
+        if state == "line":
+            if char == "\n":
+                output.append(char)
+                state = "code"
+            else:
+                output.append(" ")
+            index += 1
+            continue
+        if state == "block":
+            if pair == "/*":
+                block_depth += 1
+                output.extend("  ")
+                index += 2
+            elif pair == "*/":
+                block_depth -= 1
+                output.extend("  ")
+                index += 2
+                if block_depth == 0:
+                    state = "code"
+            else:
+                output.append("\n" if char == "\n" else " ")
+                index += 1
+            continue
+        if state == "raw":
+            if text.startswith(raw_end, index):
+                output.extend(raw_end)
+                index += len(raw_end)
+                state = "code"
+            else:
+                output.append(char)
+                index += 1
+            continue
+        if state in {"string", "char"}:
+            output.append(char)
+            if char == "\\" and index + 1 < len(text):
+                output.append(text[index + 1])
+                index += 2
+                continue
+            if (state == "string" and char == '"') or (
+                state == "char" and char == "'"
+            ):
+                state = "code"
+            index += 1
+            continue
+
+        raw = _raw_prefix(text, index)
+        if raw is not None:
+            prefix_length, raw_end = raw
+            output.extend(text[index : index + prefix_length])
+            index += prefix_length
+            state = "raw"
+        elif pair == "//":
+            output.extend("  ")
+            index += 2
+            state = "line"
+        elif pair == "/*":
+            output.extend("  ")
+            index += 2
+            block_depth = 1
+            state = "block"
+        elif char == '"':
+            output.append(char)
+            index += 1
+            state = "string"
+        elif char == "'" and re.match(r"'(?:\\.|[^\\'])'", text[index:]):
+            output.append(char)
+            index += 1
+            state = "char"
+        else:
+            output.append(char)
+            index += 1
+    if block_depth:
+        raise ValueError("unterminated Rust block comment in patch additions")
+    return "".join(output)
 
 
 def combine_sections(sections: list[bytes]) -> bytes:
@@ -193,7 +294,11 @@ def verify_manifest(manifest: dict[str, Any]) -> None:
     if not re.fullmatch(r"[0-9a-f]{40}", str(manifest["carrier_base_commit"])):
         raise ValueError("carrier_base_commit must be a full Git SHA")
     upstream = manifest["upstream"]
-    if not isinstance(upstream, dict) or set(upstream) != {"repository", "commit", "accesskit"}:
+    if not isinstance(upstream, dict) or set(upstream) != {
+        "repository",
+        "commit",
+        "accesskit",
+    }:
         raise ValueError("upstream section differs from the closed schema")
     if upstream["repository"] != "servo/servo":
         raise ValueError("unexpected upstream repository")
@@ -215,10 +320,19 @@ def verify_manifest(manifest: dict[str, Any]) -> None:
         raise ValueError("prospective merge must apply the complete package")
     if not isinstance(qualification["required"], list) or not qualification["required"]:
         raise ValueError("qualification.required must be non-empty")
-    if not isinstance(qualification["transitive_cli_sources"], list) or not qualification["transitive_cli_sources"]:
+    if not isinstance(
+        qualification["transitive_cli_sources"], list
+    ) or not qualification["transitive_cli_sources"]:
         raise ValueError("qualification.transitive_cli_sources must be non-empty")
-    if not isinstance(manifest["claim_ceiling"], str) or not manifest["claim_ceiling"].strip():
+    if not isinstance(manifest["claim_ceiling"], str) or not manifest[
+        "claim_ceiling"
+    ].strip():
         raise ValueError("claim_ceiling must be non-empty")
+
+
+def _require(code: str, pattern: str, label: str) -> None:
+    if re.search(pattern, code, flags=re.MULTILINE | re.DOTALL) is None:
+        raise ValueError(f"mandatory retained-node structure absent: {label}")
 
 
 def verify_patch_contract(
@@ -232,27 +346,166 @@ def verify_patch_contract(
     if not isinstance(patch, dict):
         raise ValueError("patch section must be an object")
     allowed = patch.get("allowed_paths")
-    if not isinstance(allowed, list) or not allowed or not all(isinstance(item, str) for item in allowed):
+    if (
+        not isinstance(allowed, list)
+        or not allowed
+        or not all(isinstance(item, str) for item in allowed)
+    ):
         raise ValueError("patch.allowed_paths must be a non-empty string list")
     if len(allowed) != len(set(allowed)):
         raise ValueError("patch.allowed_paths contains duplicates")
 
     actual = changed_paths(combined)
     if sorted(allowed) != actual:
-        raise ValueError(f"changed-path mismatch: expected {sorted(allowed)!r}, got {actual!r}")
+        raise ValueError(
+            f"changed-path mismatch: expected {sorted(allowed)!r}, got {actual!r}"
+        )
 
-    additions = added_lines(combined)
-    for token in FORBIDDEN_ADDED_PATTERNS:
-        if token in additions:
-            raise ValueError(f"forbidden fallback added to patch: {token}")
-    for token in MANDATORY_PATCH_TOKENS:
-        if token not in additions:
-            raise ValueError(f"mandatory retained-node token absent: {token}")
-    for token in MANDATORY_HEADLESS_TOKENS:
-        if token not in additions:
-            raise ValueError(f"mandatory headless-forwarding token absent: {token}")
-    if b"TODO(#4344): Forward action to Servo" in additions.encode("utf-8"):
-        raise ValueError("legacy unimplemented action-forwarding TODO remains in additions")
+    additions = added_lines_by_path(combined)
+    code = {
+        path: strip_rust_comments(text)
+        for path, text in additions.items()
+        if path.endswith(".rs")
+    }
+    all_code = "\n".join(code.values())
+    for pattern, label in FORBIDDEN_CODE_PATTERNS:
+        if re.search(pattern, all_code):
+            raise ValueError(f"forbidden fallback added to patch: {label}")
+
+    layout_tree = code.get("components/layout/accessibility_tree.rs", "")
+    _require(
+        layout_tree,
+        r"\bfn\s+action_target_for_id\s*\(",
+        "retained action_target_for_id resolver",
+    )
+    _require(
+        layout_tree,
+        r"self\.nodes\.get\s*\(\s*&node_id\s*\)\s*\?",
+        "exact retained node lookup",
+    )
+    _require(
+        layout_tree,
+        r"supports_action\s*\(\s*action\s*\)",
+        "action advertisement copied from retained node",
+    )
+    _require(
+        layout_tree,
+        r"bounds\s*\(\s*\)\.is_some\s*\(\s*\)",
+        "retained accessibility bounds check",
+    )
+
+    constellation = code.get("components/constellation/constellation.rs", "")
+    script = code.get("components/script/script_thread.rs", "")
+    tree_guard_code = constellation + "\n" + script
+    _require(
+        tree_guard_code,
+        r"request\.target_tree\s*==\s*(?:accesskit::)?TreeId::ROOT",
+        "root tree refusal",
+    )
+    _require(
+        tree_guard_code,
+        r"request\.target_tree\s*!=\s*(?:accesskit::)?TreeId::from\s*\(\s*pipeline_id\s*\)",
+        "active pipeline tree binding",
+    )
+
+    _require(
+        script,
+        r"window\.reflow\s*\([^;]*ReflowGoal::UpdateTheRendering",
+        "same-task retained-tree refresh",
+    )
+    _require(
+        script,
+        r"accessibility_node_address\s*\(",
+        "layout retained-node address query",
+    )
+    _require(script, r"\bis_connected\s*\(\s*\)", "connected DOM target check")
+    _require(
+        script,
+        r"\bhas_css_layout_box\s*\(\s*\)",
+        "current layout-box check",
+    )
+    _require(
+        script,
+        r"fire_synthetic_pointer_event_not_trusted\s*\(",
+        "single bounded click dispatch",
+    )
+    refresh = script.find("window.reflow")
+    resolve = script.find("accessibility_node_address", refresh)
+    dispatch = script.find("fire_synthetic_pointer_event_not_trusted", resolve)
+    if min(refresh, resolve, dispatch) < 0 or not refresh < resolve < dispatch:
+        raise ValueError(
+            "retained-tree refresh, exact resolution, and dispatch are not ordered"
+        )
+
+    webview = code.get("components/servo/webview.rs", "")
+    _require(
+        webview,
+        r"\bpub\s+fn\s+perform_accessibility_action\s*\(",
+        "public WebView accessibility action API",
+    )
+    _require(
+        webview,
+        r"\.send_accessibility_action\s*\(",
+        "response-aware WebView first hop",
+    )
+
+    proxy = code.get("components/servo/proxies.rs", "")
+    _require(
+        proxy,
+        r"\bfn\s+send_accessibility_action\s*\(",
+        "dedicated response-aware constellation send",
+    )
+    _require(proxy, r"\btry_send\s*\(\s*message\s*\)", "fallible first-hop send")
+    _require(
+        proxy,
+        r"response\.send\s*\(\s*AccessibilityActionResult::ConstellationDisconnected\s*\)",
+        "typed first-hop disconnect completion",
+    )
+    for test_name in (
+        "accessibility_action_normal_enqueue_completes_once",
+        "accessibility_action_already_disconnected_completes_once",
+        "accessibility_action_receiver_drop_after_precheck_completes_once",
+        "accessibility_action_dropped_callback_receiver_does_not_panic",
+    ):
+        _require(proxy, rf"\bfn\s+{re.escape(test_name)}\s*\(", test_name)
+
+    traits = code.get("components/shared/constellation/lib.rs", "")
+    _require(
+        traits,
+        r"\bConstellationDisconnected\b",
+        "closed typed transport failure",
+    )
+    _require(
+        traits,
+        r"GenericCallback\s*<\s*AccessibilityActionResult\s*>",
+        "typed callback contract",
+    )
+
+    headless = code.get("ports/servoshell/desktop/headed_window.rs", "")
+    _require(
+        headless,
+        r"active_document_accesskit_tree_id\s*\(\s*\)",
+        "headless active-tree selection",
+    )
+    _require(
+        headless,
+        r"\.perform_accessibility_action\s*\(",
+        "headless action forwarding",
+    )
+
+    servo_tests = code.get("components/servo/tests/accessibility.rs", "")
+    for test_name in (
+        "test_retained_accessibility_click_dispatches_exactly_once",
+        "test_retained_accessibility_rejects_unadvertised_and_unsupported_requests",
+        "test_retained_accessibility_rejects_replaced_node_identity",
+        "test_retained_accessibility_rejects_inactive_and_stale_tree",
+        "test_retained_accessibility_rejects_disabled_hidden_and_non_element_targets",
+        "test_retained_accessibility_dropped_callback_does_not_duplicate_dispatch",
+    ):
+        _require(servo_tests, rf"\bfn\s+{re.escape(test_name)}\s*\(", test_name)
+
+    if "TODO(#4344): Forward action to Servo" in all_code:
+        raise ValueError("legacy unimplemented action-forwarding TODO remains in code")
     if not base or not hardening or not transport_hardening:
         raise ValueError("all three ordered patch stages must be non-empty")
     return actual
@@ -273,8 +526,7 @@ def main(argv: list[str] | None = None) -> int:
         manifest = load_json(args.manifest)
         verify_manifest(manifest)
         loaded = {
-            name: load_patch_section(manifest, root, name)
-            for name in SECTION_NAMES
+            name: load_patch_section(manifest, root, name) for name in SECTION_NAMES
         }
         base, base_parts = loaded["patch"]
         hardening, hardening_parts = loaded["hardening"]
