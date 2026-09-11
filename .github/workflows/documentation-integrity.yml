@@ -1,0 +1,111 @@
+name: documentation-integrity
+
+on:
+  push:
+    branches: [main, "codex/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-integrity-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out immutable source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind and preserve public source qualification inputs
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --exit-code
+          mkdir -p "$RUNNER_TEMP/documentation-inputs"
+          git archive --format=tar HEAD | gzip -n > "$RUNNER_TEMP/documentation-inputs/source.tar.gz"
+          test "$(stat -c %s "$RUNNER_TEMP/documentation-inputs/source.tar.gz")" -le 20971520
+          {
+            printf 'source_sha=%s\nsource_tree=%s\n' "$EXPECTED_HEAD" "$(git rev-parse 'HEAD^{tree}')"
+            printf 'claim_ceiling=source_documentation_only\n'
+            printf 'qualification_result=see_workflow_job_conclusion\n'
+            printf 'release_authority=false\n'
+            cd "$RUNNER_TEMP/documentation-inputs"
+            sha256sum source.tar.gz
+          } > "$RUNNER_TEMP/documentation-inputs/identity.txt"
+      - name: Check projection, module contracts and hostile tests
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 -I tools/render_module_index.py --check
+          /usr/bin/python3 -I tools/validate_module_documentation.py
+          python3 -m unittest discover -s tests -p 'test_module_index_projection.py' -v
+          python3 -m unittest discover -s tests -p 'test_module_documentation*.py' -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+      - name: Preserve exact-source diagnostic inputs, not a pass attestation
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: documentation-inputs-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/documentation-inputs
+          if-no-files-found: error
+          retention-days: 7
+
+  prospective-merge:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out immutable event merge
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind event and live parent identity
+        shell: bash
+        env:
+          EXPECTED_MERGE: ${{ github.sha }}
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git check-ref-format "refs/heads/$BASE_REF"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MERGE"
+          test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
+          test "$(git rev-parse HEAD^1)" = "$EVENT_BASE"
+          test "$(git rev-parse HEAD^2)" = "$EVENT_HEAD"
+          test "$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | cut -f1)" = "$EVENT_BASE"
+          test "$(git ls-remote --exit-code origin "refs/pull/$PR_NUMBER/head" | cut -f1)" = "$EVENT_HEAD"
+      - name: Validate immutable prospective tree
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 -I tools/render_module_index.py --check
+          /usr/bin/python3 -I tools/validate_module_documentation.py
+          python3 -m unittest discover -s tests -p 'test_module_index_projection.py' -v
+          python3 -m unittest discover -s tests -p 'test_module_documentation*.py' -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+      - name: Refuse head or base movement during qualification
+        shell: bash
+        env:
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | cut -f1)" = "$EVENT_BASE"
+          test "$(git ls-remote --exit-code origin "refs/pull/$PR_NUMBER/head" | cut -f1)" = "$EVENT_HEAD"
+          git diff --exit-code
