@@ -1,0 +1,117 @@
+{
+  "schema": "trillionnium.desktop.s12-release-qualification.v1",
+  "stage": "S12",
+  "claim_ceiling": "source_verifier_only_no_external_fact_creation_no_signing_no_publication",
+  "evidence_packet": {
+    "schema": "trillionnium.release-evidence.v1",
+    "strict_json": true,
+    "detached_signature_required": true,
+    "external_public_key_digest_required": true,
+    "external_attestor_identity_required": true,
+    "current_main_binding_required": true,
+    "maximum_packet_age_seconds": 86400
+  },
+  "source_and_image": {
+    "plan_revision": "2026-08-29-d6",
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "source_sha_required": true,
+    "source_tree_required": true,
+    "locked_inputs_digest_required": true,
+    "whole_image_digest_and_length_required": true,
+    "s10_installed_product_receipt_required": true,
+    "s11_installed_update_recovery_receipt_required": true,
+    "sbom_license_vulnerability_digests_required": true
+  },
+  "independent_rebuild": {
+    "builder_count": 2,
+    "distinct_actor_ids": true,
+    "distinct_runner_ids": true,
+    "distinct_administrative_domains": true,
+    "same_source_tree": true,
+    "same_locked_inputs": true,
+    "same_normalized_image_digest": true
+  },
+  "fixed_hardware": {
+    "exact_bom_required": true,
+    "secure_boot_observed": true,
+    "tpm_or_equivalent_observed": true,
+    "required_results": [
+      "firmware",
+      "cpu",
+      "memory",
+      "storage",
+      "gpu",
+      "display",
+      "input",
+      "audio",
+      "network",
+      "suspend_resume",
+      "recovery"
+    ]
+  },
+  "endurance": {
+    "required_hours": [24, 72],
+    "same_image_and_bom_required": true,
+    "monotonic_checkpoints_required": true,
+    "maximum_checkpoint_gap_seconds": 900,
+    "terminal_pass_required": true
+  },
+  "raw_power_loss": {
+    "method": "non_graceful_power_removal",
+    "required_cutpoints": [
+      "update_staging",
+      "first_boot_before_health_commit",
+      "rollback_or_recovery"
+    ],
+    "post_boot_filesystem_pass_required": true,
+    "post_boot_journal_pass_required": true,
+    "post_boot_update_reconciliation_pass_required": true
+  },
+  "key_custody": {
+    "allowed_modes": ["offline", "hsm"],
+    "controller_count": 2,
+    "distinct_controllers_required": true,
+    "rotation_drill_required": true,
+    "revocation_drill_required": true,
+    "compromised_builder_drill_required": true
+  },
+  "role_separation": {
+    "roles": [
+      "author",
+      "reviewer",
+      "builder_a",
+      "builder_b",
+      "hardware_attestor",
+      "endurance_attestor",
+      "power_attestor",
+      "key_controller_a",
+      "key_controller_b",
+      "signer",
+      "promoter",
+      "publisher",
+      "release_attestor"
+    ],
+    "all_actor_ids_distinct": true
+  },
+  "publication": {
+    "protected_environment": "production-publication",
+    "protected_environment_readback_required": true,
+    "current_main_subject_required": true,
+    "promoter_publisher_separation_required": true,
+    "verifier_may_publish": false
+  },
+  "verifier_output": {
+    "eligible_for_independent_promotion_review": "derived_only_after_all_checks",
+    "release_published_by_this_verifier": false,
+    "external_facts_created_by_this_verifier": false
+  },
+  "non_claims": {
+    "second_builder_executed_by_source_ci": false,
+    "physical_hardware_executed_by_source_ci": false,
+    "endurance_time_elapsed_by_source_ci": false,
+    "raw_power_loss_executed_by_source_ci": false,
+    "production_key_accessed_by_verifier": false,
+    "release_signed_by_verifier": false,
+    "release_published_by_verifier": false
+  }
+}
