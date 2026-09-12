@@ -241,15 +241,16 @@ step_prove_graphs() {
 set -euo pipefail
 export RUSTUP_TOOLCHAIN="$RUST_CHANNEL"
 mkdir -p /tmp/trillionnium-d1/evidence
-cargo tree --locked -p hepta-agent-portd --no-default-features -e normal \
+python3 tools/validate_d1_qualification_graph.py
+cargo tree --locked -p hepta-agent-portd --no-default-features -e normal,build,features \
   > /tmp/trillionnium-d1/evidence/product-cargo-tree.txt
-if grep -Eq 'hepta-agent-port v|hepta-browser-codec v' \
+if grep -Eq 'hepta-agent-port v|hepta-browser-codec v|qualification-static-attestation|development-static-attestation' \
   /tmp/trillionnium-d1/evidence/product-cargo-tree.txt; then
   echo "product daemon graph contains qualification dependencies" >&2
   exit 1
 fi
 cargo tree --locked -p hepta-agent-portd --no-default-features \
-  --features d1-qualification -e normal \
+  --features fixture -e normal,dev,features \
   > /tmp/trillionnium-d1/evidence/qualification-cargo-tree.txt
 grep -q 'hepta-agent-port v' \
   /tmp/trillionnium-d1/evidence/qualification-cargo-tree.txt
@@ -268,19 +269,33 @@ assert_absent \
 step_build_binaries() {
 set -euo pipefail
 export RUSTUP_TOOLCHAIN="$RUST_CHANNEL"
+mkdir -p /tmp/trillionnium-d1/evidence target/release
+# Separate target directories prevent a qualification feature graph from being
+# mistaken for the product binary. Compile metadata is checked before install.
+product_target=$(mktemp -d "$RUNNER_TEMP/d1-product-target.XXXXXX")
+qualification_target=$(mktemp -d "$RUNNER_TEMP/d1-qualification-target.XXXXXX")
 cargo build --release --locked \
   -p hepta-agent-portd \
   --no-default-features \
-  --bin hepta-agent-portd
-install -D -m 0755 target/release/hepta-agent-portd \
-  "$RUNNER_TEMP/hepta-agent-portd-product"
+  --bin hepta-agent-portd \
+  --target-dir "$product_target" --message-format=json \
+  | tee /tmp/trillionnium-d1/evidence/product-build.jsonl
 cargo build --release --locked \
   -p hepta-agent-portd \
   --no-default-features \
-  --features d1-qualification \
-  --bin hepta-agent-d1-fixture
-install -m 0755 "$RUNNER_TEMP/hepta-agent-portd-product" \
+  --features fixture \
+  --example hepta-agent-d1-fixture \
+  --target-dir "$qualification_target" --message-format=json \
+  | tee /tmp/trillionnium-d1/evidence/qualification-build.jsonl
+python3 tools/validate_d1_qualification_graph.py --build-messages \
+  /tmp/trillionnium-d1/evidence/product-build.jsonl \
+  /tmp/trillionnium-d1/evidence/qualification-build.jsonl
+install -m 0755 "$product_target/release/hepta-agent-portd" \
   target/release/hepta-agent-portd
+# This staging name is consumed only by the explicit D1 qualification builder;
+# it is not added to the production install map.
+install -m 0755 "$qualification_target/release/examples/hepta-agent-d1-fixture" \
+  target/release/hepta-agent-d1-fixture
 test -x target/release/hepta-agent-portd
 test -x target/release/hepta-agent-d1-fixture
 target/release/hepta-agent-portd --self-check \

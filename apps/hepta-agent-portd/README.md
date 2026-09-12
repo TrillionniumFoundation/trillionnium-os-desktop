@@ -41,6 +41,7 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 
 - Binary `hepta-agent-portd` is the only production-shaped target and supports `--self-check`.
 - Binary `hepta-agent-port-fixture` is available only with Cargo feature `fixture`.
+- Explicit example `hepta-agent-d1-fixture` is qualification-only, selected with `--features fixture --example hepta-agent-d1-fixture`; it is not a product binary.
 - The package exports no library API; its stable interface is inherited file descriptor 0, process exit status and bounded redacted diagnostics.
 
 Registered binaries:
@@ -53,6 +54,13 @@ Registered binaries:
 Cargo `default` is empty. The `fixture` feature enables `hepta-agent-port` only for explicit tests. Runtime constants name `/run/hepta/browserd/agent.sock`, the `hepta-agent` user/group and `hepta-agent.service`. Packaging presets keep the socket disabled and no enable marker is shipped.
 
 Registered Cargo features: `default`, `fixture`
+
+The D1 example's codec and `qualification-static-attestation` dependencies are
+restricted to `[dev-dependencies]`. Product builds select only
+`--no-default-features --bin hepta-agent-portd`; all-target/all-feature test
+outputs are never production artifacts. The detailed target, build-metadata,
+identity and installation boundary is in
+`docs/architecture/D1_QUALIFICATION_GRAPH.md`.
 
 ## State, concurrency, and failure semantics
 
@@ -76,11 +84,14 @@ Primary source or test references:
 
 - `apps/hepta-agent-portd/src/main.rs`
 - `tests/test_s04_transport_custody.py`
+- `tests/test_d1_qualification_graph.py`
+- `tests/d1/test_d1_qualification_separation.py`
 
 Applicable workflows:
 
 - `.github/workflows/agent-port-custody.yml`
 - `.github/workflows/s04-transport-custody.yml`
+- `.github/workflows/d1-qualification-graph.yml`
 
 Contract references:
 

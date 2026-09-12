@@ -1,0 +1,141 @@
+name: d1-qualification-graph
+
+on:
+  push:
+    branches: [main, "codex/audit-d1-qualification-graph-*"]
+  pull_request:
+    paths:
+      - ".github/workflows/d1-qualification-graph.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "apps/hepta-agent-portd/**"
+      - "crates/hepta-agent-port/**"
+      - "crates/hepta-agent-transport/**"
+      - "crates/hepta-peer-attestation/**"
+      - "tests/d1/**"
+      - "tests/test_s04_transport_custody.py"
+      - "tools/validate_d1_qualification_graph.py"
+      - "tools/run_d1_final_qualification.sh"
+      - "tools/validate_s04_transport_custody.py"
+      - "contracts/d1-qualification-graph.v1.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d1-qualification-graph-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-and-host:
+    name: ${{ matrix.object }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        object: ${{ fromJSON(github.event_name == 'pull_request' && '["exact-head","prospective-merge"]' || '["exact-head"]') }}
+    env:
+      RUSTUP_TOOLCHAIN: 1.93.0
+      RUST_CHANNEL: 1.93.0
+      OBJECT: ${{ matrix.object }}
+      EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      EXPECTED_MERGE: ${{ github.sha }}
+      EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+      BASE_REF: ${{ github.event.pull_request.base.ref }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      SAME_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    steps:
+      - name: Check out immutable source object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ matrix.object == 'prospective-merge' && github.sha || (github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha) }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Bind source identity and retain a bounded reproduction capsule
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$OBJECT" = prospective-merge ]; then
+            test "$(git rev-parse HEAD)" = "$EXPECTED_MERGE"
+            test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE"
+            test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD"
+            test "$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | cut -f1)" = "$EXPECTED_BASE"
+            if [ "$SAME_REPOSITORY" = true ]; then
+              test "$(git ls-remote --exit-code origin "refs/heads/$HEAD_REF" | cut -f1)" = "$EXPECTED_HEAD"
+            fi
+          else
+            test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          fi
+          test -z "$(git status --porcelain=v1)"
+          capsule="$RUNNER_TEMP/d1-source-capsule"
+          mkdir -m 0700 "$capsule"
+          git archive --format=tar.gz --output="$capsule/source.tar.gz" HEAD
+          test "$(stat -c %s "$capsule/source.tar.gz")" -le 26214400
+          {
+            printf 'evidence_class=source_reproduction_only\n'
+            printf 'qualification_object=%s\n' "$OBJECT"
+            printf 'source_sha=%s\n' "$(git rev-parse HEAD)"
+            printf 'source_tree=%s\n' "$(git rev-parse HEAD^{tree})"
+            printf 'event_head=%s\nevent_base=%s\n' "$EXPECTED_HEAD" "$EXPECTED_BASE"
+            printf 'product_activation=false\ninstalled_image_proven=false\nrelease_authority=false\n'
+            sha256sum "$capsule/source.tar.gz"
+          } > "$capsule/identity.txt"
+
+      - name: Preserve exact source for independent failure reproduction
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d1-source-${{ env.EXPECTED_HEAD }}-${{ matrix.object }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/d1-source-capsule
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+      - name: Install locked Rust toolchain
+        run: rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+
+      - name: Validate source and unchanged S04 isolation rules
+        run: |
+          set -euo pipefail
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          /usr/bin/python3 -I tools/validate_module_documentation.py
+          python3 tools/validate_s04_transport_custody.py
+          python3 tools/validate_d1_qualification_graph.py
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
+          python3 -m unittest discover -s tests/d1 -p 'test_d1_qualification_separation.py' -v
+
+      - name: Compile and execute every target and feature graph
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --workspace --all-targets --all-features --locked
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+          cargo test --workspace --all-targets --all-features --locked
+
+      - name: Audit separately built product and D1 qualification targets
+        run: |
+          set -euo pipefail
+          bash tools/run_d1_final_qualification.sh prove-graphs
+          bash tools/run_d1_final_qualification.sh build-binaries
+          git diff --exit-code
+
+      - name: Refuse a moved prospective base or head after execution
+        if: success() && matrix.object == 'prospective-merge'
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | cut -f1)" = "$EXPECTED_BASE"
+          if [ "$SAME_REPOSITORY" = true ]; then
+            test "$(git ls-remote --exit-code origin "refs/heads/$HEAD_REF" | cut -f1)" = "$EXPECTED_HEAD"
+          fi
+
+      - name: Preserve bounded graph and binary diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d1-graph-${{ env.EXPECTED_HEAD }}-${{ matrix.object }}-${{ github.run_id }}
+          path: /tmp/trillionnium-d1/evidence
+          if-no-files-found: warn
+          retention-days: 14
