@@ -276,9 +276,12 @@ fn server_evidence_json(
     evidence: &ServiceEvidence,
     peer: PeerIdentity,
 ) -> Result<String, FixtureError> {
-    let peer_pid = peer.pid.filter(|pid| *pid > 0).ok_or(FixtureError::Invariant(
-        "qualification evidence requires an authenticated positive PID",
-    ))?;
+    let peer_pid = peer
+        .pid
+        .filter(|pid| *pid > 0)
+        .ok_or(FixtureError::Invariant(
+            "qualification evidence requires an authenticated positive PID",
+        ))?;
     Ok(format!(
         concat!(
             "{{\"schema\":\"trillionnium.desktop.d1-agent-server-result.v1\",",
