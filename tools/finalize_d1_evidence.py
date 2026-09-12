@@ -199,7 +199,7 @@ def validate_results(root: Path) -> dict[str, Any]:
 
 
 def validate_workflow(repository: Path) -> dict[str, str]:
-    workflow = repository / ".github/workflows/d1-final-qualification.yml"
+    workflow = repository / ".github/workflows/s10-production-debian-qemu.yml"
     text = workflow.read_text(encoding="utf-8")
     trigger = text.split("\npermissions:\n", 1)[0]
     if "paths:" in trigger or "paths-ignore:" in trigger:
@@ -376,7 +376,7 @@ def stage_artifact(
         "output_digests": output_digests,
         "product_fixture_separation": {
             "product_default_graph_fixture_free": True,
-            "qualification_feature": "d1-qualification",
+            "qualification_feature": "fixture",
             "qualification_binary": "hepta-agent-d1-fixture",
             "qualification_server_exec": results["acceptance"]["agent_port"][
                 "qualification_server_exec"

@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class D1EvidenceSoundnessTests(unittest.TestCase):
     def test_permanent_gate_is_unconditional_read_only_and_non_mutating(self) -> None:
-        workflow = (ROOT / ".github/workflows/d1-final-qualification.yml").read_text(
+        workflow = (ROOT / ".github/workflows/s10-production-debian-qemu.yml").read_text(
             encoding="utf-8"
         )
         trigger = workflow.split("\npermissions:\n", 1)[0]

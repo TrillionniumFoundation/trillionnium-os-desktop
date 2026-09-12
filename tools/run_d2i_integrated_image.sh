@@ -114,7 +114,7 @@ step_validate_source() {
     packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
   test -z "$(git status --porcelain=v1)"
   ! grep -RInE 'contents:[[:space:]]*write|git[[:space:]]+push' \
-    .github/workflows/d2i-integrated-image.yml tools/run_d2i_integrated_image.sh
+    .github/workflows/s10-production-debian-qemu.yml tools/run_d2i_integrated_image.sh
 }
 
 step_prove_d1_graphs() {

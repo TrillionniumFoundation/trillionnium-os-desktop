@@ -2,41 +2,9 @@ name: s10-production-debian-qemu
 
 on:
   pull_request:
-    paths:
-      - ".github/workflows/s10-production-debian-qemu.yml"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "rust-toolchain.toml"
-      - "apps/hepta-agent-portd/**"
-      - "apps/hepta-browserd/**"
-      - "crates/hepta-agent-port/**"
-      - "crates/hepta-browser-actor/**"
-      - "crates/hepta-session-core/**"
-      - "contracts/d2i-integrated-image.v1.json"
-      - "manifests/debian-*.json"
-      - "manifests/e2fsprogs-host-toolchain.v1.json"
-      - "manifests/servo*.json"
-      - "packaging/debian/**"
-      - "runtime/servo/**"
-      - "tests/d1/**"
-      - "tests/qemu/**"
-      - "tools/build_pinned_e2fsprogs.sh"
-      - "tools/collect_d2i_failure_diagnostics.sh"
-      - "tools/compare_d1_builds.py"
-      - "tools/d1_rootfs_manifest.py"
-      - "tools/finalize_d1_evidence.py"
-      - "tools/finalize_d2i_evidence.py"
-      - "tools/prepare_d1_inputs.py"
-      - "tools/prepare_d2i_boot_runner.py"
-      - "tools/prepare_d2i_runtime.py"
-      - "tools/reclaim_d2i_servo_workspace.sh"
-      - "tools/resolve_debian_snapshot*.py"
-      - "tools/run_d1_final_qualification.sh"
-      - "tools/run_d2i_integrated_image.sh"
-      - "tools/verify_d1_artifact.py"
-      - "tools/verify_d2i_artifact.py"
   push:
-    branches: ["codex/s10-production-debian-qemu-closure-v1"]
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -45,14 +13,52 @@ concurrency:
   group: s10-production-debian-qemu-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
-  S10_BASE_REF: codex/s09-linux-platform-adapters-v3
+  IMAGE_OBJECT: exact-head
+  EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+  EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+  EXPECTED_BASE_REF: ${{ github.event.pull_request.base.ref }}
+  EXPECTED_MERGE: ${{ github.sha }}
+  PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
+  source-contracts:
+    name: image-source-${{ matrix.object }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        object: ${{ fromJSON(github.event_name == 'pull_request' && '["exact-head","prospective-merge"]' || '["exact-head"]') }}
+    env:
+      IMAGE_OBJECT: ${{ matrix.object }}
+    steps:
+      - name: Check out exact source or prospective merge
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ matrix.object == 'prospective-merge' && github.sha || (github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha) }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind live event, head, base and ordered merge parents
+        run: python3 tools/image_workflow_identity.py
+      - name: Execute all source and image-contract regressions before costly builds
+        run: |
+          set -euo pipefail
+          python3 tools/validate_image_source_contract.py
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          /usr/bin/python3 -I tools/validate_module_documentation.py
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
+          python3 -m unittest discover -s tests/d1 -p 'test_*.py' -v
+          python3 tools/image_workflow_identity.py
+          git diff --exit-code
+
   exact-head-integrated-image:
+    needs: source-contracts
     name: exact-head-integrated-image
     runs-on: ubuntu-24.04
     timeout-minutes: 360
@@ -64,22 +70,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Verify exact source identity and live bounded parent
+      - name: Verify exact source identity against the live event
         shell: bash
-        env:
-          EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
-          test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 2
-          git check-ref-format --branch "$S10_BASE_REF"
-          git fetch --force --no-tags --depth=1 origin \
-            "+refs/heads/$S10_BASE_REF:refs/remotes/origin/$S10_BASE_REF"
-          live_base="$(git rev-parse "refs/remotes/origin/$S10_BASE_REF")"
-          test "$(git rev-parse HEAD^1)" = "$live_base"
-          printf 'evidence_class=exact_head_non_authoritative\nsubject_sha=%s\nsubject_tree=%s\nbase_ref=%s\nbase_sha=%s\n' \
-            "$EXPECTED_HEAD" "$(git rev-parse HEAD^{tree})" "$S10_BASE_REF" "$live_base" \
-            >> "$GITHUB_STEP_SUMMARY"
+          python3 tools/image_workflow_identity.py
 
       - name: Derive non-authoritative exact-head image identity
         shell: bash
@@ -166,7 +161,11 @@ jobs:
         run: bash tools/run_d2i_integrated_image.sh boot-image
 
       - name: Build and strictly verify portable D2I evidence
-        run: bash tools/run_d2i_integrated_image.sh finalize-evidence
+        run: |
+          set -euo pipefail
+          python3 tools/image_workflow_identity.py
+          bash tools/run_d2i_integrated_image.sh finalize-evidence
+          python3 tools/image_workflow_identity.py
 
       - name: Collect bounded cross-stage failure diagnostics
         if: failure()

@@ -13,11 +13,17 @@ It does not start Servo or claim a visible desktop frame.
 
 ## Exact source identity
 
-The permanent workflow never copies a webhook base SHA into the receipt. A
-pull-request run must execute an exact two-parent tested merge object and bind
-`HEAD`, `HEAD^{tree}`, `HEAD^1`, and `HEAD^2`, with the second parent equal to
-the live PR head. A push run binds the exact pushed commit and its parent. Any
-unexpected topology fails before construction begins.
+The current permanent S10 workflow checks both the exact candidate head and
+its live prospective merge before image work. Event head/base/merge identities
+are compared with live refs; the prospective object must have exactly the
+ordered base/head parents. A successor may contain several commits and need
+not have the old S09 head as its immediate parent.
+
+The image lane remains exact-head and non-authoritative, using the explicit
+D1/D2I qualification profile. A source merge test is not a test of a different
+image, and no candidate pass is transferred to integrated main. See
+`docs/architecture/IMAGE_WORKFLOW_SOURCE_BINDING.md` for current workflow,
+receipt correspondence and invalidation rules.
 
 ## Qualification-only AgentPort path
 

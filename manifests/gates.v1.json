@@ -401,8 +401,17 @@
         "tests/fixtures/**",
         "tools/prepare_d1_inputs.py",
         "tools/resolve_debian_snapshot*.py",
-        ".github/workflows/d1-final-qualification.yml",
-        "Cargo.lock"
+        ".github/workflows/s10-production-debian-qemu.yml",
+        "Cargo.lock",
+        "Cargo.toml",
+        "rust-toolchain.toml",
+        "apps/**",
+        "crates/**",
+        "contracts/**",
+        "runtime/**",
+        "manifests/**",
+        ".github/workflows/**",
+        "tools/**"
       ],
       "claim_ceiling": [
         "no_servo_frame",
@@ -411,7 +420,7 @@
         "no_release"
       ],
       "required_commands": [
-        "run .github/workflows/d1-final-qualification.yml on the exact source head"
+        "run .github/workflows/s10-production-debian-qemu.yml on the exact source object; independently review the D1/D2I substrate evidence without promoting the S10 product path"
       ],
       "review_class": "security"
     },
@@ -428,14 +437,25 @@
         "packaging/debian/**",
         "experiments/servo-headed-runtime/**",
         "manifests/**",
-        ".github/workflows/**"
+        ".github/workflows/**",
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "apps/**",
+        "crates/**",
+        "contracts/**",
+        "runtime/**",
+        "tests/d1/**",
+        "tests/qemu/**",
+        "tests/fixtures/**",
+        "tools/**"
       ],
       "claim_ceiling": [
         "no_hardware",
         "no_release"
       ],
       "required_commands": [
-        "run the D2I QEMU image workflow on one exact image digest"
+        "run .github/workflows/s10-production-debian-qemu.yml on the exact source object; independently review the D1/D2I substrate evidence without promoting the S10 product path"
       ],
       "review_class": "security"
     },
