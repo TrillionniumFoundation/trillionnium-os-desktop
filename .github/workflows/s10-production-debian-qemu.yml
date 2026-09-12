@@ -187,10 +187,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: s10-production-debian-qemu-diagnostics-${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-          path: |
-            /tmp/trillionnium-d1/evidence
-            /tmp/trillionnium-d2i/evidence
-            /tmp/trillionnium-d2i/qemu
+          path: /tmp/trillionnium-d2i/evidence/failure-diagnostics
           if-no-files-found: warn
           retention-days: 14
           compression-level: 0

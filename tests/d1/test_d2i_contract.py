@@ -100,8 +100,23 @@ class D2IContractTests(unittest.TestCase):
 
         self.assertIn("/tmp/trillionnium-d1", diagnostics)
         self.assertIn("MAX_BYTES = 4 * 1024 * 1024", diagnostics)
+        self.assertIn("MAX_CONSOLE_BYTES = 256 * 1024", diagnostics)
+        self.assertIn("MAX_CONSOLE_BYTES_PER_FILE = 64 * 1024", diagnostics)
+        self.assertIn("MAX_CONSOLE_LINES_PER_FILE = 200", diagnostics)
+        self.assertIn("D2I_DIAGNOSTIC_TAIL", diagnostics)
+        self.assertIn('name == "serial.log"', diagnostics)
+        self.assertIn('name == "runtime-journal.txt"', diagnostics)
         self.assertIn("tail_truncated", diagnostics)
         self.assertIn("diagnostics_only_not_qualification_evidence", diagnostics)
+
+        upload = workflow.split("- name: Upload bounded failure diagnostics", 1)[1]
+        upload = upload.split("- name:", 1)[0] if "- name:" in upload else upload
+        self.assertIn(
+            "path: /tmp/trillionnium-d2i/evidence/failure-diagnostics",
+            upload,
+        )
+        self.assertNotIn("/tmp/trillionnium-d2i/qemu", upload)
+        self.assertNotIn("/tmp/trillionnium-d1/evidence", upload)
 
     def test_runtime_and_host_verifier_reject_callback_as_authority(self) -> None:
         transform = (ROOT / "tools/prepare_d2i_runtime.py").read_text()
