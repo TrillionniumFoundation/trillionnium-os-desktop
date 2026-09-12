@@ -511,7 +511,12 @@ mod tests {
         assert!(encoded.contains("\"request_id\":\"request:one\""));
     }
 
-    fn custody_fixture() -> (ProcfsPeerAttestor, AttestedPeer, DispatchContext, BrowserRequest) {
+    fn custody_fixture() -> (
+        ProcfsPeerAttestor,
+        AttestedPeer,
+        DispatchContext,
+        BrowserRequest,
+    ) {
         let (stream, _other) = UnixStream::pair().expect("socket pair");
         let peer = PeerIdentity::from_stream(&stream).expect("kernel identity");
         let attestor = ProcfsPeerAttestor::default();
