@@ -103,6 +103,7 @@ jobs:
           python3 tools/validate_project_truth.py
           /usr/bin/python3 -I tools/validate_module_documentation.py
           python3 tools/validate_s04_transport_custody.py
+          python3 tools/validate_d1_qualification_graph.py
           python3 -m unittest discover -s tests -p 'test_*.py' -v
           python3 -m unittest discover -s tests/d1 -p 'test_d1_qualification_separation.py' -v
 

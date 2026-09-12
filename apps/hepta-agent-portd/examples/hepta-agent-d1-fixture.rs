@@ -1,7 +1,7 @@
 //! D1-only AgentPort qualification binary.
 //!
-//! This binary is compiled only with the explicit non-default
-//! `d1-qualification` feature and is installed only into the D1 qualification
+//! This explicit example is compiled only with the non-default `fixture`
+//! feature and its dev-dependency graph, and installed only into the D1 qualification
 //! image. Its `server` mode owns no listener: systemd supplies one already-
 //! accepted AF_UNIX stream on standard input. Client modes exercise the same
 //! bounded transport and canonical Browser API while the product
@@ -100,7 +100,8 @@ fn run_server() -> Result<String, FixtureError> {
     let peer = PeerIdentity::from_stream(&stream)?;
     let runtime_policy =
         PeerRuntimePolicy::for_system_service(expected_uid, expected_gid, EXPECTED_PEER_UNIT)?;
-    let attested = ProcfsPeerAttestor::default().attest(peer, &runtime_policy)?;
+    let attestor = ProcfsPeerAttestor::default();
+    let attested = attestor.attest(peer, &runtime_policy)?;
 
     let transport_policy = PeerPolicy {
         expected_pid: peer.pid,
@@ -109,13 +110,13 @@ fn run_server() -> Result<String, FixtureError> {
     };
     let mut handler = D0FixtureHandler::default();
     let evidence = serve_one(stream, transport_policy, SERVER_CEILING, &mut handler)?;
-    attested.ensure_alive()?;
+    attested.refresh_snapshot(&attestor)?;
     if handler.invocation_count != 1 {
         return Err(FixtureError::Invariant(
             "qualification server did not dispatch exactly once",
         ));
     }
-    Ok(server_evidence_json(&evidence))
+    server_evidence_json(&evidence, peer)
 }
 
 fn inherited_stream_from_stdin() -> Result<UnixStream, FixtureError> {
@@ -268,8 +269,17 @@ fn run_self_check() -> Result<String, FixtureError> {
     ))
 }
 
-fn server_evidence_json(evidence: &ServiceEvidence) -> String {
-    format!(
+// Raw process identity belongs only to this qualification result, never to the
+// product ServiceEvidence API. The caller passes the original SO_PEERCRED tuple
+// constrained by PeerPolicy and the same attestation before/after serve_one.
+fn server_evidence_json(
+    evidence: &ServiceEvidence,
+    peer: PeerIdentity,
+) -> Result<String, FixtureError> {
+    let peer_pid = peer.pid.filter(|pid| *pid > 0).ok_or(FixtureError::Invariant(
+        "qualification evidence requires an authenticated positive PID",
+    ))?;
+    Ok(format!(
         concat!(
             "{{\"schema\":\"trillionnium.desktop.d1-agent-server-result.v1\",",
             "\"status\":\"PASS\",\"qualification_only\":true,",
@@ -279,16 +289,16 @@ fn server_evidence_json(evidence: &ServiceEvidence) -> String {
             "\"request_sha256\":\"{}\",\"response_sha256\":\"{}\",",
             "\"response_ok\":{},\"response_committed\":{}}}"
         ),
-        evidence.peer.pid.unwrap_or_default(),
-        evidence.peer.uid,
-        evidence.peer.gid,
+        peer_pid,
+        peer.uid,
+        peer.gid,
         evidence.transport_sequence,
         escape_json(&evidence.request_id),
         evidence.request_sha256,
         evidence.response_sha256,
         evidence.response_ok,
         evidence.response_committed,
-    )
+    ))
 }
 
 fn escape_json(value: &str) -> String {
@@ -422,11 +432,6 @@ mod tests {
     #[test]
     fn server_evidence_marks_the_qualification_boundary() {
         let evidence = ServiceEvidence {
-            peer: PeerIdentity {
-                pid: Some(42),
-                uid: 1000,
-                gid: 1001,
-            },
             transport_sequence: 1,
             request_id: "request:one".to_owned(),
             session_id: None,
@@ -437,7 +442,22 @@ mod tests {
             response_ok: true,
             response_committed: true,
         };
-        let encoded = server_evidence_json(&evidence);
+        let peer = PeerIdentity {
+            pid: Some(42),
+            uid: 1000,
+            gid: 1001,
+        };
+        let encoded = server_evidence_json(&evidence, peer).expect("bound qualification result");
+        assert!(encoded.contains("\"peer_pid\":42"));
+        assert!(encoded.contains("\"peer_uid\":1000"));
+        assert!(encoded.contains("\"peer_gid\":1001"));
+        for pid in [None, Some(0)] {
+            let absent = PeerIdentity { pid, ..peer };
+            assert!(matches!(
+                server_evidence_json(&evidence, absent),
+                Err(FixtureError::Invariant(_))
+            ));
+        }
         assert!(encoded.contains("\"qualification_only\":true"));
         assert!(encoded.contains("\"product_handler_connected\":false"));
         assert!(encoded.contains("\"request_id\":\"request:one\""));

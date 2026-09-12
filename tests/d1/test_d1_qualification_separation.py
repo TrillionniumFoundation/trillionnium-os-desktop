@@ -14,21 +14,30 @@ class D1QualificationSeparationTests(unittest.TestCase):
         manifest = tomllib.loads(manifest_path.read_text(encoding="utf-8"))
         features = manifest["features"]
         self.assertEqual(features["default"], [])
-        self.assertIn("dep:hepta-agent-port", features["d1-qualification"])
-        self.assertIn("dep:hepta-browser-codec", features["d1-qualification"])
+        self.assertEqual(features, {"default": [], "fixture": ["dep:hepta-agent-port"]})
+        self.assertIs(manifest["package"]["autoexamples"], False)
+        self.assertNotIn("hepta-browser-codec", manifest["dependencies"])
+        self.assertNotIn("features", manifest["dependencies"]["hepta-peer-attestation"])
+        self.assertIn("hepta-browser-codec", manifest["dev-dependencies"])
+        self.assertEqual(
+            manifest["dev-dependencies"]["hepta-peer-attestation"]["features"],
+            ["qualification-static-attestation"],
+        )
 
         bins = {entry["name"]: entry for entry in manifest["bin"]}
         self.assertNotIn("required-features", bins["hepta-agent-portd"])
-        self.assertEqual(
-            bins["hepta-agent-d1-fixture"]["required-features"],
-            ["d1-qualification"],
-        )
+        self.assertNotIn("hepta-agent-d1-fixture", bins)
+        self.assertEqual(manifest["example"], [{
+            "name": "hepta-agent-d1-fixture",
+            "path": "examples/hepta-agent-d1-fixture.rs",
+            "required-features": ["fixture"],
+        }])
 
         product = (ROOT / "apps/hepta-agent-portd/src/main.rs").read_text(
             encoding="utf-8"
         )
         qualification = (
-            ROOT / "apps/hepta-agent-portd/src/bin/hepta-agent-d1-fixture.rs"
+            ROOT / "apps/hepta-agent-portd/examples/hepta-agent-d1-fixture.rs"
         ).read_text(encoding="utf-8")
         self.assertNotIn("D0FixtureHandler", product)
         self.assertNotIn("serve_one(", product)
@@ -62,13 +71,15 @@ class D1QualificationSeparationTests(unittest.TestCase):
 
     def test_permanent_workflow_delegates_to_audited_runner_that_proves_both_graphs(self) -> None:
         workflow = (
-            ROOT / ".github/workflows/d1-final-qualification.yml"
+            ROOT / ".github/workflows/d1-qualification-graph.yml"
         ).read_text(encoding="utf-8")
         runner = (ROOT / "tools/run_d1_final_qualification.sh").read_text(
             encoding="utf-8"
         )
 
-        self.assertIn("branches: [main]", workflow)
+        self.assertIn("pull_request:", workflow)
+        self.assertIn("contents: read", workflow)
+        self.assertNotIn("contents: write", workflow)
         self.assertIn(
             "tools/run_d1_final_qualification.sh prove-graphs", workflow
         )
@@ -78,8 +89,14 @@ class D1QualificationSeparationTests(unittest.TestCase):
         self.assertIn(
             "cargo tree --locked -p hepta-agent-portd --no-default-features", runner
         )
-        self.assertIn("--features d1-qualification", runner)
-        self.assertIn("--bin hepta-agent-d1-fixture", runner)
+        self.assertIn("--features fixture", runner)
+        self.assertIn("--example hepta-agent-d1-fixture", runner)
+        self.assertNotIn("--bin hepta-agent-d1-fixture", runner)
+        self.assertIn("-e normal,dev,features", runner)
+        self.assertIn("--message-format=json", runner)
+        self.assertIn("--build-messages", runner)
+        self.assertIn('"$product_target/release/hepta-agent-portd"', runner)
+        self.assertIn('"$qualification_target/release/examples/hepta-agent-d1-fixture"', runner)
         self.assertIn("product-daemon.strings", runner)
         self.assertIn("qualification-fixture.strings", runner)
         self.assertIn("product_handler_connected", runner)

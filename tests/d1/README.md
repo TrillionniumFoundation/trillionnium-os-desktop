@@ -23,8 +23,8 @@ unexpected topology fails before construction begins.
 
 The production `hepta-agent-portd` remains fixture-free and fails closed before
 request decoding until D3 supplies a real BrowserActor. D1 builds
-`hepta-agent-d1-fixture` only with the explicit, non-default
-`d1-qualification` feature. The qualification binary contains both client
+`hepta-agent-d1-fixture` only as an explicit Cargo example with the non-default
+`fixture` feature and its dev-dependency graph. The qualification binary contains both client
 modes and an inherited-stream server mode; it never binds or listens.
 
 Only the D1 rootfs overlay supplies a systemd drop-in that changes the
