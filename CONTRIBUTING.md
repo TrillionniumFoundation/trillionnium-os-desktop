@@ -1,19 +1,35 @@
 # Contributing
 
 1. Read `manifests/project-state.v1.json`, `manifests/gates.v1.json`, the active
-   plan, and applicable ADR/security documents before changing code.
+   plan, and applicable ADR/security documents before changing code. Use
+   `docs/plan/D6_ANNEX_PRECEDENCE.md` for inherited d5 design material.
 2. Work in one isolated work-package branch and pull request. Revalidate the
    exact base SHA before every promotion step.
 3. Keep changes inside the desktop product graph. Do not add Android/mobile,
    ADB, root-linux, or direct-shell dependencies or authority.
 4. Update implementation, schemas/contracts, golden vectors, Rust types, tests,
-   machine truth, human documentation, and claim ceilings together.
+   machine truth, human documentation, and claim ceilings together. After
+   changing the module registry, render the index to a temporary file, review
+   it and replace `docs/modules/README.md`:
+
+   ```bash
+   index_tmp="$(mktemp)"
+   python3 tools/validate_documentation_integrity.py --render-index > "$index_tmp"
+   diff -u docs/modules/README.md "$index_tmp"
+   # Review the diff, then copy the temporary file into docs/modules/README.md.
+   # Remove the temporary file when finished.
+   ```
+
+   Do not overwrite the registry with a hand-maintained summary. The index is
+   a projection, not a separate authority source.
 5. Record PR head SHA, base SHA, tested merge SHA, workflow/input identities,
    and bounded output digests. A candidate pass is not an integrated-main pass.
 6. Run:
 
    ```bash
    python3 tools/validate_module_documentation.py
+   python3 tools/validate_documentation_integrity.py
+   python3 -m unittest discover -s tests -p 'test_module_documentation*.py' -v
    python3 tools/validate_s08_servo_runtime.py
    python3 tools/validate_repository.py
    python3 tools/validate_project_truth.py
@@ -31,4 +47,5 @@
 9. Authors must not self-certify repository-setting or release gates and must
    not merge their own PR.
 10. Use focused commits. Generated evidence must be reproducible, bounded,
-    privacy-reviewed, and linked to exact inputs.
+    privacy-reviewed, and linked to exact inputs. Documentation coverage does
+    not establish a runtime, installed product or external qualification.

@@ -75,11 +75,13 @@ Primary source or test references:
 
 - `crates/hepta-session-core/src/tests.rs`
 - `tests/test_s05_receipt_recovery.py`
+- `tests/test_module_documentation_integrity.py` (documentation and temporary-filesystem permissions only)
 
 Applicable workflows:
 
 - `.github/workflows/receipt-journal.yml`
 - `.github/workflows/ci.yml`
+- `.github/workflows/documentation-integrity.yml` (source-documentation evidence only)
 
 Contract references:
 
@@ -91,12 +93,32 @@ A passing unit or hosted-CI test proves only the evidence tier named by its gate
 
 ## Operations and troubleshooting
 
-- Use a private 0600 journal directory and one writer.
+Directory mode: `0700`; journal file mode: `0600`.
+
+- Use a private, traversable journal directory and one writer. Do not remove owner execute permission from the directory.
 - On crash, reopen with explicit recovery policy, inspect the complete chain and handle unresolved receipts before rotation.
 - Treat disk full, sync failure or complete-record corruption as degraded mode, not success.
 - Run SIGKILL/cutpoint, torn-tail, tamper, rotation, migration and concurrent-reader corpora after storage changes.
 
-Operational diagnosis must retain bounded/redacted evidence and must not weaken admission, limits, ownership, sync, isolation or default-disabled controls simply to make a test pass.
+The following executable permissions example creates only a fresh development directory and an empty example file. It does not initialize a valid managed receipt store, adopt existing history or constitute a recovery procedure. Run it in an empty temporary working directory under the intended service UID; production provisioning belongs to the reviewed package/unit path.
+
+<!-- executable-example: receipt-store-permissions -->
+```python
+from pathlib import Path
+import os
+import stat
+
+# Run only in an empty development directory, never over a live journal.
+root = Path("journal-state")
+root.mkdir(mode=0o700, exist_ok=False)
+fd = os.open(root / "example.journal", os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+os.close(fd)
+assert stat.S_IMODE(root.stat().st_mode) == 0o700
+assert stat.S_IMODE((root / "example.journal").stat().st_mode) == 0o600
+```
+<!-- /executable-example: receipt-store-permissions -->
+
+Operational diagnosis must retain bounded/redacted evidence and must not weaken admission, limits, ownership, sync, isolation or default-disabled controls simply to make a test pass. Preserve damaged stores for explicit review; never delete evidence and restart with a fresh namespace to clear a failure.
 
 ## Compatibility and change protocol
 

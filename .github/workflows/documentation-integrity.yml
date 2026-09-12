@@ -1,0 +1,75 @@
+name: documentation-integrity
+
+on:
+  push:
+    branches: [main, "codex/**"]
+  pull_request:
+    branches: [main, "codex/**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-integrity-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify identity and unchanged source documentation
+        env:
+          EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse HEAD^{tree}
+          /usr/bin/python3 -I tools/validate_module_documentation.py
+          /usr/bin/python3 -I tools/validate_documentation_integrity.py
+          python3 -m unittest discover -s tests -p 'test_module_documentation*.py' -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --exit-code
+
+  prospective-merge:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out prospective merge object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify parent identities and unchanged source documentation
+        env:
+          EXPECTED_MERGE: ${{ github.sha }}
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          SAME_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MERGE"
+          test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE"
+          test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD"
+          test "$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | cut -f1)" = "$EXPECTED_BASE"
+          if [ "$SAME_REPOSITORY" = true ]; then
+            test "$(git ls-remote --exit-code origin "refs/heads/$HEAD_REF" | cut -f1)" = "$EXPECTED_HEAD"
+          fi
+          git rev-parse HEAD^{tree}
+          /usr/bin/python3 -I tools/validate_module_documentation.py
+          /usr/bin/python3 -I tools/validate_documentation_integrity.py
+          python3 -m unittest discover -s tests -p 'test_module_documentation*.py' -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --exit-code
