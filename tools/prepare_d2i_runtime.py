@@ -7,15 +7,21 @@ from pathlib import Path
 
 
 def sub(text: str, pattern: str, replacement: str, label: str, *, regex: bool = False) -> str:
+    # Counting only replacements with count=1 cannot distinguish a unique
+    # source anchor from two or more anchors. Check the entire source first;
+    # ambiguity must stop preparation before any generated output is written.
+    if not pattern:
+        raise SystemExit(f"{label}: empty replacement anchor is forbidden")
     if regex:
-        text, count = re.subn(pattern, replacement, text, count=1, flags=re.S)
+        compiled = re.compile(pattern, flags=re.S)
+        count = sum(1 for _ in compiled.finditer(text))
     else:
         count = text.count(pattern)
-        if count == 1:
-            text = text.replace(pattern, replacement, 1)
     if count != 1:
         raise SystemExit(f"{label}: expected exactly one match, found {count}")
-    return text
+    if regex:
+        return compiled.sub(replacement, text, count=1)
+    return text.replace(pattern, replacement, 1)
 
 
 def main() -> int:
