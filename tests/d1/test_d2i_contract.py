@@ -43,6 +43,19 @@ class D2IContractTests(unittest.TestCase):
         self.assertIn("WAYLAND_DISPLAY=wayland-0", service)
         self.assertIn("HEPTA_D0A02_OUTPUT=/var/lib/trillionnium-d2i", service)
 
+    def test_guest_acceptance_failure_reason_is_serial_visible(self) -> None:
+        service = (
+            ROOT
+            / "packaging/debian/image/d2i-overlay/etc/systemd/system/trillionnium-d2i-acceptance.service"
+        ).read_text()
+        acceptance = (
+            ROOT
+            / "packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance"
+        ).read_text()
+        self.assertIn("StandardOutput=journal+console", service)
+        self.assertIn("StandardError=journal+console", service)
+        self.assertIn("D2I ACCEPTANCE FAILED:", acceptance)
+
     def test_permanent_gate_is_read_only_and_unfiltered(self) -> None:
         workflow = (ROOT / ".github/workflows/s10-production-debian-qemu.yml").read_text()
         runner = (ROOT / "tools/run_d2i_integrated_image.sh").read_text()
