@@ -183,7 +183,8 @@ class D1QualificationGraphTests(unittest.TestCase):
         self.assertNotIn("pub peer", fields)
         fixture = (ROOT / "apps/hepta-agent-portd/examples/hepta-agent-d1-fixture.rs").read_text()
         self.assertNotIn("evidence.peer", fixture)
-        self.assertIn("attested.refresh_snapshot(&attestor)?", fixture)
+        self.assertIn(".refresh_snapshot(self.attestor)", fixture)
+        self.assertIn("impl BrowserRequestHandler for AttestedFixtureHandler", fixture)
         self.assertIn("server_evidence_json(&evidence, peer)", fixture)
         self.assertIn("qualification evidence requires an authenticated positive PID", fixture)
 

@@ -133,6 +133,14 @@ timeout --signal=TERM --kill-after=20s "${timeout_seconds}s" \
   "${qemu_command[@]}" > "$qemu_log" 2>&1
 qemu_status=$?
 set -e
+# Inspect only bounded fixed-name diagnostics from the terminated guest before
+# returning the original failure. These files are never qualification receipts.
+if [[ "$qemu_status" -ne 0 ]] \
+  || grep -q 'TRILLIONNIUM_D1_ACCEPTANCE_FAIL:' "$serial_log" \
+  || ! grep -q 'TRILLIONNIUM_D1_ACCEPTANCE_PASS' "$serial_log"; then
+  bash "$(dirname "${BASH_SOURCE[0]}")/../../tools/collect_d1_guest_failure.sh" \
+    "$run_image" "$output_dir" || true
+fi
 if [[ "$qemu_status" -ne 0 ]]; then
   echo "QEMU D1 acceptance exited with status $qemu_status" >&2
   tail -n 240 "$serial_log" >&2 || true

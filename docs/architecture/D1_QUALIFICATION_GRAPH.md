@@ -33,7 +33,7 @@ validator remains a separate required gate; its acceptance set is not widened.
 The product `ServiceEvidence` type does not expose raw process credentials.
 The D1 server obtains its original peer tuple from `SO_PEERCRED`, constrains
 transport admission to that tuple and the reviewed user/group policy, holds
-attestation, and refreshes it after the single request. Only the private D1
+attestation, and refreshes it immediately before fixture dispatch. Only the private D1
 result formatter receives that original peer tuple separately. A missing or
 zero PID is rejected; it cannot become a made-up zero identity.
 
@@ -81,3 +81,40 @@ Failure leaves the candidate unqualified. Do not copy an all-feature workspace
 binary into a production image, weaken S04, remove the example from the test
 corpus, or relabel a fixture result. Head/base/input changes require fresh
 qualification and independent review before any protected promotion.
+
+## Cross-UID guest admission and failure diagnosis
+
+The D1 client and connection service deliberately have different service UIDs.
+Their status, start-time and cgroup snapshots do not imply permission to read
+`/proc/<peer>/exe`. The qualification server therefore uses the existing
+`qualification-static-attestation` mechanism and the fixed root-owned installed
+path `/usr/libexec/hepta-agent-d1-fixture`. The binding is never selected by
+request, CLI, environment or an arbitrary digest. It identifies the reviewed
+qualification service executable source; it does not claim that live procfs
+executable identity was observed. No production feature, product daemon,
+service user, ptrace capability or installed product map is changed.
+
+The private `AttestedFixtureHandler` compares the original socket peer, refreshes
+the original attestor/path-bound custody, and checks the deadline immediately
+before forwarding to `D0FixtureHandler`. A mismatch, expired deadline, changed
+attestor, exited process or refresh failure invokes no fixture handler. Existing
+potential-effect refusal remains intact. No new browser or external-effect
+authority is introduced. A client may exit normally after receiving its result;
+a late post-response identity check cannot retroactively define dispatch safety.
+
+The guest failure path captures only the three qualification AgentPort unit
+journals, bounded to 160 lines, 64 KiB and five seconds. After QEMU terminates,
+`tools/collect_d1_guest_failure.sh` reads only the fixed acceptance and AgentPort
+journal paths with bounded read/time and diagnostic-prefixed output names. Empty,
+failed, timed-out or oversized reads are omitted, never presented as complete
+receipts. Missing diagnostics do not change the original failing exit status.
+This export is for a credential-free qualification image, not a general product
+journal export or a substitute for privacy-reviewed operational tools.
+
+Run `python3 -m unittest tests.test_d1_guest_custody -v`, the unchanged graph/S04
+gates and all existing D1 tests. Locked all-target/all-feature Rust checks must
+execute the example's new live-custody/deadline/process-exit tests. Finally rerun
+the exact D1/QEMU guest: normal authorized health, unauthorized refusal, killed
+connection and recovery must all pass. A local Linux cross-UID diagnostic or a
+mocked debugfs test cannot establish that installed guest result. The full S10
+product BrowserActor/Servo/receipt path remains a separate unresolved gate.

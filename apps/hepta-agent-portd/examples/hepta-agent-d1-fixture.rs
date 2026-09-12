@@ -9,11 +9,15 @@
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
-use hepta_agent_port::{D0FixtureHandler, ServiceEvidence, serve_one};
+use hepta_agent_port::{
+    AgentPortError, BrowserRequestHandler, D0FixtureHandler, DispatchContext, HandlerOutcome,
+    ServiceEvidence, serve_one,
+};
 use hepta_agent_transport::{ClientConnection, PeerIdentity, PeerPolicy};
 use hepta_browser_codec::{BrowserOperation, BrowserRequest, decode_response, encode_request};
 use hepta_peer_attestation::{
-    AttestationError, PeerRuntimePolicy, ProcfsPeerAttestor, resolve_group_id, resolve_user_id,
+    AttestationError, AttestedPeer, PeerRuntimePolicy, ProcfsPeerAttestor, hash_trusted_executable,
+    resolve_group_id, resolve_user_id,
 };
 use std::env;
 use std::fmt;
@@ -28,6 +32,8 @@ const AGENT_SOCKET_PATH: &str = "/run/hepta/browserd/agent.sock";
 const EXPECTED_PEER_USER: &str = "hepta-agent";
 const EXPECTED_PEER_GROUP: &str = "hepta-agent";
 const EXPECTED_PEER_UNIT: &str = "hepta-agent.service";
+// The reviewed root-owned D1 install map is the trust source, never CLI/environment input.
+const QUALIFICATION_PEER_EXECUTABLE: &str = "/usr/libexec/hepta-agent-d1-fixture";
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 const SERVER_CEILING: Duration = Duration::from_secs(20);
 
@@ -101,22 +107,61 @@ fn run_server() -> Result<String, FixtureError> {
     let runtime_policy =
         PeerRuntimePolicy::for_system_service(expected_uid, expected_gid, EXPECTED_PEER_UNIT)?;
     let attestor = ProcfsPeerAttestor::default();
-    let attested = attestor.attest(peer, &runtime_policy)?;
+    // The distinct service UIDs cannot read one another's /proc/<pid>/exe.
+    // Use the existing qualification-only trusted-path binding, without adding
+    // ptrace capability, using root, or changing the production feature graph.
+    let executable = hash_trusted_executable(QUALIFICATION_PEER_EXECUTABLE)?;
+    let attested =
+        attestor.attest_with_static_executable_digest(peer, &runtime_policy, &executable)?;
 
     let transport_policy = PeerPolicy {
         expected_pid: peer.pid,
         expected_uid,
         expected_gid: Some(expected_gid),
     };
-    let mut handler = D0FixtureHandler::default();
+    let mut handler = AttestedFixtureHandler {
+        attested: &attested,
+        attestor: &attestor,
+        peer,
+        fixture: D0FixtureHandler::default(),
+    };
     let evidence = serve_one(stream, transport_policy, SERVER_CEILING, &mut handler)?;
-    attested.refresh_snapshot(&attestor)?;
-    if handler.invocation_count != 1 {
+    // A peer may exit normally after receiving its response. Authority is
+    // checked immediately before handler dispatch, never retroactively here.
+    if handler.fixture.invocation_count != 1 {
         return Err(FixtureError::Invariant(
             "qualification server did not dispatch exactly once",
         ));
     }
     server_evidence_json(&evidence, peer)
+}
+
+/// Private qualification adapter: no product handler or listener authority.
+struct AttestedFixtureHandler<'a> {
+    attested: &'a AttestedPeer,
+    attestor: &'a ProcfsPeerAttestor,
+    peer: PeerIdentity,
+    fixture: D0FixtureHandler,
+}
+
+impl BrowserRequestHandler for AttestedFixtureHandler<'_> {
+    fn handle(
+        &mut self,
+        context: &DispatchContext,
+        request: &BrowserRequest,
+    ) -> Result<HandlerOutcome, AgentPortError> {
+        context.remaining()?;
+        if context.peer != self.peer {
+            return Err(AgentPortError::Handler(
+                "qualification peer custody mismatch".to_owned(),
+            ));
+        }
+        self.attested
+            .refresh_snapshot(self.attestor)
+            .map_err(|_| AgentPortError::Handler("qualification peer custody lost".to_owned()))?;
+        context.remaining()?;
+        self.fixture.handle(context, request)
+    }
 }
 
 fn inherited_stream_from_stdin() -> Result<UnixStream, FixtureError> {
@@ -271,7 +316,7 @@ fn run_self_check() -> Result<String, FixtureError> {
 
 // Raw process identity belongs only to this qualification result, never to the
 // product ServiceEvidence API. The caller passes the original SO_PEERCRED tuple
-// constrained by PeerPolicy and the same attestation before/after serve_one.
+// constrained by PeerPolicy and refreshed custody immediately before dispatch.
 fn server_evidence_json(
     evidence: &ServiceEvidence,
     peer: PeerIdentity,
@@ -464,5 +509,169 @@ mod tests {
         assert!(encoded.contains("\"qualification_only\":true"));
         assert!(encoded.contains("\"product_handler_connected\":false"));
         assert!(encoded.contains("\"request_id\":\"request:one\""));
+    }
+
+    fn custody_fixture() -> (
+        ProcfsPeerAttestor,
+        AttestedPeer,
+        DispatchContext,
+        BrowserRequest,
+    ) {
+        let (stream, _other) = UnixStream::pair().expect("socket pair");
+        let peer = PeerIdentity::from_stream(&stream).expect("kernel identity");
+        let attestor = ProcfsPeerAttestor::default();
+        let snapshot = attestor
+            .read_snapshot(peer.pid.expect("current PID"))
+            .expect("current process snapshot");
+        let executable = hash_trusted_executable("/usr/bin/true").expect("trusted test binding");
+        let attested = attestor
+            .attest_with_static_executable_digest(
+                peer,
+                &PeerRuntimePolicy::exact(&snapshot),
+                &executable,
+            )
+            .expect("qualification custody");
+        let now = std::time::Instant::now();
+        let context = DispatchContext {
+            peer,
+            transport_sequence: 1,
+            canonical_request_sha256: "a".repeat(64),
+            effect_class: hepta_browser_codec::EffectClass::Observation,
+            accepted_at: now,
+            effective_deadline: now + Duration::from_secs(5),
+        };
+        let request = BrowserRequest {
+            request_id: "qualification:custody:1".to_owned(),
+            session_id: None,
+            session_generation: None,
+            deadline_unix_ms: None,
+            operation: BrowserOperation::Health,
+        };
+        (attestor, attested, context, request)
+    }
+
+    #[test]
+    fn live_qualification_custody_allows_exactly_one_health_handler_call() {
+        let (attestor, attested, context, request) = custody_fixture();
+        let mut handler = AttestedFixtureHandler {
+            attested: &attested,
+            attestor: &attestor,
+            peer: context.peer,
+            fixture: D0FixtureHandler::default(),
+        };
+        assert!(matches!(
+            handler.handle(&context, &request),
+            Ok(HandlerOutcome::Success(_))
+        ));
+        assert_eq!(handler.fixture.invocation_count, 1);
+    }
+
+    #[test]
+    fn changed_socket_peer_is_refused_before_fixture_invocation() {
+        let (attestor, attested, mut context, request) = custody_fixture();
+        let peer = context.peer;
+        context.peer.pid = None;
+        let mut handler = AttestedFixtureHandler {
+            attested: &attested,
+            attestor: &attestor,
+            peer,
+            fixture: D0FixtureHandler::default(),
+        };
+        assert!(handler.handle(&context, &request).is_err());
+        assert_eq!(handler.fixture.invocation_count, 0);
+    }
+
+    #[test]
+    fn expired_custody_deadline_never_invokes_fixture() {
+        let (attestor, attested, mut context, request) = custody_fixture();
+        context.effective_deadline = context.accepted_at;
+        let mut handler = AttestedFixtureHandler {
+            attested: &attested,
+            attestor: &attestor,
+            peer: context.peer,
+            fixture: D0FixtureHandler::default(),
+        };
+        assert!(matches!(
+            handler.handle(&context, &request),
+            Err(AgentPortError::DeadlineExceeded)
+        ));
+        assert_eq!(handler.fixture.invocation_count, 0);
+    }
+
+    #[test]
+    fn replaced_attestor_is_refused_before_fixture_invocation() {
+        let (_attestor, attested, context, request) = custody_fixture();
+        let different = ProcfsPeerAttestor::new("/not-the-original-procfs");
+        let mut handler = AttestedFixtureHandler {
+            attested: &attested,
+            attestor: &different,
+            peer: context.peer,
+            fixture: D0FixtureHandler::default(),
+        };
+        assert!(handler.handle(&context, &request).is_err());
+        assert_eq!(handler.fixture.invocation_count, 0);
+    }
+
+    #[test]
+    fn exited_peer_is_refused_before_fixture_invocation() {
+        let (attestor, _self_custody, mut context, request) = custody_fixture();
+        let mut child = std::process::Command::new("/usr/bin/sleep")
+            .arg("30")
+            .spawn()
+            .expect("bounded peer child");
+        context.peer.pid = Some(child.id());
+        let snapshot = attestor.read_snapshot(child.id());
+        let executable = hash_trusted_executable("/usr/bin/sleep");
+        let custody = snapshot.and_then(|snapshot| {
+            executable.and_then(|executable| {
+                attestor.attest_with_static_executable_digest(
+                    context.peer,
+                    &PeerRuntimePolicy::exact(&snapshot),
+                    &executable,
+                )
+            })
+        });
+        child.kill().expect("terminate test peer");
+        child.wait().expect("reap test peer");
+        let custody = custody.expect("live child was attested");
+        let mut handler = AttestedFixtureHandler {
+            attested: &custody,
+            attestor: &attestor,
+            peer: context.peer,
+            fixture: D0FixtureHandler::default(),
+        };
+        assert!(handler.handle(&context, &request).is_err());
+        assert_eq!(handler.fixture.invocation_count, 0);
+    }
+
+    #[test]
+    fn qualification_custody_does_not_authorize_external_navigation() {
+        let (attestor, attested, mut context, mut request) = custody_fixture();
+        request.operation = BrowserOperation::PageNavigate {
+            target: hepta_browser_codec::NavigationTarget::ExternalHttps {
+                url: "https://example.com/".to_owned(),
+            },
+            expected_document_generation: 1,
+        };
+        context.effect_class = request.effect_class();
+        let mut handler = AttestedFixtureHandler {
+            attested: &attested,
+            attestor: &attestor,
+            peer: context.peer,
+            fixture: D0FixtureHandler::default(),
+        };
+        assert!(matches!(
+            handler.handle(&context, &request),
+            Ok(HandlerOutcome::Failure(_))
+        ));
+        assert_eq!(handler.fixture.invocation_count, 1);
+    }
+
+    #[test]
+    fn qualification_executable_is_not_selected_by_request_or_environment() {
+        assert_eq!(
+            QUALIFICATION_PEER_EXECUTABLE,
+            "/usr/libexec/hepta-agent-d1-fixture"
+        );
     }
 }
