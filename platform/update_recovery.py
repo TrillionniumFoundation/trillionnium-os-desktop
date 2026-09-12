@@ -16,7 +16,7 @@ import re
 import stat
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any, Callable
 
 REPOSITORY = "TrillionniumFoundation/trillionnium-os-desktop"
@@ -461,39 +461,105 @@ class UpdateCoordinator:
 
 
 class AtomicStateStore:
-    """Descriptor-pinned private state publication with an exclusive lease."""
+    """Private, descriptor-confined state with one inode-bound coordinator.
+
+    This is a cooperating-writer mechanism, not a sandbox against root or
+    arbitrary same-UID code. Existing authority paths are never repaired.
+    """
+
+    LOCK_NAME = ".coordinator.lock"
+    MAX_PATH_BYTES = 4096
+    MAX_PATH_COMPONENTS = 64
+    MAX_STATE_DEPTH = 32
+    MAX_STATE_ITEMS = 4096
+    MAX_STATE_STRING_BYTES = 4096
+    MAX_STATE_INTEGER = (1 << 63) - 1
+    _BASENAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z")
 
     def __init__(self, root: Path):
-        self.root = Path(root)
-        try:
-            self._root_fd = os.open(
-                self.root,
-                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
-            )
-        except OSError as error:
-            raise StateRefused("state root cannot be opened without following links") from error
-        metadata = os.fstat(self._root_fd)
-        mode = stat.S_IMODE(metadata.st_mode)
-        if not stat.S_ISDIR(metadata.st_mode) or mode & 0o077:
-            os.close(self._root_fd)
-            raise StateRefused("state root must be a private 0700-style directory")
-        if metadata.st_uid not in {0, os.geteuid()}:
-            os.close(self._root_fd)
-            raise StateRefused("state root owner is not trusted")
-        self._identity = (metadata.st_dev, metadata.st_ino)
+        self._root_fd: int | None = None
         self._lease_fd: int | None = None
+        self._lease_identity: tuple[int, int] | None = None
+        self._pending: tuple[str, str] | None = None
+        self._invalid = False
+        try:
+            raw = os.fspath(root)
+            if not isinstance(raw, str):
+                raise ValueError("root must be a text path")
+            parts = raw.split("/")
+            if (
+                not raw.startswith("/")
+                or len(raw.encode("utf-8")) > self.MAX_PATH_BYTES
+                or len(parts) - 1 > self.MAX_PATH_COMPONENTS
+                or any(part in {"", ".", ".."} for part in parts[1:])
+                or any(ord(c) < 32 or ord(c) == 127 or c == "\\" for c in raw)
+            ):
+                raise ValueError("noncanonical root")
+            self.root = Path(raw)
+            self._components = tuple(parts[1:])
+            self._root_fd = self._open_root()
+            metadata = os.fstat(self._root_fd)
+            self._identity = (metadata.st_dev, metadata.st_ino)
+        except (OSError, TypeError, ValueError, UnicodeError) as error:
+            self.close()
+            raise StateRefused("state root cannot be acquired safely") from error
+
+    @staticmethod
+    def _trusted_directory(metadata: os.stat_result, *, private: bool) -> bool:
+        mode = stat.S_IMODE(metadata.st_mode)
+        if not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid not in {0, os.geteuid()}:
+            return False
+        if private:
+            return mode == 0o700
+        # A root-owned sticky temporary directory is an explicit host-test
+        # exception. Attacker-owned or ordinary writable ancestors are refused.
+        return not mode & 0o022 or (
+            metadata.st_uid == 0 and bool(mode & stat.S_ISVTX)
+        )
+
+    def _open_root(self) -> int:
+        flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+        directory = os.open("/", flags)
+        try:
+            if not self._trusted_directory(os.fstat(directory), private=False):
+                raise StateRefused("untrusted state ancestor")
+            for index, component in enumerate(self._components):
+                child = os.open(component, flags, dir_fd=directory)
+                os.close(directory)
+                directory = child
+                private = index == len(self._components) - 1
+                if not self._trusted_directory(os.fstat(directory), private=private):
+                    raise StateRefused("unsafe state directory owner or mode")
+            result, directory = directory, -1
+            return result
+        finally:
+            if directory >= 0:
+                os.close(directory)
+
+    @staticmethod
+    def _private_regular(metadata: os.stat_result) -> bool:
+        return (
+            stat.S_ISREG(metadata.st_mode)
+            and metadata.st_nlink == 1
+            and stat.S_IMODE(metadata.st_mode) == 0o600
+            and metadata.st_uid in {0, os.geteuid()}
+        )
 
     def close(self) -> None:
         if self._lease_fd is not None:
-            fcntl.flock(self._lease_fd, fcntl.LOCK_UN)
-            os.close(self._lease_fd)
-            self._lease_fd = None
-        if getattr(self, "_root_fd", None) is not None:
-            os.close(self._root_fd)
-            self._root_fd = None
+            fd, self._lease_fd = self._lease_fd, None
+            self._lease_identity = None
+            os.close(fd)  # Closing the retained FD releases the advisory lease.
+        if self._root_fd is not None:
+            fd, self._root_fd = self._root_fd, None
+            os.close(fd)
 
     def __enter__(self) -> "AtomicStateStore":
-        self.acquire()
+        try:
+            self.acquire()
+        except BaseException:
+            self.close()
+            raise
         return self
 
     def __exit__(self, *_: object) -> None:
@@ -501,39 +567,148 @@ class AtomicStateStore:
 
     def _check_root(self) -> int:
         fd = self._root_fd
-        if fd is None:
-            raise StateRefused("state store is closed")
-        current = os.fstat(fd)
-        if (current.st_dev, current.st_ino) != self._identity:
-            raise StateRefused("retained state root identity changed")
-        return fd
+        if fd is None or self._invalid:
+            raise StateRefused("state store is closed or its custody was lost")
+        reopened: int | None = None
+        try:
+            current = os.fstat(fd)
+            if (
+                (current.st_dev, current.st_ino) != self._identity
+                or not self._trusted_directory(current, private=True)
+            ):
+                raise StateRefused("retained state root identity or mode changed")
+            reopened = self._open_root()
+            observed = os.fstat(reopened)
+            if (observed.st_dev, observed.st_ino) != self._identity:
+                raise StateRefused("state pathname no longer identifies the retained root")
+            return fd
+        except (OSError, StateRefused) as error:
+            self._invalid = True
+            raise StateRefused("state directory custody was lost") from error
+        finally:
+            if reopened is not None:
+                os.close(reopened)
+
+    def _check_lease(self) -> int:
+        root_fd = self._check_root()
+        if self._lease_fd is None:
+            raise CoordinatorBusy("exclusive coordinator lease is required")
+        try:
+            retained = os.fstat(self._lease_fd)
+            named = os.stat(self.LOCK_NAME, dir_fd=root_fd, follow_symlinks=False)
+            for metadata in (retained, named):
+                if (
+                    not self._private_regular(metadata)
+                    or metadata.st_size != 0
+                    or (metadata.st_dev, metadata.st_ino) != self._lease_identity
+                ):
+                    raise StateRefused("coordinator lease identity or metadata changed")
+        except (OSError, StateRefused) as error:
+            self._invalid = True
+            raise StateRefused("coordinator lease custody was lost") from error
+        return root_fd
 
     def acquire(self) -> None:
         root_fd = self._check_root()
         if self._lease_fd is not None:
             raise CoordinatorBusy("coordinator lease is already held")
-        fd = os.open(
-            ".coordinator.lock",
-            os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC,
-            0o600,
-            dir_fd=root_fd,
-        )
+        fd: int | None = None
+        created = False
         try:
-            os.fchmod(fd, 0o600)
+            flags = os.O_RDWR | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC
+            try:
+                fd = os.open(self.LOCK_NAME, flags | os.O_CREAT | os.O_EXCL,
+                             0o600, dir_fd=root_fd)
+                created = True
+            except FileExistsError:
+                fd = os.open(self.LOCK_NAME, flags, dir_fd=root_fd)
+            # Only a just-created inode may have its umask-restricted mode set.
+            # Never chmod a pre-existing lock before admitting its metadata.
+            if created:
+                os.fchmod(fd, 0o600)
+            metadata = os.fstat(fd)
+            if not self._private_regular(metadata) or metadata.st_size != 0:
+                raise StateRefused("coordinator lock is not a private empty single-link file")
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except OSError as error:
-            os.close(fd)
-            if error.errno in {errno.EACCES, errno.EAGAIN}:
-                raise CoordinatorBusy("another update coordinator holds the lease") from error
-            raise
-        self._lease_fd = fd
+            self._lease_fd, fd = fd, None
+            self._lease_identity = (metadata.st_dev, metadata.st_ino)
+            self._check_lease()
+        except (OSError, StateRefused) as error:
+            if self._lease_fd is not None:
+                os.close(self._lease_fd)
+                self._lease_fd = None
+                self._lease_identity = None
+            if isinstance(error, OSError) and error.errno in {errno.EACCES, errno.EAGAIN}:
+                raise CoordinatorBusy("coordinator lease is unavailable") from error
+            raise StateRefused("coordinator lock cannot be acquired safely") from error
+        finally:
+            if fd is not None:
+                os.close(fd)
 
-    @staticmethod
-    def _name(name: str) -> str:
-        path = PurePosixPath(name)
-        if path.is_absolute() or len(path.parts) != 1 or path.parts[0] in {"", ".", ".."}:
-            raise StateRefused("state name must be one safe basename")
-        return path.parts[0]
+    @classmethod
+    def _name(cls, name: str) -> str:
+        # No normalization: hidden lock/staging names, traversal, NULs, Unicode,
+        # trailing separators and dot aliases never become a state basename.
+        if not isinstance(name, str) or cls._BASENAME.fullmatch(name) is None:
+            raise StateRefused("state name must be one canonical non-reserved basename")
+        return name
+
+    @classmethod
+    def _validate_state(cls, value: object) -> None:
+        if type(value) is not dict:
+            raise StateRefused("state payload must be an object")
+        pending = [(value, 1)]
+        items = 0
+        text_bytes = 0
+        while pending:
+            current, depth = pending.pop()
+            items += 1
+            if depth > cls.MAX_STATE_DEPTH or items > cls.MAX_STATE_ITEMS:
+                raise StateRefused("state depth or aggregate item limit exceeded")
+            kind = type(current)
+            if kind is dict:
+                if items + len(pending) + 2 * len(current) > cls.MAX_STATE_ITEMS:
+                    raise StateRefused("state aggregate item limit exceeded")
+                if any(type(key) is not str for key in current):
+                    raise StateRefused("state keys must be strings")
+                pending.extend((key, depth + 1) for key in current)
+                pending.extend((item, depth + 1) for item in current.values())
+            elif kind is list:
+                if items + len(pending) + len(current) > cls.MAX_STATE_ITEMS:
+                    raise StateRefused("state aggregate item limit exceeded")
+                pending.extend((item, depth + 1) for item in current)
+            elif kind is str:
+                try:
+                    length = len(current.encode("utf-8"))
+                except UnicodeError as error:
+                    raise StateRefused("state text is not valid UTF-8") from error
+                text_bytes += length
+                if length > cls.MAX_STATE_STRING_BYTES or text_bytes > MAX_STATE_BYTES:
+                    raise StateRefused("state text exceeds its byte limit")
+            elif kind is int:
+                if not -cls.MAX_STATE_INTEGER <= current <= cls.MAX_STATE_INTEGER:
+                    raise StateRefused("state integer exceeds its bound")
+            elif current is not None and kind is not bool:
+                raise StateRefused("state contains a non-integer or non-JSON value")
+            if items + len(pending) > cls.MAX_STATE_ITEMS:
+                raise StateRefused("state aggregate item limit exceeded")
+
+    @classmethod
+    def _decode_state(cls, data: bytes) -> dict[str, Any]:
+        try:
+            value = _strict_object(data, MAX_STATE_BYTES)
+            cls._validate_state(value)
+            return value
+        except (ManifestRefused, StateRefused, RecursionError) as error:
+            raise RecoveryRequired("durable state is malformed or exceeds its bounds") from error
+
+    def _existing_leaf(self, root_fd: int, name: str) -> None:
+        try:
+            metadata = os.stat(name, dir_fd=root_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            return
+        if not self._private_regular(metadata) or metadata.st_size > MAX_STATE_BYTES:
+            raise StateRefused("existing state leaf has unsafe metadata")
 
     def write(
         self,
@@ -542,20 +717,27 @@ class AtomicStateStore:
         *,
         fault: Callable[[str], None] | None = None,
     ) -> str:
-        if self._lease_fd is None:
-            raise CoordinatorBusy("exclusive coordinator lease is required")
+        root_fd = self._check_lease()
+        if self._pending is not None:
+            raise RecoveryRequired("prior publication requires explicit reconciliation")
         name = self._name(name)
-        data = _canonical(value)
+        self._validate_state(value)
+        try:
+            data = _canonical(value)
+        except (TypeError, ValueError, RecursionError) as error:
+            raise StateRefused("state cannot be canonicalized") from error
         if not data or len(data) > MAX_STATE_BYTES:
             raise StateRefused("state payload is empty or over limit")
         digest = hashlib.sha256(data).hexdigest()
-        root_fd = self._check_root()
+        self._existing_leaf(root_fd, name)
         temp = f".{name}.{os.getpid()}.{digest[:16]}.tmp"
         temp_fd: int | None = None
+        temp_identity: tuple[int, int] | None = None
         replaced = False
         try:
             if fault:
                 fault("before_temp_create")
+            self._check_lease()
             temp_fd = os.open(
                 temp,
                 os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
@@ -563,6 +745,8 @@ class AtomicStateStore:
                 dir_fd=root_fd,
             )
             os.fchmod(temp_fd, 0o600)
+            metadata = os.fstat(temp_fd)
+            temp_identity = (metadata.st_dev, metadata.st_ino)
             if fault:
                 fault("after_temp_create")
             offset = 0
@@ -576,41 +760,62 @@ class AtomicStateStore:
             os.fsync(temp_fd)
             if fault:
                 fault("after_file_fsync")
-            os.close(temp_fd)
-            temp_fd = None
-            os.replace(temp, name, src_dir_fd=root_fd, dst_dir_fd=root_fd)
+            self._check_lease()
+            self._existing_leaf(root_fd, name)
+            staged = os.stat(temp, dir_fd=root_fd, follow_symlinks=False)
+            if (
+                not self._private_regular(staged)
+                or (staged.st_dev, staged.st_ino) != temp_identity
+                or staged.st_size != len(data)
+            ):
+                raise StateRefused("staged state identity changed")
+            # Latch before entering the publication syscall so interruption
+            # between its return and Python bookkeeping cannot permit a retry.
             replaced = True
+            os.replace(temp, name, src_dir_fd=root_fd, dst_dir_fd=root_fd)
             if fault:
                 fault("after_atomic_replace")
             os.fsync(root_fd)
             if fault:
                 fault("after_directory_fsync")
+            self._check_lease()
+            published = os.stat(name, dir_fd=root_fd, follow_symlinks=False)
+            if (
+                not self._private_regular(published)
+                or (published.st_dev, published.st_ino) != temp_identity
+                or published.st_size != len(data)
+            ):
+                raise StateRefused("published state identity changed")
             return digest
-        except Exception as error:
+        except BaseException as error:
             if replaced:
+                self._pending = (name, digest)
                 raise PublicationIndeterminate(digest, error) from error
-            try:
-                os.unlink(temp, dir_fd=root_fd)
-            except OSError as cleanup:
-                if cleanup.errno != errno.ENOENT:
-                    raise StateRefused("pre-publication cleanup failed") from error
+            # Never delete a collision, another writer's file, or a substituted
+            # staging inode after exclusive creation failed.
+            if temp_identity is not None:
+                try:
+                    current = os.stat(temp, dir_fd=root_fd, follow_symlinks=False)
+                    if (current.st_dev, current.st_ino) == temp_identity:
+                        os.unlink(temp, dir_fd=root_fd)
+                except FileNotFoundError:
+                    pass
+                except OSError as cleanup:
+                    raise StateRefused("pre-publication cleanup failed") from cleanup
             raise
         finally:
             if temp_fd is not None:
                 os.close(temp_fd)
 
-    def read(self, name: str) -> dict[str, Any]:
-        name = self._name(name)
+    def _read_bytes(self, name: str, *, sync: bool = False) -> bytes:
         root_fd = self._check_root()
-        fd = os.open(
-            name,
-            os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC,
-            dir_fd=root_fd,
-        )
+        fd: int | None = None
         try:
+            fd = os.open(name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC,
+                         dir_fd=root_fd)
             metadata = os.fstat(fd)
-            if not stat.S_ISREG(metadata.st_mode) or metadata.st_size > MAX_STATE_BYTES:
-                raise RecoveryRequired("durable state leaf is not a bounded regular file")
+            if not self._private_regular(metadata) or metadata.st_size > MAX_STATE_BYTES:
+                raise RecoveryRequired("durable state leaf is not a private bounded regular file")
             data = bytearray()
             while len(data) <= MAX_STATE_BYTES:
                 chunk = os.read(fd, min(65536, MAX_STATE_BYTES + 1 - len(data)))
@@ -619,8 +824,46 @@ class AtomicStateStore:
                 data.extend(chunk)
             if len(data) > MAX_STATE_BYTES:
                 raise RecoveryRequired("durable state grew beyond its limit")
-            return _strict_object(bytes(data), MAX_STATE_BYTES)
-        except ManifestRefused as error:
-            raise RecoveryRequired("durable state is malformed") from error
+            if sync:
+                os.fsync(fd)
+                os.fsync(root_fd)
+            after = os.fstat(fd)
+            named = os.stat(name, dir_fd=root_fd, follow_symlinks=False)
+            identity = (metadata.st_dev, metadata.st_ino)
+            if (
+                not self._private_regular(after) or not self._private_regular(named)
+                or (named.st_dev, named.st_ino) != identity
+                or after.st_size != len(data) or after.st_size != metadata.st_size
+                or after.st_mtime_ns != metadata.st_mtime_ns
+                or after.st_ctime_ns != metadata.st_ctime_ns
+            ):
+                raise RecoveryRequired("durable state changed during observation")
+            self._check_root()
+            return bytes(data)
+        except OSError as error:
+            raise RecoveryRequired("durable state could not be read safely") from error
         finally:
-            os.close(fd)
+            if fd is not None:
+                os.close(fd)
+
+    def read(self, name: str) -> dict[str, Any]:
+        data = self._read_bytes(self._name(name))
+        return self._decode_state(data)
+
+    def reconcile_publication(self, name: str, *, expected_sha256: str) -> dict[str, Any]:
+        """Inspect/sync exact pending bytes; never rewrite or replay an update.
+
+        This resolves only this live handle's local publication uncertainty.
+        Persisted update/boot/journal reconciliation remains a separate protocol.
+        """
+        self._check_lease()
+        name = self._name(name)
+        if self._pending != (name, expected_sha256):
+            raise RecoveryRequired("reconciliation does not match the pending publication")
+        data = self._read_bytes(name, sync=True)
+        if hashlib.sha256(data).hexdigest() != expected_sha256:
+            raise RecoveryRequired("pending publication bytes do not match")
+        value = self._decode_state(data)
+        self._check_lease()
+        self._pending = None
+        return value
