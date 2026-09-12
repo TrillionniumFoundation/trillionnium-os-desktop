@@ -54,7 +54,7 @@ class D2IContractTests(unittest.TestCase):
         ).read_text()
         self.assertIn("StandardOutput=journal+console", service)
         self.assertIn("StandardError=journal+console", service)
-        self.assertIn("D2I ACCEPTANCE FAILED:", acceptance)
+        self.assertIn("TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:", acceptance)
 
     def test_permanent_gate_is_read_only_and_unfiltered(self) -> None:
         workflow = (ROOT / ".github/workflows/s10-production-debian-qemu.yml").read_text()
