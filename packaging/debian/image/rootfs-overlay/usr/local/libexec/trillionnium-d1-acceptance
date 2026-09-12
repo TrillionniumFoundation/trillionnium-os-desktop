@@ -12,8 +12,19 @@ qualification_unit="$result_dir/qualification-agent-unit.txt"
 serial_marker=TRILLIONNIUM_D1_ACCEPTANCE_PASS
 install -d -m 0755 "$result_dir"
 
+capture_agent_diagnostics() {
+  # Qualification image only: fixed units, bounded time/lines/bytes. Do not
+  # export the general journal or turn missing diagnostics into a pass.
+  timeout --signal=TERM --kill-after=1s 5s journalctl \
+    --no-pager --lines=160 --output=short-monotonic \
+    -u hepta-browserd-agent.socket -u 'hepta-browserd-agent@*.service' \
+    -u hepta-agent.service 2>/dev/null \
+    | head -c 65536 > "$result_dir/agent-port-journal.txt" || true
+}
+
 fail() {
   reason=$1
+  capture_agent_diagnostics
   printf 'TRILLIONNIUM_D1_ACCEPTANCE_FAIL:%s\n' "$reason"
   printf '{"schema":"trillionnium.desktop.d1-acceptance.v2","status":"FAIL","reason":"%s"}\n' \
     "$reason" > "$result_dir/acceptance.json"
