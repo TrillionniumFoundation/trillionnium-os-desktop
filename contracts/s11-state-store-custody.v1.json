@@ -1,0 +1,55 @@
+{
+  "schema": "trillionnium.desktop.update-state-custody.v1",
+  "source": "platform/update_recovery.py",
+  "tests": "tests/test_s11_state_custody.py",
+  "scope": "host_filesystem_mechanism_only",
+  "path": {
+    "absolute_canonical_required": true,
+    "maximum_utf8_bytes": 4096,
+    "maximum_components": 64,
+    "every_component_no_follow": true,
+    "trusted_owners": "root_or_effective_service_uid",
+    "writable_ancestor_exception": "root_owned_sticky_only",
+    "private_root_mode": "0700",
+    "root_identity_rechecked": true,
+    "identity_loss_permanently_invalidates_handle": true
+  },
+  "lease": {
+    "name": ".coordinator.lock",
+    "regular_empty_single_link_required": true,
+    "mode": "0600",
+    "nonblocking_open_and_lock": true,
+    "retained_and_named_inode_must_match": true,
+    "existing_permissions_never_repaired": true,
+    "lock_and_staging_names_are_not_state_names": true
+  },
+  "state": {
+    "maximum_bytes": 65536,
+    "maximum_depth": 32,
+    "maximum_items_including_keys": 4096,
+    "maximum_string_utf8_bytes": 4096,
+    "maximum_integer_magnitude": 9223372036854775807,
+    "floats_and_non_json_values_refused": true,
+    "encoder_and_decoder_limits_equal": true,
+    "private_regular_single_link_required": true,
+    "mode": "0600"
+  },
+  "publication": {
+    "collision_cleanup": "only_created_matching_staging_inode",
+    "retained_staging_fd_until_completion": true,
+    "potential_replace_error": "publication_indeterminate",
+    "interpreter_interruption_after_possible_replace": "publication_indeterminate",
+    "indeterminate_blocks_all_writes": true,
+    "reconciliation": "exact_pending_name_digest_read_file_sync_directory_sync_identity_recheck",
+    "reconciliation_rewrites_or_replays": false,
+    "pending_latch_scope": "current_live_handle_only"
+  },
+  "non_claims": {
+    "production_signature_verified": false,
+    "installed_update_executed": false,
+    "persistent_transaction_recovery_completed": false,
+    "raw_power_loss_executed": false,
+    "hardware_qualified": false,
+    "release_published": false
+  }
+}

@@ -2,27 +2,8 @@ name: s11-update-recovery
 
 on:
   push:
-    branches:
-      - codex/s11-update-recovery-closure-v1
-    paths:
-      - ".github/workflows/s11-update-recovery.yml"
-      - "contracts/s11-update-recovery.v1.json"
-      - "platform/update_recovery.py"
-      - "tests/test_s11_update_recovery.py"
-      - "tools/validate_s11_update_recovery.py"
-      - "docs/architecture/S11_UPDATE_RECOVERY.md"
-      - "tools/validate_repository.py"
-      - "tools/validate_project_truth.py"
+    branches: [main, "codex/**"]
   pull_request:
-    paths:
-      - ".github/workflows/s11-update-recovery.yml"
-      - "contracts/s11-update-recovery.v1.json"
-      - "platform/update_recovery.py"
-      - "tests/test_s11_update_recovery.py"
-      - "tools/validate_s11_update_recovery.py"
-      - "docs/architecture/S11_UPDATE_RECOVERY.md"
-      - "tools/validate_repository.py"
-      - "tools/validate_project_truth.py"
 
 permissions:
   contents: read
@@ -33,14 +14,13 @@ concurrency:
 
 jobs:
   exact-head:
-    if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out exact source head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
           persist-credentials: false
 
@@ -48,7 +28,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$expected"
           git rev-parse HEAD^{tree}
 
       - name: Validate S11 update and recovery source
@@ -58,6 +39,8 @@ jobs:
           python3 -m py_compile platform/update_recovery.py tools/validate_s11_update_recovery.py tests/test_s11_update_recovery.py
           python3 tools/validate_s11_update_recovery.py
           python3 -m unittest tests.test_s11_update_recovery -v
+          python3 -m unittest tests.test_s11_state_custody -v
+          sudo /usr/bin/python3 -I tests/test_s11_state_custody.py -v
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           git diff --check
@@ -81,6 +64,7 @@ jobs:
           EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
           test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE"
           test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD"
@@ -93,6 +77,8 @@ jobs:
           python3 -m py_compile platform/update_recovery.py tools/validate_s11_update_recovery.py tests/test_s11_update_recovery.py
           python3 tools/validate_s11_update_recovery.py
           python3 -m unittest tests.test_s11_update_recovery -v
+          python3 -m unittest tests.test_s11_state_custody -v
+          sudo /usr/bin/python3 -I tests/test_s11_state_custody.py -v
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           git diff --check
