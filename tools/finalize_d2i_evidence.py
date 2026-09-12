@@ -35,6 +35,37 @@ def load(path: Path) -> dict:
     return value
 
 
+def validate_embedded_d1_receipt(receipt: dict, expected: dict) -> None:
+    """Require the actual v3 D1 receipt, bound to this exact source and workflow."""
+    if not isinstance(receipt, dict) or not isinstance(expected, dict):
+        raise ValueError("embedded D1 receipt and expected identity must be objects")
+    if receipt.get("schema") != "trillionnium.desktop.d1-final-qualification.v3" or receipt.get("status") != "PASS":
+        raise ValueError("D2I requires the canonical successful D1 v3 receipt")
+    for key in ("repository", "base_sha", "candidate_head_sha", "tested_sha", "tree_sha",
+                "ref", "evidence_role", "promotion_authoritative"):
+        if key not in expected or receipt.get(key) != expected[key]:
+            raise ValueError(f"embedded D1 source identity mismatch: {key}")
+    if not isinstance(receipt.get("promotion_authoritative"), bool):
+        raise ValueError("embedded D1 authority must be a boolean")
+    if receipt.get("workflow") != expected.get("workflow"):
+        raise ValueError("embedded D1 is not bound to the current image workflow")
+    ceiling = receipt.get("claim_ceiling")
+    keys = {"servo_started", "visible_window_created", "network_enabled_during_acceptance",
+            "secure_boot_qualified", "product_agent_port_enabled", "product_release_authorized"}
+    if not isinstance(ceiling, dict) or set(ceiling) != keys or any(value is not False for value in ceiling.values()):
+        raise ValueError("embedded D1 widened or omitted its claim ceiling")
+    separation = receipt.get("product_fixture_separation")
+    if not isinstance(separation, dict):
+        raise ValueError("embedded D1 has no product/qualification separation")
+    for key, value in {"product_default_graph_fixture_free": True,
+                       "product_handler_connected": False,
+                       "production_install_map_contains_qualification_binary": False}.items():
+        if separation.get(key) is not value:
+            raise ValueError(f"embedded D1 product isolation mismatch: {key}")
+    if separation.get("qualification_feature") != "fixture" or separation.get("qualification_binary") != "hepta-agent-d1-fixture":
+        raise ValueError("embedded D1 qualification target differs from current Cargo")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repository", type=Path, required=True)
@@ -120,7 +151,20 @@ def main() -> int:
     transform = load(artifact / "d2i/runtime/runtime-transformation.json")
     runner_transform = load(artifact / "d2i/runtime/boot-runner-transformation.json")
 
-    assert d1_receipt["status"] == "PASS_D1_FINAL_QUALIFICATION"
+    validate_embedded_d1_receipt(d1_receipt, {
+        "repository": os.environ["GITHUB_REPOSITORY"],
+        "base_sha": os.environ["BASE_SHA"],
+        "candidate_head_sha": os.environ["CANDIDATE_HEAD_SHA"],
+        "tested_sha": os.environ["TESTED_SHA"],
+        "tree_sha": os.environ["TESTED_TREE_SHA"],
+        "ref": os.environ["SOURCE_REF"],
+        "evidence_role": os.environ["EVIDENCE_ROLE"],
+        "promotion_authoritative": os.environ["PROMOTION_AUTHORITATIVE"] == "true",
+        "workflow": {
+            "path": ".github/workflows/s10-production-debian-qemu.yml",
+            "sha256": sha256(repository / ".github/workflows/s10-production-debian-qemu.yml"),
+        },
+    })
     assert prep_a["status"] == "PASS_DETERMINISTIC_INPUT_INJECTION"
     assert prep_b["status"] == "PASS_DETERMINISTIC_INPUT_INJECTION"
     assert prep_a["integrated_image_sha256"] == prep_b["integrated_image_sha256"]
@@ -151,15 +195,15 @@ def main() -> int:
         "status": "PASS_D2I_EXACT_IMAGE_CANDIDATE",
         "repository": os.environ["GITHUB_REPOSITORY"],
         "event_name": os.environ["GITHUB_EVENT_NAME"],
-        "ref": os.environ["GITHUB_REF"],
-        "ref_name": os.environ["GITHUB_REF_NAME"],
+        "ref": os.environ["SOURCE_REF"],
+        "ref_name": os.environ["SOURCE_REF_NAME"],
         "evidence_role": os.environ["EVIDENCE_ROLE"],
         "promotion_authoritative": os.environ["PROMOTION_AUTHORITATIVE"] == "true",
         "base_sha": os.environ["BASE_SHA"],
         "candidate_head_sha": os.environ["CANDIDATE_HEAD_SHA"],
         "tested_sha": os.environ["TESTED_SHA"],
         "tree_sha": os.environ["TESTED_TREE_SHA"],
-        "workflow_sha256": sha256(repository / ".github/workflows/d2i-integrated-image.yml"),
+        "workflow_sha256": sha256(repository / ".github/workflows/s10-production-debian-qemu.yml"),
         "servo_commit": os.environ["SERVO_COMMIT"],
         "source": {
             "archive_sha256": sha256(source_tar),

@@ -20,7 +20,7 @@ class D1FilesystemToolBindingTests(unittest.TestCase):
         self.assertTrue(manifest["build"]["utf8_tar_import_probe_required"])
 
         workflow = (
-            REPOSITORY_ROOT / ".github/workflows/d1-final-qualification.yml"
+            REPOSITORY_ROOT / ".github/workflows/s10-production-debian-qemu.yml"
         ).read_text(encoding="utf-8")
         runner = (
             REPOSITORY_ROOT / "tools/run_d1_final_qualification.sh"
@@ -29,7 +29,7 @@ class D1FilesystemToolBindingTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn(
-            "tools/run_d1_final_qualification.sh build-e2fsprogs", workflow
+            "tools/run_d2i_integrated_image.sh build-e2fsprogs", workflow
         )
         self.assertIn("tools/build_pinned_e2fsprogs.sh", runner)
         self.assertIn("e2fsprogs-host-tool-result.json", runner)

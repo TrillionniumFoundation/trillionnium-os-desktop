@@ -31,3 +31,13 @@ A passing pull-request run is only a candidate. Promotion additionally requires
 independent security review, protected `main`, reviewed merge, and a fresh
 exact `refs/heads/main` run. D2I proves no BrowserActor, production AgentPort,
 external effect, Secure Boot, hardware, signed update, or release readiness.
+
+## Current workflow and receipt binding
+
+The executable workflow is `.github/workflows/s10-production-debian-qemu.yml`.
+Its exact-head and prospective-merge source jobs run before the image job;
+current head/base/merge refs are revalidated rather than assuming an old S09
+commit is the immediate parent. The image remains a non-authoritative
+qualification candidate, not an installed product BrowserActor path. D1 v3
+producer/consumer status, source-ref and workflow-digest correspondence are
+specified in [image source binding](IMAGE_WORKFLOW_SOURCE_BINDING.md).

@@ -44,7 +44,7 @@ class D2IContractTests(unittest.TestCase):
         self.assertIn("HEPTA_D0A02_OUTPUT=/var/lib/trillionnium-d2i", service)
 
     def test_permanent_gate_is_read_only_and_unfiltered(self) -> None:
-        workflow = (ROOT / ".github/workflows/d2i-integrated-image.yml").read_text()
+        workflow = (ROOT / ".github/workflows/s10-production-debian-qemu.yml").read_text()
         runner = (ROOT / "tools/run_d2i_integrated_image.sh").read_text()
         self.assertIn("branches: [main]", workflow)
         self.assertNotIn("paths:", workflow)
@@ -80,7 +80,7 @@ class D2IContractTests(unittest.TestCase):
         )
 
     def test_combined_gate_reclaims_servo_tree_and_preserves_failures(self) -> None:
-        workflow = (ROOT / ".github/workflows/d2i-integrated-image.yml").read_text()
+        workflow = (ROOT / ".github/workflows/s10-production-debian-qemu.yml").read_text()
         reclaim = (ROOT / "tools/reclaim_d2i_servo_workspace.sh").read_text()
         diagnostics = (ROOT / "tools/collect_d2i_failure_diagnostics.sh").read_text()
 
