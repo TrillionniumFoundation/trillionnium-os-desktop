@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+"""Read-only coherence checks; never promotes implementation or evidence state.
+
+The existing module validator remains authoritative for the complete registry
+schema. This companion checks generated projections and the specific operational
+and plan-precedence contradictions covered by its regression corpus.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import stat
+import sys
+import tomllib
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+INDEX = "docs/modules/README.md"
+REGISTRY = "manifests/modules.v1.json"
+ANNEXES = ("PRODUCT_ARCHITECTURE.md", "CONTRACT_SECURITY_TESTING.md", "WORK_PACKAGES_AND_GATES.md")
+PERMISSIONS = "Managed store directories use `0700`; journal files use `0600`."
+MAX_BYTES = 512 * 1024
+
+
+def read_text(root: Path, relative: str) -> str:
+    """Read a bounded regular file through retained, no-follow directory FDs."""
+    parts = relative.split("/")
+    if relative.startswith("/") or "\\" in relative or any(p in {"", ".", ".."} for p in parts):
+        raise ValueError(f"noncanonical repository path: {relative!r}")
+    directory = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        for part in parts[:-1]:
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory)
+            os.close(directory)
+            directory = child
+        fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
+        with os.fdopen(fd, "rb") as stream:
+            info = os.fstat(stream.fileno())
+            if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_BYTES:
+                raise ValueError(f"not a bounded regular file: {relative}")
+            raw = stream.read(MAX_BYTES + 1)
+            if len(raw) > MAX_BYTES:
+                raise ValueError(f"file grew beyond limit: {relative}")
+            return raw.decode("utf-8")
+    finally:
+        os.close(directory)
+
+
+def _pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON member: {key}")
+        result[key] = value
+    return result
+
+
+def _number(value: str) -> None:
+    raise ValueError(f"non-integer JSON number: {value}")
+
+
+def load_json(root: Path, relative: str) -> dict[str, Any]:
+    value = json.loads(read_text(root, relative), object_pairs_hook=_pairs,
+                       parse_float=_number, parse_constant=_number)
+    if not isinstance(value, dict):
+        raise ValueError(f"expected JSON object: {relative}")
+    return value
+
+
+def _text(value: Any, label: str) -> str:
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise ValueError(f"invalid {label}")
+    if any(ord(c) < 32 or ord(c) == 127 or c in "|`<>\\" for c in value):
+        raise ValueError(f"unsafe Markdown/control character in {label}")
+    return value
+
+
+def inventory(root: Path) -> tuple[str, list[dict[str, Any]]]:
+    record = load_json(root, REGISTRY)
+    manifest = load_json(root, "docs/MANIFEST.json")
+    revision = _text(manifest.get("active_plan_revision"), "active plan revision")
+    if record.get("schema") != "trillionnium.desktop.modules.v1" or record.get("plan_revision") != revision:
+        raise ValueError("module registry does not bind the active plan")
+    modules = record.get("modules")
+    if not isinstance(modules, list) or not 1 <= len(modules) <= 256:
+        raise ValueError("invalid module inventory size")
+    paths: list[str] = []
+    ids: set[str] = set()
+    for entry in modules:
+        if not isinstance(entry, dict):
+            raise ValueError("module entry must be an object")
+        name = _text(entry.get("id"), "module id")
+        if re.fullmatch(r"[a-z][a-z0-9-]*", name) is None or name in ids:
+            raise ValueError("invalid or duplicate module id")
+        ids.add(name)
+        path = _text(entry.get("path"), "module path")
+        if path not in (f"apps/{name}", f"crates/{name}") or path in paths:
+            raise ValueError("invalid or duplicate module path")
+        paths.append(path)
+        if entry.get("package") != name or entry.get("documentation") != f"{path}/README.md":
+            raise ValueError("module package/documentation identity mismatch")
+        _text(entry.get("status"), "module status")
+        _text(entry.get("claim_ceiling"), "module claim ceiling")
+    cargo = tomllib.loads(read_text(root, "Cargo.toml"))
+    workspace = cargo.get("workspace")
+    if not isinstance(workspace, dict) or workspace.get("members") != paths:
+        raise ValueError("module projection inventory differs from Cargo workspace order")
+    return revision, modules
+
+
+def render_index(root: Path) -> str:
+    revision, modules = inventory(root)
+    lines = [
+        "<!-- Generated by tools/validate_documentation_coherence.py --render-index; do not edit. -->",
+        "# Module development documentation", "",
+        f"**Plan revision:** `{revision}`", "",
+        "This index is a deterministic projection of `manifests/modules.v1.json`.",
+        "It covers the Cargo workspace only, not every desktop product subsystem.",
+        "Status and claim ceilings are copied without promoting source, runtime,",
+        "installed-image, hardware, signing, publication or release evidence.", "",
+        "| Module | Workspace path | Status | Claim ceiling |",
+        "| --- | --- | --- | --- |",
+    ]
+    for entry in modules:
+        lines.append(f"| [`{entry['id']}`](../../{entry['documentation']}) | "
+                     f"`{entry['path']}` | `{entry['status']}` | {entry['claim_ceiling']} |")
+    lines += ["", "## Required contract", "",
+              "The module documentation gate validates each package README, Cargo binary/feature",
+              "inventory, references and claim projection. The coherence gate also requires this",
+              "index to match its generated bytes and checks the reviewed plan/permission rules.",
+              "Neither gate proves that an implementation, integration or release is complete.", "",
+              "## Change workflow", "",
+              "Update implementation, Cargo inventory, module README, registry and tests together.",
+              "Regenerate this index explicitly with the following command; CI is read-only:", "",
+              "```sh",
+              "python3 tools/validate_documentation_coherence.py --render-index > docs/modules/README.md",
+              "python3 tools/validate_module_documentation.py",
+              "python3 tools/validate_documentation_coherence.py",
+              "python3 -m unittest discover -s tests -p 'test_module_documentation*.py' -v",
+              "```", "",
+              "Run repository/project-truth and locked Rust checks. Obtain fresh independent",
+              "review on the final head and prospective merge, use protected promotion, then",
+              "rerun the exact integrated object. Consult `docs/plan/IMPLEMENTATION_CLOSURE_PLAN.md`",
+              "for product-wide acceptance work outside Cargo documentation coverage.", ""]
+    return "\n".join(lines)
+
+
+def validate(root: Path = ROOT) -> list[str]:
+    errors: list[str] = []
+    try:
+        expected = render_index(root)
+        if read_text(root, INDEX) != expected:
+            errors.append("module index is stale; regenerate it from the current registry")
+        revision, _ = inventory(root)
+        for name in ANNEXES:
+            text = read_text(root, f"docs/plan/{name}")
+            visible = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+            if f"**Plan revision:** `{revision}`" not in visible:
+                errors.append(f"{name}: active plan revision is missing or stale")
+            if "## Plan inheritance and precedence" not in visible:
+                errors.append(f"{name}: explicit d5-to-d6 precedence is missing")
+            if "normative component of the active canonical plan" in visible:
+                errors.append(f"{name}: ambiguous historical normative status remains")
+        text = read_text(root, "crates/hepta-session-core/README.md")
+        visible = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+        if PERMISSIONS not in visible:
+            errors.append("session runbook must distinguish directory 0700 from file 0600")
+        if re.search(r"0600[` ]+(?:journal\s+)?director", visible, re.I):
+            errors.append("session runbook incorrectly assigns 0600 to a directory")
+    except (OSError, UnicodeError, ValueError, RecursionError) as error:
+        errors.append(str(error))
+    return errors
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--render-index", action="store_true", help="print generated index; do not write files")
+    args = parser.parse_args(argv)
+    if args.render_index:
+        try:
+            sys.stdout.write(render_index(ROOT))
+        except (OSError, UnicodeError, ValueError, RecursionError) as error:
+            print(f"ERROR: {error}", file=sys.stderr)
+            return 1
+        return 0
+    errors = validate()
+    for error in errors:
+        print(f"ERROR: {error}", file=sys.stderr)
+    if errors:
+        return 1
+    print("documentation coherence passed (source documentation only)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

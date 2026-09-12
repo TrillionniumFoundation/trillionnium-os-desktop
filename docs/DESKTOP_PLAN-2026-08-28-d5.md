@@ -113,7 +113,7 @@ their boundaries:
    Browser API, authenticated AgentPort, error and receipt contracts, layered
    revisions, arbitration, controlled egress, effect gates, and qualification
    evidence.
-3. [`plan/WORK_PACKAGES_AND_GATES.md`](plan/WORK_PACKAGES_AND_GATES.md) —
+3. [`plan/WORK_PACKAGES_AND_GATES.d5-historical.md`](plan/WORK_PACKAGES_AND_GATES.d5-historical.md) —
    file-level work packages, dependencies, observable exits, governance, risk
    register, execution order, and claim boundary.
 4. [`adr/`](adr/) — locked architectural decisions that explain why the
@@ -143,7 +143,7 @@ implementation detail; they are not optional commentary.
 
 No later stage may waive an earlier trust, contract, reproducibility, or
 evidence gate. A source file is not completion; only the observable exit in
-`plan/WORK_PACKAGES_AND_GATES.md` advances a work package.
+`plan/WORK_PACKAGES_AND_GATES.d5-historical.md` advances a work package.
 
 ## 3. Immediate execution lock
 

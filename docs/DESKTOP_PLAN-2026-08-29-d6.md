@@ -4,7 +4,7 @@
 **Status:** active normative plan candidate  
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`  
 **Integrated implementation stage at the d6 baseline:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`  
-**Baseline main commit:** `d878fff0d809413e1f3048a87e0a8247b97d99b9`
+**Baseline main commit before S02–S12 integration:** `854d0341eaba43408edc014297ea8af43ffcc87e`
 
 This revision supersedes d5 as the execution plan after merge. It does not promote
 candidate D1 or D2 work and it does not widen production, external-effect,

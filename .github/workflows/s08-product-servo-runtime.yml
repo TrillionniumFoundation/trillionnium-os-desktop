@@ -1,0 +1,91 @@
+name: s08-product-servo-runtime
+
+on:
+  push:
+    branches:
+      - codex/s08-vertical-slice-v1
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s08-product-servo-runtime-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+      - name: Install locked Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+      - name: Qualify browserd product supervision
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --locked -p hepta-browserd --all-targets
+          cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
+          cargo test --locked -p hepta-browserd --all-targets
+          python3 tools/validate_s08_product_supervision.py
+          python3 tools/validate_module_documentation.py
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --check
+
+  prospective-merge:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out live prospective merge
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify merge parents
+        shell: bash
+        env:
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^1)" = "${EXPECTED_BASE}"
+          test "$(git rev-parse HEAD^2)" = "${EXPECTED_HEAD}"
+      - name: Install locked Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+      - name: Qualify prospective browserd product runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --all --check
+          cargo check --locked -p hepta-browserd --all-targets
+          cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
+          cargo test --locked -p hepta-browserd --all-targets
+          python3 tools/validate_s08_product_supervision.py
+          python3 tools/validate_module_documentation.py
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --check

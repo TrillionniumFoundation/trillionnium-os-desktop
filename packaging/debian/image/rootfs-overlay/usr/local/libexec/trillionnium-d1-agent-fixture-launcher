@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+
+mode_file=/run/trillionnium-d1-agent-mode
+result=/run/hepta-agent/result.json
+
+[[ -r "$mode_file" ]] || {
+  echo "D1 Agent fixture mode file is missing" >&2
+  exit 2
+}
+mode=$(cat "$mode_file")
+case "$mode" in
+  health|hold) ;;
+  *)
+    echo "unsupported D1 Agent fixture mode: $mode" >&2
+    exit 2
+    ;;
+esac
+rm -f "$result"
+exec /usr/libexec/hepta-agent-d1-fixture --mode "$mode" --output "$result"

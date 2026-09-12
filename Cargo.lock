@@ -72,6 +72,7 @@ version = "0.1.0"
 dependencies = [
  "hepta-agent-port",
  "hepta-agent-transport",
+ "hepta-browser-codec",
  "hepta-peer-attestation",
  "libc",
 ]
@@ -82,6 +83,31 @@ version = "0.1.0"
 dependencies = [
  "libc",
  "sha2",
+]
+
+[[package]]
+name = "hepta-browser-actor"
+version = "0.1.0"
+dependencies = [
+ "hepta-agent-port",
+ "hepta-agent-transport",
+ "hepta-browser-actor-simulation",
+ "hepta-browser-codec",
+ "hepta-peer-attestation",
+ "hepta-session-core",
+]
+
+[[package]]
+name = "hepta-browser-actor-simulation"
+version = "0.1.0"
+dependencies = [
+ "hepta-agent-port",
+ "hepta-agent-transport",
+ "hepta-browser-codec",
+ "hepta-peer-attestation",
+ "hepta-session-core",
+ "sha2",
+ "trillionnium-contract-core",
 ]
 
 [[package]]
@@ -116,6 +142,7 @@ version = "0.1.0"
 dependencies = [
  "hepta-agent-transport",
  "libc",
+ "sha2",
 ]
 
 [[package]]

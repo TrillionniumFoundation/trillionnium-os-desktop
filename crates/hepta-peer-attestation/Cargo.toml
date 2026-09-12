@@ -1,4 +1,7 @@
 [package]
+# Executable boundaries are explicit and machine-registered.
+autobins = false
+build = false
 name = "hepta-peer-attestation"
 version.workspace = true
 edition.workspace = true
@@ -7,6 +10,16 @@ license.workspace = true
 repository.workspace = true
 publish = false
 
+[features]
+default = []
+# Static executable bindings are opt-in and non-production.  D1
+# qualification and the explicit D3 development profile select distinct
+# features so source validators can prove neither path enters the default
+# product graph.
+qualification-static-attestation = []
+development-static-attestation = []
+
 [dependencies]
 hepta-agent-transport = { path = "../hepta-agent-transport" }
 libc = "=0.2.186"
+sha2 = "=0.10.9"

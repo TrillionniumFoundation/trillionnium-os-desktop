@@ -93,6 +93,9 @@ impl SessionMachine {
                 if ttl_ms == 0 || ttl_ms > MAX_HUMAN_LEASE_TTL_MS {
                     return Err(TransitionError::InvalidLeaseTtl);
                 }
+                let expires_at_ms = now_ms
+                    .checked_add(ttl_ms)
+                    .ok_or(TransitionError::TimeOverflow)?;
                 if matches!(
                     self.control,
                     ControlState::AgentObserving | ControlState::AgentMutating
@@ -103,7 +106,7 @@ impl SessionMachine {
                 self.human_lease = Some(HumanLease {
                     lease_id,
                     acquired_at_ms: now_ms,
-                    expires_at_ms: now_ms.saturating_add(ttl_ms),
+                    expires_at_ms,
                 });
                 effects.push(SessionEffect::HumanLeaseGranted);
             }
@@ -121,8 +124,11 @@ impl SessionMachine {
                     effects.push(SessionEffect::HumanLeaseExpired);
                 } else {
                     let extension = extend_by_ms.min(MAX_HUMAN_LEASE_TTL_MS);
+                    let expires_at_ms = now_ms
+                        .checked_add(extension)
+                        .ok_or(TransitionError::TimeOverflow)?;
                     let lease = self.require_matching_lease(&lease_id)?;
-                    lease.expires_at_ms = now_ms.saturating_add(extension);
+                    lease.expires_at_ms = expires_at_ms;
                     effects.push(SessionEffect::HumanLeaseExtended);
                 }
             }
@@ -147,11 +153,15 @@ impl SessionMachine {
                 self.control = ControlState::HumanActive;
             }
             SessionEvent::DomCommitted => {
-                self.revisions.on_dom_commit();
+                self.revisions
+                    .on_dom_commit()
+                    .map_err(TransitionError::RevisionExhausted)?;
                 effects.push(SessionEffect::MutationEpochAdvanced);
             }
             SessionEvent::SemanticSnapshotPublished => {
-                self.revisions.on_semantic_snapshot();
+                self.revisions
+                    .on_semantic_snapshot()
+                    .map_err(TransitionError::RevisionExhausted)?;
                 effects.push(SessionEffect::SemanticSnapshotAdvanced);
             }
             SessionEvent::NavigationStarted { .. } => {
@@ -162,7 +172,9 @@ impl SessionMachine {
                 if self.phase != SessionPhase::NavigationPending {
                     return Err(TransitionError::PhaseConflict(self.phase));
                 }
-                self.revisions.on_navigation_commit();
+                self.revisions
+                    .on_navigation_commit()
+                    .map_err(TransitionError::RevisionExhausted)?;
                 self.phase = SessionPhase::Ready;
                 self.control = ControlState::Idle;
                 effects.push(SessionEffect::DocumentGenerationAdvanced);
@@ -208,7 +220,9 @@ impl SessionMachine {
                 self.control = ControlState::Idle;
             }
             SessionEvent::BrowserCrashed => {
-                self.revisions.on_process_recovery();
+                self.revisions
+                    .on_process_recovery()
+                    .map_err(TransitionError::RevisionExhausted)?;
                 self.phase = SessionPhase::Recovering;
                 self.control = ControlState::Idle;
                 self.human_lease = None;

@@ -17,6 +17,10 @@ attested AgentPort
 → typed response
 ```
 
+The acceptance path is explicitly bound to the attested AgentPort and to a
+durable terminal or indeterminate receipt; the diagram is a contract summary,
+not evidence that the path has executed on an installed image.
+
 A source-level type alias or an isolated Servo harness is insufficient on its own. Final S08 promotion requires the exact immutable head to execute that complete path and the crash/recovery cases below.
 
 ## Trust and authority boundary

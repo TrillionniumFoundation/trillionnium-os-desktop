@@ -1,0 +1,82 @@
+{
+  "schema": "trillionnium.desktop.s11-update-recovery.v1",
+  "stage": "S11",
+  "claim_ceiling": "source_and_host_mechanism_candidate_only_no_installed_update_no_hardware_no_signing_no_release",
+  "manifest": {
+    "schema": "trillionnium.desktop.update-manifest.v1",
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "exact_fields": [
+      "schema",
+      "repository",
+      "source_version",
+      "source_image_sha256",
+      "target_version",
+      "target_slot",
+      "target_image_sha256",
+      "target_image_bytes",
+      "rollback_floor",
+      "expires_unix",
+      "signer_id",
+      "signature_sha256"
+    ],
+    "whole_image_digest_required": true,
+    "whole_image_length_required": true,
+    "inactive_slot_required": true,
+    "source_identity_required": true,
+    "downgrade_refused": true,
+    "rollback_floor_enforced": true,
+    "expiry_enforced": true
+  },
+  "state_machine": {
+    "states": [
+      "idle",
+      "verified",
+      "staged",
+      "boot_pending",
+      "health_pending",
+      "committed",
+      "rollback_pending",
+      "recovery_required"
+    ],
+    "commit_requires_health_receipt": true,
+    "minimum_stable_health_seconds": 60,
+    "maximum_boot_failures": 2,
+    "automatic_effect_replay": false,
+    "reconciliation_required_after_possible_dispatch": true
+  },
+  "durability": {
+    "state_directory_mode": "0700",
+    "state_file_mode": "0600",
+    "path_walk": "descriptor_pinned_no_follow",
+    "publication": [
+      "exclusive_temp_create",
+      "complete_write",
+      "file_fsync",
+      "atomic_replace",
+      "directory_fsync"
+    ],
+    "exclusive_coordinator_lease": true,
+    "post_replace_failure": "publication_indeterminate_reconcile_before_retry"
+  },
+  "fault_model": {
+    "cutpoints": [
+      "before_temp_create",
+      "after_temp_create",
+      "after_complete_write",
+      "after_file_fsync",
+      "after_atomic_replace",
+      "after_directory_fsync",
+      "during_first_boot_health",
+      "during_rollback"
+    ],
+    "missing_or_mismatched_slot": "recovery_required",
+    "torn_or_malformed_state": "recovery_required"
+  },
+  "non_claims": {
+    "installed_qemu_update_executed": false,
+    "raw_power_loss_executed": false,
+    "physical_hardware_qualified": false,
+    "production_signature_verified": false,
+    "release_published": false
+  }
+}

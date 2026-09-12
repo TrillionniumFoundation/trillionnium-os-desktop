@@ -1,0 +1,153 @@
+{
+  "schema": "trillionnium.desktop.browser-actor.v1",
+  "work_package": "D3-01",
+  "status": "SOURCE_CANDIDATE",
+  "authority_boundary": {
+    "product_crate": "hepta-browser-actor",
+    "implementation_crate": "hepta-browser-actor-simulation",
+    "implementation_crate_published": false,
+    "only_product_wrapper_may_depend_directly_on_implementation": true,
+    "caller_constructed_mechanism_identity_publicly_exported": false,
+    "principal_binding_publicly_exported": false,
+    "ordinary_browser_request_handler_implemented": false,
+    "ordinary_handle_method_exported": false,
+    "construction_requires_attested_peer": true,
+    "every_dispatch_requires_attested_peer": true,
+    "request_scoped_custody_required": true,
+    "stale_or_dropped_custody": "fail_closed_or_indeterminate_after_possible_effect",
+    "simulation_api_is_product_authority": false,
+    "product_actor_generic_over_runtime": false,
+    "caller_supplied_runtime_adapter": false,
+    "runtime_trait_publicly_exported": false,
+    "request_control_publicly_exported": false,
+    "product_runtime_type": "actor_owned_deterministic_local_runtime",
+    "deferred_work_after_terminal_success_representable": false,
+    "raw_session_event_type_publicly_exported": false,
+    "unauthenticated_session_event_mutation_publicly_exported": false,
+    "authority_changing_state_requires_attested_request": true,
+    "cancellation_helpers_are_revocation_only": true
+  },
+  "principal_binding": {
+    "semantic_principal": "TaskFlowPrincipal",
+    "mechanism_identity_fields": [
+      "pid",
+      "uid",
+      "gid",
+      "process_start_time_ticks",
+      "systemd_unit",
+      "unified_cgroup_v2_path",
+      "executable_sha256"
+    ],
+    "exact_match_required": true,
+    "source": "opaque_AttestedPeer_refresh_only",
+    "peer_drift": "fail_closed_before_dispatch",
+    "post_dispatch_drift": "indeterminate_and_runtime_retired",
+    "persistent_connection_continuity": "first_complete_peer_runtime_snapshot_including_process_start_time"
+  },
+  "page_owner": {
+    "logical_webview_limit": 1,
+    "session_binding_required": true,
+    "session_generation_required": true,
+    "stale_reference_policy": "fail_closed",
+    "human_and_agent_state_machine": "hepta-session-core",
+    "incarnation_contract": "contracts/session-incarnation.v1.json"
+  },
+  "browser_actor": {
+    "typed_operations": [
+      "health",
+      "session_create",
+      "session_snapshot",
+      "session_close",
+      "page_navigate",
+      "page_observe",
+      "page_act",
+      "page_wait",
+      "page_extract"
+    ],
+    "deadline_propagation": true,
+    "cancellation_checked_before_runtime_dispatch": true,
+    "request_authority_carried_through_runtime_control": true,
+    "final_success_released_after_peer_revalidation": true,
+    "agent_operation_control_gate": {
+      "observations": [
+        "session_snapshot",
+        "page_observe",
+        "page_wait",
+        "page_extract"
+      ],
+      "mutations": [
+        "page_navigate",
+        "page_act"
+      ],
+      "phase_and_control_checked_before_runtime": true,
+      "session_close_terminal_cleanup": true
+    },
+    "cancellation_state_policy": {
+      "human_lease_revoked_on_cancel_requested": true,
+      "human_events_during_cancelling": "fail_closed_phase_conflict",
+      "old_lease_usable_after_cancel_completed": false
+    },
+    "deterministic_local_fixture_only": true,
+    "external_https_enabled": false,
+    "trusted_app_runtime_enabled": false,
+    "external_effect_authority": false,
+    "semantic_reference_resolution": {
+      "required_for_page_act": true,
+      "runtime_hook": "PageRuntime::dispatch_page_act",
+      "atomic_resolve_and_act": true,
+      "default_without_resolver": "unsupported",
+      "deterministic_local_runtime_page_act": "unsupported",
+      "promotion_requires_servo_resolver": true
+    },
+    "engine_thread_dispatch": "contracts/engine-thread-dispatch.v1.json",
+    "event_loop_completion": "contracts/event-loop-completion.v1.json",
+    "product_runtime_construction": "inside_from_attested",
+    "generic_runtime_injection": false,
+    "later_servo_adapter_requires_distinct_concrete_reviewed_type": true,
+    "agent_navigation_requires_idle_control_before_runtime": true,
+    "human_focus_navigation_result": "human_control_active",
+    "ime_navigation_result": "ime_composition_active",
+    "other_agent_control_navigation_result": "internal_fail_closed",
+    "terminal_revision_reference_is_never_current": true,
+    "generic_session_event_ingress": false,
+    "product_state_transition_entry": "handle_attested_request_only",
+    "caller_can_release_human_or_ime_control": false,
+    "caller_can_resolve_capability_or_recovery": false,
+    "caller_can_synthesize_navigation_completion": false,
+    "unauthenticated_helpers_can_only_revoke_or_observe": true
+  },
+  "receipts": {
+    "journal": "contracts/receipt-journal.v1.json",
+    "requested_before_dispatch": true,
+    "dispatched_before_runtime_call": true,
+    "terminal_response_digest_bound": true,
+    "potential_external_effect_interruption": "indeterminate_never_automatic_replay",
+    "service_restart_reconciliation": "requested_to_interrupted_dispatched_effect_to_indeterminate",
+    "observer_failure": "fail_closed",
+    "duplicate_requested": "reject_without_replacing_original_admission_coordinates",
+    "journal_authorizes_execution": false,
+    "journal_automatically_replays_operations": false,
+    "internal_error_text_exposed_by_display": false
+  },
+  "activation": {
+    "product_agent_port_enabled": false,
+    "listener_created_by_actor_crate": false,
+    "installed_product_wiring_included": false,
+    "servo_adapter_included": false,
+    "development_fixture_is_product_authority": false,
+    "production_release_authorized": false
+  },
+  "claim_ceiling": {
+    "source_api_requires_attested_custody": true,
+    "listener_active": false,
+    "agent_port_product_active": false,
+    "servo_called": false,
+    "installed_image_qualified": false,
+    "physical_hardware_qualified": false,
+    "signing_key_custody_proven": false,
+    "publication_authorized": false,
+    "production_release": false,
+    "caller_supplied_runtime_authority": false,
+    "raw_product_state_mutation_authority": false
+  }
+}

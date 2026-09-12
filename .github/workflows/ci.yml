@@ -25,6 +25,9 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
+      - name: Validate module documentation contract
+        run: /usr/bin/python3 -I tools/validate_module_documentation.py
+
       - name: Verify exact source identity
         shell: bash
         run: |
@@ -33,15 +36,18 @@ jobs:
           test "$(git rev-parse HEAD)" = "$expected"
           git rev-parse HEAD^{tree}
 
-      - name: Validate repository, project truth, and product boundary
+      - name: Validate repository, project truth, contract foundation, and product boundary
         run: |
           set -euo pipefail
           python3 tools/validate_status_authority_singleton.py
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
+          python3 tools/validate_contract_foundation.py
           python3 -m unittest discover -s tests -p 'test_project_truth_status_documents.py'
           python3 -m unittest discover -s tests -p 'test_status_authority_singleton.py'
           python3 -m unittest discover -s tests -p 'test_source_state_workspace.py'
+          python3 -m unittest discover -s tests -p 'test_contract_foundation.py'
+          python3 -m unittest discover -s tests -p 'test_module_documentation*.py'
 
   rust:
     runs-on: ubuntu-24.04
@@ -96,6 +102,9 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
+      - name: Validate module documentation contract
+        run: /usr/bin/python3 -I tools/validate_module_documentation.py
+
       - name: Verify prospective merge identity and parent order
         shell: bash
         run: |
@@ -111,9 +120,12 @@ jobs:
           python3 tools/validate_status_authority_singleton.py
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
+          python3 tools/validate_contract_foundation.py
           python3 -m unittest discover -s tests -p 'test_project_truth_status_documents.py'
           python3 -m unittest discover -s tests -p 'test_status_authority_singleton.py'
           python3 -m unittest discover -s tests -p 'test_source_state_workspace.py'
+          python3 -m unittest discover -s tests -p 'test_contract_foundation.py'
+          python3 -m unittest discover -s tests -p 'test_module_documentation*.py'
 
   rust-prospective-merge:
     if: github.event_name == 'pull_request'

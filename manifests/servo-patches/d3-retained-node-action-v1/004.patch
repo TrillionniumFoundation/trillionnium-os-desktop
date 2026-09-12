@@ -1,0 +1,60 @@
+diff --git a/components/shared/constellation/lib.rs b/components/shared/constellation/lib.rs
+index 2dcb20e73777a70a0c6e6d87ba8321c6de6172b4..492448792f12ecd98dae0d4c21c438d0946b3e13 100644
+--- a/components/shared/constellation/lib.rs
++++ b/components/shared/constellation/lib.rs
+@@ -114,6 +114,43 @@ pub enum EmbedderToConstellationMessage {
+     UpdatePinchZoomInfos(PipelineId, PinchZoomInfos),
+     /// Activate or deactivate accessibility features for the given `WebView`.
+     SetAccessibilityActive(WebViewId, bool),
++    /// Perform one bounded accessibility action against the active document tree of the given
++    /// `WebView`. The callback is completed exactly once by the constellation or script thread.
++    PerformAccessibilityAction(
++        WebViewId,
++        accesskit::ActionRequest,
++        GenericCallback<AccessibilityActionResult>,
++    ),
++}
++
++/// Terminal result for one retained accessibility-node action request.
++///
++/// `Dispatched` means that script synchronously revalidated the current retained node and
++/// dispatched one click event. It does not claim that page script completed an external effect.
++#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
++pub enum AccessibilityActionResult {
++    /// One supported action was dispatched to the retained DOM node.
++    Dispatched,
++    /// Accessibility is disabled or inactive for the selected webview/document.
++    AccessibilityInactive,
++    /// The webview no longer exists.
++    StaleWebView,
++    /// The selected document is missing, inactive, or no longer belongs to the webview.
++    StaleDocument,
++    /// The requested AccessKit tree is not the active top-level document tree.
++    StaleTree,
++    /// The requested AccessKit node is not retained in the current tree.
++    StaleNode,
++    /// The exact retained AccessKit node does not advertise the requested action.
++    ActionNotAdvertised,
++    /// The action type or its action data is outside the initial click-only scope.
++    UnsupportedAction,
++    /// The retained accessibility node does not resolve to a DOM element.
++    TargetNotElement,
++    /// The resolved element is disabled.
++    TargetDisabled,
++    /// The resolved element is not connected or has no current CSS layout box.
++    TargetNotRendered,
+ }
+
+ pub enum UserContentManagerAction {
+diff --git a/components/shared/layout/Cargo.toml b/components/shared/layout/Cargo.toml
+index 50bfa211d1a837b4d779c394f06e6a9adfb7d571..31bdc999d1309507523c8eedf1e5177e840a3f04 100644
+--- a/components/shared/layout/Cargo.toml
++++ b/components/shared/layout/Cargo.toml
+@@ -14,6 +14,7 @@ name = "layout_api"
+ path = "lib.rs"
+
+ [dependencies]
++accesskit = { workspace = true }
+ app_units = { workspace = true }
+ atomic_refcell = { workspace = true }
+ bitflags = { workspace = true }

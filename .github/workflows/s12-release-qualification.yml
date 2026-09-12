@@ -1,0 +1,110 @@
+name: s12-release-qualification
+
+on:
+  push:
+    branches:
+      - codex/s12-release-qualification-closure-v1
+    paths:
+      - ".github/workflows/s12-release-qualification.yml"
+      - "contracts/s12-release-qualification.v1.json"
+      - "tools/verify_s12_release_qualification.py"
+      - "tools/validate_s12_release_qualification.py"
+      - "tests/test_s12_release_qualification.py"
+      - "docs/architecture/S12_RELEASE_QUALIFICATION.md"
+      - "contracts/s11-update-recovery.v1.json"
+      - "platform/update_recovery.py"
+      - "tools/validate_s11_update_recovery.py"
+      - "tests/test_s11_update_recovery.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_project_truth.py"
+  pull_request:
+    paths:
+      - ".github/workflows/s12-release-qualification.yml"
+      - "contracts/s12-release-qualification.v1.json"
+      - "tools/verify_s12_release_qualification.py"
+      - "tools/validate_s12_release_qualification.py"
+      - "tests/test_s12_release_qualification.py"
+      - "docs/architecture/S12_RELEASE_QUALIFICATION.md"
+      - "contracts/s11-update-recovery.v1.json"
+      - "platform/update_recovery.py"
+      - "tools/validate_s11_update_recovery.py"
+      - "tests/test_s11_update_recovery.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_project_truth.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s12-release-qualification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Assert exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git rev-parse HEAD^{tree}
+
+      - name: Validate S11 dependency and S12 verifier source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/verify_s12_release_qualification.py tools/validate_s12_release_qualification.py tests/test_s12_release_qualification.py
+          python3 tools/validate_s11_update_recovery.py
+          python3 -m unittest tests.test_s11_update_recovery -v
+          python3 tools/validate_s12_release_qualification.py
+          python3 -m unittest tests.test_s12_release_qualification -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --check
+
+  prospective-merge:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out live prospective merge
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Assert live merge identity and parent order
+        shell: bash
+        env:
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
+          test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE"
+          test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD"
+          git rev-parse HEAD^{tree}
+
+      - name: Validate prospective S12 tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/verify_s12_release_qualification.py tools/validate_s12_release_qualification.py tests/test_s12_release_qualification.py
+          python3 tools/validate_s11_update_recovery.py
+          python3 -m unittest tests.test_s11_update_recovery -v
+          python3 tools/validate_s12_release_qualification.py
+          python3 -m unittest tests.test_s12_release_qualification -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --check

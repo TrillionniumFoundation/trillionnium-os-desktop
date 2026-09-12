@@ -1,0 +1,404 @@
+{
+  "schema": "trillionnium.desktop.modules.v1",
+  "plan_revision": "2026-08-29-d6",
+  "policy": {
+    "workspace_members_must_match_exactly": true,
+    "module_readme_required": true,
+    "minimum_readme_bytes": 3000,
+    "required_sections": [
+      "## Status and claim ceiling",
+      "## Responsibilities",
+      "## Non-responsibilities",
+      "## Dependency and call direction",
+      "## Public API and binaries",
+      "## Configuration and features",
+      "## State, concurrency, and failure semantics",
+      "## Security invariants",
+      "## Testing and evidence",
+      "## Operations and troubleshooting",
+      "## Compatibility and change protocol"
+    ],
+    "binary_inventory_must_match_cargo": true,
+    "feature_inventory_must_match_cargo": true,
+    "references_must_exist": true,
+    "symlink_paths_forbidden": true,
+    "lower_tier_never_implies_higher_tier": true,
+    "explicit_binary_targets_only": true,
+    "build_scripts_forbidden": true
+  },
+  "modules": [
+    {
+      "id": "hepta-browserd",
+      "package": "hepta-browserd",
+      "path": "apps/hepta-browserd",
+      "kind": "application",
+      "status": "integrated_d0_scaffold_with_candidate_actor_contracts",
+      "claim_ceiling": "deterministic D0 self-check and source composition only; no product Servo runtime, enabled AgentPort, external effect, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "desktop-runtime",
+      "documentation": "apps/hepta-browserd/README.md",
+      "architecture": [
+        "docs/architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md",
+        "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
+        "docs/architecture/SESSION_STATE_MACHINE.md"
+      ],
+      "contracts": [
+        "contracts/browser-api.v1.schema.json",
+        "contracts/browser-actor.v1.json"
+      ],
+      "tests": [
+        "apps/hepta-browserd/src/lib.rs",
+        "tests/test_s06_browser_actor.py"
+      ],
+      "workflows": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/s06-browser-actor.yml"
+      ],
+      "binaries": [
+        {
+          "name": "hepta-browserd",
+          "path": "src/main.rs",
+          "required_features": []
+        }
+      ],
+      "features": []
+    },
+    {
+      "id": "hepta-agent-portd",
+      "package": "hepta-agent-portd",
+      "path": "apps/hepta-agent-portd",
+      "kind": "application",
+      "status": "candidate_profile_separated_socket_activation_service",
+      "claim_ceiling": "one-connection Linux systemd socket-activation source with a physically separate opt-in fixture; product dispatch remains unavailable and default disabled, with no BrowserActor, Servo, external effect, installed-image, hardware, signing, or release authority",
+      "owner_class": "agent-port-custody",
+      "documentation": "apps/hepta-agent-portd/README.md",
+      "architecture": [
+        "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
+        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
+        "docs/architecture/REQUEST_PEER_CUSTODY.md"
+      ],
+      "contracts": [
+        "contracts/agent-port-custody.v1.json",
+        "contracts/request-peer-custody.v1.json"
+      ],
+      "tests": [
+        "apps/hepta-agent-portd/src/main.rs",
+        "tests/test_s04_transport_custody.py"
+      ],
+      "workflows": [
+        ".github/workflows/agent-port-custody.yml",
+        ".github/workflows/s04-transport-custody.yml"
+      ],
+      "binaries": [
+        {
+          "name": "hepta-agent-portd",
+          "path": "src/main.rs",
+          "required_features": []
+        },
+        {
+          "name": "hepta-agent-port-fixture",
+          "path": "src/bin/hepta-agent-port-fixture.rs",
+          "required_features": [
+            "fixture"
+          ]
+        }
+      ],
+      "features": [
+        "default",
+        "fixture"
+      ]
+    },
+    {
+      "id": "hepta-agent-transport",
+      "package": "hepta-agent-transport",
+      "path": "crates/hepta-agent-transport",
+      "kind": "library",
+      "status": "candidate_fail_stop_authenticated_connected_stream",
+      "claim_ceiling": "authenticated, bounded and fail-stop already-connected AF_UNIX framing only; no socket listener, semantic principal, BrowserActor, capability, external effect, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "transport-security",
+      "documentation": "crates/hepta-agent-transport/README.md",
+      "architecture": [
+        "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md"
+      ],
+      "contracts": [
+        "contracts/agent-transport.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-agent-transport/src/facade.rs",
+        "tests/transport/test_agent_transport_reference.py"
+      ],
+      "workflows": [
+        ".github/workflows/agent-transport-reference.yml",
+        ".github/workflows/s04-transport-custody.yml"
+      ],
+      "binaries": [],
+      "features": []
+    },
+    {
+      "id": "hepta-browser-codec",
+      "package": "hepta-browser-codec",
+      "path": "crates/hepta-browser-codec",
+      "kind": "library",
+      "status": "candidate_canonical_browser_wire_boundary",
+      "claim_ceiling": "bounded canonical Browser API parsing, validation, encoding, hashing and risk classification only; no listener, peer authorization, BrowserActor dispatch, Servo execution, external effect, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "browser-contract-security",
+      "documentation": "crates/hepta-browser-codec/README.md",
+      "architecture": [
+        "docs/architecture/CANONICAL_BROWSER_CODEC.md",
+        "docs/architecture/RUST_BROWSER_CODEC.md"
+      ],
+      "contracts": [
+        "contracts/browser-codec.v1.json",
+        "contracts/browser-codec-resource-limits.v1.json",
+        "contracts/browser-api.v1.schema.json",
+        "contracts/browser-wire.v1.schema.json"
+      ],
+      "tests": [
+        "crates/hepta-browser-codec/src/tests.rs",
+        "tests/test_validate_rust_browser_codec.py"
+      ],
+      "workflows": [
+        ".github/workflows/browser-codec-reference.yml",
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": []
+    },
+    {
+      "id": "hepta-agent-port",
+      "package": "hepta-agent-port",
+      "path": "crates/hepta-agent-port",
+      "kind": "library",
+      "status": "candidate_exactly_one_agentport_lifecycle",
+      "claim_ceiling": "one authenticated connected-stream request lifecycle with bounded handler output and lifecycle observation only; no listener, semantic principal, concrete BrowserActor/Servo dispatch, external-effect authorization, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "agent-port-core",
+      "documentation": "crates/hepta-agent-port/README.md",
+      "architecture": [
+        "docs/architecture/CONNECTED_AGENT_PORT_BRIDGE.md",
+        "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md"
+      ],
+      "contracts": [
+        "contracts/agent-port-bridge.v1.json",
+        "contracts/receipt.v1.schema.json"
+      ],
+      "tests": [
+        "crates/hepta-agent-port/src/lib.rs",
+        "tests/test_s04_transport_custody.py"
+      ],
+      "workflows": [
+        ".github/workflows/s04-transport-custody.yml",
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": []
+    },
+    {
+      "id": "hepta-peer-attestation",
+      "package": "hepta-peer-attestation",
+      "path": "crates/hepta-peer-attestation",
+      "kind": "library",
+      "status": "candidate_request_scoped_linux_peer_custody",
+      "claim_ceiling": "Linux process, namespace, cgroup, service-unit and trusted-executable continuity plus revocable request custody only; no semantic principal, browser authorization, product activation, external effect, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "local-identity-security",
+      "documentation": "crates/hepta-peer-attestation/README.md",
+      "architecture": [
+        "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
+        "docs/architecture/REQUEST_PEER_CUSTODY.md",
+        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md"
+      ],
+      "contracts": [
+        "contracts/agent-port-custody.v1.json",
+        "contracts/request-peer-custody.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-peer-attestation/src/lib.rs",
+        "tests/test_s04_transport_custody.py"
+      ],
+      "workflows": [
+        ".github/workflows/s04-transport-custody.yml",
+        ".github/workflows/agent-port-custody.yml"
+      ],
+      "binaries": [],
+      "features": [
+        "default",
+        "qualification-static-attestation",
+        "development-static-attestation"
+      ]
+    },
+    {
+      "id": "trillionnium-contract-core",
+      "package": "trillionnium-contract-core",
+      "path": "crates/trillionnium-contract-core",
+      "kind": "library",
+      "status": "candidate_atomic_bounded_contract_primitives",
+      "claim_ceiling": "platform-neutral bounded identifiers, digests, Unix time and checked atomic revision primitives only; no transport, policy, browser, capability, external effect, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "contract-foundation",
+      "documentation": "crates/trillionnium-contract-core/README.md",
+      "architecture": [
+        "docs/architecture/SESSION_STATE_MACHINE.md",
+        "docs/plan/PRODUCT_ARCHITECTURE.md"
+      ],
+      "contracts": [
+        "contracts/contract-core-constraints.v1.json"
+      ],
+      "tests": [
+        "crates/trillionnium-contract-core/src/lib.rs",
+        "tests/test_contract_foundation.py"
+      ],
+      "workflows": [
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": []
+    },
+    {
+      "id": "hepta-browser-contracts",
+      "package": "hepta-browser-contracts",
+      "path": "crates/hepta-browser-contracts",
+      "kind": "library",
+      "status": "candidate_engine_neutral_browser_domain_contracts",
+      "claim_ceiling": "engine-neutral typed browser operations, navigation targets, semantic references, risk classes and stable errors only; no wire parsing, listener, runtime, capability, external effect, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "browser-contract-foundation",
+      "documentation": "crates/hepta-browser-contracts/README.md",
+      "architecture": [
+        "docs/architecture/CANONICAL_BROWSER_CODEC.md",
+        "docs/architecture/SESSION_STATE_MACHINE.md"
+      ],
+      "contracts": [
+        "contracts/browser-api.v1.schema.json",
+        "contracts/contract-core-constraints.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-browser-contracts/src/lib.rs",
+        "tests/test_contract_foundation.py"
+      ],
+      "workflows": [
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": []
+    },
+    {
+      "id": "hepta-session-core",
+      "package": "hepta-session-core",
+      "path": "crates/hepta-session-core",
+      "kind": "library",
+      "status": "candidate_session_arbitration_and_managed_receipt_store",
+      "claim_ceiling": "deterministic session arbitration, bounded queueing, checked revisions and durable non-replaying receipt facts only; no browser engine, listener, OS clock, semantic policy, external effect, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "session-and-receipt-integrity",
+      "documentation": "crates/hepta-session-core/README.md",
+      "architecture": [
+        "docs/architecture/SESSION_STATE_MACHINE.md",
+        "docs/architecture/DURABLE_RECEIPT_JOURNAL.md",
+        "docs/architecture/MANAGED_RECEIPT_STORE.md",
+        "docs/architecture/RECEIPT_PERSISTENCE_FAULT_MODEL.md"
+      ],
+      "contracts": [
+        "contracts/receipt-journal.v1.json",
+        "contracts/receipt.v1.schema.json",
+        "contracts/legacy-receipt-migration.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-session-core/src/tests.rs",
+        "tests/test_s05_receipt_recovery.py"
+      ],
+      "workflows": [
+        ".github/workflows/receipt-journal.yml",
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": []
+    },
+    {
+      "id": "hepta-workspace-composition",
+      "package": "hepta-workspace-composition",
+      "path": "crates/hepta-workspace-composition",
+      "kind": "library",
+      "status": "candidate_engine_neutral_trusted_workspace_model",
+      "claim_ceiling": "deterministic model of one native trusted chrome surface plus one untrusted content surface, input ownership and crash recovery only; no native window, Servo instance, rendered product frame, AgentPort, external effect, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "trusted-surface-and-input",
+      "documentation": "crates/hepta-workspace-composition/README.md",
+      "architecture": [
+        "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md",
+        "docs/architecture/SERVO_EMBEDDER_COMPATIBILITY.md"
+      ],
+      "contracts": [
+        "contracts/workspace-composition.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-workspace-composition/src/tests.rs",
+        "experiments/servo-headed-runtime/src/main.rs"
+      ],
+      "workflows": [
+        ".github/workflows/servo-headed-runtime.yml",
+        ".github/workflows/ci.yml"
+      ],
+      "binaries": [],
+      "features": []
+    },
+    {
+      "id": "hepta-browser-actor",
+      "package": "hepta-browser-actor",
+      "path": "crates/hepta-browser-actor",
+      "kind": "library",
+      "status": "candidate_exact_pin_real_servo_host_vertical_slice",
+      "claim_ceiling": "concrete non-generic ServoBrowserActor bridge plus exact-pin real-Servo host qualification candidate with attested AgentPort, request custody, durable receipts and stale-reference refusal; qualification-only mailbox; no production listener, external-effect authority, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "browser-actor-authority",
+      "documentation": "crates/hepta-browser-actor/README.md",
+      "architecture": [
+        "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
+        "docs/architecture/ENGINE_THREAD_DISPATCH.md",
+        "docs/architecture/EVENT_LOOP_COMPLETION.md",
+        "docs/architecture/SESSION_INCARNATION.md",
+        "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md",
+        "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md"
+      ],
+      "contracts": [
+        "contracts/browser-actor.v1.json",
+        "contracts/engine-thread-dispatch.v1.json",
+        "contracts/event-loop-completion.v1.json",
+        "contracts/session-incarnation.v1.json",
+        "contracts/s08-servo-runtime-bridge.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-browser-actor/src/lib.rs",
+        "tests/test_s06_browser_actor.py",
+        "crates/hepta-browser-actor/tests/s08_servo_mailbox.rs"
+      ],
+      "workflows": [
+        ".github/workflows/s06-browser-actor.yml",
+        ".github/workflows/s08-servo-vertical-slice.yml"
+      ],
+      "binaries": [],
+      "features": []
+    },
+    {
+      "id": "hepta-browser-actor-simulation",
+      "package": "hepta-browser-actor-simulation",
+      "path": "crates/hepta-browser-actor-simulation",
+      "kind": "library",
+      "status": "internal_unpublished_browser_actor_simulation_and_dispatch_core",
+      "claim_ceiling": "unpublished generic actor, deterministic fixture runtime, engine-thread/callback bridges and hostile test support only; no product runtime selection, listener, real Servo integration, external effect, installed image, hardware, signing, publication, or release authority",
+      "owner_class": "browser-actor-verification",
+      "documentation": "crates/hepta-browser-actor-simulation/README.md",
+      "architecture": [
+        "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
+        "docs/architecture/ENGINE_THREAD_DISPATCH.md",
+        "docs/architecture/EVENT_LOOP_COMPLETION.md"
+      ],
+      "contracts": [
+        "contracts/browser-actor.v1.json",
+        "contracts/engine-thread-dispatch.v1.json",
+        "contracts/event-loop-completion.v1.json"
+      ],
+      "tests": [
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop_tests.rs",
+        "tests/test_s06_browser_actor.py"
+      ],
+      "workflows": [
+        ".github/workflows/s06-browser-actor.yml"
+      ],
+      "binaries": [],
+      "features": []
+    }
+  ]
+}

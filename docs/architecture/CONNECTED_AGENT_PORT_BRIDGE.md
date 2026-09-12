@@ -1,29 +1,15 @@
 # Connected AgentPort bridge
 
-**Checkpoint:** `TOS-D0C-04`  
-**Implementation:** `crates/hepta-agent-port`  
-**Contract:** `contracts/agent-port-bridge.v1.json`
+S04 composes one authenticated connected stream with the canonical Browser API.
+It admits at most one request, constructs an immutable context from transport and
+canonical-request facts, invokes a typed handler at most once, and emits at most
+one canonical response before the effective deadline.
 
-```text
-already-connected AF_UNIX stream
-  -> authenticated bounded transport
-  -> strict canonical Browser API decoder
-  -> immutable DispatchContext
-  -> at most one typed handler invocation
-  -> request-bound canonical response
-  -> at most one response frame
-```
+Lifecycle observation is fail-closed: `requested` must be recorded before handler
+entry; `dispatched` and terminal/interrupted facts must be recorded before response
+publication. The observer has no execution authority. Durable persistence is S05;
+real BrowserActor and request queueing are S06/S08.
 
-The handler cannot author protocol, request ID, session ID/generation,
-transport sequence or connection nonce. It returns only an object result or a
-normative typed Browser error.
-
-The bridge samples wall and monotonic clocks once at acceptance. The effective
-monotonic deadline is the earlier of the server ceiling and the request's
-absolute deadline translated at that sample. A late synchronous handler result
-is discarded without response commit.
-
-The D0 fixture permits health only. Potential external effects return
-`policy_denied`; other browser-dependent operations return `unsupported`.
-There is no listener, semantic authority mapping, BrowserActor, Servo runtime,
-capability grant or external-effect authority in this checkpoint.
+The current fixture accepts health only. The product daemon does not link that
+fixture and fails closed before decoding because no BrowserActor exists. No socket,
+principal, capability, navigation, Servo, or external effect is enabled here.
