@@ -91,7 +91,10 @@ A passing unit or hosted-CI test proves only the evidence tier named by its gate
 
 ## Operations and troubleshooting
 
-- Use a private 0600 journal directory and one writer.
+- Managed store directories use `0700`; journal files use `0600`.
+- Keep one writer and preserve the existing service UID and trusted parent custody.
+- Do not repair ownership or permissions recursively during recovery; preserve the
+  damaged store and follow the explicit reconciliation procedure.
 - On crash, reopen with explicit recovery policy, inspect the complete chain and handle unresolved receipts before rotation.
 - Treat disk full, sync failure or complete-record corruption as degraded mode, not success.
 - Run SIGKILL/cutpoint, torn-tail, tamper, rotation, migration and concurrent-reader corpora after storage changes.

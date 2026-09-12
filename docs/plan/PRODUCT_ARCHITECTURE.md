@@ -1,13 +1,29 @@
-# TrillionniumOS Desktop d5 product architecture
+# TrillionniumOS Desktop d6 product architecture
 
-**Plan revision:** `2026-08-28-d5`
-**Status:** normative component of the active canonical plan
+**Plan revision:** `2026-08-29-d6`
+**Historical basis:** `2026-08-28-d5`
+**Status:** inherited architecture requirements under the active d6 executive lock
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`
 
-This annex is versioned and reviewed atomically with
-[`../DESKTOP_PLAN-2026-08-28-d5.md`](../DESKTOP_PLAN-2026-08-28-d5.md). If an
-annex conflicts with the executive lock in the main plan, the executive lock
-wins until the plan and annex are updated together.
+## Plan inheritance and precedence
+
+The active plan is [`DESKTOP_PLAN-2026-08-29-d6.md`](../DESKTOP_PLAN-2026-08-29-d6.md).
+The d5 material below supplies architectural requirements, not implementation
+or qualification claims. Machine truth and the d6 executive lock take priority.
+The older d5 plan and its work-package descriptions are historical where d6
+replaces them; they do not authorize activation or evidence promotion.
+
+For d6, trusted chrome is native/compositor-owned and separate from the single
+untrusted content WebView. The older two-WebView alternative below is not an
+approved parallel implementation path. Popup/new-window and external-navigation
+behavior follows the current gate; an older permissive alternative does not
+widen it. D3 enables only an explicitly reviewed development profile, not a
+production listener. External effects, installed images, hardware, updates and
+release remain subject to their own gates. No requirement in this annex means
+that the named service already exists or has passed qualification.
+
+[Implementation closure plan](IMPLEMENTATION_CLOSURE_PLAN.md) records the next
+acceptance work without changing machine state or inheriting candidate evidence.
 
 ## 1. Product and user promise
 

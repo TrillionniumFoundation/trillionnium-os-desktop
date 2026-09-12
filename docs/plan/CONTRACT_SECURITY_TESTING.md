@@ -1,13 +1,27 @@
-# TrillionniumOS Desktop d5 contracts, security, and testing
+# TrillionniumOS Desktop d6 contracts, security, and testing
 
-**Plan revision:** `2026-08-28-d5`
-**Status:** normative component of the active canonical plan
+**Plan revision:** `2026-08-29-d6`
+**Historical basis:** `2026-08-28-d5`
+**Status:** inherited security requirements under the active d6 executive lock
 **Repository mode:** `FULL_PRODUCT_REPOSITORY`
 
-This annex is versioned and reviewed atomically with
-[`../DESKTOP_PLAN-2026-08-28-d5.md`](../DESKTOP_PLAN-2026-08-28-d5.md). If an
-annex conflicts with the executive lock in the main plan, the executive lock
-wins until the plan and annex are updated together.
+## Plan inheritance and precedence
+
+The active plan is [`DESKTOP_PLAN-2026-08-29-d6.md`](../DESKTOP_PLAN-2026-08-29-d6.md).
+This annex preserves applicable d5 requirements but does not preserve obsolete
+activation permissions or historical completion statements. Machine truth and
+the d6 executive lock win. The older work-package annex is historical wherever
+the d6 plan or the PR73 successor ledger replaces its scheduling or gate rules.
+
+D3 means explicit development-profile activation only; production AgentPort
+remains default-disabled. D0 through D4 use deterministic local fixtures for
+Agent operations. The former optional D2 external-rendering row grants no
+current exception: external navigation must remain refused unless a separately
+approved current gate explicitly permits a controlled corpus. Local-source,
+host, installed-image, hardware and release evidence remain separate.
+
+The cross-module [request and recovery protocol](../architecture/REQUEST_EXECUTION_AND_RECOVERY.md)
+adds acceptance requirements, not new APIs or proof that the path is installed.
 
 ## 4. Contract and transport architecture
 
@@ -35,9 +49,9 @@ Every request contains a bounded request ID, optional session ID, absolute
 deadline, and exactly one typed operation. Unknown fields and unknown operation
 variants are rejected. Raw JavaScript evaluation is not in v1.
 
-### 4.2 Production AgentPort
+### 4.2 AgentPort transport requirements
 
-The D3 production transport is a local Unix-domain socket with:
+The D3 development-profile transport is a local Unix-domain socket with:
 
 - parent directory and socket ownership fixed by systemd;
 - `SO_PEERCRED` UID/GID/PID verification;
@@ -186,7 +200,7 @@ locally and never reach public DNS.
 | Stage | External behavior |
 | --- | --- |
 | D0–D4 | deterministic local fixtures; no external Agent mutation |
-| D2 | optional manually driven read-only external rendering corpus |
+| D2 | deterministic local rendering; no implicit external-navigation exception |
 | D5 | trusted signed local apps only |
 | D6 | allowlisted external observation through egress policy |
 | D7+ | separately approved prepare/execute effects with reconciliation |
