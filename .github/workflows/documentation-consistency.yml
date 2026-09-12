@@ -1,0 +1,61 @@
+name: documentation-consistency
+
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/p1-doc-consistency-20260912']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-consistency-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout immutable source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Existing module contracts
+        run: /usr/bin/python3 -I tools/validate_module_documentation.py
+      - name: Check generated index and regression corpus
+        run: |
+          python3 tools/project_module_index.py --check
+          /usr/bin/python3 -I tests/test_module_index.py -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --exit-code
+
+  prospective-merge:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout prospective merge
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind both merge parents to the triggering event
+        env:
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          test "$(git show -s --format=%P HEAD)" = "$EXPECTED_BASE $EXPECTED_HEAD"
+          git rev-parse HEAD HEAD^{tree}
+      - name: Existing module contracts
+        run: /usr/bin/python3 -I tools/validate_module_documentation.py
+      - name: Check generated index and regression corpus
+        run: |
+          python3 tools/project_module_index.py --check
+          /usr/bin/python3 -I tests/test_module_index.py -v
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          git diff --exit-code

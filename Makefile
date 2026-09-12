@@ -2,6 +2,8 @@
 
 validate:
 	/usr/bin/python3 -I tools/validate_module_documentation.py
+	python3 tools/project_module_index.py --check
+	/usr/bin/python3 -I tests/test_module_index.py -v
 	python3 tools/validate_s08_servo_runtime.py
 	python3 tools/validate_s08_product_supervision.py
 	python3 tools/validate_repository.py
