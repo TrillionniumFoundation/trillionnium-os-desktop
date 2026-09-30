@@ -1,4 +1,4 @@
-name: runtime.codex source migration diagnostic slim
+name: runtime.codex ordinary-source package
 
 on:
   push:
@@ -11,36 +11,40 @@ permissions:
   contents: read
 
 concurrency:
-  group: runtime-codex-source-migration-slim-7100c064
+  group: runtime-codex-source-package-v1
   cancel-in-progress: true
 
 env:
-  SOURCE_SHA: 48b3f2b8f0ecc040682fc3d77e35cdbdff57b707
+  SOURCE_REPOSITORY: TrillionniumFoundation/hepta-private-ci
+  SOURCE_SHA: 4fa775323b75834f543bd265649a7edbc6110fcf
 
 jobs:
-  migrate:
+  package:
     runs-on: ubuntu-slim
     timeout-minutes: 30
     steps:
-      - name: Checkout exact source
+      - name: Checkout exact convergence source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          repository: TrillionniumFoundation/hepta-private-ci
+          repository: ${{ env.SOURCE_REPOSITORY }}
           ref: ${{ env.SOURCE_SHA }}
           fetch-depth: 0
           persist-credentials: false
           path: source
 
-      - name: Run ordered migration chain
+      - name: Materialize and package ordinary source
         shell: bash
         run: |
           set -Eeuo pipefail
           cd "$GITHUB_WORKSPACE/source"
           out="$GITHUB_WORKSPACE/out"
-          mkdir -p "$out/logs"
+          logs="$out/logs"
+          mkdir -p "$logs"
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test -z "$(git status --porcelain=v1)"
-          printf 'source_sha=%s\n' "$SOURCE_SHA" > "$out/status.txt"
+          source_tree="$(git rev-parse 'HEAD^{tree}')"
+          printf 'source_repository=%s\nsource_sha=%s\nsource_tree=%s\n' \
+            "$SOURCE_REPOSITORY" "$SOURCE_SHA" "$source_tree" > "$out/status.txt"
 
           finish() {
             rc=$?
@@ -54,6 +58,21 @@ jobs:
             exit "$rc"
           }
           trap finish EXIT
+
+          run_logged() {
+            name="$1"
+            shift
+            printf 'START %s\n' "$name" | tee -a "$out/status.txt"
+            set +e
+            "$@" > "$logs/$name.log" 2>&1
+            rc=$?
+            set -e
+            printf '%s=%s\n' "$name" "$rc" | tee -a "$out/status.txt"
+            if test "$rc" -ne 0; then
+              tail -n 1000 "$logs/$name.log" > "$logs/$name.tail.log"
+              return "$rc"
+            fi
+          }
 
           migrations=(
             scripts/runtime-codex-maintainer.py
@@ -77,7 +96,10 @@ jobs:
             scripts/runtime-codex-process-crash-migration.py
             scripts/runtime-codex-process-crash-expansion.py
             scripts/runtime-codex-qualification-fixup.py
+            scripts/runtime-codex-qualification-ui-fix.py
+            scripts/runtime-codex-qualification-merge-fix.py
             scripts/runtime-codex-final-closure.py
+            scripts/runtime-codex-whitespace-fix.py
           )
           support=(
             scripts/runtime-codex-owner-lineage-fixup.py
@@ -89,31 +111,151 @@ jobs:
             scripts/runtime-codex-finalize-map-followup.py
           )
 
-          python3 -m py_compile "${migrations[@]}" "${support[@]}" "${finalizers[@]}" \
-            > "$out/logs/py_compile.log" 2>&1
+          run_logged py_compile python3 -m py_compile \
+            "${migrations[@]}" "${support[@]}" "${finalizers[@]}"
           for script in "${migrations[@]}"; do
-            name="$(basename "$script" .py)"
-            printf 'START %s\n' "$name" | tee -a "$out/status.txt"
-            set +e
-            python3 "$script" > "$out/logs/$name.log" 2>&1
-            rc=$?
-            set -e
-            printf '%s=%s\n' "$name" "$rc" | tee -a "$out/status.txt"
-            if test "$rc" -ne 0; then
-              cp "$out/logs/$name.log" "$out/logs/$name.full.log"
-              tail -n 1000 "$out/logs/$name.log" > "$out/logs/$name.tail.log"
-              exit "$rc"
-            fi
+            run_logged "$(basename "$script" .py)" python3 "$script"
           done
-          git diff --check
-          printf 'result=migration-chain-complete\nexit_code=0\n' >> "$out/status.txt"
+          run_logged migrated_diff_check git diff --check
+          run_logged qualification_helper_compile \
+            python3 -m py_compile scripts/runtime-codex-qualification.py
+          run_logged fault_matrix_static \
+            python3 scripts/check-runtime-codex-fault-matrix.py
+
+          rm -rf qualification/runtime-codex-materialize-debug
+          construction_workflows=(
+            .github/runtime-codex-source-materialize.trigger
+            .github/workflows/runtime-codex-p0-materialize.yml
+            .github/workflows/runtime-codex-materialize-once.yml
+            .github/workflows/runtime-codex-maintainer.yml
+            .github/workflows/runtime-codex-fast-feedback.yml
+            .github/workflows/runtime-codex-candidate-qualification.yml
+            .github/workflows/runtime-codex-terminal-outbox-diagnostic.yml
+            .github/workflows/runtime-codex-source-materialize.yml
+            .github/workflows/runtime-codex-source-materialize-arm.yml
+          )
+          rm -f "${construction_workflows[@]}"
+          rm -f "${migrations[@]}" "${support[@]}"
+
+          cat > docs/modules/runtime.codex/MIGRATION_HISTORY.md <<'EOF'
+          # runtime.codex migration history
+
+          The durable Agentd owner, stale-writer fencing, owner-derived linear
+          send permit, terminal outbox, transactional quarantine, cleanup store
+          and real process-crash qualification source were materialized into
+          ordinary repository files on 2026-09-30.
+
+          The immutable candidate does not run source-writing workflows, fetch
+          executable source from historical Git objects, or patch production
+          code during qualification. The two map finalizers are retained only
+          until the immediately following, non-self-referential provenance-map
+          commit; that commit deletes them. All qualification is read-only.
+          EOF
+
+          run_logged cleanup_diff_check git diff --check
+          git add -A
+          git diff --cached --check
+
+          python3 - "$SOURCE_SHA" "$source_tree" "$out" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import subprocess
+          import sys
+          import tarfile
+
+          source_sha, source_tree, out_arg = sys.argv[1:]
+          out = pathlib.Path(out_arg)
+
+          def git(*args: str) -> bytes:
+              return subprocess.check_output(["git", *args])
+
+          changed = [
+              item.decode("utf-8")
+              for item in git("diff", "--cached", "--name-only", "-z", source_sha).split(b"\0")
+              if item
+          ]
+          deleted = [
+              item.decode("utf-8")
+              for item in git(
+                  "diff", "--cached", "--diff-filter=D", "--name-only", "-z", source_sha
+              ).split(b"\0")
+              if item
+          ]
+          existing = sorted(set(changed) - set(deleted))
+
+          archive = out / "ordinary-source-files.tar.gz"
+          with tarfile.open(archive, "w:gz", dereference=False) as handle:
+              for relative in existing:
+                  handle.add(relative, arcname=relative, recursive=False)
+
+          entries = []
+          for relative in existing:
+              mode = "100755" if pathlib.Path(relative).stat().st_mode & 0o111 else "100644"
+              data = pathlib.Path(relative).read_bytes()
+              entries.append(
+                  {
+                      "path": relative,
+                      "mode": mode,
+                      "type": "blob",
+                      "gitBlobOid": subprocess.check_output(
+                          ["git", "hash-object", "--stdin"], input=data
+                      ).decode().strip(),
+                      "sha256": hashlib.sha256(data).hexdigest(),
+                      "bytes": len(data),
+                  }
+              )
+
+          manifest = {
+              "schema": "runtime.codex.ordinary-source-package.v1",
+              "sourceRepository": "TrillionniumFoundation/hepta-private-ci",
+              "sourceCommit": source_sha,
+              "sourceTree": source_tree,
+              "changedEntries": entries,
+              "deletedPaths": sorted(deleted),
+              "finalizersRetainedForMapCommit": [
+                  "scripts/runtime-codex-finalize-map.py",
+                  "scripts/runtime-codex-finalize-map-followup.py",
+              ],
+          }
+          (out / "manifest.json").write_text(
+              json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          (out / "deleted-paths.json").write_text(
+              json.dumps(sorted(deleted), indent=2) + "\n", encoding="utf-8"
+          )
+          with (out / "ordinary-source.patch").open("wb") as handle:
+              subprocess.run(
+                  ["git", "diff", "--cached", "--binary", source_sha],
+                  check=True,
+                  stdout=handle,
+              )
+
+          for name in (
+              "manifest.json",
+              "deleted-paths.json",
+              "ordinary-source-files.tar.gz",
+              "ordinary-source.patch",
+          ):
+              path = out / name
+              (out / f"{name}.sha256").write_text(
+                  f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {name}\n",
+                  encoding="utf-8",
+              )
+          PY
+
+          printf 'result=packaged\nchanged_files=%s\ndeleted_files=%s\nexit_code=0\n' \
+            "$(git diff --cached --name-only "$SOURCE_SHA" | wc -l)" \
+            "$(git diff --cached --diff-filter=D --name-only "$SOURCE_SHA" | wc -l)" \
+            >> "$out/status.txt"
           trap - EXIT
 
-      - name: Upload migration evidence
+      - name: Upload ordinary-source package
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: runtime-codex-source-migration-slim-48b3f2b8
+          name: runtime-codex-ordinary-source-4fa77532
           path: out/
           if-no-files-found: error
           retention-days: 7
