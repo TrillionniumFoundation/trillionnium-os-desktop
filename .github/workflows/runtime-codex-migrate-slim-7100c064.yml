@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SOURCE_SHA: 7100c06483a60eac2a8d9ddab21255fb56ba0e30
+  SOURCE_SHA: 48b3f2b8f0ecc040682fc3d77e35cdbdff57b707
 
 jobs:
   migrate:
@@ -66,9 +66,11 @@ jobs:
             scripts/runtime-codex-deadline-migration.py
             scripts/runtime-codex-cleanup-migration.py
             scripts/runtime-codex-storage-fixup.py
+            scripts/runtime-codex-terminal-outbox-anchor-fix.py
             scripts/runtime-codex-terminal-outbox-migration.py
             scripts/runtime-codex-product-executor-migration.py
             scripts/runtime-codex-product-executor-hardening.py
+            scripts/runtime-codex-effect-guard-anchor-fix.py
             scripts/runtime-codex-effect-guard-fixup.py
             scripts/runtime-codex-deadline-ceiling-fixup.py
             scripts/runtime-codex-structured-sequence-migration.py
@@ -111,7 +113,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: runtime-codex-source-migration-slim-7100c064
+          name: runtime-codex-source-migration-slim-48b3f2b8
           path: out/
           if-no-files-found: error
           retention-days: 7
