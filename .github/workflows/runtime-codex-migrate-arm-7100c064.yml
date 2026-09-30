@@ -1,0 +1,117 @@
+name: runtime.codex source migration diagnostic ARM
+
+on:
+  push:
+    branches:
+      - automation/runtime-codex-migrate-arm-7100c064-20260930
+    paths:
+      - .github/workflows/runtime-codex-migrate-arm-7100c064.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-codex-source-migration-arm-7100c064
+  cancel-in-progress: true
+
+env:
+  SOURCE_SHA: 7100c06483a60eac2a8d9ddab21255fb56ba0e30
+
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: TrillionniumFoundation/hepta-private-ci
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+          path: source
+
+      - name: Run ordered migration chain
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd "$GITHUB_WORKSPACE/source"
+          out="$GITHUB_WORKSPACE/out"
+          mkdir -p "$out/logs"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git status --porcelain=v1)"
+          printf 'source_sha=%s\n' "$SOURCE_SHA" > "$out/status.txt"
+
+          finish() {
+            rc=$?
+            trap - EXIT
+            set +e
+            printf 'exit_code=%s\n' "$rc" >> "$out/status.txt"
+            git status --short > "$out/worktree-status.txt"
+            git diff --stat "$SOURCE_SHA" > "$out/diff-stat.txt"
+            git diff --check "$SOURCE_SHA" > "$out/diff-check.txt" 2>&1
+            git diff --binary "$SOURCE_SHA" > "$out/partial.patch"
+            exit "$rc"
+          }
+          trap finish EXIT
+
+          migrations=(
+            scripts/runtime-codex-maintainer.py
+            scripts/runtime-codex-maintainer-followup.py
+            scripts/runtime-codex-durability-migration.py
+            scripts/runtime-codex-durability-fixup.py
+            scripts/runtime-codex-transactional-owner-fixup.py
+            scripts/runtime-codex-quarantine-migration.py
+            scripts/runtime-codex-quarantine-authority-fixup.py
+            scripts/runtime-codex-deadline-migration.py
+            scripts/runtime-codex-cleanup-migration.py
+            scripts/runtime-codex-storage-fixup.py
+            scripts/runtime-codex-terminal-outbox-migration.py
+            scripts/runtime-codex-product-executor-migration.py
+            scripts/runtime-codex-product-executor-hardening.py
+            scripts/runtime-codex-effect-guard-fixup.py
+            scripts/runtime-codex-deadline-ceiling-fixup.py
+            scripts/runtime-codex-structured-sequence-migration.py
+            scripts/runtime-codex-process-crash-migration.py
+            scripts/runtime-codex-process-crash-expansion.py
+            scripts/runtime-codex-qualification-fixup.py
+            scripts/runtime-codex-final-closure.py
+          )
+          support=(
+            scripts/runtime-codex-owner-lineage-fixup.py
+            scripts/runtime-codex-quarantine-authority-v2.py
+            scripts/runtime-codex-process-crash-expansion-v2.py
+          )
+          finalizers=(
+            scripts/runtime-codex-finalize-map.py
+            scripts/runtime-codex-finalize-map-followup.py
+          )
+
+          python3 -m py_compile "${migrations[@]}" "${support[@]}" "${finalizers[@]}" \
+            > "$out/logs/py_compile.log" 2>&1
+          for script in "${migrations[@]}"; do
+            name="$(basename "$script" .py)"
+            printf 'START %s\n' "$name" | tee -a "$out/status.txt"
+            set +e
+            python3 "$script" > "$out/logs/$name.log" 2>&1
+            rc=$?
+            set -e
+            printf '%s=%s\n' "$name" "$rc" | tee -a "$out/status.txt"
+            if test "$rc" -ne 0; then
+              cp "$out/logs/$name.log" "$out/logs/$name.full.log"
+              tail -n 1000 "$out/logs/$name.log" > "$out/logs/$name.tail.log"
+              exit "$rc"
+            fi
+          done
+          git diff --check
+          printf 'result=migration-chain-complete\nexit_code=0\n' >> "$out/status.txt"
+          trap - EXIT
+
+      - name: Upload migration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: runtime-codex-source-migration-arm-7100c064
+          path: out/
+          if-no-files-found: error
+          retention-days: 7
