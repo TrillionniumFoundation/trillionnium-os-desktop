@@ -39,3 +39,9 @@ harness = false
 name = "product_handoff_kernel"
 path = "tests/product_handoff_kernel.rs"
 harness = false
+
+# Three actual processes and fork use one single-thread kernel entrypoint.
+[[test]]
+name = "product_control_custody_kernel"
+path = "tests/product_control_custody_kernel.rs"
+harness = false

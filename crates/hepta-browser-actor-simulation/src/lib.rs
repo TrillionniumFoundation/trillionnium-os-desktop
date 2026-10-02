@@ -23,6 +23,8 @@ use hepta_browser_codec::{
     EffectClass, ElementReference, JsonObject, JsonValue, NavigationTarget, ObservationField,
     PageAction, ProfilePersistence, ProfileSpec, WaitCondition,
 };
+#[cfg(target_os = "linux")]
+use hepta_peer_attestation::ControlRequestVerifier;
 use hepta_peer_attestation::PeerRequestVerifier;
 use hepta_session_core::{
     ControlSource, ControlState, JournalError, PrivacyClass, ReceiptEffectClass, ReceiptEvent,
@@ -415,12 +417,74 @@ impl Default for CancellationToken {
 }
 
 #[derive(Debug, Clone)]
+struct RequestPeerVerifiers {
+    owner_pid: u32,
+    agent: PeerRequestVerifier,
+    #[cfg(target_os = "linux")]
+    custodian: Option<ControlRequestVerifier>,
+}
+#[cfg(test)]
+impl From<PeerRequestVerifier> for RequestPeerVerifiers {
+    fn from(agent: PeerRequestVerifier) -> Self {
+        Self {
+            owner_pid: std::process::id(),
+            agent,
+            #[cfg(target_os = "linux")]
+            custodian: None,
+        }
+    }
+}
+impl RequestPeerVerifiers {
+    fn ensure_alive(&self) -> Result<(), RuntimeFailure> {
+        if self.owner_pid != std::process::id() {
+            return Err(RuntimeFailure::PeerIdentityRevoked);
+        }
+        #[cfg(target_os = "linux")]
+        if let Some(custodian) = &self.custodian {
+            custodian
+                .ensure_pair_alive(&self.agent)
+                .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        } else {
+            self.agent
+                .ensure_alive()
+                .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        }
+        #[cfg(not(target_os = "linux"))]
+        self.agent
+            .ensure_alive()
+            .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        if self.owner_pid != std::process::id() {
+            return Err(RuntimeFailure::PeerIdentityRevoked);
+        }
+        Ok(())
+    }
+    fn verify_current(&self) -> Result<(), RuntimeFailure> {
+        self.ensure_alive()?;
+        #[cfg(target_os = "linux")]
+        if let Some(custodian) = &self.custodian {
+            custodian
+                .verify_pair_current(&self.agent)
+                .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        } else {
+            self.agent
+                .verify_current()
+                .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        }
+        #[cfg(not(target_os = "linux"))]
+        self.agent
+            .verify_current()
+            .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        self.ensure_alive()
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct RequestControl {
     pub request_id: String,
     pub deadline: Instant,
     cancelled: bool,
     cancellation: CancellationToken,
-    authority: Option<PeerRequestVerifier>,
+    authority: Option<RequestPeerVerifiers>,
 }
 
 impl RequestControl {
@@ -737,6 +801,7 @@ struct SharedActorState {
 }
 
 pub struct BrowserActor<R> {
+    owner_pid: u32,
     binding: PrincipalBinding,
     runtime: R,
     page: Option<PageOwner>,
@@ -754,6 +819,8 @@ pub struct BrowserActor<R> {
     /// distinguish an expired pure preflight from an expired runtime effect.
     runtime_dispatch_started: bool,
     request_authority: Rc<RefCell<Option<PeerRequestVerifier>>>,
+    #[cfg(target_os = "linux")]
+    control_authority: Rc<RefCell<Option<ControlRequestVerifier>>>,
     shared: Rc<RefCell<SharedActorState>>,
 }
 
@@ -769,9 +836,22 @@ impl Drop for RequestAuthorityScope {
     }
 }
 
+#[cfg(target_os = "linux")]
+struct ControlAuthorityScope {
+    slot: Rc<RefCell<Option<ControlRequestVerifier>>>,
+    previous: Option<ControlRequestVerifier>,
+}
+#[cfg(target_os = "linux")]
+impl Drop for ControlAuthorityScope {
+    fn drop(&mut self) {
+        *self.slot.borrow_mut() = self.previous.take();
+    }
+}
+
 impl<R: PageRuntime> BrowserActor<R> {
     pub fn new(binding: PrincipalBinding, runtime: R) -> Self {
         Self {
+            owner_pid: std::process::id(),
             binding,
             runtime,
             page: None,
@@ -783,12 +863,122 @@ impl<R: PageRuntime> BrowserActor<R> {
             runtime_unavailable: false,
             runtime_dispatch_started: false,
             request_authority: Rc::new(RefCell::new(None)),
+            #[cfg(target_os = "linux")]
+            control_authority: Rc::new(RefCell::new(None)),
             shared: Rc::new(RefCell::new(SharedActorState { page: None })),
         }
     }
 
     pub fn principal_binding(&self) -> &PrincipalBinding {
         &self.binding
+    }
+
+    fn runtime_authority(&self) -> Option<RequestPeerVerifiers> {
+        self.request_authority
+            .borrow()
+            .clone()
+            .map(|agent| RequestPeerVerifiers {
+                owner_pid: std::process::id(),
+                agent,
+                #[cfg(target_os = "linux")]
+                custodian: self.control_authority.borrow().clone(),
+            })
+    }
+
+    /// Additive concrete second-identity path, not a caller-provided verifier
+    /// callback. Both retained peer incarnations must be current before facts.
+    #[cfg(target_os = "linux")]
+    pub fn preflight_attested_controlled(
+        &mut self,
+        context: &DispatchContext,
+        request: &BrowserRequest,
+        attestor: &hepta_peer_attestation::ProcfsPeerAttestor,
+        attested: &hepta_peer_attestation::AttestedPeer,
+        custodian: &ControlRequestVerifier,
+    ) -> Result<Option<BrowserWireError>, AgentPortError> {
+        self.ensure_prepared_request_owner()?;
+        let cancellation = self.active_cancellation_token(&request.request_id);
+        let result = (|| {
+            context.remaining()?;
+            if custodian.verify_current().is_err() {
+                return Ok(Some(admission_error(
+                    BrowserErrorCode::PolicyDenied,
+                    "control custodian refused",
+                )));
+            }
+            context.remaining()?;
+            let result = self.preflight_attested(context, request, attestor, attested)?;
+            if custodian.verify_current().is_err() {
+                return Ok(Some(admission_error(
+                    BrowserErrorCode::PolicyDenied,
+                    "control custodian refused",
+                )));
+            }
+            context.remaining()?;
+            Ok(result)
+        })();
+        if !matches!(result, Ok(None)) {
+            self.retire_prepared_request(&request.request_id)?;
+            if let Some(token) = cancellation {
+                token.cancel();
+            }
+        }
+        result
+    }
+
+    /// Retain a concrete control verifier in every queued runtime command.
+    /// Original Agent custody is still created and retired by handle_attested.
+    #[cfg(target_os = "linux")]
+    pub fn handle_attested_controlled(
+        &mut self,
+        context: &DispatchContext,
+        request: &BrowserRequest,
+        attestor: &hepta_peer_attestation::ProcfsPeerAttestor,
+        attested: &hepta_peer_attestation::AttestedPeer,
+        custodian: &ControlRequestVerifier,
+    ) -> Result<HandlerOutcome, AgentPortError> {
+        self.ensure_prepared_request_owner()?;
+        let cancellation = self.active_cancellation_token(&request.request_id);
+        let result = (|| {
+            context.remaining()?;
+            if custodian.verify_current().is_err() {
+                return Ok(failure(
+                    BrowserErrorCode::PolicyDenied,
+                    "control custodian refused",
+                ));
+            }
+            context.remaining()?;
+            let _scope = ControlAuthorityScope {
+                previous: self
+                    .control_authority
+                    .borrow_mut()
+                    .replace(custodian.clone()),
+                slot: self.control_authority.clone(),
+            };
+            self.runtime_dispatch_started = false;
+            let outcome = self.handle_attested(context, request, attestor, attested);
+            if custodian.verify_current().is_err() {
+                if self.runtime_dispatch_started {
+                    self.runtime_unavailable = true;
+                    self.reconcile_indeterminate_page_effect(context);
+                    return Ok(failure(
+                        BrowserErrorCode::Indeterminate,
+                        "control custodian revoked after possible dispatch",
+                    ));
+                }
+                return Ok(failure(
+                    BrowserErrorCode::PolicyDenied,
+                    "control custodian refused",
+                ));
+            }
+            self.check_attested_return_deadline(context, request, self.page.is_some())?;
+            outcome
+        })();
+        self.retire_prepared_request(&request.request_id)?;
+        if let Some(token) = cancellation {
+            token.cancel();
+        }
+        result
     }
 
     /// Check live custody and semantic admission without changing page state,
@@ -1113,6 +1303,27 @@ impl<R: PageRuntime> BrowserActor<R> {
         self.cancellation_tokens.get(request_id).cloned()
     }
 
+    /// Retire preparation when a coordinator refuses or finishes a request.
+    /// This only revokes the existing token and removes that request's marker;
+    /// it creates no token, execution authority, receipt, or replay permission.
+    pub fn retire_prepared_request(&mut self, request_id: &str) -> Result<(), AgentPortError> {
+        self.ensure_prepared_request_owner()?;
+        if let Some(token) = self.cancellation_tokens.remove(request_id) {
+            token.cancel();
+        }
+        self.cancelled_requests.remove(request_id);
+        Ok(())
+    }
+
+    fn ensure_prepared_request_owner(&self) -> Result<(), AgentPortError> {
+        if self.owner_pid != std::process::id() {
+            return Err(AgentPortError::Handler(
+                "request preparation belongs to another process".into(),
+            ));
+        }
+        Ok(())
+    }
+
     pub fn apply_session_event(
         &mut self,
         event: SessionEvent,
@@ -1247,7 +1458,7 @@ impl<R: PageRuntime> BrowserActor<R> {
             deadline: context.effective_deadline,
             cancelled,
             cancellation,
-            authority: self.request_authority.borrow().clone(),
+            authority: self.runtime_authority(),
         };
         // A cancellation/deadline observed before entering the adapter is a
         // harmless preflight rejection: no remote effect could have started,
@@ -1456,7 +1667,7 @@ impl<R: PageRuntime> BrowserActor<R> {
             deadline,
             cancelled: false,
             cancellation: CancellationToken::new(),
-            authority: self.request_authority.borrow().clone(),
+            authority: self.runtime_authority(),
         };
         let owner = PageOwnerSnapshot {
             session_id: session_id.to_owned(),
@@ -1497,7 +1708,7 @@ impl<R: PageRuntime> BrowserActor<R> {
             deadline,
             cancelled: false,
             cancellation: CancellationToken::new(),
-            authority: self.request_authority.borrow().clone(),
+            authority: self.runtime_authority(),
         };
         let closed = self
             .runtime

@@ -26,6 +26,10 @@ use hepta_browser_actor::{
 };
 use hepta_browser_codec::{BrowserErrorCode, BrowserRequest, BrowserResponse, BrowserWireError};
 use hepta_peer_attestation::{AttestedPeer, PeerRuntimePolicy, ProcfsPeerAttestor};
+#[cfg(target_os = "linux")]
+use hepta_peer_attestation::{
+    ControlOwnerError, ControlReceivedAcceptedStream, ControlRequestCustody, ControlRequestVerifier,
+};
 use hepta_session_core::{Digest, DurableReceiptFact, ReceiptJournal, ReceiptLifecycleState};
 
 use crate::{RestartPolicy, RuntimeGeneration, RuntimeState};
@@ -71,6 +75,8 @@ struct ConnectionControl {
     cancelled: AtomicBool,
     active: Mutex<Option<CancellationToken>>,
     transport: Mutex<Option<UnixStream>>,
+    #[cfg(target_os = "linux")]
+    custodian: Option<ControlRequestCustody>,
 }
 
 /// Revocation only: this handle cannot dispatch, release human control, or
@@ -83,6 +89,10 @@ impl ProductConnectionCancellation {
             return;
         }
         self.0.cancelled.store(true, Ordering::SeqCst);
+        #[cfg(target_os = "linux")]
+        if let Some(custodian) = &self.0.custodian {
+            let _ = custodian.revoke();
+        }
         if let Ok(active) = self.0.active.lock()
             && let Some(token) = active.as_ref()
         {
@@ -144,6 +154,76 @@ impl AcceptedProductConnection {
                 HandoffError::DeadlineExceeded => ProductDispatchError::DeadlineExceeded,
                 _ => ProductDispatchError::PeerRefused,
             })?
+    }
+
+    /// Consume an opaque actual control handoff and retain its original
+    /// custodian through this connection's response lifetime. Original Agent
+    /// admission always uses default live `/proc`, never an injected source.
+    #[cfg(target_os = "linux")]
+    pub fn from_control_received(
+        received: ControlReceivedAcceptedStream,
+        policy: &PeerRuntimePolicy,
+        approved_executable_sha256: &str,
+    ) -> Result<Self, ProductDispatchError> {
+        received.deadline().map_err(control_error)?;
+        if approved_executable_sha256.len() != 64
+            || !approved_executable_sha256
+                .bytes()
+                .all(|value| value.is_ascii_digit() || (b'a'..=b'f').contains(&value))
+        {
+            return Err(ProductDispatchError::InvalidConfiguration);
+        }
+        received
+            .consume_before(|stream, deadline, custody| {
+                let verifier = custody.verifier().map_err(control_error)?;
+                verifier.verify_current().map_err(control_error)?;
+                let mut connection =
+                    Self::attest_before(stream, ProcfsPeerAttestor::default(), policy, deadline)?;
+                if connection.attested.snapshot().executable_sha256 != approved_executable_sha256 {
+                    return Err(ProductDispatchError::PeerRefused);
+                }
+                let control = Arc::get_mut(&mut connection.control)
+                    .ok_or(ProductDispatchError::PeerRefused)?;
+                control.custodian = Some(custody);
+                connection.ensure_control_current()?;
+                Ok(connection)
+            })
+            .map_err(control_error)?
+    }
+
+    #[cfg(target_os = "linux")]
+    fn control_verifier(&self) -> Result<Option<ControlRequestVerifier>, ProductDispatchError> {
+        if self.control.owner_pid != std::process::id() {
+            return Err(ProductDispatchError::PeerRefused);
+        }
+        self.control
+            .custodian
+            .as_ref()
+            .map(|custody| custody.verifier().map_err(control_error))
+            .transpose()
+    }
+
+    fn ensure_control_current(&self) -> Result<(), ProductDispatchError> {
+        #[cfg(target_os = "linux")]
+        if let Some(verifier) = self.control_verifier()? {
+            let checked = (|| {
+                self.deadline()?;
+                self.attested
+                    .refresh_snapshot(&self.attestor)
+                    .map_err(|_| ProductDispatchError::PeerRefused)?;
+                self.deadline()?;
+                verifier.verify_current().map_err(control_error)?;
+                self.deadline()?;
+                Ok(())
+            })();
+            if checked.is_err()
+                && let Some(custody) = &self.control.custodian
+            {
+                let _ = custody.revoke();
+            }
+            checked?;
+        }
+        Ok(())
     }
 
     fn attest_before(
@@ -212,10 +292,23 @@ fn product_time_remaining(deadline: Instant) -> Result<Duration, ProductDispatch
         .ok_or(ProductDispatchError::DeadlineExceeded)
 }
 
+#[cfg(target_os = "linux")]
+fn control_error(error: ControlOwnerError) -> ProductDispatchError {
+    match error {
+        ControlOwnerError::DeadlineExceeded => ProductDispatchError::DeadlineExceeded,
+        ControlOwnerError::Cancelled => ProductDispatchError::Cancelled,
+        _ => ProductDispatchError::PeerRefused,
+    }
+}
+
 impl Drop for AcceptedProductConnection {
     fn drop(&mut self) {
         if self.control.owner_pid != std::process::id() {
             return;
+        }
+        #[cfg(target_os = "linux")]
+        if let Some(custodian) = &self.control.custodian {
+            let _ = custodian.revoke();
         }
         if let Ok(mut active) = self.control.active.lock() {
             active.take();
@@ -252,6 +345,7 @@ impl ProductConnectionIngress {
         if self.0 != std::process::id() || connection.control.owner_pid != self.0 {
             return Err(ProductDispatchError::PeerRefused);
         }
+        connection.ensure_control_current()?;
         let cancellation = connection.cancellation();
         match self.1.try_send(connection) {
             Ok(()) => Ok(cancellation),
@@ -266,7 +360,10 @@ impl ProductConnectionQueue {
             return Err(ProductDispatchError::PeerRefused);
         }
         match self.1.try_recv() {
-            Ok(connection) => Ok(Some(connection)),
+            Ok(connection) => {
+                connection.ensure_control_current()?;
+                Ok(Some(connection))
+            }
             Err(mpsc::TryRecvError::Empty) => Ok(None),
             Err(mpsc::TryRecvError::Disconnected) => Err(ProductDispatchError::Closed),
         }
@@ -342,6 +439,7 @@ impl ProductRequestCoordinator {
         if bootstrap.control.owner_pid != std::process::id() {
             return Err(ProductDispatchError::PeerRefused);
         }
+        bootstrap.ensure_control_current()?;
         if !journal.is_managed()
             || image_id.is_empty()
             || image_id.len() > 128
@@ -389,6 +487,7 @@ impl ProductRequestCoordinator {
         )
         .map_err(|_| ProductDispatchError::PeerRefused)?;
         let observer = actor.receipt_observer(journal, image_id.clone());
+        bootstrap.ensure_control_current()?;
         Ok(Self {
             owner_pid: std::process::id(),
             actor: Some(actor),
@@ -429,6 +528,7 @@ impl ProductRequestCoordinator {
         if connection.control.cancelled.load(Ordering::SeqCst) {
             return Err(ProductDispatchError::Cancelled);
         }
+        connection.ensure_control_current()?;
         if self.storage_failed {
             return Err(ProductDispatchError::StorageUnavailable);
         }
@@ -461,6 +561,7 @@ impl ProductRequestCoordinator {
             observer: self.observer.clone(),
             trace: trace.clone(),
             control: control.clone(),
+            prepared_request: None,
         };
         let mut lifecycle = DurableProductLifecycle {
             owner_pid: self.owner_pid,
@@ -478,6 +579,9 @@ impl ProductRequestCoordinator {
                 &mut lifecycle,
             )
         }));
+        // Lifecycle/deadline errors can skip handle after successful preflight.
+        // Retire its request preparation before examining the durable outcome.
+        drop(handler);
         self.ensure_owner()?;
         if let Ok(mut active) = control.active.lock() {
             active.take();
@@ -605,6 +709,7 @@ impl ProductRequestCoordinator {
         if bootstrap.control.owner_pid != self.owner_pid {
             return Err(ProductDispatchError::PeerRefused);
         }
+        bootstrap.ensure_control_current()?;
         if self.state == RuntimeState::CrashLoopOpen {
             return Err(ProductDispatchError::CrashLoopOpen);
         }
@@ -622,6 +727,7 @@ impl ProductRequestCoordinator {
             endpoint,
         )
         .map_err(|_| ProductDispatchError::PeerRefused)?;
+        bootstrap.ensure_control_current()?;
         let observer = self
             .observer
             .borrow_mut()
@@ -649,6 +755,21 @@ struct AttestedProductHandler<'a> {
     observer: Rc<RefCell<Option<ReceiptLifecycleObserver>>>,
     trace: Rc<RefCell<OperationTrace>>,
     control: Arc<ConnectionControl>,
+    prepared_request: Option<String>,
+}
+impl Drop for AttestedProductHandler<'_> {
+    fn drop(&mut self) {
+        if self.owner_pid != std::process::id() {
+            return;
+        }
+        if let Some(request_id) = self.prepared_request.take() {
+            let _ = self.actor.retire_prepared_request(&request_id);
+            #[cfg(target_os = "linux")]
+            if let Some(custody) = &self.control.custodian {
+                let _ = custody.revoke();
+            }
+        }
+    }
 }
 impl BrowserRequestHandler for AttestedProductHandler<'_> {
     fn preflight(
@@ -657,38 +778,88 @@ impl BrowserRequestHandler for AttestedProductHandler<'_> {
         request: &BrowserRequest,
     ) -> Result<Option<BrowserWireError>, AgentPortError> {
         product_owner(self.owner_pid)?;
-        if self.control.cancelled.load(Ordering::SeqCst) {
-            return Ok(Some(refusal(
-                BrowserErrorCode::Cancelled,
-                "connection cancelled before admission",
-            )));
-        }
-        if let Some(error) =
-            self.actor
-                .preflight_attested(context, request, self.attestor, self.attested)?
-        {
-            return Ok(Some(error));
-        }
-        let mut observer = self.observer.borrow_mut();
-        let observer = observer.as_mut().ok_or_else(storage_error)?;
-        match observer.contains_receipt(&request.request_id) {
-            Ok(true) => {
+        self.prepared_request = Some(request.request_id.clone());
+        let cancellation = self.actor.active_cancellation_token(&request.request_id);
+        let result = (|| {
+            if self.control.cancelled.load(Ordering::SeqCst) {
                 return Ok(Some(refusal(
-                    BrowserErrorCode::PolicyDenied,
-                    "request identity already exists in durable history; replay refused",
+                    BrowserErrorCode::Cancelled,
+                    "connection cancelled before admission",
                 )));
             }
-            Ok(false) => (),
-            Err(_) => {
-                self.trace.borrow_mut().storage_failed = true;
-                return Err(storage_error());
+            #[cfg(target_os = "linux")]
+            if let Some(custody) = &self.control.custodian {
+                context.remaining()?;
+                if self.attested.refresh_snapshot(self.attestor).is_err() {
+                    let _ = custody.revoke();
+                    return Ok(Some(refusal(
+                        BrowserErrorCode::PolicyDenied,
+                        "original Agent refused",
+                    )));
+                }
+                context.remaining()?;
+            }
+            #[cfg(target_os = "linux")]
+            let custodian = self
+                .control
+                .custodian
+                .as_ref()
+                .map(|value| value.verifier())
+                .transpose()
+                .map_err(|_| AgentPortError::Handler("control custodian refused".into()))?;
+            #[cfg(target_os = "linux")]
+            let admission = if let Some(verifier) = &custodian {
+                self.actor.preflight_attested_controlled(
+                    context,
+                    request,
+                    self.attestor,
+                    self.attested,
+                    verifier,
+                )?
+            } else {
+                self.actor
+                    .preflight_attested(context, request, self.attestor, self.attested)?
+            };
+            #[cfg(not(target_os = "linux"))]
+            let admission =
+                self.actor
+                    .preflight_attested(context, request, self.attestor, self.attested)?;
+            if let Some(error) = admission {
+                return Ok(Some(error));
+            }
+            let mut observer = self.observer.borrow_mut();
+            let observer = observer.as_mut().ok_or_else(storage_error)?;
+            match observer.contains_receipt(&request.request_id) {
+                Ok(true) => {
+                    return Ok(Some(refusal(
+                        BrowserErrorCode::PolicyDenied,
+                        "request identity already exists in durable history; replay refused",
+                    )));
+                }
+                Ok(false) => (),
+                Err(_) => {
+                    self.trace.borrow_mut().storage_failed = true;
+                    return Err(storage_error());
+                }
+            }
+            self.trace.borrow_mut().request = Some(RequestIdentity {
+                id: request.request_id.clone(),
+                digest: request_digest(context)?,
+            });
+            Ok(None)
+        })();
+        if !matches!(result, Ok(None)) {
+            self.actor.retire_prepared_request(&request.request_id)?;
+            self.prepared_request.take();
+            if let Some(token) = cancellation {
+                token.cancel();
+            }
+            #[cfg(target_os = "linux")]
+            if let Some(custody) = &self.control.custodian {
+                let _ = custody.revoke();
             }
         }
-        self.trace.borrow_mut().request = Some(RequestIdentity {
-            id: request.request_id.clone(),
-            digest: request_digest(context)?,
-        });
-        Ok(None)
+        result
     }
 
     fn handle(
@@ -697,17 +868,52 @@ impl BrowserRequestHandler for AttestedProductHandler<'_> {
         request: &BrowserRequest,
     ) -> Result<HandlerOutcome, AgentPortError> {
         product_owner(self.owner_pid)?;
+        self.prepared_request = Some(request.request_id.clone());
         let cancellation = self.actor.cancellation_token(request.request_id.clone());
-        let mut active = self.control.active.lock().map_err(|_| {
-            AgentPortError::Handler("connection cancellation state unavailable".into())
-        })?;
-        if self.control.cancelled.load(Ordering::SeqCst) {
-            cancellation.cancel();
+        let result = (|| {
+            let mut active = self.control.active.lock().map_err(|_| {
+                AgentPortError::Handler("connection cancellation state unavailable".into())
+            })?;
+            if self.control.cancelled.load(Ordering::SeqCst) {
+                cancellation.cancel();
+            }
+            *active = Some(cancellation.clone());
+            drop(active);
+            #[cfg(target_os = "linux")]
+            if let Some(custody) = &self.control.custodian {
+                context.remaining()?;
+                if self.attested.refresh_snapshot(self.attestor).is_err() {
+                    let _ = custody.revoke();
+                    return Ok(HandlerOutcome::Failure(refusal(
+                        BrowserErrorCode::PolicyDenied,
+                        "original Agent refused before controlled dispatch",
+                    )));
+                }
+                context.remaining()?;
+                let verifier = custody
+                    .verifier()
+                    .map_err(|_| AgentPortError::Handler("control custodian refused".into()))?;
+                return self.actor.handle_attested_controlled(
+                    context,
+                    request,
+                    self.attestor,
+                    self.attested,
+                    &verifier,
+                );
+            }
+            self.actor
+                .handle_attested(context, request, self.attestor, self.attested)
+        })();
+        self.actor.retire_prepared_request(&request.request_id)?;
+        self.prepared_request.take();
+        cancellation.cancel();
+        #[cfg(target_os = "linux")]
+        if !matches!(&result, Ok(HandlerOutcome::Success(_)))
+            && let Some(custody) = &self.control.custodian
+        {
+            let _ = custody.revoke();
         }
-        *active = Some(cancellation);
-        drop(active);
-        self.actor
-            .handle_attested(context, request, self.attestor, self.attested)
+        result
     }
 }
 
