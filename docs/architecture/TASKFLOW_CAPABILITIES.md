@@ -107,6 +107,15 @@ proposal creation and cancelled/refused proposals do not replenish the budget.
 The native resource tuple is pinned for this task; revision or target changes
 require fresh independently authorized task policy, IDs and permit.
 
+The action-count regression uses a two-second test task policy and advances its
+injected monotonic clock past that original deadline after testing the count.
+Approval still runs actual offline Ed25519 verification. This avoids requiring
+a native OpenSSL process to finish within five milliseconds to reach a counter
+assertion. A separate five-millisecond task-expiry case uses a real signed permit
+and checks that expiry refuses approval and dispatch without durable consumption
+or an adapter call. Production policy limits and verification timeouts are
+unchanged; these tests do not qualify installed performance or a latency SLO.
+
 Store, coordinator, action controls and verifier policy remain bound to their
 creator process. Authority methods check the current PID before mutex use, so
 forked snapshots cannot ignore later parent cancellation/revocation or reuse an

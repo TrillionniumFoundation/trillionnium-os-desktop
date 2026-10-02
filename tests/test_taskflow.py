@@ -242,16 +242,35 @@ class TaskFlowTests(unittest.TestCase):
             self.flow.approve("task:1", self.sign(self.permit(self.proposal(action_budget_ms=1))))
 
     def test_task_and_action_count_budgets_are_enforced(self):
-        flow = self.coordinator(self.store); flow.create_task(replace(self.policy, task_id="bounded-task", max_actions=1, task_budget_ms=5))
+        # This exercises counters with the injected clock, while approval still
+        # performs real Ed25519 verification. A 5ms native-process requirement
+        # made scheduler delay fail this case before either counter assertion.
+        task_budget_ms = 2_000
+        flow = self.coordinator(self.store); flow.create_task(replace(self.policy, task_id="bounded-task", max_actions=1, task_budget_ms=task_budget_ms))
         value = self.proposal(task_id="bounded-task")
         flow.propose("bounded-task", canonical(value))
         flow.approve("bounded-task", self.sign(self.permit(value)))
         flow.dispatch("bounded-task", self.binding, lambda payload, control: tf.EffectOutcome.SUCCEEDED)
         with self.assertRaises(tf.TaskFlowError):
             flow.propose("bounded-task", canonical({**value, "action_id": "second"}))
-        self.clock.tick(6)
+        self.clock.tick(task_budget_ms + 1)
         with self.assertRaises(tf.DeadlineExceeded):
             flow.propose("bounded-task", canonical({**value, "action_id": "third"}))
+
+    def test_five_ms_task_expiry_refuses_approval_and_effect(self):
+        flow = self.coordinator(self.store)
+        flow.create_task(replace(self.policy, task_id="expired-task", task_budget_ms=5))
+        value = self.proposal(task_id="expired-task")
+        flow.propose("expired-task", canonical(value))
+        signed = self.sign(self.permit(value))
+        self.clock.tick(6)
+        with self.assertRaises(tf.DeadlineExceeded):
+            flow.approve("expired-task", signed)
+        self.assertEqual(flow.current("expired-task").state, tf.ActionState.PROPOSED)
+        with self.assertRaises(tf.ReplayRefused):
+            flow.dispatch("expired-task", self.binding, self.adapter)
+        self.assertFalse(list(self.path.glob("*.used")))
+        self.assertFalse(self.called)
 
     def test_duplicate_json_unknown_fields_numbers_and_deep_input_refused(self):
         for payload in [b'{"schema":"x","schema":"y"}', b'{"n":' + b'1' * 5000 + b'}', b"{" + b'"a":[' * 9 + b"0" + b"]" * 9 + b"}", canonical({**self.proposal(), "approved": True}), canonical(self.proposal(session_generation=True)), canonical(self.proposal(action_budget_ms=1.5))]:
