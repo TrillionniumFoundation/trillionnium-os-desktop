@@ -115,10 +115,13 @@ class PlatformMechanismInventoryTests(unittest.TestCase):
     def test_egress_cleanup_contract_remains_closed_and_cannot_mint_retry_authority(self):
         path = self.root / "contracts/controlled-egress.v1.json"
         original = path.read_text()
-        for field in ("cleanup", "interruption_evidence_scope"):
-            with self.subTest(missing=field):
+        for section, field in (("outcome", "cleanup"),
+                               ("outcome", "interruption_evidence_scope"),
+                               ("authority", "native_io_gate"),
+                               ("authority", "cancellation")):
+            with self.subTest(section=section, missing=field):
                 value = json.loads(original)
-                del value["outcome"][field]
+                del value[section][field]
                 path.write_text(json.dumps(value))
                 with self.assertRaisesRegex(ValueError, "contract nested object"):
                     gate.validate(self.root, refresh=True)

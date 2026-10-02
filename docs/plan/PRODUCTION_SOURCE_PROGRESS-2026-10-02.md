@@ -231,7 +231,21 @@ Controlled-egress cleanup follow-up retains actual attempted identity/known hops
 on cleanup interruptions, closes only its own lease, refuses fork before an
 inherited mutex, and quarantines uncertain cleanup without replay. Root additionally reproduced two ordinary admission line-boundary interruptions that left an active permit and either a held or released mutex before the outer cleanup guard. Successor b587cf4bba434ea20be1833c11facc9c37b4dc0d retains a shared empty lease and exact-permit reservation before consumption, protects the admission helper/return, and prevents a competing loser from retiring the winner. Its35 real TLS tests passed author, root and independent runs; all four source hashes match the frozen review. These
 specific cases never establish every arbitrary asynchronous C-return/store
-window or durable external-effect reconciliation.
+window or durable external-effect reconciliation. A subsequent actual hostile
+probe found that completed cancellation/revocation and a fork after the final
+socket PID check still allowed one GET on b587. The reviewed successor in PR136
+adds fixed token-then-policy native I/O admission, original-deadline and exact
+active-authority checks, retained socket-object child retirement and bounded
+nonreentrant public policy access. All 45 real socket/TLS tests pass author,
+root and independent runs; the original three probes now observe zero GETs and
+two DoT queries each. A call admitted before revocation can finish before its
+successful barrier return; tests preserve that GET1 distinction. Child actual
+descriptors become EBADF while the parent's original descriptor and hello stay
+live. Five SIGUSR1 policy entrypoints refuse within the bounded gate without
+changing policy. The reentrant-close before replay is explicitly a minimal
+one-method mutant, not the overwritten historical failure JSON. C-to-storage,
+standard-library raw-to-TLS transfer cuts, installed namespace and hardware
+qualification remain open.
 
 The current composition branch `codex/production-source-round2-20261002` starts at
 fixed c61. It combines source successors without moving their review bases or
