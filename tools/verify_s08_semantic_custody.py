@@ -80,12 +80,27 @@ ALLOWED_PATHS = [
 SEMANTIC_SCHEMA = {
     "version": 1, "name_encoding": "raw_utf8_without_normalization",
     "maximum_name_bytes": 1024, "maximum_ancestry_nodes": 16,
-    "maximum_name_preimage_bytes": 1057, "maximum_structural_preimage_bytes": 16647,
+    "maximum_name_preimage_bytes": 1057, "maximum_structural_preimage_bytes": 18007,
     "maximum_result_bytes": 4096,
     "ancestry_order": "retained_leaf_to_document_root_no_graft",
     "hash": "sha2_0.11.0_sha256", "name_domain": "trillionnium.accesskit.name\\0",
     "structural_domain": "trillionnium.accesskit.semantic\\0",
     "ipc_shape": "fixed_size_serde_closed_fields",
+    "declared_role": {
+        "profile": "current_dom_declared_role_v1", "version": 1,
+        "encoding": "borrowed_exact_utf8_without_normalization",
+        "maximum_attribute_bytes": 128, "maximum_attribute_preimage_bytes": 170,
+        "attribute_domain": "trillionnium.accesskit.declared-role\\0",
+        "structural_component_domain": "trillionnium.accesskit.structural-declared-role\\0",
+        "chain": "target_and_every_retained_ancestor",
+        "absent_and_empty_are_distinct": True,
+        "unavailable_or_overflow_poison_snapshot": True,
+        "borrow_source": {
+            "path": "components/script/layout_dom/servo_layout_element.rs",
+            "blob_sha1": "1f91e255c6401511d9d82e22806de947de96049d",
+            "sha256": "9e16539e6f5eebcb606a882d6206944d57cee4720d5d6739906558f65a23a562",
+        },
+    },
 }
 NEGATIVES = {
     "same_node_label": "TargetSemanticMismatch",
@@ -375,7 +390,7 @@ def verify(root: Path) -> tuple[dict[str, Any], dict[str, list[str]]]:
         exact(standalone[key + "_path"], path, "standalone source path")
         exact(hashlib.sha256(read(root / path)).hexdigest(), standalone[key + "_sha256"], "standalone pinned source digest")
     exact(standalone["fixture_only"], True, "standalone evidence scope")
-    exact(standalone["expected_tests"], 6, "standalone Rust corpus count")
+    exact(standalone["expected_tests"], 11, "standalone Rust corpus count")
     exact(tomllib.loads(read(root / standalone["manifest_path"]).decode()), {
         "package": {"name": "s08-semantic-standalone-source-check", "version": "0.0.0", "edition": "2024"},
         "lib": {"path": "semantic_source.rs"},
@@ -416,11 +431,49 @@ def verify(root: Path) -> tuple[dict[str, Any], dict[str, list[str]]]:
                      "components/layout/accessibility_tree.rs", "components/shared/layout/lib.rs")
     }
     verify_semantic_refresh(refresh_sources)
+    verify_declared_role(module.decode("utf-8", "strict"), refresh_sources["components/layout/accessibility_tree.rs"])
     additions = "\n".join(line[1:] for lines in parsed.values() for line in lines if line.startswith("+"))
     for pattern in (r"evaluate_javascript|EvaluateJavaScript|WebDriver", r"query_selector|element_from_point|hit_test", r"fire_synthetic_pointer_event_not_trusted"):
         if re.search(pattern, additions):
             raise ValueError("semantic production patch adds an action fallback or extra dispatch")
     return manifest, parsed
+
+
+def verify_declared_role(module: str, tree: str) -> None:
+    for marker in (
+        "ACCESSIBILITY_DECLARED_ROLE_VERSION: u16 = 1",
+        "MAX_ACCESSIBILITY_DECLARED_ROLE_BYTES: usize = 128",
+        'b"trillionnium.accesskit.declared-role\\0"',
+        'b"trillionnium.accesskit.structural-declared-role\\0"',
+        'let bytes = value.unwrap_or("").as_bytes();',
+        "if bytes.len() > MAX_ACCESSIBILITY_DECLARED_ROLE_BYTES {\n            return None;\n        }",
+        "digest.update([u8::from(value.is_some())]);",
+        "digest.update((bytes.len() as u16).to_be_bytes());",
+        "digest.update(bytes);",
+        "let Some(declaration) = declaration else {\n            self.refused = true;\n            return false;\n        };",
+        "self.digest.update(STRUCTURAL_DECLARED_ROLE_DOMAIN);",
+        "self.digest.update(declaration.digest);",
+    ):
+        if marker not in module:
+            raise ValueError("bounded exact raw DOM role encoder is missing")
+    measure = (
+        "self.declared_role_binding = match dom_node.as_element() {\n"
+        "            Some(element) => DeclaredRoleBinding::from_raw_attribute(\n"
+        "                element.attribute_as_str(&ns!(), &local_name!(\"role\")),\n"
+        "            ),\n"
+        "            None => DeclaredRoleBinding::from_raw_attribute(None),\n"
+        "        };\n"
+        "        local_damage.insert(self.set_role(role_from_dom_node(dom_node)));"
+    )
+    if measure not in tree:
+        raise ValueError("declared role must borrow current DOM before effective-role measurement")
+    for marker in (
+        "declared_role_binding: Option<DeclaredRoleBinding>", "declared_role_binding: None,",
+        "if !builder.push_with_declared_role(node.id, &node.accesskit_node, node.declared_role_binding) { return None; }",
+        "current = parent?;", "if !self.nodes.contains_key(&current.borrow().id) { return None; }",
+    ):
+        if marker not in tree:
+            raise ValueError("complete retained ancestry must carry measured DOM role bindings")
 
 
 
@@ -453,6 +506,10 @@ def verify_semantic_refresh(sources: dict[str, str]) -> None:
         raise ValueError("current DOM semantic reflow interface is absent")
 
 def verify_upstream_sources(root: Path, upstream: Path, manifest: dict[str, Any], parsed: dict[str, list[str]]) -> None:
+    borrow = SEMANTIC_SCHEMA["declared_role"]["borrow_source"]
+    borrowed_source = read(upstream / borrow["path"])
+    exact(hashlib.sha256(borrowed_source).hexdigest(), borrow["sha256"], "pinned raw DOM borrow source")
+    exact(hashlib.sha1(f"blob {len(borrowed_source)}\0".encode() + borrowed_source).hexdigest(), borrow["blob_sha1"], "pinned raw DOM borrow Git blob")
     prerequisite = load(root / PREREQUISITE)
     paths = sorted(set(prerequisite["patch"]["allowed_paths"]) | set(ALLOWED_PATHS))
     originals: dict[str, bytes | None] = {}
@@ -493,6 +550,10 @@ def verify_upstream_sources(root: Path, upstream: Path, manifest: dict[str, Any]
         verify_semantic_refresh({path: after_sources[path].decode("utf-8", "strict") for path in (
             "components/script/event_loop/script_thread.rs", "components/layout/layout_impl.rs",
             "components/layout/accessibility_tree.rs", "components/shared/layout/lib.rs")})
+        verify_declared_role(
+            after_sources["components/shared/base/accessibility_semantics.rs"].decode("utf-8", "strict"),
+            after_sources["components/layout/accessibility_tree.rs"].decode("utf-8", "strict"),
+        )
         # The checked refresh passes current ServoLayoutNode values to the existing property reader.
         tree_source = after_sources["components/layout/accessibility_tree.rs"].decode("utf-8", "strict")
         for marker in ("self.set_role(role_from_dom_node(dom_node))", "click_action_supported(dom_node)",
@@ -521,6 +582,8 @@ def verify_upstream_sources(root: Path, upstream: Path, manifest: dict[str, Any]
     for path, original in originals.items():
         if original is not None and read(upstream / path) != original:
             raise ValueError("pristine upstream source changed during verification")
+    if read(upstream / borrow["path"]) != borrowed_source:
+        raise ValueError("pristine raw DOM borrow source changed during verification")
 
 
 def verify_result(path: Path) -> None:

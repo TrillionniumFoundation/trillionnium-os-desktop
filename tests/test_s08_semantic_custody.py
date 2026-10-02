@@ -19,6 +19,78 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class S08SemanticCustodySourceTests(unittest.TestCase):
+    def rebind_semantic_patch(self, root: Path, before: str, after: str) -> None:
+        path = root / verifier.PATCH
+        source = path.read_text()
+        self.assertIn(before, source)
+        path.write_text(source.replace(before, after))
+        module = verifier.apply_exact(None, verifier.parse_patch(path.read_bytes())[
+            "components/shared/base/accessibility_semantics.rs"])
+        def bind(manifest):
+            manifest["patch"]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+            for row in manifest["patch"]["source_pins"]:
+                if row["path"].endswith("/accessibility_semantics.rs"):
+                    row["semantic_sha256"] = hashlib.sha256(module).hexdigest()
+        self.mutate_manifest(root, bind)
+
+    def test_declared_role_subprofile_is_closed_and_byte_bound_cannot_expand(self) -> None:
+        for key, value in [("version", True), ("version", 1.0), ("version", 2),
+                           ("maximum_attribute_bytes", 128.0), ("maximum_attribute_bytes", 129),
+                           ("encoding", "trimmed_role_tokens"), ("chain", "target_only"),
+                           ("unavailable_or_overflow_poison_snapshot", False),
+                           ("absent_and_empty_are_distinct", 1)]:
+            with self.subTest(key=key):
+                root = self.copied()
+                self.mutate_manifest(root, lambda m: m["semantic_schema"]["declared_role"].__setitem__(key, value))
+                with self.assertRaises(ValueError): verifier.verify(root)
+        for change in [lambda role: role.pop("borrow_source"),
+                       lambda role: role.__setitem__("caller_observed", True),
+                       lambda role: role["borrow_source"].__setitem__("blob_sha1", "0" * 40)]:
+            root = self.copied()
+            self.mutate_manifest(root, lambda m: change(m["semantic_schema"]["declared_role"]))
+            with self.assertRaises(ValueError): verifier.verify(root)
+
+    def test_rebound_declared_role_encoder_cannot_normalize_omit_or_expand(self) -> None:
+        for before, after in [
+            ("MAX_ACCESSIBILITY_DECLARED_ROLE_BYTES: usize = 128", "MAX_ACCESSIBILITY_DECLARED_ROLE_BYTES: usize = 129"),
+            ('value.unwrap_or("").as_bytes()', 'value.unwrap_or("").trim().as_bytes()'),
+            ('trillionnium.accesskit.declared-role\\0', 'trillionnium.accesskit.computed-role\\0'),
+            ("digest.update([u8::from(value.is_some())]);", "digest.update([1]);"),
+            ("self.digest.update(declaration.digest);", "self.digest.update([0; 32]);"),
+            ("let Some(declaration) = declaration else {\n+            self.refused = true;", "let Some(declaration) = declaration else {\n+            self.refused = false;"),
+        ]:
+            with self.subTest(before=before):
+                root = self.copied()
+                self.rebind_semantic_patch(root, before, after)
+                with self.assertRaises(ValueError): verifier.verify(root)
+
+    def test_rebound_native_role_snapshot_must_borrow_dom_for_complete_chain(self) -> None:
+        for before, after in [
+            ('element.attribute_as_str(&ns!(), &local_name!("role"))', 'None'),
+            ('element.attribute_as_str(&ns!(), &local_name!("role"))', 'element.attribute_as_str(&ns!(), &local_name!("class"))'),
+            ('element.attribute_as_str(&ns!(), &local_name!("role"))', 'Some("Button")'),
+            ('declared_role_binding: None,', 'declared_role_binding: DeclaredRoleBinding::from_raw_attribute(None),'),
+            ('builder.push_with_declared_role(node.id, &node.accesskit_node, node.declared_role_binding)', 'builder.push(node.id, &node.accesskit_node)'),
+            ('builder.push_with_declared_role(node.id, &node.accesskit_node, node.declared_role_binding)', 'builder.push_with_declared_role(node.id, &node.accesskit_node, DeclaredRoleBinding::from_raw_attribute(None))'),
+        ]:
+            with self.subTest(before=before):
+                root = self.copied()
+                self.rebind_semantic_patch(root, before, after)
+                with self.assertRaises(ValueError): verifier.verify(root)
+
+    def test_original_six_encoder_unit_bodies_and_outer_shape_are_unchanged(self) -> None:
+        _, parsed = verifier.verify(ROOT)
+        module = verifier.apply_exact(None, parsed["components/shared/base/accessibility_semantics.rs"])
+        start = module.index(b"#[cfg(test)]\nmod tests {")
+        end = module.index(b"#[cfg(test)]\nmod declared_role_tests {")
+        original = module[start:end].rstrip() + b"\n"
+        self.assertEqual(hashlib.sha256(original).hexdigest(),
+                         "aa3f4392a818f93d6632dc960832d9eeb21743ac27ec78c8a1d46ca656045b5a")
+        outer = module[module.index(b"pub struct AccessibilitySemanticExpectation {"):
+                       module.index(b"impl AccessibilitySemanticExpectation {")]
+        self.assertNotIn(b"declared_role", outer)
+        self.assertIn(b"ACCESSIBILITY_SEMANTIC_VERSION: u16 = 1", module)
+
     def copied(self) -> Path:
         temporary = tempfile.TemporaryDirectory(prefix="s08-semantic-source-test-")
         self.addCleanup(temporary.cleanup)

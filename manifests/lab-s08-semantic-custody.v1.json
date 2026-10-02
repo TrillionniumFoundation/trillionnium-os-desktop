@@ -6,7 +6,7 @@
   "prerequisite_manifest_sha256": "f204734ce6ec44ab97fd1a2bc71043bf31e90b4202a28b346d0c5027272ed74f",
   "patch": {
     "path": "manifests/servo-patches/s08-semantic-custody-v1/000.patch",
-    "sha256": "0364fd60d7ae5c8600e4c84fb2abb8f676f144b2a7b0a9dad1104ea9e42457d4",
+    "sha256": "6cffdef0d9469dfe97269db6bbdf619d06434943ecd1ca85466f5c908d4cd39b",
     "allowed_paths": [
       "Cargo.lock",
       "components/constellation/constellation.rs",
@@ -51,7 +51,7 @@
         "original_blob_sha1": "117b8d09e4460d271a10a48bc003ac3b6dcfb6ee",
         "original_sha256": "c806a58f04fcae6a9c9d073cc15bff2636b15e5509b9c0323890570399e00b04",
         "post_s07_sha256": "3a0aaa64471a646ed1e0b2fc2e9e3936c7debfcfb42f324954b23fd3bf85f717",
-        "semantic_sha256": "074c262998cf420f200980378001da9690cf89c59481d22346f8bd0cde9c9462"
+        "semantic_sha256": "07e5b09007a4b766232221768c19ce24ffa1fcbffbc6a9394621aa19278396e2"
       },
       {
         "path": "components/layout/layout_impl.rs",
@@ -100,7 +100,7 @@
         "original_blob_sha1": null,
         "original_sha256": null,
         "post_s07_sha256": null,
-        "semantic_sha256": "d2a4dac215a05a575dc3684f325427a7975d926d4d87a02f514cecd5baa5af51"
+        "semantic_sha256": "05be6a5890df3e38db396f341a42077688580d5fe1ed849bf09bf974b94e2dc8"
       },
       {
         "path": "components/shared/base/lib.rs",
@@ -137,14 +137,31 @@
     "name_encoding": "raw_utf8_without_normalization",
     "maximum_name_bytes": 1024,
     "maximum_ancestry_nodes": 16,
+    "maximum_name_preimage_bytes": 1057,
+    "maximum_structural_preimage_bytes": 18007,
+    "maximum_result_bytes": 4096,
     "ancestry_order": "retained_leaf_to_document_root_no_graft",
     "hash": "sha2_0.11.0_sha256",
     "name_domain": "trillionnium.accesskit.name\\0",
     "structural_domain": "trillionnium.accesskit.semantic\\0",
     "ipc_shape": "fixed_size_serde_closed_fields",
-    "maximum_name_preimage_bytes": 1057,
-    "maximum_structural_preimage_bytes": 16647,
-    "maximum_result_bytes": 4096
+    "declared_role": {
+      "profile": "current_dom_declared_role_v1",
+      "version": 1,
+      "encoding": "borrowed_exact_utf8_without_normalization",
+      "maximum_attribute_bytes": 128,
+      "maximum_attribute_preimage_bytes": 170,
+      "attribute_domain": "trillionnium.accesskit.declared-role\\0",
+      "structural_component_domain": "trillionnium.accesskit.structural-declared-role\\0",
+      "chain": "target_and_every_retained_ancestor",
+      "absent_and_empty_are_distinct": true,
+      "unavailable_or_overflow_poison_snapshot": true,
+      "borrow_source": {
+        "path": "components/script/layout_dom/servo_layout_element.rs",
+        "blob_sha1": "1f91e255c6401511d9d82e22806de947de96049d",
+        "sha256": "9e16539e6f5eebcb606a882d6206944d57cee4720d5d6739906558f65a23a562"
+      }
+    }
   },
   "original_stimulus": {
     "agentport_requests": 10,
@@ -172,7 +189,7 @@
   },
   "standalone_source_check": {
     "fixture_only": true,
-    "expected_tests": 6,
+    "expected_tests": 11,
     "manifest_path": "experiments/servo-s08-runtime/semantic-source-check/Cargo.toml",
     "manifest_sha256": "7309bded10ae3cc69edfee2d42b6dbfddcac2abf3f8284e705693f11178e7f7a",
     "lock_path": "experiments/servo-s08-runtime/semantic-source-check/Cargo.lock",
