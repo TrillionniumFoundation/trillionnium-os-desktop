@@ -1,0 +1,94 @@
+{
+  "schema": "trillionnium.desktop.accepted-stream-handoff.v1",
+  "status": "SOURCE_CANDIDATE_KERNEL_CUSTODY_ONLY",
+  "platform": "Linux with SO_COOKIE, MSG_CMSG_CLOEXEC, boot ID and actual time-namespace descriptor support; unavailable observations refuse",
+  "claim_ceiling": "one locally captured original accepted descriptor and its unchanged same-boot, same-time-namespace monotonic budget; no installed service, live executable attestation, semantic principal or native runtime authority",
+  "existing_application_protocol_changed": false,
+  "control": {
+    "carrier": "already_connected_AF_UNIX_SOCK_SEQPACKET",
+    "creates_listener": false,
+    "authentication": "actual SO_PEERCRED checked against explicit PeerPolicy; descriptor packets require actual SCM_CREDENTIALS equal to original control peer",
+    "initial_challenge_authentication": "original checked SO_PEERCRED; challenge may precede per-message credential delivery at sender endpoint",
+    "challenge_magic_ascii": "HPTAFDC1",
+    "challenge_bytes": 40,
+    "challenge_nonce_bytes": 32,
+    "challenge_nonce_source": "private operating-system getrandom only",
+    "challenge_nonce_public": false,
+    "maximum_accepted_sockets_per_channel": 64,
+    "sequence": "strictly increasing from 1, checked addition, no replay or resynchronization",
+    "duplicate_original_cookie": "refuse even under a fresh sequence",
+    "fork_authority": "creator PID checked before control use; child descriptor teardown never calls shutdown"
+  },
+  "packet": {
+    "magic_ascii": "HPTAFD01",
+    "version": 1,
+    "bytes": 128,
+    "fields": [
+      {"name": "magic", "offset": 0, "bytes": 8},
+      {"name": "version_be", "offset": 8, "bytes": 2},
+      {"name": "reserved_zero", "offset": 10, "bytes": 6},
+      {"name": "sequence_be", "offset": 16, "bytes": 8},
+      {"name": "actual_boot_uuid", "offset": 24, "bytes": 16},
+      {"name": "captured_monotonic_nanos_be", "offset": 40, "bytes": 8},
+      {"name": "fixed_deadline_monotonic_nanos_be", "offset": 48, "bytes": 8},
+      {"name": "original_kernel_socket_cookie_be", "offset": 56, "bytes": 8},
+      {"name": "original_descriptor_device_be", "offset": 64, "bytes": 8},
+      {"name": "original_descriptor_inode_be", "offset": 72, "bytes": 8},
+      {"name": "actual_time_namespace_device_be", "offset": 80, "bytes": 8},
+      {"name": "actual_time_namespace_inode_be", "offset": 88, "bytes": 8},
+      {"name": "receiver_private_challenge", "offset": 96, "bytes": 32}
+    ],
+    "application_payload_bytes": 0,
+    "caller_identity_or_authorization_fields": 0
+  },
+  "original_descriptor": {
+    "rights_count": 1,
+    "carrier": "connected_AF_UNIX_SOCK_STREAM",
+    "required_local_path": "trusted absolute exact configured pathname; maximum 107 bytes, no abstract socket or noncanonical spelling",
+    "kernel_identity": ["SO_COOKIE", "fstat.st_dev", "fstat.st_ino", "SO_PEERCRED"],
+    "reject": ["pipe", "listener", "socketpair", "different path", "different kernel socket", "missing rights", "extra rights", "SCM_PIDFD on challenge or submission", "MSG_TRUNC", "MSG_CTRUNC", "EOF", "stale challenge", "sequence replay", "cookie replay", "clock scope mismatch", "expiry"],
+    "received_fd_owner": "immediate OwnedFd for all delivered SCM_RIGHTS and nonnegative kernel SCM_PIDFD descriptors under MSG_CMSG_CLOEXEC; pidfd always refuses, never authorizes; parse all remaining ancillary rights and close each delivered descriptor once; kernel closes rights excluded by ancillary truncation",
+    "automatic_resend": false,
+    "sender_success": "one packet enqueue only; no admission/action/durable acknowledgment"
+  },
+  "deadline": {
+    "clock": "CLOCK_MONOTONIC in matching actual Linux time namespace",
+    "boot_id_source": "/proc/sys/kernel/random/boot_id",
+    "time_namespace_source": "/proc/thread-self/ns/time retained descriptor metadata",
+    "maximum_budget_seconds": 20,
+    "starts_at": "first AcceptedStreamCustody::capture ownership point, before descriptor admission checks",
+    "pre_capture_accept_wait_covered": false,
+    "transfer_and_challenge_wait_covered": true,
+    "receiver_queue_residence_covered": true,
+    "receiver_conversion": "sample Instant first then actual monotonic clock; original absolute deadline fixed thereafter",
+    "renewal_api": false,
+    "future_product_consumer": "must use supplied absolute Instant and separately recheck live identity/control at final action"
+  },
+  "public_api": {
+    "AcceptedStreamCustody::capture": "(UnixStream, &Path, Duration) -> Result<AcceptedStreamCustody, HandoffError>",
+    "HandoffReceiver::from_control": "(OwnedFd, PeerPolicy, &Path) -> Result<HandoffReceiver, HandoffError>",
+    "HandoffSender::from_control": "(OwnedFd, PeerPolicy, Duration) -> Result<HandoffSender, HandoffError>",
+    "HandoffSender::send": "(&mut self, AcceptedStreamCustody) -> Result<(), HandoffError>",
+    "HandoffReceiver::receive": "(&mut self, Duration) -> Result<ReceivedAcceptedStream, HandoffError>",
+    "ReceivedAcceptedStream::deadline": "(&self) -> Result<Instant, HandoffError>",
+    "ReceivedAcceptedStream::consume_before": "(self, impl FnOnce(UnixStream, Instant) -> T) -> Result<T, HandoffError>"
+  },
+  "ownership": {
+    "custody_cloneable": false,
+    "received_stream_fields": "private",
+    "received_raw_stream_extraction": false,
+    "consumer": "one explicit FnOnce receives original stream and fixed deadline together; trusted Rust caller is not sandboxed",
+    "failure": "consumes local custody and permanently retires this control instance; never returns a socket for retry",
+    "scope": "this owned custody and control lifetime, not a global persistent ban on duplicate FDs across arbitrary trusted callers/channels"
+  },
+  "non_claims": {
+    "live_process_unit_executable_attestation": false,
+    "root_owned_pathname_custody": false,
+    "semantic_principal_or_capability": false,
+    "cross_uid_live_attestation_qualified": false,
+    "installed_product_service_handoff": false,
+    "native_servo_runtime": false,
+    "product_ready": false,
+    "activation_changed": false
+  }
+}

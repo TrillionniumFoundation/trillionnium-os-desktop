@@ -12,6 +12,14 @@ use std::time::Duration;
 
 mod facade;
 
+#[cfg(target_os = "linux")]
+mod accepted_handoff;
+#[cfg(target_os = "linux")]
+pub use accepted_handoff::{
+    AcceptedStreamCustody, HandoffError, HandoffReceiver, HandoffSender, MAX_HANDOFF_BUDGET,
+    MAX_HANDOFFS_PER_CHANNEL, ReceivedAcceptedStream,
+};
+
 pub use facade::{
     ClientConnection, PeerIdentity, PeerPolicy, ReceivedRequest, ServerConnection, TransportError,
     self_check,
