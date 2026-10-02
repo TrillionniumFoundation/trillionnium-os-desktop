@@ -1,5 +1,40 @@
 # Product-owned headed Servo runtime
 
+The separate [explicit native direct-INET qualification](../../docs/architecture/NATIVE_DIRECT_INET_QUALIFICATION.md)
+launcher stages the compiled Cargo executable into a private, single-link
+`0500` copy outside the uploaded artifacts. Cargo's original hard-linked
+example is accepted only through this same-descriptor copy path, with a
+current-UID, non-writable-by-group-or-world source and before/after digest and
+path checks. Both compile entry points use `umask 077`; source and packet
+readers continue to reject hard links. Successful owned-unit retirement
+precedes copy removal; an uncertain run retains the private copy. This change
+requires a new native CI corpus and supplies no installed qualification.
+
+Each explicit namespace unit also owns a short `0700` `/tmp/hn-<24hex>` directory
+and receives it as its exact `TMPDIR`. The host retains nofollow directory
+descriptors and verifies actual process environment, device/inode/UID/mode,
+`PrivateTmp=no` and the exact renderer-plus-private-temporary `ReadWritePaths`.
+The rest of `/tmp` remains read-only and Xvfb's existing Unix endpoint remains
+visible. Bounded retained-inode cleanup follows exact unit/process retirement;
+foreign substitutions and forked owners refuse, and GC never removes paths.
+Temporary cleanup enumerates lazily through retained directory FDs and refuses
+on the 257th name across the entire tree before any deletion; it never first
+materializes an unbounded directory listing.
+This repairs the actual `492ed7a` read-only temporary-storage failure at the
+pinned tempfile/ipc-channel path. Actual systemd crate and Rust-entry fixtures
+exercise this source boundary; a new full pinned Servo namespace packet is
+still required. The failed old packet and every default false ceiling remain.
+
+The separate direct-INET
+profile uses a real systemd private network namespace, pre-engine descriptor and
+protocol probes, and independent stopped-process pidfd observations. Its
+immutable qualification fixture holds no INET listener. The default profile,
+normal checkpoint gate, rapid native queue and held-gesture refusals keep their
+existing behavior. The new profile requires its own exact-pin CI packet; local
+kernel fixtures do not qualify Servo. AF_UNIX host forwarding/peer permissions,
+installed browser activation and complete protocol confinement remain
+unqualified; existing resource-report claim ceilings remain false.
+
 This experiment is the executable `TOS-D0A-02` / initial `D2` qualification
 source. The permanent workflow copies `src/main.rs` and the deterministic HTML
 fixture into the exact pinned Servo checkout as an example target, compiles it

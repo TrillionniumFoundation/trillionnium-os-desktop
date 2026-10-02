@@ -48,6 +48,7 @@ use input_ownership::{
     LaneError, NativeAck, NativeKind, NativeOwner, NativeTicket, OrderedNativeInput,
     PhysicalIngress, QualificationInput, ReleaseOutcome,
 };
+mod network_confinement;
 mod resource_gate;
 use resource_gate::{
     Context as ResourceContext, Decision as ResourceDecision, Denial, Observations,
@@ -64,6 +65,15 @@ const NATIVE_INPUT_TIMEOUT_SECONDS: u64 = 150;
 
 fn main() {
     if let Some(token) = content_process_token() {
+        let root = env::var_os("HEPTA_D0A02_OUTPUT")
+            .map(PathBuf::from)
+            .unwrap_or_default();
+        if network_confinement::qualify_if_requested(network_confinement::Role::Content, &root)
+            .is_err()
+        {
+            eprintln!("content namespace entry qualification refused");
+            std::process::exit(1);
+        }
         run_content_process(token);
         return;
     }
@@ -96,7 +106,16 @@ fn run_embedder() -> Result<i32, Box<dyn Error>> {
         .unwrap_or_else(|| PathBuf::from("artifacts/servo-headed-runtime"));
     fs::create_dir_all(&output_dir)?;
 
-    let fixture = FixtureServer::start()?;
+    let profile = network_confinement::qualify_if_requested(
+        network_confinement::Role::Embedder,
+        &output_dir,
+    )?;
+    let fixture = if let Some(profile) = profile {
+        profile.check_current()?;
+        FixtureServer::immutable_namespace()?
+    } else {
+        FixtureServer::start()?
+    };
     fs::write(output_dir.join("fixture-origin.txt"), fixture.origin())?;
 
     let event_loop = EventLoop::with_user_event().build()?;
@@ -111,7 +130,7 @@ fn run_embedder() -> Result<i32, Box<dyn Error>> {
 }
 
 struct FixtureServer {
-    address: SocketAddr,
+    address: Option<SocketAddr>,
     shutdown: Arc<AtomicBool>,
     thread: Option<thread::JoinHandle<()>>,
     resource_gate: Rc<ResourceGate>,
@@ -153,7 +172,7 @@ impl FixtureServer {
             }
         });
         Ok(Self {
-            address,
+            address: Some(address),
             shutdown,
             thread: Some(handle),
             resource_gate,
@@ -161,8 +180,23 @@ impl FixtureServer {
         })
     }
 
+    fn immutable_namespace() -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
+            address: None,
+            shutdown: Arc::new(AtomicBool::new(false)),
+            thread: None,
+            resource_gate: Rc::new(ResourceGate::for_qualification_immutable(
+                FIXTURE_HTML.as_bytes(),
+            )?),
+            network_requests: Arc::new(AtomicU32::new(0)),
+        })
+    }
+
     fn origin(&self) -> String {
-        format!("http://127.0.0.1:{}", self.address.port())
+        self.resource_gate
+            .origin()
+            .expect("owned qualification origin")
+            .to_owned()
     }
 
     fn url(&self) -> Url {
@@ -173,7 +207,9 @@ impl FixtureServer {
 impl Drop for FixtureServer {
     fn drop(&mut self) {
         self.shutdown.store(true, Ordering::Relaxed);
-        let _ = TcpStream::connect(self.address);
+        if let Some(address) = self.address {
+            let _ = TcpStream::connect(address);
+        }
         if let Some(handle) = self.thread.take() {
             let _ = handle.join();
         }
@@ -2050,7 +2086,7 @@ impl RuntimeState {
                 "  \"initial_page_evidence\": {},\n",
                 "  \"recovery_page_evidence\": {},\n",
                 "  \"authority\": {{\n",
-                "    \"fixture_listener_loopback_only\": true,\n",
+                "    \"fixture_listener_loopback_only\": {},\n",
                 "    \"external_navigation_performed\": false,\n",
                 "    \"webdriver_listener_started\": false,\n",
                 "    \"browser_actor_started\": false,\n",
@@ -2078,6 +2114,7 @@ impl RuntimeState {
             self.exact_termination_observed.get(),
             initial,
             recovery,
+            self.resource_gate.holds_loopback_listener(),
         );
         if let Err(error) = fs::write(self.output_dir.join("runtime-result.json"), report) {
             eprintln!("could not write D0A-02 runtime result: {error}");

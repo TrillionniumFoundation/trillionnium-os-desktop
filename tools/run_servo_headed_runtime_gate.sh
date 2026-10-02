@@ -152,6 +152,8 @@ install -D -m 0644 experiments/servo-headed-runtime/src/input_ownership.rs \
   "$RUNNER_TEMP/input_ownership.rs"
 install -D -m 0644 experiments/servo-headed-runtime/src/resource_gate.rs \
   "$RUNNER_TEMP/resource_gate.rs"
+install -D -m 0644 experiments/servo-headed-runtime/src/network_confinement.rs \
+  "$RUNNER_TEMP/network_confinement.rs"
 rustfmt --edition 2024 "$overlay"
 rustfmt --edition 2024 --check "$overlay"
 install -D -m 0644 "$overlay" \
@@ -160,9 +162,16 @@ install -D -m 0644 "$RUNNER_TEMP/input_ownership.rs" \
   servo-source/ports/servoshell/examples/input_ownership.rs
 install -D -m 0644 "$RUNNER_TEMP/resource_gate.rs" \
   servo-source/ports/servoshell/examples/resource_gate.rs
+install -D -m 0644 "$RUNNER_TEMP/network_confinement.rs" \
+  servo-source/ports/servoshell/examples/network_confinement.rs
 rustc --edition 2024 --test experiments/servo-headed-runtime/src/resource_gate.rs \
   -o "$RUNNER_TEMP/http-resource-gate-tests"
 "$RUNNER_TEMP/http-resource-gate-tests"
+rustc --edition 2024 --test experiments/servo-headed-runtime/src/network_confinement.rs \
+  -o "$RUNNER_TEMP/native-network-entry-tests"
+"$RUNNER_TEMP/native-network-entry-tests" --test-threads=1
+python3 tools/servo_namespace_qualification.py validate-contract
+python3 -m unittest discover -s tests -p test_servo_namespace_qualification.py -v
 install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 {
@@ -174,6 +183,7 @@ install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
 
 step_compile() {
 set -euo pipefail
+umask 077
 export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
 mkdir -p artifacts/servo-headed-runtime
 cargo check --locked --manifest-path servo-source/Cargo.toml \
@@ -953,6 +963,7 @@ rm -f \
   servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
   servo-source/ports/servoshell/examples/input_ownership.rs \
   servo-source/ports/servoshell/examples/resource_gate.rs \
+  servo-source/ports/servoshell/examples/network_confinement.rs \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 test -z "$(git -C servo-source status --porcelain=v1)"
 }
@@ -1708,6 +1719,12 @@ case "${1:-}" in
     ;;
   run-native-burst-v1)
     step_run_native_burst_v1
+    ;;
+  run-native-direct-inet-v1)
+    unset PYTHONOPTIMIZE
+    python3 tools/servo_namespace_qualification.py run \
+      --binary "$PWD/servo-source/target/debug/examples/trillionnium_headed_runtime" \
+      --output "$PWD/artifacts/servo-headed-runtime/native-direct-inet-v1"
     ;;
   enforce-evidence)
     step_enforce_evidence

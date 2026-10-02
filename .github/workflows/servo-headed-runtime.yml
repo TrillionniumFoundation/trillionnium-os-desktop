@@ -12,6 +12,10 @@ on:
       - "tools/browser_codec_reference_security.py"
       - "tests/test_native_input_checkpoints.py"
       - "tests/test_native_runtime_identities.py"
+      - "tools/servo_namespace_qualification.py"
+      - "tests/test_servo_namespace_qualification.py"
+      - "contracts/native-direct-inet-qualification.v1.json"
+      - "docs/architecture/NATIVE_DIRECT_INET_QUALIFICATION.md"
       - "contracts/workspace-composition.v1.json"
       - "crates/hepta-workspace-composition/**"
       - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
@@ -31,6 +35,10 @@ on:
       - "tools/browser_codec_reference_security.py"
       - "tests/test_native_input_checkpoints.py"
       - "tests/test_native_runtime_identities.py"
+      - "tools/servo_namespace_qualification.py"
+      - "tests/test_servo_namespace_qualification.py"
+      - "contracts/native-direct-inet-qualification.v1.json"
+      - "docs/architecture/NATIVE_DIRECT_INET_QUALIFICATION.md"
       - "contracts/workspace-composition.v1.json"
       - "crates/hepta-workspace-composition/**"
       - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
@@ -137,7 +145,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             servo-source/target
-          key: servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('servo-source/Cargo.lock', 'servo-source/rust-toolchain.toml', 'experiments/servo-headed-runtime/src/main.rs', 'experiments/servo-headed-runtime/src/resource_gate.rs', 'experiments/servo-headed-runtime/fixture/index.html') }}
+          key: servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('servo-source/Cargo.lock', 'servo-source/rust-toolchain.toml', 'experiments/servo-headed-runtime/src/main.rs', 'experiments/servo-headed-runtime/src/input_ownership.rs', 'experiments/servo-headed-runtime/src/resource_gate.rs', 'experiments/servo-headed-runtime/src/network_confinement.rs', 'experiments/servo-headed-runtime/fixture/index.html') }}
           restore-keys: |
             servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
             servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
@@ -153,6 +161,8 @@ jobs:
             "$RUNNER_TEMP/input_ownership.rs"
           install -D -m 0644 experiments/servo-headed-runtime/src/resource_gate.rs \
             "$RUNNER_TEMP/resource_gate.rs"
+          install -D -m 0644 experiments/servo-headed-runtime/src/network_confinement.rs \
+            "$RUNNER_TEMP/network_confinement.rs"
           rustfmt --edition 2024 "$overlay"
           rustfmt --edition 2024 --check "$overlay"
           install -D -m 0644 "$overlay" \
@@ -163,10 +173,17 @@ jobs:
           rustc --edition 2024 --test experiments/servo-headed-runtime/src/resource_gate.rs \
             -o "$RUNNER_TEMP/http-resource-gate-tests"
           "$RUNNER_TEMP/http-resource-gate-tests"
+          rustc --edition 2024 --test experiments/servo-headed-runtime/src/network_confinement.rs \
+            -o "$RUNNER_TEMP/native-network-entry-tests"
+          "$RUNNER_TEMP/native-network-entry-tests" --test-threads=1
+          python3 tools/servo_namespace_qualification.py validate-contract
+          python3 -m unittest discover -s tests -p test_servo_namespace_qualification.py -v
           install -D -m 0644 "$RUNNER_TEMP/input_ownership.rs" \
             servo-source/ports/servoshell/examples/input_ownership.rs
           install -D -m 0644 "$RUNNER_TEMP/resource_gate.rs" \
             servo-source/ports/servoshell/examples/resource_gate.rs
+          install -D -m 0644 "$RUNNER_TEMP/network_confinement.rs" \
+            servo-source/ports/servoshell/examples/network_confinement.rs
           install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
             servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
           printf 'FORMATTED_OVERLAY_SHA256=%s\n' "$(sha256sum "$overlay" | cut -d' ' -f1)" \
@@ -176,6 +193,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          umask 077
           export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
           mkdir -p artifacts/servo-headed-runtime
           cargo check --locked --manifest-path servo-source/Cargo.toml \
@@ -399,6 +417,18 @@ jobs:
         shell: bash
         run: bash tools/run_servo_headed_runtime_gate.sh run-held-gestures-v1
 
+      - name: Qualify explicit native direct-INET namespace profile
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset PYTHONOPTIMIZE
+          python3 tools/servo_namespace_qualification.py run \
+            --binary "$PWD/servo-source/target/debug/examples/trillionnium_headed_runtime" \
+            --output "$PWD/artifacts/servo-headed-runtime/native-direct-inet-v1"
+          python3 tools/servo_namespace_qualification.py verify-corpus \
+            --output "$PWD/artifacts/servo-headed-runtime/native-direct-inet-v1"
+
       - name: Restore clean exact Servo checkout
         if: always()
         shell: bash
@@ -407,6 +437,7 @@ jobs:
             servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
             servo-source/ports/servoshell/examples/input_ownership.rs \
             servo-source/ports/servoshell/examples/resource_gate.rs \
+            servo-source/ports/servoshell/examples/network_confinement.rs \
             servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
           test -z "$(git -C servo-source status --porcelain=v1)"
 
