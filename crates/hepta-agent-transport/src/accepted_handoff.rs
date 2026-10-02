@@ -100,6 +100,50 @@ pub struct AcceptedStreamCustody {
     deadline: u64,
 }
 impl AcceptedStreamCustody {
+    /// Capture under an already fixed local absolute ceiling. Sample native
+    /// monotonic time before Instant's remaining duration: the wire deadline
+    /// is conservative relative to `deadline`, never a fresh Duration budget.
+    pub fn capture_before(
+        stream: UnixStream,
+        expected_local_path: &Path,
+        deadline: Instant,
+    ) -> Result<Self, HandoffError> {
+        let owner_pid = std::process::id();
+        let started = monotonic_nanos()?;
+        let remaining = deadline
+            .checked_duration_since(Instant::now())
+            .filter(|value| !value.is_zero())
+            .ok_or(HandoffError::DeadlineExceeded)?;
+        valid_budget(remaining)?;
+        let monotonic_deadline = started
+            .checked_add(
+                u64::try_from(remaining.as_nanos())
+                    .map_err(|_| HandoffError::InvalidConfiguration)?,
+            )
+            .ok_or(HandoffError::InvalidConfiguration)?;
+        let (time_namespace, namespace_file) = time_namespace()?;
+        valid_path(expected_local_path)?;
+        let identity = accepted_identity(&stream, expected_local_path)?;
+        let boot = boot_id()?;
+        check_time(&boot, time_namespace, started, monotonic_deadline)?;
+        if owner_pid != std::process::id() {
+            return Err(HandoffError::ProcessChanged);
+        }
+        if deadline <= Instant::now() {
+            return Err(HandoffError::DeadlineExceeded);
+        }
+        Ok(Self {
+            stream,
+            owner_pid,
+            identity,
+            boot,
+            time_namespace,
+            _time_namespace_file: namespace_file,
+            started,
+            deadline: monotonic_deadline,
+        })
+    }
+
     /// The reviewed custodian must call this at its earliest ownership point.
     /// `expected_local_path` is trusted configuration, not a peer assertion.
     /// Arbitrary Rust code with duplicate raw FDs is outside this custody API.

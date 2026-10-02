@@ -49,6 +49,7 @@ not change. It provides these consuming custody interfaces:
 
 | API | Arguments and result |
 | --- | --- |
+| `AcceptedStreamCustody::capture_before` | Consume an original stream under one fixed local `Instant`; sample native monotonic before remaining Instant duration for a conservative wire ceiling; refuse expiry or more than 20 seconds remaining |
 | `AcceptedStreamCustody::capture` | Own one `UnixStream`, trusted exact local `Path`, and positive budget up to 20 seconds; return opaque non-cloneable custody |
 | `HandoffReceiver::from_control` | Own an already connected `OwnedFd` AF_UNIX seqpacket control, explicit `PeerPolicy`, and trusted original local `Path`; publish a private OS-entropy challenge |
 | `HandoffSender::from_control` | Own the matching control descriptor, explicit `PeerPolicy`, and bounded challenge-wait budget; authenticate the kernel peer and consume its challenge |
@@ -172,3 +173,8 @@ Operational diagnosis must retain bounded/redacted evidence and must not weaken 
 Protocol magic, header layout, size ceilings, sequence rules or error classification changes require a versioned contract, reference implementation update, golden corpus and compatibility decision. Never reinterpret an existing version in place.
 
 Required change sequence: update implementation and Cargo metadata; update machine contracts and hostile tests; update this README and `manifests/modules.v1.json`; run module, repository, project-truth and Rust checks; obtain independent review on the immutable final head; then perform the required exact-main or higher-tier rerun after protected promotion.
+
+The higher-level Linux live control-custodian wrapper is documented in
+[`hepta-peer-attestation`](../hepta-peer-attestation/README.md). Its use of
+`capture_before` fixes the original transaction before any control attestation.
+The legacy duration `capture` body and kernel protocol remain unchanged.
