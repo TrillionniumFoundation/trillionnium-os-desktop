@@ -224,14 +224,15 @@ def main() -> int:
     t = sub(t, "            && self.popup_requests_denied.get() >= 1\n            && self.input_events_handled.get() >= 3\n", "            && self.popup_requests_denied.get() >= 1\n            && self.external_navigation_requests_denied.get() >= 1\n            && self.replacement_process_pid.get() > 0\n            && self.input_events_handled.get() >= 3\n", "final proof threshold")
     t = sub(
         t,
-        "    fn notify_crashed(&self, _webview: WebView, _reason: String, _backtrace: Option<String>) {",
-        "    fn request_navigation(&self, _webview: WebView, request: NavigationRequest) {\n"
+        "    fn notify_crashed(&self, webview: WebView, _reason: String, _backtrace: Option<String>) {",
+        "    fn request_navigation(&self, webview: WebView, request: NavigationRequest) {\n"
+        "        if !self.current_webview(&webview) { request.deny(); return; }\n"
         "        if request.url.scheme() == \"data\" { request.allow(); } else {\n"
         "            self.external_navigation_requests_denied.set(self.external_navigation_requests_denied.get().saturating_add(1));\n"
         "            request.deny();\n"
         "        }\n"
         "    }\n\n"
-        "    fn notify_crashed(&self, _webview: WebView, _reason: String, _backtrace: Option<String>) {",
+        "    fn notify_crashed(&self, webview: WebView, _reason: String, _backtrace: Option<String>) {",
         "navigation delegate",
     )
     t = sub(

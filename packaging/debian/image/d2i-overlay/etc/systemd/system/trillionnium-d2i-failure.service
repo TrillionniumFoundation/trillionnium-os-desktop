@@ -1,0 +1,16 @@
+[Unit]
+Description=TrillionniumOS D2I bounded startup failure diagnosis and poweroff
+After=systemd-journald.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+StateDirectory=trillionnium-d2i-diagnostics
+StateDirectoryMode=0700
+ExecStart=/bin/bash /usr/local/libexec/trillionnium-d2i-capture-failure unit_failure
+ExecStopPost=/usr/bin/systemctl poweroff --no-block
+TimeoutStartSec=40s
+StandardOutput=journal+console
+StandardError=journal+console
+Restart=no

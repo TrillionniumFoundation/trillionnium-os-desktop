@@ -5,6 +5,8 @@ import hashlib
 import importlib.util
 import json
 import subprocess
+import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -245,6 +247,7 @@ class S12ReleaseQualificationTests(unittest.TestCase):
         for payload in (
             b'{"schema":"x","schema":"y"}',
             b'{"value":NaN}',
+            b'{"value":1e999}',
             b"\xef\xbb\xbf{}",
             b"[]",
             b"",
@@ -393,6 +396,62 @@ class S12ReleaseQualificationTests(unittest.TestCase):
             with self.assertRaises(s12.QualificationError):
                 s12.verify_detached_signature(
                     evidence, signature, public_key, digest, runner=failure
+                )
+
+    def test_authority_inputs_are_bounded_and_do_not_follow_links(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = root / "original"
+            original.write_bytes(b"{}")
+            hardlink = root / "hardlink"
+            os.link(original, hardlink)
+            with self.assertRaises(s12.QualificationError):
+                s12._regular_bytes(hardlink, "packet", 100)
+            fifo = root / "fifo"
+            os.mkfifo(fifo)
+            with self.assertRaises(s12.QualificationError):
+                s12._regular_bytes(fifo, "packet", 100)
+            link = root / "link"
+            link.symlink_to(root, target_is_directory=True)
+            with self.assertRaises(s12.QualificationError):
+                s12._regular_bytes(link / "original", "packet", 100)
+            oversized = root / "oversized"
+            with oversized.open("wb") as stream:
+                stream.truncate(s12.MAX_PACKET_BYTES + 1)
+            with self.assertRaisesRegex(s12.QualificationError, "byte bound"):
+                s12._regular_bytes(oversized, "packet", s12.MAX_PACKET_BYTES)
+
+    @unittest.skipUnless(shutil.which("openssl"), "OpenSSL is required for real signature regression")
+    def test_signature_verifies_the_exact_parsed_snapshot_across_source_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            private_key, public_key = root / "private.pem", root / "public.pem"
+            evidence, signature = root / "packet.json", root / "packet.sig"
+            original = b'{"value":"signed"}'
+            evidence.write_bytes(original)
+            subprocess.run(["openssl", "genpkey", "-algorithm", "RSA", "-pkeyopt", "rsa_keygen_bits:2048", "-out", str(private_key)], check=True, capture_output=True)
+            subprocess.run(["openssl", "pkey", "-in", str(private_key), "-pubout", "-out", str(public_key)], check=True, capture_output=True)
+            subprocess.run(["openssl", "dgst", "-sha256", "-sign", str(private_key), "-out", str(signature), str(evidence)], check=True, capture_output=True)
+            key_bytes, signature_bytes = public_key.read_bytes(), signature.read_bytes()
+            key_digest = hashlib.sha256(key_bytes).hexdigest()
+
+            def replace_sources(command, **kwargs):
+                self.assertEqual(Path(command[-1]).read_bytes(), original)
+                evidence.write_bytes(b'{"value":"attacker"}')
+                public_key.write_bytes(b"attacker-key")
+                signature.write_bytes(b"attacker-signature")
+                return subprocess.run(command, **kwargs)
+
+            self.assertEqual(s12.verify_detached_signature(
+                evidence, signature, public_key, key_digest,
+                runner=replace_sources, packet_bytes=original,
+            ), key_digest)
+            public_key.write_bytes(key_bytes)
+            signature.write_bytes(signature_bytes)
+            with self.assertRaisesRegex(s12.QualificationError, "signature verification failed"):
+                s12.verify_detached_signature(
+                    evidence, signature, public_key, key_digest,
+                    packet_bytes=b'{"value":"attacker"}',
                 )
 
 

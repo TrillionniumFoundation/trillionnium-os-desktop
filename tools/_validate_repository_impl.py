@@ -3,14 +3,41 @@
 
 from __future__ import annotations
 
-import json
+import os
+from collections.abc import Iterator
 import sys
 import tomllib
 from pathlib import Path
 from typing import Any
 
+from browser_codec_reference_security import load_json_strict, open_regular_beneath
+
 ROOT = Path(__file__).resolve().parents[1]
 ERRORS: list[str] = []
+MAX_JSON_BYTES = 4 * 1024 * 1024
+# These are generated/local trees, never product source. Prune them before
+# traversal so a build or Git object store cannot contaminate source checks.
+LOCAL_ROOT_DIRECTORIES = frozenset({
+    ".git", "target", ".cache", ".pytest_cache", ".idea", ".vscode",
+    "build", "dist", "out",
+})
+
+
+def source_paths() -> Iterator[Path]:
+    def traversal_error(error: OSError) -> None:
+        fail(f"cannot inspect repository source: {error}")
+
+    for directory, children, files in os.walk(ROOT, followlinks=False, onerror=traversal_error):
+        parent = Path(directory)
+        relative_parent = parent.relative_to(ROOT)
+        children[:] = sorted(
+            name for name in children
+            if name != "__pycache__"
+            and not (parent == ROOT and name in LOCAL_ROOT_DIRECTORIES)
+            and not (relative_parent == Path("evidence") and name == "local")
+        )
+        for name in sorted(children + files):
+            yield parent / name
 
 EXPECTED_WORKSPACE_MEMBERS = [
     "apps/hepta-browserd",
@@ -88,8 +115,13 @@ def fail(message: str) -> None:
 
 def load_json(path: Path) -> Any:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
+        descriptor = open_regular_beneath(ROOT, path, label="repository JSON")
+        with os.fdopen(descriptor, "rb") as stream:
+            encoded = stream.read(MAX_JSON_BYTES + 1)
+        if len(encoded) > MAX_JSON_BYTES:
+            raise ValueError(f"JSON exceeds {MAX_JSON_BYTES} bytes")
+        return load_json_strict(encoded.decode("utf-8"))
+    except (OSError, ValueError, RecursionError) as error:
         fail(f"invalid JSON {path.relative_to(ROOT)}: {error}")
         return {}
 
@@ -104,7 +136,9 @@ def load_toml(path: Path) -> dict[str, Any]:
 
 def check_json_files() -> None:
     schema_ids: dict[str, Path] = {}
-    for path in sorted(ROOT.rglob("*.json")):
+    for path in source_paths():
+        if path.suffix != ".json":
+            continue
         document = load_json(path)
         if isinstance(document, dict) and "$id" in document:
             schema_id = document["$id"]
@@ -430,7 +464,7 @@ def check_contract_alignment() -> None:
 
 
 def check_filesystem_shape() -> None:
-    for path in ROOT.rglob("*"):
+    for path in source_paths():
         if path.is_symlink():
             fail(
                 f"symlinks are forbidden in the product baseline: "
@@ -448,6 +482,7 @@ def check_filesystem_shape() -> None:
 
 
 def main() -> int:
+    ERRORS.clear()
     check_json_files()
     check_plan_and_manifests()
     check_workspace_and_lock()

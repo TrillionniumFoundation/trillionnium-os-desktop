@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -15,13 +14,17 @@ SPEC = importlib.util.spec_from_file_location(
 assert SPEC is not None and SPEC.loader is not None
 VALIDATOR = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(VALIDATOR)
+FIXTURE_SPEC = importlib.util.spec_from_file_location("source_fixture", ROOT / "tests/_source_fixture.py")
+assert FIXTURE_SPEC is not None and FIXTURE_SPEC.loader is not None
+FIXTURE = importlib.util.module_from_spec(FIXTURE_SPEC)
+FIXTURE_SPEC.loader.exec_module(FIXTURE)
 
 
 class ModuleDocumentationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name) / "repository"
-        shutil.copytree(ROOT, self.root, symlinks=True)
+        FIXTURE.copy_source_tree(ROOT, self.root)
 
     def tearDown(self) -> None:
         self.temporary.cleanup()

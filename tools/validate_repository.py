@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Stable facade for repository validation with closed successor registration.
 
-The integrated validator is retained byte-for-byte in
-``_validate_repository_impl.py``. This facade may append only explicitly
+The integrated validator lives in ``_validate_repository_impl.py``.
+This facade may append only explicitly
 reviewed source-only workspace members and their required inventory. Missing or
 partially added candidates therefore fail closed; arbitrary Cargo members are
 never accepted.

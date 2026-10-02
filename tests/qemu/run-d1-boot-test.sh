@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+unset PYTHONOPTIMIZE
 
 usage() {
   cat <<'EOF'
@@ -142,6 +143,12 @@ fi
 if grep -q 'TRILLIONNIUM_D1_ACCEPTANCE_FAIL:' "$serial_log"; then
   echo "guest reported a D1 acceptance failure" >&2
   grep 'TRILLIONNIUM_D1_ACCEPTANCE_FAIL:' "$serial_log" >&2
+  # Failed acceptance still produces useful bounded guest facts. Do not defer
+  # extraction until the PASS-only branch, or service diagnostics are lost.
+  for guest_path in acceptance.json agent-port-journal.txt; do
+    debugfs -R "dump -p /var/lib/trillionnium-d1/$guest_path $output_dir/$guest_path" \
+      "$run_image" > "$output_dir/debugfs-failure-$guest_path.log" 2>&1 || true
+  done
   exit 1
 fi
 grep -q 'TRILLIONNIUM_D1_ACCEPTANCE_PASS' "$serial_log"

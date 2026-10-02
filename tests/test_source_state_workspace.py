@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import shutil
 import tempfile
 import unittest
@@ -112,6 +113,62 @@ class SourceStateWorkspaceTests(unittest.TestCase):
         self.assertTrue(
             any("repository_source_tree_only" in error for error in MODULE.validate_repository(root))
         )
+
+    def test_unhashable_and_non_path_members_return_errors(self) -> None:
+        for item in ({}, [], None, 42, True, "crates/../escape", "crates/a\nname"):
+            with self.subTest(item=item):
+                root = self.make_root()
+                record = self.source_state(root)
+                record["workspace_members"].append(item)
+                self.write_source_state(root, record)
+                self.assertTrue(any("invalid repository path" in error
+                                    for error in MODULE.validate_repository(root)))
+
+    def test_source_state_parent_symlink_is_rejected(self) -> None:
+        root = self.make_root()
+        (root / "docs").rename(root / "real-docs")
+        (root / "docs").symlink_to(root / "real-docs", target_is_directory=True)
+        self.assertTrue(any("cannot load source-state" in error
+                            for error in MODULE.validate_repository(root)))
+
+    def test_source_state_symlink_and_fifo_are_rejected_without_blocking(self) -> None:
+        for kind in ("symlink", "fifo"):
+            with self.subTest(kind=kind):
+                root = self.make_root()
+                path = root / "docs/source-state.v1.json"
+                path.unlink()
+                if kind == "symlink":
+                    path.symlink_to(root / "docs/status-documents.v1.json")
+                else:
+                    os.mkfifo(path)
+                self.assertTrue(any("cannot load source-state" in error
+                                    for error in MODULE.validate_repository(root)))
+
+    def test_oversized_and_deep_source_state_are_bounded_errors(self) -> None:
+        for raw in (" " * (MODULE._SOURCE.MAX_SOURCE_STATE_BYTES + 1),
+                    '{"nested":' + '[' * 2000 + '0' + ']' * 2000 + '}'):
+            root = self.make_root()
+            (root / "docs/source-state.v1.json").write_text(raw)
+            self.assertTrue(MODULE.validate_repository(root))
+
+    def test_invalid_utf8_source_state_returns_errors(self) -> None:
+        root = self.make_root()
+        (root / "docs/source-state.v1.json").write_bytes(b"\xff")
+        self.assertTrue(any("cannot load source-state" in error
+                            for error in MODULE.validate_repository(root)))
+
+    def test_source_state_duplicate_keys_are_rejected(self) -> None:
+        root = self.make_root()
+        (root / "docs/source-state.v1.json").write_text('{"schema":"one","schema":"two"}')
+        self.assertTrue(any("duplicate JSON key" in error
+                            for error in MODULE.validate_repository(root)))
+
+    def test_cargo_symlink_is_rejected_as_source_inventory(self) -> None:
+        root = self.make_root()
+        (root / "Cargo.toml").rename(root / "real-Cargo.toml")
+        (root / "Cargo.toml").symlink_to(root / "real-Cargo.toml")
+        self.assertTrue(any("cannot read Cargo workspace for source state" in error
+                            for error in MODULE.validate_repository(root)))
 
 
 if __name__ == "__main__":

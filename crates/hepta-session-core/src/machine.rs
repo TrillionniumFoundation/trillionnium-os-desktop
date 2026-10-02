@@ -4,8 +4,8 @@ use hepta_browser_contracts::{BrowserErrorCode, ElementRef, error_for_freshness}
 use trillionnium_contract_core::{LeaseId, RevisionClock};
 
 use crate::types::{
-    ControlState, HumanLease, MAX_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent, SessionPhase,
-    TransitionError,
+    ControlSource, ControlState, HumanLease, MAX_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent,
+    SessionPhase, TransitionError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -90,6 +90,7 @@ impl SessionMachine {
                 self.control = ControlState::Idle;
             }
             SessionEvent::HumanFocusGained { lease_id, ttl_ms } => {
+                self.require_ready()?;
                 if ttl_ms == 0 || ttl_ms > MAX_HUMAN_LEASE_TTL_MS {
                     return Err(TransitionError::InvalidLeaseTtl);
                 }
@@ -114,6 +115,7 @@ impl SessionMachine {
                 lease_id,
                 extend_by_ms,
             } => {
+                self.require_ready()?;
                 let expired = {
                     let lease = self.require_matching_lease(&lease_id)?;
                     now_ms >= lease.expires_at_ms
@@ -139,33 +141,52 @@ impl SessionMachine {
                 effects.push(SessionEffect::HumanLeaseReleased);
             }
             SessionEvent::ImeStarted { lease_id } => {
-                self.require_matching_lease(&lease_id)?;
+                self.require_ready()?;
+                self.require_live_lease(&lease_id, now_ms)?;
                 if self.control != ControlState::HumanActive {
                     return Err(TransitionError::ControlConflict(self.control));
                 }
                 self.control = ControlState::HumanImeComposing;
             }
             SessionEvent::ImeEnded { lease_id } => {
-                self.require_matching_lease(&lease_id)?;
+                self.require_ready()?;
+                self.require_live_lease(&lease_id, now_ms)?;
                 if self.control != ControlState::HumanImeComposing {
                     return Err(TransitionError::ControlConflict(self.control));
                 }
                 self.control = ControlState::HumanActive;
             }
             SessionEvent::DomCommitted => {
+                self.require_content_available()?;
                 self.revisions
                     .on_dom_commit()
                     .map_err(TransitionError::RevisionExhausted)?;
                 effects.push(SessionEffect::MutationEpochAdvanced);
             }
             SessionEvent::SemanticSnapshotPublished => {
+                self.require_content_available()?;
                 self.revisions
                     .on_semantic_snapshot()
                     .map_err(TransitionError::RevisionExhausted)?;
                 effects.push(SessionEffect::SemanticSnapshotAdvanced);
             }
-            SessionEvent::NavigationStarted { .. } => {
+            SessionEvent::NavigationStarted { source } => {
                 self.require_ready()?;
+                match source {
+                    ControlSource::Agent | ControlSource::System => self.require_idle()?,
+                    ControlSource::Human => {
+                        if self.control != ControlState::HumanActive {
+                            return Err(TransitionError::ControlConflict(self.control));
+                        }
+                        if self
+                            .human_lease
+                            .as_ref()
+                            .is_none_or(|lease| now_ms >= lease.expires_at_ms)
+                        {
+                            return Err(TransitionError::HumanLeaseRequired);
+                        }
+                    }
+                }
                 self.phase = SessionPhase::NavigationPending;
             }
             SessionEvent::NavigationCommitted => {
@@ -176,7 +197,7 @@ impl SessionMachine {
                     .on_navigation_commit()
                     .map_err(TransitionError::RevisionExhausted)?;
                 self.phase = SessionPhase::Ready;
-                self.control = ControlState::Idle;
+                self.release_agent_control();
                 effects.push(SessionEffect::DocumentGenerationAdvanced);
             }
             SessionEvent::NavigationFailed => {
@@ -184,7 +205,7 @@ impl SessionMachine {
                     return Err(TransitionError::PhaseConflict(self.phase));
                 }
                 self.phase = SessionPhase::Ready;
-                self.control = ControlState::Idle;
+                self.release_agent_control();
             }
             SessionEvent::ModalOpened => {
                 self.require_ready()?;
@@ -217,7 +238,7 @@ impl SessionMachine {
                     return Err(TransitionError::PhaseConflict(self.phase));
                 }
                 self.phase = SessionPhase::Ready;
-                self.control = ControlState::Idle;
+                self.release_agent_control();
             }
             SessionEvent::BrowserCrashed => {
                 self.revisions
@@ -265,6 +286,38 @@ impl SessionMachine {
             Ok(())
         } else {
             Err(TransitionError::PhaseConflict(self.phase))
+        }
+    }
+
+    // Content callbacks from a crashed engine cannot publish a fresh document
+    // or semantic revision before explicit recovery has established a frame.
+    fn require_content_available(&self) -> Result<(), TransitionError> {
+        if self.phase == SessionPhase::Recovering {
+            Err(TransitionError::PhaseConflict(self.phase))
+        } else {
+            Ok(())
+        }
+    }
+
+    // Completing a phase does not revoke human custody acquired before it.
+    fn release_agent_control(&mut self) {
+        if matches!(
+            self.control,
+            ControlState::AgentObserving | ControlState::AgentMutating
+        ) {
+            self.control = ControlState::Idle;
+        }
+    }
+
+    fn require_live_lease(
+        &mut self,
+        lease_id: &LeaseId,
+        now_ms: u64,
+    ) -> Result<(), TransitionError> {
+        if now_ms >= self.require_matching_lease(lease_id)?.expires_at_ms {
+            Err(TransitionError::HumanLeaseRequired)
+        } else {
+            Ok(())
         }
     }
 

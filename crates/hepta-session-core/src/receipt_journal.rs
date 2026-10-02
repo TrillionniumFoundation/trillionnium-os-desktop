@@ -2796,7 +2796,7 @@ impl<'a> Cursor<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::os::unix::fs::symlink;
+    use std::os::unix::fs::{DirBuilderExt, symlink};
     use std::process;
     use std::sync::atomic::{AtomicU64, Ordering};
     use std::thread;
@@ -2810,7 +2810,10 @@ mod tests {
             process::id()
         ));
         let _ = fs::remove_dir_all(&path);
-        fs::create_dir(&path).expect("create test directory");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&path)
+            .expect("create private test directory");
         path
     }
 
@@ -3077,14 +3080,20 @@ mod tests {
         let directory = temp_dir("parent-symlink");
         let real = directory.join("real");
         let link = directory.join("link");
-        fs::create_dir(&real).expect("create real parent");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&real)
+            .expect("create real parent");
         symlink(&real, &link).expect("create parent symlink");
 
         // Keep the immediate parent a real directory so this specifically
         // exercises validation of an ancestor component rather than the
         // existing direct-parent check.
         let immediate_parent = link.join("nested");
-        fs::create_dir(&immediate_parent).expect("create nested parent");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&immediate_parent)
+            .expect("create nested parent");
         let path = immediate_parent.join("journal.bin");
         assert!(matches!(
             ReceiptJournal::create(&path, JournalId([18; 16]), 1),
@@ -3099,8 +3108,14 @@ mod tests {
         let directory = temp_dir("parent-permissions");
         let outer = directory.join("outer");
         let inner = outer.join("inner");
-        fs::create_dir(&outer).expect("create outer parent");
-        fs::create_dir(&inner).expect("create inner parent");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&outer)
+            .expect("create outer parent");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&inner)
+            .expect("create inner parent");
         let path = inner.join("journal.bin");
         let journal =
             ReceiptJournal::create(&path, JournalId([19; 16]), 1).expect("create journal");
