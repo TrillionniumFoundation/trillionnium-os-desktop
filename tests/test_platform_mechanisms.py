@@ -27,7 +27,7 @@ class PlatformMechanismInventoryTests(unittest.TestCase):
 
     def test_real_source_registry_has_no_execution_or_qualification_claim(self):
         result = gate.validate(self.root)
-        self.assertEqual(result["registered_modules"], 5)
+        self.assertEqual(result["registered_modules"], 6)
         self.assertIs(result["execution_observed"], False)
         self.assertIs(result["qualification_changed"], False)
 
@@ -93,6 +93,144 @@ class PlatformMechanismInventoryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "contract"):
                     gate.validate(self.root)
                 path.write_text(original)
+
+    def test_durable_owner_requires_its_fixed_sixth_registration(self):
+        path = self.root / gate.REGISTRY
+        original = json.loads(path.read_text())
+        for change in ("missing", "duplicate", "requirements", "implementation", "documentation", "contract", "tests"):
+            with self.subTest(change=change):
+                value = json.loads(json.dumps(original))
+                module = next(item for item in value["modules"] if item["id"] == "durable_update_owner")
+                if change == "missing":
+                    value["modules"].remove(module)
+                elif change == "duplicate":
+                    module["id"] = "signed_update"
+                elif change == "requirements":
+                    module[change] = ["G6", "S11"]
+                else:
+                    module[change] = next(item for item in value["modules"] if item["id"] == "signed_update")[change]
+                path.write_text(json.dumps(value))
+                with self.assertRaises(ValueError): gate.validate(self.root, refresh=True)
+
+    def test_durable_owner_profile_closes_every_actual_nested_object_and_leaf(self):
+        contract = json.loads((self.root / "contracts/durable-update-owner.v1.json").read_text())
+        objects, leaves = {}, {}
+        def collect(value, prefix=""):
+            for key, item in value.items():
+                name = key if not prefix else prefix + "/" + key
+                if type(item) is dict:
+                    objects[name] = sorted(item)
+                    collect(item, name)
+                else:
+                    leaves[name] = item
+        collect(contract)
+        profile = gate.CONTRACT_PROFILES["durable_update_owner"]
+        self.assertEqual(profile["fields"], sorted(contract))
+        self.assertEqual(profile["objects"], objects)
+        self.assertEqual(profile["claims"], leaves)
+
+    def test_durable_owner_nested_object_extra_or_missing_fields_cannot_pass(self):
+        path = self.root / "contracts/durable-update-owner.v1.json"
+        original = path.read_text()
+        for name in gate.CONTRACT_PROFILES["durable_update_owner"]["objects"]:
+            for change in ("extra", "missing"):
+                with self.subTest(name=name, change=change):
+                    contract = json.loads(original)
+                    target = contract
+                    for part in name.split("/"): target = target[part]
+                    if change == "extra": target["production_ready"] = True
+                    else: del target[next(iter(target))]
+                    path.write_text(json.dumps(contract))
+                    with self.assertRaisesRegex(ValueError, "contract nested object"):
+                        gate.validate(self.root)
+        path.write_text(original)
+
+    def test_durable_owner_null_and_false_claims_reject_activation_and_numeric_aliases(self):
+        path = self.root / "contracts/durable-update-owner.v1.json"
+        original = path.read_text()
+        reviewed = gate.CONTRACT_PROFILES["durable_update_owner"]["claims"]
+        for name, expected in reviewed.items():
+            if expected is not None and expected is not False:
+                continue
+            for replacement in (({}, True) if expected is None else (True, 0)):
+                with self.subTest(name=name, replacement=replacement):
+                    contract = json.loads(original)
+                    parts = name.split("/")
+                    target = contract
+                    for part in parts[:-1]: target = target[part]
+                    target[parts[-1]] = replacement
+                    path.write_text(json.dumps(contract))
+                    with self.assertRaisesRegex(ValueError, "contract identity, default or claim"):
+                        gate.validate(self.root, refresh=True)
+        path.write_text(original)
+
+    def test_durable_owner_transition_artifact_and_status_cannot_be_reinterpreted(self):
+        path = self.root / "contracts/durable-update-owner.v1.json"
+        original = path.read_text()
+        cases = (("status", "PRODUCTION_READY"), ("claim_ceiling", "installed_update_ready"),
+                 ("artifacts/dependency", "platform/taskflow.py"),
+                 ("history/transitions/boot_policy_armed", ["owner_clean"]),
+                 ("history/event_phases/boot_policy_armed", "committed"),
+                 ("recovery/marker_binding", "caller_digest_and_status"),
+                 ("public_api/DurableUpdateOwner/methods/arm_first_boot", ["caller_health"]))
+        for name, replacement in cases:
+            with self.subTest(name=name):
+                contract = json.loads(original)
+                parts = name.split("/")
+                target = contract
+                for part in parts[:-1]: target = target[part]
+                target[parts[-1]] = replacement
+                path.write_text(json.dumps(contract))
+                with self.assertRaisesRegex(ValueError, "contract identity, default or claim"):
+                    gate.validate(self.root)
+        path.write_text(original)
+
+    def test_assembly_status_cannot_be_added_to_registry_or_module(self):
+        path = self.root / gate.REGISTRY
+        original = path.read_text()
+        for target in ("registry", "module", "qualification"):
+            with self.subTest(target=target):
+                value = json.loads(original)
+                if target == "registry": value["status"] = "PRODUCTION_READY"
+                elif target == "module":
+                    next(item for item in value["modules"] if item["id"] == "durable_update_owner")["status"] = "INSTALLED_READY"
+                else: value["qualification_changed"] = True
+                path.write_text(json.dumps(value))
+                with self.assertRaises(ValueError): gate.validate(self.root, refresh=True)
+
+    def test_api_refresh_changes_only_signatures_never_profiles_or_qualification(self):
+        path = self.root / gate.REGISTRY
+        original = json.loads(path.read_text())
+        profiles = json.dumps(gate.CONTRACT_PROFILES, sort_keys=True)
+        source = self.root / "platform/durable_update_owner.py"
+        changed = source.read_text().replace("def confirm_result(self, result: DurableUpdateResult)", "def confirm_result(self, result: DurableUpdateResult, reviewed_argument=None)", 1)
+        self.assertNotEqual(changed, source.read_text())
+        source.write_text(changed)
+        result = gate.validate(self.root, refresh=True)
+        updated = json.loads(path.read_text())
+        self.assertEqual(result["registered_modules"], 6)
+        self.assertIs(result["qualification_changed"], False)
+        self.assertEqual(json.dumps(gate.CONTRACT_PROFILES, sort_keys=True), profiles)
+        self.assertEqual({key: value for key, value in original.items() if key != "modules"}, {key: value for key, value in updated.items() if key != "modules"})
+        for before, after in zip(original["modules"], updated["modules"]):
+            self.assertEqual({key: value for key, value in before.items() if key != "source_defined_api"}, {key: value for key, value in after.items() if key != "source_defined_api"})
+            if before["id"] != "durable_update_owner": self.assertEqual(before, after)
+        self.assertNotEqual(original["modules"][-1]["source_defined_api"], updated["modules"][-1]["source_defined_api"])
+        gate.validate(self.root)
+
+    def test_api_refresh_refuses_contract_promotion_before_registry_publication(self):
+        path = self.root / gate.REGISTRY
+        original = path.read_bytes()
+        source = self.root / "platform/durable_update_owner.py"
+        source.write_text(source.read_text().replace("def inspect(self)", "def inspect(self, new_parameter=None)", 1))
+        contract_path = self.root / "contracts/durable-update-owner.v1.json"
+        contract = json.loads(contract_path.read_text())
+        contract["status"] = "PRODUCTION_READY"
+        contract_path.write_text(json.dumps(contract))
+        with self.assertRaisesRegex(ValueError, "contract identity, default or claim"):
+            gate.validate(self.root, refresh=True)
+        self.assertEqual(path.read_bytes(), original)
+        self.assertEqual(list(path.parent.glob(".platform-registry-*")), [])
 
     def test_class_function_and_method_calling_semantics_are_inventoried(self):
         original = "@dataclass(frozen=True)\nclass Value:\n    key: str\n    def fetch(self): pass\ndef load(): pass\n"

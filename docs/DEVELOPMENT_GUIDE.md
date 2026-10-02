@@ -49,6 +49,7 @@ boundary. It records no percentage, success observation or independent approval.
 | D6 capabilities and TaskFlow | `platform/taskflow.py`; TaskFlow architecture and execution contract | Actual externally signed scoped permits, typed immutable proposals, cancellation/handoff/budgets, durable task reservations and single-use consumption, fork refusal | Trusted approval UX, installed retained-target final effect checks, product terminal receipts and persisted authorized recovery |
 | D6 controlled observation egress | `platform/controlled_egress.py`; controlled-egress architecture and contract | Actual approved DoT resolution, all-answer IPv4/IPv6 policy, connected peer and TLS identity, bounded GET response/redirects, session/origin revocation and whole-operation cancellation/deadline | Browser namespace and every load-class intercept, trusted policy delivery, external-effect authority and durable indeterminate reconciliation |
 | D7 / S11 update and recovery | `platform/update_recovery.py`; S11 architecture and contract | Real externally rooted offline signature verification, full streamed inactive regular-file image publication, bound durable reconciliation and issuer-scoped health permits | Provisioned production roots/trusted clock, protected monotonic-floor persistence, installed block-slot/boot/health/recovery adapters and fault matrix |
+| D7 / S11 durable update owner | `platform/durable_update_owner.py`, `docs/architecture/DURABLE_UPDATE_OWNER.md`, durable-update-owner contract | Complete durable intent before actual regular-file staging, issuer-bound results with complete history/image readback, nonregressing configured time and unclean/unfinished restart quarantine without replay; arming records source policy only | Separate S11 directory-walk interrupted-close/reused-FD correction and joint regressions; installed service/boot/health/commit/rollback, trusted roots/time/floor, protected rollback anchor and installed power-loss acceptance |
 | D8/D9 / S12 release | Release architecture, `tools/verify_s12_release_qualification.py` | Offline packet/signature/role/subject consistency verifier | Independent builders, fixed hardware, actual endurance/power cuts, key custody, protected signing/promotion/publication |
 | D0T governance | `docs/governance/BRANCH_PROTECTION_REQUIRED.md`, gate registry and workflows | Source policy and workflow definitions | Live enforced branch/ruleset/environment settings, actual independent identities/review; source files cannot supply them |
 
@@ -110,11 +111,17 @@ promote exact-head diagnostics into authoritative main evidence.
 Environment-gated or skipped real-Servo tests do not establish runtime success.
 
 The top-level Python platform candidates also have a closed source inventory in
-`manifests/platform-mechanisms.v1.json`. It records source-defined public function,
+`manifests/platform-mechanisms.v1.json`. It registers six modules with fixed
+requirement and implementation/document/contract/test mappings, including
+`durable_update_owner` for G6/D7/S11. It records source-defined public function,
 constructor, method and dataclass-field signatures alongside requirement,
 technical document, contract and executable test source. Run
 `python3 tools/validate_platform_mechanisms.py`; after a reviewed API change,
-refresh signatures with `--refresh-api` and review the resulting diff. This
+refresh signatures with `--refresh-api` and review the resulting diff. Contract
+profiles require a separate explicit review; refresh cannot change a profile,
+default or qualification. The durable owner profile closes every actual nested
+contract object and pins its leaves, including null/default-denied admission,
+false installed/boot/release claims and source status. This
 inventory check imports no mechanism and reports no test execution or acceptance.
 Actual hostile tests run separately in both candidate-head and prospective-merge
 desktop CI, including stacked review branches.

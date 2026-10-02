@@ -11,6 +11,16 @@ S11 contract describes durability, indeterminate publication, journal-bound
 reconciliation and explicitly authorized rollback. It does not install a
 bootloader, protected monotonic floor or physical A/B device adapter.
 
+`durable_update_owner.py` composes that concrete verifier and both private
+stores. It confirms complete durable staging intent before actual inactive
+regular-file publication, binds results to the issuing owner and complete
+history, and quarantines unfinished or unclean restart without replay. Its
+`arm_first_boot` records source policy only and accepts no caller boot, health
+or commit assertion. Installation still needs trusted roots/time/floor,
+service wiring and actual boot/health/recovery adapters. The separately found
+S11 directory-walk close/reuse custody gap requires its core correction and
+joint regressions; wrapper tests alone do not close that dependency.
+
 `trusted_apps.py` verifies complete signed bundles offline and issues immutable
 local asset responses for exact synthetic HTTPS origins. Its versioned bundle
 contract records signature/index bytes, root and revocation policy, archive
@@ -38,9 +48,14 @@ disabled. Browser resource interception and network namespace enforcement remain
 installed obligations.
 
 `manifests/platform-mechanisms.v1.json` registers public signatures and technical
-contracts for the top-level candidates. `tools/validate_platform_mechanisms.py`
-detects unregistered modules and API drift without importing their code. Source
-inventory validation does not stand in for their real executable regressions.
+contracts for six top-level candidates. `tools/validate_platform_mechanisms.py`
+fixes each module's requirement and implementation/document/contract/test
+mapping and detects unregistered modules and API drift without importing their
+code. The durable owner has a separately reviewed fixed contract profile that
+closes every nested object and pins every leaf, including null admission,
+false activation/non-claims and its source status. `--refresh-api` updates AST
+signatures only; it cannot refresh contract profiles or qualification. Source
+inventory validation does not stand in for real executable regressions.
 
 Candidates are tested without enabling product startup or external effects.
 Compositor/portal, installed network namespace, audio and device adapters still

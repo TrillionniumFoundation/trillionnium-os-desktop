@@ -2437,6 +2437,244 @@
           ]
         }
       ]
+    },
+    {
+      "id": "durable_update_owner",
+      "requirements": [
+        "G6",
+        "D7",
+        "S11"
+      ],
+      "implementation": "platform/durable_update_owner.py",
+      "documentation": "docs/architecture/DURABLE_UPDATE_OWNER.md",
+      "contract": "contracts/durable-update-owner.v1.json",
+      "tests": "tests/test_durable_update_owner.py",
+      "source_defined_api": [
+        {
+          "kind": "class",
+          "name": "DurableUpdateError",
+          "bases": [
+            "recovery.StateRefused"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "DurableRecoveryRequired",
+          "bases": [
+            "recovery.RecoveryRequired"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "DurableResultUnavailable",
+          "bases": [
+            "DurableUpdateError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "DurableUpdateOperation",
+          "bases": [
+            "_IssuedFact"
+          ],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "operation_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "manifest_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "signature_sha256",
+              "type": "str",
+              "default": null
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "DurableUpdateResult",
+          "bases": [
+            "_IssuedFact"
+          ],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "operation_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "manifest_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "event_sequence",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "event_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "phase",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "target_slot",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "image_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "image_bytes",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "slot_root_identity",
+              "type": "tuple[int, int]",
+              "default": null
+            },
+            {
+              "name": "production_activation_enabled",
+              "type": "bool",
+              "default": null
+            },
+            {
+              "name": "bootloader_effect_performed",
+              "type": "bool",
+              "default": null
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "DurableUpdateOwner",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, state_root: Path, slot_root: Path, *, active_slot: str, current_version: int, current_image_sha256: str, signature_verifier=None, protected_rollback_floor: int | None=None, clock: Callable[[], int] | None=None",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "__del__",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "__enter__",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "__exit__",
+              "async": false,
+              "arguments": "self, kind, _value, _traceback",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "phase",
+              "async": false,
+              "arguments": "self",
+              "returns": "str",
+              "decorators": [
+                "property"
+              ]
+            },
+            {
+              "name": "verify_manifest",
+              "async": false,
+              "arguments": "self, payload: bytes | str, *, now_unix: int, signature: bytes | None=None, fault=None",
+              "returns": "DurableUpdateOperation",
+              "decorators": [
+                "_authority_guard"
+              ]
+            },
+            {
+              "name": "stage_image_file",
+              "async": false,
+              "arguments": "self, operation: DurableUpdateOperation, image_path: Path, *, now_unix: int, state_fault=None, slot_fault=None",
+              "returns": "DurableUpdateResult",
+              "decorators": [
+                "_authority_guard"
+              ]
+            },
+            {
+              "name": "arm_first_boot",
+              "async": false,
+              "arguments": "self, operation: DurableUpdateOperation, *, now_unix: int, fault=None",
+              "returns": "DurableUpdateResult",
+              "decorators": [
+                "_authority_guard"
+              ]
+            },
+            {
+              "name": "confirm_result",
+              "async": false,
+              "arguments": "self, result: DurableUpdateResult",
+              "returns": "DurableUpdateResult",
+              "decorators": [
+                "_authority_guard"
+              ]
+            },
+            {
+              "name": "inspect",
+              "async": false,
+              "arguments": "self",
+              "returns": "dict",
+              "decorators": [
+                "_authority_guard"
+              ]
+            },
+            {
+              "name": "close",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        }
+      ]
     }
   ]
 }
