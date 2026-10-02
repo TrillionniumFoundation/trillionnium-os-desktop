@@ -288,7 +288,8 @@ test -x target/release/examples/hepta-agent-d1-fixture
 target/release/hepta-agent-portd --self-check \
   > /tmp/trillionnium-d1/evidence/product-daemon-self-check-host.json
 target/release/examples/hepta-agent-d1-fixture --mode self-check \
-  > /tmp/trillionnium-d1/evidence/d1-qualification-self-check-host.json
+  --output /tmp/trillionnium-d1/evidence/d1-qualification-self-check-host.json \
+  > /dev/null
 strings target/release/hepta-agent-portd \
   > /tmp/trillionnium-d1/evidence/product-daemon.strings
 strings target/release/examples/hepta-agent-d1-fixture \

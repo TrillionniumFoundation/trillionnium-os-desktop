@@ -56,12 +56,18 @@ The inherited D1 qualification binary classifies errors into a payload-free
 `FailureCategory` enum before its logger, which accepts only that enum and emits
 fixed category codes to operational stderr/journald. Underlying attestation identities, procfs
 paths, socket paths, digests and I/O details are not forwarded into that sink.
-The explicit qualification JSON retains the process identity facts needed for
-isolation verification. A real Rust output-sink regression exercises sensitive
+Stdout receives only a fixed mode summary through another payload-free enum;
+it receives no full identity/result JSON. The explicit `--output` qualification
+file retains process identity and request facts with exclusive no-follow creation
+and mode 0600. Host self-check collection uses this explicit file instead of
+redirecting operational stdout. Server mode preserves actual attestation and
+default-disabled/static-executable claim limits; its optional raw diagnostics
+require explicit private output. A real Rust output-sink regression exercises sensitive
 UID/GID mismatches, procfs errors, transport errors and socket-path mismatches.
 
 The portable verifier independently requires typed true observed chrome
-survival, exactly twelve sent inputs and at least three handled callbacks. Full
+survival, exactly fifteen sent inputs (twelve ordinary and three IME composition
+events) and at least three handled callbacks. Full
 negative artifact fixtures rewrite the runtime and every affected boot/output
 hash: missing fields, false claims, boolean/string/float counts and insufficient
 counts still fail after complete digest rebinding. These verifier tests prove
@@ -69,7 +75,7 @@ validation behavior, not an actual guest runtime.
 
 Candidate run [37002984433](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/37002984433)
 passed its actual integrated QEMU image workflow at source head
-`bfe2664a52191ff6327e2cbd253ab02ce1527401`. Its earlier CodeQL error-log finding
+`bfe2664a52191ff6327e2cbd253ab02ce1527401`. Its earlier CodeQL stdout identity finding
 still blocked that complete candidate. The enum logging boundary and stricter
 portable verification are later source changes and need their own current-head
 CI; neither inherits an earlier object's promotion or runtime authority.

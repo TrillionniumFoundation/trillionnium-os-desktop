@@ -142,7 +142,7 @@ def d2i_fixture(root: Path) -> dict:
     runtime.update({"status": "PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY",
                     "crash_callback_required": False, "external_network_used": False,
                     "content_surface_limit": 1, "content_generation": 2,
-                    "input_events_sent": 12, "input_events_handled": 3,
+                    "input_events_sent": 15, "input_events_handled": 3,
                     "popup_requests_denied": 1, "external_navigation_requests_denied": 1,
                     "content_process_pid": 10, "content_process_start_time_ticks": 100,
                     "replacement_content_process_pid": 11, "replacement_content_process_start_time_ticks": 200})
@@ -339,7 +339,7 @@ class ArtifactEvidenceTests(unittest.TestCase):
 
     def test_d2i_refuses_wrong_sent_count_or_type_with_rebound_digests(self) -> None:
         field = "input_events_sent"
-        for replacement in ({}, {field: 11}, {field: 13}, {field: True}, {field: 12.0}, {field: "12"}, {field: None}):
+        for replacement in ({}, {field: 14}, {field: 16}, {field: True}, {field: 15.0}, {field: "15"}, {field: None}):
             with self.subTest(replacement=replacement), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 receipt = d2i_fixture(root)
