@@ -20,6 +20,7 @@ import ssl
 import struct
 import threading
 import time
+import weakref
 from dataclasses import dataclass
 from urllib.parse import urljoin, urlsplit
 
@@ -94,6 +95,120 @@ class _PolicyLease:
             self.close()
         except BaseException:
             pass
+
+
+class _PolicyAccess(_PolicyLease):
+    """Bounded public policy access, including refusal of reentrant callbacks."""
+
+    def __init__(self, client, deadline=None):
+        super().__init__(client._lock, client._owner_pid)
+        self._client = client
+        self._deadline = deadline
+
+    def _remaining(self):
+        now = time.monotonic()
+        if not math.isfinite(now):
+            self._client._clock_broken = True
+            raise EgressDenied("nonfinite policy timeout clock permanently revoked authority")
+        remaining = self._deadline - now
+        if remaining <= 0:
+            raise EgressDeadlineExceeded("whole-operation deadline expired")
+        return remaining
+
+    def __enter__(self):
+        try:
+            self._client._owner()
+            if os.getpid() != self._owner_pid or threading.get_ident() != self._thread:
+                raise EgressDenied("policy access belongs to its creating process and thread")
+            timeout = POLL_SECONDS if self._deadline is None else min(POLL_SECONDS, self._remaining())
+            self._held = self._lock.acquire(timeout=timeout)
+            if not self._held:
+                if self._deadline is not None:
+                    self._remaining()
+                raise EgressDenied("bounded policy access could not acquire its mutex")
+            self._client._owner()
+            if self._deadline is not None:
+                self._remaining()
+            return self
+        except BaseException:
+            try:
+                self.close()
+            finally:
+                self.close()
+            raise
+
+    def __exit__(self, *exception):
+        try:
+            self.close()
+        finally:
+            self.close()
+
+
+_SOCKET_OWNERS = weakref.WeakSet()
+
+
+class _SocketOwner:
+    """Register empty, then retain socket objects which own their native FDs."""
+
+    def __init__(self):
+        self._owner_pid = os.getpid()
+        self._raw = None
+        self._tls = None
+        self._child_retirement_error = None
+        if not hasattr(os, "register_at_fork"):
+            raise EgressDenied("native fork descriptor retirement is unavailable")
+        _SOCKET_OWNERS.add(self)
+
+    def _current(self):
+        if os.getpid() != self._owner_pid:
+            raise EgressDenied("egress socket belongs to its creating process")
+        return self._tls if self._tls is not None else self._raw
+
+    def __getattr__(self, name):
+        return getattr(self._current(), name)
+
+    def fileno(self):
+        stream = self._tls if self._tls is not None else self._raw
+        return -1 if stream is None else stream.fileno()
+
+    def close(self):
+        # These objects detach their own descriptor during real close. Never
+        # re-close a saved integer, shutdown, or acquire an inherited mutex.
+        error = None
+        for stream in (self.__dict__.get("_tls"), self.__dict__.get("_raw")):
+            if stream is not None:
+                try:
+                    try:
+                        stream.close()
+                    finally:
+                        stream.close()
+                except BaseException as fault:
+                    error = fault
+        if error is not None:
+            raise error
+
+    def __del__(self):
+        try:
+            self.close()
+        except BaseException:
+            pass
+
+
+def _retire_child_sockets():
+    # The child owns only copied descriptor references. Closing those copies
+    # cannot revoke the parent's connection or release its authority locks.
+    for owner in tuple(_SOCKET_OWNERS):
+        try:
+            owner.close()
+        except BaseException as error:
+            # Continue retiring the other retained sockets. The child still
+            # fails every creator-PID guard; retain a refusal diagnostic rather
+            # than treating a failed close as a successful retirement.
+            owner._child_retirement_error = error
+
+
+if hasattr(os, "register_at_fork"):
+    os.register_at_fork(after_in_child=_retire_child_sockets)
 
 
 def _host(value: object) -> str:
@@ -303,14 +418,85 @@ class ObservationResponse:
 
 class CancellationToken:
     def __init__(self):
-        self._event = threading.Event()
+        self._owner_pid = os.getpid()
+        self._cancelled = False
+        self._io_lock = threading.Lock()
 
     def cancel(self):
-        self._event.set()
+        if os.getpid() != self._owner_pid:
+            return
+        # Request revocation first. A successful return additionally crosses
+        # the gate barrier: an already admitted nonblocking call has finished.
+        self._cancelled = True
+        lease = _PolicyLease(self._io_lock, self._owner_pid)
+        try:
+            lease.acquire()
+        finally:
+            try:
+                lease.close()
+            finally:
+                lease.close()
 
     @property
     def cancelled(self):
-        return self._event.is_set()
+        return self._cancelled
+
+
+class _NativeIOGate:
+    """Serialize concrete native calls with cancellation and session revocation."""
+
+    def __init__(self, client, permit, session, token):
+        self._client, self._permit, self._session, self._token = client, permit, session, token
+        self._thread = threading.get_ident()
+
+    def perform(self, budget, stream, method, *arguments):
+        client, token = self._client, self._token
+        token_lease = _NativeIOLease(token._io_lock, client._owner_pid)
+        policy_lease = _NativeIOLease(client._lock, client._owner_pid)
+        try:
+            client._owner()
+            if threading.get_ident() != self._thread:
+                raise EgressDenied("native I/O gate belongs to its observing thread")
+            if token._owner_pid != client._owner_pid:
+                raise EgressDenied("cancellation token belongs to another process")
+            token_lease.acquire_before(budget)
+            policy_lease.acquire_before(budget)
+            client._validate_locked(self._permit, self._session, active=True)
+            if token.cancelled:
+                raise EgressCancelled("operation cancelled")
+            remaining = budget.deadline - client._clock_locked()
+            if remaining <= 0:
+                raise EgressDeadlineExceeded("whole-operation deadline expired")
+            client._validate_locked(self._permit, self._session, active=True)
+            if token.cancelled:
+                raise EgressCancelled("operation cancelled")
+            client._owner()
+            # Both authority locks stay held across this one nonblocking call.
+            # The registered at-fork hook closes child copies even if fork
+            # occurs after the last PID check. No wait/select occurs here.
+            return getattr(stream._current(), method)(*arguments)
+        finally:
+            try:
+                try:
+                    policy_lease.close()
+                finally:
+                    policy_lease.close()
+            finally:
+                try:
+                    token_lease.close()
+                finally:
+                    token_lease.close()
+
+
+class _NativeIOLease(_PolicyLease):
+    def acquire_before(self, budget):
+        if os.getpid() != self._owner_pid or threading.get_ident() != self._thread:
+            raise EgressDenied("native I/O lease belongs to its creating process and thread")
+        if self._held:
+            raise EgressDenied("native I/O lease already holds its mutex")
+        self._held = self._lock.acquire(timeout=budget.lock_timeout())
+        if not self._held:
+            raise EgressDenied("native I/O gate acquisition exceeded its bounded deadline")
 
 
 class _Budget:
@@ -320,7 +506,9 @@ class _Budget:
         if type(cancellation) is not CancellationToken:
             raise EgressDenied("explicit cancellation token is required")
         self.deadline = clock() + seconds
-        self.cancellation, self.validate, self.clock = cancellation, validate, clock
+        self.cancellation = cancellation
+        self.validate = lambda: validate(deadline=self.deadline)
+        self.clock = lambda: clock(deadline=self.deadline)
         self.attempted: ConnectionIdentity | None = None
 
     def check(self):
@@ -330,7 +518,25 @@ class _Budget:
         remaining = self.deadline - self.clock()
         if remaining <= 0:
             raise EgressDeadlineExceeded("whole-operation deadline expired")
+        self.validate()
+        if self.cancellation.cancelled:
+            raise EgressCancelled("operation cancelled")
         return remaining
+
+    def lock_timeout(self):
+        # This only bounds acquiring the gate. The actual guarded clock sample
+        # inside the gate remains authoritative and never renews the deadline.
+        now = time.monotonic()
+        remaining = self.deadline - now
+        if not math.isfinite(now):
+            self._io_gate._client._clock_broken = True
+            raise EgressDenied("nonfinite gate timeout clock permanently revoked authority")
+        if remaining <= 0:
+            raise EgressDeadlineExceeded("whole-operation deadline expired")
+        return min(POLL_SECONDS, remaining)
+
+    def native(self, stream, method, *arguments):
+        return self._io_gate.perform(self, stream, method, *arguments)
 
     def wait(self, stream, writable=False):
         timeout = min(POLL_SECONDS, self.check())
@@ -393,30 +599,30 @@ def _peer(stream, expected, port):
 def _tls(address: str, port: int, name: str, context: ssl.SSLContext, budget: _Budget, protocol: str):
     budget.check()
     family = socket.AF_INET6 if ":" in address else socket.AF_INET
-    raw = socket.socket(family, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-    stream = raw
+    stream = _SocketOwner()
     try:
-        raw.setblocking(False)
+        stream._raw = socket.socket(family, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        stream.setblocking(False)
         endpoint = (address, port, 0, 0) if family == socket.AF_INET6 else (address, port)
-        result = raw.connect_ex(endpoint)
+        result = budget.native(stream, "connect_ex", endpoint)
         if result not in {0, errno.EINPROGRESS, errno.EALREADY, errno.EWOULDBLOCK}:
             raise EgressDenied("approved endpoint connect was refused")
         while True:
-            budget.wait(raw, writable=True)
-            error = raw.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
+            budget.wait(stream, writable=True)
+            error = stream.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
             if error:
                 raise EgressDenied("approved endpoint connect failed")
             try:
-                _peer(raw, address, port)
+                _peer(stream, address, port)
                 break
             except OSError:
                 continue
-        stream = context.wrap_socket(raw, server_hostname=name, do_handshake_on_connect=False)
+        stream._tls = context.wrap_socket(stream._raw, server_hostname=name, do_handshake_on_connect=False)
         stream.setblocking(False)
         while True:
             budget.check()
             try:
-                stream.do_handshake()
+                budget.native(stream, "do_handshake")
                 break
             except ssl.SSLWantReadError:
                 budget.wait(stream)
@@ -427,9 +633,10 @@ def _tls(address: str, port: int, name: str, context: ssl.SSLContext, budget: _B
             raise EgressDenied("TLS protocol or certificate identity is unsupported")
         return stream
     except BaseException:
-        stream.close()
-        if stream is not raw:
-            raw.close()
+        try:
+            stream.close()
+        finally:
+            stream.close()
         raise
 
 
@@ -438,7 +645,7 @@ def _send(stream, data: bytes, budget: _Budget):
     while offset < len(data):
         budget.check()
         try:
-            count = stream.send(data[offset:])
+            count = budget.native(stream, "send", data[offset:])
             if count <= 0:
                 raise EgressDenied("TLS send made no progress")
             offset += count
@@ -452,7 +659,7 @@ def _receive(stream, size, budget):
     while True:
         budget.check()
         try:
-            return stream.recv(size)
+            return budget.native(stream, "recv", size)
         except (ssl.SSLWantReadError, BlockingIOError):
             budget.wait(stream)
         except ssl.SSLWantWriteError:
@@ -653,23 +860,27 @@ class ControlledEgress:
         if self._cleanup_broken:
             raise EgressDenied("egress authority is quarantined after uncertain observation cleanup")
 
-    def _clock(self):
+    def _clock(self, *, deadline=None):
         self._owner()
-        with self._lock:
-            value = time.monotonic()
-            if self._clock_broken or not math.isfinite(value) or value < self._last_monotonic:
-                self._clock_broken = True
-                self._session = None
-                self._permits.clear()
-                raise EgressDenied("monotonic clock regressed or became nonfinite; authority revoked")
-            self._last_monotonic = value
-            return value
+        with _PolicyAccess(self, deadline):
+            return self._clock_locked()
+
+    def _clock_locked(self):
+        self._owner()
+        value = time.monotonic()
+        if self._clock_broken or not math.isfinite(value) or value < self._last_monotonic:
+            self._clock_broken = True
+            self._session = None
+            self._permits.clear()
+            raise EgressDenied("monotonic clock regressed or became nonfinite; authority revoked")
+        self._last_monotonic = value
+        return value
 
     def bind_session(self, session: SessionBinding):
         self._owner()
         if type(session) is not SessionBinding or session.initiating_origin not in self._configuration.initiating_origins:
             raise EgressDenied("session origin is not externally approved")
-        with self._lock:
+        with _PolicyAccess(self):
             if self._epoch >= (1 << 63) - 1:
                 raise EgressDenied("egress session epoch exhausted")
             self._epoch += 1
@@ -678,7 +889,7 @@ class ControlledEgress:
 
     def close(self):
         self._owner()
-        with self._lock:
+        with _PolicyAccess(self):
             self._session = None
             self._permits.clear()
 
@@ -690,19 +901,23 @@ class ControlledEgress:
         configured = frozenset(self._configuration.hosts)
         if target.host not in configured or type(redirect_hosts) is not frozenset or any(type(host) is not ApprovedHost for host in redirect_hosts) or not redirect_hosts <= configured:
             raise EgressDenied("observation or redirect host is not externally approved")
-        with self._lock:
+        with _PolicyAccess(self):
             if self._session is not session or len(self._permits) >= MAX_PERMITS:
                 raise EgressDenied("session is stale or pending permit capacity is full")
             permit = ObservationPermit(secrets.token_hex(32), target.url, redirect_hosts | {target.host}, session, self._epoch, self._issuer)
             self._permits[permit.operation_id] = permit
             return permit
 
-    def _validate(self, permit, session, *, active):
+    def _validate(self, permit, session, *, active, deadline=None):
         self._owner()
-        with self._lock:
-            records = self._active if active else self._permits
-            if type(session) is not SessionBinding or self._session is None or type(permit) is not ObservationPermit or permit._issuer is not self._issuer or records.get(permit.operation_id) is not permit or self._session is not session or permit.session is not session or permit.epoch != self._epoch:
-                raise EgressDenied("permit, session, origin or issuer is stale or unrelated")
+        with _PolicyAccess(self, deadline):
+            self._validate_locked(permit, session, active=active)
+
+    def _validate_locked(self, permit, session, *, active):
+        self._owner()
+        records = self._active if active else self._permits
+        if type(session) is not SessionBinding or self._session is None or type(permit) is not ObservationPermit or permit._issuer is not self._issuer or records.get(permit.operation_id) is not permit or self._session is not session or permit.session is not session or permit.epoch != self._epoch:
+            raise EgressDenied("permit, session, origin or issuer is stale or unrelated")
 
     def _address(self, value):
         if self._qualification is None:
@@ -755,7 +970,8 @@ class ControlledEgress:
             raise EgressDenied("only explicit GET observation is supported; effects and resource protocols are disabled")
         self._validate(permit, session, active=False)
         token = CancellationToken() if cancellation is None else cancellation
-        budget = _Budget(timeout_seconds, token, lambda: self._validate(permit, session, active=True), self._clock)
+        budget = _Budget(timeout_seconds, token, lambda *, deadline=None: self._validate(permit, session, active=True, deadline=deadline), self._clock)
+        budget._io_gate = _NativeIOGate(self, permit, session, token)
         cleanup_lease = _PolicyLease(self._lock, self._owner_pid)
         hops = []
         cleanup_complete = False

@@ -35,14 +35,17 @@ The owner binds an actual `SessionBinding` object, then issues one
 `ObservationPermit` for a canonical HTTPS URL and optional exact redirect host
 scope. A permit contains a random operation ID, URL, session object, current
 epoch and issuer identity. The issuer retains that exact object. Reconstructed,
-copied, stale and cross-client permits or sessions are refused. Rebinding or
-closing the client invalidates pending permits and active operations; active I/O
-checks the current binding between bounded steps.
+copied, stale and cross-client permits or sessions are refused. Successful
+rebinding or closing invalidates pending permits and active operations. Budget
+checks validate again after clock sampling, and concrete native I/O admission
+serializes with cancellation and session revocation as described below.
 
 Only the creating process may use this authority. The PID check precedes every
-authority mutex, including active-operation validation and final cleanup, so a fork cannot reuse
-a copied permit or an old cancellation snapshot, nor deadlock on an inherited
-mutex. Threads in the creator process may execute, revoke and cancel operations.
+authority mutex, including active-operation validation and final cleanup.
+Inherited cancellation is a no-op before its copied mutex. Native I/O gates
+check the creator process and observing thread. Registered socket owners also
+retire their copied descriptors after fork, including a fork after the last
+socket PID guard. Threads in the creator process may execute, revoke and cancel operations.
 This is a trusted Python process API, not an isolation boundary against code
 that can modify the mediator's private memory.
 
@@ -99,6 +102,48 @@ This is a bound on readiness polling; operating-system scheduling and finite
 parser/TLS CPU work can add latency. Backward or nonfinite monotonic time
 permanently revokes the client; a later clock sample does not repair its permit
 authority.
+
+One private native I/O gate holds the cancellation-token mutex and then the
+client policy mutex in that fixed order. With both held, it checks the exact
+active permit/session/epoch, cancellation, creator PID and the original
+monotonic deadline, including revalidation after its guarded clock sample.
+Only then does it perform one nonblocking `connect_ex`, TLS handshake, send or
+receive on its retained socket. Private locked helpers never acquire the same
+nonreentrant mutex twice. Gate acquisition waits at most 50 ms for each mutex
+and at most the remaining original deadline; acquiring a gate never starts a
+fresh timeout. Readiness waits occur outside these locks. Scheduling and native
+TLS computation remain subject to the finite-work limitations above.
+
+`close()`, session rebinding, permit issuance, observation preflight and guarded
+clock access use a private bounded policy context. It checks the creator PID
+before entering any mutex and waits at most 50 ms; an operation's validation
+and clock accesses also respect its remaining original deadline. Busy or
+reentrant access raises `EgressDenied` before changing the binding, epoch,
+permit records or cleanup quarantine. Such a refusal does not acknowledge a
+successful revocation. Private locked helpers let an admitted native gate
+validate policy and sample its clock without reacquiring its held mutex.
+
+`close()` and session rebinding use the same policy mutex. A completed revocation
+before native gate admission prevents that call. A call already admitted while
+holding the locks can finish before the revoker returns; bytes already sent
+cannot be recalled. `CancellationToken.cancel()` first requests cancellation,
+then waits at most 50 ms for the token gate barrier. A normal return in the
+creator process acknowledges that this barrier completed. If the gate remains
+busy, cancellation is still requested but `EgressDenied` reports that the barrier
+did not complete; callers must not report successful cancellation from that
+exception. A foreign-process cancel returns `None` without setting the flag or
+touching an inherited mutex. These orderings do not promise interruption of an
+already executing native call or absence of all check-to-C-call races.
+
+An empty private socket owner is registered before opening a raw socket and
+retains both raw and TLS socket objects through setup, operation and cleanup.
+The private TLS helper returns that owner. An `os.register_at_fork` child hook
+closes only those socket objects' descriptor copies, without `shutdown`, mutex
+acquisition or release. It retains a close failure as a private diagnostic and
+continues retiring other sockets; a failed close is not represented as success.
+Socket objects own descriptor detachment, so explicit close and GC never guess
+ownership from a saved descriptor number or close a later foreign reuse.
+The parent retains its own live descriptor and can complete its request.
 
 Every hop permits at most 16 KiB of headers, 64 unique headers and 1 MiB of body.
 Responses require one exact `Content-Length`, ASCII nonfolded headers, identity
@@ -161,7 +206,10 @@ permit issuance after a completed refusal is a separate operation.
 The regressions cover specific Python call, line and helper-return boundaries,
 actual native mutex release, foreign reacquisition and fork. They do not prove
 the absence of every asynchronous interruption between a native C call and
-Python attribute storage, or that a caller received an API's final return value.
+Python attribute storage, within the standard library's raw-to-TLS ownership
+transition, or that a caller received an API's final return value. The fork hook
+and socket ownership tests cover actually retained sockets at the documented
+Python boundaries; they do not qualify every possible allocation/transfer cut.
 A local response and receipt are not a durable caller-delivery acknowledgement.
 
 ## Real local qualification and remaining integration
@@ -188,6 +236,16 @@ proxy/root environment poisoning, framing/size violations, deadline, cancel,
 send-return interruptions, session revocation, cleanup interruptions, real mutex
 timeout/release/reacquisition, GC, actual descriptor inventories across admission
 interruptions, competing same-permit callers and actual fork after a response are exercised.
+Additional real-I/O regressions cover completed post-clock revocation with zero
+GETs, an already admitted call completing before revocation returns, token/policy
+gate contention and unchanged deadlines, cancellation-barrier timeout and
+foreign-process no-op, wrong-thread refusal, empty socket-owner construction,
+GC after descriptor reuse, and actual fork after the last socket PID guard in
+raw-connect, TLS-handshake and HTTP-send stages. The child has closed descriptors
+while the parent completes the real DNS/TLS/GET path.
+Actual `SIGUSR1` callbacks at an admitted native GET exercise bounded reentrant
+close, bind, issue, observation preflight and clock refusal without changing
+authority; the original request then completes and both mutexes are released.
 These are source/host regressions, not installed browser or hardware evidence.
 
 Remaining G5 obligations include authenticated host/root/session provisioning

@@ -1214,5 +1214,450 @@ class ControlledEgressTests(unittest.TestCase):
         self.assertEqual(contract['limits'], expected)
 
 
+class NativeEgressGateTests(unittest.TestCase):
+    def test_completed_revocation_after_clock_prevents_actual_get(self):
+        for kind in ('cancel', 'close'):
+            with self.subTest(kind=kind):
+                before = descriptor_inventory()
+                fixture = Fixture()
+                client, session = fixture.client()
+                permit = client.issue_observation_permit(session, fixture.url())
+                token = eg.CancellationToken()
+                fired, workers, failures, stale_returns = [], [], [], []
+                line = source_line(eg._Budget.check, 'remaining = self.deadline - self.clock()')
+                def trace(frame, event, value):
+                    caller = frame.f_back
+                    if fired and event == 'return' and frame.f_code is eg._Budget.check.__code__ and caller is not None and caller.f_code is eg._send.__code__ and caller.f_locals['data'].startswith(b'GET ') and value is not None:
+                        stale_returns.append(value)
+                    if not fired and event == 'line' and frame.f_code is eg._Budget.check.__code__ and frame.f_lineno == line and caller is not None and caller.f_code is eg._send.__code__ and caller.f_locals['data'].startswith(b'GET '):
+                        fired.append(caller.f_locals['stream'])
+                        done = threading.Event()
+                        def revoke():
+                            try:
+                                token.cancel() if kind == 'cancel' else client.close()
+                            except BaseException as error:
+                                failures.append(error)
+                            finally:
+                                done.set()
+                        worker = threading.Thread(target=revoke)
+                        workers.append(worker)
+                        worker.start()
+                        self.assertTrue(done.wait(1), 'revocation did not actually complete')
+                    return trace
+                previous = sys.gettrace()
+                try:
+                    sys.settrace(trace)
+                    with self.assertRaises(eg.EgressIndeterminate) as caught:
+                        client.observe(permit, session, cancellation=token)
+                    self.assertEqual(caught.exception.operation_id, permit.operation_id)
+                    self.assertEqual(caught.exception.connection.connected_peer, '127.0.0.1')
+                    self.assertEqual(caught.exception.hops, ())
+                finally:
+                    sys.settrace(previous)
+                    for worker in workers:
+                        worker.join(2)
+                    fixture.close()
+                self.assertEqual(failures, [])
+                self.assertEqual(stale_returns, [], 'a revoked budget check returned an authorization interval')
+                self.assertEqual(len(fired), 1)
+                self.assertEqual(fired[0].fileno(), -1)
+                self.assertEqual(fixture.http_calls, [])
+                self.assertEqual(len(fixture.dns_calls), 2)
+                self.assertEqual(client._active, {})
+                self.assertNotIn(permit.operation_id, client._permits)
+                self.assertFalse(client._lock.locked())
+                self.assertFalse(token._io_lock.locked())
+                self.assertEqual(descriptor_inventory(), before)
+
+    def test_admitted_native_call_finishes_before_revocation_barrier_returns(self):
+        for kind in ('cancel', 'close'):
+            with self.subTest(kind=kind):
+                fixture = Fixture()
+                client, session = fixture.client()
+                permit = client.issue_observation_permit(session, fixture.url())
+                token = eg.CancellationToken()
+                entered, done = threading.Event(), threading.Event()
+                fired, workers, failures = [], [], []
+                line = source_line(eg._NativeIOGate.perform, 'return getattr(stream._current(), method)')
+                def trace(frame, event, value):
+                    if not fired and event == 'line' and frame.f_code is eg._NativeIOGate.perform.__code__ and frame.f_lineno == line and frame.f_locals['method'] == 'send' and frame.f_locals['arguments'][0].startswith(b'GET '):
+                        fired.append(frame.f_locals['stream'])
+                        self.assertTrue(client._lock.locked())
+                        self.assertTrue(token._io_lock.locked())
+                        def revoke():
+                            entered.set()
+                            try:
+                                token.cancel() if kind == 'cancel' else client.close()
+                            except BaseException as error:
+                                failures.append(error)
+                            finally:
+                                done.set()
+                        worker = threading.Thread(target=revoke)
+                        workers.append(worker)
+                        worker.start()
+                        self.assertTrue(entered.wait(1))
+                        self.assertFalse(done.wait(0.005), 'barrier returned while an admitted call was pending')
+                    return trace
+                previous = sys.gettrace()
+                try:
+                    sys.settrace(trace)
+                    with self.assertRaises(eg.EgressIndeterminate):
+                        client.observe(permit, session, cancellation=token)
+                    self.assertTrue(done.wait(1))
+                    self.assertTrue(fixture.http_received.wait(1))
+                finally:
+                    sys.settrace(previous)
+                    for worker in workers:
+                        worker.join(2)
+                    fixture.close()
+                self.assertEqual(failures, [])
+                self.assertEqual(len(fixture.http_calls), 1, 'the call was admitted before revocation completed')
+                self.assertEqual(len(fixture.dns_calls), 2)
+                self.assertEqual(client._active, {})
+                self.assertFalse(client._lock.locked())
+                self.assertFalse(token._io_lock.locked())
+                self.assertEqual(fired[0].fileno(), -1)
+
+    def test_actual_fork_after_last_socket_pid_guard_closes_child_and_preserves_parent(self):
+        for stage in ('connect_ex', 'do_handshake', 'send'):
+            with self.subTest(stage=stage):
+                before = descriptor_inventory()
+                fixture = Fixture()
+                client, session = fixture.client()
+                permit = client.issue_observation_permit(session, fixture.url())
+                token = eg.CancellationToken()
+                read_fd, write_fd = os.pipe()
+                state = {'fired': False, 'pid': None, 'reaped': False}
+                def trace(frame, event, value):
+                    caller = frame.f_back
+                    if not state['fired'] and event == 'return' and frame.f_code is eg._SocketOwner._current.__code__ and caller is not None and caller.f_code is eg._NativeIOGate.perform.__code__ and caller.f_locals['method'] == stage and (stage != 'send' or caller.f_locals['arguments'][0].startswith(b'GET ')):
+                        state['fired'] = True
+                        state['descriptor'] = value.fileno()
+                        metadata = os.fstat(state['descriptor'])
+                        self.assertTrue(client._lock.locked())
+                        self.assertTrue(token._io_lock.locked())
+                        state['pid'] = os.fork()
+                        if state['pid'] == 0:
+                            os.close(read_fd)
+                            try:
+                                os.fstat(state['descriptor'])
+                                state['child_closed'] = False
+                            except OSError as error:
+                                state['child_closed'] = error.errno == eg.errno.EBADF
+                            state['child_alias_closed'] = value.fileno() == -1
+                        else:
+                            os.close(write_fd)
+                            self.assertTrue(select.select([read_fd], [], [], 2)[0], 'child blocked on an inherited authority mutex')
+                            state['child'] = json.loads(os.read(read_fd, 8192))
+                            _, status = os.waitpid(state['pid'], 0)
+                            state['reaped'] = True
+                            self.assertEqual(os.waitstatus_to_exitcode(status), 0)
+                            current = os.fstat(state['descriptor'])
+                            self.assertEqual((current.st_dev, current.st_ino), (metadata.st_dev, metadata.st_ino))
+                            state['parent_still_live'] = value.fileno() == state['descriptor']
+                    return trace
+                previous = sys.gettrace()
+                try:
+                    sys.settrace(trace)
+                    try:
+                        response = client.observe(permit, session, cancellation=token)
+                        error = None
+                    except BaseException as caught:
+                        response, error = None, caught
+                    finally:
+                        sys.settrace(previous)
+                    if state['pid'] == 0:
+                        payload = {'closed': state['child_closed'], 'alias_closed': state['child_alias_closed'],
+                                   'error': type(error).__name__, 'parent_owner_unchanged': client._owner_pid != os.getpid()}
+                        os.write(write_fd, json.dumps(payload).encode())
+                        os.close(write_fd)
+                        os._exit(0)
+                    self.assertIsNone(error)
+                    self.assertEqual(response.body, b'hello')
+                    self.assertTrue(state['parent_still_live'])
+                    self.assertEqual(state['child'], {'closed': True, 'alias_closed': True,
+                                                     'error': 'EgressIndeterminate' if stage == 'send' else 'EgressDenied',
+                                                     'parent_owner_unchanged': True})
+                    self.assertEqual(len(fixture.http_calls), 1)
+                    self.assertEqual(len(fixture.dns_calls), 2)
+                    self.assertEqual(client._active, {})
+                    self.assertFalse(client._lock.locked())
+                    self.assertFalse(token._io_lock.locked())
+                    self.assertFalse(client._cleanup_broken)
+                finally:
+                    sys.settrace(previous)
+                    if state['pid'] and not state['reaped']:
+                        waited, _ = os.waitpid(state['pid'], os.WNOHANG)
+                        if not waited:
+                            os.kill(state['pid'], signal.SIGKILL)
+                            os.waitpid(state['pid'], 0)
+                    os.close(read_fd)
+                    if not state['fired']:
+                        os.close(write_fd)
+                    fixture.close()
+                self.assertTrue(state['fired'])
+                self.assertEqual(descriptor_inventory(), before)
+
+    def test_native_gate_contention_is_bounded_and_cannot_restart_original_deadline(self):
+        for held_mutex, near_deadline in (('token', False), ('policy', False), ('token', True)):
+            with self.subTest(held_mutex=held_mutex, near_deadline=near_deadline):
+                fixture = Fixture()
+                client, session = fixture.client()
+                permit = client.issue_observation_permit(session, fixture.url())
+                token = eg.CancellationToken()
+                held, release = threading.Event(), threading.Event()
+                fired, workers = [], []
+                line = source_line(eg._NativeIOGate.perform, 'token_lease.acquire_before(budget)')
+                def trace(frame, event, value):
+                    if not fired and event == 'line' and frame.f_code is eg._NativeIOGate.perform.__code__ and frame.f_lineno == line and frame.f_locals['method'] == 'send' and frame.f_locals['arguments'][0].startswith(b'GET '):
+                        fired.append({'deadline': frame.f_locals['budget'].deadline, 'owner': frame.f_locals['stream']})
+                        def holder():
+                            with token._io_lock if held_mutex == 'token' else client._lock:
+                                held.set()
+                                release.wait(2)
+                        worker = threading.Thread(target=holder)
+                        workers.append(worker)
+                        worker.start()
+                        self.assertTrue(held.wait(1))
+                        if near_deadline:
+                            delay = fired[0]['deadline'] - time.monotonic() - 0.012
+                            self.assertGreater(delay, 0)
+                            time.sleep(delay)
+                        fired[0]['wait_started'] = time.monotonic()
+                    return trace
+                previous = sys.gettrace()
+                started = time.monotonic()
+                try:
+                    sys.settrace(trace)
+                    with self.assertRaises(eg.EgressIndeterminate):
+                        client.observe(permit, session, cancellation=token, timeout_seconds=0.5)
+                    ended = time.monotonic()
+                    self.assertLess(ended - started, 0.8)
+                    self.assertLess(ended - fired[0]['wait_started'], 0.15)
+                    if near_deadline:
+                        self.assertGreaterEqual(ended, fired[0]['deadline'])
+                    self.assertEqual(fixture.http_calls, [])
+                    self.assertEqual(len(fixture.dns_calls), 2)
+                    self.assertEqual(fired[0]['owner'].fileno(), -1)
+                    self.assertFalse(token._io_lock.locked() if held_mutex == 'policy' else client._lock.locked())
+                finally:
+                    sys.settrace(previous)
+                    release.set()
+                    for worker in workers:
+                        worker.join(2)
+                        self.assertFalse(worker.is_alive())
+                    fixture.close()
+                self.assertFalse(token._io_lock.locked())
+                self.assertFalse(client._lock.locked())
+
+    def test_cancel_timeout_requests_revocation_without_claiming_completed_barrier(self):
+        token = eg.CancellationToken()
+        held, release = threading.Event(), threading.Event()
+        def holder():
+            with token._io_lock:
+                held.set()
+                release.wait(2)
+        worker = threading.Thread(target=holder)
+        worker.start()
+        try:
+            self.assertTrue(held.wait(1))
+            started = time.monotonic()
+            with self.assertRaises(eg.EgressDenied):
+                token.cancel()
+            self.assertLess(time.monotonic() - started, 0.2)
+            self.assertTrue(token.cancelled)
+            self.assertTrue(token._io_lock.locked(), 'failed cancellation released a foreign mutex')
+        finally:
+            release.set()
+            worker.join(2)
+        token.cancel()
+        self.assertFalse(token._io_lock.locked())
+
+    def test_real_signal_callback_policy_entrypoints_refuse_without_deadlock_or_mutation(self):
+        for operation in ('close', 'bind', 'issue', 'observe', 'clock'):
+            with self.subTest(operation=operation):
+                fixture = Fixture()
+                client, session = fixture.client()
+                permit = client.issue_observation_permit(session, fixture.url())
+                pending = client.issue_observation_permit(session, fixture.url('/second'))
+                replacement = eg.SessionBinding('replacement', 2, ORIGIN)
+                epoch = client._epoch
+                fired, refusals = [], []
+                line = source_line(eg._NativeIOGate.perform, 'return getattr(stream._current(), method)')
+                def callback(signum, frame):
+                    started = time.monotonic()
+                    try:
+                        if operation == 'close':
+                            client.close()
+                        elif operation == 'bind':
+                            client.bind_session(replacement)
+                        elif operation == 'issue':
+                            client.issue_observation_permit(session, fixture.url('/third'))
+                        elif operation == 'observe':
+                            client.observe(pending, session)
+                        else:
+                            client._clock()
+                    except eg.EgressDenied as error:
+                        refusals.append((error, time.monotonic() - started))
+                def trace(frame, event, value):
+                    if not fired and event == 'line' and frame.f_code is eg._NativeIOGate.perform.__code__ and frame.f_lineno == line and frame.f_locals['method'] == 'send' and frame.f_locals['arguments'][0].startswith(b'GET '):
+                        fired.append(True)
+                        os.kill(os.getpid(), signal.SIGUSR1)
+                    return trace
+                previous = sys.gettrace()
+                previous_signal = signal.signal(signal.SIGUSR1, callback)
+                try:
+                    sys.settrace(trace)
+                    response = client.observe(permit, session)
+                    self.assertEqual(response.body, b'hello')
+                    self.assertEqual(len(refusals), 1, 'a busy/reentrant entrypoint falsely returned success')
+                    self.assertIsInstance(refusals[0][0], eg.EgressDenied)
+                    self.assertLess(refusals[0][1], 0.2)
+                    self.assertIs(client._session, session)
+                    self.assertEqual(client._epoch, epoch)
+                    self.assertEqual(client._permits, {pending.operation_id: pending})
+                    self.assertEqual(client._active, {})
+                    self.assertFalse(client._cleanup_broken)
+                    self.assertFalse(client._lock.locked())
+                    self.assertEqual(len(fixture.dns_calls), 2)
+                    self.assertEqual(len(fixture.http_calls), 1)
+                finally:
+                    sys.settrace(previous)
+                    signal.signal(signal.SIGUSR1, previous_signal)
+                    fixture.close()
+
+    def test_native_gate_refuses_wrong_thread_before_real_mutex_acquisition(self):
+        fixture = Fixture()
+        client, session = fixture.client()
+        token = eg.CancellationToken()
+        permit = client.issue_observation_permit(session, fixture.url())
+        gate = eg._NativeIOGate(client, permit, session, token)
+        errors = []
+        client._lock.acquire()
+        token._io_lock.acquire()
+        def invoke():
+            try:
+                gate.perform(None, None, 'send', b'GET / HTTP/1.1\r\n\r\n')
+            except BaseException as error:
+                errors.append(error)
+        worker = threading.Thread(target=invoke)
+        try:
+            worker.start()
+            worker.join(0.2)
+            self.assertFalse(worker.is_alive(), 'wrong-thread gate entered a foreign mutex')
+            self.assertEqual(len(errors), 1)
+            self.assertRegex(str(errors[0]), 'observing thread')
+            self.assertTrue(client._lock.locked())
+            self.assertTrue(token._io_lock.locked())
+            self.assertEqual(fixture.dns_calls, [])
+            self.assertEqual(fixture.http_calls, [])
+        finally:
+            token._io_lock.release()
+            client._lock.release()
+            fixture.close()
+
+    def test_forked_cancel_is_noop_before_inherited_mutex_and_parent_flag_unchanged(self):
+        token = eg.CancellationToken()
+        read_fd, write_fd = os.pipe()
+        token._io_lock.acquire()
+        child, reaped = None, False
+        try:
+            child = os.fork()
+            if child == 0:
+                os.close(read_fd)
+                result = token.cancel()
+                os.write(write_fd, json.dumps({'returned_none': result is None, 'cancelled': token.cancelled,
+                                              'copied_mutex_still_held': token._io_lock.locked()}).encode())
+                os.close(write_fd)
+                os._exit(0)
+            os.close(write_fd)
+            self.assertTrue(select.select([read_fd], [], [], 1)[0], 'child cancellation entered a copied mutex')
+            facts = json.loads(os.read(read_fd, 4096))
+            _, status = os.waitpid(child, 0)
+            reaped = True
+            self.assertEqual(os.waitstatus_to_exitcode(status), 0)
+            self.assertEqual(facts, {'returned_none': True, 'cancelled': False, 'copied_mutex_still_held': True})
+            self.assertFalse(token.cancelled)
+            self.assertTrue(token._io_lock.locked(), 'child released the parent mutex')
+        finally:
+            if child and not reaped:
+                waited, _ = os.waitpid(child, os.WNOHANG)
+                if not waited:
+                    os.kill(child, signal.SIGKILL)
+                    os.waitpid(child, 0)
+            token._io_lock.release()
+            os.close(read_fd)
+            if child is None:
+                os.close(write_fd)
+
+    def test_empty_socket_owner_constructor_interrupt_precedes_native_open(self):
+        constructor = eg._SocketOwner.__init__
+        for boundary, event_kind, line in (('call', 'call', None),
+                ('first-line', 'line', source_line(constructor, 'self._owner_pid =')),
+                ('return', 'return', None)):
+            with self.subTest(boundary=boundary):
+                fixture = Fixture()
+                client, session = fixture.client()
+                permit = client.issue_observation_permit(session, fixture.url())
+                before = descriptor_inventory()
+                fired = []
+                def trace(frame, event, value):
+                    if not fired and frame.f_code is constructor.__code__ and event == event_kind and (line is None or frame.f_lineno == line):
+                        fired.append(True)
+                        raise KeyboardInterrupt('empty socket owner')
+                    return trace
+                previous = sys.gettrace()
+                try:
+                    sys.settrace(trace)
+                    with self.assertRaises(eg.EgressDenied) as caught:
+                        client.observe(permit, session)
+                    self.assertNotIsInstance(caught.exception, eg.EgressIndeterminate)
+                    self.assertIsInstance(caught.exception.__cause__, KeyboardInterrupt)
+                finally:
+                    sys.settrace(previous)
+                gc.collect()
+                self.assertTrue(fired)
+                self.assertEqual(descriptor_inventory(), before)
+                self.assertNotIn(permit.operation_id, client._permits)
+                self.assertEqual(client._active, {})
+                self.assertEqual(fixture.dns_calls, [])
+                self.assertEqual(fixture.http_calls, [])
+                fixture.close()
+
+    def test_closed_socket_owner_gc_never_closes_reused_foreign_descriptor(self):
+        before = descriptor_inventory()
+        fixture = Fixture()
+        client, session = fixture.client()
+        permit = client.issue_observation_permit(session, fixture.url())
+        retained, identities = [], []
+        original = eg._tls
+        def retain(*args, **kwargs):
+            owner = original(*args, **kwargs)
+            if args[2] == ONE:
+                retained.append(owner)
+                identities.append((owner.fileno(), weakref.ref(owner)))
+            return owner
+        foreign = None
+        sentinel = os.open('/dev/null', os.O_RDONLY | os.O_CLOEXEC)
+        try:
+            with patch.object(eg, '_tls', retain):
+                self.assertEqual(client.observe(permit, session).body, b'hello')
+            descriptor, reference = identities[0]
+            self.assertEqual(retained[0].fileno(), -1)
+            os.dup2(sentinel, descriptor)
+            foreign = descriptor
+            retained[0].close()
+            retained.clear()
+            gc.collect()
+            self.assertIsNone(reference(), 'tracked owner remained retained')
+            self.assertEqual(os.fstat(foreign), os.fstat(sentinel))
+        finally:
+            if foreign is not None:
+                os.close(foreign)
+            os.close(sentinel)
+            fixture.close()
+        self.assertEqual(descriptor_inventory(), before)
+
+
 if __name__ == '__main__':
     unittest.main()
