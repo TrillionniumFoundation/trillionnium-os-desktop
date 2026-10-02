@@ -115,6 +115,8 @@ jobs:
         env:
           # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
           CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         run: |
           # Includes the required root-path primitive and live retained bridge/kernel/coordinator profiles.
           cargo test --workspace --all-targets --locked

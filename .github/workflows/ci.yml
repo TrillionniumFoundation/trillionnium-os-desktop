@@ -100,6 +100,8 @@ jobs:
         env:
           # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
           CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         run: |
           cargo test --workspace --all-targets --locked
           cargo test --workspace --all-targets --all-features --locked
@@ -198,6 +200,8 @@ jobs:
         env:
           # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
           CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         run: |
           cargo test --workspace --all-targets --locked
           cargo test --workspace --all-targets --all-features --locked

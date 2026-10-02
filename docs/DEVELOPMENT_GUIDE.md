@@ -164,3 +164,23 @@ its current image, then close capability/apps/egress and update acceptance befor
 hardware and signing. Add performance measurements for first frame, input,
 observe/act, journal sync, recovery, RSS/FD/PID and queue growth. The project does
 not yet provide an accepted product SLO or a measured full-load capacity result.
+
+### Exact source tests with live executable custody
+
+Source CI test steps set `CARGO_PROFILE_TEST_DEBUG=0` and
+`CARGO_PROFILE_TEST_OPT_LEVEL=1`. Live procfs checks still hash the actual
+current executable at their original boundaries. Excluding test-only DWARF
+and optimizing the same measurement code avoids spending the original
+request ceiling on an unoptimized fixture ELF. The original test bodies,
+2/20/3-second limits, assertions, expiry/refusal gates and run commands stay
+unchanged. A private unmodified complete control/terminal diagnostic passed
+13 real groups, nine explicitly synthetic-Agent cuts and eleven terminal
+cases with this profile; it is not timing of an earlier CI failure or fresh
+CI qualification.
+
+The settings are local to repository source-test steps, including D1/D2I
+source validation. Production binary/image builds, the pinned Servo runtime
+and its own library/behavior tests keep their original profiles. Profile
+changes require exact source freezing, complete unfiltered source checks,
+independent review and fresh exact-object CI. Original failed objects stay
+failed; later passes never renew the original request budget.

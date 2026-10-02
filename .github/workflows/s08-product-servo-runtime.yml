@@ -40,6 +40,8 @@ jobs:
         env:
           # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
           CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -85,6 +87,8 @@ jobs:
         env:
           # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
           CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         shell: bash
         run: |
           set -euo pipefail

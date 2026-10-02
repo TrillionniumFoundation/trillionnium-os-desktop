@@ -58,6 +58,9 @@ jobs:
         run: bash tools/run_d1_final_qualification.sh build-e2fsprogs
 
       - name: Validate clean source and all D1 regressions
+        env:
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         run: bash tools/run_d1_final_qualification.sh validate-source
 
       - name: Prove product and qualification dependency separation
