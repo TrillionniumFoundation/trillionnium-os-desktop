@@ -1,7 +1,7 @@
 //! D1-only AgentPort qualification binary.
 //!
 //! This binary is compiled only with the explicit non-default
-//! `d1-qualification` feature and is installed only into the D1 qualification
+//! `fixture` feature and is installed only into the D1 qualification
 //! image. Its `server` mode owns no listener: systemd supplies one already-
 //! accepted AF_UNIX stream on standard input. Client modes exercise the same
 //! bounded transport and canonical Browser API while the product
@@ -13,7 +13,8 @@ use hepta_agent_port::{D0FixtureHandler, ServiceEvidence, serve_one};
 use hepta_agent_transport::{ClientConnection, PeerIdentity, PeerPolicy};
 use hepta_browser_codec::{BrowserOperation, BrowserRequest, decode_response, encode_request};
 use hepta_peer_attestation::{
-    AttestationError, PeerRuntimePolicy, ProcfsPeerAttestor, resolve_group_id, resolve_user_id,
+    AttestationError, PeerRuntimePolicy, ProcfsPeerAttestor, hash_trusted_executable,
+    resolve_group_id, resolve_user_id,
 };
 use std::env;
 use std::fmt;
@@ -28,6 +29,7 @@ const AGENT_SOCKET_PATH: &str = "/run/hepta/browserd/agent.sock";
 const EXPECTED_PEER_USER: &str = "hepta-agent";
 const EXPECTED_PEER_GROUP: &str = "hepta-agent";
 const EXPECTED_PEER_UNIT: &str = "hepta-agent.service";
+const QUALIFICATION_PEER_EXECUTABLE: &str = "/usr/libexec/hepta-agent-d1-fixture";
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 const SERVER_CEILING: Duration = Duration::from_secs(20);
 
@@ -100,7 +102,18 @@ fn run_server() -> Result<String, FixtureError> {
     let peer = PeerIdentity::from_stream(&stream)?;
     let runtime_policy =
         PeerRuntimePolicy::for_system_service(expected_uid, expected_gid, EXPECTED_PEER_UNIT)?;
-    let attested = ProcfsPeerAttestor::default().attest(peer, &runtime_policy)?;
+    // This fixed image-only profile runs the peer under a different service
+    // UID. Linux denies cross-UID /proc/<pid>/exe reads without ptrace
+    // authority, which the browser service must not receive. Retain the live
+    // pidfd/credentials/start-time/cgroup checks and rehash the root-owned
+    // qualification executable instead. This does not observe the process's
+    // live executable and is unavailable in the default product graph.
+    let executable = hash_trusted_executable(QUALIFICATION_PEER_EXECUTABLE)?;
+    let attested = ProcfsPeerAttestor::default().attest_with_static_executable_digest(
+        peer,
+        &runtime_policy,
+        &executable,
+    )?;
 
     let transport_policy = PeerPolicy {
         expected_pid: peer.pid,
@@ -276,6 +289,8 @@ fn server_evidence_json(evidence: &ServiceEvidence, peer: PeerIdentity) -> Strin
             "{{\"schema\":\"trillionnium.desktop.d1-agent-server-result.v1\",",
             "\"status\":\"PASS\",\"qualification_only\":true,",
             "\"product_handler_connected\":false,\"listener_created\":false,",
+            "\"live_process_executable_observed\":false,",
+            "\"peer_executable_binding\":\"root_owned_qualification_path\",",
             "\"peer_pid\":{},\"peer_uid\":{},\"peer_gid\":{},",
             "\"transport_sequence\":{},\"request_id\":\"{}\",",
             "\"request_sha256\":\"{}\",\"response_sha256\":\"{}\",",
@@ -444,6 +459,8 @@ mod tests {
         );
         assert!(encoded.contains("\"qualification_only\":true"));
         assert!(encoded.contains("\"product_handler_connected\":false"));
+        assert!(encoded.contains("\"live_process_executable_observed\":false"));
+        assert!(encoded.contains("\"peer_executable_binding\":\"root_owned_qualification_path\""));
         assert!(encoded.contains("\"request_id\":\"request:one\""));
         assert!(encoded.contains("\"peer_pid\":42"));
         assert!(encoded.contains("\"peer_uid\":1000"));

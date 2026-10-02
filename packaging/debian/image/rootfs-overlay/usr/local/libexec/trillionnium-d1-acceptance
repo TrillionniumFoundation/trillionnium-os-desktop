@@ -14,6 +14,14 @@ install -d -m 0755 "$result_dir"
 
 fail() {
   reason=$1
+  # Preserve the bounded cause before volatile journald state disappears at
+  # poweroff. This is failure diagnosis and never a successful acceptance.
+  journalctl --no-pager --lines=120 \
+    -u hepta-browserd-agent.socket \
+    -u 'hepta-browserd-agent@*.service' \
+    -u hepta-agent.service \
+    > "$result_dir/agent-port-journal.txt" 2>&1 || true
+  tail -c 65536 "$result_dir/agent-port-journal.txt" || true
   printf 'TRILLIONNIUM_D1_ACCEPTANCE_FAIL:%s\n' "$reason"
   printf '{"schema":"trillionnium.desktop.d1-acceptance.v2","status":"FAIL","reason":"%s"}\n' \
     "$reason" > "$result_dir/acceptance.json"

@@ -41,6 +41,18 @@ creates a listener. An image-local systemd drop-in replaces the per-connection
 qualification image. The drop-in and qualification binary are absent from the
 production Debian install map.
 
+The two qualification services keep distinct UIDs. Linux denies unprivileged
+cross-UID reads of `/proc/<pid>/exe`; the browser service receives no ptrace
+capability. This image-only profile therefore retains live pidfd, credentials,
+start-time and cgroup checks while hashing the fixed root-owned qualification
+executable path. Its receipt explicitly records
+`live_process_executable_observed: false` and
+`peer_executable_binding: root_owned_qualification_path`. This is a limited
+qualification identity check, not proof of the peer's running executable.
+Production live-executable attestation across those UIDs still requires a
+separately reviewed custody/broker design; the default product attestor must
+not silently use this qualification fallback.
+
 Host and guest gates prove both sides of the boundary:
 
 - the product daemon self-check reports no connected product handler and no
@@ -83,6 +95,9 @@ The guest receipt includes digests for the product self-check, qualification
 unit, Wayland evidence, responses, and journal. The permanent workflow binds
 those outputs, the workflow digest, every critical input digest, the exact
 commit/tree topology, and the claim ceiling into one uploaded evidence package.
+Failed acceptance preserves bounded service journal and acceptance records
+before guest poweroff. Failure uploads contain evidence and capped log tails;
+they exclude the multi-gigabyte guest disks and cannot promote a failed run.
 
 ## Deliberate non-claims
 
