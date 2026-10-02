@@ -57,6 +57,10 @@ Registered Cargo features: none.
 
 The session machine applies each event atomically or returns a typed error. Journal append encodes the complete record, writes at the known complete offset, syncs, then advances in-memory sequence/chain state. Uncertain writes poison the writer until reopen. Only a verified torn tail may be explicitly truncated; mid-log corruption fails hard.
 
+Rotation transfers the owned receipt-progress map without copying its history.
+Envelope export groups borrowed lifecycle records, preserving first-admission
+order and all lifecycle/privacy validation without duplicating record payloads.
+
 Failures must preserve the last truthful state. A timeout, crash, peer loss, storage ambiguity or unsupported operation cannot be converted into successful completion by a caller, retry loop, fixture, log message or evidence generator.
 
 ## Security invariants
@@ -102,4 +106,4 @@ Operational diagnosis must retain bounded/redacted evidence and must not weaken 
 
 Journal format, lifecycle, digest chain, migration or retention changes require a versioned reader/writer and rollback plan. Session event semantics require state-space tests. Never rewrite historical records to fit a new schema.
 
-Required change sequence: update implementation and Cargo metadata; update machine contracts and hostile tests; update this README and `manifests/modules.v1.json`; run module, repository, project-truth and Rust checks; obtain independent review on the immutable final head; then perform the required exact-main or higher-tier rerun after protected promotion.
+Required change sequence: update implementation and regression tests; update Cargo metadata, machine contracts, this README and `manifests/modules.v1.json` when their corresponding interface, behavior, inventory or claim changes. Do not rewrite unaffected contracts or historical evidence for an internal refactor. Run module, repository, project-truth and Rust checks; obtain independent review on the immutable final head; then perform the required exact-main or higher-tier rerun after protected promotion.

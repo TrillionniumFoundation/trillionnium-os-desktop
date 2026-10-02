@@ -9,15 +9,20 @@ validate:
 	python3 tools/validate_contract_foundation.py
 	python3 tools/validate_s04_transport_custody.py
 	python3 tools/verify_systemd_socket_custody.py
+# Aggregate discovery below includes these focused regressions exactly once.
+ifneq ($(filter check,$(MAKECMDGOALS)),check)
 	python3 -m unittest discover -s tests -p 'test_contract_foundation.py'
 	python3 -m unittest discover -s tests -p 'test_s04_transport_custody.py'
 	python3 -m unittest discover -s tests -p 'test_module_documentation*.py'
 	python3 -m unittest discover -s tests -p 'test_s08_servo_runtime.py'
 	python3 -m unittest discover -s tests -p 'test_s08_product_supervision.py'
+endif
 
 truth:
 	python3 tools/validate_project_truth.py
+ifneq ($(filter check,$(MAKECMDGOALS)),check)
 	python3 -m unittest discover -s tests -p 'test_project_truth_status_documents.py'
+endif
 
 test-python:
 	python3 -m unittest discover -s tests -v

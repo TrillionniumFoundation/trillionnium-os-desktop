@@ -178,10 +178,16 @@ impl ReceiptEnvelope {
     /// unresolved journal entry and append its `interrupted` or
     /// `indeterminate` terminal fact before publishing operation evidence.
     pub fn from_records(records: &[RecoveredRecord]) -> Result<Self, JournalError> {
+        Self::from_borrowed_records(records)
+    }
+
+    pub(crate) fn from_borrowed_records<R: std::borrow::Borrow<RecoveredRecord>>(
+        records: &[R],
+    ) -> Result<Self, JournalError> {
         let first = records.first().ok_or_else(|| {
             JournalError::InvalidInput("cannot build an envelope from no records".into())
         })?;
-        let first_event = &first.event;
+        let first_event = &first.borrow().event;
         if first_event.lifecycle != LifecycleState::Requested {
             return Err(JournalError::InvalidInput(format!(
                 "receipt {} does not begin with requested lifecycle",
@@ -190,7 +196,7 @@ impl ReceiptEnvelope {
         }
         if records
             .iter()
-            .any(|record| record.event.receipt_id != first_event.receipt_id)
+            .any(|record| record.borrow().event.receipt_id != first_event.receipt_id)
         {
             return Err(JournalError::InvalidInput(
                 "envelope records contain multiple receipt identifiers".into(),
@@ -198,7 +204,7 @@ impl ReceiptEnvelope {
         }
         let Some(terminal_index) = records
             .iter()
-            .position(|record| record.event.lifecycle.is_terminal())
+            .position(|record| record.borrow().event.lifecycle.is_terminal())
         else {
             return Err(JournalError::InvalidInput(format!(
                 "receipt {} has no terminal lifecycle record",
@@ -217,10 +223,13 @@ impl ReceiptEnvelope {
         // well-typed; do not discard changes to request identity or privacy.
         let mut progress = None;
         for record in records {
-            progress = Some(ReceiptProgress::advance(progress.as_ref(), &record.event)?);
+            progress = Some(ReceiptProgress::advance(
+                progress.as_ref(),
+                &record.borrow().event,
+            )?);
         }
 
-        let terminal = &records[terminal_index].event;
+        let terminal = &records[terminal_index].borrow().event;
         if terminal.monotonic_ms < first_event.monotonic_ms {
             return Err(JournalError::InvalidInput(format!(
                 "receipt {} terminal monotonic time precedes admission",
@@ -1320,7 +1329,7 @@ impl ReceiptJournal {
                     created_wall_clock_unix_ms,
                 },
                 false,
-                self.progress.clone(),
+                std::mem::take(&mut self.progress),
                 self.last_monotonic_ms,
                 path_lease,
             )?;
@@ -1394,22 +1403,21 @@ pub fn export_receipt_envelopes_jsonl(
 ) -> Result<Digest, JournalError> {
     let destination = destination.as_ref();
     validate_new_path(destination)?;
-    let mut groups: Vec<(String, Vec<RecoveredRecord>)> = Vec::new();
-    let mut group_indexes: HashMap<String, usize> = HashMap::new();
+    let mut groups: Vec<Vec<&RecoveredRecord>> = Vec::new();
+    let mut group_indexes: HashMap<&str, usize> = HashMap::new();
     for record in &report.records {
-        if let Some(index) = group_indexes.get(&record.event.receipt_id).copied() {
-            let (_, records) = &mut groups[index];
-            records.push(record.clone());
+        if let Some(index) = group_indexes.get(record.event.receipt_id.as_str()).copied() {
+            groups[index].push(record);
         } else {
             let index = groups.len();
-            group_indexes.insert(record.event.receipt_id.clone(), index);
-            groups.push((record.event.receipt_id.clone(), vec![record.clone()]));
+            group_indexes.insert(&record.event.receipt_id, index);
+            groups.push(vec![record]);
         }
     }
 
     let mut bytes = Vec::new();
-    for (_, records) in groups {
-        let envelope = ReceiptEnvelope::from_records(&records)?;
+    for records in groups {
+        let envelope = ReceiptEnvelope::from_borrowed_records(&records)?;
         bytes.extend_from_slice(envelope.to_canonical_json()?.as_bytes());
         bytes.push(b'\n');
     }

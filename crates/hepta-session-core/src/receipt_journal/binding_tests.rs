@@ -294,3 +294,129 @@ fn lifecycle_binding_rotated_chain_rejects_rehashed_active_drift_without_repair(
         );
     }
 }
+
+#[test]
+fn rotation_moves_receipt_history_without_cloning_or_readmitting() {
+    let dir = Directory::new();
+    let mut writer = ReceiptJournal::create(dir.path(), JournalId([48; 16]), 1).unwrap();
+    writer.append(event(LifecycleState::Requested)).unwrap();
+    writer.append(event(LifecycleState::Dispatched)).unwrap();
+    writer.append(completed()).unwrap();
+    let key = writer.progress.keys().next().unwrap().as_ptr();
+    let (_, mut successor) = writer.rotate(dir.0.join("second.hjr"), 2).unwrap();
+    assert_eq!(successor.progress.keys().next().unwrap().as_ptr(), key);
+    assert!(successor.append(event(LifecycleState::Requested)).is_err());
+    assert!(successor.inspect().unwrap().records.is_empty());
+}
+
+#[test]
+fn borrowed_envelopes_preserve_owned_validation_and_bytes() {
+    let records: Vec<_> = [
+        event(LifecycleState::Requested),
+        event(LifecycleState::Dispatched),
+        completed(),
+    ]
+    .into_iter()
+    .enumerate()
+    .map(|(i, event)| RecoveredRecord {
+        sequence: i as u64 + 1,
+        record_sha256: [9; 32],
+        event,
+    })
+    .collect();
+    let borrowed: Vec<_> = records.iter().collect();
+    // Frozen receipt.v1 bytes: independent of both traversal implementations.
+    let golden = concat!(
+        r#"{"schema":"trillionnium.desktop.receipt.v1","receipt_id":"bound-1","plan_revision":"2026-08-29-d6","image_id":"image-1","servo_commit":"670ae8a70801b162e186f81cbb5bdd2d59c39108","browserd_version":"0.1.0","session_id":"session-1","session_generation":1,"document_generation":1,"semantic_snapshot_revision":1,"mutation_epoch":1,"source":"agent","operation":"page.observe","status":"succeeded","started_monotonic_ms":10,"finished_monotonic_ms":30,"wall_clock_unix_ms":20}"#,
+    );
+    assert_eq!(
+        ReceiptEnvelope::from_borrowed_records(&borrowed)
+            .unwrap()
+            .to_canonical_json()
+            .unwrap(),
+        golden
+    );
+    assert_eq!(
+        ReceiptEnvelope::from_records(&records)
+            .unwrap()
+            .to_canonical_json()
+            .unwrap(),
+        ReceiptEnvelope::from_borrowed_records(&borrowed)
+            .unwrap()
+            .to_canonical_json()
+            .unwrap()
+    );
+    assert!(ReceiptEnvelope::from_borrowed_records(&borrowed[..2]).is_err());
+    assert!(ReceiptEnvelope::from_borrowed_records(&borrowed[1..]).is_err());
+    assert!(ReceiptEnvelope::from_borrowed_records(&borrowed[..0]).is_err());
+    for (field, mutate) in mutations() {
+        let mut changed = records.clone();
+        mutate(&mut changed[2].event);
+        let borrowed: Vec<_> = changed.iter().collect();
+        assert!(
+            ReceiptEnvelope::from_borrowed_records(&borrowed).is_err(),
+            "{field}"
+        );
+    }
+}
+
+#[test]
+fn borrowed_export_keeps_first_admission_order_for_interleaved_receipts() {
+    let dir = Directory::new();
+    let mut writer = ReceiptJournal::create(dir.path(), JournalId([49; 16]), 1).unwrap();
+    for lifecycle in [
+        LifecycleState::Requested,
+        LifecycleState::Dispatched,
+        LifecycleState::Completed,
+    ] {
+        for id in ["second-lexically", "first-lexically"] {
+            let mut value = if lifecycle == LifecycleState::Completed {
+                completed()
+            } else {
+                event(lifecycle)
+            };
+            value.receipt_id = id.into();
+            writer.append(value).unwrap();
+        }
+    }
+    let report = writer.inspect().unwrap();
+    let expected = ["second-lexically", "first-lexically"]
+        .into_iter()
+        .map(|id| {
+            let records: Vec<_> = report
+                .records
+                .iter()
+                .filter(|r| r.event.receipt_id == id)
+                .cloned()
+                .collect();
+            ReceiptEnvelope::from_records(&records)
+                .unwrap()
+                .to_canonical_json()
+                .unwrap()
+                + "\n"
+        })
+        .collect::<String>();
+    let destination = dir.0.join("envelopes.jsonl");
+    let digest = export_receipt_envelopes_jsonl(&report, &destination).unwrap();
+    assert_eq!(fs::read_to_string(destination).unwrap(), expected);
+    assert_eq!(digest, sha256(expected.as_bytes()));
+}
+
+#[test]
+fn failed_rotation_consumes_writer_but_preserves_durable_history_and_collision() {
+    let dir = Directory::new();
+    let path = dir.path();
+    let mut writer = ReceiptJournal::create(&path, JournalId([50; 16]), 1).unwrap();
+    writer.append(event(LifecycleState::Requested)).unwrap();
+    writer.append(event(LifecycleState::Dispatched)).unwrap();
+    writer.append(completed()).unwrap();
+    let before = fs::read(&path).unwrap();
+    let next = dir.0.join("collision.hjr");
+    fs::write(&next, b"existing unrelated bytes").unwrap();
+    assert!(writer.rotate(&next, 2).is_err());
+    assert_eq!(fs::read(&path).unwrap(), before);
+    assert_eq!(fs::read(&next).unwrap(), b"existing unrelated bytes");
+    let mut reopened = ReceiptJournal::open(&path, OpenPolicy::RECOVER_CRASH).unwrap();
+    assert_eq!(reopened.inspect().unwrap().records.len(), 3);
+    assert!(reopened.append(event(LifecycleState::Requested)).is_err());
+}

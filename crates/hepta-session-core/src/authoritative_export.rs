@@ -104,7 +104,7 @@ fn validate_complete_reports(reports: &[RecoveryReport]) -> Result<(), JournalEr
 
     let mut expected_sequence = 1_u64;
     let mut last_digest = [0_u8; 32];
-    let mut grouped: HashMap<String, Vec<RecoveredRecord>> = HashMap::new();
+    let mut grouped: HashMap<&str, Vec<&RecoveredRecord>> = HashMap::new();
 
     for report in reports {
         if !matches!(report.tail, TailStatus::Clean) {
@@ -142,9 +142,9 @@ fn validate_complete_reports(reports: &[RecoveryReport]) -> Result<(), JournalEr
             }
             last_digest = record.record_sha256;
             grouped
-                .entry(record.event.receipt_id.clone())
+                .entry(&record.event.receipt_id)
                 .or_default()
-                .push(record.clone());
+                .push(record);
             expected_sequence = expected_sequence.checked_add(1).ok_or_else(|| {
                 JournalError::InvalidInput("authoritative export record sequence overflow".into())
             })?;
@@ -165,7 +165,7 @@ fn validate_complete_reports(reports: &[RecoveryReport]) -> Result<(), JournalEr
     }
 
     for records in grouped.values() {
-        receipt_journal::ReceiptEnvelope::from_records(records)?;
+        receipt_journal::ReceiptEnvelope::from_borrowed_records(records)?;
     }
     Ok(())
 }

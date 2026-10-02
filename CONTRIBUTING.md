@@ -6,8 +6,11 @@
    exact base SHA before every promotion step.
 3. Keep changes inside the desktop product graph. Do not add Android/mobile,
    ADB, root-linux, or direct-shell dependencies or authority.
-4. Update implementation, schemas/contracts, golden vectors, Rust types, tests,
-   machine truth, human documentation, and claim ceilings together.
+4. Update implementation and regression tests together. Update schemas/contracts,
+   golden vectors, Rust types, machine truth, documentation and claim ceilings
+   when the corresponding behavior, interface, inventory or claim changes.
+   Internal refactors do not require no-op edits to every artifact. Preserve
+   historical evidence; rerun invalidated gates instead of relabelling it.
 5. Record PR head SHA, base SHA, tested merge SHA, workflow/input identities,
    and bounded output digests. A candidate pass is not an integrated-main pass.
 6. Run:
