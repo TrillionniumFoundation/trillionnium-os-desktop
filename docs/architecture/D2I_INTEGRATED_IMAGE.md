@@ -52,6 +52,62 @@ initial/unpainted recovery facts, plus deterministic transformation and source
 drift refusal. These are source/process tests; only a fresh integrated QEMU
 image run can establish the Wayland/Servo runtime result.
 
+The D2I startup boundary also requires an actual `wayland-info` protocol round
+trip under the renderer's UID and the same `XDG_RUNTIME_DIR` and
+`WAYLAND_DISPLAY`. The bounded pre-start probe requires `wl_compositor`,
+`wl_shm`, and `xdg_wm_base` globals and a successful client exit; a socket inode
+or systemd's `Type=simple` started state does not establish this readiness.
+Each client attempt has a two-second bound, its report has a 64 KiB bound, and
+the runtime unit wraps the complete probe in a 22-second timeout. This proves
+protocol availability only; the normal runtime must still prove every frame,
+input, IME and causal recovery requirement above.
+
+`trillionnium-d2i-acceptance.service` orders itself after the runtime with
+`Wants`, so a failed runtime start still reaches the acceptance failure check.
+D2I-specific compositor and runtime `OnFailure` edges activate one independent
+root failure service. Acceptance failures request that same service rather
+than independently shutting down during another capture. It stores bounded
+runtime/compositor and acceptance journals, unit exit state, and the Weston
+log in `/var/lib/trillionnium-d2i-diagnostics`, owned by root with mode 0700.
+It reads Weston output after dropping to the renderer UID. Symlink or unsafe
+directory/file custody is refused. The D2I-only runtime directory preservation
+keeps volatile logs available until capture; the failure service synchronizes
+the filesystem before requesting poweroff, and its stop hook also bounds a
+failed/timed-out collector with a poweroff request. Missing causes remain
+failed diagnostics, and never become a successful runtime receipt.
+
+Successful root acceptance output and its runtime journal live separately in
+`/var/lib/trillionnium-d2i-acceptance` with mode 0700. The renderer writes only
+its existing runtime output under `/var/lib/trillionnium-d2i`; root does not
+publish acceptance files into that renderer-owned directory. Host extraction
+keeps the original receipt basenames and all normal verifier requirements.
+
+Before the normal guest run, the permanent PR/main workflow executes the
+explicit `boot-startup-negative` qualification lane. It copies the exact
+prepared image, injects a runtime-only exit-73 fixture into that copy, and
+binds a distinct negative pre-boot image digest. The original candidate digest
+must remain unchanged. The actual QEMU guest must emit no D2I PASS marker,
+persist the exact fixture cause and systemd runtime exit 73, keep each
+diagnostic within its limit, and power off cleanly within 120 seconds. The
+packet records source/run identities and both image identities, lives in a
+separate startup-negative artifact, and explicitly denies normal runtime,
+promotion and release qualification. After complete diagnostic readback and
+post-boot digesting, the disposable negative clone is reclaimed before the
+normal boot copy is allocated. The normal image contains no exit-73
+override. Host text/command fixtures exercise refusal behavior; they are not
+actual QEMU or installed evidence. Current-head CI must establish that lane.
+
+Failed source head `3c3f20b918a44726b9ed8601462ada2c20d5b1d5`, tested as
+synthetic merge `cc1530ba3bdf6ea0edfa209412341dbd2d81c373` in actual run
+[37005677335](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/37005677335),
+reported runtime exit 101, acceptance dependency failure, subsequent compositor
+exit 1, and host QEMU timeout. Its diagnostics artifact contains the complete
+serial log and explicit `debugfs` file-not-found records, but no runtime,
+acceptance, or Weston journal/result. The earlier dependency suppressed the
+acceptance failure trap and its diagnostic/poweroff work. Those facts establish
+the missing diagnostic path; they do not identify which Rust panic or renderer
+initialization caused exit 101. These source fixes need a fresh exact-head run.
+
 The inherited D1 qualification binary classifies errors into a payload-free
 `FailureCategory` enum before its logger, which accepts only that enum and emits
 fixed category codes to operational stderr/journald. Underlying attestation identities, procfs

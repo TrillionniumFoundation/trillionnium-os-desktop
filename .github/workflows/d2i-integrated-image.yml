@@ -112,6 +112,9 @@ jobs:
       - name: Prepare two byte-identical integrated images
         run: bash tools/run_d2i_integrated_image.sh prepare-images
 
+      - name: Qualify isolated deliberate startup failure and clean poweroff
+        run: bash tools/run_d2i_integrated_image.sh boot-startup-negative
+
       - name: Boot and qualify exact integrated image without networking
         run: bash tools/run_d2i_integrated_image.sh boot-image
 
@@ -122,6 +125,16 @@ jobs:
         if: failure()
         continue-on-error: true
         run: bash tools/collect_d2i_failure_diagnostics.sh
+
+      - name: Upload separate startup negative qualification packet
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d2i-startup-negative-${{ github.sha }}
+          path: /tmp/trillionnium-d2i/startup-negative/evidence/qemu
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 0
 
       - name: Upload canonical portable D2I candidate evidence
         if: always()

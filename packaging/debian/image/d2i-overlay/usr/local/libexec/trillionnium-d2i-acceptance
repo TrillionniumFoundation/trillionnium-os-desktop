@@ -2,8 +2,15 @@
 set -euo pipefail
 
 out=/var/lib/trillionnium-d2i
-result="$out/guest-acceptance.json"
-mkdir -p "$out"
+acceptance_out=/var/lib/trillionnium-d2i-acceptance
+result="$acceptance_out/guest-acceptance.json"
+# systemd owns this separate directory; the renderer owns only runtime output.
+[[ -d $acceptance_out && ! -L $acceptance_out && $(stat -c '%u:%a' "$acceptance_out") == 0:700 ]]
+umask 077
+for name in guest-acceptance.json runtime-journal.txt; do
+  path="$acceptance_out/$name"
+  [[ ! -e $path && ! -L $path ]]
+done
 
 poweroff_guest() {
   sync
@@ -15,19 +22,9 @@ fail() {
   trap - ERR
   set +e
   printf 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:%s\n' "$reason" >&2
-  journalctl --no-pager -n 120 -u trillionnium-d2i-runtime.service \
-    -u trillionnium-d2i-acceptance.service 2>&1 | tail -c 65536 > "$out/runtime-journal.txt"
-  cat "$out/runtime-journal.txt" >&2
-  cat > "$result" <<EOF
-{
-  "schema": "trillionnium.desktop.d2i-guest-acceptance.v2",
-  "status": "FAIL",
-  "reason": "${reason//\"/\\\"}",
-  "network_enabled": false,
-  "product_agent_port_enabled": false
-}
-EOF
-  poweroff_guest
+  # The single independent unit owns capture and poweroff. A simultaneous
+  # compositor/runtime OnFailure must finish its capture before shutdown.
+  systemctl start --no-block trillionnium-d2i-failure.service || poweroff_guest
   exit 1
 }
 
@@ -111,7 +108,8 @@ fi
 non_loopback=$(find /sys/class/net -mindepth 1 -maxdepth 1 ! -name lo -printf '%f\n')
 [[ -z "$non_loopback" ]] || fail non_loopback_network_device_present
 
-journalctl --no-pager -u trillionnium-d2i-runtime.service > "$out/runtime-journal.txt" || true
+journalctl --no-pager -n 160 -u trillionnium-d2i-runtime.service \
+  | tail -c 131072 > "$acceptance_out/runtime-journal.txt"
 runtime_sha=$(sha256sum "$runtime" | awk '{print $1}')
 screenshot_sha=$(sha256sum "$screenshot" | awk '{print $1}')
 wayland_sha=$(sha256sum /run/hepta-desktop/weston.log | awk '{print $1}')

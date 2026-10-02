@@ -106,12 +106,14 @@ step_validate_source() {
     tools/prepare_d2i_boot_runner.py \
     tools/finalize_d2i_evidence.py \
     tools/verify_d2i_artifact.py
-  python3 -m unittest discover -s tests/d1 -p 'test_d2i_contract.py' -v
+  python3 -m unittest discover -s tests/d1 -p 'test_d2i*.py' -v
   shellcheck -e SC2016,SC2054 \
     tools/run_d2i_integrated_image.sh \
     tests/qemu/prepare-d2i-image.sh \
     tests/qemu/run-d2i-boot-test.base.sh \
-    packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance
+    packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance \
+    packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-wait-wayland \
+    packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-capture-failure
   test -z "$(git status --porcelain=v1)"
   ! grep -RInE 'contents:[[:space:]]*write|git[[:space:]]+push' \
     .github/workflows/d2i-integrated-image.yml tools/run_d2i_integrated_image.sh
@@ -221,6 +223,12 @@ step_prepare_images() {
 }
 
 step_boot_image() {
+  local -a negative_flag=()
+  local output_dir=/tmp/trillionnium-d2i/qemu
+  if [[ ${1:-} == startup-negative ]]; then
+    negative_flag=(--startup-failure-negative)
+    output_dir=/tmp/trillionnium-d2i/startup-negative/qemu
+  fi
   python3 tools/prepare_d2i_boot_runner.py \
     --source tests/qemu/run-d2i-boot-test.base.sh \
     --output /tmp/trillionnium-d2i/run-d2i-boot-test.sh \
@@ -230,7 +238,7 @@ step_boot_image() {
     --artifacts /tmp/trillionnium-d1/build-a/candidate/artifacts \
     --image /tmp/trillionnium-d2i/integrated/d2i-a.ext4 \
     --preparation /tmp/trillionnium-d2i/integrated/preparation-a.json \
-    --output-dir /tmp/trillionnium-d2i/qemu
+    --output-dir "$output_dir" "${negative_flag[@]}"
 }
 
 step_finalize_evidence() {
@@ -262,6 +270,7 @@ case "${1:-}" in
   build-runtime) step_build_runtime ;;
   run-d1) step_run_d1 ;;
   prepare-images) step_prepare_images ;;
+  boot-startup-negative) step_boot_image startup-negative ;;
   boot-image) step_boot_image ;;
   finalize-evidence) step_finalize_evidence ;;
   *) echo "unknown D2I gate command: ${1:-}" >&2; exit 64 ;;
