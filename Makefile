@@ -1,4 +1,4 @@
-.PHONY: validate truth fmt check-rust check-rust-features clippy clippy-features test test-features self-check check
+.PHONY: validate truth test-python fmt check-rust check-rust-features clippy clippy-features test test-features test-doc self-check check
 
 validate:
 	/usr/bin/python3 -I tools/validate_module_documentation.py
@@ -17,6 +17,11 @@ validate:
 truth:
 	python3 tools/validate_project_truth.py
 	python3 -m unittest discover -s tests -p 'test_project_truth_status_documents.py'
+
+test-python:
+	python3 -m unittest discover -s tests -v
+	python3 -m unittest discover -s tests/d1 -v
+	python3 -m unittest discover -s tests/transport -v
 
 fmt:
 	cargo fmt --all --check
@@ -39,9 +44,12 @@ test:
 test-features:
 	cargo test --workspace --all-targets --all-features --locked
 
+test-doc:
+	cargo test --workspace --doc --locked
+
 self-check:
 	cargo run --locked -p hepta-browserd -- --self-check
 	cargo run --locked -p hepta-agent-portd --bin hepta-agent-portd -- --self-check
 	cargo run --locked -p hepta-agent-portd --features fixture --bin hepta-agent-port-fixture -- --self-check
 
-check: validate truth fmt check-rust check-rust-features clippy clippy-features test test-features self-check
+check: validate truth test-python fmt check-rust check-rust-features clippy clippy-features test test-features test-doc self-check

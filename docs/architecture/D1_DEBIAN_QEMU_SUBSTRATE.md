@@ -30,8 +30,11 @@ Cargo graph excludes `hepta-agent-port`, the D0 fixture handler, and the Browser
 codec, and product activation fails closed until D3 connects a real
 BrowserActor.
 
-D1 compiles a separate `hepta-agent-d1-fixture` binary only with the explicit,
-non-default `d1-qualification` feature. That binary provides both the bounded
+D1 compiles the separate `hepta-agent-d1-fixture` example only with the explicit,
+non-default `fixture` feature. The host artifact is
+`target/release/examples/hepta-agent-d1-fixture`; it is installed as
+`/usr/libexec/hepta-agent-d1-fixture` only in the qualification image.
+That executable provides both the bounded
 qualification client and an inherited-stream qualification server. It never
 creates a listener. An image-local systemd drop-in replaces the per-connection
 `ExecStart` with `hepta-agent-d1-fixture --mode server` only inside the D1

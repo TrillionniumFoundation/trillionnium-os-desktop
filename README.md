@@ -12,7 +12,8 @@ This repository develops the desktop runtime, trust boundaries, contracts, quali
 
 The following files separate facts that are often incorrectly conflated:
 
-- [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) — facts integrated on the current `main` branch;
+- [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) — recorded integrated qualification baseline and its claim limits;
+- [`docs/source-state.v1.json`](docs/source-state.v1.json) and [`docs/modules/README.md`](docs/modules/README.md) — current Cargo source inventory and technical contracts, including later merged implementation;
 - [`docs/CANDIDATE_STATUS.md`](docs/CANDIDATE_STATUS.md) — unmerged candidates and their evidence rules;
 - [`docs/NON_CLAIMS.md`](docs/NON_CLAIMS.md) — capabilities and qualification levels the project does not currently claim;
 - [`docs/status-documents.v1.json`](docs/status-documents.v1.json) — closed structured source for integrated-state projection, candidate freeze, governance observations, and bounded next actions;
@@ -27,9 +28,11 @@ A source file, fixture, hosted CI run, QEMU result, or document is not evidence 
 
 ## What is present on `main`
 
-`main` contains a ten-package Rust workspace covering the desktop daemon scaffold, AgentPort daemon, authenticated Unix-stream transport, canonical browser codec, AgentPort bridge, peer attestation, shared contracts, session/receipt state, and trusted-workspace composition model.
+The current Rust workspace includes the desktop daemon scaffold, AgentPort daemon, authenticated Unix-stream transport, canonical browser codec, AgentPort bridge, peer attestation, shared contracts, session/receipt state, trusted-workspace composition model, BrowserActor, and separate simulation support. `Cargo.toml`, the source-state record and generated module index describe the same source packages. Linux adapters, image recipes, update/recovery and release verification are additional source surfaces outside Cargo.
 
-The product AgentPort remains default-disabled and fail-closed until a promoted BrowserActor/runtime binding exists. Current integrated status is deliberately narrower than the cumulative development branch.
+The older ten-package qualification baseline in `CURRENT_STATE.md` is deliberately narrower than this source inventory. The product AgentPort remains default-disabled and fail-closed until a promoted BrowserActor/runtime binding exists. Merged S02–S12 source, a fixture or a passing local test does not establish installed product readiness.
+
+Read [`docs/DEVELOPMENT_GUIDE.md`](docs/DEVELOPMENT_GUIDE.md) for the source-to-requirement map, practical verification paths and remaining product gaps.
 
 ## What is not yet established
 

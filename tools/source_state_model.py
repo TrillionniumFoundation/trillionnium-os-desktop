@@ -7,12 +7,16 @@ object. It does not promote those packages into the integrated runtime state.
 from __future__ import annotations
 
 import json
+import os
+import re
+import stat
 import tomllib
 from pathlib import Path
 from typing import Any
 
 SOURCE_STATE_PATH = "docs/source-state.v1.json"
 SOURCE_STATE_SCHEMA = "trillionnium.desktop.source-state.v1"
+MAX_SOURCE_STATE_BYTES = 256 * 1024
 EXPECTED_INTEGRATED_MEMBERS = (
     "apps/hepta-browserd",
     "apps/hepta-agent-portd",
@@ -62,15 +66,11 @@ def validate_record(record: Any) -> list[str]:
         return errors
     if any(
         not isinstance(item, str)
-        or not item
-        or item.startswith("/")
-        or item.endswith("/")
-        or "\\" in item
-        or "//" in item
-        or any(part in {"", ".", ".."} for part in item.split("/"))
+        or re.fullmatch(r"(?:apps|crates)/[a-z][a-z0-9-]*", item) is None
         for item in members
     ):
         errors.append("source_state workspace_members contains an invalid repository path")
+        return errors
     if len(members) != len(set(members)):
         errors.append("source_state workspace_members contains duplicates")
     if len(members) > 128:
@@ -91,10 +91,36 @@ def validate_record(record: Any) -> list[str]:
     return errors
 
 
+def read_repository_text(root: Path, relative: str) -> str:
+    """Read bounded regular repository input without following any child symlink."""
+    parts = relative.split("/")
+    if (
+        not relative or relative.startswith("/") or "\\" in relative
+        or any(part in {"", ".", ".."} for part in parts)
+    ):
+        raise ValueError("invalid repository input path")
+    directory = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+    try:
+        for component in parts[:-1]:
+            child = os.open(component, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+                            | os.O_CLOEXEC, dir_fd=directory)
+            os.close(directory)
+            directory = child
+        fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
+                     | os.O_CLOEXEC, dir_fd=directory)
+        with os.fdopen(fd, "rb") as stream:
+            info = os.fstat(stream.fileno())
+            if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_SOURCE_STATE_BYTES:
+                raise ValueError(f"repository input must be a bounded regular file: {relative}")
+            raw = stream.read(MAX_SOURCE_STATE_BYTES + 1)
+            if len(raw) > MAX_SOURCE_STATE_BYTES:
+                raise ValueError(f"repository input exceeded byte limit: {relative}")
+            return raw.decode("utf-8")
+    finally:
+        os.close(directory)
+
+
 def load_record(root: Path) -> tuple[dict[str, Any] | None, list[str]]:
-    path = root / SOURCE_STATE_PATH
-    if path.is_symlink() or not path.is_file():
-        return None, [f"required regular source-state file is missing: {SOURCE_STATE_PATH}"]
 
     def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
         result: dict[str, Any] = {}
@@ -106,10 +132,10 @@ def load_record(root: Path) -> tuple[dict[str, Any] | None, list[str]]:
 
     try:
         value = json.loads(
-            path.read_text(encoding="utf-8"),
+            read_repository_text(root, SOURCE_STATE_PATH),
             object_pairs_hook=reject_duplicates,
         )
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
+    except (OSError, UnicodeError, ValueError, RecursionError) as error:
         return None, [f"cannot load source-state inventory: {error}"]
     if not isinstance(value, dict):
         return None, ["source-state inventory must be a JSON object"]
@@ -121,10 +147,10 @@ def validate_repository(root: Path) -> list[str]:
     if record is None:
         return errors
     try:
-        members = tomllib.loads((root / "Cargo.toml").read_text(encoding="utf-8"))[
+        members = tomllib.loads(read_repository_text(root, "Cargo.toml"))[
             "workspace"
         ]["members"]
-    except (OSError, KeyError, tomllib.TOMLDecodeError) as error:
+    except (OSError, UnicodeError, KeyError, TypeError, ValueError, RecursionError) as error:
         errors.append(f"cannot read Cargo workspace for source state: {error}")
     else:
         if record.get("workspace_members") != members:

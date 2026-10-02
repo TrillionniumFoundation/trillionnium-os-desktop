@@ -17,10 +17,14 @@
    python3 tools/validate_s08_servo_runtime.py
    python3 tools/validate_repository.py
    python3 tools/validate_project_truth.py
+   python3 -m unittest discover -s tests -v
+   python3 -m unittest discover -s tests/d1 -v
+   python3 -m unittest discover -s tests/transport -v
    cargo fmt --all --check
    cargo check --workspace --all-targets --locked
    cargo clippy --workspace --all-targets --locked -- -D warnings
    cargo test --workspace --all-targets --locked
+   cargo test --workspace --doc --locked
    cargo run --locked -p hepta-browserd -- --self-check
    ```
 
@@ -32,3 +36,10 @@
    not merge their own PR.
 10. Use focused commits. Generated evidence must be reproducible, bounded,
     privacy-reviewed, and linked to exact inputs.
+
+Repository validation inspects product source, including newly added untracked
+source files. It prunes only known local/generated trees such as `.git`, `target`,
+root `build`/`dist`/`out`, caches and `evidence/local`; keep temporary evidence
+there. JSON inputs are bounded, strictly decoded and read without following
+symlinked parents. A successful source validator is separate from the full
+Python/Rust tests and image qualification workflows.

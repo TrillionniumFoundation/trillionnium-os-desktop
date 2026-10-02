@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Permanent D1 qualification runner. It never mutates Git refs.
 set -euo pipefail
+unset PYTHONOPTIMIZE
 
 assert_absent() {
   local pattern=$1
@@ -216,6 +217,7 @@ python3 tools/validate_repository.py
 python3 tools/validate_project_truth.py
 python3 -m unittest discover -s tests/d1 -p 'test_*.py' -v
 python3 -m py_compile \
+  tools/artifact_evidence.py \
   tools/compare_d1_builds.py \
   tools/d1_rootfs_manifest.py \
   tools/finalize_d1_evidence.py \
@@ -249,7 +251,7 @@ if grep -Eq 'hepta-agent-port v|hepta-browser-codec v' \
   exit 1
 fi
 cargo tree --locked -p hepta-agent-portd --no-default-features \
-  --features d1-qualification -e normal \
+  --features fixture -e normal \
   > /tmp/trillionnium-d1/evidence/qualification-cargo-tree.txt
 grep -q 'hepta-agent-port v' \
   /tmp/trillionnium-d1/evidence/qualification-cargo-tree.txt
@@ -277,19 +279,19 @@ install -D -m 0755 target/release/hepta-agent-portd \
 cargo build --release --locked \
   -p hepta-agent-portd \
   --no-default-features \
-  --features d1-qualification \
-  --bin hepta-agent-d1-fixture
+  --features fixture \
+  --example hepta-agent-d1-fixture
 install -m 0755 "$RUNNER_TEMP/hepta-agent-portd-product" \
   target/release/hepta-agent-portd
 test -x target/release/hepta-agent-portd
-test -x target/release/hepta-agent-d1-fixture
+test -x target/release/examples/hepta-agent-d1-fixture
 target/release/hepta-agent-portd --self-check \
   > /tmp/trillionnium-d1/evidence/product-daemon-self-check-host.json
-target/release/hepta-agent-d1-fixture --mode self-check \
+target/release/examples/hepta-agent-d1-fixture --mode self-check \
   > /tmp/trillionnium-d1/evidence/d1-qualification-self-check-host.json
 strings target/release/hepta-agent-portd \
   > /tmp/trillionnium-d1/evidence/product-daemon.strings
-strings target/release/hepta-agent-d1-fixture \
+strings target/release/examples/hepta-agent-d1-fixture \
   > /tmp/trillionnium-d1/evidence/qualification-fixture.strings
 assert_absent \
   'agent_port_ready' \
