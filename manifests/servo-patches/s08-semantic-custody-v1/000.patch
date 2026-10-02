@@ -90,12 +90,31 @@ diff --git a/components/constellation/tracing.rs b/components/constellation/trac
 diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessibility_tree.rs
 --- a/components/layout/accessibility_tree.rs
 +++ b/components/layout/accessibility_tree.rs
-@@ -526,6 +526,30 @@
-             node.accesskit_node.supports_action(action),
-             node.accesskit_node.bounds().is_some(),
-         ))
-+    }
+@@ -69,6 +69,9 @@
+ 
+ /// Changes which have occurred during the current update, and data required to process the update.
+ struct AccessibilityUpdate<'update> {
++    /// Checked semantic reflow recomputes properties from the current DOM independently of damage.
++    refresh_semantics: bool,
 +
+     /// Nodes whose internal data has changed within the current update.
+     changed_nodes: FxHashSet<NodeId>,
+     /// Nodes that changed their relation to the tree within the current update.
+@@ -220,8 +223,10 @@
+         damage_from_dom: AccessibilityDamageMap<'update>,
+         context: AccessibilityContext<'update>,
+         rooted_nodes: Option<FxHashSet<OpaqueNode>>,
++        refresh_semantics: bool,
+     ) -> (Option<accesskit::TreeUpdate>, UpdateCounters) {
+         let mut update = AccessibilityUpdate::new(damage_from_dom, rooted_nodes, self);
++        update.refresh_semantics = refresh_semantics;
+ 
+         self.ensure_root_node(root_dom_node, &mut update);
+ 
+@@ -528,6 +533,30 @@
+         ))
+     }
+ 
 +    /// Hash actual retained AccessKit data and complete leaf-to-root ancestry.
 +    /// Refuse over-budget or damaged chains; never search another node by label or coordinates.
 +    pub(crate) fn semantic_expectation_for_id(
@@ -118,31 +137,108 @@ diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessi
 +            if !self.nodes.contains_key(&current.borrow().id) { return None; }
 +        }
 +        None
++    }
++
+     /// Assert that the tree is a tree without any dangling references or orphaned nodes.
+     ///
+     /// For accessibility tests only, because it’s expensive.
+@@ -1109,7 +1138,13 @@
      }
  
-     /// Assert that the tree is a tree without any dangling references or orphaned nodes.
+     fn compute_damage(&self, update: &mut AccessibilityUpdate) -> AccessibilityDamage {
+-        let mut damage = AccessibilityDamage::empty();
++        // The ordinary damage cache is not final action authority. This traversal already
++        // resolves the current DOM node, children and bounds for every retained node.
++        let mut damage = if update.refresh_semantics {
++            AccessibilityDamage::Node
++        } else {
++            AccessibilityDamage::empty()
++        };
+ 
+         if self.dirty_state.has_damage() {
+             damage |= update.take_damage(&self.id);
+@@ -1159,6 +1194,7 @@
+             })
+             .collect();
+         Self {
++            refresh_semantics: false,
+             changed_nodes: FxHashSet::default(),
+             tree_changes: FxHashMap::default(),
+             counters: UpdateCounters::default(),
 diff --git a/components/layout/layout_impl.rs b/components/layout/layout_impl.rs
 --- a/components/layout/layout_impl.rs
 +++ b/components/layout/layout_impl.rs
-@@ -782,6 +782,19 @@
-         }
-     }
+@@ -229,6 +229,10 @@
+     /// See [Layout::force_accessibility_update()].
+     force_accessibility_update: Cell<bool>,
  
++    /// Pending checked reflow and whether it actually rebuilt current semantic properties.
++    refresh_accessibility_semantics: Cell<bool>,
++    accessibility_semantics_ready: Cell<bool>,
++
+     /// A callback to run whenever a web font from a `@font-face` rule finishes loading.
+     web_font_finished_loading_callback: StylesheetWebFontLoadFinishedCallback,
+ }
+@@ -780,6 +784,26 @@
+             action_advertised,
+             has_accessible_bounds,
+         }
++    }
++
 +    fn accessibility_semantic_expectation(
 +        &self,
 +        tree_id: accesskit::TreeId,
 +        node_id: accesskit::NodeId,
 +        epoch: Epoch,
 +    ) -> Option<servo_base::accessibility_semantics::AccessibilitySemanticExpectation> {
-+        if tree_id != self.id.into() || !self.accessibility_active.get() { return None; }
++        if tree_id != self.id.into() || !self.accessibility_active.get() ||
++            !self.accessibility_semantics_ready.get() { return None; }
 +        let retained = self.accessibility_tree.borrow();
 +        let retained = retained.as_ref()?;
 +        if retained.embedder_epoch() != epoch { return None; }
 +        retained.semantic_expectation_for_id(node_id)
 +    }
 +
++    fn prepare_accessibility_semantic_reflow(&self) {
++        self.accessibility_semantics_ready.set(false);
++        self.refresh_accessibility_semantics.set(true);
++        self.set_force_accessibility_update();
+     }
+ 
      fn accessibility_active(&self) -> bool {
-         self.accessibility_active.get()
+@@ -867,6 +891,8 @@
+             accessibility_active: Cell::new(false),
+             accessibility_tree: Default::default(),
+             force_accessibility_update: Cell::new(false),
++            refresh_accessibility_semantics: Cell::new(false),
++            accessibility_semantics_ready: Cell::new(false),
+             web_font_finished_loading_callback: Arc::new(web_font_finished_loading_callback)
+                 as StylesheetWebFontLoadFinishedCallback,
+         }
+@@ -1010,11 +1036,13 @@
+             stacking_context_tree,
+         };
+ 
++        let refresh_semantics = self.refresh_accessibility_semantics.get();
+         let (tree_update, counters) = accessibility_tree.update_tree(
+             root_element,
+             damage,
+             accessibility_context,
+             rooted_nodes,
++            refresh_semantics,
+         );
+         if let Some(tree_update) = tree_update {
+             // FIXME: Handle send error. Could have a method on accessibility tree to
+@@ -1034,6 +1062,10 @@
+         reflow_statistics.nodes_updated_bounds = counters.nodes_updated_bounds;
+         reflow_statistics.nodes_in_tree_update = counters.nodes_in_tree_update;
+ 
++        if refresh_semantics {
++            self.refresh_accessibility_semantics.set(false);
++            self.accessibility_semantics_ready.set(true);
++        }
+         self.force_accessibility_update.set(false);
+         true
      }
 diff --git a/components/script/event_loop/script_thread.rs b/components/script/event_loop/script_thread.rs
 --- a/components/script/event_loop/script_thread.rs
@@ -171,7 +267,7 @@ diff --git a/components/script/event_loop/script_thread.rs b/components/script/e
                      response,
                  );
              },
-@@ -3889,6 +3894,34 @@
+@@ -3889,6 +3894,35 @@
              .set_accessibility_active(active, epoch);
      }
  
@@ -195,6 +291,7 @@ diff --git a/components/script/event_loop/script_thread.rs b/components/script/e
 +        if document.webview_id() != webview_id || !document.is_fully_active() { respond(Observation::Refused(AccessibilityActionResult::StaleDocument)); return; }
 +        let window = document.window();
 +        if !window.layout().accessibility_active() { respond(Observation::Refused(AccessibilityActionResult::AccessibilityInactive)); return; }
++        window.layout().prepare_accessibility_semantic_reflow();
 +        window.reflow(cx, ReflowGoal::UpdateTheRendering);
 +        let value = match window.layout().accessibility_semantic_expectation(tree_id, node_id, epoch) {
 +            Some(current) => Observation::Observed(current),
@@ -206,7 +303,7 @@ diff --git a/components/script/event_loop/script_thread.rs b/components/script/e
      #[expect(unsafe_code)]
      fn perform_accessibility_action(
          &self,
-@@ -3897,6 +3930,7 @@
+@@ -3897,6 +3931,7 @@
          pipeline_id: PipelineId,
          epoch: Epoch,
          request: accesskit::ActionRequest,
@@ -214,7 +311,20 @@ diff --git a/components/script/event_loop/script_thread.rs b/components/script/e
          response: generic_channel::GenericCallback<AccessibilityActionResult>,
      ) {
          let respond = |result| {
-@@ -3983,6 +4017,26 @@
+@@ -3934,7 +3969,11 @@
+         }
+ 
+         // Update and query the retained tree inside this script task. Page script cannot interleave
+-        // between the node lookup and dispatch below.
++        // between the node lookup and dispatch below. Checked actions must recompute current
++        // semantic properties instead of trusting ordinary accessibility damage elision.
++        if expectation.is_some() {
++            window.layout().prepare_accessibility_semantic_reflow();
++        }
+         window.reflow(cx, ReflowGoal::UpdateTheRendering);
+         let (address, action_advertised, has_accessible_bounds) =
+             match window.layout().accessibility_node_address(
+@@ -3983,6 +4022,26 @@
              return;
          }
  
@@ -723,7 +833,7 @@ diff --git a/components/shared/constellation/lib.rs b/components/shared/constell
 diff --git a/components/shared/layout/lib.rs b/components/shared/layout/lib.rs
 --- a/components/shared/layout/lib.rs
 +++ b/components/shared/layout/lib.rs
-@@ -446,6 +446,14 @@
+@@ -446,6 +446,18 @@
          epoch: Epoch,
      ) -> AccessibilityNodeAddressResult;
  
@@ -734,6 +844,10 @@ diff --git a/components/shared/layout/lib.rs b/components/shared/layout/lib.rs
 +        node_id: accesskit::NodeId,
 +        epoch: Epoch,
 +    ) -> Option<servo_base::accessibility_semantics::AccessibilitySemanticExpectation>;
++
++    /// Request a checked reflow that recomputes current DOM semantic properties, ignoring
++    /// ordinary damage elision. The semantic getter refuses until that reflow completes.
++    fn prepare_accessibility_semantic_reflow(&self);
 +
      /// Returns whether accessibility is active for this Layout.
      fn accessibility_active(&self) -> bool;

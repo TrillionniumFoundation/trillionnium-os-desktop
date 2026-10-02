@@ -121,6 +121,49 @@ class S08SemanticCustodySourceTests(unittest.TestCase):
         self.mutate_manifest(root, lambda m: m["patch"].__setitem__("sha256", hashlib.sha256(patch.read_bytes()).hexdigest()))
         with self.assertRaises(ValueError): verifier.verify(root)
 
+    def test_rebound_patch_cannot_restore_damage_elision_or_stale_readiness(self) -> None:
+        for before, after in [
+            ("window.layout().prepare_accessibility_semantic_reflow();", "window.layout().set_force_accessibility_update();"),
+            ("!self.accessibility_semantics_ready.get() { return None; }", "false { return None; }"),
+            ("let mut damage = if update.refresh_semantics {\n+            AccessibilityDamage::Node", "let mut damage = if update.refresh_semantics {\n+            AccessibilityDamage::empty()"),
+            ("let refresh_semantics = self.refresh_accessibility_semantics.get();", "let refresh_semantics = false;"),
+            ("self.accessibility_semantics_ready.set(true);", "self.accessibility_semantics_ready.set(false);"),
+        ]:
+            with self.subTest(before=before):
+                root = self.copied()
+                patch = root / verifier.PATCH
+                source = patch.read_text()
+                self.assertIn(before, source)
+                patch.write_text(source.replace(before, after))
+                self.mutate_manifest(root, lambda m: m["patch"].__setitem__("sha256", hashlib.sha256(patch.read_bytes()).hexdigest()))
+                with self.assertRaises(ValueError): verifier.verify(root)
+
+    def test_rebound_same_task_dom_observation_cannot_assert_success(self) -> None:
+        for before, after in [
+            ("target.textContent === 'Changed target'", "true"),
+            ("!target.isConnected && document.getElementById('target') !== target", "true"),
+            ("matches!(mutation_result, Ok(servo::JSValue::Boolean(true)))", "true"),
+            ("let mutation_result = evaluate_javascript(&servo_test, webview.clone(), &stimulus);", "let mutation_result = Ok(servo::JSValue::Boolean(true));"),
+            ("println!(\"Semantic mutation actual DOM confirmed: {name}\");", "println!(\"Semantic mutation actual DOM confirmed: {name}\");\n        let _ = evaluate_javascript(&servo_test, webview.clone(), \"true\");"),
+            ("println!(\"Semantic mutation actual DOM confirmed: {name}\");", "println!(\"Semantic mutation actual DOM confirmed: {name}\");\n        servo_test.spin(|| false);"),
+        ]:
+            root = self.copied()
+            self.rebind_runtime_source(root, "adapter", before, after)
+            with self.assertRaises(ValueError): verifier.verify(root)
+
+    def test_closed_final_refresh_profile_cannot_promote_cache_or_skip_completion(self) -> None:
+        for key, value in [("ordinary_damage_is_final_authority", True),
+                           ("snapshot_requires_completed_checked_reflow", False),
+                           ("stimulus_same_task_dom_boolean_required", False),
+                           ("retained_tree_node_epoch_identity_preserved", 1),
+                           ("source", "caller_asserted_current")]:
+            root = self.copied()
+            self.mutate_manifest(root, lambda m: m["final_semantic_refresh"].__setitem__(key, value))
+            with self.assertRaises(ValueError): verifier.verify(root)
+        root = self.copied()
+        self.mutate_manifest(root, lambda m: m.pop("final_semantic_refresh"))
+        with self.assertRaises(ValueError): verifier.verify(root)
+
     def test_exact_transformer_rejects_offset_context_and_count_drift(self) -> None:
         source = b"alpha\nbeta\n"
         good = ["@@ -1,2 +1,2 @@\n", " alpha\n", "-beta\n", "+gamma\n"]
@@ -130,6 +173,72 @@ class S08SemanticCustodySourceTests(unittest.TestCase):
                         ["@@ -1,3 +1,2 @@\n", *good[1:]],
                         ["@@ -1,2 +2,2 @@\n", *good[1:]]]:
             with self.assertRaises(ValueError): verifier.apply_exact(source, changed)
+
+    def test_complete_current_patch_applies_with_real_gnu_and_matches_exact_bytes(self) -> None:
+        # This local skeleton supplies each real hunk's old records at its exact
+        # line number. It proves patch format, not official PIN or Servo runtime.
+        manifest, parsed = verifier.verify(ROOT)
+        with tempfile.TemporaryDirectory(prefix="s08-complete-gnu-") as temporary:
+            stage = Path(temporary)
+            expected = {}
+            for row in manifest["patch"]["source_pins"]:
+                path = row["path"]
+                records = parsed[path]
+                if row["post_s07_sha256"] is None:
+                    before = None
+                else:
+                    old = {}
+                    index = 0
+                    end = 0
+                    while index < len(records):
+                        header = verifier.HUNK.fullmatch(records[index])
+                        self.assertIsNotNone(header)
+                        start, count = int(header[1]), int(header[2] or "1")
+                        position = start - 1 if count else start
+                        index += 1
+                        while index < len(records) and not verifier.HUNK.fullmatch(records[index]):
+                            record = records[index]
+                            if record[0] in " -":
+                                self.assertNotIn(position, old)
+                                old[position] = record[1:]
+                                position += 1
+                            index += 1
+                        end = max(end, position)
+                    before = "".join(old.get(i, f"unqualified source gap {i}\n") for i in range(end + 8)).encode()
+                    destination = stage / path
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_bytes(before)
+                expected[path] = verifier.apply_exact(before, records)
+            verifier.apply_gnu_patch(stage, (ROOT / verifier.PATCH).read_bytes())
+            for path, data in expected.items():
+                self.assertEqual((stage / path).read_bytes(), data)
+
+    def test_real_gnu_rejects_short_boundary_that_exact_transform_accepts(self) -> None:
+        source = b"start\na\nb\nc\nd\ne\nordinary continuation\n"
+        records = ["@@ -2,5 +2,7 @@\n", " a\n", " b\n", " c\n", "+added\n", " d\n", " e\n", "+tail\n"]
+        self.assertEqual(verifier.apply_exact(source, records), b"start\na\nb\nc\nadded\nd\ne\ntail\nordinary continuation\n")
+        patch = ("--- a/example\n+++ b/example\n" + "".join(records)).encode()
+        with tempfile.TemporaryDirectory(prefix="s08-short-gnu-") as temporary:
+            stage = Path(temporary)
+            (stage / "example").write_bytes(source)
+            with self.assertRaisesRegex(ValueError, "GNU zero fuzz/offset"):
+                verifier.apply_gnu_patch(stage, patch)
+
+    def test_real_gnu_offset_and_missing_context_are_refused(self) -> None:
+        source = b"start\na\nb\nc\nold\nd\ne\nf\nend\n"
+        correct = "--- a/example\n+++ b/example\n@@ -2,7 +2,7 @@\n a\n b\n c\n-old\n+new\n d\n e\n f\n"
+        for patch in [correct.replace("@@ -2,7 +2,7 @@", "@@ -1,7 +1,7 @@"),
+                      correct.replace(" b\n", " absent\n")]:
+            with tempfile.TemporaryDirectory(prefix="s08-offset-gnu-") as temporary:
+                stage = Path(temporary)
+                (stage / "example").write_bytes(source)
+                with self.assertRaisesRegex(ValueError, "GNU zero fuzz/offset"):
+                    verifier.apply_gnu_patch(stage, patch.encode())
+
+        data = (ROOT / verifier.PATCH).read_bytes()
+        self.assertIn(b"+use sha2::{Digest, Sha256};\n", data)
+        with self.assertRaisesRegex(ValueError, "source body has trailing whitespace"):
+            verifier.parse_patch(data.replace(b"+use sha2::{Digest, Sha256};\n", b"+use sha2::{Digest, Sha256}; \n", 1))
 
     def test_real_path_custody_rejects_symlink_hardlink_and_fifo(self) -> None:
         for kind in ("symlink", "hardlink", "fifo"):
@@ -270,6 +379,26 @@ class S08SemanticCustodySourceTests(unittest.TestCase):
         for index, name in enumerate(names):
             (logs / f"case-{index}.log").write_text(f"running 1 test\ntest {name} ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.01s\n")
         return listing, logs, names
+
+    def test_rebound_workflow_cannot_skip_filter_or_defer_actual_layout_units(self) -> None:
+        for before, after in [
+            ("cargo test --locked -p servo-layout --lib", "true"),
+            ("cargo test --locked -p servo-layout --lib", "cargo test --locked -p servo-layout --lib test_accessibility"),
+            ("cargo test --locked -p servo-layout --lib", "cargo test --locked -p servo-layout --lib -- --ignored"),
+        ]:
+            root = self.copied()
+            self.rebind_runtime_source(root, "workflow", before, after)
+            with self.assertRaises(ValueError): verifier.verify(root)
+        root = self.copied()
+        workflow = root / verifier.WORKFLOW
+        source = workflow.read_text()
+        command = "            cargo test --locked -p servo-layout --lib\n"
+        self.assertEqual(source.count(command), 1)
+        source = source.replace(command, "")
+        source = source.replace('            mapfile -t retained_tests < "$retained/names.txt"', command + '            mapfile -t retained_tests < "$retained/names.txt"')
+        workflow.write_text(source)
+        self.mutate_manifest(root, lambda m: m["runtime_corpus"].__setitem__("workflow_sha256", hashlib.sha256(workflow.read_bytes()).hexdigest()))
+        with self.assertRaises(ValueError): verifier.verify(root)
 
     def test_actual_inventory_uses_full_names_and_requires_exact_unique_corpus(self) -> None:
         listing, logs, names = self.retained_fixture("actual_module::")

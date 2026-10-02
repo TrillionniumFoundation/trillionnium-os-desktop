@@ -52,6 +52,22 @@ SEMANTIC_MUTATIONS = [
     ("disabled", "target.disabled=true", "TargetDisabled"),
     ("hidden", "target.style.display='none'", "TargetNotRendered"),
 ]
+FINAL_SEMANTIC_REFRESH = {
+    "source": "current_dom_properties_during_checked_script_layout_reflow",
+    "ordinary_damage_is_final_authority": False,
+    "retained_tree_node_epoch_identity_preserved": True,
+    "snapshot_requires_completed_checked_reflow": True,
+    "stimulus_same_task_dom_boolean_required": True,
+    "unfiltered_upstream_layout_unit_tests_required": True,
+}
+DOM_CONDITIONS = {
+    "same_node_label": "target.textContent === 'Changed target'",
+    "same_node_role": "target.getAttribute('role') === 'heading'",
+    "same_node_ancestry": "target.parentElement === document.getElementById('other')",
+    "replacement": "!target.isConnected && document.getElementById('target') !== target",
+    "disabled": "target.disabled === true",
+    "hidden": "target.style.display === 'none'",
+}
 ALLOWED_PATHS = [
     "Cargo.lock", "components/constellation/constellation.rs", "components/constellation/tracing.rs",
     "components/layout/accessibility_tree.rs", "components/layout/layout_impl.rs",
@@ -176,7 +192,30 @@ def verify_runtime_corpus(root: Path, profile: object, prerequisite: dict[str, A
     for marker in ('for (name, mutation, expected_result) in cases {', 'assert_eq!(result, expected_result, "typed semantic refusal")', '"real refused target DOM click counter must be zero"', '"real DOM must retain zero epoch clicks"', '.checked_sub(1)', 'completed.push("{\\"case\\":\\"stale_epoch_expectation\\"'):
         if marker not in body:
             raise ValueError("complete semantic corpus gate missing")
+    conditions = re.search(r'(?s)let dom_condition = match name \{(.*?)\n        \};', body)
+    if conditions is None:
+        raise ValueError("same-task DOM mutation observations missing")
+    pairs = re.findall(r'"([a-z_]+)" => "([^"\n]+)"', conditions[1])
+    exact(pairs, list(DOM_CONDITIONS.items()), "same-task actual DOM mutation conditions")
+    for marker in ('let mutation_result = evaluate_javascript(&servo_test, webview.clone(), &stimulus);',
+                   'matches!(mutation_result, Ok(servo::JSValue::Boolean(true)))',
+                   "return ({dom_condition}) && document.getElementById('marker').textContent === 'Mutation done';",
+                   'actual same-task DOM semantic mutation must complete'):
+        if marker not in body:
+            raise ValueError("same-task DOM mutation must return an observed Boolean")
+    if body.index('matches!(mutation_result,') > body.index('let result = s08_perform_checked_action('):
+        raise ValueError("DOM mutation observation must precede checked dispatch")
+    mutation_to_dispatch = body[body.index('let stimulus = format!('):body.index('let result = s08_perform_checked_action(')]
+    if body.count('evaluate_javascript(&servo_test, webview.clone(), &stimulus)') != 1 or mutation_to_dispatch.count('evaluate_javascript(') != 1:
+        raise ValueError("mutation adds another pre-action evaluation")
+    if re.search(r"\bspin\s*\(|s08_semantic_expectation\s*\(|wait_for_|sleep\s*\(", mutation_to_dispatch):
+        raise ValueError("mutation observation adds a pre-action wait or refresh")
     workflow = read(root / WORKFLOW).decode("utf-8", "strict")
+    layout_command = "            cargo test --locked -p servo-layout --lib"
+    if re.findall(r"(?m)^            cargo test --locked -p servo-layout[^\n]*$", workflow) != [layout_command]:
+        raise ValueError("exact-pin layout cfg(test) corpus must run unfiltered")
+    if workflow.index(layout_command) > workflow.index('cargo test --locked -p servo --test accessibility -- --list'):
+        raise ValueError("layout unit compilation must precede retained runtime inventory")
     for marker in ('cargo test --locked -p servo --test accessibility -- --list', '--retained-list "$retained/list.txt" --print-retained-names', 'mapfile -t retained_tests < "$retained/names.txt"', 'test "${#retained_tests[@]}" -eq 6', 'for index in "${!retained_tests[@]}"; do', '"${retained_tests[$index]}" -- --exact --nocapture', '--retained-log-dir "$retained"', 'test_trillionnium_s08_semantic_custody -- --exact --nocapture'):
         if marker not in workflow:
             raise ValueError("fresh exact retained-process workflow gate missing")
@@ -252,6 +291,11 @@ def parse_patch(data: bytes) -> dict[str, list[str]]:
         exact(lines.pop(0), f"+++ b/{path}\n", "semantic new path")
         if not lines or HUNK.fullmatch(lines[0]) is None:
             raise ValueError("semantic patch has no exact hunk")
+        for record in lines:
+            if record[:1] in {" ", "+", "-"} and record.endswith("\n"):
+                body = record[1:-1]
+                if body and body.rstrip(" \t") != body:
+                    raise ValueError("semantic patch source body has trailing whitespace")
         output[path] = lines
     exact(list(output), ALLOWED_PATHS, "semantic patch order")
     return output
@@ -296,9 +340,24 @@ def apply_exact(before: bytes | None, lines: list[str]) -> bytes:
     return "".join(output).encode("utf-8")
 
 
+def apply_gnu_patch(stage: Path, data: bytes) -> None:
+    """Require the same complete patch the CI applies, without fuzz or offset.
+
+    An exact line transformer alone does not check GNU unified-hunk boundary
+    interpretation. This temporary source tree grants no runtime authority.
+    """
+    result = subprocess.run(
+        ["patch", "--batch", "--forward", "--fuzz=0", "-p1", "-d", str(stage)],
+        input=data, capture_output=True, timeout=30, check=False,
+    )
+    diagnostic = (result.stdout + result.stderr).decode("utf-8", "strict")
+    if result.returncode or re.search(r"\b(?:offset|fuzz)\b", diagnostic):
+        raise ValueError("complete semantic patch did not apply with GNU zero fuzz/offset")
+
+
 def verify(root: Path) -> tuple[dict[str, Any], dict[str, list[str]]]:
     manifest = load(root / MANIFEST)
-    exact(set(manifest), {"schema", "status", "servo_commit", "prerequisite_manifest", "prerequisite_manifest_sha256", "patch", "semantic_schema", "original_stimulus", "required_negative_cases", "claim_ceiling", "standalone_source_check", "runtime_corpus"}, "semantic manifest fields")
+    exact(set(manifest), {"schema", "status", "servo_commit", "prerequisite_manifest", "prerequisite_manifest_sha256", "patch", "semantic_schema", "original_stimulus", "required_negative_cases", "claim_ceiling", "standalone_source_check", "runtime_corpus", "final_semantic_refresh"}, "semantic manifest fields")
     exact(manifest["schema"], "trillionnium.lab.s08-semantic-custody.v1", "semantic schema")
     exact(manifest["status"], "SOURCE_CANDIDATE_EXACT_PIN_RUNTIME_REQUIRED", "semantic status")
     exact(manifest["servo_commit"], PIN, "semantic Servo pin")
@@ -306,6 +365,7 @@ def verify(root: Path) -> tuple[dict[str, Any], dict[str, list[str]]]:
     exact(hashlib.sha256(read(root / PREREQUISITE)).hexdigest(), manifest["prerequisite_manifest_sha256"], "original S07 manifest digest")
     verify_runtime_corpus(root, manifest["runtime_corpus"], load(root / PREREQUISITE))
     exact(manifest["semantic_schema"], SEMANTIC_SCHEMA, "bounded semantic profile")
+    exact(manifest["final_semantic_refresh"], FINAL_SEMANTIC_REFRESH, "final current DOM semantic refresh profile")
     exact(manifest["original_stimulus"], ORIGINAL_STIMULUS, "original stimulus")
     exact(manifest["required_negative_cases"], list(NEGATIVES), "semantic negative corpus")
     exact(manifest["claim_ceiling"], CLAIMS, "semantic claim ceiling")
@@ -350,12 +410,47 @@ def verify(root: Path) -> tuple[dict[str, Any], dict[str, list[str]]]:
     for marker in ("if current != expected", "expected.is_well_formed()", "expected.tree_id() != request.target_tree", "expected.node_id() != request.target_node", "accessibility_semantic_expectation(", "ObserveAccessibilitySemantics"):
         if marker not in script:
             raise ValueError("final same-task semantic comparison missing")
+    refresh_sources = {
+        path: "".join(line[1:] for line in parsed[path] if line.startswith(("+", " ")))
+        for path in ("components/script/event_loop/script_thread.rs", "components/layout/layout_impl.rs",
+                     "components/layout/accessibility_tree.rs", "components/shared/layout/lib.rs")
+    }
+    verify_semantic_refresh(refresh_sources)
     additions = "\n".join(line[1:] for lines in parsed.values() for line in lines if line.startswith("+"))
     for pattern in (r"evaluate_javascript|EvaluateJavaScript|WebDriver", r"query_selector|element_from_point|hit_test", r"fire_synthetic_pointer_event_not_trusted"):
         if re.search(pattern, additions):
             raise ValueError("semantic production patch adds an action fallback or extra dispatch")
     return manifest, parsed
 
+
+
+def verify_semantic_refresh(sources: dict[str, str]) -> None:
+    script = sources["components/script/event_loop/script_thread.rs"]
+    layout = sources["components/layout/layout_impl.rs"]
+    tree = sources["components/layout/accessibility_tree.rs"]
+    shared = sources["components/shared/layout/lib.rs"]
+    prepare = "window.layout().prepare_accessibility_semantic_reflow();"
+    if script.count(prepare) != 2 or (prepare + "\n        window.reflow(cx, ReflowGoal::UpdateTheRendering);") not in script:
+        raise ValueError("semantic observation must prepare before final reflow")
+    if "if expectation.is_some() {\n            " + prepare + "\n        }\n        window.reflow(cx, ReflowGoal::UpdateTheRendering);" not in script:
+        raise ValueError("checked dispatch must prepare its own current DOM reflow")
+    for marker in ("self.accessibility_semantics_ready.set(false);\n        self.refresh_accessibility_semantics.set(true);\n        self.set_force_accessibility_update();",
+                   "!self.accessibility_semantics_ready.get() { return None; }",
+                   "refresh_accessibility_semantics: Cell::new(false)", "accessibility_semantics_ready: Cell::new(false)",
+                   "let refresh_semantics = self.refresh_accessibility_semantics.get();",
+                   "            rooted_nodes,\n            refresh_semantics,\n        );",
+                   "if refresh_semantics {\n            self.refresh_accessibility_semantics.set(false);\n            self.accessibility_semantics_ready.set(true);\n        }"):
+        if marker not in layout:
+            raise ValueError("semantic snapshot requires an actual completed checked layout update")
+    if layout.index("let (tree_update, counters) = accessibility_tree.update_tree(") > layout.index("self.accessibility_semantics_ready.set(true);"):
+        raise ValueError("semantic readiness precedes current DOM update")
+    for marker in ("refresh_semantics: bool", "AccessibilityUpdate::new(damage_from_dom, rooted_nodes, self);\n        update.refresh_semantics = refresh_semantics;",
+                   "let mut damage = if update.refresh_semantics {\n            AccessibilityDamage::Node\n        } else {\n            AccessibilityDamage::empty()\n        };",
+                   "            refresh_semantics: false,\n            changed_nodes:"):
+        if marker not in tree:
+            raise ValueError("checked update must read current DOM properties independently of damage")
+    if "fn prepare_accessibility_semantic_reflow(&self);" not in shared:
+        raise ValueError("current DOM semantic reflow interface is absent")
 
 def verify_upstream_sources(root: Path, upstream: Path, manifest: dict[str, Any], parsed: dict[str, list[str]]) -> None:
     prerequisite = load(root / PREREQUISITE)
@@ -383,7 +478,7 @@ def verify_upstream_sources(root: Path, upstream: Path, manifest: dict[str, Any]
                 data = read(root / safe_relative(entry["path"]), MAX_PATCH_BYTES)
                 exact(hashlib.sha256(data).hexdigest(), entry["sha256"], "unchanged S07 part")
                 # Original S07 part 006 has its already-qualified one-line context fuzz.
-                # New semantic hunks use the exact transformer below, with zero fuzz/offset.
+                # The new complete semantic patch must satisfy both applicators below.
                 result = subprocess.run(["patch", "--batch", "--forward", "-p1", "-d", str(stage)], input=data, capture_output=True, timeout=30, check=False)
                 if result.returncode:
                     raise ValueError("original S07 prerequisite did not apply")
@@ -395,6 +490,16 @@ def verify_upstream_sources(root: Path, upstream: Path, manifest: dict[str, Any]
             after = apply_exact(before, parsed[path])
             exact(hashlib.sha256(after).hexdigest(), row["semantic_sha256"], "semantic after-source bytes")
             after_sources[path] = after
+        verify_semantic_refresh({path: after_sources[path].decode("utf-8", "strict") for path in (
+            "components/script/event_loop/script_thread.rs", "components/layout/layout_impl.rs",
+            "components/layout/accessibility_tree.rs", "components/shared/layout/lib.rs")})
+        # The checked refresh passes current ServoLayoutNode values to the existing property reader.
+        tree_source = after_sources["components/layout/accessibility_tree.rs"].decode("utf-8", "strict")
+        for marker in ("self.set_role(role_from_dom_node(dom_node))", "click_action_supported(dom_node)",
+                       "let text_content = dom_node.text_content();", "self.update_children_from_dom_node(",
+                       "child.parent_node = Some(weak_self.clone());"):
+            if marker not in tree_source:
+                raise ValueError("checked semantic refresh lost its current DOM measurement source")
         before_lock = tomllib.loads(read(stage / "Cargo.lock").decode())
         after_lock = tomllib.loads(after_sources["Cargo.lock"].decode())
         exact(len(after_lock["package"]), len(before_lock["package"]), "upstream locked package count")
@@ -408,6 +513,10 @@ def verify_upstream_sources(root: Path, upstream: Path, manifest: dict[str, Any]
         for item in standalone_lock["package"]:
             if "source" in item and (item["name"], item["version"], item.get("source"), item.get("checksum")) not in pinned_registry:
                 raise ValueError("standalone dependency drifted from exact pin registry bytes")
+        apply_gnu_patch(stage, read(root / PATCH, MAX_PATCH_BYTES))
+        for path, expected in after_sources.items():
+            if read(stage / path) != expected:
+                raise ValueError("GNU and exact semantic after-source bytes differ")
         # No write has been made to upstream: failures and success discard only this private copy.
     for path, original in originals.items():
         if original is not None and read(upstream / path) != original:

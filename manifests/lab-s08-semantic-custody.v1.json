@@ -6,7 +6,7 @@
   "prerequisite_manifest_sha256": "f204734ce6ec44ab97fd1a2bc71043bf31e90b4202a28b346d0c5027272ed74f",
   "patch": {
     "path": "manifests/servo-patches/s08-semantic-custody-v1/000.patch",
-    "sha256": "ee300dd108a07b0c6a059c9928c4bda3098000946fffc5dee5d61f226fffb65a",
+    "sha256": "0364fd60d7ae5c8600e4c84fb2abb8f676f144b2a7b0a9dad1104ea9e42457d4",
     "allowed_paths": [
       "Cargo.lock",
       "components/constellation/constellation.rs",
@@ -51,21 +51,21 @@
         "original_blob_sha1": "117b8d09e4460d271a10a48bc003ac3b6dcfb6ee",
         "original_sha256": "c806a58f04fcae6a9c9d073cc15bff2636b15e5509b9c0323890570399e00b04",
         "post_s07_sha256": "3a0aaa64471a646ed1e0b2fc2e9e3936c7debfcfb42f324954b23fd3bf85f717",
-        "semantic_sha256": "cff06c557453c6c0648346fd244adf69c7f9f2dbdd7d2123a654f0bd530367c0"
+        "semantic_sha256": "074c262998cf420f200980378001da9690cf89c59481d22346f8bd0cde9c9462"
       },
       {
         "path": "components/layout/layout_impl.rs",
         "original_blob_sha1": "fbca832253bc14a3f3f6d9328db0b04b556d7c76",
         "original_sha256": "e343177fde8545dbac61d32d4994012d8fea24ff8414b7ceceedc4090c2b0985",
         "post_s07_sha256": "9d4bbeba562d1f0b0828009d0565126c01fed38c5ce49ec44ab5a64b7ca94812",
-        "semantic_sha256": "adc5d4f2fe5a5c484ca2653998147e440a92556adbff558334ec8e2e199cd071"
+        "semantic_sha256": "181d8f0c36a902359b44c4e56f6eb215a07bf263acd4b40a5695d165c82b2f96"
       },
       {
         "path": "components/script/event_loop/script_thread.rs",
         "original_blob_sha1": "c7357b03cb7bfa8db5cfaef64233f67c11edd2d9",
         "original_sha256": "93412c42bdfa04d97087e48c8a599199b0c591a3783559e36f2d7d8282d12ffd",
         "post_s07_sha256": "3af54b8205427fcc9728b54bb1a84f875b4ccfbc1178459f89c1a08ccc7a0222",
-        "semantic_sha256": "b16cc81b154c1ef866392fda444021c4824918d75244d886732f0cd9336b625e"
+        "semantic_sha256": "93dc89768b5dc91087421a0069d79fc2f2761001b50d8b18c38ff9559a576784"
       },
       {
         "path": "components/script/messaging.rs",
@@ -121,7 +121,7 @@
         "original_blob_sha1": "95776711f86be301c7444c3cbdc217d88a9043bc",
         "original_sha256": "fde05de4eff977de550ed8fe7750ac29b0a0f0cfa66a152ea93ae75e51913191",
         "post_s07_sha256": "40154eac98a30e687110f6f9e6b96a4f599f4634f34f88076e75efcff0130bd6",
-        "semantic_sha256": "78abb23c9afafe0aad076db05af6e60fab4e47978660692ba32764882a493a72"
+        "semantic_sha256": "5f530b42f093112ace7f930e7b459b838895360f710776cd99eec9f59146e749"
       },
       {
         "path": "components/shared/script/lib.rs",
@@ -193,8 +193,16 @@
     "semantic_servo_owners": 1,
     "semantic_webviews": 7,
     "adapter_path": "experiments/servo-s08-runtime/accessibility_server.rs",
-    "adapter_sha256": "da0ba09d36b5b837a9da96b9a76b21831c1ebad63b15e59a887e002bb399b838",
+    "adapter_sha256": "14c24fbff90c819c1cb0e75dd9cad0e5c9d816ec7f928b63919d4b0ede3e7815",
     "workflow_path": ".github/workflows/s08-servo-vertical-slice.yml",
-    "workflow_sha256": "14839b21809a0171db4087989b9daceb4f6d7e62388c425c81e83749ba480160"
+    "workflow_sha256": "6d7c04bfb2b382dc0e5852efc2e52ebd7c4186b21796f46e27cbd5f4f49aa89f"
+  },
+  "final_semantic_refresh": {
+    "source": "current_dom_properties_during_checked_script_layout_reflow",
+    "ordinary_damage_is_final_authority": false,
+    "retained_tree_node_epoch_identity_preserved": true,
+    "snapshot_requires_completed_checked_reflow": true,
+    "stimulus_same_task_dom_boolean_required": true,
+    "unfiltered_upstream_layout_unit_tests_required": true
   }
 }

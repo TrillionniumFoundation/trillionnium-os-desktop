@@ -218,6 +218,8 @@ jobs:
           source_root="$GITHUB_WORKSPACE"
           (
             cd servo
+            # Compile and run the actual pinned layout cfg(test) owner paths without filtering.
+            cargo test --locked -p servo-layout --lib
             cargo test --locked -p servo --test accessibility -- --list \
               > "$retained/list.txt"
             # Require all six original test_retained_accessibility names in the actual list.
