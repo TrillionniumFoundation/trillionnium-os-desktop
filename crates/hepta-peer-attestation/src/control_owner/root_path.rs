@@ -1,6 +1,8 @@
 //! A same-descriptor bridge, not an approved policy loader or installed broker.
 //! No bare receive, replacement deadline, raw FD or static attestor is exposed.
 
+mod approved;
+
 use super::{
     AttestedHandoffReceiver, AttestedHandoffSender, AttestedPendingHandoff, ControlOwnerError,
     ControlOwnerPolicy, ControlPeerOwner, ControlRetainedAcceptedStream, creator, handoff,

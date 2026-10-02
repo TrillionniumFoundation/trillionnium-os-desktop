@@ -7,7 +7,16 @@
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
+#[cfg(target_os = "linux")]
+mod approved_policy;
 mod request_lease;
+#[cfg(target_os = "linux")]
+pub use approved_policy::{
+    ApprovedAgentReceivedStream, ApprovedAgentSelection, ApprovedControlSelection,
+    ApprovedPolicyDocument, ApprovedPolicyError, DEFAULT_APPROVED_POLICY_PATH,
+    MAX_APPROVED_POLICY_BYTES,
+};
+
 pub use request_lease::{PeerRequestCustody, PeerRequestVerifier};
 
 #[cfg(target_os = "linux")]

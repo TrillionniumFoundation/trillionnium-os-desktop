@@ -56,3 +56,9 @@ harness = false
 name = "product_root_path_kernel"
 path = "tests/product_root_path_kernel.rs"
 harness = false
+
+# Explicit prelaunch unit/ELF configuration, original kernel custody and journal.
+[[test]]
+name = "approved_policy_product_kernel"
+path = "tests/approved_policy_product_kernel.rs"
+harness = false

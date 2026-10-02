@@ -291,3 +291,8 @@ admission, installed service or Servo execution. `tests/test_dual_owner_custody.
 checks closed source correspondence. Cargo all-targets CI runs the real kernel
 target in both exact-head and prospective-merge lanes; source tests cannot stand
 in for those kernel runs or higher-tier qualification.
+
+
+## Approved configuration retained source connection
+
+`ApprovedRetainedProductConnection` and the coordinator's additive `from_approved_retained_connection`/`serve_approved_retained_connection` consume the same original Agent stream and rooted live Control custody admitted by the opaque approved configuration route. The Agent mechanism principal is private and compared against the configured entry before use; it is not a TaskFlow action grant or PageOwner mapping. The source file, Control peer, Agent peer, original deadlines and report-only scope remain checked through the existing coordinator. Main/default activation is unchanged. See [`APPROVED_MECHANISM_POLICY.md`](../../docs/architecture/APPROVED_MECHANISM_POLICY.md), [`approved-mechanism-policy.v1.json`](../../contracts/approved-mechanism-policy.v1.json) and the actual default-procfs/transient-systemd `tests/approved_policy_product_kernel.rs`; its native completion is a synthetic source callback, not Servo or installed product qualification.

@@ -17,6 +17,7 @@ struct ControlLeaseState {
     peer: AttestedPeer,
     revoked: AtomicBool,
     root_path: Option<Arc<super::root_path::RetainedRootPath>>,
+    approved: Vec<crate::approved_policy::ApprovedGuard>,
 }
 
 /// One non-cloneable request owner. Dropping it revokes all retained verifiers.
@@ -81,6 +82,7 @@ impl ControlRequestCustody {
                 peer: original,
                 revoked: AtomicBool::new(false),
                 root_path: None,
+                approved: Vec::new(),
             }),
         };
         custody.verifier()?.verify_current()?;
@@ -109,6 +111,39 @@ impl ControlRequestCustody {
         };
         verifier.ensure_alive()?;
         Ok(verifier)
+    }
+
+    pub(crate) fn retain_approved(
+        &mut self,
+        policy: &crate::approved_policy::ApprovedGuard,
+    ) -> Result<(), ControlOwnerError> {
+        creator(self.state.owner_pid)?;
+        policy.current()?;
+        let state = Arc::get_mut(&mut self.state).ok_or(ControlOwnerError::PeerRefused)?;
+        if state.approved.len() >= 2 || state.approved.iter().any(|old| old.same_role(policy)) {
+            return Err(ControlOwnerError::PeerRefused);
+        }
+        state.deadline = state.deadline.min(policy.deadline()?);
+        state.approved.push(policy.clone());
+        self.verifier()?.verify_current()?;
+        Ok(())
+    }
+
+    pub(crate) fn verify_approved_agent_source(
+        &self,
+        policy: &crate::approved_policy::ApprovedGuard,
+    ) -> Result<(), ControlOwnerError> {
+        creator(self.state.owner_pid)?;
+        policy.current()?;
+        if !self
+            .state
+            .approved
+            .iter()
+            .any(|control| policy.is_agent_for_control(control))
+        {
+            return Err(ControlOwnerError::PeerRefused);
+        }
+        self.verifier()?.verify_current()
     }
 
     pub fn revoke(&self) -> Result<(), ControlOwnerError> {
@@ -174,12 +209,18 @@ impl ControlRequestVerifier {
             if let Some(path) = &self.state.root_path {
                 path.current()?;
             }
+            for policy in &self.state.approved {
+                policy.current()?;
+            }
             self.state
                 .peer
                 .ensure_alive()
                 .map_err(|_| ControlOwnerError::PeerRefused)?;
             if let Some(path) = &self.state.root_path {
                 path.current()?;
+            }
+            for policy in &self.state.approved {
+                policy.current()?;
             }
             Ok(())
         });

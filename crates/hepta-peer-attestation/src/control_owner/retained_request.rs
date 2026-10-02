@@ -335,6 +335,9 @@ impl AttestedHandoffReceiver {
             let effective = owner.request_deadline(deadline)?;
             let mut custody = ControlRequestCustody::from_control_peer(&owner.attested, effective)?;
             custody.retain_root_path(owner.root_path.as_ref())?;
+            for policy in &owner.approved {
+                custody.retain_approved(policy)?;
+            }
             let action = custody.verifier()?;
             let mut retained = AttestedRetainedReceiver {
                 owner_pid: self.owner_pid,

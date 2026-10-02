@@ -124,6 +124,7 @@ struct ControlPeerOwner {
     attestor: ProcfsPeerAttestor,
     attested: AttestedPeer,
     root_path: Option<std::sync::Arc<root_path::RetainedRootPath>>,
+    approved: Vec<crate::approved_policy::ApprovedGuard>,
 }
 impl ControlPeerOwner {
     fn admit(
@@ -156,6 +157,7 @@ impl ControlPeerOwner {
             attestor,
             attested,
             root_path: None,
+            approved: Vec::new(),
         };
         owner.current()?;
         Ok((owner, OwnedFd::from(stream), PeerPolicy::exact(peer)))
@@ -165,11 +167,17 @@ impl ControlPeerOwner {
         if let Some(path) = &self.root_path {
             path.current()?;
         }
+        for policy in &self.approved {
+            policy.current()?;
+        }
         self.attested
             .refresh_snapshot(&self.attestor)
             .map_err(|_| ControlOwnerError::PeerRefused)?;
         if let Some(path) = &self.root_path {
             path.current()?;
+        }
+        for policy in &self.approved {
+            policy.current()?;
         }
         remaining(self.owner_pid, self.deadline)
     }
@@ -177,12 +185,26 @@ impl ControlPeerOwner {
         creator(self.owner_pid)?;
         // Legacy channels keep their accepted ceiling. A rooted channel also
         // retains its already captured, possibly earlier pathname ceiling.
-        Ok(if self.root_path.is_some() {
+        Ok(if self.root_path.is_some() || !self.approved.is_empty() {
             self.current()?;
             accepted.min(self.deadline)
         } else {
             accepted
         })
+    }
+    fn retain_approved(
+        &mut self,
+        policy: &crate::approved_policy::ApprovedGuard,
+    ) -> Result<(), ControlOwnerError> {
+        creator(self.owner_pid)?;
+        policy.current()?;
+        if self.approved.len() >= 2 || self.approved.iter().any(|old| old.same_role(policy)) {
+            return Err(ControlOwnerError::PeerRefused);
+        }
+        self.deadline = self.deadline.min(policy.deadline()?);
+        self.approved.push(policy.clone());
+        self.current()?;
+        Ok(())
     }
 }
 

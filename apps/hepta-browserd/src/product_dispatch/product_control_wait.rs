@@ -7,14 +7,14 @@ use hepta_agent_transport::{RemoteRetirementReport, RemoteTerminalState};
 use hepta_peer_attestation::{AttestedRetainedReceiver, ControlRetainedAcceptedStream};
 
 // Neither a public constructor nor a public sending interface is exposed.
-struct SealedTerminal {
+pub(super) struct SealedTerminal {
     owner_pid: u32,
     deadline: Instant,
     request: RequestIdentity,
     lifecycle: ReceiptLifecycleState,
     record_sha256: Digest,
 }
-enum MonitorMessage {
+pub(super) enum MonitorMessage {
     Terminal(SealedTerminal),
     NoTerminal,
 }
@@ -32,11 +32,11 @@ enum MonitorMessage {
 /// clone_required::<RetainedProductConnection>();
 /// ```
 pub struct RetainedProductConnection {
-    owner_pid: u32,
-    connection: Option<AcceptedProductConnection>,
-    terminal: Option<mpsc::SyncSender<MonitorMessage>>,
-    deadline: Instant,
-    report_deadline: Instant,
+    pub(super) owner_pid: u32,
+    pub(super) connection: Option<AcceptedProductConnection>,
+    pub(super) terminal: Option<mpsc::SyncSender<MonitorMessage>>,
+    pub(super) deadline: Instant,
+    pub(super) report_deadline: Instant,
 }
 impl RetainedProductConnection {
     pub fn from_control_retained_received(
@@ -134,12 +134,12 @@ pub enum ProductControlMonitorOutcome {
 /// Move to one same-process I/O worker and run while the actor worker serves
 /// the connection. No thread is started or unbounded join performed by Drop.
 pub struct ProductControlMonitor {
-    owner_pid: u32,
-    deadline: Instant,
-    retained: Option<AttestedRetainedReceiver>,
-    cancellation: ProductConnectionCancellation,
-    receiver: Option<mpsc::Receiver<MonitorMessage>>,
-    finished: bool,
+    pub(super) owner_pid: u32,
+    pub(super) deadline: Instant,
+    pub(super) retained: Option<AttestedRetainedReceiver>,
+    pub(super) cancellation: ProductConnectionCancellation,
+    pub(super) receiver: Option<mpsc::Receiver<MonitorMessage>>,
+    pub(super) finished: bool,
 }
 impl ProductControlMonitor {
     pub fn run(mut self) -> Result<ProductControlMonitorOutcome, ProductDispatchError> {

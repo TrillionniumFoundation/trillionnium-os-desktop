@@ -35,6 +35,10 @@ use hepta_session_core::{Digest, DurableReceiptFact, ReceiptJournal, ReceiptLife
 use crate::{RestartPolicy, RuntimeGeneration, RuntimeState};
 
 #[cfg(target_os = "linux")]
+mod product_approved_policy;
+#[cfg(target_os = "linux")]
+pub use product_approved_policy::ApprovedRetainedProductConnection;
+#[cfg(target_os = "linux")]
 mod product_control_wait;
 #[cfg(target_os = "linux")]
 pub use product_control_wait::{
