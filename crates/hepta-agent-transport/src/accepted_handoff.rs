@@ -23,6 +23,10 @@ const PACKET_BYTES: usize = 128;
 const CHALLENGE_BYTES: usize = 40;
 const MAGIC: &[u8; 8] = b"HPTAFD01";
 const CHALLENGE_MAGIC: &[u8; 8] = b"HPTAFDC1";
+// Linux socket cmsg ABI: include/linux/socket.h at v6.17 defines the
+// read-only pidfd(int) type as 0x04; libc 0.2.186 does not expose it.
+// https://github.com/torvalds/linux/blob/v6.17/include/linux/socket.h
+const SCM_PIDFD: libc::c_int = 0x04;
 // Enough aligned storage for 16 rights plus one kernel ucred. MSG_CTRUNC
 // is rejected, and Linux closes rights that did not fit the receive buffer.
 const CONTROL_WORDS: usize = 32;
@@ -887,6 +891,21 @@ fn receive_packet(fd: RawFd, data: &mut [u8]) -> Result<ReceivedPacket, HandoffE
                         drop(owned);
                     }
                     received.rights_count += 1;
+                }
+            } else if (*header).cmsg_level == libc::SOL_SOCKET && (*header).cmsg_type == SCM_PIDFD {
+                // SO_PASSPIDFD may already be enabled on an owned control.
+                // Refusal still owns every actual delivered pidfd. Never use
+                // it as authorization, and continue parsing remaining rights.
+                // Linux can report a negative errno instead of installing an
+                // fd (net/core/scm.c:scm_pidfd_recv); that is not an OwnedFd.
+                received.invalid = true;
+                for index in 0..payload_length / size_of::<RawFd>() {
+                    let raw = std::ptr::read_unaligned(
+                        libc::CMSG_DATA(header).cast::<RawFd>().add(index),
+                    );
+                    if raw >= 0 {
+                        drop(OwnedFd::from_raw_fd(raw));
+                    }
                 }
             } else if (*header).cmsg_level == libc::SOL_SOCKET
                 && (*header).cmsg_type == libc::SCM_CREDENTIALS
