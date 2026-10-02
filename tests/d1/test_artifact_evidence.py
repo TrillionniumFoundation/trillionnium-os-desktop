@@ -137,11 +137,12 @@ def d2i_fixture(root: Path) -> dict:
     runtime = {key: True for key in (
         "actual_content_process_crash_proven", "signal_sent", "content_process_termination_observed",
         "zero_content_processes_after_termination", "replacement_process_distinct",
-        "page_input_verified", "ime_path_exercised",
+        "page_input_verified", "ime_path_exercised", "trusted_chrome_survived_recovery",
     )}
     runtime.update({"status": "PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY",
                     "crash_callback_required": False, "external_network_used": False,
                     "content_surface_limit": 1, "content_generation": 2,
+                    "input_events_sent": 12, "input_events_handled": 3,
                     "popup_requests_denied": 1, "external_navigation_requests_denied": 1,
                     "content_process_pid": 10, "content_process_start_time_ticks": 100,
                     "replacement_content_process_pid": 11, "replacement_content_process_start_time_ticks": 200})
@@ -189,6 +190,15 @@ def d2i_fixture(root: Path) -> dict:
     receipt["d1_receipt_sha256"] = evidence.digest(root / "d1/evidence/d1-final-qualification.json")
     bind(root, receipt, d2i.RECEIPT, sized=True)
     return receipt
+
+
+def rebind_runtime_fixture(root: Path, receipt: dict, runtime: dict) -> None:
+    """Rewrite source-only fixture bytes and every affected complete-pack hash."""
+    runtime_path = write(root, "d2i/qemu/runtime-ready.json", runtime)
+    boot = evidence.load(root / "d2i/qemu/boot-result.json")
+    boot["runtime_ready_sha256"] = evidence.digest(runtime_path)
+    write(root, "d2i/qemu/boot-result.json", boot)
+    bind(root, receipt, d2i.RECEIPT, sized=True)
 
 
 class ArtifactEvidenceTests(unittest.TestCase):
@@ -313,6 +323,45 @@ class ArtifactEvidenceTests(unittest.TestCase):
             bind(root, receipt, d2i.RECEIPT, sized=True)
             with self.assertRaisesRegex(ValueError, "active_process_count"):
                 d2i.verify_artifact(root)
+
+    def test_d2i_refuses_unproven_chrome_survival_with_rebound_digests(self) -> None:
+        field = "trusted_chrome_survived_recovery"
+        for replacement in ({}, {field: False}, {field: 0}, {field: 1}, {field: "true"}, {field: None}):
+            with self.subTest(replacement=replacement), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                receipt = d2i_fixture(root)
+                runtime = evidence.load(root / "d2i/qemu/runtime-ready.json")
+                runtime.pop(field)
+                runtime.update(replacement)
+                rebind_runtime_fixture(root, receipt, runtime)
+                with self.assertRaisesRegex(ValueError, field):
+                    d2i.verify_artifact(root)
+
+    def test_d2i_refuses_wrong_sent_count_or_type_with_rebound_digests(self) -> None:
+        field = "input_events_sent"
+        for replacement in ({}, {field: 11}, {field: 13}, {field: True}, {field: 12.0}, {field: "12"}, {field: None}):
+            with self.subTest(replacement=replacement), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                receipt = d2i_fixture(root)
+                runtime = evidence.load(root / "d2i/qemu/runtime-ready.json")
+                runtime.pop(field)
+                runtime.update(replacement)
+                rebind_runtime_fixture(root, receipt, runtime)
+                with self.assertRaisesRegex(ValueError, field):
+                    d2i.verify_artifact(root)
+
+    def test_d2i_refuses_insufficient_handled_count_or_type_with_rebound_digests(self) -> None:
+        field = "input_events_handled"
+        for replacement in ({}, {field: 0}, {field: 2}, {field: True}, {field: 3.0}, {field: "3"}, {field: None}):
+            with self.subTest(replacement=replacement), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                receipt = d2i_fixture(root)
+                runtime = evidence.load(root / "d2i/qemu/runtime-ready.json")
+                runtime.pop(field)
+                runtime.update(replacement)
+                rebind_runtime_fixture(root, receipt, runtime)
+                with self.assertRaisesRegex(ValueError, field):
+                    d2i.verify_artifact(root)
 
     def test_source_archive_must_match_manifest_even_after_rebinding(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
