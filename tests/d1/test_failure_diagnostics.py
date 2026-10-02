@@ -60,6 +60,46 @@ class ImageFailureDiagnosticsTests(unittest.TestCase):
             self.assertEqual(acceptance["status"], "FAIL")
             self.assertEqual((Path(directory) / "agent-port-journal.txt").read_text(), "peer attestation refused\n")
 
+    def test_d2i_guest_failure_preserves_bounded_runtime_cause(self) -> None:
+        source = (ROOT / "packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-acceptance").read_text()
+        failure = source.split("fail() {", 1)[1].split("\n}\n\ntrap ", 1)[0]
+        with tempfile.TemporaryDirectory() as directory:
+            script = "set -euo pipefail\nout=$1\nresult=$out/guest-acceptance.json\n"
+            script += "journalctl() { printf '%070000d\\nruntime denied\\n' 0; }\n"
+            script += "poweroff_guest() { return 0; }\n"
+            script += "fail() {" + failure + "\n}\nfail missing_runtime-ready.json\n"
+            result = subprocess.run(["bash", "-c", script, "failure-test", directory], capture_output=True, text=True, timeout=5)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:missing_runtime-ready.json", result.stderr)
+            self.assertIn("runtime denied", result.stderr)
+            acceptance = json.loads((Path(directory) / "guest-acceptance.json").read_text())
+            self.assertEqual(acceptance["status"], "FAIL")
+            journal = (Path(directory) / "runtime-journal.txt").read_bytes()
+            self.assertEqual(len(journal), 65536)
+            self.assertTrue(journal.endswith(b"runtime denied\n"))
+
+    def test_d2i_host_extracts_guest_facts_before_pass_only_path(self) -> None:
+        source = (ROOT / "tests/qemu/run-d2i-boot-test.base.sh").read_text()
+        capture = source.split("capture_d2i_diagnostics() {", 1)[1].split("\n}\n", 1)[0]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "qemu"
+            output.mkdir()
+            (output / "guest.ext4").touch()
+            script = "set -euo pipefail\noutput_dir=$1/qemu\nshared_evidence=$1/evidence\n"
+            script += "run_image=$output_dir/guest.ext4\npreparation=$1/preparation.json\nselection=$1/selection.json\n"
+            script += 'debugfs() { printf \'{"status":"FAIL"}\\n\' > "${2##* }"; }\n'
+            script += "capture_d2i_diagnostics() {" + capture + "\n}\n"
+            script += "trap capture_d2i_diagnostics EXIT\nexit 3\n"
+            result = subprocess.run(["bash", "-c", script, "failure-test", directory], capture_output=True, text=True, timeout=5)
+            self.assertEqual(result.returncode, 3, result.stderr)
+            evidence = root / "evidence"
+            self.assertEqual(json.loads((evidence / "guest-acceptance.json").read_text())["status"], "FAIL")
+            self.assertTrue((evidence / "runtime-ready.json").is_file())
+            self.assertTrue((evidence / "runtime-journal.txt").is_file())
+            self.assertEqual((evidence / "script-exit-status.txt").read_text(), "script_exit_status=3\n")
+            self.assertFalse(any(evidence.glob("*.ext4")))
+
 
 if __name__ == "__main__":
     unittest.main()
