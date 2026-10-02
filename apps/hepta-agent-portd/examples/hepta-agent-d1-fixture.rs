@@ -37,15 +37,15 @@ fn main() {
     match run() {
         Ok(result) => {
             if let Some(path) = result.output
-                && let Err(error) = write_result(&path, &result.json)
+                && write_result(&path, &result.json).is_err()
             {
-                eprintln!("hepta-agent-d1-fixture: failed to write result: {error}");
+                eprintln!("hepta-agent-d1-fixture: result_write_failed");
                 std::process::exit(1);
             }
             println!("{}", result.json);
         }
         Err(error) => {
-            eprintln!("hepta-agent-d1-fixture: {error}");
+            let _ = write_failure(io::stderr().lock(), &error);
             std::process::exit(1);
         }
     }
@@ -353,6 +353,30 @@ enum FixtureError {
     Usage(&'static str),
 }
 
+impl FixtureError {
+    // Journald is an operational log, separate from the explicit qualification
+    // evidence. Never forward peer IDs, process paths, digests, or I/O messages
+    // from an underlying error into this sink.
+    fn public_code(&self) -> &'static str {
+        match self {
+            Self::Io(_) => "io_failed",
+            Self::Transport(_) => "transport_refused",
+            Self::Codec(_) => "codec_refused",
+            Self::AgentPort(_) => "agent_port_refused",
+            Self::Attestation(_) => "peer_attestation_refused",
+            Self::WrongInheritedDescriptor => "inherited_descriptor_refused",
+            Self::UnnamedInheritedSocket => "unnamed_inherited_socket_refused",
+            Self::SocketPathMismatch { .. } => "inherited_socket_path_refused",
+            Self::Invariant(_) => "invariant_failed",
+            Self::Usage(_) => "invalid_usage",
+        }
+    }
+}
+
+fn write_failure(mut writer: impl io::Write, error: &FixtureError) -> io::Result<()> {
+    writeln!(writer, "hepta-agent-d1-fixture: {}", error.public_code())
+}
+
 impl fmt::Display for FixtureError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -425,6 +449,45 @@ impl From<AttestationError> for FixtureError {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn operational_error_sink_redacts_identity_and_untrusted_details() {
+        let errors = [
+            FixtureError::Attestation(AttestationError::UidMismatch {
+                expected: 123456789,
+                actual: 987654321,
+            }),
+            FixtureError::Attestation(AttestationError::GidMismatch {
+                expected: 123456789,
+                actual: 987654321,
+            }),
+            FixtureError::Attestation(AttestationError::ReadProc {
+                path: PathBuf::from("/proc/123456789/private-process-path"),
+                source: io::Error::other("private-io-detail"),
+            }),
+            FixtureError::Transport(hepta_agent_transport::TransportError::Io(io::Error::other(
+                "private-transport-detail",
+            ))),
+            FixtureError::SocketPathMismatch {
+                expected: PathBuf::from("/private-expected-socket"),
+                actual: PathBuf::from("/private-actual-socket"),
+            },
+        ];
+        let mut captured = Vec::new();
+        for error in errors {
+            write_failure(&mut captured, &error).expect("write operational diagnostic");
+        }
+        assert_eq!(
+            String::from_utf8(captured).expect("UTF-8 diagnostics"),
+            concat!(
+                "hepta-agent-d1-fixture: peer_attestation_refused\n",
+                "hepta-agent-d1-fixture: peer_attestation_refused\n",
+                "hepta-agent-d1-fixture: peer_attestation_refused\n",
+                "hepta-agent-d1-fixture: transport_refused\n",
+                "hepta-agent-d1-fixture: inherited_socket_path_refused\n",
+            )
+        );
+    }
 
     #[test]
     fn socketpair_is_a_stream_but_not_a_product_path() {

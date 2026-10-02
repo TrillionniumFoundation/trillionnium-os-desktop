@@ -52,6 +52,13 @@ initial/unpainted recovery facts, plus deterministic transformation and source
 drift refusal. These are source/process tests; only a fresh integrated QEMU
 image run can establish the Wayland/Servo runtime result.
 
+The inherited D1 qualification binary writes only fixed error category codes to
+its operational stderr/journald sink. Underlying attestation identities, procfs
+paths, socket paths, digests and I/O details are not forwarded into that sink.
+The explicit qualification JSON retains the process identity facts needed for
+isolation verification. A real Rust output-sink regression exercises sensitive
+UID/GID mismatches, procfs errors, transport errors and socket-path mismatches.
+
 A passing pull-request run is only a candidate. Promotion additionally requires
 independent security review, protected `main`, reviewed merge, and a fresh
 exact `refs/heads/main` run. D2I proves no BrowserActor, production AgentPort,
