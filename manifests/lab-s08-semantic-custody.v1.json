@@ -1,0 +1,225 @@
+{
+  "schema": "trillionnium.lab.s08-semantic-custody.v1",
+  "status": "SOURCE_CANDIDATE_EXACT_PIN_RUNTIME_REQUIRED",
+  "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+  "prerequisite_manifest": "manifests/lab-d3-servo-retained-node-action.v1.json",
+  "prerequisite_manifest_sha256": "f204734ce6ec44ab97fd1a2bc71043bf31e90b4202a28b346d0c5027272ed74f",
+  "patch": {
+    "path": "manifests/servo-patches/s08-semantic-custody-v1/000.patch",
+    "sha256": "6cffdef0d9469dfe97269db6bbdf619d06434943ecd1ca85466f5c908d4cd39b",
+    "allowed_paths": [
+      "Cargo.lock",
+      "components/constellation/constellation.rs",
+      "components/constellation/tracing.rs",
+      "components/layout/accessibility_tree.rs",
+      "components/layout/layout_impl.rs",
+      "components/script/event_loop/script_thread.rs",
+      "components/script/messaging.rs",
+      "components/servo/lib.rs",
+      "components/servo/webview.rs",
+      "components/shared/base/Cargo.toml",
+      "components/shared/base/accessibility_semantics.rs",
+      "components/shared/base/lib.rs",
+      "components/shared/constellation/lib.rs",
+      "components/shared/layout/lib.rs",
+      "components/shared/script/lib.rs"
+    ],
+    "source_pins": [
+      {
+        "path": "Cargo.lock",
+        "original_blob_sha1": "98153f983ae56812b71fb5a183940e6f8da0ca6f",
+        "original_sha256": "656009c8ff251607e66541c8ae1c36d3d5ac5ed8662b2c67d01bca544c4f035a",
+        "post_s07_sha256": "56222517e4acef0b7f983cd94884e1a9d8d1571e5cb5d64c6c7f5c09e5c1ec31",
+        "semantic_sha256": "c88744d677703aea10cc2e2f3a18a3afc838a6bb153fafa44a24bb87415b49b4"
+      },
+      {
+        "path": "components/constellation/constellation.rs",
+        "original_blob_sha1": "a56d0caa7efcc1f778e1c6518676f4885b8297f6",
+        "original_sha256": "e6df553dd518d53ee5321b9a7d921853517aeaa442c9f2d80cedc3cb4e7a5c1f",
+        "post_s07_sha256": "7b410821a1b01bb0784ba4d9b1579db10d3ed344ae9a7e802742c6c953426850",
+        "semantic_sha256": "e87211dd7f586abfb895f3f9263984ff477ecbbd3d9928eadae4077ac49a2289"
+      },
+      {
+        "path": "components/constellation/tracing.rs",
+        "original_blob_sha1": "bf944e55973dd2d05a8a885a9f622b98e175a2ca",
+        "original_sha256": "3d49eaf6e295215c7821ab99d2ebb9cb08c46b2d3ac043dea952f5d1f3c2afd5",
+        "post_s07_sha256": "3c1dc025736cdfb5e79df3910736c2672b78226fa95e56ae6daee83ca707ae8e",
+        "semantic_sha256": "08677ba59d7cae8e9b8d439c24b77a7796a8b6efbd6113131b6a738321437e1c"
+      },
+      {
+        "path": "components/layout/accessibility_tree.rs",
+        "original_blob_sha1": "117b8d09e4460d271a10a48bc003ac3b6dcfb6ee",
+        "original_sha256": "c806a58f04fcae6a9c9d073cc15bff2636b15e5509b9c0323890570399e00b04",
+        "post_s07_sha256": "3a0aaa64471a646ed1e0b2fc2e9e3936c7debfcfb42f324954b23fd3bf85f717",
+        "semantic_sha256": "07e5b09007a4b766232221768c19ce24ffa1fcbffbc6a9394621aa19278396e2"
+      },
+      {
+        "path": "components/layout/layout_impl.rs",
+        "original_blob_sha1": "fbca832253bc14a3f3f6d9328db0b04b556d7c76",
+        "original_sha256": "e343177fde8545dbac61d32d4994012d8fea24ff8414b7ceceedc4090c2b0985",
+        "post_s07_sha256": "9d4bbeba562d1f0b0828009d0565126c01fed38c5ce49ec44ab5a64b7ca94812",
+        "semantic_sha256": "181d8f0c36a902359b44c4e56f6eb215a07bf263acd4b40a5695d165c82b2f96"
+      },
+      {
+        "path": "components/script/event_loop/script_thread.rs",
+        "original_blob_sha1": "c7357b03cb7bfa8db5cfaef64233f67c11edd2d9",
+        "original_sha256": "93412c42bdfa04d97087e48c8a599199b0c591a3783559e36f2d7d8282d12ffd",
+        "post_s07_sha256": "3af54b8205427fcc9728b54bb1a84f875b4ccfbc1178459f89c1a08ccc7a0222",
+        "semantic_sha256": "93dc89768b5dc91087421a0069d79fc2f2761001b50d8b18c38ff9559a576784"
+      },
+      {
+        "path": "components/script/messaging.rs",
+        "original_blob_sha1": "e6fd889e7893c6fc42fb610ef14232013b320fcf",
+        "original_sha256": "061b3edd9e2249c46850102da796e0a08bef307dfa3188042330059cfa0b7e79",
+        "post_s07_sha256": "fe0f0256c67803cc110d423f96c3eeff1b82a2a718474c55a5f6d63c31b0141b",
+        "semantic_sha256": "2dca6c5fbb386eb4772580b4439f87487c78d81ba0993c8e9ee6ab88e7e67bb9"
+      },
+      {
+        "path": "components/servo/lib.rs",
+        "original_blob_sha1": "f7a33d88ca3fdb68e0984cff95101c4df98df1da",
+        "original_sha256": "c9a0bed120f75132b8b9d9ef026f46e67e64951bc869ed2a3c7dccb052810318",
+        "post_s07_sha256": "c17f89a717aaf5655e24578db4fc8cecb911398e7f9938155129c20554686aca",
+        "semantic_sha256": "27f164d9213ad16b06bf7b29518a704162a18288ede13f2ac0d4eb71a50b49ed"
+      },
+      {
+        "path": "components/servo/webview.rs",
+        "original_blob_sha1": "3778a43c365fd0d770e72565eb1153c3ef1603c6",
+        "original_sha256": "fd77a8fdaece0bc3495f51ccae09825c77e9e83ffac0e4cdaddaf9d89132c4bf",
+        "post_s07_sha256": "da6bf07d49b6218c3296733c2ffdc90edd9210c43255aa03b49e5dc116357ef8",
+        "semantic_sha256": "03ebe2f4608b230e997ad191551d6f9298e54ed4e7cd5b682fcd832ae2b24860"
+      },
+      {
+        "path": "components/shared/base/Cargo.toml",
+        "original_blob_sha1": "cc136a26b4449238437501e36eb4fa83eb78fcb1",
+        "original_sha256": "7762ebf368b30a93286460ce7c078f0441079be4e340005ed4823d688cff71fb",
+        "post_s07_sha256": "7762ebf368b30a93286460ce7c078f0441079be4e340005ed4823d688cff71fb",
+        "semantic_sha256": "9ab586aab05d57b3c80cc1749901ff8297575babcd86b27b63063f58cde751a3"
+      },
+      {
+        "path": "components/shared/base/accessibility_semantics.rs",
+        "original_blob_sha1": null,
+        "original_sha256": null,
+        "post_s07_sha256": null,
+        "semantic_sha256": "05be6a5890df3e38db396f341a42077688580d5fe1ed849bf09bf974b94e2dc8"
+      },
+      {
+        "path": "components/shared/base/lib.rs",
+        "original_blob_sha1": "925771de23f8a1bed75d4b2970f0b1361e4a8eed",
+        "original_sha256": "4c7e4a969a6dc3399049ed2bf01256e2aa01c8283ee5e3b0c274d2d13d2e18c8",
+        "post_s07_sha256": "4c7e4a969a6dc3399049ed2bf01256e2aa01c8283ee5e3b0c274d2d13d2e18c8",
+        "semantic_sha256": "7b6a05a0c4762d038d0a952f1aff5ede54ac711768cc4b71da1fd954d9fccd72"
+      },
+      {
+        "path": "components/shared/constellation/lib.rs",
+        "original_blob_sha1": "2dcb20e73777a70a0c6e6d87ba8321c6de6172b4",
+        "original_sha256": "d1f2e0fb1b90ca050eca12b7a83d7f9c2e870f3e5ca1f8bebef23645af6e7c20",
+        "post_s07_sha256": "cd4b1c4d70e9b0cd1ca4342921678b2235eb725299692d401d229fc33fc07ca9",
+        "semantic_sha256": "64b5b606b9f47c8b0c66c67ff3bc164c508b902ef6364d60d8dc105000db52ff"
+      },
+      {
+        "path": "components/shared/layout/lib.rs",
+        "original_blob_sha1": "95776711f86be301c7444c3cbdc217d88a9043bc",
+        "original_sha256": "fde05de4eff977de550ed8fe7750ac29b0a0f0cfa66a152ea93ae75e51913191",
+        "post_s07_sha256": "40154eac98a30e687110f6f9e6b96a4f599f4634f34f88076e75efcff0130bd6",
+        "semantic_sha256": "5f530b42f093112ace7f930e7b459b838895360f710776cd99eec9f59146e749"
+      },
+      {
+        "path": "components/shared/script/lib.rs",
+        "original_blob_sha1": "0a53e57fc1dfb7e01c7160397b5db074153f0445",
+        "original_sha256": "5f06fd8419b150ad0ceda4cdcc98bfa3d82b654a69ef0987964a65ccb88293c1",
+        "post_s07_sha256": "cbca34eafc1deb6c16a15a081297a7393b2ad1609656a91c867d30d2b776d9ae",
+        "semantic_sha256": "4b1fbcfc78c28f937228985cfc182f934aab2004cb2ccb2bc9e73de6826caefd"
+      }
+    ]
+  },
+  "semantic_schema": {
+    "version": 1,
+    "name_encoding": "raw_utf8_without_normalization",
+    "maximum_name_bytes": 1024,
+    "maximum_ancestry_nodes": 16,
+    "maximum_name_preimage_bytes": 1057,
+    "maximum_structural_preimage_bytes": 18007,
+    "maximum_result_bytes": 4096,
+    "ancestry_order": "retained_leaf_to_document_root_no_graft",
+    "hash": "sha2_0.11.0_sha256",
+    "name_domain": "trillionnium.accesskit.name\\0",
+    "structural_domain": "trillionnium.accesskit.semantic\\0",
+    "ipc_shape": "fixed_size_serde_closed_fields",
+    "declared_role": {
+      "profile": "current_dom_declared_role_v1",
+      "version": 1,
+      "encoding": "borrowed_exact_utf8_without_normalization",
+      "maximum_attribute_bytes": 128,
+      "maximum_attribute_preimage_bytes": 170,
+      "attribute_domain": "trillionnium.accesskit.declared-role\\0",
+      "structural_component_domain": "trillionnium.accesskit.structural-declared-role\\0",
+      "chain": "target_and_every_retained_ancestor",
+      "absent_and_empty_are_distinct": true,
+      "unavailable_or_overflow_poison_snapshot": true,
+      "borrow_source": {
+        "path": "components/script/layout_dom/servo_layout_element.rs",
+        "blob_sha1": "1f91e255c6401511d9d82e22806de947de96049d",
+        "sha256": "9e16539e6f5eebcb606a882d6206944d57cee4720d5d6739906558f65a23a562"
+      }
+    }
+  },
+  "original_stimulus": {
+    "agentport_requests": 10,
+    "servo_commands": 9,
+    "durable_receipt_facts": 30,
+    "positive_dom_clicks": 1,
+    "s07_patch_and_test_bodies_unchanged": true
+  },
+  "required_negative_cases": [
+    "same_node_label",
+    "same_node_role",
+    "same_node_ancestry",
+    "replacement",
+    "disabled",
+    "hidden",
+    "stale_epoch_expectation"
+  ],
+  "claim_ceiling": {
+    "actual_servo_execution_requires_exact_pin_ci": true,
+    "source_fixtures_are_servo_proof": false,
+    "installed_product_activation": false,
+    "final_script_peer_control_custody": false,
+    "external_effect_authority": false,
+    "release": false
+  },
+  "standalone_source_check": {
+    "fixture_only": true,
+    "expected_tests": 11,
+    "manifest_path": "experiments/servo-s08-runtime/semantic-source-check/Cargo.toml",
+    "manifest_sha256": "7309bded10ae3cc69edfee2d42b6dbfddcac2abf3f8284e705693f11178e7f7a",
+    "lock_path": "experiments/servo-s08-runtime/semantic-source-check/Cargo.lock",
+    "lock_sha256": "71e6d19e57fcbefba4a3f5995b06231ce3fbb989ff8381d460521862c004f9cd"
+  },
+  "runtime_corpus": {
+    "retained_test_names": [
+      "test_retained_accessibility_click_dispatches_exactly_once",
+      "test_retained_accessibility_rejects_unadvertised_and_unsupported_requests",
+      "test_retained_accessibility_rejects_replaced_node_identity",
+      "test_retained_accessibility_rejects_inactive_and_stale_tree",
+      "test_retained_accessibility_rejects_disabled_hidden_and_non_element_targets",
+      "test_retained_accessibility_dropped_callback_does_not_duplicate_dispatch"
+    ],
+    "fresh_process_per_retained_test": true,
+    "exact_filter_from_actual_list": true,
+    "expected_tests_per_retained_process": 1,
+    "semantic_servo_owners": 1,
+    "semantic_webviews": 7,
+    "adapter_path": "experiments/servo-s08-runtime/accessibility_server.rs",
+    "adapter_sha256": "14c24fbff90c819c1cb0e75dd9cad0e5c9d816ec7f928b63919d4b0ede3e7815",
+    "workflow_path": ".github/workflows/s08-servo-vertical-slice.yml",
+    "workflow_sha256": "6d7c04bfb2b382dc0e5852efc2e52ebd7c4186b21796f46e27cbd5f4f49aa89f"
+  },
+  "final_semantic_refresh": {
+    "source": "current_dom_properties_during_checked_script_layout_reflow",
+    "ordinary_damage_is_final_authority": false,
+    "retained_tree_node_epoch_identity_preserved": true,
+    "snapshot_requires_completed_checked_reflow": true,
+    "stimulus_same_task_dom_boolean_required": true,
+    "unfiltered_upstream_layout_unit_tests_required": true
+  }
+}

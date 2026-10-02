@@ -81,6 +81,7 @@ Failures must preserve the last truthful state. A timeout, crash, peer loss, sto
 - Cancellation/deadline/peer revocation are checked at engine/effect boundaries.
 - Product-facing error text must be redacted while typed internal classification remains available.
 - Real semantic clicks are executed only from a retained, current Servo accessibility node after a final custody check.
+- The S08 semantic candidate derives the Actor target identity/name/structure from the current Servo script/layout observation and requires the same bounded typed tuple after final reflow before click. Its final script check covers metadata; Agent/control pidfd custody still stops at the existing bridge/test-mailbox boundary and completion, and installed native ownership remains open.
 - A navigation advances document identity so a pre-navigation element reference is refused before another Servo action command.
 - The test mailbox and synthetic procfs fixture never enter product binaries or Debian install maps.
 
@@ -115,6 +116,7 @@ A passing unit or hosted-CI test proves only the evidence tier named by its gate
 
 - Run compile-fail doctests, S06 hostile tests, S08 source validation, all-feature checks and receipt tests after API changes.
 - The exact-pin S08 workflow must run both the real Servo test process and the product integration test against one private mailbox; a skipped environment-gated test is not evidence.
+- The separate `manifests/lab-s08-semantic-custody.v1.json` source package must preserve S07 parts and S08 10/9/30/1 gates, verify original/post-S07/after-source hashes, and run seven actual semantic refusal cases. `tools/verify_s08_semantic_custody.py --source-check` is a six-test encoder check, not Servo qualification.
 - A peer refresh/binding failure is a request refusal; do not fall back to an unattested handler.
 - The deterministic runtime is a development mechanism and cannot be deployed as the real browser.
 - No installed service or data migration is owned here.
