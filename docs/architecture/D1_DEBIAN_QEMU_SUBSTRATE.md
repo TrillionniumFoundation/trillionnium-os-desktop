@@ -99,6 +99,75 @@ Failed acceptance preserves bounded service journal and acceptance records
 before guest poweroff. Failure uploads contain evidence and capped log tails;
 they exclude the multi-gigabyte guest disks and cannot promote a failed run.
 
+## Portable reader semantics
+
+The source reader uses the closed
+[`d1-portable-evidence.v1.json`](../../contracts/d1-portable-evidence.v1.json)
+profile and
+[`d1_evidence_semantics.py`](../../tools/d1_evidence_semantics.py).
+It performs these checks after verifying the complete output digest inventory:
+
+- Fixture separation stays exact: the default product graph is fixture-free,
+  the qualification example uses `fixture`, the fixed test server command is
+  preserved, and no connected product handler or production install-map claim
+  is admitted. The reproducibility scope permits only the same-run two builds;
+  cross-run and hermetic-host qualifications remain false.
+  The carried product/qualification Cargo-tree exports and binary-string exports
+  must also satisfy the producer's existing separation checks. These are
+  exported records, not a fresh binary disassembly or a new Cargo build.
+- Every required pipeline stage, including the overall stage, has an exact
+  integer zero exit status and `PASS`; failed stage is null, finish follows
+  start, and the pipeline's release/network/Secure Boot/Servo ceilings stay
+  false. A summary status cannot hide a failed subordinate stage.
+- Both carried rootfs manifests are parsed and their canonical entries digest,
+  exact count, unique canonical paths and object metadata are checked. The
+  `.` entry must be an explicit directory, and every nonroot entry has an
+  explicit directory parent; file or symlink parents and missing ancestors
+  are inconsistent records. Each declared hardlink group has one self-naming
+  head at the byte-lexicographic minimum carried member, matching metadata and
+  no more carried members than its declared `nlink`. The producer may observe
+  additional links outside the root, so equality with `nlink` is not required.
+  A symlink's nonempty target encodes as Linux UTF-8/surrogateescape bytes,
+  and its recorded size must equal that byte length, rather than a Unicode
+  character count. Real producer tests include Unicode and non-UTF-8 target
+  bytes; complete rehashed packets with contradictory lengths are refused.
+  This checks carried-manifest consistency, without claiming a complete inode
+  inventory or inspection of the omitted filesystem payload. The
+  product and qualification binary records bind the corresponding rootfs SHA,
+  size, root ownership, ordinary executable mode and single-link entries in
+  both builds. This links the recorded binaries to the recorded image contents;
+  the reader does not execute a binary or independently inspect an omitted
+  filesystem image.
+- Both actual carried package-lock byte streams match the prepared expected
+  lock, count and digest. Build/prepared/reproducibility records bind the same
+  prepared-input bytes, selected package set and fixed build invariants. The
+  reproducibility comparison table binds each build's artifact digest and
+  length, requires equality and an empty semantic rootfs diff, and recomputes
+  the carried manifest/package digests and lengths from their original bytes.
+- The boot record binds the declared tested image digest and package lock,
+  exact zero QEMU exit and disabled network, plus the SHA of the actual carried
+  acceptance bytes. Acceptance binds the same image identity and package set.
+  Its actual PID 1, active services and AgentPort default/denial/request/recovery
+  facts must agree with the boot claims, and its product self-check digest binds
+  the actual carried self-check bytes.
+
+Parsing and hashing use the same bounded, retained regular-file descriptor.
+The reader rejects symlinks and hard links, verifies named identity and caches
+the inspected bytes. Its final readback retains all inspected descriptors
+through a final identity check, so a predecessor changed during a later read
+cannot yield a stale successful result. The finalizer invokes this same reader
+before leaving a success receipt. This source check supplies no activation or
+external authority from caller-provided JSON.
+
+The portable packet contains the rootfs **manifest**, not the multi-gigabyte
+ext4 disk, rootfs tar, kernel or initrd payloads. For those omitted payloads the
+reader checks the build/comparison/boot record relationships; it cannot claim
+to have rehashed their complete bytes. Actual creation and same-run comparison
+remain responsibilities of the recorded build/QEMU producer. Ordinary decoder
+fixtures and rewritten negative packets exercise the source reader; they are
+not new guest executions, signing approvals, installed qualification or release
+authorization.
+
 ## Deliberate non-claims
 
 D1 does not prove a Servo frame, BrowserActor dispatch, product AgentPort
