@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import fields, replace
 import gc
+import errno
 import hashlib
 import importlib.util
 import inspect
@@ -75,6 +76,16 @@ def private_file(path, data):
     path.chmod(0o600)
 
 
+def fd_inventory():
+    result = {}
+    for name in os.listdir("/proc/self/fd"):
+        try:
+            result[int(name)] = os.readlink(f"/proc/self/fd/{name}")
+        except FileNotFoundError:
+            pass  # The inventory directory's own descriptor already closed.
+    return result
+
+
 class DurableUpdateOwnerTests(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory(prefix="durable-update-state-")
@@ -109,6 +120,154 @@ class DurableUpdateOwnerTests(unittest.TestCase):
 
     def events(self):
         return [json.loads(path.read_bytes()) for path in sorted(self.state.glob("update-event-*.json"))]
+
+    def _assert_private_image_consumer_detaches(self, item, invoke, *, source=False, slot="slot-A.img"):
+        target = s11 if source else item._slots
+        method = "_open_image" if source else "_open_slot"
+        actual_open = getattr(target, method)
+        actual_close, raw_open = os.close, os.open
+        captured, foreign, closed = [], [], []
+        def opened(*args, **kwargs):
+            descriptor = actual_open(*args, **kwargs)
+            if not captured and (source or args[1] == slot):
+                captured.append(descriptor.fileno())
+            return descriptor
+        def close_reuse(number):
+            number = int(number)
+            name = os.readlink(f"/proc/self/fd/{number}")
+            closed.append(name)
+            actual_close(number)
+            if captured and number == captured[0] and not foreign:
+                replacement = raw_open("/dev/null", os.O_RDONLY | os.O_CLOEXEC)
+                if replacement != number:
+                    os.dup2(replacement, number, inheritable=False)
+                    actual_close(replacement)
+                foreign.append(number)
+        try:
+            with patch.object(target, method, side_effect=opened), patch.object(os, "close", side_effect=close_reuse):
+                result = invoke()
+                gc.collect()
+            # The old os.close(owner) call is also retained in a spy's argument
+            # history; collect after removing that spy to expose its pending GC.
+            gc.collect()
+            self.assertEqual(len(captured), 1)
+            self.assertEqual(foreign, captured)
+            self.assertTrue(stat.S_ISCHR(os.fstat(foreign[0]).st_mode))
+            self.assertNotIn("/dev/null", closed, "consumer left an owner armed after closing its number")
+            return result
+        finally:
+            for number in foreign:
+                try:
+                    if stat.S_ISCHR(os.fstat(number).st_mode):
+                        actual_close(number)
+                except OSError:
+                    pass
+
+    def test_active_private_image_consumer_detaches_before_reuse_and_gc(self):
+        item = self.create()
+        self._assert_private_image_consumer_detaches(item, item._verify_active)
+        self.assertEqual(item.phase, "idle")
+        self.assertEqual((self.slots / "slot-A.img").read_bytes(), SOURCE)
+
+    def test_staged_private_image_consumer_detaches_before_reuse_and_gc(self):
+        item = self.create()
+        operation = self.admitted(item)
+        result = item.stage_image_file(operation, self.candidate, now_unix=NOW)
+        self._assert_private_image_consumer_detaches(item, item._verify_staged, slot="slot-B.img")
+        self.assertIs(item.confirm_result(result), result)
+        self.assertEqual(item.phase, "staged")
+
+    def test_prehash_private_image_consumer_detaches_before_reuse_and_gc(self):
+        item = self.create()
+        operation = self.admitted(item)
+        result = self._assert_private_image_consumer_detaches(item,
+            lambda: item.stage_image_file(operation, self.candidate, now_unix=NOW), source=True)
+        self.assertIs(item.confirm_result(result), result)
+        self.assertEqual(item.phase, "staged")
+        self.assertEqual((self.slots / "slot-B.img").read_bytes(), TARGET)
+
+    def test_scan_owner_constructor_call_first_line_and_return_interruptions_do_not_leak(self):
+        item = self.create()
+        before_events = self.events()
+        for event_kind in ("call", "line", "return"):
+            with self.subTest(event=event_kind):
+                before = fd_inventory()
+                triggered = []
+                prior = sys.gettrace()
+                def interrupt_constructor(frame, event, _argument):
+                    if frame.f_code is owner._ScanRecord.__init__.__code__ and event == event_kind:
+                        triggered.append(True)
+                        raise KeyboardInterrupt("actual scan constructor before caller record adoption")
+                    return interrupt_constructor
+                try:
+                    sys.settrace(interrupt_constructor)
+                    with self.assertRaises(KeyboardInterrupt):
+                        item._load_history()
+                finally:
+                    sys.settrace(prior)
+                gc.collect()
+                self.assertEqual(triggered, [True])
+                self.assertEqual(fd_inventory(), before)
+                self.assertEqual(self.events(), before_events)
+        self.assertEqual(item.inspect()["phase"], "idle")
+        self.assertEqual((self.slots / "slot-B.img").read_bytes(), b"previous-inactive-image")
+
+    def test_discarded_scan_owner_gc_closes_only_its_owned_descriptor(self):
+        item = self.create()
+        before = fd_inventory()
+        record = owner._ScanRecord("update-event-000001.json")
+        record._descriptors = [os.open(self.state / record.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)]
+        descriptor = record.descriptor
+        self.assertEqual(os.pread(descriptor, 1, 0), b"{")
+        del record
+        gc.collect()
+        with self.assertRaises(OSError) as closed:
+            os.fstat(descriptor)
+        self.assertEqual(closed.exception.errno, errno.EBADF)
+        self.assertEqual(fd_inventory(), before)
+        self.assertEqual(item.phase, "idle")
+
+    def test_scan_owner_close_detaches_before_actual_reuse_interruption_and_gc(self):
+        item = self.create()
+        actual_close, actual_open = os.close, os.open
+        event_file = self.state / "update-event-000001.json"
+        for replacement in (Path("/dev/null"), event_file):
+            for interrupted in (False, True):
+                with self.subTest(replacement=replacement, interrupted=interrupted):
+                    before = fd_inventory()
+                    record = owner._ScanRecord(event_file.name)
+                    record._descriptors = [actual_open(event_file, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)]
+                    descriptor = record.descriptor
+                    closed = []
+                    def close_reuse(number):
+                        closed.append(number)
+                        actual_close(number)
+                        donor = actual_open(replacement, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+                        if donor != number:
+                            os.dup2(donor, number, inheritable=False)
+                            actual_close(donor)
+                        if interrupted:
+                            raise KeyboardInterrupt("actual scan close released number before interruption")
+                    try:
+                        with patch.object(os, "close", side_effect=close_reuse):
+                            if interrupted:
+                                with self.assertRaises(KeyboardInterrupt):
+                                    record.close()
+                            else:
+                                record.close()
+                            self.assertEqual(record._descriptors, [])
+                            del record
+                            gc.collect()
+                            self.assertEqual(closed, [descriptor])
+                            metadata = os.fstat(descriptor)
+                            if replacement == event_file:
+                                self.assertEqual(metadata.st_ino, event_file.stat().st_ino)
+                                self.assertEqual(os.pread(descriptor, 1, 0), b"{")
+                            else:
+                                self.assertTrue(stat.S_ISCHR(metadata.st_mode))
+                    finally:
+                        actual_close(descriptor)
+                    self.assertEqual(fd_inventory(), before)
 
     def test_real_signature_full_image_and_source_boot_policy_are_durable(self):
         item = self.create()
@@ -364,6 +523,7 @@ class DurableUpdateOwnerTests(unittest.TestCase):
         real_fsync = os.fsync
         altered = []
         def mutate_predecessor(descriptor):
+            descriptor = int(descriptor)
             real_fsync(descriptor)
             name = os.readlink(f"/proc/self/fd/{descriptor}")
             if not altered and len(item._history) == 3 and name.endswith("update-event-000003.json"):
@@ -384,6 +544,7 @@ class DurableUpdateOwnerTests(unittest.TestCase):
         real_fsync = os.fsync
         altered = []
         def mutate_history(descriptor):
+            descriptor = int(descriptor)
             real_fsync(descriptor)
             if not altered and len(item._history) == 4 and os.readlink(f"/proc/self/fd/{descriptor}").endswith("slot-B.img"):
                 with (self.state / "update-event-000001.json").open("ab") as stream:
@@ -402,6 +563,7 @@ class DurableUpdateOwnerTests(unittest.TestCase):
         real_fsync = os.fsync
         altered = []
         def mutate_history(descriptor):
+            descriptor = int(descriptor)
             real_fsync(descriptor)
             if not altered and os.readlink(f"/proc/self/fd/{descriptor}").endswith("slot-B.img"):
                 with (self.state / "update-event-000001.json").open("ab") as stream:
@@ -603,7 +765,8 @@ class DurableUpdateOwnerTests(unittest.TestCase):
         before = len(os.listdir("/proc/self/fd"))
         real_close = os.close
         closed = []
-        retained = {item._state._root_fd, item._state._lease_fd, item._slots._root_fd, item._slots._lease_fd}
+        retained = {int(descriptor) for descriptor in (item._state._root_fd, item._state._lease_fd,
+                                                      item._slots._root_fd, item._slots._lease_fd)}
         def actual_close_then_interrupt(descriptor):
             real_close(descriptor)
             if descriptor in retained:
