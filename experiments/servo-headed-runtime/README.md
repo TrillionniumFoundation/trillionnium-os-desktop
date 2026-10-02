@@ -24,7 +24,8 @@ script-thread panic as a process crash. The trusted parent enumerates `/proc`
 and requires exactly one direct child whose canonical executable is identical
 to the parent binary and whose NUL-delimited command line contains
 `--content-process`. Only that PID is recorded and sent `SIGKILL`; zero or
-multiple candidates fail closed. Servo must then surface `notify_crashed`, the
+multiple candidates fail closed. Exact selected-process termination must then be observed; the pipeline
+`notify_crashed` callback is recorded when delivered but is not required. The
 parent-owned window and trusted chrome must remain alive, and generation 2 must
 be created through the normal `WebViewBuilder` path.
 
@@ -63,7 +64,7 @@ content point, and content keyboard/IME requires a physical content press in the
 currently focused window. Reconstruction inherits no pointer, keyboard or IME
 ownership. Generation-bound delegates and asynchronous screenshot/focus/evidence
 callbacks ignore withdrawn and replaced content. Line wheel deltas stay in line
-units. The ownership module has six executable hostile regressions.
+units. The ownership module has eight executable hostile regressions, including repeated IME compositions under one enabled native context.
 
 The permanent X11 corpus first establishes a content pointer coordinate, then
 clicks, wheels and types `x` in trusted chrome before its positive content
@@ -78,3 +79,13 @@ provide variable scaling or keyboard-layout/clipboard integration, prove Chinese
 OS IME composition, or install a product embedder. Those G3 requirements remain
 open. Native IME event counters record observation, including refused events;
 synthetic composition is reported separately.
+
+The native IME enabled context is separate from a composition. A commit ends
+only that composition; later preedit/commit events remain accepted under the
+same enabled context once current physical content ownership exists. Pointer
+withdrawal notifies Servo `MouseLeftViewport`; chrome presses and window focus
+loss blur the WebView. Requested-fault success requires the selected PID/start
+identity, successful SIGKILL command and exact termination observation; a
+spontaneous crash is a qualification failure. Native CI binds the GitHub builtin
+event/SHA/repository/ref and current remote main for authoritative main runs.
+Seven real Git-object identity regressions cover those constraints.

@@ -12,6 +12,7 @@ pub struct InputOwnership {
     content_keyboard: bool,
     point: Option<(f32, f32)>,
     ime_open: bool,
+    ime_enabled: bool,
 }
 
 impl InputOwnership {
@@ -27,6 +28,7 @@ impl InputOwnership {
             content_keyboard: false,
             point: None,
             ime_open: false,
+            ime_enabled: false,
         }
     }
 
@@ -78,7 +80,7 @@ impl InputOwnership {
     }
 
     pub fn begin_ime(&mut self) -> bool {
-        if !self.keyboard_allowed() || self.ime_open {
+        if !self.keyboard_allowed() || !self.ime_enabled || self.ime_open {
             return false;
         }
         self.ime_open = true;
@@ -86,7 +88,17 @@ impl InputOwnership {
     }
 
     pub fn ime_allowed(&self) -> bool {
-        self.keyboard_allowed() && self.ime_open
+        self.keyboard_allowed() && self.ime_enabled && self.ime_open
+    }
+    pub fn enable_ime(&mut self) {
+        self.ime_enabled = self.live;
+    }
+    pub fn disable_ime(&mut self) -> bool {
+        self.ime_enabled = false;
+        self.end_ime()
+    }
+    pub fn ime_context_allowed(&self) -> bool {
+        self.keyboard_allowed() && self.ime_enabled
     }
     pub fn end_ime(&mut self) -> bool {
         std::mem::replace(&mut self.ime_open, false)
@@ -104,6 +116,7 @@ impl InputOwnership {
         self.live = false;
         self.point = None;
         self.content_keyboard = false;
+        self.ime_enabled = false;
         self.end_ime()
     }
 
@@ -117,6 +130,7 @@ impl InputOwnership {
         self.point = None;
         self.content_keyboard = false;
         self.ime_open = false;
+        self.ime_enabled = false;
         true
     }
 
@@ -131,6 +145,7 @@ mod tests {
     fn owner() -> InputOwnership {
         let mut o = InputOwnership::new(1024, 768, 64);
         o.focused(true);
+        o.enable_ime();
         o
     }
     #[test]
@@ -207,5 +222,36 @@ mod tests {
         assert!(!o.keyboard_allowed());
         assert!(!o.ime_allowed());
         assert!(!o.reconstruct(3));
+    }
+
+    #[test]
+    fn one_native_context_supports_multiple_compositions() {
+        let mut o = owner();
+        o.pointer(10.0, 100.0);
+        o.pressed();
+        for _ in 0..2 {
+            assert!(o.begin_ime());
+            assert!(o.ime_allowed());
+            assert!(o.end_ime());
+        }
+        assert!(o.ime_context_allowed());
+        o.disable_ime();
+        assert!(!o.begin_ime());
+    }
+
+    #[test]
+    fn enabled_context_before_physical_press_does_not_grant_keyboard() {
+        let mut o = owner();
+        assert!(!o.keyboard_allowed());
+        assert!(!o.begin_ime());
+        o.pointer(10.0, 100.0);
+        o.pressed();
+        assert!(o.begin_ime());
+        o.pointer(10.0, 10.0);
+        assert!(o.pressed());
+        assert!(!o.ime_allowed());
+        o.pointer(10.0, 100.0);
+        o.pressed();
+        assert!(o.begin_ime());
     }
 }

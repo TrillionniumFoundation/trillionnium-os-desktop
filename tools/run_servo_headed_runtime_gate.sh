@@ -6,6 +6,14 @@ step_identities() {
 set -euo pipefail
 tested_sha=$(git rev-parse HEAD)
 tested_tree_sha=$(git rev-parse 'HEAD^{tree}')
+[[ "${GITHUB_EVENT_NAME:-}" == "$EVENT_NAME" && "${GITHUB_SHA:-}" == "$tested_sha" ]] || {
+  echo "checkout does not bind the builtin GitHub event and commit" >&2
+  exit 1
+}
+[[ "${GITHUB_REPOSITORY,,}" == trillionniumfoundation/trillionnium-os-desktop ]] || {
+  echo "qualification event is for an unexpected repository" >&2
+  exit 1
+}
 mapfile -t parents < <(
   git show -s --format='%P' HEAD | tr ' ' '\n' | sed '/^$/d'
 )
@@ -33,8 +41,17 @@ case "$EVENT_NAME" in
     }
     ;;
   push)
+    [[ "$GITHUB_REF" == "refs/heads/$GITHUB_REF_NAME" ]] || {
+      echo "push event ref does not bind its builtin branch name" >&2
+      exit 1
+    }
     candidate_head_sha=$tested_sha
     if [[ "$GITHUB_REF_NAME" == main ]]; then
+      git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+      [[ "$tested_sha" == "$(git rev-parse refs/remotes/origin/main)" ]] || {
+        echo "main push checkout is not the current main commit" >&2
+        exit 1
+      }
       [[ ${#parents[@]} -ge 1 ]] || {
         echo "exact-main qualification requires at least one parent" >&2
         exit 1

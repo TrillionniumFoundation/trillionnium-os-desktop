@@ -286,6 +286,7 @@ impl ApplicationHandler<AppEvent> for App {
                         return;
                     }
                     state.crash_observed.set(true);
+                    state.exact_termination_observed.set(true);
                     state.input.borrow_mut().crashed();
                     *state.crash_reason.borrow_mut() = Some(format!(
                         "exact content process terminated after SIGKILL: pid={pid}, start_time={start_time}"
@@ -334,10 +335,16 @@ impl ApplicationHandler<AppEvent> for App {
             }
             WindowEvent::RedrawRequested => state.compose(),
             WindowEvent::CursorMoved { position, .. } => state.forward_pointer_move(position),
-            WindowEvent::CursorLeft { .. } => state.input.borrow_mut().pointer_left(),
+            WindowEvent::CursorLeft { .. } => state.pointer_left(),
             WindowEvent::Focused(focused) => {
                 let dismiss = state.input.borrow_mut().focused(focused);
                 state.dismiss_ime(dismiss);
+                if !focused {
+                    state.pointer_left();
+                    if let Some(webview) = state.webview.borrow().as_ref() {
+                        webview.blur();
+                    }
+                }
             }
             WindowEvent::MouseInput {
                 state: button_state,
@@ -416,6 +423,7 @@ struct RuntimeState {
     completed: Cell<bool>,
     input: RefCell<InputOwnership>,
     fault_process: Cell<Option<(u32, u64)>>,
+    exact_termination_observed: Cell<bool>,
 }
 
 impl RuntimeState {
@@ -516,6 +524,7 @@ impl RuntimeState {
                 CHROME_HEIGHT,
             )),
             fault_process: Cell::new(None),
+            exact_termination_observed: Cell::new(false),
         });
         state.create_webview();
         fs::write(state.output_dir.join("window-created"), WINDOW_TITLE)?;
@@ -551,6 +560,9 @@ impl RuntimeState {
         }
         if self.failure.borrow().is_some() {
             self.finish_failure();
+            return;
+        }
+        if self.crash_observed.get() && !self.exact_termination_observed.get() {
             return;
         }
 
@@ -766,6 +778,15 @@ impl RuntimeState {
         self.fault_process
             .set(Some((content_pid, content_start_time)));
         if let Err(error) = fs::write(
+            self.output_dir.join("content-process-identity.json"),
+            format!(
+                "{{\"generation\":1,\"pid\":{content_pid},\"start_time\":{content_start_time}}}\n"
+            ),
+        ) {
+            self.fail(&format!("could not bind fault incarnation: {error}"));
+            return;
+        }
+        if let Err(error) = fs::write(
             self.output_dir.join("content-process-pid.txt"),
             format!("{content_pid}\n"),
         ) {
@@ -796,6 +817,15 @@ impl RuntimeState {
             self.fail(&format!(
                 "exact content-process kill exited with status {status}"
             ));
+            return;
+        }
+        if let Err(error) = fs::write(
+            self.output_dir.join("content-sigkill-sent.json"),
+            format!(
+                "{{\"generation\":1,\"pid\":{content_pid},\"start_time\":{content_start_time},\"signal\":\"SIGKILL\"}}\n"
+            ),
+        ) {
+            self.fail(&format!("could not record requested fault signal: {error}"));
             return;
         }
 
@@ -998,6 +1028,7 @@ impl RuntimeState {
     fn forward_pointer_move(&self, position: PhysicalPosition<f64>) {
         let point = self.input.borrow_mut().pointer(position.x, position.y);
         let Some((x, y)) = point else {
+            self.pointer_left();
             return;
         };
         let point = DevicePoint::new(x, y);
@@ -1008,10 +1039,24 @@ impl RuntimeState {
         }
     }
 
+    fn pointer_left(&self) {
+        self.input.borrow_mut().pointer_left();
+        if let Some(webview) = self.webview.borrow().as_ref() {
+            webview.notify_input_event(InputEvent::MouseLeftViewport);
+        }
+    }
+
     fn forward_mouse_button(&self, state: ElementState, button: MouseButton) {
         if state == ElementState::Pressed {
             let dismiss = self.input.borrow_mut().pressed();
             self.dismiss_ime(dismiss);
+            if let Some(webview) = self.webview.borrow().as_ref() {
+                if self.input.borrow().keyboard_allowed() {
+                    webview.focus();
+                } else {
+                    webview.blur();
+                }
+            }
         }
         let Some((x, y)) = self.input.borrow().point() else {
             return;
@@ -1090,30 +1135,40 @@ impl RuntimeState {
         let Some(webview) = self.webview.borrow().as_ref().cloned() else {
             return;
         };
-        let input = match event {
-            Ime::Enabled if self.input.borrow_mut().begin_ime() => {
-                Some(ImeEvent::Composition(CompositionEvent {
-                    state: CompositionState::Start,
-                    data: String::new(),
-                }))
+        let committing = matches!(&event, Ime::Commit(_));
+        match event {
+            Ime::Enabled => self.input.borrow_mut().enable_ime(),
+            Ime::Preedit(data, _) | Ime::Commit(data) => {
+                if !self.input.borrow().ime_context_allowed() {
+                    return;
+                }
+                if self.input.borrow_mut().begin_ime() {
+                    webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(
+                        CompositionEvent {
+                            state: CompositionState::Start,
+                            data: String::new(),
+                        },
+                    )));
+                }
+                // Enabled spans multiple compositions; Commit ends only this one.
+                webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(
+                    CompositionEvent {
+                        state: if committing {
+                            CompositionState::End
+                        } else {
+                            CompositionState::Update
+                        },
+                        data,
+                    },
+                )));
+                if committing {
+                    self.input.borrow_mut().end_ime();
+                }
             }
-            Ime::Preedit(data, _) if self.input.borrow().ime_allowed() => {
-                Some(ImeEvent::Composition(CompositionEvent {
-                    state: CompositionState::Update,
-                    data,
-                }))
+            Ime::Disabled => {
+                let dismiss = self.input.borrow_mut().disable_ime();
+                self.dismiss_ime(dismiss);
             }
-            Ime::Commit(data) if self.input.borrow_mut().end_ime() => {
-                Some(ImeEvent::Composition(CompositionEvent {
-                    state: CompositionState::End,
-                    data,
-                }))
-            }
-            Ime::Disabled if self.input.borrow_mut().end_ime() => Some(ImeEvent::Dismissed),
-            _ => None,
-        };
-        if let Some(input) = input {
-            webview.notify_input_event(InputEvent::Ime(input));
         }
     }
 
@@ -1223,6 +1278,14 @@ impl RuntimeState {
     }
 
     fn finish_success(&self) {
+        if !self.crash_triggered.get()
+            || !self.exact_termination_observed.get()
+            || self.fault_process.get().is_none()
+        {
+            self.fail("requested process fault and exact termination evidence are required");
+            self.finish_failure();
+            return;
+        }
         if self.completed.replace(true) {
             return;
         }
@@ -1237,6 +1300,10 @@ impl RuntimeState {
             .clone()
             .unwrap_or_else(|| "null".to_owned());
         let crash_reason = self.crash_reason.borrow().clone().unwrap_or_default();
+        let (fault_pid, fault_start) = self
+            .fault_process
+            .get()
+            .expect("fault identity checked above");
         let report = format!(
             concat!(
                 "{{\n",
@@ -1263,6 +1330,7 @@ impl RuntimeState {
                 "  \"external_navigation_requests_denied\": {},\n",
                 "  \"content_crash_observed\": true,\n",
                 "  \"content_crash_reason\": {},\n",
+                "  \"fault_injection\": {{\"mechanism\":\"requested_SIGKILL\",\"generation\":1,\"pid\":{},\"start_time\":{},\"exact_termination_observed\":{}}},\n",
                 "  \"trusted_window_survived_content_crash\": true,\n",
                 "  \"initial_page_evidence\": {},\n",
                 "  \"recovery_page_evidence\": {},\n",
@@ -1290,6 +1358,9 @@ impl RuntimeState {
             self.popup_denied.get(),
             self.navigation_denied.get(),
             json_string(&crash_reason),
+            fault_pid,
+            fault_start,
+            self.exact_termination_observed.get(),
             initial,
             recovery,
         );
@@ -1346,6 +1417,11 @@ impl WebViewDelegate for RuntimeDelegate {
 
     fn notify_crashed(&self, _webview: WebView, reason: String, _backtrace: Option<String>) {
         if let Some(state) = self.current() {
+            if !state.crash_triggered.get() || state.fault_process.get().is_none() {
+                state.input.borrow_mut().crashed();
+                state.fail("spontaneous content crash cannot satisfy requested process-fault qualification");
+                return;
+            }
             state.crash_observed.set(true);
             state.input.borrow_mut().crashed();
             *state.crash_reason.borrow_mut() = Some(reason);
@@ -1381,6 +1457,7 @@ impl WebViewDelegate for RuntimeDelegate {
     fn show_embedder_control(&self, _webview: WebView, control: EmbedderControl) {
         if let Some(state) = self.current() {
             if matches!(control, EmbedderControl::InputMethod(_)) {
+                state.window.set_ime_allowed(true);
                 state
                     .input_method_controls
                     .set(state.input_method_controls.get() + 1);
