@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +12,10 @@ SPEC = importlib.util.spec_from_file_location("validate_s08_servo_runtime", MODU
 assert SPEC is not None and SPEC.loader is not None
 VALIDATOR = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(VALIDATOR)
+FIXTURE_SPEC = importlib.util.spec_from_file_location("source_fixture", ROOT / "tests/_source_fixture.py")
+assert FIXTURE_SPEC is not None and FIXTURE_SPEC.loader is not None
+FIXTURE = importlib.util.module_from_spec(FIXTURE_SPEC)
+FIXTURE_SPEC.loader.exec_module(FIXTURE)
 
 
 class S08ServoRuntimeContractTests(unittest.TestCase):
@@ -22,7 +25,7 @@ class S08ServoRuntimeContractTests(unittest.TestCase):
     def copied_tree(self) -> tuple[tempfile.TemporaryDirectory[str], Path]:
         temporary = tempfile.TemporaryDirectory()
         root = Path(temporary.name) / "repository"
-        shutil.copytree(ROOT, root, symlinks=True)
+        FIXTURE.copy_source_tree(ROOT, root)
         return temporary, root
 
     def test_contract_cannot_promote_installed_image(self) -> None:

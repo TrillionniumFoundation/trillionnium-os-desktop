@@ -285,8 +285,12 @@ jobs:
               production_signing_proven:false,
               release_proven:false
             }' > "$evidence/evidence.json"
-          find "$evidence" -type f -maxdepth 1 -print0 \
-            | sort -z | xargs -0 sha256sum > "$evidence/SHA256SUMS"
+          (
+            cd "$evidence"
+            find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+              | sort -z | xargs -0 sha256sum > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
       - name: Upload exact-head S08 evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

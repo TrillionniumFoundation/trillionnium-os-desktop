@@ -51,9 +51,11 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 
 - `BrowserActor::from_attested` and `handle_attested` remain the deterministic S06 authority path.
 - `ServoBrowserActor::from_attested` admits only the concrete S08 callback bridge; callers cannot supply a generic runtime.
+- `ServoBrowserActor::preflight_attested` checks current custody, session/reference binding, arbitration, cancellation and supported operation without dispatching engine work or writing receipts. Refusal retires request cancellation registration; `handle_attested` still rechecks final custody/control after durable intent.
 - `servo_runtime_pair` returns one actor endpoint and one creator-thread `ServoRuntimeOwner`.
 - `ServoRuntimeCommand` and `ServoRuntimeCompletion` expose bounded operation data and single-use completion without exposing Servo objects.
 - `principal`, `page_owner`, cancellation accessors and `receipt_observer` expose bounded views.
+- `ReceiptLifecycleObserver` exposes complete-chain deduplication and sealed receipt lookup, and `into_journal` consumes only an idle observer with no nonterminal durable history for explicit actor rebinding.
 - Selected codec/attestation/receipt types are re-exported for product integration; principal/mechanism binding constructors are not.
 - Compile-fail documentation guards generic runtime injection and ordinary-handler use.
 

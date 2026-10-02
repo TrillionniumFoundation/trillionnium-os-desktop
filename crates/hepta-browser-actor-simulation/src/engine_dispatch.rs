@@ -52,16 +52,16 @@ pub struct EngineThreadRuntime {
 
 /// Engine-side endpoint. Construct and pump it on the engine event-loop thread.
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::EngineThreadOwner;
-/// use hepta_browser_actor::DeterministicLocalRuntime;
+/// ```compile_fail,E0277
+/// use hepta_browser_actor_simulation::engine_dispatch::EngineThreadOwner;
+/// use hepta_browser_actor_simulation::DeterministicLocalRuntime;
 /// fn needs_send<T: Send>() {}
 /// needs_send::<EngineThreadOwner<DeterministicLocalRuntime>>();
 /// ```
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::EngineThreadOwner;
-/// use hepta_browser_actor::DeterministicLocalRuntime;
+/// ```compile_fail,E0277
+/// use hepta_browser_actor_simulation::engine_dispatch::EngineThreadOwner;
+/// use hepta_browser_actor_simulation::DeterministicLocalRuntime;
 /// fn needs_sync<T: Sync>() {}
 /// needs_sync::<EngineThreadOwner<DeterministicLocalRuntime>>();
 /// ```

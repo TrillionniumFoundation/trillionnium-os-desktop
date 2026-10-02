@@ -1,42 +1,7 @@
 name: s10-production-debian-qemu
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/s10-production-debian-qemu.yml"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "rust-toolchain.toml"
-      - "apps/hepta-agent-portd/**"
-      - "apps/hepta-browserd/**"
-      - "crates/hepta-agent-port/**"
-      - "crates/hepta-browser-actor/**"
-      - "crates/hepta-session-core/**"
-      - "contracts/d2i-integrated-image.v1.json"
-      - "manifests/debian-*.json"
-      - "manifests/e2fsprogs-host-toolchain.v1.json"
-      - "manifests/servo*.json"
-      - "packaging/debian/**"
-      - "runtime/servo/**"
-      - "tests/d1/**"
-      - "tests/qemu/**"
-      - "tools/build_pinned_e2fsprogs.sh"
-      - "tools/collect_d2i_failure_diagnostics.sh"
-      - "tools/compare_d1_builds.py"
-      - "tools/d1_rootfs_manifest.py"
-      - "tools/finalize_d1_evidence.py"
-      - "tools/finalize_d2i_evidence.py"
-      - "tools/prepare_d1_inputs.py"
-      - "tools/prepare_d2i_boot_runner.py"
-      - "tools/prepare_d2i_runtime.py"
-      - "tools/reclaim_d2i_servo_workspace.sh"
-      - "tools/resolve_debian_snapshot*.py"
-      - "tools/run_d1_final_qualification.sh"
-      - "tools/run_d2i_integrated_image.sh"
-      - "tools/verify_d1_artifact.py"
-      - "tools/verify_d2i_artifact.py"
-  push:
-    branches: ["codex/s10-production-debian-qemu-closure-v1"]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -49,48 +14,28 @@ env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
-  S10_BASE_REF: codex/s09-linux-platform-adapters-v3
 
 jobs:
-  exact-head-integrated-image:
-    name: exact-head-integrated-image
+  manual-candidate-image:
+    name: manual-candidate-image
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     steps:
       - name: Check out exact source head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Verify exact source identity and live bounded parent
+      - name: Bind the actual manual checkout without promotion authority
         shell: bash
         env:
-          EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          EXPECTED_SOURCE: ${{ github.sha }}
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
-          test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 2
-          git check-ref-format --branch "$S10_BASE_REF"
-          git fetch --force --no-tags --depth=1 origin \
-            "+refs/heads/$S10_BASE_REF:refs/remotes/origin/$S10_BASE_REF"
-          live_base="$(git rev-parse "refs/remotes/origin/$S10_BASE_REF")"
-          test "$(git rev-parse HEAD^1)" = "$live_base"
-          printf 'evidence_class=exact_head_non_authoritative\nsubject_sha=%s\nsubject_tree=%s\nbase_ref=%s\nbase_sha=%s\n' \
-            "$EXPECTED_HEAD" "$(git rev-parse HEAD^{tree})" "$S10_BASE_REF" "$live_base" \
-            >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Derive non-authoritative exact-head image identity
-        shell: bash
-        env:
-          SOURCE_BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
-        run: |
-          set -euo pipefail
-          GITHUB_EVENT_NAME=workflow_dispatch \
-          GITHUB_REF="refs/heads/$SOURCE_BRANCH" \
-          GITHUB_REF_NAME="$SOURCE_BRANCH" \
-            bash tools/run_d2i_integrated_image.sh identities
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          bash tools/run_d2i_integrated_image.sh identities
 
       - name: Install and bind D1 plus Servo host dependencies
         run: bash tools/run_d2i_integrated_image.sh install-deps
@@ -191,7 +136,6 @@ jobs:
           path: |
             /tmp/trillionnium-d1/evidence
             /tmp/trillionnium-d2i/evidence
-            /tmp/trillionnium-d2i/qemu
           if-no-files-found: warn
           retention-days: 14
           compression-level: 0

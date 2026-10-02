@@ -25,6 +25,14 @@ def main() -> int:
     text = source
     text = replace_once(
         text,
+        'assert runtime["content_generation"] == 2, runtime\n',
+        'assert runtime["content_generation"] == 2, runtime\n'
+        'assert runtime["trusted_chrome_survived_recovery"] is True, runtime\n'
+        'assert runtime["input_events_handled"] >= 3, runtime\n',
+        "observed recovery and original input threshold",
+    )
+    text = replace_once(
+        text,
         'assert acceptance["schema"] == "trillionnium.desktop.d2i-guest-acceptance.v1", acceptance\n',
         'assert acceptance["schema"] == "trillionnium.desktop.d2i-guest-acceptance.v2", acceptance\n',
         "acceptance schema",

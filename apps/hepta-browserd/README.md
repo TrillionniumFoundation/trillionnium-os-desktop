@@ -26,7 +26,7 @@ A narrower machine-state, gate or non-claim always wins. Source presence and doc
 
 ## Dependency and call direction
 
-`hepta-browserd` is an application-layer consumer of `hepta-agent-transport`, `hepta-browser-codec`, `hepta-agent-port`, `hepta-browser-contracts`, `hepta-session-core`, and `trillionnium-contract-core`. Those lower layers must never depend back on this application. The current self-check calls into each mechanism in dependency order and then exercises the engine-neutral session state machine. The future Servo adapter must remain a distinct concrete, reviewed path rather than a generic caller-injected runtime.
+`hepta-browserd` is an application-layer consumer of `hepta-agent-transport`, `hepta-browser-codec`, `hepta-agent-port`, `hepta-browser-actor`, `hepta-browser-contracts`, `hepta-peer-attestation`, `hepta-session-core`, and `trillionnium-contract-core`. Those lower layers must never depend back on this application. The current self-check calls into each mechanism in dependency order and then exercises the engine-neutral session state machine. The native Servo adapter must remain a distinct concrete, reviewed path rather than a generic caller-injected runtime.
 
 Relevant architecture:
 
@@ -41,6 +41,78 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 - `ACTIVE_PLAN_REVISION` and `IMPLEMENTATION_STAGE` are immutable build-truth sentinels.
 - `run_self_check()` returns a bounded `SelfCheckReport`; it is development evidence, not readiness.
 - Binary `hepta-browserd` supports `--self-check`, `--print-build-info`, and `--help`. Unknown arguments fail with exit status 2.
+- `BrowserdRuntimeSupervisor<A, F>` is the source-level supervision API; `ProductServoRuntime<F>` binds its actor parameter to the concrete `ServoBrowserActor`. The executable does not yet call this supervisor to start a product runtime.
+- `RuntimeGeneration`, `SemanticReference`, `RuntimeState`, `DispatchCompletion<T>`, `RestartPolicy`, `CrashTransition` and `ProductRuntimeError` describe its checked lifecycle and redacted results.
+
+The supervision operations have the following contract. The complete signatures
+and Rust API examples live with `apps/hepta-browserd/src/servo_product_runtime.rs`
+and its public package exports in `apps/hepta-browserd/src/lib.rs`.
+
+| Operation | Preconditions and result | Failure/ownership semantics |
+| --- | --- | --- |
+| `RestartPolicy::new(u32)` | Positive crash threshold; returns a policy | Zero returns `invalid_restart_policy` |
+| `BrowserdRuntimeSupervisor::start(factory, policy)` | Factory creates generation one; returns a ready supervisor | Factory error becomes redacted `reconstruction_failed` |
+| `semantic_reference(revision)` / `validate_reference(reference)` | Reference carries current runtime generation | A previous generation returns `stale_generation`; opaque revision validation remains BrowserActor's responsibility |
+| `dispatch(reference, FnOnce)` | Current reference, ready actor, no replay latch or open crash loop | Calls the closure once; possible dispatch without completion latches reconciliation; no retry |
+| `content_process_crashed()` | Invalidates generation and drops the actor | Never calls the factory; generation exhaustion and crash threshold leave terminal lockout |
+| `reconstruct()` | Explicit caller action with no replay latch or open crash loop | Constructs the reserved generation; failure does not create success or replay |
+| `acknowledge_stable_cycle()` | A ready actor, no replay latch, and closed crash-loop breaker | Resets the consecutive-crash count only; never reopens terminal lockout |
+| `reconcile_indeterminate()` | Caller has separately accepted the durable reconciliation evidence | Clears replay uncertainty only; no replay, implicit reconstruction or reopening of terminal lockout |
+
+The reconciliation method does not itself validate or issue a durable receipt.
+The product coordinator must establish that authority before calling it; a
+generic supervisor test does not prove the installed reconciliation path.
+
+The separate `product_dispatch` source module provides concrete request composition:
+
+| API | Contract |
+| --- | --- |
+| `AcceptedProductConnection::attest` | Retain the original connected Unix stream, kernel credentials, opaque pidfd-backed live attestation, and one monotonic budget including admission and queue residence; maximum 20 seconds |
+| `AcceptedProductConnection::from_received` (Linux) | Consume opaque `ReceivedAcceptedStream` through its one-shot callback; retain the original stream and exact absolute deadline while performing separate live pidfd-backed identity admission; transfer/receiver delay cannot restart the budget |
+| `AcceptedProductConnection::deadline` | Read the same fixed Instant after creator-PID, cancellation and expiry checks; this does not refresh identity or grant dispatch |
+| `product_connection_queue` / `try_submit` / `try_next` | Nonblocking bounded handoff of original connections; capacity 1–8; overflow closes the rejected connection |
+| `ProductConnectionCancellation::cancel` | Revoke a queued/active connection, interrupt blocking socket operations and cancel active actor work; grants no dispatch or recovery authority |
+| `ProductRequestCoordinator::from_connection` | Bind a concrete `ServoRuntimeEndpoint` and a complete managed receipt journal to the admitted principal; refuse nonterminal or terminal-uncertain prior history |
+| `from_connection_after_reconciliation` | Trusted recovery caller explicitly acknowledges every terminal uncertain request by exact ID and canonical digest, checked against complete live journal facts; nonterminal history remains blocked |
+| `serve_connection` | Semantic preflight before durable admission, durable dispatch intent before engine work, and terminal receipt acknowledgment before response publication; deduplication includes sealed predecessor segments |
+| `reconcile_request` | Validate the exact currently blocked request against a sealed terminal fact from the live complete journal; no replay, receipt rewrite or implicit reconstruction |
+| `content_process_crashed` / `reconstruct` | Native owner first withdraws old content/input and retires its bridge; checked generation invalidation then explicit fresh endpoint binding; crash-loop lockout remains closed |
+
+The handoff consumer and raw `attest` share the private `attest_before` helper.
+It checks the absolute deadline before/after kernel peer observation, after live
+attestation before the interrupt clone, after cloning/liveness and after local
+setup before return. Late results close the original owned stream and any clone.
+The attestor's existing synchronous procfs calls are not preempted mid-syscall;
+this API refuses a late result rather than claiming a hard syscall timeout.
+The closed source contract/API inventory is
+[`accepted-stream-handoff.v1.json`](../../contracts/accepted-stream-handoff.v1.json).
+
+`cargo test --locked -p hepta-browserd --test product_handoff_kernel` exercises
+real SCM_RIGHTS, an actual same-UID child `/proc`/pidfd identity, original fixed
+Instant after receiver delay, queue expiry, cancellation/EOF and actual fork.
+It does not establish an approved systemd principal, cross-UID product custody,
+installed service or Servo action. Existing synthetic composition tests retain
+their separate scope.
+
+The coordinator and actor are constructed on their worker thread after moving
+the concrete endpoint there. The native creator thread must own and pump the
+matching `ServoRuntimeOwner`, retain current native semantic nodes, and call
+`ServoRuntimeCompletion::ensure_current_peer` immediately before the action.
+No installed embedder currently fulfills this composition/startup contract.
+The executable and default AgentPort service remain disabled. Cross-UID live
+executable attestation also requires an approved broker or equivalent narrowly
+reviewed authority; qualification static attestation is not a product fallback.
+Trusted recovery UI/policy and durable operator-decision records remain open.
+Startup therefore requires explicit exact acknowledgments again after reopening;
+source receipt inspection does not claim a persisted operator decision.
+
+The coordinator, supervisor, connection queue and cancellation owner bind to
+their creating PID. Inherited fork objects refuse dispatch/recovery before a
+copied mutex or channel can be touched. Foreign cancellation is a no-op and
+foreign teardown only closes child descriptor copies; it never shuts down the
+parent's original socket or changes its journal lease. Intended worker-thread
+handoff remains available within the creating process. Native Servo owner-thread
+checks remain separate and mandatory.
 
 Registered binaries:
 
@@ -54,7 +126,7 @@ Registered Cargo features: none.
 
 ## State, concurrency, and failure semantics
 
-All current state is local to the self-check call. Session transitions use `SessionMachine`; navigation, human focus, IME, crash and recovery advance typed revisions. No background worker, global mutable runtime, persisted profile or retry loop exists. A future runtime supervisor must bound restart attempts, withdraw stale pixels and input ownership, and enter a visible degraded state rather than restart indefinitely.
+The executable's state is local to its self-check call. Session transitions use `SessionMachine`; navigation, human focus, IME, crash and recovery advance typed revisions. The separate source-level supervisor owns one optional actor, a factory, checked runtime generation, consecutive-crash count and replay latch. The concrete coordinator co-owns one Servo actor and managed receipt observer; storage failure permanently closes admission for that instance. Terminal uncertainty and interruptions after durable dispatch require explicit exact-request reconciliation. Neither API automatically repeats work or reconstructs an actor. Native pixels/input withdrawal, installed process startup, trusted recovery UI and persisted recovery decisions remain integration work.
 
 Failures must preserve the last truthful state. A timeout, crash, peer loss, storage ambiguity or unsupported operation cannot be converted into successful completion by a caller, retry loop, fixture, log message or evidence generator.
 
@@ -70,15 +142,26 @@ Every invariant above is a review condition, not merely commentary. Weakening on
 
 ## Testing and evidence
 
+`apps/hepta-browserd/tests/product_fork_custody.rs` is a standalone single-thread
+actual-fork regression. It exercises inherited queue, cancellation, dispatch,
+recovery and supervisor refusal, parent socket continuity and sole-writer
+custody. Its procfs/native owner inputs are explicitly source fixtures; it does
+not qualify installed Servo or service startup.
+
 Primary source or test references:
 
 - `apps/hepta-browserd/src/lib.rs`
+- `apps/hepta-browserd/src/servo_product_runtime.rs`
+- `apps/hepta-browserd/src/product_dispatch.rs`
+- `apps/hepta-browserd/src/product_dispatch/tests.rs` (real Unix framing, synthetic procfs facts and controlled callbacks; source tests only)
 - `tests/test_s06_browser_actor.py`
+- `tests/test_s08_product_supervision.py`
 
 Applicable workflows:
 
 - `.github/workflows/ci.yml`
 - `.github/workflows/s06-browser-actor.yml`
+- `.github/workflows/s08-product-servo-runtime.yml`
 
 Contract references:
 
@@ -92,6 +175,7 @@ A passing unit or hosted-CI test proves only the evidence tier named by its gate
 - Run `cargo run --locked -p hepta-browserd -- --self-check` after repository validation.
 - Use `--print-build-info` to compare the binary with machine truth; a mismatch is a build/repository defect.
 - A self-check failure should be investigated at the first named lower-layer error. Do not suppress it or widen the claim ceiling.
+- Review [`S08_PRODUCT_SERVO_SUPERVISION.md`](../../docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md) before changing crash, generation, dispatch or reconciliation semantics.
 - There is no supported service installation or user-data migration on this source line.
 
 Operational diagnosis must retain bounded/redacted evidence and must not weaken admission, limits, ownership, sync, isolation or default-disabled controls simply to make a test pass.

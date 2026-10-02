@@ -8,10 +8,13 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "apps/hepta-agent-portd/**"
+      - "apps/hepta-browserd/**"
       - "crates/hepta-agent-transport/**"
       - "crates/hepta-peer-attestation/**"
       - "crates/hepta-agent-port/**"
       - "contracts/agent-transport.v1.json"
+      - "contracts/accepted-stream-handoff.v1.json"
+      - "tests/test_accepted_stream_handoff.py"
       - "contracts/agent-port-bridge.v1.json"
       - "contracts/agent-port-custody.v1.json"
       - "contracts/request-peer-custody.v1.json"
@@ -30,10 +33,13 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "apps/hepta-agent-portd/**"
+      - "apps/hepta-browserd/**"
       - "crates/hepta-agent-transport/**"
       - "crates/hepta-peer-attestation/**"
       - "crates/hepta-agent-port/**"
       - "contracts/agent-transport.v1.json"
+      - "contracts/accepted-stream-handoff.v1.json"
+      - "tests/test_accepted_stream_handoff.py"
       - "contracts/agent-port-bridge.v1.json"
       - "contracts/agent-port-custody.v1.json"
       - "contracts/request-peer-custody.v1.json"
@@ -81,6 +87,7 @@ jobs:
             tools/validate_s04_transport_custody.py \
             tools/agent_transport_reference.py \
             tests/test_s04_transport_custody.py \
+            tests/test_accepted_stream_handoff.py \
             tests/transport/test_agent_transport_reference.py
       - name: Validate source, contracts, and project truth
         run: |
@@ -91,6 +98,7 @@ jobs:
           python3 tools/validate_rust_browser_codec.py
           python3 tools/validate_s04_transport_custody.py
           python3 -m unittest tests.test_s04_transport_custody -v
+          python3 -m unittest discover -s tests -p test_accepted_stream_handoff.py -v
           python3 -m unittest discover -s tests/transport -p 'test_*.py' -v
       - name: Reproduce independent transport evidence
         run: |
@@ -181,6 +189,7 @@ jobs:
           python3 tools/validate_rust_browser_codec.py
           python3 tools/validate_s04_transport_custody.py
           python3 -m unittest tests.test_s04_transport_custody -v
+          python3 -m unittest discover -s tests -p test_accepted_stream_handoff.py -v
           python3 -m unittest discover -s tests/transport -p 'test_*.py' -v
           python3 tools/agent_transport_reference.py \
             --contract contracts/agent-transport.v1.json \

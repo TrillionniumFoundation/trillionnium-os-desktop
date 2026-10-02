@@ -1,0 +1,76 @@
+{
+  "schema": "trillionnium.desktop.app-storage.v1",
+  "status": "SOURCE_CANDIDATE",
+  "implementation": "platform/app_storage.py",
+  "admission_dependency": "platform/trusted_apps.py concrete TrustedAppAdmission and owner-issued VerifiedAppBundle; no boolean, digest assertion, caller verifier or default publisher root",
+  "partition": {
+    "identity": "exact trusted principal identifier plus exact https://<app_id>.<publisher>.apps.hepta.invalid origin",
+    "digest_domain_utf8": "trillionnium.desktop.app-storage-partition.v1\u0000",
+    "digest_preimage": "domain bytes plus ASCII canonical JSON [principal, exact_origin]",
+    "handle": "store-issued opaque InstalledApp, bound to creating store and active install sequence",
+    "caller_authentication": "trusted host boundary obligation; a caller-supplied principal string is not engine authentication"
+  },
+  "custody": {
+    "root": "already provisioned absolute canonical service-UID directory, exact mode 0700",
+    "ancestors": "retained O_DIRECTORY|O_NOFOLLOW descriptors and complete absolute-chain identity/mode/owner rechecks",
+    "lease": ".app-storage.lock, regular service-owned mode 0600, zero bytes, one link, retained exclusive nonblocking flock; no inherited child LOCK_UN",
+    "files": "flat derived names, O_EXCL|O_NOFOLLOW, regular service-owned mode 0600 and one link; retain writing fd through file and directory fsync, named-inode checks and full readback",
+    "deletion_or_auto_repair": false
+  },
+  "lifecycle": {
+    "version_profile": "stable canonical uint32 SemVer triple; strict numeric increase, including after uninstall; prerelease storage unsupported",
+    "transaction": "prepare_install accepts this admission owner's verified immutable bundle and issues a concrete plan bound to store, policy snapshot and event sequence; commit_install revalidates current policy, exact plan, published ZIP and signature before and after commit",
+    "assets": "deterministic classic ZIP_STORED snapshot, fixed regular-file metadata, every member obtained from admitted immutable bytes; stored complete archive re-admitted with real current Ed25519 on open",
+    "uninstall": "durable logical tombstone, invalidates old handles; version floor, signed assets, app data and all history retained",
+    "reinstall": "strictly higher stable version and identical signed data_schema_version; previously retained app data remains in this exact partition",
+    "migration": "unsupported; any data_schema_version change including omission/addition refuses before lifecycle intent"
+  },
+  "data": {
+    "key": "one canonical portable ASCII asset-path segment, no traversal, slash, backslash, percent encoding, hidden name, trailing dot or Windows device basename; exact case-sensitive identity",
+    "value": "immutable bytes, logically replaced by a new immutable artifact; deletion publishes a retained tombstone",
+    "namespace": "same principal and exact synthetic origin, with current active install handle and current publisher policy required",
+    "quotas": "retained history and tombstoned key identities remain counted; quotas never trigger deletion"
+  },
+  "policy": {
+    "default_roots": [],
+    "provisioning": "externally authenticated actual admission owner; page/model/bundle may not configure roots, clock or owner",
+    "durable_floor": "synchronize_policy persists actual policy revision, roots, cumulative revocations and seen key pins before use; lower revision, changed same revision, pin rebinding/removal or revoked-key removal refuses across clean restart",
+    "refused_target_or_capacity": "persist a newly observed compatible policy before target-key refusal; inability to record that snapshot, including pre-intent capacity failure, keeps owner unresolved and refuses restart rather than forgetting a revocation",
+    "current_revalidation": "every active asset/data/lifecycle operation checks the actual owner's current key validity, revocation, freshness and exact issuer binding",
+    "clock": "now_unix must be a fresh authenticated host-clock sample; no configured clock, monotonic expiry clock or backward-time latch; untrusted/frozen/replayed timestamps cannot establish current validity",
+    "historical_consistency": "reopen parses bounded historical ZIPs and complete index to bind persisted floor metadata; historical records grant no execution authority; current open must reverify real signature"
+  },
+  "durability": {
+    "protocol": "fsync owner open record before mutations; fsync intent, immutable artifact and commit separately with directory barriers and retained-fd custody/readback; clean owner receipt only after all operations succeed",
+    "persistent_refusal": "unresolved owner open, intent without commit, orphan/malformed/substituted artifact or close refusal artifact blocks future owners; no automatic retry, recovery, history pruning or acknowledgement boolean",
+    "return_window": "observed in-operation interruption after durable commit preserves unresolved session and refuses restart; final callee return callback may lose response after protected region while known durable commit remains terminal, but consumed operation/plan/version cannot replay; caller delivery is not proven",
+    "close_barrier_failure": "retain clean candidate plus best-effort explicit refused artifact; failure preventing marker creation or persistence cannot be solved without external storage custody",
+    "operator_recovery": "not implemented; store remains refused until an independently specified authenticated recovery protocol exists"
+  },
+  "limits": {
+    "events": 256,
+    "owner_sessions": 256,
+    "partitions": 64,
+    "root_files": 2048,
+    "retained_store_bytes": 134217728,
+    "record_bytes": 1048576,
+    "canonical_archive_bytes": 33554432,
+    "data_value_bytes": 1048576,
+    "live_partition_data_bytes": 4194304,
+    "retained_partition_key_identities": 128
+  },
+  "owner": "creating process and Python thread; nonreentrant; copied fork authority refuses",
+  "garbage_collection": "descriptor-only cleanup, detach all lease/chain/root ownership before any close, attempt each detached fd despite errors, no retry by integer, no explicit LOCK_UN, no thread authority check, no clean receipt or history deletion; unresolved owner still refuses reopening",
+  "installed_engine_storage_enforcement": false,
+  "installed_origin_interception": false,
+  "installed_csp_or_egress_qualification": false,
+  "whole_directory_rollback_protection": false,
+  "remaining_obligations": [
+    "authenticated external policy/time/root provisioning and protected rollback anchor",
+    "native context principal binding, exact-origin interception and storage-engine enforcement",
+    "revocation of already running native app contexts and loaded code",
+    "trusted installed app approval, activation and uninstall UX",
+    "authenticated operator recovery and history retention/capacity policy",
+    "transactional supported schema migration protocol and independent installed fault corpus"
+  ]
+}

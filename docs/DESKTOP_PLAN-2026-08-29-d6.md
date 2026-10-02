@@ -64,7 +64,12 @@ fixture handler for BrowserActor.
 
 ## 4. Current demonstrated state
 
-Integrated main demonstrates:
+This section records the established foundation qualification baseline. Later
+S02–S12 implementation is present in the merged source; see
+`docs/source-state.v1.json`, the module index and `docs/DEVELOPMENT_GUIDE.md`.
+Source integration does not rerun or promote the qualification evidence below.
+
+At that recorded baseline, integrated main demonstrates:
 
 - D0R repository, toolchain, dependency, product-boundary, and signed Debian
   input locks;

@@ -4,6 +4,7 @@ use super::*;
 use crate::{BrowserActor, PrincipalBinding, TaskFlowPrincipal};
 use hepta_agent_port::{DispatchContext, HandlerOutcome};
 use hepta_agent_transport::PeerIdentity;
+use hepta_browser_codec::BrowserErrorCode;
 use hepta_browser_codec::{EffectClass, JsonObject};
 use hepta_peer_attestation::{AttestedPeer, PeerRuntimePolicy, ProcfsPeerAttestor};
 use std::cell::{Cell, RefCell};
@@ -106,6 +107,149 @@ fn health() -> BrowserRequest {
         operation: BrowserOperation::Health,
     }
 }
+
+#[test]
+fn cancelled_preflight_retires_registration_without_dispatch() {
+    let fixture = Fixture::new();
+    let calls = Rc::new(Cell::new(0));
+    let mut actor = BrowserActor::new(fixture.binding.clone(), Counter(calls.clone()));
+    let request = health();
+    actor.cancel_request(request.request_id.clone());
+    let refusal = actor
+        .preflight_attested(
+            &fixture.context(),
+            &request,
+            &fixture.attestor,
+            &fixture.attested,
+        )
+        .unwrap()
+        .unwrap();
+    assert_eq!(refusal.code, BrowserErrorCode::Cancelled);
+    assert_eq!(calls.get(), 0);
+    assert!(
+        actor
+            .active_cancellation_token(&request.request_id)
+            .is_none()
+    );
+    assert!(
+        actor
+            .preflight_attested(
+                &fixture.context(),
+                &request,
+                &fixture.attestor,
+                &fixture.attested
+            )
+            .unwrap()
+            .is_none()
+    );
+    assert_eq!(calls.get(), 0);
+}
+
+#[test]
+fn stale_session_preflight_refuses_without_page_or_runtime_change() {
+    let fixture = Fixture::new();
+    let calls = Rc::new(Cell::new(0));
+    let mut actor = BrowserActor::new(fixture.binding.clone(), Counter(calls.clone()));
+    let request = BrowserRequest {
+        request_id: "stale-admission".into(),
+        session_id: Some("foreign-session".into()),
+        session_generation: Some(1),
+        deadline_unix_ms: None,
+        operation: BrowserOperation::SessionSnapshot,
+    };
+    let refusal = actor
+        .preflight_attested(
+            &fixture.context(),
+            &request,
+            &fixture.attestor,
+            &fixture.attested,
+        )
+        .unwrap()
+        .unwrap();
+    assert_eq!(refusal.code, BrowserErrorCode::StaleSession);
+    assert!(actor.page_owner().is_none());
+    assert_eq!(calls.get(), 0);
+}
+
+#[test]
+fn rejected_identity_preflight_retires_cancellation_and_redacts_diagnosis() {
+    let fixture = Fixture::new();
+    let mut actor = BrowserActor::new(fixture.binding.clone(), Counter(Rc::new(Cell::new(0))));
+    let request = health();
+    actor.cancellation_token(request.request_id.clone());
+    fs::remove_file(fixture.process.join("exe")).unwrap();
+    let refusal = actor
+        .preflight_attested(
+            &fixture.context(),
+            &request,
+            &fixture.attestor,
+            &fixture.attested,
+        )
+        .unwrap()
+        .unwrap();
+    assert_eq!(refusal.code, BrowserErrorCode::PolicyDenied);
+    assert_eq!(refusal.message, "peer attestation refresh failed");
+    assert!(
+        actor
+            .active_cancellation_token(&request.request_id)
+            .is_none()
+    );
+}
+
+#[test]
+fn admission_attestation_io_errors_do_not_disclose_procfs_paths() {
+    let fixture = Fixture::new();
+    let calls = Rc::new(Cell::new(0));
+    let mut actor = BrowserActor::new(fixture.binding.clone(), Counter(calls.clone()));
+    fs::remove_file(fixture.process.join("exe")).expect("simulate failed executable read");
+    let outcome = actor
+        .handle_attested(
+            &fixture.context(),
+            &health(),
+            &fixture.attestor,
+            &fixture.attested,
+        )
+        .expect("typed refusal");
+    let HandlerOutcome::Failure(error) = outcome else {
+        panic!("missing attestation was admitted");
+    };
+    assert_eq!(
+        error.code,
+        hepta_browser_codec::BrowserErrorCode::PolicyDenied
+    );
+    assert_eq!(error.message, "peer attestation refresh failed");
+    assert!(error.details.is_none());
+    assert_eq!(calls.get(), 0);
+}
+
+#[test]
+fn admission_continuity_errors_do_not_disclose_expected_or_observed_credentials() {
+    let fixture = Fixture::new();
+    let calls = Rc::new(Cell::new(0));
+    let mut binding = fixture.binding.clone();
+    let mut context = fixture.context();
+    // Model a service wiring mismatch while retaining a real, live original
+    // attestation. Rejection must expose no expected/observed mechanism IDs.
+    binding.mechanism.peer.uid += 1;
+    context.peer.uid += 1;
+    let mut actor = BrowserActor::new(binding, Counter(calls.clone()));
+    let outcome = actor
+        .handle_attested(&context, &health(), &fixture.attestor, &fixture.attested)
+        .expect("typed refusal");
+    let HandlerOutcome::Failure(error) = outcome else {
+        panic!("changed credentials were admitted");
+    };
+    assert_eq!(
+        error.code,
+        hepta_browser_codec::BrowserErrorCode::PolicyDenied
+    );
+    assert_eq!(
+        error.message,
+        "peer attestation continuity rejected dispatch"
+    );
+    assert!(error.details.is_none());
+    assert_eq!(calls.get(), 0);
+}
 struct Counter(Rc<Cell<usize>>);
 impl PageRuntime for Counter {
     fn dispatch(
@@ -120,6 +264,39 @@ impl PageRuntime for Counter {
             current_url: None,
         })
     }
+}
+
+#[test]
+fn direct_backend_internal_diagnostics_do_not_enter_wire_errors() {
+    struct PrivateDiagnostics;
+    impl PageRuntime for PrivateDiagnostics {
+        fn dispatch(
+            &mut self,
+            _: Option<&PageOwnerSnapshot>,
+            _: BrowserActorMessage,
+            _: &RequestControl,
+        ) -> Result<RuntimeReply, RuntimeFailure> {
+            Err(RuntimeFailure::Internal(
+                "private backend path=/private/profile token=synthetic-secret".to_owned(),
+            ))
+        }
+    }
+    let fixture = Fixture::new();
+    let mut actor = BrowserActor::new(fixture.binding.clone(), PrivateDiagnostics);
+    let outcome = actor
+        .handle_attested(
+            &fixture.context(),
+            &health(),
+            &fixture.attestor,
+            &fixture.attested,
+        )
+        .expect("typed runtime failure");
+    let HandlerOutcome::Failure(error) = outcome else {
+        panic!("backend failure was accepted");
+    };
+    assert_eq!(error.code, hepta_browser_codec::BrowserErrorCode::Internal);
+    assert_eq!(error.message, "runtime operation failed");
+    assert!(error.details.is_none());
 }
 
 fn changed_queued_identity_is_refused(file: &str, replacement: &str) {

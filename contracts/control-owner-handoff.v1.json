@@ -1,0 +1,52 @@
+{
+  "schema": "trillionnium.desktop.control-owner-handoff.v1",
+  "status": "SOURCE_CANDIDATE_LIVE_CONTROL_INCARNATION_ONLY",
+  "implementation": "crates/hepta-peer-attestation/src/control_owner.rs",
+  "policy": {
+    "source": "trusted owner supplies explicit private ControlOwnerPolicy; provisioning authentication is outside this API; no page, model, peer JSON or environment approval",
+    "kernel": "actual original SO_PEERCRED, exact configured UID and GID and optional exact positive PID; channel still requires actual SCM_CREDENTIALS from the same peer",
+    "runtime": "fixed default /proc live executable bytes, uniform IDs, exact configured cgroup/unit, original start time and pidfd",
+    "executable_pin": "canonical 64 lowercase hexadecimal policy digest compared to actual live /proc executable SHA256; never substitutes for that measurement",
+    "refresh": "original pidfd and entire original live snapshot rechecked before and after control setup, send and receive; no replacement process, static source or configurable attestor"
+  },
+  "budgets": {
+    "maximum_seconds": 20,
+    "accepted": "fixed sender entry Instant before capture_before and any control attestation; conservative original native wire deadline and returned opaque Instant never renew that ceiling",
+    "receiver_control_wait": "separate fixed receiver entry Instant before attestation; all remaining Duration calls checked before and after against this same Instant",
+    "preemptive_procfs_timeout": false,
+    "pre_accept_wait_covered": false,
+    "cancellation": "exclusive mutable owner cancel drops original local channel/custody; cannot concurrently interrupt a call already borrowing it mutably",
+    "automatic_renewal": false
+  },
+  "ownership": {
+    "transaction_count_each_instance": 1,
+    "raw_stream_extraction": false,
+    "sender_custody_return_on_error": false,
+    "send_success": "one native packet enqueue only; not receiver admission or action/durable receipt",
+    "failure": "permanent local retirement; received custody drops if identity or deadline postcheck fails; no retry or repair",
+    "fork": "creator PID checked before operations and mutation; Drop closes child descriptor copies only; no shutdown, copied mutex or parent process kill",
+    "returned": "existing ReceivedAcceptedStream with its original socket and immutable deadline, not control-owner effect authority"
+  },
+  "public_api": {
+    "ControlOwnerPolicy::new": "(PeerPolicy, PeerRuntimePolicy, String) -> Result<ControlOwnerPolicy, ControlOwnerError>",
+    "AttestedHandoffSender::from_accepted": "(OwnedFd, UnixStream, &Path, ControlOwnerPolicy, Duration) -> Result<AttestedHandoffSender, ControlOwnerError>",
+    "AttestedHandoffSender::ensure_current": "(&mut self) -> Result<Instant, ControlOwnerError>",
+    "AttestedHandoffSender::send": "(&mut self) -> Result<(), ControlOwnerError>",
+    "AttestedHandoffSender::cancel": "(&mut self) -> Result<(), ControlOwnerError>",
+    "AttestedHandoffReceiver::from_control": "(OwnedFd, ControlOwnerPolicy, &Path, Duration) -> Result<AttestedHandoffReceiver, ControlOwnerError>",
+    "AttestedHandoffReceiver::ensure_current": "(&mut self) -> Result<Instant, ControlOwnerError>",
+    "AttestedHandoffReceiver::receive": "(&mut self) -> Result<ReceivedAcceptedStream, ControlOwnerError>",
+    "AttestedHandoffReceiver::cancel": "(&mut self) -> Result<(), ControlOwnerError>"
+  },
+  "non_claims": {
+    "approved_policy_provisioned": false,
+    "live_cross_uid_attestation_qualified": false,
+    "root_owned_control_path_custody": false,
+    "installed_daemon_owner": false,
+    "native_final_effect_gate": false,
+    "semantic_principal": false,
+    "fixture_or_static_substitution": false,
+    "product_ready": false,
+    "default_activation_changed": false
+  }
+}

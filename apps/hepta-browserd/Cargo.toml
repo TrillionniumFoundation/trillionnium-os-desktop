@@ -15,7 +15,11 @@ hepta-agent-port = { path = "../../crates/hepta-agent-port" }
 hepta-browser-actor = { path = "../../crates/hepta-browser-actor" }
 hepta-browser-contracts = { path = "../../crates/hepta-browser-contracts" }
 hepta-session-core = { path = "../../crates/hepta-session-core" }
+hepta-peer-attestation = { path = "../../crates/hepta-peer-attestation" }
 trillionnium-contract-core = { path = "../../crates/trillionnium-contract-core" }
+
+[dev-dependencies]
+libc = "=0.2.186"
 
 [lib]
 path = "src/lib.rs"
@@ -23,3 +27,15 @@ path = "src/lib.rs"
 [[bin]]
 name = "hepta-browserd"
 path = "src/main.rs"
+
+# Actual fork runs from a single-thread main, never from the unit-test harness.
+[[test]]
+name = "product_fork_custody"
+path = "tests/product_fork_custody.rs"
+harness = false
+
+# Real Linux rights/pidfd/EOF/fork corpus runs from a single-thread main.
+[[test]]
+name = "product_handoff_kernel"
+path = "tests/product_handoff_kernel.rs"
+harness = false

@@ -42,7 +42,9 @@
     "minimum_stable_health_seconds": 60,
     "maximum_boot_failures": 2,
     "automatic_effect_replay": false,
-    "reconciliation_required_after_possible_dispatch": true
+    "reconciliation_required_after_possible_dispatch": true,
+    "permits_bound_to_actual_coordinator_instance": true,
+    "health_permits_invalidated_by_boot_failure_or_repeated_boot": true
   },
   "durability": {
     "state_directory_mode": "0700",
@@ -56,7 +58,10 @@
       "directory_fsync"
     ],
     "exclusive_coordinator_lease": true,
-    "post_replace_failure": "publication_indeterminate_reconcile_before_retry"
+    "lease_release": "close_descriptor_copies_only_never_explicit_unlock_last_copy_releases",
+    "descriptor_lifecycle": "explicit_close_or_descriptor_only_gc_with_cleared_ownership_no_write_or_reconciliation",
+    "post_replace_failure": "publication_indeterminate_reconcile_before_retry",
+    "replace_call_failure": "publication_indeterminate_even_before_return"
   },
   "fault_model": {
     "cutpoints": [
@@ -78,5 +83,94 @@
     "physical_hardware_qualified": false,
     "production_signature_verified": false,
     "release_published": false
+  },
+  "signature_admission": {
+    "default_admission_enabled": false,
+    "trust_roots": "externally_approved_pinned_public_pem_not_manifest_or_repository",
+    "signing_preimage_domain": "trillionnium.desktop.update-manifest-signature.v1\\u0000",
+    "signing_preimage_encoding": "ascii_json_ensure_ascii_sorted_keys_compact_no_trailing_newline",
+    "unsigned_envelope_fields": [
+      "signature_sha256"
+    ],
+    "detached_signature_digest_required": true,
+    "verification": "system_openssl_dgst_sha256_verify_offline",
+    "verification_input_custody": "three_sealed_linux_memfds_inherited_via_pass_fds_proc_self_fd_only",
+    "verification_input_seals": [
+      "write",
+      "grow",
+      "shrink",
+      "seal"
+    ],
+    "verification_environment": {
+      "PATH": "/usr/bin:/bin",
+      "OPENSSL_CONF": "/dev/null",
+      "LC_ALL": "C"
+    },
+    "maximum_signature_bytes": 65536,
+    "maximum_public_key_bytes": 65536,
+    "maximum_trust_roots": 32,
+    "verifier_timeout_seconds": 15,
+    "unknown_revoked_or_expired_signer_refused": true,
+    "protected_floor_and_root_minimum_required": true,
+    "trusted_clock_and_revalidation_before_publication_and_boot": true,
+    "external_monotonic_floor_persistence_implemented": false,
+    "trusted_clock_and_revalidation_before_commit": true
+  },
+  "authority_ownership": {
+    "configuration_types": "exact_UpdateTrustRoot_ExternalUpdateSignatureVerifier_DurableUpdateJournal_ImageSlotStore_no_subclass_callbacks",
+    "scope": "creating_process_and_creating_thread",
+    "guard_before_authority_use": true,
+    "inherited_fork_authority": false,
+    "fork_child_descriptor_cleanup_only": true,
+    "thread_transfer_or_concurrent_use": false,
+    "caller_verification_or_persistence_callbacks": false,
+    "callbacks": "trusted_nonreentrant_in_process_configuration"
+  },
+  "image_staging": {
+    "backend": "private_leased_regular_file_slots_only",
+    "slot_names": [
+      "slot-A.img",
+      "slot-B.img"
+    ],
+    "full_digest_and_length_verified_before_temp_write": true,
+    "stream_chunk_bytes": 1048576,
+    "active_slot_source_digest_verified": true,
+    "retained_temp_and_named_inode_verified": true,
+    "publication": "file_fsync_atomic_replace_directory_fsync",
+    "post_replace_failure": "image_publication_indeterminate_recovery_required",
+    "reconciliation": "verify_existing_complete_image_file_and_directory_fsync_no_rewrite",
+    "production_activation_enabled": false,
+    "replace_call_failure": "publication_indeterminate_even_before_return",
+    "coordinator_intent_recorded_before_replace_call": true
+  },
+  "operator_recovery": {
+    "default_approved_operator_uids": [],
+    "identity": "actual_local_effective_uid_from_external_approved_configuration",
+    "action": "rollback_only_no_replay",
+    "complete_source_digest_and_protected_floor_required": true,
+    "possible_dispatch_latch_clear": "complete_private_durable_operation_record_verified_and_resynced_by_configured_authority",
+    "bootloader_or_block_device_mutation": false
+  },
+  "journal_reconciliation": {
+    "default_authority_enabled": false,
+    "schema": "trillionnium.desktop.update-dispatch-journal.v1",
+    "exact_fields": [
+      "schema",
+      "manifest_sha256",
+      "sequence",
+      "operation_id",
+      "operation",
+      "target_slot",
+      "image_sha256",
+      "status"
+    ],
+    "operation_identity": "coordinator_issued_random_256_bit_nonce",
+    "caller_digest_or_status_assertion_accepted": false,
+    "private_retained_root_lease_and_record_inode_required": true,
+    "complete_bounded_record_required": true,
+    "file_and_directory_fsync_before_fact_and_clear": true,
+    "actual_issued_fact_and_current_record_identity_required": true,
+    "clear_target_phase": "rollback_pending",
+    "installed_journal_authority_provisioned": false
   }
 }

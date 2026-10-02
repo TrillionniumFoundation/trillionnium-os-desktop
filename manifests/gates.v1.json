@@ -402,7 +402,14 @@
         "tools/prepare_d1_inputs.py",
         "tools/resolve_debian_snapshot*.py",
         ".github/workflows/d1-final-qualification.yml",
-        "Cargo.lock"
+        "Cargo.lock",
+        "Cargo.toml",
+        "rust-toolchain.toml",
+        "apps/**",
+        "crates/**",
+        "contracts/**",
+        "tools/**",
+        "runtime/servo/**"
       ],
       "claim_ceiling": [
         "no_servo_frame",
@@ -428,7 +435,18 @@
         "packaging/debian/**",
         "experiments/servo-headed-runtime/**",
         "manifests/**",
-        ".github/workflows/**"
+        ".github/workflows/**",
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "apps/**",
+        "crates/**",
+        "contracts/**",
+        "tools/**",
+        "tests/d1/**",
+        "tests/qemu/**",
+        "tests/fixtures/**",
+        "runtime/servo/**"
       ],
       "claim_ceiling": [
         "no_hardware",

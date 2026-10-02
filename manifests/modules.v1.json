@@ -39,19 +39,30 @@
       "architecture": [
         "docs/architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md",
         "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
-        "docs/architecture/SESSION_STATE_MACHINE.md"
+        "docs/architecture/SESSION_STATE_MACHINE.md",
+        "docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md",
+        "docs/architecture/REQUEST_EXECUTION_AND_RECOVERY.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
-        "contracts/browser-actor.v1.json"
+        "contracts/browser-actor.v1.json",
+        "contracts/accepted-stream-handoff.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
-        "tests/test_s06_browser_actor.py"
+        "tests/test_s06_browser_actor.py",
+        "apps/hepta-browserd/src/servo_product_runtime.rs",
+        "tests/test_s08_product_supervision.py",
+        "apps/hepta-browserd/src/product_dispatch/tests.rs",
+        "apps/hepta-browserd/tests/product_fork_custody.rs",
+        "apps/hepta-browserd/tests/product_handoff_kernel.rs",
+        "tests/test_accepted_stream_handoff.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
-        ".github/workflows/s06-browser-actor.yml"
+        ".github/workflows/s06-browser-actor.yml",
+        ".github/workflows/s08-product-servo-runtime.yml",
+        ".github/workflows/s04-transport-custody.yml"
       ],
       "binaries": [
         {
@@ -120,10 +131,13 @@
         "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md"
       ],
       "contracts": [
-        "contracts/agent-transport.v1.json"
+        "contracts/agent-transport.v1.json",
+        "contracts/accepted-stream-handoff.v1.json"
       ],
       "tests": [
         "crates/hepta-agent-transport/src/facade.rs",
+        "crates/hepta-agent-transport/tests/accepted_handoff_kernel.rs",
+        "tests/test_accepted_stream_handoff.py",
         "tests/transport/test_agent_transport_reference.py"
       ],
       "workflows": [
@@ -207,11 +221,14 @@
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
-        "contracts/request-peer-custody.v1.json"
+        "contracts/request-peer-custody.v1.json",
+        "contracts/control-owner-handoff.v1.json"
       ],
       "tests": [
         "crates/hepta-peer-attestation/src/lib.rs",
-        "tests/test_s04_transport_custody.py"
+        "tests/test_s04_transport_custody.py",
+        "crates/hepta-peer-attestation/tests/control_owner_kernel.rs",
+        "tests/test_control_owner_handoff.py"
       ],
       "workflows": [
         ".github/workflows/s04-transport-custody.yml",
@@ -299,7 +316,9 @@
       ],
       "tests": [
         "crates/hepta-session-core/src/tests.rs",
-        "tests/test_s05_receipt_recovery.py"
+        "tests/test_s05_receipt_recovery.py",
+        "crates/hepta-session-core/tests/durable_receipt_fact.rs",
+        "crates/hepta-session-core/tests/journal_fork_custody.rs"
       ],
       "workflows": [
         ".github/workflows/receipt-journal.yml",

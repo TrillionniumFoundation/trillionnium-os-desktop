@@ -36,6 +36,7 @@ impl ManagedOpenPolicy {
 }
 
 pub(super) struct ManagedDirectory {
+    owner_pid: u32,
     root: PathBuf,
     directory: File,
     identity: (u64, u64),
@@ -113,6 +114,7 @@ impl ManagedDirectory {
         let marker_identity = validate_existing_path_identity(&root.join(MARKER))?;
         let marker = open_existing_file_checked(&root.join(MARKER), false, marker_identity)?;
         let this = Self {
+            owner_pid: std::process::id(),
             root: root.to_owned(),
             directory,
             identity: directory_id,
@@ -126,6 +128,7 @@ impl ManagedDirectory {
     }
 
     fn verify_anchor(&self) -> Result<(), JournalError> {
+        ensure_creating_process(self.owner_pid)?;
         if identity(&directory_metadata(&self.root)?) != self.identity
             || identity(&self.directory.metadata().map_err(map_io_error)?) != self.identity
             || validate_existing_path_identity(&self.root.join(MARKER))? != self.marker_identity
@@ -204,11 +207,13 @@ impl ManagedDirectory {
         next.check_live_state()?;
         #[cfg(test)]
         persistence_tests::point("reopen.before_active_sync")?;
+        ensure_creating_process(self.owner_pid)?;
         next.file.sync_all().map_err(map_io_error)?;
         #[cfg(test)]
         persistence_tests::point("reopen.after_active_sync")?;
         #[cfg(test)]
         persistence_tests::point("reopen.before_directory_sync")?;
+        ensure_creating_process(self.owner_pid)?;
         self.directory.sync_all().map_err(map_io_error)?;
         #[cfg(test)]
         persistence_tests::point("reopen.after_directory_sync")?;
@@ -237,6 +242,7 @@ impl ManagedDirectory {
         }
         #[cfg(test)]
         persistence_tests::point("publish.before_file_sync")?;
+        ensure_creating_process(self.owner_pid)?;
         next.file.sync_all().map_err(map_io_error)?;
         #[cfg(test)]
         persistence_tests::point("publish.after_file_sync")?;
@@ -255,12 +261,14 @@ impl ManagedDirectory {
         }
         #[cfg(test)]
         persistence_tests::point("publish.before_rename")?;
+        ensure_creating_process(self.owner_pid)?;
         fs::rename(&next.path, &final_path).map_err(map_io_error)?;
         #[cfg(test)]
         persistence_tests::point("publish.after_rename")?;
         next.path = final_path;
         #[cfg(test)]
         persistence_tests::point("publish.before_directory_sync")?;
+        ensure_creating_process(self.owner_pid)?;
         self.directory.sync_all().map_err(map_io_error)?;
         #[cfg(test)]
         persistence_tests::point("publish.after_directory_sync")?;
@@ -340,6 +348,7 @@ impl ReceiptJournal {
         persistence_tests::point("initialize.after_directory_sync")?;
         let marker_identity = identity(&marker.metadata().map_err(map_io_error)?);
         let mut guard = ManagedDirectory {
+            owner_pid: std::process::id(),
             root: root.to_owned(),
             directory,
             identity: directory_id,
@@ -433,7 +442,8 @@ impl ReceiptJournal {
     /// True only after a complete request lifecycle and below no new authority.
     /// The caller decides when to consume the handle via rotate_managed.
     pub fn managed_rotation_due(&self) -> bool {
-        self.managed.is_some()
+        ensure_creating_process(self.owner_pid).is_ok()
+            && self.managed.is_some()
             && self.end_offset >= MANAGED_ROTATION_THRESHOLD_BYTES
             && self
                 .progress
@@ -442,6 +452,6 @@ impl ReceiptJournal {
     }
 
     pub fn is_managed(&self) -> bool {
-        self.managed.is_some()
+        ensure_creating_process(self.owner_pid).is_ok() && self.managed.is_some()
     }
 }
