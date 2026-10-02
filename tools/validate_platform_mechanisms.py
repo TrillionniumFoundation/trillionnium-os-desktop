@@ -982,6 +982,176 @@ def refresh_registry(root: Path, original: str, value: dict) -> None:
                 os.close(parent)
 
 
+# Independently reviewed read-only source inventory. This is not a seventh
+# authority mechanism; --refresh-api cannot refresh this closed profile.
+_READONLY_OBSERVER_INDEX = {'schema': 'trillionnium.desktop.update-observation-source-index.v1',
+ 'plan_revision': '2026-08-29-d6',
+ 'requirements': ['G6', 'D7', 'S11'],
+ 'implementation': 'platform/update_boot_observer.py',
+ 'entrypoint': 'tools/inspect_pending_update.py',
+ 'documentation': 'docs/architecture/UPDATE_BOOT_OBSERVER.md',
+ 'contract': 'contracts/update-boot-observer.v1.json',
+ 'tests': 'tests/test_update_boot_observer.py',
+ 'workflow': '.github/workflows/update-boot-observer.yml',
+ 'dependencies': ['platform/update_recovery.py', 'platform/durable_update_owner.py'],
+ 'claim_ceiling': 'source-only read-only locked structural journal and fixed actual kernel observations; no '
+                  'signing, boot-image mapping, health, continuation, external effect, installed two-boot or '
+                  'hardware qualification authority',
+ 'authority_mechanism': False,
+ 'production_activation_enabled': False}
+_READONLY_OBSERVER_CONTRACT = {'schema': 'trillionnium.desktop.update-boot-observer-contract.v1',
+ 'status': 'SOURCE_CANDIDATE',
+ 'implementation': 'platform/update_boot_observer.py',
+ 'api': {'inspect_pending_update': "(state_root: 'Path', slot_root: 'Path') -> 'BootObservation'",
+         'BootObservation.public_json': "(self) -> 'bytes'",
+         'BootObservation.private_json': "(self) -> 'bytes'"},
+ 'observation_schema': 'trillionnium.desktop.update-boot-observation.v1',
+ 'public_fields': ['booted_image_verified',
+                   'bootloader_effect_performed',
+                   'continuation_authorized',
+                   'production_activation_enabled',
+                   'reason_codes',
+                   'schema',
+                   'signature_authority',
+                   'signed_boot_image_mapping',
+                   'status'],
+ 'status_codes': ['no_pending_update', 'pending_identity_unknown', 'recovery_required', 'observation_unavailable'],
+ 'reason_codes': ['owner_busy',
+                  'custody_unavailable',
+                  'journal_invalid',
+                  'kernel_observation_unavailable',
+                  'kernel_observation_changed',
+                  'unfinished_owner',
+                  'recovery_marker_present',
+                  'signature_authority_unavailable',
+                  'signed_boot_image_mapping_unknown'],
+ 'limits': {'events': 256,
+            'record_bytes': 65536,
+            'mountinfo_bytes': 524288,
+            'mounts': 4096,
+            'private_diagnostic_bytes': 65536,
+            'absolute_path_components': 32},
+ 'kernel_sources': ['/proc/self',
+                    '/proc/sys/kernel/random/boot_id',
+                    '/proc/<creator-pid>/mountinfo',
+                    '/proc/<creator-pid>/ns/mnt',
+                    '/'],
+ 'kernel_measurement': {'filesystem_magic': {'procfs': 40864, 'nsfs': 1853056627},
+                        'samples': 'before and after the complete scan; exact boot id, namespace identity, root '
+                                   'device/inode and mountinfo bytes digest must match',
+                        'root_mapping': 'one root mount with the actual root st_dev major/minor; no mapping to a '
+                                        'signed image or slot',
+                        'procfs_zero_size': 'bounded fixed procfs reads only; ordinary journal/image files must '
+                                            'have positive size'},
+ 'custody': {'existing_roots': 'absolute bounded nofollow component walk; final private directory owned by root '
+                               'or actual euid; retain directory descriptors',
+             'existing_leases': 'open the exact named .coordinator.lock inode read-only, one private regular hard '
+                                'link; LOCK_SH|LOCK_NB on both state and slots; retain and compare named inode '
+                                'before completion',
+             'writer_exclusion': 'the existing coordinator uses LOCK_EX on the same named inode; busy is typed '
+                                 'and no repair is attempted',
+             'journal': 'canonical closed JSON; complete consecutive sha256 chain, source transitions, original '
+                        'root identities, immutable operation and receipt bindings, marker confirmed prefix; '
+                        'retain every opened record until final fstat/named-leaf and inventory checks',
+             'slot_files': 'private 0600 regular single-link slot-A.img and slot-B.img; bounded positive size; '
+                           'retained inode/size/mtime/ctime only; no image reads or hashes',
+             'process_thread': 'scan methods check actual creator PID and thread before descriptor acquisition or '
+                               'inspection',
+             'cleanup': 'detach each owned descriptor before close; attempt all retained descriptors; fork and GC '
+                        'only close copied descriptors and never explicitly unlock or write',
+             'interruption_scope': 'finite tested read/substitution/fork/close-and-reuse boundaries; not every '
+                                   'C-to-Python-store or asynchronous interruption window'},
+ 'cli': {'entrypoint': 'tools/inspect_pending_update.py',
+         'arguments': ['--state-root', '--slot-root', '--output'],
+         'default': 'read-only; stdout contains only the public closed enum/false-claim object',
+         'raw_output': 'only explicit --output; exclusive nofollow new 0600 file under a pre-existing private '
+                       'retained parent, outside authority-root ancestry; same-fd fsync/readback and final '
+                       'metadata checks; no overwrite or recursive creation',
+         'exit_codes': {'no_pending_update': 0, 'unknown_recovery_unavailable_output_or_argument_refusal': 2}},
+ 'claims': {'approved_roots': [],
+            'signature_authority': 'unavailable',
+            'signed_boot_image_mapping': 'unknown',
+            'booted_image_verified': False,
+            'continuation_authorized': False,
+            'production_activation_enabled': False,
+            'bootloader_effect_performed': False,
+            'health_qualified': False,
+            'installed_two_boot_qualified': False,
+            'hardware_power_loss_qualified': False},
+ 'remaining_installed_obligations': ['persisted detached signature plus separately provisioned production '
+                                     'public-root policy and protected version/time anchors',
+                                     'immutable signed-image-to-actual-root/block-device mapping before any '
+                                     'resume or effect; writable ext4 observation is insufficient',
+                                     'installed bootloader arm, root selection, monotonic measured health, '
+                                     'durable commit/rollback and authenticated operator recovery',
+                                     'separate actual QEMU two-boot update/recovery corpus and hardware power-cut '
+                                     'qualification']}
+_READONLY_OBSERVER_API = [{'kind': 'class',
+  'name': 'ObservationStatus',
+  'bases': ['str', 'Enum'],
+  'decorators': [],
+  'fields': [],
+  'methods': []},
+ {'kind': 'class',
+  'name': 'ObservationReason',
+  'bases': ['str', 'Enum'],
+  'decorators': [],
+  'fields': [],
+  'methods': []},
+ {'kind': 'class',
+  'name': 'BootObservation',
+  'bases': [],
+  'decorators': ['dataclass(frozen=True)'],
+  'fields': [{'name': 'status', 'type': 'ObservationStatus', 'default': None},
+             {'name': 'reasons', 'type': 'tuple[ObservationReason, ...]', 'default': None}],
+  'methods': [{'name': 'public_json', 'async': False, 'arguments': 'self', 'returns': 'bytes', 'decorators': []},
+              {'name': 'private_json',
+               'async': False,
+               'arguments': 'self',
+               'returns': 'bytes',
+               'decorators': []}]},
+ {'kind': 'function',
+  'name': 'inspect_pending_update',
+  'async': False,
+  'decorators': [],
+  'arguments': 'state_root: Path, slot_root: Path',
+  'returns': 'BootObservation'}]
+
+
+def _readonly_observer(root: Path) -> set[str]:
+    relative = "manifests/update-observation.v1.json"
+    registered_paths = [relative, *[_READONLY_OBSERVER_INDEX[field] for field in
+                        ("implementation", "entrypoint", "documentation", "contract", "tests", "workflow")]]
+    # Legacy six-mechanism snapshots remain valid. A partial new package cannot
+    # hide an unregistered source or skip the independent complete profile.
+    if not any(os.path.lexists(root / path) for path in registered_paths):
+        return set()
+    index = load_json_strict(read(root, relative))
+    canonical = lambda value: json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    if canonical(index) != canonical(_READONLY_OBSERVER_INDEX):
+        raise ValueError("read-only observer source index identity, paths or claim ceiling changed")
+    contract = load_json_strict(read(root, index["contract"]))
+    if canonical(contract) != canonical(_READONLY_OBSERVER_CONTRACT):
+        raise ValueError("read-only observer contract fields, API or claim ceiling changed")
+    source = read(root, index["implementation"])
+    if api_inventory(source) != _READONLY_OBSERVER_API:
+        raise ValueError("read-only observer public API inventory drift")
+    document = read(root, index["documentation"])
+    if not document.startswith("# ") or index["implementation"] not in document:
+        raise ValueError("read-only observer documentation source mapping changed")
+    read(root, index["entrypoint"])
+    workflow = read(root, index["workflow"])
+    if "test_update_boot_observer.py" not in workflow or "result.skipped" not in workflow:
+        raise ValueError("read-only observer actual non-skipping corpus workflow is absent")
+    tests = ast.parse(read(root, index["tests"]))
+    cases = [node for node in tests.body if isinstance(node, ast.ClassDef)
+             and any(ast.unparse(base) == "unittest.TestCase" for base in node.bases)]
+    if not any(isinstance(member, ast.FunctionDef) and member.name.startswith("test_")
+               for case in cases for member in case.body):
+        raise ValueError("read-only observer regression source is absent")
+    return {index["implementation"]}
+
+
 def validate(root: Path, *, refresh: bool = False) -> dict:
     original = read(root, REGISTRY)
     value = load_json_strict(original)
@@ -1044,6 +1214,7 @@ def validate(root: Path, *, refresh: bool = False) -> dict:
         if not any(isinstance(member, ast.FunctionDef) and member.name.startswith("test_")
                    for case in cases for member in case.body):
             raise ValueError("registered test source has no direct unittest.TestCase test methods")
+    implementations.update(_readonly_observer(root))
     actual = {path.relative_to(root).as_posix() for path in (root / "platform").glob("*.py") if path.name != "__init__.py"}
     if actual != implementations:
         raise ValueError("top-level platform module is unregistered or absent")
