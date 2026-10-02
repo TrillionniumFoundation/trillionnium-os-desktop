@@ -41,10 +41,10 @@ fn assert_terminal_fact(writer: &mut ReceiptJournal, record: &CommittedRecord) {
     let fact = writer
         .receipt_fact("prior-request", [1; 32])
         .expect("read terminal fact from the locked complete chain");
-    assert_eq!(fact.receipt_id(), "prior-request");
-    assert_eq!(fact.request_sha256(), [1; 32]);
-    assert_eq!(fact.lifecycle(), State::Completed);
-    assert_eq!(fact.record_sha256(), record.record_sha256);
+    assert_eq!(fact.receipt_id().unwrap(), "prior-request");
+    assert_eq!(fact.request_sha256().unwrap(), [1; 32]);
+    assert_eq!(fact.lifecycle().unwrap(), State::Completed);
+    assert_eq!(fact.record_sha256().unwrap(), record.record_sha256);
     assert!(writer.contains_receipt("prior-request").unwrap());
     assert!(!writer.has_unresolved_receipts().unwrap());
 }
@@ -135,9 +135,9 @@ fn requested_and_dispatched_facts_keep_the_startup_latch_after_reopen() {
         let fact = writer
             .receipt_fact("unresolved-request", [1; 32])
             .expect("unresolved fact is evidence, never terminal authority");
-        assert_eq!(fact.lifecycle(), last_state);
-        assert!(!fact.lifecycle().is_terminal());
-        assert_eq!(fact.record_sha256(), latest.record_sha256);
+        assert_eq!(fact.lifecycle().unwrap(), last_state);
+        assert!(!fact.lifecycle().unwrap().is_terminal());
+        assert_eq!(fact.record_sha256().unwrap(), latest.record_sha256);
 
         writer
             .append(event("unresolved-request", State::Interrupted))
@@ -202,15 +202,18 @@ fn terminal_uncertainty_remains_visible_across_rotation_and_reopen() {
     );
     let facts = writer.execution_reconciliation_facts().unwrap();
     assert_eq!(facts.len(), 2);
-    assert_eq!(facts[0].receipt_id(), "post-dispatch-interruption");
-    assert_eq!(facts[0].lifecycle(), State::Interrupted);
-    assert_eq!(facts[1].receipt_id(), "unknown-completion");
-    assert_eq!(facts[1].lifecycle(), State::Indeterminate);
+    assert_eq!(facts[0].receipt_id().unwrap(), "post-dispatch-interruption");
+    assert_eq!(facts[0].lifecycle().unwrap(), State::Interrupted);
+    assert_eq!(facts[1].receipt_id().unwrap(), "unknown-completion");
+    assert_eq!(facts[1].lifecycle().unwrap(), State::Indeterminate);
     for fact in facts {
         let original = writer
-            .receipt_fact(fact.receipt_id(), fact.request_sha256())
+            .receipt_fact(fact.receipt_id().unwrap(), fact.request_sha256().unwrap())
             .unwrap();
-        assert_eq!(fact.record_sha256(), original.record_sha256());
+        assert_eq!(
+            fact.record_sha256().unwrap(),
+            original.record_sha256().unwrap()
+        );
     }
     assert!(
         writer.inspect().unwrap().records.is_empty(),

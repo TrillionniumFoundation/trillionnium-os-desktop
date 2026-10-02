@@ -102,6 +102,22 @@
   },
   "durability": {
     "single_writer": "unmanaged_boot_pid_lease_or_managed_directory_lock_with_all_segment_inode_locks",
+    "live_process_custody": {
+      "owner": "creating_PID",
+      "same_process_thread_handoff": true,
+      "fork_inherited_authority": "reject_before_file_or_lock_validation_append_sync_lookup_seal_rotation",
+      "child_drop": "close_child_descriptors_only_no_parent_lease_marker_write_or_explicit_unlock",
+      "fact_type": "DurableReceiptFact_private_fields",
+      "fact_accessor_signatures": {
+        "receipt_id": "Result<&str, JournalError>",
+        "request_sha256": "Result<Digest, JournalError>",
+        "lifecycle": "Result<ReceiptLifecycleState, JournalError>",
+        "record_sha256": "Result<Digest, JournalError>"
+      },
+      "fact_access": "creating_PID_checked_on_every_accessor",
+      "persistent_record_format_changed": false,
+      "execution_or_replay_authority": false
+    },
     "file_mode": "0600",
     "append": "write_all_then_sync_data_before_in_memory_commit",
     "create_and_export": "same_directory_private_stage_write_sync_all_verify_atomic_no_replace_publish_then_directory_sync",

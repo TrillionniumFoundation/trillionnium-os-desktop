@@ -216,8 +216,11 @@ fn run(plans: &[Plan], fault: Fault) -> Summary {
             let fact = coordinator
                 .reconcile_request(&pending.id, pending.digest)
                 .unwrap();
-            assert_eq!(fact.lifecycle(), ReceiptLifecycleState::Indeterminate);
-            assert_eq!(fact.receipt_id(), pending.id);
+            assert_eq!(
+                fact.lifecycle().unwrap(),
+                ReceiptLifecycleState::Indeterminate
+            );
+            assert_eq!(fact.receipt_id().unwrap(), pending.id);
             reconciled = true;
         }
         let records = coordinator
