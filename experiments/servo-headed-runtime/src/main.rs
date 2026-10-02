@@ -7,6 +7,7 @@
 // WebDriver and its HTTP fixture listens only on 127.0.0.1.
 
 use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs;
@@ -41,7 +42,7 @@ use winit::raw_window_handle::{HasDisplayHandle, HasWindowHandle};
 use winit::window::Window;
 
 mod input_ownership;
-use input_ownership::InputOwnership;
+use input_ownership::{Button, ButtonAction, InputOwnership, ReleaseOutcome};
 
 const WINDOW_WIDTH: u32 = 1024;
 const WINDOW_HEIGHT: u32 = 768;
@@ -288,6 +289,7 @@ impl ApplicationHandler<AppEvent> for App {
                     state.crash_observed.set(true);
                     state.exact_termination_observed.set(true);
                     state.input.borrow_mut().crashed();
+                    state.retire_withdrawn_gesture();
                     *state.crash_reason.borrow_mut() = Some(format!(
                         "exact content process terminated after SIGKILL: pid={pid}, start_time={start_time}"
                     ));
@@ -339,6 +341,9 @@ impl ApplicationHandler<AppEvent> for App {
             WindowEvent::Focused(focused) => {
                 let dismiss = state.input.borrow_mut().focused(focused);
                 state.dismiss_ime(dismiss);
+                if state.retire_withdrawn_gesture() {
+                    return;
+                }
                 if !focused {
                     state.pointer_left();
                     if let Some(webview) = state.webview.borrow().as_ref() {
@@ -422,6 +427,7 @@ struct RuntimeState {
     failure: RefCell<Option<String>>,
     completed: Cell<bool>,
     input: RefCell<InputOwnership>,
+    pending_mouse_releases: RefCell<HashMap<InputEventId, Button>>,
     fault_process: Cell<Option<(u32, u64)>>,
     exact_termination_observed: Cell<bool>,
 }
@@ -523,6 +529,7 @@ impl RuntimeState {
                 WINDOW_HEIGHT,
                 CHROME_HEIGHT,
             )),
+            pending_mouse_releases: RefCell::new(HashMap::new()),
             fault_process: Cell::new(None),
             exact_termination_observed: Cell::new(false),
         });
@@ -1041,6 +1048,9 @@ impl RuntimeState {
 
     fn pointer_left(&self) {
         self.input.borrow_mut().pointer_left();
+        if self.retire_withdrawn_gesture() {
+            return;
+        }
         if let Some(webview) = self.webview.borrow().as_ref() {
             webview.notify_input_event(InputEvent::MouseLeftViewport(
                 servo::MouseLeftViewportEvent::default(),
@@ -1052,6 +1062,9 @@ impl RuntimeState {
         if state == ElementState::Pressed {
             let dismiss = self.input.borrow_mut().pressed();
             self.dismiss_ime(dismiss);
+            if self.retire_withdrawn_gesture() {
+                return;
+            }
             if let Some(webview) = self.webview.borrow().as_ref() {
                 if self.input.borrow().keyboard_allowed() {
                     webview.focus();
@@ -1060,31 +1073,98 @@ impl RuntimeState {
                 }
             }
         }
-        let Some((x, y)) = self.input.borrow().point() else {
+        let (owned_button, button) = match button {
+            MouseButton::Left => (Button::Primary, ServoMouseButton::Primary),
+            MouseButton::Right => (Button::Secondary, ServoMouseButton::Secondary),
+            MouseButton::Middle => (Button::Auxiliary, ServoMouseButton::Auxiliary),
+            MouseButton::Back => (Button::Back, ServoMouseButton::Back),
+            MouseButton::Forward => (Button::Forward, ServoMouseButton::Forward),
+            MouseButton::Other(value) => (Button::Other(value), ServoMouseButton::Other(value)),
+        };
+        let (owned_action, action) = match state {
+            ElementState::Pressed => (ButtonAction::Down, MouseButtonAction::Down),
+            ElementState::Released => (ButtonAction::Up, MouseButtonAction::Up),
+        };
+        let point =
+            self.input
+                .borrow_mut()
+                .route_button(self.generation.get(), owned_button, owned_action);
+        if self.retire_withdrawn_gesture() {
+            return;
+        }
+        let Some((x, y)) = point else {
             return;
         };
         let point = DevicePoint::new(x, y);
-        let button = match button {
-            MouseButton::Left => ServoMouseButton::Primary,
-            MouseButton::Right => ServoMouseButton::Secondary,
-            MouseButton::Middle => ServoMouseButton::Auxiliary,
-            MouseButton::Back => ServoMouseButton::Back,
-            MouseButton::Forward => ServoMouseButton::Forward,
-            MouseButton::Other(value) => ServoMouseButton::Other(value),
-        };
-        let action = match state {
-            ElementState::Pressed => MouseButtonAction::Down,
-            ElementState::Released => MouseButtonAction::Up,
-        };
         self.native_button_events
             .set(self.native_button_events.get() + 1);
         if let Some(webview) = self.webview.borrow().as_ref() {
-            webview.notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(
-                action,
-                button,
-                point.into(),
-            )));
+            let event_id = webview.notify_input_event(InputEvent::MouseButton(
+                MouseButtonEvent::new(action, button, point.into()),
+            ));
+            if owned_action == ButtonAction::Up {
+                self.pending_mouse_releases
+                    .borrow_mut()
+                    .insert(event_id, owned_button);
+            }
         }
+    }
+
+    fn retire_withdrawn_gesture(&self) -> bool {
+        let Some(outcome) = self.input.borrow_mut().take_withdrawal() else {
+            return false;
+        };
+        if outcome.generation != self.generation.get() {
+            self.fail("withdrawn gesture does not match the active native generation");
+            return true;
+        }
+        let dismiss = self.input.borrow_mut().end_ime();
+        self.dismiss_ime(dismiss);
+        let retired = self.webview.borrow_mut().take();
+        self.pending_mouse_releases.borrow_mut().clear();
+        let owned_handle_removed = retired.is_some();
+        if let Some(webview) = retired {
+            webview.blur();
+            webview.hide();
+            // The pin closes a WebView when its last handle drops. Temporary
+            // callback handles can defer that; input and delegates are already
+            // latched closed. Servo's global mouse mask has no cancellation API.
+            drop(webview);
+        }
+        self.window
+            .set_title("TrillionniumOS Desktop — input recovery required — D0A-02");
+        self.window.request_redraw();
+        let report = format!(
+            concat!(
+                "{{\n",
+                "  \"schema\": \"trillionnium.desktop.native-gesture-withdrawal.v1\",\n",
+                "  \"generation\": {},\n",
+                "  \"reason\": {},\n",
+                "  \"held_button_count\": {},\n",
+                "  \"recovery_required\": true,\n",
+                "  \"owned_webview_handle_removed\": {},\n",
+                "  \"synthetic_mouse_release_sent\": false,\n",
+                "  \"servo_mouse_state_reset_proven\": false,\n",
+                "  \"automatic_reconstruction_allowed\": false,\n",
+                "  \"product_ready\": false\n",
+                "}}\n"
+            ),
+            outcome.generation,
+            json_string(outcome.reason.as_str()),
+            outcome.held_buttons,
+            owned_handle_removed,
+        );
+        if fs::write(
+            self.output_dir.join("gesture-recovery-required.json"),
+            report,
+        )
+        .is_err()
+        {
+            self.fail("could not record native held-gesture recovery requirement");
+        } else {
+            self.fail("native held gesture withdrawn; fresh Servo owner recovery is required");
+        }
+        true
     }
 
     fn forward_wheel(&self, delta: MouseScrollDelta) {
@@ -1406,10 +1486,25 @@ impl WebViewDelegate for RuntimeDelegate {
     fn notify_input_event_handled(
         &self,
         _webview: WebView,
-        _event_id: InputEventId,
-        _result: InputEventResult,
+        event_id: InputEventId,
+        result: InputEventResult,
     ) {
         if let Some(state) = self.current() {
+            let button = state.pending_mouse_releases.borrow_mut().remove(&event_id);
+            if let Some(button) = button {
+                let outcome = if result.contains(InputEventResult::DispatchFailed) {
+                    ReleaseOutcome::DispatchFailed
+                } else {
+                    ReleaseOutcome::Accepted
+                };
+                state
+                    .input
+                    .borrow_mut()
+                    .acknowledge_release(self.generation, button, outcome);
+                if state.retire_withdrawn_gesture() {
+                    return;
+                }
+            }
             state
                 .input_handled_callbacks
                 .set(state.input_handled_callbacks.get() + 1);
@@ -1421,11 +1516,13 @@ impl WebViewDelegate for RuntimeDelegate {
         if let Some(state) = self.current() {
             if !state.crash_triggered.get() || state.fault_process.get().is_none() {
                 state.input.borrow_mut().crashed();
+                state.retire_withdrawn_gesture();
                 state.fail("spontaneous content crash cannot satisfy requested process-fault qualification");
                 return;
             }
             state.crash_observed.set(true);
             state.input.borrow_mut().crashed();
+            state.retire_withdrawn_gesture();
             *state.crash_reason.borrow_mut() = Some(reason);
             state.window.request_redraw();
             let _ = state.proxy.send_event(AppEvent::Drive);
