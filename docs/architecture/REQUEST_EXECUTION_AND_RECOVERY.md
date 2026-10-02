@@ -69,6 +69,17 @@ publication. Canonical request-ID deduplication reads the complete managed chain
 transport loss after a durable terminal result does not permit reexecution.
 
 Connection admission and queue residence consume one original monotonic budget.
+On Linux, `AcceptedProductConnection::from_received` now consumes the opaque
+`ReceivedAcceptedStream` and its original absolute Instant through the same
+one-shot callback. The shared private admission helper checks the ceiling before
+and after kernel peer observation, live pidfd-backed attestation, interrupt
+clone/liveness and local setup; it does not allocate a fresh 20-second budget at
+receiver handoff. A read-only `deadline()` observation rechecks creator PID,
+cancellation and expiry and grants no dispatch authority. Procfs syscalls remain
+synchronous: a late result is refused, not represented as preemptively timed out.
+Real Linux same-UID/SCM_RIGHTS host tests verify this receiver bridge; approved
+principal/service custody, installed native startup and actual Servo execution
+still require separate integration and qualification.
 Revocation closes the same transport to wake blocking receive and cancels active
 actor work. The native owner must still perform the final peer/control/retained
 node check inside its reviewed engine action and withdraw stale pixels/input
@@ -77,8 +88,8 @@ trusted recovery UI/policy and approved cross-UID live-executable attestation
 broker/authority remain missing. Default daemon activation stays closed; the
 qualification mailbox and static attestation profile cannot fill these gaps.
 
-Source regressions use real Unix framing/pidfds with explicitly synthetic procfs
-facts and controlled native completion callbacks. They test source ordering and
+Existing request/coordinator regressions use real Unix framing/pidfds with
+explicitly synthetic procfs facts and controlled native completion callbacks. They test source ordering and
 failure behavior; they are not installed product or renderer qualification.
 
 The live coordinator/supervisor, queues, cancellation handles, journal/store

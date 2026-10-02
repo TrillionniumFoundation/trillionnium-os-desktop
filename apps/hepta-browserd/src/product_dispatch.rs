@@ -17,6 +17,8 @@ use hepta_agent_port::{
     AgentPortError, BrowserRequestHandler, DispatchContext, HandlerOutcome,
     OperationLifecycleObserver, ServiceEvidence, serve_one_before_with_observer,
 };
+#[cfg(target_os = "linux")]
+use hepta_agent_transport::{HandoffError, ReceivedAcceptedStream};
 use hepta_agent_transport::{PeerIdentity, PeerPolicy};
 use hepta_browser_actor::{
     CancellationToken, ReceiptLifecycleObserver, ServoBrowserActor, ServoRuntimeEndpoint,
@@ -121,18 +123,53 @@ impl AcceptedProductConnection {
         let deadline = Instant::now()
             .checked_add(budget)
             .ok_or(ProductDispatchError::InvalidConfiguration)?;
-        let peer =
-            PeerIdentity::from_stream(&stream).map_err(|_| ProductDispatchError::PeerRefused)?;
-        let attested = attestor
-            .attest(peer, policy)
-            .map_err(|_| ProductDispatchError::PeerRefused)?;
-        if Instant::now() >= deadline {
-            return Err(ProductDispatchError::DeadlineExceeded);
+        Self::attest_before(stream, attestor, policy, deadline)
+    }
+
+    /// Consume the received original descriptor and its original absolute
+    /// deadline together. Transfer and receiver queue residence are never
+    /// converted into a fresh product admission budget. This still requires
+    /// independently configured live identity policy; it grants no principal.
+    #[cfg(target_os = "linux")]
+    pub fn from_received(
+        received: ReceivedAcceptedStream,
+        attestor: ProcfsPeerAttestor,
+        policy: &PeerRuntimePolicy,
+    ) -> Result<Self, ProductDispatchError> {
+        received
+            .consume_before(|stream, deadline| {
+                Self::attest_before(stream, attestor, policy, deadline)
+            })
+            .map_err(|error| match error {
+                HandoffError::DeadlineExceeded => ProductDispatchError::DeadlineExceeded,
+                _ => ProductDispatchError::PeerRefused,
+            })?
+    }
+
+    fn attest_before(
+        stream: UnixStream,
+        attestor: ProcfsPeerAttestor,
+        policy: &PeerRuntimePolicy,
+        deadline: Instant,
+    ) -> Result<Self, ProductDispatchError> {
+        let remaining = product_time_remaining(deadline)?;
+        if remaining > MAX_PRODUCT_CONNECTION_BUDGET {
+            return Err(ProductDispatchError::InvalidConfiguration);
         }
-        let interrupt = stream
-            .try_clone()
+        let peer = PeerIdentity::from_stream(&stream);
+        product_time_remaining(deadline)?;
+        let peer = peer.map_err(|_| ProductDispatchError::PeerRefused)?;
+        let attested = attestor.attest(peer, policy);
+        product_time_remaining(deadline)?;
+        let attested = attested.map_err(|_| ProductDispatchError::PeerRefused)?;
+        let interrupt = stream.try_clone();
+        product_time_remaining(deadline)?;
+        let interrupt = interrupt.map_err(|_| ProductDispatchError::PeerRefused)?;
+        attested
+            .ensure_alive()
             .map_err(|_| ProductDispatchError::PeerRefused)?;
-        Ok(Self {
+        product_time_remaining(deadline)?;
+        let connection = Self {
             stream: Some(stream),
             peer,
             attestor,
@@ -143,12 +180,36 @@ impl AcceptedProductConnection {
                 transport: Mutex::new(Some(interrupt)),
                 ..ConnectionControl::default()
             }),
-        })
+        };
+        // Allocation/setup also consume the original ceiling. A late local
+        // result closes its owned descriptors instead of issuing admission.
+        product_time_remaining(deadline)?;
+        Ok(connection)
+    }
+
+    /// Inspect the unchanged ingress ceiling, never renew it. This local
+    /// observation is neither identity refresh nor dispatch authority.
+    pub fn deadline(&self) -> Result<Instant, ProductDispatchError> {
+        if self.control.owner_pid != std::process::id() {
+            return Err(ProductDispatchError::PeerRefused);
+        }
+        if self.control.cancelled.load(Ordering::SeqCst) {
+            return Err(ProductDispatchError::Cancelled);
+        }
+        product_time_remaining(self.deadline)?;
+        Ok(self.deadline)
     }
 
     pub fn cancellation(&self) -> ProductConnectionCancellation {
         ProductConnectionCancellation(self.control.clone())
     }
+}
+
+fn product_time_remaining(deadline: Instant) -> Result<Duration, ProductDispatchError> {
+    deadline
+        .checked_duration_since(Instant::now())
+        .filter(|remaining| !remaining.is_zero())
+        .ok_or(ProductDispatchError::DeadlineExceeded)
 }
 
 impl Drop for AcceptedProductConnection {
