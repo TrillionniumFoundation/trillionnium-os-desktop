@@ -43,6 +43,7 @@ jobs:
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/validate_contract_foundation.py
+          python3 tools/validate_platform_mechanisms.py
           python3 -m unittest discover -s tests -v
           python3 -m unittest discover -s tests/d1 -v
           python3 -m unittest discover -s tests/transport -v
@@ -128,6 +129,7 @@ jobs:
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/validate_contract_foundation.py
+          python3 tools/validate_platform_mechanisms.py
           python3 -m unittest discover -s tests -v
           python3 -m unittest discover -s tests/d1 -v
           python3 -m unittest discover -s tests/transport -v

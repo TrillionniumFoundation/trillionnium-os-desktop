@@ -2,6 +2,9 @@
 
 ## Scope and claim ceiling
 
+Source entry point: `platform/update_recovery.py`; executable host corpus:
+`tests/test_s11_update_recovery.py`.
+
 S11 implements a source and host mechanism candidate for signed A/B updates. It authenticates a closed manifest, verifies a complete target image before any staging write, publishes bytes only to a private regular-file inactive slot, requires exact boot identity and a health receipt before policy commit, and rejects ambiguous transitions.
 
 The ceiling remains source behavior and host filesystem mechanics. No installed QEMU update, bootloader integration, block-device write, raw power loss, physical device, production signing-key custody, protected monotonic storage, publication or release readiness is proven. Update admission defaults to disabled without externally approved roots; every image staging receipt reports `production_activation_enabled=false`.

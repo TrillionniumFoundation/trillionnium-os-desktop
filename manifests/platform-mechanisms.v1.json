@@ -1,0 +1,2442 @@
+{
+  "schema": "trillionnium.desktop.platform-mechanisms.v1",
+  "claim_ceiling": "source_contract_and_api_inventory_only",
+  "qualification_changed": false,
+  "modules": [
+    {
+      "id": "signed_apps",
+      "requirements": [
+        "G5",
+        "D5"
+      ],
+      "implementation": "platform/trusted_apps.py",
+      "documentation": "docs/architecture/TRUSTED_APP_BUNDLES.md",
+      "contract": "contracts/trusted-app-bundle.v1.json",
+      "tests": "tests/test_trusted_apps.py",
+      "source_defined_api": [
+        {
+          "kind": "class",
+          "name": "AppAdmissionError",
+          "bases": [
+            "ValueError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "function",
+          "name": "manifest_signing_bytes",
+          "async": false,
+          "decorators": [],
+          "arguments": "payload: bytes",
+          "returns": "bytes"
+        },
+        {
+          "kind": "function",
+          "name": "content_index_bytes",
+          "async": false,
+          "decorators": [],
+          "arguments": "assets: Mapping[str, bytes]",
+          "returns": "bytes"
+        },
+        {
+          "kind": "function",
+          "name": "content_root_sha256",
+          "async": false,
+          "decorators": [],
+          "arguments": "assets: Mapping[str, bytes]",
+          "returns": "str"
+        },
+        {
+          "kind": "class",
+          "name": "PublisherTrustRoot",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "publisher",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "key_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "public_key",
+              "type": "bytes",
+              "default": null
+            },
+            {
+              "name": "public_key_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "valid_from_unix",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "valid_until_unix",
+              "type": "int",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "PublisherTrustPolicy",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "revision",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "valid_from_unix",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "valid_until_unix",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "roots",
+              "type": "tuple[PublisherTrustRoot, ...]",
+              "default": "()"
+            },
+            {
+              "name": "revoked_keys",
+              "type": "tuple[tuple[str, str], ...]",
+              "default": "()"
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "VerifiedAppBundle",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True, init=False)"
+          ],
+          "fields": [
+            {
+              "name": "publisher",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "app_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "version",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "entrypoint",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "origin_host",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "content_root_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "archive_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "manifest_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "capabilities",
+              "type": "tuple[str, ...]",
+              "default": null
+            },
+            {
+              "name": "data_schema_version",
+              "type": "int | None",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, *args: object, **kwargs: object",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "entrypoint_url",
+              "async": false,
+              "arguments": "self",
+              "returns": "str",
+              "decorators": [
+                "property"
+              ]
+            },
+            {
+              "name": "asset_paths",
+              "async": false,
+              "arguments": "self",
+              "returns": "tuple[str, ...]",
+              "decorators": [
+                "property"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "LocalAssetResponse",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "asset_path",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "body",
+              "type": "bytes",
+              "default": null
+            },
+            {
+              "name": "headers",
+              "type": "Mapping[str, str]",
+              "default": null
+            },
+            {
+              "name": "status",
+              "type": "int",
+              "default": "200"
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "TrustedAppAdmission",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, *, shell_version: str, policy: PublisherTrustPolicy | None=None",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "replace_policy",
+              "async": false,
+              "arguments": "self, policy: PublisherTrustPolicy",
+              "returns": "None",
+              "decorators": [
+                "_owned_operation"
+              ]
+            },
+            {
+              "name": "admit_bundle_file",
+              "async": false,
+              "arguments": "self, path: os.PathLike[str] | str, *, now_unix: int",
+              "returns": "VerifiedAppBundle",
+              "decorators": [
+                "_owned_operation"
+              ]
+            },
+            {
+              "name": "asset_response",
+              "async": false,
+              "arguments": "self, bundle: VerifiedAppBundle, url: str, *, now_unix: int, method: str='GET'",
+              "returns": "LocalAssetResponse",
+              "decorators": [
+                "_owned_operation"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "app_storage",
+      "requirements": [
+        "G5",
+        "D5"
+      ],
+      "implementation": "platform/app_storage.py",
+      "documentation": "docs/architecture/APP_STORAGE.md",
+      "contract": "contracts/app-storage.v1.json",
+      "tests": "tests/test_app_storage.py",
+      "source_defined_api": [
+        {
+          "kind": "class",
+          "name": "AppStorageError",
+          "bases": [
+            "ValueError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "RecoveryRequired",
+          "bases": [
+            "AppStorageError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "InstalledApp",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True, init=False)"
+          ],
+          "fields": [
+            {
+              "name": "principal",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "origin",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "version",
+              "type": "str",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, *args, **kwargs",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "InstallTransaction",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True, init=False)"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, *args, **kwargs",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "AppStorage",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, root: os.PathLike | str, *, admission=None, shell_version='1.0.0'",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "synchronize_policy",
+              "async": false,
+              "arguments": "self, *, now_unix: int",
+              "returns": null,
+              "decorators": [
+                "_owned"
+              ]
+            },
+            {
+              "name": "prepare_install",
+              "async": false,
+              "arguments": "self, principal: str, bundle, *, now_unix: int",
+              "returns": "InstallTransaction",
+              "decorators": [
+                "_owned"
+              ]
+            },
+            {
+              "name": "commit_install",
+              "async": false,
+              "arguments": "self, transaction: InstallTransaction, *, operation_id: str, now_unix: int",
+              "returns": "InstalledApp",
+              "decorators": [
+                "_owned"
+              ]
+            },
+            {
+              "name": "open_app",
+              "async": false,
+              "arguments": "self, principal: str, origin: str, *, now_unix: int",
+              "returns": "InstalledApp",
+              "decorators": [
+                "_owned"
+              ]
+            },
+            {
+              "name": "asset_response",
+              "async": false,
+              "arguments": "self, handle: InstalledApp, url: str, *, now_unix: int",
+              "returns": null,
+              "decorators": [
+                "_owned"
+              ]
+            },
+            {
+              "name": "uninstall",
+              "async": false,
+              "arguments": "self, handle: InstalledApp, *, operation_id: str, now_unix: int",
+              "returns": null,
+              "decorators": [
+                "_owned"
+              ]
+            },
+            {
+              "name": "put_data",
+              "async": false,
+              "arguments": "self, handle: InstalledApp, key: str, payload: bytes, *, operation_id: str, now_unix: int",
+              "returns": null,
+              "decorators": [
+                "_owned"
+              ]
+            },
+            {
+              "name": "read_data",
+              "async": false,
+              "arguments": "self, handle: InstalledApp, key: str, *, now_unix: int",
+              "returns": "bytes",
+              "decorators": [
+                "_owned"
+              ]
+            },
+            {
+              "name": "delete_data",
+              "async": false,
+              "arguments": "self, handle: InstalledApp, key: str, *, operation_id: str, now_unix: int",
+              "returns": null,
+              "decorators": [
+                "_owned"
+              ]
+            },
+            {
+              "name": "close",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "__del__",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "taskflow",
+      "requirements": [
+        "G5",
+        "D6"
+      ],
+      "implementation": "platform/taskflow.py",
+      "documentation": "docs/architecture/TASKFLOW_CAPABILITIES.md",
+      "contract": "contracts/taskflow-execution.v1.json",
+      "tests": "tests/test_taskflow.py",
+      "source_defined_api": [
+        {
+          "kind": "class",
+          "name": "TaskFlowError",
+          "bases": [
+            "ValueError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "PermitRefused",
+          "bases": [
+            "TaskFlowError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "ReplayRefused",
+          "bases": [
+            "TaskFlowError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "RecoveryRequired",
+          "bases": [
+            "TaskFlowError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "DeadlineExceeded",
+          "bases": [
+            "TaskFlowError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "Cancelled",
+          "bases": [
+            "TaskFlowError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "CurrentBinding",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "principal_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "session_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "session_generation",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "origin",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "resource_kind",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "resource_target",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "document_generation",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "semantic_snapshot_revision",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "mutation_epoch",
+              "type": "int",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "resource",
+              "async": false,
+              "arguments": "self",
+              "returns": "dict",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "TaskPolicy",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "task_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "binding",
+              "type": "CurrentBinding",
+              "default": null
+            },
+            {
+              "name": "audience",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "policy_revision",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "max_actions",
+              "type": "int",
+              "default": "1"
+            },
+            {
+              "name": "task_budget_ms",
+              "type": "int",
+              "default": "60000"
+            },
+            {
+              "name": "max_action_budget_ms",
+              "type": "int",
+              "default": "MAX_ACTION_BUDGET_MS"
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "proposal_sha256",
+          "async": false,
+          "decorators": [],
+          "arguments": "payload: bytes",
+          "returns": "str"
+        },
+        {
+          "kind": "function",
+          "name": "permit_signing_bytes",
+          "async": false,
+          "decorators": [],
+          "arguments": "payload: bytes",
+          "returns": "bytes"
+        },
+        {
+          "kind": "class",
+          "name": "PinnedIssuerRoot",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "issuer",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "key_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "public_key_der",
+              "type": "bytes",
+              "default": null
+            },
+            {
+              "name": "public_key_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "audience",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "policy_revision",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "valid_from_unix_ms",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "valid_until_unix_ms",
+              "type": "int",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ExternalPermitVerifier",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, roots: tuple[PinnedIssuerRoot, ...]=()",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "revoke_key",
+              "async": false,
+              "arguments": "self, key_id: str",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "revoke_permit",
+              "async": false,
+              "arguments": "self, permit_id: str",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "verify",
+              "async": false,
+              "arguments": "self, payload: bytes, *, now_unix_ms: int, timeout: float=2.0",
+              "returns": "bytes",
+              "decorators": []
+            },
+            {
+              "name": "revalidate",
+              "async": false,
+              "arguments": "self, verified_payload: bytes, *, now_unix_ms: int",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "DurableGrantStore",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, root: Path",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "refuses_task_resume",
+              "async": false,
+              "arguments": "self, task_id: str",
+              "returns": "bool",
+              "decorators": []
+            },
+            {
+              "name": "close",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "__enter__",
+              "async": false,
+              "arguments": "self",
+              "returns": "DurableGrantStore",
+              "decorators": []
+            },
+            {
+              "name": "__exit__",
+              "async": false,
+              "arguments": "self, *_: object",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "__del__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ActionState",
+          "bases": [
+            "str",
+            "Enum"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "EffectOutcome",
+          "bases": [
+            "str",
+            "Enum"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "ActionView",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "task_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "action_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "proposal_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "state",
+              "type": "ActionState",
+              "default": null
+            },
+            {
+              "name": "operation",
+              "type": "str",
+              "default": null
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "ActionControl",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, owner: TaskFlowCoordinator, task_id: str, action_id: str, seal: object",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "ensure_active",
+              "async": false,
+              "arguments": "self, current: CurrentBinding",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "is_cancelled",
+              "async": false,
+              "arguments": "self",
+              "returns": "bool",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "TaskFlowCoordinator",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, verifier: ExternalPermitVerifier | None=None, store: DurableGrantStore | None=None, *, monotonic_ns: Callable[[], int]=time.monotonic_ns, unix_ms: Callable[[], int]=lambda: time.time_ns() // 1000000",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "create_task",
+              "async": false,
+              "arguments": "self, policy: TaskPolicy",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "propose",
+              "async": false,
+              "arguments": "self, task_id: str, payload: bytes",
+              "returns": "ActionView",
+              "decorators": []
+            },
+            {
+              "name": "current",
+              "async": false,
+              "arguments": "self, task_id: str",
+              "returns": "ActionView",
+              "decorators": []
+            },
+            {
+              "name": "approve",
+              "async": false,
+              "arguments": "self, task_id: str, permit_payload: bytes",
+              "returns": "ActionView",
+              "decorators": []
+            },
+            {
+              "name": "dispatch",
+              "async": false,
+              "arguments": "self, task_id: str, current: CurrentBinding, adapter: Callable[[bytes, ActionControl], EffectOutcome]",
+              "returns": "ActionView",
+              "decorators": []
+            },
+            {
+              "name": "cancel",
+              "async": false,
+              "arguments": "self, task_id: str",
+              "returns": "ActionView | None",
+              "decorators": []
+            },
+            {
+              "name": "handoff_to_human",
+              "async": false,
+              "arguments": "self, task_id: str",
+              "returns": "ActionView | None",
+              "decorators": []
+            },
+            {
+              "name": "close_task",
+              "async": false,
+              "arguments": "self, task_id: str",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "controlled_egress",
+      "requirements": [
+        "G5",
+        "D6"
+      ],
+      "implementation": "platform/controlled_egress.py",
+      "documentation": "docs/architecture/CONTROLLED_EGRESS.md",
+      "contract": "contracts/controlled-egress.v1.json",
+      "tests": "tests/test_controlled_egress.py",
+      "source_defined_api": [
+        {
+          "kind": "class",
+          "name": "EgressDenied",
+          "bases": [
+            "RuntimeError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "EgressCancelled",
+          "bases": [
+            "EgressDenied"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "EgressDeadlineExceeded",
+          "bases": [
+            "EgressDenied"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "EgressIndeterminate",
+          "bases": [
+            "EgressDenied"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, operation_id: str, connection: 'ConnectionIdentity', hops: tuple['HopReceipt', ...], cause: BaseException",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "public_address",
+          "async": false,
+          "decorators": [],
+          "arguments": "value: str",
+          "returns": "str"
+        },
+        {
+          "kind": "class",
+          "name": "ApprovedHost",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "hostname",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "port",
+              "type": "int",
+              "default": "443"
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ApprovedResolver",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "address",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "tls_hostname",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "ca_pem",
+              "type": "bytes",
+              "default": null
+            },
+            {
+              "name": "port",
+              "type": "int",
+              "default": "853"
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "EgressConfiguration",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "hosts",
+              "type": "tuple[ApprovedHost, ...]",
+              "default": "()"
+            },
+            {
+              "name": "initiating_origins",
+              "type": "frozenset[str]",
+              "default": "frozenset()"
+            },
+            {
+              "name": "resolver",
+              "type": "ApprovedResolver | None",
+              "default": "None"
+            },
+            {
+              "name": "ca_pem",
+              "type": "bytes | None",
+              "default": "None"
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "QualificationProfile",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "hosts",
+              "type": "tuple[ApprovedHost, ...]",
+              "default": null
+            },
+            {
+              "name": "initiating_origins",
+              "type": "frozenset[str]",
+              "default": null
+            },
+            {
+              "name": "resolver",
+              "type": "ApprovedResolver",
+              "default": null
+            },
+            {
+              "name": "ca_pem",
+              "type": "bytes",
+              "default": null
+            },
+            {
+              "name": "loopback_addresses",
+              "type": "frozenset[str]",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "SessionBinding",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "session_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "generation",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "initiating_origin",
+              "type": "str",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ObservationPermit",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "operation_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "initial_url",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "hosts",
+              "type": "frozenset[ApprovedHost]",
+              "default": null
+            },
+            {
+              "name": "session",
+              "type": "SessionBinding",
+              "default": null
+            },
+            {
+              "name": "epoch",
+              "type": "int",
+              "default": null
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "ConnectionIdentity",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "session_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "session_generation",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "initiating_origin",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "url_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "host",
+              "type": "ApprovedHost",
+              "default": null
+            },
+            {
+              "name": "dns_answers",
+              "type": "tuple[str, ...]",
+              "default": null
+            },
+            {
+              "name": "connected_peer",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "certificate_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "resolver_peer",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "resolver_certificate_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "trust_policy_sha256",
+              "type": "str",
+              "default": null
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "HopReceipt",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "connection",
+              "type": "ConnectionIdentity",
+              "default": null
+            },
+            {
+              "name": "status",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "body_bytes",
+              "type": "int",
+              "default": null
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "ObservationResponse",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "operation_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "body",
+              "type": "bytes",
+              "default": null
+            },
+            {
+              "name": "body_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "headers",
+              "type": "tuple[tuple[str, str], ...]",
+              "default": null
+            },
+            {
+              "name": "hops",
+              "type": "tuple[HopReceipt, ...]",
+              "default": null
+            },
+            {
+              "name": "qualification_only",
+              "type": "bool",
+              "default": null
+            },
+            {
+              "name": "browser_namespace_enforced",
+              "type": "bool",
+              "default": "False"
+            },
+            {
+              "name": "external_mutation_enabled",
+              "type": "bool",
+              "default": "False"
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "CancellationToken",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "cancel",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "cancelled",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": [
+                "property"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ControlledEgress",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, configuration: EgressConfiguration=EgressConfiguration()",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "bind_session",
+              "async": false,
+              "arguments": "self, session: SessionBinding",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "close",
+              "async": false,
+              "arguments": "self",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "issue_observation_permit",
+              "async": false,
+              "arguments": "self, session: SessionBinding, url: str, *, redirect_hosts: frozenset[ApprovedHost]=frozenset()",
+              "returns": "ObservationPermit",
+              "decorators": []
+            },
+            {
+              "name": "observe",
+              "async": false,
+              "arguments": "self, permit: ObservationPermit, session: SessionBinding, *, timeout_seconds=10, cancellation: CancellationToken | None=None, method='GET', resource_class='observation'",
+              "returns": "ObservationResponse",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "QualificationEgressClient",
+          "bases": [
+            "ControlledEgress"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, profile: QualificationProfile",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "signed_update",
+      "requirements": [
+        "G6",
+        "D7",
+        "S11"
+      ],
+      "implementation": "platform/update_recovery.py",
+      "documentation": "docs/architecture/S11_UPDATE_RECOVERY.md",
+      "contract": "contracts/s11-update-recovery.v1.json",
+      "tests": "tests/test_s11_update_recovery.py",
+      "source_defined_api": [
+        {
+          "kind": "class",
+          "name": "UpdateError",
+          "bases": [
+            "RuntimeError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "ManifestRefused",
+          "bases": [
+            "UpdateError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "StateRefused",
+          "bases": [
+            "UpdateError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "RecoveryRequired",
+          "bases": [
+            "UpdateError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "CoordinatorBusy",
+          "bases": [
+            "UpdateError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "PublicationIndeterminate",
+          "bases": [
+            "UpdateError"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, digest: str, cause: BaseException",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ImagePublicationIndeterminate",
+          "bases": [
+            "PublicationIndeterminate"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, slot: str, digest: str, cause: BaseException",
+              "returns": null,
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "Phase",
+          "bases": [
+            "str",
+            "Enum"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": []
+        },
+        {
+          "kind": "function",
+          "name": "manifest_signing_bytes",
+          "async": false,
+          "decorators": [],
+          "arguments": "payload: bytes | str",
+          "returns": "bytes"
+        },
+        {
+          "kind": "class",
+          "name": "UpdateTrustRoot",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "signer_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "public_key_pem",
+              "type": "bytes",
+              "default": null
+            },
+            {
+              "name": "expected_public_key_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "minimum_version",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "valid_from_unix",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "valid_until_unix",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "revoked",
+              "type": "bool",
+              "default": "False"
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "SignatureAdmission",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "signer_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "public_key_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "signature_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "signing_preimage_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "trust_policy_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "minimum_version",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "verified_unix",
+              "type": "int",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ExternalUpdateSignatureVerifier",
+          "bases": [
+            "_ProcessThreadOwner"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, roots: tuple[UpdateTrustRoot, ...]",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "verify",
+              "async": false,
+              "arguments": "self, payload: bytes | str, signature: bytes, *, now_unix: int",
+              "returns": "SignatureAdmission",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "revalidate",
+              "async": false,
+              "arguments": "self, admission: SignatureAdmission, *, now_unix: int",
+              "returns": "None",
+              "decorators": [
+                "_owner_guard"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "UpdateManifest",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "repository",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "source_version",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "source_image_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "target_version",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "target_slot",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "target_image_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "target_image_bytes",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "rollback_floor",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "expires_unix",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "signer_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "signature_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "manifest_sha256",
+              "type": "str",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "parse",
+              "async": false,
+              "arguments": "cls, payload: bytes | str, *, now_unix: int, active_slot: str, current_version: int, current_image_sha256: str",
+              "returns": "'UpdateManifest'",
+              "decorators": [
+                "classmethod"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ManifestTicket",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "manifest",
+              "type": "UpdateManifest",
+              "default": null
+            },
+            {
+              "name": "sequence",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "signature_admission",
+              "type": "SignatureAdmission",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "HealthPermit",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "manifest_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "sequence",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "health_receipt_sha256",
+              "type": "str",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "JournalReconciliation",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "manifest_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "sequence",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "journal_record_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "status",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "operation_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "journal_identity",
+              "type": "tuple[int, int, int, int]",
+              "default": null
+            }
+          ],
+          "methods": [
+            {
+              "name": "__post_init__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "DispatchBinding",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "manifest_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "sequence",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "operation_id",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "operation",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "target_slot",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "image_sha256",
+              "type": "str",
+              "default": null
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "ImageStageReceipt",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "target_slot",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "image_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "image_bytes",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "manifest_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "signature_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "production_activation_enabled",
+              "type": "bool",
+              "default": "False"
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "RecoveryDecision",
+          "bases": [],
+          "decorators": [
+            "dataclass(frozen=True)"
+          ],
+          "fields": [
+            {
+              "name": "operator_uid",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "manifest_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "sequence",
+              "type": "int",
+              "default": null
+            },
+            {
+              "name": "source_image_sha256",
+              "type": "str",
+              "default": null
+            },
+            {
+              "name": "action",
+              "type": "str",
+              "default": "'rollback_only_no_replay'"
+            }
+          ],
+          "methods": []
+        },
+        {
+          "kind": "class",
+          "name": "UpdateCoordinator",
+          "bases": [
+            "_ProcessThreadOwner"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, *, active_slot: str, current_version: int, current_image_sha256: str, max_boot_failures: int=MAX_BOOT_FAILURES, signature_verifier: ExternalUpdateSignatureVerifier | None=None, protected_rollback_floor: int | None=None, clock: Callable[[], int] | None=None, recovery_operator_uids: frozenset[int]=frozenset(), journal_authority: 'DurableUpdateJournal | None'=None",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "effect_reconciliation_required",
+              "async": false,
+              "arguments": "self",
+              "returns": "bool",
+              "decorators": [
+                "property",
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "verify_manifest",
+              "async": false,
+              "arguments": "self, payload: bytes | str, *, now_unix: int, signature: bytes | None=None",
+              "returns": "ManifestTicket",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "stage_image",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket, image: bytes, *, now_unix: int",
+              "returns": "None",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "arm_first_boot",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket, *, now_unix: int",
+              "returns": "None",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "stage_image_file",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket, image_path: Path, slot_store: 'ImageSlotStore', *, now_unix: int, fault: Callable[[str], None] | None=None",
+              "returns": "ImageStageReceipt",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "request_operator_rollback",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket, source_image_path: Path",
+              "returns": "RecoveryDecision",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "reconcile_image_publication",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket, slot_store: 'ImageSlotStore', *, now_unix: int",
+              "returns": "ImageStageReceipt",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "record_booted_image",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket, *, slot: str, image_sha256: str",
+              "returns": "None",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "record_health",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket, *, stable_seconds: int, health_receipt_sha256: str",
+              "returns": "HealthPermit",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "commit",
+              "async": false,
+              "arguments": "self, permit: HealthPermit",
+              "returns": "None",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "record_boot_failure",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket",
+              "returns": "Phase",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "rollback",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket, *, recovered_image_sha256: str",
+              "returns": "None",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "mark_possible_dispatch",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket",
+              "returns": "DispatchBinding",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "verify_journal_reconciliation",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket",
+              "returns": "JournalReconciliation",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "reconcile_possible_dispatch",
+              "async": false,
+              "arguments": "self, fact: JournalReconciliation",
+              "returns": "None",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "reconcile_startup",
+              "async": false,
+              "arguments": "self, slot_digests: dict[str, str]",
+              "returns": "Phase",
+              "decorators": [
+                "_owner_guard"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "AtomicStateStore",
+          "bases": [
+            "_ProcessThreadOwner"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, root: Path",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "close",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "__del__",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "__enter__",
+              "async": false,
+              "arguments": "self",
+              "returns": "'AtomicStateStore'",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "__exit__",
+              "async": false,
+              "arguments": "self, *_: object",
+              "returns": "None",
+              "decorators": []
+            },
+            {
+              "name": "acquire",
+              "async": false,
+              "arguments": "self",
+              "returns": "None",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "write",
+              "async": false,
+              "arguments": "self, name: str, value: dict[str, Any], *, fault: Callable[[str], None] | None=None",
+              "returns": "str",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "read",
+              "async": false,
+              "arguments": "self, name: str",
+              "returns": "dict[str, Any]",
+              "decorators": [
+                "_owner_guard"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ImageSlotStore",
+          "bases": [
+            "AtomicStateStore"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "async": false,
+              "arguments": "self, root: Path, *, active_slot: str",
+              "returns": null,
+              "decorators": []
+            },
+            {
+              "name": "active_slot",
+              "async": false,
+              "arguments": "self",
+              "returns": "str",
+              "decorators": [
+                "property",
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "write",
+              "async": false,
+              "arguments": "self, name: str, value: dict[str, Any], *, fault: Callable[[str], None] | None=None",
+              "returns": "str",
+              "decorators": [
+                "_owner_guard"
+              ]
+            },
+            {
+              "name": "reconcile_image",
+              "async": false,
+              "arguments": "self, ticket: ManifestTicket",
+              "returns": "ImageStageReceipt",
+              "decorators": [
+                "_owner_guard"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "DurableUpdateJournal",
+          "bases": [
+            "AtomicStateStore"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "confirm_dispatch",
+              "async": false,
+              "arguments": "self, binding: DispatchBinding",
+              "returns": "tuple[str, str, tuple[int, int, int, int]]",
+              "decorators": [
+                "_owner_guard"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

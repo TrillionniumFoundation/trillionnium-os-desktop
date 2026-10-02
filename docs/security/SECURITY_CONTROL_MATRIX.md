@@ -1,23 +1,30 @@
 # Security control matrix
 
-**Revision:** `2026-08-29-d6`
+**Source review revision:** `2026-10-02`. This candidate view does not replace
+`manifests/project-state.v1.json`, historical qualification or release authority.
 
-| Control | Current implementation | Required test/evidence | Current status | Residual risk / next gate |
+| Control | Source implementation | Required test/evidence | Candidate status | Remaining acceptance |
 | --- | --- | --- | --- | --- |
-| strict Browser API codec | Rust canonical parser/encoder | independent vectors, fuzz, exact-head Rust | host validated | no BrowserActor/Servo dispatch |
-| bounded authenticated carrier | AF_UNIX connected stream, peer creds, nonce, digest, sequence, deadlines | malformed corpus, peer tests | host validated | no product listener claim |
-| socket custody | systemd socket/service, default-disabled marker, sandbox | PID 1 QEMU activation corpus | host validated only | D1 runtime evidence missing |
-| semantic principal binding | not integrated | exact service identity and TaskFlow mapping | open | D3 |
-| stale-reference control | state machine and codec fields | headed/runtime ambiguity/navigation/crash corpus | partial | D2/D3 |
-| trusted shell separation | architecture/contracts | headed pixels, process and origin evidence | candidate | D2 |
-| renderer sandbox | design only | namespace/seccomp/LSM escape corpus | open | D2/D6/D8 |
-| durable receipts | bounded chained journal | independent parser, corruption, disk-full, crash corpus | host validated | authenticity anchor and integration remain |
-| external-effect replay refusal | journal/plan rule | BrowserActor kill/disconnect/reconciliation corpus | source/host only | D3/D7 |
-| controlled egress | design only | SSRF/rebinding/redirect/IPv6/protocol corpus | open | D6 |
-| capability permits/portals | schemas/design | audience/resource/expiry and ambient-authority tests | open | D5/D6 |
-| signed apps and trusted origins | schemas/ADRs | signature/revocation/anti-downgrade/storage isolation | open | D5 |
-| reproducible image | D1 candidate | two-build digest identity and QEMU boot | candidate | D1 |
-| signed update/rollback | design only | power loss, failed update, rollback, recovery | open | D7 |
-| fixed hardware | none selected | exact BOM qualification and stability | open | D8 |
-| supply-chain action pinning | d6 CI work | immutable-action audit | candidate | exact-head/main CI |
-| protected review and signing separation | source policy only | repository settings and custody evidence | external gate | admin action required |
+| strict Browser API codec | canonical Rust codec and closed registry | independent vectors, fuzz, exact source/merge CI | source/host validated | exhaustive version/domain conversion and installed dispatch |
+| authenticated connected carrier | original AF_UNIX stream, live peer/pidfd, bounded nonce/digest/sequence/deadline | malformed/live-peer tests and installed fault corpus | source/host validated | approved cross-UID live executable custody broker and principal policy |
+| socket custody | systemd default-disabled socket and separate qualification server | real PID1/QEMU activation, denial, teardown and connection-kill | D1 candidate pass on head `6b73ae4`, portable artifact independently verified | fresh exact objects; qualification static executable path does not close product live attestation |
+| semantic principal and dispatch | concrete actor/coordinator, original attested stream and durable response ordering | actual socket/receipt/deadline/cancel/recovery matrix | G2 source candidate | installed startup/native owner, service handoff, trusted policy and user recovery |
+| stale-reference control | actor preflight/final checks and bounded supervised incarnation reconstruction | navigation/mutation/crash ambiguity corpus | source candidate | installed native retained-target matrix |
+| trusted chrome and input | Winit fixture ownership, focus/leave/crash withdrawal, generation-bound callbacks | exact-pin Servo compile and native X11 positive/negative input recovery | native candidate CI passes on `6b0b41f` and fresh-base `aac2124` | product PageOwner, held gestures, layouts/scaling, clipboard, actual Chinese OS IME and approval UX |
+| renderer sandbox | architecture and reviewed systemd restrictions | namespace/seccomp/LSM and bypass/escape corpus | open | installed renderer confinement and hardware qualification |
+| durable receipts | private descriptor-bound chained complete request lifecycle, creator-process authority and sealed readback facts | corruption, quota, sync uncertainty, actual fork, cancellation/restart/no-replay tests | G2 source candidate | installed disk/crash matrix, archival and independent rollback anchor |
+| external-effect replay refusal | complete-chain deduplication; uncertain state requires explicit reconciliation | lost response, disconnect, crash, substituted/current journal facts | source/host candidate | installed effects and durable authorized operator decisions |
+| controlled observation egress | actual approved DoT, address policy, peer/TLS and each redirect binding | real DoT/HTTPS/IPv6, wrong CA/peer, rebinding, cancel/deadline/fork tests | G5 source candidate | complete browser resource interception/namespace, policy approval and durable uncertainty recovery |
+| typed TaskFlow/capability authority | actual external Ed25519, exact proposal/resource binding, durable task reservations and consumed grants | audience/resource/expiry, budget/cancel/restart/fork/crypto substitution | G5 source candidate | trusted consent surface, native final effect gate, terminal receipts and persistent revocation/recovery |
+| signed apps and trusted origins | complete indexed signed ZIP, immutable assets and exact synthetic HTTPS responses | real signature/ZIP collision/incomplete index/URL/root/revocation tests | G5 source candidate | installed origin/CSP/CORS/cache and protected root/policy delivery |
+| app storage lifecycle | private leased principal/origin partitions, durable version/policy floors, single-use transactions and tombstones | real package signatures, policy revocation, upgrade/uninstall, interruption/restart/fork/descriptor cleanup | G5 source candidate | native storage binding, trusted time/policy, migration/recovery and protected rollback anchor |
+| reproducible image | locked Debian, two actual D1 images and offline digest binding | exact image/input tuple and real QEMU boot | D1 candidate pass; D2I run `36997938015` failed missing recovery screenshot | repaired integrated image/runtime and exact-main regression |
+| signed update/rollback | real externally rooted signature with sealed inputs, complete streamed inactive image, durable reconciliation, issued health permit and process/thread custody | actual crypto/full-image/fsync/return-window/recovery/fork/descriptor cleanup tests | G6 source candidate | production roots/clock/floor, installed boot/block-slot health and physical power-loss corpus |
+| fixed hardware | none provisioned | fixed BOM, endurance, actual non-graceful power removal | open external facilities | hardware and independent builders |
+| supply chain and exact-object CI | immutable action pins, exact head/merge parent checks and closed source inventories | actual workflows and portable digest-bound evidence | candidate CI | independent protected review, exact-main rerun and approved publication |
+| protected review/signing separation | policy and offline release verifier | live settings, actual designated independent approvals and signing custody | open external authority | independent identities, protected environments and offline/HSM production signing |
+
+Host, native, installed image, physical hardware and release evidence remain
+separate. A source candidate or subgate pass closes none of the unobserved tiers.
+Review the [closure plan](../plan/IMPLEMENTATION_CLOSURE_PLAN.md) for acceptance
+dependencies and the candidate execution record for immutable review objects.
