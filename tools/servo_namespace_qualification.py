@@ -131,6 +131,279 @@ def hash_regular(path: Path, limit: int = 4 * 1024**3) -> str:
         os.close(descriptor)
 
 
+class _StagingDescriptor:
+    """Empty before acquisition; descriptor cleanup never acts on pathnames."""
+    def __init__(self):
+        self.fd = None
+
+    def close(self):
+        descriptor = None
+        close_attempted = False
+        try:
+            descriptor, self.fd = self.fd, None
+            if descriptor is not None:
+                # Keep the attempt mark and native call on one traceable line.
+                # A line interruption before this call can retire the local FD;
+                # an attempted close must never retry a potentially reused FD.
+                close_attempted = True; os.close(descriptor)
+        except BaseException:
+            if descriptor is not None and not close_attempted:
+                os.close(descriptor)
+            raise
+
+    def __del__(self):
+        try:
+            self.close()
+        except BaseException:
+            pass
+
+
+class _StagingPath:
+    """Retain every NOFOLLOW ancestor and the opened leaf until retirement."""
+    def __init__(self):
+        self.owners = []
+        self.path = None
+
+    @classmethod
+    def open(cls, path: Path, *, directory=False):
+        value = cls()
+        value.path = path.absolute()
+        require(".." not in value.path.parts, "staging path is not canonical")
+        parts = value.path.parts[1:]
+        require(bool(parts) or directory, "staging input is not a file")
+        try:
+            root = _StagingDescriptor()
+            value.owners.append(root)
+            root.fd = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+            for index, part in enumerate(parts):
+                owner = _StagingDescriptor()
+                parent = value.owners[-1].fd
+                value.owners.append(owner)
+                flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK
+                if directory or index < len(parts) - 1:
+                    flags |= os.O_DIRECTORY
+                owner.fd = os.open(part, flags, dir_fd=parent)
+            return value
+        except BaseException:
+            value.close()
+            raise
+
+    @property
+    def fd(self):
+        require(bool(self.owners) and self.owners[-1].fd is not None, "staging descriptor retired")
+        return self.owners[-1].fd
+
+    def identities(self):
+        return [(item.st_dev, item.st_ino) for item in (os.fstat(owner.fd) for owner in self.owners)]
+
+    def close(self):
+        error = None
+        while self.owners:
+            owner = self.owners.pop()
+            try:
+                owner.close()
+            except BaseException as failure:
+                if error is None:
+                    error = failure
+        if error is not None:
+            raise error
+
+    def __del__(self):
+        try:
+            self.close()
+        except BaseException:
+            pass
+
+
+class _StagedExecutable:
+    """Private single-link copy of an explicitly supplied Cargo executable.
+
+    Only this compiled-input admission accepts multiple source hard links.
+    Source/portable readers retain their strict single-link rule. Cleanup is
+    creator-only, and a failed unit corpus retains the private file for review.
+    """
+    LIMIT = 4 * 1024**3
+    BUDGET = 60
+
+    def __init__(self, source: Path, *, artifact_root: Path | None = None):
+        self.owner_pid = os.getpid()
+        self.source = None
+        self.parent = None
+        self.root = None
+        self.copy = _StagingDescriptor()
+        self.path = None
+        self.source_snapshot = None
+        self.copy_snapshot = None
+        self.digest = None
+        try:
+            self.source = _StagingPath.open(source)
+            before = os.fstat(self.source.fd)
+            require(stat.S_ISREG(before.st_mode) and before.st_uid == os.getuid()
+                and before.st_nlink >= 1 and before.st_mode & 0o022 == 0
+                and before.st_mode & 0o100 != 0 and 0 < before.st_size <= self.LIMIT,
+                "compiled executable source unsafe")
+            self.source_snapshot = snapshot(before)
+            # The unit does not enable PrivateTmp. Use the explicit runner work
+            # directory, outside the uploaded artifacts, rather than /tmp.
+            parent = Path(os.environ.get("RUNNER_TEMP", str(ROOT.parent))).absolute()
+            excluded = [ROOT / "artifacts"]
+            if artifact_root is not None:
+                excluded.append(Path(os.path.abspath(artifact_root)))
+            require(not any(parent.is_relative_to(path) for path in excluded),
+                    "executable staging must be outside artifact output")
+            self.parent = _StagingPath.open(parent, directory=True)
+            name = ".hepta-netns-exec-" + uuid.uuid4().hex
+            os.mkdir(name, 0o700, dir_fd=self.parent.fd)
+            self.root = _StagingPath.open(parent / name, directory=True)
+            require(self.root.identities()[:-1] == self.parent.identities(), "staging parent changed")
+            self._check_root()
+            self.path = parent / name / "runtime"
+            self.copy.fd = os.open("runtime", os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                                   0o500, dir_fd=self.root.fd)
+            value = hashlib.sha256()
+            total = 0
+            deadline = time.monotonic() + self.BUDGET
+            while True:
+                require(time.monotonic() < deadline, "executable staging deadline expired")
+                block = os.read(self.source.fd, 1024 * 1024)
+                require(time.monotonic() < deadline, "executable staging deadline expired")
+                if not block:
+                    break
+                total += len(block)
+                require(total <= self.LIMIT, "executable staging byte limit exceeded")
+                value.update(block)
+                pending = memoryview(block)
+                while pending:
+                    require(time.monotonic() < deadline, "executable staging deadline expired")
+                    written = os.write(self.copy.fd, pending)
+                    require(time.monotonic() < deadline, "executable staging deadline expired")
+                    require(written > 0, "executable staging short write")
+                    pending = pending[written:]
+            require(total == before.st_size and snapshot(os.fstat(self.source.fd)) == self.source_snapshot,
+                    "compiled executable source changed during copy")
+            os.fchmod(self.copy.fd, 0o500)
+            os.fsync(self.copy.fd)
+            os.fsync(self.root.fd)
+            self.copy_snapshot = snapshot(os.fstat(self.copy.fd))
+            self.digest = value.hexdigest()
+            readonly = _StagingDescriptor()
+            readonly.fd = os.open("runtime", os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                                  dir_fd=self.root.fd)
+            require(snapshot(os.fstat(readonly.fd)) == self.copy_snapshot, "staged executable changed before read-only retention")
+            writable, self.copy = self.copy, readonly
+            writable.close()  # A retained writable FD would make exec fail ETXTBSY.
+            self.verify()
+            require(time.monotonic() < deadline, "executable staging deadline expired")
+        except BaseException:
+            self.close(remove=True)
+            raise
+
+    def _creator(self):
+        require(os.getpid() == self.owner_pid, "staging owner inherited by child")
+
+    def _check_root(self):
+        metadata = os.fstat(self.root.fd)
+        require(stat.S_ISDIR(metadata.st_mode) and metadata.st_uid == os.getuid()
+                and stat.S_IMODE(metadata.st_mode) == 0o700, "staging directory unsafe")
+        current = _StagingPath.open(self.root.path, directory=True)
+        try:
+            require(current.identities() == self.root.identities(), "staging directory path changed")
+        finally:
+            current.close()
+
+    def _source_current(self):
+        require(snapshot(os.fstat(self.source.fd)) == self.source_snapshot, "compiled executable source changed")
+        current = _StagingPath.open(self.source.path)
+        try:
+            require(current.identities() == self.source.identities()
+                and snapshot(os.fstat(current.fd)) == self.source_snapshot, "compiled executable source name changed")
+        finally:
+            current.close()
+
+    def verify(self):
+        self._creator()
+        deadline = time.monotonic() + self.BUDGET
+        self._source_current()
+        self._check_root()
+        metadata = os.fstat(self.copy.fd)
+        require(snapshot(metadata) == self.copy_snapshot and metadata.st_uid == os.getuid()
+            and metadata.st_nlink == 1 and stat.S_IMODE(metadata.st_mode) == 0o500,
+            "staged executable metadata changed")
+        current = _StagingPath.open(self.path)
+        try:
+            require(current.identities()[:-1] == self.root.identities()
+                and snapshot(os.fstat(current.fd)) == self.copy_snapshot, "staged executable name changed")
+        finally:
+            current.close()
+        require(hash_regular(self.path, self.LIMIT) == self.digest, "staged executable bytes changed")
+        require(time.monotonic() < deadline, "compiled executable recheck deadline expired")
+        value = hashlib.sha256()
+        position = 0
+        while position < self.source_snapshot[5]:
+            require(time.monotonic() < deadline, "compiled executable recheck deadline expired")
+            block = os.pread(self.source.fd, min(1024 * 1024, self.source_snapshot[5] - position), position)
+            require(time.monotonic() < deadline, "compiled executable recheck deadline expired")
+            require(bool(block), "compiled executable recheck truncated")
+            value.update(block)
+            position += len(block)
+        self._source_current()
+        require(value.hexdigest() == self.digest, "compiled executable source bytes changed")
+        require(time.monotonic() < deadline, "compiled executable recheck deadline expired")
+        return self.digest
+
+    def close(self, *, remove=False):
+        self._creator()
+        error = None
+        try:
+            if remove and self.root is not None:
+                self._check_root()
+                if self.path is not None and self.copy is not None and self.copy.fd is not None:
+                    current = _StagingPath.open(self.path)
+                    try:
+                        require(current.identities()[:-1] == self.root.identities()
+                            and (os.fstat(current.fd).st_dev, os.fstat(current.fd).st_ino)
+                            == (os.fstat(self.copy.fd).st_dev, os.fstat(self.copy.fd).st_ino),
+                            "staged executable cleanup name changed")
+                    finally:
+                        current.close()
+                    os.unlink("runtime", dir_fd=self.root.fd)
+                require(not os.listdir(self.root.fd), "staging directory contains foreign entries")
+                os.rmdir(self.root.path.name, dir_fd=self.parent.fd)
+        except BaseException as failure:
+            error = failure
+        finally:
+            for name in ("copy", "root", "parent", "source"):
+                owner = getattr(self, name, None)
+                setattr(self, name, None)
+                if owner is not None:
+                    try:
+                        owner.close()
+                    except BaseException as failure:
+                        if error is None:
+                            error = failure
+        if error is not None:
+            raise error
+
+    def __enter__(self):
+        self.verify()
+        return self
+
+    def __exit__(self, kind, value, traceback):
+        self.close(remove=kind is None)
+
+    def __del__(self):
+        # Never unlink from GC or from a copied process. Detach first, and close
+        # only these descriptor copies, without mutating the parent's paths.
+        for name in ("copy", "root", "parent", "source"):
+            owner = getattr(self, name, None)
+            setattr(self, name, None)
+            if owner is not None:
+                try:
+                    owner.close()
+                except BaseException:
+                    pass
+
+
 class Packet:
     """Complete, bounded original bytes, rechecked before any result receipt."""
     def __init__(self, root: Path):
@@ -1184,12 +1457,17 @@ def main() -> int:
         os.umask(0o077)
         require(not args.output.exists(), "namespace corpus must be fresh")
         args.output.mkdir(mode=0o700, parents=True)
-        binding = source_binding(args.binary.absolute()) if args.mode == "run" else None
         cases = ["kernel-fixture"] if args.mode == "kernel-fixture" else ["burst", "chrome", "window-leave", "focus-loss"]
         cases += [f"inherited-{role}-ipv{version}" for role in ("embedder", "content") for version in (4, 6)]
-        results = [run_case(args.binary.absolute(), args.output / case, case) for case in cases]
-        if binding is not None:
-            exact_tree(source_binding(args.binary.absolute()), binding, "compiled/source object changed during namespace corpus")
+        with _StagedExecutable(args.binary.absolute(), artifact_root=args.output) as executable:
+            binding = source_binding(executable.path) if args.mode == "run" else None
+            results = []
+            for case in cases:
+                executable.verify()
+                results.append(run_case(executable.path, args.output / case, case))
+            executable.verify()
+            if binding is not None:
+                exact_tree(source_binding(executable.path), binding, "compiled/source object changed during namespace corpus")
         write_json(args.output / "namespace-corpus.json", {"schema": "trillionnium.desktop.netns-corpus.v1",
             "status": "PASS_HOST_KERNEL_FIXTURE_ONLY" if args.mode == "kernel-fixture" else "PASS_EXPLICIT_NATIVE_DIRECT_INET_QUALIFICATION_ONLY",
             "actual_servo_executed": args.mode == "run", "cases": results, "source_qualification_only": True,
