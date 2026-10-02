@@ -48,7 +48,11 @@ def tearDownModule():
 
 
 def snapshot(root):
-    return {path.name: (path.lstat(), path.read_bytes()) for path in root.iterdir()}
+    result = {}
+    for path in root.iterdir():
+        contents = path.read_bytes()
+        result[path.name] = (path.lstat(), contents)
+    return result
 
 
 def descriptor_inventory():
@@ -56,6 +60,18 @@ def descriptor_inventory():
 
 
 class UpdateBootObserverTests(unittest.TestCase):
+    def test_snapshot_preserves_metadata_after_its_own_access_time_update(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            authority = root / "authority"
+            fixture.private_file(authority, b"immutable authority")
+            metadata = authority.stat()
+            os.utime(authority, ns=(1, metadata.st_mtime_ns))
+            first = snapshot(root)
+            self.assertEqual(first["authority"][0], authority.lstat())
+            self.assertEqual(first, snapshot(root))
+            self.assertEqual(first["authority"][1], b"immutable authority")
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="source-boot-observer-")
         self.addCleanup(self.temporary.cleanup)

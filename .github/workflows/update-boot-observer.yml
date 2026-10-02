@@ -86,7 +86,7 @@ jobs:
           openssl version
           python3 - <<'PY'
           import unittest
-          for pattern, minimum in (('test_update_boot_observer.py', 36), ('test_s11_update_recovery.py', 78), ('test_durable_update_owner.py', 41), ('test_platform_mechanisms.py', 26)):
+          for pattern, minimum in (('test_update_boot_observer.py', 37), ('test_s11_update_recovery.py', 78), ('test_durable_update_owner.py', 41), ('test_platform_mechanisms.py', 26)):
               suite = unittest.defaultTestLoader.discover('tests', pattern=pattern)
               expected = suite.countTestCases()
               if expected < minimum:
