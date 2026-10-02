@@ -12,7 +12,12 @@ poweroff_guest() {
 
 fail() {
   local reason=$1
+  trap - ERR
+  set +e
   printf 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:%s\n' "$reason" >&2
+  journalctl --no-pager -n 120 -u trillionnium-d2i-runtime.service \
+    -u trillionnium-d2i-acceptance.service 2>&1 | tail -c 65536 > "$out/runtime-journal.txt"
+  cat "$out/runtime-journal.txt" >&2
   cat > "$result" <<EOF
 {
   "schema": "trillionnium.desktop.d2i-guest-acceptance.v2",
@@ -25,6 +30,8 @@ EOF
   poweroff_guest
   exit 1
 }
+
+trap 'fail "unexpected_shell_failure_line_${LINENO}_status_$?"' ERR
 
 json_true() {
   local key=$1
