@@ -52,3 +52,29 @@ the application boundary, uses Servo's min/max `DeviceIntRect` convention, and
 clones the current WebView handle before native IME dispatch so no temporary
 `RefCell` borrow escapes its statement. These are compile-boundary adaptations;
 they do not change the runtime trust topology or relax any navigation policy.
+
+## Native input ownership candidate (2026-10-02)
+
+`src/input_ownership.rs` is compiled into the real Winit example. Native pointer
+coordinates use physical pixels and the fixed chrome offset. Leaving content,
+leaving the window, losing window focus, or crashing withdraws the saved pointer
+coordinate. A chrome press cannot deliver a click or wheel event at an earlier
+content point, and content keyboard/IME requires a physical content press in the
+currently focused window. Reconstruction inherits no pointer, keyboard or IME
+ownership. Generation-bound delegates and asynchronous screenshot/focus/evidence
+callbacks ignore withdrawn and replaced content. Line wheel deltas stay in line
+units. The ownership module has six executable hostile regressions.
+
+The permanent X11 corpus first establishes a content pointer coordinate, then
+clicks, wheels and types `x` in trusted chrome before its positive content
+sequence. The DOM must see exactly the three intended content presses and no
+`x` key. This candidate must compile and run at the immutable Servo pin before
+its native qualification is accepted. The standalone runner's full v2 evidence
+corpus additionally requires source/process-topology work not provided by this
+v1 example; only its exact Git identity step is shared by this workflow.
+
+This still does not connect native input to the product BrowserActor/PageOwner,
+provide variable scaling or keyboard-layout/clipboard integration, prove Chinese
+OS IME composition, or install a product embedder. Those G3 requirements remain
+open. Native IME event counters record observation, including refused events;
+synthetic composition is reported separately.

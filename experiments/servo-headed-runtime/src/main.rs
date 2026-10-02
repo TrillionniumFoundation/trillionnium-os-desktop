@@ -40,6 +40,9 @@ use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::raw_window_handle::{HasDisplayHandle, HasWindowHandle};
 use winit::window::Window;
 
+mod input_ownership;
+use input_ownership::InputOwnership;
+
 const WINDOW_WIDTH: u32 = 1024;
 const WINDOW_HEIGHT: u32 = 768;
 const CHROME_HEIGHT: u32 = 64;
@@ -275,7 +278,15 @@ impl ApplicationHandler<AppEvent> for App {
             }
             AppEvent::ContentProcessTerminated { pid, start_time } => {
                 if let Some(state) = &self.state {
+                    if state.generation.get() != 1 {
+                        return;
+                    }
+                    if state.fault_process.get() != Some((pid, start_time)) {
+                        state.fail("content termination event does not match selected incarnation");
+                        return;
+                    }
                     state.crash_observed.set(true);
+                    state.input.borrow_mut().crashed();
                     *state.crash_reason.borrow_mut() = Some(format!(
                         "exact content process terminated after SIGKILL: pid={pid}, start_time={start_time}"
                     ));
@@ -307,12 +318,15 @@ impl ApplicationHandler<AppEvent> for App {
     fn window_event(
         &mut self,
         _event_loop: &ActiveEventLoop,
-        _window_id: winit::window::WindowId,
+        window_id: winit::window::WindowId,
         event: WindowEvent,
     ) {
         let Some(state) = &self.state else {
             return;
         };
+        if window_id != state.window.id() {
+            return;
+        }
         state.servo.spin_event_loop();
         match event {
             WindowEvent::CloseRequested => {
@@ -320,6 +334,11 @@ impl ApplicationHandler<AppEvent> for App {
             }
             WindowEvent::RedrawRequested => state.compose(),
             WindowEvent::CursorMoved { position, .. } => state.forward_pointer_move(position),
+            WindowEvent::CursorLeft { .. } => state.input.borrow_mut().pointer_left(),
+            WindowEvent::Focused(focused) => {
+                let dismiss = state.input.borrow_mut().focused(focused);
+                state.dismiss_ime(dismiss);
+            }
             WindowEvent::MouseInput {
                 state: button_state,
                 button,
@@ -395,7 +414,8 @@ struct RuntimeState {
     window_resize_events: Cell<u32>,
     failure: RefCell<Option<String>>,
     completed: Cell<bool>,
-    last_content_point: Cell<DevicePoint>,
+    input: RefCell<InputOwnership>,
+    fault_process: Cell<Option<(u32, u64)>>,
 }
 
 impl RuntimeState {
@@ -490,7 +510,12 @@ impl RuntimeState {
             window_resize_events: Cell::new(0),
             failure: RefCell::new(None),
             completed: Cell::new(false),
-            last_content_point: Cell::new(DevicePoint::new(0.0, 0.0)),
+            input: RefCell::new(InputOwnership::new(
+                WINDOW_WIDTH,
+                WINDOW_HEIGHT,
+                CHROME_HEIGHT,
+            )),
+            fault_process: Cell::new(None),
         });
         state.create_webview();
         fs::write(state.output_dir.join("window-created"), WINDOW_TITLE)?;
@@ -504,6 +529,7 @@ impl RuntimeState {
         url.set_query(Some(&format!("generation={generation}")));
         let delegate = Rc::new(RuntimeDelegate {
             state: Rc::downgrade(self),
+            generation,
         });
         let webview = WebViewBuilder::new(&self.servo, self.content_context.clone())
             .url(url)
@@ -618,19 +644,24 @@ impl RuntimeState {
         };
         let generation = self.generation.get();
         let state = self.clone();
-        webview.take_screenshot(None, move |result| match result {
-            Ok(image) => {
-                let path = state
-                    .output_dir
-                    .join(format!("content-generation-{generation}.png"));
-                if let Err(error) = image.save(&path) {
-                    state.fail(&format!("could not save Servo screenshot: {error}"));
-                    return;
-                }
-                state.content_screenshot_saved.set(true);
-                let _ = state.proxy.send_event(AppEvent::Drive);
+        webview.take_screenshot(None, move |result| {
+            if !state.input.borrow().current_callback(generation) {
+                return;
             }
-            Err(error) => state.fail(&format!("Servo screenshot failed: {error:?}")),
+            match result {
+                Ok(image) => {
+                    let path = state
+                        .output_dir
+                        .join(format!("content-generation-{generation}.png"));
+                    if let Err(error) = image.save(&path) {
+                        state.fail(&format!("could not save Servo screenshot: {error}"));
+                        return;
+                    }
+                    state.content_screenshot_saved.set(true);
+                    let _ = state.proxy.send_event(AppEvent::Drive);
+                }
+                Err(error) => state.fail(&format!("Servo screenshot failed: {error:?}")),
+            }
         });
     }
 
@@ -641,14 +672,20 @@ impl RuntimeState {
             return;
         };
         let state = self.clone();
+        let generation = self.generation.get();
         webview.evaluate_javascript(
             "document.getElementById('field').focus(); document.activeElement.id === 'field'",
-            move |result| match result {
-                Ok(JSValue::Boolean(true)) => {
-                    state.focus_ready.set(true);
-                    let _ = state.proxy.send_event(AppEvent::Drive);
+            move |result| {
+                if !state.input.borrow().current_callback(generation) {
+                    return;
                 }
-                other => state.fail(&format!("fixture input focus failed: {other:?}")),
+                match result {
+                    Ok(JSValue::Boolean(true)) => {
+                        state.focus_ready.set(true);
+                        let _ = state.proxy.send_event(AppEvent::Drive);
+                    }
+                    other => state.fail(&format!("fixture input focus failed: {other:?}")),
+                }
             },
         );
     }
@@ -693,6 +730,9 @@ impl RuntimeState {
         let state = self.clone();
         let generation = self.generation.get();
         webview.evaluate_javascript("JSON.stringify(window.__heptaEvidence)", move |result| {
+            if !state.input.borrow().current_callback(generation) {
+                return;
+            }
             match result {
                 Ok(JSValue::String(value)) => {
                     if generation == 1 {
@@ -723,6 +763,8 @@ impl RuntimeState {
                 return;
             }
         };
+        self.fault_process
+            .set(Some((content_pid, content_start_time)));
         if let Err(error) = fs::write(
             self.output_dir.join("content-process-pid.txt"),
             format!("{content_pid}\n"),
@@ -823,6 +865,10 @@ impl RuntimeState {
         self.recovery_started.set(true);
         *self.webview.borrow_mut() = None;
         self.generation.set(2);
+        if !self.input.borrow_mut().reconstruct(2) {
+            self.fail("replacement input ownership did not follow a crash");
+            return;
+        }
         self.load_complete.set(false);
         self.frame_ready.set(0);
         self.content_screenshot_requested.set(false);
@@ -950,14 +996,11 @@ impl RuntimeState {
     }
 
     fn forward_pointer_move(&self, position: PhysicalPosition<f64>) {
-        if position.y < CHROME_HEIGHT as f64 {
+        let point = self.input.borrow_mut().pointer(position.x, position.y);
+        let Some((x, y)) = point else {
             return;
-        }
-        let point = DevicePoint::new(
-            position.x as f32,
-            (position.y - CHROME_HEIGHT as f64) as f32,
-        );
-        self.last_content_point.set(point);
+        };
+        let point = DevicePoint::new(x, y);
         self.native_pointer_events
             .set(self.native_pointer_events.get() + 1);
         if let Some(webview) = self.webview.borrow().as_ref() {
@@ -966,6 +1009,14 @@ impl RuntimeState {
     }
 
     fn forward_mouse_button(&self, state: ElementState, button: MouseButton) {
+        if state == ElementState::Pressed {
+            let dismiss = self.input.borrow_mut().pressed();
+            self.dismiss_ime(dismiss);
+        }
+        let Some((x, y)) = self.input.borrow().point() else {
+            return;
+        };
+        let point = DevicePoint::new(x, y);
         let button = match button {
             MouseButton::Left => ServoMouseButton::Primary,
             MouseButton::Right => ServoMouseButton::Secondary,
@@ -984,16 +1035,18 @@ impl RuntimeState {
             webview.notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(
                 action,
                 button,
-                self.last_content_point.get().into(),
+                point.into(),
             )));
         }
     }
 
     fn forward_wheel(&self, delta: MouseScrollDelta) {
+        let Some((x, y)) = self.input.borrow().point() else {
+            return;
+        };
+        let point = DevicePoint::new(x, y);
         let (x, y, mode) = match delta {
-            MouseScrollDelta::LineDelta(x, y) => {
-                (x as f64 * 40.0, y as f64 * 40.0, WheelMode::DeltaLine)
-            }
+            MouseScrollDelta::LineDelta(x, y) => (x as f64, y as f64, WheelMode::DeltaLine),
             MouseScrollDelta::PixelDelta(position) => {
                 (position.x, position.y, WheelMode::DeltaPixel)
             }
@@ -1003,12 +1056,15 @@ impl RuntimeState {
         if let Some(webview) = self.webview.borrow().as_ref() {
             webview.notify_input_event(InputEvent::Wheel(WheelEvent::new(
                 WheelDelta { x, y, z: 0.0, mode },
-                self.last_content_point.get().into(),
+                point.into(),
             )));
         }
     }
 
     fn forward_keyboard(&self, event: winit::event::KeyEvent) {
+        if !self.input.borrow().keyboard_allowed() {
+            return;
+        }
         let key = match event.logical_key {
             WinitKey::Character(value) => Key::Character(value.to_string()),
             WinitKey::Named(WinitNamedKey::Enter) => Key::Named(NamedKey::Enter),
@@ -1035,22 +1091,37 @@ impl RuntimeState {
             return;
         };
         let input = match event {
-            Ime::Enabled => Some(ImeEvent::Composition(CompositionEvent {
-                state: CompositionState::Start,
-                data: String::new(),
-            })),
-            Ime::Preedit(data, _) => Some(ImeEvent::Composition(CompositionEvent {
-                state: CompositionState::Update,
-                data,
-            })),
-            Ime::Commit(data) => Some(ImeEvent::Composition(CompositionEvent {
-                state: CompositionState::End,
-                data,
-            })),
-            Ime::Disabled => Some(ImeEvent::Dismissed),
+            Ime::Enabled if self.input.borrow_mut().begin_ime() => {
+                Some(ImeEvent::Composition(CompositionEvent {
+                    state: CompositionState::Start,
+                    data: String::new(),
+                }))
+            }
+            Ime::Preedit(data, _) if self.input.borrow().ime_allowed() => {
+                Some(ImeEvent::Composition(CompositionEvent {
+                    state: CompositionState::Update,
+                    data,
+                }))
+            }
+            Ime::Commit(data) if self.input.borrow_mut().end_ime() => {
+                Some(ImeEvent::Composition(CompositionEvent {
+                    state: CompositionState::End,
+                    data,
+                }))
+            }
+            Ime::Disabled if self.input.borrow_mut().end_ime() => Some(ImeEvent::Dismissed),
+            _ => None,
         };
         if let Some(input) = input {
             webview.notify_input_event(InputEvent::Ime(input));
+        }
+    }
+
+    fn dismiss_ime(&self, dismiss: bool) {
+        if dismiss {
+            if let Some(webview) = self.webview.borrow().as_ref() {
+                webview.notify_input_event(InputEvent::Ime(ImeEvent::Dismissed));
+            }
         }
     }
 
@@ -1233,18 +1304,27 @@ impl RuntimeState {
 
 struct RuntimeDelegate {
     state: Weak<RuntimeState>,
+    generation: u32,
+}
+
+impl RuntimeDelegate {
+    fn current(&self) -> Option<Rc<RuntimeState>> {
+        self.state
+            .upgrade()
+            .filter(|state| state.input.borrow().current_callback(self.generation))
+    }
 }
 
 impl WebViewDelegate for RuntimeDelegate {
     fn notify_load_status_changed(&self, _webview: WebView, status: LoadStatus) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             state.load_complete.set(status == LoadStatus::Complete);
             let _ = state.proxy.send_event(AppEvent::Drive);
         }
     }
 
     fn notify_new_frame_ready(&self, _webview: WebView) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             state.frame_ready.set(state.frame_ready.get() + 1);
             state.window.request_redraw();
         }
@@ -1256,7 +1336,7 @@ impl WebViewDelegate for RuntimeDelegate {
         _event_id: InputEventId,
         _result: InputEventResult,
     ) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             state
                 .input_handled_callbacks
                 .set(state.input_handled_callbacks.get() + 1);
@@ -1265,8 +1345,9 @@ impl WebViewDelegate for RuntimeDelegate {
     }
 
     fn notify_crashed(&self, _webview: WebView, reason: String, _backtrace: Option<String>) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             state.crash_observed.set(true);
+            state.input.borrow_mut().crashed();
             *state.crash_reason.borrow_mut() = Some(reason);
             state.window.request_redraw();
             let _ = state.proxy.send_event(AppEvent::Drive);
@@ -1274,7 +1355,7 @@ impl WebViewDelegate for RuntimeDelegate {
     }
 
     fn request_navigation(&self, _webview: WebView, request: NavigationRequest) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             if state.fixture_origin_matches(&request.url) {
                 request.allow();
             } else {
@@ -1290,7 +1371,7 @@ impl WebViewDelegate for RuntimeDelegate {
     }
 
     fn request_create_new(&self, _parent: WebView, _request: CreateNewWebViewRequest) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             state.popup_denied.set(state.popup_denied.get() + 1);
             let _ = state.proxy.send_event(AppEvent::Drive);
         }
@@ -1298,7 +1379,7 @@ impl WebViewDelegate for RuntimeDelegate {
     }
 
     fn show_embedder_control(&self, _webview: WebView, control: EmbedderControl) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             if matches!(control, EmbedderControl::InputMethod(_)) {
                 state
                     .input_method_controls
