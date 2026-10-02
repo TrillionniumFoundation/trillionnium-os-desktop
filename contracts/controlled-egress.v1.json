@@ -17,7 +17,7 @@
     "session": "exact owner-bound SessionBinding object, bounded session_id, positive generation and approved initiating_origin",
     "permit": "single-use actual issuer-retained ObservationPermit object; immutable operation_id, canonical initial URL, exact host and redirect scope, actual session object and current owner epoch",
     "revocation": "bind_session or close invalidates pending and active permissions; active I/O rechecks before each bounded step",
-    "process": "client authority belongs to its creating PID; inherited fork objects are refused before any mutex or socket; threads in the creator process may cancel and revoke",
+    "process": "client authority belongs to its creating PID; inherited fork objects are refused before any mutex or socket, including final active-record cleanup; threads in the creator process may cancel and revoke",
     "clock": "one monotonic deadline per operation; a backward or nonfinite monotonic clock permanently revokes this client owner",
     "approval_surface_implemented": false,
     "persistent_permit_or_indeterminate_journal_implemented": false
@@ -82,8 +82,10 @@
       "resolver": "object with exactly address,port,tls_hostname,ca_sha256 (SHA256 of exact resolver CA PEM bytes), or null",
       "qualification_addresses": "sorted exact loopback strings or null"
     },
-    "before_http_send": "policy/protocol/cancellation/deadline refusal; consumed permits cannot be reused once admitted to active operations",
-    "after_http_send_attempt": "EgressIndeterminate on any failure including KeyboardInterrupt/SystemExit; preserves operation_id, attempted connection, completed hops and cause; permit stays consumed",
+    "before_http_send": "policy/protocol/cancellation/deadline refusal; protected exact-permit reservation precedes consumption and active insertion; completed cleanup after a reserved admission interruption gives chained EgressDenied with the permit consumed and no invented connection identity; an unreserved competing caller cannot retire the winner",
+    "after_http_send_attempt": "EgressIndeterminate on failure within managed I/O and cleanup including KeyboardInterrupt/SystemExit; preserves operation_id, attempted connection, completed hops recorded before TLS close and cause; permit stays consumed",
+    "cleanup": "shared private reservation in retained creator-PID/thread mutex lease, constructed before consumption and covering admission/helper return; each admission/final acquisition waits at most 0.05 seconds; only matching owned permit records retire; ownership retires before actual release, never releases a future holder; unconfirmed final cleanup permanently quarantines this client before subsequent authority mutexes and retains at most four active records; before HTTP send returns chained EgressDenied without invented connection facts; no repair or replay API",
+    "interruption_evidence_scope": "specific Python call/line/helper-return boundaries, actual socket close and native mutex release/reacquisition/GC/fork; no proof of all C-call-to-attribute-storage opcode windows or caller receipt of the API final return",
     "automatic_retry": false,
     "durable_delivery_or_external_effect_proof": false
   },

@@ -40,7 +40,7 @@ closing the client invalidates pending permits and active operations; active I/O
 checks the current binding between bounded steps.
 
 Only the creating process may use this authority. The PID check precedes every
-authority mutex, including active-operation validation, so a fork cannot reuse
+authority mutex, including active-operation validation and final cleanup, so a fork cannot reuse
 a copied permit or an old cancellation snapshot, nor deadlock on an inherited
 mutex. Threads in the creator process may execute, revoke and cancel operations.
 This is a trusted Python process API, not an isolation boundary against code
@@ -120,14 +120,49 @@ defines its exact fields. It identifies the policy used by this client, not a
 signature, durable delivery receipt or independent approval proof.
 
 Immediately before the first HTTP send attempt, the client records the actual
-connection identity. Any later failure, cancellation, timeout or interruption,
-including `KeyboardInterrupt` and `SystemExit`, produces `EgressIndeterminate`
+connection identity. Failures, cancellations, timeouts and interruptions within
+the managed I/O and cleanup path, including `KeyboardInterrupt` and `SystemExit`, produce `EgressIndeterminate`
 with the operation ID, attempted connection, completed hops and original cause.
+An admitted complete response hop is recorded before closing its owned TLS
+socket, so a socket-close interruption retains that actual hop. Cleanup retries
+only the owned socket's idempotent close; it never sends the HTTP request again.
 The consumed permit cannot run again. Earlier errors are bounded policy,
 resolver, connect or certificate refusals. The client never retries or chooses
 another address automatically. It has no persistent operation journal or API
 that clears indeterminate outcomes; explicit later operation approval and
 durable reconciliation belong to the installed mediator/effect owner.
+
+Admission and final active-record cleanup use a retained private mutex lease
+constructed before permit consumption. The protected admission helper checks
+capacity and the exact pending permit under the actual mutex, then records its
+private reservation before consuming or inserting records. That shared owner
+survives admission helper-return interruptions. Only the caller that owns this
+reservation can retire its matching pending/active permit; a competing caller
+that loses admission cannot remove the winning request's active record.
+
+The lease checks the creating PID before acquiring a mutex,
+waits at most one 50 ms poll interval, and retires its logical ownership before
+the actual release. Explicit cleanup and destructor cleanup never infer
+ownership from whether the mutex is locked, so they cannot release a later
+acquisition by another thread. A failure to confirm final cleanup permanently
+quarantines this client before any subsequent authority mutex: pending permits
+cannot dispatch and retained active records remain bounded by four. A cleanup
+failure before any HTTP send is a chained `EgressDenied` quarantine refusal,
+without an invented connection identity; after a send attempt it is
+`EgressIndeterminate` carrying the actual attempted identity and known hops.
+There is no repair, retry or quarantine-clearing API. Ordinary protocol refusals
+whose cleanup completes do not quarantine the owner.
+An admission interruption after reservation whose cleanup completes returns a
+chained `EgressDenied` for the consumed permit; it leaves no active record or
+socket, grants no connection facts and cannot restore that permit. Before any
+reservation, an interruption leaves the pending permit unused. Fresh explicit
+permit issuance after a completed refusal is a separate operation.
+
+The regressions cover specific Python call, line and helper-return boundaries,
+actual native mutex release, foreign reacquisition and fork. They do not prove
+the absence of every asynchronous interruption between a native C call and
+Python attribute storage, or that a caller received an API's final return value.
+A local response and receipt are not a durable caller-delivery acknowledgement.
 
 ## Real local qualification and remaining integration
 
@@ -150,7 +185,9 @@ Missing OpenSSL or an unavailable required IPv6 loopback listener fails the
 suite rather than skipping qualification. Positive requests, wrong CA/name,
 actual peer substitution, mixed/private/mapped answers, rebinding, redirects,
 proxy/root environment poisoning, framing/size violations, deadline, cancel,
-send-return interruptions, session revocation and actual fork are exercised.
+send-return interruptions, session revocation, cleanup interruptions, real mutex
+timeout/release/reacquisition, GC, actual descriptor inventories across admission
+interruptions, competing same-permit callers and actual fork after a response are exercised.
 These are source/host regressions, not installed browser or hardware evidence.
 
 Remaining G5 obligations include authenticated host/root/session provisioning

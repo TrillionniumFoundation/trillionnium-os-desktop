@@ -64,6 +64,38 @@ class EgressIndeterminate(EgressDenied):
         self.operation_id, self.connection, self.hops, self.cause = operation_id, connection, hops, cause
 
 
+class _PolicyLease:
+    """Own one cleanup acquisition, never a future holder of the same mutex."""
+
+    def __init__(self, lock, owner_pid):
+        # Construct before acquiring any resource, including the helper return.
+        self._lock, self._owner_pid = lock, owner_pid
+        self._thread = threading.get_ident()
+        self._held = False
+        self._reserved = False
+
+    def acquire(self):
+        if os.getpid() != self._owner_pid or threading.get_ident() != self._thread:
+            raise EgressDenied("cleanup lease belongs to its creating process and thread")
+        if self._held:
+            raise EgressDenied("cleanup lease already holds its mutex")
+        self._held = self._lock.acquire(timeout=POLL_SECONDS)
+        if not self._held:
+            raise EgressDenied("bounded observation cleanup could not acquire its mutex")
+
+    def close(self):
+        if self._held and os.getpid() == self._owner_pid and threading.get_ident() == self._thread:
+            # One Python line: retire ownership before the actual release. An
+            # after-release interruption must never release a future holder.
+            self._held = False; self._lock.release()
+
+    def __del__(self):
+        try:
+            self.close()
+        except BaseException:
+            pass
+
+
 def _host(value: object) -> str:
     if type(value) is not str or not value or len(value) > 253 or value != value.lower() or value.endswith("."):
         raise EgressDenied("host must be one canonical bounded ASCII DNS name")
@@ -590,6 +622,7 @@ class ControlledEgress:
     def _initialize(self, configuration, qualification):
         self._owner_pid = os.getpid()
         self._clock_broken = False
+        self._cleanup_broken = False
         self._last_monotonic = time.monotonic()
         if not math.isfinite(self._last_monotonic):
             raise EgressDenied("monotonic operation clock is invalid")
@@ -617,6 +650,8 @@ class ControlledEgress:
             raise EgressDenied("egress authority belongs to its creating process")
         if self._clock_broken:
             raise EgressDenied("egress authority has a permanently invalid monotonic clock")
+        if self._cleanup_broken:
+            raise EgressDenied("egress authority is quarantined after uncertain observation cleanup")
 
     def _clock(self):
         self._owner()
@@ -676,6 +711,44 @@ class ControlledEgress:
             raise EgressDenied("qualification network is restricted to its exact loopback set")
         return value
 
+    def _admit_observation(self, permit, lease):
+        try:
+            self._owner()
+            lease.acquire()
+            self._owner()
+            if len(self._active) >= MAX_ACTIVE or self._permits.get(permit.operation_id) is not permit:
+                raise EgressDenied("active observation capacity is full or permit was already consumed")
+            # Retain ownership in the shared empty lease before mutations. A
+            # helper-return interrupt cannot lose this reservation, and a
+            # competing caller that loses the predicate never owns this slot.
+            lease._reserved = True
+            del self._permits[permit.operation_id]
+            self._active[permit.operation_id] = permit
+        finally:
+            try:
+                lease.close()
+            finally:
+                lease.close()
+
+    def _retire_observation(self, permit, lease):
+        try:
+            # Never enter or release a mutex copied from another process.
+            if os.getpid() != self._owner_pid:
+                raise EgressDenied("egress authority belongs to its creating process")
+            lease.acquire()
+            if self._permits.get(permit.operation_id) is permit:
+                del self._permits[permit.operation_id]
+            if self._active.get(permit.operation_id) is permit:
+                self._active.pop(permit.operation_id, None)
+        finally:
+            # The retained lease also covers acquire/helper return interruptions.
+            # The second call is safe whether the first failed before or after
+            # the detach; it never guesses ownership from lock.locked().
+            try:
+                lease.close()
+            finally:
+                lease.close()
+
     def observe(self, permit: ObservationPermit, session: SessionBinding, *, timeout_seconds=10,
                 cancellation: CancellationToken | None = None, method="GET", resource_class="observation") -> ObservationResponse:
         if type(method) is not str or type(resource_class) is not str or method != "GET" or resource_class != "observation":
@@ -683,69 +756,89 @@ class ControlledEgress:
         self._validate(permit, session, active=False)
         token = CancellationToken() if cancellation is None else cancellation
         budget = _Budget(timeout_seconds, token, lambda: self._validate(permit, session, active=True), self._clock)
-        with self._lock:
-            if len(self._active) >= MAX_ACTIVE or self._permits.get(permit.operation_id) is not permit:
-                raise EgressDenied("active observation capacity is full or permit was already consumed")
-            del self._permits[permit.operation_id]
-            self._active[permit.operation_id] = permit
+        cleanup_lease = _PolicyLease(self._lock, self._owner_pid)
         hops = []
+        cleanup_complete = False
         try:
-            target = _target(permit.initial_url)
-            visited = set()
-            for hop in range(MAX_REDIRECTS + 1):
-                budget.check()
-                if target.host not in permit.hosts or target.host not in self._configuration.hosts or target.url in visited:
-                    raise EgressDenied("redirect escapes its approved scope or repeats a URL")
-                visited.add(target.url)
-                resolution = _resolve(target.host.hostname, self._configuration.resolver, self._dns_context, budget, self._address)
-                answers = resolution.answers
-                budget.check()
-                address = answers[0]  # One exact connection attempt; no automatic fallback/retry.
-                stream = _tls(address, target.host.port, target.host.hostname, self._https_context, budget, "http/1.1")
-                try:
-                    identity = ConnectionIdentity(session.session_id, session.generation, session.initiating_origin,
-                                                  hashlib.sha256(target.url.encode("ascii")).hexdigest(), target.host,
-                                                  answers, address, hashlib.sha256(stream.getpeercert(binary_form=True)).hexdigest(),
-                                                  resolution.resolver_peer, resolution.resolver_certificate_sha256, self._policy_sha256)
+            try:
+                self._admit_observation(permit, cleanup_lease)
+                target = _target(permit.initial_url)
+                visited = set()
+                for hop in range(MAX_REDIRECTS + 1):
                     budget.check()
-                    authority = target.host.hostname + (f":{target.host.port}" if target.host.port != 443 else "")
-                    request = (f"GET {target.path} HTTP/1.1\r\nHost: {authority}\r\nConnection: close\r\n"
-                               "Accept: text/plain, text/html, application/json\r\nAccept-Encoding: identity\r\n\r\n").encode("ascii")
-                    budget.attempted = identity  # Before send, including return-boundary interruptions.
-                    _send(stream, request, budget)
-                    status, headers, body = _response(stream, budget)
-                    _peer(stream, address, target.host.port)
+                    if target.host not in permit.hosts or target.host not in self._configuration.hosts or target.url in visited:
+                        raise EgressDenied("redirect escapes its approved scope or repeats a URL")
+                    visited.add(target.url)
+                    resolution = _resolve(target.host.hostname, self._configuration.resolver, self._dns_context, budget, self._address)
+                    answers = resolution.answers
                     budget.check()
-                finally:
-                    stream.close()
-                hops.append(HopReceipt(identity, status, len(body)))
-                if status in {301, 302, 303, 307, 308}:
-                    if hop == MAX_REDIRECTS or "location" not in headers:
-                        raise EgressDenied("redirect limit exceeded or Location absent")
-                    location = headers["location"]
-                    if not location or any(ord(c) <= 32 or ord(c) >= 127 for c in location) or "\\" in location:
-                        raise EgressDenied("redirect Location is malformed")
-                    target = _target(urljoin(target.url, location))
-                    continue
-                if status != 200 or "location" in headers:
-                    raise EgressDenied("response status is unsupported; challenges are not bypassed")
-                content_type = headers.get("content-type", "").lower()
-                if re.fullmatch(r'(?:text/plain|text/html|application/json)(?:;\s*charset\s*=\s*(?:utf-8|us-ascii|"utf-8"|"us-ascii"))?', content_type) is None:
-                    raise EgressDenied("response type is unsupported; downloads are disabled")
-                return ObservationResponse(permit.operation_id, body, hashlib.sha256(body).hexdigest(), tuple(headers.items()),
-                                           tuple(hops), self._qualification is not None)
-            raise EgressDenied("redirect bound exhausted")
+                    address = answers[0]  # One exact connection attempt; no automatic fallback/retry.
+                    stream = _tls(address, target.host.port, target.host.hostname, self._https_context, budget, "http/1.1")
+                    try:
+                        identity = ConnectionIdentity(session.session_id, session.generation, session.initiating_origin,
+                                                      hashlib.sha256(target.url.encode("ascii")).hexdigest(), target.host,
+                                                      answers, address, hashlib.sha256(stream.getpeercert(binary_form=True)).hexdigest(),
+                                                      resolution.resolver_peer, resolution.resolver_certificate_sha256, self._policy_sha256)
+                        budget.check()
+                        authority = target.host.hostname + (f":{target.host.port}" if target.host.port != 443 else "")
+                        request = (f"GET {target.path} HTTP/1.1\r\nHost: {authority}\r\nConnection: close\r\n"
+                                   "Accept: text/plain, text/html, application/json\r\nAccept-Encoding: identity\r\n\r\n").encode("ascii")
+                        budget.attempted = identity  # Before send, including return-boundary interruptions.
+                        _send(stream, request, budget)
+                        status, headers, body = _response(stream, budget)
+                        _peer(stream, address, target.host.port)
+                        budget.check()
+                        hops.append(HopReceipt(identity, status, len(body)))
+                    finally:
+                        try:
+                            stream.close()
+                        finally:
+                            stream.close()
+                    if status in {301, 302, 303, 307, 308}:
+                        if hop == MAX_REDIRECTS or "location" not in headers:
+                            raise EgressDenied("redirect limit exceeded or Location absent")
+                        location = headers["location"]
+                        if not location or any(ord(c) <= 32 or ord(c) >= 127 for c in location) or "\\" in location:
+                            raise EgressDenied("redirect Location is malformed")
+                        target = _target(urljoin(target.url, location))
+                        continue
+                    if status != 200 or "location" in headers:
+                        raise EgressDenied("response status is unsupported; challenges are not bypassed")
+                    content_type = headers.get("content-type", "").lower()
+                    if re.fullmatch(r'(?:text/plain|text/html|application/json)(?:;\s*charset\s*=\s*(?:utf-8|us-ascii|"utf-8"|"us-ascii"))?', content_type) is None:
+                        raise EgressDenied("response type is unsupported; downloads are disabled")
+                    return ObservationResponse(permit.operation_id, body, hashlib.sha256(body).hexdigest(), tuple(headers.items()),
+                                               tuple(hops), self._qualification is not None)
+                raise EgressDenied("redirect bound exhausted")
+            finally:
+                if cleanup_lease._reserved:
+                    self._retire_observation(permit, cleanup_lease)
+                cleanup_complete = True
         except BaseException as error:
+            if not cleanup_complete and os.getpid() == self._owner_pid:
+                # Bounded retained records are quarantine, never renewed permits.
+                # Check this latch before every future authority mutex.
+                self._cleanup_broken = True
+            try:
+                try:
+                    cleanup_lease.close()
+                finally:
+                    cleanup_lease.close()
+            except BaseException as cleanup_error:
+                if os.getpid() == self._owner_pid:
+                    self._cleanup_broken = True
+                error = cleanup_error
             if budget.attempted is not None:
                 raise EgressIndeterminate(permit.operation_id, budget.attempted, tuple(hops), error) from error
+            if self._cleanup_broken:
+                raise EgressDenied("observation cleanup is uncertain; egress authority is quarantined") from error
             if isinstance(error, EgressDenied):
-                raise
+                raise error
             if isinstance(error, (OSError, ssl.SSLError)):
                 raise EgressDenied("controlled resolver/connect/TLS operation failed") from error
-            raise
-        finally:
-            with self._lock:
-                self._active.pop(permit.operation_id, None)
+            if cleanup_lease._reserved and isinstance(error, (KeyboardInterrupt, SystemExit)):
+                raise EgressDenied("observation interrupted before HTTP send; permit remains consumed") from error
+            raise error
 
 
 class QualificationEgressClient(ControlledEgress):
