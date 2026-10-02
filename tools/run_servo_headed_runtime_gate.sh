@@ -145,16 +145,24 @@ RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL" cargo --version --verbose
 step_install_overlay() {
 set -euo pipefail
 export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
+python3 tools/check_servo_resource_gate.py --servo-source servo-source
 overlay="$RUNNER_TEMP/trillionnium_headed_runtime.rs"
 cp experiments/servo-headed-runtime/src/main.rs "$overlay"
 install -D -m 0644 experiments/servo-headed-runtime/src/input_ownership.rs \
   "$RUNNER_TEMP/input_ownership.rs"
+install -D -m 0644 experiments/servo-headed-runtime/src/resource_gate.rs \
+  "$RUNNER_TEMP/resource_gate.rs"
 rustfmt --edition 2024 "$overlay"
 rustfmt --edition 2024 --check "$overlay"
 install -D -m 0644 "$overlay" \
   servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs
 install -D -m 0644 "$RUNNER_TEMP/input_ownership.rs" \
   servo-source/ports/servoshell/examples/input_ownership.rs
+install -D -m 0644 "$RUNNER_TEMP/resource_gate.rs" \
+  servo-source/ports/servoshell/examples/resource_gate.rs
+rustc --edition 2024 --test experiments/servo-headed-runtime/src/resource_gate.rs \
+  -o "$RUNNER_TEMP/http-resource-gate-tests"
+"$RUNNER_TEMP/http-resource-gate-tests"
 install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 {
@@ -500,6 +508,7 @@ def run_case(case):
             environment = dict(os.environ, DISPLAY=f':{number}', HEPTA_D0A02_OUTPUT=str(directory),
                                RUST_BACKTRACE='1')
             environment.pop('WAYLAND_DISPLAY', None)
+            environment.pop('HEPTA_D0A02_INPUT_NONCE', None)
             (directory / 'xdpyinfo.txt').write_text(command(['xdpyinfo'], environment))
             if case == 'focus-loss':
                 title = f'HEPTA held gesture focus withdrawal {uuid.uuid4().hex}'
@@ -610,6 +619,7 @@ receipt = {'schema': 'trillionnium.desktop.native-held-gesture-corpus.v1',
         ('.github/workflows/servo-headed-runtime.yml', 'tools/run_servo_headed_runtime_gate.sh',
          'experiments/servo-headed-runtime/src/main.rs',
          'experiments/servo-headed-runtime/src/input_ownership.rs',
+         'experiments/servo-headed-runtime/src/resource_gate.rs',
          'experiments/servo-headed-runtime/fixture/index.html', 'manifests/servo.lock.json')},
     'claim_ceiling': {'local_native_x11_xtest_only': True, 'physical_hardware_input_qualified': False,
         'mouse_cancellation_proven': False, 'same_servo_recovery_qualified': False,
@@ -629,8 +639,11 @@ PY
 step_run_runtime() {
 set -euo pipefail
 output="$PWD/artifacts/servo-headed-runtime/runtime"
-mkdir -p "$output"
+mkdir -p "$(dirname "$output")"
+mkdir -m 0700 "$output"
 export HEPTA_D0A02_OUTPUT="$output"
+HEPTA_D0A02_INPUT_NONCE=$(python3 -c 'import secrets; print(secrets.token_hex(16))')
+export HEPTA_D0A02_INPUT_NONCE
 export RUST_BACKTRACE=1
 
 Xvfb :99 -screen 0 1280x900x24 -nolisten tcp >"$output/xvfb.log" 2>&1 &
@@ -646,6 +659,7 @@ cleanup() {
 }
 trap cleanup EXIT
 export DISPLAY=:99
+unset WAYLAND_DISPLAY
 for _ in $(seq 1 100); do
   xdpyinfo >/dev/null 2>&1 && break
   sleep 0.1
@@ -655,6 +669,11 @@ xdpyinfo >"$output/xdpyinfo.txt"
 servo-source/target/debug/examples/trillionnium_headed_runtime \
   >"$output/runtime.log" 2>&1 &
 app_pid=$!
+export HEPTA_D0A02_OWNER_PID=$app_pid
+if [[ -n "${GITHUB_ENV:-}" ]]; then
+  printf 'HEPTA_D0A02_INPUT_NONCE=%s\nHEPTA_D0A02_OWNER_PID=%s\n' \
+    "$HEPTA_D0A02_INPUT_NONCE" "$app_pid" >> "$GITHUB_ENV"
+fi
 for _ in $(seq 1 600); do
   [[ -f "$output/input-ready" ]] && break
   kill -0 "$app_pid" 2>/dev/null || {
@@ -667,21 +686,13 @@ test -f "$output/input-ready"
 
 window_id="$(xdotool search --name 'TrillionniumOS Desktop.*D0A-02' | head -n1)"
 test -n "$window_id"
+test "$(xdotool getwindowpid "$window_id")" = "$app_pid"
 xwininfo -id "$window_id" >"$output/xwininfo.txt"
 xdotool windowfocus --sync "$window_id"
 test "$(xdotool getwindowfocus)" = "$window_id"
 
-xdotool mousemove --sync --window "$window_id" 200 132
-xdotool mousedown 1
-xdotool mouseup 1
-xdotool key k
-xdotool mousemove --sync --window "$window_id" 400 164
-xdotool mousedown 1
-xdotool mouseup 1
-xdotool click 5
-xdotool mousemove --sync --window "$window_id" 200 132
-xdotool mousedown 1
-xdotool mouseup 1
+python3 tools/native_input_checkpoints.py drive --output "$output" \
+  --pid "$app_pid" --window "$window_id" --nonce "$HEPTA_D0A02_INPUT_NONCE"
 
 ps -eo pid,ppid,stat,args >"$output/process-table-during-input.txt"
 timeout 180 tail --pid="$app_pid" -f /dev/null
@@ -692,6 +703,10 @@ ps -eo pid,ppid,stat,args >"$output/process-table-after-result.txt"
 
 step_enforce_evidence() {
 set -euo pipefail
+unset PYTHONOPTIMIZE
+python3 tools/native_input_checkpoints.py verify \
+  --output "$PWD/artifacts/servo-headed-runtime/runtime" \
+  --pid "$HEPTA_D0A02_OWNER_PID" --nonce "$HEPTA_D0A02_INPUT_NONCE"
 python3 - <<'PY'
 from pathlib import Path
 import hashlib
@@ -734,7 +749,8 @@ assert report['external_navigation_requests_denied'] > 0
 
 initial = report['initial_page_evidence']
 assert initial['generation'] == 1 and initial['loaded'] is True
-assert initial['pointerMoves'] > 0 and initial['pointerDowns'] > 0
+assert initial['pointerMoves'] > 0 and initial['pointerDowns'] == 3
+assert 'x' not in [str(item).lower() for item in initial['keyDowns']]
 assert initial['clicks'] > 0 and initial['wheels'] > 0
 assert 'k' in [str(item).lower() for item in initial['keyDowns']]
 assert initial['popupAttempted'] is True
@@ -852,6 +868,7 @@ assert required.issubset(artifacts)
 report['artifacts'] = artifacts
 
 evidence_files = [
+    'resource-gate-result.json',
     'content-process-identity.json',
     'content-sigkill-sent.json',
     'process-topology-pre-fault.json',
@@ -882,6 +899,9 @@ report['evidence_identity'] = {
     'formatted_overlay_sha256': os.environ['FORMATTED_OVERLAY_SHA256'],
     'fixture_sha256': hashlib.sha256(
         Path('experiments/servo-headed-runtime/fixture/index.html').read_bytes()
+    ).hexdigest(),
+    'resource_gate_sha256': hashlib.sha256(
+        Path('experiments/servo-headed-runtime/src/resource_gate.rs').read_bytes()
     ).hexdigest(),
     'servo_lock_sha256': hashlib.sha256(
         Path('manifests/servo.lock.json').read_bytes()
@@ -924,12 +944,15 @@ receipt = {
     json.dumps(receipt, indent=2, sort_keys=True) + '\n'
 )
 PY
+python3 tools/check_servo_resource_gate.py \
+  --runtime-dir artifacts/servo-headed-runtime/runtime
 }
 
 step_restore_servo() {
 rm -f \
   servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
   servo-source/ports/servoshell/examples/input_ownership.rs \
+  servo-source/ports/servoshell/examples/resource_gate.rs \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 test -z "$(git -C servo-source status --porcelain=v1)"
 }

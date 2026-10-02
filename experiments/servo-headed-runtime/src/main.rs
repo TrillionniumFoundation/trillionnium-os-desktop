@@ -11,13 +11,14 @@ use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs;
-use std::io::{ErrorKind, Read, Write};
+use std::io::{ErrorKind, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
+use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::rc::{Rc, Weak};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -29,8 +30,8 @@ use servo::{
     InputEventResult, JSValue, Key, KeyState, KeyboardEvent, LoadStatus,
     MouseButton as ServoMouseButton, MouseButtonAction, MouseButtonEvent, MouseMoveEvent, NamedKey,
     NavigationRequest, OffscreenRenderingContext, Opts, RenderingContext, Servo, ServoBuilder,
-    WebView, WebViewBuilder, WebViewDelegate, WheelDelta, WheelEvent, WheelMode,
-    WindowRenderingContext, run_content_process,
+    ServoDelegate, WebResourceLoad, WebResourceResponse, WebView, WebViewBuilder, WebViewDelegate,
+    WheelDelta, WheelEvent, WheelMode, WindowRenderingContext, run_content_process,
 };
 use url::Url;
 use winit::application::ApplicationHandler;
@@ -42,7 +43,15 @@ use winit::raw_window_handle::{HasDisplayHandle, HasWindowHandle};
 use winit::window::Window;
 
 mod input_ownership;
-use input_ownership::{Button, ButtonAction, InputOwnership, ReleaseOutcome};
+use input_ownership::{
+    Button, ButtonAction, CheckpointPhase, InputCheckpoint, InputOwnership, QualificationInput,
+    ReleaseOutcome,
+};
+mod resource_gate;
+use resource_gate::{
+    Context as ResourceContext, Decision as ResourceDecision, Denial, Observations,
+    QUALIFICATION_CSP, Request as ResourceRequest, ResourceGate,
+};
 
 const WINDOW_WIDTH: u32 = 1024;
 const WINDOW_HEIGHT: u32 = 768;
@@ -104,6 +113,8 @@ struct FixtureServer {
     address: SocketAddr,
     shutdown: Arc<AtomicBool>,
     thread: Option<thread::JoinHandle<()>>,
+    resource_gate: Rc<ResourceGate>,
+    network_requests: Arc<AtomicU32>,
 }
 
 impl FixtureServer {
@@ -111,12 +122,25 @@ impl FixtureServer {
         let listener = TcpListener::bind(("127.0.0.1", 0))?;
         listener.set_nonblocking(true)?;
         let address = listener.local_addr()?;
+        let resource_gate = Rc::new(ResourceGate::for_owned_fixture(
+            &listener,
+            FIXTURE_HTML.as_bytes(),
+        )?);
+        let network_requests = Arc::new(AtomicU32::new(0));
+        let observed_requests = network_requests.clone();
         let shutdown = Arc::new(AtomicBool::new(false));
         let thread_shutdown = shutdown.clone();
         let handle = thread::spawn(move || {
             while !thread_shutdown.load(Ordering::Relaxed) {
                 match listener.accept() {
-                    Ok((mut stream, _peer)) => serve_fixture(&mut stream),
+                    Ok((mut stream, _peer)) => {
+                        let _ = observed_requests.fetch_update(
+                            Ordering::Relaxed,
+                            Ordering::Relaxed,
+                            |count| Some(count.saturating_add(1)),
+                        );
+                        serve_fixture(&mut stream);
+                    }
                     Err(error) if error.kind() == ErrorKind::WouldBlock => {
                         thread::sleep(Duration::from_millis(10));
                     }
@@ -131,6 +155,8 @@ impl FixtureServer {
             address,
             shutdown,
             thread: Some(handle),
+            resource_gate,
+            network_requests,
         })
     }
 
@@ -154,21 +180,11 @@ impl Drop for FixtureServer {
 }
 
 fn serve_fixture(stream: &mut TcpStream) {
-    let mut request = [0_u8; 4096];
-    let _ = stream.read(&mut request);
-    let body = FIXTURE_HTML.as_bytes();
-    let header = format!(
-        "HTTP/1.1 200 OK\r\n\
-         Content-Type: text/html; charset=utf-8\r\n\
-         Content-Length: {}\r\n\
-         Cache-Control: no-store\r\n\
-         Content-Security-Policy: default-src 'self' 'unsafe-inline'; connect-src 'none'; img-src 'none'; media-src 'none'; frame-src 'none'\r\n\
-         X-Content-Type-Options: nosniff\r\n\
-         Connection: close\r\n\r\n",
-        body.len()
-    );
-    let _ = stream.write_all(header.as_bytes());
-    let _ = stream.write_all(body);
+    // The listener reserves this real fixture origin. Renderer resources must
+    // use the interception path; a network continuation cannot fetch the page.
+    let _ = stream.set_write_timeout(Some(Duration::from_secs(1)));
+    let _ = stream
+        .write_all(b"HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
     let _ = stream.flush();
 }
 
@@ -246,6 +262,8 @@ impl ApplicationHandler<AppEvent> for App {
             self.proxy.clone(),
             self.fixture_url.clone(),
             self.output_dir.clone(),
+            self._fixture.resource_gate.clone(),
+            self._fixture.network_requests.clone(),
         );
         match result {
             Ok(state) => {
@@ -390,6 +408,9 @@ struct RuntimeState {
     window: Window,
     proxy: EventLoopProxy<AppEvent>,
     fixture_url: Url,
+    resource_gate: Rc<ResourceGate>,
+    resource_observations: Rc<RefCell<Observations>>,
+    fixture_network_requests: Arc<AtomicU32>,
     output_dir: PathBuf,
 
     generation: Cell<u32>,
@@ -430,6 +451,9 @@ struct RuntimeState {
     pending_mouse_releases: RefCell<HashMap<InputEventId, Button>>,
     fault_process: Cell<Option<(u32, u64)>>,
     exact_termination_observed: Cell<bool>,
+    qualification_nonce: Option<String>,
+    qualification_owner_start: u64,
+    qualification_input: RefCell<Option<QualificationInput<InputEventId>>>,
 }
 
 impl RuntimeState {
@@ -439,7 +463,34 @@ impl RuntimeState {
         proxy: EventLoopProxy<AppEvent>,
         fixture_url: Url,
         output_dir: PathBuf,
+        resource_gate: Rc<ResourceGate>,
+        fixture_network_requests: Arc<AtomicU32>,
     ) -> Result<Rc<Self>, Box<dyn Error>> {
+        // Only explicit host qualification enables these checkpoints.
+        let qualification_nonce = match env::var("HEPTA_D0A02_INPUT_NONCE") {
+            Ok(nonce)
+                if nonce.len() == 32
+                    && nonce
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase()) =>
+            {
+                if fs::metadata(&output_dir)?.permissions().mode() & 0o777 != 0o700 {
+                    return Err("qualification output directory must be private (0700)".into());
+                }
+                Some(nonce)
+            }
+            Ok(_) => return Err("qualification input nonce must be 32 lowercase hex digits".into()),
+            Err(env::VarError::NotPresent) => None,
+            Err(error) => return Err(error.into()),
+        };
+        let qualification_input = qualification_nonce
+            .as_ref()
+            .map(|_| QualificationInput::new());
+        let qualification_owner_start = if qualification_nonce.is_some() {
+            exact_content_process_start_time(std::process::id())?
+        } else {
+            0
+        };
         let display_handle = event_loop.display_handle()?;
         let attributes = Window::default_attributes()
             .with_title(WINDOW_TITLE)
@@ -479,6 +530,12 @@ impl RuntimeState {
             .opts(opts)
             .event_loop_waker(Box::new(waker))
             .build();
+        let resource_observations = Rc::new(RefCell::new(Observations::default()));
+        // The exact pin installs its default delegate during build. Replace it
+        // before any WebView or event-loop spin can publish an HTTP request.
+        servo.set_delegate(Rc::new(GlobalResourceDelegate {
+            observations: resource_observations.clone(),
+        }));
         servo.setup_logging();
 
         let state = Rc::new(Self {
@@ -489,6 +546,9 @@ impl RuntimeState {
             webview: RefCell::new(None),
             proxy,
             fixture_url,
+            resource_gate,
+            resource_observations,
+            fixture_network_requests,
             output_dir,
             generation: Cell::new(1),
             load_complete: Cell::new(false),
@@ -532,6 +592,9 @@ impl RuntimeState {
             pending_mouse_releases: RefCell::new(HashMap::new()),
             fault_process: Cell::new(None),
             exact_termination_observed: Cell::new(false),
+            qualification_nonce,
+            qualification_owner_start,
+            qualification_input: RefCell::new(qualification_input),
         });
         state.create_webview();
         fs::write(state.output_dir.join("window-created"), WINDOW_TITLE)?;
@@ -546,6 +609,8 @@ impl RuntimeState {
         let delegate = Rc::new(RuntimeDelegate {
             state: Rc::downgrade(self),
             generation,
+            resource_gate: self.resource_gate.clone(),
+            observations: self.resource_observations.clone(),
         });
         let webview = WebViewBuilder::new(&self.servo, self.content_context.clone())
             .url(url)
@@ -564,6 +629,11 @@ impl RuntimeState {
     fn drive(self: &Rc<Self>) {
         if self.completed.get() {
             return;
+        }
+        if self.resource_observations.borrow().exceeded_bound
+            || self.fixture_network_requests.load(Ordering::Relaxed) != 0
+        {
+            self.fail("resource callback bound or fixture network continuation violated");
         }
         if self.failure.borrow().is_some() {
             self.finish_failure();
@@ -613,6 +683,7 @@ impl RuntimeState {
         }
 
         if self.generation.get() == 1
+            && self.qualification_input_complete()
             && self.native_pointer_events.get() > 0
             && self.native_button_events.get() >= 2
             && self.native_wheel_events.get() > 0
@@ -624,6 +695,7 @@ impl RuntimeState {
         }
 
         if self.generation.get() == 1
+            && self.qualification_input_complete()
             && self.synthetic_ime_sent.get()
             && self.settled.get()
             && !self.page_evidence_requested.get()
@@ -754,6 +826,19 @@ impl RuntimeState {
             }
             match result {
                 Ok(JSValue::String(value)) => {
+                    let probes_settled = serde_json::from_str::<serde_json::Value>(&value)
+                        .ok()
+                        .and_then(|value| value.get("resourceProbesSettled").cloned())
+                        == Some(serde_json::Value::Bool(true));
+                    if !probes_settled {
+                        state.page_evidence_requested.set(false);
+                        let proxy = state.proxy.clone();
+                        thread::spawn(move || {
+                            thread::sleep(Duration::from_millis(100));
+                            let _ = proxy.send_event(AppEvent::Drive);
+                        });
+                        return;
+                    }
                     if generation == 1 {
                         *state.initial_page_evidence.borrow_mut() = Some(value);
                     } else {
@@ -1036,13 +1121,32 @@ impl RuntimeState {
         let point = self.input.borrow_mut().pointer(position.x, position.y);
         let Some((x, y)) = point else {
             self.pointer_left();
+            if position.x == 10.0 && position.y == 10.0 {
+                let checkpoint = self
+                    .qualification_input
+                    .borrow_mut()
+                    .as_mut()
+                    .and_then(|input| {
+                        input.observe_chrome(
+                            self.generation.get(),
+                            self.input.borrow().window_focused(),
+                        )
+                    });
+                if let Some(checkpoint) = checkpoint {
+                    self.publish_input_checkpoint(checkpoint);
+                }
+            }
             return;
         };
         let point = DevicePoint::new(x, y);
         self.native_pointer_events
             .set(self.native_pointer_events.get() + 1);
         if let Some(webview) = self.webview.borrow().as_ref() {
-            webview.notify_input_event(InputEvent::MouseMove(MouseMoveEvent::new(point.into())));
+            let event_id = webview
+                .notify_input_event(InputEvent::MouseMove(MouseMoveEvent::new(point.into())));
+            if let Some(input) = self.qualification_input.borrow_mut().as_mut() {
+                input.observe_pointer(self.generation.get(), (x, y), event_id);
+            }
         }
     }
 
@@ -1085,6 +1189,20 @@ impl RuntimeState {
             ElementState::Pressed => (ButtonAction::Down, MouseButtonAction::Down),
             ElementState::Released => (ButtonAction::Up, MouseButtonAction::Up),
         };
+        if let Some(input) = self.qualification_input.borrow().as_ref() {
+            let point = self.input.borrow().point();
+            if point.is_some() {
+                let ready = owned_button == Button::Primary
+                    && match owned_action {
+                        ButtonAction::Down => input.allows_down(self.generation.get(), point),
+                        ButtonAction::Up => input.allows_up(self.generation.get(), point),
+                    };
+                if !ready {
+                    self.fail("native qualification button arrived before its exact checkpoint");
+                    return;
+                }
+            }
+        }
         let point =
             self.input
                 .borrow_mut()
@@ -1107,6 +1225,83 @@ impl RuntimeState {
                     .borrow_mut()
                     .insert(event_id, owned_button);
             }
+            if let Some(input) = self.qualification_input.borrow_mut().as_mut() {
+                let result = match owned_action {
+                    ButtonAction::Down => input.submit_down(event_id),
+                    ButtonAction::Up => input.submit_up(event_id),
+                };
+                if let Err(error) = result {
+                    self.fail(error);
+                }
+            }
+        }
+    }
+
+    fn qualification_input_complete(&self) -> bool {
+        self.qualification_input
+            .borrow()
+            .as_ref()
+            .is_none_or(QualificationInput::complete)
+    }
+
+    fn publish_input_checkpoint(&self, checkpoint: InputCheckpoint<InputEventId>) {
+        let Some(nonce) = &self.qualification_nonce else {
+            self.fail("input checkpoint has no qualification session");
+            return;
+        };
+        let phase = checkpoint.phase.as_str();
+        let point = checkpoint
+            .point
+            .map_or_else(|| "null".to_owned(), |(x, y)| format!("[{x},{y}]"));
+        let identifier = |event: Option<InputEventId>| {
+            event.map_or_else(|| "null".to_owned(), |id| json_string(&format!("{id:?}")))
+        };
+        let report = format!(
+            concat!(
+                "{{\"schema\":\"trillionnium.desktop.native-input-checkpoint.v1\",",
+                "\"nonce\":{},\"owner_pid\":{},\"owner_start_time\":{},",
+                "\"generation\":1,\"sequence\":{},\"phase\":{},\"content_point\":{},",
+                "\"pointer_event_id\":{},\"down_event_id\":{},\"up_event_id\":{},",
+                "\"pointer_dispatch_accepted\":{},\"down_dispatch_accepted\":{},",
+                "\"up_dispatch_accepted\":{},\"completed_pairs\":{},\"product_ready\":false}}\n"
+            ),
+            json_string(nonce),
+            std::process::id(),
+            self.qualification_owner_start,
+            checkpoint.sequence,
+            json_string(phase),
+            point,
+            identifier(checkpoint.pointer_event),
+            identifier(checkpoint.down_event),
+            identifier(checkpoint.up_event),
+            checkpoint.phase != CheckpointPhase::ChromeReady,
+            matches!(
+                checkpoint.phase,
+                CheckpointPhase::DownAccepted | CheckpointPhase::UpAccepted
+            ),
+            checkpoint.phase == CheckpointPhase::UpAccepted,
+            checkpoint.completed_pairs,
+        );
+        let name = format!("input-pair-{}-{phase}.json", checkpoint.sequence);
+        let temporary = self.output_dir.join(format!(".{name}.{nonce}.tmp"));
+        let published = self.output_dir.join(&name);
+        let write = || -> std::io::Result<()> {
+            let mut file = fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .mode(0o600)
+                .open(&temporary)?;
+            file.write_all(report.as_bytes())?;
+            file.sync_all()?;
+            if published.symlink_metadata().is_ok() {
+                return Err(std::io::Error::other("input checkpoint already exists"));
+            }
+            fs::rename(&temporary, &published)
+        };
+        if let Err(error) = write() {
+            self.fail(&format!(
+                "could not publish exact input checkpoint: {error}"
+            ));
         }
     }
 
@@ -1368,6 +1563,13 @@ impl RuntimeState {
             self.finish_failure();
             return;
         }
+        if let Err(error) = self.write_resource_evidence() {
+            self.fail(&format!(
+                "resource confinement evidence incomplete: {error}"
+            ));
+            self.finish_failure();
+            return;
+        }
         if self.completed.replace(true) {
             return;
         }
@@ -1453,11 +1655,112 @@ impl RuntimeState {
         }
         let _ = self.proxy.send_event(AppEvent::Exit(0));
     }
+
+    fn write_resource_evidence(&self) -> Result<(), String> {
+        let observations = self.resource_observations.borrow();
+        if observations.exceeded_bound || self.fixture_network_requests.load(Ordering::Relaxed) != 0
+        {
+            return Err("bounded callback or no-network requirement failed".into());
+        }
+        let mut generations = Vec::with_capacity(2);
+        for (index, evidence) in [
+            self.initial_page_evidence.borrow().clone(),
+            self.recovery_page_evidence.borrow().clone(),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let generation = index + 1;
+            let facts = observations.generations[index];
+            let page: serde_json::Value =
+                serde_json::from_str(&evidence.ok_or("missing actual DOM evidence")?)
+                    .map_err(|_| "invalid actual DOM evidence")?;
+            let mut dom = serde_json::Map::new();
+            for key in [
+                "resourceProbesSettled",
+                "sameOriginScriptRejected",
+                "wrongMethodFetchRejected",
+                "externalScriptRejected",
+            ] {
+                if page.get(key) != Some(&serde_json::Value::Bool(true)) {
+                    return Err(format!(
+                        "generation {generation} DOM refusal missing: {key}"
+                    ));
+                }
+                dom.insert(key.into(), serde_json::Value::Bool(true));
+            }
+            if page.get("forbiddenResourceExecuted") != Some(&serde_json::Value::Bool(false))
+                || page.get("generation").and_then(serde_json::Value::as_u64)
+                    != Some(generation as u64)
+                || !facts.probes_observed()
+            {
+                return Err(format!(
+                    "generation {generation} actual callback/DOM binding failed"
+                ));
+            }
+            dom.insert(
+                "forbiddenResourceExecuted".into(),
+                serde_json::Value::Bool(false),
+            );
+            let worker = page
+                .get("serviceWorkerProbe")
+                .and_then(serde_json::Value::as_str)
+                .ok_or("missing worker probe availability")?;
+            if !matches!(worker, "unavailable" | "rejected") {
+                return Err("worker probe did not reach a refused or unavailable outcome".into());
+            }
+            dom.insert(
+                "serviceWorkerProbe".into(),
+                serde_json::Value::String(worker.into()),
+            );
+            generations.push(serde_json::json!({
+                "generation": generation,
+                "callbacks": facts.callbacks,
+                "local_response_finishes": facts.local_response_finishes,
+                "cancel_submissions": facts.cancel_submissions,
+                "same_origin_script_cancels": facts.same_origin_script_cancels,
+                "wrong_method_fetch_cancels": facts.wrong_method_fetch_cancels,
+                "external_script_cancels": facts.external_script_cancels,
+                "dom": dom,
+            }));
+        }
+        let report = serde_json::json!({
+            "schema": "trillionnium.desktop.servo-http-resource-gate.v1",
+            "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+            "status": "OBSERVED_HTTP_CALLBACK_REFUSALS",
+            "fixture_origin": self.resource_gate.origin().ok_or("missing fixture custody")?,
+            "fixture_network_requests": self.fixture_network_requests.load(Ordering::Relaxed),
+            "generations": generations,
+            "global_cancel_submissions": observations.global_cancel_submissions,
+            "global_callback_observed": observations.global_cancel_submissions > 0,
+            "stale_cancel_submissions": observations.stale_cancel_submissions,
+            "default_resources_admitted": 0,
+            "network_continuations_submitted": 0,
+            "callback_bound_exceeded": observations.exceeded_bound,
+            "claim_ceiling": {
+                "signed_app_admission_connected": false,
+                "installed_csp_qualified": false,
+                "websocket_confinement": false,
+                "all_protocol_confinement": false,
+                "network_namespace_confinement": false,
+                "product_ready": false,
+            },
+        });
+        fs::write(
+            self.output_dir.join("resource-gate-result.json"),
+            serde_json::to_string_pretty(&report)
+                .map_err(|_| "resource result serialization failed")?
+                + "\n",
+        )
+        .map_err(|_| "resource result publication failed".into())
+    }
 }
 
 struct RuntimeDelegate {
     state: Weak<RuntimeState>,
     generation: u32,
+    resource_gate: Rc<ResourceGate>,
+    observations: Rc<RefCell<Observations>>,
 }
 
 impl RuntimeDelegate {
@@ -1469,6 +1772,33 @@ impl RuntimeDelegate {
 }
 
 impl WebViewDelegate for RuntimeDelegate {
+    fn load_web_resource(&self, webview: WebView, load: WebResourceLoad) {
+        let state = self.current();
+        let current_generation = state.as_ref().map_or(0, |state| state.generation.get());
+        let active_owned_webview = state.as_ref().is_some_and(|state| {
+            !state.completed.get()
+                && state.failure.borrow().is_none()
+                && state
+                    .webview
+                    .borrow()
+                    .as_ref()
+                    .is_some_and(|owned| owned.id() == webview.id())
+        });
+        respond_to_resource(
+            load,
+            &self.resource_gate,
+            &self.observations,
+            ResourceContext {
+                callback_generation: Some(self.generation),
+                current_generation,
+                active_owned_webview,
+            },
+        );
+        if let Some(state) = state {
+            let _ = state.proxy.send_event(AppEvent::Drive);
+        }
+    }
+
     fn notify_load_status_changed(&self, _webview: WebView, status: LoadStatus) {
         if let Some(state) = self.current() {
             state.load_complete.set(status == LoadStatus::Complete);
@@ -1497,13 +1827,63 @@ impl WebViewDelegate for RuntimeDelegate {
                 } else {
                     ReleaseOutcome::Accepted
                 };
-                state
-                    .input
-                    .borrow_mut()
-                    .acknowledge_release(self.generation, button, outcome);
+                let acknowledged =
+                    state
+                        .input
+                        .borrow_mut()
+                        .acknowledge_release(self.generation, button, outcome);
                 if state.retire_withdrawn_gesture() {
                     return;
                 }
+                if !acknowledged {
+                    state.fail("actual mouse release callback did not settle its owned binding");
+                    return;
+                }
+            }
+            let (point, focused, ready) = {
+                let input = state.input.borrow();
+                (
+                    input.point(),
+                    input.window_focused(),
+                    input.button_ready(self.generation, Button::Primary),
+                )
+            };
+            let checkpoint = state
+                .qualification_input
+                .borrow_mut()
+                .as_mut()
+                .map(|input| {
+                    input.acknowledge(
+                        self.generation,
+                        point,
+                        focused,
+                        event_id,
+                        !result.contains(InputEventResult::DispatchFailed),
+                    )
+                });
+            match checkpoint {
+                Some(Ok(Some(checkpoint))) => {
+                    if checkpoint.phase == CheckpointPhase::UpAccepted
+                        && button != Some(Button::Primary)
+                    {
+                        state.fail("qualification Up callback did not match the actual owned primary release");
+                        return;
+                    }
+                    if matches!(
+                        checkpoint.phase,
+                        CheckpointPhase::Ready | CheckpointPhase::PreludeReady
+                    ) && !ready
+                    {
+                        state.fail("native pointer checkpoint still has an unsettled owned button");
+                        return;
+                    }
+                    state.publish_input_checkpoint(checkpoint);
+                }
+                Some(Err(error)) => {
+                    state.fail(error);
+                    return;
+                }
+                _ => {}
             }
             state
                 .input_handled_callbacks
@@ -1562,6 +1942,83 @@ impl WebViewDelegate for RuntimeDelegate {
                     .set(state.input_method_controls.get() + 1);
             }
             let _ = state.proxy.send_event(AppEvent::Drive);
+        }
+    }
+}
+
+struct GlobalResourceDelegate {
+    observations: Rc<RefCell<Observations>>,
+}
+
+impl ServoDelegate for GlobalResourceDelegate {
+    fn load_web_resource(&self, load: WebResourceLoad) {
+        // No WebView principal exists here. No fixture or future app authority
+        // is granted to global/worker/background requests.
+        cancel_resource(load);
+        self.observations
+            .borrow_mut()
+            .cancel(None, Denial::NoWebView, None);
+    }
+}
+
+fn cancel_resource(load: WebResourceLoad) {
+    // Cancellation is bound to the load's responder, not the response URL. A
+    // fixed URL avoids copying an unbounded, content-controlled denied URL.
+    let response =
+        WebResourceResponse::new(Url::parse("about:blank").expect("fixed cancellation URL"));
+    load.intercept(response).cancel();
+}
+
+fn respond_to_resource(
+    load: WebResourceLoad,
+    gate: &ResourceGate,
+    observations: &RefCell<Observations>,
+    context: ResourceContext,
+) {
+    let request = load.request();
+    let probe = context.callback_generation.and_then(|generation| {
+        gate.probe(generation, request.url.as_str(), request.method.as_str())
+    });
+    let decision = if observations.borrow().exceeded_bound {
+        ResourceDecision::Cancel(Denial::StaleOrWithdrawn)
+    } else {
+        gate.decide(
+            context,
+            ResourceRequest {
+                canonical_url: request.url.as_str(),
+                method: request.method.as_str(),
+                is_for_main_frame: request.is_for_main_frame,
+                is_redirect: request.is_redirect,
+            },
+        )
+    };
+    match decision {
+        ResourceDecision::LocalFixture(bytes) => {
+            let mut response = WebResourceResponse::new(request.url.clone());
+            for (name, value) in [
+                ("content-type", "text/html; charset=utf-8"),
+                ("cache-control", "no-store"),
+                ("x-content-type-options", "nosniff"),
+                ("content-security-policy", QUALIFICATION_CSP),
+            ] {
+                response
+                    .headers
+                    .insert(name, value.parse().expect("fixed response header"));
+            }
+            let mut interception = load.intercept(response);
+            interception.send_body_data(bytes.to_vec());
+            interception.finish();
+            observations.borrow_mut().finish_local(
+                context
+                    .callback_generation
+                    .expect("admitted WebView generation"),
+            );
+        }
+        ResourceDecision::Cancel(denial) => {
+            cancel_resource(load);
+            observations
+                .borrow_mut()
+                .cancel(context.callback_generation, denial, probe);
         }
     }
 }
