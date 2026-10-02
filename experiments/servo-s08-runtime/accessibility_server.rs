@@ -340,6 +340,31 @@ fn s08_perform_checked_action(
     results[0]
 }
 
+// Fresh WebView/delegate/tree per case, all on the one process-local Servo owner.
+// The exact pin initializes global options once; rebuilding Servo for another
+// case panics even when Rust tests run sequentially. The original upstream
+// helper and retained-action test bodies remain unchanged.
+fn s08_build_webview_and_tree(
+    servo_test: &ServoTest,
+    url: &str,
+) -> (
+    Rc<WebViewDelegateImpl>,
+    servo::WebView,
+    accesskit_consumer::Tree,
+) {
+    let delegate = Rc::new(WebViewDelegateImpl::default());
+    let webview = WebViewBuilder::new(servo_test.servo(), servo_test.rendering_context.clone())
+        .delegate(delegate.clone())
+        .url(Url::parse(url).unwrap())
+        .build();
+    webview.set_accessibility_active(true);
+    let load_webview = webview.clone();
+    servo_test.spin(move || load_webview.load_status() != LoadStatus::Complete);
+    let updates = wait_for_min_updates(servo_test, delegate.clone(), 2);
+    let tree = build_tree(updates);
+    (delegate, webview, tree)
+}
+
 // Real Servo corpus: page-side mutation is test stimulus, never action fallback.
 // The final checked click uses the retained AccessKit identity and expected metadata only.
 #[test]
@@ -349,6 +374,7 @@ fn test_trillionnium_s08_semantic_custody() {
     };
     let output = std::path::PathBuf::from(output);
     assert!(output.is_absolute());
+    let servo_test = build_test();
     let cases = [
         (
             "same_node_label",
@@ -387,7 +413,7 @@ fn test_trillionnium_s08_semantic_custody() {
             <main><button id='target' onclick='document.getElementById("count").textContent="Semantic click count 1"'>Action target</button></main>
             <aside id='other'></aside><h1 id='count'>Semantic click count 0</h1>
             <h2 id='marker'>Mutation pending</h2>"#;
-        let (servo_test, delegate, webview, mut tree) = build_webview_and_tree(url);
+        let (delegate, webview, mut tree) = s08_build_webview_and_tree(&servo_test, url);
         let target = find_labeled_node(&tree, Role::Button, "Action target");
         let original_location = target.locate();
         let expected =
@@ -438,7 +464,8 @@ fn test_trillionnium_s08_semantic_custody() {
     }
 
     // A retained typed expectation with a stale epoch is refused on the real final script path.
-    let (servo_test, _delegate, webview, tree) = build_webview_and_tree(
+    let (_delegate, webview, tree) = s08_build_webview_and_tree(
+        &servo_test,
         "data:text/html,<!doctype html><button onclick='document.getElementById(\"count\").textContent=\"Epoch click count 1\"'>Epoch target</button><h1 id='count'>Epoch click count 0</h1>",
     );
     let target = find_labeled_node(&tree, Role::Button, "Epoch target");

@@ -213,15 +213,38 @@ jobs:
           RUST_BACKTRACE: "1"
         run: |
           set -euo pipefail
+          retained="$RUNNER_TEMP/s08-retained-corpus"
+          mkdir -m 700 "$retained"
+          source_root="$GITHUB_WORKSPACE"
           (
             cd servo
-            cargo test --locked -p servo --test accessibility \
-              test_retained_accessibility -- --nocapture
+            cargo test --locked -p servo --test accessibility -- --list \
+              > "$retained/list.txt"
+            # Require all six original test_retained_accessibility names in the actual list.
+            # The verifier emits full names so --exact never guesses a module prefix.
+            python3 "$source_root/tools/verify_s08_semantic_custody.py" \
+              --root "$source_root" \
+              --retained-list "$retained/list.txt" --print-retained-names \
+              > "$retained/names.txt"
+            mapfile -t retained_tests < "$retained/names.txt"
+            test "${#retained_tests[@]}" -eq 6
+            for index in "${!retained_tests[@]}"; do
+              # Each original test constructs Servo: the pin permits one owner per process.
+              cargo test --locked -p servo --test accessibility \
+                "${retained_tests[$index]}" -- --exact --nocapture \
+                > "$retained/case-$index.log" 2>&1
+              cat "$retained/case-$index.log"
+            done
+            python3 "$source_root/tools/verify_s08_semantic_custody.py" \
+              --root "$source_root" --retained-list "$retained/list.txt" \
+              --retained-log-dir "$retained" \
+              > "$RUNNER_TEMP/s08-retained-corpus-verification.json"
             HEPTA_S08_SEMANTIC_RESULTS="$RUNNER_TEMP/s08-semantic-result.json" \
               cargo test --locked -p servo --test accessibility \
-                test_trillionnium_s08_semantic_custody -- --nocapture
+                test_trillionnium_s08_semantic_custody -- --exact --nocapture
           ) > "$RUNNER_TEMP/s08-semantic-servo.log" 2>&1
           python3 tools/verify_s08_semantic_custody.py \
+            --retained-list "$retained/list.txt" --retained-log-dir "$retained" \
             --result "$RUNNER_TEMP/s08-semantic-result.json"
       - name: Validate bounded S08 results
         shell: bash
@@ -252,6 +275,12 @@ jobs:
               if not isinstance(value, dict):
                   raise SystemExit(f"{name}: object required")
               return value
+          def require_scalar_types(value, expected, label):
+              if set(value) != set(expected):
+                  raise SystemExit(f"{label}: closed fields required")
+              for key, expected_value in expected.items():
+                  if type(value[key]) is not type(expected_value):
+                      raise SystemExit(f"{label}: exact scalar type required for {key}")
           product = load("s08-product-result.json")
           servo = load("s08-servo-result.json")
           expected_product = {
@@ -270,6 +299,7 @@ jobs:
               "physical_hardware_proven": False,
               "release_proven": False,
           }
+          require_scalar_types(product, expected_product, "product")
           if product != expected_product:
               raise SystemExit(f"unexpected product result: {product!r}")
           required_servo = {
@@ -283,6 +313,7 @@ jobs:
               "physical_hardware_proven": False,
               "release_proven": False,
           }
+          require_scalar_types(servo, required_servo, "Servo")
           if servo != required_servo:
               raise SystemExit(f"unexpected Servo result: {servo!r}")
           PY
@@ -299,8 +330,14 @@ jobs:
             s08-tested-servo.patch.sha256 s08-servo-packages.txt \
             s08-servo.log s08-product.log s08-receipt-files.sha256 \
             s08-semantic-source-verification.json s08-semantic-pin-verification.json \
-            s08-semantic-servo.log s08-semantic-result.json; do
+            s08-semantic-servo.log s08-semantic-result.json \
+            s08-retained-corpus-verification.json; do
             test ! -f "$RUNNER_TEMP/$file" || cp "$RUNNER_TEMP/$file" "$evidence/$file"
+          done
+          retained="$RUNNER_TEMP/s08-retained-corpus"
+          for file in list.txt names.txt case-0.log case-1.log case-2.log \
+            case-3.log case-4.log case-5.log; do
+            test ! -f "$retained/$file" || cp "$retained/$file" "$evidence/s08-retained-$file"
           done
           mailbox="$RUNNER_TEMP/s08-mailbox"
           for file in s08-product-result.json s08-servo-result.json; do

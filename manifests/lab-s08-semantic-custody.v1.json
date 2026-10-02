@@ -177,5 +177,24 @@
     "manifest_sha256": "7309bded10ae3cc69edfee2d42b6dbfddcac2abf3f8284e705693f11178e7f7a",
     "lock_path": "experiments/servo-s08-runtime/semantic-source-check/Cargo.lock",
     "lock_sha256": "71e6d19e57fcbefba4a3f5995b06231ce3fbb989ff8381d460521862c004f9cd"
+  },
+  "runtime_corpus": {
+    "retained_test_names": [
+      "test_retained_accessibility_click_dispatches_exactly_once",
+      "test_retained_accessibility_rejects_unadvertised_and_unsupported_requests",
+      "test_retained_accessibility_rejects_replaced_node_identity",
+      "test_retained_accessibility_rejects_inactive_and_stale_tree",
+      "test_retained_accessibility_rejects_disabled_hidden_and_non_element_targets",
+      "test_retained_accessibility_dropped_callback_does_not_duplicate_dispatch"
+    ],
+    "fresh_process_per_retained_test": true,
+    "exact_filter_from_actual_list": true,
+    "expected_tests_per_retained_process": 1,
+    "semantic_servo_owners": 1,
+    "semantic_webviews": 7,
+    "adapter_path": "experiments/servo-s08-runtime/accessibility_server.rs",
+    "adapter_sha256": "da0ba09d36b5b837a9da96b9a76b21831c1ebad63b15e59a887e002bb399b838",
+    "workflow_path": ".github/workflows/s08-servo-vertical-slice.yml",
+    "workflow_sha256": "14839b21809a0171db4087989b9daceb4f6d7e62388c425c81e83749ba480160"
   }
 }
