@@ -41,13 +41,15 @@
         "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
         "docs/architecture/SESSION_STATE_MACHINE.md",
         "docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md",
-        "docs/architecture/REQUEST_EXECUTION_AND_RECOVERY.md"
+        "docs/architecture/REQUEST_EXECUTION_AND_RECOVERY.md",
+        "docs/architecture/RETAINED_CONTROL_TERMINAL.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
         "contracts/browser-actor.v1.json",
         "contracts/accepted-stream-handoff.v1.json",
-        "contracts/dual-owner-request-custody.v1.json"
+        "contracts/dual-owner-request-custody.v1.json",
+        "contracts/retained-control-terminal.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -59,7 +61,9 @@
         "apps/hepta-browserd/tests/product_handoff_kernel.rs",
         "tests/test_accepted_stream_handoff.py",
         "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
-        "tests/test_dual_owner_custody.py"
+        "tests/test_dual_owner_custody.py",
+        "tests/test_retained_control_terminal.py",
+        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
@@ -131,17 +135,22 @@
       "owner_class": "transport-security",
       "documentation": "crates/hepta-agent-transport/README.md",
       "architecture": [
-        "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md"
+        "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md",
+        "docs/architecture/RETAINED_CONTROL_TERMINAL.md"
       ],
       "contracts": [
         "contracts/agent-transport.v1.json",
-        "contracts/accepted-stream-handoff.v1.json"
+        "contracts/accepted-stream-handoff.v1.json",
+        "contracts/retained-control-terminal.v1.json"
       ],
       "tests": [
         "crates/hepta-agent-transport/src/facade.rs",
         "crates/hepta-agent-transport/tests/accepted_handoff_kernel.rs",
         "tests/test_accepted_stream_handoff.py",
-        "tests/transport/test_agent_transport_reference.py"
+        "tests/transport/test_agent_transport_reference.py",
+        "tests/test_retained_control_terminal.py",
+        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs",
+        "crates/hepta-agent-transport/tests/retained_control_kernel.rs"
       ],
       "workflows": [
         ".github/workflows/agent-transport-reference.yml",
@@ -220,13 +229,15 @@
       "architecture": [
         "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
         "docs/architecture/REQUEST_PEER_CUSTODY.md",
-        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md"
+        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
+        "docs/architecture/RETAINED_CONTROL_TERMINAL.md"
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
         "contracts/request-peer-custody.v1.json",
         "contracts/control-owner-handoff.v1.json",
-        "contracts/dual-owner-request-custody.v1.json"
+        "contracts/dual-owner-request-custody.v1.json",
+        "contracts/retained-control-terminal.v1.json"
       ],
       "tests": [
         "crates/hepta-peer-attestation/src/lib.rs",
@@ -234,7 +245,9 @@
         "crates/hepta-peer-attestation/tests/control_owner_kernel.rs",
         "tests/test_control_owner_handoff.py",
         "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
-        "tests/test_dual_owner_custody.py"
+        "tests/test_dual_owner_custody.py",
+        "tests/test_retained_control_terminal.py",
+        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs"
       ],
       "workflows": [
         ".github/workflows/s04-transport-custody.yml",

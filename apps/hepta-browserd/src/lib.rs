@@ -14,6 +14,10 @@ pub use product_dispatch::{
     ProductConnectionCancellation, ProductConnectionIngress, ProductConnectionQueue,
     ProductDispatchError, ProductRequestCoordinator, product_connection_queue,
 };
+#[cfg(target_os = "linux")]
+pub use product_dispatch::{
+    ProductControlMonitor, ProductControlMonitorOutcome, RetainedProductConnection,
+};
 
 pub use servo_product_runtime::{
     BrowserdRuntimeSupervisor, CrashTransition, DispatchCompletion, ProductRuntimeError,

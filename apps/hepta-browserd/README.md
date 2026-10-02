@@ -87,6 +87,27 @@ this API refuses a late result rather than claiming a hard syscall timeout.
 The closed source contract/API inventory is
 [`accepted-stream-handoff.v1.json`](../../contracts/accepted-stream-handoff.v1.json).
 
+The additive retained-control source route has separate APIs and claims:
+`RetainedProductConnection::from_control_retained_received` returns one opaque
+admitted connection and `ProductControlMonitor`; the latter runs on a same-
+process I/O worker with wait intervals of at most five milliseconds under the
+fixed deadline and a private
+single-message terminal link. `from_retained_connection` constructs the same
+coordinator, and `serve_retained_connection` privately binds only its own current
+request to a freshly reread terminal from its own complete managed journal.
+No public ServiceEvidence, boolean, caller digest or foreign fact supplies that
+seal. Remote cancellation revokes actions while an independent original live
+report identity remains; it grants no renewed execution. A report asserts
+terminal lifecycle and digests only, without response delivery or effect success.
+Missing/lost reports preserve history and never automatically replay. The new
+wrapper supplies no installed admission/queue/service owner. Full signatures,
+failures and actual host test tiers are specified in
+[`retained-control-terminal.v1.json`](../../contracts/retained-control-terminal.v1.json)
+and [`RETAINED_CONTROL_TERMINAL.md`](../../docs/architecture/RETAINED_CONTROL_TERMINAL.md).
+`product_terminal_wait_kernel` exercises actual three-process default-proc,
+original-stream, managed-journal, cancellation, loss, exec, fork and deadline
+behavior with a controlled completion callback; it does not execute Servo.
+
 `cargo test --locked -p hepta-browserd --test product_handoff_kernel` exercises
 real SCM_RIGHTS, an actual same-UID child `/proc`/pidfd identity, original fixed
 Instant after receiver delay, queue expiry, cancellation/EOF and actual fork.
@@ -251,10 +272,12 @@ all-asynchronous-window guarantee is made.
 
 One-shot sender/receiver channel closure is expected and is **not** custodian
 process exit. The same custodian must remain alive throughout the request.
-A retained-control terminal-wait/cancel/ack protocol, installed owner startup,
-root-owned pathname policy, cross-UID executable-attestation authority and native
-final effect integration remain missing. Default binaries and systemd activation
-remain closed. A source callback check does not execute Servo.
+The additive retained-control source route above supplies same-channel
+cancellation and remote terminal reports with a private own-journal coordinator
+association. Installed owner startup, root-owned pathname policy, cross-UID
+executable-attestation authority and native final effect integration remain
+missing. Default binaries and systemd activation remain closed. A source
+callback check does not execute Servo.
 
 `apps/hepta-browserd/tests/product_control_custody_kernel.rs` exercises original
 stream bytes, three distinct actual same-UID Linux PIDs, default `/proc` identity,

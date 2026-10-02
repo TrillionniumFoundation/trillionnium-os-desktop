@@ -109,6 +109,59 @@ establish source descriptor/deadline continuity only. Approved cross-UID broker,
 principal policy, installed process handoff and native owner remain separate.
 There is no daemon or activation change in this addition.
 
+The additive retained-control API consumes exactly one submission and retains
+its original seqpacket channel. It does not change the legacy handoff packets,
+multi-submission methods, application frames or golden bytes:
+
+| API | Arguments and result |
+| --- | --- |
+| `HandoffSender::send_retained` | Consume this sender and one original custody; return `PendingHandoffSender` after the one descriptor submission |
+| `HandoffReceiver::receive_retained` | Consume this receiver and a bounded control-wait duration; return `RetainedReceivedAcceptedStream` |
+| `RetainedReceivedAcceptedStream::into_parts` | Consume once into the original opaque `ReceivedAcceptedStream` and `PendingHandoffReceiver`; check the unchanged dispatch deadline |
+| `PendingHandoffSender::{ensure_current,deadline}` | Mutably check original kernel peer, creator PID, boot/time namespace and fixed deadline; return that `Instant` or permanently retire the channel |
+| `PendingHandoffSender::request_cancel` | Attempt one bounded cancellation packet; consume cancellation publication before native send and never retry |
+| `PendingHandoffSender::wait_report` | Receive one `RemoteRetirementReport` before the original fixed deadline; retire on success, EOF, timeout or protocol/I/O failure |
+| `PendingHandoffSender::poll_report` | Nonblocking zero-time poll for the same report; absent data keeps the same owner/deadline, while a report or any failure retires it |
+| `PendingHandoffReceiver::{ensure_current,deadline}` | Check the same retained identity and original deadline with fail-stop retirement |
+| `PendingHandoffReceiver::poll_cancel` | Perform actual zero-time `poll` and nonblocking `recvmsg`; return true for the first valid cancellation packet, false if no packet is ready; duplicate cancellation retires the endpoint |
+| `PendingHandoffReceiver::send_report` | Attempt one report and retire publication authority before its first native send; no re-enqueue or retry exists |
+| `RemoteRetirementReport::new` | Build explicitly remote-asserted transport data from `RemoteTerminalState` and two nonzero 32-byte request/record digests |
+| `RemoteRetirementReport::{state,request_sha256,record_sha256}` | Read those bounded remote declarations; no journal, effect or delivery authority is derived |
+
+The separate 192-byte sideband frame uses magic `HPTAFDS1`, version 1, kind
+at byte 10 (cancel=1, report=2), state at byte 11 (cancel=0; report
+Completed=1, Interrupted=2, Indeterminate=3), and four zero reserved bytes at
+12..16. Bytes 16..128 bind the original submission sequence, boot,
+monotonic start/deadline, accepted socket cookie/device/inode, actual time
+namespace and private channel challenge using the unchanged handoff layout.
+Request and record digest bytes occupy 128..160 and 160..192; cancellation
+requires both to be zero. Every packet requires exact original kernel
+per-message credentials and zero descriptor rights. Short/long frames,
+unknown types/states, nonzero reserved bytes, any changed binding,
+extra rights, actual SCM_PIDFD, truncation or duplicate cancel refuse the
+endpoint, with all actually received descriptors cleaned by the existing parser.
+
+`RemoteTerminalState::Completed` does not assert application success: it may
+represent success, failure, refusal or cancellation as declared by the peer.
+Public report construction is transport data only. A product coordinator must
+privately correlate its own exact request and read its own complete locked
+journal before publishing a journal-associated report. Neither caller-created
+`ServiceEvidence`, a foreign journal fact nor a boolean can provide that local
+authority. This leaf crate imports no journal or product dependency.
+
+Sideband waiting and receiver queue residence preserve the original native
+deadline, boot and clock namespace. There is no additional wait budget, deadline
+renewal or resend. Report enqueue does not prove delivery or remote admission;
+expiry or lost reports cannot erase a known local durable completion or justify
+replay. Cancellation requests do not prove an effect barrier or undo. Waiting
+exclusively borrows the sender: cancellation may be requested before waiting,
+and cannot concurrently interrupt an already borrowed `wait_report` call.
+An exclusive custodian command loop can use `poll_report` between cancellation
+commands without sharing or duplicating the original control descriptor.
+Higher-level live pidfd/executable refresh and cancellation coordination remain
+the caller's responsibility. Drop closes owned descriptor copies only and never
+shuts down a socket inherited by a fork child.
+
 This library registers no binary target. Cargo binary auto-discovery and package build scripts are disabled.
 
 ## Configuration and features
@@ -140,6 +193,7 @@ Primary source or test references:
 - `crates/hepta-agent-transport/src/facade.rs`
 - `tests/transport/test_agent_transport_reference.py`
 - `crates/hepta-agent-transport/tests/accepted_handoff_kernel.rs` (19 actual kernel cases, single-thread descriptor inventory, required real SO_PASSPIDFD challenge/submission cleanup and fork entry)
+- `crates/hepta-agent-transport/tests/retained_control_kernel.rs` (actual retained-control kernel groups, original socket/deadline, strict sideband mutations, cancellation, rights/pidfd cleanup, send backpressure, fork and distinct-process custody)
 - `tests/test_accepted_stream_handoff.py` (closed-contract/source API correspondence)
 
 Applicable workflows:
@@ -162,6 +216,10 @@ A passing unit or hosted-CI test proves only the evidence tier named by its gate
   The actual same-UID corpus does not skip and checks complete FD inventory after
   each case. Its distinct-process handoff is not a cross-UID live attestation
   result; no installed/native or new-namespace execution result is claimed.
+- Run `cargo test --locked -p hepta-agent-transport --test retained_control_kernel`.
+  It requires real Linux SO_PASSPIDFD support and never skips that cleanup test.
+  Public report values and same-UID process fixtures are source protocol
+  evidence; they are not local durable journal or installed/native qualification.
 - A `DeadlineExceeded`, `UnexpectedEof` or digest/protocol error requires discarding the connection.
 - Do not debug production failures by increasing frame limits or bypassing peer checks; reproduce with a bounded fixture instead.
 - Protocol traces must not contain unredacted application payloads.

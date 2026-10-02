@@ -14,8 +14,10 @@ pub use request_lease::{PeerRequestCustody, PeerRequestVerifier};
 mod control_owner;
 #[cfg(target_os = "linux")]
 pub use control_owner::{
-    AttestedHandoffReceiver, AttestedHandoffSender, ControlOwnerError, ControlOwnerPolicy,
-    ControlReceivedAcceptedStream, ControlRequestCustody, ControlRequestVerifier,
+    AttestedHandoffReceiver, AttestedHandoffSender, AttestedPendingHandoff,
+    AttestedRetainedReceiver, ControlOwnerError, ControlOwnerPolicy, ControlReceivedAcceptedStream,
+    ControlRequestCustody, ControlRequestVerifier, ControlRetainedAcceptedStream,
+    PeerReportedRetirement,
 };
 
 use hepta_agent_transport::PeerIdentity;

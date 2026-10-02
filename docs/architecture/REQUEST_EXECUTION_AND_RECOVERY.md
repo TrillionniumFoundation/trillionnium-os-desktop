@@ -111,10 +111,14 @@ failure followed by handler Drop prove this
 source lifecycle with actual control custody or explicitly synthetic Agent
 metadata as labeled; they do not execute Servo or qualify installed effects.
 
-The one-shot control socket closes after receive; this is not permission for the
-custodian process to exit. The same live incarnation must remain until request
-retirement. A terminal-wait/remote-cancel protocol and installed service wiring
-remain absent. Three-process same-UID default-proc kernel tests cover identity
+The legacy one-shot control socket closes after receive; this is not permission
+for the custodian process to exit. The same live incarnation must remain until
+request retirement. The additive source candidate in
+[Retained control reporting](RETAINED_CONTROL_TERMINAL.md) keeps the original
+channel through remote cancellation and a private coordinator-owned exact
+journal terminal association. Its low-level report remains remote-asserted
+transport data, never a local durable proof or response delivery assertion.
+Installed service wiring remains absent. Three-process same-UID default-proc kernel tests cover identity
 and FD continuity. A separately labeled synthetic-Agent callback corpus covers
 source ordering only; neither tier proves native Servo effect execution.
 

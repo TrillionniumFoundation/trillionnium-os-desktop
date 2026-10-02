@@ -46,7 +46,9 @@ jobs:
           cargo fmt --all --check
           cargo check --locked -p hepta-browserd --all-targets
           cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
+          # Includes standalone actual three-process retained terminal source corpus.
           cargo test --locked -p hepta-browserd --all-targets
+          python3 -m unittest discover -s tests -p test_retained_control_terminal.py -v
           python3 tools/validate_s08_product_supervision.py
           python3 tools/validate_module_documentation.py
           python3 tools/validate_repository.py
@@ -89,7 +91,9 @@ jobs:
           cargo fmt --all --check
           cargo check --locked -p hepta-browserd --all-targets
           cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
+          # Includes standalone actual three-process retained terminal source corpus.
           cargo test --locked -p hepta-browserd --all-targets
+          python3 -m unittest discover -s tests -p test_retained_control_terminal.py -v
           python3 tools/validate_s08_product_supervision.py
           python3 tools/validate_module_documentation.py
           python3 tools/validate_repository.py

@@ -107,6 +107,23 @@ Required change sequence: update implementation and Cargo metadata; update machi
 
 ## Live control-custodian successor
 
+The additive retained route is documented in
+[`RETAINED_CONTROL_TERMINAL.md`](../../docs/architecture/RETAINED_CONTROL_TERMINAL.md)
+and its closed 36-method source inventory in
+[`retained-control-terminal.v1.json`](../../contracts/retained-control-terminal.v1.json).
+`send_retained` and `receive_retained_custodied` move the same original channel
+and identity into one pending/report owner. `AttestedPendingHandoff` exposes
+current checks, one cancellation, blocking wait and nonblocking
+`poll_retirement`; `AttestedRetainedReceiver` polls cancellation and sends only
+remote-asserted report data. `ControlRetainedAcceptedStream` consumes the same
+original stream, accepted Instant, unique request custody and retained report
+identity together. The reporting-only identity cannot restore revoked execution
+custody. `PeerReportedRetirement` is an authenticated remote assertion, without
+local journal, effect-success, response-delivery, principal or replay authority.
+All deadlines remain original; both control and accepted ceilings bound report
+waiting. The three-process `product_terminal_wait_kernel` target verifies this
+with default live procfs and explicitly controlled, non-Servo completions.
+
 Linux `ControlOwnerPolicy`, `ControlOwnerError`, `AttestedHandoffSender` and
 `AttestedHandoffReceiver` wrap the existing accepted-stream protocol. They own
 already connected `OwnedFd` seqpacket controls and read the actual kernel peer.
@@ -216,10 +233,12 @@ all-asynchronous-window guarantee is made.
 
 One-shot sender/receiver channel closure is expected and is **not** custodian
 process exit. The same custodian must remain alive throughout the request.
-A retained-control terminal-wait/cancel/ack protocol, installed owner startup,
-root-owned pathname policy, cross-UID executable-attestation authority and native
-final effect integration remain missing. Default binaries and systemd activation
-remain closed. A source callback check does not execute Servo.
+The additive retained-control source route above supplies same-channel
+cancellation and remote terminal reports with a private own-journal coordinator
+association. Installed owner startup, root-owned pathname policy, cross-UID
+executable-attestation authority and native final effect integration remain
+missing. Default binaries and systemd activation remain closed. A source
+callback check does not execute Servo.
 
 `apps/hepta-browserd/tests/product_control_custody_kernel.rs` exercises original
 stream bytes, three distinct actual same-UID Linux PIDs, default `/proc` identity,

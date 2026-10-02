@@ -16,6 +16,12 @@ use std::time::{Duration, Instant};
 
 use crate::{PeerIdentity, PeerPolicy};
 
+mod retained_control;
+pub use retained_control::{
+    PendingHandoffReceiver, PendingHandoffSender, RemoteRetirementReport, RemoteTerminalState,
+    RetainedReceivedAcceptedStream,
+};
+
 pub const MAX_HANDOFF_BUDGET: Duration = Duration::from_secs(20);
 pub const MAX_HANDOFFS_PER_CHANNEL: usize = 64;
 const MAX_RIGHTS: usize = 16;

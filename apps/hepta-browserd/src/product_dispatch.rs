@@ -34,6 +34,13 @@ use hepta_session_core::{Digest, DurableReceiptFact, ReceiptJournal, ReceiptLife
 
 use crate::{RestartPolicy, RuntimeGeneration, RuntimeState};
 
+#[cfg(target_os = "linux")]
+mod product_control_wait;
+#[cfg(target_os = "linux")]
+pub use product_control_wait::{
+    ProductControlMonitor, ProductControlMonitorOutcome, RetainedProductConnection,
+};
+
 pub const MAX_PRODUCT_PENDING_CONNECTIONS: usize = 8;
 pub const MAX_PRODUCT_CONNECTION_BUDGET: Duration = Duration::from_secs(20);
 
@@ -381,6 +388,7 @@ struct OperationTrace {
     requested: bool,
     dispatched: bool,
     terminal: Option<ReceiptLifecycleState>,
+    terminal_record: Option<Digest>,
     storage_failed: bool,
     uncertain: bool,
 }
@@ -400,6 +408,10 @@ pub struct ProductRequestCoordinator {
     storage_failed: bool,
     image_id: String,
     principal: TaskFlowPrincipal,
+    // Private coordinates from this invocation only; never supplied by a
+    // caller's ServiceEvidence or a fact from another journal instance.
+    #[cfg(target_os = "linux")]
+    last_retirement: Option<(RequestIdentity, ReceiptLifecycleState, Digest)>,
 }
 
 impl ProductRequestCoordinator {
@@ -500,6 +512,8 @@ impl ProductRequestCoordinator {
             storage_failed: false,
             image_id,
             principal,
+            #[cfg(target_os = "linux")]
+            last_retirement: None,
         })
     }
 
@@ -522,6 +536,10 @@ impl ProductRequestCoordinator {
         mut connection: AcceptedProductConnection,
     ) -> Result<ServiceEvidence, ProductDispatchError> {
         self.ensure_owner()?;
+        #[cfg(target_os = "linux")]
+        {
+            self.last_retirement = None;
+        }
         if connection.control.owner_pid != self.owner_pid {
             return Err(ProductDispatchError::PeerRefused);
         }
@@ -587,6 +605,15 @@ impl ProductRequestCoordinator {
             active.take();
         }
         let trace = trace.borrow();
+        #[cfg(target_os = "linux")]
+        if !trace.storage_failed
+            && trace.requested
+            && let (Some(request), Some(lifecycle), Some(record)) =
+                (&trace.request, trace.terminal, trace.terminal_record)
+            && lifecycle.is_terminal()
+        {
+            self.last_retirement = Some((request.clone(), lifecycle, record));
+        }
         self.storage_failed |= trace.storage_failed;
         let unresolved = trace.requested
             && (trace.uncertain
@@ -947,9 +974,10 @@ impl DurableProductLifecycle {
             .as_mut()
             .ok_or_else(storage_error)?
             .receipt_fact(&request.request_id, digest);
-        match fact.and_then(|fact| fact.lifecycle()) {
-            Ok(lifecycle) => {
+        match fact.and_then(|fact| Ok((fact.lifecycle()?, fact.record_sha256()?))) {
+            Ok((lifecycle, record)) => {
                 self.trace.borrow_mut().terminal = Some(lifecycle);
+                self.trace.borrow_mut().terminal_record = Some(record);
                 Ok(())
             }
             Err(_) => {

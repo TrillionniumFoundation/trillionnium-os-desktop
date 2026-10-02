@@ -49,7 +49,7 @@ impl fmt::Debug for ControlRequestVerifier {
 }
 
 impl ControlRequestCustody {
-    fn from_control_peer(
+    pub(super) fn from_control_peer(
         peer: &AttestedPeer,
         deadline: Instant,
     ) -> Result<Self, ControlOwnerError> {
@@ -110,6 +110,12 @@ impl Drop for ControlRequestCustody {
     }
 }
 impl ControlRequestVerifier {
+    pub(super) fn revoke_scope(&self) -> Result<(), ControlOwnerError> {
+        creator(self.state.owner_pid)?;
+        self.state.revoked.store(true, Ordering::SeqCst);
+        Ok(())
+    }
+
     fn original_peer_result(
         &self,
         checked: Result<(), crate::AttestationError>,

@@ -14,8 +14,13 @@ use std::path::Path;
 use std::time::{Duration, Instant};
 
 mod control_request;
+mod retained_request;
 pub use control_request::{
     ControlReceivedAcceptedStream, ControlRequestCustody, ControlRequestVerifier,
+};
+pub use retained_request::{
+    AttestedPendingHandoff, AttestedRetainedReceiver, ControlRetainedAcceptedStream,
+    PeerReportedRetirement,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
