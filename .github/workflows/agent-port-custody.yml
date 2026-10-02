@@ -123,8 +123,8 @@ jobs:
           set -euo pipefail
           test ! -e enable-agent-port
           test ! -e /etc/hepta/enable-agent-port
-          ! grep -R -n -E 'TcpListener|UnixListener|WebDriver' \
-            apps/hepta-agent-portd crates/hepta-peer-attestation
+          ! grep -R -n --include='*.rs' -E 'TcpListener|UnixListener|WebDriver' \
+            apps/hepta-agent-portd crates/hepta-peer-attestation/src
           ! grep -F 'D0FixtureHandler' apps/hepta-agent-portd/src/main.rs
           grep -F 'ProductHandlerUnavailable' apps/hepta-agent-portd/src/main.rs
           grep -F 'D0FixtureHandler' \

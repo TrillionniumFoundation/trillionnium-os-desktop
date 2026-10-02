@@ -221,11 +221,14 @@
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
-        "contracts/request-peer-custody.v1.json"
+        "contracts/request-peer-custody.v1.json",
+        "contracts/control-owner-handoff.v1.json"
       ],
       "tests": [
         "crates/hepta-peer-attestation/src/lib.rs",
-        "tests/test_s04_transport_custody.py"
+        "tests/test_s04_transport_custody.py",
+        "crates/hepta-peer-attestation/tests/control_owner_kernel.rs",
+        "tests/test_control_owner_handoff.py"
       ],
       "workflows": [
         ".github/workflows/s04-transport-custody.yml",

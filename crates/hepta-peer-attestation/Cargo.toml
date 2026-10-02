@@ -23,3 +23,9 @@ development-static-attestation = []
 hepta-agent-transport = { path = "../hepta-agent-transport" }
 libc = "=0.2.186"
 sha2 = "=0.10.9"
+
+# Actual fork and distinct-process descriptor custody use a single-thread main.
+[[test]]
+name = "control_owner_kernel"
+path = "tests/control_owner_kernel.rs"
+harness = false
