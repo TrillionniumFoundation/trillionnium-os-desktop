@@ -1,0 +1,26 @@
+#!/bin/bash
+# D2I qualification only. An actual protocol round trip, under the same
+# renderer UID/environment, must finish before starting the Servo embedder.
+set -euo pipefail
+deadline=$((SECONDS + 20))
+report=$(mktemp /run/hepta-desktop/d2i-wayland-info.XXXXXXXX)
+trap 'rm -f "$report"' EXIT
+while (( SECONDS < deadline )); do
+  remaining=$((deadline - SECONDS))
+  (( remaining > 0 )) || break
+  (( remaining > 2 )) && remaining=2
+  if timeout --signal=TERM --kill-after=1s "${remaining}s" \
+      /usr/bin/wayland-info 2>&1 | head -c 65537 > "$report"; then
+    if (( $(stat -c %s "$report") <= 65536 )) &&
+       grep -q "interface: 'wl_compositor'" "$report" &&
+       grep -q "interface: 'wl_shm'" "$report" &&
+       grep -q "interface: 'xdg_wm_base'" "$report"; then
+      printf 'TRILLIONNIUM_D2I_WAYLAND_PROTOCOL_READY\n'
+      exit 0
+    fi
+  fi
+  sleep 0.25
+done
+printf 'TRILLIONNIUM_D2I_WAYLAND_PROTOCOL_FAIL\n' >&2
+tail -c 65536 "$report" >&2 || true
+exit 1

@@ -17,6 +17,7 @@ artifacts=
 image=
 preparation=
 output_dir=
+startup_failure_negative=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --selection) selection=$2; shift 2 ;;
@@ -24,6 +25,7 @@ while [[ $# -gt 0 ]]; do
     --image) image=$2; shift 2 ;;
     --preparation) preparation=$2; shift 2 ;;
     --output-dir) output_dir=$2; shift 2 ;;
+    --startup-failure-negative) startup_failure_negative=true; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "unknown argument: $1" >&2; usage; exit 2 ;;
   esac
@@ -41,6 +43,10 @@ image=$(readlink -f "$image")
 preparation=$(readlink -f "$preparation")
 mkdir -p "$output_dir"
 output_dir=$(readlink -f "$output_dir")
+[[ -z $(find "$output_dir" -mindepth 1 -maxdepth 1 -print -quit) ]] || {
+  echo 'D2I boot requires a fresh empty output directory' >&2
+  exit 1
+}
 shared_evidence="$(dirname "$output_dir")/evidence/qemu"
 
 capture_d2i_diagnostics() {
@@ -52,12 +58,20 @@ capture_d2i_diagnostics() {
   # case the normal path exits before its successful-acceptance extraction.
   if (( code != 0 )) && [[ -n ${run_image:-} && -f ${run_image:-} ]]; then
     local guest_name
-    for guest_name in guest-acceptance.json runtime-ready.json runtime-journal.txt \
+    for guest_name in runtime-ready.json \
       content-process-identity.json content-sigkill-sent.json \
       process-topology-pre-fault.json process-topology-post-termination.json \
       process-topology-post-recovery.json; do
       debugfs -R "dump -p /var/lib/trillionnium-d2i/$guest_name $output_dir/$guest_name" \
         "$run_image" > "$output_dir/debugfs-failure-$guest_name.log" 2>&1 || true
+    done
+    for guest_name in guest-acceptance.json runtime-journal.txt; do
+      debugfs -R "dump -p /var/lib/trillionnium-d2i-acceptance/$guest_name $output_dir/$guest_name" \
+        "$run_image" > "$output_dir/debugfs-failure-acceptance-$guest_name.log" 2>&1 || true
+    done
+    for guest_name in failure.json runtime-journal.txt acceptance-journal.txt weston.log unit-state.txt; do
+      debugfs -R "dump -p /var/lib/trillionnium-d2i-diagnostics/$guest_name $output_dir/startup-$guest_name" \
+        "$run_image" > "$output_dir/debugfs-failure-startup-$guest_name.log" 2>&1 || true
     done
   fi
   if [[ -d "$output_dir" ]]; then
@@ -89,6 +103,14 @@ capture_d2i_diagnostics() {
 }
 trap capture_d2i_diagnostics EXIT
 
+dump_guest_file() {
+  local guest_path=$1
+  local host_path=$2
+  local log_path=$3
+  debugfs -R "dump -p $guest_path $host_path" "$run_image" > "$log_path" 2>&1
+  [[ -s $host_path ]]
+}
+
 for path in "$selection" "$image" "$preparation" \
   "$artifacts/vmlinuz" "$artifacts/initrd.img" "$artifacts/package-lock.tsv"; do
   [[ -f $path && ! -L $path ]] || { echo "missing or unsafe D2I input: $path" >&2; exit 1; }
@@ -114,6 +136,10 @@ if ! [[ $timeout_seconds =~ ^[0-9]+$ ]] || (( timeout_seconds < 60 || timeout_se
 fi
 
 run_image="$output_dir/trillionnium-d2i-qemu.ext4"
+if [[ $startup_failure_negative == true ]]; then
+  run_image="$output_dir/trillionnium-d2i-startup-negative.ext4"
+  timeout_seconds=120
+fi
 serial_log="$output_dir/serial.log"
 qemu_log="$output_dir/qemu.log"
 command_file="$output_dir/qemu-command.txt"
@@ -122,6 +148,25 @@ runtime_ready="$output_dir/runtime-ready.json"
 screenshot="$output_dir/servo-content-recovered.png"
 runtime_journal="$output_dir/runtime-journal.txt"
 cp --sparse=always "$image" "$run_image"
+if [[ $startup_failure_negative == true ]]; then
+  # Only this explicit qualification clone contains the deliberate failure.
+  # The normal candidate and its prepared digest remain unchanged.
+  negative_override="$output_dir/startup-negative.conf"
+  cat > "$negative_override" <<'EOF'
+[Unit]
+Requires=
+After=
+[Service]
+ExecStartPre=
+ExecStart=
+ExecStart=/bin/sh -c 'printf "D2I_EXPLICIT_STARTUP_NEGATIVE_EXIT_73\\n" >&2; exit 73'
+EOF
+  debugfs -w -R 'mkdir /etc/systemd/system/trillionnium-d2i-runtime.service.d' "$run_image" >/dev/null 2>&1
+  debugfs -w -R "write $negative_override /etc/systemd/system/trillionnium-d2i-runtime.service.d/90-startup-negative.conf" \
+    "$run_image" >/dev/null 2>&1
+  negative_image_sha=$(sha256sum "$run_image" | awk '{print $1}')
+  [[ $negative_image_sha != "$expected_image_sha" ]] || { echo 'negative clone was not modified' >&2; exit 1; }
+fi
 : > "$serial_log"
 : > "$qemu_log"
 
@@ -164,6 +209,7 @@ if grep -Eq '(-net|-nic)[[:space:]]+(user|tap|bridge|socket)' "$command_file"; t
 fi
 
 set +e
+boot_started_seconds=$SECONDS
 timeout --signal=TERM --kill-after=20s "${timeout_seconds}s" \
   "${qemu_command[@]}" > "$qemu_log" 2>&1
 qemu_status=$?
@@ -174,26 +220,94 @@ if [[ $qemu_status -ne 0 ]]; then
   tail -n 160 "$qemu_log" >&2 || true
   exit 1
 fi
+if [[ $startup_failure_negative == true ]]; then
+  for guest_name in failure.json runtime-journal.txt acceptance-journal.txt weston.log unit-state.txt; do
+    dump_guest_file "/var/lib/trillionnium-d2i-diagnostics/$guest_name" \
+      "$output_dir/startup-$guest_name" "$output_dir/debugfs-startup-$guest_name.log"
+  done
+  candidate_after_sha=$(sha256sum "$image" | awk '{print $1}')
+  [[ $candidate_after_sha == "$expected_image_sha" ]] || { echo 'normal candidate changed during negative boot' >&2; exit 1; }
+  python3 - "$output_dir" "$expected_image_sha" "$negative_image_sha" \
+    "$qemu_status" "$((SECONDS - boot_started_seconds))" <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import sys
+root = Path(sys.argv[1])
+serial = (root / 'serial.log').read_text()
+if 'TRILLIONNIUM_D2I_ACCEPTANCE_PASS' in serial:
+    raise SystemExit('startup negative emitted a PASS marker')
+if 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:' not in serial or 'reboot: Power down' not in serial:
+    raise SystemExit('startup negative did not diagnose and cleanly power off')
+limits = {'failure.json': 4096, 'runtime-journal.txt': 131072,
+          'acceptance-journal.txt': 65536, 'weston.log': 66560, 'unit-state.txt': 16384}
+records = {}
+for name, limit in limits.items():
+    data = (root / ('startup-' + name)).read_bytes()
+    if not 0 < len(data) <= limit:
+        raise SystemExit('missing or unbounded startup diagnostic: ' + name)
+    records[name] = {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+failure = json.loads((root / 'startup-failure.json').read_text())
+if failure.get('schema') != 'trillionnium.desktop.d2i-startup-failure.v1' or failure.get('status') != 'FAIL':
+    raise SystemExit('negative startup result was not FAIL')
+if set(failure) != {'schema', 'status', 'reason', 'qualification_only', 'release_ready'}:
+    raise SystemExit('negative startup result has unexpected fields')
+if failure.get('qualification_only') is not True or failure.get('release_ready') is not False:
+    raise SystemExit('negative startup claim scope drifted')
+journal = (root / 'startup-runtime-journal.txt').read_text()
+state = (root / 'startup-unit-state.txt').read_text()
+runtime_state = re.search(r'\[trillionnium-d2i-runtime.service\]\n(.*?)(?=\n\[|\Z)', state, re.S)
+if 'D2I_EXPLICIT_STARTUP_NEGATIVE_EXIT_73' not in journal or runtime_state is None:
+    raise SystemExit('explicit startup failure cause was not captured')
+if re.search(r'^ExecMainStatus=73$', runtime_state.group(1), re.M) is None:
+    raise SystemExit('systemd did not observe the deliberate runtime exit 73')
+if sys.argv[2] == sys.argv[3] or int(sys.argv[4]) != 0 or int(sys.argv[5]) > 120:
+    raise SystemExit('negative identity, exit, or deadline changed')
+identities = {key: os.environ[key] for key in ('TESTED_SHA', 'TESTED_TREE_SHA', 'CANDIDATE_HEAD_SHA',
+              'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'EVIDENCE_ROLE')}
+for key in ('TESTED_SHA', 'TESTED_TREE_SHA', 'CANDIDATE_HEAD_SHA'):
+    if re.fullmatch('[0-9a-f]{40}', identities[key]) is None:
+        raise SystemExit('negative packet source identity is invalid')
+if identities['EVIDENCE_ROLE'] not in ('pr_synthetic_merge', 'exact_main_push', 'manual_non_authoritative'):
+    raise SystemExit('negative packet evidence role is invalid')
+for key in ('GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT'):
+    if re.fullmatch('[1-9][0-9]*', identities[key]) is None:
+        raise SystemExit('negative packet run identity is invalid')
+with (root / 'trillionnium-d2i-startup-negative.ext4').open('rb') as stream:
+    post_boot_image_sha = hashlib.file_digest(stream, 'sha256').hexdigest()
+result = {'schema': 'trillionnium.desktop.d2i-startup-negative.v1',
+          'status': 'PASS_EXPLICIT_STARTUP_FAILURE_DIAGNOSED_AND_POWEROFF',
+          'normal_prepared_image_sha256': sys.argv[2], 'negative_pre_boot_image_sha256': sys.argv[3],
+          'negative_post_boot_image_sha256': post_boot_image_sha,
+          'source_identities': identities, 'promotion_authoritative': False,
+          'candidate_unchanged': True, 'negative_only': True, 'network': 'none',
+          'qemu_exit_status': 0, 'clean_poweroff': True, 'serial_pass_marker': False,
+          'elapsed_seconds': int(sys.argv[5]), 'maximum_boot_seconds': 120,
+          'diagnostics': records, 'normal_runtime_qualified': False, 'release_ready': False}
+for name in ('serial.log', 'qemu-command.txt'):
+    result[name.replace('.', '_') + '_sha256'] = hashlib.sha256((root / name).read_bytes()).hexdigest()
+(root / 'startup-negative-result.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+PY
+  # Keep the bounded packet and both exact digest bindings, then reclaim only
+  # this disposable clone before the normal candidate needs its boot copy.
+  rm -- "$run_image"
+  exit 0
+fi
 if grep -q 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:' "$serial_log"; then
   grep 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:' "$serial_log" >&2
   exit 1
 fi
 grep -q 'TRILLIONNIUM_D2I_ACCEPTANCE_PASS' "$serial_log"
 
-dump_guest_file() {
-  local guest_path=$1
-  local host_path=$2
-  local log_path=$3
-  debugfs -R "dump -p $guest_path $host_path" "$run_image" > "$log_path" 2>&1
-  [[ -s $host_path ]]
-}
-dump_guest_file /var/lib/trillionnium-d2i/guest-acceptance.json \
+dump_guest_file /var/lib/trillionnium-d2i-acceptance/guest-acceptance.json \
   "$acceptance" "$output_dir/debugfs-acceptance.log"
 dump_guest_file /var/lib/trillionnium-d2i/runtime-ready.json \
   "$runtime_ready" "$output_dir/debugfs-runtime-ready.log"
 dump_guest_file /var/lib/trillionnium-d2i/servo-content-recovered.png \
   "$screenshot" "$output_dir/debugfs-screenshot.log"
-dump_guest_file /var/lib/trillionnium-d2i/runtime-journal.txt \
+dump_guest_file /var/lib/trillionnium-d2i-acceptance/runtime-journal.txt \
   "$runtime_journal" "$output_dir/debugfs-runtime-journal.log"
 for name in content-process-identity content-sigkill-sent \
   process-topology-pre-fault process-topology-post-termination \
