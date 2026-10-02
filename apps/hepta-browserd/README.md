@@ -68,6 +68,8 @@ The separate `product_dispatch` source module provides concrete request composit
 | API | Contract |
 | --- | --- |
 | `AcceptedProductConnection::attest` | Retain the original connected Unix stream, kernel credentials, opaque pidfd-backed live attestation, and one monotonic budget including admission and queue residence; maximum 20 seconds |
+| `AcceptedProductConnection::from_received` (Linux) | Consume opaque `ReceivedAcceptedStream` through its one-shot callback; retain the original stream and exact absolute deadline while performing separate live pidfd-backed identity admission; transfer/receiver delay cannot restart the budget |
+| `AcceptedProductConnection::deadline` | Read the same fixed Instant after creator-PID, cancellation and expiry checks; this does not refresh identity or grant dispatch |
 | `product_connection_queue` / `try_submit` / `try_next` | Nonblocking bounded handoff of original connections; capacity 1–8; overflow closes the rejected connection |
 | `ProductConnectionCancellation::cancel` | Revoke a queued/active connection, interrupt blocking socket operations and cancel active actor work; grants no dispatch or recovery authority |
 | `ProductRequestCoordinator::from_connection` | Bind a concrete `ServoRuntimeEndpoint` and a complete managed receipt journal to the admitted principal; refuse nonterminal or terminal-uncertain prior history |
@@ -75,6 +77,22 @@ The separate `product_dispatch` source module provides concrete request composit
 | `serve_connection` | Semantic preflight before durable admission, durable dispatch intent before engine work, and terminal receipt acknowledgment before response publication; deduplication includes sealed predecessor segments |
 | `reconcile_request` | Validate the exact currently blocked request against a sealed terminal fact from the live complete journal; no replay, receipt rewrite or implicit reconstruction |
 | `content_process_crashed` / `reconstruct` | Native owner first withdraws old content/input and retires its bridge; checked generation invalidation then explicit fresh endpoint binding; crash-loop lockout remains closed |
+
+The handoff consumer and raw `attest` share the private `attest_before` helper.
+It checks the absolute deadline before/after kernel peer observation, after live
+attestation before the interrupt clone, after cloning/liveness and after local
+setup before return. Late results close the original owned stream and any clone.
+The attestor's existing synchronous procfs calls are not preempted mid-syscall;
+this API refuses a late result rather than claiming a hard syscall timeout.
+The closed source contract/API inventory is
+[`accepted-stream-handoff.v1.json`](../../contracts/accepted-stream-handoff.v1.json).
+
+`cargo test --locked -p hepta-browserd --test product_handoff_kernel` exercises
+real SCM_RIGHTS, an actual same-UID child `/proc`/pidfd identity, original fixed
+Instant after receiver delay, queue expiry, cancellation/EOF and actual fork.
+It does not establish an approved systemd principal, cross-UID product custody,
+installed service or Servo action. Existing synthetic composition tests retain
+their separate scope.
 
 The coordinator and actor are constructed on their worker thread after moving
 the concrete endpoint there. The native creator thread must own and pump the

@@ -62,7 +62,7 @@
     "receiver_queue_residence_covered": true,
     "receiver_conversion": "sample Instant first then actual monotonic clock; original absolute deadline fixed thereafter",
     "renewal_api": false,
-    "future_product_consumer": "must use supplied absolute Instant and separately recheck live identity/control at final action"
+    "future_product_consumer": "AcceptedProductConnection::from_received consumes the supplied absolute Instant; admission, clone/setup and later queue/AgentPort checks never restart it"
   },
   "public_api": {
     "AcceptedStreamCustody::capture": "(UnixStream, &Path, Duration) -> Result<AcceptedStreamCustody, HandoffError>",
@@ -90,5 +90,49 @@
     "native_servo_runtime": false,
     "product_ready": false,
     "activation_changed": false
+  },
+  "product_consumer": {
+    "implementation": "apps/hepta-browserd/src/product_dispatch.rs",
+    "status": "SOURCE_CANDIDATE_LIVE_RECEIVER_BRIDGE_ONLY",
+    "platform": "Linux; existing raw attest remains available on its prior platform graph",
+    "public_api": {
+      "AcceptedProductConnection::attest": "(UnixStream, ProcfsPeerAttestor, &PeerRuntimePolicy, Duration) -> Result<AcceptedProductConnection, ProductDispatchError>",
+      "AcceptedProductConnection::from_received": "(ReceivedAcceptedStream, ProcfsPeerAttestor, &PeerRuntimePolicy) -> Result<AcceptedProductConnection, ProductDispatchError>",
+      "AcceptedProductConnection::deadline": "(&self) -> Result<Instant, ProductDispatchError>",
+      "AcceptedProductConnection::cancellation": "(&self) -> ProductConnectionCancellation"
+    },
+    "ownership": {
+      "consuming_callback": true,
+      "fixed_absolute_deadline": true,
+      "raw_stream_extraction": false,
+      "renewal_api": false,
+      "caller_principal_issued": false
+    },
+    "admission": {
+      "original_peer": "SO_PEERCRED from transferred original UnixStream, never caller JSON",
+      "attestor": "existing ProcfsPeerAttestor and explicit PeerRuntimePolicy supplied by trusted Rust caller; normal live profile observes actual /proc executable, start/cgroup/unit and retains pidfd",
+      "shared_private_helper": "attest_before; raw attest preserves its Duration API and begins budget at original raw admission",
+      "deadline_checks": [
+        "before_peer_read",
+        "after_peer_read_before_live_attestation",
+        "after_live_attestation_before_clone",
+        "after_clone",
+        "after_pidfd_liveness",
+        "after_local_setup_before_return"
+      ],
+      "maximum_remaining_budget_seconds": 20,
+      "preemptive_procfs_syscall_timeout": false,
+      "late_attestation_result": "refuse and close owned stream/clone; original ceiling never renews",
+      "handoff_error": "DeadlineExceeded remains deadline refusal; other custody errors redact to PeerRefused",
+      "deadline_observation": "creator PID, cancellation and expiry rechecked before returning same stored Instant; no identity/dispatch authority"
+    },
+    "non_claims": {
+      "approved_principal": false,
+      "cross_uid_live_attestation_qualified": false,
+      "installed_product_service_handoff": false,
+      "native_servo_runtime": false,
+      "product_ready": false,
+      "activation_changed": false
+    }
   }
 }

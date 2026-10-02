@@ -15,7 +15,7 @@ SOURCE = ROOT / "crates/hepta-agent-transport/src/accepted_handoff.rs"
 
 def check_contract(value: dict) -> None:
     expected_keys = {"schema", "status", "platform", "claim_ceiling",
-                     "existing_application_protocol_changed", "control", "packet",
+                     "existing_application_protocol_changed", "control", "packet", "product_consumer",
                      "original_descriptor", "deadline", "public_api", "ownership", "non_claims"}
     if type(value) is not dict or set(value) != expected_keys:
         raise ValueError("closed handoff contract field set")
@@ -42,6 +42,40 @@ def check_contract(value: dict) -> None:
                        ("ownership", "received_raw_stream_extraction")]:
         if value[group][key] is not False:
             raise ValueError(f"forbidden authority: {group}.{key}")
+
+    consumer = value["product_consumer"]
+    if type(consumer) is not dict or set(consumer) != {"implementation", "status", "platform", "public_api", "ownership", "admission", "non_claims"}:
+        raise ValueError("closed product consumer fields")
+    if consumer["implementation"] != "apps/hepta-browserd/src/product_dispatch.rs" or consumer["status"] != "SOURCE_CANDIDATE_LIVE_RECEIVER_BRIDGE_ONLY":
+        raise ValueError("product receiver scope changed")
+    ownership = consumer["ownership"]
+    expected_ownership = {"consuming_callback": True, "fixed_absolute_deadline": True,
+                          "raw_stream_extraction": False, "renewal_api": False,
+                          "caller_principal_issued": False}
+    if type(ownership) is not dict or set(ownership) != set(expected_ownership) or any(ownership[key] is not expected for key, expected in expected_ownership.items()):
+        raise ValueError("product receiver ownership changed")
+    admission = consumer["admission"]
+    expected_admission = {"original_peer", "attestor", "shared_private_helper", "deadline_checks",
+                          "maximum_remaining_budget_seconds", "preemptive_procfs_syscall_timeout",
+                          "late_attestation_result", "handoff_error", "deadline_observation"}
+    if type(admission) is not dict or set(admission) != expected_admission:
+        raise ValueError("closed product receiver admission fields")
+    if type(admission["maximum_remaining_budget_seconds"]) is not int or admission["maximum_remaining_budget_seconds"] != 20 or admission["preemptive_procfs_syscall_timeout"] is not False:
+        raise ValueError("product receiver time or syscall claim changed")
+    expected_checks = ["before_peer_read", "after_peer_read_before_live_attestation", "after_live_attestation_before_clone", "after_clone", "after_pidfd_liveness", "after_local_setup_before_return"]
+    if admission["deadline_checks"] != expected_checks:
+        raise ValueError("product receiver absolute deadline checks changed")
+    expected_nonclaims = {"approved_principal", "cross_uid_live_attestation_qualified", "installed_product_service_handoff", "native_servo_runtime", "product_ready", "activation_changed"}
+    if type(consumer["non_claims"]) is not dict or set(consumer["non_claims"]) != expected_nonclaims or any(item is not False for item in consumer["non_claims"].values()):
+        raise ValueError("product receiver claim ceiling changed")
+    expected_api = {
+        "AcceptedProductConnection::attest": "(UnixStream, ProcfsPeerAttestor, &PeerRuntimePolicy, Duration) -> Result<AcceptedProductConnection, ProductDispatchError>",
+        "AcceptedProductConnection::from_received": "(ReceivedAcceptedStream, ProcfsPeerAttestor, &PeerRuntimePolicy) -> Result<AcceptedProductConnection, ProductDispatchError>",
+        "AcceptedProductConnection::deadline": "(&self) -> Result<Instant, ProductDispatchError>",
+        "AcceptedProductConnection::cancellation": "(&self) -> ProductConnectionCancellation",
+    }
+    if consumer["public_api"] != expected_api:
+        raise ValueError("closed product receiver API inventory changed")
 
 
 class AcceptedStreamHandoffContractTests(unittest.TestCase):
@@ -126,6 +160,76 @@ class AcceptedStreamHandoffContractTests(unittest.TestCase):
         value = copy.deepcopy(self.contract); value["extra_authority"] = True
         with self.assertRaises(ValueError):
             check_contract(value)
+
+    def test_product_consumer_closed_signatures_and_single_original_deadline_path(self):
+        source = (ROOT / "apps/hepta-browserd/src/product_dispatch.rs").read_text()
+        normalized = re.sub(r"\s+", " ", source)
+        for signature in (
+            "pub fn attest( stream: UnixStream, attestor: ProcfsPeerAttestor, policy: &PeerRuntimePolicy, budget: Duration, ) -> Result<Self, ProductDispatchError>",
+            "pub fn from_received( received: ReceivedAcceptedStream, attestor: ProcfsPeerAttestor, policy: &PeerRuntimePolicy, ) -> Result<Self, ProductDispatchError>",
+            "pub fn deadline(&self) -> Result<Instant, ProductDispatchError>",
+            "pub fn cancellation(&self) -> ProductConnectionCancellation",
+        ):
+            self.assertIn(signature, normalized)
+        impl = source.split("impl AcceptedProductConnection {", 1)[1].split("fn product_time_remaining", 1)[0]
+        self.assertEqual(re.findall(r"pub fn (\w+)\s*\(", impl), ["attest", "from_received", "deadline", "cancellation"])
+        received = impl.split("pub fn from_received", 1)[1].split("fn attest_before", 1)[0]
+        self.assertIn(".consume_before(|stream, deadline|", received)
+        self.assertIn("Self::attest_before(stream, attestor, policy, deadline)", received)
+        self.assertNotIn("Instant::now", received)
+        self.assertNotIn("MAX_PRODUCT_CONNECTION_BUDGET", received)
+        self.assertNotIn("Self::attest(", received)
+        self.assertIn('#[cfg(target_os = "linux")]\n    pub fn from_received', source)
+        helper = impl.split("fn attest_before", 1)[1].split("pub fn deadline", 1)[0]
+        self.assertEqual(helper.count("product_time_remaining(deadline)?"), 6)
+        self.assertNotIn("checked_add", helper)
+        positions = [helper.index(token) for token in [
+            "let remaining = product_time_remaining", "PeerIdentity::from_stream", "let peer = peer.map_err", "attestor.attest(peer, policy)", "let attested = attested.map_err", "stream.try_clone()", "let interrupt = interrupt.map_err", ".ensure_alive()", "let connection = Self", "Ok(connection)"]]
+        self.assertEqual(positions, sorted(positions))
+        getter = impl.split("pub fn deadline", 1)[1].split("pub fn cancellation", 1)[0]
+        self.assertLess(getter.index("owner_pid != std::process::id()"), getter.index("cancelled.load"))
+        self.assertLess(getter.index("cancelled.load"), getter.index("product_time_remaining(self.deadline)?"))
+        self.assertIn("Ok(self.deadline)", getter)
+        self.assertNotIn(".lock()", getter)
+
+    def test_product_consumer_nested_claim_api_and_bound_drift_are_refused(self):
+        mutations = [("ownership", "consuming_callback", False), ("ownership", "fixed_absolute_deadline", False),
+                     ("ownership", "raw_stream_extraction", True), ("ownership", "renewal_api", True),
+                     ("ownership", "caller_principal_issued", True), ("admission", "preemptive_procfs_syscall_timeout", True),
+                     ("admission", "maximum_remaining_budget_seconds", True), ("admission", "maximum_remaining_budget_seconds", 21)]
+        mutations += [("non_claims", key, bad) for key in self.contract["product_consumer"]["non_claims"] for bad in (True, 0, "false")]
+        for group, key, bad in mutations:
+            value = copy.deepcopy(self.contract); value["product_consumer"][group][key] = bad
+            with self.subTest(group=group, key=key, bad=bad), self.assertRaises(ValueError):
+                check_contract(value)
+        for group in ("ownership", "admission", "non_claims", "public_api"):
+            value = copy.deepcopy(self.contract); value["product_consumer"][group]["extra"] = False
+            with self.subTest(group=group), self.assertRaises(ValueError):
+                check_contract(value)
+        for group in ("status", "implementation"):
+            value = copy.deepcopy(self.contract); value["product_consumer"][group] = "PRODUCT_READY"
+            with self.subTest(group=group), self.assertRaises(ValueError):
+                check_contract(value)
+        value = copy.deepcopy(self.contract); value["product_consumer"]["admission"]["deadline_checks"].pop()
+        with self.assertRaises(ValueError):
+            check_contract(value)
+
+    def test_product_receiver_actual_linux_corpus_and_both_source_ci_lanes(self):
+        manifest = tomllib.loads((ROOT / "apps/hepta-browserd/Cargo.toml").read_text())
+        target = next(item for item in manifest["test"] if item["name"] == "product_handoff_kernel")
+        self.assertIs(target["harness"], False)
+        source = (ROOT / "apps/hepta-browserd" / target["path"]).read_text()
+        for token in ("libc::SOCK_SEQPACKET", "AcceptedStreamCustody::capture", "sender.send(custody)", "receiver.receive(WAIT)", "ProcfsPeerAttestor::default()", "live.child.kill()", "libc::fork()", "libc::_exit(0)", "Duration::from_millis(500)", "connection.deadline().unwrap(),", '"original-peer"'):
+            self.assertIn(token, source)
+        self.assertNotIn("#[ignore]", source)
+        self.assertNotIn("SKIP", source)
+        workflow = (ROOT / ".github/workflows/s08-product-servo-runtime.yml").read_text()
+        self.assertEqual(workflow.count("cargo test --locked -p hepta-browserd --all-targets"), 2)
+        source_ci = (ROOT / ".github/workflows/s04-transport-custody.yml").read_text()
+        self.assertEqual(source_ci.count('"apps/hepta-browserd/**"'), 2)
+        self.assertIn('branches: [main, "codex/**"]', source_ci)
+        self.assertEqual(source_ci.count("cargo test --workspace --all-targets --all-features --locked"), 2)
+        self.assertEqual(source_ci.count("python3 -m unittest discover -s tests -p test_accepted_stream_handoff.py -v"), 2)
 
     def test_actual_kernel_corpus_is_unskipped_and_registered_in_ci(self):
         manifest = tomllib.loads((ROOT / "crates/hepta-agent-transport/Cargo.toml").read_text())

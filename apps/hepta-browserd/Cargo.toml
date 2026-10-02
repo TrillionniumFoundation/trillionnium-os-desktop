@@ -33,3 +33,9 @@ path = "src/main.rs"
 name = "product_fork_custody"
 path = "tests/product_fork_custody.rs"
 harness = false
+
+# Real Linux rights/pidfd/EOF/fork corpus runs from a single-thread main.
+[[test]]
+name = "product_handoff_kernel"
+path = "tests/product_handoff_kernel.rs"
+harness = false
