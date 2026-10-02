@@ -65,6 +65,7 @@
     "future_product_consumer": "AcceptedProductConnection::from_received consumes the supplied absolute Instant; admission, clone/setup and later queue/AgentPort checks never restart it"
   },
   "public_api": {
+    "AcceptedStreamCustody::capture_before": "(UnixStream, &Path, Instant) -> Result<AcceptedStreamCustody, HandoffError>",
     "AcceptedStreamCustody::capture": "(UnixStream, &Path, Duration) -> Result<AcceptedStreamCustody, HandoffError>",
     "HandoffReceiver::from_control": "(OwnedFd, PeerPolicy, &Path) -> Result<HandoffReceiver, HandoffError>",
     "HandoffSender::from_control": "(OwnedFd, PeerPolicy, Duration) -> Result<HandoffSender, HandoffError>",

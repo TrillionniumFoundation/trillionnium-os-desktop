@@ -113,6 +113,7 @@ class AcceptedStreamHandoffContractTests(unittest.TestCase):
 
     def test_public_signature_inventory_and_private_stream_consumer(self):
         expected = {
+            "AcceptedStreamCustody::capture_before": "(UnixStream, &Path, Instant) -> Result<AcceptedStreamCustody, HandoffError>",
             "AcceptedStreamCustody::capture": "(UnixStream, &Path, Duration) -> Result<AcceptedStreamCustody, HandoffError>",
             "HandoffReceiver::from_control": "(OwnedFd, PeerPolicy, &Path) -> Result<HandoffReceiver, HandoffError>",
             "HandoffSender::from_control": "(OwnedFd, PeerPolicy, Duration) -> Result<HandoffSender, HandoffError>",
@@ -124,6 +125,7 @@ class AcceptedStreamHandoffContractTests(unittest.TestCase):
         self.assertEqual(self.contract["public_api"], expected)
         normalized = re.sub(r"\s+", " ", self.source)
         signatures = [
+            "pub fn capture_before( stream: UnixStream, expected_local_path: &Path, deadline: Instant, ) -> Result<Self, HandoffError>",
             "pub fn capture( stream: UnixStream, expected_local_path: &Path, budget: Duration, ) -> Result<Self, HandoffError>",
             "pub fn from_control( control: OwnedFd, policy: PeerPolicy, handshake_budget: Duration, ) -> Result<Self, HandoffError>",
             "pub fn from_control( control: OwnedFd, policy: PeerPolicy, expected_local_path: &Path, ) -> Result<Self, HandoffError>",
@@ -135,7 +137,7 @@ class AcceptedStreamHandoffContractTests(unittest.TestCase):
         for signature in signatures:
             self.assertIn(signature, normalized)
         public_methods = re.findall(r"pub fn (\w+)(?:<[^>]+>)?\s*\(", self.source)
-        self.assertEqual(sorted(public_methods), sorted(["capture", "from_control", "from_control", "send", "receive", "deadline", "consume_before"]))
+        self.assertEqual(sorted(public_methods), sorted(["capture_before", "capture", "from_control", "from_control", "send", "receive", "deadline", "consume_before"]))
         self.assertNotIn("pub stream:", self.source)
         self.assertNotIn("pub nonce:", self.source)
         self.assertNotIn("pub deadline:", self.source)

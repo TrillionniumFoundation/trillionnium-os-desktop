@@ -10,6 +10,13 @@
 mod request_lease;
 pub use request_lease::{PeerRequestCustody, PeerRequestVerifier};
 
+#[cfg(target_os = "linux")]
+mod control_owner;
+#[cfg(target_os = "linux")]
+pub use control_owner::{
+    AttestedHandoffReceiver, AttestedHandoffSender, ControlOwnerError, ControlOwnerPolicy,
+};
+
 use hepta_agent_transport::PeerIdentity;
 use sha2::{Digest as _, Sha256};
 use std::ffi::{CStr, CString};
