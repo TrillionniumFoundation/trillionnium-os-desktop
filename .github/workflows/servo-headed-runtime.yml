@@ -97,7 +97,8 @@ jobs:
           sudo apt-get update
           xargs -r sudo apt-get install -y --no-install-recommends < /tmp/servo-packages.txt
           sudo apt-get install -y --no-install-recommends \
-            iproute2 mesa-utils x11-utils xdotool xvfb
+            iproute2 libx11-6 mesa-utils x11-utils xdotool xvfb
+          command -v xmessage
           sudo apt-get purge -y fonts-droid-fallback || true
 
       - name: Install Servo-declared Rust channel
@@ -361,6 +362,11 @@ jobs:
           }
           path.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
           PY
+
+      - name: Run native held-gesture refusal corpus v1
+        timeout-minutes: 10
+        shell: bash
+        run: bash tools/run_servo_headed_runtime_gate.sh run-held-gestures-v1
 
       - name: Restore clean exact Servo checkout
         if: always()

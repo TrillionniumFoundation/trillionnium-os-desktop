@@ -163,3 +163,55 @@ UX, installed PageOwner integration or an OS IME qualification. Local standalone
 ownership tests do not qualify the Servo dispatcher: this candidate still needs
 the exact pinned compile and native runtime corpus. Existing native evidence does
 not prove the newly added held-withdrawal paths ran on X11/Wayland.
+
+## Permanent native held-gesture refusal corpus v1
+
+After its complete positive input and requested-SIGKILL recovery corpus, the
+permanent workflow invokes the independent runner mode `run-held-gestures-v1`
+against the native example it compiled at the exact Servo pin. The old full
+runner's `run-runtime` and `enforce-evidence` modes still require their separate
+v2 contract; neither is called or relaxed to accept this example's v1 results.
+
+The new mode starts three separate native fixture processes on three fresh Xvfb
+displays. Each admits one native X11/XTest Button1 Down in content and then either
+moves into chrome, moves outside the native window, or transfers actual focus to
+a mapped auxiliary `xmessage` window. XQueryPointer must observe Button1 still
+held before and after withdrawal. These are real native OS event tests, not a
+physical hardware input qualification. No case injects MouseUp, including during
+cleanup. An implicit pointer grab can report an out-of-bounds move before window
+leave; the outside case accepts either corresponding typed withdrawal reason.
+
+Each process must exit 1 within the bound and emit its actual held-gesture FAIL,
+`gesture-recovery-required.json` and `runtime-state.json`. The verifier requires
+one admitted native button event, one unsettled button, generation 1, removed
+owned WebView handle and explicit false reset/reconstruction/product claims.
+Initial frame/content/chrome/focus readiness must have been reached. Synthetic
+IME, crash injection, replacement generation and recovery evidence must remain
+absent. A timeout, signal exit, another failure reason, malformed diagnostic or
+missing fact fails the gate. This negative corpus cannot satisfy the positive
+crash/recovery predicates.
+
+The harness binds the actual native executable PID/start time/session/process
+group, native window PID and the parent's concrete loopback fixture-listener
+inode. Python's Linux child-subreaper custody allows orphaned content children to
+be reaped. Exit observation uses `waitid` with `WNOWAIT`, preserving the actual
+leader's PID until its group is closed. Before every group signal, the captured
+leader start time, session and group must still match. Cleanup reaps adopted
+nonleader children first and releases the exited leader only when no other group
+member remains. An already reaped or changed leader refuses group signalling;
+repeated completed cleanup never touches that numeric PID again. Cleanup targets
+only groups started and identity-checked by this harness, uses bounded
+TERM/KILL/wait, verifies those groups and the fixture
+listener disappeared, and closes that case's fresh display. It does not claim
+graceful Servo teardown or engine mouse cancellation. A 16 MiB inherited regular
+file bound limits each log and fits the fixed viewport's screenshots; any file
+exhaustion fails the supported corpus. Logs, stimuli, identities and raw failure
+diagnostics remain in each case directory even when verification fails.
+
+Only all three verified native cases produce
+`artifacts/servo-headed-runtime/held-gestures-v1/negative-corpus.json`, with exact
+source-object identities and raw-fact hashes. Its status is
+`PASS_HELD_GESTURE_REFUSAL_LOCAL_X11_ONLY`; mouse cancellation, same-Servo
+recovery, DOM action success, installed BrowserActor, OS IME and product readiness
+remain explicitly false. Adding this executable gate is a source change; its
+actual fixed-pin native result must be observed in CI before claiming it passed.
