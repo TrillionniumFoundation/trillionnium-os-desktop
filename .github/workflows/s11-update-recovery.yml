@@ -55,6 +55,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test -x /usr/bin/openssl
           python3 -m py_compile platform/update_recovery.py tools/validate_s11_update_recovery.py tests/test_s11_update_recovery.py
           python3 tools/validate_s11_update_recovery.py
           python3 -m unittest tests.test_s11_update_recovery -v
@@ -90,6 +91,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test -x /usr/bin/openssl
           python3 -m py_compile platform/update_recovery.py tools/validate_s11_update_recovery.py tests/test_s11_update_recovery.py
           python3 tools/validate_s11_update_recovery.py
           python3 -m unittest tests.test_s11_update_recovery -v
