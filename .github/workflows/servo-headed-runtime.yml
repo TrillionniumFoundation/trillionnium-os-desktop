@@ -289,6 +289,14 @@ jobs:
           }
           assert initial['popupAttempted'] is True
           assert initial['externalNavigationAttempted'] is True
+          fault = report['fault_injection']
+          assert fault['mechanism'] == 'requested_SIGKILL'
+          assert fault['generation'] == 1 and fault['pid'] > 1 and fault['start_time'] > 0
+          assert fault['exact_termination_observed'] is True
+          selected = json.loads((root / 'content-process-identity.json').read_text())
+          sent = json.loads((root / 'content-sigkill-sent.json').read_text())
+          assert selected == {'generation': 1, 'pid': fault['pid'], 'start_time': fault['start_time']}
+          assert sent == {**selected, 'signal': 'SIGKILL'}
           recovery = report['recovery_page_evidence']
           assert recovery['generation'] == 2 and recovery['loaded'] is True
 
@@ -340,6 +348,10 @@ jobs:
                   Path('experiments/servo-headed-runtime/src/main.rs').read_bytes()
               ).hexdigest(),
               'formatted_overlay_sha256': os.environ['FORMATTED_OVERLAY_SHA256'],
+              'fault_record_sha256': {
+                  name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+                  for name in ('content-process-identity.json', 'content-sigkill-sent.json')
+              },
               'input_ownership_sha256': hashlib.sha256(
                   Path('experiments/servo-headed-runtime/src/input_ownership.rs').read_bytes()
               ).hexdigest(),
