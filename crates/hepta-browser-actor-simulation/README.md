@@ -43,6 +43,7 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 - Generic verification types include `BrowserActor<R>`, `PageRuntime`, `BrowserActorMessage`, `RequestControl`, `RuntimeReply` and `RuntimeFailure`.
 - Engine bridges include `EngineThreadRuntime`, `EngineThreadOwner`, `CallbackPageRuntime`, `CallbackEngineOwner`, `EngineCompletion` and pump results.
 - `DeterministicLocalRuntime`, principal/binding helpers, incarnation and receipt observer support tests.
+- `preflight_attested` supplies side-effect-free semantic admission before receipts; it retires cancellation registration on refusal. Concrete execution repeats custody/control validation after durable intent. Unknown completion of any operation that may change local or external state is recorded as indeterminate.
 - Simulation doctests validate its examples and thread/ownership constraints; product authority compile-fail guarantees also live in the sealed wrapper.
 
 This library registers no binary target. Cargo binary auto-discovery and package build scripts are disabled.

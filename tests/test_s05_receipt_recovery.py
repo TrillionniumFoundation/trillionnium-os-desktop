@@ -8,6 +8,24 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReceiptRecoverySliceTests(unittest.TestCase):
+    def test_live_writer_and_facts_are_process_bound_without_disk_format_change(self) -> None:
+        contract = json.loads((ROOT / "contracts/receipt-journal.v1.json").read_text())
+        custody = contract["durability"]["live_process_custody"]
+        self.assertEqual(custody["owner"], "creating_PID")
+        self.assertTrue(custody["same_process_thread_handoff"])
+        self.assertEqual(custody["fact_access"], "creating_PID_checked_on_every_accessor")
+        self.assertFalse(custody["persistent_record_format_changed"])
+        self.assertFalse(custody["execution_or_replay_authority"])
+        self.assertEqual(custody["fact_accessor_signatures"], {
+            "receipt_id": "Result<&str, JournalError>",
+            "request_sha256": "Result<Digest, JournalError>",
+            "lifecycle": "Result<ReceiptLifecycleState, JournalError>",
+            "record_sha256": "Result<Digest, JournalError>",
+        })
+        for relative in ("crates/hepta-session-core/tests/journal_fork_custody.rs",
+                         "apps/hepta-browserd/tests/product_fork_custody.rs"):
+            self.assertTrue((ROOT / relative).is_file(), relative)
+
     def test_contract_never_claims_execution_or_automatic_replay(self) -> None:
         contract = json.loads((ROOT / "contracts/receipt-journal.v1.json").read_text())
         self.assertTrue(all(value is False for value in contract["claim_ceiling"].values()))
