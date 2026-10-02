@@ -129,6 +129,32 @@ hash: missing fields, false claims, boolean/string/float counts and insufficient
 counts still fail after complete digest rebinding. These verifier tests prove
 validation behavior, not an actual guest runtime.
 
+The verifier also rejects equal-valued floating-point identities inside the
+pre-fault and recovery topology lists. Selected process, signal and topology
+records have closed field sets; nested identity values retain exact integer
+types. Runtime evidence must contain exactly three composition events, at least
+two actual presented frames and a typed false simulated-recovery field. Guest
+PID1, service, chrome, input and IME facts must agree with the accepted runtime;
+its runtime and recovery screenshot digests bind the same downloaded bytes.
+The receipt's claim and ceiling maps are closed and require exact boolean
+values, so a rehashed packet cannot add release, hardware or AgentPort authority.
+The nested D1 reader independently requires an integer source count, a closed
+ceiling containing its six exact false booleans, and recursively typed equality
+between receipt summaries and staged documents. Rehashing both receipt layers
+cannot turn an integer into a float or a false ceiling into numeric zero,
+remove a required ceiling, or attach an additional release claim.
+The reader streams each archived file into Git's blob hash and reconstructs the
+canonical directory tree from raw UTF-8 paths and tracked executable modes.
+The rebuilt tree must match the declared tested Git tree; changing both the
+source archive and every inner/outer manifest digest cannot retain a different
+source object's tree identity. Fixture baseline trees come from the actual Git
+CLI, independent of the reader's implementation. Paths are bounded to 4096
+UTF-8 bytes and 128 components; links, conflicting paths and unsupported modes
+remain refused without extracting the archive or executing its contents.
+The full-fixture negative corpus rewrites every affected boot, guest and output
+digest. Its results qualify the reader's refusals, never an actual QEMU boot or
+production image. An actual downloaded image packet is verified separately.
+
 Candidate run [37002984433](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/37002984433)
 passed its actual integrated QEMU image workflow at source head
 `bfe2664a52191ff6327e2cbd253ab02ce1527401`. Its earlier CodeQL stdout identity finding
