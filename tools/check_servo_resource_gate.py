@@ -50,7 +50,9 @@ def count(value: object, label: str, minimum: int = 0) -> int:
     return value
 
 
-def validate(report: object, runtime: object, fixture_origin: str) -> None:
+def validate(report: object, runtime: object, fixture_origin: str, *, namespace_immutable_qualification: bool = False) -> None:
+    if type(namespace_immutable_qualification) is not bool:
+        raise ValueError("immutable qualification selector must be an exact boolean")
     report = closed_object(report, REPORT_KEYS, "resource report")
     if type(runtime) is not dict:
         raise ValueError("actual runtime report must be an object")
@@ -59,10 +61,13 @@ def validate(report: object, runtime: object, fixture_origin: str) -> None:
     exact(report["schema"], "trillionnium.desktop.servo-http-resource-gate.v1", "schema")
     exact(report["servo_commit"], PIN, "Servo pin")
     exact(report["status"], "OBSERVED_HTTP_CALLBACK_REFUSALS", "resource status")
-    if not re.fullmatch(r"http://127\.0\.0\.1:([1-9][0-9]{0,4})", fixture_origin):
-        raise ValueError("fixture origin is not exact IPv4 loopback with an explicit port")
-    if int(fixture_origin.rsplit(":", 1)[1]) > 65535:
-        raise ValueError("fixture port is invalid")
+    if namespace_immutable_qualification:
+        exact(fixture_origin, "https://fixture.netns-qualification.invalid", "immutable qualification origin")
+    else:
+        if not re.fullmatch(r"http://127\.0\.0\.1:([1-9][0-9]{0,4})", fixture_origin):
+            raise ValueError("fixture origin is not exact IPv4 loopback with an explicit port")
+        if int(fixture_origin.rsplit(":", 1)[1]) > 65535:
+            raise ValueError("fixture port is invalid")
     exact(report["fixture_origin"], fixture_origin, "owned fixture origin")
     for key in ("fixture_network_requests", "default_resources_admitted", "network_continuations_submitted"):
         exact(report[key], 0, key)
@@ -135,12 +140,12 @@ def load(path: Path) -> tuple[object, bytes]:
     return json.loads(data.decode("utf-8", "strict"), object_pairs_hook=pairs), data
 
 
-def verify_runtime(root: Path) -> dict:
+def verify_runtime(root: Path, *, namespace_immutable_qualification: bool = False) -> dict:
     report, report_bytes = load(root / "resource-gate-result.json")
     runtime, runtime_bytes = load(root / "runtime-result.json")
     origin_bytes = read_bounded(root / "fixture-origin.txt", 64)
     origin = origin_bytes.decode("ascii", "strict").strip()
-    validate(report, runtime, origin)
+    validate(report, runtime, origin, namespace_immutable_qualification=namespace_immutable_qualification)
     return {
         "schema": "trillionnium.desktop.servo-http-resource-evidence.v1",
         "resource_result_sha256": hashlib.sha256(report_bytes).hexdigest(),
@@ -179,13 +184,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runtime-dir", type=Path)
     parser.add_argument("--servo-source", type=Path)
+    parser.add_argument("--namespace-immutable-qualification", action="store_true",
+                        help="explicit fixed immutable source fixture; this checker does not prove a namespace")
     args = parser.parse_args()
     if args.runtime_dir is None and args.servo_source is None:
         parser.error("require actual runtime directory or actual pinned source")
+    if args.namespace_immutable_qualification and args.runtime_dir is None:
+        parser.error("immutable qualification requires its actual runtime packet")
     if args.servo_source is not None:
         verify_pin(args.servo_source)
     if args.runtime_dir is not None:
-        receipt = verify_runtime(args.runtime_dir)
+        receipt = verify_runtime(args.runtime_dir, namespace_immutable_qualification=args.namespace_immutable_qualification)
         print(json.dumps(receipt, sort_keys=True))
     return 0
 

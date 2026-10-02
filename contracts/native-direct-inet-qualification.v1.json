@@ -1,0 +1,197 @@
+{
+  "activation": {
+    "default_enabled": false,
+    "environment_key": "HEPTA_D0A02_NETNS_PROFILE",
+    "environment_value": "immutable-origin-v1",
+    "product_activation_allowed": false
+  },
+  "authority": {
+    "actual_complete_host_fd_inventory_required": true,
+    "actual_pidfd_getfd_required": true,
+    "actual_retained_pidfd_required": true,
+    "caller_asserted_identity_authority": false,
+    "entry_stop_before_engine_start": true,
+    "host_records_outside_renderer_write_root": true,
+    "socket_domain_alone_is_peer_approval": false,
+    "systemd_unit_name_owns_cleanup": true
+  },
+  "claim_ceiling": {
+    "approved_external_egress": false,
+    "approved_unix_peer_policy": false,
+    "arbitrary_file_descriptor_authority_qualified": false,
+    "host_unix_proxy_confinement": false,
+    "installed_all_protocol_confinement": false,
+    "installed_browser_actor": false,
+    "installed_qualified": false,
+    "late_scm_rights_authority_qualified": false,
+    "lifetime_socket_authority_qualified": false,
+    "physical_hardware_input_qualified": false,
+    "production_ready": false,
+    "wayland_scaling_qualified": false
+  },
+  "compiled_overlay_files": [
+    "trillionnium_headed_runtime.rs",
+    "input_ownership.rs",
+    "resource_gate.rs",
+    "network_confinement.rs",
+    "trillionnium_headed_fixture.html"
+  ],
+  "fixture": {
+    "holds_inet_listener": false,
+    "origin": "https://fixture.netns-qualification.invalid",
+    "signed_app_qualification": false,
+    "trusted_app_admission": false
+  },
+  "kernel_fixture_cases": [
+    "kernel-fixture",
+    "inherited-embedder-ipv4",
+    "inherited-embedder-ipv6",
+    "inherited-content-ipv4",
+    "inherited-content-ipv6"
+  ],
+  "limits": {
+    "entry_absolute_budget_seconds": 10,
+    "host_observation_budget_seconds": 4,
+    "maximum_entry_fds": 256,
+    "maximum_entry_proc_bytes": 8192,
+    "maximum_packet_bytes": 2097152,
+    "maximum_runtime_log_bytes": 16777216,
+    "unit_runtime_max_seconds": 180,
+    "unit_stop_timeout_seconds": 5
+  },
+  "profile": "immutable-origin-v1",
+  "qualification": {
+    "actual_native_compile_and_corpus_required": true,
+    "default_rapid_document_click_events": 3,
+    "default_rapid_pairs": 3,
+    "held_cases_synthetic_up_allowed": false,
+    "kernel_fixture_is_native_qualification": false,
+    "missing_support_is_failure": true,
+    "qualification_nonce_enabled": false,
+    "qualification_results_embedded_in_contract": false,
+    "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+    "skip_is_success": false
+  },
+  "record_fields": {
+    "entry": [
+      "cap_ambient",
+      "cap_bounding",
+      "cap_effective",
+      "descriptor_inventory",
+      "entry_stop_requested",
+      "installed_qualified",
+      "network_namespace_inode",
+      "no_new_privileges",
+      "pid",
+      "production_ready",
+      "profile",
+      "role",
+      "schema",
+      "seccomp_filter_observed",
+      "source_qualification_only",
+      "start_time",
+      "tcp_ipv4_errno",
+      "tcp_ipv6_errno",
+      "udp_ipv4_errno",
+      "udp_ipv6_errno",
+      "unix_payload_roundtrip"
+    ],
+    "entry_fd": [
+      "device",
+      "fd",
+      "inode",
+      "kind"
+    ],
+    "host": [
+      "caps",
+      "content_argument_observed",
+      "control_group",
+      "descriptor_inventory",
+      "entry_stopped",
+      "executable_identity",
+      "identity",
+      "installed_qualified",
+      "main_pid",
+      "network_namespace_inode",
+      "no_new_privileges",
+      "outside_network_namespace_inode",
+      "pidfd_retained",
+      "production_ready",
+      "read_write_paths",
+      "renderer_gid",
+      "renderer_uid",
+      "role",
+      "schema",
+      "seccomp",
+      "source_qualification_only",
+      "unit",
+      "unit_properties"
+    ],
+    "host_fd": [
+      "device",
+      "fd",
+      "inode",
+      "kind",
+      "socket_domain"
+    ],
+    "process_identity": [
+      "pgid",
+      "pid",
+      "ppid",
+      "session",
+      "start_time",
+      "state"
+    ],
+    "refusal": [
+      "engine_started",
+      "entry_stop_requested",
+      "installed_qualified",
+      "network_namespace_inode",
+      "pid",
+      "production_ready",
+      "profile",
+      "reason",
+      "role",
+      "schema",
+      "source_qualification_only",
+      "start_time"
+    ]
+  },
+  "required_cases": [
+    "burst",
+    "chrome",
+    "window-leave",
+    "focus-loss",
+    "inherited-embedder-ipv4",
+    "inherited-embedder-ipv6",
+    "inherited-content-ipv4",
+    "inherited-content-ipv6"
+  ],
+  "schema": "trillionnium.desktop.native-direct-inet-qualification-contract.v1",
+  "source_paths": [
+    ".github/workflows/servo-headed-runtime.yml",
+    "tools/run_servo_headed_runtime_gate.sh",
+    "tools/servo_namespace_qualification.py",
+    "tools/check_servo_resource_gate.py",
+    "tools/browser_codec_reference_security.py",
+    "tools/artifact_evidence.py",
+    "experiments/servo-headed-runtime/src/main.rs",
+    "experiments/servo-headed-runtime/src/input_ownership.rs",
+    "experiments/servo-headed-runtime/src/resource_gate.rs",
+    "experiments/servo-headed-runtime/src/network_confinement.rs",
+    "experiments/servo-headed-runtime/fixture/index.html",
+    "manifests/servo.lock.json",
+    "contracts/native-direct-inet-qualification.v1.json"
+  ],
+  "status": "SOURCE_ONLY_EXPLICIT_QUALIFICATION_PROCEDURE",
+  "systemd_properties": {
+    "CapabilityBoundingSet": "",
+    "NoNewPrivileges": "yes",
+    "PrivateNetwork": "yes",
+    "ProtectHome": "read-only",
+    "ProtectSystem": "strict",
+    "RestrictAddressFamilies": "AF_UNIX",
+    "RestrictNamespaces": "yes",
+    "SystemCallArchitectures": "native"
+  }
+}

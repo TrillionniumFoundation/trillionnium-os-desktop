@@ -1,5 +1,15 @@
 # Product-owned headed Servo runtime
 
+The separate [explicit native direct-INET qualification](../../docs/architecture/NATIVE_DIRECT_INET_QUALIFICATION.md)
+profile uses a real systemd private network namespace, pre-engine descriptor and
+protocol probes, and independent stopped-process pidfd observations. Its
+immutable qualification fixture holds no INET listener. The default profile,
+normal checkpoint gate, rapid native queue and held-gesture refusals keep their
+existing behavior. The new profile requires its own exact-pin CI packet; local
+kernel fixtures do not qualify Servo. AF_UNIX host forwarding/peer permissions,
+installed browser activation and complete protocol confinement remain
+unqualified; existing resource-report claim ceilings remain false.
+
 This experiment is the executable `TOS-D0A-02` / initial `D2` qualification
 source. The permanent workflow copies `src/main.rs` and the deterministic HTML
 fixture into the exact pinned Servo checkout as an example target, compiles it
