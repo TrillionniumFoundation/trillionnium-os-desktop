@@ -168,7 +168,9 @@ class Driver:
         require(process_start(self.pid) == self.start, "native stimulus owner incarnation changed")
         require(root_identity(self.root) == self.identity, "native stimulus output root changed")
         check_snapshots(self.root, self.identity, self.snapshots)
-        return self.deadline - time.monotonic()
+        remaining = self.deadline - time.monotonic()
+        require(remaining > 0, "native stimulus absolute deadline expired")
+        return remaining
 
     def command(self, arguments: list[str]) -> str:
         return subprocess.run(["xdotool", *arguments], check=True, capture_output=True,

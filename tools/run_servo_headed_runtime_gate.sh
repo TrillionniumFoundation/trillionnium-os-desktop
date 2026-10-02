@@ -1138,6 +1138,113 @@ def wait_for(predicate, seconds, process=None):
         time.sleep(0.05)
 
 
+def capture_burst_topology(process, executable, compiled_executable_identity):
+    # Only this unreaped leader and its same-image, same-session direct child
+    # are inspected. The opaque content IPC token is never copied into facts.
+    deadline = time.monotonic() + 5
+    require(observe_exit(process) is None, 'native owner exited before topology capture')
+    expected = executable.stat()
+    verify_compiled_executable_identity({'device': expected.st_dev, 'inode': expected.st_ino},
+                                        compiled_executable_identity)
+    identity_keys = ('pid', 'start_time', 'ppid', 'pgid', 'session')
+    native = anchored_identity(process)
+    native_exe = Path(f'/proc/{process.pid}/exe').stat()
+    require((native_exe.st_dev, native_exe.st_ino) == (expected.st_dev, expected.st_ino),
+            'captured native executable inode differs')
+    candidates = []
+    for row in members(process.pid):
+        require(time.monotonic() < deadline, 'bounded topology capture expired')
+        if row['ppid'] != process.pid:
+            continue
+        try:
+            image = Path(f'/proc/{row["pid"]}/exe').stat()
+            with Path(f'/proc/{row["pid"]}/cmdline').open('rb') as stream:
+                arguments = stream.read(4097)
+        except (FileNotFoundError, ProcessLookupError):
+            continue
+        require(len(arguments) <= 4096, 'owned content argv exceeds bound')
+        if ((image.st_dev, image.st_ino) == (expected.st_dev, expected.st_ino)
+                and b'--content-process' in arguments.split(b'\0')):
+            candidates.append(row)
+    require(len(candidates) == 1, 'expected exactly one live owned content process')
+    candidate = candidates[0]
+    descriptor = os.pidfd_open(candidate['pid'], 0)
+    try:
+        import select
+        poller = select.poll()
+        poller.register(descriptor, select.POLLIN | select.POLLHUP | select.POLLERR)
+        require(not poller.poll(0), 'captured content process is not alive')
+        current = process_stat(candidate['pid'])
+        require(all(current[key] == candidate[key] for key in identity_keys)
+            and current['state'] not in {'Z', 'X'}
+            and current['ppid'] == process.pid and current['pgid'] == process.pid
+            and current['session'] == process.pid, 'content incarnation/ownership changed')
+        image = Path(f'/proc/{candidate["pid"]}/exe').stat()
+        require((image.st_dev, image.st_ino) == (expected.st_dev, expected.st_ino),
+                'retained content executable inode differs')
+        with Path(f'/proc/{candidate["pid"]}/cmdline').open('rb') as stream:
+            arguments = stream.read(4097)
+        require(len(arguments) <= 4096 and b'--content-process' in arguments.split(b'\0'),
+                'retained content argv is not the bounded native content entry')
+        after = process_stat(candidate['pid'])
+        require(all(after[key] == current[key] for key in identity_keys)
+            and not poller.poll(0), 'retained content incarnation drifted')
+        require(observe_exit(process) is None and time.monotonic() < deadline,
+                'native owner or topology budget expired during capture')
+        require(all(anchored_identity(process)[key] == native[key] for key in identity_keys),
+                'native owner changed during topology capture')
+        return {'schema': 'trillionnium.desktop.native-burst-topology.v1',
+            'native': {key: native[key] for key in identity_keys},
+            'content': {key: current[key] for key in identity_keys},
+            'compiled_executable_device': expected.st_dev, 'compiled_executable_inode': expected.st_ino,
+            'content_process_flag_observed': True, 'retained_content_pidfd_alive_at_capture': True,
+            'ipc_token_recorded': False, 'source_qualification_only': True, 'product_ready': False}
+    finally:
+        os.close(descriptor)
+
+
+def verify_compiled_executable_identity(value, expected):
+    for item in (value, expected):
+        require(type(item) is dict and set(item) == {'device', 'inode'}
+            and type(item['device']) is int and item['device'] >= 0
+            and type(item['inode']) is int and item['inode'] > 0,
+            'compiled executable snapshot is not closed exact integers')
+    require(value == expected, 'compiled executable snapshot differs from before-launch identity')
+
+
+def verify_burst_topology(topology, native, selected, compiled_executable_identity):
+    require(type(topology) is dict and set(topology) == {'schema', 'native', 'content',
+        'compiled_executable_device', 'compiled_executable_inode', 'content_process_flag_observed',
+        'retained_content_pidfd_alive_at_capture', 'ipc_token_recorded', 'source_qualification_only', 'product_ready'},
+        'actual burst topology fields differ')
+    require(topology['schema'] == 'trillionnium.desktop.native-burst-topology.v1'
+        and topology['content_process_flag_observed'] is True
+        and topology['retained_content_pidfd_alive_at_capture'] is True
+        and topology['ipc_token_recorded'] is False
+        and topology['source_qualification_only'] is True and topology['product_ready'] is False,
+        'actual burst topology observation/claim differs')
+    keys = {'pid', 'start_time', 'ppid', 'pgid', 'session'}
+    for role in ('native', 'content'):
+        row = topology[role]
+        require(type(row) is dict and set(row) == keys
+            and all(type(row[key]) is int and row[key] > 0 for key in keys),
+            'actual burst topology identity must use closed positive integers')
+    require(type(topology['compiled_executable_device']) is int and topology['compiled_executable_device'] >= 0
+        and type(topology['compiled_executable_inode']) is int and topology['compiled_executable_inode'] > 0,
+        'actual burst executable inode is not exact')
+    verify_compiled_executable_identity({'device': topology['compiled_executable_device'],
+                                        'inode': topology['compiled_executable_inode']}, compiled_executable_identity)
+    owner, content = topology['native'], topology['content']
+    require(all(owner[key] == native[key] for key in keys)
+        and owner['pid'] == owner['pgid'] == owner['session'] and owner['pid'] > 1,
+        'actual burst topology native owner differs')
+    require(content['pid'] == selected['pid'] and content['start_time'] == selected['start_time']
+        and content['pid'] > 1 and content['pid'] != owner['pid']
+        and content['ppid'] == owner['pid'] and content['pgid'] == owner['pgid']
+        and content['session'] == owner['session'],
+        'actual burst topology does not bind the selected fault incarnation')
+
+
 def unique_window(environment, title, pid=None):
     arguments = ['xdotool', 'search', '--onlyvisible']
     if pid is not None:
@@ -1420,9 +1527,10 @@ def verify_burst(directory, native, returncode):
         'external_navigation_performed': False, 'webdriver_listener_started': False,
         'browser_actor_started': False, 'agent_port_enabled': False,
         'persistent_credentials_used': False, 'product_ready': False}, 'runtime claim ceiling drift')
-    topology = regular_bytes(directory / 'process-topology.txt').decode('utf-8')
-    require('trillionnium_headed_runtime' in topology and '--content-process' in topology,
-            'actual process topology missing')
+    stimulus = read_json(directory / 'native-burst-stimulus.json')
+    require(type(stimulus) is dict, 'actual stimulus fact is not an object')
+    verify_compiled_executable_identity(stimulus.get('compiled_executable_identity'), binary_identity)
+    verify_burst_topology(read_json(directory / 'process-topology-pre-burst.json'), native, selected, binary_identity)
     for name in ('content-generation-1.png', 'content-generation-2.png', 'workspace-generation-1.png',
                  'workspace-crash-placeholder.png', 'workspace-generation-2.png'):
         require(regular_bytes(directory / name, 16 * 1024 * 1024).startswith(b'\x89PNG\r\n\x1a\n'), 'actual screenshot missing')
@@ -1456,6 +1564,8 @@ output.mkdir(mode=0o700)  # Fresh process/profile/markers; rerun is refused.
 require(output.stat().st_uid == os.getuid() and stat.S_IMODE(output.stat().st_mode) == 0o700,
         'rapid qualification output is not a private owned directory')
 binary_sha256 = digest(binary)
+before_launch_binary_stat = binary.stat()
+binary_identity = {'device': before_launch_binary_stat.st_dev, 'inode': before_launch_binary_stat.st_ino}
 installed_overlay_sha256 = digest(root / 'servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs')
 require(installed_overlay_sha256 == os.environ['FORMATTED_OVERLAY_SHA256'],
         'actual installed compile overlay differs from recorded formatted source')
@@ -1485,6 +1595,8 @@ with ExitStack() as stack:
         facts['xvfb_process'] = xvfb_identity
         require(Path(f'/proc/{native.pid}/exe').resolve() == binary.resolve(), 'fresh native executable drift')
         wait_for(lambda: (output / 'input-ready').is_file(), 60, native)
+        facts['compiled_executable_identity'] = dict(binary_identity)
+        write_json(output / 'process-topology-pre-burst.json', capture_burst_topology(native, binary, binary_identity))
         fixture = fixture_listener(native.pid)
         facts['fixture_listener'] = fixture
         window = wait_for(lambda: unique_window(environment, 'TrillionniumOS Desktop.*D0A-02', native.pid), 10, native)
@@ -1511,7 +1623,9 @@ with ExitStack() as stack:
         write_json(output / 'native-burst-stimulus.json', facts)
         code = wait_exit(native, 120)
         facts['native_exit_code'] = code
-        verification = verify_burst(output, native_identity, code)
+        after_execution_binary_stat = binary.stat()
+        verify_compiled_executable_identity({'device': after_execution_binary_stat.st_dev,
+                                            'inode': after_execution_binary_stat.st_ino}, binary_identity)
         require(digest(binary) == binary_sha256, 'compiled native executable changed during burst')
     except BaseException:
         (output / 'harness-failure.txt').write_text(traceback.format_exc())
@@ -1531,6 +1645,12 @@ with ExitStack() as stack:
             if not gone: errors.append('actual fixture listener survives cleanup')
         write_json(output / 'native-burst-stimulus.json', facts)
         require(not errors, 'owned bounded cleanup failed: ' + '; '.join(errors))
+# Cleanup finishes the stimulus fact before its immutable validation snapshot.
+try:
+    verification = verify_burst(output, native_identity, code)
+except BaseException:
+    (output / 'harness-failure.txt').write_text(traceback.format_exc())
+    raise
 # Re-open every consumed fact after validation and cleanup; digest receipts bind
 # those same strictly decoded raw bytes, rather than a later pathname read.
 raw = dict(observed)

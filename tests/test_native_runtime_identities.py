@@ -192,7 +192,13 @@ class NativeBurstVerifierTests(unittest.TestCase):
         self.addCleanup(os.umask, previous_umask)
         self.namespace = {'root': self.directory, 'READ_LIMIT': 2 * 1024 * 1024, 'observed': {}}
         exec(self.helper, self.namespace)
-        self.native = {'pid': os.getpid(), 'start_time': 12345}
+        binary = self.directory / 'private-binary-metadata-fixture'
+        binary.write_bytes(b'file metadata fixture only, not a Servo binary')
+        metadata = binary.stat()
+        self.binary_identity = {'device': metadata.st_dev, 'inode': metadata.st_ino}
+        self.namespace['binary_identity'] = dict(self.binary_identity)
+        self.native = {'pid': os.getpid(), 'start_time': 12345, 'ppid': os.getppid(),
+                       'pgid': os.getpid(), 'session': os.getpid()}
         self.queue = {'schema': 'trillionnium.desktop.native-input-queue.v1', 'source_only': True,
             'owner_pid': self.native['pid'], 'owner_start_time': 12345, 'qualification_ack_profile': False,
             'queue_idle': True, 'maximum_pending_events': 64, 'maximum_payload_bytes': 16384,
@@ -254,7 +260,14 @@ class NativeBurstVerifierTests(unittest.TestCase):
         self.write('native-input-queue.json', self.queue)
         self.write('content-process-identity.json', {'generation': 1, 'pid': 321, 'start_time': 543})
         self.write('content-sigkill-sent.json', {'generation': 1, 'pid': 321, 'start_time': 543, 'signal': 'SIGKILL'})
-        (self.directory / 'process-topology.txt').write_text('trillionnium_headed_runtime --content-process')
+        self.write('process-topology-pre-burst.json', {
+            'schema': 'trillionnium.desktop.native-burst-topology.v1', 'native': self.native,
+            'content': {'pid': 321, 'start_time': 543, 'ppid': self.native['pid'],
+                        'pgid': self.native['pid'], 'session': self.native['pid']},
+            'compiled_executable_device': self.binary_identity['device'], 'compiled_executable_inode': self.binary_identity['inode'],
+            'content_process_flag_observed': True, 'retained_content_pidfd_alive_at_capture': True,
+            'ipc_token_recorded': False, 'source_qualification_only': True, 'product_ready': False})
+        self.write('native-burst-stimulus.json', {'compiled_executable_identity': self.binary_identity})
         (self.directory / 'resource-gate-result.json').write_text('{}')
         for name in ('content-generation-1.png', 'content-generation-2.png', 'workspace-generation-1.png',
                      'workspace-crash-placeholder.png', 'workspace-generation-2.png'):
@@ -370,6 +383,95 @@ class NativeBurstVerifierTests(unittest.TestCase):
                 if mutation == 'signal': receipt['signal'] = True
                 self.write(name, receipt)
                 with self.subTest(name=name, mutation=mutation), self.assertRaises(RuntimeError):
+                    self.namespace['verify_burst'](self.directory, self.native, 0)
+
+    def test_burst_refuses_missing_own_topology_even_if_old_text_is_present(self):
+        self.verify_report(self.report_fixture())
+        (self.directory / 'process-topology-pre-burst.json').unlink()
+        (self.directory / 'process-topology.txt').write_text('unrelated_old_runtime --content-process')
+        with self.assertRaises(ValueError):
+            self.namespace['verify_burst'](self.directory, self.native, 0)
+
+    def test_topology_closed_numeric_incarnation_and_claims_are_required(self):
+        import json
+        for role in ('native', 'content'):
+            for field in ('pid', 'start_time', 'ppid', 'pgid', 'session'):
+                for mutation in ('bool', 'float', 'other'):
+                    self.verify_report(self.report_fixture())
+                    topology = json.loads((self.directory / 'process-topology-pre-burst.json').read_text())
+                    value = topology[role][field]
+                    topology[role][field] = True if mutation == 'bool' else float(value) if mutation == 'float' else value + 1
+                    self.write('process-topology-pre-burst.json', topology)
+                    with self.subTest(role=role, field=field, mutation=mutation), self.assertRaises(RuntimeError):
+                        self.namespace['verify_burst'](self.directory, self.native, 0)
+        for mutation in ('extra', 'nested_extra', 'missing', 'pidfd', 'token', 'production'):
+            self.verify_report(self.report_fixture())
+            topology = json.loads((self.directory / 'process-topology-pre-burst.json').read_text())
+            if mutation == 'extra': topology['copied_from_old_runtime'] = True
+            if mutation == 'nested_extra': topology['content']['argv'] = 'hidden-token'
+            if mutation == 'missing': del topology['content']['ppid']
+            if mutation == 'pidfd': topology['retained_content_pidfd_alive_at_capture'] = False
+            if mutation == 'token': topology['ipc_token_recorded'] = True
+            if mutation == 'production': topology['product_ready'] = True
+            self.write('process-topology-pre-burst.json', topology)
+            with self.subTest(mutation=mutation), self.assertRaises(RuntimeError):
+                self.namespace['verify_burst'](self.directory, self.native, 0)
+        for field in ('compiled_executable_device', 'compiled_executable_inode'):
+            for mutation in ('bool', 'float', 'other'):
+                self.verify_report(self.report_fixture())
+                topology = json.loads((self.directory / 'process-topology-pre-burst.json').read_text())
+                topology[field] = True if mutation == 'bool' else float(topology[field]) if mutation == 'float' else topology[field] + 1
+                self.write('process-topology-pre-burst.json', topology)
+                with self.subTest(field=field, mutation=mutation), self.assertRaises(RuntimeError):
+                    self.namespace['verify_burst'](self.directory, self.native, 0)
+
+    def test_actual_owned_native_and_content_process_topology_uses_pidfd_and_redacts_token(self):
+        import json
+        import sys
+        script = ('import subprocess,sys,time,signal\n'
+                  'child=subprocess.Popen([sys.executable,"-c","import time;time.sleep(30)","--content-process","PRIVATE_IPC_TOKEN"] )\n'
+                  'signal.signal(signal.SIGTERM,lambda *args:sys.exit(0))\n'
+                  'print("READY",flush=True)\n'
+                  'try: time.sleep(30)\n'
+                  'finally: child.terminate();child.wait(timeout=3)\n')
+        log_path = self.directory / 'actual-owner.log'
+        with log_path.open('w') as log:
+            process, native = self.namespace['spawn']([sys.executable, '-c', script], dict(os.environ), log)
+            try:
+                self.namespace['wait_for'](lambda: 'READY' in log_path.read_text(), 5, process)
+                metadata = Path(sys.executable).stat()
+                identity = {'device': metadata.st_dev, 'inode': metadata.st_ino}
+                topology = self.namespace['capture_burst_topology'](process, Path(sys.executable), identity)
+                self.namespace['verify_burst_topology'](topology, native,
+                    {'generation': 1, 'pid': topology['content']['pid'], 'start_time': topology['content']['start_time']}, identity)
+                self.assertNotIn('PRIVATE_IPC_TOKEN', json.dumps(topology))
+                self.assertNotIn('argv', json.dumps(topology))
+                self.assertTrue(topology['retained_content_pidfd_alive_at_capture'])
+            finally:
+                self.namespace['cleanup'](process)
+
+    def test_actual_owner_without_a_content_entry_is_refused(self):
+        import sys
+        with (self.directory / 'actual-no-content.log').open('w') as log:
+            process, _ = self.namespace['spawn']([sys.executable, '-c', 'import time;time.sleep(30)'], dict(os.environ), log)
+            try:
+                with self.assertRaisesRegex(RuntimeError, 'exactly one live owned content'):
+                    metadata = Path(sys.executable).stat()
+                    self.namespace['capture_burst_topology'](process, Path(sys.executable),
+                        {'device': metadata.st_dev, 'inode': metadata.st_ino})
+            finally:
+                self.namespace['cleanup'](process)
+
+    def test_raw_before_launch_executable_snapshot_cannot_be_retyped_or_replaced(self):
+        for field in ('device', 'inode'):
+            for mutation in ('bool', 'float', 'other', 'missing', 'extra'):
+                self.verify_report(self.report_fixture())
+                identity = dict(self.binary_identity)
+                if mutation == 'missing': del identity[field]
+                elif mutation == 'extra': identity['from_topology'] = True
+                else: identity[field] = True if mutation == 'bool' else float(identity[field]) if mutation == 'float' else identity[field] + 1
+                self.write('native-burst-stimulus.json', {'compiled_executable_identity': identity})
+                with self.subTest(field=field, mutation=mutation), self.assertRaises(RuntimeError):
                     self.namespace['verify_burst'](self.directory, self.native, 0)
 
     def test_unsent_nonbutton_withdrawal_is_recorded_without_forging_dispatch(self):
