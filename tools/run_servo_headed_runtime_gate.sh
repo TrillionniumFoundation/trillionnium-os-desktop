@@ -500,6 +500,7 @@ def run_case(case):
             environment = dict(os.environ, DISPLAY=f':{number}', HEPTA_D0A02_OUTPUT=str(directory),
                                RUST_BACKTRACE='1')
             environment.pop('WAYLAND_DISPLAY', None)
+            environment.pop('HEPTA_D0A02_INPUT_NONCE', None)
             (directory / 'xdpyinfo.txt').write_text(command(['xdpyinfo'], environment))
             if case == 'focus-loss':
                 title = f'HEPTA held gesture focus withdrawal {uuid.uuid4().hex}'
@@ -629,8 +630,11 @@ PY
 step_run_runtime() {
 set -euo pipefail
 output="$PWD/artifacts/servo-headed-runtime/runtime"
-mkdir -p "$output"
+mkdir -p "$(dirname "$output")"
+mkdir -m 0700 "$output"
 export HEPTA_D0A02_OUTPUT="$output"
+HEPTA_D0A02_INPUT_NONCE=$(python3 -c 'import secrets; print(secrets.token_hex(16))')
+export HEPTA_D0A02_INPUT_NONCE
 export RUST_BACKTRACE=1
 
 Xvfb :99 -screen 0 1280x900x24 -nolisten tcp >"$output/xvfb.log" 2>&1 &
@@ -646,6 +650,7 @@ cleanup() {
 }
 trap cleanup EXIT
 export DISPLAY=:99
+unset WAYLAND_DISPLAY
 for _ in $(seq 1 100); do
   xdpyinfo >/dev/null 2>&1 && break
   sleep 0.1
@@ -655,6 +660,11 @@ xdpyinfo >"$output/xdpyinfo.txt"
 servo-source/target/debug/examples/trillionnium_headed_runtime \
   >"$output/runtime.log" 2>&1 &
 app_pid=$!
+export HEPTA_D0A02_OWNER_PID=$app_pid
+if [[ -n "${GITHUB_ENV:-}" ]]; then
+  printf 'HEPTA_D0A02_INPUT_NONCE=%s\nHEPTA_D0A02_OWNER_PID=%s\n' \
+    "$HEPTA_D0A02_INPUT_NONCE" "$app_pid" >> "$GITHUB_ENV"
+fi
 for _ in $(seq 1 600); do
   [[ -f "$output/input-ready" ]] && break
   kill -0 "$app_pid" 2>/dev/null || {
@@ -667,21 +677,13 @@ test -f "$output/input-ready"
 
 window_id="$(xdotool search --name 'TrillionniumOS Desktop.*D0A-02' | head -n1)"
 test -n "$window_id"
+test "$(xdotool getwindowpid "$window_id")" = "$app_pid"
 xwininfo -id "$window_id" >"$output/xwininfo.txt"
 xdotool windowfocus --sync "$window_id"
 test "$(xdotool getwindowfocus)" = "$window_id"
 
-xdotool mousemove --sync --window "$window_id" 200 132
-xdotool mousedown 1
-xdotool mouseup 1
-xdotool key k
-xdotool mousemove --sync --window "$window_id" 400 164
-xdotool mousedown 1
-xdotool mouseup 1
-xdotool click 5
-xdotool mousemove --sync --window "$window_id" 200 132
-xdotool mousedown 1
-xdotool mouseup 1
+python3 tools/native_input_checkpoints.py drive --output "$output" \
+  --pid "$app_pid" --window "$window_id" --nonce "$HEPTA_D0A02_INPUT_NONCE"
 
 ps -eo pid,ppid,stat,args >"$output/process-table-during-input.txt"
 timeout 180 tail --pid="$app_pid" -f /dev/null
@@ -692,6 +694,10 @@ ps -eo pid,ppid,stat,args >"$output/process-table-after-result.txt"
 
 step_enforce_evidence() {
 set -euo pipefail
+unset PYTHONOPTIMIZE
+python3 tools/native_input_checkpoints.py verify \
+  --output "$PWD/artifacts/servo-headed-runtime/runtime" \
+  --pid "$HEPTA_D0A02_OWNER_PID" --nonce "$HEPTA_D0A02_INPUT_NONCE"
 python3 - <<'PY'
 from pathlib import Path
 import hashlib
@@ -734,7 +740,8 @@ assert report['external_navigation_requests_denied'] > 0
 
 initial = report['initial_page_evidence']
 assert initial['generation'] == 1 and initial['loaded'] is True
-assert initial['pointerMoves'] > 0 and initial['pointerDowns'] > 0
+assert initial['pointerMoves'] > 0 and initial['pointerDowns'] == 3
+assert 'x' not in [str(item).lower() for item in initial['keyDowns']]
 assert initial['clicks'] > 0 and initial['wheels'] > 0
 assert 'k' in [str(item).lower() for item in initial['keyDowns']]
 assert initial['popupAttempted'] is True

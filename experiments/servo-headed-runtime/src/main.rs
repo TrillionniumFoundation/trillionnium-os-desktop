@@ -13,6 +13,7 @@ use std::error::Error;
 use std::fs;
 use std::io::{ErrorKind, Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
+use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::rc::{Rc, Weak};
@@ -42,7 +43,10 @@ use winit::raw_window_handle::{HasDisplayHandle, HasWindowHandle};
 use winit::window::Window;
 
 mod input_ownership;
-use input_ownership::{Button, ButtonAction, InputOwnership, ReleaseOutcome};
+use input_ownership::{
+    Button, ButtonAction, CheckpointPhase, InputCheckpoint, InputOwnership, QualificationInput,
+    ReleaseOutcome,
+};
 
 const WINDOW_WIDTH: u32 = 1024;
 const WINDOW_HEIGHT: u32 = 768;
@@ -430,6 +434,9 @@ struct RuntimeState {
     pending_mouse_releases: RefCell<HashMap<InputEventId, Button>>,
     fault_process: Cell<Option<(u32, u64)>>,
     exact_termination_observed: Cell<bool>,
+    qualification_nonce: Option<String>,
+    qualification_owner_start: u64,
+    qualification_input: RefCell<Option<QualificationInput<InputEventId>>>,
 }
 
 impl RuntimeState {
@@ -440,6 +447,31 @@ impl RuntimeState {
         fixture_url: Url,
         output_dir: PathBuf,
     ) -> Result<Rc<Self>, Box<dyn Error>> {
+        // Only explicit host qualification enables these checkpoints.
+        let qualification_nonce = match env::var("HEPTA_D0A02_INPUT_NONCE") {
+            Ok(nonce)
+                if nonce.len() == 32
+                    && nonce
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase()) =>
+            {
+                if fs::metadata(&output_dir)?.permissions().mode() & 0o777 != 0o700 {
+                    return Err("qualification output directory must be private (0700)".into());
+                }
+                Some(nonce)
+            }
+            Ok(_) => return Err("qualification input nonce must be 32 lowercase hex digits".into()),
+            Err(env::VarError::NotPresent) => None,
+            Err(error) => return Err(error.into()),
+        };
+        let qualification_input = qualification_nonce
+            .as_ref()
+            .map(|_| QualificationInput::new());
+        let qualification_owner_start = if qualification_nonce.is_some() {
+            exact_content_process_start_time(std::process::id())?
+        } else {
+            0
+        };
         let display_handle = event_loop.display_handle()?;
         let attributes = Window::default_attributes()
             .with_title(WINDOW_TITLE)
@@ -532,6 +564,9 @@ impl RuntimeState {
             pending_mouse_releases: RefCell::new(HashMap::new()),
             fault_process: Cell::new(None),
             exact_termination_observed: Cell::new(false),
+            qualification_nonce,
+            qualification_owner_start,
+            qualification_input: RefCell::new(qualification_input),
         });
         state.create_webview();
         fs::write(state.output_dir.join("window-created"), WINDOW_TITLE)?;
@@ -613,6 +648,7 @@ impl RuntimeState {
         }
 
         if self.generation.get() == 1
+            && self.qualification_input_complete()
             && self.native_pointer_events.get() > 0
             && self.native_button_events.get() >= 2
             && self.native_wheel_events.get() > 0
@@ -624,6 +660,7 @@ impl RuntimeState {
         }
 
         if self.generation.get() == 1
+            && self.qualification_input_complete()
             && self.synthetic_ime_sent.get()
             && self.settled.get()
             && !self.page_evidence_requested.get()
@@ -1036,13 +1073,32 @@ impl RuntimeState {
         let point = self.input.borrow_mut().pointer(position.x, position.y);
         let Some((x, y)) = point else {
             self.pointer_left();
+            if position.x == 10.0 && position.y == 10.0 {
+                let checkpoint = self
+                    .qualification_input
+                    .borrow_mut()
+                    .as_mut()
+                    .and_then(|input| {
+                        input.observe_chrome(
+                            self.generation.get(),
+                            self.input.borrow().window_focused(),
+                        )
+                    });
+                if let Some(checkpoint) = checkpoint {
+                    self.publish_input_checkpoint(checkpoint);
+                }
+            }
             return;
         };
         let point = DevicePoint::new(x, y);
         self.native_pointer_events
             .set(self.native_pointer_events.get() + 1);
         if let Some(webview) = self.webview.borrow().as_ref() {
-            webview.notify_input_event(InputEvent::MouseMove(MouseMoveEvent::new(point.into())));
+            let event_id = webview
+                .notify_input_event(InputEvent::MouseMove(MouseMoveEvent::new(point.into())));
+            if let Some(input) = self.qualification_input.borrow_mut().as_mut() {
+                input.observe_pointer(self.generation.get(), (x, y), event_id);
+            }
         }
     }
 
@@ -1085,6 +1141,20 @@ impl RuntimeState {
             ElementState::Pressed => (ButtonAction::Down, MouseButtonAction::Down),
             ElementState::Released => (ButtonAction::Up, MouseButtonAction::Up),
         };
+        if let Some(input) = self.qualification_input.borrow().as_ref() {
+            let point = self.input.borrow().point();
+            if point.is_some() {
+                let ready = owned_button == Button::Primary
+                    && match owned_action {
+                        ButtonAction::Down => input.allows_down(self.generation.get(), point),
+                        ButtonAction::Up => input.allows_up(self.generation.get(), point),
+                    };
+                if !ready {
+                    self.fail("native qualification button arrived before its exact checkpoint");
+                    return;
+                }
+            }
+        }
         let point =
             self.input
                 .borrow_mut()
@@ -1107,6 +1177,83 @@ impl RuntimeState {
                     .borrow_mut()
                     .insert(event_id, owned_button);
             }
+            if let Some(input) = self.qualification_input.borrow_mut().as_mut() {
+                let result = match owned_action {
+                    ButtonAction::Down => input.submit_down(event_id),
+                    ButtonAction::Up => input.submit_up(event_id),
+                };
+                if let Err(error) = result {
+                    self.fail(error);
+                }
+            }
+        }
+    }
+
+    fn qualification_input_complete(&self) -> bool {
+        self.qualification_input
+            .borrow()
+            .as_ref()
+            .is_none_or(QualificationInput::complete)
+    }
+
+    fn publish_input_checkpoint(&self, checkpoint: InputCheckpoint<InputEventId>) {
+        let Some(nonce) = &self.qualification_nonce else {
+            self.fail("input checkpoint has no qualification session");
+            return;
+        };
+        let phase = checkpoint.phase.as_str();
+        let point = checkpoint
+            .point
+            .map_or_else(|| "null".to_owned(), |(x, y)| format!("[{x},{y}]"));
+        let identifier = |event: Option<InputEventId>| {
+            event.map_or_else(|| "null".to_owned(), |id| json_string(&format!("{id:?}")))
+        };
+        let report = format!(
+            concat!(
+                "{{\"schema\":\"trillionnium.desktop.native-input-checkpoint.v1\",",
+                "\"nonce\":{},\"owner_pid\":{},\"owner_start_time\":{},",
+                "\"generation\":1,\"sequence\":{},\"phase\":{},\"content_point\":{},",
+                "\"pointer_event_id\":{},\"down_event_id\":{},\"up_event_id\":{},",
+                "\"pointer_dispatch_accepted\":{},\"down_dispatch_accepted\":{},",
+                "\"up_dispatch_accepted\":{},\"completed_pairs\":{},\"product_ready\":false}}\n"
+            ),
+            json_string(nonce),
+            std::process::id(),
+            self.qualification_owner_start,
+            checkpoint.sequence,
+            json_string(phase),
+            point,
+            identifier(checkpoint.pointer_event),
+            identifier(checkpoint.down_event),
+            identifier(checkpoint.up_event),
+            checkpoint.phase != CheckpointPhase::ChromeReady,
+            matches!(
+                checkpoint.phase,
+                CheckpointPhase::DownAccepted | CheckpointPhase::UpAccepted
+            ),
+            checkpoint.phase == CheckpointPhase::UpAccepted,
+            checkpoint.completed_pairs,
+        );
+        let name = format!("input-pair-{}-{phase}.json", checkpoint.sequence);
+        let temporary = self.output_dir.join(format!(".{name}.{nonce}.tmp"));
+        let published = self.output_dir.join(&name);
+        let write = || -> std::io::Result<()> {
+            let mut file = fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .mode(0o600)
+                .open(&temporary)?;
+            file.write_all(report.as_bytes())?;
+            file.sync_all()?;
+            if published.symlink_metadata().is_ok() {
+                return Err(std::io::Error::other("input checkpoint already exists"));
+            }
+            fs::rename(&temporary, &published)
+        };
+        if let Err(error) = write() {
+            self.fail(&format!(
+                "could not publish exact input checkpoint: {error}"
+            ));
         }
     }
 
@@ -1497,13 +1644,63 @@ impl WebViewDelegate for RuntimeDelegate {
                 } else {
                     ReleaseOutcome::Accepted
                 };
-                state
-                    .input
-                    .borrow_mut()
-                    .acknowledge_release(self.generation, button, outcome);
+                let acknowledged =
+                    state
+                        .input
+                        .borrow_mut()
+                        .acknowledge_release(self.generation, button, outcome);
                 if state.retire_withdrawn_gesture() {
                     return;
                 }
+                if !acknowledged {
+                    state.fail("actual mouse release callback did not settle its owned binding");
+                    return;
+                }
+            }
+            let (point, focused, ready) = {
+                let input = state.input.borrow();
+                (
+                    input.point(),
+                    input.window_focused(),
+                    input.button_ready(self.generation, Button::Primary),
+                )
+            };
+            let checkpoint = state
+                .qualification_input
+                .borrow_mut()
+                .as_mut()
+                .map(|input| {
+                    input.acknowledge(
+                        self.generation,
+                        point,
+                        focused,
+                        event_id,
+                        !result.contains(InputEventResult::DispatchFailed),
+                    )
+                });
+            match checkpoint {
+                Some(Ok(Some(checkpoint))) => {
+                    if checkpoint.phase == CheckpointPhase::UpAccepted
+                        && button != Some(Button::Primary)
+                    {
+                        state.fail("qualification Up callback did not match the actual owned primary release");
+                        return;
+                    }
+                    if matches!(
+                        checkpoint.phase,
+                        CheckpointPhase::Ready | CheckpointPhase::PreludeReady
+                    ) && !ready
+                    {
+                        state.fail("native pointer checkpoint still has an unsettled owned button");
+                        return;
+                    }
+                    state.publish_input_checkpoint(checkpoint);
+                }
+                Some(Err(error)) => {
+                    state.fail(error);
+                    return;
+                }
+                _ => {}
             }
             state
                 .input_handled_callbacks
