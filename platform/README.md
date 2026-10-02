@@ -17,9 +17,11 @@ regular-file publication, binds results to the issuing owner and complete
 history, and quarantines unfinished or unclean restart without replay. Its
 `arm_first_boot` records source policy only and accepts no caller boot, health
 or commit assertion. Installation still needs trusted roots/time/floor,
-service wiring and actual boot/health/recovery adapters. The separately found
-S11 directory-walk close/reuse custody gap requires its core correction and
-joint regressions; wrapper tests alone do not close that dependency.
+service wiring and actual boot/health/recovery adapters. The S11 directory-walk,
+lease and publication cleanup correction is integrated with the wrapper's private
+owner protocol and raw scan-record cleanup. Joint real close/reuse/GC and
+constructor/return interruption regressions cover the reproduced paths; they do
+not prove every C-return-to-bytecode window or close installed prerequisites.
 
 `trusted_apps.py` verifies complete signed bundles offline and issues immutable
 local asset responses for exact synthetic HTTPS origins. Its versioned bundle
