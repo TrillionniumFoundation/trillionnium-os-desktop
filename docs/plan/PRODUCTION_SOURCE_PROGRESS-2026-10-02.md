@@ -25,6 +25,7 @@ fresh event/object; they must not be weakened to accept a stale parent.
 | G2 request/recovery composition | [PR133](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/133) | Original AF_UNIX attestation, queue-wide deadline/cancellation, concrete engine-thread actor/coordinator, semantic preflight, durable intent/terminal facts before response, complete-chain deduplication and unresolved restart refusal | Installed native startup/owner, per-connection service handoff, approved cross-UID executable custody, principal policy and durable trusted recovery decisions |
 | G2 original-stream custody | [PR142](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/142) | Actual consuming SCM_RIGHTS original-socket handoff, kernel credentials/cookie, private challenge/sequence, boot/time-namespace scope and fixed deadline; post-review pidfd ancillary cleanup successor | Live unit/executable broker, root-owned service path and semantic principal; consumer is reviewed separately in PR143; no activation |
 | G2 product handoff deadline | [PR143](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/143), based on PR142 | Consuming opaque original-stream callback preserves same Instant through live pidfd admission, clone/setup and queue; read-only getter refuses changed process/cancel/expiry | Synchronous procfs cannot be preempted; approved broker/principal, installed service and native owner remain open |
+| G2 live control custodian | [PR146](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/146), fixed PR143 base | Actual default-procfs executable/unit/cgroup/credential and retained-pidfd checks bracket one-shot control handoff; original accepted deadline and separate receiver wait ceiling never renew | Installed control path/policy, cross-UID broker, custodian lifetime through queued execution and native final-effect authority remain open |
 | G3 native input/chrome | [PR131](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/131) | Actual Winit focus/content ownership, generation-bound callbacks, repeated IME context, causally bound selected-process SIGKILL evidence; actual native held-gesture withdrawal refuses further input/reconstruction and requires a fresh Servo owner | Complete owner replacement, product PageOwner integration, layout/scaling/clipboard, actual Chinese OS IME and trusted approval/handoff UX |
 | G3 default rapid native input | [PR144](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/144), fixed PR141 base | Bounded FIFO with one exact-ID submission, frozen owner/arrival point and nonrenewing episode deadline; actual possible key/composition holds survive local withdrawal | Fresh pinned compilation and default-profile burst, full original runtime/held gates; installed PageOwner and hardware remain open |
 | G4 startup diagnosis | [PR139](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/139) | Actual Wayland protocol handshake, independent private persisted failure diagnostics and bounded guest shutdown; normal and explicit exit73 QEMU paths | Installed native product image, wider fault/reboot/endurance matrix and independent release facilities |
@@ -231,8 +232,17 @@ host review passes 51 input and8 resource Rust tests,27 strict native-parser,
 burst requires six original native button admissions and ACKs, three actual
 DOM presses/clicks and nine ordered events at the original points. Process
 receipts reject Boolean/float integer aliases and unknown fields. Actual
-pinned main compilation and rapid native CI remain pending; formatting is not
-API type checking, and ACKs alone are not DOM execution proof.
+pinned compilation and the original positive/runtime enforcement passed in
+push run37028860736, but the whole burst failed because its producer omitted
+the topology file demanded by its verifier. Actual partial facts contain three
+DOM clicks and all six button ACKs; held-negative cases did not run. This failed
+packet is never retroactively supplemented. Successor
+`bbad9f7a1551691a99c5cb8242ea3a32d1021a7e` captures its own pre-stimulus topology
+under a retained pidfd and binds closed executable device/inode facts to a
+before-launch compiled-image snapshot. Actual host parser32 and checkpoint19
+pass independent review. Checkpoint expiry is sampled again after identity/file
+checks, refusing a nonpositive remainder before sleep. Fresh complete pinned
+native CI remains required; ACKs alone are not DOM execution proof.
 
 The original-stream custody candidatecfb1bb463cfd86549c52346a08b0da248764d156
 passed actual16 old Rust tests,18 kernel case groups,5 closed Python contract
@@ -263,13 +273,38 @@ qualification remain open.
 Generic desktop CI on a07 passes source/Rust checks but does not execute the
 45 Python socket/TLS cases. A dedicated controlled-egress workflow now runs the
 actual corpus on head and live-parent prospective merge, refusing fewer than45
-cases or skips. Its static checks and separate code review do not substitute
-for the required fresh remote run.
+cases or skips. PR136 head0c9597262b031c783d0b5dd1196812f059ef9e41 actually
+passes both dedicated jobs in run37029073438, with45 executed cases and zero
+skips each. Tested merge4962bc1b32b0bf8fe5dfe73658c8f3ffc29108f9 and
+treee64aa5fb3fd13b43cae604f0f0dbfaedaf02722b have independently checked live
+base/head parents. These results do not transfer to a different source object.
+
+PR146 head34e3d36406b72c1f7e0ffb0120166d5f95945d12 passes frozen thirteen-file
+author/root/independent review. Actual default and explicit no-default Rust70,
+all-features77, doctest4 and Python5/8/11 pass, including13 real control-owner
+kernel groups and all19 byte-unchanged original transport groups. Three real
+mutants fail. The earlier500ms positive fixture overrun remains failure evidence;
+a5s fixture successor changes no20s product maximum. This source owner measures
+actual fixed-procfs peer bytes and incarnation, consumes custody once, preserves
+original deadlines and retires errors/cancellation without replay. Returned
+socket custody does not retain the control custodian through product execution.
+Exclusive mutable cancellation cannot preempt an in-progress mutable call.
+Installed startup, authenticated policy, cross-UID broker and final native
+effects remain unqualified; actual prospective-merge CI remains required.
 
 The current composition branch `codex/production-source-round2-20261002` starts at
 fixed c61. It combines source successors without moving their review bases or
 self-merging any PR. Its module manifest also maps the product consumer contract, kernel corpus and S04 workflow to browserd without changing claim ceilings. Exact-object full checks and appropriate runtime/image CI remain required after composition. Product activation and machine qualification
 fields remain unchanged.
+
+Historical composition982b23b6ed81a57f316f2ff786c8e3936e9e2095 passes local full
+checks (Python632/78/15, Rust411/424/15). Actual main-based PR145 D2I
+run37029653440 passes, while desktop head run37029652882 fails one real-time
+checkpoint case with a negative sleep remainder after identity checks, and
+native run37029652884 fails the missing burst topology producer. Those failed
+objects remain failed. The current composition incorporates both source repairs
+and PR146; it requires new full validation and actual head/prospective runtime
+and image evidence. Historical green results never qualify this successor.
 
 ## Conditions still blocking production
 
