@@ -1,8 +1,11 @@
 # TrillionniumOS Desktop adversarial audit
 
-**Date:** 2026-10-02, Asia/Shanghai  
-**Baseline:** main `1281d7ac8376bd8837fa63636420b0afc5586eda`  
-**Active plan:** `docs/DESKTOP_PLAN-2026-08-29-d6.md`  
+**Date:** 2026-10-02, Asia/Shanghai
+
+**Baseline:** main `1281d7ac8376bd8837fa63636420b0afc5586eda`
+
+**Active plan:** `docs/DESKTOP_PLAN-2026-08-29-d6.md`
+
 **Scope:** repository source, development documentation, host tests, portable
 evidence checks and workflow consistency. This is a source review candidate,
 not an installed-image, hardware, independent approval or release record.
@@ -40,6 +43,7 @@ independent identities, protected signing or publication.
 | Rust documentation | Simulation examples imported the old crate; six compile-fail examples passed because imports failed; doctests were disabled | Correct imports, enable doctests, verify intended E0277/E0599/E0382 failures, run workspace doctests in CI |
 | Host test isolation | Private receipt fixtures inherited writable umask; Python fixtures copied live Cargo output | Explicit private test directories, preserve insecure negative cases, copy source while excluding generated output |
 | D1 image construction | Removed Cargo feature/bin/path and absent permanent workflows prevented execution | Use `fixture` and the Cargo example output, restore permanent D1/D2I workflows, complete invalidation inputs |
+| AgentPort custody gate | Active verifier still required the old single-item fixture feature map and failed on the reviewed D1 qualification example | Bind the exact current fixture map, optional dependencies, explicit example gate and disabled product/attestor defaults; execute full verifier with hostile source mutations |
 | CI source coverage | Selected top-level Python patterns omitted D1/transport and optional Rust targets | Run all three Python discovery roots, default/all-feature Rust targets and doctests on source head and prospective merge |
 | Workflow identity | Old S10 depended on a deleted base and relabelled PR execution as manual; finalizers labelled canonical procedures as actual producers | Manual S10 uses its real event; permanent gates use merge/main; record native workflow path/ref/SHA/digest separately from canonical procedure and bind them to source |
 | Portable evidence | D2I expected an obsolete D1 status; files could escape paths or be omitted from digest binding; source archive and process facts were not fully cross-checked | Consume current D1 v3, exact file inventory, strict bounded descriptor reads, role/source/producer/process consistency and finalizer self-verification |
@@ -64,8 +68,8 @@ Run all Python discovery roots and the source validators in `make check`.
 Adversarial tests exercise actual finalizer subprocesses, detached signatures,
 real filesystem custody and workflow graph identities. Synthetic evidence is
 test input only. No test fixture is an actual image, hardware or release result.
-All three Python discovery roots passed: 243 top-level, 41 D1 and fifteen
-transport tests, for 299 total. Thirteen active source validators passed. The
+All three Python discovery roots passed: 250 top-level, 41 D1 and fifteen
+transport tests, for 306 total. Fourteen active source validators passed. The
 historical D0C-04 seven-package snapshot validator correctly rejects the later
 twelve-package workspace; its purpose and diagnostic are now explicit. YAML
 parsing, changed shell syntax and `git diff --check` passed. The PR and
@@ -74,7 +78,10 @@ user-facing report record any subsequent CI limitations.
 Iterations continued after initial fixes: independent review exposed signature
 snapshot inconsistency, coordinator lease replacement, staging-file replacement,
 workflow producer ambiguity and false-positive compile-fail examples. Each new
-reproduced defect received a regression and another review. This establishes a
+reproduced defect received a regression and another review. The first remote PR
+run then exposed the stale active AgentPort fixture feature check; it was fixed
+without enabling qualification features in the default product graph and added
+to local aggregate validation. This establishes a
 bounded review of these surfaces; it cannot prove that the complete project has
 no remaining defect or possible improvement.
 

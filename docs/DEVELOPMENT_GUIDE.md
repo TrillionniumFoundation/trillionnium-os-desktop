@@ -1,6 +1,7 @@
 # Development guide and implementation coverage
 
-**Plan revision:** `2026-08-29-d6`  
+**Plan revision:** `2026-08-29-d6`
+
 **Scope:** source maintenance and acceptance navigation; not a qualification record
 
 Read the [active plan](DESKTOP_PLAN-2026-08-29-d6.md),
