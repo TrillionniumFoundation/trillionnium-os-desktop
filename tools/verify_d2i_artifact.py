@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -19,15 +20,29 @@ except ImportError:
 RECEIPT = "evidence/d2i-final-qualification.json"
 
 
+def _same_typed_value(actual: object, expected: object) -> bool:
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return (set(actual) == set(expected)
+                and all(_same_typed_value(actual[key], value) for key, value in expected.items()))
+    if isinstance(expected, list):
+        return (len(actual) == len(expected)
+                and all(_same_typed_value(left, right) for left, right in zip(actual, expected)))
+    return actual == expected
+
+
 def require(document: dict[str, Any], key: str, expected: object) -> None:
     actual = document.get(key)
-    if type(actual) is not type(expected) or actual != expected:
+    if not _same_typed_value(actual, expected):
         raise ValueError(f"D2I evidence field {key!r} must equal {expected!r}")
 
 
 def verify_process_identity(root: Path, runtime: dict[str, Any]) -> None:
     selected = load(artifact_file(root, "d2i/qemu/content-process-identity.json"))
     signal = load(artifact_file(root, "d2i/qemu/content-sigkill-sent.json"))
+    if set(selected) != {"generation", "pid", "start_time_ticks"} or set(signal) != {"generation", "pid", "start_time_ticks", "signal"}:
+        raise ValueError("content process identity record fields differ")
     require(selected, "generation", 1)
     require(signal, "generation", 1)
     require(signal, "signal", "SIGKILL")
@@ -46,6 +61,8 @@ def verify_process_identity(root: Path, runtime: dict[str, Any]) -> None:
     embedder = None
     for phase, identities in (("pre-fault", [old]), ("post-termination", []), ("post-recovery", [new])):
         topology = load(artifact_file(root, f"d2i/qemu/process-topology-{phase}.json"))
+        if set(topology) != {"active_process_count", "processes", "embedder_pid"}:
+            raise ValueError("content process topology record fields differ")
         require(topology, "active_process_count", len(identities))
         require(topology, "processes", identities)
         if type(topology.get("embedder_pid")) is not int or topology["embedder_pid"] <= 1:
@@ -55,6 +72,18 @@ def verify_process_identity(root: Path, runtime: dict[str, Any]) -> None:
         require(topology, "embedder_pid", embedder)
         if any(identity["pid"] == embedder for identity in identities):
             raise ValueError("content process identity aliases the trusted embedder")
+
+
+def _git_tree_oid(nodes: dict[str, Any]) -> bytes:
+    """Rebuild Git's tracked tree, including executable mode and raw UTF-8 names."""
+    payload = bytearray()
+    for name, value in sorted(nodes.items(), key=lambda pair: pair[0].encode("utf-8") + (b"/" if isinstance(pair[1], dict) else b"")):
+        if isinstance(value, dict):
+            mode, oid = b"40000", _git_tree_oid(value)
+        else:
+            mode, oid = value
+        payload.extend(mode + b" " + name.encode("utf-8") + b"\0" + oid)
+    return hashlib.sha1(b"tree " + str(len(payload)).encode("ascii") + b"\0" + payload).digest()
 
 
 def verify_source(root: Path, receipt: dict[str, Any]) -> dict[str, Any]:
@@ -77,7 +106,7 @@ def verify_source(root: Path, receipt: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("source digest is malformed")
         expected[name] = entry
     observed: set[str] = set()
-    import hashlib
+    git_nodes: dict[str, Any] = {}
     with os.fdopen(open_file(archive_path), "rb") as archive_stream, tarfile.open(fileobj=archive_stream, mode="r:") as archive:
         for member in archive:
             # Archives are inspected without extraction. Links and special files
@@ -91,18 +120,36 @@ def verify_source(root: Path, receipt: dict[str, Any]) -> dict[str, Any]:
             entry = expected[name]
             if member.size != entry["bytes"]:
                 raise ValueError("source archive member size mismatch")
+            parts = name.split("/")
+            if len(name.encode("utf-8")) > 4096 or len(parts) > 128:
+                raise ValueError("source archive path is over its bound")
+            if member.mode not in {0o644, 0o664, 0o755, 0o775}:
+                raise ValueError("source archive file has an unsupported Git mode")
             stream = archive.extractfile(member)
             if stream is None:
                 raise ValueError("source archive member has no payload")
             value = hashlib.sha256()
+            blob = hashlib.sha1(b"blob " + str(member.size).encode("ascii") + b"\0")
             with stream:
                 for chunk in iter(lambda: stream.read(1024 * 1024), b""):
                     value.update(chunk)
+                    blob.update(chunk)
             if value.hexdigest() != entry["sha256"]:
                 raise ValueError("source archive differs from tracked source manifest")
             observed.add(name)
+            parent = git_nodes
+            for part in parts[:-1]:
+                child = parent.setdefault(part, {})
+                if not isinstance(child, dict):
+                    raise ValueError("source archive file/directory paths conflict")
+                parent = child
+            if parts[-1] in parent:
+                raise ValueError("source archive file/directory paths conflict")
+            parent[parts[-1]] = (b"100755" if member.mode & 0o111 else b"100644", blob.digest())
     if observed != set(expected):
         raise ValueError("source archive does not contain every declared source input")
+    if _git_tree_oid(git_nodes).hex() != receipt["tree_sha"]:
+        raise ValueError("source archive bytes and modes do not rebuild the declared Git tree")
     d1_source = load(artifact_file(root, "d1/evidence/source-input-digests.json"))
     if d1_source.get("files") != {name: entry["sha256"] for name, entry in expected.items()}:
         raise ValueError("D1 and D2I source input manifests differ")
@@ -112,11 +159,11 @@ def verify_source(root: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     verify_workflow_binding({"path": ".github/workflows/d2i-integrated-image.yml",
                              "sha256": receipt.get("workflow_sha256")}, source_files, producer=False)
     binding = receipt.get("source")
-    if not isinstance(binding, dict) or binding != {
+    if not _same_typed_value(binding, {
         "archive_sha256": digest(archive_path),
         "manifest_sha256": digest(source_path),
         "entry_count": len(entries),
-    }:
+    }):
         raise ValueError("receipt source archive or manifest binding is inconsistent")
     return source
 
@@ -127,6 +174,31 @@ def verify_artifact(path: Path) -> dict[str, Any]:
     require(receipt, "schema", "trillionnium.desktop.d2i-final-qualification.v1")
     require(receipt, "status", "PASS_D2I_EXACT_IMAGE_CANDIDATE")
     validate_role(receipt)
+    require(receipt, "claims", {
+        "same_exact_image_contains_d1_and_headed_servo": True,
+        "systemd_pid1": True,
+        "headless_wayland": True,
+        "single_content_surface": True,
+        "image_local_servo_input_dispatch": True,
+        "native_host_input_inherited_from_d0a02_only": True,
+        "popup_denied": True,
+        "external_navigation_denied": True,
+        "sigkill_exact_identity": True,
+        "zero_process_intermediate": True,
+        "distinct_replacement_identity": True,
+        "crash_callback_required": False,
+        "product_agent_port_default_disabled": True,
+        "network_device_present": False,
+    })
+    require(receipt, "claim_ceiling", {
+        "browser_actor": False,
+        "product_agent_port_enabled": False,
+        "external_effects": False,
+        "secure_boot": False,
+        "hardware_readiness": False,
+        "signed_update": False,
+        "release_readiness": False,
+    })
     outputs = receipt.get("output_digests")
     verify_outputs(root, RECEIPT, outputs, sized=True)
     d1 = verify_d1_artifact(root / "d1")
@@ -159,6 +231,10 @@ def verify_artifact(path: Path) -> dict[str, Any]:
         require(runtime, key, True)
     # Twelve ordinary input events plus three submitted IME composition events.
     require(runtime, "input_events_sent", 15)
+    require(runtime, "ime_composition_events_sent", 3)
+    require(runtime, "simulated_content_process_recovery", False)
+    if type(runtime.get("frame_count")) is not int or runtime["frame_count"] < 2:
+        raise ValueError("runtime frame_count must be an integer of at least 2")
     if type(runtime.get("input_events_handled")) is not int or runtime["input_events_handled"] < 3:
         raise ValueError("runtime input_events_handled must be an integer of at least 3")
     require(runtime, "crash_callback_required", False)
@@ -175,6 +251,14 @@ def verify_artifact(path: Path) -> dict[str, Any]:
         require(guest, key, True)
     for key in ("crash_callback_required", "network_enabled", "release_ready"):
         require(guest, key, False)
+    for key in ("udev_active", "dbus_active", "logind_active", "headless_wayland_active",
+                "headed_servo_runtime_completed", "trusted_chrome_survived_recovery",
+                "page_input_verified", "ime_path_exercised"):
+        require(guest, key, True)
+    require(guest, "pid1", "systemd")
+    require(guest, "content_surface_limit", 1)
+    require(guest, "runtime_ready_sha256", digest(artifact_file(root, "d2i/qemu/runtime-ready.json")))
+    require(guest, "recovery_screenshot_sha256", digest(artifact_file(root, "d2i/qemu/servo-content-recovered.png")))
     require(boot, "schema", "trillionnium.desktop.d2i-qemu-boot-result.v1")
     require(boot, "status", "PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE")
     require(boot, "prepared_image_sha256", receipt.get("integrated_image_sha256"))

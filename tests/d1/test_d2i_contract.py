@@ -48,6 +48,24 @@ class D2IContractTests(unittest.TestCase):
         self.assertIn("WAYLAND_DISPLAY=wayland-0", service)
         self.assertIn("HEPTA_D0A02_OUTPUT=/var/lib/trillionnium-d2i", service)
 
+    def test_portable_proof_contract_preserves_typed_observations_and_claim_ceiling(self) -> None:
+        contract = json.loads((ROOT / "contracts/d2i-integrated-image.v1.json").read_text())
+        self.assertEqual(contract["portable_verification"], {
+            "d1_source_count_exact_integer_required": True,
+            "d1_claim_ceiling": "closed_six_false_booleans",
+            "d1_staged_document_binding": "recursive_exact_types",
+            "process_identity_nested_integer_types_required": True,
+            "process_record_field_sets": "closed",
+            "source_archive_rebuilds_declared_git_tree": True,
+            "ime_composition_events_sent": 3,
+            "minimum_recovered_frame_count": 2,
+            "simulated_recovery_allowed": False,
+            "guest_runtime_and_screenshot_digests_required": True,
+            "guest_runtime_facts_must_agree": True,
+            "receipt_claims_and_ceiling": "closed_exact_boolean_maps",
+            "rehashed_negative_fixture_is_guest_evidence": False,
+        })
+
     def test_permanent_gate_is_read_only_and_unfiltered(self) -> None:
         workflow = (ROOT / ".github/workflows/d2i-integrated-image.yml").read_text()
         runner = (ROOT / "tools/run_d2i_integrated_image.sh").read_text()
