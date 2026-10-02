@@ -100,7 +100,12 @@ duplicates raw descriptors or ignores supplied deadlines. It does not establish
 live PID/executable/unit continuity, root-owned pathname custody, a principal,
 installed service handoff, native Servo, or product authorization. A subsequent
 identity broker/attestor and final effect boundary must perform live refresh;
-future product integration must actually use the supplied absolute deadline.
+the separate Linux `AcceptedProductConnection::from_received` source consumer
+now passes that exact Instant into product live admission and queue residence.
+Its checks refuse a late result after synchronous procfs observation or clone
+setup; they do not preempt a blocking syscall. Actual same-UID host bridge tests
+establish source descriptor/deadline continuity only. Approved cross-UID broker,
+principal policy, installed process handoff and native owner remain separate.
 There is no daemon or activation change in this addition.
 
 This library registers no binary target. Cargo binary auto-discovery and package build scripts are disabled.
