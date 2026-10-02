@@ -127,6 +127,10 @@ It performs these checks after verifying the complete output digest inventory:
   head at the byte-lexicographic minimum carried member, matching metadata and
   no more carried members than its declared `nlink`. The producer may observe
   additional links outside the root, so equality with `nlink` is not required.
+  A symlink's nonempty target encodes as Linux UTF-8/surrogateescape bytes,
+  and its recorded size must equal that byte length, rather than a Unicode
+  character count. Real producer tests include Unicode and non-UTF-8 target
+  bytes; complete rehashed packets with contradictory lengths are refused.
   This checks carried-manifest consistency, without claiming a complete inode
   inventory or inspection of the omitted filesystem payload. The
   product and qualification binary records bind the corresponding rootfs SHA,

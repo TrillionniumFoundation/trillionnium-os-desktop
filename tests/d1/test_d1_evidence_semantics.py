@@ -317,5 +317,41 @@ class D1SemanticEvidenceTests(unittest.TestCase):
             with self.subTest(mutation=mutation), self.assertRaises(ValueError): semantics.validate_contract(hostile)
 
 
+    def test_complete_rebound_symlink_byte_length_and_empty_target_fail(self):
+        original = self.document("builds/build-a/rootfs-content-manifest.json")["entries"]
+        target = "目标/路径"
+        link = {**copy.deepcopy(original[0]), "path": "./usr/libexec/symlink",
+            "type": "symlink", "mode": "0777", "nlink": 1,
+            "size": len(target.encode("utf-8")), "target": target}
+        link.pop("sha256")
+        self.rebind_rootfs(copy.deepcopy(original) + [copy.deepcopy(link)])
+        self.assertEqual(d1.verify_artifact(self.root)["status"], "PASS")
+        for mutation in ("byte_mismatch", "character_count", "empty", "unrepresentable"):
+            hostile = copy.deepcopy(link)
+            if mutation == "byte_mismatch": hostile["size"] += 1
+            elif mutation == "character_count": hostile["size"] = len(target)
+            elif mutation == "empty": hostile.update(target="", size=0)
+            else: hostile.update(target="\ud800", size=1)
+            self.rebind_rootfs(copy.deepcopy(original) + [hostile])
+            with self.subTest(mutation=mutation), self.assertRaisesRegex(ValueError, "symlink"):
+                d1.verify_artifact(self.root)
+
+    def test_actual_producer_symlink_unicode_and_non_utf8_bytes_match_size(self):
+        import sys
+        sys.path.insert(0, str(Path(semantics.__file__).parent))
+        import d1_rootfs_manifest as producer
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            targets = {"unicode": "目标/路径".encode("utf-8"), "raw-byte": b"\x80/not-present"}
+            for name, target in targets.items():
+                os.symlink(target, os.fsencode(root / name))
+            parsed = semantics.rootfs(producer.build_manifest(root))
+            for name, target in targets.items():
+                item = parsed["./" + name]
+                self.assertEqual(item["size"], (root / name).lstat().st_size)
+                self.assertEqual(item["size"], len(target))
+                self.assertEqual(item["target"].encode("utf-8", "surrogateescape"), target)
+
+
 if __name__ == "__main__":
     unittest.main()

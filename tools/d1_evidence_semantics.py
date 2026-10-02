@@ -39,6 +39,7 @@ ROOTFS_CONSISTENCY = {
     "hardlink_head": "self-reference at the byte-lexicographic minimum carried group member",
     "hardlink_group": "all carried members name the same head and have matching inode metadata",
     "hardlink_member_count": "at most declared nlink; links outside the carried root may be absent",
+    "symlink_target": "nonempty UTF-8/surrogateescape target bytes match recorded size",
     "actual_rootfs_payload_inspected": False,
     "complete_inode_link_inventory_claimed": False,
 }
@@ -220,6 +221,14 @@ def rootfs(document: dict) -> dict[str, dict]:
         directory = by_path.get(parent)
         if directory is None or directory["type"] != "directory":
             raise ValueError("D1 rootfs path has no explicit directory parent")
+    for item in by_path.values():
+        if item["type"] == "symlink":
+            try:
+                target_bytes = item["target"].encode("utf-8", "surrogateescape")
+            except UnicodeEncodeError as error:
+                raise ValueError("D1 rootfs symlink target is not filesystem-representable") from error
+            if not target_bytes or item["size"] != len(target_bytes):
+                raise ValueError("D1 rootfs symlink target byte length differs from recorded size")
     hardlink_groups: dict[str, list[str]] = {}
     for item in by_path.values():
         if "hardlink_head" in item:
