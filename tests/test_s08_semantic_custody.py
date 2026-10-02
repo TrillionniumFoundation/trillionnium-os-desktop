@@ -3,8 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shutil
 import stat
+import subprocess
+import sys
+import textwrap
 import tempfile
 import unittest
 from pathlib import Path
@@ -19,9 +23,13 @@ class S08SemanticCustodySourceTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory(prefix="s08-semantic-source-test-")
         self.addCleanup(temporary.cleanup)
         root = Path(temporary.name)
+        prerequisite = json.loads((ROOT / verifier.PREREQUISITE).read_text())
         paths = [verifier.MANIFEST, verifier.PATCH, verifier.PREREQUISITE,
+                 verifier.ADAPTER, verifier.WORKFLOW,
                  "experiments/servo-s08-runtime/semantic-source-check/Cargo.toml",
                  "experiments/servo-s08-runtime/semantic-source-check/Cargo.lock"]
+        paths += [row["path"] for section in ("patch", "hardening")
+                  for row in prerequisite[section]["parts"]]
         for relative in paths:
             path = root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -195,6 +203,229 @@ class S08SemanticCustodySourceTests(unittest.TestCase):
                        '"durable_receipt_records": 30',
                        "refs/pull/${{ github.event.pull_request.number }}/merge"]:
             self.assertIn(marker, text)
+
+    def test_closed_process_owner_profile_rejects_aliases_omission_and_claims(self) -> None:
+        for key, value in [("fresh_process_per_retained_test", 1),
+                           ("exact_filter_from_actual_list", False),
+                           ("expected_tests_per_retained_process", True),
+                           ("semantic_servo_owners", 1.0), ("semantic_servo_owners", 7),
+                           ("semantic_webviews", 6), ("retained_test_names", verifier.RETAINED_TESTS[:-1]),
+                           ("actual_servo_proven", True)]:
+            with self.subTest(key=key, value=value):
+                root = self.copied()
+                self.mutate_manifest(root, lambda m: m["runtime_corpus"].__setitem__(key, value))
+                with self.assertRaises(ValueError): verifier.verify(root)
+
+    def rebind_runtime_source(self, root: Path, key: str, before: str, after: str) -> None:
+        path = root / (verifier.ADAPTER if key == "adapter" else verifier.WORKFLOW)
+        text = path.read_text()
+        self.assertIn(before, text)
+        path.write_text(text.replace(before, after, 1))
+        self.mutate_manifest(root, lambda m: m["runtime_corpus"].__setitem__(key + "_sha256", hashlib.sha256(path.read_bytes()).hexdigest()))
+
+    def test_rebound_semantic_source_cannot_reconstruct_or_select_owner_cases(self) -> None:
+        for before, after in [
+            ("let servo_test = build_test();\n    let cases", "let servo_test = build_test();\n    let second = build_test();\n    let cases"),
+            ("s08_build_webview_and_tree(&servo_test, url)", "build_webview_and_tree(url)"),
+            ("let delegate = Rc::new(WebViewDelegateImpl::default());", "let extra = build_test();\n    let delegate = Rc::new(WebViewDelegateImpl::default());"),
+            ('"same_node_label",', '"omitted_label_case",'),
+            ('let cases = [', 'let selected = std::env::var_os("CASE");\n    let cases = ['),
+            ('"real DOM must retain zero epoch clicks"', '"fixture result is enough"'),
+        ]:
+            root = self.copied()
+            self.rebind_runtime_source(root, "adapter", before, after)
+            with self.assertRaises(ValueError): verifier.verify(root)
+
+    def test_original_product_body_and_all_s07_parts_cannot_change(self) -> None:
+        root = self.copied()
+        self.rebind_runtime_source(root, "adapter", 'let mut click_count = 0_u64;', 'let mut click_count = 1_u64;')
+        with self.assertRaises(ValueError): verifier.verify(root)
+        root = self.copied()
+        prerequisite = json.loads((root / verifier.PREREQUISITE).read_text())
+        part = root / prerequisite["hardening"]["parts"][-1]["path"]
+        part.write_bytes(part.read_bytes() + b"\n")
+        with self.assertRaises(ValueError): verifier.verify(root)
+
+    def test_rebound_workflow_cannot_group_skip_or_prefix_filter_originals(self) -> None:
+        for before, after in [
+            ('"${retained_tests[$index]}" -- --exact --nocapture', '"${retained_tests[$index]}" -- --nocapture'),
+            ('for index in "${!retained_tests[@]}"; do', 'for index in 0; do'),
+            ('test "${#retained_tests[@]}" -eq 6', 'test "${#retained_tests[@]}" -eq 5'),
+            ('--retained-list "$retained/list.txt" --print-retained-names', '--print-retained-names'),
+            ('test_trillionnium_s08_semantic_custody -- --exact --nocapture', 'test_trillionnium_s08_semantic_custody -- --nocapture'),
+        ]:
+            root = self.copied()
+            self.rebind_runtime_source(root, "workflow", before, after)
+            with self.assertRaises(ValueError): verifier.verify(root)
+
+    def retained_fixture(self, prefix: str = "") -> tuple[Path, Path, list[str]]:
+        # Only parser fixtures; these log strings do not establish any Servo execution.
+        root = self.copied()
+        names = [prefix + name for name in verifier.RETAINED_TESTS]
+        listed = names + [prefix + verifier.SEMANTIC_TEST, prefix + "another_test"]
+        listing = root / "list.txt"
+        listing.write_text("\n".join(name + ": test" for name in listed) + "\n\n8 tests, 0 benchmarks\n")
+        logs = root / "retained"
+        logs.mkdir(mode=0o700)
+        for index, name in enumerate(names):
+            (logs / f"case-{index}.log").write_text(f"running 1 test\ntest {name} ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.01s\n")
+        return listing, logs, names
+
+    def test_actual_inventory_uses_full_names_and_requires_exact_unique_corpus(self) -> None:
+        listing, logs, names = self.retained_fixture("actual_module::")
+        self.assertEqual(verifier.retained_inventory(listing), (names, 8))
+        verifier.verify_retained_results(listing, logs)
+        original = listing.read_text()
+        for text in [original.replace(names[0] + ": test\n", ""),
+                     original.replace(names[0] + ": test", names[1] + ": test"),
+                     original.replace("8 tests", "7 tests"),
+                     original.replace("actual_module::" + verifier.SEMANTIC_TEST, "other_semantic_test"),
+                     original.replace(names[0], "actual_module::test_retained_accessibility_extra"),
+                     original + "caller verified=true\n"]:
+            listing.write_text(text)
+            with self.assertRaises(ValueError): verifier.retained_inventory(listing)
+
+    def test_retained_logs_refuse_zero_match_ignored_wrong_filter_and_duplicate_pass(self) -> None:
+        listing, logs, names = self.retained_fixture()
+        path = logs / "case-0.log"
+        original = path.read_text()
+        for text in [original.replace("running 1 test", "running 0 tests").replace("1 passed", "0 passed"),
+                     original.replace(names[0], names[1]),
+                     original.replace("... ok", "... ignored"),
+                     original.replace("7 filtered out", "6 filtered out"),
+                     original + original,
+                     original.replace("running 1 test", "running 2 tests")]:
+            path.write_text(text)
+            with self.assertRaises(ValueError): verifier.verify_retained_results(listing, logs)
+        path.write_text(original)
+        (logs / "case-5.log").unlink()
+        with self.assertRaises((ValueError, OSError)): verifier.verify_retained_results(listing, logs)
+
+    def test_retained_inventory_and_logs_use_real_nofollow_bounded_reads(self) -> None:
+        for kind in ("symlink", "hardlink", "fifo", "ancestor"):
+            listing, logs, _ = self.retained_fixture()
+            path = logs / "case-0.log"
+            data = path.read_bytes()
+            victim = listing.parent / "victim"
+            victim.write_bytes(data)
+            if kind == "ancestor":
+                moved = logs.with_name("original-logs")
+                logs.rename(moved)
+                logs.symlink_to(moved, target_is_directory=True)
+            else:
+                path.unlink()
+                if kind == "symlink": path.symlink_to(victim)
+                elif kind == "hardlink": os.link(victim, path)
+                else: os.mkfifo(path, 0o600)
+            with self.assertRaises((ValueError, OSError)): verifier.verify_retained_results(listing, logs)
+            self.assertEqual(victim.read_bytes(), data)
+        listing, _, _ = self.retained_fixture()
+        listing.write_bytes(b"x" * (verifier.MAX_SOURCE_BYTES + 1))
+        with self.assertRaises(ValueError): verifier.retained_inventory(listing)
+
+    def test_actual_libtest_process_fixture_reproduces_once_owner_and_separate_processes(self) -> None:
+        # Real Rust processes and OnceLock, without Servo or original retained test bodies.
+        # This verifies libtest names/counts and isolation, not browser semantics.
+        version = subprocess.check_output(["rustc", "--version"], text=True, timeout=20).strip()
+        self.assertEqual(version, "rustc 1.93.0 (254b59607 2026-01-19)")
+        root = self.copied()
+        source = root / "process_fixture.rs"
+        source.write_text('use std::sync::OnceLock;\nstatic OWNER: OnceLock<()> = OnceLock::new();\n'
+                          'fn acquire() { OWNER.set(()).expect("Already initialized"); }\n'
+                          + "".join(f"#[test]\nfn {name}() {{ acquire(); }}\n" for name in verifier.RETAINED_TESTS)
+                          + f"#[test]\nfn {verifier.SEMANTIC_TEST}() {{}}\n")
+        executable = root / "process_fixture"
+        subprocess.run(["rustc", "--edition=2024", "--test", str(source), "-o", str(executable)], capture_output=True, check=True, timeout=30)
+        grouped = subprocess.run([str(executable), "test_retained_accessibility", "--test-threads=1"], capture_output=True, text=True, timeout=10)
+        self.assertEqual(grouped.returncode, 101)
+        self.assertIn("1 passed; 5 failed; 0 ignored", grouped.stdout)
+        self.assertIn("Already initialized", grouped.stdout)
+        listing = root / "list.txt"
+        listing.write_bytes(subprocess.check_output([str(executable), "--list"], timeout=10))
+        names, count = verifier.retained_inventory(listing)
+        self.assertEqual((names, count), (verifier.RETAINED_TESTS, 7))
+        for index, name in enumerate(names):
+            result = subprocess.run([str(executable), name, "--exact", "--nocapture"], capture_output=True, timeout=10)
+            self.assertEqual(result.returncode, 0)
+            (root / f"case-{index}.log").write_bytes(result.stdout + result.stderr)
+        verifier.verify_retained_results(listing, root)
+
+    def ci_body(self) -> str:
+        workflow = (ROOT / verifier.WORKFLOW).read_text()
+        step = workflow.split("      - name: Validate bounded S08 results\n", 1)[1].split("      - name:", 1)[0]
+        match = re.search(r"(?ms)^          python3 .* <<'PY'\n(.*?)^          PY$", step)
+        self.assertIsNotNone(match)
+        return textwrap.dedent(match[1])
+
+    def ci_fixture(self) -> dict[str, dict]:
+        # Complete result-parser fixtures; these are not a Servo producer or run.
+        return {
+            "s08-product-result.json": {
+                "schema": "trillionnium.desktop.s08-product-result.v1",
+                "status": "PASS_REAL_SERVO_AGENTPORT_BROWSERACTOR_RECEIPT_CHAIN",
+                "agent_port_requests": 10, "servo_runtime_commands": 9, "durable_receipt_records": 30,
+                "all_responses_committed": True, "unresolved_receipts": 0,
+                "stale_document_rejected": True, "retained_node_click_exactly_once": True,
+                "peer_identity_redacted": True, "production_agent_port_enabled": False,
+                "installed_image_proven": False, "physical_hardware_proven": False, "release_proven": False,
+            },
+            "s08-servo-result.json": {
+                "schema": "trillionnium.desktop.s08-servo-host-result.v1", "status": "PASS_EXACT_PIN_REAL_SERVO",
+                "servo_commands": 9, "servo_navigation_count": 2,
+                "retained_node_click_dispatched_exactly_once": True, "external_navigation_enabled": False,
+                "installed_image_proven": False, "physical_hardware_proven": False, "release_proven": False,
+            },
+        }
+
+    def run_ci_body(self, documents: dict[str, dict]) -> subprocess.CompletedProcess:
+        with tempfile.TemporaryDirectory(prefix="s08-actual-ci-body-") as directory:
+            for name, document in documents.items():
+                (Path(directory) / name).write_text(json.dumps(document) + "\n")
+            return subprocess.run([sys.executable, "-B", "-c", self.ci_body(), directory],
+                                  capture_output=True, text=True, timeout=10)
+
+    def test_actual_extracted_ci_body_requires_exact_scalar_types(self) -> None:
+        self.assertEqual(self.run_ci_body(self.ci_fixture()).returncode, 0)
+        for name, original in self.ci_fixture().items():
+            for key, value in original.items():
+                if type(value) is bool:
+                    replacements = [int(value), float(value)]
+                elif type(value) is int:
+                    replacements = [float(value), True, False]
+                else:
+                    replacements = [0, True, None]
+                for replacement in replacements:
+                    with self.subTest(name=name, field=key, replacement=replacement):
+                        documents = self.ci_fixture(); documents[name][key] = replacement
+                        result = self.run_ci_body(documents)
+                        self.assertNotEqual(result.returncode, 0, (name, key, replacement, result.stdout))
+                        self.assertIn("exact scalar type required", result.stderr)
+
+    def test_actual_extracted_ci_body_refuses_missing_and_unknown_flat_fields(self) -> None:
+        for name, original in self.ci_fixture().items():
+            for key in original:
+                with self.subTest(name=name, missing=key):
+                    documents = self.ci_fixture(); documents[name].pop(key)
+                    result = self.run_ci_body(documents)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("closed fields required", result.stderr)
+            documents = self.ci_fixture(); documents[name]["caller_verified"] = True
+            result = self.run_ci_body(documents)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("closed fields required", result.stderr)
+
+    def test_rebound_workflow_cannot_omit_or_defer_ci_type_guards(self) -> None:
+        for before, after in [
+            ('if type(value[key]) is not type(expected_value):', 'if False:'),
+            ('if set(value) != set(expected):', 'if False:'),
+            ('require_scalar_types(product, expected_product, "product")', '# removed product guard'),
+            ('require_scalar_types(servo, required_servo, "Servo")', '# removed Servo guard'),
+            ('          require_scalar_types(product, expected_product, "product")\n          if product != expected_product:\n              raise SystemExit(f"unexpected product result: {product!r}")',
+             '          if product != expected_product:\n              raise SystemExit(f"unexpected product result: {product!r}")\n          require_scalar_types(product, expected_product, "product")'),
+        ]:
+            root = self.copied()
+            self.rebind_runtime_source(root, "workflow", before, after)
+            with self.assertRaises(ValueError): verifier.verify(root)
 
 
 if __name__ == "__main__":
