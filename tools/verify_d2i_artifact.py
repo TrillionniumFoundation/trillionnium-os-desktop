@@ -157,7 +157,8 @@ def verify_artifact(path: Path) -> dict[str, Any]:
         "page_input_verified", "ime_path_exercised", "trusted_chrome_survived_recovery",
     ):
         require(runtime, key, True)
-    require(runtime, "input_events_sent", 12)
+    # Twelve ordinary input events plus three submitted IME composition events.
+    require(runtime, "input_events_sent", 15)
     if type(runtime.get("input_events_handled")) is not int or runtime["input_events_handled"] < 3:
         raise ValueError("runtime input_events_handled must be an integer of at least 3")
     require(runtime, "crash_callback_required", False)

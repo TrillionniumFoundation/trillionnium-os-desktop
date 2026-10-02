@@ -21,6 +21,7 @@ use std::fmt;
 use std::fs;
 use std::io;
 use std::os::fd::{AsRawFd, FromRawFd};
+use std::os::unix::fs::OpenOptionsExt;
 use std::os::unix::net::UnixStream;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
@@ -42,7 +43,7 @@ fn main() {
                 eprintln!("hepta-agent-d1-fixture: result_write_failed");
                 std::process::exit(1);
             }
-            println!("{}", result.json);
+            let _ = write_public_result(io::stdout().lock(), result.mode);
         }
         Err(error) => {
             let category = error.category();
@@ -83,15 +84,22 @@ fn run() -> Result<FixtureResult, FixtureError> {
     }
 
     let mode = mode.ok_or(FixtureError::Usage("--mode is required"))?;
-    let json = match mode.as_str() {
-        "server" => run_server()?,
-        "health" => run_health()?,
-        "expect-denied" => run_expect_denied()?,
-        "hold" => run_hold()?,
-        "self-check" => run_self_check()?,
+    let mode = match mode.as_str() {
+        "server" => FixtureMode::Server,
+        "health" => FixtureMode::Health,
+        "expect-denied" => FixtureMode::ExpectDenied,
+        "hold" => FixtureMode::Hold,
+        "self-check" => FixtureMode::SelfCheck,
         _ => return Err(FixtureError::Usage("unsupported mode")),
     };
-    Ok(FixtureResult { json, output })
+    let json = match mode {
+        FixtureMode::Server => run_server()?,
+        FixtureMode::Health => run_health()?,
+        FixtureMode::ExpectDenied => run_expect_denied()?,
+        FixtureMode::Hold => run_hold()?,
+        FixtureMode::SelfCheck => run_self_check()?,
+    };
+    Ok(FixtureResult { json, output, mode })
 }
 
 fn run_server() -> Result<String, FixtureError> {
@@ -332,12 +340,71 @@ fn write_result(path: &Path, json: &str) -> Result<(), io::Error> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
-    fs::write(path, format!("{json}\n"))
+    // Explicit qualification output is private evidence, never the operational
+    // log sink. Refuse an existing file/link rather than truncate another fact.
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+        .open(path)?;
+    use io::Write;
+    writeln!(file, "{json}")?;
+    file.sync_all()
 }
 
 struct FixtureResult {
     json: String,
     output: Option<PathBuf>,
+    mode: FixtureMode,
+}
+
+#[derive(Clone, Copy)]
+enum FixtureMode {
+    Server,
+    Health,
+    ExpectDenied,
+    Hold,
+    SelfCheck,
+}
+
+impl FixtureMode {
+    fn public_result(self) -> &'static str {
+        match self {
+            Self::Server => concat!(
+                "{\"schema\":\"trillionnium.desktop.d1-agent-server-result.v1\",",
+                "\"status\":\"PASS\",\"qualification_only\":true,",
+                "\"product_handler_connected\":false,\"listener_created\":false,",
+                "\"live_process_executable_observed\":false,",
+                "\"peer_executable_binding\":\"root_owned_qualification_path\",",
+                "\"peer_identity_redacted\":true}"
+            ),
+            Self::SelfCheck => concat!(
+                "{\"schema\":\"trillionnium.desktop.d1-agent-fixture-self-check.v1\",",
+                "\"status\":\"PASS\",\"qualification_only\":true,",
+                "\"listener_created\":false,\"product_handler_connected\":false,",
+                "\"peer_identity_redacted\":true}"
+            ),
+            Self::Health => concat!(
+                "{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v2\",",
+                "\"status\":\"PASS\",\"mode\":\"health\",",
+                "\"qualification_only\":true,\"product_handler_connected\":false}"
+            ),
+            Self::ExpectDenied => concat!(
+                "{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v2\",",
+                "\"status\":\"PASS\",\"mode\":\"expect-denied\",",
+                "\"qualification_only\":true,\"connection_admitted\":false}"
+            ),
+            Self::Hold => concat!(
+                "{\"schema\":\"trillionnium.desktop.d1-agent-fixture.v2\",",
+                "\"status\":\"PASS\",\"mode\":\"hold\",\"qualification_only\":true}"
+            ),
+        }
+    }
+}
+
+fn write_public_result(mut writer: impl io::Write, mode: FixtureMode) -> io::Result<()> {
+    writeln!(writer, "{}", mode.public_result())
 }
 
 #[derive(Debug)]
@@ -482,6 +549,63 @@ impl From<AttestationError> for FixtureError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    fn actual_public_sink_has_no_raw_identity_or_request_details() {
+        let mut captured = Vec::new();
+        for mode in [
+            FixtureMode::Server,
+            FixtureMode::Health,
+            FixtureMode::ExpectDenied,
+            FixtureMode::Hold,
+            FixtureMode::SelfCheck,
+        ] {
+            write_public_result(&mut captured, mode).expect("public diagnostic");
+        }
+        let captured = String::from_utf8(captured).expect("UTF-8 public result");
+        for private in [
+            "peer_uid",
+            "peer_gid",
+            "peer_pid",
+            "request_id",
+            "response_sha256",
+        ] {
+            assert!(
+                !captured.contains(private),
+                "public sink contains {private}"
+            );
+        }
+        assert!(captured.contains("\"connection_admitted\":false"));
+        assert_eq!(captured.lines().count(), 5);
+    }
+
+    #[test]
+    fn explicit_identity_evidence_is_private_exclusive_and_does_not_follow_links() {
+        let directory = env::temp_dir().join(format!(
+            "d1-private-output-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&directory).expect("private test directory");
+        let path = directory.join("evidence.json");
+        let json = "{\"peer_uid\":123456789,\"peer_pid\":987654321}";
+        write_result(&path, json).expect("write explicit identity evidence");
+        assert_eq!(fs::read_to_string(&path).unwrap(), format!("{json}\n"));
+        assert_eq!(
+            fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
+        assert!(write_result(&path, "{}").is_err());
+        let link = directory.join("alias.json");
+        std::os::unix::fs::symlink(&path, &link).expect("symlink probe");
+        assert!(write_result(&link, "{}").is_err());
+        assert_eq!(fs::read_to_string(&path).unwrap(), format!("{json}\n"));
+        fs::remove_dir_all(directory).expect("cleanup private test evidence");
+    }
 
     #[test]
     fn operational_error_sink_redacts_identity_and_untrusted_details() {

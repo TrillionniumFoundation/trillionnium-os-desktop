@@ -38,7 +38,8 @@ class D1QualificationSeparationTests(unittest.TestCase):
         self.assertNotIn("serve_one(", product)
         self.assertIn("ProductHandlerUnavailable", product)
         self.assertIn("D0FixtureHandler", qualification)
-        self.assertIn('"server" => run_server()?', qualification)
+        self.assertIn('"server" => FixtureMode::Server', qualification)
+        self.assertIn('FixtureMode::Server => run_server()?', qualification)
         self.assertIn("qualification_only", qualification)
         self.assertIn("product_handler_connected", qualification)
 
