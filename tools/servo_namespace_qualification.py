@@ -60,10 +60,15 @@ REFUSAL_KEYS = {"schema", "profile", "role", "pid", "start_time", "network_names
 HOST_KEYS = {"schema", "unit", "control_group", "main_pid", "role", "identity", "executable_identity",
     "network_namespace_inode", "outside_network_namespace_inode", "caps", "no_new_privileges", "seccomp",
     "unit_properties", "descriptor_inventory", "pidfd_retained", "entry_stopped", "content_argument_observed",
-    "renderer_uid", "renderer_gid", "read_write_paths", "source_qualification_only", "installed_qualified", "production_ready"}
+    "renderer_uid", "renderer_gid", "read_write_paths", "temporary_directory", "source_qualification_only", "installed_qualified", "production_ready"}
+TEMP_KEYS = {"path", "device", "inode", "uid", "mode"}
+LAUNCH_KEYS = {"schema", "case", "unit", "main_pid", "binary_identity", "binary_sha256", "outside_namespace",
+    "entries", "exit_code", "owned_unit_stopped", "exact_processes_exited", "qualification_nonce_enabled",
+    "per_pair_ack_pacing", "renderer_uid", "renderer_gid", "renderer_path", "temporary_directory",
+    "temporary_directory_removed", "source_qualification_only", "installed_qualified", "production_ready"}
 PROPERTIES = {"PrivateNetwork": "yes", "RestrictAddressFamilies": "AF_UNIX", "NoNewPrivileges": "yes",
     "CapabilityBoundingSet": "", "RestrictNamespaces": "yes", "SystemCallArchitectures": "native",
-    "ProtectSystem": "strict", "ProtectHome": "read-only"}
+    "ProtectSystem": "strict", "ProtectHome": "read-only", "PrivateTmp": "no"}
 
 
 def require(condition: bool, message: str) -> None:
@@ -404,6 +409,166 @@ class _StagedExecutable:
                     pass
 
 
+def validate_temporary_directory(value: object, uid: int) -> dict:
+    value = closed(value, TEMP_KEYS, "temporary directory fields")
+    require(type(value["path"]) is str and re.fullmatch(r"/tmp/hn-[a-f0-9]{24}", value["path"]),
+            "temporary directory is not a short owned profile path")
+    integer(value["device"], "temporary directory device", 0)
+    integer(value["inode"], "temporary directory inode")
+    integer(value["uid"], "temporary directory UID")
+    exact(value["uid"], uid, "temporary directory owner differs from renderer")
+    exact(value["mode"], 0o700, "temporary directory is not private0700")
+    return value
+
+
+class _PrivateTemporaryDirectory:
+    """Short retained directory for one unit; GC never removes pathnames."""
+    MAX_ENTRIES = 256
+    MAX_BYTES = 32 * 1024 * 1024
+    MAX_DEPTH = 4
+
+    def __init__(self):
+        self.owner_pid = os.getpid()
+        self.parent = self.root = None
+        self.path = None
+        self.identity = None
+        try:
+            self.parent = _StagingPath.open(Path("/tmp"), directory=True)
+            parent = os.fstat(self.parent.fd)
+            require(parent.st_uid == 0 and stat.S_IMODE(parent.st_mode) == 0o1777,
+                    "temporary parent is not the actual root-owned sticky directory")
+            self.path = Path("/tmp") / ("hn-" + uuid.uuid4().hex[:24])
+            os.mkdir(self.path.name, 0o700, dir_fd=self.parent.fd)
+            self.root = _StagingPath.open(self.path, directory=True)
+            require(self.root.identities()[:-1] == self.parent.identities(), "temporary parent changed")
+            metadata = os.fstat(self.root.fd)
+            self.identity = {"path": str(self.path), "device": metadata.st_dev, "inode": metadata.st_ino,
+                             "uid": metadata.st_uid, "mode": stat.S_IMODE(metadata.st_mode)}
+            self.verify()
+        except BaseException:
+            self.close(remove=self.identity is not None)
+            raise
+
+    def verify(self) -> dict:
+        require(os.getpid() == self.owner_pid, "temporary owner inherited across fork")
+        validate_temporary_directory(self.identity, os.getuid())
+        current = _StagingPath.open(self.path, directory=True)
+        try:
+            require(current.identities() == self.root.identities(), "temporary directory pathname changed")
+            metadata = os.fstat(current.fd)
+            require(stat.S_ISDIR(metadata.st_mode) and {"path": str(self.path), "device": metadata.st_dev,
+                "inode": metadata.st_ino, "uid": metadata.st_uid, "mode": stat.S_IMODE(metadata.st_mode)} == self.identity,
+                "temporary directory custody changed")
+        finally:
+            current.close()
+        return dict(self.identity)
+
+    def _remove_owned_tree(self) -> None:
+        """Bounded retained-inode tree, after the unit and every observed process retire."""
+        self.verify()
+        owners, records = [], []
+        total = enumerated = 0
+        deadline = time.monotonic() + 5
+        try:
+            def scan(parent_fd, depth):
+                nonlocal total, enumerated
+                require(time.monotonic() < deadline, "temporary cleanup deadline expired")
+                require(depth <= self.MAX_DEPTH, "temporary cleanup depth exceeded")
+                children = []
+                with os.scandir(parent_fd) as entries:
+                    while True:
+                        require(time.monotonic() < deadline, "temporary cleanup deadline expired")
+                        entry = next(entries, None)
+                        require(time.monotonic() < deadline, "temporary cleanup deadline expired")
+                        if entry is None:
+                            break
+                        enumerated += 1
+                        require(enumerated <= self.MAX_ENTRIES, "temporary cleanup entry bound exceeded")
+                        name = entry.name
+                        require(time.monotonic() < deadline, "temporary cleanup deadline expired")
+                        owner = _StagingDescriptor(); owners.append(owner)
+                        owner.fd = os.open(name, os.O_PATH | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent_fd)
+                        before = os.fstat(owner.fd)
+                        kind = "directory" if stat.S_ISDIR(before.st_mode) else "leaf"
+                        require((stat.S_ISDIR(before.st_mode) or stat.S_ISREG(before.st_mode) or stat.S_ISSOCK(before.st_mode))
+                            and before.st_uid == os.getuid() and before.st_mode & 0o022 == 0,
+                            "temporary cleanup refuses foreign or unsafe contents")
+                        require(kind == "directory" or before.st_nlink == 1, "temporary cleanup refuses aliased contents")
+                        total += before.st_size if stat.S_ISREG(before.st_mode) else 0
+                        require(total <= self.MAX_BYTES, "temporary cleanup byte bound exceeded")
+                        record = {"name": name, "parent": parent_fd, "owner": owner, "before": before,
+                                  "kind": kind, "children": []}
+                        records.append(record); children.append(record)
+                        if kind == "directory":
+                            directory = _StagingDescriptor(); owners.append(directory)
+                            directory.fd = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                                                   dir_fd=parent_fd)
+                            require(snapshot(os.fstat(directory.fd)) == snapshot(before), "temporary child changed")
+                            record["children"] = scan(directory.fd, depth + 1)
+                return children
+            scan(self.root.fd, 1)
+            self.verify()
+            # A foreign substitution found during the complete scan causes no deletion.
+            for record in records:
+                require(time.monotonic() < deadline, "temporary cleanup deadline expired")
+                require(snapshot(os.stat(record["name"], dir_fd=record["parent"], follow_symlinks=False))
+                    == snapshot(record["before"]) == snapshot(os.fstat(record["owner"].fd)),
+                    "temporary cleanup name changed")
+            for record in reversed(records):
+                require(time.monotonic() < deadline, "temporary cleanup deadline expired")
+                self.verify()
+                named = os.stat(record["name"], dir_fd=record["parent"], follow_symlinks=False)
+                before = record["before"]
+                if record["kind"] == "directory":
+                    require((named.st_dev, named.st_ino, named.st_mode, named.st_uid)
+                        == (before.st_dev, before.st_ino, before.st_mode, before.st_uid),
+                        "temporary cleanup directory replaced")
+                    os.rmdir(record["name"], dir_fd=record["parent"])
+                else:
+                    require(snapshot(named) == snapshot(before) == snapshot(os.fstat(record["owner"].fd)),
+                            "temporary cleanup leaf replaced")
+                    os.unlink(record["name"], dir_fd=record["parent"])
+            self.verify()
+            with os.scandir(self.root.fd) as entries:
+                require(time.monotonic() < deadline, "temporary cleanup deadline expired")
+                first = next(entries, None)
+                require(time.monotonic() < deadline, "temporary cleanup deadline expired")
+                require(first is None, "temporary directory contains foreign names")
+            require(time.monotonic() < deadline, "temporary cleanup deadline expired")
+            os.rmdir(self.path.name, dir_fd=self.parent.fd)
+            require(time.monotonic() < deadline, "temporary cleanup deadline expired after final removal")
+        finally:
+            pending, owners = owners, []
+            error = None
+            for owner in reversed(pending):
+                try: owner.close()
+                except BaseException as failure:
+                    if error is None: error = failure
+            if error is not None: raise error
+
+    def _close_descriptors(self):
+        pending = [self.root, self.parent]
+        self.root = self.parent = None
+        error = None
+        for owner in pending:
+            if owner is not None:
+                try: owner.close()
+                except BaseException as failure:
+                    if error is None: error = failure
+        if error is not None: raise error
+
+    def close(self, *, remove=False):
+        require(os.getpid() == self.owner_pid, "temporary owner inherited across fork")
+        try:
+            if remove: self._remove_owned_tree()
+        finally:
+            self._close_descriptors()
+
+    def __del__(self):
+        try: self._close_descriptors()
+        except BaseException: pass
+
+
 class Packet:
     """Complete, bounded original bytes, rechecked before any result receipt."""
     def __init__(self, root: Path):
@@ -502,7 +667,7 @@ def unit_properties(unit: str) -> dict:
 
 def _validate_host(value: object, role: str, executable: dict, outside: int, main_pid: int,
                    *, standalone_negative: bool = False, renderer_identity: tuple[int, int] | None = None,
-                   renderer_path: str | None = None) -> dict:
+                   renderer_path: str | None = None, temporary_directory: dict | None = None) -> dict:
     value = closed(value, HOST_KEYS, "host observation fields invalid")
     exact(value["schema"], "trillionnium.desktop.netns-host-observation.v1", "host schema")
     exact(value["role"], role, "host role")
@@ -533,12 +698,18 @@ def _validate_host(value: object, role: str, executable: dict, outside: int, mai
     exact(value["unit_properties"], PROPERTIES, "host confinement unit properties")
     integer(value["renderer_uid"], "host renderer UID")
     integer(value["renderer_gid"], "host renderer GID")
-    require(type(value["read_write_paths"]) is str and value["read_write_paths"].startswith("/"), "host writer path")
+    temporary = validate_temporary_directory(value["temporary_directory"], value["renderer_uid"])
+    if temporary_directory is not None:
+        exact_tree(temporary, temporary_directory, "host temporary directory differs from retained launch")
+    require(type(value["read_write_paths"]) is str, "host writer path")
+    paths = value["read_write_paths"].split(" ")
+    require(len(paths) == 2 and len(set(paths)) == 2 and temporary["path"] in paths
+        and all(path.startswith("/") and not re.search(r"\s|\.\.", path) for path in paths), "host writer paths invalid")
     if renderer_identity is not None:
         exact(value["renderer_uid"], renderer_identity[0], "host renderer UID differs from launch")
         exact(value["renderer_gid"], renderer_identity[1], "host renderer GID differs from launch")
     if renderer_path is not None:
-        exact(value["read_write_paths"], renderer_path, "host renderer may write outside approved output")
+        require(set(paths) == {renderer_path, temporary["path"]}, "host renderer may write outside approved output and private temporary")
     for key, expected in (("pidfd_retained", True), ("entry_stopped", True), ("content_argument_observed", role == "content"),
                           ("source_qualification_only", True), ("installed_qualified", False), ("production_ready", False)):
         exact(value[key], expected, "host qualification ceiling")
@@ -562,14 +733,15 @@ def _validate_host(value: object, role: str, executable: dict, outside: int, mai
 
 def validate_binding(entry: object, host: object, executable: dict, outside: int, main_pid: int,
                      *, inherited_family: int | None = None, renderer_identity: tuple[int, int] | None = None,
-                     renderer_path: str | None = None) -> None:
+                     renderer_path: str | None = None, temporary_directory: dict | None = None) -> None:
     keys = REFUSAL_KEYS if inherited_family is not None else ENTRY_KEYS
     entry = closed(entry, keys, "entry closed fields")
     exact(entry["profile"], PROFILE, "entry profile")
     require(entry["role"] in {"embedder", "content"}, "entry role")
     host = _validate_host(host, entry["role"], executable, outside, main_pid,
                           standalone_negative=inherited_family is not None,
-                          renderer_identity=renderer_identity, renderer_path=renderer_path)
+                          renderer_identity=renderer_identity, renderer_path=renderer_path,
+                          temporary_directory=temporary_directory)
     for key in ("pid", "start_time"):
         integer(entry[key], "entry identity integer", 2 if key == "pid" else 1)
         exact(entry[key], host["identity"][key], "entry identity differs from actual retained host process")
@@ -615,11 +787,12 @@ def inspect_stopped(request: dict) -> dict:
     """Root test helper: retained actual kernel process, never asserted identity."""
     require(os.geteuid() == 0, "independent FD observer requires root test profile")
     request = closed(request, {"unit", "pid", "start_time", "main_pid", "role", "binary_identity", "outside_namespace",
-        "standalone_negative", "renderer_uid", "renderer_gid", "renderer_path"}, "inspect request")
+        "standalone_negative", "renderer_uid", "renderer_gid", "renderer_path", "temporary_directory"}, "inspect request")
     require(type(request["standalone_negative"]) is bool, "inspect negative profile type")
     pid = integer(request["pid"], "inspect PID", 2)
     deadline = time.monotonic() + 4
     descriptor = os.pidfd_open(pid)
+    retained_temporary = None
     try:
         require(not select.select([descriptor], [], [], 0)[0], "inspected process already exited")
         before = process_stat(pid)
@@ -635,6 +808,16 @@ def inspect_stopped(request: dict) -> dict:
             require([int(item) for item in status[name].split()] == [expected] * 4, "actual renderer UID/GID differs from owner")
         exact(properties["User"], str(request["renderer_uid"]), "unit user mismatch")
         exact(properties["Group"], str(request["renderer_gid"]), "unit group mismatch")
+        temporary = validate_temporary_directory(request["temporary_directory"], request["renderer_uid"])
+        environment = proc_bytes(pid, "environ", 256 * 1024).split(b"\x00")
+        require([value for value in environment if value.startswith(b"TMPDIR=")]
+            == [b"TMPDIR=" + temporary["path"].encode()], "actual process TMPDIR differs from retained launch")
+        del environment
+        retained_temporary = _StagingPath.open(Path(temporary["path"]), directory=True)
+        metadata = os.fstat(retained_temporary.fd)
+        require(stat.S_ISDIR(metadata.st_mode) and {"path": temporary["path"], "device": metadata.st_dev,
+            "inode": metadata.st_ino, "uid": metadata.st_uid, "mode": stat.S_IMODE(metadata.st_mode)} == temporary,
+            "actual temporary directory differs from retained owner")
         arguments = proc_bytes(pid, "cmdline", 256 * 1024).split(b"\x00")
         content = arguments.count(b"--content-process") == 1
         del arguments  # The opaque content IPC token never leaves this process.
@@ -675,6 +858,15 @@ def inspect_stopped(request: dict) -> dict:
                     os.close(duplicate)
         require(names == sorted(int(name) for name in os.listdir(f"/proc/{pid}/fd")), "stopped FD names drift")
         require(process_stat(pid) == before and ns_inode(pid) == namespace, "process changed during independent observation")
+        current_temporary = _StagingPath.open(Path(temporary["path"]), directory=True)
+        try:
+            metadata = os.fstat(current_temporary.fd)
+            require(current_temporary.identities() == retained_temporary.identities()
+                and {"path": temporary["path"], "device": metadata.st_dev, "inode": metadata.st_ino,
+                     "uid": metadata.st_uid, "mode": stat.S_IMODE(metadata.st_mode)} == temporary,
+                "actual temporary directory changed during independent observation")
+        finally:
+            current_temporary.close()
         require(not select.select([descriptor], [], [], 0)[0] and time.monotonic() < deadline, "observation ended after exit/deadline")
         value = {"schema": "trillionnium.desktop.netns-host-observation.v1", "unit": request["unit"],
             "control_group": properties["ControlGroup"], "main_pid": request["main_pid"], "role": request["role"],
@@ -683,14 +875,19 @@ def inspect_stopped(request: dict) -> dict:
             "no_new_privileges": int(status["NoNewPrivs"].strip()), "seccomp": int(status["Seccomp"].strip()),
             "unit_properties": {key: properties[key] for key in PROPERTIES}, "descriptor_inventory": rows,
             "renderer_uid": request["renderer_uid"], "renderer_gid": request["renderer_gid"], "read_write_paths": properties["ReadWritePaths"],
+            "temporary_directory": temporary,
             "pidfd_retained": True, "entry_stopped": True, "content_argument_observed": content,
             "source_qualification_only": True, "installed_qualified": False, "production_ready": False}
         _validate_host(value, request["role"], request["binary_identity"], request["outside_namespace"], request["main_pid"],
                        standalone_negative=request["standalone_negative"], renderer_identity=(request["renderer_uid"], request["renderer_gid"]),
-                       renderer_path=request["renderer_path"])
+                       renderer_path=request["renderer_path"], temporary_directory=temporary)
         return value
     finally:
-        os.close(descriptor)
+        try:
+            if retained_temporary is not None:
+                retained_temporary.close()
+        finally:
+            os.close(descriptor)
 
 
 class Canary:
@@ -803,9 +1000,16 @@ class Unit:
         self.main_pid = 0
         self.forwarder: subprocess.Popen | None = None
         self.thread: threading.Thread | None = None
+        self.temporary = None
+        self.temporary_identity = None
         self.log = (self.output / "runtime.log").open("xb")
         self.inherited_family = int(inherited.family) if inherited else None
         try:
+            self.temporary = _PrivateTemporaryDirectory()
+            self.temporary_identity = self.temporary.verify()
+            require(not re.search(r"\s", str(self.output.absolute())), "renderer path contains unsupported whitespace")
+            require("TMPDIR" not in environment, "ambient temporary directory is not approved")
+            environment = {**environment, "TMPDIR": str(self.temporary.path)}
             args = ["sudo", "-n", "systemd-run", "--quiet", "--wait", "--pipe", "--unit", self.unit,
                 "--property", f"User={os.getuid()}", "--property", f"Group={os.getgid()}",
                 "--property", "PrivateNetwork=yes", "--property", "RestrictAddressFamilies=AF_UNIX",
@@ -813,7 +1017,8 @@ class Unit:
                 "--property", "CapabilityBoundingSet=", "--property", "AmbientCapabilities=",
                 "--property", "NoNewPrivileges=yes", "--property", "KillMode=control-group",
                 "--property", "ProtectSystem=strict", "--property", "ProtectHome=read-only",
-                "--property", "ReadWritePaths=" + str(self.output.absolute()),
+                "--property", "PrivateTmp=no",
+                "--property", "ReadWritePaths=" + str(self.output.absolute()) + " " + str(self.temporary.path),
                 "--property", "RuntimeMaxSec=180", "--property", "TimeoutStopSec=5",
                 "--property", "RemainAfterExit=yes",
                 "--property", "LimitFSIZE=16777216", "--property", "UMask=0077",
@@ -835,6 +1040,7 @@ class Unit:
                 if not self.main_pid:
                     time.sleep(0.02)
             self.thread = threading.Thread(target=self._observe, daemon=True)
+            self.temporary.verify()
             self.thread.start()
         except BaseException:
             self.close()
@@ -870,7 +1076,7 @@ class Unit:
                     request = {"unit": self.unit, "pid": pid, "start_time": started, "main_pid": self.main_pid,
                         "role": entry.get("role"), "binary_identity": self.binary_identity, "outside_namespace": self.outside,
                         "standalone_negative": self.inherited_family is not None, "renderer_uid": os.getuid(), "renderer_gid": os.getgid(),
-                        "renderer_path": str(self.output.absolute())}
+                        "renderer_path": str(self.output.absolute()), "temporary_directory": self.temporary.verify()}
                     result = subprocess.run(["sudo", "-n", "python3", str(Path(__file__).absolute()), "inspect"],
                         input=json.dumps(request), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=5, check=True)
                     require(len(result.stdout.encode()) <= MAX_BYTES and len(result.stderr.encode()) <= MAX_BYTES,
@@ -878,7 +1084,7 @@ class Unit:
                     host = load_json_strict(result.stdout)
                     validate_binding(entry, host, self.binary_identity, self.outside, self.main_pid,
                                      inherited_family=self.inherited_family, renderer_identity=(os.getuid(), os.getgid()),
-                                     renderer_path=str(self.output.absolute()))
+                                     renderer_path=str(self.output.absolute()), temporary_directory=self.temporary.verify())
                     require(process_stat(pid) == host["identity"] and not select.select([descriptor], [], [], 0)[0],
                             "stopped owner changed before exact pidfd continuation")
                     self.packet.read(name)
@@ -966,6 +1172,13 @@ class Unit:
                            stderr=subprocess.PIPE, timeout=5, check=False)
         except BaseException as error:
             errors.append(error)
+        temporary = getattr(self, "temporary", None)
+        if temporary is not None:
+            try:
+                temporary.close(remove=not errors)
+            except BaseException as error:
+                errors.append(error)
+            self.temporary = None
         if errors:
             raise ValueError("namespace cleanup did not confirm exact process exit") from errors[0]
 
@@ -1110,16 +1323,15 @@ def validate_runtime(packet: Packet, native: dict) -> dict:
 def verify_packet(directory: Path, case: str) -> dict:
     host_packet = Packet(directory)
     packet = Packet(directory / "renderer")
-    launch = closed(host_packet.json("namespace-launch.json"), {"schema", "case", "unit", "main_pid", "binary_identity",
-        "binary_sha256", "outside_namespace", "entries", "exit_code", "owned_unit_stopped", "exact_processes_exited",
-        "qualification_nonce_enabled", "per_pair_ack_pacing", "renderer_uid", "renderer_gid", "renderer_path",
-        "source_qualification_only", "installed_qualified", "production_ready"}, "launch fields")
+    launch = closed(host_packet.json("namespace-launch.json"), LAUNCH_KEYS, "launch fields")
     exact(launch["schema"], "trillionnium.desktop.netns-launch.v1", "launch schema")
     exact(launch["case"], case, "launch case")
     main_pid = integer(launch["main_pid"], "launch MainPID", 2)
     outside = integer(launch["outside_namespace"], "launch outside namespace")
     renderer_identity = (integer(launch["renderer_uid"], "launch renderer UID"), integer(launch["renderer_gid"], "launch renderer GID"))
     require(type(launch["renderer_path"]) is str and launch["renderer_path"].endswith("/" + case + "/renderer"), "launch renderer path")
+    temporary = validate_temporary_directory(launch["temporary_directory"], renderer_identity[0])
+    exact(launch["temporary_directory_removed"], True, "temporary directory was not retired after the unit")
     binary = closed(launch["binary_identity"], {"device", "inode"}, "launch binary fields")
     integer(binary["device"], "launch binary device", 0)
     integer(binary["inode"], "launch binary inode")
@@ -1145,7 +1357,7 @@ def verify_packet(directory: Path, case: str) -> dict:
         host = host_packet.json(summary["host"])
         exact(summary["host"], "host-" + summary["entry"], "host file binding")
         validate_binding(entry, host, binary, outside, main_pid, inherited_family=inherited,
-                         renderer_identity=renderer_identity, renderer_path=launch["renderer_path"])
+                         renderer_identity=renderer_identity, renderer_path=launch["renderer_path"], temporary_directory=temporary)
         exact(host["unit"], launch["unit"], "entry changed actual unit")
         for key in ("pid", "start_time", "role"):
             exact(summary[key], entry[key], "summary differs from actual entry")
@@ -1294,6 +1506,7 @@ def run_case(binary: Path, output: Path, case: str) -> dict:
                 "main_pid": unit.main_pid, "binary_identity": binary_identity, "binary_sha256": binary_hash,
                 "outside_namespace": unit.outside, "entries": list(unit.observations.values()), "exit_code": exit_code,
                 "renderer_uid": os.getuid(), "renderer_gid": os.getgid(), "renderer_path": str(runtime_output.absolute()),
+                "temporary_directory": unit.temporary_identity, "temporary_directory_removed": True,
                 "owned_unit_stopped": True, "exact_processes_exited": True, "qualification_nonce_enabled": False,
                 "per_pair_ack_pacing": False, "source_qualification_only": True, "installed_qualified": False, "production_ready": False}
             unit = None
@@ -1348,7 +1561,7 @@ def verify_corpus(output: Path) -> dict:
     require(type(value["cases"]) is list and len(value["cases"]) == len(cases), "corpus case set")
     observed = []
     binaries = set()
-    units, incarnations = set(), set()
+    units, incarnations, temporary_paths = set(), set(), set()
     for case, recorded in zip(cases, value["cases"]):
         observed_case = verify_packet(output / case, case)
         exact_tree(recorded, observed_case, "corpus case differs from complete raw facts")
@@ -1357,6 +1570,8 @@ def verify_corpus(output: Path) -> dict:
         require(launch["unit"] not in units and (launch["main_pid"], launch["entries"][0]["start_time"]) not in incarnations,
                 "corpus reused a unit or original process incarnation")
         units.add(launch["unit"])
+        require(launch["temporary_directory"]["path"] not in temporary_paths, "corpus reused a private temporary directory")
+        temporary_paths.add(launch["temporary_directory"]["path"])
         incarnations.add((launch["main_pid"], launch["entries"][0]["start_time"]))
         binaries.add(launch["binary_sha256"])
     require(len(binaries) == 1, "corpus changed compiled binary between cases")
@@ -1406,6 +1621,13 @@ def validate_contract(value: object | None = None) -> None:
             "maximum_packet_bytes": 2097152, "maximum_runtime_log_bytes": 16777216, "host_observation_budget_seconds": 4,
             "unit_runtime_max_seconds": 180, "unit_stop_timeout_seconds": 5},
         "systemd_properties": PROPERTIES,
+        "temporary_directory": {"path_pattern": "/tmp/hn-[a-f0-9]{24}", "maximum_absolute_path_bytes": 32,
+            "mode": 0o700, "creator_pid_guard": True, "nofollow_retained_inode_required": True,
+            "actual_process_TMPDIR_observed": True, "read_write_paths": "exact renderer plus retained private temporary directory",
+            "whole_host_tmp_writable": False, "PrivateTmp_enabled": False, "GC_removes_paths": False,
+            "cleanup_after_exact_unit_retirement": True, "cleanup_maximum_entries": 256,
+            "cleanup_maximum_enumerated_names_before_refusal": 257, "cleanup_root_empty_maximum_names": 1,
+            "cleanup_maximum_bytes": 33554432, "cleanup_maximum_depth": 4, "cleanup_absolute_budget_seconds": 5},
         "authority": {"entry_stop_before_engine_start": True, "actual_retained_pidfd_required": True,
             "actual_pidfd_getfd_required": True, "actual_complete_host_fd_inventory_required": True,
             "socket_domain_alone_is_peer_approval": False, "host_records_outside_renderer_write_root": True,
@@ -1415,6 +1637,7 @@ def validate_contract(value: object | None = None) -> None:
         "kernel_fixture_cases": ["kernel-fixture"] +
             [f"inherited-{role}-ipv{version}" for role in ("embedder", "content") for version in (4, 6)],
         "record_fields": {"entry": sorted(ENTRY_KEYS), "refusal": sorted(REFUSAL_KEYS), "host": sorted(HOST_KEYS),
+            "temporary_directory": sorted(TEMP_KEYS), "launch": sorted(LAUNCH_KEYS),
             "process_identity": sorted(IDENTITY_KEYS), "entry_fd": ["device", "fd", "inode", "kind"],
             "host_fd": ["device", "fd", "inode", "kind", "socket_domain"]},
         "source_paths": list(SOURCE_PATHS), "compiled_overlay_files": list(COMPILED_PATHS),

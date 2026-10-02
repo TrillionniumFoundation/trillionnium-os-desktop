@@ -77,12 +77,77 @@ systemd, seccomp, pidfd, pidfd_getfd, IPv6 or required permissions is a failure.
 There is no skip-as-success path.
 
 Host records reside in the case directory. The renderer writes only its
-`renderer/` subdirectory: `ProtectSystem=strict`, `ProtectHome=read-only` and an
-exact `ReadWritePaths` constrain that namespace's filesystem writes. Both the
-actual process UID/GID and this actual property are observed. This keeps the
+`renderer/` subdirectory and its one private temporary directory:
+`ProtectSystem=strict`, `ProtectHome=read-only` and an exact two-path
+`ReadWritePaths` constrain that namespace's filesystem writes. Both the
+actual process UID/GID and these actual properties are observed. This keeps the
 host observation files outside the renderer's directly writable mount path; it
 does not establish an approved Unix peer/path policy or prevent a host AF_UNIX
 service from acting as a proxy.
+
+### Temporary storage and actual IPC
+
+The failed `492ed7a` CI packets retain the actual pre-engine failure: the pinned
+Servo disk-cache path calls `tempfile::tempdir`, and ipc-channel's one-shot Unix
+server creates a temporary directory and its `socket` child. `/tmp` was read-only
+under the original `ProtectSystem=strict` profile. The source successor does
+not reuse those failed packets as successful qualification.
+
+The exact Servo lock uses [tempfile 3.23.0](https://docs.rs/crate/tempfile/3.23.0/source/src/lib.rs)
+and [ipc-channel 0.22.0](https://github.com/servo/ipc-channel/blob/v0.22.0/src/platform/unix/mod.rs).
+The former's default builder uses `std::env::temp_dir`; the latter uses that
+builder and appends `socket`. Each unit now receives a fresh, 32-byte absolute
+`/tmp/hn-<24 lowercase hex digits>` path as its exact `TMPDIR`. The creator opens
+every path component with `O_NOFOLLOW`, retains the root-owned sticky `/tmp`
+and new current-UID `0700` leaf, and binds its device, inode, UID and mode.
+The path remains short enough for the locked crate's normal AF_UNIX address;
+the actual pinned-crate host fixture independently exercises bind, connect and
+bidirectional payload transfer with a path shorter than Linux's 108-byte limit.
+This does not permit arbitrary user-supplied socket names or guarantee every
+possible nested application path length.
+
+The unit explicitly keeps `PrivateTmp=no`, preserving the existing host Xvfb
+`/tmp/.X11-unix` connection. Only the exact renderer output and this retained
+temporary directory are writable exceptions; `/tmp` itself and other host paths
+remain read-only. The stopped-process inspector reads the actual selected
+process's bounded environment, verifies the sole `TMPDIR` value, checks the
+actual unit `ReadWritePaths` and `PrivateTmp`, and retains and rechecks the
+temporary directory's name/inode through its complete observation. These facts
+are closed, typed fields in every host and launch record. They are also bound
+across the corpus; another unit cannot reuse the same temporary path.
+
+Cleanup first stops the exact unit, retires the observer and forwarder, and
+confirms every retained pidfd has exited. It then scans at most 256 entries,
+32 MiB of combined regular-file sizes and four directory levels including the owned
+directory with a five-second absolute cleanup budget. Retained-FD `scandir`
+iterators retrieve names lazily with one global count across recursion: the
+257th name refuses before any deletion, without first collecting a full
+directory. The final root-empty check retrieves at most one name. Iterators
+close on success and failure; clock checks surround each retrieval, including
+EOF. These checks do not preempt a native filesystem syscall. Regular files and sockets
+must be current-UID, single-link and not writable by group/world; subdirectories
+must have the same owner and private write permissions. A complete retained
+inode/name check precedes deletion, with another check before each removal.
+Symlinks, foreign/replaced roots or leaves, hard-linked leaves and unsupported
+types refuse cleanup without following or repairing them. New foreign names
+can cause partial removal of already verified owned contents followed by a
+failure; they never produce a successful cleanup receipt. Failed or uncertain
+unit retirement leaves the directory in place for diagnosis. Successful launch
+facts state removal only after the actual matching directory was removed.
+Creator-PID guards precede path mutation; inherited owners refuse. GC only
+retires descriptor copies and never removes a path. The existing staging
+interruption/opcode and concurrent-mutation limits above also apply here; a
+deadline check does not preempt a blocked native syscall.
+The original cleanup deadline is checked again after the final matching-root
+`rmdir` returns. A late return refuses a successful launch record even when
+that owned directory was already removed; refusal does not undo its removal.
+
+The actual systemd-255 host fixture uses the locked versions and checks the
+read-only failure before this write exception, then complete tempfile file
+write/sync/read and actual Unix IPC afterward, with an unapproved `/tmp` write
+still failing with `EROFS`. It also checks complete owned-directory cleanup
+after process retirement. These are host crate/entry tests. A new exact-pin
+Servo compile and all eight native namespace cases remain required.
 
 `qualify_if_requested(Role, root)` checks real CapEff/CapBnd/CapAmb, no_new_privs,
 seccomp, current network namespace and process start time before engine startup.

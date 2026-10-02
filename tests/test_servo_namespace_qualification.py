@@ -39,7 +39,8 @@ def source_binding_fixture():
         "executable_identity": binary, "network_namespace_inode": 222, "outside_network_namespace_inode": 111,
         "caps": {"CapEff": "0000000000000000", "CapBnd": "0000000000000000", "CapAmb": "0000000000000000"},
         "no_new_privileges": 1, "seccomp": 2, "unit_properties": dict(gate.PROPERTIES), "descriptor_inventory": fds,
-        "renderer_uid": 1000, "renderer_gid": 1000, "read_write_paths": "/source-fixture/kernel-fixture/renderer",
+        "renderer_uid": 1000, "renderer_gid": 1000, "read_write_paths": "/source-fixture/kernel-fixture/renderer /tmp/hn-" + "a" * 24,
+        "temporary_directory": {"path": "/tmp/hn-" + "a" * 24, "device": 7, "inode": 88, "uid": 1000, "mode": 0o700},
         "pidfd_retained": True, "entry_stopped": True, "content_argument_observed": False,
         "source_qualification_only": True, "installed_qualified": False, "production_ready": False}
     entry = {"schema": "trillionnium.desktop.netns-entry.v1", "profile": gate.PROFILE, "role": "embedder",
@@ -50,6 +51,259 @@ def source_binding_fixture():
             if key != "socket_domain"} for item in fds], "entry_stop_requested": True,
         "source_qualification_only": True, "installed_qualified": False, "production_ready": False}
     return entry, host, binary
+
+
+class PrivateTemporaryDirectoryTests(unittest.TestCase):
+    """Actual private files/Unix sockets; these tests do not execute Servo."""
+    def test_real_short_directory_tempfile_and_unix_socket_cleanup(self):
+        previous = os.umask(0o077)
+        owner = gate._PrivateTemporaryDirectory()
+        path = owner.path
+        try:
+            self.assertEqual(len(str(path).encode()), 32)
+            self.assertEqual(owner.verify()["mode"], 0o700)
+            with tempfile.TemporaryDirectory(dir=path) as nested:
+                socket_path = str(Path(nested) / "socket")
+                self.assertLess(len(socket_path.encode()), 108)
+                listener = socket.socket(socket.AF_UNIX); client = socket.socket(socket.AF_UNIX)
+                try:
+                    listener.bind(socket_path); listener.listen(1)
+                    client.connect(socket_path); accepted, _ = listener.accept()
+                    with accepted:
+                        client.sendall(b"actual-private-ipc"); self.assertEqual(accepted.recv(32), b"actual-private-ipc")
+                finally:
+                    listener.close(); client.close()
+            (path / "cache.sqlite3").write_bytes(b"owned cache bytes")
+            owner.close(remove=True)
+            self.assertFalse(path.exists())
+        finally:
+            if owner.root is not None: owner.close(remove=True)
+            os.umask(previous)
+
+    def test_replaced_named_directory_preserves_foreign_inode_and_bytes(self):
+        owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        saved = path.with_name(path.name + "-saved")
+        try:
+            path.rename(saved); path.mkdir(mode=0o700); foreign = path / "foreign"; foreign.write_bytes(b"foreign")
+            inode = foreign.stat().st_ino
+            with self.assertRaisesRegex(ValueError, "pathname changed"): owner.close(remove=True)
+            self.assertEqual((foreign.stat().st_ino, foreign.read_bytes()), (inode, b"foreign"))
+        finally:
+            (path / "foreign").unlink(); path.rmdir(); saved.rmdir()
+
+    def test_actual_abandoned_nested_cache_and_unix_socket_are_retired(self):
+        previous = os.umask(0o077); owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        try:
+            nested = path / ".tmpActual"; nested.mkdir(mode=0o700)
+            (nested / "cache.sqlite3").write_bytes(b"abandoned private cache")
+            endpoint = socket.socket(socket.AF_UNIX)
+            try: endpoint.bind(str(nested / "socket"))
+            finally: endpoint.close()
+            self.assertTrue((nested / "socket").is_socket())
+            owner.close(remove=True)
+            self.assertFalse(path.exists())
+        finally:
+            if owner.root is not None: owner.close(remove=True)
+            os.umask(previous)
+
+    def test_foreign_symlink_child_refuses_cleanup_without_deleting_target(self):
+        owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        with tempfile.TemporaryDirectory() as external:
+            target = Path(external) / "target"; target.write_bytes(b"outside")
+            inode = target.stat().st_ino; (path / "foreign-link").symlink_to(target)
+            with self.assertRaisesRegex(ValueError, "foreign or unsafe"): owner.close(remove=True)
+            self.assertTrue((path / "foreign-link").is_symlink())
+            self.assertEqual((target.stat().st_ino, target.read_bytes()), (inode, b"outside"))
+            (path / "foreign-link").unlink(); path.rmdir()
+
+    def test_hardlinked_child_is_preserved_and_never_repaired(self):
+        previous = os.umask(0o077); owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        try:
+            leaf = path / "first"; leaf.write_bytes(b"aliased"); os.link(leaf, path / "second")
+            with self.assertRaisesRegex(ValueError, "aliased"): owner.close(remove=True)
+            self.assertEqual(leaf.stat().st_nlink, 2)
+        finally:
+            (path / "second").unlink(); (path / "first").unlink(); path.rmdir(); os.umask(previous)
+
+    def test_changed_directory_permissions_refuse_without_repair(self):
+        owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        try:
+            path.chmod(0o775)
+            with self.assertRaises(ValueError): owner.close(remove=True)
+            self.assertEqual(path.stat().st_mode & 0o777, 0o775)
+        finally:
+            path.chmod(0o700); path.rmdir()
+
+    def test_actual_fork_refuses_before_unlink_and_parent_retains_descriptor(self):
+        owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        (path / "owned").write_bytes(b"parent")
+        read, write = os.pipe(); child = os.fork()
+        if child == 0:
+            os.close(read)
+            try: owner.close(remove=True)
+            except ValueError:
+                os.write(write, b"refused"); os._exit(0)
+            os._exit(2)
+        os.close(write)
+        try:
+            self.assertTrue(select.select([read], [], [], 3)[0])
+            self.assertEqual(os.read(read, 32), b"refused"); self.assertEqual(os.waitpid(child, 0)[1], 0)
+            self.assertEqual((path / "owned").read_bytes(), b"parent"); owner.verify()
+        finally:
+            os.close(read); (path / "owned").unlink(); owner.close(remove=True)
+
+    def test_actual_leaf_substitution_during_complete_scan_preserves_foreign_file(self):
+        previous = os.umask(0o077); owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        leaf = path / "cache.sqlite3"; leaf.write_bytes(b"original")
+        real_stat = os.stat; replaced = False
+        def substitute(name, *args, **kwargs):
+            nonlocal replaced
+            if name == "cache.sqlite3" and not replaced:
+                replaced = True; leaf.unlink(); leaf.write_bytes(b"foreign")
+            return real_stat(name, *args, **kwargs)
+        try:
+            with mock.patch.object(gate.os, "stat", side_effect=substitute):
+                with self.assertRaisesRegex(ValueError, "name changed"): owner.close(remove=True)
+            self.assertTrue(replaced); self.assertEqual(leaf.read_bytes(), b"foreign")
+        finally:
+            leaf.unlink(); path.rmdir(); os.umask(previous)
+
+    def test_gc_retires_descriptors_without_removing_path(self):
+        owner = gate._PrivateTemporaryDirectory(); path = owner.path; descriptor = owner.root.fd
+        del owner; gc.collect()
+        try:
+            with self.assertRaises(OSError): os.fstat(descriptor)
+            self.assertTrue(path.is_dir())
+        finally: path.rmdir()
+
+    def test_closed_temporary_metadata_alias_or_extra_writable_path_fails(self):
+        for field, value in (("mode", 448.0), ("inode", True), ("uid", 1000.0), ("path", "/tmp"), ("path", "/tmp/hn-" + "a" * 100)):
+            entry, host, binary = source_binding_fixture(); host["temporary_directory"][field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                gate.validate_binding(entry, host, binary, 111, 4242, renderer_path="/source-fixture/kernel-fixture/renderer")
+        entry, host, binary = source_binding_fixture(); host["read_write_paths"] += " /tmp"
+        with self.assertRaises(ValueError): gate.validate_binding(entry, host, binary, 111, 4242)
+
+    def test_actual_entry_size_and_depth_bounds_refuse_before_deleting_contents(self):
+        for limit in ("entries", "bytes", "depth"):
+            previous = os.umask(0o077); owner = gate._PrivateTemporaryDirectory(); path = owner.path
+            try:
+                if limit == "entries":
+                    for index in range(owner.MAX_ENTRIES + 1): (path / str(index)).touch(mode=0o600)
+                elif limit == "bytes":
+                    with (path / "sparse-cache").open("xb") as stream: stream.truncate(owner.MAX_BYTES + 1)
+                else:
+                    parent = path
+                    for index in range(owner.MAX_DEPTH): parent = parent / str(index); parent.mkdir(mode=0o700)
+                    (parent / "cache").write_bytes(b"retained")
+                before = sorted(str(item.relative_to(path)) for item in path.rglob("*"))
+                with self.subTest(limit=limit), self.assertRaisesRegex(ValueError, "bound exceeded|depth exceeded"):
+                    owner.close(remove=True)
+                self.assertEqual(before, sorted(str(item.relative_to(path)) for item in path.rglob("*")))
+            finally:
+                for item in sorted(path.rglob("*"), key=lambda item: len(item.parts), reverse=True):
+                    if item.is_dir(): item.rmdir()
+                    else: item.unlink()
+                path.rmdir(); os.umask(previous)
+
+
+class LazyTemporaryEnumerationTests(unittest.TestCase):
+    """Real private names and iterator FDs; injected cuts are host source tests."""
+    def test_actual_4096_names_stop_at_257_before_unlink_without_fd_leak(self):
+        real_scandir = os.scandir
+        def inventory():
+            values = {}
+            for name in os.listdir("/proc/self/fd"):
+                try:
+                    metadata = os.fstat(int(name)); values[name] = (metadata.st_dev, metadata.st_ino)
+                except OSError: pass
+            return values
+        previous = os.umask(0o077); before = inventory()
+        owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        for index in range(4096): (path / str(index)).touch(mode=0o600)
+        observers = []
+        class ObservedIterator:
+            def __init__(self, descriptor):
+                self.native = real_scandir(descriptor); self.names = 0; self.closed = False; observers.append(self)
+            def __enter__(self): return self
+            def __exit__(self, *args): self.native.close(); self.closed = True
+            def __next__(self):
+                value = next(self.native); self.names += 1; return value
+        try:
+            with mock.patch.object(gate.os, "scandir", side_effect=ObservedIterator):
+                with self.assertRaisesRegex(ValueError, "entry bound exceeded"): owner.close(remove=True)
+            self.assertEqual(sum(item.names for item in observers), 257)
+            self.assertTrue(all(item.closed for item in observers))
+            self.assertEqual(len(os.listdir(path)), 4096)
+            self.assertEqual(inventory(), before)
+        finally:
+            for name in os.listdir(path): (path / name).unlink()
+            path.rmdir(); os.umask(previous)
+
+    def test_actual_nested_count_is_global_and_rejects_before_any_deletion(self):
+        previous = os.umask(0o077); owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        for directory in (path / "first", path / "second"):
+            directory.mkdir(mode=0o700)
+            for index in range(128): (directory / str(index)).touch(mode=0o600)
+        before = sorted(str(item.relative_to(path)) for item in path.rglob("*"))
+        try:
+            with self.assertRaisesRegex(ValueError, "entry bound exceeded"): owner.close(remove=True)
+            self.assertEqual(before, sorted(str(item.relative_to(path)) for item in path.rglob("*")))
+        finally:
+            for directory in (path / "first", path / "second"):
+                for child in directory.iterdir(): child.unlink()
+                directory.rmdir()
+            path.rmdir(); os.umask(previous)
+
+    def test_real_late_empty_iterator_and_interrupt_close_fds_and_preserve_names(self):
+        real_scandir = os.scandir
+        for cut in ("late-eof", "interrupted-next", "late-foreign"):
+            previous = os.umask(0o077); owner = gate._PrivateTemporaryDirectory(); path = owner.path
+            if cut == "interrupted-next": (path / "owned").write_bytes(b"not deleted")
+            descriptors = set(os.listdir("/proc/self/fd")); elapsed = [0.0]; calls = [0]; iterators = []
+            class CutIterator:
+                def __init__(self, descriptor):
+                    calls[0] += 1
+                    if cut == "late-foreign" and calls[0] == 2: (path / "foreign").write_bytes(b"preserved")
+                    self.native = real_scandir(descriptor); self.closed = False; self.names = 0; iterators.append(self)
+                def __enter__(self): return self
+                def __exit__(self, *args): self.native.close(); self.closed = True
+                def __next__(self):
+                    if cut == "interrupted-next": raise KeyboardInterrupt("actual iterator owns an FD")
+                    try:
+                        item = next(self.native); self.names += 1; return item
+                    except StopIteration:
+                        if cut == "late-eof": elapsed[0] = 6.0
+                        raise
+            try:
+                with mock.patch.object(gate.os, "scandir", side_effect=CutIterator), \
+                        mock.patch.object(gate.time, "monotonic", side_effect=lambda: elapsed[0]):
+                    with self.assertRaises(KeyboardInterrupt if cut == "interrupted-next" else ValueError):
+                        owner.close(remove=True)
+                self.assertTrue(all(item.closed for item in iterators))
+                self.assertEqual(sum(item.names for item in iterators), 1 if cut == "late-foreign" else 0)
+                self.assertTrue(path.is_dir())
+                if cut == "late-foreign": self.assertEqual((path / "foreign").read_bytes(), b"preserved")
+                if cut == "interrupted-next": self.assertEqual((path / "owned").read_bytes(), b"not deleted")
+                # The temporary owner's descriptors retired as well as the iterators.
+                self.assertLess(len(set(os.listdir("/proc/self/fd"))), len(descriptors))
+            finally:
+                for name in os.listdir(path): (path / name).unlink()
+                path.rmdir(); os.umask(previous)
+
+
+    def test_actual_final_rmdir_effect_after_deadline_refuses_success_without_rollback(self):
+        owner = gate._PrivateTemporaryDirectory(); path = owner.path
+        real_rmdir = os.rmdir; elapsed = [0.0]; removed = []
+        def after_real_effect(*args, **kwargs):
+            result = real_rmdir(*args, **kwargs); elapsed[0] = 6.0; removed.append(True); return result
+        with mock.patch.object(gate.os, "rmdir", side_effect=after_real_effect), \
+                mock.patch.object(gate.time, "monotonic", side_effect=lambda: elapsed[0]):
+            with self.assertRaisesRegex(ValueError, "expired after final removal"): owner.close(remove=True)
+        self.assertEqual(removed, [True])
+        self.assertFalse(path.exists())
+        self.assertIsNone(owner.root)
+        self.assertIsNone(owner.parent)
 
 
 class OwnedCleanupTests(unittest.TestCase):
@@ -401,7 +655,8 @@ class CompletePacketTests(unittest.TestCase):
         self.put(self.root / "outside-canary.json", self.canary)
         self.launch = {"schema": "trillionnium.desktop.netns-launch.v1", "case": "kernel-fixture", "unit": host["unit"],
             "main_pid": 4242, "binary_identity": binary, "binary_sha256": "c" * 64, "outside_namespace": 111,
-            "renderer_uid": 1000, "renderer_gid": 1000, "renderer_path": host["read_write_paths"],
+            "renderer_uid": 1000, "renderer_gid": 1000, "renderer_path": host["read_write_paths"].split()[0],
+            "temporary_directory": copy.deepcopy(host["temporary_directory"]), "temporary_directory_removed": True,
             "entries": [{"entry": self.entry_name, "host": self.host_name, "pid": 4242, "start_time": 12345, "role": "embedder"}],
             "exit_code": 0, "owned_unit_stopped": True, "exact_processes_exited": True, "qualification_nonce_enabled": False,
             "per_pair_ack_pacing": False, "source_qualification_only": True, "installed_qualified": False, "production_ready": False}
@@ -448,6 +703,22 @@ class CompletePacketTests(unittest.TestCase):
         self.put(self.root / self.host_name, self.host)
         hostile = copy.deepcopy(self.canary); hostile["actual_connections"][0]["family"] = 2.0
         self.put(self.root / "outside-canary.json", hostile)
+        with self.assertRaises(ValueError): self.check()
+
+    def test_private_temp_launch_alias_missing_cleanup_and_actual_host_drift_are_refused(self):
+        for mutation in ("float", "bool", "foreign", "extra", "not_removed", "numeric_removed"):
+            hostile = copy.deepcopy(self.launch)
+            if mutation == "float": hostile["temporary_directory"]["device"] = 7.0
+            elif mutation == "bool": hostile["temporary_directory"]["inode"] = True
+            elif mutation == "foreign": hostile["temporary_directory"]["inode"] += 1
+            elif mutation == "extra": hostile["temporary_directory"]["approved"] = True
+            elif mutation == "not_removed": hostile["temporary_directory_removed"] = False
+            else: hostile["temporary_directory_removed"] = 1
+            self.put(self.root / "namespace-launch.json", hostile)
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError): self.check()
+        self.put(self.root / "namespace-launch.json", self.launch)
+        hostile = copy.deepcopy(self.host); hostile["read_write_paths"] += " /tmp"
+        self.put(self.root / self.host_name, hostile)
         with self.assertRaises(ValueError): self.check()
 
 
@@ -522,7 +793,8 @@ class CompleteCorpusTests(unittest.TestCase):
             unit = "hepta-netns-" + f"{index:032x}" + ".service"
             role = "content" if "content" in case else "embedder"
             host.update(unit=unit, control_group="/system.slice/" + unit, main_pid=pid, role=role,
-                content_argument_observed=role == "content", read_write_paths="/source-fixture/" + case + "/renderer")
+                content_argument_observed=role == "content", read_write_paths="/source-fixture/" + case + "/renderer /tmp/hn-" + f"{index:024x}")
+            host["temporary_directory"].update(path="/tmp/hn-" + f"{index:024x}", inode=88 + index)
             host["identity"].update(pid=pid, pgid=pid, session=pid, start_time=started)
             host["descriptor_inventory"][0].update(kind="socket", socket_domain=10 if case.endswith("ipv6") else 2)
             entry = {key: value for key, value in self.fixture.entry.items() if key in gate.REFUSAL_KEYS}
@@ -532,7 +804,7 @@ class CompleteCorpusTests(unittest.TestCase):
             self.fixture.put(renderer / entry_name, entry); self.fixture.put(directory / host_name, host)
             (renderer / "runtime.log").write_text("SOURCE_ONLY_MOCKED_REFUSAL_NO_KERNEL_EXECUTION\n")
             launch = copy.deepcopy(self.fixture.launch)
-            launch.update(case=case, unit=unit, main_pid=pid, exit_code=1, renderer_path=host["read_write_paths"],
+            launch.update(case=case, unit=unit, main_pid=pid, exit_code=1, renderer_path=host["read_write_paths"].split()[0], temporary_directory=copy.deepcopy(host["temporary_directory"]),
                 entries=[{"entry": entry_name, "host": host_name, "pid": pid, "start_time": started, "role": role}])
             self.fixture.put(directory / "namespace-launch.json", launch)
             self.fixture.put(directory / "outside-canary.json", self.fixture.canary)
@@ -581,6 +853,19 @@ class CompleteCorpusTests(unittest.TestCase):
         self.corpus["cases"][1] = gate.verify_packet(directory, case)
         self.write(self.corpus)
         with self.assertRaisesRegex(ValueError, "reused"): gate.verify_corpus(self.root)
+
+    def test_reused_private_temp_is_refused_after_complete_case_rehash(self):
+        case = self.cases[1]; directory = self.root / case
+        launch = json.loads((directory / "namespace-launch.json").read_text())
+        temporary = copy.deepcopy(self.fixture.launch["temporary_directory"])
+        launch["temporary_directory"] = temporary
+        host_name = launch["entries"][0]["host"]
+        host = json.loads((directory / host_name).read_text())
+        host["temporary_directory"] = temporary
+        host["read_write_paths"] = launch["renderer_path"] + " " + temporary["path"]
+        self.fixture.put(directory / host_name, host); self.fixture.put(directory / "namespace-launch.json", launch)
+        self.corpus["cases"][1] = gate.verify_packet(directory, case); self.write(self.corpus)
+        with self.assertRaisesRegex(ValueError, "reused a private temporary"): gate.verify_corpus(self.root)
 
 
 class ContractWiringTests(unittest.TestCase):
