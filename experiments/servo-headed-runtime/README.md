@@ -398,6 +398,21 @@ SIGKILL, exact termination, recovery, chrome pixels and HTTP-resource refusal
 checks all remain required. Servo ACK is dispatch completion, not DOM execution
 proof; both are independently required.
 
+The fresh burst captures `process-topology-pre-burst.json` before its stimulus.
+The unreaped native leader anchors its process group; an actual retained pidfd
+brackets bounded observation of exactly one direct, same-executable content
+process. Closed integer PID/start/parent/group/session facts bind the later
+selected SIGKILL incarnation. Only the fixed content-entry flag is recorded;
+opaque IPC tokens and other command arguments are excluded. Missing topology
+or a copied earlier text file cannot satisfy the burst gate. The first b339
+burst demonstrated all three clicks and six ACKs but failed this missing
+producer check; that failed packet is not retroactively supplemented or passed.
+
+The checkpoint driver's absolute deadline is sampled again after actual owner
+and file-snapshot validation. A nonpositive remainder raises the explicit deadline
+refusal before polling sleep or another command; expiry during these checks
+cannot return a negative sleep budget or renew the original deadline.
+
 `native-input-queue.json` contains closed `native-input-queue.v1` source facts:
 actual owner PID/start time, default versus nonce profile, bounded ordered
 admitted/submitted/accepted/local/withdrawn records with frozen owner and point,
