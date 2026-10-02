@@ -27,6 +27,9 @@
     pointerMoves: 0,
     pointerDowns: 0,
     clicks: 0,
+    documentClickEvents: 0,
+    inputEventOrder: [],
+    inputEventOrderOverflow: false,
     wheels: 0,
     keyDowns: [],
     composition: [],
@@ -45,7 +48,22 @@
   const status = document.getElementById('status');
 
   document.addEventListener('pointermove', () => evidence.pointerMoves++);
-  document.addEventListener('pointerdown', () => evidence.pointerDowns++);
+  function inputFact(event) {
+    if (evidence.inputEventOrder.length === 128) {
+      evidence.inputEventOrderOverflow = true;
+      return;
+    }
+    evidence.inputEventOrder.push({
+      sequence: evidence.inputEventOrder.length + 1,
+      type: event.type,
+      button: event.button,
+      x: event.clientX,
+      y: event.clientY
+    });
+  }
+  document.addEventListener('pointerdown', event => { evidence.pointerDowns++; inputFact(event); });
+  document.addEventListener('pointerup', inputFact);
+  document.addEventListener('click', event => { evidence.documentClickEvents++; inputFact(event); });
   document.addEventListener('wheel', () => evidence.wheels++);
   document.addEventListener('keydown', event => evidence.keyDowns.push(event.key));
   document.addEventListener('compositionstart', event => evidence.composition.push(['start', event.data]));

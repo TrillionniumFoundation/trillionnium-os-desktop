@@ -122,7 +122,7 @@ content point, and content keyboard/IME requires a physical content press in the
 currently focused window. Reconstruction inherits no pointer, keyboard or IME
 ownership. Generation-bound delegates and asynchronous screenshot/focus/evidence
 callbacks ignore withdrawn and replaced content. Line wheel deltas stay in line
-units. The ownership module has 26 executable regressions, including repeated
+units. The ownership module has 51 executable regressions, including repeated
 IME compositions, normal matched mouse down/up, generation and button mismatch,
 held content/window/focus withdrawal, held crash, bounded simultaneous buttons
 and persistent input retirement, pending release callbacks and dispatch failure.
@@ -146,8 +146,10 @@ synthetic composition is reported separately.
 The native IME enabled context is separate from a composition. A commit ends
 only that composition; later preedit/commit events remain accepted under the
 same enabled context once current physical content ownership exists. Pointer
-withdrawal without an unsettled mouse gesture notifies Servo `MouseLeftViewport`;
-chrome presses and window focus loss blur the WebView. Requested-fault success
+withdrawal immediately invalidates local ingress and unsent events before an
+event-loop spin. Chrome presses and window focus loss blur the WebView. This
+local invalidation does not prove cancellation of Servo input state; any possible
+unsettled dispatch closes the lane as described below. Requested-fault success
 requires the selected PID/start
 identity, successful SIGKILL command and exact termination observation; a
 spontaneous crash is a qualification failure. Native CI binds the GitHub builtin
@@ -168,8 +170,9 @@ Sending the physical Up does not immediately clear its binding. The dispatcher
 retains the actual returned Servo `InputEventId`, and only the matching callback
 in the current generation without `DispatchFailed` settles that release. Unknown,
 duplicate or stale callbacks cannot clear it. A failed release dispatch retires
-the generation, and another Down for that button is refused while completion is
-pending. This callback binding confirms the pinned dispatch outcome, not a
+the generation, and another Down for that button remains unsent in the ordered lane while
+completion is pending. The dispatch ledger itself still refuses a direct new
+Down while release completion is pending. This callback binding confirms the pinned dispatch outcome, not a
 general mouse-cancel or page-state recovery guarantee.
 
 Leaving content/chrome, leaving the native window, losing native focus, or
@@ -327,3 +330,109 @@ source-object identities and raw-fact hashes. Its status is
 recovery, DOM action success, installed BrowserActor, OS IME and product readiness
 remain explicitly false. Adding this executable gate is a source change; its
 actual fixed-pin native result must be observed in CI before claiming it passed.
+
+
+## Bounded ordered default native lane source candidate
+
+The fixed-viewport prototype now admits all native pointer moves, buttons,
+wheel, keys and IME controls through one `OrderedNativeInput` FIFO. It is the
+normal nonce-disabled Winit path as well as the existing qualification path.
+`PhysicalIngress` projects OS focus, the pointer and physical button/IME state;
+admission does not focus Servo or change its dispatch-side held ledger. Each
+event freezes the original WebView ID, generation, physical ownership epoch,
+payload and arrival point. A physical Up keeps its own arrival point, including
+when further pointer moves have already arrived. Native preedit/commit expands
+to at most two adjacent queued engine events (Start plus Update/End); native
+Enabled/Disabled controls are ordered local events. A real OS Disabled event
+may enqueue Dismissed for its active composition. Focus/content/window/crash
+barriers do not synthesize a mouse/key release or IME dismissal.
+
+Each busy episode has one five-second absolute `Instant`, starting with its
+first admitted event. Further arrivals, local control, submission and ACK do
+not renew it. The queue includes the in-flight event in its 64-event count;
+queued plus in-flight payloads total at most 16 KiB, and each payload is at
+most 4 KiB. Event sequence, owner, payload, capacity, expiry, dispatch failure,
+unknown submission and withdrawal are typed refusal paths. `WaitUntil` uses
+that same deadline so a missing callback cannot leave the lane waiting forever.
+IME expansion is admitted as one group; capacity refusal cannot admit its
+Start while silently dropping its End. Evidence is capped at 256 native records
+and 128 actual DOM button-event records; overflow fails qualification.
+
+One Drive submits at most one event. It reserves `Submitting`, releases all
+`RefCell` borrows, then enters Servo. It validates the current owner and absolute
+deadline again when binding the actual returned `InputEventId`. A reentrant
+callback before binding is unknown submission and closes the lane. Only the
+matching callback for that actual ID, WebView, generation and epoch without
+`DispatchFailed` settles the event. The callback posts a later Drive; it does
+not recursively drain. Unknown or duplicate callbacks never advance the queue,
+renew its deadline or satisfy a qualification checkpoint.
+
+Every observed OS withdrawal is applied before spinning the Servo loop. Unsent
+events are discarded with `withdrawn_unsent` facts, without engine IDs, counters,
+synthetic releases or fabricated held-button counts. A possible submitted mouse
+Down or pending Up retains the original held-gesture recovery reason. An
+unresolved nonbutton dispatch, a dispatched key Down awaiting its actual Up
+ACK, or a possible composition awaiting its actual End/Dismissed ACK also
+requires a fresh Servo owner. Key auto-repeat retains one bounded physical-key
+hold. Local IME disable cannot clear a possible dispatched composition. Neither
+focus reentry nor same-Servo WebView reconstruction clears these latches. Clean
+fixture crash/replacement requires the lane to be idle with no possible key or
+composition hold; unsent old-generation events are never replayed into it.
+
+The qualification-only synthetic Start/Update/End triplet uses this same ordered
+lane only after all admitted native events and held key/composition state settle.
+It is labelled `qualification_synthetic`, independently of the actual Winit IME
+observation counter. It does not qualify OS IME composition. The existing private
+nonce/checkpoint profile still submits exactly its three original pairs, and
+the existing three held-button negative cases still send no Up.
+
+The permanent workflow additionally calls `run-native-burst-v1` in a fresh
+process, Xvfb server and private output directory without a qualification nonce.
+A single XTest batch sends exactly three rapid Down/Up pairs at native window
+points (200,132), (400,164), (200,132), with no per-pair ACK waits, retries or
+extra clicks. Key `k` and wheel input follow that burst. The actual DOM must
+observe exactly three pointer downs, three document click events and the nine
+ordered down/up/click events at content points (200,68), (400,100), (200,68).
+The existing fixture-button `clicks > 0`, keyboard, wheel, native IME, requested
+SIGKILL, exact termination, recovery, chrome pixels and HTTP-resource refusal
+checks all remain required. Servo ACK is dispatch completion, not DOM execution
+proof; both are independently required.
+
+The fresh burst captures `process-topology-pre-burst.json` before its stimulus.
+The unreaped native leader anchors its process group; an actual retained pidfd
+brackets bounded observation of exactly one direct, same-executable content
+process. Closed integer PID/start/parent/group/session facts bind the later
+selected SIGKILL incarnation. Only the fixed content-entry flag is recorded;
+opaque IPC tokens and other command arguments are excluded. Missing topology
+or a copied earlier text file cannot satisfy the burst gate. The first b339
+burst demonstrated all three clicks and six ACKs but failed this missing
+producer check; that failed packet is not retroactively supplemented or passed.
+
+The checkpoint driver's absolute deadline is sampled again after actual owner
+and file-snapshot validation. A nonpositive remainder raises the explicit deadline
+refusal before polling sleep or another command; expiry during these checks
+cannot return a negative sleep budget or renew the original deadline.
+
+`native-input-queue.json` contains closed `native-input-queue.v1` source facts:
+actual owner PID/start time, default versus nonce profile, bounded ordered
+admitted/submitted/accepted/local/withdrawn records with frozen owner and point,
+actual returned IDs, resource limits and explicit false product/DOM-proof claims.
+The burst verifier reads bounded strict JSON through retained regular,
+single-link, non-symlink descriptors, compares metadata and named identity,
+and rereads all consumed raw facts before recording their hashes. It writes
+`native-burst-stimulus.json` and `native-burst-verification.json`; stale output
+is refused. The receipt binds source SHA/tree identities, source file hashes,
+compiled binary hash, original stimulus, raw facts, matching actual ACK IDs and
+actual DOM event order. The harness observes and cleans only its captured
+PID/start-time/session/group and requires its fixture listener to disappear.
+
+The host Rust corpus includes rapid queued pairs, mixed event order and points,
+IME expansion, key/composition completion, capacity/byte ceilings, a missing
+ACK, absolute deadline, wrong/duplicate/stale callbacks, reentrant submission,
+and unsent versus possible-effect withdrawal. Python private-file mutation
+fixtures and source-wiring checks test the verifier and adapter boundaries;
+fixture PASS is not native qualification. Acceptance still requires compilation
+and the new runtime corpus at the immutable Servo pin. This prototype does not
+qualify a product PageOwner/BrowserActor, installed input, Wayland, variable
+scaling, complete key layouts, clipboard, physical hardware, or mouse-state
+cancellation. Those integration and qualification requirements remain open.

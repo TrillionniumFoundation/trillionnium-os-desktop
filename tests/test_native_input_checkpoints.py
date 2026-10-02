@@ -351,5 +351,20 @@ class CheckpointTests(unittest.TestCase):
         self.assertEqual(drive.count("&& self.qualification_input_complete()"), 2)
 
 
+    def test_missing_ack_expiry_during_real_identity_checks_never_sleeps_or_resends(self):
+        driver = self.fixture_driver()
+        deadline = driver.deadline
+        # The checkpoint really is absent, and actual private-directory and
+        # process-incarnation checks execute between the two clock samples.
+        with patch.object(gate.time, "monotonic", side_effect=[
+                deadline - 0.01, deadline - 0.01, deadline - 0.001, deadline + 0.001]), \
+                patch.object(gate.time, "sleep") as sleep:
+            with self.assertRaisesRegex(ValueError, "absolute deadline expired"):
+                driver.wait(1, "up_accepted")
+        sleep.assert_not_called()
+        self.assertEqual(driver.commands, [])
+        self.assertEqual(driver.deadline, deadline)
+
+
 if __name__ == "__main__":
     unittest.main()
