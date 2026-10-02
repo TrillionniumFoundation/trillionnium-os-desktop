@@ -45,7 +45,8 @@
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
-        "contracts/browser-actor.v1.json"
+        "contracts/browser-actor.v1.json",
+        "contracts/accepted-stream-handoff.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -53,12 +54,15 @@
         "apps/hepta-browserd/src/servo_product_runtime.rs",
         "tests/test_s08_product_supervision.py",
         "apps/hepta-browserd/src/product_dispatch/tests.rs",
-        "apps/hepta-browserd/tests/product_fork_custody.rs"
+        "apps/hepta-browserd/tests/product_fork_custody.rs",
+        "apps/hepta-browserd/tests/product_handoff_kernel.rs",
+        "tests/test_accepted_stream_handoff.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
         ".github/workflows/s06-browser-actor.yml",
-        ".github/workflows/s08-product-servo-runtime.yml"
+        ".github/workflows/s08-product-servo-runtime.yml",
+        ".github/workflows/s04-transport-custody.yml"
       ],
       "binaries": [
         {

@@ -23,7 +23,11 @@ fresh event/object; they must not be weakened to accept a stale parent.
 | --- | --- | --- | --- |
 | G1 foundations/CI and hostile audit | [PR130](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/130) | Runtime owner/cancellation/recovery fixes; receipt filesystem custody; strict release signature snapshots; evidence provenance; restored exact image workflows and bounded failure diagnostics | Designated independent review, protected merge, fresh exact-main gates |
 | G2 request/recovery composition | [PR133](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/133) | Original AF_UNIX attestation, queue-wide deadline/cancellation, concrete engine-thread actor/coordinator, semantic preflight, durable intent/terminal facts before response, complete-chain deduplication and unresolved restart refusal | Installed native startup/owner, per-connection service handoff, approved cross-UID executable custody, principal policy and durable trusted recovery decisions |
+| G2 original-stream custody | [PR142](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/142) | Actual consuming SCM_RIGHTS original-socket handoff, kernel credentials/cookie, private challenge/sequence, boot/time-namespace scope and fixed deadline; post-review pidfd ancillary cleanup successor | Live unit/executable broker, root-owned service path and semantic principal; consumer is reviewed separately in PR143; no activation |
+| G2 product handoff deadline | [PR143](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/143), based on PR142 | Consuming opaque original-stream callback preserves same Instant through live pidfd admission, clone/setup and queue; read-only getter refuses changed process/cancel/expiry | Synchronous procfs cannot be preempted; approved broker/principal, installed service and native owner remain open |
 | G3 native input/chrome | [PR131](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/131) | Actual Winit focus/content ownership, generation-bound callbacks, repeated IME context, causally bound selected-process SIGKILL evidence; actual native held-gesture withdrawal refuses further input/reconstruction and requires a fresh Servo owner | Complete owner replacement, product PageOwner integration, layout/scaling/clipboard, actual Chinese OS IME and trusted approval/handoff UX |
+| G4 startup diagnosis | [PR139](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/139) | Actual Wayland protocol handshake, independent private persisted failure diagnostics and bounded guest shutdown; normal and explicit exit73 QEMU paths | Installed native product image, wider fault/reboot/endurance matrix and independent release facilities |
+| G5 HTTP embedder gate | [PR141](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/141) | Pinned Servo global/per-WebView HTTP interception; current-owner immutable local document, explicit cancel, bounded same-byte evidence reader and settled two-generation denial probes; composed with matching native input ACK stimulus | All supported resource classes/protocols and namespace confinement, signed-app/principal/storage/native product integration |
 | G5 signed app admission | [PR134](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/134) | Actual externally pinned Ed25519 using immutable verifier inputs; complete bounded archive/index checks; immutable assets for exact synthetic HTTPS origins; current publisher-scoped trust/revocation and restrictive response headers | Installed origin interception, browser CSP/CORS/cache enforcement and protected policy/root delivery |
 | G5 TaskFlow/capabilities | [PR135](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/135) | Typed proposal/resource binding; actual signed permit admission; original budgets/cancel/handoff; durable task reservation and single-use grant consumption before adapter entry; restart/fork refusal | Trusted native approval/signing surface, retained-target final native effect gate, product terminal receipts and durable recovery/revocation |
 | G5 controlled observations | [PR136](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/136) | Real approved DoT, all-answer address policy, actual TCP peer and TLS identity, bounded GET/redirect observations under one deadline; ambient proxy/CA, synthetic DNS fallback, fork and clock-regression refusal | Browser network namespace plus every supported resource-class intercept; external effects and durable indeterminate reconciliation |
@@ -31,7 +35,7 @@ fresh event/object; they must not be weakened to accept a stale parent.
 | G6 signed update/recovery | [PR132](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/132) | Actual externally rooted signature/full-image checks, inactive private regular-file publication, issued health permits, concrete journal reconciliation, sealed verifier inputs, concrete authority types and fork/thread/lease custody | Production roots/clock/floor, installed block-slot/boot/health/recovery adapters, durable product journal wiring, QEMU update and physical cutpoint evidence |
 | G6 durable update ownership | [PR140](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/140), based on PR132 | Complete durable intent before concrete inactive staging, full retained-chain/image readback, issuer-bound results, source boot policy and unclean/nonterminal restart quarantine without replay; integrated private descriptor-owner cleanup | Installed owner/service journal wiring, boot/health/commit/rollback and trusted operator recovery; protected roots/time/floor and physical power-loss evidence |
 
-The combined branch `codex/production-source-integration-20261002` exercises
+The original combined branch `codex/production-source-integration-20261002` exercises
 these candidates together and registers the top-level Python mechanisms with
 their source-defined public signatures, technical contracts and actual test
 sources. Its checks are integration of source candidates, not installation or
@@ -180,15 +184,59 @@ The logging and fifteen-event offline-verifier successor is head
 `cc210cb051ec179c022cd814cca41af94f91925f`; its actual CodeQL check passed, while
 fresh image workflow
 [37008295707](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/37008295707)
-remains pending at this snapshot.
+passed. Its complete downloaded packet independently verified ninety outputs and419 source inputs. This historical result does not transfer to successors.
 
 The intermediate `3c3f20b` image run
 [37005677335](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/37005677335)
 failed with runtime exit 101, dependent acceptance not started and host timeout.
 Its bounded packet confirmed absent persistent runtime/acceptance logs; the
-specific panic cause remains unobserved. Startup-handshake and independent
-failure-diagnosis/clean-poweroff source work is a separate follow-up; this
-document does not turn that failed run into a passing image.
+specific panic cause remains unobserved. The separate startup diagnosis successor at head88a76549d5b03d43c01e6748c45fe00f6d63064a passed QEMU run37012392942 and fresh CodeQL. The complete normal packet independently verified90 outputs and424 source inputs; the explicit-negative packet verified7 raw digests, actual exit73, persisted original cause, no normal PASS and clean QEMU shutdown in29 seconds. Both packets bind the same prepared-image digest and tested merge41f2d7c279fa27a5200c53b32e2c536d02fa010f. Whole negative-clone pre/post hashes were produced by the host gate but not independently rehashed after artifact extraction; no whole-clone proof is inferred. This closes that candidate diagnosis scenario, while the earlier exit101 panic cause remains unobserved.
+
+## Current successor composition
+
+The c61 combined source passed complete local checks (Python554/55/15,
+Rust411/424/13). Fresh source/prospective-merge checks and S08 run37010289458
+passed; the downloaded S08 packet independently verifies ten relative checksum
+members excluding the checksum itself. Its native run37010289801 failed the
+unchanged three-Down DOM assertion after actual compilation and crash recovery.
+
+Resource predecessor dc91a34e also compiled the actual pinned Servo. Push
+run37012770958 and PR run37012983713 failed the original three-Down requirement.
+The downloaded component records independently verify each generation's one
+immutable local response, three explicit cancellations, matching settled DOM
+refusals and zero listener requests. Global callbacks were zero and the worker
+API unavailable. This limited HTTP component result never qualifies the whole
+failed native gate.
+
+Native successor5f9529168b218db66121bff68006c4ee1b861aeb retains exactly the
+original three content Down/Up pairs, chrome-exclusion stimulus and independent
+DOM click/wheel/IME/fault/recovery gates. Each next pointer/Down/Up is paced by
+actual current-owner InputEventId acknowledgments. Missing/stale/DispatchFailed
+callbacks abort with no replay or synthetic cleanup Up. All26 ownership,
+18 new private-driver and12 old source regressions passed independent hash-bound
+review. Its actual pinned native PR run37018011742 passed compilation, positive
+crash/recovery, evidence enforcement and all three held-negative cases. The default rapid-input path still drops a second Down while prior Up waits for ACK. A separate bounded ordered native lane and default unpaced burst CI successor is under development; ACK-paced success does not qualify that gap. Hardware and installed product claims remain open.
+
+The resource/ACK composite76c01a7c7fde9c8d38fcf6ac9ecd7020ec0e4064 passes full
+local checks (Python586/55/15, Rust411/424/13) and independent eleven-file
+integration review. Actual PR native run37018209994 completed SUCCESS at tested merge10ff461dbadeec6a57462038f5f36a4ec1875ed0/treeb8dc57e621c24ed870259c1864b4eddaf77d0165. The complete downloaded packet independently verifies5 PNGs,2 exact-process fault hashes,11 input checkpoints/10 distinct IDs and21 held-negative raw hashes; both generations HTTP local1/cancel3 settledDOM/zero listener checks also pass. Global callbacks0 and worker unavailable remain unqualified. Earlier objects did not supply this successor qualification.
+
+The original-stream custody candidatecfb1bb463cfd86549c52346a08b0da248764d156
+passed actual16 old Rust tests,18 kernel case groups,5 closed Python contract
+checks and2 compile-fail API doctests. S04 head/prospective-merge CI passed.
+Independent adversarial review then reproduced a valid SO_PASSPIDFD control's
+unknown SCM_PIDFD refusal leaking an actual kernel pidfd. The descriptor-cleanup successor2d4a3460ad56b5d7aa25d5d140ea35e5b73ebf6c now closes that observed leak with19 actual kernel groups. Its new S04 PR run37019638390 passes head/prospective-merge and actually executes SCM_PIDFD receive/challenge cleanup in both Rust graphs. Old green tests did not erase the defect. The separate consumerf9b6ded8bdff13c86098e3abb77ee7dd7c14dae7 now consumes the same private stream/deadline and brackets live admission/clone/setup with six original-deadline checks. Seven actual Linux cases plus24 old units/1API/fork and8 closed Python checks passed root and independent review. Its actual S04 PR run37020862563 now passes head/prospective-merge Rust and source policy; the original deadline is preserved through receiver delay and queue expiry. Synchronous procfs may exceed wall time but cannot produce a late admitted result; no installed service, approved principal or native Servo effect is inferred.
+
+Controlled-egress cleanup follow-up retains actual attempted identity/known hops
+on cleanup interruptions, closes only its own lease, refuses fork before an
+inherited mutex, and quarantines uncertain cleanup without replay. Root additionally reproduced two ordinary admission line-boundary interruptions that left an active permit and either a held or released mutex before the outer cleanup guard. Successor b587cf4bba434ea20be1833c11facc9c37b4dc0d retains a shared empty lease and exact-permit reservation before consumption, protects the admission helper/return, and prevents a competing loser from retiring the winner. Its35 real TLS tests passed author, root and independent runs; all four source hashes match the frozen review. These
+specific cases never establish every arbitrary asynchronous C-return/store
+window or durable external-effect reconciliation.
+
+The current composition branch `codex/production-source-round2-20261002` starts at
+fixed c61. It combines source successors without moving their review bases or
+self-merging any PR. Its module manifest also maps the product consumer contract, kernel corpus and S04 workflow to browserd without changing claim ceilings. Exact-object full checks and appropriate runtime/image CI remain required after composition. Product activation and machine qualification
+fields remain unchanged.
 
 ## Conditions still blocking production
 
