@@ -1042,7 +1042,9 @@ impl RuntimeState {
     fn pointer_left(&self) {
         self.input.borrow_mut().pointer_left();
         if let Some(webview) = self.webview.borrow().as_ref() {
-            webview.notify_input_event(InputEvent::MouseLeftViewport);
+            webview.notify_input_event(InputEvent::MouseLeftViewport(
+                servo::MouseLeftViewportEvent::default(),
+            ));
         }
     }
 
