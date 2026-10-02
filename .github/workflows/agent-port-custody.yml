@@ -6,6 +6,10 @@ on:
       - ".github/workflows/agent-port-custody.yml"
       - "apps/hepta-agent-portd/**"
       - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-agent-transport/**"
+      - "contracts/root-owned-control-path.v1.json"
+      - "docs/architecture/ROOT_OWNED_CONTROL_PATH.md"
+      - "tests/test_root_control_path.py"
       - "packaging/debian/systemd/**"
       - "packaging/debian/sysusers.d/**"
       - "packaging/debian/tmpfiles.d/**"
@@ -27,6 +31,10 @@ on:
       - ".github/workflows/agent-port-custody.yml"
       - "apps/hepta-agent-portd/**"
       - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-agent-transport/**"
+      - "contracts/root-owned-control-path.v1.json"
+      - "docs/architecture/ROOT_OWNED_CONTROL_PATH.md"
+      - "tests/test_root_control_path.py"
       - "packaging/debian/systemd/**"
       - "packaging/debian/sysusers.d/**"
       - "packaging/debian/tmpfiles.d/**"
@@ -66,6 +74,7 @@ jobs:
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -p test_root_control_path.py -v
 
       - name: Verify systemd unit syntax and account mappings
         shell: bash
@@ -97,6 +106,7 @@ jobs:
           # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
           CARGO_PROFILE_TEST_DEBUG: '0'
         run: |
+          # Includes the required explicit privileged root-path kernel profile.
           cargo test --workspace --all-targets --locked
           cargo test --locked -p hepta-agent-portd --all-targets --all-features
           cargo run --locked -p hepta-browserd -- --self-check
@@ -112,23 +122,48 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          reject_match() {
+            local result
+            if grep "$@"; then
+              exit 1
+            else
+              result=$?
+              if [[ "$result" -ne 1 ]]; then
+                exit "$result"
+              fi
+            fi
+          }
           cargo clean -p hepta-agent-portd
           cargo build --release --locked -p hepta-agent-portd --bin hepta-agent-portd
           test -x target/release/hepta-agent-portd
           test ! -e target/release/hepta-agent-port-fixture
-          ! strings target/release/hepta-agent-portd | grep -F 'D0FixtureHandler'
-          ! strings target/release/hepta-agent-portd | grep -F 'agent-port-fixture-self-check'
-          ! grep -F 'hepta-agent-port-fixture' packaging/debian/hepta-agent-portd.install
+          strings_report="$(mktemp "${RUNNER_TEMP:?}/agent-portd-strings.XXXXXX")"
+          trap 'rm -f -- "$strings_report"' EXIT
+          strings target/release/hepta-agent-portd > "$strings_report"
+          reject_match -F 'D0FixtureHandler' "$strings_report"
+          reject_match -F 'agent-port-fixture-self-check' "$strings_report"
+          reject_match -F 'hepta-agent-port-fixture' packaging/debian/hepta-agent-portd.install
 
       - name: Reconfirm closed authority and activation ceiling
         shell: bash
         run: |
           set -euo pipefail
+          reject_match() {
+            local result
+            if grep "$@"; then
+              exit 1
+            else
+              result=$?
+              if [[ "$result" -ne 1 ]]; then
+                exit "$result"
+              fi
+            fi
+          }
           test ! -e enable-agent-port
           test ! -e /etc/hepta/enable-agent-port
-          ! grep -R -n --include='*.rs' -E 'TcpListener|UnixListener|WebDriver' \
+          reject_match -R -n --include='*.rs' -E 'TcpListener|UnixListener|WebDriver' \
             apps/hepta-agent-portd crates/hepta-peer-attestation/src
-          ! grep -F 'D0FixtureHandler' apps/hepta-agent-portd/src/main.rs
+          reject_match -F 'D0FixtureHandler' apps/hepta-agent-portd/src/main.rs
           grep -F 'ProductHandlerUnavailable' apps/hepta-agent-portd/src/main.rs
           grep -F 'D0FixtureHandler' \
             apps/hepta-agent-portd/src/bin/hepta-agent-port-fixture.rs

@@ -236,3 +236,35 @@ The higher-level Linux live control-custodian wrapper is documented in
 [`hepta-peer-attestation`](../hepta-peer-attestation/README.md). Its use of
 `capture_before` fixes the original transaction before any control attestation.
 The legacy duration `capture` body and kernel protocol remain unchanged.
+
+
+### Root-owned control pathname source custody
+
+The Linux additive API is inventoried in
+[`root-owned-control-path.v1.json`](../../contracts/root-owned-control-path.v1.json)
+and described in [Root-owned control pathname custody](../../docs/architecture/ROOT_OWNED_CONTROL_PATH.md).
+`RootOwnedControlListener::from_inherited` consumes an existing root-owned
+seqpacket listener created/listened by the same actual process, rejects a
+foreign/PID1 creator, obtains its actual bound inode through privileged
+SIOCUNIXFILE and retains nofollow root ancestor/leaf custody. It never binds,
+relistens, changes path permissions or activates a service. Missing actual
+privilege fails without an address/stat fallback.
+
+`RootPathControlConnection::connect_before` admits only the explicitly configured
+kernel peer under the original absolute Instant. It retains protected pathname
+snapshots, original socket identity/cookie and actual SO_PEERPIDFD. The connector
+does not independently obtain the server's bound dentry and cannot turn path
+custody into an approved executable, unit or principal. `consume_before` moves
+the same OwnedFd, unchanged Instant and unique `RootControlPathCustody`; later
+consumers must keep and check its opaque verifier. Fork, observed drift, expiry
+and custody Drop refuse the same scope without reconnect, rebudget or shutdown.
+The new standalone kernel corpus requires its explicit privileged sudo test
+profile; it tests real root/non-root paths and processes without skips. It does
+not install a broker, provision production policy or execute Servo. Existing
+control handoff and default service activation remain unchanged.
+
+Later actual listening credential drift also retires that scope permanently;
+restoring credentials through a descriptor alias cannot revive it. The explicit
+privileged kernel target retains the original ten groups and adds real relisten
+and nonblocking-status drift/restore groups. Observed O_NONBLOCK removal also
+retires the typed listener rather than risking an unbounded native accept.
