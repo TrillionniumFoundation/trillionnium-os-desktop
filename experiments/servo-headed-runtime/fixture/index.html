@@ -32,7 +32,13 @@
     composition: [],
     inputEvents: 0,
     popupAttempted: false,
-    externalNavigationAttempted: false
+    externalNavigationAttempted: false,
+    resourceProbesSettled: false,
+    sameOriginScriptRejected: false,
+    wrongMethodFetchRejected: false,
+    externalScriptRejected: false,
+    forbiddenResourceExecuted: false,
+    serviceWorkerProbe: 'unavailable'
   };
   const field = document.getElementById('field');
   const button = document.getElementById('button');
@@ -49,6 +55,37 @@
   button.addEventListener('click', () => {
     evidence.clicks++;
     status.textContent = `clicked-${evidence.clicks}`;
+  });
+
+  // These requests are deliberately permitted by this qualification response's
+  // narrow CSP so the actual HTTP embedder callback, rather than CSP, refuses
+  // them. They do not grant resource or network authority to the page.
+  window.__forbiddenResourceExecuted = false;
+  function rejectedScript(url, key) {
+    return new Promise(resolve => {
+      const script = document.createElement('script');
+      script.src = url;
+      script.onerror = () => { evidence[key] = true; resolve(); };
+      script.onload = () => { evidence.forbiddenResourceExecuted = true; resolve(); };
+      document.head.append(script);
+    });
+  }
+  const probes = [
+    rejectedScript(`/blocked-script.js?generation=${generation}`, 'sameOriginScriptRejected'),
+    rejectedScript(`https://resource-denied.invalid/blocked-script.js?generation=${generation}`, 'externalScriptRejected'),
+    fetch(`/?generation=${generation}`, {method: 'POST', body: 'denied-resource-probe'})
+      .then(() => { evidence.forbiddenResourceExecuted = true; },
+            () => { evidence.wrongMethodFetchRejected = true; })
+  ];
+  if (navigator.serviceWorker) {
+    evidence.serviceWorkerProbe = 'pending';
+    probes.push(navigator.serviceWorker.register(`/global-worker.js?generation=${generation}`)
+      .then(() => { evidence.serviceWorkerProbe = 'unexpectedly-registered'; },
+            () => { evidence.serviceWorkerProbe = 'rejected'; }));
+  }
+  Promise.all(probes).then(() => {
+    evidence.forbiddenResourceExecuted ||= window.__forbiddenResourceExecuted === true;
+    evidence.resourceProbesSettled = true;
   });
 
   addEventListener('load', () => {

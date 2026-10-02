@@ -12,6 +12,64 @@ below the chrome. Navigation is permitted only to the ephemeral
 `127.0.0.1` fixture origin; popup/new-window and external navigation requests
 are denied.
 
+The source resource gate also handles both HTTP resource callbacks at Servo pin
+`670ae8a70801b162e186f81cbb5bdd2d59c39108`. A default `ResourceGate` admits no
+resource. This qualification executable explicitly creates one capability from
+its already bound IPv4 loopback fixture listener and retains a duplicate of
+that real listener. Only `GET /?generation=1` or `GET /?generation=2` for the
+current, live owned WebView can receive the bounded HTML bytes compiled into
+the executable. The exact serialized URL, method, nonredirect main-document
+request, generation, held-input latch, and actual callback WebView ID are
+checked. No asset pathname or externally supplied response callback is used.
+
+Allowed responses are intercepted with fixed MIME, no-store, nosniff and CSP
+headers, one bounded byte chunk and explicit finish. All other WebView HTTP
+loads are intercepted and cancelled, including unknown paths, methods, ports,
+origins, query strings, credentials or fragments represented in the parsed
+request URL. Stale, withdrawn or missing owned WebViews also explicitly cancel.
+The global `ServoDelegate` is installed before the first WebView or event-loop
+spin and always cancels requests without a WebView principal. Neither callback
+drops a request to continue normal networking. The fixture listener returns
+403 to any real network connection; successful evidence requires its actual
+connection counter to remain zero.
+
+The fixture's qualification CSP permits only two fixed script-refusal probe
+locations (`'self'` and `https://resource-denied.invalid`) and a same-origin
+POST probe to reach the actual embedder callback. Both content generations must
+show the three actual cancellation submissions and matching DOM script-error
+or fetch-rejection outcomes, with no successful forbidden-resource execution.
+`resource-gate-result.json` records bounded typed facts; the independent checker
+binds them to the existing runtime's generation-specific DOM evidence. It
+reads bounded JSON and origin bytes through retained regular, single-link
+descriptors with no symlink traversal, checks metadata before and after reading,
+and prints their hashes from those same bytes. The checker is read-only and does
+not create or overwrite an evidence file. The existing native
+input, IME, SIGKILL, recovery and held-gesture thresholds are unchanged. A
+service-worker registration probe is conditional; this pin's
+`Preferences::default` keeps `dom_serviceworker_enabled` false and this
+prototype does not enable it. The global
+callback observation field is derived solely from actual delivered callbacks,
+and zero observations do not qualify worker execution.
+
+The standalone Rust corpus uses real loopback listeners to test the closed
+default, retained ownership, exact admission, stale/global refusals and bounded
+counters. Python mutation fixtures test the verifier through real files and
+CLI invocation; these fixtures provide no native or installed runtime evidence.
+The permanent CI still compiles this source against the actual pin and requires
+the observed negative corpus in addition to all existing positive checks.
+
+This is a source qualification HTTP-response prototype. It does not connect
+the Python signed-app admission or AppStorage APIs to Servo, does not grant a
+synthetic production principal, and does not qualify installed CSP, WebSocket,
+non-HTTP protocols, complete worker behavior, or network namespaces. Those
+integration boundaries remain open; production resource admission defaults
+to empty.
+
+The fixed-pin API evidence is upstream's
+[WebView resource callback and interception ownership](https://github.com/servo/servo/blob/670ae8a70801b162e186f81cbb5bdd2d59c39108/components/servo/webview_delegate.rs#L217-L310),
+[global resource callback](https://github.com/servo/servo/blob/670ae8a70801b162e186f81cbb5bdd2d59c39108/components/servo/servo_delegate.rs#L27-L34),
+and [explicit cancellation to a network error](https://github.com/servo/servo/blob/670ae8a70801b162e186f81cbb5bdd2d59c39108/components/net/request_interceptor.rs#L75-L79).
+
 The runtime corpus records content and full-workspace screenshots, native X11
 pointer/button/wheel/keyboard forwarding, Servo IME composition, process
 topology, a real multiprocess content-child termination, trusted-window
@@ -64,7 +122,7 @@ content point, and content keyboard/IME requires a physical content press in the
 currently focused window. Reconstruction inherits no pointer, keyboard or IME
 ownership. Generation-bound delegates and asynchronous screenshot/focus/evidence
 callbacks ignore withdrawn and replaced content. Line wheel deltas stay in line
-units. The ownership module has 21 executable regressions, including repeated
+units. The ownership module has 26 executable regressions, including repeated
 IME compositions, normal matched mouse down/up, generation and button mismatch,
 held content/window/focus withdrawal, held crash, bounded simultaneous buttons
 and persistent input retirement, pending release callbacks and dispatch failure.
@@ -163,6 +221,60 @@ UX, installed PageOwner integration or an OS IME qualification. Local standalone
 ownership tests do not qualify the Servo dispatcher: this candidate still needs
 the exact pinned compile and native runtime corpus. Existing native evidence does
 not prove the newly added held-withdrawal paths ran on X11/Wayland.
+
+## Exact positive input checkpoints
+
+The actual native CI run `37010289801` tested merge
+`9c5479b178e10e45da53ea01cd683cfacbbb7ee4` of candidate `c61bb83b496fbd479e7d931d1a594d286374568a`.
+It compiled and finished the local fixture/crash/replacement run, then failed the
+unchanged DOM requirement of three content pointer-downs: its raw result recorded
+two, with four forwarded native button events. Native IME was observed twice.
+Earlier run `37005158637` recorded three DOM downs and six forwarded button
+events with identical native source and workflow. The raw artifact does not
+identify which pair was refused or establish its exact callback timing.
+
+A source replay of exactly the original three pairs reproduces four forwarded
+events and two downs when the first release callback arrives after the next pair.
+The input owner correctly refuses another same-button Down while the actual Up
+callback is pending. The qualification script previously issued the next pair
+without satisfying that prerequisite. This is a concrete source interleaving
+consistent with the actual failure, not a reconstructed per-event native trace.
+
+Both the workflow's v1 positive entry and the standalone runner's separate v2
+positive entry now use `tools/native_input_checkpoints.py`. A fresh 32-hex run
+nonce enables the explicit host profile. The native parent first confirms the
+initial content pointer's actual Servo callback, then observes the physical
+chrome position in the focused current generation. This preserves the original
+chrome click/wheel/`x` exclusion stimulus. For each of the original three content
+pairs, the driver waits for that point's actual MouseMove callback, submits one
+Down, waits for its matching accepted `InputEventId`, submits one Up, and waits
+for its matching accepted release callback before proceeding. Missing, stale,
+duplicate or mismatched callbacks do not advance the sequence. `DispatchFailed`
+fails the runtime; pending release ownership is never cleared by a counter or
+file. IME submission and page evidence wait for all three matching releases.
+
+The parent publishes each one-shot checkpoint as private JSON through a retained
+temporary file and rename. The host checks bounded strict JSON, no symbolic-link
+path traversal, private regular one-link files, root/file identities, its exact
+PID/start time and nonce, generation, sequence, point, dispatch outcome and actual
+event identifiers. A new driver refuses any already published checkpoint or
+receipt even for the same live owner and generation. Earlier records are checked again before further stimuli and
+at final verification. The driver has one absolute 30-second budget. It never
+retries an input, adds clicks to reach a counter, or sends a cleanup Up. Its
+`HOST_STIMULUS_COMPLETE` receipt records host commands and checkpoint digests;
+the existing DOM `pointerDowns == 3`, native IME and crash/recovery requirements
+remain independently mandatory. The v2 runner still cannot accept this v1
+example or replace its missing v2 topology evidence.
+
+The new Rust and private-file host regressions test source sequencing and driver
+validation. They do not prove the new source compiled or ran at Servo's pin; a
+fresh actual native CI result is required. Checkpoints are a qualification
+protocol, not a production renderer authentication channel, installed PageOwner
+integration, hardware/Wayland qualification, or a queue for fast user input.
+Rapid same-button double-clicks remain refused while a release is awaiting its
+callback; lossless input queuing and multi-click UX require separate owner work.
+The held-gesture negative profile explicitly excludes this nonce and continues
+to inject no Up or automatic recovery.
 
 ## Permanent native held-gesture refusal corpus v1
 
