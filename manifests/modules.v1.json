@@ -393,7 +393,8 @@
         "docs/architecture/EVENT_LOOP_COMPLETION.md",
         "docs/architecture/SESSION_INCARNATION.md",
         "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md",
-        "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md"
+        "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md",
+        "docs/architecture/NATIVE_IMMUTABLE_PRODUCT_OWNER.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
@@ -401,7 +402,8 @@
         "contracts/event-loop-completion.v1.json",
         "contracts/session-incarnation.v1.json",
         "contracts/s08-servo-runtime-bridge.v1.json",
-        "contracts/dual-owner-request-custody.v1.json"
+        "contracts/dual-owner-request-custody.v1.json",
+        "contracts/native-product-owner.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-actor/src/lib.rs",
@@ -409,12 +411,15 @@
         "crates/hepta-browser-actor/tests/s08_servo_mailbox.rs",
         "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
         "tests/test_dual_owner_custody.py",
-        "tests/test_s08_semantic_custody.py"
+        "tests/test_s08_semantic_custody.py",
+        "tests/test_native_product_owner.py",
+        "apps/hepta-browserd/tests/immutable_profile_admission.rs"
       ],
       "workflows": [
         ".github/workflows/s06-browser-actor.yml",
         ".github/workflows/s08-servo-vertical-slice.yml",
-        ".github/workflows/s04-transport-custody.yml"
+        ".github/workflows/s04-transport-custody.yml",
+        ".github/workflows/g2-native-product-owner.yml"
       ],
       "binaries": [],
       "features": []

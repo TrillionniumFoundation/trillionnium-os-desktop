@@ -22,8 +22,8 @@ use hepta_agent_port::{AgentPortError, DispatchContext, HandlerOutcome};
 use hepta_agent_transport::PeerIdentity;
 use hepta_browser_actor_simulation as simulation;
 use hepta_browser_codec::{
-    BrowserRequest, BrowserWireError, ElementReference, JsonObject, ObservationField, PageAction,
-    ProfileSpec, WaitCondition,
+    BrowserErrorCode, BrowserOperation, BrowserRequest, BrowserWireError, ElementReference,
+    JsonObject, ObservationField, PageAction, ProfileSpec, WaitCondition,
 };
 #[cfg(target_os = "linux")]
 use hepta_peer_attestation::ControlRequestVerifier;
@@ -64,6 +64,7 @@ impl simulation::engine_dispatch::EngineEventLoopWaker for ServoWakerAdapter {
 /// The field is private and the value is non-cloneable.  Callers obtain it only
 /// together with [`ServoRuntimeOwner`] from [`servo_runtime_pair`].
 pub struct ServoRuntimeEndpoint {
+    profile: ServoProfile,
     inner: simulation::engine_dispatch::EngineThreadRuntime,
 }
 
@@ -72,6 +73,7 @@ pub struct ServoRuntimeEndpoint {
 /// This type is intentionally distinct from the deterministic [`crate::BrowserActor`].
 /// It accepts no generic runtime parameter or caller-implemented runtime trait.
 pub struct ServoBrowserActor {
+    profile: ServoProfile,
     inner: simulation::BrowserActor<simulation::engine_dispatch::EngineThreadRuntime>,
 }
 
@@ -92,6 +94,7 @@ impl ServoBrowserActor {
                 AgentPortError::Handler(format!("principal binding failed: {error}"))
             })?;
         Ok(Self {
+            profile: endpoint.profile,
             inner: simulation::BrowserActor::new(binding, endpoint.inner),
         })
     }
@@ -104,6 +107,12 @@ impl ServoBrowserActor {
         attestor: &ProcfsPeerAttestor,
         attested: &AttestedPeer,
     ) -> Result<HandlerOutcome, AgentPortError> {
+        if matches!(self.profile, ServoProfile::ClosedImmutableReadOnly)
+            && let Some(error) = self.preflight_attested(context, request, attestor, attested)?
+        {
+            self.inner.retire_prepared_request(&request.request_id)?;
+            return Ok(HandlerOutcome::Failure(error));
+        }
         self.inner
             .handle_attested(context, request, attestor, attested)
     }
@@ -118,8 +127,10 @@ impl ServoBrowserActor {
         attestor: &ProcfsPeerAttestor,
         attested: &AttestedPeer,
     ) -> Result<Option<BrowserWireError>, AgentPortError> {
-        self.inner
-            .preflight_attested(context, request, attestor, attested)
+        let refusal = self
+            .inner
+            .preflight_attested(context, request, attestor, attested)?;
+        self.finish_profile_preflight(request, refusal)
     }
 
     /// Source controlled path carrying the actual control-custodian verifier
@@ -133,8 +144,10 @@ impl ServoBrowserActor {
         attested: &AttestedPeer,
         custodian: &ControlRequestVerifier,
     ) -> Result<Option<BrowserWireError>, AgentPortError> {
-        self.inner
-            .preflight_attested_controlled(context, request, attestor, attested, custodian)
+        let refusal = self
+            .inner
+            .preflight_attested_controlled(context, request, attestor, attested, custodian)?;
+        self.finish_profile_preflight(request, refusal)
     }
 
     #[cfg(target_os = "linux")]
@@ -146,8 +159,27 @@ impl ServoBrowserActor {
         attested: &AttestedPeer,
         custodian: &ControlRequestVerifier,
     ) -> Result<HandlerOutcome, AgentPortError> {
+        if matches!(self.profile, ServoProfile::ClosedImmutableReadOnly)
+            && let Some(error) =
+                self.preflight_attested_controlled(context, request, attestor, attested, custodian)?
+        {
+            self.inner.retire_prepared_request(&request.request_id)?;
+            return Ok(HandlerOutcome::Failure(error));
+        }
         self.inner
             .handle_attested_controlled(context, request, attestor, attested, custodian)
+    }
+
+    fn finish_profile_preflight(
+        &mut self,
+        request: &BrowserRequest,
+        refusal: Option<BrowserWireError>,
+    ) -> Result<Option<BrowserWireError>, AgentPortError> {
+        let refusal = refusal.or_else(|| self.profile.refusal(&request.operation));
+        if refusal.is_some() {
+            self.inner.retire_prepared_request(&request.request_id)?;
+        }
+        Ok(refusal)
     }
 
     /// Return only the semantic principal.  Mechanism identity remains private.
@@ -355,6 +387,46 @@ fn map_runtime_error(error: RuntimeFailure) -> ServoRuntimeError {
     }
 }
 
+// Private, closed selection travels with the concrete endpoint. It cannot be
+// widened by an operation packet or by an embedder-supplied capability boolean.
+#[derive(Clone, Copy)]
+enum ServoProfile {
+    ExistingSemanticBridge,
+    ClosedImmutableReadOnly,
+}
+impl ServoProfile {
+    fn refusal(self, operation: &BrowserOperation) -> Option<BrowserWireError> {
+        if matches!(self, Self::ClosedImmutableReadOnly)
+            && matches!(operation, BrowserOperation::SessionCreate { profile, .. }
+                if profile.profile_id != "immutable-read-only-v1")
+        {
+            return Some(BrowserWireError {
+                code: BrowserErrorCode::PolicyDenied,
+                message: "closed immutable owner requires its fixed ephemeral profile".into(),
+                details: None,
+            });
+        }
+        if matches!(self, Self::ClosedImmutableReadOnly)
+            && !matches!(
+                operation,
+                BrowserOperation::Health
+                    | BrowserOperation::SessionCreate { .. }
+                    | BrowserOperation::SessionSnapshot
+                    | BrowserOperation::PageObserve { .. }
+                    | BrowserOperation::SessionClose
+            )
+        {
+            return Some(BrowserWireError {
+                code: BrowserErrorCode::Unsupported,
+                message: "closed immutable owner supports no navigation, action, extract or wait"
+                    .into(),
+                details: None,
+            });
+        }
+        None
+    }
+}
+
 struct ServoCommandBridge {
     state: Rc<RefCell<ServoCommandState>>,
 }
@@ -502,13 +574,32 @@ impl ServoRuntimeOwner {
 pub fn servo_runtime_pair(
     waker: Arc<dyn ServoEventLoopWaker>,
 ) -> (ServoRuntimeEndpoint, ServoRuntimeOwner) {
+    runtime_pair(waker, ServoProfile::ExistingSemanticBridge)
+}
+
+/// Create a concrete endpoint whose actor refuses Navigate, Act, Extract and
+/// Wait during live preflight, before durable admission or engine dispatch.
+/// This grants no listener, policy provisioning or installed activation.
+pub fn closed_immutable_servo_runtime_pair(
+    waker: Arc<dyn ServoEventLoopWaker>,
+) -> (ServoRuntimeEndpoint, ServoRuntimeOwner) {
+    runtime_pair(waker, ServoProfile::ClosedImmutableReadOnly)
+}
+
+fn runtime_pair(
+    waker: Arc<dyn ServoEventLoopWaker>,
+    profile: ServoProfile,
+) -> (ServoRuntimeEndpoint, ServoRuntimeOwner) {
     let state = Rc::new(RefCell::new(ServoCommandState::default()));
     let bridge = ServoCommandBridge {
         state: state.clone(),
     };
     let (endpoint, owner) = callback_engine_pair(bridge, Arc::new(ServoWakerAdapter(waker)));
     (
-        ServoRuntimeEndpoint { inner: endpoint },
+        ServoRuntimeEndpoint {
+            inner: endpoint,
+            profile,
+        },
         ServoRuntimeOwner {
             inner: owner,
             state,
@@ -595,5 +686,87 @@ mod tests {
             HandlerOutcome::Success(_)
         ));
         assert!(owner.take_command().is_none());
+    }
+}
+
+#[cfg(test)]
+mod immutable_profile_tests {
+    use super::*;
+    use hepta_browser_codec::{NavigationTarget, ProfilePersistence};
+
+    #[test]
+    fn read_only_profile_refuses_all_effect_and_unimplemented_operation_classes() {
+        let profile = ServoProfile::ClosedImmutableReadOnly;
+        let target = ElementReference {
+            session_generation: 1,
+            document_generation: 1,
+            semantic_snapshot_revision: 1,
+            frame_id: "frame".into(),
+            backend_node_key: Some("node".into()),
+            role: Some("button".into()),
+            accessible_name_sha256: Some("a".repeat(64)),
+            structural_fingerprint: "b".repeat(64),
+        };
+        for operation in [
+            BrowserOperation::PageNavigate {
+                target: NavigationTarget::ExternalHttps {
+                    url: "https://example.com/".into(),
+                },
+                expected_document_generation: 1,
+            },
+            BrowserOperation::PageAct {
+                target,
+                action: PageAction::Click,
+            },
+            BrowserOperation::PageExtract {
+                schema_id: "read-only-is-not-extract".into(),
+            },
+            BrowserOperation::PageWait {
+                condition: WaitCondition::DocumentReady,
+                timeout_ms: 1,
+            },
+        ] {
+            assert_eq!(
+                profile.refusal(&operation).unwrap().code,
+                BrowserErrorCode::Unsupported
+            );
+        }
+    }
+    #[test]
+    fn fixed_profile_cannot_be_replaced_by_a_valid_arbitrary_profile_identifier() {
+        let operation = BrowserOperation::SessionCreate {
+            profile: ProfileSpec {
+                profile_id: "different-valid-id".into(),
+                persistence: ProfilePersistence::Ephemeral,
+            },
+            ui_mode: "headed".into(),
+        };
+        assert_eq!(
+            ServoProfile::ClosedImmutableReadOnly
+                .refusal(&operation)
+                .unwrap()
+                .code,
+            BrowserErrorCode::PolicyDenied
+        );
+        assert!(
+            ServoProfile::ExistingSemanticBridge
+                .refusal(&operation)
+                .is_none()
+        );
+    }
+    #[test]
+    fn concrete_pair_carries_closed_selection_and_no_generic_capability_argument() {
+        let (endpoint, mut owner) = closed_immutable_servo_runtime_pair(Arc::new(|| {}));
+        assert!(matches!(
+            endpoint.profile,
+            ServoProfile::ClosedImmutableReadOnly
+        ));
+        assert!(owner.take_command().is_none());
+        assert!(matches!(owner.pump_one(), ServoPumpResult::Idle));
+        let (existing, _) = servo_runtime_pair(Arc::new(|| {}));
+        assert!(matches!(
+            existing.profile,
+            ServoProfile::ExistingSemanticBridge
+        ));
     }
 }

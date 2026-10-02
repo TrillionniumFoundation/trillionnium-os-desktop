@@ -53,6 +53,7 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 - `ServoBrowserActor::from_attested` admits only the concrete S08 callback bridge; callers cannot supply a generic runtime.
 - `ServoBrowserActor::preflight_attested` checks current custody, session/reference binding, arbitration, cancellation and supported operation without dispatching engine work or writing receipts. Refusal retires request cancellation registration; `handle_attested` still rechecks final custody/control after durable intent.
 - `servo_runtime_pair` returns one actor endpoint and one creator-thread `ServoRuntimeOwner`.
+- `closed_immutable_servo_runtime_pair` adds a fixed read-only endpoint selection. It retains live preflight and rejects Navigate/Act/Extract/Wait before durable admission; it grants no installed activation. Its actual same-process consumer source is described in `docs/architecture/NATIVE_IMMUTABLE_PRODUCT_OWNER.md`.
 - `ServoRuntimeCommand` and `ServoRuntimeCompletion` expose bounded operation data and single-use completion without exposing Servo objects.
 - `principal`, `page_owner`, cancellation accessors and `receipt_observer` expose bounded views.
 - `ReceiptLifecycleObserver` exposes complete-chain deduplication and sealed receipt lookup, and `into_journal` consumes only an idle observer with no nonterminal durable history for explicit actor rebinding.
@@ -64,6 +65,8 @@ This library registers no binary target. Cargo binary auto-discovery and package
 ## Configuration and features
 
 There are no Cargo features. The deterministic wrapper remains local-only, while S08 adds a concrete bridge whose real-Servo behavior is enabled only by the permanent qualification workflow. `HEPTA_S08_MAILBOX` is accepted solely by the integration test and must name an absolute private test directory; it is not runtime product configuration. Product activation remains controlled by higher-level profile and systemd custody.
+
+The closed immutable consumer is a separate source candidate. Its reusable real-Servo adapter is not the S08 mailbox and is not linked into the default browserd CLI. The existing full semantic bridge selection and all old tests remain present; new source selection does not qualify the known failing S08 action lane.
 
 Registered Cargo features: none.
 
