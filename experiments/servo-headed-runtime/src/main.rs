@@ -37,15 +37,16 @@ use url::Url;
 use winit::application::ApplicationHandler;
 use winit::dpi::{PhysicalPosition, PhysicalSize};
 use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
-use winit::event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy};
+use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop, EventLoopProxy};
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::raw_window_handle::{HasDisplayHandle, HasWindowHandle};
 use winit::window::Window;
 
 mod input_ownership;
 use input_ownership::{
-    Button, ButtonAction, CheckpointPhase, InputCheckpoint, InputOwnership, QualificationInput,
-    ReleaseOutcome,
+    AuxiliaryOwnership, Button, ButtonAction, CheckpointPhase, InputCheckpoint, InputOwnership,
+    LaneError, NativeAck, NativeKind, NativeOwner, NativeTicket, OrderedNativeInput,
+    PhysicalIngress, QualificationInput, ReleaseOutcome,
 };
 mod resource_gate;
 use resource_gate::{
@@ -306,7 +307,9 @@ impl ApplicationHandler<AppEvent> for App {
                     }
                     state.crash_observed.set(true);
                     state.exact_termination_observed.set(true);
+                    state.ingress.borrow_mut().barrier();
                     state.input.borrow_mut().crashed();
+                    state.withdraw_native_input();
                     state.retire_withdrawn_gesture();
                     *state.crash_reason.borrow_mut() = Some(format!(
                         "exact content process terminated after SIGKILL: pid={pid}, start_time={start_time}"
@@ -348,23 +351,30 @@ impl ApplicationHandler<AppEvent> for App {
         if window_id != state.window.id() {
             return;
         }
-        state.servo.spin_event_loop();
+        // OS ingress/withdrawal must precede any old Servo ACK or queue drain.
         match event {
             WindowEvent::CloseRequested => {
+                state.ingress.borrow_mut().barrier();
+                state.input.borrow_mut().pointer_left();
+                state.withdraw_native_input();
                 state.fail("window closed before qualification completed");
             }
             WindowEvent::RedrawRequested => state.compose(),
             WindowEvent::CursorMoved { position, .. } => state.forward_pointer_move(position),
             WindowEvent::CursorLeft { .. } => state.pointer_left(),
             WindowEvent::Focused(focused) => {
-                let dismiss = state.input.borrow_mut().focused(focused);
-                state.dismiss_ime(dismiss);
+                let changed = state.ingress.borrow().focused_now() != focused;
+                state.ingress.borrow_mut().focused(focused);
+                state.input.borrow_mut().focused(focused);
+                if changed {
+                    state.withdraw_native_input();
+                }
                 if state.retire_withdrawn_gesture() {
                     return;
                 }
                 if !focused {
-                    state.pointer_left();
-                    if let Some(webview) = state.webview.borrow().as_ref() {
+                    let webview = state.webview.borrow().as_ref().cloned();
+                    if let Some(webview) = webview {
                         webview.blur();
                     }
                 }
@@ -383,20 +393,34 @@ impl ApplicationHandler<AppEvent> for App {
                         .window_resize_events
                         .set(state.window_resize_events.get() + 1);
                 } else {
+                    state.ingress.borrow_mut().barrier();
+                    state.input.borrow_mut().pointer_left();
+                    state.withdraw_native_input();
                     state.fail("runtime window size changed from the fixed qualification surface");
                 }
             }
             _ => {}
         }
+        if state.failure.borrow().is_none() {
+            state.servo.spin_event_loop();
+        }
         let _ = state.proxy.send_event(AppEvent::Drive);
     }
 
-    fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
+    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         if let Some(state) = &self.state {
             state.servo.spin_event_loop();
             state.drive();
+            let deadline = state.native_lane.borrow().deadline();
+            event_loop.set_control_flow(deadline.map_or(ControlFlow::Wait, ControlFlow::WaitUntil));
         }
     }
+}
+
+struct NativePayload {
+    event: Option<InputEvent>,
+    local_ime: Option<bool>,
+    key_transition: Option<(String, bool)>,
 }
 
 struct RuntimeState {
@@ -448,6 +472,10 @@ struct RuntimeState {
     failure: RefCell<Option<String>>,
     completed: Cell<bool>,
     input: RefCell<InputOwnership>,
+    ingress: RefCell<PhysicalIngress>,
+    native_lane: RefCell<OrderedNativeInput<InputEventId, NativePayload>>,
+    native_trace: RefCell<Vec<serde_json::Value>>,
+    auxiliary: RefCell<AuxiliaryOwnership<InputEventId>>,
     pending_mouse_releases: RefCell<HashMap<InputEventId, Button>>,
     fault_process: Cell<Option<(u32, u64)>>,
     exact_termination_observed: Cell<bool>,
@@ -486,11 +514,7 @@ impl RuntimeState {
         let qualification_input = qualification_nonce
             .as_ref()
             .map(|_| QualificationInput::new());
-        let qualification_owner_start = if qualification_nonce.is_some() {
-            exact_content_process_start_time(std::process::id())?
-        } else {
-            0
-        };
+        let qualification_owner_start = exact_content_process_start_time(std::process::id())?;
         let display_handle = event_loop.display_handle()?;
         let attributes = Window::default_attributes()
             .with_title(WINDOW_TITLE)
@@ -589,6 +613,14 @@ impl RuntimeState {
                 WINDOW_HEIGHT,
                 CHROME_HEIGHT,
             )),
+            ingress: RefCell::new(PhysicalIngress::new(
+                WINDOW_WIDTH,
+                WINDOW_HEIGHT,
+                CHROME_HEIGHT,
+            )),
+            native_lane: RefCell::new(OrderedNativeInput::new()),
+            native_trace: RefCell::new(Vec::new()),
+            auxiliary: RefCell::new(AuxiliaryOwnership::new()),
             pending_mouse_releases: RefCell::new(HashMap::new()),
             fault_process: Cell::new(None),
             exact_termination_observed: Cell::new(false),
@@ -630,11 +662,20 @@ impl RuntimeState {
         if self.completed.get() {
             return;
         }
+        let time_check = self.native_lane.borrow_mut().check(Instant::now());
+        if let Err(error) = time_check {
+            self.refuse_native_input(error);
+        }
         if self.resource_observations.borrow().exceeded_bound
             || self.fixture_network_requests.load(Ordering::Relaxed) != 0
         {
             self.fail("resource callback bound or fixture network continuation violated");
         }
+        if self.failure.borrow().is_some() {
+            self.finish_failure();
+            return;
+        }
+        self.drain_native_input();
         if self.failure.borrow().is_some() {
             self.finish_failure();
             return;
@@ -684,10 +725,12 @@ impl RuntimeState {
 
         if self.generation.get() == 1
             && self.qualification_input_complete()
+            && self.native_lane.borrow().idle()
             && self.native_pointer_events.get() > 0
             && self.native_button_events.get() >= 2
             && self.native_wheel_events.get() > 0
             && self.native_keyboard_events.get() >= 2
+            && !self.auxiliary.borrow().unsettled()
             && !self.synthetic_ime_sent.get()
         {
             self.send_synthetic_ime();
@@ -696,6 +739,7 @@ impl RuntimeState {
 
         if self.generation.get() == 1
             && self.qualification_input_complete()
+            && self.native_lane.borrow().idle()
             && self.synthetic_ime_sent.get()
             && self.settled.get()
             && !self.page_evidence_requested.get()
@@ -706,6 +750,8 @@ impl RuntimeState {
 
         if self.generation.get() == 1
             && self.initial_page_evidence.borrow().is_some()
+            && self.native_lane.borrow().idle()
+            && !self.auxiliary.borrow().unsettled()
             && self.popup_denied.get() > 0
             && self.navigation_denied.get() > 0
             && self.input_method_controls.get() > 0
@@ -717,12 +763,16 @@ impl RuntimeState {
 
         if self.generation.get() == 2
             && self.workspace_screenshot_saved.get()
+            && self.native_lane.borrow().idle()
             && !self.page_evidence_requested.get()
         {
             self.request_page_evidence();
             return;
         }
-        if self.generation.get() == 2 && self.recovery_page_evidence.borrow().is_some() {
+        if self.generation.get() == 2
+            && self.native_lane.borrow().idle()
+            && self.recovery_page_evidence.borrow().is_some()
+        {
             self.finish_success();
         }
     }
@@ -800,9 +850,24 @@ impl RuntimeState {
                 data: "hepta".to_owned(),
             },
         ];
-        for event in events {
-            webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(event)));
-        }
+        drop(webview);
+        let events = events
+            .into_iter()
+            .map(|event| {
+                let bytes = event.data.len() + 32;
+                (
+                    NativeKind::SyntheticIme,
+                    None,
+                    bytes,
+                    NativePayload {
+                        event: Some(InputEvent::Ime(ImeEvent::Composition(event))),
+                        local_ime: None,
+                        key_transition: None,
+                    },
+                )
+            })
+            .collect();
+        self.enqueue_native(events);
         self.synthetic_ime_sent.set(true);
         self.settled.set(false);
         let proxy = self.proxy.clone();
@@ -986,6 +1051,7 @@ impl RuntimeState {
     fn start_recovery(self: &Rc<Self>) {
         self.recovery_started.set(true);
         *self.webview.borrow_mut() = None;
+        self.ingress.borrow_mut().barrier();
         self.generation.set(2);
         if !self.input.borrow_mut().reconstruct(2) {
             self.fail("replacement input ownership did not follow a crash");
@@ -1012,7 +1078,8 @@ impl RuntimeState {
         }
 
         if !self.crash_observed.get() || self.recovery_started.get() {
-            if let Some(webview) = self.webview.borrow().as_ref() {
+            let webview = self.webview.borrow().as_ref().cloned();
+            if let Some(webview) = webview {
                 webview.paint();
             }
         }
@@ -1118,8 +1185,11 @@ impl RuntimeState {
     }
 
     fn forward_pointer_move(&self, position: PhysicalPosition<f64>) {
-        let point = self.input.borrow_mut().pointer(position.x, position.y);
+        let point = self.ingress.borrow_mut().pointer(position.x, position.y);
         let Some((x, y)) = point else {
+            self.input.borrow_mut().pointer(position.x, position.y);
+            self.input.borrow_mut().pressed();
+            self.withdraw_native_input();
             self.pointer_left();
             if position.x == 10.0 && position.y == 10.0 {
                 let checkpoint = self
@@ -1138,45 +1208,28 @@ impl RuntimeState {
             }
             return;
         };
-        let point = DevicePoint::new(x, y);
-        self.native_pointer_events
-            .set(self.native_pointer_events.get() + 1);
-        if let Some(webview) = self.webview.borrow().as_ref() {
-            let event_id = webview
-                .notify_input_event(InputEvent::MouseMove(MouseMoveEvent::new(point.into())));
-            if let Some(input) = self.qualification_input.borrow_mut().as_mut() {
-                input.observe_pointer(self.generation.get(), (x, y), event_id);
-            }
-        }
+        self.enqueue_native(vec![(
+            NativeKind::Move,
+            Some((x, y)),
+            32,
+            NativePayload {
+                event: Some(InputEvent::MouseMove(MouseMoveEvent::new(
+                    DevicePoint::new(x, y).into(),
+                ))),
+                local_ime: None,
+                key_transition: None,
+            },
+        )]);
     }
 
     fn pointer_left(&self) {
+        self.ingress.borrow_mut().barrier();
         self.input.borrow_mut().pointer_left();
-        if self.retire_withdrawn_gesture() {
-            return;
-        }
-        if let Some(webview) = self.webview.borrow().as_ref() {
-            webview.notify_input_event(InputEvent::MouseLeftViewport(
-                servo::MouseLeftViewportEvent::default(),
-            ));
-        }
+        self.withdraw_native_input();
+        self.retire_withdrawn_gesture();
     }
 
     fn forward_mouse_button(&self, state: ElementState, button: MouseButton) {
-        if state == ElementState::Pressed {
-            let dismiss = self.input.borrow_mut().pressed();
-            self.dismiss_ime(dismiss);
-            if self.retire_withdrawn_gesture() {
-                return;
-            }
-            if let Some(webview) = self.webview.borrow().as_ref() {
-                if self.input.borrow().keyboard_allowed() {
-                    webview.focus();
-                } else {
-                    webview.blur();
-                }
-            }
-        }
         let (owned_button, button) = match button {
             MouseButton::Left => (Button::Primary, ServoMouseButton::Primary),
             MouseButton::Right => (Button::Secondary, ServoMouseButton::Secondary),
@@ -1189,52 +1242,52 @@ impl RuntimeState {
             ElementState::Pressed => (ButtonAction::Down, MouseButtonAction::Down),
             ElementState::Released => (ButtonAction::Up, MouseButtonAction::Up),
         };
-        if let Some(input) = self.qualification_input.borrow().as_ref() {
-            let point = self.input.borrow().point();
-            if point.is_some() {
-                let ready = owned_button == Button::Primary
-                    && match owned_action {
-                        ButtonAction::Down => input.allows_down(self.generation.get(), point),
-                        ButtonAction::Up => input.allows_up(self.generation.get(), point),
-                    };
-                if !ready {
-                    self.fail("native qualification button arrived before its exact checkpoint");
-                    return;
+        let projected = self.ingress.borrow_mut().button(owned_button, owned_action);
+        let point = match projected {
+            Ok(Some(point)) => point,
+            Ok(None) => {
+                self.trace_native_refusal("outside_content");
+                let webview = self.webview.borrow().as_ref().cloned();
+                if let Some(webview) = webview {
+                    webview.blur();
                 }
+                self.input.borrow_mut().pressed();
+                return;
             }
-        }
-        let point =
-            self.input
-                .borrow_mut()
-                .route_button(self.generation.get(), owned_button, owned_action);
-        if self.retire_withdrawn_gesture() {
-            return;
-        }
-        let Some((x, y)) = point else {
-            return;
+            Err(error) => {
+                self.refuse_native_input(error);
+                return;
+            }
         };
-        let point = DevicePoint::new(x, y);
-        self.native_button_events
-            .set(self.native_button_events.get() + 1);
-        if let Some(webview) = self.webview.borrow().as_ref() {
-            let event_id = webview.notify_input_event(InputEvent::MouseButton(
-                MouseButtonEvent::new(action, button, point.into()),
-            ));
-            if owned_action == ButtonAction::Up {
-                self.pending_mouse_releases
-                    .borrow_mut()
-                    .insert(event_id, owned_button);
-            }
-            if let Some(input) = self.qualification_input.borrow_mut().as_mut() {
-                let result = match owned_action {
-                    ButtonAction::Down => input.submit_down(event_id),
-                    ButtonAction::Up => input.submit_up(event_id),
+        if let Some(input) = self.qualification_input.borrow().as_ref() {
+            let ready = owned_button == Button::Primary
+                && match owned_action {
+                    ButtonAction::Down => input.allows_down(self.generation.get(), Some(point)),
+                    ButtonAction::Up => input.allows_up(self.generation.get(), Some(point)),
                 };
-                if let Err(error) = result {
-                    self.fail(error);
-                }
+            if !ready {
+                self.fail("native qualification button arrived before its exact checkpoint");
+                return;
             }
         }
+        let kind = match owned_action {
+            ButtonAction::Down => NativeKind::Down(owned_button),
+            ButtonAction::Up => NativeKind::Up(owned_button),
+        };
+        self.enqueue_native(vec![(
+            kind,
+            Some(point),
+            32,
+            NativePayload {
+                event: Some(InputEvent::MouseButton(MouseButtonEvent::new(
+                    action,
+                    button,
+                    DevicePoint::new(point.0, point.1).into(),
+                ))),
+                local_ime: None,
+                key_transition: None,
+            },
+        )]);
     }
 
     fn qualification_input_complete(&self) -> bool {
@@ -1313,8 +1366,9 @@ impl RuntimeState {
             self.fail("withdrawn gesture does not match the active native generation");
             return true;
         }
-        let dismiss = self.input.borrow_mut().end_ime();
-        self.dismiss_ime(dismiss);
+        self.input.borrow_mut().end_ime();
+        let _ = self.native_lane.borrow_mut().withdraw();
+        self.ingress.borrow_mut().barrier();
         let retired = self.webview.borrow_mut().take();
         self.pending_mouse_releases.borrow_mut().clear();
         let owned_handle_removed = retired.is_some();
@@ -1363,98 +1417,469 @@ impl RuntimeState {
     }
 
     fn forward_wheel(&self, delta: MouseScrollDelta) {
-        let Some((x, y)) = self.input.borrow().point() else {
+        let Some((px, py)) = self.ingress.borrow().point() else {
+            self.trace_native_refusal("wheel_outside_content");
             return;
         };
-        let point = DevicePoint::new(x, y);
         let (x, y, mode) = match delta {
             MouseScrollDelta::LineDelta(x, y) => (x as f64, y as f64, WheelMode::DeltaLine),
             MouseScrollDelta::PixelDelta(position) => {
                 (position.x, position.y, WheelMode::DeltaPixel)
             }
         };
-        self.native_wheel_events
-            .set(self.native_wheel_events.get() + 1);
-        if let Some(webview) = self.webview.borrow().as_ref() {
-            webview.notify_input_event(InputEvent::Wheel(WheelEvent::new(
-                WheelDelta { x, y, z: 0.0, mode },
-                point.into(),
-            )));
+        if !x.is_finite() || !y.is_finite() {
+            self.refuse_native_input(LaneError::Payload);
+            return;
         }
+        self.enqueue_native(vec![(
+            NativeKind::Wheel,
+            Some((px, py)),
+            48,
+            NativePayload {
+                event: Some(InputEvent::Wheel(WheelEvent::new(
+                    WheelDelta { x, y, z: 0.0, mode },
+                    DevicePoint::new(px, py).into(),
+                ))),
+                local_ime: None,
+                key_transition: None,
+            },
+        )]);
     }
 
     fn forward_keyboard(&self, event: winit::event::KeyEvent) {
-        if !self.input.borrow().keyboard_allowed() {
+        if !self.ingress.borrow().keyboard_allowed() {
+            self.trace_native_refusal("keyboard_not_owned");
             return;
         }
-        let key = match event.logical_key {
-            WinitKey::Character(value) => Key::Character(value.to_string()),
-            WinitKey::Named(WinitNamedKey::Enter) => Key::Named(NamedKey::Enter),
-            WinitKey::Named(WinitNamedKey::Tab) => Key::Named(NamedKey::Tab),
-            WinitKey::Named(WinitNamedKey::Backspace) => Key::Named(NamedKey::Backspace),
-            _ => Key::Named(NamedKey::Unidentified),
+        let physical_key = format!("{:?}", event.physical_key);
+        let down = event.state == ElementState::Pressed;
+        let (key, bytes) = match event.logical_key {
+            WinitKey::Character(value) => (Key::Character(value.to_string()), value.len() + 32),
+            WinitKey::Named(WinitNamedKey::Enter) => (Key::Named(NamedKey::Enter), 32),
+            WinitKey::Named(WinitNamedKey::Tab) => (Key::Named(NamedKey::Tab), 32),
+            WinitKey::Named(WinitNamedKey::Backspace) => (Key::Named(NamedKey::Backspace), 32),
+            _ => (Key::Named(NamedKey::Unidentified), 32),
         };
-        let key_state = match event.state {
+        let state = match event.state {
             ElementState::Pressed => KeyState::Down,
             ElementState::Released => KeyState::Up,
         };
-        self.native_keyboard_events
-            .set(self.native_keyboard_events.get() + 1);
-        if let Some(webview) = self.webview.borrow().as_ref() {
-            webview.notify_input_event(InputEvent::Keyboard(KeyboardEvent::from_state_and_key(
-                key_state, key,
-            )));
-        }
+        let point = self.ingress.borrow().point();
+        self.enqueue_native(vec![(
+            NativeKind::Key,
+            point,
+            bytes + physical_key.len(),
+            NativePayload {
+                event: Some(InputEvent::Keyboard(KeyboardEvent::from_state_and_key(
+                    state, key,
+                ))),
+                local_ime: None,
+                key_transition: Some((physical_key, down)),
+            },
+        )]);
     }
 
     fn forward_native_ime(&self, event: Ime) {
         self.native_ime_events.set(self.native_ime_events.get() + 1);
-        let Some(webview) = self.webview.borrow().as_ref().cloned() else {
-            return;
-        };
+        let mut events = Vec::new();
         let committing = matches!(&event, Ime::Commit(_));
         match event {
-            Ime::Enabled => self.input.borrow_mut().enable_ime(),
-            Ime::Preedit(data, _) | Ime::Commit(data) => {
-                if !self.input.borrow().ime_context_allowed() {
-                    return;
-                }
-                if self.input.borrow_mut().begin_ime() {
-                    webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(
-                        CompositionEvent {
-                            state: CompositionState::Start,
-                            data: String::new(),
-                        },
-                    )));
-                }
-                // Enabled spans multiple compositions; Commit ends only this one.
-                webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(
-                    CompositionEvent {
-                        state: if committing {
-                            CompositionState::End
-                        } else {
-                            CompositionState::Update
-                        },
-                        data,
+            Ime::Enabled => {
+                self.ingress.borrow_mut().ime_enabled(true);
+                events.push((
+                    NativeKind::LocalIme,
+                    None,
+                    8,
+                    NativePayload {
+                        event: None,
+                        local_ime: Some(true),
+                        key_transition: None,
                     },
-                )));
-                if committing {
-                    self.input.borrow_mut().end_ime();
-                }
+                ));
             }
             Ime::Disabled => {
-                let dismiss = self.input.borrow_mut().disable_ime();
-                self.dismiss_ime(dismiss);
+                let dismiss = self.ingress.borrow_mut().ime_enabled(false);
+                events.push((
+                    NativeKind::LocalIme,
+                    None,
+                    8,
+                    NativePayload {
+                        event: None,
+                        local_ime: Some(false),
+                        key_transition: None,
+                    },
+                ));
+                if dismiss {
+                    events.push((
+                        NativeKind::Ime,
+                        None,
+                        8,
+                        NativePayload {
+                            event: Some(InputEvent::Ime(ImeEvent::Dismissed)),
+                            local_ime: None,
+                            key_transition: None,
+                        },
+                    ));
+                }
             }
+            Ime::Preedit(data, _) | Ime::Commit(data) => {
+                let start = self.ingress.borrow_mut().composition(committing);
+                let Some(start) = start else {
+                    self.trace_native_refusal("ime_not_owned");
+                    return;
+                };
+                if start {
+                    events.push((
+                        NativeKind::Ime,
+                        None,
+                        32,
+                        NativePayload {
+                            event: Some(InputEvent::Ime(ImeEvent::Composition(CompositionEvent {
+                                state: CompositionState::Start,
+                                data: String::new(),
+                            }))),
+                            local_ime: None,
+                            key_transition: None,
+                        },
+                    ));
+                }
+                let bytes = data.len() + 32;
+                events.push((
+                    NativeKind::Ime,
+                    None,
+                    bytes,
+                    NativePayload {
+                        event: Some(InputEvent::Ime(ImeEvent::Composition(CompositionEvent {
+                            state: if committing {
+                                CompositionState::End
+                            } else {
+                                CompositionState::Update
+                            },
+                            data,
+                        }))),
+                        local_ime: None,
+                        key_transition: None,
+                    },
+                ));
+            }
+        }
+        self.enqueue_native(events);
+    }
+
+    fn native_owner(&self) -> Option<NativeOwner> {
+        if !self.input.borrow().current_callback(self.generation.get()) {
+            return None;
+        }
+        let view = self
+            .webview
+            .borrow()
+            .as_ref()
+            .map(|webview| format!("{:?}", webview.id()))?;
+        Some(NativeOwner {
+            generation: self.generation.get(),
+            view,
+            epoch: self.ingress.borrow().epoch,
+        })
+    }
+
+    fn record_native(&self, phase: &str, ticket: &NativeTicket, id: Option<InputEventId>) {
+        let mut records = self.native_trace.borrow_mut();
+        if records.len() == 256 {
+            drop(records);
+            self.fail("bounded native input facts exceeded");
+            return;
+        }
+        records.push(serde_json::json!({"phase":phase,"sequence":ticket.sequence,
+            "generation":ticket.owner.generation,"view":ticket.owner.view,"epoch":ticket.owner.epoch,
+            "kind":ticket.kind.as_str(),"point":ticket.point,"event_id":id.map(|value|format!("{value:?}")),
+            "source":if ticket.kind == NativeKind::SyntheticIme {"qualification_synthetic"} else {"native_winit"}}));
+    }
+
+    fn trace_native_refusal(&self, reason: &str) {
+        let mut records = self.native_trace.borrow_mut();
+        if records.len() == 256 {
+            drop(records);
+            self.fail("bounded native input facts exceeded");
+            return;
+        }
+        records.push(serde_json::json!({"phase":"not_admitted","reason":reason,
+            "generation":self.generation.get(),"epoch":self.ingress.borrow().epoch}));
+    }
+
+    fn enqueue_native(&self, events: Vec<(NativeKind, Option<(f32, f32)>, usize, NativePayload)>) {
+        let Some(owner) = self.native_owner() else {
+            self.trace_native_refusal("stale_owner");
+            return;
+        };
+        let result = self
+            .native_lane
+            .borrow_mut()
+            .enqueue(Instant::now(), owner, events);
+        match result {
+            Ok(tickets) => {
+                for ticket in tickets {
+                    self.record_native("admitted", &ticket, None);
+                }
+                let _ = self.proxy.send_event(AppEvent::Drive);
+            }
+            Err(error) => self.refuse_native_input(error),
         }
     }
 
-    fn dismiss_ime(&self, dismiss: bool) {
-        if dismiss {
-            if let Some(webview) = self.webview.borrow().as_ref() {
-                webview.notify_input_event(InputEvent::Ime(ImeEvent::Dismissed));
+    fn withdraw_native_input(&self) {
+        let discarded = self.native_lane.borrow().unsent_tickets();
+        let result = self.native_lane.borrow_mut().withdraw();
+        for ticket in discarded {
+            self.record_native("withdrawn_unsent", &ticket, None);
+        }
+        let result = if self.auxiliary.borrow().unsettled() {
+            self.native_lane
+                .borrow_mut()
+                .close(LaneError::OwnershipWithdrawn)
+        } else {
+            result
+        };
+        // Preserve the actual held gesture's original withdrawal reason.
+        if self.retire_withdrawn_gesture() {
+            return;
+        }
+        if let Err(error) = result {
+            self.refuse_native_input(error);
+        }
+    }
+
+    fn refuse_native_input(&self, error: LaneError) {
+        if self.failure.borrow().is_some() {
+            return;
+        }
+        let _: Result<(), LaneError> = self.native_lane.borrow_mut().close(error);
+        self.input.borrow_mut().refuse_ordered_input();
+        if self.retire_withdrawn_gesture() {
+            return;
+        }
+        self.input.borrow_mut().crashed();
+        self.ingress.borrow_mut().barrier();
+        let retired = self.webview.borrow_mut().take();
+        if let Some(webview) = retired {
+            webview.blur();
+            webview.hide();
+            drop(webview);
+        }
+        self.trace_native_refusal(error.as_str());
+        let report = serde_json::json!({"schema":"trillionnium.desktop.native-input-refusal.v1",
+            "reason":error.as_str(),"generation":self.generation.get(),"fresh_servo_owner_required":true,
+            "synthetic_mouse_release_sent":false,"same_servo_reconstruction_allowed":false,"product_ready":false});
+        let _ = fs::write(
+            self.output_dir.join("native-input-refusal.json"),
+            serde_json::to_string_pretty(&report).unwrap() + "\n",
+        );
+        self.fail(&format!("ordered native input refused: {}", error.as_str()));
+    }
+
+    fn drain_native_input(&self) {
+        let Some(owner) = self.native_owner() else {
+            return;
+        };
+        let reservation = self.native_lane.borrow_mut().begin(Instant::now(), &owner);
+        let event = match reservation {
+            Ok(Some(event)) => event,
+            Ok(None) => return,
+            Err(error) => {
+                self.refuse_native_input(error);
+                return;
+            }
+        };
+        let ticket = event.ticket;
+        let webview = self.webview.borrow().as_ref().cloned();
+        let Some(webview) = webview else {
+            self.refuse_native_input(LaneError::UnknownSubmission);
+            return;
+        };
+        // Submitting is reserved and all RefCell borrows are released here.
+        if let Some(enabled) = event.payload.local_ime {
+            if enabled {
+                self.input.borrow_mut().enable_ime();
+            } else {
+                self.input.borrow_mut().disable_ime();
+            }
+            let result = self
+                .native_lane
+                .borrow_mut()
+                .local(Instant::now(), &owner, &ticket);
+            match result {
+                Ok(()) => {
+                    self.record_native("local_applied", &ticket, None);
+                    let _ = self.proxy.send_event(AppEvent::Drive);
+                }
+                Err(error) => self.refuse_native_input(error),
+            }
+            return;
+        }
+        if matches!(ticket.kind, NativeKind::Down(_)) {
+            webview.focus();
+        }
+        if self.native_owner().as_ref() != Some(&ticket.owner) {
+            self.refuse_native_input(LaneError::StaleOwner);
+            return;
+        }
+        let check = self.native_lane.borrow_mut().check(Instant::now());
+        if let Err(error) = check {
+            self.refuse_native_input(error);
+            return;
+        }
+        if let Some((x, y)) = ticket.point {
+            self.input
+                .borrow_mut()
+                .pointer(x as f64, y as f64 + CHROME_HEIGHT as f64);
+        }
+        match ticket.kind {
+            NativeKind::Down(button) | NativeKind::Up(button) => {
+                let owned_action = if matches!(ticket.kind, NativeKind::Down(_)) {
+                    ButtonAction::Down
+                } else {
+                    ButtonAction::Up
+                };
+                let point = ticket.point.unwrap();
+                if owned_action == ButtonAction::Down {
+                    self.input.borrow_mut().pressed();
+                }
+                let route = self.input.borrow_mut().route_button_at(
+                    self.generation.get(),
+                    button,
+                    owned_action,
+                    point,
+                );
+                if route != Some(point) {
+                    self.refuse_native_input(LaneError::PhysicalSequence);
+                    return;
+                }
+                self.native_button_events
+                    .set(self.native_button_events.get() + 1);
+            }
+            NativeKind::Move => self
+                .native_pointer_events
+                .set(self.native_pointer_events.get() + 1),
+            NativeKind::Wheel => self
+                .native_wheel_events
+                .set(self.native_wheel_events.get() + 1),
+            NativeKind::Key => self
+                .native_keyboard_events
+                .set(self.native_keyboard_events.get() + 1),
+            _ => {}
+        }
+        let Some(payload) = event.payload.event else {
+            self.refuse_native_input(LaneError::UnknownSubmission);
+            return;
+        };
+        let key_release = if let Some((physical_key, down)) = event.payload.key_transition {
+            let result = self.auxiliary.borrow_mut().reserve_key(&physical_key, down);
+            match result {
+                Ok(release) => release,
+                Err(error) => {
+                    self.refuse_native_input(error);
+                    return;
+                }
+            }
+        } else {
+            None
+        };
+        let composition_end = matches!(
+            &payload,
+            InputEvent::Ime(ImeEvent::Composition(CompositionEvent {
+                state: CompositionState::End,
+                ..
+            })) | InputEvent::Ime(ImeEvent::Dismissed)
+        );
+        if let InputEvent::Ime(ImeEvent::Composition(composition)) = &payload {
+            let start = matches!(&composition.state, CompositionState::Start);
+            let result = self
+                .auxiliary
+                .borrow_mut()
+                .reserve_composition(start, composition_end);
+            if let Err(error) = result {
+                self.refuse_native_input(error);
+                return;
+            }
+            if ticket.kind == NativeKind::Ime {
+                let allowed = if start {
+                    self.input.borrow_mut().begin_ime()
+                } else {
+                    self.input.borrow().ime_allowed()
+                };
+                if !allowed {
+                    self.refuse_native_input(LaneError::PhysicalSequence);
+                    return;
+                }
             }
         }
+        // At most one actual Servo input call per Drive, never from the ACK.
+        let event_id = webview.notify_input_event(payload);
+        let Some(current) = self.native_owner() else {
+            self.refuse_native_input(LaneError::UnknownSubmission);
+            return;
+        };
+        let result =
+            self.native_lane
+                .borrow_mut()
+                .bind(Instant::now(), &current, &ticket, event_id);
+        if let Err(error) = result {
+            self.refuse_native_input(error);
+            return;
+        }
+        let completion =
+            self.auxiliary
+                .borrow_mut()
+                .bind_completion(event_id, key_release, composition_end);
+        if let Err(error) = completion {
+            self.refuse_native_input(error);
+            return;
+        }
+        if let NativeKind::Up(owned_button) = ticket.kind {
+            self.pending_mouse_releases
+                .borrow_mut()
+                .insert(event_id, owned_button);
+        }
+        let qualified = {
+            let mut qualified = self.qualification_input.borrow_mut();
+            if let Some(input) = qualified.as_mut() {
+                match ticket.kind {
+                    NativeKind::Move => {
+                        input.observe_pointer(
+                            self.generation.get(),
+                            ticket.point.unwrap(),
+                            event_id,
+                        );
+                        Ok(())
+                    }
+                    NativeKind::Down(_) => input.submit_down(event_id),
+                    NativeKind::Up(_) => input.submit_up(event_id),
+                    _ => Ok(()),
+                }
+            } else {
+                Ok(())
+            }
+        };
+        if let Err(error) = qualified {
+            self.fail(error);
+        }
+        self.record_native("submitted", &ticket, Some(event_id));
+    }
+
+    fn write_native_evidence(&self) -> Result<(), String> {
+        let report = serde_json::json!({"schema":"trillionnium.desktop.native-input-queue.v1",
+            "source_only":true,"owner_pid":std::process::id(),"owner_start_time":self.qualification_owner_start,
+            "qualification_ack_profile":self.qualification_nonce.is_some(),
+            "records":&*self.native_trace.borrow(),"queue_idle":self.native_lane.borrow().idle(),
+            "maximum_pending_events":input_ownership::MAX_NATIVE_EVENTS,
+            "maximum_payload_bytes":input_ownership::MAX_NATIVE_PAYLOAD_BYTES,
+            "busy_episode_budget_seconds":input_ownership::NATIVE_EPISODE_BUDGET.as_secs(),
+            "ack_is_dom_execution_proof":false,"product_ready":false});
+        fs::write(
+            self.output_dir.join("native-input-queue.json"),
+            serde_json::to_string_pretty(&report).map_err(|_| "input facts encoding failed")?
+                + "\n",
+        )
+        .map_err(|_| "input facts publication failed".into())
     }
 
     fn fail(&self, message: &str) {
@@ -1545,6 +1970,7 @@ impl RuntimeState {
             self.window_resize_events.get(),
             json_string(&failure),
         );
+        let _ = self.write_native_evidence();
         let _ = fs::write(self.output_dir.join("runtime-state.json"), state_report);
         let report = format!(
             "{{\n  \"schema\": \"trillionnium.desktop.d0a02-headed-runtime.v1\",\n  \"status\": \"FAIL\",\n  \"failure\": {},\n  \"servo_started\": true,\n  \"product_ready\": false\n}}\n",
@@ -1567,6 +1993,11 @@ impl RuntimeState {
             self.fail(&format!(
                 "resource confinement evidence incomplete: {error}"
             ));
+            self.finish_failure();
+            return;
+        }
+        if let Err(error) = self.write_native_evidence() {
+            self.fail(&error);
             self.finish_failure();
             return;
         }
@@ -1815,11 +2246,57 @@ impl WebViewDelegate for RuntimeDelegate {
 
     fn notify_input_event_handled(
         &self,
-        _webview: WebView,
+        webview: WebView,
         event_id: InputEventId,
         result: InputEventResult,
     ) {
         if let Some(state) = self.current() {
+            let Some(mut owner) = state.native_owner() else {
+                return;
+            };
+            owner.view = format!("{:?}", webview.id());
+            let result_lane = state.native_lane.borrow_mut().acknowledge(
+                Instant::now(),
+                &owner,
+                event_id,
+                !result.contains(InputEventResult::DispatchFailed),
+            );
+            let ticket = match result_lane {
+                Ok(NativeAck::Accepted(ticket)) => ticket,
+                Ok(NativeAck::Ignored) => {
+                    state.trace_native_refusal("stale_callback");
+                    return;
+                }
+                Err(error) => {
+                    if error == LaneError::DispatchFailed {
+                        let release = state.pending_mouse_releases.borrow_mut().remove(&event_id);
+                        if let Some(button) = release {
+                            state.input.borrow_mut().acknowledge_release(
+                                self.generation,
+                                button,
+                                ReleaseOutcome::DispatchFailed,
+                            );
+                            if state.retire_withdrawn_gesture() {
+                                return;
+                            }
+                        }
+                    }
+                    state.refuse_native_input(error);
+                    return;
+                }
+            };
+            state.record_native("accepted", &ticket, Some(event_id));
+            let auxiliary = state.auxiliary.borrow_mut().accepted(event_id);
+            match auxiliary {
+                Ok(true) => {
+                    state.input.borrow_mut().end_ime();
+                }
+                Ok(false) => {}
+                Err(error) => {
+                    state.refuse_native_input(error);
+                    return;
+                }
+            }
             let button = state.pending_mouse_releases.borrow_mut().remove(&event_id);
             if let Some(button) = button {
                 let outcome = if result.contains(InputEventResult::DispatchFailed) {
@@ -1843,7 +2320,11 @@ impl WebViewDelegate for RuntimeDelegate {
             let (point, focused, ready) = {
                 let input = state.input.borrow();
                 (
-                    input.point(),
+                    if state.qualification_nonce.is_some() {
+                        input.point()
+                    } else {
+                        state.ingress.borrow().point()
+                    },
                     input.window_focused(),
                     input.button_ready(self.generation, Button::Primary),
                 )
@@ -1895,13 +2376,17 @@ impl WebViewDelegate for RuntimeDelegate {
     fn notify_crashed(&self, _webview: WebView, reason: String, _backtrace: Option<String>) {
         if let Some(state) = self.current() {
             if !state.crash_triggered.get() || state.fault_process.get().is_none() {
+                state.ingress.borrow_mut().barrier();
                 state.input.borrow_mut().crashed();
+                state.withdraw_native_input();
                 state.retire_withdrawn_gesture();
                 state.fail("spontaneous content crash cannot satisfy requested process-fault qualification");
                 return;
             }
             state.crash_observed.set(true);
+            state.ingress.borrow_mut().barrier();
             state.input.borrow_mut().crashed();
+            state.withdraw_native_input();
             state.retire_withdrawn_gesture();
             *state.crash_reason.borrow_mut() = Some(reason);
             state.window.request_redraw();

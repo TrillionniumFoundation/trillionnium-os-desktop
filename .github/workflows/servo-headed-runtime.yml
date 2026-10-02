@@ -11,6 +11,7 @@ on:
       - "tools/native_input_checkpoints.py"
       - "tools/browser_codec_reference_security.py"
       - "tests/test_native_input_checkpoints.py"
+      - "tests/test_native_runtime_identities.py"
       - "contracts/workspace-composition.v1.json"
       - "crates/hepta-workspace-composition/**"
       - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
@@ -29,6 +30,7 @@ on:
       - "tools/native_input_checkpoints.py"
       - "tools/browser_codec_reference_security.py"
       - "tests/test_native_input_checkpoints.py"
+      - "tests/test_native_runtime_identities.py"
       - "contracts/workspace-composition.v1.json"
       - "crates/hepta-workspace-composition/**"
       - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
@@ -386,6 +388,11 @@ jobs:
           path.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
           PY
           python3 tools/check_servo_resource_gate.py --runtime-dir artifacts/servo-headed-runtime/runtime
+
+      - name: Run default ordered rapid native pairs without ACK pacing
+        timeout-minutes: 5
+        shell: bash
+        run: bash tools/run_servo_headed_runtime_gate.sh run-native-burst-v1
 
       - name: Run native held-gesture refusal corpus v1
         timeout-minutes: 10
