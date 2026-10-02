@@ -59,6 +59,7 @@
     ],
     "exclusive_coordinator_lease": true,
     "lease_release": "close_descriptor_copies_only_never_explicit_unlock_last_copy_releases",
+    "descriptor_lifecycle": "explicit_close_or_descriptor_only_gc_with_cleared_ownership_no_write_or_reconciliation",
     "post_replace_failure": "publication_indeterminate_reconcile_before_retry",
     "replace_call_failure": "publication_indeterminate_even_before_return"
   },

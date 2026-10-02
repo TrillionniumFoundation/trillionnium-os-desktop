@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import gc
+import errno
 import importlib.util
 import json
 import os
@@ -11,6 +13,7 @@ import subprocess
 import tempfile
 import threading
 import unittest
+import weakref
 from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
@@ -485,6 +488,62 @@ def fork_results(operations, *, before_release=None, cleanup=None):
 
 
 class S11OwnershipTests(unittest.TestCase):
+    def test_discarded_store_gc_on_foreign_thread_closes_fds_and_releases_lease(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = s11.AtomicStateStore(Path(directory))
+            store.acquire()
+            store.write("state.json", {"durable": True})
+            descriptors = store._root_fd, store._lease_fd
+            reference = weakref.ref(store)
+            last_reference = [store]
+            del store
+            def collect():
+                last_reference.clear()
+                gc.collect()
+            thread = threading.Thread(target=collect)
+            thread.start()
+            thread.join(5)
+            self.assertFalse(thread.is_alive())
+            self.assertIsNone(reference())
+            for descriptor in descriptors:
+                with self.assertRaises(OSError) as refused:
+                    os.fstat(descriptor)
+                self.assertEqual(refused.exception.errno, errno.EBADF)
+            with s11.AtomicStateStore(Path(directory)) as successor:
+                self.assertEqual(successor.read("state.json"), {"durable": True})
+
+    def test_failed_constructor_cleanup_cannot_close_reused_descriptor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            os.chmod(root, 0o755)
+            retained, descriptors = [], []
+            actual_open = s11.AtomicStateStore._open_root
+            def capture(owner):
+                retained.append(owner)
+                descriptor = actual_open(owner)
+                descriptors.append(descriptor)
+                return descriptor
+            with patch.object(s11.AtomicStateStore, "_open_root", capture), self.assertRaises(s11.StateRefused):
+                s11.AtomicStateStore(root)
+            self.assertEqual(len(retained), 1)
+            self.assertIsNone(retained[0]._root_fd)
+            self.assertIsNone(retained[0]._lease_fd)
+            reused = descriptors[0]
+            with self.assertRaises(OSError) as refused:
+                os.fstat(reused)
+            self.assertEqual(refused.exception.errno, errno.EBADF)
+            source = os.open("/dev/null", os.O_RDONLY | os.O_CLOEXEC)
+            try:
+                if source != reused:
+                    os.dup2(source, reused, inheritable=False)
+                retained.clear()
+                gc.collect()
+                self.assertTrue(stat.S_ISCHR(os.fstat(reused).st_mode))
+            finally:
+                os.close(source)
+                if source != reused:
+                    os.close(reused)
+
     def test_child_close_cannot_release_parent_lease(self):
         with tempfile.TemporaryDirectory() as directory:
             with s11.AtomicStateStore(Path(directory)) as store:

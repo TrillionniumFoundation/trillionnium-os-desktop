@@ -194,6 +194,7 @@ def check_contract() -> None:
         "publication",
         "exclusive_coordinator_lease",
         "lease_release",
+        "descriptor_lifecycle",
         "post_replace_failure",
         "replace_call_failure",
     }
@@ -217,6 +218,8 @@ def check_contract() -> None:
             fail("exclusive coordinator lease was removed")
         if durability.get("lease_release") != "close_descriptor_copies_only_never_explicit_unlock_last_copy_releases":
             fail("fork child cleanup can release another coordinator's lease")
+        if durability.get("descriptor_lifecycle") != "explicit_close_or_descriptor_only_gc_with_cleared_ownership_no_write_or_reconciliation":
+            fail("descriptor cleanup acquired transaction authority")
         if durability.get("post_replace_failure") != (
             "publication_indeterminate_reconcile_before_retry"
         ):
@@ -455,8 +458,8 @@ def check_source() -> None:
             decorators = {ast.unparse(item) for item in method.decorator_list}
             if method.name in {"__init__", "__exit__"} or "staticmethod" in decorators:
                 continue
-            if node.name == "AtomicStateStore" and method.name == "close":
-                continue  # A fork child may close only its inherited descriptor copies.
+            if node.name == "AtomicStateStore" and method.name in {"close", "__del__", "_release_descriptors"}:
+                continue  # A fork child and GC may close only descriptor copies.
             if "_owner_guard" not in decorators:
                 fail(f"{node.name}.{method.name} lacks an authority ownership guard")
     if any(isinstance(node, ast.Attribute) and node.attr == "LOCK_UN" for node in ast.walk(tree)):
@@ -554,6 +557,8 @@ def check_docs_tests_workflow() -> None:
             "test_authority_requires_creating_thread_before_crypto_or_storage",
             "test_callback_verifier_and_root_subclasses_refused_before_authority",
             "test_callback_journal_and_slot_subclasses_refused_before_authority",
+            "test_discarded_store_gc_on_foreign_thread_closes_fds_and_releases_lease",
+            "test_failed_constructor_cleanup_cannot_close_reused_descriptor",
         ):
             if f"def {name}(" not in text:
                 fail(f"S11 hostile corpus is missing {name}")
