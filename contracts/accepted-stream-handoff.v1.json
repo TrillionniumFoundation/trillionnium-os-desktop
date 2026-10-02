@@ -100,7 +100,8 @@
       "AcceptedProductConnection::attest": "(UnixStream, ProcfsPeerAttestor, &PeerRuntimePolicy, Duration) -> Result<AcceptedProductConnection, ProductDispatchError>",
       "AcceptedProductConnection::from_received": "(ReceivedAcceptedStream, ProcfsPeerAttestor, &PeerRuntimePolicy) -> Result<AcceptedProductConnection, ProductDispatchError>",
       "AcceptedProductConnection::deadline": "(&self) -> Result<Instant, ProductDispatchError>",
-      "AcceptedProductConnection::cancellation": "(&self) -> ProductConnectionCancellation"
+      "AcceptedProductConnection::cancellation": "(&self) -> ProductConnectionCancellation",
+      "AcceptedProductConnection::from_control_received": "(ControlReceivedAcceptedStream, &PeerRuntimePolicy, &str) -> Result<AcceptedProductConnection, ProductDispatchError>"
     },
     "ownership": {
       "consuming_callback": true,

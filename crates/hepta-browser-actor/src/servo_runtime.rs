@@ -25,6 +25,8 @@ use hepta_browser_codec::{
     BrowserRequest, BrowserWireError, ElementReference, JsonObject, ObservationField, PageAction,
     ProfileSpec, WaitCondition,
 };
+#[cfg(target_os = "linux")]
+use hepta_peer_attestation::ControlRequestVerifier;
 use hepta_peer_attestation::{AttestedPeer, ProcfsPeerAttestor};
 use hepta_session_core::ReceiptJournal;
 
@@ -120,6 +122,34 @@ impl ServoBrowserActor {
             .preflight_attested(context, request, attestor, attested)
     }
 
+    /// Source controlled path carrying the actual control-custodian verifier
+    /// alongside the separately admitted original Agent. No principal grant.
+    #[cfg(target_os = "linux")]
+    pub fn preflight_attested_controlled(
+        &mut self,
+        context: &DispatchContext,
+        request: &BrowserRequest,
+        attestor: &ProcfsPeerAttestor,
+        attested: &AttestedPeer,
+        custodian: &ControlRequestVerifier,
+    ) -> Result<Option<BrowserWireError>, AgentPortError> {
+        self.inner
+            .preflight_attested_controlled(context, request, attestor, attested, custodian)
+    }
+
+    #[cfg(target_os = "linux")]
+    pub fn handle_attested_controlled(
+        &mut self,
+        context: &DispatchContext,
+        request: &BrowserRequest,
+        attestor: &ProcfsPeerAttestor,
+        attested: &AttestedPeer,
+        custodian: &ControlRequestVerifier,
+    ) -> Result<HandlerOutcome, AgentPortError> {
+        self.inner
+            .handle_attested_controlled(context, request, attestor, attested, custodian)
+    }
+
     /// Return only the semantic principal.  Mechanism identity remains private.
     pub fn principal(&self) -> &TaskFlowPrincipal {
         self.inner.principal_binding().principal()
@@ -143,6 +173,12 @@ impl ServoBrowserActor {
     /// Return an existing token without creating new authority.
     pub fn active_cancellation_token(&self, request_id: &str) -> Option<CancellationToken> {
         self.inner.active_cancellation_token(request_id)
+    }
+
+    /// Cancel and remove preparation for a refused or completed request.
+    /// Creator-PID refusal precedes mutation; this grants no execution authority.
+    pub fn retire_prepared_request(&mut self, request_id: &str) -> Result<(), AgentPortError> {
+        self.inner.retire_prepared_request(request_id)
     }
 
     /// Construct a durable lifecycle observer.  Journal facts never authorize execution.

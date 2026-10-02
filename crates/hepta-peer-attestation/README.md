@@ -144,8 +144,10 @@ Inherited calls fail before mutation; ordinary Rust destruction closes only the
 child's descriptor copies. Success neither attests the original application
 peer nor issues a principal: `AcceptedProductConnection::from_received` still
 performs original-Agent live admission. These wrappers do not automatically
-retain a control-owner verifier at a future engine action boundary. The native
-owner must integrate that final live custody check separately.
+retain a control-owner verifier at a future engine action boundary when using
+the legacy `receive` result. The additive `receive_custodied` path below carries
+that verifier to source runtime controls; the native owner still must integrate
+and perform the actual final live custody check.
 
 Run `cargo test --locked -p hepta-peer-attestation --test control_owner_kernel`,
 `cargo test --locked -p hepta-agent-transport --test accepted_handoff_kernel`
@@ -167,3 +169,67 @@ root-owned endpoint custody, the cross-UID live-attestation broker, trusted
 principal policy, native Servo owner/final control check and installed fault
 qualification remain missing. Main binaries, service units, default features,
 activation marker and all product readiness claims remain unchanged and closed.
+
+
+## Dual-owner request-custody source successor
+
+The closed additive inventory is `contracts/dual-owner-request-custody.v1.json`.
+Linux `AttestedHandoffReceiver::receive_custodied` returns a non-cloneable
+`ControlReceivedAcceptedStream`. It duplicates the already held control pidfd
+and original snapshot **before** retiring the one-shot control channel. The
+private custody constructor accepts only that original fixed default `/proc`
+live attestation. No static profile, caller boolean, injected attestor or new
+numeric-PID lookup supplies control identity. Existing `receive` is unchanged.
+
+`ControlRequestCustody` has one owner and cloneable `ControlRequestVerifier`
+observations. `verifier`/`revoke`, `ensure_alive`/`verify_current`/`deadline`, and
+`ensure_pair_alive`/`verify_pair_current` are the explicit methods; the pair
+methods verify concrete original `PeerRequestVerifier` objects, never a caller
+assertion. Creator-PID checks precede mutation; observed identity failure and
+Drop/revoke/cancel cannot be reversed by restoring executable bytes or replacing
+a process. Child Drop closes its own FD copies without shutdown or parent unlock.
+
+The opaque received object's `deadline`, `control_verifier`, and consuming
+`consume_before` callback carry the original stream, unchanged absolute Instant
+and unique custody together. `AcceptedProductConnection::from_control_received`
+uses the fixed default live Agent attestor and requires an explicit trusted
+`PeerRuntimePolicy` plus canonical lowercase approved Agent executable SHA256.
+The pin is compared with actual measured bytes. Runtime policy alone does not
+pin that executable; neither an observed digest nor peer/page/model output may
+auto-approve production configuration. Invalid pins consume and close custody.
+There is no configured approved production policy in this source candidate.
+
+Controlled connection admission, queue submit/dequeue, preflight and handler
+recheck both original identities. `preflight_attested_controlled` and
+`handle_attested_controlled` are additive on both actor and concrete Servo facade.
+`RequestControl` carries the paired concrete verifiers into queued runtime work;
+The native owner must call `ServoRuntimeCompletion::ensure_current_peer` for
+both identities before and after its actual retained-node/action checks. Observed original-Agent
+loss also retires the paired control scope. A possible dispatch followed by
+custody loss remains indeterminate and retires the runtime; no replay is granted.
+
+All these steps consume the original accepted absolute deadline and existing
+20-second maximum. Receiver control-wait expiry is independent and cannot renew
+accepted custody. Queues keep the existing eight-connection ceiling. Procfs/hash
+calls are synchronous: late results refuse admission; no preemptive syscall or
+all-asynchronous-window guarantee is made.
+
+One-shot sender/receiver channel closure is expected and is **not** custodian
+process exit. The same custodian must remain alive throughout the request.
+A retained-control terminal-wait/cancel/ack protocol, installed owner startup,
+root-owned pathname policy, cross-UID executable-attestation authority and native
+final effect integration remain missing. Default binaries and systemd activation
+remain closed. A source callback check does not execute Servo.
+
+`apps/hepta-browserd/tests/product_control_custody_kernel.rs` exercises original
+stream bytes, three distinct actual same-UID Linux PIDs, default `/proc` identity,
+Drop/revoke/cancel, queue overflow, Agent and custodian death/exec before admission
+and after queueing, immutable expiry, FD inventory and actual fork refusal while
+parent FDs survive. Its positive fixture ceiling is 20 seconds, not a raised
+product bound. A separate clearly labeled source-callback group uses synthetic
+Agent procfs facts and actual control custody because the host need not expose a
+systemd unit; it proves paired completion ordering, never default product
+admission, installed service or Servo execution. `tests/test_dual_owner_custody.py`
+checks closed source correspondence. Cargo all-targets CI runs the real kernel
+target in both exact-head and prospective-merge lanes; source tests cannot stand
+in for those kernel runs or higher-tier qualification.

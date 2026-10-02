@@ -37,6 +37,9 @@ jobs:
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
       - name: Qualify browserd product supervision
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         shell: bash
         run: |
           set -euo pipefail
@@ -77,6 +80,9 @@ jobs:
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
       - name: Qualify prospective browserd product runtime
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         shell: bash
         run: |
           set -euo pipefail

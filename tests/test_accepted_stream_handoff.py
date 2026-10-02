@@ -71,6 +71,7 @@ def check_contract(value: dict) -> None:
     expected_api = {
         "AcceptedProductConnection::attest": "(UnixStream, ProcfsPeerAttestor, &PeerRuntimePolicy, Duration) -> Result<AcceptedProductConnection, ProductDispatchError>",
         "AcceptedProductConnection::from_received": "(ReceivedAcceptedStream, ProcfsPeerAttestor, &PeerRuntimePolicy) -> Result<AcceptedProductConnection, ProductDispatchError>",
+        "AcceptedProductConnection::from_control_received": "(ControlReceivedAcceptedStream, &PeerRuntimePolicy, &str) -> Result<AcceptedProductConnection, ProductDispatchError>",
         "AcceptedProductConnection::deadline": "(&self) -> Result<Instant, ProductDispatchError>",
         "AcceptedProductConnection::cancellation": "(&self) -> ProductConnectionCancellation",
     }
@@ -174,8 +175,8 @@ class AcceptedStreamHandoffContractTests(unittest.TestCase):
         ):
             self.assertIn(signature, normalized)
         impl = source.split("impl AcceptedProductConnection {", 1)[1].split("fn product_time_remaining", 1)[0]
-        self.assertEqual(re.findall(r"pub fn (\w+)\s*\(", impl), ["attest", "from_received", "deadline", "cancellation"])
-        received = impl.split("pub fn from_received", 1)[1].split("fn attest_before", 1)[0]
+        self.assertEqual(re.findall(r"pub fn (\w+)\s*\(", impl), ["attest", "from_received", "from_control_received", "deadline", "cancellation"])
+        received = impl.split("pub fn from_received", 1)[1].split("pub fn from_control_received", 1)[0]
         self.assertIn(".consume_before(|stream, deadline|", received)
         self.assertIn("Self::attest_before(stream, attestor, policy, deadline)", received)
         self.assertNotIn("Instant::now", received)

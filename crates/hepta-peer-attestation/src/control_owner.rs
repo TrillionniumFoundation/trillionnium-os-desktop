@@ -13,6 +13,11 @@ use std::os::unix::net::UnixStream;
 use std::path::Path;
 use std::time::{Duration, Instant};
 
+mod control_request;
+pub use control_request::{
+    ControlReceivedAcceptedStream, ControlRequestCustody, ControlRequestVerifier,
+};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ControlOwnerError {
     InvalidConfiguration,

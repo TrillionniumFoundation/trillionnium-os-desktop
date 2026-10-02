@@ -801,3 +801,192 @@ fn changed_sealed_history_after_startup_blocks_admission_and_engine_dispatch() {
         RuntimeState::ReplayReconciliationRequired
     );
 }
+
+#[test]
+fn product_early_refusals_retire_prepared_tokens_without_dispatch() {
+    // Actual Unix peer/pidfd, explicitly synthetic Agent procfs and typed
+    // source callbacks only. This does not install a custodian or run Servo.
+    for cut in [
+        "expired-handle",
+        "agent-changed-handle",
+        "cancelled-handle",
+        "poisoned-handle",
+        "expired-preflight",
+        "agent-changed-preflight",
+        "cancelled-preflight",
+        "storage-preflight",
+        "replay-preflight",
+        "digest-preflight",
+    ] {
+        let fixture = Fixture::new();
+        let (connection, _client) = fixture.connection();
+        let (endpoint, mut owner) = servo_runtime_pair(Arc::new(|| {}));
+        let mut actor = ServoBrowserActor::from_attested(
+            fixture.principal.clone(),
+            connection.peer,
+            &connection.attestor,
+            &connection.attested,
+            endpoint,
+        )
+        .unwrap();
+        let observer = Rc::new(RefCell::new(Some(
+            actor.receipt_observer(fixture.journal(), "source-prepared-retirement"),
+        )));
+        let trace = Rc::new(RefCell::new(OperationTrace::default()));
+        let request = Plan::Health("prepared-product-refusal").request(&None);
+        let mut context = DispatchContext {
+            peer: connection.peer,
+            transport_sequence: 1,
+            canonical_request_sha256: "1".repeat(64),
+            effect_class: hepta_browser_codec::EffectClass::Observation,
+            accepted_at: Instant::now(),
+            effective_deadline: connection.deadline,
+        };
+        let mut handler = AttestedProductHandler {
+            owner_pid: std::process::id(),
+            actor: &mut actor,
+            attestor: &connection.attestor,
+            attested: &connection.attested,
+            observer: observer.clone(),
+            trace,
+            control: connection.control.clone(),
+            prepared_request: None,
+        };
+        assert!(handler.preflight(&context, &request).unwrap().is_none());
+        let cancellation = handler.actor.cancellation_token(request.request_id.clone());
+        assert!(!cancellation.is_cancelled());
+        assert!(
+            handler
+                .actor
+                .active_cancellation_token(&request.request_id)
+                .is_some()
+        );
+        if cut.starts_with("expired-") {
+            context.effective_deadline = Instant::now() - Duration::from_millis(1);
+        } else if cut.starts_with("agent-changed-") {
+            fs::write(
+                fixture
+                    .root
+                    .join("proc")
+                    .join(connection.peer.pid.unwrap().to_string())
+                    .join("exe"),
+                b"changed explicitly-synthetic Agent image",
+            )
+            .unwrap();
+        } else if cut.starts_with("cancelled-") {
+            connection.cancellation().cancel();
+        } else if cut == "poisoned-handle" {
+            let control = connection.control.clone();
+            assert!(
+                thread::spawn(move || {
+                    let _lock = control.active.lock().unwrap();
+                    panic!("source-fixture cancellation mutex fault");
+                })
+                .join()
+                .is_err()
+            );
+        } else if cut == "storage-preflight" {
+            observer.borrow_mut().take();
+        } else if cut == "replay-preflight" {
+            observer
+                .borrow_mut()
+                .as_mut()
+                .unwrap()
+                .requested(&context, &request)
+                .unwrap();
+        } else if cut == "digest-preflight" {
+            context.canonical_request_sha256 = "invalid source digest".into();
+        }
+        if cut.ends_with("-handle") {
+            assert!(
+                !matches!(
+                    handler.handle(&context, &request),
+                    Ok(HandlerOutcome::Success(_))
+                ),
+                "{cut} cannot succeed"
+            );
+        } else {
+            assert!(
+                !matches!(handler.preflight(&context, &request), Ok(None)),
+                "{cut} cannot be admitted"
+            );
+        }
+        assert!(
+            handler
+                .actor
+                .active_cancellation_token(&request.request_id)
+                .is_none(),
+            "{cut} must remove prepared registration"
+        );
+        assert!(
+            cancellation.is_cancelled(),
+            "{cut} must revoke retained token"
+        );
+        assert!(handler.actor.page_owner().is_none());
+        owner.pump_one();
+        assert!(
+            owner.take_command().is_none(),
+            "{cut} must not enqueue runtime work"
+        );
+    }
+}
+
+#[test]
+fn lifecycle_exit_after_successful_preflight_retires_prepared_request_on_handler_drop() {
+    let fixture = Fixture::new();
+    let (connection, _client) = fixture.connection();
+    let (endpoint, mut owner) = servo_runtime_pair(Arc::new(|| {}));
+    let mut actor = ServoBrowserActor::from_attested(
+        fixture.principal.clone(),
+        connection.peer,
+        &connection.attestor,
+        &connection.attested,
+        endpoint,
+    )
+    .unwrap();
+    let observer = Rc::new(RefCell::new(Some(
+        actor.receipt_observer(fixture.journal(), "source-lifecycle-exit"),
+    )));
+    let request = Plan::Health("prepared-lifecycle-exit").request(&None);
+    let context = DispatchContext {
+        peer: connection.peer,
+        transport_sequence: 1,
+        canonical_request_sha256: "1".repeat(64),
+        effect_class: hepta_browser_codec::EffectClass::Observation,
+        accepted_at: Instant::now(),
+        effective_deadline: connection.deadline,
+    };
+    let cancellation;
+    {
+        let mut handler = AttestedProductHandler {
+            owner_pid: std::process::id(),
+            actor: &mut actor,
+            attestor: &connection.attestor,
+            attested: &connection.attested,
+            observer: observer.clone(),
+            trace: Rc::new(RefCell::new(OperationTrace::default())),
+            control: connection.control.clone(),
+            prepared_request: None,
+        };
+        assert!(handler.preflight(&context, &request).unwrap().is_none());
+        cancellation = handler.actor.cancellation_token(request.request_id.clone());
+        // A real observer failure skips handle in serve_one, so the handler
+        // scope must own retirement rather than rely on handler dispatch.
+        observer.borrow_mut().take();
+        let mut lifecycle = DurableProductLifecycle {
+            owner_pid: std::process::id(),
+            observer: observer.clone(),
+            trace: Rc::new(RefCell::new(OperationTrace::default())),
+        };
+        assert!(lifecycle.requested(&context, &request).is_err());
+        assert!(!cancellation.is_cancelled());
+    }
+    assert!(cancellation.is_cancelled());
+    assert!(
+        actor
+            .active_cancellation_token(&request.request_id)
+            .is_none()
+    );
+    owner.pump_one();
+    assert!(owner.take_command().is_none());
+}
