@@ -419,10 +419,25 @@ fn test_trillionnium_s08_semantic_custody() {
         let expected =
             s08_semantic_expectation(&servo_test, &webview, target).expect("actual metadata");
         let request = action_request(target, Action::Click, None);
+        let dom_condition = match name {
+            "same_node_label" => "target.textContent === 'Changed target'",
+            "same_node_role" => "target.getAttribute('role') === 'heading'",
+            "same_node_ancestry" => "target.parentElement === document.getElementById('other')",
+            "replacement" => "!target.isConnected && document.getElementById('target') !== target",
+            "disabled" => "target.disabled === true",
+            "hidden" => "target.style.display === 'none'",
+            _ => unreachable!("closed semantic mutation inventory"),
+        };
         let stimulus = format!(
-            "let target=document.getElementById('target'); {mutation}; document.getElementById('marker').textContent='Mutation done';"
+            "(() => {{ let target=document.getElementById('target'); {mutation}; document.getElementById('marker').textContent='Mutation done'; return ({dom_condition}) && document.getElementById('marker').textContent === 'Mutation done'; }})()"
         );
-        let _ = evaluate_javascript(&servo_test, webview.clone(), &stimulus);
+        // Return actual DOM facts from the same mutation task, without another pre-action eval.
+        let mutation_result = evaluate_javascript(&servo_test, webview.clone(), &stimulus);
+        assert!(
+            matches!(mutation_result, Ok(servo::JSValue::Boolean(true))),
+            "actual same-task DOM semantic mutation must complete: {name}: {mutation_result:?}"
+        );
+        println!("Semantic mutation actual DOM confirmed: {name}");
         // Do not refresh the consumer expectation. Script must reflow and remeasure itself.
         let result = s08_perform_checked_action(&servo_test, &webview, request, expected);
         assert_eq!(result, expected_result, "typed semantic refusal");
