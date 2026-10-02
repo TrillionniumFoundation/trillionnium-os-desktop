@@ -214,6 +214,9 @@ fn custodian(cp: &Path, op: &Path, budget: Duration) {
     poll(original.as_raw_fd(), libc::POLLIN, Instant::now() + WAIT);
     let (stream, _) = original.accept().unwrap();
     let allowed = policy(control.as_raw_fd());
+    // Unrelated fixture policy preparation precedes the first custody capture.
+    // The barrier never reconnects, recaptures or changes either fixed budget.
+    assert_eq!(input(), b'a');
     let mut sender =
         AttestedHandoffSender::from_accepted(control, stream, op, allowed, budget).unwrap();
     println!("ARMED");
@@ -385,9 +388,7 @@ impl Trio {
         assert_ne!(agent.child.id(), custodian.child.id());
         assert_ne!(agent.child.id(), std::process::id());
         assert_ne!(custodian.child.id(), std::process::id());
-        let receiver =
-            AttestedHandoffReceiver::from_control(control, policy(raw), &op, control_wait).unwrap();
-        custodian.line("ARMED");
+        let control_policy = policy(raw);
         let snapshot = ProcfsPeerAttestor::default()
             .read_snapshot(agent.child.id())
             .unwrap();
@@ -409,6 +410,11 @@ impl Trio {
             expected_cgroup_v2_path: snapshot.cgroup_v2_path.clone(),
             expected_executable_sha256: pin.clone(),
         };
+        custodian.command(b'a');
+        let receiver =
+            AttestedHandoffReceiver::from_control(control, control_policy, &op, control_wait)
+                .unwrap();
+        custodian.line("ARMED");
         Self {
             directory,
             custodian,

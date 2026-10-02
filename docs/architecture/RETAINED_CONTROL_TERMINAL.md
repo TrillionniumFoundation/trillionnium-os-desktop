@@ -97,3 +97,23 @@ authority, trusted principal policy, concrete installed Servo event-loop owner,
 final engine-task peer/node/epoch gate and recovery UI remain open. Raw duplicate
 FDs outside these owners, arbitrary asynchronous syscall/opcode interruptions
 and language-runtime C-return ownership windows are not claimed fully closed.
+
+## Host deadline fixture preparation
+
+The terminal kernel fixture selects its explicit Agent/controller policies before
+the custodian and receiver capture their first fixed deadlines. A one-time child
+barrier retains the same raw accepted stream until this unrelated preparation
+finishes; it does not reconnect, clone, recapture or renew a custody budget.
+The original two-second accepted/control ceilings, twenty-second longer ceiling,
+three-second monitor bound and complete eleven-group assertions remain unchanged.
+This expiry experiment measures the first custody and control-wait deadlines,
+not kernel accept or raw-stream time before capture. Separate delayed handoff and
+queue tests retain their original elapsed-time assertions. Child/descriptor
+cleanup uses the existing owned fixture groups and wait bound on barrier failure.
+
+Prior complete and isolated fixture failures returned DeadlineExceeded during
+final connection admission. Independent timing later measured roughly 1.8 seconds
+of live attestation/preparation under a two-second fixture budget; this later
+measurement is not timing evidence from the original failing run. Production
+deadlines, live Procfs/ELF verification, dispatch and recovery code are unchanged
+by this test preparation change.
