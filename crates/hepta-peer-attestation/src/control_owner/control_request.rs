@@ -16,6 +16,7 @@ struct ControlLeaseState {
     deadline: Instant,
     peer: AttestedPeer,
     revoked: AtomicBool,
+    root_path: Option<Arc<super::root_path::RetainedRootPath>>,
 }
 
 /// One non-cloneable request owner. Dropping it revokes all retained verifiers.
@@ -79,10 +80,26 @@ impl ControlRequestCustody {
                 deadline,
                 peer: original,
                 revoked: AtomicBool::new(false),
+                root_path: None,
             }),
         };
         custody.verifier()?.verify_current()?;
         Ok(custody)
+    }
+
+    pub(super) fn retain_root_path(
+        &mut self,
+        path: Option<&Arc<super::root_path::RetainedRootPath>>,
+    ) -> Result<(), ControlOwnerError> {
+        creator(self.state.owner_pid)?;
+        if let Some(path) = path {
+            path.current()?;
+            Arc::get_mut(&mut self.state)
+                .ok_or(ControlOwnerError::PeerRefused)?
+                .root_path = Some(Arc::clone(path));
+            self.verifier()?.verify_current()?;
+        }
+        Ok(())
     }
 
     pub fn verifier(&self) -> Result<ControlRequestVerifier, ControlOwnerError> {
@@ -154,10 +171,17 @@ impl ControlRequestVerifier {
             return Err(ControlOwnerError::PeerRefused);
         }
         let checked = remaining(self.state.owner_pid, self.state.deadline).and_then(|_| {
+            if let Some(path) = &self.state.root_path {
+                path.current()?;
+            }
             self.state
                 .peer
                 .ensure_alive()
-                .map_err(|_| ControlOwnerError::PeerRefused)
+                .map_err(|_| ControlOwnerError::PeerRefused)?;
+            if let Some(path) = &self.state.root_path {
+                path.current()?;
+            }
+            Ok(())
         });
         creator(self.state.owner_pid)?;
         if let Err(error) = checked {

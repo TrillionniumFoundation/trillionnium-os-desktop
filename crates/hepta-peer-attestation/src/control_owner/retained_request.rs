@@ -248,17 +248,18 @@ impl ControlRetainedAcceptedStream {
             .as_ref()
             .ok_or(ControlOwnerError::ChannelRetired)?
             .verifier()?;
-        if verifier.deadline()? != deadline {
+        let effective = verifier.deadline()?;
+        if effective > deadline {
             return Err(ControlOwnerError::PeerRefused);
         }
-        Ok(deadline)
+        Ok(effective)
     }
     pub fn consume_before<T>(
         mut self,
         consumer: impl FnOnce(UnixStream, Instant, ControlRequestCustody, AttestedRetainedReceiver) -> T,
     ) -> Result<T, ControlOwnerError> {
         creator(self.owner_pid)?;
-        self.deadline()?;
+        let effective = self.deadline()?;
         self.retained
             .as_mut()
             .ok_or(ControlOwnerError::ChannelRetired)?
@@ -276,7 +277,7 @@ impl ControlRetainedAcceptedStream {
             .take()
             .ok_or(ControlOwnerError::ChannelRetired)?;
         received
-            .consume_before(|stream, deadline| consumer(stream, deadline, custody, retained))
+            .consume_before(|stream, _original| consumer(stream, effective, custody, retained))
             .map_err(handoff)
     }
 }
@@ -331,7 +332,9 @@ impl AttestedHandoffReceiver {
             let owner = self.owner.take().ok_or(ControlOwnerError::ChannelRetired)?;
             owner.current()?;
             let deadline = received.deadline().map_err(handoff)?;
-            let custody = ControlRequestCustody::from_control_peer(&owner.attested, deadline)?;
+            let effective = owner.request_deadline(deadline)?;
+            let mut custody = ControlRequestCustody::from_control_peer(&owner.attested, effective)?;
+            custody.retain_root_path(owner.root_path.as_ref())?;
             let action = custody.verifier()?;
             let mut retained = AttestedRetainedReceiver {
                 owner_pid: self.owner_pid,

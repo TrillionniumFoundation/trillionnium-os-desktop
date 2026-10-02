@@ -10,6 +10,10 @@ on:
       - "contracts/root-owned-control-path.v1.json"
       - "docs/architecture/ROOT_OWNED_CONTROL_PATH.md"
       - "tests/test_root_control_path.py"
+      - "apps/hepta-browserd/**"
+      - "contracts/root-path-retained-control.v1.json"
+      - "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md"
+      - "tests/test_root_path_retained_control.py"
       - "packaging/debian/systemd/**"
       - "packaging/debian/sysusers.d/**"
       - "packaging/debian/tmpfiles.d/**"
@@ -27,6 +31,7 @@ on:
       - main
       - codex/d0c05-systemd-custody-v2
       - codex/d3-agentport-fixture-separation-v1
+      - codex/g2-root-path-retained-control-20261003
     paths:
       - ".github/workflows/agent-port-custody.yml"
       - "apps/hepta-agent-portd/**"
@@ -35,6 +40,10 @@ on:
       - "contracts/root-owned-control-path.v1.json"
       - "docs/architecture/ROOT_OWNED_CONTROL_PATH.md"
       - "tests/test_root_control_path.py"
+      - "apps/hepta-browserd/**"
+      - "contracts/root-path-retained-control.v1.json"
+      - "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md"
+      - "tests/test_root_path_retained_control.py"
       - "packaging/debian/systemd/**"
       - "packaging/debian/sysusers.d/**"
       - "packaging/debian/tmpfiles.d/**"
@@ -75,6 +84,7 @@ jobs:
           python3 tools/validate_project_truth.py
           python3 tools/verify_systemd_socket_custody.py
           python3 -m unittest discover -s tests -p test_root_control_path.py -v
+          python3 -m unittest discover -s tests -p test_root_path_retained_control.py -v
 
       - name: Verify systemd unit syntax and account mappings
         shell: bash
@@ -106,7 +116,7 @@ jobs:
           # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
           CARGO_PROFILE_TEST_DEBUG: '0'
         run: |
-          # Includes the required explicit privileged root-path kernel profile.
+          # Includes the required root-path primitive and live retained bridge/kernel/coordinator profiles.
           cargo test --workspace --all-targets --locked
           cargo test --locked -p hepta-agent-portd --all-targets --all-features
           cargo run --locked -p hepta-browserd -- --self-check

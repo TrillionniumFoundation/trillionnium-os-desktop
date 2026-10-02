@@ -50,3 +50,9 @@ harness = false
 name = "product_terminal_wait_kernel"
 path = "tests/product_terminal_wait_kernel.rs"
 harness = false
+
+# Same rooted control FD, live subprocesses and the existing journal coordinator.
+[[test]]
+name = "product_root_path_kernel"
+path = "tests/product_root_path_kernel.rs"
+harness = false

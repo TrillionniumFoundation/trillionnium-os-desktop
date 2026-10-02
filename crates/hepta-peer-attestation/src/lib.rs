@@ -17,7 +17,7 @@ pub use control_owner::{
     AttestedHandoffReceiver, AttestedHandoffSender, AttestedPendingHandoff,
     AttestedRetainedReceiver, ControlOwnerError, ControlOwnerPolicy, ControlReceivedAcceptedStream,
     ControlRequestCustody, ControlRequestVerifier, ControlRetainedAcceptedStream,
-    PeerReportedRetirement,
+    PeerReportedRetirement, RootPathAttestedHandoffReceiver, RootPathAttestedHandoffSender,
 };
 
 use hepta_agent_transport::PeerIdentity;

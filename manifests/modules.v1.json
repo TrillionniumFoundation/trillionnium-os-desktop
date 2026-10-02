@@ -42,14 +42,16 @@
         "docs/architecture/SESSION_STATE_MACHINE.md",
         "docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md",
         "docs/architecture/REQUEST_EXECUTION_AND_RECOVERY.md",
-        "docs/architecture/RETAINED_CONTROL_TERMINAL.md"
+        "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
+        "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
         "contracts/browser-actor.v1.json",
         "contracts/accepted-stream-handoff.v1.json",
         "contracts/dual-owner-request-custody.v1.json",
-        "contracts/retained-control-terminal.v1.json"
+        "contracts/retained-control-terminal.v1.json",
+        "contracts/root-path-retained-control.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -63,13 +65,16 @@
         "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
         "tests/test_dual_owner_custody.py",
         "tests/test_retained_control_terminal.py",
-        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs"
+        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs",
+        "apps/hepta-browserd/tests/product_root_path_kernel.rs",
+        "tests/test_root_path_retained_control.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
         ".github/workflows/s06-browser-actor.yml",
         ".github/workflows/s08-product-servo-runtime.yml",
-        ".github/workflows/s04-transport-custody.yml"
+        ".github/workflows/s04-transport-custody.yml",
+        ".github/workflows/agent-port-custody.yml"
       ],
       "binaries": [
         {
@@ -235,14 +240,16 @@
         "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
         "docs/architecture/REQUEST_PEER_CUSTODY.md",
         "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
-        "docs/architecture/RETAINED_CONTROL_TERMINAL.md"
+        "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
+        "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md"
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
         "contracts/request-peer-custody.v1.json",
         "contracts/control-owner-handoff.v1.json",
         "contracts/dual-owner-request-custody.v1.json",
-        "contracts/retained-control-terminal.v1.json"
+        "contracts/retained-control-terminal.v1.json",
+        "contracts/root-path-retained-control.v1.json"
       ],
       "tests": [
         "crates/hepta-peer-attestation/src/lib.rs",
@@ -252,7 +259,9 @@
         "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
         "tests/test_dual_owner_custody.py",
         "tests/test_retained_control_terminal.py",
-        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs"
+        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs",
+        "apps/hepta-browserd/tests/product_root_path_kernel.rs",
+        "tests/test_root_path_retained_control.py"
       ],
       "workflows": [
         ".github/workflows/s04-transport-custody.yml",

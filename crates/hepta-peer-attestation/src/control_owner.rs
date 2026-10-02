@@ -15,6 +15,7 @@ use std::time::{Duration, Instant};
 
 mod control_request;
 mod retained_request;
+mod root_path;
 pub use control_request::{
     ControlReceivedAcceptedStream, ControlRequestCustody, ControlRequestVerifier,
 };
@@ -22,6 +23,7 @@ pub use retained_request::{
     AttestedPendingHandoff, AttestedRetainedReceiver, ControlRetainedAcceptedStream,
     PeerReportedRetirement,
 };
+pub use root_path::{RootPathAttestedHandoffReceiver, RootPathAttestedHandoffSender};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ControlOwnerError {
@@ -121,6 +123,7 @@ struct ControlPeerOwner {
     deadline: Instant,
     attestor: ProcfsPeerAttestor,
     attested: AttestedPeer,
+    root_path: Option<std::sync::Arc<root_path::RetainedRootPath>>,
 }
 impl ControlPeerOwner {
     fn admit(
@@ -152,16 +155,34 @@ impl ControlPeerOwner {
             deadline,
             attestor,
             attested,
+            root_path: None,
         };
         owner.current()?;
         Ok((owner, OwnedFd::from(stream), PeerPolicy::exact(peer)))
     }
     fn current(&self) -> Result<Duration, ControlOwnerError> {
         remaining(self.owner_pid, self.deadline)?;
+        if let Some(path) = &self.root_path {
+            path.current()?;
+        }
         self.attested
             .refresh_snapshot(&self.attestor)
             .map_err(|_| ControlOwnerError::PeerRefused)?;
+        if let Some(path) = &self.root_path {
+            path.current()?;
+        }
         remaining(self.owner_pid, self.deadline)
+    }
+    fn request_deadline(&self, accepted: Instant) -> Result<Instant, ControlOwnerError> {
+        creator(self.owner_pid)?;
+        // Legacy channels keep their accepted ceiling. A rooted channel also
+        // retains its already captured, possibly earlier pathname ceiling.
+        Ok(if self.root_path.is_some() {
+            self.current()?;
+            accepted.min(self.deadline)
+        } else {
+            accepted
+        })
     }
 }
 

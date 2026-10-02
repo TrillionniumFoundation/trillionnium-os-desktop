@@ -252,3 +252,33 @@ admission, installed service or Servo execution. `tests/test_dual_owner_custody.
 checks closed source correspondence. Cargo all-targets CI runs the real kernel
 target in both exact-head and prospective-merge lanes; source tests cannot stand
 in for those kernel runs or higher-tier qualification.
+
+### Root pathname retained bridge
+
+`RootPathAttestedHandoffSender::from_accepted` and
+`RootPathAttestedHandoffReceiver::from_control` consume the original
+`RootPathControlConnection`, preserving its same FD, fixed Instant and unique
+pathname custody. They expose only retained send/receive, current checks and
+cancellation, with no raw stream or legacy non-retained handoff escape.
+The sender consumes an existing `AcceptedStreamCustody`, preserving its original
+accepted ceiling without recapture. Its `ensure_control_current` checks the
+root-control ceiling; the original low-level publication gate separately refuses
+an expired accepted custody before any descriptor packet. Pending/request checks
+use the minimum of both original ceilings.
+The private shared path owner accompanies live control identity and every
+request verifier through existing Agent/queue/native/terminal checks. All five
+public request verification entries check the path, including the alive gates.
+Request deadlines only decrease to the minimum original accepted/root ceiling.
+Action retirement never grants another execution; the independent report owner
+retains the original path to report only an already sealed own journal terminal.
+
+See [ROOT_PATH_RETAINED_CONTROL.md](../../docs/architecture/ROOT_PATH_RETAINED_CONTROL.md)
+and `contracts/root-path-retained-control.v1.json`. Run the required real root
+source corpus with `cargo test --locked -p hepta-browserd --test product_root_path_kernel`
+and closed source correspondence with
+`python3 -m unittest discover -s tests -p test_root_path_retained_control.py -v`.
+The test launcher supplies an explicit known fixture executable policy before
+peer launch. Actual root/nobody path checks and cross-UID `/proc` denial remain
+mechanism evidence; native callback completion is synthetic, not Servo. No
+policy-loader/broker/main activation, installed principal or product qualification
+is provided. Legacy control constructors and their original tests remain.
