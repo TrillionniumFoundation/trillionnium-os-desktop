@@ -3,7 +3,8 @@ name: s11-update-recovery
 on:
   push:
     branches:
-      - codex/s11-update-recovery-closure-v1
+      - main
+      - "codex/**"
     paths:
       - ".github/workflows/s11-update-recovery.yml"
       - "contracts/s11-update-recovery.v1.json"

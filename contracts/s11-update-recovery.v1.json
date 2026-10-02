@@ -58,6 +58,7 @@
       "directory_fsync"
     ],
     "exclusive_coordinator_lease": true,
+    "lease_release": "close_descriptor_copies_only_never_explicit_unlock_last_copy_releases",
     "post_replace_failure": "publication_indeterminate_reconcile_before_retry",
     "replace_call_failure": "publication_indeterminate_even_before_return"
   },
@@ -92,6 +93,18 @@
     ],
     "detached_signature_digest_required": true,
     "verification": "system_openssl_dgst_sha256_verify_offline",
+    "verification_input_custody": "three_sealed_linux_memfds_inherited_via_pass_fds_proc_self_fd_only",
+    "verification_input_seals": [
+      "write",
+      "grow",
+      "shrink",
+      "seal"
+    ],
+    "verification_environment": {
+      "PATH": "/usr/bin:/bin",
+      "OPENSSL_CONF": "/dev/null",
+      "LC_ALL": "C"
+    },
     "maximum_signature_bytes": 65536,
     "maximum_public_key_bytes": 65536,
     "maximum_trust_roots": 32,
@@ -101,6 +114,16 @@
     "trusted_clock_and_revalidation_before_publication_and_boot": true,
     "external_monotonic_floor_persistence_implemented": false,
     "trusted_clock_and_revalidation_before_commit": true
+  },
+  "authority_ownership": {
+    "configuration_types": "exact_UpdateTrustRoot_ExternalUpdateSignatureVerifier_DurableUpdateJournal_ImageSlotStore_no_subclass_callbacks",
+    "scope": "creating_process_and_creating_thread",
+    "guard_before_authority_use": true,
+    "inherited_fork_authority": false,
+    "fork_child_descriptor_cleanup_only": true,
+    "thread_transfer_or_concurrent_use": false,
+    "caller_verification_or_persistence_callbacks": false,
+    "callbacks": "trusted_nonreentrant_in_process_configuration"
   },
   "image_staging": {
     "backend": "private_leased_regular_file_slots_only",
