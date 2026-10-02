@@ -67,6 +67,25 @@
     "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md",
     ".github/workflows/s08-servo-vertical-slice.yml",
     "tools/validate_s08_servo_runtime.py",
-    "tests/test_s08_servo_runtime.py"
-  ]
+    "tests/test_s08_servo_runtime.py",
+    "manifests/lab-s08-semantic-custody.v1.json",
+    "manifests/servo-patches/s08-semantic-custody-v1/000.patch",
+    "tools/verify_s08_semantic_custody.py",
+    "tests/test_s08_semantic_custody.py",
+    "experiments/servo-s08-runtime/semantic-source-check/Cargo.toml",
+    "experiments/servo-s08-runtime/semantic-source-check/Cargo.lock"
+  ],
+  "semantic_custody": {
+    "manifest": "manifests/lab-s08-semantic-custody.v1.json",
+    "expectation_version": 1,
+    "maximum_name_bytes": 1024,
+    "maximum_ancestry_nodes": 16,
+    "observation_source": "actual_current_script_layout_retained_accesskit_leaf_and_ancestry",
+    "actor_target_metadata": "derived_tree_node_role_name_sha256_and_structural_fingerprint",
+    "final_check": "after_reflow_before_click_same_script_task",
+    "checked_action_api": "WebView::perform_checked_accessibility_action",
+    "legacy_s07_api_and_tests_preserved": true,
+    "final_peer_control_custody_proven": false,
+    "observation_api": "WebView::observe_accessibility_semantics"
+  }
 }
