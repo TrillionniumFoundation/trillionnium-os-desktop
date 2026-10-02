@@ -88,6 +88,14 @@ Trusted recovery UI/policy and durable operator-decision records remain open.
 Startup therefore requires explicit exact acknowledgments again after reopening;
 source receipt inspection does not claim a persisted operator decision.
 
+The coordinator, supervisor, connection queue and cancellation owner bind to
+their creating PID. Inherited fork objects refuse dispatch/recovery before a
+copied mutex or channel can be touched. Foreign cancellation is a no-op and
+foreign teardown only closes child descriptor copies; it never shuts down the
+parent's original socket or changes its journal lease. Intended worker-thread
+handoff remains available within the creating process. Native Servo owner-thread
+checks remain separate and mandatory.
+
 Registered binaries:
 
 - `hepta-browserd` at `src/main.rs`; required features: `none`.
@@ -115,6 +123,12 @@ Failures must preserve the last truthful state. A timeout, crash, peer loss, sto
 Every invariant above is a review condition, not merely commentary. Weakening one requires a new threat analysis, hostile regression and explicit claim-ceiling decision.
 
 ## Testing and evidence
+
+`apps/hepta-browserd/tests/product_fork_custody.rs` is a standalone single-thread
+actual-fork regression. It exercises inherited queue, cancellation, dispatch,
+recovery and supervisor refusal, parent socket continuity and sole-writer
+custody. Its procfs/native owner inputs are explicitly source fixtures; it does
+not qualify installed Servo or service startup.
 
 Primary source or test references:
 

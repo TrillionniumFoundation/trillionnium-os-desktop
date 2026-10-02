@@ -298,6 +298,7 @@ impl ReceiptJournal {
         #[cfg(test)]
         persistence_tests::point("migration.after_directory_sync")?;
         let guard = ManagedDirectory {
+            owner_pid: std::process::id(),
             root: root.to_owned(),
             directory,
             identity: directory_id,

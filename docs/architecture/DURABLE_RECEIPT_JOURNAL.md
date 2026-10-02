@@ -29,6 +29,15 @@ identity is no longer live before replacing the payload in place. Malformed or
 unreadable lease state is never treated as stale, and a replacement lock inode
 is never removed by an old writer.
 
+The live writer and journal-issued `DurableReceiptFact` additionally bind their
+creating PID. A journal can move between threads in that process; a fork copy
+cannot append, sync, inspect authoritative history, rotate or mint/access a
+sealed fact. Fact getters return `Result<..., JournalError>` after checking
+process ownership. Child teardown closes its descriptor copy without rewriting
+the lease marker or explicitly unlocking the parent's shared open file
+description. Actual single-thread fork regressions cover legacy and managed
+stores and require the original parent to remain the sole working writer.
+
 ## Format and chain
 
 A segment begins with a fixed 148-byte header. Each record has a fixed

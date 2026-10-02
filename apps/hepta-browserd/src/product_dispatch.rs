@@ -65,6 +65,7 @@ impl std::error::Error for ProductDispatchError {}
 
 #[derive(Default)]
 struct ConnectionControl {
+    owner_pid: u32,
     cancelled: AtomicBool,
     active: Mutex<Option<CancellationToken>>,
     transport: Mutex<Option<UnixStream>>,
@@ -76,6 +77,9 @@ struct ConnectionControl {
 pub struct ProductConnectionCancellation(Arc<ConnectionControl>);
 impl ProductConnectionCancellation {
     pub fn cancel(&self) {
+        if self.0.owner_pid != std::process::id() {
+            return;
+        }
         self.0.cancelled.store(true, Ordering::SeqCst);
         if let Ok(active) = self.0.active.lock()
             && let Some(token) = active.as_ref()
@@ -135,6 +139,7 @@ impl AcceptedProductConnection {
             attested,
             deadline,
             control: Arc::new(ConnectionControl {
+                owner_pid: std::process::id(),
                 transport: Mutex::new(Some(interrupt)),
                 ..ConnectionControl::default()
             }),
@@ -148,6 +153,9 @@ impl AcceptedProductConnection {
 
 impl Drop for AcceptedProductConnection {
     fn drop(&mut self) {
+        if self.control.owner_pid != std::process::id() {
+            return;
+        }
         if let Ok(mut active) = self.control.active.lock() {
             active.take();
         }
@@ -157,8 +165,8 @@ impl Drop for AcceptedProductConnection {
     }
 }
 
-pub struct ProductConnectionIngress(mpsc::SyncSender<AcceptedProductConnection>);
-pub struct ProductConnectionQueue(mpsc::Receiver<AcceptedProductConnection>);
+pub struct ProductConnectionIngress(u32, mpsc::SyncSender<AcceptedProductConnection>);
+pub struct ProductConnectionQueue(u32, mpsc::Receiver<AcceptedProductConnection>);
 
 pub fn product_connection_queue(
     capacity: usize,
@@ -167,9 +175,10 @@ pub fn product_connection_queue(
         return Err(ProductDispatchError::InvalidConfiguration);
     }
     let (sender, receiver) = mpsc::sync_channel(capacity);
+    let owner_pid = std::process::id();
     Ok((
-        ProductConnectionIngress(sender),
-        ProductConnectionQueue(receiver),
+        ProductConnectionIngress(owner_pid, sender),
+        ProductConnectionQueue(owner_pid, receiver),
     ))
 }
 
@@ -179,8 +188,11 @@ impl ProductConnectionIngress {
         &self,
         connection: AcceptedProductConnection,
     ) -> Result<ProductConnectionCancellation, ProductDispatchError> {
+        if self.0 != std::process::id() || connection.control.owner_pid != self.0 {
+            return Err(ProductDispatchError::PeerRefused);
+        }
         let cancellation = connection.cancellation();
-        match self.0.try_send(connection) {
+        match self.1.try_send(connection) {
             Ok(()) => Ok(cancellation),
             Err(mpsc::TrySendError::Full(_)) => Err(ProductDispatchError::QueueFull),
             Err(mpsc::TrySendError::Disconnected(_)) => Err(ProductDispatchError::Closed),
@@ -189,7 +201,10 @@ impl ProductConnectionIngress {
 }
 impl ProductConnectionQueue {
     pub fn try_next(&self) -> Result<Option<AcceptedProductConnection>, ProductDispatchError> {
-        match self.0.try_recv() {
+        if self.0 != std::process::id() {
+            return Err(ProductDispatchError::PeerRefused);
+        }
+        match self.1.try_recv() {
             Ok(connection) => Ok(Some(connection)),
             Err(mpsc::TryRecvError::Empty) => Ok(None),
             Err(mpsc::TryRecvError::Disconnected) => Err(ProductDispatchError::Closed),
@@ -216,6 +231,7 @@ struct OperationTrace {
 /// Rc state deliberately prevents moving a constructed coordinator to another
 /// thread. Move the concrete endpoint first, then construct on that worker.
 pub struct ProductRequestCoordinator {
+    owner_pid: u32,
     actor: Option<ServoBrowserActor>,
     observer: Rc<RefCell<Option<ReceiptLifecycleObserver>>>,
     state: RuntimeState,
@@ -262,6 +278,9 @@ impl ProductRequestCoordinator {
         restart_policy: RestartPolicy,
         acknowledged_requests: &[(&str, Digest)],
     ) -> Result<Self, ProductDispatchError> {
+        if bootstrap.control.owner_pid != std::process::id() {
+            return Err(ProductDispatchError::PeerRefused);
+        }
         if !journal.is_managed()
             || image_id.is_empty()
             || image_id.len() > 128
@@ -281,18 +300,24 @@ impl ProductRequestCoordinator {
         let uncertain = journal
             .execution_reconciliation_facts()
             .map_err(|_| ProductDispatchError::StorageUnavailable)?;
-        if uncertain.len() != acknowledged_requests.len()
-            || uncertain.iter().any(|fact| {
-                acknowledged_requests
-                    .iter()
-                    .filter(|(id, digest)| {
-                        *id == fact.receipt_id() && *digest == fact.request_sha256()
-                    })
-                    .count()
-                    != 1
-            })
-        {
+        if uncertain.len() != acknowledged_requests.len() {
             return Err(ProductDispatchError::RecoveryRequired);
+        }
+        for fact in &uncertain {
+            let fact_id = fact
+                .receipt_id()
+                .map_err(|_| ProductDispatchError::StorageUnavailable)?;
+            let fact_digest = fact
+                .request_sha256()
+                .map_err(|_| ProductDispatchError::StorageUnavailable)?;
+            if acknowledged_requests
+                .iter()
+                .filter(|(id, digest)| *id == fact_id && *digest == fact_digest)
+                .count()
+                != 1
+            {
+                return Err(ProductDispatchError::RecoveryRequired);
+            }
         }
         let actor = ServoBrowserActor::from_attested(
             principal.clone(),
@@ -304,6 +329,7 @@ impl ProductRequestCoordinator {
         .map_err(|_| ProductDispatchError::PeerRefused)?;
         let observer = actor.receipt_observer(journal, image_id.clone());
         Ok(Self {
+            owner_pid: std::process::id(),
             actor: Some(actor),
             observer: Rc::new(RefCell::new(Some(observer))),
             state: RuntimeState::Ready,
@@ -324,10 +350,21 @@ impl ProductRequestCoordinator {
         self.generation
     }
 
+    fn ensure_owner(&self) -> Result<(), ProductDispatchError> {
+        if self.owner_pid != std::process::id() {
+            return Err(ProductDispatchError::PeerRefused);
+        }
+        Ok(())
+    }
+
     pub fn serve_connection(
         &mut self,
         mut connection: AcceptedProductConnection,
     ) -> Result<ServiceEvidence, ProductDispatchError> {
+        self.ensure_owner()?;
+        if connection.control.owner_pid != self.owner_pid {
+            return Err(ProductDispatchError::PeerRefused);
+        }
         if connection.control.cancelled.load(Ordering::SeqCst) {
             return Err(ProductDispatchError::Cancelled);
         }
@@ -356,6 +393,7 @@ impl ProductRequestCoordinator {
             .ok_or(ProductDispatchError::Closed)?;
         let control = connection.control.clone();
         let mut handler = AttestedProductHandler {
+            owner_pid: self.owner_pid,
             actor,
             attestor: &connection.attestor,
             attested: &connection.attested,
@@ -364,6 +402,7 @@ impl ProductRequestCoordinator {
             control: control.clone(),
         };
         let mut lifecycle = DurableProductLifecycle {
+            owner_pid: self.owner_pid,
             observer: self.observer.clone(),
             trace: trace.clone(),
         };
@@ -378,6 +417,7 @@ impl ProductRequestCoordinator {
                 &mut lifecycle,
             )
         }));
+        self.ensure_owner()?;
         if let Ok(mut active) = control.active.lock() {
             active.take();
         }
@@ -415,6 +455,7 @@ impl ProductRequestCoordinator {
         request_id: &str,
         request_digest: Digest,
     ) -> Result<DurableReceiptFact, ProductDispatchError> {
+        self.ensure_owner()?;
         if self.storage_failed {
             return Err(ProductDispatchError::StorageUnavailable);
         }
@@ -432,7 +473,11 @@ impl ProductRequestCoordinator {
             .ok_or(ProductDispatchError::StorageUnavailable)?
             .receipt_fact(request_id, request_digest)
             .map_err(|_| ProductDispatchError::StorageUnavailable)?;
-        if !fact.lifecycle().is_terminal() {
+        if !fact
+            .lifecycle()
+            .map_err(|_| ProductDispatchError::StorageUnavailable)?
+            .is_terminal()
+        {
             return Err(ProductDispatchError::RecoveryRequired);
         }
         self.pending_reconciliation = None;
@@ -449,6 +494,7 @@ impl ProductRequestCoordinator {
     /// The native owner must withdraw content pixels/input and retire its
     /// bridge before calling this notification. No factory or replay runs here.
     pub fn content_process_crashed(&mut self) -> Result<(), ProductDispatchError> {
+        self.ensure_owner()?;
         if self.state == RuntimeState::CrashLoopOpen {
             return Err(ProductDispatchError::CrashLoopOpen);
         }
@@ -477,7 +523,8 @@ impl ProductRequestCoordinator {
     }
 
     pub fn acknowledge_stable_cycle(&mut self) {
-        if self.state == RuntimeState::Ready
+        if self.ensure_owner().is_ok()
+            && self.state == RuntimeState::Ready
             && !self.storage_failed
             && self.pending_reconciliation.is_none()
             && self.actor.is_some()
@@ -493,6 +540,10 @@ impl ProductRequestCoordinator {
         bootstrap: &AcceptedProductConnection,
         endpoint: ServoRuntimeEndpoint,
     ) -> Result<(), ProductDispatchError> {
+        self.ensure_owner()?;
+        if bootstrap.control.owner_pid != self.owner_pid {
+            return Err(ProductDispatchError::PeerRefused);
+        }
         if self.state == RuntimeState::CrashLoopOpen {
             return Err(ProductDispatchError::CrashLoopOpen);
         }
@@ -530,6 +581,7 @@ impl ProductRequestCoordinator {
 }
 
 struct AttestedProductHandler<'a> {
+    owner_pid: u32,
     actor: &'a mut ServoBrowserActor,
     attestor: &'a ProcfsPeerAttestor,
     attested: &'a AttestedPeer,
@@ -543,6 +595,7 @@ impl BrowserRequestHandler for AttestedProductHandler<'_> {
         context: &DispatchContext,
         request: &BrowserRequest,
     ) -> Result<Option<BrowserWireError>, AgentPortError> {
+        product_owner(self.owner_pid)?;
         if self.control.cancelled.load(Ordering::SeqCst) {
             return Ok(Some(refusal(
                 BrowserErrorCode::Cancelled,
@@ -582,6 +635,7 @@ impl BrowserRequestHandler for AttestedProductHandler<'_> {
         context: &DispatchContext,
         request: &BrowserRequest,
     ) -> Result<HandlerOutcome, AgentPortError> {
+        product_owner(self.owner_pid)?;
         let cancellation = self.actor.cancellation_token(request.request_id.clone());
         let mut active = self.control.active.lock().map_err(|_| {
             AgentPortError::Handler("connection cancellation state unavailable".into())
@@ -597,6 +651,7 @@ impl BrowserRequestHandler for AttestedProductHandler<'_> {
 }
 
 struct DurableProductLifecycle {
+    owner_pid: u32,
     observer: Rc<RefCell<Option<ReceiptLifecycleObserver>>>,
     trace: Rc<RefCell<OperationTrace>>,
 }
@@ -605,6 +660,7 @@ impl DurableProductLifecycle {
         &mut self,
         operation: impl FnOnce(&mut ReceiptLifecycleObserver) -> Result<(), AgentPortError>,
     ) -> Result<(), AgentPortError> {
+        product_owner(self.owner_pid)?;
         let mut observer = self.observer.borrow_mut();
         let result = operation(observer.as_mut().ok_or_else(storage_error)?);
         if result.is_err() {
@@ -617,15 +673,16 @@ impl DurableProductLifecycle {
         context: &DispatchContext,
         request: &BrowserRequest,
     ) -> Result<(), AgentPortError> {
+        product_owner(self.owner_pid)?;
         let digest = request_digest(context)?;
         let mut observer = self.observer.borrow_mut();
         let fact = observer
             .as_mut()
             .ok_or_else(storage_error)?
             .receipt_fact(&request.request_id, digest);
-        match fact {
-            Ok(fact) => {
-                self.trace.borrow_mut().terminal = Some(fact.lifecycle());
+        match fact.and_then(|fact| fact.lifecycle()) {
+            Ok(lifecycle) => {
+                self.trace.borrow_mut().terminal = Some(lifecycle);
                 Ok(())
             }
             Err(_) => {
@@ -641,6 +698,7 @@ impl OperationLifecycleObserver for DurableProductLifecycle {
         context: &DispatchContext,
         request: &BrowserRequest,
     ) -> Result<(), AgentPortError> {
+        product_owner(self.owner_pid)?;
         self.apply(|observer| observer.requested(context, request))?;
         self.trace.borrow_mut().requested = true;
         Ok(())
@@ -661,6 +719,7 @@ impl OperationLifecycleObserver for DurableProductLifecycle {
         response: &BrowserResponse,
         digest: &str,
     ) -> Result<(), AgentPortError> {
+        product_owner(self.owner_pid)?;
         if response.outcome.as_ref().err().is_some_and(|error| {
             matches!(
                 error.code,
@@ -692,6 +751,14 @@ fn refusal(code: BrowserErrorCode, message: &str) -> BrowserWireError {
 }
 fn storage_error() -> AgentPortError {
     AgentPortError::Handler("product receipt storage requires recovery".into())
+}
+fn product_owner(owner_pid: u32) -> Result<(), AgentPortError> {
+    if std::process::id() != owner_pid {
+        return Err(AgentPortError::Handler(
+            "product owner process changed".into(),
+        ));
+    }
+    Ok(())
 }
 fn request_digest(context: &DispatchContext) -> Result<Digest, AgentPortError> {
     let text = context.canonical_request_sha256.as_bytes();

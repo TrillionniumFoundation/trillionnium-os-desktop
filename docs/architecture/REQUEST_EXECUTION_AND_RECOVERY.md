@@ -81,6 +81,15 @@ Source regressions use real Unix framing/pidfds with explicitly synthetic procfs
 facts and controlled native completion callbacks. They test source ordering and
 failure behavior; they are not installed product or renderer qualification.
 
+The live coordinator/supervisor, queues, cancellation handles, journal/store
+custody and sealed facts are scoped to their creating process. Checks precede
+copied mutex/channel access and the requested/dispatch/terminal gates. Fork
+children cannot reuse a copied permit, publish a fact, translate old sealed
+facts, clear recovery or cancel/shutdown the parent's original stream. Child
+journal Drop closes only child descriptors and preserves the parent lease.
+Standalone single-thread actual-fork regressions exercise these boundaries;
+they do not establish an installed native owner or trusted policy/UI.
+
 ## Fault matrix required for the real product path
 
 | Fault/cutpoint | Expected result | Forbidden recovery |

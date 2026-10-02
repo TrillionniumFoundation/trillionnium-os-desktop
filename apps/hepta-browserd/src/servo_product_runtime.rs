@@ -178,6 +178,7 @@ pub struct BrowserdRuntimeSupervisor<A, F>
 where
     F: FnMut(RuntimeGeneration) -> Result<A, ProductRuntimeError>,
 {
+    owner_pid: u32,
     actor: Option<A>,
     factory: F,
     generation: RuntimeGeneration,
@@ -196,6 +197,7 @@ where
         let generation = RuntimeGeneration::INITIAL;
         let actor = factory(generation).map_err(|_| ProductRuntimeError::ReconstructionFailed)?;
         Ok(Self {
+            owner_pid: std::process::id(),
             actor: Some(actor),
             factory,
             generation,
@@ -235,6 +237,7 @@ where
         &self,
         reference: SemanticReference,
     ) -> Result<(), ProductRuntimeError> {
+        self.ensure_owner()?;
         if reference.generation() != self.generation {
             return Err(ProductRuntimeError::StaleGeneration);
         }
@@ -287,6 +290,7 @@ where
     /// Trusted service state survives, but the actor is dropped and the factory is
     /// not called. Reconstruction is therefore explicit and independently auditable.
     pub fn content_process_crashed(&mut self) -> Result<CrashTransition, ProductRuntimeError> {
+        self.ensure_owner()?;
         if self.state == RuntimeState::CrashLoopOpen {
             return Err(ProductRuntimeError::CrashLoopOpen);
         }
@@ -318,6 +322,7 @@ where
 
     /// Explicitly construct the actor reserved for the current generation.
     pub fn reconstruct(&mut self) -> Result<RuntimeGeneration, ProductRuntimeError> {
+        self.ensure_owner()?;
         if self.state == RuntimeState::CrashLoopOpen {
             return Err(ProductRuntimeError::CrashLoopOpen);
         }
@@ -338,7 +343,11 @@ where
     /// Record a stable service cycle of a ready actor and reset its crash counter.
     /// Unavailable, unresolved, or permanently locked runtimes cannot be stable.
     pub fn acknowledge_stable_cycle(&mut self) {
-        if self.state == RuntimeState::Ready && self.actor.is_some() && !self.replay_blocked {
+        if self.ensure_owner().is_ok()
+            && self.state == RuntimeState::Ready
+            && self.actor.is_some()
+            && !self.replay_blocked
+        {
             self.consecutive_crashes = 0;
         }
     }
@@ -348,6 +357,9 @@ where
     /// This method neither reconstructs the actor nor replays a command, and
     /// never clears permanent crash-loop or generation-exhaustion lockout.
     pub fn reconcile_indeterminate(&mut self) {
+        if self.ensure_owner().is_err() {
+            return;
+        }
         self.replay_blocked = false;
         if self.state != RuntimeState::CrashLoopOpen {
             self.state = if self.actor.is_some() {
@@ -356,6 +368,13 @@ where
                 RuntimeState::NeedsReconstruction
             };
         }
+    }
+
+    fn ensure_owner(&self) -> Result<(), ProductRuntimeError> {
+        if self.owner_pid != std::process::id() {
+            return Err(ProductRuntimeError::RuntimeUnavailable);
+        }
+        Ok(())
     }
 }
 

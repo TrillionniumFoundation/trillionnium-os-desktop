@@ -18,9 +18,18 @@ hepta-session-core = { path = "../../crates/hepta-session-core" }
 hepta-peer-attestation = { path = "../../crates/hepta-peer-attestation" }
 trillionnium-contract-core = { path = "../../crates/trillionnium-contract-core" }
 
+[dev-dependencies]
+libc = "=0.2.186"
+
 [lib]
 path = "src/lib.rs"
 
 [[bin]]
 name = "hepta-browserd"
 path = "src/main.rs"
+
+# Actual fork runs from a single-thread main, never from the unit-test harness.
+[[test]]
+name = "product_fork_custody"
+path = "tests/product_fork_custody.rs"
+harness = false

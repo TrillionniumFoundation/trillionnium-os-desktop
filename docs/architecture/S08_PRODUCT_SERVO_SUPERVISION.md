@@ -83,6 +83,12 @@ Before S08 promotion, an end-to-end hostile test must show:
 
 ## Failure and logging policy
 
+Supervisor lifecycle authority binds to the creating PID. Inherited fork
+objects refuse validation, dispatch, crash notification and reconstruction;
+stable-cycle and reconciliation callbacks do nothing in the foreign process.
+This complements generation/actor-thread checks and cannot authorize a new
+native runtime or translate a journal fact across processes.
+
 Public errors use a closed redacted vocabulary. They may expose stable codes such as `stale_generation`, `runtime_unavailable`, `crash_loop_open`, `indeterminate_after_dispatch` and `reconstruction_failed`. They must not expose request payloads, secrets, peer credentials, Servo internals or unrestricted implementation error strings.
 
 Generation, transition class, redacted error code, receipt identity and source commit may be recorded as evidence. Logs are supporting evidence only and never substitute for the durable receipt journal.
