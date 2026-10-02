@@ -326,9 +326,7 @@ fn borrowed_envelopes_preserve_owned_validation_and_bytes() {
     .collect();
     let borrowed: Vec<_> = records.iter().collect();
     // Frozen receipt.v1 bytes: independent of both traversal implementations.
-    let golden = concat!(
-        r#"{"schema":"trillionnium.desktop.receipt.v1","receipt_id":"bound-1","plan_revision":"2026-08-29-d6","image_id":"image-1","servo_commit":"670ae8a70801b162e186f81cbb5bdd2d59c39108","browserd_version":"0.1.0","session_id":"session-1","session_generation":1,"document_generation":1,"semantic_snapshot_revision":1,"mutation_epoch":1,"source":"agent","operation":"page.observe","status":"succeeded","started_monotonic_ms":10,"finished_monotonic_ms":30,"wall_clock_unix_ms":20}"#,
-    );
+    let golden = r#"{"schema":"trillionnium.desktop.receipt.v1","receipt_id":"bound-1","plan_revision":"2026-08-29-d6","image_id":"image-1","servo_commit":"670ae8a70801b162e186f81cbb5bdd2d59c39108","browserd_version":"0.1.0","session_id":"session-1","session_generation":1,"document_generation":1,"semantic_snapshot_revision":1,"mutation_epoch":1,"source":"agent","operation":"page.observe","status":"succeeded","started_monotonic_ms":10,"finished_monotonic_ms":30,"wall_clock_unix_ms":20}"#;
     assert_eq!(
         ReceiptEnvelope::from_borrowed_records(&borrowed)
             .unwrap()
