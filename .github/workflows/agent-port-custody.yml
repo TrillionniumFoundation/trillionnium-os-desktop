@@ -93,6 +93,9 @@ jobs:
           cargo clippy --locked -p hepta-agent-portd --all-targets --all-features -- -D warnings
 
       - name: Run product and explicit fixture regressions
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         run: |
           cargo test --workspace --all-targets --locked
           cargo test --locked -p hepta-agent-portd --all-targets --all-features

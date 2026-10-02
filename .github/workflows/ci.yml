@@ -97,6 +97,9 @@ jobs:
           cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
       - name: Unit and integration tests
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         run: |
           cargo test --workspace --all-targets --locked
           cargo test --workspace --all-targets --all-features --locked
@@ -192,6 +195,9 @@ jobs:
           cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
       - name: Unit and integration tests
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         run: |
           cargo test --workspace --all-targets --locked
           cargo test --workspace --all-targets --all-features --locked
