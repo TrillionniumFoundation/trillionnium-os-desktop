@@ -1,8 +1,11 @@
 """Closed source correspondence only; real Rust kernel corpora supply facts."""
 import copy
 import json
+import os
 from pathlib import Path
 import re
+import subprocess
+import tempfile
 import tomllib
 import unittest
 from test_root_path_retained_control import signatures, exact
@@ -227,5 +230,153 @@ class ApprovedMechanismPolicyTests(unittest.TestCase):
         doc=(ROOT/"docs/architecture/APPROVED_MECHANISM_POLICY.md").read_text()
         for word in ("synthetic", "not Servo", "BEFORE", "minimum", "EACCES", "namespace", "TaskFlow", "original"):
             self.assertIn(word,doc)
+
+class ApprovedPolicyWorkflowIdentityTests(unittest.TestCase):
+    """Execute the complete source identity body against real private Git refs."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.directory = Path(self.temp.name)
+        self.repository = self.directory / "checkout"
+        self.remote = self.directory / "origin.git"
+        self.repository.mkdir()
+        self.git("init", "--bare", str(self.remote), cwd=self.directory)
+        self.git("init", "-b", "main")
+        self.git("config", "user.email", "fixture@example.invalid")
+        self.git("config", "user.name", "Approved identity fixture")
+        self.git("remote", "add", "origin", str(self.remote))
+        # These are source-binding fixture bytes, not approved product policy.
+        for relative in (SOURCE, PRODUCT,
+                         "crates/hepta-peer-attestation/src/control_owner/root_path/approved.rs",
+                         CONTRACT):
+            path = self.repository / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("private Git identity fixture\n")
+        self.commit("base")
+        self.base = self.git("rev-parse", "HEAD").strip()
+        self.git("push", "origin", "main")
+        self.git("switch", "-c", "fork-topic")
+        self.commit("fork head")
+        self.head = self.git("rev-parse", "HEAD").strip()
+        # A fork branch has no origin refs/heads/fork-topic advertisement.
+        self.git("push", "origin", "HEAD:refs/pull/7/head")
+        self.git("switch", "main")
+        self.git("merge", "--no-ff", "fork-topic", "-m", "prospective fixture")
+        self.merge = self.git("rev-parse", "HEAD").strip()
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def git(self, *arguments, cwd=None):
+        return subprocess.run(
+            ["git", *arguments], cwd=cwd or self.repository, check=True,
+            capture_output=True, text=True, timeout=10,
+        ).stdout
+
+    def commit(self, message):
+        (self.repository / "input").write_text(message + "\n")
+        self.git("add", ".")
+        self.git("commit", "-m", message)
+
+    @staticmethod
+    def identity_body(workflow=None):
+        text = workflow if workflow is not None else (
+            ROOT / ".github/workflows/approved-mechanism-policy.yml").read_text()
+        lines = text.splitlines()
+        name = "- name: Bind exact source and current prospective parents"
+        index = next(i for i, line in enumerate(lines) if line.strip() == name)
+        start = next(i for i in range(index + 1, len(lines))
+                     if lines[i].strip() == "run: |") + 1
+        end = start
+        while end < len(lines) and (not lines[end].strip()
+                                  or lines[end].startswith("          ")):
+            end += 1
+        return "\n".join(line[10:] if line.startswith("          ") else line
+                         for line in lines[start:end]) + "\n"
+
+    def run_identity(self, source="head", checkout=None, workflow=None, **changes):
+        self.git("checkout", "--detach", checkout or (
+            self.merge if source == "prospective-merge" else self.head))
+        environment = dict(os.environ)
+        environment.update({
+            "EVENT_NAME": "pull_request", "PR_NUMBER": "7",
+            "SOURCE_OBJECT": source, "EVENT_HEAD": self.head,
+            "EVENT_TESTED": self.merge, "HEAD_REF": "fork-topic",
+            "BASE_REF": "main", "EVENT_BASE": self.base, "LC_ALL": "C",
+        })
+        environment.update(changes)
+        return subprocess.run(
+            ["bash", "--noprofile", "--norc", "-c", self.identity_body(workflow)],
+            cwd=self.repository, env=environment, capture_output=True,
+            text=True, timeout=10,
+        )
+
+    def test_fork_pr_only_pull_ref_accepts_exact_head_and_ordered_merge(self):
+        self.assertEqual(self.git("ls-remote", "origin", "refs/heads/fork-topic"), "")
+        for source in ("head", "prospective-merge"):
+            with self.subTest(source=source):
+                result = self.run_identity(source)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                expected = self.merge if source == "prospective-merge" else self.head
+                self.assertEqual(result.stdout.splitlines()[:2], [
+                    expected, self.git("rev-parse", expected + "^{tree}").strip()])
+
+    def test_push_requires_origin_branch_not_the_pull_ref(self):
+        result = self.run_identity(EVENT_NAME="push", PR_NUMBER="")
+        self.assertNotEqual(result.returncode, 0)
+        self.git("push", "origin", self.head + ":refs/heads/fork-topic")
+        result = self.run_identity(EVENT_NAME="push", PR_NUMBER="")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotEqual(self.run_identity(EVENT_NAME="push", HEAD_REF="fork-topic*").returncode, 0)
+        self.assertNotEqual(self.run_identity(EVENT_NAME="workflow_dispatch").returncode, 0)
+        result = self.run_identity(EVENT_NAME="push", EVENT_HEAD=self.base)
+        self.assertNotEqual(result.returncode, 0)
+
+    def test_invalid_pr_numbers_and_suffix_only_reference_refuse(self):
+        # Advertise invalid but Git-syntactically legal issue identifiers, so
+        # refusal proves canonical-number validation rather than missing refs.
+        for number in ("0", "07", "-7", "+7", "7.0"):
+            self.git("push", "origin", self.head + ":refs/pull/" + number + "/head")
+        for number in ("", "0", "07", "-7", "+7", "7.0", "7/head", "*", "7\n8"):
+            with self.subTest(number=number):
+                self.assertNotEqual(self.run_identity(PR_NUMBER=number).returncode, 0)
+        self.assertNotEqual(self.run_identity(PR_NUMBER="8").returncode, 0)
+        # ls-remote patterns can match a slash-delimited suffix of another ref.
+        self.git("push", "origin", self.head + ":refs/heads/refs/pull/8/head")
+        advertised = self.git("ls-remote", "origin", "refs/pull/8/head")
+        self.assertIn("refs/heads/refs/pull/8/head", advertised)
+        self.assertNotEqual(self.run_identity(PR_NUMBER="8").returncode, 0)
+
+    def test_same_named_origin_branch_cannot_replace_changed_or_missing_pr_ref(self):
+        self.git("push", "origin", self.head + ":refs/heads/fork-topic")
+        self.git("push", "--force", "origin", self.base + ":refs/pull/7/head")
+        self.assertNotEqual(self.run_identity().returncode, 0)
+        self.git("push", "origin", ":refs/pull/7/head")
+        self.assertNotEqual(self.run_identity().returncode, 0)
+
+    def test_original_checkout_and_ordered_live_parent_checks_stay_closed(self):
+        self.assertNotEqual(self.run_identity(checkout=self.base).returncode, 0)
+        result = self.run_identity("prospective-merge", EVENT_TESTED=self.head)
+        self.assertNotEqual(result.returncode, 0)
+        tree = self.git("rev-parse", self.head + "^{tree}").strip()
+        reversed_merge = self.git("commit-tree", tree, "-p", self.head, "-p", self.base,
+                                  "-m", "reversed prospective fixture").strip()
+        result = self.run_identity("prospective-merge", checkout=reversed_merge,
+                                   EVENT_TESTED=reversed_merge)
+        self.assertNotEqual(result.returncode, 0)
+        third = self.git("commit-tree", tree, "-m", "independent parent fixture").strip()
+        three = self.git("commit-tree", tree, "-p", self.base, "-p", self.head,
+                         "-p", third, "-m", "three-parent fixture").strip()
+        result = self.run_identity("prospective-merge", checkout=three, EVENT_TESTED=three)
+        self.assertNotEqual(result.returncode, 0)
+        self.git("push", "origin", self.base + ":refs/heads/refs/heads/unadvertised")
+        self.assertIn("refs/heads/refs/heads/unadvertised",
+                      self.git("ls-remote", "origin", "refs/heads/unadvertised"))
+        self.assertNotEqual(self.run_identity("prospective-merge", BASE_REF="unadvertised").returncode, 0)
+        self.git("switch", "-c", "base-moved", self.base)
+        self.commit("new base")
+        self.git("push", "origin", "HEAD:refs/heads/main")
+        self.assertNotEqual(self.run_identity("prospective-merge").returncode, 0)
+
 
 if __name__=="__main__":unittest.main()
