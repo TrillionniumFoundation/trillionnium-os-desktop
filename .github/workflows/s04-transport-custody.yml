@@ -141,6 +141,9 @@ jobs:
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
       - name: Rust format, build, lint, and test all S04 feature graphs
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         run: |
           set -euo pipefail
           cargo fmt --all --check
@@ -244,6 +247,9 @@ jobs:
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
       - name: Run prospective Rust gate
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         run: |
           set -euo pipefail
           cargo fmt --all --check

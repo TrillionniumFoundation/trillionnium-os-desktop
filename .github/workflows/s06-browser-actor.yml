@@ -105,6 +105,9 @@ jobs:
             -v
 
       - name: Run complete locked source graph
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         shell: bash
         run: |
           set -euo pipefail
@@ -215,6 +218,9 @@ jobs:
             -v
 
       - name: Run complete locked merged graph
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         shell: bash
         run: |
           set -euo pipefail

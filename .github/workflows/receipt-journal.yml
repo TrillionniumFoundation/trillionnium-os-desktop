@@ -83,6 +83,9 @@ jobs:
           python3 -m unittest tests.test_s05_receipt_recovery -v
 
       - name: Enforce complete locked Rust graph and nonzero receipt corpus
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         shell: bash
         run: |
           set -euo pipefail
@@ -181,6 +184,9 @@ jobs:
           python3 -m unittest tests.test_s05_receipt_recovery -v
 
       - name: Enforce complete locked Rust graph and nonzero receipt corpus
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
         shell: bash
         run: |
           set -euo pipefail
