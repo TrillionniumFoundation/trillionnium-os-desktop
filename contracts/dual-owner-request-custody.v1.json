@@ -1,0 +1,100 @@
+{
+  "schema": "trillionnium.desktop.dual-owner-request-custody.v1",
+  "status": "SOURCE_CANDIDATE_TWO_LIVE_INCARNATIONS_ONLY",
+  "platform": "Linux",
+  "implementation": {
+    "control": "crates/hepta-peer-attestation/src/control_owner/control_request.rs",
+    "product": "apps/hepta-browserd/src/product_dispatch.rs",
+    "actor": "crates/hepta-browser-actor-simulation/src/lib.rs",
+    "facade": "crates/hepta-browser-actor/src/servo_runtime.rs"
+  },
+  "policy": {
+    "control_constructor": "only existing ControlPeerOwner with fixed default /proc live executable source and explicit approved ControlOwnerPolicy",
+    "original_agent_constructor": "from_control_received uses fixed default ProcfsPeerAttestor; explicit PeerRuntimePolicy and canonical approved executable pin",
+    "approved_agent_pin": "64 lowercase hexadecimal SHA256 compared to actual original Agent executable bytes; observation never auto-approves production policy",
+    "principal_issued": false,
+    "policy_provisioned": false,
+    "injected_control_attestor": false,
+    "static_control_source": false
+  },
+  "ownership": {
+    "transactions_per_receiver": 1,
+    "custody_cloneable": false,
+    "opaque_received_cloneable": false,
+    "verifier_cloneable": true,
+    "raw_stream_extraction": false,
+    "original_agent": "actual original stream SO_PEERCRED; original Agent pidfd and snapshot, never control custodian PID as Agent identity",
+    "control_custodian": "duplicate same retained original control pidfd and snapshot before one-shot receiver retires; never replacement numeric PID lookup",
+    "retirement": [
+      "owner_drop",
+      "explicit_revoke",
+      "connection_cancel",
+      "observed_agent_death_or_exec",
+      "observed_control_death_or_exec",
+      "original_deadline_expiry"
+    ],
+    "observed_identity_failure_latched": true,
+    "fork": "creator PID before state, queue, mutex, callback and mutation; child Drop closes owned descriptor copies without parent shutdown or unlock",
+    "prepared_request_retirement": "creator PID before cleanup; every controlled preflight refusal/error and handler return cancels and removes that request token/marker, including successful preflight followed by revoked custody or expiry; no dispatch or replay grant"
+  },
+  "deadline": {
+    "maximum_seconds": 20,
+    "queue_capacity_maximum": 8,
+    "accepted": "unchanged original received absolute Instant; both identity scopes and queue share it",
+    "control_wait": "independent original receiver absolute Instant, rechecked through receive; never substitutes for accepted transaction deadline",
+    "renewal_api": false,
+    "preemptive_procfs_timeout": false
+  },
+  "request_chain": [
+    "receive_custodied",
+    "from_control_received",
+    "queue_submit_and_dequeue",
+    "semantic_preflight_before_durable_facts",
+    "handle_attested_controlled",
+    "RequestControl_pair",
+    "ServoRuntimeCompletion_ensure_current_peer"
+  ],
+  "control_channel": {
+    "one_shot_local_close_is_peer_exit": false,
+    "custodian_must_remain_same_live_incarnation": true,
+    "remote_cancel_or_terminal_ack_protocol": false,
+    "terminal_wait_protocol": false
+  },
+  "public_api": {
+    "AttestedHandoffReceiver::receive_custodied": "(&mut self) -> Result<ControlReceivedAcceptedStream, ControlOwnerError>",
+    "ControlReceivedAcceptedStream::deadline": "(&self) -> Result<Instant, ControlOwnerError>",
+    "ControlReceivedAcceptedStream::control_verifier": "(&self) -> Result<ControlRequestVerifier, ControlOwnerError>",
+    "ControlReceivedAcceptedStream::consume_before": "(self, impl FnOnce(UnixStream, Instant, ControlRequestCustody) -> T) -> Result<T, ControlOwnerError>",
+    "ControlRequestCustody::verifier": "(&self) -> Result<ControlRequestVerifier, ControlOwnerError>",
+    "ControlRequestCustody::revoke": "(&self) -> Result<(), ControlOwnerError>",
+    "ControlRequestVerifier::ensure_alive": "(&self) -> Result<(), ControlOwnerError>",
+    "ControlRequestVerifier::verify_current": "(&self) -> Result<(), ControlOwnerError>",
+    "ControlRequestVerifier::deadline": "(&self) -> Result<Instant, ControlOwnerError>",
+    "ControlRequestVerifier::ensure_pair_alive": "(&self, &PeerRequestVerifier) -> Result<(), ControlOwnerError>",
+    "ControlRequestVerifier::verify_pair_current": "(&self, &PeerRequestVerifier) -> Result<(), ControlOwnerError>",
+    "AcceptedProductConnection::from_control_received": "(ControlReceivedAcceptedStream, &PeerRuntimePolicy, &str) -> Result<AcceptedProductConnection, ProductDispatchError>",
+    "BrowserActor::preflight_attested_controlled": "(&mut self, &DispatchContext, &BrowserRequest, &ProcfsPeerAttestor, &AttestedPeer, &ControlRequestVerifier) -> Result<Option<BrowserWireError>, AgentPortError>",
+    "BrowserActor::handle_attested_controlled": "(&mut self, &DispatchContext, &BrowserRequest, &ProcfsPeerAttestor, &AttestedPeer, &ControlRequestVerifier) -> Result<HandlerOutcome, AgentPortError>",
+    "ServoBrowserActor::preflight_attested_controlled": "(&mut self, &DispatchContext, &BrowserRequest, &ProcfsPeerAttestor, &AttestedPeer, &ControlRequestVerifier) -> Result<Option<BrowserWireError>, AgentPortError>",
+    "ServoBrowserActor::handle_attested_controlled": "(&mut self, &DispatchContext, &BrowserRequest, &ProcfsPeerAttestor, &AttestedPeer, &ControlRequestVerifier) -> Result<HandlerOutcome, AgentPortError>",
+    "BrowserActor::retire_prepared_request": "(&mut self, &str) -> Result<(), AgentPortError>",
+    "ServoBrowserActor::retire_prepared_request": "(&mut self, &str) -> Result<(), AgentPortError>"
+  },
+  "evidence": {
+    "actual_kernel": "apps/hepta-browserd/tests/product_control_custody_kernel.rs: three independent same-UID Linux processes, original SCM_RIGHTS stream and default live procfs identities",
+    "source_callback": "same target: separately labeled synthetic Agent procfs plus actual control pidfd; typed completion callback ordering only, no Servo execution",
+    "contract_tests": "tests/test_dual_owner_custody.py: closed fields, typed flags, exact additive API/source correspondence and CI registration only"
+  },
+  "non_claims": {
+    "approved_policy_provisioned": false,
+    "cross_uid_live_attestation_qualified": false,
+    "root_owned_control_path_custody": false,
+    "installed_daemon_owner": false,
+    "native_final_effect_gate": false,
+    "remote_terminal_protocol": false,
+    "semantic_principal": false,
+    "product_ready": false,
+    "default_activation_changed": false,
+    "all_asynchronous_syscall_windows_closed": false
+  }
+}

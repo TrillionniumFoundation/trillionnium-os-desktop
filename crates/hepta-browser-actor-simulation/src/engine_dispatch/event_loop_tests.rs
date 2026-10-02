@@ -524,7 +524,7 @@ fn queued_request_identity_drift_prevents_callback_start() {
     let fixture = super::super::authority_tests::Fixture::new();
     let custody = fixture.attested.request_custody().unwrap();
     let mut ctl = control("before-start-identity");
-    ctl.authority = Some(custody.verifier());
+    ctl.authority = Some(custody.verifier().into());
     let state = Rc::new(RefCell::new(NativeState::default()));
     let (port, mut engine, events) = pair(DelayedBackend(state.clone()));
     let work = worker(port, ctl);
@@ -545,7 +545,7 @@ fn buffered_callback_success_is_rechecked_against_current_request_identity() {
     let fixture = super::super::authority_tests::Fixture::new();
     let custody = fixture.attested.request_custody().unwrap();
     let mut ctl = control("after-callback-identity");
-    ctl.authority = Some(custody.verifier());
+    ctl.authority = Some(custody.verifier().into());
     let state = Rc::new(RefCell::new(NativeState::default()));
     let (port, mut engine, events) = pair(DelayedBackend(state.clone()));
     let work = worker(port, ctl);
@@ -571,7 +571,7 @@ fn completion_checks_current_identity_before_eventual_atomic_work() {
     let fixture = super::super::authority_tests::Fixture::new();
     let custody = fixture.attested.request_custody().unwrap();
     let mut ctl = control("before-eventual-work");
-    ctl.authority = Some(custody.verifier());
+    ctl.authority = Some(custody.verifier().into());
     let state = Rc::new(RefCell::new(NativeState::default()));
     let (port, mut engine, events) = pair(DelayedBackend(state.clone()));
     let work = worker(port, ctl);

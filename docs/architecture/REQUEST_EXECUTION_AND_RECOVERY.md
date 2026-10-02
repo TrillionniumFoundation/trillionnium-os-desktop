@@ -80,6 +80,44 @@ synchronous: a late result is refused, not represented as preemptively timed out
 Real Linux same-UID/SCM_RIGHTS host tests verify this receiver bridge; approved
 principal/service custody, installed native startup and actual Servo execution
 still require separate integration and qualification.
+The additive Linux dual-owner path now uses `receive_custodied` and
+`AcceptedProductConnection::from_control_received`: the original Agent stream
+and accepted absolute Instant travel with unique custody of the same default-live
+control custodian. Both original process incarnations are refreshed at queue,
+preflight and controlled handler boundaries; paired opaque verifiers reach the
+concrete runtime completion check. The new constructor additionally requires a
+trusted configured canonical approved Agent executable pin and compares actual
+live bytes; the runtime-policy object alone never supplies that pin. There is no
+provisioned product policy. The original `receive`/`from_received` APIs remain
+unchanged. `contracts/dual-owner-request-custody.v1.json` records the exact
+additive inventory and ceiling.
+
+
+`retire_prepared_request(&mut self, &str) -> Result<(), AgentPortError>` is
+additive on the actor and concrete facade. It checks the actor creator PID
+before mutation, cancels an existing shared token and removes only that request's
+registration and cancellation marker. It creates no token, receipt, authority,
+new deadline or replay grant. Controlled preflight refusals/errors and every
+controlled handler return retire preparation, including successful preflight
+followed by custodian revocation or expiry. The product handler also retires on
+its own early cancellation, identity, replay and storage refusals. A retained
+token clone is cancelled even when the original legacy handler already removed
+the registration. Successful preflight keeps preparation for actual dispatch.
+The private product handler also owns preparation until Drop, so lifecycle or
+deadline errors that skip handle after preflight retire the same request. The
+added four source-callback cuts (including actual fork refusal before token
+mutation with unchanged parent FDs), ten product-refusal cases and actual observer
+failure followed by handler Drop prove this
+source lifecycle with actual control custody or explicitly synthetic Agent
+metadata as labeled; they do not execute Servo or qualify installed effects.
+
+The one-shot control socket closes after receive; this is not permission for the
+custodian process to exit. The same live incarnation must remain until request
+retirement. A terminal-wait/remote-cancel protocol and installed service wiring
+remain absent. Three-process same-UID default-proc kernel tests cover identity
+and FD continuity. A separately labeled synthetic-Agent callback corpus covers
+source ordering only; neither tier proves native Servo effect execution.
+
 Revocation closes the same transport to wake blocking receive and cancels active
 actor work. The native owner must still perform the final peer/control/retained
 node check inside its reviewed engine action and withdraw stale pixels/input
