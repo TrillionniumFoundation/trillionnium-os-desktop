@@ -45,7 +45,8 @@ fn main() {
             println!("{}", result.json);
         }
         Err(error) => {
-            let _ = write_failure(io::stderr().lock(), &error);
+            let category = error.category();
+            let _ = write_failure(io::stderr().lock(), category);
             std::process::exit(1);
         }
     }
@@ -357,24 +358,56 @@ impl FixtureError {
     // Journald is an operational log, separate from the explicit qualification
     // evidence. Never forward peer IDs, process paths, digests, or I/O messages
     // from an underlying error into this sink.
-    fn public_code(&self) -> &'static str {
+    fn category(&self) -> FailureCategory {
         match self {
-            Self::Io(_) => "io_failed",
-            Self::Transport(_) => "transport_refused",
-            Self::Codec(_) => "codec_refused",
-            Self::AgentPort(_) => "agent_port_refused",
-            Self::Attestation(_) => "peer_attestation_refused",
-            Self::WrongInheritedDescriptor => "inherited_descriptor_refused",
-            Self::UnnamedInheritedSocket => "unnamed_inherited_socket_refused",
-            Self::SocketPathMismatch { .. } => "inherited_socket_path_refused",
-            Self::Invariant(_) => "invariant_failed",
-            Self::Usage(_) => "invalid_usage",
+            Self::Io(_) => FailureCategory::Io,
+            Self::Transport(_) => FailureCategory::Transport,
+            Self::Codec(_) => FailureCategory::Codec,
+            Self::AgentPort(_) => FailureCategory::AgentPort,
+            Self::Attestation(_) => FailureCategory::Attestation,
+            Self::WrongInheritedDescriptor => FailureCategory::WrongInheritedDescriptor,
+            Self::UnnamedInheritedSocket => FailureCategory::UnnamedInheritedSocket,
+            Self::SocketPathMismatch { .. } => FailureCategory::SocketPathMismatch,
+            Self::Invariant(_) => FailureCategory::Invariant,
+            Self::Usage(_) => FailureCategory::Usage,
         }
     }
 }
 
-fn write_failure(mut writer: impl io::Write, error: &FixtureError) -> io::Result<()> {
-    writeln!(writer, "hepta-agent-d1-fixture: {}", error.public_code())
+// The operational logger cannot receive an underlying error or any payload.
+// Classification finishes before entering the logging boundary.
+enum FailureCategory {
+    Io,
+    Transport,
+    Codec,
+    AgentPort,
+    Attestation,
+    WrongInheritedDescriptor,
+    UnnamedInheritedSocket,
+    SocketPathMismatch,
+    Invariant,
+    Usage,
+}
+
+impl FailureCategory {
+    fn public_code(self) -> &'static str {
+        match self {
+            Self::Io => "io_failed",
+            Self::Transport => "transport_refused",
+            Self::Codec => "codec_refused",
+            Self::AgentPort => "agent_port_refused",
+            Self::Attestation => "peer_attestation_refused",
+            Self::WrongInheritedDescriptor => "inherited_descriptor_refused",
+            Self::UnnamedInheritedSocket => "unnamed_inherited_socket_refused",
+            Self::SocketPathMismatch => "inherited_socket_path_refused",
+            Self::Invariant => "invariant_failed",
+            Self::Usage => "invalid_usage",
+        }
+    }
+}
+
+fn write_failure(mut writer: impl io::Write, category: FailureCategory) -> io::Result<()> {
+    writeln!(writer, "hepta-agent-d1-fixture: {}", category.public_code())
 }
 
 impl fmt::Display for FixtureError {
@@ -475,7 +508,7 @@ mod tests {
         ];
         let mut captured = Vec::new();
         for error in errors {
-            write_failure(&mut captured, &error).expect("write operational diagnostic");
+            write_failure(&mut captured, error.category()).expect("write operational diagnostic");
         }
         assert_eq!(
             String::from_utf8(captured).expect("UTF-8 diagnostics"),

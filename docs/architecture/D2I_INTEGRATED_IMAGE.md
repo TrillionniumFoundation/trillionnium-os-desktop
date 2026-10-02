@@ -52,12 +52,27 @@ initial/unpainted recovery facts, plus deterministic transformation and source
 drift refusal. These are source/process tests; only a fresh integrated QEMU
 image run can establish the Wayland/Servo runtime result.
 
-The inherited D1 qualification binary writes only fixed error category codes to
-its operational stderr/journald sink. Underlying attestation identities, procfs
+The inherited D1 qualification binary classifies errors into a payload-free
+`FailureCategory` enum before its logger, which accepts only that enum and emits
+fixed category codes to operational stderr/journald. Underlying attestation identities, procfs
 paths, socket paths, digests and I/O details are not forwarded into that sink.
 The explicit qualification JSON retains the process identity facts needed for
 isolation verification. A real Rust output-sink regression exercises sensitive
 UID/GID mismatches, procfs errors, transport errors and socket-path mismatches.
+
+The portable verifier independently requires typed true observed chrome
+survival, exactly twelve sent inputs and at least three handled callbacks. Full
+negative artifact fixtures rewrite the runtime and every affected boot/output
+hash: missing fields, false claims, boolean/string/float counts and insufficient
+counts still fail after complete digest rebinding. These verifier tests prove
+validation behavior, not an actual guest runtime.
+
+Candidate run [37002984433](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/37002984433)
+passed its actual integrated QEMU image workflow at source head
+`bfe2664a52191ff6327e2cbd253ab02ce1527401`. Its earlier CodeQL error-log finding
+still blocked that complete candidate. The enum logging boundary and stricter
+portable verification are later source changes and need their own current-head
+CI; neither inherits an earlier object's promotion or runtime authority.
 
 A passing pull-request run is only a candidate. Promotion additionally requires
 independent security review, protected `main`, reviewed merge, and a fresh
