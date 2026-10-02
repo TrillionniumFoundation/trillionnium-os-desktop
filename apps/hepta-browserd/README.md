@@ -26,7 +26,7 @@ A narrower machine-state, gate or non-claim always wins. Source presence and doc
 
 ## Dependency and call direction
 
-`hepta-browserd` is an application-layer consumer of `hepta-agent-transport`, `hepta-browser-codec`, `hepta-agent-port`, `hepta-browser-contracts`, `hepta-session-core`, and `trillionnium-contract-core`. Those lower layers must never depend back on this application. The current self-check calls into each mechanism in dependency order and then exercises the engine-neutral session state machine. The future Servo adapter must remain a distinct concrete, reviewed path rather than a generic caller-injected runtime.
+`hepta-browserd` is an application-layer consumer of `hepta-agent-transport`, `hepta-browser-codec`, `hepta-agent-port`, `hepta-browser-actor`, `hepta-browser-contracts`, `hepta-peer-attestation`, `hepta-session-core`, and `trillionnium-contract-core`. Those lower layers must never depend back on this application. The current self-check calls into each mechanism in dependency order and then exercises the engine-neutral session state machine. The native Servo adapter must remain a distinct concrete, reviewed path rather than a generic caller-injected runtime.
 
 Relevant architecture:
 
@@ -63,6 +63,31 @@ The reconciliation method does not itself validate or issue a durable receipt.
 The product coordinator must establish that authority before calling it; a
 generic supervisor test does not prove the installed reconciliation path.
 
+The separate `product_dispatch` source module provides concrete request composition:
+
+| API | Contract |
+| --- | --- |
+| `AcceptedProductConnection::attest` | Retain the original connected Unix stream, kernel credentials, opaque pidfd-backed live attestation, and one monotonic budget including admission and queue residence; maximum 20 seconds |
+| `product_connection_queue` / `try_submit` / `try_next` | Nonblocking bounded handoff of original connections; capacity 1–8; overflow closes the rejected connection |
+| `ProductConnectionCancellation::cancel` | Revoke a queued/active connection, interrupt blocking socket operations and cancel active actor work; grants no dispatch or recovery authority |
+| `ProductRequestCoordinator::from_connection` | Bind a concrete `ServoRuntimeEndpoint` and a complete managed receipt journal to the admitted principal; refuse nonterminal or terminal-uncertain prior history |
+| `from_connection_after_reconciliation` | Trusted recovery caller explicitly acknowledges every terminal uncertain request by exact ID and canonical digest, checked against complete live journal facts; nonterminal history remains blocked |
+| `serve_connection` | Semantic preflight before durable admission, durable dispatch intent before engine work, and terminal receipt acknowledgment before response publication; deduplication includes sealed predecessor segments |
+| `reconcile_request` | Validate the exact currently blocked request against a sealed terminal fact from the live complete journal; no replay, receipt rewrite or implicit reconstruction |
+| `content_process_crashed` / `reconstruct` | Native owner first withdraws old content/input and retires its bridge; checked generation invalidation then explicit fresh endpoint binding; crash-loop lockout remains closed |
+
+The coordinator and actor are constructed on their worker thread after moving
+the concrete endpoint there. The native creator thread must own and pump the
+matching `ServoRuntimeOwner`, retain current native semantic nodes, and call
+`ServoRuntimeCompletion::ensure_current_peer` immediately before the action.
+No installed embedder currently fulfills this composition/startup contract.
+The executable and default AgentPort service remain disabled. Cross-UID live
+executable attestation also requires an approved broker or equivalent narrowly
+reviewed authority; qualification static attestation is not a product fallback.
+Trusted recovery UI/policy and durable operator-decision records remain open.
+Startup therefore requires explicit exact acknowledgments again after reopening;
+source receipt inspection does not claim a persisted operator decision.
+
 Registered binaries:
 
 - `hepta-browserd` at `src/main.rs`; required features: `none`.
@@ -75,7 +100,7 @@ Registered Cargo features: none.
 
 ## State, concurrency, and failure semantics
 
-The executable's state is local to its self-check call. Session transitions use `SessionMachine`; navigation, human focus, IME, crash and recovery advance typed revisions. The separate source-level supervisor owns one optional actor, a factory, checked runtime generation, consecutive-crash count and replay latch. It performs no background work or automatic reconstruction. Product process supervision, native pixels/input withdrawal, trusted recovery UI and persisted reconciliation remain integration work.
+The executable's state is local to its self-check call. Session transitions use `SessionMachine`; navigation, human focus, IME, crash and recovery advance typed revisions. The separate source-level supervisor owns one optional actor, a factory, checked runtime generation, consecutive-crash count and replay latch. The concrete coordinator co-owns one Servo actor and managed receipt observer; storage failure permanently closes admission for that instance. Terminal uncertainty and interruptions after durable dispatch require explicit exact-request reconciliation. Neither API automatically repeats work or reconstructs an actor. Native pixels/input withdrawal, installed process startup, trusted recovery UI and persisted recovery decisions remain integration work.
 
 Failures must preserve the last truthful state. A timeout, crash, peer loss, storage ambiguity or unsupported operation cannot be converted into successful completion by a caller, retry loop, fixture, log message or evidence generator.
 
@@ -95,6 +120,8 @@ Primary source or test references:
 
 - `apps/hepta-browserd/src/lib.rs`
 - `apps/hepta-browserd/src/servo_product_runtime.rs`
+- `apps/hepta-browserd/src/product_dispatch.rs`
+- `apps/hepta-browserd/src/product_dispatch/tests.rs` (real Unix framing, synthetic procfs facts and controlled callbacks; source tests only)
 - `tests/test_s06_browser_actor.py`
 - `tests/test_s08_product_supervision.py`
 

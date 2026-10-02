@@ -22,8 +22,8 @@ use hepta_agent_port::{AgentPortError, DispatchContext, HandlerOutcome};
 use hepta_agent_transport::PeerIdentity;
 use hepta_browser_actor_simulation as simulation;
 use hepta_browser_codec::{
-    BrowserRequest, ElementReference, JsonObject, ObservationField, PageAction, ProfileSpec,
-    WaitCondition,
+    BrowserRequest, BrowserWireError, ElementReference, JsonObject, ObservationField, PageAction,
+    ProfileSpec, WaitCondition,
 };
 use hepta_peer_attestation::{AttestedPeer, ProcfsPeerAttestor};
 use hepta_session_core::ReceiptJournal;
@@ -104,6 +104,20 @@ impl ServoBrowserActor {
     ) -> Result<HandlerOutcome, AgentPortError> {
         self.inner
             .handle_attested(context, request, attestor, attested)
+    }
+
+    /// Refuse stale, revoked, cancelled or unavailable requests before the
+    /// coordinator writes admitted/dispatched facts. This grants no execution
+    /// authority; handle_attested rechecks after the durability barrier.
+    pub fn preflight_attested(
+        &mut self,
+        context: &DispatchContext,
+        request: &BrowserRequest,
+        attestor: &ProcfsPeerAttestor,
+        attested: &AttestedPeer,
+    ) -> Result<Option<BrowserWireError>, AgentPortError> {
+        self.inner
+            .preflight_attested(context, request, attestor, attested)
     }
 
     /// Return only the semantic principal.  Mechanism identity remains private.

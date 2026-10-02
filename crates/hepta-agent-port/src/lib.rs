@@ -54,6 +54,22 @@ pub enum HandlerOutcome {
 }
 
 pub trait BrowserRequestHandler {
+    /// Validate semantic admission before durable lifecycle facts are recorded.
+    ///
+    /// This hook must be bounded and must not dispatch browser work. `Some`
+    /// refuses admission with a canonical failure response bound to the decoded
+    /// request; `Err` closes the connection without lifecycle facts or dispatch.
+    /// Passing preflight does not replace the handler's final authority checks.
+    /// The default preserves existing handlers; product handlers must explicitly
+    /// implement their attested admission policy here.
+    fn preflight(
+        &mut self,
+        _context: &DispatchContext,
+        _request: &BrowserRequest,
+    ) -> Result<Option<BrowserWireError>, AgentPortError> {
+        Ok(None)
+    }
+
     fn handle(
         &mut self,
         context: &DispatchContext,
@@ -158,6 +174,65 @@ where
         .checked_add(server_ceiling)
         .ok_or(AgentPortError::DeadlineExceeded)?;
 
+    serve_one_until(
+        stream,
+        peer_policy,
+        accepted_at,
+        accepted_unix_ms,
+        server_deadline,
+        handler,
+        observer,
+    )
+}
+
+/// Serve one connection within the exact monotonic deadline reserved at ingress.
+///
+/// Queue wait and preflight never renew this budget. An already expired deadline
+/// closes the consumed stream before a transport handshake or lifecycle callback.
+/// The request's optional wall-clock deadline may only shorten this ceiling.
+pub fn serve_one_before_with_observer<H, O>(
+    stream: UnixStream,
+    peer_policy: PeerPolicy,
+    absolute_server_deadline: Instant,
+    handler: &mut H,
+    observer: &mut O,
+) -> Result<ServiceEvidence, AgentPortError>
+where
+    H: BrowserRequestHandler,
+    O: OperationLifecycleObserver,
+{
+    let accepted_at = Instant::now();
+    if absolute_server_deadline <= accepted_at {
+        return Err(AgentPortError::DeadlineExceeded);
+    }
+    let accepted_unix_ms = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|_| AgentPortError::ClockBeforeUnixEpoch)?
+        .as_millis();
+    serve_one_until(
+        stream,
+        peer_policy,
+        accepted_at,
+        accepted_unix_ms,
+        absolute_server_deadline,
+        handler,
+        observer,
+    )
+}
+
+fn serve_one_until<H, O>(
+    stream: UnixStream,
+    peer_policy: PeerPolicy,
+    accepted_at: Instant,
+    accepted_unix_ms: u128,
+    server_deadline: Instant,
+    handler: &mut H,
+    observer: &mut O,
+) -> Result<ServiceEvidence, AgentPortError>
+where
+    H: BrowserRequestHandler,
+    O: OperationLifecycleObserver,
+{
     let mut connection =
         ServerConnection::accept(stream, peer_policy, remaining_until(server_deadline)?)?;
     let peer = connection.peer_identity();
@@ -170,13 +245,19 @@ where
     let context = DispatchContext {
         peer,
         transport_sequence: request_frame.sequence,
-        canonical_request_sha256: request_sha256.clone(),
+        canonical_request_sha256: request_sha256,
         effect_class: request.effect_class(),
         accepted_at,
         effective_deadline,
     };
 
     context.remaining()?;
+    let refusal = handler.preflight(&context, &request)?;
+    context.remaining()?;
+    if let Some(error) = refusal {
+        let response = prepare_response(&request, HandlerOutcome::Failure(error))?;
+        return publish_response(&mut connection, &context, request, response);
+    }
     observer.requested(&context, &request)?;
     if let Err(error) = context.remaining() {
         observer.interrupted(&context, &request, &error)?;
@@ -200,36 +281,58 @@ where
         observer.interrupted(&context, &request, &error)?;
         return Err(error);
     }
-    let response = match bind_response(&request, outcome) {
+    let response = match prepare_response(&request, outcome) {
         Ok(response) => response,
         Err(error) => {
             observer.interrupted(&context, &request, &error)?;
             return Err(error);
         }
     };
-    let response_ok = response.outcome.is_ok();
-    let encoded = match encode_response(&response) {
-        Ok(encoded) => encoded,
-        Err(error) => {
-            let error = AgentPortError::Codec(error);
-            observer.interrupted(&context, &request, &error)?;
-            return Err(error);
-        }
-    };
-    let response_sha256 = sha256_hex(&encoded);
+    observer.completed(&context, &request, &response.value, &response.sha256)?;
+    publish_response(&mut connection, &context, request, response)
+}
 
-    observer.completed(&context, &request, &response, &response_sha256)?;
-    connection.send_response(request_frame.sequence, encoded, context.remaining()?)?;
+struct PreparedResponse {
+    value: BrowserResponse,
+    encoded: Vec<u8>,
+    sha256: String,
+}
+
+fn prepare_response(
+    request: &BrowserRequest,
+    outcome: HandlerOutcome,
+) -> Result<PreparedResponse, AgentPortError> {
+    let value = bind_response(request, outcome)?;
+    let encoded = encode_response(&value)?;
+    let sha256 = sha256_hex(&encoded);
+    Ok(PreparedResponse {
+        value,
+        encoded,
+        sha256,
+    })
+}
+
+fn publish_response(
+    connection: &mut ServerConnection,
+    context: &DispatchContext,
+    request: BrowserRequest,
+    response: PreparedResponse,
+) -> Result<ServiceEvidence, AgentPortError> {
+    connection.send_response(
+        context.transport_sequence,
+        response.encoded,
+        context.remaining()?,
+    )?;
 
     Ok(ServiceEvidence {
-        transport_sequence: request_frame.sequence,
+        transport_sequence: context.transport_sequence,
         request_id: request.request_id,
         session_id: request.session_id,
         session_generation: request.session_generation,
-        request_sha256,
-        response_sha256,
+        request_sha256: context.canonical_request_sha256.clone(),
+        response_sha256: response.sha256,
         effect_class: context.effect_class,
-        response_ok,
+        response_ok: response.value.outcome.is_ok(),
         response_committed: true,
     })
 }
@@ -536,8 +639,9 @@ pub fn self_check() -> Result<(), AgentPortError> {
 mod tests {
     use super::*;
     use hepta_browser_codec::{NavigationTarget, decode_response, encode_request};
-    use std::sync::Arc;
+    use std::io::Read;
     use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::{Arc, Mutex};
     use std::thread;
 
     fn policy(stream: &UnixStream) -> PeerPolicy {
@@ -614,6 +718,341 @@ mod tests {
             self.0.fetch_add(1, Ordering::SeqCst);
             Ok(HandlerOutcome::Success(JsonObject::new()))
         }
+    }
+
+    enum PreflightDecision {
+        Accept,
+        Refuse,
+        Error,
+        Expire,
+        OversizedRefusal,
+    }
+
+    struct AdmissionHandler {
+        decision: PreflightDecision,
+        events: Arc<Mutex<Vec<&'static str>>>,
+    }
+
+    impl BrowserRequestHandler for AdmissionHandler {
+        fn preflight(
+            &mut self,
+            context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<Option<BrowserWireError>, AgentPortError> {
+            self.events.lock().unwrap().push("preflight");
+            match self.decision {
+                PreflightDecision::Accept => return Ok(None),
+                PreflightDecision::Error => {
+                    return Err(AgentPortError::Handler("admission failed".to_owned()));
+                }
+                PreflightDecision::Expire => {
+                    while context.remaining().is_ok() {
+                        thread::yield_now();
+                    }
+                }
+                PreflightDecision::Refuse | PreflightDecision::OversizedRefusal => {}
+            }
+            let details = if matches!(self.decision, PreflightDecision::OversizedRefusal) {
+                JsonObject::from([(
+                    "bounded".to_owned(),
+                    JsonValue::String("x".repeat(MAX_HANDLER_STRING_BYTES + 1)),
+                )])
+            } else {
+                JsonObject::from([
+                    (
+                        "request_id".to_owned(),
+                        JsonValue::String("replacement-request".to_owned()),
+                    ),
+                    (
+                        "session_id".to_owned(),
+                        JsonValue::String("replacement-session".to_owned()),
+                    ),
+                    ("session_generation".to_owned(), JsonValue::Integer(999)),
+                ])
+            };
+            Ok(Some(BrowserWireError {
+                code: BrowserErrorCode::PolicyDenied,
+                message: "semantic admission refused".to_owned(),
+                details: Some(details),
+            }))
+        }
+
+        fn handle(
+            &mut self,
+            _context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<HandlerOutcome, AgentPortError> {
+            self.events.lock().unwrap().push("handle");
+            Ok(HandlerOutcome::Success(JsonObject::new()))
+        }
+    }
+
+    struct AdmissionObserver(Arc<Mutex<Vec<&'static str>>>);
+
+    impl OperationLifecycleObserver for AdmissionObserver {
+        fn requested(
+            &mut self,
+            _context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<(), AgentPortError> {
+            self.0.lock().unwrap().push("requested");
+            Ok(())
+        }
+
+        fn dispatched(
+            &mut self,
+            _context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<(), AgentPortError> {
+            self.0.lock().unwrap().push("dispatched");
+            Ok(())
+        }
+
+        fn completed(
+            &mut self,
+            _context: &DispatchContext,
+            _request: &BrowserRequest,
+            response: &BrowserResponse,
+            response_sha256: &str,
+        ) -> Result<(), AgentPortError> {
+            assert_eq!(
+                sha256_hex(&encode_response(response).unwrap()),
+                response_sha256
+            );
+            self.0.lock().unwrap().push("completed");
+            Ok(())
+        }
+
+        fn interrupted(
+            &mut self,
+            _context: &DispatchContext,
+            _request: &BrowserRequest,
+            _error: &AgentPortError,
+        ) -> Result<(), AgentPortError> {
+            self.0.lock().unwrap().push("interrupted");
+            Ok(())
+        }
+    }
+
+    type PreflightExchange = (
+        Result<ServiceEvidence, AgentPortError>,
+        Result<Vec<u8>, TransportError>,
+        Vec<&'static str>,
+    );
+
+    fn exercise_preflight(
+        decision: PreflightDecision,
+        request: &BrowserRequest,
+    ) -> PreflightExchange {
+        let timeout = Duration::from_secs(2);
+        let ceiling = if matches!(decision, PreflightDecision::Expire) {
+            Duration::from_millis(50)
+        } else {
+            timeout
+        };
+        let (client_stream, server_stream) = UnixStream::pair().expect("socketpair");
+        let client_policy = policy(&client_stream);
+        let server_policy = policy(&server_stream);
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let server_events = Arc::clone(&events);
+        let server = thread::spawn(move || {
+            let mut handler = AdmissionHandler {
+                decision,
+                events: Arc::clone(&server_events),
+            };
+            let mut observer = AdmissionObserver(server_events);
+            serve_one_with_observer(
+                server_stream,
+                server_policy,
+                ceiling,
+                &mut handler,
+                &mut observer,
+            )
+        });
+        let mut client = ClientConnection::connect(client_stream, client_policy, timeout)
+            .expect("client connect");
+        let sequence = client
+            .send_request(encode_request(request).expect("encode request"), timeout)
+            .expect("send request");
+        let response = client.receive_response(sequence, timeout);
+        let result = server.join().expect("server join");
+        let events = events.lock().unwrap().clone();
+        (result, response, events)
+    }
+
+    #[test]
+    fn preflight_refusal_binds_identity_without_handler_or_lifecycle_facts() {
+        let request = BrowserRequest {
+            request_id: "admission:refused".to_owned(),
+            session_id: Some("session-original".to_owned()),
+            session_generation: Some(7),
+            deadline_unix_ms: None,
+            operation: BrowserOperation::SessionSnapshot,
+        };
+        let (result, encoded, events) = exercise_preflight(PreflightDecision::Refuse, &request);
+        let evidence = result.expect("refusal response committed");
+        let encoded = encoded.expect("receive refusal");
+        let response = decode_response(&encoded).expect("canonical refusal").value;
+        assert_eq!(events, ["preflight"]);
+        assert_eq!(response.request_id, request.request_id);
+        assert_eq!(response.session_id, request.session_id);
+        assert_eq!(response.session_generation, request.session_generation);
+        assert_eq!(
+            response.outcome.expect_err("admission refused").code,
+            BrowserErrorCode::PolicyDenied
+        );
+        assert_eq!(evidence.request_id, request.request_id);
+        assert_eq!(evidence.session_id, request.session_id);
+        assert_eq!(evidence.session_generation, request.session_generation);
+        assert_eq!(evidence.response_sha256, sha256_hex(&encoded));
+        assert!(!evidence.response_ok);
+        assert!(evidence.response_committed);
+    }
+
+    #[test]
+    fn preflight_error_closes_without_handler_response_or_lifecycle_facts() {
+        let (result, response, events) =
+            exercise_preflight(PreflightDecision::Error, &health_request());
+        assert!(matches!(result, Err(AgentPortError::Handler(_))));
+        assert!(response.is_err());
+        assert_eq!(events, ["preflight"]);
+    }
+
+    #[test]
+    fn accepted_preflight_preserves_durable_completion_order() {
+        let (result, encoded, events) =
+            exercise_preflight(PreflightDecision::Accept, &health_request());
+        let evidence = result.expect("accepted response committed");
+        let encoded = encoded.expect("receive response");
+        let response = decode_response(&encoded).expect("canonical response").value;
+        assert_eq!(
+            events,
+            [
+                "preflight",
+                "requested",
+                "dispatched",
+                "handle",
+                "completed"
+            ]
+        );
+        assert!(response.outcome.is_ok());
+        assert!(evidence.response_ok);
+        assert_eq!(evidence.response_sha256, sha256_hex(&encoded));
+    }
+
+    #[test]
+    fn preflight_cannot_extend_deadline_or_publish_a_late_refusal() {
+        let (result, response, events) =
+            exercise_preflight(PreflightDecision::Expire, &health_request());
+        assert!(matches!(result, Err(AgentPortError::DeadlineExceeded)));
+        assert!(response.is_err());
+        assert_eq!(events, ["preflight"]);
+    }
+
+    #[test]
+    fn preflight_refusal_keeps_existing_response_resource_bounds() {
+        let (result, response, events) =
+            exercise_preflight(PreflightDecision::OversizedRefusal, &health_request());
+        assert!(matches!(
+            result,
+            Err(AgentPortError::InvalidHandlerResult(_))
+        ));
+        assert!(response.is_err());
+        assert_eq!(events, ["preflight"]);
+    }
+
+    #[test]
+    fn expired_ingress_deadline_closes_before_handshake_or_admission() {
+        let (mut client_stream, server_stream) = UnixStream::pair().expect("socketpair");
+        let server_policy = policy(&server_stream);
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let mut handler = AdmissionHandler {
+            decision: PreflightDecision::Accept,
+            events: Arc::clone(&events),
+        };
+        let mut observer = AdmissionObserver(Arc::clone(&events));
+        let ingress_deadline = Instant::now();
+        let result = serve_one_before_with_observer(
+            server_stream,
+            server_policy,
+            ingress_deadline,
+            &mut handler,
+            &mut observer,
+        );
+        assert!(matches!(result, Err(AgentPortError::DeadlineExceeded)));
+        assert!(events.lock().unwrap().is_empty());
+        client_stream
+            .set_read_timeout(Some(Duration::from_millis(50)))
+            .unwrap();
+        let mut challenge = [0; 1];
+        assert_eq!(
+            client_stream.read(&mut challenge).expect("closed stream"),
+            0,
+            "no transport challenge may be emitted after ingress expiry"
+        );
+    }
+
+    struct DeadlineCaptureHandler {
+        admitted_deadline: Option<Instant>,
+    }
+
+    impl BrowserRequestHandler for DeadlineCaptureHandler {
+        fn preflight(
+            &mut self,
+            context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<Option<BrowserWireError>, AgentPortError> {
+            self.admitted_deadline = Some(context.effective_deadline);
+            Ok(None)
+        }
+
+        fn handle(
+            &mut self,
+            context: &DispatchContext,
+            _request: &BrowserRequest,
+        ) -> Result<HandlerOutcome, AgentPortError> {
+            assert_eq!(self.admitted_deadline, Some(context.effective_deadline));
+            Ok(HandlerOutcome::Success(JsonObject::new()))
+        }
+    }
+
+    #[test]
+    fn preflight_and_dispatch_retain_the_exact_ingress_deadline() {
+        let timeout = Duration::from_secs(2);
+        let (client_stream, server_stream) = UnixStream::pair().expect("socketpair");
+        let client_policy = policy(&client_stream);
+        let server_policy = policy(&server_stream);
+        let ingress_deadline = Instant::now().checked_add(timeout).unwrap();
+        let server = thread::spawn(move || {
+            let mut handler = DeadlineCaptureHandler {
+                admitted_deadline: None,
+            };
+            let mut observer = NoopOperationLifecycleObserver;
+            let evidence = serve_one_before_with_observer(
+                server_stream,
+                server_policy,
+                ingress_deadline,
+                &mut handler,
+                &mut observer,
+            )
+            .expect("serve within original ingress budget");
+            (evidence, handler.admitted_deadline.unwrap())
+        });
+        let mut client = ClientConnection::connect(client_stream, client_policy, timeout)
+            .expect("client connect");
+        let sequence = client
+            .send_request(
+                encode_request(&health_request()).expect("encode request"),
+                timeout,
+            )
+            .expect("send request");
+        let response = client
+            .receive_response(sequence, timeout)
+            .expect("receive response");
+        assert!(decode_response(&response).unwrap().value.outcome.is_ok());
+        let (evidence, effective_deadline) = server.join().expect("server join");
+        assert_eq!(effective_deadline, ingress_deadline);
+        assert!(evidence.response_committed);
     }
 
     struct DeadlineObserver {

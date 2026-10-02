@@ -44,6 +44,15 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 - `SessionMachine`, `SessionSnapshot`, `SessionEvent`, `SessionEffect`, `SessionPhase`, `ControlState`, `ArbiterQueue` and related errors model arbitration.
 - `ReceiptJournal`, `ManagedReceiptStore`, envelope/lifecycle/privacy/effect types, recovery reports, export and retention functions model durable facts.
 - Open/create/append/inspect/seal/rotate operations are explicit and fallible.
+- `contains_receipt`, `has_unresolved_receipts`, `receipt_fact` and `execution_reconciliation_facts` revalidate the complete locked journal chain, including sealed predecessors. Lookup never readmits a request.
+- `DurableReceiptFact` has private fields and can only be obtained by authoritative journal lookup. Its exact request digest, latest lifecycle and record digest are evidence, not execution or replay permission.
+
+Structural terminal state and execution certainty are distinct.
+`has_unresolved_receipts` reports nonterminal lifecycle history;
+`execution_reconciliation_facts` separately preserves `indeterminate` and
+`interrupted` after durable dispatch for explicit recovery review, even after
+rotation/reopen. An interruption before dispatch needs no execution decision.
+Neither query changes receipts or records an operator acknowledgment.
 
 This library registers no binary target. Cargo binary auto-discovery and package build scripts are disabled.
 

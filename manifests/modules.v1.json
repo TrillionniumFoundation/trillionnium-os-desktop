@@ -40,7 +40,8 @@
         "docs/architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md",
         "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
         "docs/architecture/SESSION_STATE_MACHINE.md",
-        "docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md"
+        "docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md",
+        "docs/architecture/REQUEST_EXECUTION_AND_RECOVERY.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
@@ -50,7 +51,8 @@
         "apps/hepta-browserd/src/lib.rs",
         "tests/test_s06_browser_actor.py",
         "apps/hepta-browserd/src/servo_product_runtime.rs",
-        "tests/test_s08_product_supervision.py"
+        "tests/test_s08_product_supervision.py",
+        "apps/hepta-browserd/src/product_dispatch/tests.rs"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
@@ -303,7 +305,8 @@
       ],
       "tests": [
         "crates/hepta-session-core/src/tests.rs",
-        "tests/test_s05_receipt_recovery.py"
+        "tests/test_s05_receipt_recovery.py",
+        "crates/hepta-session-core/tests/durable_receipt_fact.rs"
       ],
       "workflows": [
         ".github/workflows/receipt-journal.yml",

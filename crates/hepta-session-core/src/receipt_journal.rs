@@ -692,6 +692,38 @@ pub struct CommittedRecord {
     pub end_offset: u64,
 }
 
+/// One fact read from the complete locked journal chain. Unlike forensic
+/// reports, callers cannot construct this value or supply it to the writer.
+///
+/// ```compile_fail,E0451
+/// use hepta_session_core::{DurableReceiptFact, ReceiptLifecycleState};
+/// let forged = DurableReceiptFact {
+///     receipt_id: "forged".into(), request_sha256: [1; 32],
+///     lifecycle: ReceiptLifecycleState::Completed, record_sha256: [2; 32],
+/// };
+/// ```
+pub struct DurableReceiptFact {
+    receipt_id: String,
+    request_sha256: Digest,
+    lifecycle: LifecycleState,
+    record_sha256: Digest,
+}
+
+impl DurableReceiptFact {
+    pub fn receipt_id(&self) -> &str {
+        &self.receipt_id
+    }
+    pub const fn request_sha256(&self) -> Digest {
+        self.request_sha256
+    }
+    pub const fn lifecycle(&self) -> LifecycleState {
+        self.lifecycle
+    }
+    pub const fn record_sha256(&self) -> Digest {
+        self.record_sha256
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SegmentSeal {
     pub segment_number: u64,
@@ -1209,6 +1241,87 @@ impl ReceiptJournal {
                 .unwrap_or(0),
         );
         Ok(report)
+    }
+
+    /// Check the authoritative deduplication namespace, including sealed
+    /// predecessors imported by managed open/rotation. This never readmits.
+    pub fn contains_receipt(&mut self, receipt_id: &str) -> Result<bool, JournalError> {
+        self.authoritative_reports()?;
+        Ok(self.progress.contains_key(receipt_id))
+    }
+
+    /// Startup must retain unresolved facts from every segment, rather than
+    /// inspecting only the active segment and silently forgetting predecessors.
+    pub fn has_unresolved_receipts(&mut self) -> Result<bool, JournalError> {
+        self.authoritative_reports()?;
+        Ok(self
+            .progress
+            .values()
+            .any(|progress| !progress.last_state.is_terminal()))
+    }
+
+    /// Terminal uncertainty is still a recovery decision. Return sealed facts
+    /// from the complete locked chain, including an interruption after durable
+    /// dispatch. Merely reopening a journal does not acknowledge these facts.
+    pub fn execution_reconciliation_facts(
+        &mut self,
+    ) -> Result<Vec<DurableReceiptFact>, JournalError> {
+        let reports = self.authoritative_reports()?;
+        let mut dispatched = std::collections::BTreeSet::new();
+        let mut latest = std::collections::BTreeMap::new();
+        for record in reports.iter().flat_map(|report| report.records.iter()) {
+            if record.event.lifecycle == LifecycleState::Dispatched {
+                dispatched.insert(record.event.receipt_id.as_str());
+            }
+            latest.insert(record.event.receipt_id.as_str(), record);
+        }
+        Ok(latest
+            .into_iter()
+            .filter_map(|(receipt_id, record)| {
+                let lifecycle = record.event.lifecycle;
+                (lifecycle == LifecycleState::Indeterminate
+                    || (lifecycle == LifecycleState::Interrupted
+                        && dispatched.contains(receipt_id)))
+                .then(|| DurableReceiptFact {
+                    receipt_id: receipt_id.to_owned(),
+                    request_sha256: record.event.request_sha256,
+                    lifecycle,
+                    record_sha256: record.record_sha256,
+                })
+            })
+            .collect())
+    }
+
+    /// Read the latest exact-request fact under all source inode/directory
+    /// locks. An unknown ID or different canonical request digest is refused.
+    /// A fact does not authorize execution, replay, or outcome synthesis.
+    pub fn receipt_fact(
+        &mut self,
+        receipt_id: &str,
+        request_sha256: Digest,
+    ) -> Result<DurableReceiptFact, JournalError> {
+        let reports = self.authoritative_reports()?;
+        let record = reports
+            .iter()
+            .flat_map(|report| report.records.iter())
+            .rev()
+            .find(|record| record.event.receipt_id == receipt_id)
+            .ok_or_else(|| {
+                JournalError::InvalidInput(
+                    "receipt identifier is not present in the complete journal".into(),
+                )
+            })?;
+        if record.event.request_sha256 != request_sha256 {
+            return Err(JournalError::InvalidInput(
+                "canonical request digest does not match the durable receipt".into(),
+            ));
+        }
+        Ok(DurableReceiptFact {
+            receipt_id: receipt_id.to_owned(),
+            request_sha256,
+            lifecycle: record.event.lifecycle,
+            record_sha256: record.record_sha256,
+        })
     }
 
     pub fn seal(&mut self) -> Result<SegmentSeal, JournalError> {

@@ -4,7 +4,7 @@
 **Status:** proposed integration acceptance detail; implementation and qualification remain separate
 
 This document refines the S08–S11 work without activating a product listener,
-introducing a new API, declaring a test passed, or changing project truth. The
+declaring an installed test passed, or changing project truth. The
 existing transport, actor, journal, runtime-supervision and update contracts
 remain authoritative for their individual mechanisms. Resolve a disagreement
 by retaining the narrower authority and obtaining an explicit contract review.
@@ -57,6 +57,30 @@ in code. The journal and engine do not form an atomic distributed transaction;
 this protocol intentionally preserves an indeterminate window rather than
 promising exactly-once external effects.
 
+## Current source composition
+
+`apps/hepta-browserd/src/product_dispatch.rs` connects these boundaries using
+the original attested Unix stream, a bounded connection queue, concrete
+`ServoBrowserActor`, and managed `ReceiptLifecycleObserver`. AgentPort preflight
+rejects stale/unsupported/cancelled requests before admission facts. Journal
+append/sync acknowledges requested and dispatch-intent facts before the actor
+submits the engine command, then acknowledges terminal facts before response
+publication. Canonical request-ID deduplication reads the complete managed chain;
+transport loss after a durable terminal result does not permit reexecution.
+
+Connection admission and queue residence consume one original monotonic budget.
+Revocation closes the same transport to wake blocking receive and cancels active
+actor work. The native owner must still perform the final peer/control/retained
+node check inside its reviewed engine action and withdraw stale pixels/input
+before notifying a crash. The installed native embedder, process/service handoff,
+trusted recovery UI/policy and approved cross-UID live-executable attestation
+broker/authority remain missing. Default daemon activation stays closed; the
+qualification mailbox and static attestation profile cannot fill these gaps.
+
+Source regressions use real Unix framing/pidfds with explicitly synthetic procfs
+facts and controlled native completion callbacks. They test source ordering and
+failure behavior; they are not installed product or renderer qualification.
+
 ## Fault matrix required for the real product path
 
 | Fault/cutpoint | Expected result | Forbidden recovery |
@@ -96,6 +120,17 @@ A recovery decision must identify its actor, scope, source facts and allowed
 transition. Only an exact same-request durable reconciliation accepted by the
 journal may clear an indeterminate latch. Clearing a latch does not reconstruct
 an actor or repeat an operation. Reconstruction is a separate explicit step.
+
+The current coordinator's `reconcile_request` checks the exact blocked ID and
+canonical digest against a journal-issued terminal `DurableReceiptFact`.
+Storage ambiguity cannot be cleared through it. Default startup refuses both
+nonterminal history and terminal indeterminate/interrupted-after-dispatch facts
+from all segments. `from_connection_after_reconciliation` requires the trusted
+recovery caller to explicitly acknowledge every terminal uncertain identity and
+digest; incomplete, duplicate or mismatched acknowledgments fail closed. No
+receipt is rewritten, replayed or promoted to a known outcome. A persisted
+operator-decision protocol remains unimplemented, so reopening requires this
+explicit review again rather than inferring a decision from terminal syntax.
 
 When no reliable outcome evidence exists, retain indeterminate and hand control
 to the human. Do not offer a misleading "retry safely" button. Any intentional
