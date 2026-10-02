@@ -1,0 +1,112 @@
+{
+  "schema": "trillionnium.desktop.taskflow-execution.v1",
+  "plan_revision": "2026-08-29-d6",
+  "status": "candidate_source_enforcement",
+  "claim_ceiling": "typed externally signed TaskFlow admission and concrete local durable single-use consumption source only; no trusted approval UI, installed effect adapter, native retained-target qualification, network egress, operator recovery decision, protected anti-rollback, hardware or release authority",
+  "implementation": "platform/taskflow.py",
+  "documentation": "docs/architecture/TASKFLOW_CAPABILITIES.md",
+  "tests": "tests/test_taskflow.py",
+  "default_authority": {
+    "trust_roots": [],
+    "durable_store": null,
+    "approval_without_valid_external_signature": false,
+    "dispatch_without_concrete_durable_store": false,
+    "automatic_retry": false,
+    "automatic_handoff_clear": false,
+    "resume_any_previously_reserved_task_after_restart": false,
+    "reuse_inherited_fork_authority": false
+  },
+  "proposal_schema": "trillionnium.desktop.taskflow-proposal.v1",
+  "proposal_fields": [
+    "schema", "task_id", "action_id", "principal_id", "audience", "policy_revision",
+    "session_id", "session_generation", "origin", "operation", "resource",
+    "arguments", "action_budget_ms"
+  ],
+  "operations": {
+    "page.observe": {"resource_kind": "page", "arguments": {"mode": "semantic"}},
+    "page.act": {"resource_kind": "semantic_node", "arguments": {"action": "click"}},
+    "page.navigate": {"resource_kind": "navigation", "arguments": {"url": "exact credential-free URL under the same canonical origin"}},
+    "page.extract": {"resource_kind": "extraction_schema", "arguments": {"schema_id": "must equal resource.target"}}
+  },
+  "native_resource_fields": [
+    "kind", "target", "document_generation", "semantic_snapshot_revision", "mutation_epoch"
+  ],
+  "native_binding_fields": [
+    "principal_id", "session_id", "session_generation", "origin", "resource_kind",
+    "resource_target", "document_generation", "semantic_snapshot_revision", "mutation_epoch"
+  ],
+  "permit_schema": "contracts/capability-permit.v1.schema.json",
+  "permit_resource_fields": [
+    "task_id", "action_id", "session_id", "session_generation", "origin",
+    "proposal_sha256", "target", "arguments_sha256", "action_budget_ms"
+  ],
+  "json_profile": {
+    "objects": "closed field sets at every boundary; duplicate members refused",
+    "numbers": "bounded integers only; bool, floats, NaN and Infinity refused",
+    "canonicalization": "UTF-8 JSON, sorted object keys, separators comma/colon, ensure_ascii=false, no unpaired surrogate",
+    "origin": "exact lowercase credential-free HTTPS origin including distinct synthetic HTTPS for trusted apps; no custom scheme/path/query/fragment/default443port",
+    "identifiers": "ASCII [A-Za-z0-9._:-]{1,128}",
+    "sha256": "64 lowercase hexadecimal characters",
+    "signature": "canonical padded base64 encoding of exactly64 Ed25519 bytes"
+  },
+  "signing": {
+    "proposal_domain": "trillionnium.desktop.taskflow-proposal-digest.v1\u0000",
+    "permit_domain": "trillionnium.desktop.capability-permit-signature.v1\u0000",
+    "excluded_field": "signature.value",
+    "included_signature_fields": ["algorithm", "key_id"],
+    "algorithm": "ed25519",
+    "key_encoding": "canonical44-byte DER SubjectPublicKeyInfo with Ed25519 OID and32-byte public key",
+    "key_pin": "SHA-256 of complete DER bytes from externally approved provisioning",
+    "verification": "fixed /usr/bin/openssl pkeyutl -verify -rawin -pubin -keyform DER with three sealed inherited memfd snapshots via /proc/self/fd and sanitized environment",
+    "root_scope": ["issuer", "key_id", "audience", "policy_revision", "valid_from_unix_ms", "valid_until_unix_ms"],
+    "revocation": "trusted caller may monotonically revoke key IDs or permit IDs; this source API has no revocation removal",
+    "untrusted_source_cannot_configure_roots": true
+  },
+  "states": ["proposed", "approved", "dispatched", "terminal", "indeterminate", "cancelled", "human_handoff"],
+  "transitions": {
+    "proposed_to_approved": "exact current proposal match plus actual external offline signature and current root/permit validity",
+    "approved_to_dispatched": "exact native binding and current root/permit/control/deadline plus concrete durable consumption; irreversible single-use state before adapter entry",
+    "dispatched_to_terminal": "typed known completion before the original deadline with current authority",
+    "dispatched_to_indeterminate": "unknown or untyped completion, exception, cancellation, handoff, lost authority or late result; no replay",
+    "predispatch_cancel_or_handoff": "close current action and task; no adapter invocation",
+    "clock_regression": "permanent coordinator time-recovery latch",
+    "new_task_after_revisions_change": "fresh independently authorized task policy, identifiers and permit required; no automatic reference translation"
+  },
+  "budgets": {
+    "max_wire_bytes": 32768,
+    "max_json_depth": 8,
+    "max_roots": 32,
+    "max_revocations": 1024,
+    "max_tasks_per_coordinator": 64,
+    "max_actions_per_task": 32,
+    "max_task_budget_ms": 3600000,
+    "max_action_budget_ms": 20000,
+    "max_permit_lifetime_ms": 300000,
+    "max_consumptions_per_store": 1024,
+    "max_task_reservations_per_store": 1024,
+    "signature_verification_timeout_seconds": 2
+  },
+  "durable_consumption": {
+    "schema": "trillionnium.desktop.taskflow-consumption.v1",
+    "fields": ["schema", "task_id", "action_id", "proposal_sha256", "permit_id", "issuer", "nonce", "permit_sha256"],
+    "root": "externally provisioned service-owned0700 directory; nofollow retained ancestor chain and exclusive validated0600 one-link lease; creatorPID checked before locking",
+    "task_reservation": "every accepted taskID is durably O_EXCL reserved with exact policy digest before proposals or approval; task-<SHA256(task_id)>.reserved is immutable and never deleted",
+    "task_reservation_schema": "trillionnium.desktop.taskflow-reservation.v1",
+    "task_reservation_fields": ["schema", "task_id", "policy_sha256"],
+    "namespaces": ["nonce", "permit_id", "task_id_and_action_id"],
+    "commit": "three O_EXCL0600 one-link immutable files, retained descriptors, complete writes, file fsync, directory fsync, exact bytes/inode/name/root/ancestor readback before adapter dispatch",
+    "failure": "partial writes, sync failure, path drift or custody ambiguity poison the instance; historical partial or corrupt sets refuse open; evidence never deleted",
+    "replay": "reservation and consumption survive coordinator/service restart; nonce substitution cannot reuse original action; all previously reserved task IDs require a separate recovery protocol before resume, including predispatch cancellation/handoff/deadline closure",
+    "capacity": "fail closed; no pruning or shortened authoritative history",
+    "anti_rollback": "not provided; whole-directory rollback requires an independently protected anchor"
+  },
+  "remaining_integration": [
+    "authenticated provisioning and current revocation delivery",
+    "trusted native approval UI issuing externally signed permits",
+    "installed native effect adapter using retained current target and final ActionControl check",
+    "product receipt lifecycle and durable terminal outcome integration",
+    "durable authorized human recovery decisions",
+    "actual DNS/peer/TLS/redirect/namespace egress enforcement",
+    "exact installed-image evidence, independent review and protected promotion"
+  ]
+}

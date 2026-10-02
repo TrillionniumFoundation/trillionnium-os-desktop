@@ -38,15 +38,18 @@ boundary. It records no percentage, success observation or independent approval.
 | --- | --- | --- | --- |
 | D0 contracts and wire admission | `trillionnium-contract-core`, `hepta-browser-contracts`, `hepta-browser-codec`; module READMEs and Browser API schemas | Bounded IDs/revisions, typed browser operations, canonical encoding and parsing | Exhaustive domain/wire conversion parity and versioned executable API examples |
 | D0 local custody and request lifecycle | `hepta-agent-transport`, `hepta-peer-attestation`, `hepta-agent-port`; connected bridge and request-peer contracts | Bounded authenticated connected streams, live peer custody, one request per connection | Production principal policy, global resource/backpressure limits and installed dispatch |
-| D3 BrowserActor and Servo | `hepta-browser-actor`, separate simulation crate, `experiments/servo-s08-runtime`; S08 architecture | Concrete callback bridge, creator-thread owner, retained-node qualification path, receipt observation | Installed daemon IPC from attested AgentPort to real Servo and durable response; qualification mailbox cannot substitute |
+| D3 BrowserActor and Servo | `hepta-browser-actor`, `apps/hepta-browserd/src/product_dispatch.rs`, separate simulation crate; S08 architecture | Original-stream attested coordinator, bounded deadline/queue/cancellation, semantic preflight, concrete actor and durable response ordering | Installed native Servo owner/startup and connection-service handoff; approved cross-UID live executable attestation; qualification mailbox cannot substitute |
 | D3 runtime crash/recovery | `apps/hepta-browserd/src/servo_product_runtime.rs`; S08 product supervision | Checked generations, explicit reconstruction, bounded crash loop, no automatic replay | Wire the supervisor into product startup, process custody, trusted recovery UI and durable reconciliation |
 | D3 receipts | `hepta-session-core`; journal, managed store and fault-model contracts | Durable chained lifecycle facts, recovery, bounded records, rotation and redacted export | Installed crash/disk-full matrix, archival/quota policy and independently protected rollback anchor |
-| D4 collaboration and input | Session machine and `hepta-workspace-composition`; session/composition architecture | Human/Agent arbitration and deterministic trusted/untrusted surface model | Real compositor focus/input/clipboard/scaling and Chinese IME; trusted approval and handoff UX |
+| D4 collaboration and input | Session machine, `hepta-workspace-composition`, `experiments/servo-headed-runtime`; session/composition architecture | Human/Agent arbitration; native fixture candidate withdraws input on chrome/focus/crash and rejects stale callbacks | Product PageOwner/native integration, compositor scaling/layouts/clipboard and Chinese OS IME; trusted approval and handoff UX |
 | D1/D2I and S10 image | `packaging/debian/image/`, `tools/run_d1_final_qualification.sh`, `tools/run_d2i_integrated_image.sh`; D1/D2I architecture | Locked image builders, qualification overlays, guest runners and offline evidence checks | Current immutable image builds and guest runs, review and exact-main regression; production binary still disabled |
 | S09 Linux mechanisms | `platform/linux/adapters.py` and its README | Descriptor-confined files, clock/entropy/procfs, retained Wayland endpoint, pure HTTPS/address policy | Native rendering/input, actual resolver/TLS/socket enforcement and installed mechanism coverage |
-| D5 trusted apps | `docs/adr/0004-trusted-app-origin-model.md`, product architecture | Synthetic HTTPS origin/storage design | Signed bundle runtime, trust-root rotation/revocation, CSP/CORS, partitioned storage, upgrade/migration/uninstall |
-| D6 capabilities, TaskFlow and egress | Threat/control matrices, capability/egress plan; `services/README.md`, `workers/README.md` | Requirements and some low-level policy helpers; service directories remain design placeholders | Trusted consent/typed permits, task budgets/cancellation, complete egress enforcement and bypass corpus |
-| D7 / S11 update and recovery | `platform/update_recovery.py`; S11 architecture and contract | Host A/B state coordination, image/source binding, boot/health transitions and reconciliation | External signature verifier/trust root before staging, installed boot/rollback/recovery fault matrix and recovery tooling |
+| D5 trusted apps | `platform/trusted_apps.py`, `docs/architecture/TRUSTED_APP_BUNDLES.md`, ADR 0004 | Real offline Ed25519 verification, complete bounded bundle index, immutable local assets, publisher-scoped root/revocation policy and restrictive headers | Installed origin interception/CSP/CORS/cache and protected root/policy delivery |
+| D5 app storage lifecycle | `platform/app_storage.py`, `docs/architecture/APP_STORAGE.md`, app-storage contract | Private leased principal/origin partitions, complete package re-admission, durable version/policy floors, same-schema upgrades, uninstall/data tombstones and no-replay transactions | Native storage and principal binding, authenticated current time, migrations, authorized recovery/archival and independently protected rollback anchor |
+| D6 capabilities and TaskFlow | `platform/taskflow.py`; TaskFlow architecture and execution contract | Actual externally signed scoped permits, typed immutable proposals, cancellation/handoff/budgets, durable task reservations and single-use consumption, fork refusal | Trusted approval UX, installed retained-target final effect checks, product terminal receipts and persisted authorized recovery |
+| D6 controlled observation egress | `platform/controlled_egress.py`; controlled-egress architecture and contract | Actual approved DoT resolution, all-answer IPv4/IPv6 policy, connected peer and TLS identity, bounded GET response/redirects, session/origin revocation and whole-operation cancellation/deadline | Browser namespace and every load-class intercept, trusted policy delivery, external-effect authority and durable indeterminate reconciliation |
+| D7 / S11 update and recovery | `platform/update_recovery.py`; S11 architecture and contract | Real externally rooted offline signature verification, full streamed inactive regular-file image publication, bound durable reconciliation and issuer-scoped health permits | Provisioned production roots/trusted clock, protected monotonic-floor persistence, installed block-slot/boot/health/recovery adapters and fault matrix |
+| D7 / S11 durable update owner | `platform/durable_update_owner.py`, `docs/architecture/DURABLE_UPDATE_OWNER.md`, durable-update-owner contract | Complete durable intent before actual regular-file staging, issuer-bound results with complete history/image readback, nonregressing configured time and unclean/unfinished restart quarantine without replay; arming records source policy only | Separate S11 directory-walk interrupted-close/reused-FD correction and joint regressions; installed service/boot/health/commit/rollback, trusted roots/time/floor, protected rollback anchor and installed power-loss acceptance |
 | D8/D9 / S12 release | Release architecture, `tools/verify_s12_release_qualification.py` | Offline packet/signature/role/subject consistency verifier | Independent builders, fixed hardware, actual endurance/power cuts, key custody, protected signing/promotion/publication |
 | D0T governance | `docs/governance/BRANCH_PROTECTION_REQUIRED.md`, gate registry and workflows | Source policy and workflow definitions | Live enforced branch/ruleset/environment settings, actual independent identities/review; source files cannot supply them |
 
@@ -106,6 +109,22 @@ The permanent D1 and D2I workflows cover actual prospective merges and main
 pushes. S10's manual workflow retains its real dispatch event and cannot
 promote exact-head diagnostics into authoritative main evidence.
 Environment-gated or skipped real-Servo tests do not establish runtime success.
+
+The top-level Python platform candidates also have a closed source inventory in
+`manifests/platform-mechanisms.v1.json`. It registers six modules with fixed
+requirement and implementation/document/contract/test mappings, including
+`durable_update_owner` for G6/D7/S11. It records source-defined public function,
+constructor, method and dataclass-field signatures alongside requirement,
+technical document, contract and executable test source. Run
+`python3 tools/validate_platform_mechanisms.py`; after a reviewed API change,
+refresh signatures with `--refresh-api` and review the resulting diff. Contract
+profiles require a separate explicit review; refresh cannot change a profile,
+default or qualification. The durable owner profile closes every actual nested
+contract object and pins its leaves, including null/default-denied admission,
+false installed/boot/release claims and source status. This
+inventory check imports no mechanism and reports no test execution or acceptance.
+Actual hostile tests run separately in both candidate-head and prospective-merge
+desktop CI, including stacked review branches.
 
 ## Product data, operations and change protocol
 

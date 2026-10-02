@@ -3,6 +3,7 @@
 validate:
 	/usr/bin/python3 -I tools/validate_module_documentation.py
 	python3 tools/validate_documentation_coherence.py
+	python3 tools/validate_platform_mechanisms.py
 	python3 tools/validate_s08_servo_runtime.py
 	python3 tools/validate_s08_product_supervision.py
 	python3 tools/validate_repository.py

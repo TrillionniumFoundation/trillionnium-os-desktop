@@ -7,6 +7,7 @@
 // WebDriver and its HTTP fixture listens only on 127.0.0.1.
 
 use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs;
@@ -39,6 +40,9 @@ use winit::event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy};
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::raw_window_handle::{HasDisplayHandle, HasWindowHandle};
 use winit::window::Window;
+
+mod input_ownership;
+use input_ownership::{Button, ButtonAction, InputOwnership, ReleaseOutcome};
 
 const WINDOW_WIDTH: u32 = 1024;
 const WINDOW_HEIGHT: u32 = 768;
@@ -275,7 +279,17 @@ impl ApplicationHandler<AppEvent> for App {
             }
             AppEvent::ContentProcessTerminated { pid, start_time } => {
                 if let Some(state) = &self.state {
+                    if state.generation.get() != 1 {
+                        return;
+                    }
+                    if state.fault_process.get() != Some((pid, start_time)) {
+                        state.fail("content termination event does not match selected incarnation");
+                        return;
+                    }
                     state.crash_observed.set(true);
+                    state.exact_termination_observed.set(true);
+                    state.input.borrow_mut().crashed();
+                    state.retire_withdrawn_gesture();
                     *state.crash_reason.borrow_mut() = Some(format!(
                         "exact content process terminated after SIGKILL: pid={pid}, start_time={start_time}"
                     ));
@@ -307,12 +321,15 @@ impl ApplicationHandler<AppEvent> for App {
     fn window_event(
         &mut self,
         _event_loop: &ActiveEventLoop,
-        _window_id: winit::window::WindowId,
+        window_id: winit::window::WindowId,
         event: WindowEvent,
     ) {
         let Some(state) = &self.state else {
             return;
         };
+        if window_id != state.window.id() {
+            return;
+        }
         state.servo.spin_event_loop();
         match event {
             WindowEvent::CloseRequested => {
@@ -320,6 +337,20 @@ impl ApplicationHandler<AppEvent> for App {
             }
             WindowEvent::RedrawRequested => state.compose(),
             WindowEvent::CursorMoved { position, .. } => state.forward_pointer_move(position),
+            WindowEvent::CursorLeft { .. } => state.pointer_left(),
+            WindowEvent::Focused(focused) => {
+                let dismiss = state.input.borrow_mut().focused(focused);
+                state.dismiss_ime(dismiss);
+                if state.retire_withdrawn_gesture() {
+                    return;
+                }
+                if !focused {
+                    state.pointer_left();
+                    if let Some(webview) = state.webview.borrow().as_ref() {
+                        webview.blur();
+                    }
+                }
+            }
             WindowEvent::MouseInput {
                 state: button_state,
                 button,
@@ -395,7 +426,10 @@ struct RuntimeState {
     window_resize_events: Cell<u32>,
     failure: RefCell<Option<String>>,
     completed: Cell<bool>,
-    last_content_point: Cell<DevicePoint>,
+    input: RefCell<InputOwnership>,
+    pending_mouse_releases: RefCell<HashMap<InputEventId, Button>>,
+    fault_process: Cell<Option<(u32, u64)>>,
+    exact_termination_observed: Cell<bool>,
 }
 
 impl RuntimeState {
@@ -490,7 +524,14 @@ impl RuntimeState {
             window_resize_events: Cell::new(0),
             failure: RefCell::new(None),
             completed: Cell::new(false),
-            last_content_point: Cell::new(DevicePoint::new(0.0, 0.0)),
+            input: RefCell::new(InputOwnership::new(
+                WINDOW_WIDTH,
+                WINDOW_HEIGHT,
+                CHROME_HEIGHT,
+            )),
+            pending_mouse_releases: RefCell::new(HashMap::new()),
+            fault_process: Cell::new(None),
+            exact_termination_observed: Cell::new(false),
         });
         state.create_webview();
         fs::write(state.output_dir.join("window-created"), WINDOW_TITLE)?;
@@ -504,6 +545,7 @@ impl RuntimeState {
         url.set_query(Some(&format!("generation={generation}")));
         let delegate = Rc::new(RuntimeDelegate {
             state: Rc::downgrade(self),
+            generation,
         });
         let webview = WebViewBuilder::new(&self.servo, self.content_context.clone())
             .url(url)
@@ -525,6 +567,9 @@ impl RuntimeState {
         }
         if self.failure.borrow().is_some() {
             self.finish_failure();
+            return;
+        }
+        if self.crash_observed.get() && !self.exact_termination_observed.get() {
             return;
         }
 
@@ -618,19 +663,24 @@ impl RuntimeState {
         };
         let generation = self.generation.get();
         let state = self.clone();
-        webview.take_screenshot(None, move |result| match result {
-            Ok(image) => {
-                let path = state
-                    .output_dir
-                    .join(format!("content-generation-{generation}.png"));
-                if let Err(error) = image.save(&path) {
-                    state.fail(&format!("could not save Servo screenshot: {error}"));
-                    return;
-                }
-                state.content_screenshot_saved.set(true);
-                let _ = state.proxy.send_event(AppEvent::Drive);
+        webview.take_screenshot(None, move |result| {
+            if !state.input.borrow().current_callback(generation) {
+                return;
             }
-            Err(error) => state.fail(&format!("Servo screenshot failed: {error:?}")),
+            match result {
+                Ok(image) => {
+                    let path = state
+                        .output_dir
+                        .join(format!("content-generation-{generation}.png"));
+                    if let Err(error) = image.save(&path) {
+                        state.fail(&format!("could not save Servo screenshot: {error}"));
+                        return;
+                    }
+                    state.content_screenshot_saved.set(true);
+                    let _ = state.proxy.send_event(AppEvent::Drive);
+                }
+                Err(error) => state.fail(&format!("Servo screenshot failed: {error:?}")),
+            }
         });
     }
 
@@ -641,14 +691,20 @@ impl RuntimeState {
             return;
         };
         let state = self.clone();
+        let generation = self.generation.get();
         webview.evaluate_javascript(
             "document.getElementById('field').focus(); document.activeElement.id === 'field'",
-            move |result| match result {
-                Ok(JSValue::Boolean(true)) => {
-                    state.focus_ready.set(true);
-                    let _ = state.proxy.send_event(AppEvent::Drive);
+            move |result| {
+                if !state.input.borrow().current_callback(generation) {
+                    return;
                 }
-                other => state.fail(&format!("fixture input focus failed: {other:?}")),
+                match result {
+                    Ok(JSValue::Boolean(true)) => {
+                        state.focus_ready.set(true);
+                        let _ = state.proxy.send_event(AppEvent::Drive);
+                    }
+                    other => state.fail(&format!("fixture input focus failed: {other:?}")),
+                }
             },
         );
     }
@@ -693,6 +749,9 @@ impl RuntimeState {
         let state = self.clone();
         let generation = self.generation.get();
         webview.evaluate_javascript("JSON.stringify(window.__heptaEvidence)", move |result| {
+            if !state.input.borrow().current_callback(generation) {
+                return;
+            }
             match result {
                 Ok(JSValue::String(value)) => {
                     if generation == 1 {
@@ -723,6 +782,17 @@ impl RuntimeState {
                 return;
             }
         };
+        self.fault_process
+            .set(Some((content_pid, content_start_time)));
+        if let Err(error) = fs::write(
+            self.output_dir.join("content-process-identity.json"),
+            format!(
+                "{{\"generation\":1,\"pid\":{content_pid},\"start_time\":{content_start_time}}}\n"
+            ),
+        ) {
+            self.fail(&format!("could not bind fault incarnation: {error}"));
+            return;
+        }
         if let Err(error) = fs::write(
             self.output_dir.join("content-process-pid.txt"),
             format!("{content_pid}\n"),
@@ -754,6 +824,15 @@ impl RuntimeState {
             self.fail(&format!(
                 "exact content-process kill exited with status {status}"
             ));
+            return;
+        }
+        if let Err(error) = fs::write(
+            self.output_dir.join("content-sigkill-sent.json"),
+            format!(
+                "{{\"generation\":1,\"pid\":{content_pid},\"start_time\":{content_start_time},\"signal\":\"SIGKILL\"}}\n"
+            ),
+        ) {
+            self.fail(&format!("could not record requested fault signal: {error}"));
             return;
         }
 
@@ -823,6 +902,10 @@ impl RuntimeState {
         self.recovery_started.set(true);
         *self.webview.borrow_mut() = None;
         self.generation.set(2);
+        if !self.input.borrow_mut().reconstruct(2) {
+            self.fail("replacement input ownership did not follow a crash");
+            return;
+        }
         self.load_complete.set(false);
         self.frame_ready.set(0);
         self.content_screenshot_requested.set(false);
@@ -950,14 +1033,12 @@ impl RuntimeState {
     }
 
     fn forward_pointer_move(&self, position: PhysicalPosition<f64>) {
-        if position.y < CHROME_HEIGHT as f64 {
+        let point = self.input.borrow_mut().pointer(position.x, position.y);
+        let Some((x, y)) = point else {
+            self.pointer_left();
             return;
-        }
-        let point = DevicePoint::new(
-            position.x as f32,
-            (position.y - CHROME_HEIGHT as f64) as f32,
-        );
-        self.last_content_point.set(point);
+        };
+        let point = DevicePoint::new(x, y);
         self.native_pointer_events
             .set(self.native_pointer_events.get() + 1);
         if let Some(webview) = self.webview.borrow().as_ref() {
@@ -965,35 +1046,134 @@ impl RuntimeState {
         }
     }
 
-    fn forward_mouse_button(&self, state: ElementState, button: MouseButton) {
-        let button = match button {
-            MouseButton::Left => ServoMouseButton::Primary,
-            MouseButton::Right => ServoMouseButton::Secondary,
-            MouseButton::Middle => ServoMouseButton::Auxiliary,
-            MouseButton::Back => ServoMouseButton::Back,
-            MouseButton::Forward => ServoMouseButton::Forward,
-            MouseButton::Other(value) => ServoMouseButton::Other(value),
-        };
-        let action = match state {
-            ElementState::Pressed => MouseButtonAction::Down,
-            ElementState::Released => MouseButtonAction::Up,
-        };
-        self.native_button_events
-            .set(self.native_button_events.get() + 1);
+    fn pointer_left(&self) {
+        self.input.borrow_mut().pointer_left();
+        if self.retire_withdrawn_gesture() {
+            return;
+        }
         if let Some(webview) = self.webview.borrow().as_ref() {
-            webview.notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(
-                action,
-                button,
-                self.last_content_point.get().into(),
-            )));
+            webview.notify_input_event(InputEvent::MouseLeftViewport(
+                servo::MouseLeftViewportEvent::default(),
+            ));
         }
     }
 
-    fn forward_wheel(&self, delta: MouseScrollDelta) {
-        let (x, y, mode) = match delta {
-            MouseScrollDelta::LineDelta(x, y) => {
-                (x as f64 * 40.0, y as f64 * 40.0, WheelMode::DeltaLine)
+    fn forward_mouse_button(&self, state: ElementState, button: MouseButton) {
+        if state == ElementState::Pressed {
+            let dismiss = self.input.borrow_mut().pressed();
+            self.dismiss_ime(dismiss);
+            if self.retire_withdrawn_gesture() {
+                return;
             }
+            if let Some(webview) = self.webview.borrow().as_ref() {
+                if self.input.borrow().keyboard_allowed() {
+                    webview.focus();
+                } else {
+                    webview.blur();
+                }
+            }
+        }
+        let (owned_button, button) = match button {
+            MouseButton::Left => (Button::Primary, ServoMouseButton::Primary),
+            MouseButton::Right => (Button::Secondary, ServoMouseButton::Secondary),
+            MouseButton::Middle => (Button::Auxiliary, ServoMouseButton::Auxiliary),
+            MouseButton::Back => (Button::Back, ServoMouseButton::Back),
+            MouseButton::Forward => (Button::Forward, ServoMouseButton::Forward),
+            MouseButton::Other(value) => (Button::Other(value), ServoMouseButton::Other(value)),
+        };
+        let (owned_action, action) = match state {
+            ElementState::Pressed => (ButtonAction::Down, MouseButtonAction::Down),
+            ElementState::Released => (ButtonAction::Up, MouseButtonAction::Up),
+        };
+        let point =
+            self.input
+                .borrow_mut()
+                .route_button(self.generation.get(), owned_button, owned_action);
+        if self.retire_withdrawn_gesture() {
+            return;
+        }
+        let Some((x, y)) = point else {
+            return;
+        };
+        let point = DevicePoint::new(x, y);
+        self.native_button_events
+            .set(self.native_button_events.get() + 1);
+        if let Some(webview) = self.webview.borrow().as_ref() {
+            let event_id = webview.notify_input_event(InputEvent::MouseButton(
+                MouseButtonEvent::new(action, button, point.into()),
+            ));
+            if owned_action == ButtonAction::Up {
+                self.pending_mouse_releases
+                    .borrow_mut()
+                    .insert(event_id, owned_button);
+            }
+        }
+    }
+
+    fn retire_withdrawn_gesture(&self) -> bool {
+        let Some(outcome) = self.input.borrow_mut().take_withdrawal() else {
+            return false;
+        };
+        if outcome.generation != self.generation.get() {
+            self.fail("withdrawn gesture does not match the active native generation");
+            return true;
+        }
+        let dismiss = self.input.borrow_mut().end_ime();
+        self.dismiss_ime(dismiss);
+        let retired = self.webview.borrow_mut().take();
+        self.pending_mouse_releases.borrow_mut().clear();
+        let owned_handle_removed = retired.is_some();
+        if let Some(webview) = retired {
+            webview.blur();
+            webview.hide();
+            // The pin closes a WebView when its last handle drops. Temporary
+            // callback handles can defer that; input and delegates are already
+            // latched closed. Servo's global mouse mask has no cancellation API.
+            drop(webview);
+        }
+        self.window
+            .set_title("TrillionniumOS Desktop — input recovery required — D0A-02");
+        self.window.request_redraw();
+        let report = format!(
+            concat!(
+                "{{\n",
+                "  \"schema\": \"trillionnium.desktop.native-gesture-withdrawal.v1\",\n",
+                "  \"generation\": {},\n",
+                "  \"reason\": {},\n",
+                "  \"held_button_count\": {},\n",
+                "  \"recovery_required\": true,\n",
+                "  \"owned_webview_handle_removed\": {},\n",
+                "  \"synthetic_mouse_release_sent\": false,\n",
+                "  \"servo_mouse_state_reset_proven\": false,\n",
+                "  \"automatic_reconstruction_allowed\": false,\n",
+                "  \"product_ready\": false\n",
+                "}}\n"
+            ),
+            outcome.generation,
+            json_string(outcome.reason.as_str()),
+            outcome.held_buttons,
+            owned_handle_removed,
+        );
+        if fs::write(
+            self.output_dir.join("gesture-recovery-required.json"),
+            report,
+        )
+        .is_err()
+        {
+            self.fail("could not record native held-gesture recovery requirement");
+        } else {
+            self.fail("native held gesture withdrawn; fresh Servo owner recovery is required");
+        }
+        true
+    }
+
+    fn forward_wheel(&self, delta: MouseScrollDelta) {
+        let Some((x, y)) = self.input.borrow().point() else {
+            return;
+        };
+        let point = DevicePoint::new(x, y);
+        let (x, y, mode) = match delta {
+            MouseScrollDelta::LineDelta(x, y) => (x as f64, y as f64, WheelMode::DeltaLine),
             MouseScrollDelta::PixelDelta(position) => {
                 (position.x, position.y, WheelMode::DeltaPixel)
             }
@@ -1003,12 +1183,15 @@ impl RuntimeState {
         if let Some(webview) = self.webview.borrow().as_ref() {
             webview.notify_input_event(InputEvent::Wheel(WheelEvent::new(
                 WheelDelta { x, y, z: 0.0, mode },
-                self.last_content_point.get().into(),
+                point.into(),
             )));
         }
     }
 
     fn forward_keyboard(&self, event: winit::event::KeyEvent) {
+        if !self.input.borrow().keyboard_allowed() {
+            return;
+        }
         let key = match event.logical_key {
             WinitKey::Character(value) => Key::Character(value.to_string()),
             WinitKey::Named(WinitNamedKey::Enter) => Key::Named(NamedKey::Enter),
@@ -1034,23 +1217,48 @@ impl RuntimeState {
         let Some(webview) = self.webview.borrow().as_ref().cloned() else {
             return;
         };
-        let input = match event {
-            Ime::Enabled => Some(ImeEvent::Composition(CompositionEvent {
-                state: CompositionState::Start,
-                data: String::new(),
-            })),
-            Ime::Preedit(data, _) => Some(ImeEvent::Composition(CompositionEvent {
-                state: CompositionState::Update,
-                data,
-            })),
-            Ime::Commit(data) => Some(ImeEvent::Composition(CompositionEvent {
-                state: CompositionState::End,
-                data,
-            })),
-            Ime::Disabled => Some(ImeEvent::Dismissed),
-        };
-        if let Some(input) = input {
-            webview.notify_input_event(InputEvent::Ime(input));
+        let committing = matches!(&event, Ime::Commit(_));
+        match event {
+            Ime::Enabled => self.input.borrow_mut().enable_ime(),
+            Ime::Preedit(data, _) | Ime::Commit(data) => {
+                if !self.input.borrow().ime_context_allowed() {
+                    return;
+                }
+                if self.input.borrow_mut().begin_ime() {
+                    webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(
+                        CompositionEvent {
+                            state: CompositionState::Start,
+                            data: String::new(),
+                        },
+                    )));
+                }
+                // Enabled spans multiple compositions; Commit ends only this one.
+                webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(
+                    CompositionEvent {
+                        state: if committing {
+                            CompositionState::End
+                        } else {
+                            CompositionState::Update
+                        },
+                        data,
+                    },
+                )));
+                if committing {
+                    self.input.borrow_mut().end_ime();
+                }
+            }
+            Ime::Disabled => {
+                let dismiss = self.input.borrow_mut().disable_ime();
+                self.dismiss_ime(dismiss);
+            }
+        }
+    }
+
+    fn dismiss_ime(&self, dismiss: bool) {
+        if dismiss {
+            if let Some(webview) = self.webview.borrow().as_ref() {
+                webview.notify_input_event(InputEvent::Ime(ImeEvent::Dismissed));
+            }
         }
     }
 
@@ -1152,6 +1360,14 @@ impl RuntimeState {
     }
 
     fn finish_success(&self) {
+        if !self.crash_triggered.get()
+            || !self.exact_termination_observed.get()
+            || self.fault_process.get().is_none()
+        {
+            self.fail("requested process fault and exact termination evidence are required");
+            self.finish_failure();
+            return;
+        }
         if self.completed.replace(true) {
             return;
         }
@@ -1166,6 +1382,10 @@ impl RuntimeState {
             .clone()
             .unwrap_or_else(|| "null".to_owned());
         let crash_reason = self.crash_reason.borrow().clone().unwrap_or_default();
+        let (fault_pid, fault_start) = self
+            .fault_process
+            .get()
+            .expect("fault identity checked above");
         let report = format!(
             concat!(
                 "{{\n",
@@ -1192,6 +1412,7 @@ impl RuntimeState {
                 "  \"external_navigation_requests_denied\": {},\n",
                 "  \"content_crash_observed\": true,\n",
                 "  \"content_crash_reason\": {},\n",
+                "  \"fault_injection\": {{\"mechanism\":\"requested_SIGKILL\",\"generation\":1,\"pid\":{},\"start_time\":{},\"exact_termination_observed\":{}}},\n",
                 "  \"trusted_window_survived_content_crash\": true,\n",
                 "  \"initial_page_evidence\": {},\n",
                 "  \"recovery_page_evidence\": {},\n",
@@ -1219,6 +1440,9 @@ impl RuntimeState {
             self.popup_denied.get(),
             self.navigation_denied.get(),
             json_string(&crash_reason),
+            fault_pid,
+            fault_start,
+            self.exact_termination_observed.get(),
             initial,
             recovery,
         );
@@ -1233,18 +1457,27 @@ impl RuntimeState {
 
 struct RuntimeDelegate {
     state: Weak<RuntimeState>,
+    generation: u32,
+}
+
+impl RuntimeDelegate {
+    fn current(&self) -> Option<Rc<RuntimeState>> {
+        self.state
+            .upgrade()
+            .filter(|state| state.input.borrow().current_callback(self.generation))
+    }
 }
 
 impl WebViewDelegate for RuntimeDelegate {
     fn notify_load_status_changed(&self, _webview: WebView, status: LoadStatus) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             state.load_complete.set(status == LoadStatus::Complete);
             let _ = state.proxy.send_event(AppEvent::Drive);
         }
     }
 
     fn notify_new_frame_ready(&self, _webview: WebView) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             state.frame_ready.set(state.frame_ready.get() + 1);
             state.window.request_redraw();
         }
@@ -1253,10 +1486,25 @@ impl WebViewDelegate for RuntimeDelegate {
     fn notify_input_event_handled(
         &self,
         _webview: WebView,
-        _event_id: InputEventId,
-        _result: InputEventResult,
+        event_id: InputEventId,
+        result: InputEventResult,
     ) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
+            let button = state.pending_mouse_releases.borrow_mut().remove(&event_id);
+            if let Some(button) = button {
+                let outcome = if result.contains(InputEventResult::DispatchFailed) {
+                    ReleaseOutcome::DispatchFailed
+                } else {
+                    ReleaseOutcome::Accepted
+                };
+                state
+                    .input
+                    .borrow_mut()
+                    .acknowledge_release(self.generation, button, outcome);
+                if state.retire_withdrawn_gesture() {
+                    return;
+                }
+            }
             state
                 .input_handled_callbacks
                 .set(state.input_handled_callbacks.get() + 1);
@@ -1265,8 +1513,16 @@ impl WebViewDelegate for RuntimeDelegate {
     }
 
     fn notify_crashed(&self, _webview: WebView, reason: String, _backtrace: Option<String>) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
+            if !state.crash_triggered.get() || state.fault_process.get().is_none() {
+                state.input.borrow_mut().crashed();
+                state.retire_withdrawn_gesture();
+                state.fail("spontaneous content crash cannot satisfy requested process-fault qualification");
+                return;
+            }
             state.crash_observed.set(true);
+            state.input.borrow_mut().crashed();
+            state.retire_withdrawn_gesture();
             *state.crash_reason.borrow_mut() = Some(reason);
             state.window.request_redraw();
             let _ = state.proxy.send_event(AppEvent::Drive);
@@ -1274,7 +1530,7 @@ impl WebViewDelegate for RuntimeDelegate {
     }
 
     fn request_navigation(&self, _webview: WebView, request: NavigationRequest) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             if state.fixture_origin_matches(&request.url) {
                 request.allow();
             } else {
@@ -1290,7 +1546,7 @@ impl WebViewDelegate for RuntimeDelegate {
     }
 
     fn request_create_new(&self, _parent: WebView, _request: CreateNewWebViewRequest) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             state.popup_denied.set(state.popup_denied.get() + 1);
             let _ = state.proxy.send_event(AppEvent::Drive);
         }
@@ -1298,8 +1554,9 @@ impl WebViewDelegate for RuntimeDelegate {
     }
 
     fn show_embedder_control(&self, _webview: WebView, control: EmbedderControl) {
-        if let Some(state) = self.state.upgrade() {
+        if let Some(state) = self.current() {
             if matches!(control, EmbedderControl::InputMethod(_)) {
+                state.window.set_ime_allowed(true);
                 state
                     .input_method_controls
                     .set(state.input_method_controls.get() + 1);

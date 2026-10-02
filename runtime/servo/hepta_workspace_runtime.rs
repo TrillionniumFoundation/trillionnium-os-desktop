@@ -35,7 +35,8 @@ const FIXTURE_URL: &str = concat!(
     "data:text/html,%3C!doctype%20html%3E%3Cmeta%20charset=utf-8%3E",
     "%3Ctitle%3EHepta%20D0A02%20Fixture%3C/title%3E",
     "%3Cstyle%3Ehtml,body%7Bmargin:0;width:100%25;height:100%25;background:%23141a22;",
-    "color:%23f4f7fb;font:24px%20sans-serif%7D%23target%7Bpadding:48px%7D%3C/style%3E",
+    "color:%23f4f7fb;font:24px%20sans-serif%7D%23target%7Bpadding:48px%7D",
+    "%23field%7Bposition:fixed;left:48px;top:160px;width:300px;height:40px%7D%3C/style%3E",
     "%3Cbody%3E%3Cdiv%20id=target%3ED0A-02%20Servo%20content%3C/div%3E",
     "%3Cinput%20id=field%20autofocus%20aria-label=ime-test%3E",
     "%3Cscript%3Ewindow.__hepta=%7Bmouse:0,button:0,wheel:0,key:0%7D;",
@@ -46,6 +47,211 @@ const FIXTURE_URL: &str = concat!(
     "setTimeout(()=>%7Bwindow.__hepta_popup=window.open('data:text/html,popup')%7D,0);",
     "document.getElementById('field').focus();%3C/script%3E"
 );
+
+// BEGIN QUALIFICATION INPUT SEQUENCE: also compiled independently by the host corpus.
+mod qualification_input {
+    use std::time::{Duration, Instant};
+
+    pub const STEPS: u8 = 12;
+    pub const SPACING: Duration = Duration::from_millis(80);
+    pub const DEADLINE: Duration = Duration::from_secs(90);
+
+    #[derive(Debug, PartialEq, Eq)]
+    pub enum Action {
+        RequestReadiness(u64),
+        Send(u8),
+        Wait,
+        Expired,
+    }
+
+    pub struct Sequence {
+        generation: u64,
+        ready: bool,
+        pending: bool,
+        step: u8,
+        last_sent: Option<Instant>,
+    }
+
+    impl Sequence {
+        pub fn new(generation: u64) -> Self {
+            Self {
+                generation,
+                ready: false,
+                pending: false,
+                step: 0,
+                last_sent: None,
+            }
+        }
+
+        pub fn readiness(&mut self, generation: u64, ready: bool) -> bool {
+            if generation != self.generation {
+                return false;
+            }
+            self.pending = false;
+            self.ready = ready;
+            true
+        }
+
+        pub fn complete(&self) -> bool {
+            self.ready && self.step == STEPS
+        }
+
+        pub fn next(
+            &mut self,
+            now: Instant,
+            elapsed: Duration,
+            current_frame: bool,
+            awaiting_move: bool,
+        ) -> Action {
+            if elapsed >= DEADLINE {
+                return Action::Expired;
+            }
+            if !self.ready {
+                if self.pending {
+                    return Action::Wait;
+                }
+                self.pending = true;
+                return Action::RequestReadiness(self.generation);
+            }
+            if !current_frame
+                || awaiting_move
+                || self.step == STEPS
+                || self
+                    .last_sent
+                    .is_some_and(|last| now.saturating_duration_since(last) < SPACING)
+            {
+                return Action::Wait;
+            }
+            let step = self.step;
+            self.step += 1;
+            self.last_sent = Some(now);
+            Action::Send(step)
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn no_input_before_observed_current_readiness_and_frame() {
+            let now = Instant::now();
+            let mut sequence = Sequence::new(1);
+            assert_eq!(
+                sequence.next(now, Duration::ZERO, true, false),
+                Action::RequestReadiness(1)
+            );
+            assert_eq!(
+                sequence.next(now, Duration::ZERO, true, false),
+                Action::Wait
+            );
+            assert!(!sequence.complete());
+            sequence.readiness(1, true);
+            assert_eq!(
+                sequence.next(now, Duration::ZERO, false, false),
+                Action::Wait
+            );
+            assert_eq!(
+                sequence.next(now, Duration::ZERO, true, false),
+                Action::Send(0)
+            );
+        }
+
+        #[test]
+        fn each_real_dispatch_step_requires_another_spaced_turn() {
+            let now = Instant::now();
+            let mut sequence = Sequence::new(1);
+            sequence.readiness(1, true);
+            for step in 0..STEPS {
+                let at = now + SPACING * u32::from(step);
+                assert_eq!(
+                    sequence.next(at, Duration::ZERO, true, false),
+                    Action::Send(step)
+                );
+                assert_eq!(sequence.next(at, Duration::ZERO, true, false), Action::Wait);
+            }
+            assert!(sequence.complete());
+            assert_eq!(
+                sequence.next(now + Duration::from_secs(2), Duration::ZERO, true, false),
+                Action::Wait
+            );
+        }
+
+        #[test]
+        fn failed_readiness_retries_without_consuming_input() {
+            let now = Instant::now();
+            let mut sequence = Sequence::new(1);
+            assert_eq!(
+                sequence.next(now, Duration::ZERO, true, false),
+                Action::RequestReadiness(1)
+            );
+            sequence.readiness(1, false);
+            assert_eq!(
+                sequence.next(now, Duration::ZERO, true, false),
+                Action::RequestReadiness(1)
+            );
+            assert!(!sequence.complete());
+        }
+
+        #[test]
+        fn delayed_move_ack_blocks_following_steps_without_extending_deadline() {
+            let now = Instant::now();
+            let mut sequence = Sequence::new(1);
+            sequence.readiness(1, true);
+            assert_eq!(
+                sequence.next(now, Duration::ZERO, true, false),
+                Action::Send(0)
+            );
+            let later = now + Duration::from_secs(10);
+            assert_eq!(
+                sequence.next(later, Duration::from_secs(10), true, true),
+                Action::Wait
+            );
+            assert_eq!(
+                sequence.next(later, Duration::from_secs(10), true, false),
+                Action::Send(1)
+            );
+            assert_eq!(sequence.next(later, DEADLINE, true, true), Action::Expired);
+        }
+
+        #[test]
+        fn replacement_never_inherits_readiness_or_input_and_ignores_old_callback() {
+            let now = Instant::now();
+            let mut old = Sequence::new(1);
+            old.readiness(1, true);
+            assert_eq!(old.next(now, Duration::ZERO, true, false), Action::Send(0));
+            let mut replacement = Sequence::new(2);
+            assert!(!replacement.readiness(1, true));
+            assert_eq!(
+                replacement.next(now, Duration::ZERO, true, false),
+                Action::RequestReadiness(2)
+            );
+            replacement.readiness(2, true);
+            assert_eq!(
+                replacement.next(now, Duration::ZERO, true, false),
+                Action::Send(0)
+            );
+        }
+
+        #[test]
+        fn original_deadline_wins_even_with_pending_readiness_or_completed_input() {
+            let now = Instant::now();
+            let mut sequence = Sequence::new(1);
+            assert_eq!(
+                sequence.next(now, Duration::ZERO, true, false),
+                Action::RequestReadiness(1)
+            );
+            assert_eq!(sequence.next(now, DEADLINE, true, false), Action::Expired);
+            sequence.readiness(1, true);
+            for step in 0..STEPS {
+                sequence.next(now + SPACING * u32::from(step), Duration::ZERO, true, false);
+            }
+            assert!(sequence.complete());
+            assert_eq!(sequence.next(now, DEADLINE, true, false), Action::Expired);
+        }
+    }
+}
+// END QUALIFICATION INPUT SEQUENCE
 
 fn main() -> Result<(), Box<dyn Error>> {
     if let Some(token) = content_process_token() {
@@ -94,8 +300,11 @@ struct RuntimeState {
     output: PathBuf,
     started_at: Instant,
     frame_count: Cell<u64>,
+    presented_frame: Cell<u64>,
     input_events_sent: Cell<u64>,
     input_events_handled: Cell<u64>,
+    qualification_inputs: RefCell<qualification_input::Sequence>,
+    pending_move: Cell<Option<InputEventId>>,
     page_input_evidence_requested: Cell<bool>,
     page_input_verified: Cell<bool>,
     ime_composition_events_sent: Cell<u64>,
@@ -122,16 +331,53 @@ impl RuntimeState {
             .build()
     }
 
-    fn send_qualification_input(&self) {
-        if self.input_events_sent.get() != 0 {
-            return;
-        }
-        let binding = self.webview.borrow();
-        let Some(webview) = binding.as_ref() else {
+    fn current_webview(&self, webview: &WebView) -> bool {
+        self.webview
+            .borrow()
+            .as_ref()
+            .is_some_and(|current| current.id() == webview.id())
+    }
+
+    fn send_qualification_input(self: &Rc<Self>) {
+        let action = self.qualification_inputs.borrow_mut().next(
+            Instant::now(),
+            self.started_at.elapsed(),
+            self.frame_count.get() > self.recovery_frame_baseline.get(),
+            self.pending_move.get().is_some(),
+        );
+        let Some(webview) = self.webview.borrow().as_ref().cloned() else {
+            self.write_evidence("FAIL_CURRENT_WEBVIEW_MISSING");
             return;
         };
-        webview.focus();
-        let point = DevicePoint::new(64.0, 64.0).into();
+        let step = match action {
+            qualification_input::Action::RequestReadiness(generation) => {
+                let state = self.clone();
+                let current = webview.clone();
+                webview.focus();
+                webview.evaluate_javascript(
+                    "Boolean(document.readyState === 'complete' && window.__hepta && document.getElementById('field') && (document.getElementById('field').focus(), document.activeElement.id === 'field'))",
+                    move |result| {
+                        if state.generation.get() != generation || !state.current_webview(&current) {
+                            return;
+                        }
+                        state.qualification_inputs.borrow_mut().readiness(
+                            generation, matches!(result, Ok(JSValue::Boolean(true))),
+                        );
+                        let _ = state.proxy.send_event(AppEvent::Wake);
+                    },
+                );
+                return;
+            }
+            qualification_input::Action::Send(step) => step,
+            qualification_input::Action::Expired => {
+                self.write_evidence("FAIL_RUNTIME_TIMEOUT");
+                return;
+            }
+            qualification_input::Action::Wait => return,
+        };
+        let point = DevicePoint::new(64.0, 176.0).into();
+        let second = DevicePoint::new(68.0, 180.0).into();
+        let third = DevicePoint::new(72.0, 184.0).into();
         let events = [
             InputEvent::MouseMove(MouseMoveEvent::new(point)),
             InputEvent::MouseButton(MouseButtonEvent::new(
@@ -161,28 +407,40 @@ impl RuntimeState {
                 KeyState::Up,
                 Key::Character("h".into()),
             )),
-        ];
-        for event in events {
-            webview.notify_input_event(event);
-        }
-        // Servo reports handled callbacks only for events that enter its input
-        // dispatch path. Repeat pointer/button input so the qualification gate
-        // cannot stall merely because keyboard or dismissed-IME events have no
-        // handled callback on the exact pinned Servo revision.
-        for _ in 0..2 {
-            webview.notify_input_event(InputEvent::MouseMove(MouseMoveEvent::new(point)));
-            webview.notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(
+            InputEvent::MouseMove(MouseMoveEvent::new(second)),
+            InputEvent::MouseButton(MouseButtonEvent::new(
                 MouseButtonAction::Down,
                 MouseButton::Primary,
-                point,
-            )));
-            webview.notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(
+                second,
+            )),
+            InputEvent::MouseButton(MouseButtonEvent::new(
                 MouseButtonAction::Up,
                 MouseButton::Primary,
-                point,
-            )));
+                second,
+            )),
+            InputEvent::MouseMove(MouseMoveEvent::new(third)),
+            InputEvent::MouseButton(MouseButtonEvent::new(
+                MouseButtonAction::Down,
+                MouseButton::Primary,
+                third,
+            )),
+            InputEvent::MouseButton(MouseButtonEvent::new(
+                MouseButtonAction::Up,
+                MouseButton::Primary,
+                third,
+            )),
+        ];
+        let event_id = webview.notify_input_event(
+            events
+                .into_iter()
+                .nth(usize::from(step))
+                .expect("bounded input step"),
+        );
+        if matches!(step, 0 | 6 | 9) {
+            self.pending_move.set(Some(event_id));
         }
-        self.input_events_sent.set(12);
+        self.input_events_sent
+            .set(self.input_events_sent.get().saturating_add(1));
     }
 
     fn send_composition_ime(self: &Rc<Self>) {
@@ -211,7 +469,8 @@ impl RuntimeState {
             webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(event)));
         }
         self.ime_composition_events_sent.set(3);
-        self.input_events_sent.set(15);
+        self.input_events_sent
+            .set(self.input_events_sent.get().saturating_add(3));
         self.ime_path_exercised.set(true);
         let _ = fs::write(
             self.output.join("ime-composition.completed"),
@@ -229,9 +488,14 @@ impl RuntimeState {
             return;
         };
         let state = self.clone();
+        let generation = self.generation.get();
+        let current = webview.clone();
         webview.evaluate_javascript(
             "Boolean(window.__hepta && window.__hepta.mouse > 0 && window.__hepta.button > 0 && window.__hepta.wheel > 0 && window.__hepta.key > 0)",
             move |result| {
+                if state.generation.get() != generation || !state.current_webview(&current) {
+                    return;
+                }
                 if matches!(result, Ok(JSValue::Boolean(true))) {
                     state.page_input_verified.set(true);
                 } else {
@@ -345,13 +609,16 @@ impl RuntimeState {
         self.webview.borrow_mut().take();
         self.generation.set(2);
         self.recovery_frame_baseline.set(self.frame_count.get());
+        self.qualification_inputs
+            .replace(qualification_input::Sequence::new(2));
+        self.pending_move.set(None);
         let replacement = self.build_webview();
         self.webview.replace(Some(replacement));
         self.window.set_title(TRUSTED_TITLE);
         self.window.request_redraw();
     }
 
-    fn request_recovery_screenshot(&self) {
+    fn request_recovery_screenshot(self: &Rc<Self>) {
         if self.screenshot_requested.replace(true) {
             return;
         }
@@ -362,7 +629,13 @@ impl RuntimeState {
         let screenshot = self.output.join("servo-content-recovered.png");
         let marker = self.output.join("screenshot.ready");
         let proxy = self.proxy.clone();
+        let state = self.clone();
+        let generation = self.generation.get();
+        let current = webview.clone();
         webview.take_screenshot(None, move |result| {
+            if state.generation.get() != generation || !state.current_webview(&current) {
+                return;
+            }
             match result {
                 Ok(image) => match image.save(&screenshot) {
                     Ok(()) => {
@@ -391,6 +664,12 @@ impl RuntimeState {
             return;
         }
         let elapsed_ms = self.started_at.elapsed().as_millis();
+        let trusted_chrome_survived_recovery = self.generation.get() == 2
+            && self.recovery_started.get()
+            && self.content_process_termination_observed.get()
+            && self.frame_count.get() > self.recovery_frame_baseline.get()
+            && self.presented_frame.get() > self.recovery_frame_baseline.get()
+            && self.webview.borrow().is_some();
         let evidence = format!(
             concat!(
                 "{{\n",
@@ -398,7 +677,7 @@ impl RuntimeState {
                 "  \"status\": \"{}\",\n",
                 "  \"trusted_chrome_kind\": \"native_window_decorations\",\n",
                 "  \"trusted_chrome_title\": \"{}\",\n",
-                "  \"trusted_chrome_survived_recovery\": true,\n",
+                "  \"trusted_chrome_survived_recovery\": {},\n",
                 "  \"content_surface_limit\": 1,\n",
                 "  \"content_generation\": {},\n",
                 "  \"frame_count\": {},\n",
@@ -420,6 +699,7 @@ impl RuntimeState {
             ),
             status,
             TRUSTED_TITLE,
+            trusted_chrome_survived_recovery,
             self.generation.get(),
             self.frame_count.get(),
             self.input_events_sent.get(),
@@ -439,10 +719,28 @@ impl RuntimeState {
         let _ = fs::write(self.output.join("runtime-ready.json"), evidence);
     }
 
-    fn drive(self: &Rc<Self>) {
+    fn drive(self: &Rc<Self>, advance_input: bool) {
+        // Deadline precedes every readiness/evidence early return, and remains
+        // the original runtime deadline across replacement generations.
+        if self.evidence_written.get() {
+            return;
+        }
+        if self.started_at.elapsed() >= qualification_input::DEADLINE {
+            self.write_evidence("FAIL_RUNTIME_TIMEOUT");
+            return;
+        }
         self.servo.spin_event_loop();
-        if self.frame_count.get() > 0 {
+        if self.started_at.elapsed() >= qualification_input::DEADLINE {
+            self.write_evidence("FAIL_RUNTIME_TIMEOUT");
+            return;
+        }
+        // Only about_to_wait advances input: every step crosses a native event
+        // loop boundary and spins Servo before the following step.
+        if advance_input {
             self.send_qualification_input();
+        }
+        if self.evidence_written.get() || !self.qualification_inputs.borrow().complete() {
+            return;
         }
         if self.generation.get() == 1
             && self.input_events_handled.get() >= 3
@@ -482,20 +780,21 @@ impl RuntimeState {
         }
         if self.output.join("screenshot.ready").is_file()
             && self.generation.get() == 2
+            && self.presented_frame.get() > self.recovery_frame_baseline.get()
             && self.popup_requests_denied.get() >= 1
             && self.input_events_handled.get() >= 3
             && self.page_input_verified.get()
         {
             self.write_evidence("PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY");
         }
-        if self.started_at.elapsed() > Duration::from_secs(90) && !self.evidence_written.get() {
-            self.write_evidence("FAIL_RUNTIME_TIMEOUT");
-        }
     }
 }
 
 impl servo::WebViewDelegate for RuntimeState {
-    fn notify_new_frame_ready(&self, _webview: WebView) {
+    fn notify_new_frame_ready(&self, webview: WebView) {
+        if !self.current_webview(&webview) {
+            return;
+        }
         self.frame_count
             .set(self.frame_count.get().saturating_add(1));
         self.window.request_redraw();
@@ -503,23 +802,38 @@ impl servo::WebViewDelegate for RuntimeState {
 
     fn notify_input_event_handled(
         &self,
-        _webview: WebView,
-        _event_id: InputEventId,
+        webview: WebView,
+        event_id: InputEventId,
         result: InputEventResult,
     ) {
+        if !self.current_webview(&webview) {
+            return;
+        }
+        if self.pending_move.get() == Some(event_id) {
+            self.pending_move.set(None);
+            if result.contains(InputEventResult::DispatchFailed) {
+                self.write_evidence("FAIL_MOUSE_MOVE_DISPATCH");
+                return;
+            }
+        }
         if !result.contains(InputEventResult::DispatchFailed) {
             self.input_events_handled
                 .set(self.input_events_handled.get().saturating_add(1));
         }
     }
 
-    fn request_create_new(&self, _parent: WebView, request: CreateNewWebViewRequest) {
-        self.popup_requests_denied
-            .set(self.popup_requests_denied.get().saturating_add(1));
+    fn request_create_new(&self, parent: WebView, request: CreateNewWebViewRequest) {
+        if self.current_webview(&parent) {
+            self.popup_requests_denied
+                .set(self.popup_requests_denied.get().saturating_add(1));
+        }
         drop(request);
     }
 
-    fn notify_crashed(&self, _webview: WebView, _reason: String, _backtrace: Option<String>) {
+    fn notify_crashed(&self, webview: WebView, _reason: String, _backtrace: Option<String>) {
+        if !self.current_webview(&webview) {
+            return;
+        }
         self.actual_crash_callbacks
             .set(self.actual_crash_callbacks.get().saturating_add(1));
         self.window.set_title(TRUSTED_TITLE);
@@ -591,8 +905,11 @@ impl ApplicationHandler<AppEvent> for App {
             output: output.clone(),
             started_at: Instant::now(),
             frame_count: Cell::new(0),
+            presented_frame: Cell::new(0),
             input_events_sent: Cell::new(0),
             input_events_handled: Cell::new(0),
+            qualification_inputs: RefCell::new(qualification_input::Sequence::new(1)),
+            pending_move: Cell::new(None),
             page_input_evidence_requested: Cell::new(false),
             page_input_verified: Cell::new(false),
             ime_composition_events_sent: Cell::new(0),
@@ -632,7 +949,7 @@ impl ApplicationHandler<AppEvent> for App {
                 }
                 AppEvent::Wake => {}
             }
-            state.drive();
+            state.drive(false);
         }
     }
 
@@ -652,8 +969,9 @@ impl ApplicationHandler<AppEvent> for App {
                 if let Some(webview) = state.webview.borrow().as_ref() {
                     webview.paint();
                     state.rendering_context.present();
+                    state.presented_frame.set(state.frame_count.get());
                 }
-                state.drive();
+                state.drive(false);
             }
             WindowEvent::Resized(size) => {
                 if let Some(webview) = state.webview.borrow().as_ref() {
@@ -669,7 +987,7 @@ impl ApplicationHandler<AppEvent> for App {
             let Self::Running(state) = self else {
                 return;
             };
-            state.drive();
+            state.drive(true);
             state.window.request_redraw();
             state.evidence_written.get()
                 && (state.output.join("capture.done").is_file()

@@ -692,6 +692,52 @@ pub struct CommittedRecord {
     pub end_offset: u64,
 }
 
+/// One fact read from the complete locked journal chain. Unlike forensic
+/// reports, callers cannot construct this value or supply it to the writer.
+///
+/// ```compile_fail,E0451
+/// use hepta_session_core::{DurableReceiptFact, ReceiptLifecycleState};
+/// let forged = DurableReceiptFact {
+///     receipt_id: "forged".into(), request_sha256: [1; 32],
+///     lifecycle: ReceiptLifecycleState::Completed, record_sha256: [2; 32],
+/// };
+/// ```
+pub struct DurableReceiptFact {
+    owner_pid: u32,
+    receipt_id: String,
+    request_sha256: Digest,
+    lifecycle: LifecycleState,
+    record_sha256: Digest,
+}
+
+impl DurableReceiptFact {
+    pub fn receipt_id(&self) -> Result<&str, JournalError> {
+        ensure_creating_process(self.owner_pid)?;
+        Ok(&self.receipt_id)
+    }
+    pub fn request_sha256(&self) -> Result<Digest, JournalError> {
+        ensure_creating_process(self.owner_pid)?;
+        Ok(self.request_sha256)
+    }
+    pub fn lifecycle(&self) -> Result<LifecycleState, JournalError> {
+        ensure_creating_process(self.owner_pid)?;
+        Ok(self.lifecycle)
+    }
+    pub fn record_sha256(&self) -> Result<Digest, JournalError> {
+        ensure_creating_process(self.owner_pid)?;
+        Ok(self.record_sha256)
+    }
+}
+
+fn ensure_creating_process(owner_pid: u32) -> Result<(), JournalError> {
+    if std::process::id() != owner_pid {
+        return Err(JournalError::InvalidInput(
+            "journal authority belongs to its creating process".into(),
+        ));
+    }
+    Ok(())
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SegmentSeal {
     pub segment_number: u64,
@@ -805,6 +851,7 @@ struct ReceiptProgress {
 
 #[derive(Debug)]
 struct WriterLease {
+    owner_pid: u32,
     // Keep the lock descriptor open for the complete journal lifetime.  The
     // descriptor carries an advisory OS file lock.  The sidecar pathname is
     // intentionally never unlinked during Drop: a metadata check followed by
@@ -868,12 +915,21 @@ impl WriterLease {
         if !path_matches_metadata(&path, &metadata)? {
             return Err(JournalError::WriterBusy);
         }
-        Ok(Self { _file: file })
+        Ok(Self {
+            owner_pid: std::process::id(),
+            _file: file,
+        })
     }
 }
 
 impl Drop for WriterLease {
     fn drop(&mut self) {
+        // A fork inherits this open file description and the parent's lock.
+        // Closing the child's descriptor is safe; altering its payload or
+        // explicitly unlocking it would mutate the parent's live lease.
+        if ensure_creating_process(self.owner_pid).is_err() {
+            return;
+        }
         // Keep the sidecar inode in place and publish a clean-release marker
         // while the advisory lock is still held.  A contender therefore sees
         // either WriterBusy (until unlock), a complete `released=1` marker,
@@ -1006,6 +1062,7 @@ fn process_identity_from_file(file: &mut File) -> Result<ProcessIdentity, Journa
 }
 
 pub struct ReceiptJournal {
+    owner_pid: u32,
     path: PathBuf,
     file: File,
     _lease: Option<WriterLease>,
@@ -1083,6 +1140,7 @@ impl ReceiptJournal {
         persistence_tests::point("segment.after_parent_sync")?;
         let metadata = file.metadata().map_err(map_io_error)?;
         Ok(Self {
+            owner_pid: std::process::id(),
             path: path.to_owned(),
             file,
             _lease: lease,
@@ -1112,6 +1170,7 @@ impl ReceiptJournal {
     }
 
     fn verify_active_append_state(&self, expected_offset: u64) -> Result<(), JournalError> {
+        ensure_creating_process(self.owner_pid)?;
         if let Some(managed) = &self.managed {
             managed.verify_current()?;
         }
@@ -1175,6 +1234,7 @@ impl ReceiptJournal {
         self.file
             .seek(SeekFrom::Start(self.end_offset))
             .map_err(map_io_error)?;
+        ensure_creating_process(self.owner_pid)?;
         if let Err(error) = commit_bytes(&mut self.file, &bytes) {
             self.poisoned = true;
             return Err(error);
@@ -1211,10 +1271,94 @@ impl ReceiptJournal {
         Ok(report)
     }
 
+    /// Check the authoritative deduplication namespace, including sealed
+    /// predecessors imported by managed open/rotation. This never readmits.
+    pub fn contains_receipt(&mut self, receipt_id: &str) -> Result<bool, JournalError> {
+        self.authoritative_reports()?;
+        Ok(self.progress.contains_key(receipt_id))
+    }
+
+    /// Startup must retain unresolved facts from every segment, rather than
+    /// inspecting only the active segment and silently forgetting predecessors.
+    pub fn has_unresolved_receipts(&mut self) -> Result<bool, JournalError> {
+        self.authoritative_reports()?;
+        Ok(self
+            .progress
+            .values()
+            .any(|progress| !progress.last_state.is_terminal()))
+    }
+
+    /// Terminal uncertainty is still a recovery decision. Return sealed facts
+    /// from the complete locked chain, including an interruption after durable
+    /// dispatch. Merely reopening a journal does not acknowledge these facts.
+    pub fn execution_reconciliation_facts(
+        &mut self,
+    ) -> Result<Vec<DurableReceiptFact>, JournalError> {
+        let reports = self.authoritative_reports()?;
+        let mut dispatched = std::collections::BTreeSet::new();
+        let mut latest = std::collections::BTreeMap::new();
+        for record in reports.iter().flat_map(|report| report.records.iter()) {
+            if record.event.lifecycle == LifecycleState::Dispatched {
+                dispatched.insert(record.event.receipt_id.as_str());
+            }
+            latest.insert(record.event.receipt_id.as_str(), record);
+        }
+        Ok(latest
+            .into_iter()
+            .filter_map(|(receipt_id, record)| {
+                let lifecycle = record.event.lifecycle;
+                (lifecycle == LifecycleState::Indeterminate
+                    || (lifecycle == LifecycleState::Interrupted
+                        && dispatched.contains(receipt_id)))
+                .then(|| DurableReceiptFact {
+                    owner_pid: self.owner_pid,
+                    receipt_id: receipt_id.to_owned(),
+                    request_sha256: record.event.request_sha256,
+                    lifecycle,
+                    record_sha256: record.record_sha256,
+                })
+            })
+            .collect())
+    }
+
+    /// Read the latest exact-request fact under all source inode/directory
+    /// locks. An unknown ID or different canonical request digest is refused.
+    /// A fact does not authorize execution, replay, or outcome synthesis.
+    pub fn receipt_fact(
+        &mut self,
+        receipt_id: &str,
+        request_sha256: Digest,
+    ) -> Result<DurableReceiptFact, JournalError> {
+        let reports = self.authoritative_reports()?;
+        let record = reports
+            .iter()
+            .flat_map(|report| report.records.iter())
+            .rev()
+            .find(|record| record.event.receipt_id == receipt_id)
+            .ok_or_else(|| {
+                JournalError::InvalidInput(
+                    "receipt identifier is not present in the complete journal".into(),
+                )
+            })?;
+        if record.event.request_sha256 != request_sha256 {
+            return Err(JournalError::InvalidInput(
+                "canonical request digest does not match the durable receipt".into(),
+            ));
+        }
+        Ok(DurableReceiptFact {
+            owner_pid: self.owner_pid,
+            receipt_id: receipt_id.to_owned(),
+            request_sha256,
+            lifecycle: record.event.lifecycle,
+            record_sha256: record.record_sha256,
+        })
+    }
+
     pub fn seal(&mut self) -> Result<SegmentSeal, JournalError> {
         self.check_live_state()?;
         #[cfg(test)]
         persistence_tests::point("seal.before_sync")?;
+        ensure_creating_process(self.owner_pid)?;
         self.file.sync_all().map_err(map_io_error)?;
         #[cfg(test)]
         persistence_tests::point("seal.after_sync")?;
@@ -1240,6 +1384,7 @@ impl ReceiptJournal {
         next_path: impl AsRef<Path>,
         created_wall_clock_unix_ms: u64,
     ) -> Result<(SegmentSeal, Self), JournalError> {
+        ensure_creating_process(self.owner_pid)?;
         if self.managed.is_some() {
             return Err(JournalError::InvalidInput(
                 "managed journal requires rotate_managed".into(),

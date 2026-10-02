@@ -27,6 +27,59 @@ product AgentPort remaining disabled and absent. Native host input remains the
 separate D0A-02 headed-host claim and is not silently promoted into an
 OS-native D2I claim.
 
+The image fixture must report its own completed document and focused input
+before qualification input starts. The twelve original pointer, button,
+wheel and keyboard events advance one step per native `about_to_wait` callback,
+with at least 80 ms between steps and a Servo event-loop spin before the next
+step. Each of the three distinct pointer moves also waits for its exact
+`InputEventId` handled callback, so a slow script/rendering turn cannot merge
+the moves into one pending input. The pointer positions remain inside the
+fixture input field. The original floor of three handled events and the DOM,
+three-event IME, popup, navigation and causal recovery requirements remain.
+
+Replacement generation two obtains a new fixture readiness result and frame;
+it resets input evidence and rejects callbacks from the retired `WebView`.
+The same 90-second runtime deadline is checked before and after spinning Servo,
+including pending readiness, DOM callbacks and process identity lookup. The
+trusted-chrome recovery field is false before real recovery and becomes true
+only after the replacement's current frame has actually been presented. Guest
+and host acceptance both require this derived field and the three-event floor.
+
+The host corpus compiles and executes the tracked sequencing module and the
+generated JSON writer with repository Rust 1.93. It exercises readiness,
+delayed acknowledgments, replacement isolation, deadline precedence and false
+initial/unpainted recovery facts, plus deterministic transformation and source
+drift refusal. These are source/process tests; only a fresh integrated QEMU
+image run can establish the Wayland/Servo runtime result.
+
+The inherited D1 qualification binary classifies errors into a payload-free
+`FailureCategory` enum before its logger, which accepts only that enum and emits
+fixed category codes to operational stderr/journald. Underlying attestation identities, procfs
+paths, socket paths, digests and I/O details are not forwarded into that sink.
+Stdout receives only a fixed mode summary through another payload-free enum;
+it receives no full identity/result JSON. The explicit `--output` qualification
+file retains process identity and request facts with exclusive no-follow creation
+and mode 0600. Host self-check collection uses this explicit file instead of
+redirecting operational stdout. Server mode preserves actual attestation and
+default-disabled/static-executable claim limits; its optional raw diagnostics
+require explicit private output. A real Rust output-sink regression exercises sensitive
+UID/GID mismatches, procfs errors, transport errors and socket-path mismatches.
+
+The portable verifier independently requires typed true observed chrome
+survival, exactly fifteen sent inputs (twelve ordinary and three IME composition
+events) and at least three handled callbacks. Full
+negative artifact fixtures rewrite the runtime and every affected boot/output
+hash: missing fields, false claims, boolean/string/float counts and insufficient
+counts still fail after complete digest rebinding. These verifier tests prove
+validation behavior, not an actual guest runtime.
+
+Candidate run [37002984433](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/37002984433)
+passed its actual integrated QEMU image workflow at source head
+`bfe2664a52191ff6327e2cbd253ab02ce1527401`. Its earlier CodeQL stdout identity finding
+still blocked that complete candidate. The enum logging boundary and stricter
+portable verification are later source changes and need their own current-head
+CI; neither inherits an earlier object's promotion or runtime authority.
+
 A passing pull-request run is only a candidate. Promotion additionally requires
 independent security review, protected `main`, reviewed merge, and a fresh
 exact `refs/heads/main` run. D2I proves no BrowserActor, production AgentPort,

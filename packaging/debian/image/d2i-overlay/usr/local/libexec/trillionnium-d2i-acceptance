@@ -68,11 +68,14 @@ grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS_HEADED_SERVO_NATIVE_CHROME_SING
 [[ $(json_uint content_generation "$runtime") == 2 ]] || fail recovery_generation_missing
 frame_count=$(json_uint frame_count "$runtime")
 [[ ${frame_count:-0} -ge 2 ]] || fail recovered_frame_missing
-for key in page_input_verified ime_path_exercised signal_sent \
+for key in trusted_chrome_survived_recovery page_input_verified ime_path_exercised signal_sent \
   content_process_termination_observed zero_content_processes_after_termination \
   replacement_process_distinct actual_content_process_crash_proven; do
   json_true "$key" "$runtime" || fail "runtime_${key}_not_true"
 done
+
+handled=$(json_uint input_events_handled "$runtime")
+[[ ${handled:-0} -ge 3 ]] || fail input_handling_incomplete
 
 [[ $(json_uint ime_composition_events_sent "$runtime") == 3 ]] || fail ime_composition_not_complete
 grep -Eq '"external_network_used"[[:space:]]*:[[:space:]]*false' "$runtime" \

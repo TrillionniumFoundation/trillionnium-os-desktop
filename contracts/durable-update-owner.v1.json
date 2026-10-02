@@ -1,0 +1,137 @@
+{
+  "schema": "trillionnium.desktop.durable-update-owner.v1",
+  "stage": "G6",
+  "status": "source_and_host_candidate_only",
+  "claim_ceiling": "real_signed_regular_file_staging_with_durable_intent_no_installed_boot_or_release_qualification",
+  "artifacts": {
+    "implementation": "platform/durable_update_owner.py",
+    "dependency": "platform/update_recovery.py",
+    "tests": "tests/test_durable_update_owner.py",
+    "documentation": "docs/architecture/DURABLE_UPDATE_OWNER.md"
+  },
+  "public_api": {
+    "DurableUpdateOwner": {
+      "constructor": ["state_root", "slot_root", "active_slot", "current_version", "current_image_sha256", "signature_verifier", "protected_rollback_floor", "clock"],
+      "methods": {
+        "verify_manifest": ["payload", "now_unix", "signature", "fault"],
+        "stage_image_file": ["operation", "image_path", "now_unix", "state_fault", "slot_fault"],
+        "arm_first_boot": ["operation", "now_unix", "fault"],
+        "confirm_result": ["result"],
+        "inspect": [],
+        "close": []
+      },
+      "properties": ["phase"]
+    },
+    "operation_fields": ["operation_id", "manifest_sha256", "signature_sha256"],
+    "result_fields": ["operation_id", "manifest_sha256", "event_sequence", "event_sha256", "phase", "target_slot", "image_sha256", "image_bytes", "slot_root_identity", "production_activation_enabled", "bootloader_effect_performed"],
+    "errors": ["DurableUpdateError", "DurableRecoveryRequired", "DurableResultUnavailable"]
+  },
+  "defaults": {
+    "signature_verifier": null,
+    "update_admission_enabled": false,
+    "protected_rollback_floor": "current_version_if_not_explicitly_configured",
+    "clock": "system_unix_time_requires_external_trust_for_installation",
+    "production_activation_enabled": false,
+    "bootloader_effect_performed": false
+  },
+  "ownership": {
+    "stores": "exact_bundled_AtomicStateStore_and_ImageSlotStore_created_by_owner",
+    "verifier": "exact_bundled_ExternalUpdateSignatureVerifier",
+    "authority_scope": "creating_process_and_creating_thread_only",
+    "operation_and_result_acceptance": "actual_retained_issuer_bound_object_identity_not_copies_hashes_or_status",
+    "reentrant_callbacks": false,
+    "fork_authority": false,
+    "fork_cleanup": "close_descriptor_copies_only_no_explicit_unlock_no_durable_event",
+    "garbage_collection": "descriptor_only_never_clean_close_or_recovery_acknowledgment"
+  },
+  "history": {
+    "event_schema": "trillionnium.desktop.durable-update-event.v1",
+    "event_name_format": "update-event-%06d.json",
+    "maximum_events": 256,
+    "maximum_record_bytes": 65536,
+    "maximum_directory_entries": 258,
+    "maximum_retained_scan_record_descriptors": 257,
+    "state_directory_mode": "0700",
+    "record_mode": "0600",
+    "record_custody": "regular_one_link_owner_or_root_no_follow_retained_root_lease_and_named_inode",
+    "encoding": "canonical_ascii_json_sorted_keys_compact_no_nan_no_trailing_newline",
+    "event_exact_fields": ["schema", "sequence", "previous_sha256", "owner_id", "kind", "phase", "observed_unix", "configuration", "operation", "stage_receipt", "production_activation_enabled", "bootloader_effect_performed"],
+    "configuration_exact_fields": ["active_slot", "current_version", "current_image_sha256", "protected_rollback_floor", "trust_policy_sha256", "state_root_identity", "slot_root_identity"],
+    "operation_exact_fields": ["operation_id", "owner_id", "ticket_sequence", "manifest", "signature_admission"],
+    "admission_exact_fields": ["signer_id", "public_key_sha256", "signature_sha256", "signing_preimage_sha256", "trust_policy_sha256", "minimum_version", "verified_unix"],
+    "stage_receipt_exact_fields": ["target_slot", "image_sha256", "image_bytes", "manifest_sha256", "signature_sha256", "production_activation_enabled"],
+    "transitions": {
+      "initial": ["owner_open"],
+      "owner_open": ["manifest_verified", "owner_clean"],
+      "manifest_verified": ["stage_intent"],
+      "stage_intent": ["stage_completed"],
+      "stage_completed": ["arm_intent"],
+      "arm_intent": ["boot_policy_armed"],
+      "boot_policy_armed": [],
+      "owner_clean": ["owner_open"]
+    },
+    "event_phases": {
+      "owner_open": "idle",
+      "manifest_verified": "verified",
+      "stage_intent": "stage_intent",
+      "stage_completed": "staged",
+      "arm_intent": "arm_intent",
+      "boot_policy_armed": "boot_pending",
+      "owner_clean": "closed"
+    },
+    "binding": "consecutive_sequence_previous_actual_canonical_sha256_unique_owner_id_complete_configuration_and_operation",
+    "complete_readback": "retain_every_scan_record_fd_fsync_leaf_and_directory_recheck_all_named_and_retained_metadata_root_lease_and_inventory",
+    "live_record_replacement": "refuse_even_if_complete_bytes_match_prior_record",
+    "clock": "nondecreasing_actual_configured_clock_events_no_authority_renewal_after_regression",
+    "configuration_change": "recovery_required_no_implicit_policy_migration",
+    "history_compaction_or_deletion": false
+  },
+  "staging": {
+    "backend": "private_leased_regular_file_inactive_slot_only",
+    "slot_names": ["slot-A.img", "slot-B.img"],
+    "maximum_image_bytes": 17179869184,
+    "stream_chunk_bytes": 1048576,
+    "admission": "actual_detached_signature_verification_using_S11_external_roots_domain_and_sealed_memfds",
+    "pre_effect": "complete_candidate_digest_length_and_durable_stage_intent_full_readback_before_concrete_slot_publication",
+    "cutpoint_checks": "owner_and_complete_durable_intent_before_and_after_each_core_slot_fault_cutpoint",
+    "publication": "complete_stream_digest_retained_temp_file_fsync_atomic_replace_directory_fsync_bound_readback",
+    "result": "complete_durable_stage_completed_chain_and_actual_active_and_target_image_readback_current_signature_time_and_floor_then_final_history_readback",
+    "arm_first_boot": "durable_arm_intent_before_in_memory_source_policy_then_durable_boot_policy_armed_no_bootloader_effect",
+    "caller_boot_health_commit_rollback_api": false
+  },
+  "recovery": {
+    "schema": "trillionnium.desktop.durable-update-recovery.v1",
+    "file": "update-recovery-required.json",
+    "exact_fields": ["schema", "phase", "reason", "state_root_identity", "slot_root_identity", "history_count", "last_event_sha256", "operation_id", "production_activation_enabled", "bootloader_effect_performed"],
+    "marker_binding": "last_confirmed_actual_history_prefix_digest_and_operation_not_total_unconfirmed_files",
+    "unclean_or_nonterminal_restart": "persist_recovery_required_refuse_new_operation_no_ticket_or_result_reconstruction",
+    "gap_unknown_corrupt_or_substituted_record": "retain_evidence_refuse_no_repair_or_history_clear",
+    "marker_write_failure": "in_memory_recovery_required_confirmed_pending_chain_still_refuses_restart_marker_durability_not_claimed",
+    "explicit_clean_close": "only_idle_owner_no_admitted_or_staged_or_armed_update",
+    "known_durable_completion_response_unavailable": "DurableResultUnavailable_preserves_known_phase_no_replay_no_claim_of_caller_acknowledgment",
+    "possibly_effectful_or_unconfirmed_completion_failure": "DurableRecoveryRequired_preserve_intent_and_marker_no_replay",
+    "diagnostics": "bounded_complete_file_readback_without_issuing_resumed_operation_result_or_activation_permit",
+    "automatic_replay": false,
+    "automatic_resume": false,
+    "caller_digest_status_or_health_assertion_accepted": false,
+    "marker_clear_api": false
+  },
+  "non_claims": {
+    "installed_service_wiring": false,
+    "installed_qemu_update_executed": false,
+    "real_bootloader_integration": false,
+    "observed_installed_boot_or_health": false,
+    "boot_commit_or_rollback_performed": false,
+    "block_device_write": false,
+    "raw_power_loss_executed": false,
+    "physical_hardware_qualified": false,
+    "production_signature_verified": false,
+    "production_trust_roots_provisioned": false,
+    "protected_monotonic_floor_storage": false,
+    "trusted_production_clock_provisioned": false,
+    "whole_directory_rollback_protection": false,
+    "privileged_arbitrary_in_process_or_filesystem_writer_isolated": false,
+    "release_published": false,
+    "production_activation_enabled": false
+  }
+}
