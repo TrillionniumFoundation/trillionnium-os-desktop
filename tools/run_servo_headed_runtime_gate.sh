@@ -24,6 +24,13 @@ case "$EVENT_NAME" in
     }
     evidence_mode=pr_synthetic_merge
     merged_candidate_sha=$candidate_head_sha
+    expected_base_ref=${EXPECTED_BASE_REF:-main}
+    git check-ref-format --branch "$expected_base_ref" >/dev/null
+    git fetch --no-tags origin "refs/heads/$expected_base_ref:refs/remotes/origin/$expected_base_ref"
+    [[ "$base_sha" == "$(git rev-parse "refs/remotes/origin/$expected_base_ref")" ]] || {
+      echo "checked-out merge first parent is not the current target branch" >&2
+      exit 1
+    }
     ;;
   push)
     candidate_head_sha=$tested_sha
@@ -122,10 +129,14 @@ set -euo pipefail
 export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
 overlay="$RUNNER_TEMP/trillionnium_headed_runtime.rs"
 cp experiments/servo-headed-runtime/src/main.rs "$overlay"
+install -D -m 0644 experiments/servo-headed-runtime/src/input_ownership.rs \
+  "$RUNNER_TEMP/input_ownership.rs"
 rustfmt --edition 2024 "$overlay"
 rustfmt --edition 2024 --check "$overlay"
 install -D -m 0644 "$overlay" \
   servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs
+install -D -m 0644 "$RUNNER_TEMP/input_ownership.rs" \
+  servo-source/ports/servoshell/examples/input_ownership.rs
 install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 {
@@ -452,6 +463,7 @@ PY
 step_restore_servo() {
 rm -f \
   servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
+  servo-source/ports/servoshell/examples/input_ownership.rs \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 test -z "$(git -C servo-source status --porcelain=v1)"
 }
