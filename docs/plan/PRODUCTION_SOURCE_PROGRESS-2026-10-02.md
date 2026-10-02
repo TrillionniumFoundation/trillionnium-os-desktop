@@ -1,6 +1,6 @@
 # Production blocker execution record: source candidates
 
-Snapshot date: 2026-10-02. Accepted planning authority remains
+Snapshot date: 2026-10-03. Accepted planning authority remains
 [IMPLEMENTATION_CLOSURE_PLAN.md](IMPLEMENTATION_CLOSURE_PLAN.md), active d6 and
 `manifests/project-state.v1.json`. This record changes no integrated completion,
 qualification, protected review or release field. Main inspected during this
@@ -26,16 +26,21 @@ fresh event/object; they must not be weakened to accept a stale parent.
 | G2 original-stream custody | [PR142](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/142) | Actual consuming SCM_RIGHTS original-socket handoff, kernel credentials/cookie, private challenge/sequence, boot/time-namespace scope and fixed deadline; post-review pidfd ancillary cleanup successor | Live unit/executable broker, root-owned service path and semantic principal; consumer is reviewed separately in PR143; no activation |
 | G2 product handoff deadline | [PR143](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/143), based on PR142 | Consuming opaque original-stream callback preserves same Instant through live pidfd admission, clone/setup and queue; read-only getter refuses changed process/cancel/expiry | Synchronous procfs cannot be preempted; approved broker/principal, installed service and native owner remain open |
 | G2 live control custodian | [PR146](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/146), fixed PR143 base | Actual default-procfs executable/unit/cgroup/credential and retained-pidfd checks bracket one-shot control handoff; original accepted deadline and separate receiver wait ceiling never renew | Installed control path/policy, cross-UID broker, custodian lifetime through queued execution and native final-effect authority remain open |
+| G2 dual-owner request lifetime | [PR149](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/149), fixed PR146 base | Retained live control and Agent verifiers bracket queue, preflight, dispatch and completion; prepared tokens retire on early refusal, observer failure, unwind and handler Drop; source-test CI excludes DWARF without extending the original budget | Installed broker/principal, retained custodian terminal-wait/cancel protocol, same native final-task identity and actual product startup remain open |
 | G3 native input/chrome | [PR131](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/131) | Actual Winit focus/content ownership, generation-bound callbacks, repeated IME context, causally bound selected-process SIGKILL evidence; actual native held-gesture withdrawal refuses further input/reconstruction and requires a fresh Servo owner | Complete owner replacement, product PageOwner integration, layout/scaling/clipboard, actual Chinese OS IME and trusted approval/handoff UX |
 | G3 default rapid native input | [PR144](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/144), fixed PR141 base | Bounded FIFO with one exact-ID submission, frozen owner/arrival point and nonrenewing episode deadline; actual possible key/composition holds survive local withdrawal | Fresh pinned compilation and default-profile burst, full original runtime/held gates; installed PageOwner and hardware remain open |
 | G4 startup diagnosis | [PR139](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/139) | Actual Wayland protocol handshake, independent private persisted failure diagnostics and bounded guest shutdown; normal and explicit exit73 QEMU paths | Installed native product image, wider fault/reboot/endurance matrix and independent release facilities |
 | G5 HTTP embedder gate | [PR141](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/141) | Pinned Servo global/per-WebView HTTP interception; current-owner immutable local document, explicit cancel, bounded same-byte evidence reader and settled two-generation denial probes; composed with matching native input ACK stimulus | All supported resource classes/protocols and namespace confinement, signed-app/principal/storage/native product integration |
+| G5 explicit direct-INET qualification | [PR148](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/148), fixed PR144 base | Same-entry namespace and inherited-FD refusal, actual transient-unit identity, double-stack canary and private bounded executable staging; descriptor close interruption successor preserves strict portable readers | Fresh exact-pin Servo eight-case corpus on the staging successor; late SCM_RIGHTS, Unix proxies, supported protocol completeness and installed confinement remain open |
 | G5 signed app admission | [PR134](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/134) | Actual externally pinned Ed25519 using immutable verifier inputs; complete bounded archive/index checks; immutable assets for exact synthetic HTTPS origins; current publisher-scoped trust/revocation and restrictive response headers | Installed origin interception, browser CSP/CORS/cache enforcement and protected policy/root delivery |
 | G5 TaskFlow/capabilities | [PR135](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/135) | Typed proposal/resource binding; actual signed permit admission; original budgets/cancel/handoff; durable task reservation and single-use grant consumption before adapter entry; restart/fork refusal | Trusted native approval/signing surface, retained-target final native effect gate, product terminal receipts and durable recovery/revocation |
 | G5 controlled observations | [PR136](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/136) | Real approved DoT, all-answer address policy, actual TCP peer and TLS identity, bounded GET/redirect observations under one deadline; ambient proxy/CA, synthetic DNS fallback, fork and clock-regression refusal | Browser network namespace plus every supported resource-class intercept; external effects and durable indeterminate reconciliation |
 | G5 local app storage | [PR137](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/137), based on signed-app PR134 | Concrete private leased principal/origin partitions, verified immutable packages, stable version floor, same-schema updates, uninstall/data tombstones, durable policy pins/revocations, no-replay operation records and unresolved-owner refusal | Native engine storage binding, authenticated current time/policy delivery, schema migration, safe operator recovery/archival and protected rollback anchor |
 | G6 signed update/recovery | [PR132](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/132) | Actual externally rooted signature/full-image checks, inactive private regular-file publication, issued health permits, concrete journal reconciliation, sealed verifier inputs, concrete authority types and fork/thread/lease custody | Production roots/clock/floor, installed block-slot/boot/health/recovery adapters, durable product journal wiring, QEMU update and physical cutpoint evidence |
 | G6 durable update ownership | [PR140](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/140), based on PR132 | Complete durable intent before concrete inactive staging, full retained-chain/image readback, issuer-bound results, source boot policy and unclean/nonterminal restart quarantine without replay; integrated private descriptor-owner cleanup | Installed owner/service journal wiring, boot/health/commit/rollback and trusted operator recovery; protected roots/time/floor and physical power-loss evidence |
+| G6 read-only boot diagnosis | [PR147](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/147), fixed PR145 base | Strict unchanged snapshots and bounded pending-update inspection; reports cannot authorize boot health, commit, rollback or signature acceptance | Actual installed two-boot lineage, production roots and trusted recovery authority remain open |
+| G1/G4 portable evidence semantics | [PR150](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/150), fixed PR145 base | Exact typed ceilings, actual carried Git source-tree binding, payload/build/boot consistency, root/parent/hardlink graph and Linux symlink-byte-size checks | Fresh main-target image qualification and independently rehashed omitted image payloads remain open |
+| G2 semantic retained action | [PR151](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/151), fixed PR145 base | Actual current script/layout metadata observation and final same-task comparison bind role, raw UTF-8 name, state, epoch and retained ancestry; original address/action gates preserved | Fresh complete pinned Servo compilation, original positive and seven semantic refusal cases; final peer/control custody and installed product remain open |
 
 The original combined branch `codex/production-source-integration-20261002` exercises
 these candidates together and registers the top-level Python mechanisms with
@@ -302,9 +307,109 @@ checks (Python632/78/15, Rust411/424/15). Actual main-based PR145 D2I
 run37029653440 passes, while desktop head run37029652882 fails one real-time
 checkpoint case with a negative sleep remainder after identity checks, and
 native run37029652884 fails the missing burst topology producer. Those failed
-objects remain failed. The current composition incorporates both source repairs
-and PR146; it requires new full validation and actual head/prospective runtime
-and image evidence. Historical green results never qualify this successor.
+objects remain failed. Round2 head3c2d4bc539ec3d9f05248a3bd5f36bb8add66077
+incorporates both source repairs and PR146. Its exact local checks and all18
+actual main-target PR workflows passed; its new native, S08 and D2I packets
+were separately downloaded and verified. These results do not qualify the
+later round3 source composition described below.
+
+## Round3 source and adversarial review checkpoint
+
+Round2 tested merge34aa55cfa61249927b0bb29c193c6948f0e92c05/tree
+8f44ade81ad434a9af786e5eacdbae497ff24afc has independently verified ordered
+main1281/head3c parents. Full Rust1.93 checks ran Python643/78/15 and
+Rust411/424/16. Native run37033697554 verifies the original five PNGs, two
+causally selected fault identities, eleven checkpoints/ten IDs, all21 held
+records and the separate rapid-input DOM/ACK corpus. D2I run37033697562 carries
+90 outputs and471 actual source inputs; all source Git bytes and modes match
+the tested tree. Its same-image startup-negative path exits73 and shuts down
+cleanly in32 seconds. Neither this image nor earlier ones install the new
+product daemon/actor path.
+
+PR147's original metadata test observed atime before its own read and failed
+actual PR CI. Successor e1b2001b1277be2bae07d7ff43d100ce23f5b1db samples after
+that read and preserves the original36 method bodies. New observer PR
+run37042834256 executes37/78/41/26 cases on both source objects; desktop
+run37042834254 executes680/78/15 each. The prospective object's parents and
+tree were independently verified. The observer still supplies no health,
+commit, rollback, signature or whole-image authority.
+
+PR149's initial twenty-file candidate leaked a prepared cancellation token
+after an ordinary early control refusal. The final21 source fixes that token
+and successful-preflight/observer/unwind/handler-Drop retirement, retaining
+all old test bodies. Published dc023baa2732aab803da16ee066e757eaf9b9a14 then
+failed actual S04, S06, product-supervision and desktop PR Rust tests because
+the unchanged20-second first-connection fixture expired while constructing a
+second trio and hashing its debug-heavy executable. Those failures remain
+failures. Successor2874b96382505f9c00e92f3763b79187d741c77f changes only eight
+workflows: fourteen source Rust-test steps set CARGO_PROFILE_TEST_DEBUG=0.
+Every original run body, product budget, assertion and other tracked source
+byte is unchanged. Author workspace413/426/17 and root26 browserd units,
+13 actual control-process groups, nine explicitly synthetic-Agent callback
+cuts, seven actual handoffs and fork refusal pass. New S04 PR37051118843 and
+desktop PR37051118665 completed SUCCESS; their raw execution counts require
+independent readback before claiming detailed remote coverage. Full Servo,
+cross-UID principal and installed lifetime are not inferred from these tests.
+
+PR148 head6815b85951d92718a4ff4730606a46e2615a4d6b compiled the exact Servo
+pin and passed the original normal, enforce, rapid-input and held gates in
+actual PR run37043022455. The whole run failed before all eight new namespace
+cases because Cargo's example binary has two hardlinks. The original114-file
+failure artifact, actual raw log and strict normal/held/burst rechecks are
+retained. The new private staging copies a bounded, safe compiled source
+through retained nofollow descriptors into a private single-link0500 file;
+source and portable evidence readers keep their strict single-link rule.
+First staging freeze35bcc7b2 passed real kernel/Cargo checks but leaked a
+descriptor at an actual Python line interruption after detachment and before
+native close. Final six-file freeze56e39045fe949fea1b94b57b31d62f6bb3668c5cd58f5b1f3f73a47915521ff0
+repairs that pre-attempt path without retrying any integer after an attempted
+close. Independent122 Python, five Rust entry tests, fresh five real systemd
+cases, original-probe replay and foreign-FD reuse checks pass. The old56 method
+bodies are unchanged. Opcode/native-return windows, repeated cleanup faults,
+late foreign descriptors and all supported network classes remain unqualified.
+Published successor492ed7a29a366f686fb054f7a68149126ba05824 has only that
+reviewed six-file delta. New actual native PR37052137798 must execute all
+eight cases; no older source/runtime PASS transfers to it.
+
+Portable reader audits fully recomputed every inner/outer checksum rather than
+testing only stale digest refusal. Earlier readers accepted typed aliases,
+false claim ceilings, inconsistent carried payload/build/boot records, a
+different Git tree and impossible root/parent or hardlink graphs. PR150's
+structure head df842f3e318bff4924cc469faa18439160c11275 still accepted a fully
+rebound symlink whose declared size disagreed with the target bytes. Final
+headfb122b16404e47613f04720899c9ada6249a04bf requires nonempty Linux-representable
+UTF-8/surrogateescape targets and exact raw byte lengths. Its frozen ten-file
+source passes full Python643/109/15 and Rust411/424/16. Independent65 focused
+cases, real Unicode/non-UTF-8 host producer checks, unmodified actual67/90
+packets with471 source inputs and same-byte negative replays pass. Old18
+semantic method bodies remain unchanged. Rootfs tar/disk/kernel/initrd are
+omitted from the portable packet: their digests are bound metadata, not bytes
+rehash-verified by this source-reader audit. No actual guest failure is claimed
+from a contradictory carried manifest.
+
+PR151 head dffe37edf5b86bd3606986b48abdbbfde41596cd replaces qualification
+adapter constant metadata hashes with a read-only observation from the actual
+active script/layout owner. Its fifteen-path upstream patch recomputes and
+compares bounded role/name/state/ancestry/epoch in the same final script task
+before the original retained click. Independent final source39 Python,
+locked Rust1.93 encoder6, five validators, thirteen shell bodies and20 freshly
+retrieved official original blobs plus15 zero-fuzz transformations pass. The
+original eight S07 parts,10 requests/9 commands/30 receipt gates and Actor
+wait-through-terminal body remain unchanged. Complete make ran before the
+last comment/CLI-diagnostic adjustments; final frozen focused checks ran
+afterward. New full Servo PR37051355736 must compile and run the original
+positive and seven separate real semantic negatives. Source encoder checks
+never substitute for those results.
+
+The round3 isolated composition includes the reviewed NS staging commit and
+preserves both G2 and S08 module test entries and both source-test debug
+environment settings. Exact whole-source checks and a fresh main-based Draft
+remain required.
+Focused stacked PR150 does not trigger D1/D2I because both image workflows
+require a main target; there is no helper path-filter omission. The new
+main-based composition must rerun those workflows with fresh source/parent
+and artifact identities. No branch is self-merged and machine truth/default
+activation is unchanged.
 
 ## Conditions still blocking production
 
