@@ -78,6 +78,10 @@ def check_contract() -> None:
         "durability",
         "fault_model",
         "non_claims",
+        "signature_admission",
+        "image_staging",
+        "operator_recovery",
+        "journal_reconciliation",
     }
     if not exact_keys(value, expected_top, "contract"):
         return
@@ -149,6 +153,8 @@ def check_contract() -> None:
         "maximum_boot_failures",
         "automatic_effect_replay",
         "reconciliation_required_after_possible_dispatch",
+        "permits_bound_to_actual_coordinator_instance",
+        "health_permits_invalidated_by_boot_failure_or_repeated_boot",
     }
     if exact_keys(state, state_keys, "state_machine"):
         assert isinstance(state, dict)
@@ -174,6 +180,10 @@ def check_contract() -> None:
             fail("automatic effect replay was enabled")
         if state.get("reconciliation_required_after_possible_dispatch") is not True:
             fail("possible dispatch no longer requires reconciliation")
+        if state.get("permits_bound_to_actual_coordinator_instance") is not True:
+            fail("permit authority can cross coordinator instances")
+        if state.get("health_permits_invalidated_by_boot_failure_or_repeated_boot") is not True:
+            fail("health permits survive boot failure or repeated boot")
 
     durability = value.get("durability")
     durability_keys = {
@@ -183,6 +193,7 @@ def check_contract() -> None:
         "publication",
         "exclusive_coordinator_lease",
         "post_replace_failure",
+        "replace_call_failure",
     }
     if exact_keys(durability, durability_keys, "durability"):
         assert isinstance(durability, dict)
@@ -206,6 +217,8 @@ def check_contract() -> None:
             "publication_indeterminate_reconcile_before_retry"
         ):
             fail("post-replace uncertainty is no longer fail closed")
+        if durability.get("replace_call_failure") != "publication_indeterminate_even_before_return":
+            fail("replace-call interruption is no longer classified as indeterminate")
 
     fault = value.get("fault_model")
     fault_keys = {
@@ -245,6 +258,67 @@ def check_contract() -> None:
         if any(item is not False for item in non_claims.values()):
             fail("an S11 non-claim was promoted by source")
 
+    expected_signature = {
+        "default_admission_enabled": False,
+        "trust_roots": "externally_approved_pinned_public_pem_not_manifest_or_repository",
+        "signing_preimage_domain": "trillionnium.desktop.update-manifest-signature.v1\\u0000",
+        "signing_preimage_encoding": "ascii_json_ensure_ascii_sorted_keys_compact_no_trailing_newline",
+        "unsigned_envelope_fields": ["signature_sha256"],
+        "detached_signature_digest_required": True,
+        "verification": "system_openssl_dgst_sha256_verify_offline",
+        "maximum_signature_bytes": 65536,
+        "maximum_public_key_bytes": 65536,
+        "maximum_trust_roots": 32,
+        "verifier_timeout_seconds": 15,
+        "unknown_revoked_or_expired_signer_refused": True,
+        "protected_floor_and_root_minimum_required": True,
+        "trusted_clock_and_revalidation_before_publication_and_boot": True,
+        "trusted_clock_and_revalidation_before_commit": True,
+        "external_monotonic_floor_persistence_implemented": False,
+    }
+    expected_staging = {
+        "backend": "private_leased_regular_file_slots_only",
+        "slot_names": ["slot-A.img", "slot-B.img"],
+        "full_digest_and_length_verified_before_temp_write": True,
+        "stream_chunk_bytes": 1048576,
+        "active_slot_source_digest_verified": True,
+        "retained_temp_and_named_inode_verified": True,
+        "publication": "file_fsync_atomic_replace_directory_fsync",
+        "post_replace_failure": "image_publication_indeterminate_recovery_required",
+        "reconciliation": "verify_existing_complete_image_file_and_directory_fsync_no_rewrite",
+        "production_activation_enabled": False,
+        "replace_call_failure": "publication_indeterminate_even_before_return",
+        "coordinator_intent_recorded_before_replace_call": True,
+    }
+    expected_operator = {
+        "default_approved_operator_uids": [],
+        "identity": "actual_local_effective_uid_from_external_approved_configuration",
+        "action": "rollback_only_no_replay",
+        "complete_source_digest_and_protected_floor_required": True,
+        "possible_dispatch_latch_clear": "complete_private_durable_operation_record_verified_and_resynced_by_configured_authority",
+        "bootloader_or_block_device_mutation": False,
+    }
+    expected_journal = {
+        "default_authority_enabled": False,
+        "schema": "trillionnium.desktop.update-dispatch-journal.v1",
+        "exact_fields": ["schema", "manifest_sha256", "sequence", "operation_id", "operation", "target_slot", "image_sha256", "status"],
+        "operation_identity": "coordinator_issued_random_256_bit_nonce",
+        "caller_digest_or_status_assertion_accepted": False,
+        "private_retained_root_lease_and_record_inode_required": True,
+        "complete_bounded_record_required": True,
+        "file_and_directory_fsync_before_fact_and_clear": True,
+        "actual_issued_fact_and_current_record_identity_required": True,
+        "clear_target_phase": "rollback_pending",
+        "installed_journal_authority_provisioned": False,
+    }
+    for name, expected in (("signature_admission", expected_signature), ("image_staging", expected_staging),
+                           ("operator_recovery", expected_operator), ("journal_reconciliation", expected_journal)):
+        actual = value.get(name)
+        if exact_keys(actual, set(expected), name):
+            for key, expected_value in expected.items():
+                if type(actual[key]) is not type(expected_value) or actual[key] != expected_value:
+                    fail(f"{name}.{key} changed its closed admission/recovery contract")
+
 
 def check_source() -> None:
     try:
@@ -264,6 +338,15 @@ def check_source() -> None:
         "AtomicStateStore",
         "PublicationIndeterminate",
         "RecoveryRequired",
+        "UpdateTrustRoot",
+        "ExternalUpdateSignatureVerifier",
+        "SignatureAdmission",
+        "ImageSlotStore",
+        "ImageStageReceipt",
+        "ImagePublicationIndeterminate",
+        "RecoveryDecision",
+        "DurableUpdateJournal",
+        "DispatchBinding",
     }
     missing = sorted(required_classes - classes)
     if missing:
@@ -291,12 +374,22 @@ def check_source() -> None:
         "acquire",
         "write",
         "read",
+        "manifest_signing_bytes",
+        "_image_digest",
+        "_trusted_now",
+        "_revalidate_admission",
+        "stage_image_file",
+        "reconcile_image_publication",
+        "reconcile_image",
+        "request_operator_rollback",
+        "confirm_dispatch",
     }
     missing_functions = sorted(required_functions - functions)
     if missing_functions:
         fail(f"S11 source functions are missing: {missing_functions}")
 
-    forbidden_imports = {"requests", "httpx", "aiohttp", "socket", "subprocess", "urllib"}
+    forbidden_imports = {"requests", "httpx", "aiohttp", "socket", "urllib"}
+    offline_verifiers = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
@@ -313,6 +406,24 @@ def check_source() -> None:
                 name = f"{node.func.value.id}.{node.func.attr}"
             if name in {"eval", "exec", "compile", "os.system", "os.popen"}:
                 fail(f"S11 source contains forbidden call {name}")
+            if name and name.startswith("subprocess."):
+                if name != "subprocess.run":
+                    fail(f"S11 subprocess API is outside the one bounded verifier: {name}")
+                else:
+                    offline_verifiers.append(node)
+
+    if len(offline_verifiers) != 1:
+        fail("S11 must have exactly one offline verification process boundary")
+    else:
+        call = offline_verifiers[0]
+        keywords = {keyword.arg: ast.unparse(keyword.value) for keyword in call.keywords}
+        if keywords != {"stdin": "subprocess.DEVNULL", "stdout": "subprocess.DEVNULL", "stderr": "subprocess.DEVNULL",
+                        "timeout": "15", "check": "False"}:
+            fail("offline verifier timeout, shell exclusion or redacted I/O changed")
+        arguments = ast.unparse(call.args[0]) if len(call.args) == 1 else ""
+        for token in ("str(executable)", "'dgst'", "'-sha256'", "'-verify'", "'-signature'", "'public.pem'", "'signature.bin'", "'manifest.bin'"):
+            if token not in arguments:
+                fail(f"offline signature verifier command lost {token}")
 
     markers = (
         "parse_constant=constant",
@@ -329,6 +440,21 @@ def check_source() -> None:
         "os.fsync(temp_fd)",
         "os.replace(",
         "os.fsync(root_fd)",
+        'Path("/usr/bin/openssl")',
+        "SIGNATURE_DOMAIN",
+        'key != "signature_sha256"',
+        "MAX_SIGNATURE_BYTES",
+        "MAX_PUBLIC_KEY_BYTES",
+        "root.revoked",
+        "root.valid_until_unix",
+        "protected_rollback_floor",
+        "production_activation_enabled: bool = False",
+        "os.pread(descriptor, min(1024 * 1024",
+        "os.fsync(target_fd)",
+        "except BaseException as error:",
+        "self._health_permit is not permit",
+        "self._reconciliation_fact is not fact",
+        "secrets.token_hex(32)",
     )
     for marker in markers:
         if marker not in text:
@@ -352,6 +478,28 @@ def check_docs_tests_workflow() -> None:
             "test_atomic_state_store_is_private_locked_and_durable",
             "test_state_store_refuses_symlink_root_and_post_replace_uncertainty",
             "test_pre_replace_fault_leaves_no_promoted_state",
+            "test_real_signature_and_domain_separated_preimage",
+            "test_unsigned_default_wrong_key_and_actual_signature_digest_refused",
+            "test_every_authority_field_is_signed_even_with_valid_envelope_digest",
+            "test_unapproved_revoked_expired_or_unpinned_roots_refused",
+            "test_floor_and_clock_cannot_be_weakened",
+            "test_expiry_clock_regression_and_policy_change_rechecked_before_stage_and_boot",
+            "test_streamed_real_signed_publication_is_durable_and_inactive_only",
+            "test_bad_complete_image_or_active_slot_refused_before_any_write",
+            "test_temp_substitution_and_source_growth_cannot_publish",
+            "test_post_replace_uncertainty_requires_fsync_reconciliation_without_rewrite",
+            "test_approved_operator_rollback_binds_source_and_never_clears_dispatch_latch",
+            "test_post_replace_interrupts_are_indeterminate_and_cannot_restaging",
+            "test_atomic_state_post_replace_interrupts_preserve_uncertainty",
+            "test_permits_and_tickets_cannot_cross_coordinator_instances",
+            "test_caller_hash_and_status_cannot_mint_reconciliation",
+            "test_complete_bound_durable_record_and_revalidation_clear_only_to_rollback",
+            "test_missing_malformed_wrong_operation_manifest_and_sequence_records_refused",
+            "test_sync_failure_copied_fact_and_replaced_record_cannot_clear_latch",
+            "test_journal_fact_cannot_cross_coordinator_instances",
+            "test_replace_effect_then_interrupt_before_return_is_indeterminate",
+            "test_publication_return_interrupt_still_retains_recovery_intent",
+            "test_health_permit_expires_on_boot_failure_and_cannot_commit_expired_admission",
         ):
             if f"def {name}(" not in text:
                 fail(f"S11 hostile corpus is missing {name}")
@@ -378,6 +526,11 @@ def check_docs_tests_workflow() -> None:
             "no automatic replay",
             "raw power loss",
             "installed QEMU",
+            "manifest_signing_bytes",
+            "stage_image_file",
+            "request_operator_rollback",
+            "externally approved",
+            "OpenSSL",
         ):
             if phrase.lower() not in text.lower():
                 fail(f"S11 document omits required phrase {phrase!r}")
@@ -393,6 +546,7 @@ def check_docs_tests_workflow() -> None:
             "python3 -m py_compile platform/update_recovery.py",
             "python3 tools/validate_s11_update_recovery.py",
             "python3 -m unittest tests.test_s11_update_recovery -v",
+            "test -x /usr/bin/openssl",
             "python3 tools/validate_repository.py",
             "python3 tools/validate_project_truth.py",
             "git diff --check",
