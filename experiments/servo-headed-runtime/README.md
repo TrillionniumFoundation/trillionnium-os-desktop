@@ -10,6 +10,21 @@ readers continue to reject hard links. Successful owned-unit retirement
 precedes copy removal; an uncertain run retains the private copy. This change
 requires a new native CI corpus and supplies no installed qualification.
 
+Each explicit namespace unit also owns a short `0700` `/tmp/hn-<24hex>` directory
+and receives it as its exact `TMPDIR`. The host retains nofollow directory
+descriptors and verifies actual process environment, device/inode/UID/mode,
+`PrivateTmp=no` and the exact renderer-plus-private-temporary `ReadWritePaths`.
+The rest of `/tmp` remains read-only and Xvfb's existing Unix endpoint remains
+visible. Bounded retained-inode cleanup follows exact unit/process retirement;
+foreign substitutions and forked owners refuse, and GC never removes paths.
+Temporary cleanup enumerates lazily through retained directory FDs and refuses
+on the 257th name across the entire tree before any deletion; it never first
+materializes an unbounded directory listing.
+This repairs the actual `492ed7a` read-only temporary-storage failure at the
+pinned tempfile/ipc-channel path. Actual systemd crate and Rust-entry fixtures
+exercise this source boundary; a new full pinned Servo namespace packet is
+still required. The failed old packet and every default false ceiling remain.
+
 The separate direct-INET
 profile uses a real systemd private network namespace, pre-engine descriptor and
 protocol probes, and independent stopped-process pidfd observations. Its

@@ -124,6 +124,7 @@
       "schema",
       "seccomp",
       "source_qualification_only",
+      "temporary_directory",
       "unit",
       "unit_properties"
     ],
@@ -155,6 +156,36 @@
       "schema",
       "source_qualification_only",
       "start_time"
+    ],
+    "temporary_directory": [
+      "device",
+      "inode",
+      "mode",
+      "path",
+      "uid"
+    ],
+    "launch": [
+      "binary_identity",
+      "binary_sha256",
+      "case",
+      "entries",
+      "exact_processes_exited",
+      "exit_code",
+      "installed_qualified",
+      "main_pid",
+      "outside_namespace",
+      "owned_unit_stopped",
+      "per_pair_ack_pacing",
+      "production_ready",
+      "qualification_nonce_enabled",
+      "renderer_gid",
+      "renderer_path",
+      "renderer_uid",
+      "schema",
+      "source_qualification_only",
+      "temporary_directory",
+      "temporary_directory_removed",
+      "unit"
     ]
   },
   "required_cases": [
@@ -192,6 +223,26 @@
     "ProtectSystem": "strict",
     "RestrictAddressFamilies": "AF_UNIX",
     "RestrictNamespaces": "yes",
-    "SystemCallArchitectures": "native"
+    "SystemCallArchitectures": "native",
+    "PrivateTmp": "no"
+  },
+  "temporary_directory": {
+    "GC_removes_paths": false,
+    "PrivateTmp_enabled": false,
+    "actual_process_TMPDIR_observed": true,
+    "cleanup_absolute_budget_seconds": 5,
+    "cleanup_after_exact_unit_retirement": true,
+    "cleanup_maximum_bytes": 33554432,
+    "cleanup_maximum_depth": 4,
+    "cleanup_maximum_entries": 256,
+    "creator_pid_guard": true,
+    "maximum_absolute_path_bytes": 32,
+    "mode": 448,
+    "nofollow_retained_inode_required": true,
+    "path_pattern": "/tmp/hn-[a-f0-9]{24}",
+    "read_write_paths": "exact renderer plus retained private temporary directory",
+    "whole_host_tmp_writable": false,
+    "cleanup_maximum_enumerated_names_before_refusal": 257,
+    "cleanup_root_empty_maximum_names": 1
   }
 }
