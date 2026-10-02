@@ -69,13 +69,13 @@ pub trait CallbackPageRuntime {
 /// The original control remains revocable; retaining this token cannot extend
 /// its deadline or request peer custody. It contains no DOM/engine pointer.
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::event_loop::EngineCompletion;
+/// ```compile_fail,E0599
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::EngineCompletion;
 /// fn duplicate(done: EngineCompletion) { let _second = done.clone(); }
 /// ```
-/// ```compile_fail
-/// use hepta_browser_actor::{RuntimeReply};
-/// use hepta_browser_actor::engine_dispatch::event_loop::EngineCompletion;
+/// ```compile_fail,E0382
+/// use hepta_browser_actor_simulation::{RuntimeReply};
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::EngineCompletion;
 /// fn twice(done: EngineCompletion, reply: RuntimeReply) {
 ///     let _ = done.complete(Ok(reply.clone()));
 ///     let _ = done.complete(Ok(reply));
@@ -189,16 +189,16 @@ struct ActiveCall {
 /// non-cloneable actor endpoint serializes requests. Native events must run
 /// between pumps; repeated pumping must not replace the application's loop.
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::event_loop::{CallbackEngineOwner, CallbackPageRuntime};
+/// ```compile_fail,E0277
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::{CallbackEngineOwner, CallbackPageRuntime};
 /// fn move_owner<R: CallbackPageRuntime + Send>() {
 ///     fn needs_send<T: Send>() {}
 ///     needs_send::<CallbackEngineOwner<R>>();
 /// }
 /// ```
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::event_loop::{CallbackEngineOwner, CallbackPageRuntime};
+/// ```compile_fail,E0277
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::{CallbackEngineOwner, CallbackPageRuntime};
 /// fn share_owner<R: CallbackPageRuntime + Sync>() {
 ///     fn needs_sync<T: Sync>() {}
 ///     needs_sync::<CallbackEngineOwner<R>>();
@@ -220,8 +220,8 @@ pub struct CallbackEngineOwner<R: CallbackPageRuntime> {
 /// thread/window/listener, or change the synchronous development backend.
 /// ```
 /// use std::sync::Arc;
-/// use hepta_browser_actor::{BrowserActorMessage, PageOwnerSnapshot};
-/// use hepta_browser_actor::engine_dispatch::event_loop::{
+/// use hepta_browser_actor_simulation::{BrowserActorMessage, PageOwnerSnapshot};
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::{
 ///     callback_engine_pair, CallbackPageRuntime, CallbackPumpResult, EngineCompletion,
 /// };
 /// struct Native;

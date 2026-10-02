@@ -48,6 +48,18 @@ capture_d2i_diagnostics() {
   trap - EXIT
   set +e
   mkdir -p "$shared_evidence"
+  # Extract guest records even when no serial PASS marker was produced. In that
+  # case the normal path exits before its successful-acceptance extraction.
+  if (( code != 0 )) && [[ -n ${run_image:-} && -f ${run_image:-} ]]; then
+    local guest_name
+    for guest_name in guest-acceptance.json runtime-ready.json runtime-journal.txt \
+      content-process-identity.json content-sigkill-sent.json \
+      process-topology-pre-fault.json process-topology-post-termination.json \
+      process-topology-post-recovery.json; do
+      debugfs -R "dump -p /var/lib/trillionnium-d2i/$guest_name $output_dir/$guest_name" \
+        "$run_image" > "$output_dir/debugfs-failure-$guest_name.log" 2>&1 || true
+    done
+  fi
   if [[ -d "$output_dir" ]]; then
     while IFS= read -r -d '' file; do
       local name size
@@ -183,7 +195,16 @@ dump_guest_file /var/lib/trillionnium-d2i/servo-content-recovered.png \
   "$screenshot" "$output_dir/debugfs-screenshot.log"
 dump_guest_file /var/lib/trillionnium-d2i/runtime-journal.txt \
   "$runtime_journal" "$output_dir/debugfs-runtime-journal.log"
+for name in content-process-identity content-sigkill-sent \
+  process-topology-pre-fault process-topology-post-termination \
+  process-topology-post-recovery; do
+  dump_guest_file "/var/lib/trillionnium-d2i/$name.json" \
+    "$output_dir/$name.json" "$output_dir/debugfs-$name.log"
+done
 
+# The assertions are part of qualification, so inherited Python optimization
+# must never strip them from the generated reviewed verifier.
+unset PYTHONOPTIMIZE
 python3 - "$acceptance" "$runtime_ready" <<'PY'
 import json
 import pathlib

@@ -21,6 +21,7 @@ PORTD = ROOT / "apps/hepta-agent-portd/src/main.rs"
 FIXTURE = ROOT / "apps/hepta-agent-portd/src/bin/hepta-agent-port-fixture.rs"
 PORTD_CARGO = ROOT / "apps/hepta-agent-portd/Cargo.toml"
 ATTESTOR = ROOT / "crates/hepta-peer-attestation/src/lib.rs"
+ATTESTOR_CARGO = ROOT / "crates/hepta-peer-attestation/Cargo.toml"
 MARKER = "/etc/hepta/enable-agent-port"
 SOCKET_PATH = "/run/hepta/browserd/agent.sock"
 
@@ -159,6 +160,7 @@ def audit_source_and_features() -> None:
     fixture = read(FIXTURE)
     attestor = read(ATTESTOR)
     cargo = tomllib.loads(read(PORTD_CARGO))
+    attestor_cargo = tomllib.loads(read(ATTESTOR_CARGO))
 
     for forbidden in (
         "UnixListener",
@@ -197,9 +199,26 @@ def audit_source_and_features() -> None:
 
     features = cargo.get("features", {})
     require(features.get("default") == [], "fixture feature is enabled by default")
-    require(features.get("fixture") == ["dep:hepta-agent-port"], "fixture feature mapping changed")
-    dependency = cargo.get("dependencies", {}).get("hepta-agent-port")
-    require(isinstance(dependency, dict) and dependency.get("optional") is True, "fixture dependency is not optional")
+    require(features == {
+        "default": [],
+        "fixture": [
+            "dep:hepta-agent-port",
+            "dep:hepta-browser-codec",
+            "hepta-peer-attestation/qualification-static-attestation",
+        ],
+    }, "fixture feature mapping changed")
+    dependencies = cargo.get("dependencies", {})
+    for name in ("hepta-agent-port", "hepta-browser-codec"):
+        dependency = dependencies.get(name)
+        require(isinstance(dependency, dict) and dependency.get("optional") is True,
+                f"fixture dependency {name} is not optional")
+    attestor_dependency = dependencies.get("hepta-peer-attestation")
+    require(isinstance(attestor_dependency, dict) and attestor_dependency.get("features", []) == [],
+            "product dependency enables peer attestor features")
+    attestor_features = attestor_cargo.get("features", {})
+    require(attestor_features.get("default") == [], "peer attestor features are enabled by default")
+    require(attestor_features.get("qualification-static-attestation") == [],
+            "qualification attestation feature mapping changed")
     bins = {entry.get("name"): entry for entry in cargo.get("bin", [])}
     product = bins.get("hepta-agent-portd", {})
     fixture_bin = bins.get("hepta-agent-port-fixture", {})
@@ -207,6 +226,10 @@ def audit_source_and_features() -> None:
     require("required-features" not in product, "product binary unexpectedly feature-gated")
     require(fixture_bin.get("path") == "src/bin/hepta-agent-port-fixture.rs", "fixture bin path changed")
     require(fixture_bin.get("required-features") == ["fixture"], "fixture bin is not explicitly feature-gated")
+    examples = {entry.get("name"): entry for entry in cargo.get("example", [])}
+    d1_fixture = examples.get("hepta-agent-d1-fixture", {})
+    require(d1_fixture.get("path") == "examples/hepta-agent-d1-fixture.rs", "D1 fixture example path changed")
+    require(d1_fixture.get("required-features") == ["fixture"], "D1 fixture example is not explicitly feature-gated")
 
     for required in (
         "SYS_pidfd_open",

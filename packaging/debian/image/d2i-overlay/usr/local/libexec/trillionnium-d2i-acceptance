@@ -12,7 +12,12 @@ poweroff_guest() {
 
 fail() {
   local reason=$1
+  trap - ERR
+  set +e
   printf 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:%s\n' "$reason" >&2
+  journalctl --no-pager -n 120 -u trillionnium-d2i-runtime.service \
+    -u trillionnium-d2i-acceptance.service 2>&1 | tail -c 65536 > "$out/runtime-journal.txt"
+  cat "$out/runtime-journal.txt" >&2
   cat > "$result" <<EOF
 {
   "schema": "trillionnium.desktop.d2i-guest-acceptance.v2",
@@ -26,16 +31,18 @@ EOF
   exit 1
 }
 
+trap 'fail "unexpected_shell_failure_line_${LINENO}_status_$?"' ERR
+
 json_true() {
   local key=$1
   local path=$2
-  grep -Eq "\"${key}\"[[:space:]]*:[[:space:]]*true" "$path"
+  grep -Eq "\"${key}\"[[:space:]]*:[[:space:]]*true[[:space:]]*([,}]|$)" "$path"
 }
 
 json_uint() {
   local key=$1
   local path=$2
-  sed -n "s/.*\"${key}\"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p" "$path" | head -n1
+  sed -n "s/.*\"${key}\"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\)[[:space:]]*\([,}]\|$\).*/\1/p" "$path" | head -n1
 }
 
 systemctl is-active --quiet systemd-udevd.service || fail udev_inactive
@@ -57,20 +64,17 @@ done
 
 grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY"' "$runtime" \
   || fail runtime_status_not_pass
-grep -Eq '"content_surface_limit"[[:space:]]*:[[:space:]]*1' "$runtime" \
-  || fail content_surface_limit_changed
-grep -Eq '"content_generation"[[:space:]]*:[[:space:]]*2' "$runtime" \
-  || fail recovery_generation_missing
-grep -Eq '"frame_count"[[:space:]]*:[[:space:]]*[2-9][0-9]*' "$runtime" \
-  || fail recovered_frame_missing
+[[ $(json_uint content_surface_limit "$runtime") == 1 ]] || fail content_surface_limit_changed
+[[ $(json_uint content_generation "$runtime") == 2 ]] || fail recovery_generation_missing
+frame_count=$(json_uint frame_count "$runtime")
+[[ ${frame_count:-0} -ge 2 ]] || fail recovered_frame_missing
 for key in page_input_verified ime_path_exercised signal_sent \
   content_process_termination_observed zero_content_processes_after_termination \
   replacement_process_distinct actual_content_process_crash_proven; do
   json_true "$key" "$runtime" || fail "runtime_${key}_not_true"
 done
 
-grep -Eq '"ime_composition_events_sent"[[:space:]]*:[[:space:]]*3' "$runtime" \
-  || fail ime_composition_not_complete
+[[ $(json_uint ime_composition_events_sent "$runtime") == 3 ]] || fail ime_composition_not_complete
 grep -Eq '"external_network_used"[[:space:]]*:[[:space:]]*false' "$runtime" \
   || fail runtime_network_claim_changed
 popup_denied=$(json_uint popup_requests_denied "$runtime")
@@ -78,12 +82,9 @@ nav_denied=$(json_uint external_navigation_requests_denied "$runtime")
 [[ ${popup_denied:-0} -ge 1 ]] || fail popup_denial_missing
 [[ ${nav_denied:-0} -ge 1 ]] || fail external_navigation_denial_missing
 
-grep -Eq '"active_process_count"[[:space:]]*:[[:space:]]*1' "$pre" \
-  || fail pre_fault_process_cardinality_changed
-grep -Eq '"active_process_count"[[:space:]]*:[[:space:]]*0' "$terminated" \
-  || fail zero_process_intermediate_missing
-grep -Eq '"active_process_count"[[:space:]]*:[[:space:]]*1' "$recovered" \
-  || fail replacement_process_cardinality_changed
+[[ $(json_uint active_process_count "$pre") == 1 ]] || fail pre_fault_process_cardinality_changed
+[[ $(json_uint active_process_count "$terminated") == 0 ]] || fail zero_process_intermediate_missing
+[[ $(json_uint active_process_count "$recovered") == 1 ]] || fail replacement_process_cardinality_changed
 
 old_pid=$(json_uint pid "$selected")
 old_start=$(json_uint start_time_ticks "$selected")

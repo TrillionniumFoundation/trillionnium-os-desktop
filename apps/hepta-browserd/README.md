@@ -41,6 +41,27 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 - `ACTIVE_PLAN_REVISION` and `IMPLEMENTATION_STAGE` are immutable build-truth sentinels.
 - `run_self_check()` returns a bounded `SelfCheckReport`; it is development evidence, not readiness.
 - Binary `hepta-browserd` supports `--self-check`, `--print-build-info`, and `--help`. Unknown arguments fail with exit status 2.
+- `BrowserdRuntimeSupervisor<A, F>` is the source-level supervision API; `ProductServoRuntime<F>` binds its actor parameter to the concrete `ServoBrowserActor`. The executable does not yet call this supervisor to start a product runtime.
+- `RuntimeGeneration`, `SemanticReference`, `RuntimeState`, `DispatchCompletion<T>`, `RestartPolicy`, `CrashTransition` and `ProductRuntimeError` describe its checked lifecycle and redacted results.
+
+The supervision operations have the following contract. The complete signatures
+and Rust API examples live with `apps/hepta-browserd/src/servo_product_runtime.rs`
+and its public package exports in `apps/hepta-browserd/src/lib.rs`.
+
+| Operation | Preconditions and result | Failure/ownership semantics |
+| --- | --- | --- |
+| `RestartPolicy::new(u32)` | Positive crash threshold; returns a policy | Zero returns `invalid_restart_policy` |
+| `BrowserdRuntimeSupervisor::start(factory, policy)` | Factory creates generation one; returns a ready supervisor | Factory error becomes redacted `reconstruction_failed` |
+| `semantic_reference(revision)` / `validate_reference(reference)` | Reference carries current runtime generation | A previous generation returns `stale_generation`; opaque revision validation remains BrowserActor's responsibility |
+| `dispatch(reference, FnOnce)` | Current reference, ready actor, no replay latch or open crash loop | Calls the closure once; possible dispatch without completion latches reconciliation; no retry |
+| `content_process_crashed()` | Invalidates generation and drops the actor | Never calls the factory; generation exhaustion and crash threshold leave terminal lockout |
+| `reconstruct()` | Explicit caller action with no replay latch or open crash loop | Constructs the reserved generation; failure does not create success or replay |
+| `acknowledge_stable_cycle()` | A ready actor, no replay latch, and closed crash-loop breaker | Resets the consecutive-crash count only; never reopens terminal lockout |
+| `reconcile_indeterminate()` | Caller has separately accepted the durable reconciliation evidence | Clears replay uncertainty only; no replay, implicit reconstruction or reopening of terminal lockout |
+
+The reconciliation method does not itself validate or issue a durable receipt.
+The product coordinator must establish that authority before calling it; a
+generic supervisor test does not prove the installed reconciliation path.
 
 Registered binaries:
 
@@ -54,7 +75,7 @@ Registered Cargo features: none.
 
 ## State, concurrency, and failure semantics
 
-All current state is local to the self-check call. Session transitions use `SessionMachine`; navigation, human focus, IME, crash and recovery advance typed revisions. No background worker, global mutable runtime, persisted profile or retry loop exists. A future runtime supervisor must bound restart attempts, withdraw stale pixels and input ownership, and enter a visible degraded state rather than restart indefinitely.
+The executable's state is local to its self-check call. Session transitions use `SessionMachine`; navigation, human focus, IME, crash and recovery advance typed revisions. The separate source-level supervisor owns one optional actor, a factory, checked runtime generation, consecutive-crash count and replay latch. It performs no background work or automatic reconstruction. Product process supervision, native pixels/input withdrawal, trusted recovery UI and persisted reconciliation remain integration work.
 
 Failures must preserve the last truthful state. A timeout, crash, peer loss, storage ambiguity or unsupported operation cannot be converted into successful completion by a caller, retry loop, fixture, log message or evidence generator.
 
@@ -73,12 +94,15 @@ Every invariant above is a review condition, not merely commentary. Weakening on
 Primary source or test references:
 
 - `apps/hepta-browserd/src/lib.rs`
+- `apps/hepta-browserd/src/servo_product_runtime.rs`
 - `tests/test_s06_browser_actor.py`
+- `tests/test_s08_product_supervision.py`
 
 Applicable workflows:
 
 - `.github/workflows/ci.yml`
 - `.github/workflows/s06-browser-actor.yml`
+- `.github/workflows/s08-product-servo-runtime.yml`
 
 Contract references:
 
@@ -92,6 +116,7 @@ A passing unit or hosted-CI test proves only the evidence tier named by its gate
 - Run `cargo run --locked -p hepta-browserd -- --self-check` after repository validation.
 - Use `--print-build-info` to compare the binary with machine truth; a mismatch is a build/repository defect.
 - A self-check failure should be investigated at the first named lower-layer error. Do not suppress it or widen the claim ceiling.
+- Review [`S08_PRODUCT_SERVO_SUPERVISION.md`](../../docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md) before changing crash, generation, dispatch or reconciliation semantics.
 - There is no supported service installation or user-data migration on this source line.
 
 Operational diagnosis must retain bounded/redacted evidence and must not weaken admission, limits, ownership, sync, isolation or default-disabled controls simply to make a test pass.

@@ -8,6 +8,7 @@ import stat
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / "platform/update_recovery.py"
@@ -61,6 +62,7 @@ class S11UpdateRecoveryTests(unittest.TestCase):
         for payload in (
             b'{"schema":"x","schema":"y"}',
             b'{"value":NaN}',
+            b'{"value":1e999}',
             b"[]",
             b"\xef\xbb\xbf{}",
         ):
@@ -89,6 +91,144 @@ class S11UpdateRecoveryTests(unittest.TestCase):
             c.stage_image(ticket, b"wrong-image")
         c.stage_image(ticket, TARGET)
         self.assertEqual(c.phase, s11.Phase.STAGED)
+
+    def test_noninteger_and_nonfinite_health_windows_cannot_commit(self) -> None:
+        c = coordinator()
+        ticket = c.verify_manifest(manifest(), now_unix=1_000_000)
+        c.stage_image(ticket, TARGET)
+        c.arm_first_boot(ticket)
+        c.record_booted_image(ticket, slot="B", image_sha256=TARGET_DIGEST)
+        for stable in (float("nan"), float("inf"), 60.0, True, "60", None):
+            with self.subTest(stable=stable), self.assertRaises(s11.StateRefused):
+                c.record_health(ticket, stable_seconds=stable, health_receipt_sha256=RECEIPT)
+        self.assertEqual(c.phase, s11.Phase.HEALTH_PENDING)
+
+    def test_state_publication_cannot_replace_its_coordinator_lease(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first = s11.AtomicStateStore(root)
+            second = s11.AtomicStateStore(root)
+            try:
+                first.acquire()
+                for name in (".coordinator.lock", ".state.json.tmp", "state.json/", "./state.json"):
+                    with self.subTest(name=name), self.assertRaises(s11.StateRefused):
+                        first.write(name, {"phase": "verified"})
+                with self.assertRaises(s11.CoordinatorBusy):
+                    second.acquire()
+            finally:
+                first.close()
+                second.close()
+
+    def test_failed_exclusive_temp_creation_never_unlinks_an_existing_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with s11.AtomicStateStore(root) as store:
+                name = f".state.json.{os.getpid()}.{'a' * 32}.tmp"
+                stale = root / name
+                stale.write_bytes(b"preexisting")
+                with patch.object(s11.secrets, "token_hex", return_value="a" * 32):
+                    with self.assertRaises(FileExistsError):
+                        store.write("state.json", {"phase": "verified"})
+                self.assertEqual(stale.read_bytes(), b"preexisting")
+
+    def test_state_store_refuses_lease_hardlinks_and_root_custody_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "state"
+            root.mkdir(mode=0o700)
+            unrelated = root / "original"
+            unrelated.write_text("private")
+            os.link(unrelated, root / ".coordinator.lock")
+            store = s11.AtomicStateStore(root)
+            try:
+                with self.assertRaises(s11.StateRefused):
+                    store.acquire()
+                (root / ".coordinator.lock").unlink()
+                store.acquire()
+                root.chmod(0o777)
+                with self.assertRaises(s11.StateRefused):
+                    store.write("state.json", {"phase": "verified"})
+                root.chmod(0o700)
+                root.rename(root.with_name("saved"))
+                root.mkdir(mode=0o700)
+                with self.assertRaises(s11.StateRefused):
+                    store.write("state.json", {"phase": "verified"})
+            finally:
+                store.close()
+
+    def test_replaced_lease_cannot_leave_two_coordinators_authorized(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first = s11.AtomicStateStore(root)
+            second = s11.AtomicStateStore(root)
+            try:
+                first.acquire()
+                (root / ".coordinator.lock").rename(root / ".saved-lock")
+                second.acquire()
+                with self.assertRaisesRegex(s11.StateRefused, "lease pathname was replaced"):
+                    first.write("state.json", {"writer": "first"})
+                second.write("state.json", {"writer": "second"})
+                self.assertEqual(second.read("state.json"), {"writer": "second"})
+            finally:
+                first.close()
+                second.close()
+
+    def test_existing_unsafe_lease_mode_is_refused_without_repair(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lease = root / ".coordinator.lock"
+            lease.write_bytes(b"lease")
+            lease.chmod(0o666)
+            store = s11.AtomicStateStore(root)
+            try:
+                with self.assertRaises(s11.StateRefused):
+                    store.acquire()
+                self.assertEqual(stat.S_IMODE(lease.stat().st_mode), 0o666)
+                lease.chmod(0o600)
+                store.acquire()
+            finally:
+                store.close()
+
+    def test_lease_replacement_before_publication_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with s11.AtomicStateStore(root) as store:
+                def replace(point: str) -> None:
+                    if point == "after_file_fsync":
+                        (root / ".coordinator.lock").rename(root / ".saved-lock")
+                        (root / ".coordinator.lock").write_bytes(b"replacement")
+                with self.assertRaisesRegex(s11.StateRefused, "lease pathname was replaced"):
+                    store.write("state.json", {"phase": "verified"}, fault=replace)
+                self.assertFalse((root / "state.json").exists())
+                self.assertFalse(any(path.name.endswith(".tmp") for path in root.iterdir()))
+
+    def test_staged_path_substitution_never_promotes_a_symlink_or_deletes_foreign_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "state"
+            root.mkdir(mode=0o700)
+            outside = root.parent / "outside.json"
+            outside.write_text('{"writer":"attacker"}')
+            with s11.AtomicStateStore(root) as store:
+                def substitute(point: str) -> None:
+                    if point == "after_file_fsync":
+                        temporary = next(root.glob(".state.json.*.tmp"))
+                        temporary.unlink()
+                        temporary.symlink_to(outside)
+                with self.assertRaises(s11.StateRefused):
+                    store.write("state.json", {"writer": "expected"}, fault=substitute)
+                self.assertFalse((root / "state.json").exists())
+                self.assertTrue(next(root.glob(".state.json.*.tmp")).is_symlink())
+                self.assertEqual(outside.read_text(), '{"writer":"attacker"}')
+
+    def test_post_replace_state_substitution_is_indeterminate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with s11.AtomicStateStore(root) as store:
+                def substitute(point: str) -> None:
+                    if point == "after_atomic_replace":
+                        (root / "state.json").unlink()
+                        (root / "state.json").write_text('{"writer":"attacker"}')
+                with self.assertRaises(s11.PublicationIndeterminate):
+                    store.write("state.json", {"writer": "expected"}, fault=substitute)
 
     def test_health_gated_commit_and_exact_boot_identity(self) -> None:
         c = coordinator()

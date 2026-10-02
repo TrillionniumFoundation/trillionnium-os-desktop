@@ -1,5 +1,6 @@
 //! Semantic corruption remains corruption even when an attacker recomputes hashes.
 use super::*;
+use std::os::unix::fs::DirBuilderExt;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 static NEXT: AtomicU64 = AtomicU64::new(1);
@@ -11,7 +12,7 @@ impl Directory {
             std::process::id(),
             NEXT.fetch_add(1, Ordering::Relaxed)
         ));
-        fs::create_dir(&path).unwrap();
+        fs::DirBuilder::new().mode(0o700).create(&path).unwrap();
         Self(path)
     }
     fn path(&self) -> PathBuf {

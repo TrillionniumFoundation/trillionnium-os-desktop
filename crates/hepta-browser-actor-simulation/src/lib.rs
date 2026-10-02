@@ -830,21 +830,22 @@ impl<R: PageRuntime> BrowserActor<R> {
         context.remaining()?;
         let snapshot = match attested.refresh_snapshot(attestor) {
             Ok(snapshot) => snapshot,
-            Err(error) => {
+            Err(_) => {
                 return Ok(failure(
                     BrowserErrorCode::PolicyDenied,
-                    &format!("peer attestation refresh failed: {error}"),
+                    "peer attestation refresh failed",
                 ));
             }
         };
         context.remaining()?;
-        if let Err(error) = self
+        if self
             .binding
             .verify_dispatch_attestation(context.peer, &snapshot)
+            .is_err()
         {
             return Ok(failure(
                 BrowserErrorCode::PolicyDenied,
-                &format!("peer attestation continuity rejected dispatch: {error}"),
+                "peer attestation continuity rejected dispatch",
             ));
         }
         let custody = match attested.request_custody() {
@@ -1571,10 +1572,10 @@ impl<R: PageRuntime> BrowserActor<R> {
         // before any validation. It is set only immediately before a runtime
         // adapter call and consumed by the final deadline reconciliation.
         self.runtime_dispatch_started = false;
-        if let Err(error) = self.binding.verify_dispatch_peer(context.peer) {
+        if self.binding.verify_dispatch_peer(context.peer).is_err() {
             return Ok(failure(
                 BrowserErrorCode::PolicyDenied,
-                &format!("semantic principal binding rejected transport peer: {error}"),
+                "semantic principal binding rejected transport peer",
             ));
         }
         context.remaining()?;
@@ -2422,7 +2423,9 @@ fn runtime_failure(error: RuntimeFailure) -> HandlerOutcome {
             BrowserErrorCode::Indeterminate,
             "request peer identity was revoked; runtime retired",
         ),
-        RuntimeFailure::Internal(message) => failure(BrowserErrorCode::Internal, &message),
+        RuntimeFailure::Internal(_) => {
+            failure(BrowserErrorCode::Internal, "runtime operation failed")
+        }
     }
 }
 
@@ -2854,6 +2857,7 @@ mod tests {
     use hepta_session_core::{JournalId, ReceiptJournal};
     use std::cell::Cell;
     use std::fs;
+    use std::os::unix::fs::DirBuilderExt;
     use std::sync::mpsc;
 
     struct SharedCancellationRuntime {
@@ -4871,7 +4875,10 @@ mod tests {
                 .expect("clock")
                 .as_nanos()
         ));
-        fs::create_dir_all(&directory).expect("create directory");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&directory)
+            .expect("create private directory");
         let journal_path = directory.join("receipts.hjr");
         let journal = ReceiptJournal::create(
             &journal_path,
@@ -4946,7 +4953,10 @@ mod tests {
                 .expect("clock")
                 .as_nanos()
         ));
-        fs::create_dir_all(&directory).expect("create directory");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&directory)
+            .expect("create private directory");
         let journal_path = directory.join("receipts.hjr");
         let journal = ReceiptJournal::create(
             &journal_path,
@@ -4990,7 +5000,10 @@ mod tests {
                 .expect("clock")
                 .as_nanos()
         ));
-        fs::create_dir_all(&directory).expect("create directory");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&directory)
+            .expect("create private directory");
         let journal_path = directory.join("receipts.hjr");
         let journal = ReceiptJournal::create(
             &journal_path,
@@ -5040,7 +5053,10 @@ mod tests {
                 .expect("clock")
                 .as_nanos()
         ));
-        fs::create_dir_all(&directory).expect("create directory");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&directory)
+            .expect("create private directory");
         let journal_path = directory.join("receipts.hjr");
         let journal = ReceiptJournal::create(
             &journal_path,
@@ -5088,7 +5104,10 @@ mod tests {
                 .expect("clock")
                 .as_nanos()
         ));
-        fs::create_dir_all(&directory).expect("create directory");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&directory)
+            .expect("create private directory");
         let journal_path = directory.join("receipts.hjr");
         let journal = ReceiptJournal::create(
             &journal_path,
@@ -5150,7 +5169,10 @@ mod tests {
                 .expect("clock")
                 .as_nanos()
         ));
-        fs::create_dir_all(&directory).expect("create directory");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&directory)
+            .expect("create private directory");
         let journal_path = directory.join("receipts.hjr");
         let journal = ReceiptJournal::create(
             &journal_path,
@@ -5221,7 +5243,10 @@ mod tests {
                 .unwrap()
                 .as_nanos()
         ));
-        fs::create_dir(&directory).unwrap();
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&directory)
+            .unwrap();
         let path = directory.join("journal.hjr");
         let journal = ReceiptJournal::create(&path, JournalId([0x48; 16]), 1).unwrap();
         let mut actor = BrowserActor::new(binding(peer), DeterministicLocalRuntime::default());

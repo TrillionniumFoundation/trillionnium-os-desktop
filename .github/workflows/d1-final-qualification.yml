@@ -1,0 +1,100 @@
+name: d1-final-qualification
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d1-final-qualification-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+
+jobs:
+  exact-image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Check out exact event object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Bind exact source and prospective merge parents
+        env:
+          EXPECTED_SOURCE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          bash tools/run_d1_final_qualification.sh identities
+
+      - name: Install and bind image host dependencies
+        run: bash tools/run_d1_final_qualification.sh install-deps
+
+      - name: Install locked repository Rust toolchain
+        run: bash tools/run_d1_final_qualification.sh install-rust
+
+      - name: Restore repository Cargo cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: d1-repository-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+
+      - name: Build exact e2fsprogs host tools
+        run: bash tools/run_d1_final_qualification.sh build-e2fsprogs
+
+      - name: Validate clean source and all D1 regressions
+        run: bash tools/run_d1_final_qualification.sh validate-source
+
+      - name: Prove product and qualification dependency separation
+        run: bash tools/run_d1_final_qualification.sh prove-graphs
+
+      - name: Build and audit physically separate binaries
+        run: bash tools/run_d1_final_qualification.sh build-binaries
+
+      - name: Build two images and boot the accepted image without networking
+        run: bash tools/run_d1_final_qualification.sh run-pipeline
+
+      - name: Finalize and independently verify portable evidence
+        run: bash tools/run_d1_final_qualification.sh enforce-evidence
+
+      - name: Upload portable D1 candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d1-final-qualification-${{ github.sha }}
+          path: /tmp/trillionnium-d1-artifact
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 0
+
+      - name: Collect bounded failure diagnostics
+        if: failure()
+        continue-on-error: true
+        run: bash tools/collect_d2i_failure_diagnostics.sh
+
+      - name: Upload bounded failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: d1-final-qualification-diagnostics-${{ github.sha }}
+          path: |
+            /tmp/trillionnium-d1/evidence
+            /tmp/trillionnium-d2i/evidence/failure-diagnostics
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 0

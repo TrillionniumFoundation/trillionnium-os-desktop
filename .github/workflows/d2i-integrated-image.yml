@@ -1,23 +1,28 @@
-name: s10-production-debian-qemu
+name: d2i-integrated-image
 
 on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: s10-production-debian-qemu-${{ github.event.pull_request.number || github.ref }}
+  group: d2i-integrated-image-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   SERVO_COMMIT: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+  EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha }}
 
 jobs:
-  manual-candidate-image:
-    name: manual-candidate-image
+  exact-head-integrated-image:
+    name: exact-head-integrated-image
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     steps:
@@ -28,7 +33,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Bind the actual manual checkout without promotion authority
+      - name: Bind exact source and prospective merge parents
         shell: bash
         env:
           EXPECTED_SOURCE: ${{ github.sha }}
@@ -50,7 +55,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: s10-repository-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+          key: d2i-repository-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
 
       - name: Build exact pinned e2fsprogs toolchain
         run: bash tools/run_d2i_integrated_image.sh build-e2fsprogs
@@ -91,9 +96,9 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             servo-source/target
-          key: s10-servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('runtime/servo/hepta_workspace_runtime.rs', 'tools/prepare_d2i_runtime.py') }}
+          key: d2i-servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('runtime/servo/hepta_workspace_runtime.rs', 'tools/prepare_d2i_runtime.py') }}
           restore-keys: |
-            s10-servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
+            d2i-servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
 
       - name: Build callback-independent causal Servo runtime
         run: bash tools/run_d2i_integrated_image.sh build-runtime
@@ -118,11 +123,11 @@ jobs:
         continue-on-error: true
         run: bash tools/collect_d2i_failure_diagnostics.sh
 
-      - name: Upload canonical portable S10 candidate evidence
+      - name: Upload canonical portable D2I candidate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: s10-production-debian-qemu-${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          name: d2i-integrated-image-${{ github.sha }}
           path: /tmp/trillionnium-d2i-artifact
           if-no-files-found: warn
           retention-days: 30
@@ -132,7 +137,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: s10-production-debian-qemu-diagnostics-${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          name: d2i-integrated-image-diagnostics-${{ github.sha }}
           path: |
             /tmp/trillionnium-d1/evidence
             /tmp/trillionnium-d2i/evidence

@@ -106,7 +106,7 @@ step_validate_source() {
     tools/prepare_d2i_boot_runner.py \
     tools/finalize_d2i_evidence.py \
     tools/verify_d2i_artifact.py
-  python3 -m unittest tests.d1.test_d2i_contract -v
+  python3 -m unittest discover -s tests/d1 -p 'test_d2i_contract.py' -v
   shellcheck -e SC2016,SC2054 \
     tools/run_d2i_integrated_image.sh \
     tests/qemu/prepare-d2i-image.sh \

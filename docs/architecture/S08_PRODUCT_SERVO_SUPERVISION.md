@@ -33,6 +33,8 @@ Only a current-generation semantic reference may be admitted. Request cancellati
 
 The initial content-runtime incarnation is generation one. A content-process crash advances the generation with checked arithmetic and drops the concrete actor. Generation wrap is a terminal failure; it must never wrap or reuse an identity.
 
+Actor custody is revoked before advancing either counter. If generation advancement fails, the actor is still dropped and the supervisor remains permanently locked for that service lifecycle. Receipt reconciliation and stable-cycle acknowledgements cannot reopen it.
+
 Every semantic reference carries the generation that minted it. Reconstruction reserves a new generation, so all references from the crashed incarnation are stale by construction. Stale references are rejected rather than translated, refreshed or replayed implicitly.
 
 ## Crash and reconstruction protocol
@@ -48,6 +50,8 @@ A content-process crash does not terminate trusted chrome or the long-lived `hep
 
 The crash transition itself never invokes the actor factory. Reconstruction is a separate auditable operation. At the configured crash threshold the supervisor opens the crash loop and refuses further reconstruction until an external recovery decision creates a new qualified service lifecycle.
 
+Only a ready actor with no unresolved dispatch may acknowledge a stable cycle and reset the consecutive-crash counter. An acknowledgement while reconstruction or reconciliation is required does not reset it. Durable-receipt reconciliation clears only the replay latch; it never clears an open crash loop.
+
 ## No automatic replay
 
 The dispatch closure is invoked exactly once. Its completion must be classified as one of:
@@ -57,6 +61,8 @@ The dispatch closure is invoked exactly once. Its completion must be classified 
 - `IndeterminateAfterDispatch`: Servo may have observed the command.
 
 `IndeterminateAfterDispatch` latches `ReplayReconciliationRequired`. While latched, all dispatch and reconstruction attempts fail closed. Only an explicit external durable-receipt reconciliation may clear the latch. Clearing the latch does not reconstruct an actor and does not replay a command.
+
+The replay latch is set before invoking the dispatch closure and cleared only for a conclusive `Completed` or `NotDispatched` return. If that closure unwinds after a possible effect and a trusted caller catches the panic, the supervisor retains the unresolved latch until explicit reconciliation.
 
 This rule is mandatory for operations with external effects. A process crash, transport loss, timeout or missing completion after possible dispatch must never be treated as permission to retry automatically.
 
