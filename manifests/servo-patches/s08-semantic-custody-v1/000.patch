@@ -1,0 +1,767 @@
+diff --git a/Cargo.lock b/Cargo.lock
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -7854,6 +7854,7 @@
+  "serde_json",
+  "servo-config",
+  "servo-malloc-size-of",
++ "sha2 0.11.0",
+  "time",
+  "unicode-segmentation",
+  "webrender_api",
+diff --git a/components/constellation/constellation.rs b/components/constellation/constellation.rs
+--- a/components/constellation/constellation.rs
++++ b/components/constellation/constellation.rs
+@@ -1469,12 +1469,16 @@
+             EmbedderToConstellationMessage::SetAccessibilityActive(webview_id, active) => {
+                 self.set_accessibility_active(webview_id, active);
+             },
++            EmbedderToConstellationMessage::ObserveAccessibilitySemantics(webview_id, tree_id, node_id, response) => {
++                self.observe_accessibility_semantics(webview_id, tree_id, node_id, response);
++            },
+             EmbedderToConstellationMessage::PerformAccessibilityAction(
+                 webview_id,
+                 request,
++                expectation,
+                 response,
+             ) => {
+-                self.perform_accessibility_action(webview_id, request, response);
++                self.perform_accessibility_action(webview_id, request, expectation, response);
+             },
+         }
+     }
+@@ -3210,10 +3214,37 @@
+         );
+     }
+ 
++    fn observe_accessibility_semantics(
++        &mut self,
++        webview_id: WebViewId,
++        tree_id: TreeId,
++        node_id: accesskit::NodeId,
++        response: GenericCallback<servo_constellation_traits::AccessibilitySemanticObservationResult>,
++    ) {
++        use servo_constellation_traits::AccessibilitySemanticObservationResult as Observation;
++        let reject = |reason| {
++            if response.send(Observation::Refused(reason)).is_err() {
++                warn!("Could not return accessibility semantic observation");
++            }
++        };
++        if !pref!(accessibility_enabled) { reject(AccessibilityActionResult::AccessibilityInactive); return; }
++        let Some(webview) = self.webviews.get(&webview_id) else { reject(AccessibilityActionResult::StaleWebView); return; };
++        if !webview.accessibility_active { reject(AccessibilityActionResult::AccessibilityInactive); return; }
++        let Some(pipeline_id) = webview.active_top_level_pipeline_id else { reject(AccessibilityActionResult::StaleDocument); return; };
++        if tree_id == TreeId::ROOT || tree_id != TreeId::from(pipeline_id) { reject(AccessibilityActionResult::StaleTree); return; }
++        let message = ScriptThreadMessage::ObserveAccessibilitySemantics(
++            webview_id, pipeline_id, webview.active_top_level_pipeline_epoch, tree_id, node_id, response.clone(),
++        );
++        let send_result = self.pipelines.get(&pipeline_id).ok_or(SendError::Disconnected)
++            .and_then(|pipeline| pipeline.event_loop.send(message));
++        if let Err(error) = send_result { self.handle_send_error(pipeline_id, error); reject(AccessibilityActionResult::StaleDocument); }
++    }
++
+     fn perform_accessibility_action(
+         &mut self,
+         webview_id: WebViewId,
+         request: accesskit::ActionRequest,
++        expectation: Option<servo_base::accessibility_semantics::AccessibilitySemanticExpectation>,
+         response: GenericCallback<AccessibilityActionResult>,
+     ) {
+         let reject = |result| {
+@@ -3252,6 +3283,7 @@
+             pipeline_id,
+             epoch,
+             request,
++            expectation,
+             response.clone(),
+         );
+         let send_result = self
+diff --git a/components/constellation/tracing.rs b/components/constellation/tracing.rs
+--- a/components/constellation/tracing.rs
++++ b/components/constellation/tracing.rs
+@@ -82,6 +82,7 @@
+                 Self::UserContentManagerAction(..) => target!("UserContentManagerAction"),
+                 Self::UpdatePinchZoomInfos(..) => target!("UpdatePinchZoomInfos"),
+                 Self::SetAccessibilityActive(..) => target!("SetAccessibilityActive"),
++                Self::ObserveAccessibilitySemantics(..) => target!("ObserveAccessibilitySemantics"),
+                 Self::PerformAccessibilityAction(..) => {
+                     target!("PerformAccessibilityAction")
+                 },
+diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessibility_tree.rs
+--- a/components/layout/accessibility_tree.rs
++++ b/components/layout/accessibility_tree.rs
+@@ -526,6 +526,30 @@
+             node.accesskit_node.supports_action(action),
+             node.accesskit_node.bounds().is_some(),
+         ))
++    }
++
++    /// Hash actual retained AccessKit data and complete leaf-to-root ancestry.
++    /// Refuse over-budget or damaged chains; never search another node by label or coordinates.
++    pub(crate) fn semantic_expectation_for_id(
++        &self,
++        node_id: NodeId,
++    ) -> Option<servo_base::accessibility_semantics::AccessibilitySemanticExpectation> {
++        use servo_base::accessibility_semantics::{AccessibilitySemanticBuilder, MAX_ACCESSIBILITY_ANCESTRY};
++        let mut builder = AccessibilitySemanticBuilder::new(self.tree_id, self.embedder_epoch.0);
++        let mut current = self.nodes.get(&node_id)?.clone();
++        for _ in 0..MAX_ACCESSIBILITY_ANCESTRY {
++            let node = current.borrow();
++            if !builder.push(node.id, &node.accesskit_node) { return None; }
++            let parent = node.parent();
++            if parent.is_none() {
++                if self.root_node.as_ref()?.borrow().id != node.id { return None; }
++                return builder.finish();
++            }
++            drop(node);
++            current = parent?;
++            if !self.nodes.contains_key(&current.borrow().id) { return None; }
++        }
++        None
+     }
+ 
+     /// Assert that the tree is a tree without any dangling references or orphaned nodes.
+diff --git a/components/layout/layout_impl.rs b/components/layout/layout_impl.rs
+--- a/components/layout/layout_impl.rs
++++ b/components/layout/layout_impl.rs
+@@ -782,6 +782,19 @@
+         }
+     }
+ 
++    fn accessibility_semantic_expectation(
++        &self,
++        tree_id: accesskit::TreeId,
++        node_id: accesskit::NodeId,
++        epoch: Epoch,
++    ) -> Option<servo_base::accessibility_semantics::AccessibilitySemanticExpectation> {
++        if tree_id != self.id.into() || !self.accessibility_active.get() { return None; }
++        let retained = self.accessibility_tree.borrow();
++        let retained = retained.as_ref()?;
++        if retained.embedder_epoch() != epoch { return None; }
++        retained.semantic_expectation_for_id(node_id)
++    }
++
+     fn accessibility_active(&self) -> bool {
+         self.accessibility_active.get()
+     }
+diff --git a/components/script/event_loop/script_thread.rs b/components/script/event_loop/script_thread.rs
+--- a/components/script/event_loop/script_thread.rs
++++ b/components/script/event_loop/script_thread.rs
+@@ -1959,11 +1959,15 @@
+             ScriptThreadMessage::SetAccessibilityActive(pipeline_id, active, epoch) => {
+                 self.set_accessibility_active(pipeline_id, active, epoch);
+             },
++            ScriptThreadMessage::ObserveAccessibilitySemantics(webview_id, pipeline_id, epoch, tree_id, node_id, response) => {
++                self.observe_accessibility_semantics(cx, webview_id, pipeline_id, epoch, tree_id, node_id, response);
++            },
+             ScriptThreadMessage::PerformAccessibilityAction(
+                 webview_id,
+                 pipeline_id,
+                 epoch,
+                 request,
++                expectation,
+                 response,
+             ) => {
+                 self.perform_accessibility_action(
+@@ -1972,6 +1976,7 @@
+                     pipeline_id,
+                     epoch,
+                     request,
++                    expectation,
+                     response,
+                 );
+             },
+@@ -3889,6 +3894,34 @@
+             .set_accessibility_active(active, epoch);
+     }
+ 
++    fn observe_accessibility_semantics(
++        &self,
++        cx: &mut JSContext,
++        webview_id: WebViewId,
++        pipeline_id: PipelineId,
++        epoch: Epoch,
++        tree_id: accesskit::TreeId,
++        node_id: accesskit::NodeId,
++        response: generic_channel::GenericCallback<servo_constellation_traits::AccessibilitySemanticObservationResult>,
++    ) {
++        use servo_constellation_traits::AccessibilitySemanticObservationResult as Observation;
++        let respond = |value| {
++            if response.send(value).is_err() { warn!("Could not return accessibility semantic observation"); }
++        };
++        if !pref!(accessibility_enabled) { respond(Observation::Refused(AccessibilityActionResult::AccessibilityInactive)); return; }
++        if tree_id == accesskit::TreeId::ROOT || tree_id != accesskit::TreeId::from(pipeline_id) { respond(Observation::Refused(AccessibilityActionResult::StaleTree)); return; }
++        let Some(document) = self.documents.borrow().find_document(pipeline_id) else { respond(Observation::Refused(AccessibilityActionResult::StaleDocument)); return; };
++        if document.webview_id() != webview_id || !document.is_fully_active() { respond(Observation::Refused(AccessibilityActionResult::StaleDocument)); return; }
++        let window = document.window();
++        if !window.layout().accessibility_active() { respond(Observation::Refused(AccessibilityActionResult::AccessibilityInactive)); return; }
++        window.reflow(cx, ReflowGoal::UpdateTheRendering);
++        let value = match window.layout().accessibility_semantic_expectation(tree_id, node_id, epoch) {
++            Some(current) => Observation::Observed(current),
++            None => Observation::Refused(AccessibilityActionResult::SemanticSnapshotUnavailable),
++        };
++        respond(value);
++    }
++
+     #[expect(unsafe_code)]
+     fn perform_accessibility_action(
+         &self,
+@@ -3897,6 +3930,7 @@
+         pipeline_id: PipelineId,
+         epoch: Epoch,
+         request: accesskit::ActionRequest,
++        expectation: Option<servo_base::accessibility_semantics::AccessibilitySemanticExpectation>,
+         response: generic_channel::GenericCallback<AccessibilityActionResult>,
+     ) {
+         let respond = |result| {
+@@ -3983,6 +4017,26 @@
+             return;
+         }
+ 
++        // No event-loop spin, JS evaluation, or task yield occurs between this metadata read
++        // and click dispatch. The existing address/document/action/state checks above still apply.
++        if let Some(expected) = expectation {
++            if !expected.is_well_formed() || expected.tree_id() != request.target_tree ||
++                expected.node_id() != request.target_node
++            {
++                respond(AccessibilityActionResult::InvalidSemanticExpectation);
++                return;
++            }
++            let Some(current) = window.layout().accessibility_semantic_expectation(
++                request.target_tree, request.target_node, epoch,
++            ) else {
++                respond(AccessibilityActionResult::SemanticSnapshotUnavailable);
++                return;
++            };
++            if current != expected {
++                respond(AccessibilityActionResult::TargetSemanticMismatch);
++                return;
++            }
++        }
+         node.fire_synthetic_pointer_event_not_trusted(cx, atom!("click"));
+         respond(AccessibilityActionResult::Dispatched);
+     }
+diff --git a/components/script/messaging.rs b/components/script/messaging.rs
+--- a/components/script/messaging.rs
++++ b/components/script/messaging.rs
+@@ -112,6 +112,7 @@
+                 ScriptThreadMessage::UpdatePinchZoomInfos(id, _) => Some(*id),
+                 ScriptThreadMessage::SetAccessibilityActive(..) => None,
+                 ScriptThreadMessage::PerformAccessibilityAction(_, id, ..) => Some(*id),
++                ScriptThreadMessage::ObserveAccessibilitySemantics(_, id, ..) => Some(*id),
+                 ScriptThreadMessage::TriggerGarbageCollection => None,
+             },
+             MixedMessage::FromScript(inner_msg) => match inner_msg {
+diff --git a/components/servo/lib.rs b/components/servo/lib.rs
+--- a/components/servo/lib.rs
++++ b/components/servo/lib.rs
+@@ -87,8 +87,9 @@
+ pub use resources;
+ pub use servo_base::generic_channel::{GenericCallback, GenericSender};
+ pub use servo_base::id::WebViewId;
++pub use servo_base::accessibility_semantics::{AccessibilitySemanticBuilder, AccessibilitySemanticExpectation};
+ pub use servo_config::opts::{DiagnosticsLogging, DiagnosticsLoggingOption, Opts, OutputOptions};
+-pub use servo_constellation_traits::AccessibilityActionResult;
++pub use servo_constellation_traits::{AccessibilityActionResult, AccessibilitySemanticObservationResult};
+ pub use servo_config::prefs::{PrefValue, Preferences, UserAgentPlatform};
+ pub use servo_config::{opts, pref, prefs};
+ pub use servo_geometry::{
+diff --git a/components/servo/webview.rs b/components/servo/webview.rs
+--- a/components/servo/webview.rs
++++ b/components/servo/webview.rs
+@@ -924,7 +924,36 @@
+             EmbedderToConstellationMessage::PerformAccessibilityAction(
+                 self.id(),
+                 request,
++                None,
+                 response,
++            ),
++        );
++    }
++
++    /// Ask the current script/layout owner for a read-only bounded retained-node snapshot.
++    /// This does not infer the epoch of a buffered embedder TreeUpdate or dispatch an action.
++    pub fn observe_accessibility_semantics(
++        &self,
++        tree_id: TreeId,
++        node_id: NodeId,
++        response: GenericCallback<servo_constellation_traits::AccessibilitySemanticObservationResult>,
++    ) {
++        self.inner().servo.constellation_proxy().send(
++            EmbedderToConstellationMessage::ObserveAccessibilitySemantics(self.id(), tree_id, node_id, response),
++        );
++    }
++
++    /// Revalidate a bounded typed metadata observation in the final script task before action.
++    /// This preserves all original retained-node and click-only safety gates.
++    pub fn perform_checked_accessibility_action(
++        &self,
++        request: ActionRequest,
++        expectation: servo_base::accessibility_semantics::AccessibilitySemanticExpectation,
++        response: GenericCallback<AccessibilityActionResult>,
++    ) {
++        self.inner().servo.constellation_proxy().send(
++            EmbedderToConstellationMessage::PerformAccessibilityAction(
++                self.id(), request, Some(expectation), response,
+             ),
+         );
+     }
+diff --git a/components/shared/base/Cargo.toml b/components/shared/base/Cargo.toml
+--- a/components/shared/base/Cargo.toml
++++ b/components/shared/base/Cargo.toml
+@@ -28,6 +28,7 @@
+ serde = { workspace = true }
+ serde_json = { workspace = true }
+ servo-config = { workspace = true }
++sha2 = { workspace = true }
+ time = { workspace = true }
+ unicode-segmentation = { workspace = true }
+ webrender_api = { workspace = true }
+diff --git a/components/shared/base/accessibility_semantics.rs b/components/shared/base/accessibility_semantics.rs
+new file mode 100644
+--- /dev/null
++++ b/components/shared/base/accessibility_semantics.rs
+@@ -0,0 +1,342 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
++
++//! Versioned, bounded semantic expectations for retained accessibility actions.
++//! A digest compares metadata; it grants no node, document, or action authority.
++
++use accesskit::{Action, Node, NodeId, Role, TreeId};
++use serde::{Deserialize, Serialize};
++use sha2::{Digest, Sha256};
++
++pub const ACCESSIBILITY_SEMANTIC_VERSION: u16 = 1;
++pub const MAX_ACCESSIBILITY_NAME_BYTES: usize = 1024;
++/// Includes the retained target itself; ancestry is leaf-to-root without graft nodes.
++pub const MAX_ACCESSIBILITY_ANCESTRY: usize = 16;
++const STATE_MASK: u8 = 0x3f;
++
++/// Fixed-size IPC expectation, made from one actual retained tree observation.
++/// Raw names and variable-size ancestry never enter this IPC payload.
++#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
++#[serde(deny_unknown_fields)]
++pub struct AccessibilitySemanticExpectation {
++    version: u16,
++    tree_id: TreeId,
++    node_id: NodeId,
++    epoch: u32,
++    role: Role,
++    name_present: bool,
++    name_bytes: u16,
++    ancestry_depth: u8,
++    state: u8,
++    accessible_name_sha256: [u8; 32],
++    structural_fingerprint: [u8; 32],
++}
++
++impl AccessibilitySemanticExpectation {
++    pub fn tree_id(&self) -> TreeId {
++        self.tree_id
++    }
++    pub fn node_id(&self) -> NodeId {
++        self.node_id
++    }
++    pub fn epoch(&self) -> u32 {
++        self.epoch
++    }
++    pub fn role(&self) -> Role {
++        self.role
++    }
++    pub fn accessible_name_sha256(&self) -> [u8; 32] {
++        self.accessible_name_sha256
++    }
++    pub fn structural_fingerprint(&self) -> [u8; 32] {
++        self.structural_fingerprint
++    }
++
++    pub fn is_well_formed(&self) -> bool {
++        self.version == ACCESSIBILITY_SEMANTIC_VERSION
++            && self.tree_id != TreeId::ROOT
++            && usize::from(self.name_bytes) <= MAX_ACCESSIBILITY_NAME_BYTES
++            && (self.name_present || self.name_bytes == 0)
++            && (1..=MAX_ACCESSIBILITY_ANCESTRY).contains(&usize::from(self.ancestry_depth))
++            && self.state & !STATE_MASK == 0
++    }
++}
++
++/// Incrementally hashes a bounded retained leaf-to-root chain without cloning DOM strings
++/// or AccessKit child lists. Both the consumer observation and layout use this encoder.
++pub struct AccessibilitySemanticBuilder {
++    digest: Sha256,
++    expectation: AccessibilitySemanticExpectation,
++    ids: [NodeId; MAX_ACCESSIBILITY_ANCESTRY],
++    refused: bool,
++}
++
++impl AccessibilitySemanticBuilder {
++    pub fn new(tree_id: TreeId, epoch: u32) -> Self {
++        let mut digest = Sha256::new();
++        digest.update(b"trillionnium.accesskit.semantic\0");
++        digest.update(ACCESSIBILITY_SEMANTIC_VERSION.to_be_bytes());
++        digest.update(tree_id.0.as_bytes());
++        digest.update(epoch.to_be_bytes());
++        Self {
++            digest,
++            expectation: AccessibilitySemanticExpectation {
++                version: ACCESSIBILITY_SEMANTIC_VERSION,
++                tree_id,
++                node_id: NodeId(0),
++                epoch,
++                role: Role::Unknown,
++                name_present: false,
++                name_bytes: 0,
++                ancestry_depth: 0,
++                state: 0,
++                accessible_name_sha256: [0; 32],
++                structural_fingerprint: [0; 32],
++            },
++            ids: [NodeId(0); MAX_ACCESSIBILITY_ANCESTRY],
++            refused: tree_id == TreeId::ROOT,
++        }
++    }
++
++    /// Refuses before hashing a too-large name, repeated node, or excessive depth.
++    /// UTF-8 is hashed exactly as AccessKit stores it, without normalization or truncation.
++    pub fn push(&mut self, id: NodeId, node: &Node) -> bool {
++        let depth = usize::from(self.expectation.ancestry_depth);
++        let label = node.label();
++        let name = label.unwrap_or("").as_bytes();
++        if self.refused
++            || depth == MAX_ACCESSIBILITY_ANCESTRY
++            || name.len() > MAX_ACCESSIBILITY_NAME_BYTES
++            || self.ids[..depth].contains(&id)
++        {
++            self.refused = true;
++            return false;
++        }
++        let state = u8::from(node.is_hidden())
++            | (u8::from(node.is_disabled()) << 1)
++            | (u8::from(node.is_read_only()) << 2)
++            | (u8::from(node.is_busy()) << 3)
++            | (u8::from(node.supports_action(Action::Click)) << 4)
++            | (u8::from(node.bounds().is_some()) << 5);
++        self.digest.update(id.0.to_be_bytes());
++        self.digest
++            .update([node.role() as u8, state, u8::from(label.is_some())]);
++        self.digest.update((name.len() as u16).to_be_bytes());
++        self.digest.update(name);
++        self.ids[depth] = id;
++        self.expectation.ancestry_depth += 1;
++        if depth == 0 {
++            self.expectation.node_id = id;
++            self.expectation.role = node.role();
++            self.expectation.name_present = label.is_some();
++            self.expectation.name_bytes = name.len() as u16;
++            self.expectation.state = state;
++            let mut name_digest = Sha256::new();
++            name_digest.update(b"trillionnium.accesskit.name\0");
++            name_digest.update(ACCESSIBILITY_SEMANTIC_VERSION.to_be_bytes());
++            name_digest.update([u8::from(label.is_some())]);
++            name_digest.update((name.len() as u16).to_be_bytes());
++            name_digest.update(name);
++            self.expectation.accessible_name_sha256 = name_digest.finalize().into();
++        }
++        true
++    }
++
++    pub fn finish(mut self) -> Option<AccessibilitySemanticExpectation> {
++        if self.refused || !self.expectation.is_well_formed() {
++            return None;
++        }
++        self.digest.update([self.expectation.ancestry_depth]);
++        self.expectation.structural_fingerprint = self.digest.finalize().into();
++        Some(self.expectation)
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    fn tree() -> TreeId {
++        TreeId(accesskit::Uuid::from_u128(1))
++    }
++    fn button(name: &str) -> Node {
++        let mut node = Node::new(Role::Button);
++        node.set_label(name);
++        node.add_action(Action::Click);
++        node.set_bounds(accesskit::Rect::new(1., 2., 3., 4.));
++        node
++    }
++    fn observe(node: &Node) -> AccessibilitySemanticExpectation {
++        let mut builder = AccessibilitySemanticBuilder::new(tree(), 7);
++        assert!(builder.push(NodeId(17), node));
++        assert!(builder.push(NodeId(19), &Node::new(Role::RootWebArea)));
++        builder.finish().unwrap()
++    }
++
++    #[test]
++    fn metadata_changes_same_node_are_detected() {
++        let original = observe(&button("Action target"));
++        for changed in [
++            {
++                let mut n = button("Action target");
++                n.set_role(Role::Heading);
++                n
++            },
++            button("Changed target"),
++            {
++                let mut n = button("Action target");
++                n.set_disabled();
++                n
++            },
++            {
++                let mut n = button("Action target");
++                n.set_hidden();
++                n
++            },
++            {
++                let mut n = button("Action target");
++                n.remove_action(Action::Click);
++                n
++            },
++            {
++                let mut n = button("Action target");
++                n.clear_bounds();
++                n
++            },
++        ] {
++            assert_ne!(original, observe(&changed));
++            assert_eq!(original.node_id(), observe(&changed).node_id());
++        }
++        assert_eq!(original, observe(&button("Action target")));
++    }
++
++    #[test]
++    fn raw_utf8_presence_and_length_are_unambiguous() {
++        assert_ne!(observe(&button("é")), observe(&button("e\u{301}")));
++        assert_ne!(observe(&button("a\0b")), observe(&button("a")));
++        let mut absent = button("");
++        absent.clear_label();
++        assert_ne!(
++            observe(&absent).accessible_name_sha256(),
++            observe(&button("")).accessible_name_sha256()
++        );
++        let digest = observe(&button("Action target")).accessible_name_sha256();
++        assert_eq!(
++            digest,
++            [
++                0xa4, 0x0b, 0x12, 0x7b, 0xee, 0x12, 0x72, 0xbe, 0x9c, 0x97, 0xee, 0xb1, 0x2d, 0xe9,
++                0x69, 0x7b, 0x59, 0x7d, 0x73, 0x6d, 0x86, 0x03, 0x74, 0x3f, 0x63, 0x05, 0x14, 0x11,
++                0x6b, 0x0d, 0x12, 0x27
++            ]
++        );
++    }
++
++    #[test]
++    fn tree_epoch_identity_and_complete_ancestry_are_bound() {
++        let node = button("Action target");
++        let original = observe(&node);
++        for (tree_id, epoch, target, parent) in [
++            (
++                TreeId(accesskit::Uuid::from_u128(2)),
++                7,
++                NodeId(17),
++                NodeId(19),
++            ),
++            (tree(), 8, NodeId(17), NodeId(19)),
++            (tree(), 7, NodeId(18), NodeId(19)),
++            (tree(), 7, NodeId(17), NodeId(20)),
++        ] {
++            let mut b = AccessibilitySemanticBuilder::new(tree_id, epoch);
++            assert!(b.push(target, &node));
++            assert!(b.push(parent, &Node::new(Role::RootWebArea)));
++            assert_ne!(original, b.finish().unwrap());
++        }
++        let mut b = AccessibilitySemanticBuilder::new(tree(), 7);
++        assert!(b.push(NodeId(17), &node));
++        assert!(b.push(NodeId(18), &Node::new(Role::GenericContainer)));
++        assert!(b.push(NodeId(19), &Node::new(Role::RootWebArea)));
++        assert_ne!(original, b.finish().unwrap());
++    }
++
++    #[test]
++    fn exact_name_byte_bound_is_fail_closed_and_sticky() {
++        assert!(observe(&button(&"é".repeat(MAX_ACCESSIBILITY_NAME_BYTES / 2))).is_well_formed());
++        let mut b = AccessibilitySemanticBuilder::new(tree(), 7);
++        assert!(!b.push(
++            NodeId(17),
++            &button(&"é".repeat(MAX_ACCESSIBILITY_NAME_BYTES / 2 + 1))
++        ));
++        assert!(!b.push(NodeId(18), &button("small")));
++        assert!(b.finish().is_none());
++    }
++
++    #[test]
++    fn depth_cycle_empty_and_graft_root_refuse() {
++        let mut bounded = AccessibilitySemanticBuilder::new(tree(), 7);
++        for i in 0..MAX_ACCESSIBILITY_ANCESTRY {
++            assert!(bounded.push(NodeId(i as u64), &button("x")));
++        }
++        assert!(bounded.finish().is_some());
++        let mut overflow = AccessibilitySemanticBuilder::new(tree(), 7);
++        for i in 0..MAX_ACCESSIBILITY_ANCESTRY {
++            assert!(overflow.push(NodeId(i as u64), &button("x")));
++        }
++        assert!(!overflow.push(NodeId(99), &button("x")));
++        assert!(overflow.finish().is_none());
++        let mut cycle = AccessibilitySemanticBuilder::new(tree(), 7);
++        assert!(cycle.push(NodeId(17), &button("x")));
++        assert!(!cycle.push(NodeId(17), &button("x")));
++        assert!(cycle.finish().is_none());
++        assert!(
++            AccessibilitySemanticBuilder::new(tree(), 7)
++                .finish()
++                .is_none()
++        );
++        assert!(
++            AccessibilitySemanticBuilder::new(TreeId::ROOT, 7)
++                .finish()
++                .is_none()
++        );
++    }
++
++    #[test]
++    fn wire_shape_types_arrays_and_versions_are_closed() {
++        let original = observe(&button("Action target"));
++        let encoded = serde_json::to_value(original).unwrap();
++        assert_eq!(
++            serde_json::from_value::<AccessibilitySemanticExpectation>(encoded.clone()).unwrap(),
++            original
++        );
++        for (key, value) in [
++            ("version", serde_json::json!(true)),
++            ("epoch", serde_json::json!(7.0)),
++            ("state", serde_json::json!(-1)),
++            ("ancestry_depth", serde_json::json!(true)),
++            ("name_present", serde_json::json!(1)),
++            ("accessible_name_sha256", serde_json::json!(vec![0; 31])),
++        ] {
++            let mut altered = encoded.clone();
++            altered[key] = value;
++            assert!(serde_json::from_value::<AccessibilitySemanticExpectation>(altered).is_err());
++        }
++        let mut extra = encoded.clone();
++        extra["caller_verified"] = serde_json::json!(true);
++        assert!(serde_json::from_value::<AccessibilitySemanticExpectation>(extra).is_err());
++        for (key, value) in [
++            ("version", 2),
++            ("ancestry_depth", 0),
++            ("ancestry_depth", 17),
++            ("name_bytes", 1025),
++            ("state", 64),
++        ] {
++            let mut altered = encoded.clone();
++            altered[key] = serde_json::json!(value);
++            assert!(
++                !serde_json::from_value::<AccessibilitySemanticExpectation>(altered)
++                    .unwrap()
++                    .is_well_formed()
++            );
++        }
++    }
++}
+diff --git a/components/shared/base/lib.rs b/components/shared/base/lib.rs
+--- a/components/shared/base/lib.rs
++++ b/components/shared/base/lib.rs
+@@ -9,6 +9,7 @@
+ //! You should almost never need to add a data type to this crate. Instead look for
+ //! a more shared crate that has fewer dependents.
+ 
++pub mod accessibility_semantics;
+ pub mod cross_process_instant;
+ pub mod generic_channel;
+ pub mod id;
+diff --git a/components/shared/constellation/lib.rs b/components/shared/constellation/lib.rs
+--- a/components/shared/constellation/lib.rs
++++ b/components/shared/constellation/lib.rs
+@@ -114,13 +114,28 @@
+     UpdatePinchZoomInfos(PipelineId, PinchZoomInfos),
+     /// Activate or deactivate accessibility features for the given `WebView`.
+     SetAccessibilityActive(WebViewId, bool),
++    /// Read current bounded metadata from the active retained document without dispatching action.
++    ObserveAccessibilitySemantics(
++        WebViewId,
++        accesskit::TreeId,
++        accesskit::NodeId,
++        GenericCallback<AccessibilitySemanticObservationResult>,
++    ),
+     /// Perform one bounded accessibility action against the active document tree of the given
+     /// `WebView`. The callback is completed exactly once by the constellation or script thread.
+     PerformAccessibilityAction(
+         WebViewId,
+         accesskit::ActionRequest,
++        Option<servo_base::accessibility_semantics::AccessibilitySemanticExpectation>,
+         GenericCallback<AccessibilityActionResult>,
+     ),
++}
++
++/// Read-only semantic observation result. Only the current layout/script owner creates Observed.
++#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
++pub enum AccessibilitySemanticObservationResult {
++    Observed(servo_base::accessibility_semantics::AccessibilitySemanticExpectation),
++    Refused(AccessibilityActionResult),
+ }
+ 
+ /// Terminal result for one retained accessibility-node action request.
+@@ -151,6 +166,12 @@
+     TargetDisabled,
+     /// The resolved element is not connected or has no current CSS layout box.
+     TargetNotRendered,
++    /// Current retained metadata differs from the observed typed expectation.
++    TargetSemanticMismatch,
++    /// Metadata is unavailable, cyclic, or outside the bounded semantic schema.
++    SemanticSnapshotUnavailable,
++    /// The supplied fixed-size semantic expectation has invalid version or target identity.
++    InvalidSemanticExpectation,
+ }
+ 
+ pub enum UserContentManagerAction {
+diff --git a/components/shared/layout/lib.rs b/components/shared/layout/lib.rs
+--- a/components/shared/layout/lib.rs
++++ b/components/shared/layout/lib.rs
+@@ -446,6 +446,14 @@
+         epoch: Epoch,
+     ) -> AccessibilityNodeAddressResult;
+ 
++    /// Observe bounded current retained-node metadata from this exact tree and epoch.
++    fn accessibility_semantic_expectation(
++        &self,
++        tree_id: accesskit::TreeId,
++        node_id: accesskit::NodeId,
++        epoch: Epoch,
++    ) -> Option<servo_base::accessibility_semantics::AccessibilitySemanticExpectation>;
++
+     /// Returns whether accessibility is active for this Layout.
+     fn accessibility_active(&self) -> bool;
+ 
+diff --git a/components/shared/script/lib.rs b/components/shared/script/lib.rs
+--- a/components/shared/script/lib.rs
++++ b/components/shared/script/lib.rs
+@@ -342,6 +342,15 @@
+     /// may be split across multiple script threads, and the pipelines in a script thread may belong
+     /// to multiple webviews. So the simplest approach is to activate it for one pipeline at a time.
+     SetAccessibilityActive(PipelineId, bool, Epoch),
++    /// Read current bounded retained metadata without dispatching an action.
++    ObserveAccessibilitySemantics(
++        WebViewId,
++        PipelineId,
++        Epoch,
++        accesskit::TreeId,
++        accesskit::NodeId,
++        GenericCallback<servo_constellation_traits::AccessibilitySemanticObservationResult>,
++    ),
+     /// Atomically resolve and dispatch one accessibility action against a retained node in the
+     /// current accessibility tree.
+     PerformAccessibilityAction(
+@@ -349,6 +358,7 @@
+         PipelineId,
+         Epoch,
+         accesskit::ActionRequest,
++        Option<servo_base::accessibility_semantics::AccessibilitySemanticExpectation>,
+         GenericCallback<AccessibilityActionResult>,
+     ),
+     /// Force a garbage collection in this script thread.
