@@ -115,7 +115,7 @@ fn run_server() -> Result<String, FixtureError> {
             "qualification server did not dispatch exactly once",
         ));
     }
-    Ok(server_evidence_json(&evidence))
+    Ok(server_evidence_json(&evidence, peer))
 }
 
 fn inherited_stream_from_stdin() -> Result<UnixStream, FixtureError> {
@@ -268,7 +268,9 @@ fn run_self_check() -> Result<String, FixtureError> {
     ))
 }
 
-fn server_evidence_json(evidence: &ServiceEvidence) -> String {
+// Raw mechanism identity is explicit qualification evidence only. It is not
+// added back to the redacted product AgentPort ServiceEvidence type.
+fn server_evidence_json(evidence: &ServiceEvidence, peer: PeerIdentity) -> String {
     format!(
         concat!(
             "{{\"schema\":\"trillionnium.desktop.d1-agent-server-result.v1\",",
@@ -279,9 +281,9 @@ fn server_evidence_json(evidence: &ServiceEvidence) -> String {
             "\"request_sha256\":\"{}\",\"response_sha256\":\"{}\",",
             "\"response_ok\":{},\"response_committed\":{}}}"
         ),
-        evidence.peer.pid.unwrap_or_default(),
-        evidence.peer.uid,
-        evidence.peer.gid,
+        peer.pid.unwrap_or_default(),
+        peer.uid,
+        peer.gid,
         evidence.transport_sequence,
         escape_json(&evidence.request_id),
         evidence.request_sha256,
@@ -422,11 +424,6 @@ mod tests {
     #[test]
     fn server_evidence_marks_the_qualification_boundary() {
         let evidence = ServiceEvidence {
-            peer: PeerIdentity {
-                pid: Some(42),
-                uid: 1000,
-                gid: 1001,
-            },
             transport_sequence: 1,
             request_id: "request:one".to_owned(),
             session_id: None,
@@ -437,9 +434,19 @@ mod tests {
             response_ok: true,
             response_committed: true,
         };
-        let encoded = server_evidence_json(&evidence);
+        let encoded = server_evidence_json(
+            &evidence,
+            PeerIdentity {
+                pid: Some(42),
+                uid: 1000,
+                gid: 1001,
+            },
+        );
         assert!(encoded.contains("\"qualification_only\":true"));
         assert!(encoded.contains("\"product_handler_connected\":false"));
         assert!(encoded.contains("\"request_id\":\"request:one\""));
+        assert!(encoded.contains("\"peer_pid\":42"));
+        assert!(encoded.contains("\"peer_uid\":1000"));
+        assert!(encoded.contains("\"peer_gid\":1001"));
     }
 }

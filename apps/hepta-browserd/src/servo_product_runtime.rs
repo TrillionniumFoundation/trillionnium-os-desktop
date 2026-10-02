@@ -261,12 +261,22 @@ where
             .actor
             .as_mut()
             .ok_or(ProductRuntimeError::RuntimeUnavailable)?;
+        // A callback can unwind after issuing an effect and before classifying
+        // its completion. Keep the latch until it proves a conclusive outcome.
+        self.replay_blocked = true;
+        self.state = RuntimeState::ReplayReconciliationRequired;
         match operation(actor) {
-            DispatchCompletion::Completed(value) => Ok(value),
-            DispatchCompletion::NotDispatched => Err(ProductRuntimeError::RuntimeUnavailable),
+            DispatchCompletion::Completed(value) => {
+                self.replay_blocked = false;
+                self.state = RuntimeState::Ready;
+                Ok(value)
+            }
+            DispatchCompletion::NotDispatched => {
+                self.replay_blocked = false;
+                self.state = RuntimeState::Ready;
+                Err(ProductRuntimeError::RuntimeUnavailable)
+            }
             DispatchCompletion::IndeterminateAfterDispatch => {
-                self.replay_blocked = true;
-                self.state = RuntimeState::ReplayReconciliationRequired;
                 Err(ProductRuntimeError::IndeterminateAfterDispatch)
             }
         }
@@ -281,8 +291,12 @@ where
             return Err(ProductRuntimeError::CrashLoopOpen);
         }
         let previous = self.generation;
-        self.generation = previous.checked_next()?;
+        // Invalidate custody before checked arithmetic or actor cleanup can
+        // fail. Exhaustion is terminal, so this lifecycle stays locked even
+        // though there is no unused generation to reserve.
+        self.state = RuntimeState::CrashLoopOpen;
         self.actor = None;
+        self.generation = previous.checked_next()?;
         self.consecutive_crashes = self
             .consecutive_crashes
             .checked_add(1)
@@ -321,21 +335,27 @@ where
         Ok(self.generation)
     }
 
-    /// Record a stable service cycle and reset only the crash-loop counter.
+    /// Record a stable service cycle of a ready actor and reset its crash counter.
+    /// Unavailable, unresolved, or permanently locked runtimes cannot be stable.
     pub fn acknowledge_stable_cycle(&mut self) {
-        self.consecutive_crashes = 0;
+        if self.state == RuntimeState::Ready && self.actor.is_some() && !self.replay_blocked {
+            self.consecutive_crashes = 0;
+        }
     }
 
     /// Clear the replay latch after external durable-receipt reconciliation.
     ///
-    /// This method neither reconstructs the actor nor replays a command.
+    /// This method neither reconstructs the actor nor replays a command, and
+    /// never clears permanent crash-loop or generation-exhaustion lockout.
     pub fn reconcile_indeterminate(&mut self) {
         self.replay_blocked = false;
-        self.state = if self.actor.is_some() {
-            RuntimeState::Ready
-        } else {
-            RuntimeState::NeedsReconstruction
-        };
+        if self.state != RuntimeState::CrashLoopOpen {
+            self.state = if self.actor.is_some() {
+                RuntimeState::Ready
+            } else {
+                RuntimeState::NeedsReconstruction
+            };
+        }
     }
 }
 
@@ -361,7 +381,12 @@ mod tests {
     #[test]
     fn stale_reference_is_rejected_after_reconstruction() {
         let mut runtime = BrowserdRuntimeSupervisor::start(
-            |generation| Ok(TestActor { generation, calls: 0 }),
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
             policy(3),
         )
         .expect("start");
@@ -389,7 +414,10 @@ mod tests {
         let mut runtime = BrowserdRuntimeSupervisor::start(
             move |generation| {
                 observed.set(observed.get() + 1);
-                Ok(TestActor { generation, calls: 0 })
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
             },
             policy(4),
         )
@@ -404,7 +432,12 @@ mod tests {
     #[test]
     fn indeterminate_dispatch_latches_until_reconciliation() {
         let mut runtime = BrowserdRuntimeSupervisor::start(
-            |generation| Ok(TestActor { generation, calls: 0 }),
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
             policy(3),
         )
         .expect("start");
@@ -429,7 +462,12 @@ mod tests {
     #[test]
     fn crash_loop_opens_at_configured_bound() {
         let mut runtime = BrowserdRuntimeSupervisor::start(
-            |generation| Ok(TestActor { generation, calls: 0 }),
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
             policy(2),
         )
         .expect("start");
@@ -437,13 +475,151 @@ mod tests {
         runtime.reconstruct().expect("first reconstruction");
         runtime.content_process_crashed().expect("second crash");
         assert_eq!(runtime.state(), RuntimeState::CrashLoopOpen);
-        assert_eq!(runtime.reconstruct(), Err(ProductRuntimeError::CrashLoopOpen));
+        assert_eq!(
+            runtime.reconstruct(),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
+    }
+
+    #[test]
+    fn reconciliation_and_stable_acknowledgement_cannot_reopen_crash_loop() {
+        let calls = Rc::new(Cell::new(0_u32));
+        let observed = Rc::clone(&calls);
+        let mut runtime = BrowserdRuntimeSupervisor::start(
+            move |generation| {
+                observed.set(observed.get() + 1);
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
+            policy(1),
+        )
+        .expect("start");
+        let reference = runtime.semantic_reference(1);
+        assert_eq!(
+            runtime.dispatch(reference, |_| {
+                DispatchCompletion::<()>::IndeterminateAfterDispatch
+            }),
+            Err(ProductRuntimeError::IndeterminateAfterDispatch)
+        );
+        runtime.content_process_crashed().expect("threshold crash");
+        runtime.acknowledge_stable_cycle();
+        runtime.reconcile_indeterminate();
+        assert!(!runtime.replay_blocked());
+        assert_eq!(runtime.state(), RuntimeState::CrashLoopOpen);
+        assert_eq!(
+            runtime.reconstruct(),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
+        let current = runtime.semantic_reference(2);
+        assert_eq!(
+            runtime.dispatch(current, |_| DispatchCompletion::Completed(())),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
+        assert_eq!(calls.get(), 1, "lockout cannot invoke the factory again");
+    }
+
+    #[test]
+    fn generation_exhaustion_drops_actor_and_permanently_blocks_dispatch() {
+        let mut runtime = BrowserdRuntimeSupervisor::start(
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
+            policy(3),
+        )
+        .expect("start");
+        runtime.generation = RuntimeGeneration(u64::MAX);
+        let reference = runtime.semantic_reference(1);
+        assert_eq!(
+            runtime.content_process_crashed(),
+            Err(ProductRuntimeError::GenerationExhausted)
+        );
+        assert_eq!(runtime.generation().get(), u64::MAX);
+        assert!(runtime.actor.is_none());
+        runtime.reconcile_indeterminate();
+        runtime.acknowledge_stable_cycle();
+        assert_eq!(runtime.state(), RuntimeState::CrashLoopOpen);
+        assert_eq!(
+            runtime.reconstruct(),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
+        assert_eq!(
+            runtime.dispatch(reference, |_| DispatchCompletion::Completed(())),
+            Err(ProductRuntimeError::CrashLoopOpen)
+        );
+    }
+
+    #[test]
+    fn stable_acknowledgement_requires_a_ready_actor() {
+        let mut runtime = BrowserdRuntimeSupervisor::start(
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
+            policy(2),
+        )
+        .expect("start");
+        runtime.content_process_crashed().expect("first crash");
+        runtime.acknowledge_stable_cycle();
+        runtime.reconstruct().expect("explicit reconstruction");
+        runtime.content_process_crashed().expect("second crash");
+        assert_eq!(runtime.state(), RuntimeState::CrashLoopOpen);
+    }
+
+    #[test]
+    fn dispatch_panic_keeps_possible_effect_latched() {
+        use std::panic::{AssertUnwindSafe, catch_unwind};
+
+        let mut runtime = BrowserdRuntimeSupervisor::start(
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
+            policy(3),
+        )
+        .expect("start");
+        let reference = runtime.semantic_reference(1);
+        let panic = catch_unwind(AssertUnwindSafe(|| {
+            let _: Result<(), _> = runtime.dispatch(reference, |actor| {
+                actor.calls += 1;
+                panic!("completion lost after possible dispatch");
+            });
+        }));
+        assert!(panic.is_err());
+        assert!(runtime.replay_blocked());
+        assert_eq!(runtime.state(), RuntimeState::ReplayReconciliationRequired);
+        assert_eq!(
+            runtime.dispatch(reference, |_| DispatchCompletion::Completed(())),
+            Err(ProductRuntimeError::IndeterminateAfterDispatch)
+        );
+        runtime.reconstruct().expect_err("reconciliation required");
+        runtime.reconcile_indeterminate();
+        assert_eq!(
+            runtime.dispatch(reference, |actor| DispatchCompletion::Completed(
+                actor.calls
+            )),
+            Ok(1),
+            "an explicit reconciliation cannot replay the panicked operation"
+        );
     }
 
     #[test]
     fn stable_cycle_resets_only_crash_counter() {
         let mut runtime = BrowserdRuntimeSupervisor::start(
-            |generation| Ok(TestActor { generation, calls: 0 }),
+            |generation| {
+                Ok(TestActor {
+                    generation,
+                    calls: 0,
+                })
+            },
             policy(2),
         )
         .expect("start");

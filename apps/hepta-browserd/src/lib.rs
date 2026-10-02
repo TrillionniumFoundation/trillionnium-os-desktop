@@ -8,8 +8,8 @@
 mod servo_product_runtime;
 
 pub use servo_product_runtime::{
-    BrowserdRuntimeSupervisor, DispatchCompletion, ProductRuntimeError, ProductServoRuntime,
-    RuntimeGeneration, RuntimeState, SemanticReference,
+    BrowserdRuntimeSupervisor, CrashTransition, DispatchCompletion, ProductRuntimeError,
+    ProductServoRuntime, RestartPolicy, RuntimeGeneration, RuntimeState, SemanticReference,
 };
 
 use hepta_browser_contracts::BROWSER_API_PROTOCOL;

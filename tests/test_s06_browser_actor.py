@@ -61,7 +61,7 @@ class BrowserActorAuthorityBoundaryTests(unittest.TestCase):
             ROOT / "crates/hepta-browser-actor-simulation/Cargo.toml"
         )
         self.assertFalse(simulation["package"]["publish"])
-        self.assertFalse(simulation["lib"]["doctest"])
+        self.assertTrue(simulation.get("lib", {}).get("doctest", True))
 
     def test_product_api_has_no_generic_or_caller_supplied_runtime(self) -> None:
         source = (ROOT / "crates/hepta-browser-actor/src/lib.rs").read_text(

@@ -106,6 +106,61 @@ fn health() -> BrowserRequest {
         operation: BrowserOperation::Health,
     }
 }
+
+#[test]
+fn admission_attestation_io_errors_do_not_disclose_procfs_paths() {
+    let fixture = Fixture::new();
+    let calls = Rc::new(Cell::new(0));
+    let mut actor = BrowserActor::new(fixture.binding.clone(), Counter(calls.clone()));
+    fs::remove_file(fixture.process.join("exe")).expect("simulate failed executable read");
+    let outcome = actor
+        .handle_attested(
+            &fixture.context(),
+            &health(),
+            &fixture.attestor,
+            &fixture.attested,
+        )
+        .expect("typed refusal");
+    let HandlerOutcome::Failure(error) = outcome else {
+        panic!("missing attestation was admitted");
+    };
+    assert_eq!(
+        error.code,
+        hepta_browser_codec::BrowserErrorCode::PolicyDenied
+    );
+    assert_eq!(error.message, "peer attestation refresh failed");
+    assert!(error.details.is_none());
+    assert_eq!(calls.get(), 0);
+}
+
+#[test]
+fn admission_continuity_errors_do_not_disclose_expected_or_observed_credentials() {
+    let fixture = Fixture::new();
+    let calls = Rc::new(Cell::new(0));
+    let mut binding = fixture.binding.clone();
+    let mut context = fixture.context();
+    // Model a service wiring mismatch while retaining a real, live original
+    // attestation. Rejection must expose no expected/observed mechanism IDs.
+    binding.mechanism.peer.uid += 1;
+    context.peer.uid += 1;
+    let mut actor = BrowserActor::new(binding, Counter(calls.clone()));
+    let outcome = actor
+        .handle_attested(&context, &health(), &fixture.attestor, &fixture.attested)
+        .expect("typed refusal");
+    let HandlerOutcome::Failure(error) = outcome else {
+        panic!("changed credentials were admitted");
+    };
+    assert_eq!(
+        error.code,
+        hepta_browser_codec::BrowserErrorCode::PolicyDenied
+    );
+    assert_eq!(
+        error.message,
+        "peer attestation continuity rejected dispatch"
+    );
+    assert!(error.details.is_none());
+    assert_eq!(calls.get(), 0);
+}
 struct Counter(Rc<Cell<usize>>);
 impl PageRuntime for Counter {
     fn dispatch(
@@ -120,6 +175,39 @@ impl PageRuntime for Counter {
             current_url: None,
         })
     }
+}
+
+#[test]
+fn direct_backend_internal_diagnostics_do_not_enter_wire_errors() {
+    struct PrivateDiagnostics;
+    impl PageRuntime for PrivateDiagnostics {
+        fn dispatch(
+            &mut self,
+            _: Option<&PageOwnerSnapshot>,
+            _: BrowserActorMessage,
+            _: &RequestControl,
+        ) -> Result<RuntimeReply, RuntimeFailure> {
+            Err(RuntimeFailure::Internal(
+                "private backend path=/private/profile token=synthetic-secret".to_owned(),
+            ))
+        }
+    }
+    let fixture = Fixture::new();
+    let mut actor = BrowserActor::new(fixture.binding.clone(), PrivateDiagnostics);
+    let outcome = actor
+        .handle_attested(
+            &fixture.context(),
+            &health(),
+            &fixture.attestor,
+            &fixture.attested,
+        )
+        .expect("typed runtime failure");
+    let HandlerOutcome::Failure(error) = outcome else {
+        panic!("backend failure was accepted");
+    };
+    assert_eq!(error.code, hepta_browser_codec::BrowserErrorCode::Internal);
+    assert_eq!(error.message, "runtime operation failed");
+    assert!(error.details.is_none());
 }
 
 fn changed_queued_identity_is_refused(file: &str, replacement: &str) {
