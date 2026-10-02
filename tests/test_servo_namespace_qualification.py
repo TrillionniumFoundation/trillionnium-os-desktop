@@ -6,6 +6,9 @@ kernel-fixture CLI. The permanent native CI runs the real pinned Servo binary.
 from __future__ import annotations
 
 import copy
+import fcntl
+import gc
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -16,6 +19,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from unittest import mock
 
@@ -611,6 +615,344 @@ class ContractWiringTests(unittest.TestCase):
         self.assertIn("const MAX_FDS: usize = 256", source)
         self.assertIn("const MAX_PROC_BYTES: u64 = 8192", source)
         self.assertNotIn("cmdline", source)
+
+
+class ExecutableStagingTests(unittest.TestCase):
+    """Actual files, descriptors, exec and fork; no Servo qualification."""
+    def source(self, parent, body=b"#!/bin/sh\nprintf staging-fixture"):
+        path = Path(parent) / "source-runtime"
+        path.write_bytes(body)
+        path.chmod(0o700)
+        return path
+
+    def fds(self, value):
+        result = [value.copy.fd]
+        for item in (value.source, value.parent, value.root):
+            result.extend(owner.fd for owner in item.owners)
+        return result
+
+    def test_actual_two_link_executable_copied_and_executes_readonly_single_link(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            source = self.source(directory)
+            alias = Path(directory) / "cargo-hash-alias"
+            os.link(source, alias)
+            self.assertEqual(source.stat().st_nlink, 2)
+            with self.assertRaisesRegex(ValueError, "exactly one hard link"):
+                gate.hash_regular(source)
+            with gate._StagedExecutable(source) as value:
+                retained = self.fds(value)
+                path = value.path
+                self.assertEqual(path.stat().st_nlink, 1)
+                self.assertEqual(path.stat().st_mode & 0o777, 0o500)
+                self.assertEqual(path.parent.stat().st_mode & 0o777, 0o700)
+                self.assertEqual(fcntl.fcntl(value.copy.fd, fcntl.F_GETFL) & os.O_ACCMODE, os.O_RDONLY)
+                self.assertTrue(fcntl.fcntl(value.copy.fd, fcntl.F_GETFD) & fcntl.FD_CLOEXEC)
+                self.assertEqual(value.digest, hashlib.sha256(source.read_bytes()).hexdigest())
+                self.assertEqual(gate.hash_regular(path), value.verify())
+                actual = subprocess.run([str(path)], capture_output=True, timeout=3, check=True)
+                self.assertEqual(actual.stdout, b"staging-fixture")
+            self.assertFalse(path.parent.exists())
+            self.assertTrue(alias.exists())
+            for descriptor in retained:
+                with self.assertRaises(OSError): os.fstat(descriptor)
+
+    def test_unsafe_group_write_source_is_not_repaired_or_admitted(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            source = self.source(directory)
+            source.chmod(0o775)
+            with self.assertRaisesRegex(ValueError, "source unsafe"):
+                gate._StagedExecutable(source)
+            self.assertEqual(source.stat().st_mode & 0o777, 0o775)
+            self.assertFalse(list(Path(directory).glob(".hepta-netns-exec-*")))
+
+    def test_explicit_staging_parent_inside_uploaded_output_is_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = self.source(directory)
+            artifacts = Path(directory) / "artifacts"
+            artifacts.mkdir(mode=0o700)
+            with mock.patch.dict(os.environ, {"RUNNER_TEMP": str(artifacts)}):
+                with self.assertRaisesRegex(ValueError, "outside artifact output"):
+                    gate._StagedExecutable(source, artifact_root=artifacts)
+            self.assertFalse(list(artifacts.iterdir()))
+
+    def test_source_leaf_and_ancestor_symlinks_and_fifo_are_refused(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            root = Path(directory)
+            real = root / "real"
+            real.mkdir(mode=0o700)
+            source = self.source(real)
+            alias = root / "alias"
+            alias.symlink_to(real, target_is_directory=True)
+            leaf = root / "leaf"
+            leaf.symlink_to(source)
+            fifo = root / "fifo"
+            os.mkfifo(fifo, 0o700)
+            for path in (alias / source.name, leaf, fifo):
+                with self.subTest(path=path), self.assertRaises((ValueError, OSError)):
+                    gate._StagedExecutable(path)
+            self.assertFalse(list(root.glob(".hepta-netns-exec-*")))
+
+    def test_real_source_name_substitution_during_copy_refuses_and_removes_owned_copy(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            source = self.source(directory)
+            original = os.read
+            changed = False
+            def read(descriptor, size):
+                nonlocal changed
+                block = original(descriptor, size)
+                if block and not changed:
+                    changed = True
+                    source.rename(source.with_name("old-runtime"))
+                    self.source(directory)
+                return block
+            with mock.patch.object(gate.os, "read", side_effect=read):
+                with self.assertRaisesRegex(ValueError, "source.*changed"):
+                    gate._StagedExecutable(source)
+            self.assertTrue(changed)
+            self.assertFalse(list(Path(directory).glob(".hepta-netns-exec-*")))
+
+    def test_source_and_staged_bytes_rechecked_after_actual_creation(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            source = self.source(directory)
+            value = gate._StagedExecutable(source)
+            source.write_bytes(b"changed-source")
+            with self.assertRaisesRegex(ValueError, "source changed"):
+                value.verify()
+            value.close(remove=True)
+            source = self.source(directory)
+            value = gate._StagedExecutable(source)
+            value.path.chmod(0o700)
+            value.path.write_bytes(b"changed-copy")
+            with self.assertRaisesRegex(ValueError, "metadata changed"):
+                value.verify()
+            value.close(remove=True)
+
+    def test_source_parent_replacement_is_refused_with_retained_original_fd(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            root = Path(directory)
+            parent = root / "input"
+            parent.mkdir(mode=0o700)
+            source = self.source(parent)
+            value = gate._StagedExecutable(source)
+            parent.rename(root / "old-input")
+            parent.mkdir(mode=0o700)
+            self.source(parent)
+            self.assertEqual(gate.snapshot(os.fstat(value.source.fd)), value.source_snapshot)
+            with self.assertRaisesRegex(ValueError, "source name changed"):
+                value.verify()
+            value.close(remove=True)
+
+    def test_foreign_leaf_substitution_is_preserved_when_cleanup_refuses(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            value = gate._StagedExecutable(self.source(directory))
+            retained = self.fds(value)
+            value.path.rename(value.path.with_name("retained-old"))
+            value.path.write_bytes(b"foreign-do-not-delete")
+            foreign = value.path
+            with self.assertRaisesRegex(ValueError, "cleanup name changed"):
+                value.close(remove=True)
+            self.assertEqual(foreign.read_bytes(), b"foreign-do-not-delete")
+            for descriptor in retained:
+                with self.assertRaises(OSError): os.fstat(descriptor)
+
+    def test_foreign_directory_substitution_is_preserved_when_cleanup_refuses(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            value = gate._StagedExecutable(self.source(directory))
+            path = value.path.parent
+            path.rename(path.with_name(path.name + "-old"))
+            path.mkdir(mode=0o700)
+            foreign = path / "runtime"
+            foreign.write_bytes(b"foreign-directory")
+            with self.assertRaisesRegex(ValueError, "directory path changed"):
+                value.close(remove=True)
+            self.assertEqual(foreign.read_bytes(), b"foreign-directory")
+
+    def test_partial_real_write_failure_retires_descriptors_and_owned_names(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            source = self.source(directory)
+            original = os.write
+            def write(descriptor, block):
+                original(descriptor, block[:3])
+                raise OSError("actual partial staged write")
+            with mock.patch.object(gate.os, "write", side_effect=write):
+                with self.assertRaisesRegex(OSError, "partial staged write"):
+                    gate._StagedExecutable(source)
+            self.assertFalse(list(Path(directory).glob(".hepta-netns-exec-*")))
+
+    def test_real_fsync_interruption_and_expired_copy_budget_leave_no_executable(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            source = self.source(directory)
+            original = os.fsync
+            def fsync(descriptor):
+                original(descriptor)
+                raise KeyboardInterrupt("after actual staged fsync")
+            with mock.patch.object(gate.os, "fsync", side_effect=fsync):
+                with self.assertRaisesRegex(KeyboardInterrupt, "actual staged fsync"):
+                    gate._StagedExecutable(source)
+            self.assertFalse(list(Path(directory).glob(".hepta-netns-exec-*")))
+            with mock.patch.object(gate._StagedExecutable, "BUDGET", 0):
+                with self.assertRaisesRegex(ValueError, "staging deadline expired"):
+                    gate._StagedExecutable(source)
+            self.assertFalse(list(Path(directory).glob(".hepta-netns-exec-*")))
+
+    def test_actual_late_eof_cannot_renew_the_original_copy_budget(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            source = self.source(directory)
+            original = os.read
+            delayed = False
+            def read(descriptor, size):
+                nonlocal delayed
+                block = original(descriptor, size)
+                if not block and not delayed:
+                    delayed = True
+                    time.sleep(0.03)
+                return block
+            with mock.patch.object(gate._StagedExecutable, "BUDGET", 0.02), mock.patch.object(gate.os, "read", side_effect=read):
+                with self.assertRaisesRegex(ValueError, "staging deadline expired"):
+                    gate._StagedExecutable(source)
+            self.assertTrue(delayed)
+            self.assertFalse(list(Path(directory).glob(".hepta-netns-exec-*")))
+
+    def test_actual_fork_refuses_before_cleanup_and_preserves_parent_file_and_fds(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            value = gate._StagedExecutable(self.source(directory))
+            retained = self.fds(value)
+            child = os.fork()
+            if child == 0:
+                try:
+                    for operation in (value.verify, lambda: value.close(remove=True)):
+                        try: operation()
+                        except ValueError: pass
+                        else: os._exit(2)
+                    value.__del__()
+                    os._exit(0 if value.path.is_file() else 3)
+                except BaseException:
+                    os._exit(4)
+            descriptor = os.pidfd_open(child)
+            try:
+                self.assertTrue(select.select([descriptor], [], [], 3)[0])
+                self.assertEqual(os.waitpid(child, 0)[1], 0)
+                for owned in retained: os.fstat(owned)
+                value.verify()
+            finally:
+                if not select.select([descriptor], [], [], 0)[0]:
+                    signal.pidfd_send_signal(descriptor, signal.SIGKILL)
+                try: os.waitpid(child, 0)
+                except ChildProcessError: pass
+                os.close(descriptor)
+                value.close(remove=True)
+
+    def test_real_close_then_reuse_interrupt_gc_never_closes_foreign_fd(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            value = gate._StagedExecutable(self.source(directory))
+            retained = self.fds(value)
+            target = value.copy.fd
+            original = os.close
+            interrupted = False
+            def close(descriptor):
+                nonlocal interrupted
+                original(descriptor)
+                if descriptor == target and not interrupted:
+                    interrupted = True
+                    foreign = os.open("/dev/null", os.O_RDONLY | os.O_CLOEXEC)
+                    if foreign != target:
+                        os.dup2(foreign, target)
+                        original(foreign)
+                    raise KeyboardInterrupt("after real close and descriptor reuse")
+            with mock.patch.object(gate.os, "close", side_effect=close):
+                with self.assertRaisesRegex(KeyboardInterrupt, "descriptor reuse"):
+                    value.close()
+            del value
+            gc.collect()
+            try:
+                os.fstat(target)
+                self.assertTrue(interrupted)
+                for descriptor in retained:
+                    if descriptor != target:
+                        with self.assertRaises(OSError): os.fstat(descriptor)
+            finally:
+                original(target)
+
+    def test_actual_helper_return_interruption_gc_closes_unreceived_path_descriptors(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = self.source(directory)
+            captured = []
+            previous = sys.gettrace()
+            def trace(frame, event, arg):
+                if event == "return" and frame.f_code is gate._StagingPath.open.__func__.__code__:
+                    captured.extend(owner.fd for owner in arg.owners)
+                    raise KeyboardInterrupt("actual path-owner return")
+                return trace
+            try:
+                sys.settrace(trace)
+                with self.assertRaisesRegex(KeyboardInterrupt, "path-owner return"):
+                    gate._StagingPath.open(source)
+            finally:
+                sys.settrace(previous)
+            gc.collect()
+            self.assertTrue(captured)
+            for descriptor in captured:
+                with self.assertRaises(OSError): os.fstat(descriptor)
+
+    def test_actual_constructor_return_interruption_gc_retires_fds_without_unlinking(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+            source = self.source(directory)
+            before = set(os.listdir("/proc/self/fd"))
+            paths = []
+            previous = sys.gettrace()
+            def trace(frame, event, arg):
+                if event == "return" and frame.f_code is gate._StagedExecutable.__init__.__code__:
+                    paths.append(frame.f_locals["self"].path)
+                    raise KeyboardInterrupt("actual staged constructor return")
+                return trace
+            try:
+                sys.settrace(trace)
+                with self.assertRaisesRegex(KeyboardInterrupt, "staged constructor return"):
+                    gate._StagedExecutable(source)
+            finally:
+                sys.settrace(previous)
+            gc.collect()
+            self.assertEqual(set(os.listdir("/proc/self/fd")), before)
+            self.assertEqual(len(paths), 1)
+            self.assertTrue(paths[0].is_file(), "GC must not turn an undelivered owner into pathname cleanup")
+
+    def test_actual_detached_and_native_call_line_interruptions_retire_all_owned_fds(self):
+        import inspect
+        lines, first = inspect.getsourcelines(gate._StagingDescriptor.close)
+        native_line = next(first + index for index, line in enumerate(lines)
+                           if "os.close(descriptor)" in line)
+        for boundary in ("after_detach", "native_call_line"):
+            for target_kind in ("copy", "source"):
+                with self.subTest(boundary=boundary, target=target_kind):
+                    with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"RUNNER_TEMP": directory}):
+                        value = gate._StagedExecutable(self.source(directory))
+                        retained = self.fds(value)
+                        target = value.copy.fd if target_kind == "copy" else value.source.fd
+                        previous = sys.gettrace()
+                        fired = False
+                        def trace(frame, event, arg):
+                            nonlocal fired
+                            if (not fired and event == "line"
+                                and frame.f_code is gate._StagingDescriptor.close.__code__
+                                and frame.f_locals.get("descriptor") == target
+                                and frame.f_locals["self"].fd is None
+                                and (boundary == "after_detach" or frame.f_lineno == native_line)):
+                                fired = True
+                                sys.settrace(None)
+                                raise KeyboardInterrupt("actual detached native-close line")
+                            return trace
+                        try:
+                            sys.settrace(trace)
+                            with self.assertRaisesRegex(KeyboardInterrupt, "detached native-close"):
+                                value.close()
+                        finally:
+                            sys.settrace(previous)
+                        self.assertTrue(fired)
+                        del value
+                        gc.collect()
+                        for descriptor in retained:
+                            with self.assertRaises(OSError):
+                                os.fstat(descriptor)
 
 
 if __name__ == "__main__":

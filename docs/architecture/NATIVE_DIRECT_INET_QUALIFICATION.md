@@ -26,9 +26,46 @@ lane already recorded by the normal headed workflow. It binds the before-launch
 compiled binary SHA-256 and device/inode, the five actual installed formatted
 overlay files, and the fixed source-file inventory. Each case launches a fresh
 unit and compares the live executable against that original binary identity.
-Binary hashing streams a bounded regular single-link file and checks descriptor
-metadata and named identity after the read. The source and compiled input
-binding is checked again before the complete corpus result is published.
+The compiled Cargo executable has a separate admission path because Cargo may
+retain both its example name and a hash-named hard link. The supplied source
+must be a regular, current-UID executable with no group or world write access.
+Both compile entry points use `umask 077`; staging never repairs an unsafe
+input's permissions. Its absolute path must contain no `..` component. Every
+ancestor and the source descriptor are retained through `O_NOFOLLOW` opens.
+A copy and SHA-256 are produced from that same descriptor, bounded to 4 GiB and
+60 seconds. Original metadata, every ancestor identity and a fresh opening of
+the named source are checked before admission and after the corpus.
+
+The launcher creates a fresh private `0700` directory below `RUNNER_TEMP`, or
+the repository's parent directory when that variable is absent. This directory
+is required to be outside both the conventional and explicit artifact output.
+The default locations are outside `/tmp`; an explicitly configured temporary
+parent must be visible to the unit, which does not enable `PrivateTmp`.
+An exclusive `0500`, single-link copy is synced, verified
+against the original bytes and retained through a read-only descriptor. The
+write descriptor is closed before execution to avoid Linux `ETXTBSY`. Both
+the workflow and shell entry use this same launcher. `source_binding`, every
+unit's live executable identity and every case's binary hash refer to the
+actual single-link copy. The original and copy identities and digests are
+rechecked between cases and at the end. Source files, overlays, packet files
+and portable evidence retain their strict single-link checks.
+
+Only after all cases and owned-unit retirement return successfully does the
+creator remove its matching copy and empty matching directory. Replaced paths
+and foreign entries are refused. A failed or interrupted corpus retains the
+private copy for diagnosis; no recursive cleanup or automatic repair is used.
+GC in either process closes only its own descriptor copies, with ownership
+detached before close. A traced Python line interruption after detachment or
+at the native-close line retires the pending local descriptor and still
+attempts all other owned descriptors. The attempt mark and native call share
+one traceable line; an error after an attempted close never retries its integer,
+which may already identify a foreign descriptor. An inherited owner is rejected
+at verify/cleanup entry, before path checks or mutations. This
+ephemeral source procedure does not prove every interruption between a native
+descriptor-return syscall and Python field assignment, every opcode between the
+close-attempt mark and the native call, repeated faults inside cleanup, or every
+concurrent same-UID pathname mutation. It does not add a durable product
+executable store.
 
 `Unit` owns one random `hepta-netns-<UUID>.service` name and is restricted to its
 creator PID. It uses the real systemd MainPID and ControlGroup; the `systemd-run`

@@ -1,6 +1,16 @@
 # Product-owned headed Servo runtime
 
 The separate [explicit native direct-INET qualification](../../docs/architecture/NATIVE_DIRECT_INET_QUALIFICATION.md)
+launcher stages the compiled Cargo executable into a private, single-link
+`0500` copy outside the uploaded artifacts. Cargo's original hard-linked
+example is accepted only through this same-descriptor copy path, with a
+current-UID, non-writable-by-group-or-world source and before/after digest and
+path checks. Both compile entry points use `umask 077`; source and packet
+readers continue to reject hard links. Successful owned-unit retirement
+precedes copy removal; an uncertain run retains the private copy. This change
+requires a new native CI corpus and supplies no installed qualification.
+
+The separate direct-INET
 profile uses a real systemd private network namespace, pre-engine descriptor and
 protocol probes, and independent stopped-process pidfd observations. Its
 immutable qualification fixture holds no INET listener. The default profile,

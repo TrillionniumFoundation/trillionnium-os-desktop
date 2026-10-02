@@ -183,6 +183,7 @@ install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
 
 step_compile() {
 set -euo pipefail
+umask 077
 export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
 mkdir -p artifacts/servo-headed-runtime
 cargo check --locked --manifest-path servo-source/Cargo.toml \
