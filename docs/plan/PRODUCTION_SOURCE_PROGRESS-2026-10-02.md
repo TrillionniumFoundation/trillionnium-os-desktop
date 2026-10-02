@@ -26,6 +26,7 @@ fresh event/object; they must not be weakened to accept a stale parent.
 | G2 original-stream custody | [PR142](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/142) | Actual consuming SCM_RIGHTS original-socket handoff, kernel credentials/cookie, private challenge/sequence, boot/time-namespace scope and fixed deadline; post-review pidfd ancillary cleanup successor | Live unit/executable broker, root-owned service path and semantic principal; consumer is reviewed separately in PR143; no activation |
 | G2 product handoff deadline | [PR143](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/143), based on PR142 | Consuming opaque original-stream callback preserves same Instant through live pidfd admission, clone/setup and queue; read-only getter refuses changed process/cancel/expiry | Synchronous procfs cannot be preempted; approved broker/principal, installed service and native owner remain open |
 | G3 native input/chrome | [PR131](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/131) | Actual Winit focus/content ownership, generation-bound callbacks, repeated IME context, causally bound selected-process SIGKILL evidence; actual native held-gesture withdrawal refuses further input/reconstruction and requires a fresh Servo owner | Complete owner replacement, product PageOwner integration, layout/scaling/clipboard, actual Chinese OS IME and trusted approval/handoff UX |
+| G3 default rapid native input | [PR144](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/144), fixed PR141 base | Bounded FIFO with one exact-ID submission, frozen owner/arrival point and nonrenewing episode deadline; actual possible key/composition holds survive local withdrawal | Fresh pinned compilation and default-profile burst, full original runtime/held gates; installed PageOwner and hardware remain open |
 | G4 startup diagnosis | [PR139](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/139) | Actual Wayland protocol handshake, independent private persisted failure diagnostics and bounded guest shutdown; normal and explicit exit73 QEMU paths | Installed native product image, wider fault/reboot/endurance matrix and independent release facilities |
 | G5 HTTP embedder gate | [PR141](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/141) | Pinned Servo global/per-WebView HTTP interception; current-owner immutable local document, explicit cancel, bounded same-byte evidence reader and settled two-generation denial probes; composed with matching native input ACK stimulus | All supported resource classes/protocols and namespace confinement, signed-app/principal/storage/native product integration |
 | G5 signed app admission | [PR134](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/134) | Actual externally pinned Ed25519 using immutable verifier inputs; complete bounded archive/index checks; immutable assets for exact synthetic HTTPS origins; current publisher-scoped trust/revocation and restrictive response headers | Installed origin interception, browser CSP/CORS/cache enforcement and protected policy/root delivery |
@@ -221,6 +222,18 @@ The resource/ACK composite76c01a7c7fde9c8d38fcf6ac9ecd7020ec0e4064 passes full
 local checks (Python586/55/15, Rust411/424/13) and independent eleven-file
 integration review. Actual PR native run37018209994 completed SUCCESS at tested merge10ff461dbadeec6a57462038f5f36a4ec1875ed0/treeb8dc57e621c24ed870259c1864b4eddaf77d0165. The complete downloaded packet independently verifies5 PNGs,2 exact-process fault hashes,11 input checkpoints/10 distinct IDs and21 held-negative raw hashes; both generations HTTP local1/cancel3 settledDOM/zero listener checks also pass. Global callbacks0 and worker unavailable remain unqualified. Earlier objects did not supply this successor qualification.
 
+Independent source audit reproduced a second Down dropped while the preceding
+Up awaited its actual ACK in the default rapid path. PR144 head
+`b339758d822a033a005058216b436803970c311d`, fixed base76 above, adds the ordered
+lane without changing the original positive/held runner functions. Its frozen
+host review passes 51 input and8 resource Rust tests,27 strict native-parser,
+18 original-checkpoint and14 resource Python tests. The separate fresh default
+burst requires six original native button admissions and ACKs, three actual
+DOM presses/clicks and nine ordered events at the original points. Process
+receipts reject Boolean/float integer aliases and unknown fields. Actual
+pinned main compilation and rapid native CI remain pending; formatting is not
+API type checking, and ACKs alone are not DOM execution proof.
+
 The original-stream custody candidatecfb1bb463cfd86549c52346a08b0da248764d156
 passed actual16 old Rust tests,18 kernel case groups,5 closed Python contract
 checks and2 compile-fail API doctests. S04 head/prospective-merge CI passed.
@@ -246,6 +259,12 @@ changing policy. The reentrant-close before replay is explicitly a minimal
 one-method mutant, not the overwritten historical failure JSON. C-to-storage,
 standard-library raw-to-TLS transfer cuts, installed namespace and hardware
 qualification remain open.
+
+Generic desktop CI on a07 passes source/Rust checks but does not execute the
+45 Python socket/TLS cases. A dedicated controlled-egress workflow now runs the
+actual corpus on head and live-parent prospective merge, refusing fewer than45
+cases or skips. Its static checks and separate code review do not substitute
+for the required fresh remote run.
 
 The current composition branch `codex/production-source-round2-20261002` starts at
 fixed c61. It combines source successors without moving their review bases or
