@@ -22,7 +22,7 @@ impl RuntimeGeneration {
         self.0
     }
 
-    fn checked_next(self) -> Result<Self, ProductRuntimeError> {
+    pub(crate) fn checked_next(self) -> Result<Self, ProductRuntimeError> {
         self.0
             .checked_add(1)
             .map(Self)
