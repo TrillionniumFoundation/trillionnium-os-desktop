@@ -6,6 +6,8 @@ on:
       - ".github/workflows/servo-headed-runtime.yml"
       - "experiments/servo-headed-runtime/**"
       - "tools/run_servo_headed_runtime_gate.sh"
+      - "tools/check_servo_resource_gate.py"
+      - "tests/test_servo_resource_gate.py"
       - "contracts/workspace-composition.v1.json"
       - "crates/hepta-workspace-composition/**"
       - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
@@ -19,6 +21,8 @@ on:
       - ".github/workflows/servo-headed-runtime.yml"
       - "experiments/servo-headed-runtime/**"
       - "tools/run_servo_headed_runtime_gate.sh"
+      - "tools/check_servo_resource_gate.py"
+      - "tests/test_servo_resource_gate.py"
       - "contracts/workspace-composition.v1.json"
       - "crates/hepta-workspace-composition/**"
       - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
@@ -75,6 +79,7 @@ jobs:
           set -euo pipefail
           test "$(git -C servo-source rev-parse HEAD)" = "$SERVO_COMMIT"
           test -z "$(git -C servo-source status --porcelain=v1)"
+          python3 tools/check_servo_resource_gate.py --servo-source servo-source
           python3 - <<'PY'
           from pathlib import Path
           import json
@@ -124,7 +129,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             servo-source/target
-          key: servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('servo-source/Cargo.lock', 'servo-source/rust-toolchain.toml', 'experiments/servo-headed-runtime/src/main.rs') }}
+          key: servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('servo-source/Cargo.lock', 'servo-source/rust-toolchain.toml', 'experiments/servo-headed-runtime/src/main.rs', 'experiments/servo-headed-runtime/src/resource_gate.rs', 'experiments/servo-headed-runtime/fixture/index.html') }}
           restore-keys: |
             servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
             servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
@@ -138,6 +143,8 @@ jobs:
           cp experiments/servo-headed-runtime/src/main.rs "$overlay"
           install -D -m 0644 experiments/servo-headed-runtime/src/input_ownership.rs \
             "$RUNNER_TEMP/input_ownership.rs"
+          install -D -m 0644 experiments/servo-headed-runtime/src/resource_gate.rs \
+            "$RUNNER_TEMP/resource_gate.rs"
           rustfmt --edition 2024 "$overlay"
           rustfmt --edition 2024 --check "$overlay"
           install -D -m 0644 "$overlay" \
@@ -145,8 +152,13 @@ jobs:
           rustc --edition 2024 --test experiments/servo-headed-runtime/src/input_ownership.rs \
             -o "$RUNNER_TEMP/native-input-ownership-tests"
           "$RUNNER_TEMP/native-input-ownership-tests"
+          rustc --edition 2024 --test experiments/servo-headed-runtime/src/resource_gate.rs \
+            -o "$RUNNER_TEMP/http-resource-gate-tests"
+          "$RUNNER_TEMP/http-resource-gate-tests"
           install -D -m 0644 "$RUNNER_TEMP/input_ownership.rs" \
             servo-source/ports/servoshell/examples/input_ownership.rs
+          install -D -m 0644 "$RUNNER_TEMP/resource_gate.rs" \
+            servo-source/ports/servoshell/examples/resource_gate.rs
           install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
             servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
           printf 'FORMATTED_OVERLAY_SHA256=%s\n' "$(sha256sum "$overlay" | cut -d' ' -f1)" \
@@ -356,12 +368,22 @@ jobs:
               'input_ownership_sha256': hashlib.sha256(
                   Path('experiments/servo-headed-runtime/src/input_ownership.rs').read_bytes()
               ).hexdigest(),
+              'resource_gate_sha256': hashlib.sha256(
+                  Path('experiments/servo-headed-runtime/src/resource_gate.rs').read_bytes()
+              ).hexdigest(),
+              'fixture_sha256': hashlib.sha256(
+                  Path('experiments/servo-headed-runtime/fixture/index.html').read_bytes()
+              ).hexdigest(),
+              'resource_result_sha256': hashlib.sha256(
+                  (root / 'resource-gate-result.json').read_bytes()
+              ).hexdigest(),
               'servo_lock_sha256': hashlib.sha256(
                   Path('manifests/servo.lock.json').read_bytes()
               ).hexdigest(),
           }
           path.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
           PY
+          python3 tools/check_servo_resource_gate.py --runtime-dir artifacts/servo-headed-runtime/runtime
 
       - name: Run native held-gesture refusal corpus v1
         timeout-minutes: 10
@@ -375,6 +397,7 @@ jobs:
           rm -f \
             servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
             servo-source/ports/servoshell/examples/input_ownership.rs \
+            servo-source/ports/servoshell/examples/resource_gate.rs \
             servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
           test -z "$(git -C servo-source status --porcelain=v1)"
 

@@ -12,6 +12,64 @@ below the chrome. Navigation is permitted only to the ephemeral
 `127.0.0.1` fixture origin; popup/new-window and external navigation requests
 are denied.
 
+The source resource gate also handles both HTTP resource callbacks at Servo pin
+`670ae8a70801b162e186f81cbb5bdd2d59c39108`. A default `ResourceGate` admits no
+resource. This qualification executable explicitly creates one capability from
+its already bound IPv4 loopback fixture listener and retains a duplicate of
+that real listener. Only `GET /?generation=1` or `GET /?generation=2` for the
+current, live owned WebView can receive the bounded HTML bytes compiled into
+the executable. The exact serialized URL, method, nonredirect main-document
+request, generation, held-input latch, and actual callback WebView ID are
+checked. No asset pathname or externally supplied response callback is used.
+
+Allowed responses are intercepted with fixed MIME, no-store, nosniff and CSP
+headers, one bounded byte chunk and explicit finish. All other WebView HTTP
+loads are intercepted and cancelled, including unknown paths, methods, ports,
+origins, query strings, credentials or fragments represented in the parsed
+request URL. Stale, withdrawn or missing owned WebViews also explicitly cancel.
+The global `ServoDelegate` is installed before the first WebView or event-loop
+spin and always cancels requests without a WebView principal. Neither callback
+drops a request to continue normal networking. The fixture listener returns
+403 to any real network connection; successful evidence requires its actual
+connection counter to remain zero.
+
+The fixture's qualification CSP permits only two fixed script-refusal probe
+locations (`'self'` and `https://resource-denied.invalid`) and a same-origin
+POST probe to reach the actual embedder callback. Both content generations must
+show the three actual cancellation submissions and matching DOM script-error
+or fetch-rejection outcomes, with no successful forbidden-resource execution.
+`resource-gate-result.json` records bounded typed facts; the independent checker
+binds them to the existing runtime's generation-specific DOM evidence. It
+reads bounded JSON and origin bytes through retained regular, single-link
+descriptors with no symlink traversal, checks metadata before and after reading,
+and prints their hashes from those same bytes. The checker is read-only and does
+not create or overwrite an evidence file. The existing native
+input, IME, SIGKILL, recovery and held-gesture thresholds are unchanged. A
+service-worker registration probe is conditional; this pin's
+`Preferences::default` keeps `dom_serviceworker_enabled` false and this
+prototype does not enable it. The global
+callback observation field is derived solely from actual delivered callbacks,
+and zero observations do not qualify worker execution.
+
+The standalone Rust corpus uses real loopback listeners to test the closed
+default, retained ownership, exact admission, stale/global refusals and bounded
+counters. Python mutation fixtures test the verifier through real files and
+CLI invocation; these fixtures provide no native or installed runtime evidence.
+The permanent CI still compiles this source against the actual pin and requires
+the observed negative corpus in addition to all existing positive checks.
+
+This is a source qualification HTTP-response prototype. It does not connect
+the Python signed-app admission or AppStorage APIs to Servo, does not grant a
+synthetic production principal, and does not qualify installed CSP, WebSocket,
+non-HTTP protocols, complete worker behavior, or network namespaces. Those
+integration boundaries remain open; production resource admission defaults
+to empty.
+
+The fixed-pin API evidence is upstream's
+[WebView resource callback and interception ownership](https://github.com/servo/servo/blob/670ae8a70801b162e186f81cbb5bdd2d59c39108/components/servo/webview_delegate.rs#L217-L310),
+[global resource callback](https://github.com/servo/servo/blob/670ae8a70801b162e186f81cbb5bdd2d59c39108/components/servo/servo_delegate.rs#L27-L34),
+and [explicit cancellation to a network error](https://github.com/servo/servo/blob/670ae8a70801b162e186f81cbb5bdd2d59c39108/components/net/request_interceptor.rs#L75-L79).
+
 The runtime corpus records content and full-workspace screenshots, native X11
 pointer/button/wheel/keyboard forwarding, Servo IME composition, process
 topology, a real multiprocess content-child termination, trusted-window

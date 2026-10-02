@@ -145,16 +145,24 @@ RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL" cargo --version --verbose
 step_install_overlay() {
 set -euo pipefail
 export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
+python3 tools/check_servo_resource_gate.py --servo-source servo-source
 overlay="$RUNNER_TEMP/trillionnium_headed_runtime.rs"
 cp experiments/servo-headed-runtime/src/main.rs "$overlay"
 install -D -m 0644 experiments/servo-headed-runtime/src/input_ownership.rs \
   "$RUNNER_TEMP/input_ownership.rs"
+install -D -m 0644 experiments/servo-headed-runtime/src/resource_gate.rs \
+  "$RUNNER_TEMP/resource_gate.rs"
 rustfmt --edition 2024 "$overlay"
 rustfmt --edition 2024 --check "$overlay"
 install -D -m 0644 "$overlay" \
   servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs
 install -D -m 0644 "$RUNNER_TEMP/input_ownership.rs" \
   servo-source/ports/servoshell/examples/input_ownership.rs
+install -D -m 0644 "$RUNNER_TEMP/resource_gate.rs" \
+  servo-source/ports/servoshell/examples/resource_gate.rs
+rustc --edition 2024 --test experiments/servo-headed-runtime/src/resource_gate.rs \
+  -o "$RUNNER_TEMP/http-resource-gate-tests"
+"$RUNNER_TEMP/http-resource-gate-tests"
 install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 {
@@ -610,6 +618,7 @@ receipt = {'schema': 'trillionnium.desktop.native-held-gesture-corpus.v1',
         ('.github/workflows/servo-headed-runtime.yml', 'tools/run_servo_headed_runtime_gate.sh',
          'experiments/servo-headed-runtime/src/main.rs',
          'experiments/servo-headed-runtime/src/input_ownership.rs',
+         'experiments/servo-headed-runtime/src/resource_gate.rs',
          'experiments/servo-headed-runtime/fixture/index.html', 'manifests/servo.lock.json')},
     'claim_ceiling': {'local_native_x11_xtest_only': True, 'physical_hardware_input_qualified': False,
         'mouse_cancellation_proven': False, 'same_servo_recovery_qualified': False,
@@ -852,6 +861,7 @@ assert required.issubset(artifacts)
 report['artifacts'] = artifacts
 
 evidence_files = [
+    'resource-gate-result.json',
     'content-process-identity.json',
     'content-sigkill-sent.json',
     'process-topology-pre-fault.json',
@@ -882,6 +892,9 @@ report['evidence_identity'] = {
     'formatted_overlay_sha256': os.environ['FORMATTED_OVERLAY_SHA256'],
     'fixture_sha256': hashlib.sha256(
         Path('experiments/servo-headed-runtime/fixture/index.html').read_bytes()
+    ).hexdigest(),
+    'resource_gate_sha256': hashlib.sha256(
+        Path('experiments/servo-headed-runtime/src/resource_gate.rs').read_bytes()
     ).hexdigest(),
     'servo_lock_sha256': hashlib.sha256(
         Path('manifests/servo.lock.json').read_bytes()
@@ -924,12 +937,15 @@ receipt = {
     json.dumps(receipt, indent=2, sort_keys=True) + '\n'
 )
 PY
+python3 tools/check_servo_resource_gate.py \
+  --runtime-dir artifacts/servo-headed-runtime/runtime
 }
 
 step_restore_servo() {
 rm -f \
   servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
   servo-source/ports/servoshell/examples/input_ownership.rs \
+  servo-source/ports/servoshell/examples/resource_gate.rs \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 test -z "$(git -C servo-source status --porcelain=v1)"
 }
