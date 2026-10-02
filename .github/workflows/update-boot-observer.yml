@@ -1,0 +1,108 @@
+name: update-boot-observer-host-corpus
+
+on:
+  push:
+    branches: [main, "codex/**"]
+    paths:
+      - ".github/workflows/update-boot-observer.yml"
+      - "platform/update_boot_observer.py"
+      - "tools/inspect_pending_update.py"
+      - "tests/test_update_boot_observer.py"
+      - "contracts/update-boot-observer.v1.json"
+      - "docs/architecture/UPDATE_BOOT_OBSERVER.md"
+      - "manifests/update-observation.v1.json"
+      - "platform/update_recovery.py"
+      - "platform/durable_update_owner.py"
+      - "tests/test_s11_update_recovery.py"
+      - "tests/test_durable_update_owner.py"
+      - "tools/validate_platform_mechanisms.py"
+  pull_request:
+    paths:
+      - ".github/workflows/update-boot-observer.yml"
+      - "platform/update_boot_observer.py"
+      - "tools/inspect_pending_update.py"
+      - "tests/test_update_boot_observer.py"
+      - "contracts/update-boot-observer.v1.json"
+      - "docs/architecture/UPDATE_BOOT_OBSERVER.md"
+      - "manifests/update-observation.v1.json"
+      - "platform/update_recovery.py"
+      - "platform/durable_update_owner.py"
+      - "tests/test_s11_update_recovery.py"
+      - "tests/test_durable_update_owner.py"
+      - "tools/validate_platform_mechanisms.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-boot-observer-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actual-host-corpus:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        object: ${{ github.event_name == 'pull_request' && fromJSON('["head","prospective-merge"]') || fromJSON('["head"]') }}
+    steps:
+      - name: Check out exact source object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ matrix.object == 'prospective-merge' && format('refs/pull/{0}/merge', github.event.pull_request.number) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha) }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind exact source and current prospective parents
+        shell: bash
+        env:
+          SOURCE_OBJECT: ${{ matrix.object }}
+          EVENT_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          EVENT_TESTED: ${{ github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          live_head="$(git ls-remote origin "refs/heads/$HEAD_REF" | awk 'NR == 1 {print $1}')"
+          test "$live_head" = "$EVENT_HEAD"
+          if test "$SOURCE_OBJECT" = prospective-merge; then
+            live_base="$(git ls-remote origin "refs/heads/$BASE_REF" | awk 'NR == 1 {print $1}')"
+            test "$live_base" = "$EVENT_BASE"
+            test "$(git rev-parse HEAD)" = "$EVENT_TESTED"
+            test "$(git show -s --format=%P HEAD | wc -w)" -eq 2
+            test "$(git rev-parse HEAD^1)" = "$live_base"
+            test "$(git rev-parse HEAD^2)" = "$live_head"
+          else
+            test "$(git rev-parse HEAD)" = "$EVENT_HEAD"
+          fi
+          git rev-parse HEAD 'HEAD^{tree}'
+          sha256sum platform/update_boot_observer.py tools/inspect_pending_update.py contracts/update-boot-observer.v1.json manifests/update-observation.v1.json
+      - name: Run actual read-only observer and unchanged update corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset PYTHONOPTIMIZE
+          openssl version
+          python3 - <<'PY'
+          import unittest
+          for pattern, minimum in (('test_update_boot_observer.py', 36), ('test_s11_update_recovery.py', 78), ('test_durable_update_owner.py', 41), ('test_platform_mechanisms.py', 26)):
+              suite = unittest.defaultTestLoader.discover('tests', pattern=pattern)
+              expected = suite.countTestCases()
+              if expected < minimum:
+                  raise RuntimeError('required update source corpus is missing tests')
+              result = unittest.TextTestRunner(verbosity=2).run(suite)
+              if not result.wasSuccessful() or result.testsRun != expected or result.skipped:
+                  raise SystemExit('update source corpus failed, omitted or skipped cases')
+          PY
+      - name: Validate contracts and source claim ceilings
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_module_documentation.py
+          python3 tools/validate_documentation_coherence.py
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/validate_contract_foundation.py
+          python3 tools/validate_platform_mechanisms.py
+          git diff --exit-code
