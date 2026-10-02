@@ -183,7 +183,16 @@ dump_guest_file /var/lib/trillionnium-d2i/servo-content-recovered.png \
   "$screenshot" "$output_dir/debugfs-screenshot.log"
 dump_guest_file /var/lib/trillionnium-d2i/runtime-journal.txt \
   "$runtime_journal" "$output_dir/debugfs-runtime-journal.log"
+for name in content-process-identity content-sigkill-sent \
+  process-topology-pre-fault process-topology-post-termination \
+  process-topology-post-recovery; do
+  dump_guest_file "/var/lib/trillionnium-d2i/$name.json" \
+    "$output_dir/$name.json" "$output_dir/debugfs-$name.log"
+done
 
+# The assertions are part of qualification, so inherited Python optimization
+# must never strip them from the generated reviewed verifier.
+unset PYTHONOPTIMIZE
 python3 - "$acceptance" "$runtime_ready" <<'PY'
 import json
 import pathlib

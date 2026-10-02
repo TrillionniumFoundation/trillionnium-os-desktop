@@ -11,8 +11,10 @@ import errno
 import fcntl
 import hashlib
 import json
+import math
 import os
 import re
+import secrets
 import stat
 from dataclasses import dataclass
 from enum import Enum
@@ -112,8 +114,15 @@ def _strict_object(payload: bytes | str, maximum: int) -> dict[str, Any]:
     def constant(_: str) -> None:
         raise ManifestRefused("non-JSON numeric constant")
 
+    def finite_float(value: str) -> float:
+        number = float(value)
+        if not math.isfinite(number):
+            raise ManifestRefused("non-finite JSON number")
+        return number
+
     try:
-        value = json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
+        value = json.loads(text, object_pairs_hook=pairs, parse_constant=constant,
+                           parse_float=finite_float)
     except (json.JSONDecodeError, ManifestRefused, ValueError) as error:
         if isinstance(error, ManifestRefused):
             raise
@@ -175,6 +184,9 @@ class UpdateManifest:
             raise ManifestRefused("manifest schema or repository identity is wrong")
         if active_slot not in {"A", "B"}:
             raise ManifestRefused("active slot is invalid")
+        _positive_int(now_unix, "now_unix")
+        _positive_int(current_version, "current_version")
+        _hash(current_image_sha256, "current image")
         source_version = _positive_int(value["source_version"], "source_version")
         target_version = _positive_int(value["target_version"], "target_version")
         rollback_floor = _positive_int(value["rollback_floor"], "rollback_floor")
@@ -266,9 +278,9 @@ class UpdateCoordinator:
     ) -> None:
         if active_slot not in {"A", "B"}:
             raise StateRefused("active slot is invalid")
-        if current_version <= 0 or _HASH.fullmatch(current_image_sha256) is None:
+        if type(current_version) is not int or current_version <= 0 or not isinstance(current_image_sha256, str) or _HASH.fullmatch(current_image_sha256) is None:
             raise StateRefused("current image identity is invalid")
-        if max_boot_failures <= 0 or max_boot_failures > 16:
+        if type(max_boot_failures) is not int or max_boot_failures <= 0 or max_boot_failures > 16:
             raise StateRefused("boot failure bound is invalid")
         self.active_slot = active_slot
         self.current_version = current_version
@@ -349,9 +361,9 @@ class UpdateCoordinator:
         health_receipt_sha256: str,
     ) -> HealthPermit:
         manifest = self._require(ticket, Phase.HEALTH_PENDING)
-        if stable_seconds < MIN_STABLE_HEALTH_SECONDS:
+        if type(stable_seconds) is not int or stable_seconds < MIN_STABLE_HEALTH_SECONDS:
             raise StateRefused("health window is not stable for the required duration")
-        if _HASH.fullmatch(health_receipt_sha256) is None:
+        if not isinstance(health_receipt_sha256, str) or _HASH.fullmatch(health_receipt_sha256) is None:
             raise StateRefused("health receipt digest is invalid")
         return HealthPermit(
             manifest.manifest_sha256,
@@ -464,12 +476,9 @@ class AtomicStateStore:
     """Descriptor-pinned private state publication with an exclusive lease."""
 
     def __init__(self, root: Path):
-        self.root = Path(root)
+        self.root = Path(root).absolute()
         try:
-            self._root_fd = os.open(
-                self.root,
-                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
-            )
+            self._root_fd = self._open_root()
         except OSError as error:
             raise StateRefused("state root cannot be opened without following links") from error
         metadata = os.fstat(self._root_fd)
@@ -482,6 +491,20 @@ class AtomicStateStore:
             raise StateRefused("state root owner is not trusted")
         self._identity = (metadata.st_dev, metadata.st_ino)
         self._lease_fd: int | None = None
+
+    def _open_root(self) -> int:
+        descriptor = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        try:
+            for component in self.root.parts[1:]:
+                if component in {".", ".."}:
+                    raise StateRefused("state root path contains traversal")
+                next_descriptor = os.open(component, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=descriptor)
+                os.close(descriptor)
+                descriptor = next_descriptor
+            return descriptor
+        except BaseException:
+            os.close(descriptor)
+            raise
 
     def close(self) -> None:
         if self._lease_fd is not None:
@@ -506,6 +529,32 @@ class AtomicStateStore:
         current = os.fstat(fd)
         if (current.st_dev, current.st_ino) != self._identity:
             raise StateRefused("retained state root identity changed")
+        if current.st_uid not in {0, os.geteuid()} or stat.S_IMODE(current.st_mode) & 0o077:
+            raise StateRefused("state root custody is no longer private")
+        try:
+            current_fd = self._open_root()
+        except OSError as error:
+            raise StateRefused("state root pathname is no longer safe") from error
+        try:
+            pathname = os.fstat(current_fd)
+            if (pathname.st_dev, pathname.st_ino) != self._identity:
+                raise StateRefused("state root pathname no longer names the retained directory")
+        finally:
+            os.close(current_fd)
+        if self._lease_fd is not None:
+            lease = os.fstat(self._lease_fd)
+            if not stat.S_ISREG(lease.st_mode) or lease.st_nlink != 1 or lease.st_uid not in {0, os.geteuid()} or stat.S_IMODE(lease.st_mode) & 0o077:
+                raise StateRefused("retained coordinator lease custody changed")
+            try:
+                named_fd = os.open(".coordinator.lock", os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=fd)
+            except OSError as error:
+                raise StateRefused("coordinator lease pathname is absent or unsafe") from error
+            try:
+                named = os.fstat(named_fd)
+                if (named.st_dev, named.st_ino) != (lease.st_dev, lease.st_ino):
+                    raise StateRefused("coordinator lease pathname was replaced")
+            finally:
+                os.close(named_fd)
         return fd
 
     def acquire(self) -> None:
@@ -514,24 +563,28 @@ class AtomicStateStore:
             raise CoordinatorBusy("coordinator lease is already held")
         fd = os.open(
             ".coordinator.lock",
-            os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC,
+            os.O_RDWR | os.O_CREAT | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC,
             0o600,
             dir_fd=root_fd,
         )
         try:
-            os.fchmod(fd, 0o600)
+            metadata = os.fstat(fd)
+            if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or metadata.st_uid not in {0, os.geteuid()} or stat.S_IMODE(metadata.st_mode) != 0o600:
+                raise StateRefused("coordinator lease must be a trusted regular file with one hard link")
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except OSError as error:
+        except (OSError, StateRefused) as error:
             os.close(fd)
-            if error.errno in {errno.EACCES, errno.EAGAIN}:
+            if isinstance(error, OSError) and error.errno in {errno.EACCES, errno.EAGAIN}:
                 raise CoordinatorBusy("another update coordinator holds the lease") from error
             raise
         self._lease_fd = fd
 
     @staticmethod
     def _name(name: str) -> str:
+        if not isinstance(name, str) or name.startswith(".") or "\x00" in name or "\\" in name:
+            raise StateRefused("state name is reserved or malformed")
         path = PurePosixPath(name)
-        if path.is_absolute() or len(path.parts) != 1 or path.parts[0] in {"", ".", ".."}:
+        if path.is_absolute() or len(path.parts) != 1 or path.parts[0] in {"", ".", ".."} or path.as_posix() != name:
             raise StateRefused("state name must be one safe basename")
         return path.parts[0]
 
@@ -550,19 +603,24 @@ class AtomicStateStore:
             raise StateRefused("state payload is empty or over limit")
         digest = hashlib.sha256(data).hexdigest()
         root_fd = self._check_root()
-        temp = f".{name}.{os.getpid()}.{digest[:16]}.tmp"
+        temp = f".{name}.{os.getpid()}.{secrets.token_hex(16)}.tmp"
         temp_fd: int | None = None
+        created = False
+        temp_identity: tuple[int, int] | None = None
         replaced = False
         try:
             if fault:
                 fault("before_temp_create")
             temp_fd = os.open(
                 temp,
-                os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
                 0o600,
                 dir_fd=root_fd,
             )
+            created = True
             os.fchmod(temp_fd, 0o600)
+            staged = os.fstat(temp_fd)
+            temp_identity = (staged.st_dev, staged.st_ino)
             if fault:
                 fault("after_temp_create")
             offset = 0
@@ -576,28 +634,52 @@ class AtomicStateStore:
             os.fsync(temp_fd)
             if fault:
                 fault("after_file_fsync")
-            os.close(temp_fd)
-            temp_fd = None
+            self._check_root()
+            self._check_staged_file(root_fd, temp, temp_fd, data)
             os.replace(temp, name, src_dir_fd=root_fd, dst_dir_fd=root_fd)
             replaced = True
             if fault:
                 fault("after_atomic_replace")
+            self._check_staged_file(root_fd, name, temp_fd, data)
             os.fsync(root_fd)
             if fault:
                 fault("after_directory_fsync")
+            self._check_root()
+            self._check_staged_file(root_fd, name, temp_fd, data)
             return digest
         except Exception as error:
             if replaced:
                 raise PublicationIndeterminate(digest, error) from error
-            try:
-                os.unlink(temp, dir_fd=root_fd)
-            except OSError as cleanup:
-                if cleanup.errno != errno.ENOENT:
-                    raise StateRefused("pre-publication cleanup failed") from error
+            if created:
+                try:
+                    metadata = os.stat(temp, dir_fd=root_fd, follow_symlinks=False)
+                    if (metadata.st_dev, metadata.st_ino) == temp_identity:
+                        os.unlink(temp, dir_fd=root_fd)
+                except OSError as cleanup:
+                    if cleanup.errno != errno.ENOENT:
+                        raise StateRefused("pre-publication cleanup failed") from error
             raise
         finally:
             if temp_fd is not None:
                 os.close(temp_fd)
+
+    @staticmethod
+    def _check_staged_file(root_fd: int, name: str, retained_fd: int, data: bytes) -> None:
+        retained = os.fstat(retained_fd)
+        if not stat.S_ISREG(retained.st_mode) or retained.st_nlink != 1 or retained.st_uid not in {0, os.geteuid()} or stat.S_IMODE(retained.st_mode) != 0o600 or retained.st_size != len(data):
+            raise StateRefused("staged state file custody changed")
+        try:
+            named_fd = os.open(name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=root_fd)
+        except OSError as error:
+            raise StateRefused("staged state pathname was substituted") from error
+        try:
+            named = os.fstat(named_fd)
+            if (named.st_dev, named.st_ino) != (retained.st_dev, retained.st_ino):
+                raise StateRefused("staged state pathname was substituted")
+            if os.pread(retained_fd, MAX_STATE_BYTES + 1, 0) != data:
+                raise StateRefused("staged state bytes were substituted")
+        finally:
+            os.close(named_fd)
 
     def read(self, name: str) -> dict[str, Any]:
         name = self._name(name)
@@ -609,7 +691,7 @@ class AtomicStateStore:
         )
         try:
             metadata = os.fstat(fd)
-            if not stat.S_ISREG(metadata.st_mode) or metadata.st_size > MAX_STATE_BYTES:
+            if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or metadata.st_uid not in {0, os.geteuid()} or stat.S_IMODE(metadata.st_mode) & 0o077 or metadata.st_size > MAX_STATE_BYTES:
                 raise RecoveryRequired("durable state leaf is not a bounded regular file")
             data = bytearray()
             while len(data) <= MAX_STATE_BYTES:
