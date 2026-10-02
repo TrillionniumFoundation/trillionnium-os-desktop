@@ -127,10 +127,13 @@
         "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md"
       ],
       "contracts": [
-        "contracts/agent-transport.v1.json"
+        "contracts/agent-transport.v1.json",
+        "contracts/accepted-stream-handoff.v1.json"
       ],
       "tests": [
         "crates/hepta-agent-transport/src/facade.rs",
+        "crates/hepta-agent-transport/tests/accepted_handoff_kernel.rs",
+        "tests/test_accepted_stream_handoff.py",
         "tests/transport/test_agent_transport_reference.py"
       ],
       "workflows": [
