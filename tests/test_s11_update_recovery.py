@@ -440,6 +440,82 @@ def record_dispatch(journal, binding, status="terminal", **changes):
     journal.write(f"dispatch-{binding.operation_id}.json", record)
 
 
+def assert_real_close_reuse_safe(case, invoke, matches, *, expected=KeyboardInterrupt,
+                                known_descriptors=()):
+    """Real kernel close, number reuse and interruption; never close-before-effect.
+
+    Keep the foreign /dev/null descriptor live and release every other known
+    acquired descriptor, including the next path component or staged image.
+    """
+    actual_open, actual_close, actual_memfd = os.open, os.close, os.memfd_create
+    acquired, closed, foreign = [], [], []
+
+    def remember(descriptor):
+        descriptor = int(descriptor)
+        metadata = os.fstat(descriptor)
+        acquired.append((descriptor, metadata.st_dev, metadata.st_ino,
+                         os.readlink(f"/proc/self/fd/{descriptor}")))
+        return descriptor
+
+    for descriptor in known_descriptors:
+        remember(descriptor)
+
+    def opened(*args, **kwargs):
+        return remember(actual_open(*args, **kwargs))
+
+    def memfd(*args, **kwargs):
+        return remember(actual_memfd(*args, **kwargs))
+
+    def close_then_interrupt(descriptor):
+        path = os.readlink(f"/proc/self/fd/{descriptor}")
+        closed.append((descriptor, path))
+        actual_close(descriptor)
+        if not foreign and matches(descriptor, path, acquired):
+            source = actual_open("/dev/null", os.O_RDONLY | os.O_CLOEXEC)
+            if source != descriptor:
+                os.dup2(source, descriptor, inheritable=False)
+                actual_close(source)
+            foreign.append(descriptor)
+            raise KeyboardInterrupt("real close completed before interrupt and FD reuse")
+
+    try:
+        with patch.object(s11.os, "open", side_effect=opened), \
+             patch.object(s11.os, "memfd_create", side_effect=memfd), \
+             patch.object(s11.os, "close", side_effect=close_then_interrupt), case.assertRaises(expected) as caught:
+            invoke()
+        case.assertEqual(len(foreign), 1, "probe did not reach the intended actual close")
+        case.assertTrue(stat.S_ISCHR(os.fstat(foreign[0]).st_mode), "foreign descriptor was closed again")
+        case.assertNotIn((foreign[0], "/dev/null"), closed, "cleanup retried the reused integer")
+        leaked = []
+        for descriptor, device, inode, path in acquired:
+            try:
+                metadata = os.fstat(descriptor)
+            except OSError as error:
+                case.assertEqual(error.errno, errno.EBADF)
+                continue
+            if (metadata.st_dev, metadata.st_ino) == (device, inode):
+                leaked.append((descriptor, path))
+        case.assertEqual(leaked, [], "interruption abandoned another acquired descriptor")
+        return caught.exception
+    finally:
+        # Failed assertions must not leak the foreign FD or close a number that
+        # now names another owner's inode.
+        for descriptor, device, inode, _ in acquired:
+            try:
+                metadata = os.fstat(descriptor)
+            except OSError:
+                continue
+            if (metadata.st_dev, metadata.st_ino) == (device, inode):
+                actual_close(descriptor)
+        for descriptor in foreign:
+            try:
+                metadata = os.fstat(descriptor)
+            except OSError:
+                continue
+            if stat.S_ISCHR(metadata.st_mode):
+                actual_close(descriptor)
+
+
 def fork_results(operations, *, before_release=None, cleanup=None):
     """Run inherited authority after an explicit parent-to-child barrier."""
     ready_read, ready_write = os.pipe()
@@ -488,6 +564,273 @@ def fork_results(operations, *, before_release=None, cleanup=None):
 
 
 class S11OwnershipTests(unittest.TestCase):
+    def test_private_owners_are_constructed_before_acquiring_their_descriptors(self):
+        def inventory():
+            result = {}
+            for name in os.listdir("/proc/self/fd"):
+                try:
+                    result[int(name)] = os.readlink(f"/proc/self/fd/{name}")
+                except FileNotFoundError:
+                    pass  # The inventory directory's own FD already closed.
+            return result
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            image = root / "candidate.img"
+            private_image(image, TARGET)
+            with s11.ImageSlotStore(root, active_slot="A") as store:
+                root_descriptor = store._check_root()
+                helpers = (
+                    ("state-root", lambda: s11.AtomicStateStore(root), (1, 2)),
+                    ("image", lambda: s11._open_image(image), (1, 2)),
+                    ("sealed-input", lambda: s11._sealed_snapshot("constructor-entry", TARGET), (1,)),
+                    ("slot", lambda: store._open_slot(root_descriptor, image.name), (1,)),
+                )
+                for name, invoke, positions in helpers:
+                    for event_kind in ("call", "line"):
+                        for position in positions:
+                            with self.subTest(helper=name, event=event_kind, constructor=position):
+                                before = inventory()
+                                reached = []
+                                previous_trace = sys.gettrace()
+                                def interrupt_constructor(frame, event, _argument):
+                                    if frame.f_code is s11._OwnedDescriptor.__init__.__code__ and event == event_kind:
+                                        reached.append(True)
+                                        if len(reached) == position:
+                                            raise KeyboardInterrupt("actual Python owner entry before any new FD acquisition")
+                                    return interrupt_constructor
+                                try:
+                                    sys.settrace(interrupt_constructor)
+                                    with self.assertRaises(KeyboardInterrupt):
+                                        invoke()
+                                finally:
+                                    sys.settrace(previous_trace)
+                                gc.collect()
+                                self.assertEqual(len(reached), position)
+                                self.assertEqual(inventory(), before)
+                store.write("still-owned.json", {"lease": "retained after constructor entry interruption"})
+
+    def test_undelivered_private_helper_return_owners_are_garbage_collected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            image = root / "candidate.img"
+            private_image(image, TARGET)
+            with s11.ImageSlotStore(root, active_slot="A") as store:
+                helpers = (
+                    (s11._open_directory_components, lambda: s11._open_directory_components(root.parts[1:], "test root")),
+                    (s11.AtomicStateStore._open_root.__wrapped__, store._open_root),
+                    (s11._open_image, lambda: s11._open_image(image)),
+                    (s11._sealed_snapshot, lambda: s11._sealed_snapshot("undelivered-sealed-input", TARGET)),
+                    (s11.ImageSlotStore._open_slot.__wrapped__, lambda: store._open_slot(store._check_root(), image.name)),
+                )
+                for function, invoke in helpers:
+                    with self.subTest(helper=function.__name__):
+                        returned = []
+                        previous_trace = sys.gettrace()
+                        def interrupt_return(frame, event, argument):
+                            if frame.f_code is function.__code__ and event == "return":
+                                self.assertIsInstance(argument, s11._OwnedDescriptor)
+                                self.assertNotIsInstance(argument, int)
+                                returned.append(argument.fileno())
+                                os.fstat(returned[-1])
+                                raise KeyboardInterrupt("actual RETURN_VALUE before caller receives private owner")
+                            return interrupt_return
+                        try:
+                            sys.settrace(interrupt_return)
+                            with self.assertRaises(KeyboardInterrupt):
+                                invoke()
+                        finally:
+                            sys.settrace(previous_trace)
+                        gc.collect()
+                        self.assertEqual(len(returned), 1)
+                        with self.assertRaises(OSError) as closed:
+                            os.fstat(returned[0])
+                        self.assertEqual(closed.exception.errno, errno.EBADF)
+                store.write("still-owned.json", {"lease": "retained after undelivered helper returns"})
+
+    def test_closed_owner_gc_does_not_close_reused_number_including_same_inode(self):
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "candidate.img"
+            private_image(image, TARGET)
+            for replacement in (Path("/dev/null"), image):
+                with self.subTest(replacement=replacement):
+                    owner = s11._open_image(image)
+                    descriptor = owner.fileno()
+                    self.assertEqual(os.pread(owner, len(TARGET), 0), TARGET)
+                    owner.close()
+                    self.assertEqual(owner.fileno(), -1)
+                    source = os.open(replacement, os.O_RDONLY | os.O_CLOEXEC)
+                    try:
+                        if source != descriptor:
+                            os.dup2(source, descriptor, inheritable=False)
+                        owner.close()
+                        del owner
+                        gc.collect()
+                        metadata = os.fstat(descriptor)
+                        if replacement == image:
+                            self.assertEqual(metadata.st_ino, image.stat().st_ino)
+                            self.assertEqual(os.pread(descriptor, len(TARGET), 0), TARGET)
+                        else:
+                            self.assertTrue(stat.S_ISCHR(metadata.st_mode))
+                    finally:
+                        os.close(source)
+                        if source != descriptor:
+                            os.close(descriptor)
+
+    def test_interrupted_owner_close_detaches_before_gc_and_actual_number_reuse(self):
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "candidate.img"
+            private_image(image, TARGET)
+            owner = s11._open_image(image)
+            descriptor = owner.fileno()
+            actual_close = os.close
+            closes = []
+            def close_reuse_then_interrupt(number):
+                closes.append(number)
+                actual_close(number)
+                source = os.open("/dev/null", os.O_RDONLY | os.O_CLOEXEC)
+                if source != number:
+                    os.dup2(source, number, inheritable=False)
+                    actual_close(source)
+                raise KeyboardInterrupt("owner actual close before reuse and interrupt")
+            try:
+                with patch.object(s11.os, "close", side_effect=close_reuse_then_interrupt):
+                    with self.assertRaises(KeyboardInterrupt):
+                        owner.close()
+                    self.assertEqual(owner.fileno(), -1)
+                    del owner
+                    gc.collect()
+                    self.assertEqual(closes, [descriptor])
+                    self.assertTrue(stat.S_ISCHR(os.fstat(descriptor).st_mode))
+            finally:
+                actual_close(descriptor)
+
+    def test_root_walk_close_interruption_preserves_foreign_fd_and_closes_next(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "private-state"
+            root.mkdir(mode=0o700)
+            for parent in ("/", str(root.parent)):
+                with self.subTest(parent=parent):
+                    assert_real_close_reuse_safe(self, lambda: s11.AtomicStateStore(root),
+                        lambda descriptor, path, acquired: path == parent)
+
+    def test_root_recheck_close_interruption_preserves_retained_store(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with s11.AtomicStateStore(Path(directory)) as store:
+                retained = store._root_fd, store._lease_fd
+                assert_real_close_reuse_safe(self, store._check_root,
+                    lambda descriptor, path, acquired: path == "/")
+                for descriptor in retained:
+                    os.fstat(descriptor)
+                store.write("still-owned.json", {"lease": "retained"})
+
+    def test_image_walk_and_final_parent_close_release_every_acquired_fd(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            image = root / "candidate.img"
+            private_image(image, TARGET)
+            for parent in ("/", str(root)):
+                with self.subTest(parent=parent):
+                    assert_real_close_reuse_safe(self, lambda: s11._open_image(image),
+                        lambda descriptor, path, acquired: path == parent)
+
+    def test_store_release_detaches_all_descriptors_before_interrupted_close(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = s11.AtomicStateStore(Path(directory))
+            store.acquire()
+            descriptors = store._root_fd, store._lease_fd
+            lease = store._lease_fd
+            assert_real_close_reuse_safe(self, store.close,
+                lambda descriptor, path, acquired: descriptor == lease,
+                known_descriptors=descriptors)
+            self.assertIsNone(store._root_fd)
+            self.assertIsNone(store._lease_fd)
+            store.close()
+
+    def test_interrupted_actual_lease_acquisition_closes_pending_descriptor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = s11.AtomicStateStore(Path(directory))
+            actual_flock = s11.fcntl.flock
+            pending = []
+            def lock_then_interrupt(descriptor, operation):
+                actual_flock(descriptor, operation)
+                pending.append(descriptor)
+                raise KeyboardInterrupt("actual lease acquired before ownership transfer")
+            try:
+                with patch.object(s11.fcntl, "flock", side_effect=lock_then_interrupt), self.assertRaises(KeyboardInterrupt):
+                    store.acquire()
+                self.assertEqual(len(pending), 1)
+                self.assertIsNone(store._lease_fd)
+                with self.assertRaises(OSError) as refused:
+                    os.fstat(pending[0])
+                self.assertEqual(refused.exception.errno, errno.EBADF)
+                with s11.AtomicStateStore(Path(directory)) as successor:
+                    successor.write("next.json", {"lease": "actually released"})
+            finally:
+                store.close()
+
+    def test_actual_lease_handoff_line_interrupt_closes_untransferred_descriptor(self):
+        assignment_line = next(number for number, line in enumerate(MODULE.read_text().splitlines(), 1)
+                               if line.strip() == "self._lease_fd = fd")
+        acquire_code = s11.AtomicStateStore.acquire.__wrapped__.__code__
+        pending = []
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            store = s11.AtomicStateStore(root)
+            previous_trace = sys.gettrace()
+            def interrupt_before_handoff(frame, event, _argument):
+                if frame.f_code is acquire_code and event == "line" and frame.f_lineno == assignment_line:
+                    pending.append(frame.f_locals["fd"])
+                    contender = os.open(root / ".coordinator.lock", os.O_RDWR | os.O_NOFOLLOW | os.O_CLOEXEC)
+                    try:
+                        with self.assertRaises(OSError) as busy:
+                            s11.fcntl.flock(contender, s11.fcntl.LOCK_EX | s11.fcntl.LOCK_NB)
+                        self.assertIn(busy.exception.errno, {errno.EACCES, errno.EAGAIN})
+                    finally:
+                        os.close(contender)
+                    raise KeyboardInterrupt("real flock held before object field assignment")
+                return interrupt_before_handoff
+            try:
+                sys.settrace(interrupt_before_handoff)
+                with self.assertRaises(KeyboardInterrupt):
+                    store.acquire()
+            finally:
+                sys.settrace(previous_trace)
+                store.close()
+            self.assertEqual(len(pending), 1)
+            self.assertIsNone(store._lease_fd)
+            with self.assertRaises(OSError) as closed:
+                os.fstat(pending[0])
+            self.assertEqual(closed.exception.errno, errno.EBADF)
+            with s11.AtomicStateStore(root) as successor:
+                successor.write("next.json", {"untransferred lease": "actually released"})
+
+    def test_state_publication_retained_close_failure_is_indeterminate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with s11.AtomicStateStore(Path(directory)) as store:
+                def retained_temp(descriptor, _path, acquired):
+                    return descriptor == next((fd for fd, _, _, name in acquired
+                                               if "/.state.json." in name and name.endswith(".tmp")), None)
+                value = {"published": True}
+                error = assert_real_close_reuse_safe(self, lambda: store.write("state.json", value),
+                    retained_temp, expected=s11.PublicationIndeterminate)
+                self.assertIsInstance(error.__cause__, KeyboardInterrupt)
+                self.assertEqual(error.digest, hashlib.sha256(s11._canonical(value)).hexdigest())
+                self.assertEqual(store.read("state.json"), value)
+
+    def test_prepublication_state_close_failure_does_not_claim_publication(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with s11.AtomicStateStore(Path(directory)) as store:
+                def before_effect(point):
+                    if point == "after_temp_create":
+                        raise s11.StateRefused("abort before any publication attempt")
+                def retained_temp(descriptor, _path, acquired):
+                    return descriptor == next((fd for fd, _, _, name in acquired
+                                               if "/.state.json." in name and name.endswith(".tmp")), None)
+                assert_real_close_reuse_safe(self,
+                    lambda: store.write("state.json", {"unpublished": True}, fault=before_effect), retained_temp)
+                self.assertFalse((Path(directory) / "state.json").exists())
+                self.assertFalse(tuple(Path(directory).glob(".state.json.*.tmp")))
+
     def test_discarded_store_gc_on_foreign_thread_closes_fds_and_releases_lease(self):
         with tempfile.TemporaryDirectory() as directory:
             store = s11.AtomicStateStore(Path(directory))
@@ -521,7 +864,7 @@ class S11OwnershipTests(unittest.TestCase):
             def capture(owner):
                 retained.append(owner)
                 descriptor = actual_open(owner)
-                descriptors.append(descriptor)
+                descriptors.append(int(descriptor))
                 return descriptor
             with patch.object(s11.AtomicStateStore, "_open_root", capture), self.assertRaises(s11.StateRefused):
                 s11.AtomicStateStore(root)
@@ -654,6 +997,12 @@ class S11OwnershipTests(unittest.TestCase):
 
 
 class S11SignedAdmissionTests(unittest.TestCase):
+    def test_snapshot_cleanup_attempts_remaining_fds_after_real_close_interruption(self):
+        payload = manifest()
+        verifier = s11.ExternalUpdateSignatureVerifier((TRUST_ROOT,))
+        assert_real_close_reuse_safe(self, lambda: verifier.verify(payload, SIGNATURES[payload], now_unix=NOW),
+            lambda descriptor, path, acquired: path.startswith("/memfd:update-public-key"))
+
     def test_callback_verifier_and_root_subclasses_refused_before_authority(self):
         calls = []
         value = json.loads(manifest())
@@ -874,6 +1223,104 @@ class S11ImagePublicationTests(unittest.TestCase):
 
     def tearDown(self):
         self.directory.cleanup()
+
+    def test_publication_close_interruption_releases_temp_and_preserves_foreign_fd(self):
+        c = configured_coordinator()
+        ticket = admit(c)
+        active_path = str(self.slot_root / "slot-A.img")
+        def first_active(descriptor, path, acquired):
+            return path == active_path and descriptor == next(fd for fd, _, _, name in acquired if name == active_path)
+        with s11.ImageSlotStore(self.slot_root, active_slot="A") as store:
+            assert_real_close_reuse_safe(self,
+                lambda: c.stage_image_file(ticket, self.image, store, now_unix=NOW),
+                first_active, expected=s11.ImagePublicationIndeterminate)
+            self.assertEqual(c.phase, s11.Phase.RECOVERY_REQUIRED)
+            self.assertEqual((self.slot_root / "slot-A.img").read_bytes(), SOURCE)
+            self.assertEqual((self.slot_root / "slot-B.img").read_bytes(), TARGET)
+
+    def test_reconcile_close_interruption_releases_target_and_preserves_foreign_fd(self):
+        c = configured_coordinator()
+        ticket = admit(c)
+        def interrupt_after_publication(point):
+            if point == "after_directory_fsync":
+                raise KeyboardInterrupt("actual staged publication remains pending")
+        active_path = str(self.slot_root / "slot-A.img")
+        def first_active(descriptor, path, acquired):
+            return path == active_path and descriptor == next(fd for fd, _, _, name in acquired if name == active_path)
+        with s11.ImageSlotStore(self.slot_root, active_slot="A") as store:
+            with self.assertRaises(s11.ImagePublicationIndeterminate):
+                c.stage_image_file(ticket, self.image, store, now_unix=NOW, fault=interrupt_after_publication)
+            assert_real_close_reuse_safe(self,
+                lambda: c.reconcile_image_publication(ticket, store, now_unix=NOW), first_active,
+                expected=s11.ImagePublicationIndeterminate)
+            self.assertEqual(c.phase, s11.Phase.RECOVERY_REQUIRED)
+            self.assertEqual((self.slot_root / "slot-B.img").read_bytes(), TARGET)
+
+    def test_original_source_close_failure_preserves_pending_publication(self):
+        c = configured_coordinator()
+        ticket = admit(c)
+        source_path = str(self.image)
+        def retained_source(descriptor, _path, acquired):
+            return descriptor == next((fd for fd, _, _, name in acquired if name == source_path), None)
+        with s11.ImageSlotStore(self.slot_root, active_slot="A") as store:
+            error = assert_real_close_reuse_safe(self,
+                lambda: c.stage_image_file(ticket, self.image, store, now_unix=NOW),
+                retained_source, expected=s11.ImagePublicationIndeterminate)
+            self.assertIsInstance(error.__cause__, KeyboardInterrupt)
+            self.assertEqual(c.phase, s11.Phase.RECOVERY_REQUIRED)
+            self.assertIs(c._image_publication_pending, ticket)
+            self.assertEqual((self.slot_root / "slot-B.img").read_bytes(), TARGET)
+            with self.assertRaises(s11.StateRefused):
+                c.stage_image_file(ticket, self.image, store, now_unix=NOW)
+            receipt = c.reconcile_image_publication(ticket, store, now_unix=NOW)
+            self.assertEqual(receipt.image_sha256, TARGET_DIGEST)
+            self.assertEqual(c.phase, s11.Phase.STAGED)
+            self.assertIsNone(c._image_publication_pending)
+
+    def test_rejected_source_close_failure_does_not_claim_image_publication(self):
+        c = configured_coordinator()
+        ticket = admit(c)
+        private_image(self.image, b"invalid-image")
+        source_path = str(self.image)
+        def retained_source(descriptor, _path, acquired):
+            return descriptor == next((fd for fd, _, _, name in acquired if name == source_path), None)
+        with s11.ImageSlotStore(self.slot_root, active_slot="A") as store:
+            assert_real_close_reuse_safe(self,
+                lambda: c.stage_image_file(ticket, self.image, store, now_unix=NOW), retained_source)
+            self.assertEqual(c.phase, s11.Phase.VERIFIED)
+            self.assertIsNone(c._image_publication_pending)
+            self.assertEqual((self.slot_root / "slot-B.img").read_bytes(), b"old-inactive-image")
+
+    def test_publication_record_entry_interrupt_and_source_close_keep_typed_uncertainty(self):
+        c = configured_coordinator()
+        ticket = admit(c)
+        source_path = str(self.image)
+        entered = []
+        def retained_source(descriptor, _path, acquired):
+            return descriptor == next((fd for fd, _, _, name in acquired if name == source_path), None)
+        def interrupt_record_entry(frame, event, _argument):
+            if event == "call" and frame.f_code.co_filename == str(MODULE) \
+                    and frame.f_code.co_name == "record_publication_attempt":
+                entered.append(True)
+                raise KeyboardInterrupt("slot attempt boundary entered before coordinator callback body")
+            return interrupt_record_entry
+        with s11.ImageSlotStore(self.slot_root, active_slot="A") as store:
+            previous_trace = sys.gettrace()
+            try:
+                sys.settrace(interrupt_record_entry)
+                assert_real_close_reuse_safe(self,
+                    lambda: c.stage_image_file(ticket, self.image, store, now_unix=NOW),
+                    retained_source, expected=s11.ImagePublicationIndeterminate)
+            finally:
+                sys.settrace(previous_trace)
+            self.assertEqual(entered, [True])
+            self.assertEqual(c.phase, s11.Phase.RECOVERY_REQUIRED)
+            self.assertIs(c._image_publication_pending, ticket)
+            self.assertEqual((self.slot_root / "slot-B.img").read_bytes(), b"old-inactive-image")
+            with self.assertRaises(s11.ImagePublicationIndeterminate):
+                c.reconcile_image_publication(ticket, store, now_unix=NOW)
+            self.assertEqual(c.phase, s11.Phase.RECOVERY_REQUIRED)
+            self.assertIs(c._image_publication_pending, ticket)
 
     def test_callback_journal_and_slot_subclasses_refused_before_authority(self):
         calls = []

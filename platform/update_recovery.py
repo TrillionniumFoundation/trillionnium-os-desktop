@@ -84,10 +84,87 @@ def _owner_guard(method):
     return invoke
 
 
-def _sealed_snapshot(name: str, data: bytes) -> int:
-    """Immutable inherited verifier input, never a mutable filesystem pathname."""
-    descriptor = os.memfd_create(name, os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+class _OwnedDescriptor:
+    """One private FD owner; undelivered helper returns have descriptor-only GC.
+
+    This is deliberately not an int subclass. Explicit close detaches ownership
+    before the syscall, so later GC cannot close another owner's reused number.
+    """
+
+    __slots__ = ("_fd",)
+
+    def __init__(self):
+        # Construct before acquiring any FD. A Python constructor-entry or first
+        # field-assignment interruption must not strand an already opened integer.
+        self._fd: int | None = None
+
+    def fileno(self) -> int:
+        descriptor = self._fd
+        return -1 if descriptor is None else descriptor
+
+    def __index__(self) -> int:
+        return self.fileno()
+
+    def close(self) -> None:
+        descriptor = getattr(self, "_fd", None)
+        self._fd = None
+        if descriptor is not None:
+            os.close(descriptor)
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except BaseException:
+            pass
+
+
+def _close_owned_descriptors(owned: list[int | _OwnedDescriptor]) -> None:
+    """Detach before each close; attempt every owned FD once even on interruption.
+
+    A failed close may already have released its number. Retrying that integer
+    can close another owner's newly allocated descriptor, so it is never retried.
+    """
+    first_error: BaseException | None = None
+    while owned:
+        descriptor = owned.pop()
+        try:
+            if isinstance(descriptor, _OwnedDescriptor):
+                descriptor.close()
+            else:
+                os.close(descriptor)
+        except BaseException as error:
+            if first_error is None:
+                first_error = error
+    if first_error is not None:
+        raise first_error
+
+
+def _open_directory_components(components: tuple[str, ...], label: str) -> _OwnedDescriptor:
+    owned = [_OwnedDescriptor()]
     try:
+        owned[0]._fd = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        for component in components:
+            if component in {".", ".."}:
+                raise StateRefused(f"{label} path contains traversal")
+            next_directory = _OwnedDescriptor()
+            owned.append(next_directory)
+            next_directory._fd = os.open(component, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                                         dir_fd=owned[0])
+            # The new directory is owned before the previous one is detached.
+            # If close releases the old number and then raises, finally closes
+            # only the next directory, never that old, potentially reused number.
+            previous = owned.pop(0)
+            previous.close()
+        return owned.pop()
+    finally:
+        _close_owned_descriptors(owned)
+
+
+def _sealed_snapshot(name: str, data: bytes) -> _OwnedDescriptor:
+    """Immutable inherited verifier input, never a mutable filesystem pathname."""
+    descriptor = _OwnedDescriptor()
+    try:
+        descriptor._fd = os.memfd_create(name, os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
         view = memoryview(data)
         while view:
             written = os.write(descriptor, view)
@@ -99,7 +176,7 @@ def _sealed_snapshot(name: str, data: bytes) -> int:
         os.lseek(descriptor, 0, os.SEEK_SET)
         return descriptor
     except BaseException:
-        os.close(descriptor)
+        descriptor.close()
         raise
 
 
@@ -120,28 +197,26 @@ class ImagePublicationIndeterminate(PublicationIndeterminate):
         self.target_slot = slot
 
 
-def _open_image(path: Path) -> int:
+def _open_image(path: Path) -> _OwnedDescriptor:
     """Acquire one bounded regular image without following any component."""
     absolute = Path(path).absolute()
-    directory = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    owned: list[_OwnedDescriptor] = []
     try:
-        for component in absolute.parts[1:-1]:
-            if component in {".", ".."}:
-                raise StateRefused("image path contains traversal")
-            next_directory = os.open(component, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)
-            os.close(directory)
-            directory = next_directory
-        descriptor = os.open(absolute.name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)
-        try:
-            _image_metadata(descriptor)
-            return descriptor
-        except BaseException:
-            os.close(descriptor)
-            raise
+        owned.append(_open_directory_components(absolute.parts[1:-1], "image"))
+        image = _OwnedDescriptor()
+        owned.append(image)
+        image._fd = os.open(absolute.name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC,
+                            dir_fd=owned[0])
+        _image_metadata(owned[-1])
+        directory = owned.pop(0)
+        directory.close()
+        # Transfer the image only after its directory close succeeds. A directory
+        # close interruption must not abandon the still-owned image descriptor.
+        return owned.pop()
     except OSError as error:
         raise StateRefused("image path is absent or unsafe") from error
     finally:
-        os.close(directory)
+        _close_owned_descriptors(owned)
 
 
 def _image_metadata(descriptor: int) -> os.stat_result:
@@ -358,11 +433,12 @@ class ExternalUpdateSignatureVerifier(_ProcessThreadOwner):
             metadata = executable.lstat()
             if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != 0 or stat.S_IMODE(metadata.st_mode) & 0o022:
                 raise ManifestRefused("system signature verifier executable is not trusted")
-            snapshots = []
+            snapshot_owners = []
             try:
                 for name, data in (("update-preimage", preimage), ("update-signature", signature),
                                    ("update-public-key", root.public_key_pem)):
-                    snapshots.append(_sealed_snapshot(name, data))
+                    snapshot_owners.append(_sealed_snapshot(name, data))
+                snapshots = tuple(snapshot.fileno() for snapshot in snapshot_owners)
                 manifest_fd, signature_fd, key_fd = snapshots
                 result = subprocess.run([str(executable), "dgst", "-sha256", "-verify", f"/proc/self/fd/{key_fd}",
                                          "-signature", f"/proc/self/fd/{signature_fd}", f"/proc/self/fd/{manifest_fd}"],
@@ -370,8 +446,7 @@ class ExternalUpdateSignatureVerifier(_ProcessThreadOwner):
                                         stderr=subprocess.DEVNULL, env=OPENSSL_ENV,
                                         pass_fds=tuple(snapshots), timeout=15, check=False)
             finally:
-                for descriptor in reversed(snapshots):
-                    os.close(descriptor)
+                _close_owned_descriptors(snapshot_owners)
         except (OSError, AttributeError, subprocess.TimeoutExpired) as error:
             raise ManifestRefused("offline update signature verification is unavailable") from error
         if result.returncode != 0:
@@ -688,6 +763,7 @@ class UpdateCoordinator(_ProcessThreadOwner):
         if type(slot_store) is not ImageSlotStore or slot_store.active_slot != self.active_slot:
             raise StateRefused("slot store does not bind the coordinator active slot")
         descriptor = _open_image(image_path)
+        publication_attempted = False
         try:
             digest, _ = _image_digest(descriptor, expected_bytes=manifest.target_image_bytes)
             if digest != manifest.target_image_sha256:
@@ -696,8 +772,10 @@ class UpdateCoordinator(_ProcessThreadOwner):
                 self._require(ticket, Phase.VERIFIED)
                 self._revalidate_admission(ticket, now_unix=self._clock())
             def record_publication_attempt() -> None:
+                nonlocal publication_attempted
                 # Record intent before entering the replace call, including the
                 # window after that call returns and before this method resumes.
+                publication_attempted = True
                 self._image_publication_pending = ticket
                 self.phase = Phase.RECOVERY_REQUIRED
             try:
@@ -712,11 +790,18 @@ class UpdateCoordinator(_ProcessThreadOwner):
                     self.phase = Phase.RECOVERY_REQUIRED
                     raise ImagePublicationIndeterminate(manifest.target_slot, manifest.target_image_sha256, error) from error
                 raise
-            self.phase = Phase.STAGED
-            self._image_publication_pending = None
-            return receipt
         finally:
-            os.close(descriptor)
+            try:
+                _close_owned_descriptors([descriptor])
+            except BaseException as error:
+                if publication_attempted or self._image_publication_pending is ticket:
+                    self._image_publication_pending = ticket
+                    self.phase = Phase.RECOVERY_REQUIRED
+                    raise ImagePublicationIndeterminate(manifest.target_slot, manifest.target_image_sha256, error) from error
+                raise
+        self.phase = Phase.STAGED
+        self._image_publication_pending = None
+        return receipt
 
     @_owner_guard
     def request_operator_rollback(self, ticket: ManifestTicket, source_image_path: Path) -> RecoveryDecision:
@@ -736,7 +821,7 @@ class UpdateCoordinator(_ProcessThreadOwner):
         try:
             digest, _ = _image_digest(descriptor)
         finally:
-            os.close(descriptor)
+            descriptor.close()
         if digest != manifest.source_image_sha256 or manifest.source_version < self.protected_rollback_floor:
             raise RecoveryRequired("operator rollback source does not match protected source identity")
         self.phase = Phase.ROLLBACK_PENDING
@@ -923,7 +1008,7 @@ class AtomicStateStore(_ProcessThreadOwner):
 
     def __init__(self, root: Path):
         self._bind_owner()
-        self._root_fd: int | None = None
+        self._root_fd: _OwnedDescriptor | None = None
         self._lease_fd: int | None = None
         self.root = Path(root).absolute()
         try:
@@ -941,19 +1026,8 @@ class AtomicStateStore(_ProcessThreadOwner):
         self._identity = (metadata.st_dev, metadata.st_ino)
 
     @_owner_guard
-    def _open_root(self) -> int:
-        descriptor = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
-        try:
-            for component in self.root.parts[1:]:
-                if component in {".", ".."}:
-                    raise StateRefused("state root path contains traversal")
-                next_descriptor = os.open(component, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=descriptor)
-                os.close(descriptor)
-                descriptor = next_descriptor
-            return descriptor
-        except BaseException:
-            os.close(descriptor)
-            raise
+    def _open_root(self) -> _OwnedDescriptor:
+        return _open_directory_components(self.root.parts[1:], "state root")
 
     def close(self) -> None:
         # fork copies share the same flock open-file description. LOCK_UN in
@@ -968,12 +1042,7 @@ class AtomicStateStore(_ProcessThreadOwner):
         # A stale integer must never close a subsequently reused descriptor.
         lease, root = getattr(self, "_lease_fd", None), getattr(self, "_root_fd", None)
         self._lease_fd = self._root_fd = None
-        try:
-            if lease is not None:
-                os.close(lease)
-        finally:
-            if root is not None:
-                os.close(root)
+        _close_owned_descriptors([descriptor for descriptor in (root, lease) if descriptor is not None])
 
     def __del__(self) -> None:
         # GC may run in another thread or in a fork child. Cleanup holds no
@@ -1010,7 +1079,7 @@ class AtomicStateStore(_ProcessThreadOwner):
             if (pathname.st_dev, pathname.st_ino) != self._identity:
                 raise StateRefused("state root pathname no longer names the retained directory")
         finally:
-            os.close(current_fd)
+            current_fd.close()
         if self._lease_fd is not None:
             lease = os.fstat(self._lease_fd)
             if not stat.S_ISREG(lease.st_mode) or lease.st_nlink != 1 or lease.st_uid not in {0, os.geteuid()} or stat.S_IMODE(lease.st_mode) & 0o077:
@@ -1025,7 +1094,8 @@ class AtomicStateStore(_ProcessThreadOwner):
                     raise StateRefused("coordinator lease pathname was replaced")
             finally:
                 os.close(named_fd)
-        return fd
+        # Borrow the integer only while this store retains its sole FD owner.
+        return fd.fileno()
 
     @_owner_guard
     def acquire(self) -> None:
@@ -1043,12 +1113,13 @@ class AtomicStateStore(_ProcessThreadOwner):
             if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or metadata.st_uid not in {0, os.geteuid()} or stat.S_IMODE(metadata.st_mode) != 0o600:
                 raise StateRefused("coordinator lease must be a trusted regular file with one hard link")
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except (OSError, StateRefused) as error:
-            os.close(fd)
+            self._lease_fd = fd
+        except BaseException as error:
+            self._lease_fd = None
+            _close_owned_descriptors([fd])
             if isinstance(error, OSError) and error.errno in {errno.EACCES, errno.EAGAIN}:
                 raise CoordinatorBusy("another update coordinator holds the lease") from error
             raise
-        self._lease_fd = fd
 
     @staticmethod
     def _name(name: str) -> str:
@@ -1133,7 +1204,12 @@ class AtomicStateStore(_ProcessThreadOwner):
             raise
         finally:
             if temp_fd is not None:
-                os.close(temp_fd)
+                try:
+                    _close_owned_descriptors([temp_fd])
+                except BaseException as error:
+                    if publication_attempted:
+                        raise PublicationIndeterminate(digest, error) from error
+                    raise
 
     @staticmethod
     def _check_staged_file(root_fd: int, name: str, retained_fd: int, data: bytes) -> None:
@@ -1206,16 +1282,17 @@ class ImageSlotStore(AtomicStateStore):
         return super().write(name, value, fault=fault)
 
     @_owner_guard
-    def _open_slot(self, root_fd: int, name: str) -> int:
+    def _open_slot(self, root_fd: int, name: str) -> _OwnedDescriptor:
+        descriptor = _OwnedDescriptor()
         try:
-            descriptor = os.open(name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=root_fd)
+            descriptor._fd = os.open(name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=root_fd)
         except OSError as error:
             raise StateRefused("image slot pathname is absent or unsafe") from error
         try:
             self._private_image(descriptor)
             return descriptor
         except BaseException:
-            os.close(descriptor)
+            descriptor.close()
             raise
 
     @staticmethod
@@ -1241,7 +1318,7 @@ class ImageSlotStore(AtomicStateStore):
                 raise StateRefused("image slot pathname changed during verification")
             self._private_image(descriptor)
         finally:
-            os.close(named_fd)
+            named_fd.close()
 
     @_owner_guard
     def _inactive_identity(self, root_fd: int, name: str) -> tuple[int, int] | None:
@@ -1254,7 +1331,7 @@ class ImageSlotStore(AtomicStateStore):
             metadata = os.fstat(descriptor)
             return metadata.st_dev, metadata.st_ino
         finally:
-            os.close(descriptor)
+            descriptor.close()
 
     @_owner_guard
     def _require_image_ticket(self, ticket: ManifestTicket) -> UpdateManifest:
@@ -1359,9 +1436,12 @@ class ImageSlotStore(AtomicStateStore):
                     pass
             raise
         finally:
-            os.close(active_fd)
-            if temp_fd is not None:
-                os.close(temp_fd)
+            try:
+                _close_owned_descriptors([descriptor for descriptor in (temp_fd, active_fd) if descriptor is not None])
+            except BaseException as error:
+                if publication_attempted:
+                    raise ImagePublicationIndeterminate(manifest.target_slot, manifest.target_image_sha256, error) from error
+                raise
 
     @_owner_guard
     def reconcile_image(self, ticket: ManifestTicket) -> ImageStageReceipt:
@@ -1371,7 +1451,7 @@ class ImageSlotStore(AtomicStateStore):
         active_name = f"slot-{self.active_slot}.img"
         target_name = f"slot-{manifest.target_slot}.img"
         active_fd = self._open_slot(root_fd, active_name)
-        target_fd: int | None = None
+        target_fd: _OwnedDescriptor | None = None
         try:
             target_fd = self._open_slot(root_fd, target_name)
             self._bound_image(root_fd, active_name, active_fd, manifest.source_image_sha256)
@@ -1385,9 +1465,10 @@ class ImageSlotStore(AtomicStateStore):
         except BaseException as error:
             raise ImagePublicationIndeterminate(manifest.target_slot, manifest.target_image_sha256, error) from error
         finally:
-            os.close(active_fd)
-            if target_fd is not None:
-                os.close(target_fd)
+            try:
+                _close_owned_descriptors([descriptor for descriptor in (target_fd, active_fd) if descriptor is not None])
+            except BaseException as error:
+                raise ImagePublicationIndeterminate(manifest.target_slot, manifest.target_image_sha256, error) from error
 
 
 class DurableUpdateJournal(AtomicStateStore):

@@ -66,22 +66,32 @@ class DurableResultUnavailable(DurableUpdateError):
 class _ScanRecord:
     """One shared fd owner, including an interrupted transfer into a scan."""
 
-    def __init__(self, name: str, descriptor: int):
+    def __init__(self, name: str):
         self.name = name
         self.metadata = None
-        self._descriptors = [descriptor]
+        # Construct before opening the file: constructor entry and return
+        # interruptions have no acquired raw descriptor to strand.
+        self._descriptors = []
 
     @property
     def descriptor(self) -> int:
         return self._descriptors[0]
 
     def close(self) -> None:
-        if self._descriptors:
+        descriptors = getattr(self, "_descriptors", None)
+        if descriptors:
             # The same record can reach both finally blocks if adoption is
             # interrupted. Detach its sole integer before the actual close;
             # a close that takes effect then raises must never be retried.
-            descriptor = self._descriptors.pop()
+            descriptor = descriptors.pop()
             os.close(descriptor)
+
+    def __del__(self) -> None:
+        # No record adoption, history update, receipt or lease authority in GC.
+        try:
+            self.close()
+        except BaseException:
+            pass
 
 
 def _fields(value: object, fields: set[str]) -> dict:
@@ -293,8 +303,9 @@ class DurableUpdateOwner:
 
     def _read(self, name: str, *, retained: list | None = None) -> tuple[dict, str]:
         root = self._state._check_root()
-        record = _ScanRecord(name, os.open(name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=root))
+        record = _ScanRecord(name)
         try:
+            record._descriptors = [os.open(name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=root)]
             descriptor = record.descriptor
             before = self._metadata(os.fstat(descriptor))
             if name in self._record_identities and before != self._record_identities[name]:
@@ -547,7 +558,7 @@ class DurableUpdateOwner:
         try:
             self._slots._bound_image(root, name, descriptor, self._coordinator.current_image_sha256)
         finally:
-            os.close(descriptor)
+            descriptor.close()
 
     def _verify_staged(self) -> None:
         manifest = self._ticket.manifest
@@ -563,7 +574,7 @@ class DurableUpdateOwner:
             self._slots._check_root()
             self._slots._bound_image(root, name, descriptor, manifest.target_image_sha256, manifest.target_image_bytes)
         finally:
-            os.close(descriptor)
+            descriptor.close()
 
     def _result(self, event: dict, digest: str) -> DurableUpdateResult:
         operation = event["operation"]
@@ -605,7 +616,7 @@ class DurableUpdateOwner:
             if digest != self._ticket.manifest.target_image_sha256:
                 raise DurableUpdateError("complete candidate image differs from the admitted manifest")
         finally:
-            os.close(descriptor)
+            descriptor.close()
         record = self._history[-1][0]["operation"]
         known_completion = False
         try:

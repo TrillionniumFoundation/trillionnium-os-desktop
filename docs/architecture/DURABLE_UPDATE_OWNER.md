@@ -104,6 +104,14 @@ reject same-byte replacement by a new inode. Descriptor cleanup uses one
 shared owner per scanned FD, detaches ownership before actual close, and
 attempts all owned closes even if one close raises after taking effect.
 
+Each scan record is constructed empty before its actual file open. The retained
+record receives the raw descriptor inside the protected read scope. Constructor
+call, first-line and final-return interruptions therefore acquire no scan FD.
+Descriptor-only garbage collection closes an acquired record that is discarded;
+explicit cleanup detaches the integer before `os.close` and never retries that
+number. GC does not adopt a record, acknowledge history or release a lease by an
+explicit unlock.
+
 An operation stores the complete signed manifest and actual signature
 admission bindings: signer ID, pinned public-key digest, detached-signature
 digest, domain-separated preimage digest, policy digest, minimum version and
@@ -124,6 +132,13 @@ within the underlying five-second bound; caller time is not authority.
 ## Actual staging and results
 
 The candidate is opened through the existing absolute no-follow path walk.
+The corrected S11 private acquisition helpers return a non-integer descriptor
+owner. The wrapper closes those owners through their `close()` method in active
+image verification, staged image verification and candidate prehashing. Actual
+filesystem calls borrow their FD through `fileno()` or the integer-index
+protocol; closing an owner disarms later GC before the kernel close, so reuse
+of its number cannot authorize a second close. The scanned JSON records keep
+their separate raw-descriptor ownership and cleanup protocol.
 Actual complete digest and signed byte length are checked before durable
 staging intent and before the core creates its image temporary file. Staging
 uses the existing 1 MiB streaming copy, with a maximum 16 GiB image. It
@@ -190,6 +205,11 @@ results and non-clean closure. Single-thread fork tests enforce inherited
 authority refusal and the parent lease; real SIGKILL tests interrupt four
 slot cutpoints and reopen the retained chain without replay. Line-trace
 interruptions with actual close and FD reuse check descriptor ownership.
+Actual private image consumer tests reuse the just-closed number before owner
+GC and retain the foreign file. Scan constructor call/first-line/return faults
+leave the prior FD inventory and history intact. Raw scan cleanup and GC tests
+exercise ordinary and interrupted real close, including reuse for the same
+inode, without a second close or leaked scan descriptor.
 
 Installed service startup/wiring, safe external recovery operators, actual
 bootloader/block-device adapters, authenticated installed boot and health,
@@ -201,9 +221,17 @@ status. Adding it to source CI/registry requires recording its actual source
 and tests separately; a source check cannot promote installed or release
 readiness.
 
-This four-file package does not modify its frozen S11 dependency. A separate
-audit reproduced an interrupted close in that dependency's directory path
-walk: an old FD integer could be closed again after reuse, while the newly
-opened directory FD leaked. The core correction and its actual close/reuse
-regressions must be applied and retested as a separate dependency change.
-Passing wrapper tests alone does not close that underlying cleanup finding.
+The S11 dependency correction has been applied separately: path walks detach
+each old owner before closing, attempt every owned cleanup, and preserve the
+successor directory or image until transfer. Real close/reuse regressions now
+preserve the foreign descriptor and close the successor. Private helper
+`RETURN_VALUE` interruptions dispose undelivered owners, and each core owner is
+constructed empty before its actual open or sealed-memfd creation. The wrapper
+uses that protocol and adds its independent raw scan record cleanup above.
+
+These tests establish the specific Python constructor, return and cleanup
+windows exercised. They do not prove every asynchronous opcode window between
+an original C `os.open`/`memfd_create` result and its assignment to a Python owner
+field or raw record list. Python cannot prove delivery of a returned value to
+the caller. The core and wrapper tests remain host mechanism evidence; none of
+these cleanup corrections closes the installation prerequisites listed above.
