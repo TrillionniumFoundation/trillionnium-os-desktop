@@ -6,6 +6,14 @@ step_identities() {
 set -euo pipefail
 tested_sha=$(git rev-parse HEAD)
 tested_tree_sha=$(git rev-parse 'HEAD^{tree}')
+[[ "${GITHUB_EVENT_NAME:-}" == "$EVENT_NAME" && "${GITHUB_SHA:-}" == "$tested_sha" ]] || {
+  echo "checkout does not bind the builtin GitHub event and commit" >&2
+  exit 1
+}
+[[ "${GITHUB_REPOSITORY,,}" == trillionniumfoundation/trillionnium-os-desktop ]] || {
+  echo "qualification event is for an unexpected repository" >&2
+  exit 1
+}
 mapfile -t parents < <(
   git show -s --format='%P' HEAD | tr ' ' '\n' | sed '/^$/d'
 )
@@ -24,10 +32,26 @@ case "$EVENT_NAME" in
     }
     evidence_mode=pr_synthetic_merge
     merged_candidate_sha=$candidate_head_sha
+    expected_base_ref=${EXPECTED_BASE_REF:-main}
+    git check-ref-format --branch "$expected_base_ref" >/dev/null
+    git fetch --no-tags origin "refs/heads/$expected_base_ref:refs/remotes/origin/$expected_base_ref"
+    [[ "$base_sha" == "$(git rev-parse "refs/remotes/origin/$expected_base_ref")" ]] || {
+      echo "checked-out merge first parent is not the current target branch" >&2
+      exit 1
+    }
     ;;
   push)
+    [[ "$GITHUB_REF" == "refs/heads/$GITHUB_REF_NAME" ]] || {
+      echo "push event ref does not bind its builtin branch name" >&2
+      exit 1
+    }
     candidate_head_sha=$tested_sha
     if [[ "$GITHUB_REF_NAME" == main ]]; then
+      git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+      [[ "$tested_sha" == "$(git rev-parse refs/remotes/origin/main)" ]] || {
+        echo "main push checkout is not the current main commit" >&2
+        exit 1
+      }
       [[ ${#parents[@]} -ge 1 ]] || {
         echo "exact-main qualification requires at least one parent" >&2
         exit 1
@@ -97,7 +121,8 @@ sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' \
 sudo apt-get update
 xargs -r sudo apt-get install -y --no-install-recommends < /tmp/servo-packages.txt
 sudo apt-get install -y --no-install-recommends \
-  iproute2 mesa-utils x11-utils xdotool xvfb
+  iproute2 libx11-6 mesa-utils x11-utils xdotool xvfb
+command -v xmessage
 sudo apt-get purge -y fonts-droid-fallback || true
 sudo rm -rf /var/lib/apt/lists/*
 }
@@ -122,10 +147,14 @@ set -euo pipefail
 export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
 overlay="$RUNNER_TEMP/trillionnium_headed_runtime.rs"
 cp experiments/servo-headed-runtime/src/main.rs "$overlay"
+install -D -m 0644 experiments/servo-headed-runtime/src/input_ownership.rs \
+  "$RUNNER_TEMP/input_ownership.rs"
 rustfmt --edition 2024 "$overlay"
 rustfmt --edition 2024 --check "$overlay"
 install -D -m 0644 "$overlay" \
   servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs
+install -D -m 0644 "$RUNNER_TEMP/input_ownership.rs" \
+  servo-source/ports/servoshell/examples/input_ownership.rs
 install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 {
@@ -149,11 +178,463 @@ cargo build --locked --manifest-path servo-source/Cargo.toml \
   2>&1 | tee artifacts/servo-headed-runtime/cargo-build.log
 }
 
+# The permanent workflow's v1 negative corpus is independent of this file's old
+# full v2 positive runner/verifier. Never route v1 results through those modes.
+step_run_held_gestures_v1() {
+unset PYTHONOPTIMIZE
+python3 - <<'PY'
+from contextlib import ExitStack
+from pathlib import Path
+import ctypes
+import hashlib
+import json
+import os
+import re
+import resource
+import signal
+import socket
+import subprocess
+import time
+import traceback
+import uuid
+
+root = Path.cwd()
+output = root / 'artifacts/servo-headed-runtime/held-gestures-v1'
+binary = root / 'servo-source/target/debug/examples/trillionnium_headed_runtime'
+failure = 'native held gesture withdrawn; fresh Servo owner recovery is required'
+
+
+def require(condition, message):
+    if not condition:
+        raise RuntimeError(message)
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def command(arguments, environment=None, timeout=5):
+    return subprocess.run(arguments, env=environment, check=True, timeout=timeout,
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).stdout.strip()
+
+
+def write_json(path, value):
+    path.write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+
+
+def process_stat(pid):
+    values = Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()
+    return {'pid': pid, 'ppid': int(values[1]), 'pgid': int(values[2]),
+            'session': int(values[3]), 'start_time': int(values[19]), 'state': values[0]}
+
+
+def members(group):
+    rows = []
+    for entry in Path('/proc').iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            row = process_stat(int(entry.name))
+        except (FileNotFoundError, ProcessLookupError):
+            continue
+        if row['pgid'] == group:
+            require(row['session'] == group, 'owned process group changed its session identity')
+            rows.append(row)
+    return sorted(rows, key=lambda row: row['pid'])
+
+
+def spawn(arguments, environment, log, pass_fds=()):
+    process = subprocess.Popen(arguments, env=environment, stdout=log,
+                               stderr=subprocess.STDOUT, start_new_session=True, pass_fds=pass_fds)
+    try:
+        row = process_stat(process.pid)
+        require(row['pgid'] == process.pid and row['session'] == process.pid,
+                'new child does not own its new session and process group')
+        process._hepta_identity = row
+        process._hepta_cleanup_complete = False
+    except BaseException:
+        # The unreaped direct child still anchors its PID. Without the captured
+        # session identity, only that child may be signalled, never a numeric group.
+        try:
+            os.kill(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait(timeout=5)
+        raise
+    return process, row
+
+
+def anchored_identity(process):
+    expected = process._hepta_identity
+    require(process.returncode is None, 'leader was reaped before owned group cleanup')
+    current = process_stat(process.pid)
+    require(all(current[key] == expected[key] for key in ('pid', 'start_time', 'pgid', 'session')),
+            'captured leader PID/start-time/session/group identity no longer matches')
+    return current
+
+
+def observe_exit(process):
+    anchored_identity(process)
+    result = os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOWAIT | os.WNOHANG)
+    if result is None:
+        return None
+    if result.si_code == os.CLD_EXITED:
+        return result.si_status
+    require(result.si_code in (os.CLD_KILLED, os.CLD_DUMPED), 'unexpected native waitid outcome')
+    return -result.si_status
+
+
+def wait_exit(process, seconds):
+    deadline = time.monotonic() + seconds
+    while True:
+        result = observe_exit(process)
+        if result is not None:
+            return result
+        require(time.monotonic() < deadline, 'bounded native exit observation expired')
+        time.sleep(0.05)
+
+
+def cleanup(process):
+    if process is None:
+        return []
+    if process._hepta_cleanup_complete:
+        return []  # No reused numeric PID/group is touched after the original closes.
+    group = process.pid
+    require(group > 1 and group != os.getpgrp(), 'refusing to clean an unowned group')
+    anchored_identity(process)
+    before = members(group)
+    anchored_identity(process)
+    try:
+        os.killpg(group, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    # The harness is a Linux subreaper, so content children orphaned by the
+    # native fixture's explicit exit can be reaped. Keep the unreaped leader as
+    # the numeric session/group anchor until all other members have disappeared.
+    started = time.monotonic()
+    deadline = started + 7
+    killed = False
+    while True:
+        anchored_identity(process)
+        for row in members(group):
+            if row['pid'] == group:
+                continue
+            try:
+                os.waitpid(row['pid'], os.WNOHANG)
+            except ChildProcessError:
+                pass  # Still owned by a live leader; adoption happens on its exit.
+        remaining = members(group)
+        if observe_exit(process) is not None and all(row['pid'] == group for row in remaining):
+            # The last member is our captured, exited leader. Only now may its
+            # original PID/session be released; no later kill uses this number.
+            process.wait(timeout=1)
+            process._hepta_cleanup_complete = True
+            return before
+        if not killed and time.monotonic() >= started + 2:
+            anchored_identity(process)
+            try:
+                os.killpg(group, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            killed = True
+        require(time.monotonic() < deadline, 'owned process group did not disappear after bounded cleanup')
+        time.sleep(0.05)
+
+
+def wait_for(predicate, seconds, process=None):
+    deadline = time.monotonic() + seconds
+    while True:
+        value = predicate()
+        if value:
+            return value
+        require(process is None or observe_exit(process) is None, 'native/helper process exited before readiness')
+        require(time.monotonic() < deadline, 'bounded native readiness wait expired')
+        time.sleep(0.05)
+
+
+def unique_window(environment, title, pid=None):
+    arguments = ['xdotool', 'search', '--onlyvisible']
+    if pid is not None:
+        arguments += ['--pid', str(pid)]
+    arguments += ['--name', title]
+    try:
+        result = command(arguments, environment)
+    except subprocess.CalledProcessError:
+        return None
+    windows = result.splitlines()
+    require(len(windows) == 1, 'native stimulus did not bind one visible owned window')
+    return int(windows[0])
+
+
+def pointer(environment):
+    x11 = ctypes.CDLL('libX11.so.6')
+    x11.XOpenDisplay.argtypes = [ctypes.c_char_p]
+    x11.XOpenDisplay.restype = ctypes.c_void_p
+    x11.XDefaultRootWindow.argtypes = [ctypes.c_void_p]
+    x11.XDefaultRootWindow.restype = ctypes.c_ulong
+    x11.XQueryPointer.argtypes = [ctypes.c_void_p, ctypes.c_ulong,
+        ctypes.POINTER(ctypes.c_ulong), ctypes.POINTER(ctypes.c_ulong),
+        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_uint)]
+    x11.XQueryPointer.restype = ctypes.c_int
+    x11.XCloseDisplay.argtypes = [ctypes.c_void_p]
+    display = x11.XOpenDisplay(environment['DISPLAY'].encode())
+    require(display, 'could not open the case X11 display for actual button observation')
+    try:
+        root_window, child = ctypes.c_ulong(), ctypes.c_ulong()
+        root_x, root_y, window_x, window_y = (ctypes.c_int() for _ in range(4))
+        mask = ctypes.c_uint()
+        require(x11.XQueryPointer(display, x11.XDefaultRootWindow(display),
+            ctypes.byref(root_window), ctypes.byref(child), ctypes.byref(root_x), ctypes.byref(root_y),
+            ctypes.byref(window_x), ctypes.byref(window_y), ctypes.byref(mask)), 'XQueryPointer failed')
+        return {'root_x': root_x.value, 'root_y': root_y.value,
+                'child_window': child.value, 'button_mask': mask.value & 0x1f00}
+    finally:
+        x11.XCloseDisplay(display)
+
+
+def listeners():
+    rows = []
+    for line in Path('/proc/self/net/tcp').read_text().splitlines()[1:]:
+        fields = line.split()
+        if fields[3] != '0A':
+            continue
+        address, port = fields[1].split(':')
+        rows.append({'address': socket.inet_ntoa(bytes.fromhex(address)[::-1]),
+                     'port': int(port, 16), 'inode': int(fields[9])})
+    return rows
+
+
+def fixture_listener(pid):
+    inodes = set()
+    for fd in Path(f'/proc/{pid}/fd').iterdir():
+        try:
+            target = os.readlink(fd)
+        except FileNotFoundError:
+            continue
+        match = re.fullmatch(r'socket:\[(\d+)\]', target)
+        if match:
+            inodes.add(int(match[1]))
+    owned = [row for row in listeners() if row['inode'] in inodes]
+    require(len(owned) == 1 and owned[0]['address'] == '127.0.0.1' and owned[0]['port'] > 0,
+            'native fixture did not own exactly one ephemeral IPv4 loopback listener')
+    return owned[0]
+
+
+def read_json(path):
+    def unique_pairs(pairs):
+        value = {}
+        for key, item in pairs:
+            require(key not in value, 'duplicate diagnostic JSON key')
+            value[key] = item
+        return value
+    data = path.read_bytes()
+    require(0 < len(data) <= 2 * 1024 * 1024, 'diagnostic JSON exceeded its supported bound')
+    return json.loads(data.decode('utf-8'), object_pairs_hook=unique_pairs)
+
+
+def verify_case(directory, case, returncode):
+    require(returncode == 1, 'native refusal must exit 1; timeout/signal/success is not negative evidence')
+    report = read_json(directory / 'runtime-result.json')
+    state = read_json(directory / 'runtime-state.json')
+    gesture = read_json(directory / 'gesture-recovery-required.json')
+    require(report == {'schema': 'trillionnium.desktop.d0a02-headed-runtime.v1', 'status': 'FAIL',
+                      'failure': failure, 'servo_started': True, 'product_ready': False},
+            'runtime did not report the exact held-gesture refusal')
+    require(report['servo_started'] is True and report['product_ready'] is False,
+            'runtime claim flags must be typed JSON booleans')
+    expected_reasons = {'chrome': {'content_boundary'},
+                        'window-leave': {'content_boundary', 'window_leave'},
+                        'focus-loss': {'window_focus_lost'}}
+    expected_gesture = {'schema': 'trillionnium.desktop.native-gesture-withdrawal.v1',
+        'generation': 1, 'reason': gesture.get('reason'), 'held_button_count': 1,
+        'recovery_required': True, 'owned_webview_handle_removed': True,
+        'synthetic_mouse_release_sent': False, 'servo_mouse_state_reset_proven': False,
+        'automatic_reconstruction_allowed': False, 'product_ready': False}
+    require(gesture == expected_gesture and gesture['reason'] in expected_reasons[case]
+            and type(gesture['generation']) is int and type(gesture['held_button_count']) is int,
+            'typed withdrawal does not bind this native stimulus and generation')
+    for key, expected in expected_gesture.items():
+        if type(expected) is bool:
+            require(gesture[key] is expected, 'withdrawal claim flags must be typed JSON booleans')
+    require(state['schema'] == 'trillionnium.desktop.d0a02-runtime-state.v1'
+            and state['failure'] == failure and type(state['generation']) is int
+            and state['generation'] == 1, 'refusal changed its content generation')
+    require(type(state['native_button_events']) is int and state['native_button_events'] == 1
+            and type(state['native_pointer_events']) is int and state['native_pointer_events'] > 0,
+            'case must admit exactly one native Down and no Up')
+    require(type(state['native_wheel_events']) is int and state['native_wheel_events'] == 0
+            and type(state['native_keyboard_events']) is int and state['native_keyboard_events'] == 0,
+            'negative case admitted unrelated input')
+    for key in ('load_complete', 'content_screenshot_saved', 'workspace_screenshot_saved',
+                'focus_ready', 'input_marker_written', 'chrome_initial_ok'):
+        require(state[key] is True, 'refusal was not exercised after actual initial native readiness')
+    for key in ('synthetic_ime_sent', 'page_evidence_requested', 'initial_page_evidence_present',
+                'recovery_page_evidence_present', 'crash_triggered', 'crash_observed',
+                'crash_workspace_saved', 'recovery_started', 'chrome_recovery_ok'):
+        require(state[key] is False, 'negative case must not qualify crash, synthetic IME or recovery')
+    for name in ('content-generation-2.png', 'workspace-generation-2.png',
+                 'content-process-identity.json', 'content-sigkill-sent.json', 'gate-evidence.json'):
+        require(not (directory / name).exists(), 'negative case published a recovery/fault qualification artifact')
+    return gesture
+
+
+def run_case(case):
+    directory = output / case
+    directory.mkdir(mode=0o700)
+    native = helper = xvfb = None
+    fixture = None
+    facts = {'case': case, 'stimulus': [], 'synthetic_mouse_up_injected': False}
+    with ExitStack() as stack:
+        try:
+            display_path = directory / 'display-number'
+            display_fd = stack.enter_context(display_path.open('w'))
+            xvfb_log = stack.enter_context((directory / 'xvfb.log').open('w'))
+            # Xvfb chooses a fresh display; every case gets a fresh physical button
+            # state. No cleanup MouseUp can ever be delivered to an old WebView.
+            xvfb, xvfb_identity = spawn(['Xvfb', '-displayfd', str(display_fd.fileno()),
+                '-screen', '0', '1280x900x24', '-nolisten', 'tcp'], dict(os.environ), xvfb_log,
+                pass_fds=(display_fd.fileno(),))
+            number = wait_for(lambda: display_path.read_text().strip(), 10, xvfb)
+            require(re.fullmatch(r'[0-9]+', number), 'Xvfb published an invalid display number')
+            environment = dict(os.environ, DISPLAY=f':{number}', HEPTA_D0A02_OUTPUT=str(directory),
+                               RUST_BACKTRACE='1')
+            environment.pop('WAYLAND_DISPLAY', None)
+            environment.pop('HEPTA_D0A02_INPUT_NONCE', None)
+            (directory / 'xdpyinfo.txt').write_text(command(['xdpyinfo'], environment))
+            if case == 'focus-loss':
+                title = f'HEPTA held gesture focus withdrawal {uuid.uuid4().hex}'
+                helper_log = stack.enter_context((directory / 'focus-helper.log').open('w'))
+                helper, helper_identity = spawn(['xmessage', '-title', title, '-geometry',
+                    '120x50+1100+10', '-buttons', 'Close:0', 'Native focus withdrawal'], environment, helper_log)
+                helper_window = wait_for(lambda: unique_window(environment, f'^{title}$'), 10, helper)
+                facts['focus_helper'] = {**helper_identity, 'window_id': helper_window, 'title': title}
+            native_log = stack.enter_context((directory / 'runtime.log').open('w'))
+            native, identity = spawn([str(binary)], environment, native_log)
+            facts['native_process'] = identity
+            require(Path(f'/proc/{native.pid}/exe').resolve() == binary.resolve(),
+                    'native process executable changed from the compiled pin target')
+            wait_for(lambda: (directory / 'input-ready').is_file(), 60, native)
+            fixture = fixture_listener(native.pid)
+            facts['fixture_listener'] = fixture
+            window = wait_for(lambda: unique_window(environment, 'TrillionniumOS Desktop.*D0A-02', native.pid),
+                              10, native)
+            facts['native_window_id'] = window
+            (directory / 'xwininfo.txt').write_text(command(['xwininfo', '-id', str(window)], environment))
+            command(['xdotool', 'windowfocus', '--sync', str(window)], environment)
+            require(command(['xdotool', 'getwindowfocus'], environment) == str(window),
+                    'native window did not receive actual X11 focus')
+            command(['xdotool', 'mousemove', '--sync', '--window', str(window), '200', '132'], environment)
+            time.sleep(0.2)
+            facts['pointer_before_down'] = pointer(environment)
+            require(facts['pointer_before_down']['button_mask'] == 0,
+                    'fresh case inherited a held mouse button')
+            command(['xdotool', 'mousedown', '1'], environment)
+            time.sleep(0.2)
+            facts['pointer_after_down'] = pointer(environment)
+            require(facts['pointer_after_down']['button_mask'] == 0x100,
+                    'X11 server did not observe the exact held Button1')
+            facts['stimulus'].append({'event': 'native_x11_mousedown', 'button': 1})
+            if case == 'chrome':
+                command(['xdotool', 'mousemove', '--sync', '--window', str(window), '10', '10'], environment)
+                facts['stimulus'].append({'event': 'native_x11_move_to_chrome', 'x': 10, 'y': 10})
+            elif case == 'window-leave':
+                geometry = dict(line.split('=', 1) for line in
+                    command(['xdotool', 'getwindowgeometry', '--shell', str(window)], environment).splitlines())
+                x, y, width = (int(geometry[key]) for key in ('X', 'Y', 'WIDTH'))
+                outside_x = x + width + 20 if x + width + 20 < 1280 else x - 20
+                require(0 <= outside_x < 1280 and 0 <= y + 132 < 900,
+                        'native geometry leaves no supported on-screen outside coordinate')
+                command(['xdotool', 'mousemove', '--sync', str(outside_x), str(y + 132)], environment)
+                facts['stimulus'].append({'event': 'native_x11_move_outside_window',
+                                          'root_x': outside_x, 'root_y': y + 132, 'geometry': geometry})
+            else:
+                command(['xdotool', 'windowfocus', '--sync', str(helper_window)], environment)
+                require(command(['xdotool', 'getwindowfocus'], environment) == str(helper_window),
+                        'actual helper did not take focus from the native owner')
+                facts['stimulus'].append({'event': 'native_x11_focus_withdrawal', 'window_id': helper_window})
+            facts['pointer_after_withdrawal'] = pointer(environment)
+            require(facts['pointer_after_withdrawal']['button_mask'] == 0x100,
+                    'withdrawal stimulus lost the held button before observing refusal')
+            write_json(directory / 'stimulus.json', facts)
+            returncode = wait_exit(native, 30)
+            facts['native_exit_code'] = returncode
+            gesture = verify_case(directory, case, returncode)
+            facts['observed_withdrawal'] = gesture
+        except BaseException:
+            (directory / 'harness-failure.txt').write_text(traceback.format_exc())
+            raise
+        finally:
+            errors = []
+            facts['cleanup'] = {}
+            for name, process in (('native', native), ('focus_helper', helper), ('xvfb', xvfb)):
+                try:
+                    facts['cleanup'][name] = {'group_members_before_cleanup': cleanup(process),
+                                              'owned_group_absent_after_cleanup': True}
+                except BaseException as error:
+                    errors.append(f'{name}: {error}')
+                    facts['cleanup'][name] = {'error': str(error)}
+            if fixture is not None:
+                gone = all(row['inode'] != fixture['inode'] for row in listeners())
+                facts['fixture_listener_absent_after_cleanup'] = gone
+                if not gone:
+                    errors.append('native fixture listener remained after process-group cleanup')
+            write_json(directory / 'stimulus.json', facts)
+            require(not errors, 'bounded owned cleanup failed: ' + '; '.join(errors))
+    facts['raw_fact_sha256'] = {name: digest(directory / name) for name in
+        ('runtime-result.json', 'runtime-state.json', 'gesture-recovery-required.json',
+         'stimulus.json', 'runtime.log', 'xwininfo.txt', 'xdpyinfo.txt')}
+    return facts
+
+
+require(binary.is_file() and os.access(binary, os.X_OK), 'compile the exact pinned native target before this mode')
+identity = {key.lower(): os.environ[key] for key in ('BASE_SHA', 'CANDIDATE_HEAD_SHA', 'TESTED_SHA',
+    'TESTED_TREE_SHA', 'EVIDENCE_MODE', 'GITHUB_REPOSITORY', 'GITHUB_EVENT_NAME')}
+require(identity['tested_sha'] == command(['git', 'rev-parse', 'HEAD'])
+        and identity['tested_tree_sha'] == command(['git', 'rev-parse', 'HEAD^{tree}']),
+        'negative corpus does not bind the recorded exact source object')
+libc = ctypes.CDLL(None, use_errno=True)
+require(libc.prctl(36, 1, 0, 0, 0) == 0, 'Linux child-subreaper custody is required for bounded native cleanup')
+# Fixed 1024x768 screenshots fit this profile. The inherited file-size limit
+# bounds each runtime/helper/Xvfb log; exhaustion fails instead of minting PASS.
+logfile_limit = 16 * 1024 * 1024
+resource.setrlimit(resource.RLIMIT_FSIZE, (logfile_limit, logfile_limit))
+output.parent.mkdir(parents=True, exist_ok=True)
+output.mkdir(mode=0o700)  # Refuse stale markers/diagnostics from an earlier run.
+binary_sha256 = digest(binary)
+receipt = {'schema': 'trillionnium.desktop.native-held-gesture-corpus.v1',
+    'status': 'PASS_HELD_GESTURE_REFUSAL_LOCAL_X11_ONLY',
+    'servo_commit': '670ae8a70801b162e186f81cbb5bdd2d59c39108',
+    'evidence_identity': identity, 'compiled_native_binary_sha256': binary_sha256,
+    'harness_regular_file_limit_bytes': logfile_limit,
+    'source_sha256': {name: digest(root / name) for name in
+        ('.github/workflows/servo-headed-runtime.yml', 'tools/run_servo_headed_runtime_gate.sh',
+         'experiments/servo-headed-runtime/src/main.rs',
+         'experiments/servo-headed-runtime/src/input_ownership.rs',
+         'experiments/servo-headed-runtime/fixture/index.html', 'manifests/servo.lock.json')},
+    'claim_ceiling': {'local_native_x11_xtest_only': True, 'physical_hardware_input_qualified': False,
+        'mouse_cancellation_proven': False, 'same_servo_recovery_qualified': False,
+        'dom_action_success_receipt': False, 'installed_browser_actor': False,
+        'os_ime_qualified': False, 'product_ready': False}, 'cases': []}
+try:
+    for case in ('chrome', 'window-leave', 'focus-loss'):
+        receipt['cases'].append(run_case(case))
+    require(digest(binary) == binary_sha256, 'compiled native target changed during the negative corpus')
+    write_json(output / 'negative-corpus.json', receipt)
+except BaseException:
+    (output / 'harness-failure.txt').write_text(traceback.format_exc())
+    raise
+PY
+}
+
 step_run_runtime() {
 set -euo pipefail
 output="$PWD/artifacts/servo-headed-runtime/runtime"
-mkdir -p "$output"
+mkdir -p "$(dirname "$output")"
+mkdir -m 0700 "$output"
 export HEPTA_D0A02_OUTPUT="$output"
+HEPTA_D0A02_INPUT_NONCE=$(python3 -c 'import secrets; print(secrets.token_hex(16))')
+export HEPTA_D0A02_INPUT_NONCE
 export RUST_BACKTRACE=1
 
 Xvfb :99 -screen 0 1280x900x24 -nolisten tcp >"$output/xvfb.log" 2>&1 &
@@ -169,6 +650,7 @@ cleanup() {
 }
 trap cleanup EXIT
 export DISPLAY=:99
+unset WAYLAND_DISPLAY
 for _ in $(seq 1 100); do
   xdpyinfo >/dev/null 2>&1 && break
   sleep 0.1
@@ -178,6 +660,11 @@ xdpyinfo >"$output/xdpyinfo.txt"
 servo-source/target/debug/examples/trillionnium_headed_runtime \
   >"$output/runtime.log" 2>&1 &
 app_pid=$!
+export HEPTA_D0A02_OWNER_PID=$app_pid
+if [[ -n "${GITHUB_ENV:-}" ]]; then
+  printf 'HEPTA_D0A02_INPUT_NONCE=%s\nHEPTA_D0A02_OWNER_PID=%s\n' \
+    "$HEPTA_D0A02_INPUT_NONCE" "$app_pid" >> "$GITHUB_ENV"
+fi
 for _ in $(seq 1 600); do
   [[ -f "$output/input-ready" ]] && break
   kill -0 "$app_pid" 2>/dev/null || {
@@ -190,21 +677,13 @@ test -f "$output/input-ready"
 
 window_id="$(xdotool search --name 'TrillionniumOS Desktop.*D0A-02' | head -n1)"
 test -n "$window_id"
+test "$(xdotool getwindowpid "$window_id")" = "$app_pid"
 xwininfo -id "$window_id" >"$output/xwininfo.txt"
 xdotool windowfocus --sync "$window_id"
 test "$(xdotool getwindowfocus)" = "$window_id"
 
-xdotool mousemove --sync --window "$window_id" 200 132
-xdotool mousedown 1
-xdotool mouseup 1
-xdotool key k
-xdotool mousemove --sync --window "$window_id" 400 164
-xdotool mousedown 1
-xdotool mouseup 1
-xdotool click 5
-xdotool mousemove --sync --window "$window_id" 200 132
-xdotool mousedown 1
-xdotool mouseup 1
+python3 tools/native_input_checkpoints.py drive --output "$output" \
+  --pid "$app_pid" --window "$window_id" --nonce "$HEPTA_D0A02_INPUT_NONCE"
 
 ps -eo pid,ppid,stat,args >"$output/process-table-during-input.txt"
 timeout 180 tail --pid="$app_pid" -f /dev/null
@@ -215,6 +694,10 @@ ps -eo pid,ppid,stat,args >"$output/process-table-after-result.txt"
 
 step_enforce_evidence() {
 set -euo pipefail
+unset PYTHONOPTIMIZE
+python3 tools/native_input_checkpoints.py verify \
+  --output "$PWD/artifacts/servo-headed-runtime/runtime" \
+  --pid "$HEPTA_D0A02_OWNER_PID" --nonce "$HEPTA_D0A02_INPUT_NONCE"
 python3 - <<'PY'
 from pathlib import Path
 import hashlib
@@ -257,7 +740,8 @@ assert report['external_navigation_requests_denied'] > 0
 
 initial = report['initial_page_evidence']
 assert initial['generation'] == 1 and initial['loaded'] is True
-assert initial['pointerMoves'] > 0 and initial['pointerDowns'] > 0
+assert initial['pointerMoves'] > 0 and initial['pointerDowns'] == 3
+assert 'x' not in [str(item).lower() for item in initial['keyDowns']]
 assert initial['clicks'] > 0 and initial['wheels'] > 0
 assert 'k' in [str(item).lower() for item in initial['keyDowns']]
 assert initial['popupAttempted'] is True
@@ -452,6 +936,7 @@ PY
 step_restore_servo() {
 rm -f \
   servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
+  servo-source/ports/servoshell/examples/input_ownership.rs \
   servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
 test -z "$(git -C servo-source status --porcelain=v1)"
 }
@@ -487,6 +972,9 @@ case "${1:-}" in
     ;;
   run-runtime)
     step_run_runtime
+    ;;
+  run-held-gestures-v1)
+    step_run_held_gestures_v1
     ;;
   enforce-evidence)
     step_enforce_evidence
