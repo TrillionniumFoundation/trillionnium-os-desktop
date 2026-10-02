@@ -17,10 +17,11 @@ import re
 import secrets
 import stat
 import subprocess
-import tempfile
+import threading
 import time
 from dataclasses import dataclass
 from enum import Enum
+from functools import wraps
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
 
@@ -35,6 +36,7 @@ MAX_BOOT_FAILURES = 2
 MAX_SIGNATURE_BYTES = 64 * 1024
 MAX_PUBLIC_KEY_BYTES = 64 * 1024
 SIGNATURE_DOMAIN = b"trillionnium.desktop.update-manifest-signature.v1\x00"
+OPENSSL_ENV = {"PATH": "/usr/bin:/bin", "OPENSSL_CONF": "/dev/null", "LC_ALL": "C"}
 _HASH = re.compile(r"[0-9a-f]{64}\Z")
 _ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/@+-]{0,127}\Z")
 _SEAL = object()
@@ -58,6 +60,47 @@ class RecoveryRequired(UpdateError):
 
 class CoordinatorBusy(UpdateError):
     pass
+
+
+class _ProcessThreadOwner:
+    """Authority stays in its creating process and thread, including after fork."""
+
+    _ownership_error = StateRefused
+
+    def _bind_owner(self) -> None:
+        self._owner_pid = os.getpid()
+        self._owner_thread = threading.current_thread()
+
+    def _check_owner(self) -> None:
+        if os.getpid() != self._owner_pid or threading.current_thread() is not self._owner_thread:
+            raise self._ownership_error("update authority requires its creating process and thread")
+
+
+def _owner_guard(method):
+    @wraps(method)
+    def invoke(self, *args, **kwargs):
+        self._check_owner()
+        return method(self, *args, **kwargs)
+    return invoke
+
+
+def _sealed_snapshot(name: str, data: bytes) -> int:
+    """Immutable inherited verifier input, never a mutable filesystem pathname."""
+    descriptor = os.memfd_create(name, os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+    try:
+        view = memoryview(data)
+        while view:
+            written = os.write(descriptor, view)
+            if written <= 0:
+                raise OSError("verifier snapshot write made no progress")
+            view = view[written:]
+        fcntl.fcntl(descriptor, fcntl.F_ADD_SEALS,
+                    fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL)
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
 
 
 class PublicationIndeterminate(UpdateError):
@@ -268,11 +311,14 @@ class SignatureAdmission:
             raise ManifestRefused("signature admission was not verified")
 
 
-class ExternalUpdateSignatureVerifier:
+class ExternalUpdateSignatureVerifier(_ProcessThreadOwner):
     """Offline verification with approved roots; no signing or network path."""
 
+    _ownership_error = ManifestRefused
+
     def __init__(self, roots: tuple[UpdateTrustRoot, ...]):
-        if not isinstance(roots, tuple) or not roots or len(roots) > 32 or any(not isinstance(root, UpdateTrustRoot) for root in roots):
+        self._bind_owner()
+        if type(roots) is not tuple or not roots or len(roots) > 32 or any(type(root) is not UpdateTrustRoot for root in roots):
             raise ManifestRefused("one bounded externally supplied trust-root set is required")
         if len({root.signer_id for root in roots}) != len(roots):
             raise ManifestRefused("approved signer identities are duplicated")
@@ -283,6 +329,7 @@ class ExternalUpdateSignatureVerifier:
                   for root in sorted(roots, key=lambda root: root.signer_id)]
         self.policy_sha256 = hashlib.sha256(_canonical({"roots": policy})).hexdigest()
 
+    @_owner_guard
     def _root(self, signer_id: str, now_unix: int) -> UpdateTrustRoot:
         _positive_int(now_unix, "now_unix")
         if not isinstance(signer_id, str) or _ID.fullmatch(signer_id) is None:
@@ -294,6 +341,7 @@ class ExternalUpdateSignatureVerifier:
             raise ManifestRefused("approved signer is outside its validity window")
         return root
 
+    @_owner_guard
     def verify(self, payload: bytes | str, signature: bytes, *, now_unix: int) -> SignatureAdmission:
         value = _strict_object(payload, MAX_MANIFEST_BYTES)
         preimage = manifest_signing_bytes(payload)
@@ -310,17 +358,21 @@ class ExternalUpdateSignatureVerifier:
             metadata = executable.lstat()
             if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != 0 or stat.S_IMODE(metadata.st_mode) & 0o022:
                 raise ManifestRefused("system signature verifier executable is not trusted")
-            with tempfile.TemporaryDirectory(prefix="trillionnium-update-verify-") as directory:
-                snapshot = Path(directory)
-                for name, data in (("manifest.bin", preimage), ("signature.bin", signature), ("public.pem", root.public_key_pem)):
-                    with (snapshot / name).open("xb") as stream:
-                        os.fchmod(stream.fileno(), 0o600)
-                        stream.write(data)
-                result = subprocess.run([str(executable), "dgst", "-sha256", "-verify", str(snapshot / "public.pem"),
-                                         "-signature", str(snapshot / "signature.bin"), str(snapshot / "manifest.bin")],
+            snapshots = []
+            try:
+                for name, data in (("update-preimage", preimage), ("update-signature", signature),
+                                   ("update-public-key", root.public_key_pem)):
+                    snapshots.append(_sealed_snapshot(name, data))
+                manifest_fd, signature_fd, key_fd = snapshots
+                result = subprocess.run([str(executable), "dgst", "-sha256", "-verify", f"/proc/self/fd/{key_fd}",
+                                         "-signature", f"/proc/self/fd/{signature_fd}", f"/proc/self/fd/{manifest_fd}"],
                                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                        stderr=subprocess.DEVNULL, timeout=15, check=False)
-        except (OSError, subprocess.TimeoutExpired) as error:
+                                        stderr=subprocess.DEVNULL, env=OPENSSL_ENV,
+                                        pass_fds=tuple(snapshots), timeout=15, check=False)
+            finally:
+                for descriptor in reversed(snapshots):
+                    os.close(descriptor)
+        except (OSError, AttributeError, subprocess.TimeoutExpired) as error:
             raise ManifestRefused("offline update signature verification is unavailable") from error
         if result.returncode != 0:
             raise ManifestRefused("detached update signature verification failed")
@@ -328,6 +380,7 @@ class ExternalUpdateSignatureVerifier:
                                   hashlib.sha256(preimage).hexdigest(), self.policy_sha256,
                                   root.minimum_version, now_unix, _SEAL)
 
+    @_owner_guard
     def revalidate(self, admission: SignatureAdmission, *, now_unix: int) -> None:
         if admission._seal is not _SEAL or admission.trust_policy_sha256 != self.policy_sha256:
             raise ManifestRefused("signature admission belongs to a stale trust policy")
@@ -483,7 +536,7 @@ class RecoveryDecision:
     action: str = "rollback_only_no_replay"
 
 
-class UpdateCoordinator:
+class UpdateCoordinator(_ProcessThreadOwner):
     """Single-operation, fail-closed A/B update coordinator."""
 
     def __init__(
@@ -499,6 +552,7 @@ class UpdateCoordinator:
         recovery_operator_uids: frozenset[int] = frozenset(),
         journal_authority: "DurableUpdateJournal | None" = None,
     ) -> None:
+        self._bind_owner()
         if active_slot not in {"A", "B"}:
             raise StateRefused("active slot is invalid")
         if type(current_version) is not int or current_version <= 0 or not isinstance(current_image_sha256, str) or _HASH.fullmatch(current_image_sha256) is None:
@@ -509,8 +563,10 @@ class UpdateCoordinator:
         self.current_version = current_version
         self.current_image_sha256 = current_image_sha256
         self.max_boot_failures = max_boot_failures
-        if signature_verifier is not None and not isinstance(signature_verifier, ExternalUpdateSignatureVerifier):
+        if signature_verifier is not None and type(signature_verifier) is not ExternalUpdateSignatureVerifier:
             raise StateRefused("signature verifier configuration is invalid")
+        if signature_verifier is not None:
+            signature_verifier._check_owner()
         floor = current_version if protected_rollback_floor is None else protected_rollback_floor
         if type(floor) is not int or floor <= 0 or floor > current_version:
             raise StateRefused("externally protected rollback floor is invalid")
@@ -520,8 +576,10 @@ class UpdateCoordinator:
         if not isinstance(recovery_operator_uids, frozenset) or any(type(uid) is not int or uid < 0 for uid in recovery_operator_uids):
             raise StateRefused("approved recovery operator UID set is invalid")
         self._recovery_operator_uids = recovery_operator_uids
-        if journal_authority is not None and not isinstance(journal_authority, DurableUpdateJournal):
+        if journal_authority is not None and type(journal_authority) is not DurableUpdateJournal:
             raise StateRefused("durable journal authority configuration is invalid")
+        if journal_authority is not None:
+            journal_authority._check_owner()
         self._journal_authority = journal_authority
         self.phase = Phase.IDLE
         self.sequence = 0
@@ -534,9 +592,11 @@ class UpdateCoordinator:
         self._health_permit: HealthPermit | None = None
 
     @property
+    @_owner_guard
     def effect_reconciliation_required(self) -> bool:
         return self._effect_reconciliation_required
 
+    @_owner_guard
     def _require(self, ticket: ManifestTicket, *phases: Phase) -> UpdateManifest:
         if (
             ticket._seal is not _SEAL
@@ -547,6 +607,7 @@ class UpdateCoordinator:
             raise StateRefused("ticket, sequence, or phase is stale")
         return ticket.manifest
 
+    @_owner_guard
     def verify_manifest(
         self, payload: bytes | str, *, now_unix: int, signature: bytes | None = None
     ) -> ManifestTicket:
@@ -579,6 +640,7 @@ class UpdateCoordinator:
         self.boot_failures = 0
         return ticket
 
+    @_owner_guard
     def _trusted_now(self, requested: int) -> int:
         _positive_int(requested, "now_unix")
         now = _positive_int(self._clock(), "trusted clock")
@@ -586,6 +648,7 @@ class UpdateCoordinator:
             raise ManifestRefused("caller time does not match the configured trusted clock")
         return now
 
+    @_owner_guard
     def _revalidate_admission(self, ticket: ManifestTicket, *, now_unix: int) -> None:
         if self._signature_verifier is None:
             raise ManifestRefused("update admission is disabled")
@@ -596,6 +659,7 @@ class UpdateCoordinator:
         if ticket.manifest.rollback_floor < self.protected_rollback_floor:
             raise ManifestRefused("admitted manifest weakens the protected rollback floor")
 
+    @_owner_guard
     def stage_image(self, ticket: ManifestTicket, image: bytes, *, now_unix: int) -> None:
         manifest = self._require(ticket, Phase.VERIFIED)
         self._revalidate_admission(ticket, now_unix=now_unix)
@@ -607,19 +671,21 @@ class UpdateCoordinator:
             raise StateRefused("whole-image digest does not match the manifest")
         self.phase = Phase.STAGED
 
+    @_owner_guard
     def arm_first_boot(self, ticket: ManifestTicket, *, now_unix: int) -> None:
         self._require(ticket, Phase.STAGED)
         self._revalidate_admission(ticket, now_unix=now_unix)
         self._health_permit = None
         self.phase = Phase.BOOT_PENDING
 
+    @_owner_guard
     def stage_image_file(
         self, ticket: ManifestTicket, image_path: Path, slot_store: "ImageSlotStore", *,
         now_unix: int, fault: Callable[[str], None] | None = None,
     ) -> ImageStageReceipt:
         manifest = self._require(ticket, Phase.VERIFIED)
         self._revalidate_admission(ticket, now_unix=now_unix)
-        if not isinstance(slot_store, ImageSlotStore) or slot_store.active_slot != self.active_slot:
+        if type(slot_store) is not ImageSlotStore or slot_store.active_slot != self.active_slot:
             raise StateRefused("slot store does not bind the coordinator active slot")
         descriptor = _open_image(image_path)
         try:
@@ -652,6 +718,7 @@ class UpdateCoordinator:
         finally:
             os.close(descriptor)
 
+    @_owner_guard
     def request_operator_rollback(self, ticket: ManifestTicket, source_image_path: Path) -> RecoveryDecision:
         """Authenticate a local operator and authorize rollback without replay.
 
@@ -676,6 +743,7 @@ class UpdateCoordinator:
         self._health_permit = None
         return RecoveryDecision(uid, manifest.manifest_sha256, ticket.sequence, digest)
 
+    @_owner_guard
     def reconcile_image_publication(self, ticket: ManifestTicket, slot_store: "ImageSlotStore", *, now_unix: int) -> ImageStageReceipt:
         self._require(ticket, Phase.RECOVERY_REQUIRED)
         if self._image_publication_pending is not ticket:
@@ -683,7 +751,7 @@ class UpdateCoordinator:
         if self._effect_reconciliation_required:
             raise StateRefused("possible effect requires journal reconciliation before image reconciliation")
         self._revalidate_admission(ticket, now_unix=now_unix)
-        if not isinstance(slot_store, ImageSlotStore) or slot_store.active_slot != self.active_slot:
+        if type(slot_store) is not ImageSlotStore or slot_store.active_slot != self.active_slot:
             raise StateRefused("slot store does not bind the coordinator active slot")
         receipt = slot_store.reconcile_image(ticket)
         self._revalidate_admission(ticket, now_unix=self._clock())
@@ -691,6 +759,7 @@ class UpdateCoordinator:
         self.phase = Phase.STAGED
         return receipt
 
+    @_owner_guard
     def record_booted_image(
         self, ticket: ManifestTicket, *, slot: str, image_sha256: str
     ) -> None:
@@ -701,6 +770,7 @@ class UpdateCoordinator:
             raise RecoveryRequired("booted slot identity does not match the staged image")
         self.phase = Phase.HEALTH_PENDING
 
+    @_owner_guard
     def record_health(
         self,
         ticket: ManifestTicket,
@@ -722,6 +792,7 @@ class UpdateCoordinator:
         self._health_permit = permit
         return permit
 
+    @_owner_guard
     def commit(self, permit: HealthPermit) -> None:
         ticket = self._ticket
         if (
@@ -745,6 +816,7 @@ class UpdateCoordinator:
         self._health_permit = None
         self._image_publication_pending = None
 
+    @_owner_guard
     def record_boot_failure(self, ticket: ManifestTicket) -> Phase:
         self._require(ticket, Phase.BOOT_PENDING, Phase.HEALTH_PENDING)
         self._health_permit = None
@@ -755,6 +827,7 @@ class UpdateCoordinator:
             self.phase = Phase.BOOT_PENDING
         return self.phase
 
+    @_owner_guard
     def rollback(self, ticket: ManifestTicket, *, recovered_image_sha256: str) -> None:
         manifest = self._require(ticket, Phase.ROLLBACK_PENDING)
         if recovered_image_sha256 != manifest.source_image_sha256 or manifest.source_version < self.protected_rollback_floor:
@@ -766,6 +839,7 @@ class UpdateCoordinator:
         self._health_permit = None
         self._image_publication_pending = None
 
+    @_owner_guard
     def mark_possible_dispatch(self, ticket: ManifestTicket) -> DispatchBinding:
         self._require(
             ticket,
@@ -784,6 +858,7 @@ class UpdateCoordinator:
         self.phase = Phase.RECOVERY_REQUIRED
         return binding
 
+    @_owner_guard
     def verify_journal_reconciliation(self, ticket: ManifestTicket) -> JournalReconciliation:
         self._require(ticket, Phase.RECOVERY_REQUIRED)
         binding = self._pending_dispatch
@@ -795,6 +870,7 @@ class UpdateCoordinator:
         self._reconciliation_fact = fact
         return fact
 
+    @_owner_guard
     def reconcile_possible_dispatch(self, fact: JournalReconciliation) -> None:
         ticket = self._ticket
         if (
@@ -817,6 +893,7 @@ class UpdateCoordinator:
         self._reconciliation_fact = None
         self.phase = Phase.ROLLBACK_PENDING
 
+    @_owner_guard
     def reconcile_startup(self, slot_digests: dict[str, str]) -> Phase:
         if set(slot_digests) != {"A", "B"}:
             self.phase = Phase.RECOVERY_REQUIRED
@@ -841,10 +918,11 @@ class UpdateCoordinator:
         return self.phase
 
 
-class AtomicStateStore:
+class AtomicStateStore(_ProcessThreadOwner):
     """Descriptor-pinned private state publication with an exclusive lease."""
 
     def __init__(self, root: Path):
+        self._bind_owner()
         self.root = Path(root).absolute()
         try:
             self._root_fd = self._open_root()
@@ -861,6 +939,7 @@ class AtomicStateStore:
         self._identity = (metadata.st_dev, metadata.st_ino)
         self._lease_fd: int | None = None
 
+    @_owner_guard
     def _open_root(self) -> int:
         descriptor = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
         try:
@@ -876,14 +955,19 @@ class AtomicStateStore:
             raise
 
     def close(self) -> None:
+        # fork copies share the same flock open-file description. LOCK_UN in
+        # either process would release the parent's lease. Closing only this
+        # process's descriptors releases the lease after the last copy closes.
+        if os.getpid() == self._owner_pid:
+            self._check_owner()
         if self._lease_fd is not None:
-            fcntl.flock(self._lease_fd, fcntl.LOCK_UN)
             os.close(self._lease_fd)
             self._lease_fd = None
         if getattr(self, "_root_fd", None) is not None:
             os.close(self._root_fd)
             self._root_fd = None
 
+    @_owner_guard
     def __enter__(self) -> "AtomicStateStore":
         self.acquire()
         return self
@@ -891,6 +975,7 @@ class AtomicStateStore:
     def __exit__(self, *_: object) -> None:
         self.close()
 
+    @_owner_guard
     def _check_root(self) -> int:
         fd = self._root_fd
         if fd is None:
@@ -926,6 +1011,7 @@ class AtomicStateStore:
                 os.close(named_fd)
         return fd
 
+    @_owner_guard
     def acquire(self) -> None:
         root_fd = self._check_root()
         if self._lease_fd is not None:
@@ -957,6 +1043,7 @@ class AtomicStateStore:
             raise StateRefused("state name must be one safe basename")
         return path.parts[0]
 
+    @_owner_guard
     def write(
         self,
         name: str,
@@ -1050,6 +1137,7 @@ class AtomicStateStore:
         finally:
             os.close(named_fd)
 
+    @_owner_guard
     def read(self, name: str) -> dict[str, Any]:
         name = self._name(name)
         root_fd = self._check_root()
@@ -1091,14 +1179,17 @@ class ImageSlotStore(AtomicStateStore):
         self._active_slot = active_slot
 
     @property
+    @_owner_guard
     def active_slot(self) -> str:
         return self._active_slot
 
+    @_owner_guard
     def write(self, name: str, value: dict[str, Any], *, fault: Callable[[str], None] | None = None) -> str:
         if name in {"slot-A.img", "slot-B.img"}:
             raise StateRefused("image slots cannot be overwritten through the state API")
         return super().write(name, value, fault=fault)
 
+    @_owner_guard
     def _open_slot(self, root_fd: int, name: str) -> int:
         try:
             descriptor = os.open(name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=root_fd)
@@ -1118,6 +1209,7 @@ class ImageSlotStore(AtomicStateStore):
             raise StateRefused("image slot custody is not private and trusted")
         return metadata
 
+    @_owner_guard
     def _bound_image(self, root_fd: int, name: str, descriptor: int, digest: str, size: int | None = None) -> None:
         retained = self._private_image(descriptor)
         named_fd = self._open_slot(root_fd, name)
@@ -1135,6 +1227,7 @@ class ImageSlotStore(AtomicStateStore):
         finally:
             os.close(named_fd)
 
+    @_owner_guard
     def _inactive_identity(self, root_fd: int, name: str) -> tuple[int, int] | None:
         try:
             os.stat(name, dir_fd=root_fd, follow_symlinks=False)
@@ -1147,6 +1240,7 @@ class ImageSlotStore(AtomicStateStore):
         finally:
             os.close(descriptor)
 
+    @_owner_guard
     def _require_image_ticket(self, ticket: ManifestTicket) -> UpdateManifest:
         if self._lease_fd is None:
             raise CoordinatorBusy("exclusive coordinator lease is required for image staging")
@@ -1161,6 +1255,7 @@ class ImageSlotStore(AtomicStateStore):
         return ImageStageReceipt(manifest.target_slot, manifest.target_image_sha256, manifest.target_image_bytes,
                                  manifest.manifest_sha256, manifest.signature_sha256)
 
+    @_owner_guard
     def _publish_verified_image(self, ticket: ManifestTicket, source_fd: int,
                                 authorize_publication: Callable[[], None],
                                 record_publication_attempt: Callable[[], None], *,
@@ -1252,6 +1347,7 @@ class ImageSlotStore(AtomicStateStore):
             if temp_fd is not None:
                 os.close(temp_fd)
 
+    @_owner_guard
     def reconcile_image(self, ticket: ManifestTicket) -> ImageStageReceipt:
         """Confirm and fsync an existing publication; never rewrite or replay."""
         manifest = self._require_image_ticket(ticket)
@@ -1286,6 +1382,7 @@ class DurableUpdateJournal(AtomicStateStore):
     receipt-chain/monotonic authority must provision and protect this root.
     """
 
+    @_owner_guard
     def confirm_dispatch(self, binding: DispatchBinding) -> tuple[str, str, tuple[int, int, int, int]]:
         if self._lease_fd is None:
             raise CoordinatorBusy("durable journal reconciliation requires its exclusive lease")
@@ -1336,6 +1433,7 @@ class DurableUpdateJournal(AtomicStateStore):
         if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or metadata.st_uid not in {0, os.geteuid()} or stat.S_IMODE(metadata.st_mode) != 0o600 or not 0 < metadata.st_size <= MAX_STATE_BYTES:
             raise StateRefused("journal record is not a private bounded one-link regular authority file")
 
+    @_owner_guard
     def _check_record(self, root_fd: int, name: str, descriptor: int, before: os.stat_result) -> None:
         after = os.fstat(descriptor)
         self._record_custody(after)

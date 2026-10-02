@@ -4,9 +4,12 @@ import hashlib
 import importlib.util
 import json
 import os
+import select
+import signal
 import stat
 import subprocess
 import tempfile
+import threading
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -41,8 +44,8 @@ def setUpModule() -> None:
     TEST_KEYS = tempfile.TemporaryDirectory(prefix="s11-test-keys-")
     root = Path(TEST_KEYS.name)
     for name in ("approved", "other"):
-        subprocess.run(["/usr/bin/openssl", "genpkey", "-algorithm", "RSA", "-pkeyopt", "rsa_keygen_bits:2048", "-out", str(root / f"{name}.private")], capture_output=True, check=True)
-        subprocess.run(["/usr/bin/openssl", "pkey", "-in", str(root / f"{name}.private"), "-pubout", "-out", str(root / f"{name}.public")], capture_output=True, check=True)
+        subprocess.run(["/usr/bin/openssl", "genpkey", "-algorithm", "RSA", "-pkeyopt", "rsa_keygen_bits:2048", "-out", str(root / f"{name}.private")], capture_output=True, check=True, env=s11.OPENSSL_ENV)
+        subprocess.run(["/usr/bin/openssl", "pkey", "-in", str(root / f"{name}.private"), "-pubout", "-out", str(root / f"{name}.public")], capture_output=True, check=True, env=s11.OPENSSL_ENV)
     public = (root / "approved.public").read_bytes()
     TRUST_ROOT = s11.UpdateTrustRoot("release-key:test", public, hashlib.sha256(public).hexdigest(), 10, 1, 3_000_000)
     public = (root / "other.public").read_bytes()
@@ -55,11 +58,11 @@ def tearDownModule() -> None:
     SIGNATURES.clear()
 
 
-def signed_payload(value: dict[str, object]) -> bytes:
+def signed_payload(value: dict[str, object], *, signer: str = "approved") -> bytes:
     root = Path(TEST_KEYS.name)
     payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
     (root / "manifest.bin").write_bytes(s11.manifest_signing_bytes(payload))
-    subprocess.run(["/usr/bin/openssl", "dgst", "-sha256", "-sign", str(root / "approved.private"), "-out", str(root / "signature.bin"), str(root / "manifest.bin")], capture_output=True, check=True)
+    subprocess.run(["/usr/bin/openssl", "dgst", "-sha256", "-sign", str(root / f"{signer}.private"), "-out", str(root / "signature.bin"), str(root / "manifest.bin")], capture_output=True, check=True, env=s11.OPENSSL_ENV)
     signature = (root / "signature.bin").read_bytes()
     value = {**value, "signature_sha256": hashlib.sha256(signature).hexdigest()}
     payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
@@ -434,7 +437,248 @@ def record_dispatch(journal, binding, status="terminal", **changes):
     journal.write(f"dispatch-{binding.operation_id}.json", record)
 
 
+def fork_results(operations, *, before_release=None, cleanup=None):
+    """Run inherited authority after an explicit parent-to-child barrier."""
+    ready_read, ready_write = os.pipe()
+    result_read, result_write = os.pipe()
+    child = os.fork()
+    if child == 0:
+        os.close(ready_write)
+        os.close(result_read)
+        try:
+            if os.read(ready_read, 1) != b"x":
+                os._exit(2)
+            result = {}
+            for name, operation in operations.items():
+                try:
+                    operation()
+                    result[name] = "returned"
+                except BaseException as error:
+                    result[name] = type(error).__name__
+            if cleanup is not None:
+                cleanup()
+            os.write(result_write, json.dumps(result).encode())
+            os._exit(0)
+        except BaseException:
+            os._exit(3)
+    os.close(ready_read)
+    os.close(result_write)
+    reaped = False
+    try:
+        if before_release is not None:
+            before_release()
+        os.write(ready_write, b"x")
+        if not select.select([result_read], [], [], 10)[0]:
+            raise AssertionError("forked authority probe did not return")
+        result = json.loads(os.read(result_read, 65536))
+        _, status = os.waitpid(child, 0)
+        reaped = True
+        if not os.WIFEXITED(status) or os.WEXITSTATUS(status) != 0:
+            raise AssertionError(f"forked authority probe failed: {status}")
+        return result
+    finally:
+        os.close(ready_write)
+        os.close(result_read)
+        if not reaped:
+            os.kill(child, signal.SIGKILL)
+            os.waitpid(child, 0)
+
+
+class S11OwnershipTests(unittest.TestCase):
+    def test_child_close_cannot_release_parent_lease(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with s11.AtomicStateStore(Path(directory)) as store:
+                store.write("state.json", {"owner": "parent"})
+                self.assertEqual(fork_results({"close": store.close}), {"close": "returned"})
+                contender = s11.AtomicStateStore(Path(directory))
+                try:
+                    with self.assertRaises(s11.CoordinatorBusy):
+                        contender.acquire()
+                finally:
+                    contender.close()
+                self.assertEqual(store.read("state.json"), {"owner": "parent"})
+            with s11.AtomicStateStore(Path(directory)) as reacquired:
+                self.assertEqual(reacquired.read("state.json"), {"owner": "parent"})
+
+    def test_inherited_health_permit_cannot_commit_after_parent_boot_failure(self):
+        c = configured_coordinator()
+        ticket = admit(c)
+        c.stage_image(ticket, TARGET, now_unix=NOW)
+        c.arm_first_boot(ticket, now_unix=NOW)
+        c.record_booted_image(ticket, slot="B", image_sha256=TARGET_DIGEST)
+        permit = c.record_health(ticket, stable_seconds=60, health_receipt_sha256=RECEIPT)
+        result = fork_results({"commit": lambda: c.commit(permit)},
+                              before_release=lambda: c.record_boot_failure(ticket))
+        self.assertEqual(result, {"commit": "StateRefused"})
+        self.assertEqual(c.phase, s11.Phase.BOOT_PENDING)
+        self.assertEqual(c.active_slot, "A")
+        with self.assertRaises(s11.StateRefused):
+            c.commit(permit)
+
+    def test_forked_verifier_store_staging_and_reconciliation_are_refused(self):
+        payload = manifest()
+        verifier = s11.ExternalUpdateSignatureVerifier((TRUST_ROOT,))
+        c = configured_coordinator()
+        ticket = admit(c, payload)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            slots = root / "slots"
+            slots.mkdir(mode=0o700)
+            journal_root = root / "journal"
+            journal_root.mkdir(mode=0o700)
+            image = root / "candidate.img"
+            private_image(image, TARGET)
+            private_image(slots / "slot-A.img", SOURCE)
+            private_image(slots / "slot-B.img", b"old-inactive-image")
+            with s11.ImageSlotStore(slots, active_slot="A") as store, s11.DurableUpdateJournal(journal_root) as journal:
+                store.write("state.json", {"owner": "parent"})
+                recovery = configured_coordinator(journal_authority=journal)
+                recovery_ticket = admit(recovery, payload)
+                binding = recovery.mark_possible_dispatch(recovery_ticket)
+                record_dispatch(journal, binding)
+                fact = recovery.verify_journal_reconciliation(recovery_ticket)
+                result = fork_results({
+                    "verify": lambda: verifier.verify(payload, SIGNATURES[payload], now_unix=NOW),
+                    "revalidate": lambda: verifier.revalidate(ticket.signature_admission, now_unix=NOW),
+                    "admit": lambda: c.verify_manifest(payload, signature=SIGNATURES[payload], now_unix=NOW),
+                    "stage": lambda: c.stage_image_file(ticket, image, store, now_unix=NOW),
+                    "slot_reconcile": lambda: store.reconcile_image(ticket),
+                    "acquire": store.acquire,
+                    "read": lambda: store.read("state.json"),
+                    "write": lambda: store.write("child.json", {"owner": "child"}),
+                    "confirm": lambda: journal.confirm_dispatch(binding),
+                    "verify_reconcile": lambda: recovery.verify_journal_reconciliation(recovery_ticket),
+                    "reconcile": lambda: recovery.reconcile_possible_dispatch(fact),
+                    "startup": lambda: c.reconcile_startup({"A": SOURCE_DIGEST, "B": TARGET_DIGEST}),
+                    "inherited_verifier_configuration": lambda: s11.UpdateCoordinator(active_slot="A", current_version=10, current_image_sha256=SOURCE_DIGEST, signature_verifier=verifier),
+                    "inherited_journal_configuration": lambda: configured_coordinator(journal_authority=journal),
+                }, cleanup=lambda: (store.close(), journal.close()))
+                self.assertEqual(result, {name: "ManifestRefused" if name in {"verify", "revalidate", "inherited_verifier_configuration"} else "StateRefused" for name in result})
+                self.assertEqual(len(result), 14)
+                self.assertEqual((slots / "slot-B.img").read_bytes(), b"old-inactive-image")
+                self.assertFalse((slots / "child.json").exists())
+                self.assertEqual(store.read("state.json"), {"owner": "parent"})
+                self.assertTrue(recovery.effect_reconciliation_required)
+                recovery.reconcile_possible_dispatch(fact)
+                self.assertEqual(recovery.phase, s11.Phase.ROLLBACK_PENDING)
+
+    def test_authority_requires_creating_thread_before_crypto_or_storage(self):
+        payload = manifest()
+        verifier = s11.ExternalUpdateSignatureVerifier((TRUST_ROOT,))
+        c = configured_coordinator()
+        ticket = admit(c, payload)
+        with tempfile.TemporaryDirectory() as directory, s11.AtomicStateStore(Path(directory)) as store:
+            store.write("state.json", {"owner": "parent"})
+            result = {}
+            def foreign_thread():
+                for name, operation in {
+                    "verify": lambda: verifier.verify(payload, SIGNATURES[payload], now_unix=NOW),
+                    "stage": lambda: c.stage_image(ticket, TARGET, now_unix=NOW),
+                    "read": lambda: store.read("state.json"),
+                    "write": lambda: store.write("thread.json", {}),
+                    "close": store.close,
+                }.items():
+                    try:
+                        operation()
+                        result[name] = "returned"
+                    except BaseException as error:
+                        result[name] = type(error).__name__
+            thread = threading.Thread(target=foreign_thread)
+            with patch.object(s11.subprocess, "run", side_effect=AssertionError("foreign thread reached crypto")):
+                thread.start()
+                thread.join(5)
+            self.assertFalse(thread.is_alive())
+            self.assertEqual(result, {"verify": "ManifestRefused", "stage": "StateRefused", "read": "StateRefused", "write": "StateRefused", "close": "StateRefused"})
+            self.assertFalse((Path(directory) / "thread.json").exists())
+            self.assertEqual(c.phase, s11.Phase.VERIFIED)
+            self.assertEqual(store.read("state.json"), {"owner": "parent"})
+
+
 class S11SignedAdmissionTests(unittest.TestCase):
+    def test_callback_verifier_and_root_subclasses_refused_before_authority(self):
+        calls = []
+        value = json.loads(manifest())
+        payload = signed_payload(value, signer="other")
+        # A callback can fabricate correctly shaped facts for a real wrong-key
+        # signature. The coordinator must reject the callback itself.
+        fake = s11.SignatureAdmission(TRUST_ROOT.signer_id, TRUST_ROOT.expected_public_key_sha256,
+            hashlib.sha256(SIGNATURES[payload]).hexdigest(), hashlib.sha256(s11.manifest_signing_bytes(payload)).hexdigest(),
+            s11.ExternalUpdateSignatureVerifier((TRUST_ROOT,)).policy_sha256, 10, NOW, s11._SEAL)
+        class CallbackVerifier(s11.ExternalUpdateSignatureVerifier):
+            def verify(self, *args, **kwargs):
+                calls.append("verify")
+                return fake
+        with self.assertRaises(s11.StateRefused):
+            configured_coordinator(signature_verifier=CallbackVerifier((TRUST_ROOT,)))
+        self.assertEqual(calls, [])
+        with self.assertRaises(s11.ManifestRefused):
+            s11.ExternalUpdateSignatureVerifier((TRUST_ROOT,)).verify(payload, SIGNATURES[payload], now_unix=NOW)
+        class CallbackRoot(s11.UpdateTrustRoot):
+            pass
+        alternate = CallbackRoot(**vars(TRUST_ROOT))
+        with self.assertRaises(s11.ManifestRefused):
+            s11.ExternalUpdateSignatureVerifier((alternate,))
+
+    def test_sealed_inputs_refuse_actual_wrong_signer_key_substitution(self):
+        payload = signed_payload(json.loads(manifest()), signer="other")
+        verifier = s11.ExternalUpdateSignatureVerifier((TRUST_ROOT,))
+        actual_run = subprocess.run
+        attempts = []
+        def substitute_key(arguments, **kwargs):
+            key_path = Path(arguments[arguments.index("-verify") + 1])
+            self.assertTrue(str(key_path).startswith("/proc/self/fd/"))
+            with self.assertRaises(OSError):
+                key_path.write_bytes((Path(TEST_KEYS.name) / "other.public").read_bytes())
+            attempts.append(True)
+            return actual_run(arguments, **kwargs)
+        with patch.object(s11.subprocess, "run", side_effect=substitute_key), self.assertRaises(s11.ManifestRefused):
+            verifier.verify(payload, SIGNATURES[payload], now_unix=NOW)
+        self.assertEqual(attempts, [True])
+
+    def test_real_crypto_inputs_are_sealed_environment_fixed_and_fds_closed(self):
+        payload = manifest()
+        actual_run = subprocess.run
+        descriptors = []
+        def inspect_inputs(arguments, **kwargs):
+            self.assertEqual(arguments[:4], ["/usr/bin/openssl", "dgst", "-sha256", "-verify"])
+            self.assertEqual(kwargs["env"], {"PATH": "/usr/bin:/bin", "OPENSSL_CONF": "/dev/null", "LC_ALL": "C"})
+            self.assertEqual(len(kwargs["pass_fds"]), 3)
+            for descriptor in kwargs["pass_fds"]:
+                seals = s11.fcntl.fcntl(descriptor, s11.fcntl.F_GET_SEALS)
+                required = s11.fcntl.F_SEAL_WRITE | s11.fcntl.F_SEAL_GROW | s11.fcntl.F_SEAL_SHRINK | s11.fcntl.F_SEAL_SEAL
+                self.assertEqual(seals & required, required)
+                with self.assertRaises(OSError):
+                    os.write(descriptor, b"replace")
+                with self.assertRaises(OSError):
+                    os.ftruncate(descriptor, 0)
+                descriptors.append(descriptor)
+            return actual_run(arguments, **kwargs)
+        c = configured_coordinator()
+        with patch.object(s11.subprocess, "run", side_effect=inspect_inputs):
+            ticket = admit(c, payload)
+        self.assertEqual(ticket.signature_admission.public_key_sha256, TRUST_ROOT.expected_public_key_sha256)
+        self.assertEqual(len(descriptors), 3)
+        for descriptor in descriptors:
+            with self.assertRaises(OSError):
+                os.fstat(descriptor)
+
+    def test_snapshot_write_failure_closes_fds_and_never_verifies(self):
+        payload = manifest()
+        verifier = s11.ExternalUpdateSignatureVerifier((TRUST_ROOT,))
+        actual_create = os.memfd_create
+        descriptors = []
+        def create(*args):
+            descriptor = actual_create(*args)
+            descriptors.append(descriptor)
+            return descriptor
+        with patch.object(s11.os, "memfd_create", side_effect=create), patch.object(s11.os, "write", side_effect=OSError("snapshot unavailable")), patch.object(s11.subprocess, "run") as process:
+            with self.assertRaises(s11.ManifestRefused):
+                verifier.verify(payload, SIGNATURES[payload], now_unix=NOW)
+        process.assert_not_called()
+        self.assertEqual(len(descriptors), 1)
+        with self.assertRaises(OSError):
+            os.fstat(descriptors[0])
+
     def test_permits_and_tickets_cannot_cross_coordinator_instances(self):
         first, second = configured_coordinator(), configured_coordinator()
         payload = manifest()
@@ -571,6 +815,42 @@ class S11ImagePublicationTests(unittest.TestCase):
 
     def tearDown(self):
         self.directory.cleanup()
+
+    def test_callback_journal_and_slot_subclasses_refused_before_authority(self):
+        calls = []
+        class CallbackJournal(s11.DurableUpdateJournal):
+            def confirm_dispatch(self, binding):
+                calls.append("journal")
+                return JOURNAL, "terminal", (1, 2, 3, 4)
+        with CallbackJournal(self.root) as journal:
+            with self.assertRaises(s11.StateRefused):
+                configured_coordinator(journal_authority=journal)
+        c = configured_coordinator()
+        ticket = admit(c)
+        fake = s11.ImageStageReceipt("B", TARGET_DIGEST, len(TARGET), ticket.manifest.manifest_sha256, ticket.manifest.signature_sha256)
+        class CallbackSlots(s11.ImageSlotStore):
+            def _publish_verified_image(self, *args, **kwargs):
+                calls.append("stage")
+                return fake
+            def reconcile_image(self, *args, **kwargs):
+                calls.append("reconcile")
+                return fake
+        with CallbackSlots(self.slot_root, active_slot="A") as slots:
+            with self.assertRaises(s11.StateRefused):
+                c.stage_image_file(ticket, self.image, slots, now_unix=NOW)
+        self.assertEqual(c.phase, s11.Phase.VERIFIED)
+        self.assertEqual((self.slot_root / "slot-B.img").read_bytes(), b"old-inactive-image")
+        def interrupt(point):
+            if point == "after_atomic_replace":
+                raise KeyboardInterrupt()
+        with s11.ImageSlotStore(self.slot_root, active_slot="A") as slots:
+            with self.assertRaises(s11.ImagePublicationIndeterminate):
+                c.stage_image_file(ticket, self.image, slots, now_unix=NOW, fault=interrupt)
+        with CallbackSlots(self.slot_root, active_slot="A") as slots:
+            with self.assertRaises(s11.StateRefused):
+                c.reconcile_image_publication(ticket, slots, now_unix=NOW)
+        self.assertEqual(c.phase, s11.Phase.RECOVERY_REQUIRED)
+        self.assertEqual(calls, [])
 
     def test_streamed_real_signed_publication_is_durable_and_inactive_only(self):
         c = configured_coordinator()
