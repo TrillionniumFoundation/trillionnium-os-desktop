@@ -62,7 +62,7 @@ class ResourceGateBehaviorTests(unittest.TestCase):
             self.assertEqual(compiled.returncode, 0, compiled.stderr)
             executed = subprocess.run([str(binary)], capture_output=True, text=True, timeout=10)
             self.assertEqual(executed.returncode, 0, executed.stdout + executed.stderr)
-            self.assertIn("8 passed", executed.stdout)
+            self.assertIn("10 passed", executed.stdout)
 
     def test_both_actual_callback_paths_cancel_and_owned_view_identity_is_checked(self):
         source = (ROOT / "experiments/servo-headed-runtime/src/main.rs").read_text()

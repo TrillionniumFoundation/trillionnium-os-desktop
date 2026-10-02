@@ -1,7 +1,7 @@
 //! HTTP callback policy for the source qualification embedder.
-//! A default gate has no admitted resources. The only constructor that admits
-//! bytes retains a real, already bound fixture listener; it grants no network
-//! continuation and no filesystem path lookup.
+//! A default gate has no admitted resources. Explicit qualification profiles
+//! serve bounded immutable bytes, with an owned loopback listener or the fixed
+//! namespace-test origin. Neither grants a network continuation or path lookup.
 
 use std::io;
 use std::net::{Ipv4Addr, SocketAddr, TcpListener};
@@ -44,8 +44,8 @@ pub struct Request<'a> {
 }
 
 struct QualificationFixture {
-    listener: TcpListener,
-    address: SocketAddr,
+    listener: Option<TcpListener>,
+    address: Option<SocketAddr>,
     origin: String,
     bytes: &'static [u8],
 }
@@ -66,12 +66,34 @@ impl ResourceGate {
         }
         Ok(Self {
             fixture: Some(QualificationFixture {
-                listener: listener.try_clone()?,
-                address,
+                listener: Some(listener.try_clone()?),
+                address: Some(address),
                 origin: format!("http://127.0.0.1:{}", address.port()),
                 bytes,
             }),
         })
+    }
+
+    /// Explicit immutable source fixture, never trusted-app or network policy.
+    /// The separate namespace lane must independently prove kernel confinement.
+    pub fn for_qualification_immutable(bytes: &'static [u8]) -> io::Result<Self> {
+        if bytes.is_empty() || bytes.len() > MAX_FIXTURE_BYTES {
+            return Err(io::Error::other("invalid immutable qualification fixture"));
+        }
+        Ok(Self {
+            fixture: Some(QualificationFixture {
+                listener: None,
+                address: None,
+                origin: "https://fixture.netns-qualification.invalid".to_owned(),
+                bytes,
+            }),
+        })
+    }
+
+    pub fn holds_loopback_listener(&self) -> bool {
+        self.fixture
+            .as_ref()
+            .is_some_and(|fixture| fixture.listener.is_some())
     }
 
     pub fn decide(&self, context: Context, request: Request<'_>) -> Decision {
@@ -87,8 +109,10 @@ impl ResourceGate {
         let Some(fixture) = &self.fixture else {
             return Decision::Cancel(Denial::Closed);
         };
-        if fixture.listener.local_addr().ok() != Some(fixture.address) {
-            return Decision::Cancel(Denial::FixtureCustody);
+        match (&fixture.listener, fixture.address) {
+            (Some(listener), Some(address)) if listener.local_addr().ok() == Some(address) => {}
+            (None, None) => {}
+            _ => return Decision::Cancel(Denial::FixtureCustody),
         }
         if request.canonical_url.len() > MAX_REQUEST_URL_BYTES
             || request.is_redirect
@@ -357,6 +381,49 @@ mod tests {
         assert!(ResourceGate::for_owned_fixture(&loopback, b"").is_err());
         static BIG: [u8; MAX_FIXTURE_BYTES + 1] = [0; MAX_FIXTURE_BYTES + 1];
         assert!(ResourceGate::for_owned_fixture(&loopback, &BIG).is_err());
+    }
+
+    #[test]
+    fn explicit_immutable_qualification_profile_holds_no_inet_listener() {
+        let gate = ResourceGate::for_qualification_immutable(BODY).unwrap();
+        assert!(!gate.holds_loopback_listener());
+        assert_eq!(
+            gate.origin(),
+            Some("https://fixture.netns-qualification.invalid")
+        );
+        assert_eq!(
+            gate.decide(
+                context(1),
+                request("https://fixture.netns-qualification.invalid/?generation=1")
+            ),
+            Decision::LocalFixture(BODY)
+        );
+        assert_eq!(
+            ResourceGate::default().decide(
+                context(1),
+                request("https://fixture.netns-qualification.invalid/?generation=1")
+            ),
+            Decision::Cancel(Denial::Closed)
+        );
+    }
+
+    #[test]
+    fn immutable_profile_never_accepts_origin_alias_or_subresource() {
+        let gate = ResourceGate::for_qualification_immutable(BODY).unwrap();
+        for target in [
+            "http://fixture.netns-qualification.invalid/?generation=1",
+            "https://fixture.netns-qualification.invalid:443/?generation=1",
+            "https://shell.system.hepta.invalid/?generation=1",
+            "https://fixture.netns-qualification.invalid/blocked-script.js?generation=1",
+        ] {
+            assert!(matches!(
+                gate.decide(context(1), request(target)),
+                Decision::Cancel(_)
+            ));
+        }
+        assert!(ResourceGate::for_qualification_immutable(b"").is_err());
+        static BIG: [u8; MAX_FIXTURE_BYTES + 1] = [0; MAX_FIXTURE_BYTES + 1];
+        assert!(ResourceGate::for_qualification_immutable(&BIG).is_err());
     }
 
     #[test]
