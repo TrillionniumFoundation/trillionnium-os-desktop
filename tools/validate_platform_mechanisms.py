@@ -621,8 +621,8 @@ def refresh_registry(root: Path, original: str, value: dict) -> None:
     payload = (json.dumps(value, indent=2, ensure_ascii=False) + "\n").encode()
     if len(payload) > MAX_BYTES:
         raise ValueError("refreshed registry exceeds the byte bound before publication")
-    parent = os.open(root / "manifests", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
     temporary = ".platform-registry-" + secrets.token_hex(16)
+    parent = os.open(root / "manifests", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
     descriptor = None
     temporary_identity = None
     publication_attempted = False

@@ -188,6 +188,15 @@ class PlatformMechanismInventoryTests(unittest.TestCase):
         self.assertEqual(path.read_text(), original)
         self.assertEqual(list(path.parent.glob(".platform-registry-*")), [])
 
+    def test_refresh_entropy_failure_leaks_no_descriptor(self):
+        path = self.root / gate.REGISTRY
+        original = path.read_text()
+        before = len(os.listdir("/proc/self/fd"))
+        with patch.object(gate.secrets, "token_hex", side_effect=OSError("entropy unavailable")), self.assertRaises(OSError):
+            gate.refresh_registry(self.root, original, json.loads(original))
+        self.assertEqual(len(os.listdir("/proc/self/fd")), before)
+        self.assertEqual(path.read_text(), original)
+
 
 if __name__ == "__main__":
     unittest.main()
