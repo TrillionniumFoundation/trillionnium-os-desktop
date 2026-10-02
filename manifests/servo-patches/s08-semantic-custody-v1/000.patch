@@ -90,7 +90,15 @@ diff --git a/components/constellation/tracing.rs b/components/constellation/trac
 diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessibility_tree.rs
 --- a/components/layout/accessibility_tree.rs
 +++ b/components/layout/accessibility_tree.rs
-@@ -69,6 +69,9 @@
+@@ -17,6 +17,7 @@
+ use rustc_hash::{FxHashMap, FxHashSet};
+ use script::layout_dom::{ServoLayoutElement, ServoLayoutNode};
+ use servo_base::Epoch;
++use servo_base::accessibility_semantics::DeclaredRoleBinding;
+ use servo_base::print_tree::PrintTree;
+ use servo_config::opts::{self, DiagnosticsLogging, DiagnosticsLoggingOption};
+ use servo_config::pref;
+@@ -69,6 +70,9 @@
  
  /// Changes which have occurred during the current update, and data required to process the update.
  struct AccessibilityUpdate<'update> {
@@ -100,7 +108,16 @@ diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessi
      /// Nodes whose internal data has changed within the current update.
      changed_nodes: FxHashSet<NodeId>,
      /// Nodes that changed their relation to the tree within the current update.
-@@ -220,8 +223,10 @@
+@@ -118,6 +122,8 @@
+     /// The computed [`accesskit::Node`] data. This will be copied and serialized into a
+     /// [`accesskit::TreeUpdate`] whenever it is changed during an update.
+     accesskit_node: accesskit::Node,
++    /// Measured current DOM declaration, including absent/empty. None means unavailable or overflow.
++    declared_role_binding: Option<DeclaredRoleBinding>,
+     /// This node's parent, if any.
+     parent_node: Option<WeakRefCell<AccessibilityNode>>,
+     /// All this node's children.
+@@ -220,8 +226,10 @@
          damage_from_dom: AccessibilityDamageMap<'update>,
          context: AccessibilityContext<'update>,
          rooted_nodes: Option<FxHashSet<OpaqueNode>>,
@@ -111,7 +128,7 @@ diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessi
  
          self.ensure_root_node(root_dom_node, &mut update);
  
-@@ -528,6 +533,30 @@
+@@ -528,6 +536,30 @@
          ))
      }
  
@@ -126,7 +143,7 @@ diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessi
 +        let mut current = self.nodes.get(&node_id)?.clone();
 +        for _ in 0..MAX_ACCESSIBILITY_ANCESTRY {
 +            let node = current.borrow();
-+            if !builder.push(node.id, &node.accesskit_node) { return None; }
++            if !builder.push_with_declared_role(node.id, &node.accesskit_node, node.declared_role_binding) { return None; }
 +            let parent = node.parent();
 +            if parent.is_none() {
 +                if self.root_node.as_ref()?.borrow().id != node.id { return None; }
@@ -142,7 +159,30 @@ diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessi
      /// Assert that the tree is a tree without any dangling references or orphaned nodes.
      ///
      /// For accessibility tests only, because it’s expensive.
-@@ -1109,7 +1138,13 @@
+@@ -651,6 +683,7 @@
+         Self {
+             id,
+             accesskit_node: accesskit::Node::new(role),
++            declared_role_binding: None,
+             parent_node: None,
+             child_nodes: vec![],
+             opaque_node: None,
+@@ -850,6 +883,14 @@
+         if !dom_damage.contains(AccessibilityDamage::Node) {
+             return local_damage;
+         }
++        // The effective AccessKit role can fall back to the native element when the DOM
++        // declaration is unsupported. Bind the borrowed original attribute independently.
++        self.declared_role_binding = match dom_node.as_element() {
++            Some(element) => DeclaredRoleBinding::from_raw_attribute(
++                element.attribute_as_str(&ns!(), &local_name!("role")),
++            ),
++            None => DeclaredRoleBinding::from_raw_attribute(None),
++        };
+         local_damage.insert(self.set_role(role_from_dom_node(dom_node)));
+         self.set_action_supported(Action::Click, click_action_supported(dom_node));
+         if dom_node.type_id() == Some(LayoutNodeType::Text) {
+@@ -1109,7 +1150,13 @@
      }
  
      fn compute_damage(&self, update: &mut AccessibilityUpdate) -> AccessibilityDamage {
@@ -157,7 +197,7 @@ diff --git a/components/layout/accessibility_tree.rs b/components/layout/accessi
  
          if self.dirty_state.has_damage() {
              damage |= update.take_damage(&self.id);
-@@ -1159,6 +1194,7 @@
+@@ -1159,6 +1206,7 @@
              })
              .collect();
          Self {
@@ -431,7 +471,7 @@ diff --git a/components/shared/base/accessibility_semantics.rs b/components/shar
 new file mode 100644
 --- /dev/null
 +++ b/components/shared/base/accessibility_semantics.rs
-@@ -0,0 +1,342 @@
+@@ -0,0 +1,547 @@
 +/* This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this
 + * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -448,6 +488,42 @@ new file mode 100644
 +/// Includes the retained target itself; ancestry is leaf-to-root without graft nodes.
 +pub const MAX_ACCESSIBILITY_ANCESTRY: usize = 16;
 +const STATE_MASK: u8 = 0x3f;
++
++/// A separately versioned digest subprofile; the outer IPC fields stay unchanged.
++pub const ACCESSIBILITY_DECLARED_ROLE_VERSION: u16 = 1;
++pub const MAX_ACCESSIBILITY_DECLARED_ROLE_BYTES: usize = 128;
++const DECLARED_ROLE_DOMAIN: &[u8] = b"trillionnium.accesskit.declared-role\0";
++const STRUCTURAL_DECLARED_ROLE_DOMAIN: &[u8] = b"trillionnium.accesskit.structural-declared-role\0";
++
++/// Bounded current DOM declaration, distinct from the engine's effective AccessKit role.
++/// Only fixed-size hashes are retained. An absent attribute differs from a present empty one.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct DeclaredRoleBinding {
++    present: bool,
++    bytes: u16,
++    digest: [u8; 32],
++}
++
++impl DeclaredRoleBinding {
++    /// Borrows exact UTF-8 without tokenization, normalization, trimming or unbounded cloning.
++    pub fn from_raw_attribute(value: Option<&str>) -> Option<Self> {
++        let bytes = value.unwrap_or("").as_bytes();
++        if bytes.len() > MAX_ACCESSIBILITY_DECLARED_ROLE_BYTES {
++            return None;
++        }
++        let mut digest = Sha256::new();
++        digest.update(DECLARED_ROLE_DOMAIN);
++        digest.update(ACCESSIBILITY_DECLARED_ROLE_VERSION.to_be_bytes());
++        digest.update([u8::from(value.is_some())]);
++        digest.update((bytes.len() as u16).to_be_bytes());
++        digest.update(bytes);
++        Some(Self {
++            present: value.is_some(),
++            bytes: bytes.len() as u16,
++            digest: digest.finalize().into(),
++        })
++    }
++}
 +
 +/// Fixed-size IPC expectation, made from one actual retained tree observation.
 +/// Raw names and variable-size ancestry never enter this IPC payload.
@@ -584,6 +660,31 @@ new file mode 100644
 +        self.digest.update([self.expectation.ancestry_depth]);
 +        self.expectation.structural_fingerprint = self.digest.finalize().into();
 +        Some(self.expectation)
++    }
++
++    /// Product layout snapshots bind a measured declaration for every node in the chain.
++    /// A missing measurement or overflow poisons this builder instead of becoming "absent".
++    /// Legacy `push` remains the original AccessKit-only encoder; it cannot equal this profile.
++    pub fn push_with_declared_role(
++        &mut self,
++        id: NodeId,
++        node: &Node,
++        declaration: Option<DeclaredRoleBinding>,
++    ) -> bool {
++        let Some(declaration) = declaration else {
++            self.refused = true;
++            return false;
++        };
++        if !self.push(id, node) {
++            return false;
++        }
++        self.digest.update(STRUCTURAL_DECLARED_ROLE_DOMAIN);
++        self.digest
++            .update(ACCESSIBILITY_DECLARED_ROLE_VERSION.to_be_bytes());
++        self.digest.update([u8::from(declaration.present)]);
++        self.digest.update(declaration.bytes.to_be_bytes());
++        self.digest.update(declaration.digest);
++        true
 +    }
 +}
 +
@@ -772,6 +873,150 @@ new file mode 100644
 +                    .is_well_formed()
 +            );
 +        }
++    }
++}
++
++#[cfg(test)]
++mod declared_role_tests {
++    use super::*;
++
++    fn observe(leaf: Option<&str>, parent: Option<&str>) -> AccessibilitySemanticExpectation {
++        let mut builder =
++            AccessibilitySemanticBuilder::new(TreeId(accesskit::Uuid::from_u128(1)), 7);
++        let mut node = Node::new(Role::Button);
++        node.set_label("Action target");
++        node.add_action(Action::Click);
++        node.set_bounds(accesskit::Rect::new(1., 2., 3., 4.));
++        assert!(builder.push_with_declared_role(
++            NodeId(17),
++            &node,
++            DeclaredRoleBinding::from_raw_attribute(leaf),
++        ));
++        assert!(builder.push_with_declared_role(
++            NodeId(19),
++            &Node::new(Role::RootWebArea),
++            DeclaredRoleBinding::from_raw_attribute(parent),
++        ));
++        builder.finish().unwrap()
++    }
++
++    #[test]
++    fn raw_declared_role_presence_and_exact_utf8_are_distinct() {
++        let original = observe(None, None);
++        for value in ["", "heading", "Heading", " heading ", "\t", "é", "e\u{301}"] {
++            let changed = observe(Some(value), None);
++            assert_ne!(original, changed);
++            assert_eq!(original.role(), changed.role());
++            assert_eq!(original.node_id(), changed.node_id());
++            assert_eq!(
++                original.accessible_name_sha256(),
++                changed.accessible_name_sha256()
++            );
++        }
++        assert_ne!(
++            observe(Some("heading"), None),
++            observe(Some("Heading"), None)
++        );
++        assert_ne!(
++            observe(Some("heading"), None),
++            observe(Some(" heading "), None)
++        );
++        assert_ne!(observe(Some("é"), None), observe(Some("e\u{301}"), None));
++        assert_eq!(original, observe(None, None));
++    }
++
++    #[test]
++    fn every_ancestor_declaration_is_bound_without_changing_effective_roles() {
++        let original = observe(None, None);
++        for value in ["", "heading", "main", " main ", "é", "e\u{301}"] {
++            assert_ne!(original, observe(None, Some(value)));
++        }
++        assert_ne!(
++            observe(Some("heading"), None),
++            observe(None, Some("heading"))
++        );
++        let mut legacy =
++            AccessibilitySemanticBuilder::new(TreeId(accesskit::Uuid::from_u128(1)), 7);
++        let mut node = Node::new(Role::Button);
++        node.set_label("Action target");
++        node.add_action(Action::Click);
++        node.set_bounds(accesskit::Rect::new(1., 2., 3., 4.));
++        assert!(legacy.push(NodeId(17), &node));
++        assert!(legacy.push(NodeId(19), &Node::new(Role::RootWebArea)));
++        assert_ne!(legacy.finish().unwrap(), original);
++    }
++
++    #[test]
++    fn exact_raw_role_byte_limit_and_missing_measurement_poison_the_builder() {
++        let exact = "é".repeat(MAX_ACCESSIBILITY_DECLARED_ROLE_BYTES / 2);
++        assert!(DeclaredRoleBinding::from_raw_attribute(Some(&exact)).is_some());
++        assert!(observe(Some(&exact), Some(&exact)).is_well_formed());
++        let too_large = exact + "a";
++        assert!(DeclaredRoleBinding::from_raw_attribute(Some(&too_large)).is_none());
++        for raw in [
++            None,
++            DeclaredRoleBinding::from_raw_attribute(Some(&too_large)),
++        ] {
++            let mut builder =
++                AccessibilitySemanticBuilder::new(TreeId(accesskit::Uuid::from_u128(1)), 7);
++            assert!(!builder.push_with_declared_role(NodeId(17), &Node::new(Role::Button), raw));
++            assert!(!builder.push_with_declared_role(
++                NodeId(19),
++                &Node::new(Role::RootWebArea),
++                DeclaredRoleBinding::from_raw_attribute(None),
++            ));
++            assert!(builder.finish().is_none());
++        }
++    }
++
++    #[test]
++    fn declared_role_domain_has_an_independent_exact_byte_vector() {
++        let binding = DeclaredRoleBinding::from_raw_attribute(Some("heading")).unwrap();
++        assert!(binding.present);
++        assert_eq!(binding.bytes, 7);
++        assert_eq!(
++            binding.digest,
++            [
++                66, 208, 213, 26, 232, 151, 80, 39, 10, 163, 206, 168, 164, 232, 170, 254, 47, 5,
++                91, 81, 110, 87, 43, 7, 172, 14, 169, 110, 39, 249, 90, 74,
++            ]
++        );
++        let absent = DeclaredRoleBinding::from_raw_attribute(None).unwrap();
++        let empty = DeclaredRoleBinding::from_raw_attribute(Some("")).unwrap();
++        assert_eq!(absent.bytes, empty.bytes);
++        assert_ne!(absent, empty);
++    }
++
++    #[test]
++    fn declared_role_profile_preserves_outer_closed_wire_fields_and_name_digest() {
++        let original = observe(None, None);
++        let declared = observe(Some("heading"), Some("main"));
++        let old_wire = serde_json::to_value(original).unwrap();
++        let new_wire = serde_json::to_value(declared).unwrap();
++        assert_eq!(
++            old_wire.as_object().unwrap().keys().collect::<Vec<_>>(),
++            new_wire.as_object().unwrap().keys().collect::<Vec<_>>()
++        );
++        assert_eq!(old_wire["version"], serde_json::json!(1));
++        assert_eq!(
++            old_wire["accessible_name_sha256"],
++            new_wire["accessible_name_sha256"]
++        );
++        assert_ne!(
++            old_wire["structural_fingerprint"],
++            new_wire["structural_fingerprint"]
++        );
++        assert!(
++            new_wire
++                .as_object()
++                .unwrap()
++                .keys()
++                .all(|key| !key.contains("declared_role"))
++        );
++        assert_eq!(
++            serde_json::from_value::<AccessibilitySemanticExpectation>(new_wire).unwrap(),
++            declared
++        );
 +    }
 +}
 diff --git a/components/shared/base/lib.rs b/components/shared/base/lib.rs
