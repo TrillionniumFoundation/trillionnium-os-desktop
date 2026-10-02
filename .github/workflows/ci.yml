@@ -37,6 +37,15 @@ jobs:
           git rev-parse HEAD^{tree}
 
       - name: Validate repository, project truth, contract foundation, and product boundary
+        # The D2I Python corpus compiles tracked Rust source controls. Provision
+        # its exact toolchain before running it, including on a cold runner.
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+          rustc --version --verbose
+
+      - name: Execute repository contracts and actual regression corpus
         run: |
           set -euo pipefail
           python3 tools/validate_status_authority_singleton.py
@@ -123,6 +132,13 @@ jobs:
           git rev-parse HEAD^{tree}
 
       - name: Validate prospective merge repository contracts
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+          rustc --version --verbose
+
+      - name: Execute prospective merge repository contracts and actual regression corpus
         run: |
           set -euo pipefail
           python3 tools/validate_status_authority_singleton.py
