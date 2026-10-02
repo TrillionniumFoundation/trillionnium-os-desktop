@@ -112,6 +112,29 @@ class PlatformMechanismInventoryTests(unittest.TestCase):
                 path.write_text(json.dumps(value))
                 with self.assertRaises(ValueError): gate.validate(self.root, refresh=True)
 
+    def test_egress_cleanup_contract_remains_closed_and_cannot_mint_retry_authority(self):
+        path = self.root / "contracts/controlled-egress.v1.json"
+        original = path.read_text()
+        for field in ("cleanup", "interruption_evidence_scope"):
+            with self.subTest(missing=field):
+                value = json.loads(original)
+                del value["outcome"][field]
+                path.write_text(json.dumps(value))
+                with self.assertRaisesRegex(ValueError, "contract nested object"):
+                    gate.validate(self.root, refresh=True)
+        for field, replacement in (("cleanup_confirmed_by_caller", True),
+                                   ("automatic_retry", True),
+                                   ("durable_delivery_or_external_effect_proof", True),
+                                   ("automatic_retry", 0)):
+            with self.subTest(field=field, replacement=replacement):
+                value = json.loads(original)
+                value["outcome"][field] = replacement
+                path.write_text(json.dumps(value))
+                with self.assertRaisesRegex(ValueError, "contract"):
+                    gate.validate(self.root, refresh=True)
+        path.write_text(original)
+        gate.validate(self.root)
+
     def test_durable_owner_profile_closes_every_actual_nested_object_and_leaf(self):
         contract = json.loads((self.root / "contracts/durable-update-owner.v1.json").read_text())
         objects, leaves = {}, {}
