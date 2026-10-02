@@ -180,6 +180,14 @@ class PlatformMechanismInventoryTests(unittest.TestCase):
         with patch.object(gate.os, "fsync", refuse_directory), self.assertRaisesRegex(ValueError, "publication uncertain"):
             gate.validate(self.root, refresh=True)
 
+    def test_refresh_oversized_output_is_refused_before_publication(self):
+        path = self.root / gate.REGISTRY
+        original = path.read_text()
+        with self.assertRaisesRegex(ValueError, "before publication"):
+            gate.refresh_registry(self.root, original, {"oversized": "x" * gate.MAX_BYTES})
+        self.assertEqual(path.read_text(), original)
+        self.assertEqual(list(path.parent.glob(".platform-registry-*")), [])
+
 
 if __name__ == "__main__":
     unittest.main()
