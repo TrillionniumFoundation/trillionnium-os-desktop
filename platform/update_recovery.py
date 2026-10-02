@@ -923,6 +923,8 @@ class AtomicStateStore(_ProcessThreadOwner):
 
     def __init__(self, root: Path):
         self._bind_owner()
+        self._root_fd: int | None = None
+        self._lease_fd: int | None = None
         self.root = Path(root).absolute()
         try:
             self._root_fd = self._open_root()
@@ -931,13 +933,12 @@ class AtomicStateStore(_ProcessThreadOwner):
         metadata = os.fstat(self._root_fd)
         mode = stat.S_IMODE(metadata.st_mode)
         if not stat.S_ISDIR(metadata.st_mode) or mode & 0o077:
-            os.close(self._root_fd)
+            self._release_descriptors()
             raise StateRefused("state root must be a private 0700-style directory")
         if metadata.st_uid not in {0, os.geteuid()}:
-            os.close(self._root_fd)
+            self._release_descriptors()
             raise StateRefused("state root owner is not trusted")
         self._identity = (metadata.st_dev, metadata.st_ino)
-        self._lease_fd: int | None = None
 
     @_owner_guard
     def _open_root(self) -> int:
@@ -960,12 +961,27 @@ class AtomicStateStore(_ProcessThreadOwner):
         # process's descriptors releases the lease after the last copy closes.
         if os.getpid() == self._owner_pid:
             self._check_owner()
-        if self._lease_fd is not None:
-            os.close(self._lease_fd)
-            self._lease_fd = None
-        if getattr(self, "_root_fd", None) is not None:
-            os.close(self._root_fd)
-            self._root_fd = None
+        self._release_descriptors()
+
+    def _release_descriptors(self) -> None:
+        # Clear ownership before close, including partially constructed objects.
+        # A stale integer must never close a subsequently reused descriptor.
+        lease, root = getattr(self, "_lease_fd", None), getattr(self, "_root_fd", None)
+        self._lease_fd = self._root_fd = None
+        try:
+            if lease is not None:
+                os.close(lease)
+        finally:
+            if root is not None:
+                os.close(root)
+
+    def __del__(self) -> None:
+        # GC may run in another thread or in a fork child. Cleanup holds no
+        # authority and never commits, reconciles, writes or explicitly unlocks.
+        try:
+            self._release_descriptors()
+        except BaseException:
+            pass
 
     @_owner_guard
     def __enter__(self) -> "AtomicStateStore":
