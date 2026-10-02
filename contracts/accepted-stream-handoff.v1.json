@@ -46,8 +46,8 @@
     "carrier": "connected_AF_UNIX_SOCK_STREAM",
     "required_local_path": "trusted absolute exact configured pathname; maximum 107 bytes, no abstract socket or noncanonical spelling",
     "kernel_identity": ["SO_COOKIE", "fstat.st_dev", "fstat.st_ino", "SO_PEERCRED"],
-    "reject": ["pipe", "listener", "socketpair", "different path", "different kernel socket", "missing rights", "extra rights", "MSG_TRUNC", "MSG_CTRUNC", "EOF", "stale challenge", "sequence replay", "cookie replay", "clock scope mismatch", "expiry"],
-    "received_fd_owner": "immediate OwnedFd for all delivered SCM_RIGHTS; MSG_CMSG_CLOEXEC; rejected delivered rights close once; kernel closes rights excluded by ancillary truncation",
+    "reject": ["pipe", "listener", "socketpair", "different path", "different kernel socket", "missing rights", "extra rights", "SCM_PIDFD on challenge or submission", "MSG_TRUNC", "MSG_CTRUNC", "EOF", "stale challenge", "sequence replay", "cookie replay", "clock scope mismatch", "expiry"],
+    "received_fd_owner": "immediate OwnedFd for all delivered SCM_RIGHTS and nonnegative kernel SCM_PIDFD descriptors under MSG_CMSG_CLOEXEC; pidfd always refuses, never authorizes; parse all remaining ancillary rights and close each delivered descriptor once; kernel closes rights excluded by ancillary truncation",
     "automatic_resend": false,
     "sender_success": "one packet enqueue only; no admission/action/durable acknowledgment"
   },

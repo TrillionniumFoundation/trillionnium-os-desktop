@@ -80,8 +80,11 @@ and descriptor device/inode, be a connected AF_UNIX `SOCK_STREAM` with the exact
 configured local pathname, and expose valid kernel peer credentials. A listener,
 pipe, socketpair, different pathname/socket, extra/missing rights, truncation,
 unknown packet layout, wrong challenge, sequence/cookie replay or clock mismatch
-refuses admission. All rights are adopted immediately as `OwnedFd` under
-`MSG_CMSG_CLOEXEC`; every received fd is closed on refusal. Linux closes rights
+refuses admission. Delivered `SCM_RIGHTS` and kernel-created `SCM_PIDFD` descriptors
+are immediately adopted as `OwnedFd` under `MSG_CMSG_CLOEXEC`; refusal closes both
+descriptor types while continuing ancillary parsing. `SCM_PIDFD`, including when
+an inherited control option enables it, always refuses the challenge/submission
+and never supplies authorization. Linux closes rights
 that could not fit a truncated ancillary buffer. Replay memory is bounded to 64
 accepted original sockets per control instance. Exhaustion closes that instance.
 
@@ -130,7 +133,7 @@ Primary source or test references:
 
 - `crates/hepta-agent-transport/src/facade.rs`
 - `tests/transport/test_agent_transport_reference.py`
-- `crates/hepta-agent-transport/tests/accepted_handoff_kernel.rs` (18 actual kernel cases, single-thread descriptor inventory and fork entry)
+- `crates/hepta-agent-transport/tests/accepted_handoff_kernel.rs` (19 actual kernel cases, single-thread descriptor inventory, required real SO_PASSPIDFD challenge/submission cleanup and fork entry)
 - `tests/test_accepted_stream_handoff.py` (closed-contract/source API correspondence)
 
 Applicable workflows:

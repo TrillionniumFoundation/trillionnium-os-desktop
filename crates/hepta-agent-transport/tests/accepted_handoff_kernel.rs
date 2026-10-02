@@ -539,6 +539,89 @@ fn malformed_challenge_rights_are_owned_and_closed_on_sender_refusal() {
     ));
     assert_eq!(inventory().len() + 1, before.len());
 }
+fn actual_passpidfd_refuses_and_closes_pidfds_and_remaining_rights() {
+    fn enable(descriptor: RawFd) {
+        let enabled: libc::c_int = 1;
+        // Required actual kernel capability, never a mock or skipped case.
+        // SAFETY: the integer option storage and owned descriptor are live.
+        let result = unsafe {
+            libc::setsockopt(
+                descriptor,
+                libc::SOL_SOCKET,
+                libc::SO_PASSPIDFD,
+                std::ptr::addr_of!(enabled).cast(),
+                size_of_val(&enabled) as libc::socklen_t,
+            )
+        };
+        assert_eq!(
+            result,
+            0,
+            "actual SO_PASSPIDFD is required; unsupported kernel refuses this test: {}",
+            std::io::Error::last_os_error()
+        );
+    }
+    {
+        let directory = Directory::new();
+        let path = directory.0.join("original.sock");
+        let (accepted, mut client) = original(&path);
+        let (sender, receiver) = controls();
+        enable(receiver.as_raw_fd());
+        let mut receiver = HandoffReceiver::from_control(receiver, policy(), &path).unwrap();
+        let mut sender = HandoffSender::from_control(sender, policy(), WAIT).unwrap();
+        sender
+            .send(AcceptedStreamCustody::capture(accepted, &path, WAIT).unwrap())
+            .unwrap();
+        let before = inventory();
+        assert!(matches!(
+            receiver.receive(WAIT),
+            Err(HandoffError::ProtocolRefused)
+        ));
+        // The original right and kernel-created pidfd are both gone; only the
+        // failed receiver's owned control descriptor disappears from inventory.
+        assert_eq!(inventory().len() + 1, before.len());
+        eof(&mut client);
+        assert!(matches!(
+            receiver.receive(WAIT),
+            Err(HandoffError::ChannelRetired)
+        ));
+    }
+    {
+        // A valid, rights-free challenge must refuse solely because the kernel
+        // additionally delivered SCM_PIDFD, without retaining that pidfd.
+        let directory = Directory::new();
+        let path = directory.0.join("original.sock");
+        let (sender, receiver) = controls();
+        enable(sender.as_raw_fd());
+        let _receiver = HandoffReceiver::from_control(receiver, policy(), &path).unwrap();
+        let before = inventory();
+        assert!(matches!(
+            HandoffSender::from_control(sender, policy(), WAIT),
+            Err(HandoffError::ProtocolRefused)
+        ));
+        assert_eq!(inventory().len() + 1, before.len());
+    }
+    {
+        // The shared challenge parser also closes an extra original right and
+        // the actual kernel pidfd, even though that challenge is already invalid.
+        let directory = Directory::new();
+        let path = directory.0.join("original.sock");
+        let (accepted, mut client) = original(&path);
+        let (sender, receiver) = controls();
+        enable(sender.as_raw_fd());
+        let control = UnixStream::from(receiver);
+        let mut challenge = [1; 40];
+        challenge[..8].copy_from_slice(b"HPTAFDC1");
+        raw_send(&control, &challenge, &[accepted.as_raw_fd()]);
+        drop(accepted);
+        let before = inventory();
+        assert!(matches!(
+            HandoffSender::from_control(sender, policy(), WAIT),
+            Err(HandoffError::ProtocolRefused)
+        ));
+        assert_eq!(inventory().len() + 1, before.len());
+        eof(&mut client);
+    }
+}
 fn strict_budget_configuration_and_no_inherited_process_use() {
     for budget in [Duration::ZERO, MAX_HANDOFF_BUDGET + Duration::from_nanos(1)] {
         let directory = Directory::new();
@@ -811,6 +894,10 @@ fn main() {
         (
             "malformed challenge FD cleanup",
             malformed_challenge_rights_are_owned_and_closed_on_sender_refusal,
+        ),
+        (
+            "actual SCM_PIDFD challenge and original right cleanup",
+            actual_passpidfd_refuses_and_closes_pidfds_and_remaining_rights,
         ),
         (
             "strict budgets and actual inherited fork refusal",
