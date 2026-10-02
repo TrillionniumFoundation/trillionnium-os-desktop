@@ -227,6 +227,13 @@ Run the source regression with:
 python3 -m unittest discover -s tests -p test_controlled_egress.py -v
 ```
 
+The dedicated [controlled-egress host workflow](../../.github/workflows/controlled-egress.yml)
+executes the actual corpus on the event head and current prospective merge,
+checks live branch refs and ordered merge parents, and refuses fewer than 45
+cases or any skipped case. Generic repository/Rust CI alone does not execute
+this Python socket/TLS corpus. A host workflow pass remains separate from
+installed browser confinement, production policy and hardware acceptance.
+
 The tests create disposable test-only CA/server certificates using system
 OpenSSL, then run actual local DNS-over-TLS and HTTPS endpoints, including IPv6.
 Missing OpenSSL or an unavailable required IPv6 loopback listener fails the
