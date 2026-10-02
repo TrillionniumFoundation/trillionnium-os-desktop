@@ -58,7 +58,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
-          git rev-parse HEAD^{tree}
+          git rev-parse 'HEAD^{tree}'
           test "$(git merge-base HEAD "$S06_HEAD")" = "$S06_HEAD"
           test "$(jq -r '.carrier_base_commit' "$D3_SERVO_MANIFEST")" = "$S06_HEAD"
           test "$(jq -r '.carrier_branch' "$D3_SERVO_MANIFEST")" = "codex/s07-servo-retained-node-closure-v1"
@@ -108,7 +108,21 @@ jobs:
           git -C servo diff --name-only | sort > "$RUNNER_TEMP/d3-changed.txt"
           jq -r '.patch.allowed_paths[]' "$D3_SERVO_MANIFEST" | sort > "$RUNNER_TEMP/d3-allowed.txt"
           cmp "$RUNNER_TEMP/d3-allowed.txt" "$RUNNER_TEMP/d3-changed.txt"
-          ! grep -R -F "TODO(#4344): Forward action to Servo" servo/ports/servoshell/desktop/headed_window.rs
+          reject_match() {
+            local grep_status
+            if grep "$@"; then
+              echo "forbidden source match" >&2
+              exit 1
+            else
+              grep_status=$?
+            fi
+            if [[ $grep_status -eq 1 ]]; then
+              return 0
+            fi
+            echo "source absence scan failed with status $grep_status" >&2
+            exit "$grep_status"
+          }
+          reject_match -R -F "TODO(#4344): Forward action to Servo" servo/ports/servoshell/desktop/headed_window.rs
           git -C servo diff --check
 
       - name: Install exact Servo dependencies and Rust toolchain
@@ -262,7 +276,7 @@ jobs:
             test ! -f "$RUNNER_TEMP/$file" || cp "$RUNNER_TEMP/$file" "$evidence/$file"
           done
           carrier=$(git rev-parse HEAD)
-          carrier_tree=$(git rev-parse HEAD^{tree})
+          carrier_tree=$(git rev-parse 'HEAD^{tree}')
           tested_patch_sha256=""
           tested_tree=""
           if test -f "$RUNNER_TEMP/d3-servo-tested.patch.sha256"; then
@@ -389,7 +403,7 @@ jobs:
           tested_patch_sha256=$(sha256sum "$RUNNER_TEMP/s07-tested.patch" | awk '{print $1}')
           tested_tree=$(git -C servo write-tree)
           merge_commit=$(git rev-parse HEAD)
-          merge_tree=$(git rev-parse HEAD^{tree})
+          merge_tree=$(git rev-parse 'HEAD^{tree}')
           base_commit=$(git rev-parse HEAD^1)
           head_commit=$(git rev-parse HEAD^2)
           jq -n \

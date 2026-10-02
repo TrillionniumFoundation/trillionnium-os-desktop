@@ -60,6 +60,21 @@ without a promoted handler. The complete request/recovery acceptance path is
 defined in [REQUEST_EXECUTION_AND_RECOVERY.md](architecture/REQUEST_EXECUTION_AND_RECOVERY.md)
 and remains a product integration gate.
 
+## CI absence checks
+
+S06's sealed-API checks, S07's unforwarded-action check and D2I's source
+permission scan distinguish native grep status 0 (forbidden match), 1 (no
+match) and other statuses (read failure). Both matches and read failures end
+the gate explicitly. A negated command by itself disables Bash errexit for
+that command and can lose a failure when a later command succeeds.
+
+`tests/test_ci_absence_guards.py` executes the complete S06 claim-check bodies
+with isolated source/contract fixtures, and the actual S07/D2I guard tails with
+native grep and Git checks. It preserves the original patterns and scan scopes
+and exercises clean inputs, forbidden markers and absent inputs. These tests
+prove the source gate's behavior; they do not compile Servo, build an image or
+qualify a product runtime.
+
 ## Reproducible local verification
 
 Use Python 3.11 or newer (`tomllib` is required) and the exact Rust 1.93.0

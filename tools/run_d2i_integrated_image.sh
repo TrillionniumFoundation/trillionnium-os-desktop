@@ -2,6 +2,21 @@
 # Permanent read-only D2I qualification runner. It never mutates Git refs.
 set -euo pipefail
 
+reject_source_match() {
+  local grep_status
+  if grep "$@"; then
+    echo "forbidden source match" >&2
+    exit 1
+  else
+    grep_status=$?
+  fi
+  if [[ $grep_status -eq 1 ]]; then
+    return 0
+  fi
+  echo "source absence scan failed with status $grep_status" >&2
+  exit "$grep_status"
+}
+
 step_identities() {
   local tested_sha tree_sha parent_count base_sha candidate_head_sha role authoritative topology
   tested_sha=$(git rev-parse HEAD)
@@ -115,7 +130,7 @@ step_validate_source() {
     packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-wait-wayland \
     packaging/debian/image/d2i-overlay/usr/local/libexec/trillionnium-d2i-capture-failure
   test -z "$(git status --porcelain=v1)"
-  ! grep -RInE 'contents:[[:space:]]*write|git[[:space:]]+push' \
+  reject_source_match -RInE 'contents:[[:space:]]*write|git[[:space:]]+push' \
     .github/workflows/d2i-integrated-image.yml tools/run_d2i_integrated_image.sh
 }
 

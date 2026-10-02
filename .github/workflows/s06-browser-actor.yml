@@ -125,8 +125,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -R -n -E 'pub struct BrowserActor<|impl<.*BrowserActor|runtime: R|pub fn new\(|pub fn handle\(' crates/hepta-browser-actor/src
-          ! grep -R -n -E 'pub (use|type).*PrincipalBinding|pub (use|type).*MechanismIdentity|PageRuntime,|RequestControl,|RuntimeReply,' crates/hepta-browser-actor/src
+          reject_match() {
+            local grep_status
+            if grep "$@"; then
+              echo "forbidden source match" >&2
+              exit 1
+            else
+              grep_status=$?
+            fi
+            if [[ $grep_status -eq 1 ]]; then
+              return 0
+            fi
+            echo "source absence scan failed with status $grep_status" >&2
+            exit "$grep_status"
+          }
+          reject_match -R -n -E 'pub struct BrowserActor<|impl<.*BrowserActor|runtime: R|pub fn new\(|pub fn handle\(' crates/hepta-browser-actor/src
+          reject_match -R -n -E 'pub (use|type).*PrincipalBinding|pub (use|type).*MechanismIdentity|PageRuntime,|RequestControl,|RuntimeReply,' crates/hepta-browser-actor/src
           grep -R -n 'pub fn from_attested' crates/hepta-browser-actor/src
           grep -R -n 'pub fn handle_attested' crates/hepta-browser-actor/src
           python3 - <<'PY'
@@ -238,8 +252,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -R -n -E 'pub struct BrowserActor<|impl<.*BrowserActor|runtime: R|pub fn new\(|pub fn handle\(' crates/hepta-browser-actor/src
-          ! grep -R -n -E 'pub (use|type).*PrincipalBinding|pub (use|type).*MechanismIdentity|PageRuntime,|RequestControl,|RuntimeReply,' crates/hepta-browser-actor/src
+          reject_match() {
+            local grep_status
+            if grep "$@"; then
+              echo "forbidden source match" >&2
+              exit 1
+            else
+              grep_status=$?
+            fi
+            if [[ $grep_status -eq 1 ]]; then
+              return 0
+            fi
+            echo "source absence scan failed with status $grep_status" >&2
+            exit "$grep_status"
+          }
+          reject_match -R -n -E 'pub struct BrowserActor<|impl<.*BrowserActor|runtime: R|pub fn new\(|pub fn handle\(' crates/hepta-browser-actor/src
+          reject_match -R -n -E 'pub (use|type).*PrincipalBinding|pub (use|type).*MechanismIdentity|PageRuntime,|RequestControl,|RuntimeReply,' crates/hepta-browser-actor/src
           grep -R -n 'pub fn from_attested' crates/hepta-browser-actor/src
           grep -R -n 'pub fn handle_attested' crates/hepta-browser-actor/src
           python3 - <<'PY'
