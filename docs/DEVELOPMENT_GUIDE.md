@@ -242,3 +242,16 @@ Historical v3 packets require a fresh exact-source run for v4 qualification.
 ## Persisted signed update readback candidate
 
 The additive G6 / D7 / S11 v2 source package is registered by `manifests/authenticated-update.v2.json`, with its closed contract in `contracts/authenticated-update.v2.json`. [Authenticated update journal and readback](architecture/AUTHENTICATED_UPDATE_READBACK.md) documents exact original signed-byte custody, actual current-root OpenSSL verification and full stored slot readback after reopening existing read-only leases. V1 histories and budgets remain frozen. The new facts are diagnostics; installed boot-root binding, health/commit/rollback, protected production roots/time/floor and physical qualification remain incomplete.
+
+## Separate installed immutable root fixture
+
+The additive [G6a installation fixture](architecture/G6A_IMMUTABLE_AB_FIXTURE.md)
+has an independent signed Debian package selection, actual image recipe in
+`tools/build_g6a_fixture.py`, fixed initramfs guest selector under
+`packaging/debian/g6a`, and same-disk QEMU matrix in
+`tests/qemu/run_g6a_qualification.py`. It executes signature/image/hash-tree and
+kernel mapping checks, read-only root probes, bounded guest A/B attempts and
+actual interrupted publications. `tests/test_g6a_immutable_ab.py` separately
+tests real host OpenSSL and filesystem failure behavior. This fixture preserves
+historical D1/D2I recipes and provides no installed desktop health, protected
+boot chain/floor, production signing or release qualification.

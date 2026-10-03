@@ -35,3 +35,8 @@ It does not promote the historical qualification baseline or release authority.
 ## Authenticated update readback
 
 [Authenticated update journal and readback](architecture/AUTHENTICATED_UPDATE_READBACK.md) describes the additive G6 / D7 / S11 exact-signature capsule and actual read-only OpenSSL/file readback candidate, preserving the v1 profile and installed qualification limits.
+
+[G6a installed immutable A/B fixture](architecture/G6A_IMMUTABLE_AB_FIXTURE.md)
+describes the separate executable Debian/QEMU guest selector, real signed
+dm-verity roots and persistent attempt/fault matrix. Its test fixture does not
+qualify desktop health, firmware trust, production floor or release activation.

@@ -1,0 +1,734 @@
+{
+  "architecture": "amd64",
+  "archive_keyring": {
+    "bootstrap": "official_debian_https_plus_pinned_primary_fingerprints",
+    "bytes": 18367,
+    "path_in_builder": "/home/alex/Documents/Codex/2026-10-02/github-trillionnium-os-destop/work/g6a-debian-bounded/work/debian-13-archive-keyring.gpg",
+    "sha256": "dbc72305245c79a3087dd1cffb35e9fdf56ee0df7cc0a8637a5662a9110305db",
+    "trust_roots": [
+      {
+        "armored_bytes": 11861,
+        "armored_sha256": "6f1d277429dd7ffedcc6f8688a7ad9a458859b1139ffa026d1eeaadcbffb0da7",
+        "effective_url": "https://ftp-master.debian.org/keys/archive-key-13.asc",
+        "id": "debian-13-archive",
+        "primary_fingerprint": "04B54C3CDCA79751B16BC6B5225629DF75B188BD",
+        "requested_url": "https://ftp-master.debian.org/keys/archive-key-13.asc"
+      },
+      {
+        "armored_bytes": 11873,
+        "armored_sha256": "844c07d242db37f283afab9d5531270a0550841e90f9f1a9c3bd599722b808b7",
+        "effective_url": "https://ftp-master.debian.org/keys/archive-key-13-security.asc",
+        "id": "debian-13-security",
+        "primary_fingerprint": "5E04A1E3223A19A20706E20F9904613D4CCE68C6",
+        "requested_url": "https://ftp-master.debian.org/keys/archive-key-13-security.asc"
+      },
+      {
+        "armored_bytes": 1384,
+        "armored_sha256": "4d097bb93f83d731f475c5b92a0c2fcf108cfce1d4932792fca72d00b48d198b",
+        "effective_url": "https://ftp-master.debian.org/keys/release-13.asc",
+        "id": "debian-13-release",
+        "primary_fingerprint": "41587F7DB8C774BCCF131416762F67A0B2C39DE4",
+        "requested_url": "https://ftp-master.debian.org/keys/release-13.asc"
+      }
+    ]
+  },
+  "claims": {
+    "disk_image_created": false,
+    "product_ready": false,
+    "qemu_booted": false,
+    "rootfs_created": false,
+    "secure_boot_enabled": false,
+    "wayland_started": false
+  },
+  "distribution": "Debian GNU/Linux",
+  "inrelease": [
+    {
+      "accepted_primary_fingerprints": [
+        "04B54C3CDCA79751B16BC6B5225629DF75B188BD",
+        "41587F7DB8C774BCCF131416762F67A0B2C39DE4"
+      ],
+      "bytes": 140416,
+      "date": "Sat, 11 Jul 2026 09:02:23 UTC",
+      "effective_url": "% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\n  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\n  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\n100   299  100   299    0     0    361      0 --:--:-- --:--:-- --:--:--   361\n\n 56  137k   56 79124    0     0  59333      0  0:00:02  0:00:01  0:00:01 59333\n100  137k  100  137k    0     0  83184      0  0:00:01  0:00:01 --:--:--  169k\nhttps://snapshot.debian.org/file/7a5d0114537288b0e5bd24b45456bef8024a780a/InRelease",
+      "gpgv_exit_code": 2,
+      "id": "debian",
+      "label": "Debian",
+      "origin": "Debian",
+      "primary_key_fingerprints": [
+        "04B54C3CDCA79751B16BC6B5225629DF75B188BD",
+        "41587F7DB8C774BCCF131416762F67A0B2C39DE4"
+      ],
+      "requested_url": "https://snapshot.debian.org/archive/debian/20260828T000000Z/dists/trixie/InRelease",
+      "sha256": "98b25b5cd185c59d34aa6e4c3e9b5b8f01bbe9d104fe2dcfbcd30dc0a14a59ed",
+      "signing_fingerprints": [
+        "41587F7DB8C774BCCF131416762F67A0B2C39DE4",
+        "B8E5F13176D2A7A75220028078DBA3BC47EF2265"
+      ],
+      "suite": "trixie",
+      "unknown_signature_key_ids": [
+        "6ED0E7B82643E131"
+      ],
+      "valid_primary_fingerprints": [
+        "04B54C3CDCA79751B16BC6B5225629DF75B188BD",
+        "41587F7DB8C774BCCF131416762F67A0B2C39DE4"
+      ],
+      "valid_signature_fingerprints": [
+        "41587F7DB8C774BCCF131416762F67A0B2C39DE4",
+        "B8E5F13176D2A7A75220028078DBA3BC47EF2265"
+      ],
+      "valid_until": null
+    },
+    {
+      "accepted_primary_fingerprints": [
+        "04B54C3CDCA79751B16BC6B5225629DF75B188BD",
+        "41587F7DB8C774BCCF131416762F67A0B2C39DE4"
+      ],
+      "bytes": 47340,
+      "date": "Thu, 27 Aug 2026 20:08:01 UTC",
+      "effective_url": "% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\n  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\n  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\n100   299  100   299    0     0    310      0 --:--:-- --:--:-- --:--:--   310\n\n 13 47340   13  6621    0     0   4427      0  0:00:10  0:00:01  0:00:09  4427\n100 47340  100 47340    0     0  26305      0  0:00:01  0:00:01 --:--:--  130k\nhttps://snapshot.debian.org/file/5205d0515986fe6caaeff6adb1aa1d5449e28d75/InRelease",
+      "gpgv_exit_code": 2,
+      "id": "debian-updates",
+      "label": "Debian",
+      "origin": "Debian",
+      "primary_key_fingerprints": [
+        "04B54C3CDCA79751B16BC6B5225629DF75B188BD"
+      ],
+      "requested_url": "https://snapshot.debian.org/archive/debian/20260828T000000Z/dists/trixie-updates/InRelease",
+      "sha256": "e7e983b7c9f67a4c3f007e6a0ca808fbe855dededdac9e94d6e4b0cc84fe21a0",
+      "signing_fingerprints": [
+        "B8E5F13176D2A7A75220028078DBA3BC47EF2265"
+      ],
+      "suite": "trixie-updates",
+      "unknown_signature_key_ids": [
+        "6ED0E7B82643E131"
+      ],
+      "valid_primary_fingerprints": [
+        "04B54C3CDCA79751B16BC6B5225629DF75B188BD"
+      ],
+      "valid_signature_fingerprints": [
+        "B8E5F13176D2A7A75220028078DBA3BC47EF2265"
+      ],
+      "valid_until": "Thu, 03 Sep 2026 20:08:01 UTC"
+    },
+    {
+      "accepted_primary_fingerprints": [
+        "5E04A1E3223A19A20706E20F9904613D4CCE68C6"
+      ],
+      "bytes": 43409,
+      "date": "Thu, 27 Aug 2026 17:06:57 UTC",
+      "effective_url": "% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\n  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\n100   299  100   299    0     0    418      0 --:--:-- --:--:-- --:--:--   418\n100   299  100   299    0     0    418      0 --:--:-- --:--:-- --:--:--   418\n\n100 43409  100 43409    0     0  30907      0  0:00:01  0:00:01 --:--:-- 30907\nhttps://snapshot.debian.org/file/c8f3623dc3fc1db7ae0d8eb768a333687917114b/InRelease",
+      "gpgv_exit_code": 2,
+      "id": "debian-security",
+      "label": "Debian-Security",
+      "origin": "Debian",
+      "primary_key_fingerprints": [
+        "5E04A1E3223A19A20706E20F9904613D4CCE68C6"
+      ],
+      "requested_url": "https://snapshot.debian.org/archive/debian-security/20260828T000000Z/dists/trixie-security/InRelease",
+      "sha256": "324858a9652243a987a7bbbe812fc41aabfc2a9cd86c65bd9a9c17bbe4fd8ee4",
+      "signing_fingerprints": [
+        "89C87ACEA5DD6B8E6A7068808E9F831205B4BA95"
+      ],
+      "suite": "trixie-security",
+      "unknown_signature_key_ids": [
+        "BDE6D2B9216EC7A8"
+      ],
+      "valid_primary_fingerprints": [
+        "5E04A1E3223A19A20706E20F9904613D4CCE68C6"
+      ],
+      "valid_signature_fingerprints": [
+        "89C87ACEA5DD6B8E6A7068808E9F831205B4BA95"
+      ],
+      "valid_until": "Thu, 03 Sep 2026 17:06:57 UTC"
+    }
+  ],
+  "next_gate": "test-only G6a installed immutable root and attempt matrix",
+  "package_set_sha256": "d825a11fc5ce024d80544ce7471c2d5a6928a3153827f9e197a71d8718c44208",
+  "packages": [
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/b/busybox/busybox-static_1.37.0-6+b8_amd64.deb",
+      "package": "busybox-static",
+      "requested_name": "busybox-static",
+      "sha256": "73efc773b070ea220c5d7cb2d12206ec235c46b03a9ad133d1f6a7ca62201e41",
+      "size": 955448,
+      "version": "1:1.37.0-6+b8"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/c/coreutils/coreutils_9.7-3_amd64.deb",
+      "package": "coreutils",
+      "requested_name": "coreutils",
+      "sha256": "1299ab6f9389a288eb2f5f3dd222c26cc777b9a2d5ecb6ee4cbd340cebcdada2",
+      "size": 3023556,
+      "version": "9.7-3"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/c/cpio/cpio_2.15+dfsg-2_amd64.deb",
+      "package": "cpio",
+      "requested_name": "cpio",
+      "sha256": "d8faece250bcf72e91ac15a5fef198be173af18c9f48bae257e7ee937fbc6cdc",
+      "size": 252116,
+      "version": "2.15+dfsg-2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/c/cryptsetup/cryptsetup-bin_2.7.5-2_amd64.deb",
+      "package": "cryptsetup-bin",
+      "requested_name": "cryptsetup-bin",
+      "sha256": "b77b192cf1c35f96da02134300bb227ab92c49eec2444268049fa1ce84fb9bc7",
+      "size": 503628,
+      "version": "2:2.7.5-2"
+    },
+    {
+      "architecture": "all",
+      "filename": "pool/main/d/debconf/debconf_1.5.91_all.deb",
+      "package": "debconf",
+      "requested_name": "debconf",
+      "sha256": "1ddc7e6c5925f748eefb7ca811d98e049f18c158bb21fbc7e122262ce6011e49",
+      "size": 121088,
+      "version": "1.5.91"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/l/lvm2/dmsetup_1.02.205-2_amd64.deb",
+      "package": "dmsetup",
+      "requested_name": "dmsetup",
+      "sha256": "4771f7ab0a907a8e5d02a6358ff016ae7cb49124906bada02fa882e141b615a0",
+      "size": 82344,
+      "version": "2:1.02.205-2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/d/dpkg/dpkg_1.22.22_amd64.deb",
+      "package": "dpkg",
+      "requested_name": "dpkg",
+      "sha256": "3e800c6d75e8e709007ed1c356e5fa8509a75c1694fb0a1183709abc9cfdc1f3",
+      "size": 1537216,
+      "version": "1.22.22"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/d/dracut/dracut-install_106-6_amd64.deb",
+      "package": "dracut-install",
+      "requested_name": "dracut-install",
+      "sha256": "5ef87c15510db933d4ec7617b88012b436b0ebfc248e4c7d3b6baf9aa5acbc76",
+      "size": 37784,
+      "version": "106-6"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/g/gcc-14/gcc-14-base_14.2.0-19_amd64.deb",
+      "package": "gcc-14-base",
+      "requested_name": "gcc-14-base",
+      "sha256": "5b6825de4263824b78c4c51f6476414f3b4e89c2ab63e81dc8b9b5501e867cf6",
+      "size": 49432,
+      "version": "14.2.0-19"
+    },
+    {
+      "architecture": "all",
+      "filename": "pool/main/i/initramfs-tools/initramfs-tools_0.148.4_all.deb",
+      "package": "initramfs-tools",
+      "requested_name": "initramfs-tools",
+      "sha256": "4c65a6c385a3815aa65706066ae3a35395bf4ae7e13c9d4df4c655bd1d1ef956",
+      "size": 17400,
+      "version": "0.148.4"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/i/initramfs-tools/initramfs-tools-bin_0.148.4_amd64.deb",
+      "package": "initramfs-tools-bin",
+      "requested_name": "initramfs-tools-bin",
+      "sha256": "e4cbca64522133f8a9e23810029b217f496a40dc6d98a6082fc2eece8a95d69b",
+      "size": 17516,
+      "version": "0.148.4"
+    },
+    {
+      "architecture": "all",
+      "filename": "pool/main/i/initramfs-tools/initramfs-tools-core_0.148.4_all.deb",
+      "package": "initramfs-tools-core",
+      "requested_name": "initramfs-tools-core",
+      "sha256": "03cb11b8acd188e3b441526698536694f515ea6f2f5a20aef5ae70e5eb485a7a",
+      "size": 50668,
+      "version": "0.148.4"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/k/klibc/klibc-utils_2.0.14-1_amd64.deb",
+      "package": "klibc-utils",
+      "requested_name": "klibc-utils",
+      "sha256": "6d4d6b154f3147771709e47ac2fca84c38d9bd57407cf0bc1f806f9fc082b9fc",
+      "size": 95068,
+      "version": "2.0.14-1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/k/kmod/kmod_34.2-2_amd64.deb",
+      "package": "kmod",
+      "requested_name": "kmod",
+      "sha256": "d56f9311beb17cd15447d11d91fd4de94d23a47d4619e8806b1b807b40c72e53",
+      "size": 95704,
+      "version": "34.2-2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/a/acl/libacl1_2.3.2-2+b1_amd64.deb",
+      "package": "libacl1",
+      "requested_name": "libacl1",
+      "sha256": "08074f01e384bc07c0c2d79a58cf4a6523f71cf75d1808101c79617656c9a39d",
+      "size": 32860,
+      "version": "2.3.2-2+b1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/a/apparmor/libapparmor1_4.1.0-1_amd64.deb",
+      "package": "libapparmor1",
+      "requested_name": "libapparmor1",
+      "sha256": "4158976c77038b93021967f425b4cc505df18c4f5e3f444732399e7ed4af4419",
+      "size": 43688,
+      "version": "4.1.0-1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/a/attr/libattr1_2.5.2-3_amd64.deb",
+      "package": "libattr1",
+      "requested_name": "libattr1",
+      "sha256": "606b5ee12ea2786be607a17f40c1fb5e65c76ceaff66665bdf8f8c6c1b71d1fb",
+      "size": 22876,
+      "version": "1:2.5.2-3"
+    },
+    {
+      "architecture": "all",
+      "filename": "pool/main/a/audit/libaudit-common_4.0.2-2_all.deb",
+      "package": "libaudit-common",
+      "requested_name": "libaudit-common",
+      "sha256": "b6edcd7aa36a2a5a1abd2c52966d69a99eebdb69c8f5cb33cbf415b0875775e3",
+      "size": 12692,
+      "version": "1:4.0.2-2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/a/audit/libaudit1_4.0.2-2+b2_amd64.deb",
+      "package": "libaudit1",
+      "requested_name": "libaudit1",
+      "sha256": "e5c200c6f9db0d0e5766c5cad66a686f46c7649868435fba966cdb0be59b42f2",
+      "size": 55080,
+      "version": "1:4.0.2-2+b2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/u/util-linux/libblkid1_2.41.5-0+deb13u1_amd64.deb",
+      "package": "libblkid1",
+      "requested_name": "libblkid1",
+      "sha256": "81535f3c2c0efc732965907c8749103a0a26377c761622c9ce39b4c92dcde52f",
+      "size": 171612,
+      "version": "2.41.5-0+deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/b/bzip2/libbz2-1.0_1.0.8-6_amd64.deb",
+      "package": "libbz2-1.0",
+      "requested_name": "libbz2-1.0",
+      "sha256": "cba4cda04244b5e481bb15524bc3c983a7d1b6f330013b9b381706a2fcb65310",
+      "size": 37912,
+      "version": "1.0.8-6"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/g/glibc/libc6_2.41-12+deb13u3_amd64.deb",
+      "package": "libc6",
+      "requested_name": "libc6",
+      "sha256": "8ffd13165b9ee3f067e2ee670df718e48c1bdaa18676ac93d1de761dbbb3913c",
+      "size": 2849576,
+      "version": "2.41-12+deb13u3"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/libc/libcap-ng/libcap-ng0_0.8.5-4+b1_amd64.deb",
+      "package": "libcap-ng0",
+      "requested_name": "libcap-ng0",
+      "sha256": "20a9e4b0619a3eb2566338223bed135dde5a601eaa2f8fdd5f20b94506addcac",
+      "size": 17584,
+      "version": "0.8.5-4+b1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/libc/libcap2/libcap2_2.75-10+deb13u1+b1_amd64.deb",
+      "package": "libcap2",
+      "requested_name": "libcap2",
+      "sha256": "860db6f80d400239744eee2b454f1d8e66b064e18dd0527535824887691e9cb7",
+      "size": 28988,
+      "version": "1:2.75-10+deb13u1+b1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/libx/libxcrypt/libcrypt1_4.4.38-1_amd64.deb",
+      "package": "libcrypt1",
+      "requested_name": "libcrypt1",
+      "sha256": "0ebc144d662e3197982d1bf3a7b8b35ca845e54c68811de0328b1f0d7c67585c",
+      "size": 90072,
+      "version": "1:4.4.38-1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/c/cryptsetup/libcryptsetup12_2.7.5-2_amd64.deb",
+      "package": "libcryptsetup12",
+      "requested_name": "libcryptsetup12",
+      "sha256": "84f6596296c346c1c8f6bb16b0d4d485215b7a23a23ff21e9c28e35822d45a7b",
+      "size": 254056,
+      "version": "2:2.7.5-2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/l/lvm2/libdevmapper1.02.1_1.02.205-2_amd64.deb",
+      "package": "libdevmapper1.02.1",
+      "requested_name": "libdevmapper1.02.1",
+      "sha256": "e924e0df8823987f271b7d3a375dc2f8adcd76db66f09d0273043c885edb0af0",
+      "size": 134640,
+      "version": "2:1.02.205-2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/e/expat/libexpat1_2.8.3-1~deb13u1_amd64.deb",
+      "package": "libexpat1",
+      "requested_name": "libexpat1",
+      "sha256": "38abe0e710a07688e9c149d74536e67cfee0364bdb64dd6d644c32a1cfad389f",
+      "size": 122672,
+      "version": "2.8.3-1~deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/g/gcc-14/libgcc-s1_14.2.0-19_amd64.deb",
+      "package": "libgcc-s1",
+      "requested_name": "libgcc-s1",
+      "sha256": "3c71917b490d1a17aed43196a2787a256ecf060526cdb20216a74bedc061b150",
+      "size": 72772,
+      "version": "14.2.0-19"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/g/gmp/libgmp10_6.3.0+dfsg-3_amd64.deb",
+      "package": "libgmp10",
+      "requested_name": "libgmp10",
+      "sha256": "d0d0265eb01770f17afd0f7c8c0622f80479dcfbbe13653a0debeec61464e622",
+      "size": 560220,
+      "version": "2:6.3.0+dfsg-3"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/j/json-c/libjson-c5_0.18+ds-1_amd64.deb",
+      "package": "libjson-c5",
+      "requested_name": "libjson-c5",
+      "sha256": "4fbd5fb4d54c626f05d68abf38a31533fbf1bf4a87068696abe041ee9c974fe0",
+      "size": 45956,
+      "version": "0.18+ds-1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/k/klibc/libklibc_2.0.14-1_amd64.deb",
+      "package": "libklibc",
+      "requested_name": "libklibc",
+      "sha256": "8c71660ca790ef06f46a4e64febc6ad515499a7364aa9aa98c88b5655f9c5bda",
+      "size": 44760,
+      "version": "2.0.14-1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/k/kmod/libkmod2_34.2-2_amd64.deb",
+      "package": "libkmod2",
+      "requested_name": "libkmod2",
+      "sha256": "ee6c50ebac79aa9795e8bf9aa01d94c99984d09d22598c66be0f8ba917b62179",
+      "size": 63196,
+      "version": "34.2-2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/x/xz-utils/liblzma5_5.8.1-1+deb13u1_amd64.deb",
+      "package": "liblzma5",
+      "requested_name": "liblzma5",
+      "sha256": "1cfcc6e0dc36f438a79b6e2189facdb9d150b08f57d190a60e01c98075c7f896",
+      "size": 309492,
+      "version": "5.8.1-1+deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/libm/libmd/libmd0_1.1.0-2+b1_amd64.deb",
+      "package": "libmd0",
+      "requested_name": "libmd0",
+      "sha256": "7244ec3839b61fac0c1884fe08aaa040f26e8f1f35f1f5d3482eacefd30d1b44",
+      "size": 36272,
+      "version": "1.1.0-2+b1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/u/util-linux/libmount1_2.41.5-0+deb13u1_amd64.deb",
+      "package": "libmount1",
+      "requested_name": "libmount1",
+      "sha256": "6d00f45f2e80e078e906e3eedecd3ba6913e39fef49bff361ee583f17f00ec05",
+      "size": 210408,
+      "version": "2.41.5-0+deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/p/pam/libpam0g_1.7.0-5_amd64.deb",
+      "package": "libpam0g",
+      "requested_name": "libpam0g",
+      "sha256": "4f5bde27d8df2de6ea8990319b42d9974f56a3ba9907ce7296fd0f8964fc9fb1",
+      "size": 69880,
+      "version": "1.7.0-5"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/p/pcre2/libpcre2-8-0_10.46-1~deb13u1_amd64.deb",
+      "package": "libpcre2-8-0",
+      "requested_name": "libpcre2-8-0",
+      "sha256": "6aa452af6a07e34498bf8e734e8789c9dd602fb34f12572e62dc1bba4889a60e",
+      "size": 298536,
+      "version": "10.46-1~deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/p/popt/libpopt0_1.19+dfsg-2_amd64.deb",
+      "package": "libpopt0",
+      "requested_name": "libpopt0",
+      "sha256": "07f649b706852af937654295697dcfc7858f3295718ec18681dce1704663e4f2",
+      "size": 43844,
+      "version": "1.19+dfsg-2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/p/python3.13/libpython3.13-minimal_3.13.5-2+deb13u4_amd64.deb",
+      "package": "libpython3.13-minimal",
+      "requested_name": "libpython3.13-minimal",
+      "sha256": "e3a45504aaf395acb5c57efb5ccfdf85efa6eaffc165653d1f03532bbf5b92c5",
+      "size": 863160,
+      "version": "3.13.5-2+deb13u4"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/libs/libseccomp/libseccomp2_2.6.0-2_amd64.deb",
+      "package": "libseccomp2",
+      "requested_name": "libseccomp2",
+      "sha256": "89d5138e05fb6a86b9afd8b54dc0fb4b14f4c27c05e6c5f767c2132bdf808531",
+      "size": 51712,
+      "version": "2.6.0-2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/libs/libselinux/libselinux1_3.8.1-1_amd64.deb",
+      "package": "libselinux1",
+      "requested_name": "libselinux1",
+      "sha256": "68bb8d32bd8d6d7d2f5952a169db03d1484b46ae1e52abccdec42a19dccea5d5",
+      "size": 84680,
+      "version": "3.8.1-1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/u/util-linux/libsmartcols1_2.41.5-0+deb13u1_amd64.deb",
+      "package": "libsmartcols1",
+      "requested_name": "libsmartcols1",
+      "sha256": "d96bac9c8805685f2734885098a214b82950da6ebb182c27a6b7a124a0323392",
+      "size": 143216,
+      "version": "2.41.5-0+deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/o/openssl/libssl3t64_3.5.7-1~deb13u2_amd64.deb",
+      "package": "libssl3t64",
+      "requested_name": "libssl3t64",
+      "sha256": "916f7f40b34a06e6ebfaefcdab331bff458328411da672598f126a760472467d",
+      "size": 2453872,
+      "version": "3.5.7-1~deb13u2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/s/systemd/libsystemd-shared_257.13-1~deb13u1_amd64.deb",
+      "package": "libsystemd-shared",
+      "requested_name": "libsystemd-shared",
+      "sha256": "2d349824e57f88507e2a33360610d8afc143a4ad5e80ee4bf8f37b826d6f37f9",
+      "size": 2154616,
+      "version": "257.13-1~deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/s/systemd/libsystemd0_257.13-1~deb13u1_amd64.deb",
+      "package": "libsystemd0",
+      "requested_name": "libsystemd0",
+      "sha256": "ab0d4127b5e46e6f8c015a1db15a62ba9ae274cdefa150083adf90ada0600ea1",
+      "size": 454648,
+      "version": "257.13-1~deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/s/systemd/libudev1_257.13-1~deb13u1_amd64.deb",
+      "package": "libudev1",
+      "requested_name": "libudev1",
+      "sha256": "5d41c284f5a93b05bc7d648b61a02dd2bb9ff05b2261ad1a8b7d96044a0cfa88",
+      "size": 152300,
+      "version": "257.13-1~deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/u/util-linux/libuuid1_2.41.5-0+deb13u1_amd64.deb",
+      "package": "libuuid1",
+      "requested_name": "libuuid1",
+      "sha256": "c1bf4c4c3ff48c57fabf93307dfb56996b60cfa33927afc4158b5db36fb2721e",
+      "size": 37848,
+      "version": "2.41.5-0+deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/libz/libzstd/libzstd1_1.5.7+dfsg-1_amd64.deb",
+      "package": "libzstd1",
+      "requested_name": "libzstd1",
+      "sha256": "2f6a2aeacfc925eba8b00ac9139bc4bfccf8cacb09eb93de067074b26948eef9",
+      "size": 303836,
+      "version": "1.5.7+dfsg-1"
+    },
+    {
+      "architecture": "all",
+      "filename": "pool/main/l/linux-base/linux-base_4.12.1_all.deb",
+      "package": "linux-base",
+      "requested_name": "linux-base",
+      "sha256": "d86e703aff81f404f2104af9411fd2acbae5fdb65f9264e488bb276a77a562be",
+      "size": 25544,
+      "version": "4.12.1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/l/linux-signed-amd64/linux-image-6.12.105+deb13-amd64_6.12.105-1_amd64.deb",
+      "package": "linux-image-6.12.105+deb13-amd64",
+      "requested_name": "linux-image-6.12.105+deb13-amd64",
+      "sha256": "657f7dc4dd25be3bdabb454357ad0e3af77f6a6b43700425d21a802400ff75b5",
+      "size": 107916820,
+      "version": "6.12.105-1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/l/linux-signed-amd64/linux-image-amd64_6.12.105-1_amd64.deb",
+      "package": "linux-image-amd64",
+      "requested_name": "linux-image-amd64",
+      "sha256": "4e4ea7f42da44a0c53fbb5e31ce2c54363df8c2d25a811456b275ec546e361e8",
+      "size": 1480,
+      "version": "6.12.105-1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/e/e2fsprogs/logsave_1.47.2-3+b11_amd64.deb",
+      "package": "logsave",
+      "requested_name": "logsave",
+      "sha256": "0dd470e53e65eb4307a8911f632d180000ec4380cb4109bddc0ee66ae385fc24",
+      "size": 24884,
+      "version": "1.47.2-3+b11"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/u/util-linux/mount_2.41.5-0+deb13u1_amd64.deb",
+      "package": "mount",
+      "requested_name": "mount",
+      "sha256": "eb70a615114ac40123768beb20e302554d5cb7edb33290be7e418ebe1075c878",
+      "size": 163208,
+      "version": "2.41.5-0+deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/o/openssl/openssl_3.5.7-1~deb13u2_amd64.deb",
+      "package": "openssl",
+      "requested_name": "openssl",
+      "sha256": "4ff006f431d8c2e69fa736885a3b6e779f2448535f69dbde821d9f0ff87ad8ea",
+      "size": 1507300,
+      "version": "3.5.7-1~deb13u2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/updates/main/o/openssl/openssl-provider-legacy_3.5.7-1~deb13u2_amd64.deb",
+      "package": "openssl-provider-legacy",
+      "requested_name": "openssl-provider-legacy",
+      "sha256": "f155c8191ae6d41da73d792f4182680aeafeb85c3dd223934ee9fdd115c4f1fa",
+      "size": 316132,
+      "version": "3.5.7-1~deb13u2"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/p/python3-defaults/python3-minimal_3.13.5-1_amd64.deb",
+      "package": "python3-minimal",
+      "requested_name": "python3-minimal",
+      "sha256": "a5d2371bebf3689f676e3f3bae800371bcc4392a8a51269e23d528249b399615",
+      "size": 27248,
+      "version": "3.13.5-1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/p/python3.13/python3.13-minimal_3.13.5-2+deb13u4_amd64.deb",
+      "package": "python3.13-minimal",
+      "requested_name": "python3.13-minimal",
+      "sha256": "d86fb415db31273c8d98b42088c070b55094fa0bedb5d2daf34101195b78cf23",
+      "size": 2216940,
+      "version": "3.13.5-2+deb13u4"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/s/systemd/systemd_257.13-1~deb13u1_amd64.deb",
+      "package": "systemd",
+      "requested_name": "systemd",
+      "sha256": "ee81302a1d5b7434762b6e784a572854d4b6cf6235e33e2d104ad4e1cae71ab4",
+      "size": 3093632,
+      "version": "257.13-1~deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/t/tar/tar_1.35+dfsg-3.1_amd64.deb",
+      "package": "tar",
+      "requested_name": "tar",
+      "sha256": "214c02e1aa291076a3147b8a4c4cae02fadf4c67df629186e3e313726faef1de",
+      "size": 814968,
+      "version": "1.35+dfsg-3.1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/s/systemd/udev_257.13-1~deb13u1_amd64.deb",
+      "package": "udev",
+      "requested_name": "udev",
+      "sha256": "a9d751b4d73a489120ef68a21caedf0b58fba80598fb22a17f85060f308bfe7e",
+      "size": 1418624,
+      "version": "257.13-1~deb13u1"
+    },
+    {
+      "architecture": "amd64",
+      "filename": "pool/main/z/zlib/zlib1g_1.3.dfsg+really1.3.1-1+b1_amd64.deb",
+      "package": "zlib1g",
+      "requested_name": "zlib1g",
+      "sha256": "015be740d6236ad114582dea500c1d907f29e16d6db00566ca32fb68d71ac90d",
+      "size": 88892,
+      "version": "1:1.3.dfsg+really1.3.1-1+b1"
+    }
+  ],
+  "resolved_package_count": 62,
+  "resolver_policy": {
+    "allow_unauthenticated": false,
+    "check_valid_until_for_frozen_snapshot": false,
+    "download_and_hash_every_deb": true,
+    "empty_dpkg_status": true,
+    "full_dependency_closure_required": true,
+    "install_recommends": false,
+    "trust_root_transport": "official_debian_https_plus_pinned_primary_fingerprint"
+  },
+  "schema": "trillionnium.desktop.debian-snapshot-lock.v1",
+  "seed_packages": [
+    "busybox-static",
+    "cryptsetup-bin",
+    "dmsetup",
+    "kmod",
+    "linux-image-amd64",
+    "openssl",
+    "python3-minimal"
+  ],
+  "snapshot_timestamp": "20260828T000000Z",
+  "sources": [
+    "deb [check-valid-until=no signed-by=/home/alex/Documents/Codex/2026-10-02/github-trillionnium-os-destop/work/g6a-debian-bounded/work/debian-13-archive-keyring.gpg] https://snapshot.debian.org/archive/debian/20260828T000000Z trixie main",
+    "deb [check-valid-until=no signed-by=/home/alex/Documents/Codex/2026-10-02/github-trillionnium-os-destop/work/g6a-debian-bounded/work/debian-13-archive-keyring.gpg] https://snapshot.debian.org/archive/debian/20260828T000000Z trixie-updates main",
+    "deb [check-valid-until=no signed-by=/home/alex/Documents/Codex/2026-10-02/github-trillionnium-os-destop/work/g6a-debian-bounded/work/debian-13-archive-keyring.gpg] https://snapshot.debian.org/archive/debian-security/20260828T000000Z trixie-security main"
+  ],
+  "status": "PASS_SIGNED_INPUT_AND_PACKAGE_CLOSURE_ONLY"
+}
