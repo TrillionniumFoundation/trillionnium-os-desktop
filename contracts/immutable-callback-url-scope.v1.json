@@ -1,0 +1,54 @@
+{
+  "api": {
+    "name": "closed_immutable_callback_engine_pair",
+    "preconditions": [
+      "construct_and_pump_on_creator_engine_thread",
+      "separately_enforce_closed_operation_profile",
+      "preserve_original_live_peer_custody_and_deadline"
+    ],
+    "refusals": {
+      "invalid_owner_token_or_fixture": "PolicyDenied_before_dispatch",
+      "other_owner_url": "PolicyDenied_before_dispatch",
+      "other_reply_url": "Internal_and_pair_retirement"
+    },
+    "result": "noncloneable_actor_endpoint_and_non_send_non_sync_callback_owner",
+    "signature": "pub fn closed_immutable_callback_engine_pair<R: CallbackPageRuntime>(runtime: R, waker: Arc<dyn EngineEventLoopWaker>) -> (EngineThreadRuntime, CallbackEngineOwner<R>)",
+    "source": "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop.rs"
+  },
+  "api_version": "0.1.0",
+  "fixed_document_url": "data:text/html,<!DOCTYPE html><title>Immutable owner</title><main><h1>Owned semantic document</h1><p>Read only native Servo page</p></main>",
+  "native_url_source": "actual_owned_WebView_url_not_replaced_by_constant_or_about_blank",
+  "non_claims": {
+    "approved_principal_minted": false,
+    "hardware_or_release": false,
+    "human_approval": false,
+    "installed_activation": false,
+    "native_execution_passed": false
+  },
+  "qualification": {
+    "native_approved_cases": 2,
+    "native_original_cases": 4,
+    "synthetic_host_cases": 4,
+    "unchanged_connection_seconds": 20,
+    "unchanged_native_seconds": 5
+  },
+  "schema": "trillionnium.desktop.immutable-callback-url-scope.v1",
+  "selection": {
+    "caller_capability_parameter": false,
+    "caller_url_parameter": false,
+    "checked_at": [
+      "actor_preflight",
+      "actor_call",
+      "callback_completion",
+      "callback_owner_poll"
+    ],
+    "closed_servo_profile": "ClosedImmutableReadOnly_exact_fixed_document",
+    "existing_engine_and_callback_defaults": "D3Local_about_blank_or_loopback_http",
+    "propagated_to": [
+      "EngineThreadRuntime",
+      "CallbackEngineOwner",
+      "EngineCompletion"
+    ]
+  },
+  "status": "SOURCE_FIXED_DOCUMENT_SCOPE_NATIVE_EXECUTION_PENDING"
+}

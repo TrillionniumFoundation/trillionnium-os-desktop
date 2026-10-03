@@ -11,9 +11,9 @@ pub use immediate::ImmediateCallbacks;
 
 use super::{
     BrowserActorMessage, BrowserOperation, ENGINE_CANCEL_POLL, ENGINE_PENDING_LIMIT,
-    ElementReference, EngineEventLoopWaker, EngineThreadRuntime, PageAction, PageOwnerSnapshot,
-    PendingCall, RequestControl, RuntimeFailure, RuntimeReply, bound_reply, is_uncertain_failure,
-    notify_engine, ordinary_message,
+    ElementReference, EngineEventLoopWaker, EngineThreadRuntime, EngineUrlScope, PageAction,
+    PageOwnerSnapshot, PendingCall, RequestControl, RuntimeFailure, RuntimeReply, bound_reply,
+    is_uncertain_failure, notify_engine, ordinary_message,
 };
 use std::marker::PhantomData;
 use std::panic::{AssertUnwindSafe, catch_unwind};
@@ -87,6 +87,7 @@ pub struct EngineCompletion {
     closed: Arc<AtomicBool>,
     control: RequestControl,
     waker: Arc<dyn EngineEventLoopWaker>,
+    url_scope: EngineUrlScope,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -136,7 +137,7 @@ impl EngineCompletion {
             .control
             .ensure_active()
             .and(result)
-            .and_then(bound_reply)
+            .and_then(|reply| bound_reply(reply, self.url_scope))
             .and_then(|reply| self.control.ensure_active().map(|()| reply))
             .map_err(redact_failure);
         if sender.try_send(result).is_err() {
@@ -212,6 +213,7 @@ pub struct CallbackEngineOwner<R: CallbackPageRuntime> {
     waker: Arc<dyn EngineEventLoopWaker>,
     owner_thread: ThreadId,
     retired: bool,
+    url_scope: EngineUrlScope,
     _thread_affinity: PhantomData<Rc<()>>,
 }
 
@@ -240,6 +242,24 @@ pub fn callback_engine_pair<R: CallbackPageRuntime>(
     runtime: R,
     waker: Arc<dyn EngineEventLoopWaker>,
 ) -> (EngineThreadRuntime, CallbackEngineOwner<R>) {
+    callback_pair(runtime, waker, EngineUrlScope::D3Local)
+}
+
+/// Select the single fixed immutable document URL for replies and owner custody.
+/// The caller must separately enforce the closed operation profile and live
+/// peer authority. No caller URL, listener, grant or new deadline enters here.
+pub fn closed_immutable_callback_engine_pair<R: CallbackPageRuntime>(
+    runtime: R,
+    waker: Arc<dyn EngineEventLoopWaker>,
+) -> (EngineThreadRuntime, CallbackEngineOwner<R>) {
+    callback_pair(runtime, waker, EngineUrlScope::ClosedImmutableReadOnly)
+}
+
+fn callback_pair<R: CallbackPageRuntime>(
+    runtime: R,
+    waker: Arc<dyn EngineEventLoopWaker>,
+    url_scope: EngineUrlScope,
+) -> (EngineThreadRuntime, CallbackEngineOwner<R>) {
     let (sender, receiver) = mpsc::sync_channel(ENGINE_PENDING_LIMIT);
     let closed = Arc::new(AtomicBool::new(false));
     let owner_thread = thread::current().id();
@@ -249,6 +269,7 @@ pub fn callback_engine_pair<R: CallbackPageRuntime>(
             closed: closed.clone(),
             owner_thread,
             waker: waker.clone(),
+            url_scope,
         },
         CallbackEngineOwner {
             receiver,
@@ -258,6 +279,7 @@ pub fn callback_engine_pair<R: CallbackPageRuntime>(
             waker,
             owner_thread,
             retired: false,
+            url_scope,
             _thread_affinity: PhantomData,
         },
     )
@@ -320,6 +342,7 @@ impl<R: CallbackPageRuntime> CallbackEngineOwner<R> {
             closed: self.closed.clone(),
             control: call.control.clone(),
             waker: self.waker.clone(),
+            url_scope: self.url_scope,
         };
         // Publish active state before callbacks can fire synchronously.
         self.active = Some(ActiveCall {
@@ -373,7 +396,7 @@ impl<R: CallbackPageRuntime> CallbackEngineOwner<R> {
             .control
             .ensure_current_peer()
             .and(result)
-            .and_then(bound_reply)
+            .and_then(|reply| bound_reply(reply, self.url_scope))
             .and_then(|reply| active.call.control.ensure_active().map(|()| reply))
             .map_err(redact_failure);
         let uncertain = result.as_ref().is_err_and(is_uncertain_failure);

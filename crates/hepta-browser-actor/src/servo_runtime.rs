@@ -32,7 +32,7 @@ use hepta_session_core::ReceiptJournal;
 
 use simulation::engine_dispatch::event_loop::{
     CallbackEngineOwner, CallbackPageRuntime, CallbackPumpResult, CompletionDelivery,
-    EngineCompletion, callback_engine_pair,
+    EngineCompletion, callback_engine_pair, closed_immutable_callback_engine_pair,
 };
 use simulation::{
     BrowserActorMessage, CancellationToken, PageOwnerSnapshot, ReceiptLifecycleObserver,
@@ -594,7 +594,13 @@ fn runtime_pair(
     let bridge = ServoCommandBridge {
         state: state.clone(),
     };
-    let (endpoint, owner) = callback_engine_pair(bridge, Arc::new(ServoWakerAdapter(waker)));
+    let waker = Arc::new(ServoWakerAdapter(waker));
+    let (endpoint, owner) = match profile {
+        ServoProfile::ExistingSemanticBridge => callback_engine_pair(bridge, waker),
+        ServoProfile::ClosedImmutableReadOnly => {
+            closed_immutable_callback_engine_pair(bridge, waker)
+        }
+    };
     (
         ServoRuntimeEndpoint {
             inner: endpoint,
