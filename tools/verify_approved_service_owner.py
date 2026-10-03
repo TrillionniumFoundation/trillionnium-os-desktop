@@ -334,6 +334,11 @@ def legacy_source(path: str, text: str) -> str:
     accepted. An arbitrary module/comment tail, altered old byte or same-tail
     decoy fails. Full new source correspondence is a separate mandatory gate.
     """
+    try:
+        from .verify_approved_service_request import parent_source as service_request_parent_source
+    except ImportError:
+        from verify_approved_service_request import parent_source as service_request_parent_source
+    text = service_request_parent_source(path, text)
     if type(text) is not str:
         raise ValueError('exact Foundation source text type differs')
     receiver = EXPECTED['composition_receiver']['source_boundaries'].get(path)
@@ -388,6 +393,11 @@ def _pinned_receiver_text(text, rule):
 
 def detach_for_readiness(path, text):
     """Restore only exact reviewed receiver files at its whole-hash boundary."""
+    try:
+        from .verify_approved_service_request import parent_source as service_request_parent_source
+    except ImportError:
+        from verify_approved_service_request import parent_source as service_request_parent_source
+    text = service_request_parent_source(path, text)
     rule = EXPECTED['composition_receiver']['source_boundaries'].get(path)
     if rule is None:
         return text
@@ -412,6 +422,11 @@ def detach_for_readiness(path, text):
 
 def receiver_profile_inputs(texts):
     """Require complete exact bare or combined profiles before original rules."""
+    try:
+        from .verify_approved_service_request import parent_source as service_request_parent_source
+    except ImportError:
+        from verify_approved_service_request import parent_source as service_request_parent_source
+    texts = {path: service_request_parent_source(path, text) for path, text in texts.items()}
     result = dict(texts)
     receiver = EXPECTED['composition_receiver']
     rule = receiver['make']
@@ -456,7 +471,11 @@ def inputs(root=ROOT):
              set(EXPECTED['kernel_source_sha256']) |
              set(EXPECTED['composition_receiver']['source_boundaries']) |
              {EXPECTED['cargo_inverse']['path'], EXPECTED['mandatory_make_inverse']['path']})
-    return {path: source_gate.source(root, path) for path in sorted(paths)}
+    try:
+        from .verify_approved_service_request import parent_source as service_request_parent_source
+    except ImportError:
+        from verify_approved_service_request import parent_source as service_request_parent_source
+    return {path: service_request_parent_source(path, source_gate.source(root, path)) for path in sorted(paths)}
 
 
 def check(value, texts):

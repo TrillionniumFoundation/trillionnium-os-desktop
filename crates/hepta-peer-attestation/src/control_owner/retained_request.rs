@@ -362,3 +362,5 @@ impl AttestedHandoffReceiver {
 }
 
 mod readiness;
+
+mod service_request;

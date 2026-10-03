@@ -339,3 +339,19 @@ ELF/config inputs, every group FD inventory and final root file bytes require
 actual execution evidence. Per-request Control/Agent bridges, Actor/Coordinator/
 Page/journal integration, installed activation, native sixty-second health,
 hardware, human approvals and production readiness are unimplemented.
+
+## Original service requests v2 SOURCE candidate
+
+The additive `ApprovedServiceRequests` bridge now has authored source for
+root-selected persistent Source/Owner continuity and separate original bounded
+Control/Agent requests. Its seven opaque types and seventeen total peer/transport
+methods are documented in `docs/architecture/PERSISTENT_SERVICE_REQUEST_BRIDGE.md`
+and `contracts/approved-service-request-bridge.v2.json`. The previous Foundation
+paragraph records its earlier scope; this new source still has no Actor/Coordinator/
+Page/journal integration, installed activation or native health qualification.
+The new mandatory `tools/verify_approved_service_request.py` requires complete
+current modules and preserves the exact old bytes by finite inverse. Its
+`tests/test_approved_service_request.py` cases are source mutations only; the new
+`approved_service_request_kernel` harness is a separate real-process corpus,
+not yet compiled or run for this candidate. Old raw APIs, tests and budgets stay
+exact. Default product activation remains disabled.

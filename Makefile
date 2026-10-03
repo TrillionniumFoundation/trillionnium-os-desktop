@@ -12,6 +12,7 @@ validate:
 	python3 tools/verify_approved_composition_scope.py
 	python3 tools/verify_approved_constructor_route.py
 	python3 tools/verify_approved_service_owner.py
+	python3 tools/verify_approved_service_request.py
 	python3 tools/verify_retained_control_readiness.py
 	python3 tools/verify_mozjs_secondary_input.py
 	python3 tools/verify_mozjs_authenticated_input.py

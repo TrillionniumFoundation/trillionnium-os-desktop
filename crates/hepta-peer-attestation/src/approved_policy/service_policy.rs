@@ -417,6 +417,14 @@ impl ApprovedServiceOwnerVerifier {
     }
 }
 
+mod request_bridge;
+pub use request_bridge::{
+    ApprovedServiceControlReceiver, ApprovedServiceReceivedRequest, ApprovedServiceRequestBinding,
+    ApprovedServiceRequestVerifier, ApprovedServiceRequests, ApprovedServiceRetainedReporter,
+    ApprovedServiceSessionVerifier,
+};
+pub(crate) use request_bridge::ServiceSessionState;
+
 #[cfg(test)]
 mod tests {
     use super::*;
