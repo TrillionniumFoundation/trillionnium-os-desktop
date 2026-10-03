@@ -113,3 +113,12 @@ debug with debug symbols can consume the unchanged twenty-second scope hashing
 its larger ELF. Such a timeout is an actual failed object, not a skipped case or
 qualification for another build profile. No build profile or fixture budget is
 changed by this package.
+
+The retained cancellation monitor delegates its current check to `poll_cancel`
+once per loop. That method retains its complete checks before and after reading
+the original channel, and retires the same action/report scope on a failure.
+The monitor does not repeat a third complete ELF read immediately before that
+call. The public retained poll methods, including their no-message behavior,
+are unchanged; root source, pathname, pidfd, channel and original absolute
+deadline checks still apply before cancellation can affect dispatch. This
+removes a repeated check and supplies no byte cache or native qualification.

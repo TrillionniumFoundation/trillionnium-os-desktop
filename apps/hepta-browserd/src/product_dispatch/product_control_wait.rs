@@ -149,7 +149,8 @@ impl ProductControlMonitor {
         loop {
             product_time_remaining(self.deadline)?;
             let retained = self.retained.as_mut().ok_or(ProductDispatchError::Closed)?;
-            retained.ensure_current().map_err(control_error)?;
+            // poll_cancel performs the complete current check before and after
+            // its own channel observation, retiring the same scope on failure.
             if retained.poll_cancel().map_err(control_error)? {
                 self.cancellation.cancel();
             }
