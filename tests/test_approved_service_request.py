@@ -16,6 +16,7 @@ TRANSPORT = "crates/hepta-agent-transport/src/accepted_handoff/retained_control/
 BRIDGE = "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs"
 ROOTED = "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs"
 PACKING = "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs"
+TRANSFER = "crates/hepta-agent-transport/src/root_control_path/service_control.rs"
 
 
 class ApprovedServiceRequestTests(unittest.TestCase):
@@ -39,7 +40,7 @@ class ApprovedServiceRequestTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         report = json.loads(result.stdout)
         self.assertEqual(report["scope"], "P1_SOURCE_ONLY")
-        self.assertEqual(report["public_methods"], 17)
+        self.assertEqual(report["public_methods"], 18)
         for key in ("actual_kernel", "native_health", "installed", "production_ready"):
             self.assertIs(report[key], False)
 
@@ -117,15 +118,15 @@ class ApprovedServiceRequestTests(unittest.TestCase):
         value["known_legacy_inputs"][path][0]["sha256"] = "0" * 64
         with self.assertRaises(ValueError): gate.check(value, self.texts())
 
-    def test_all_four_production_modules_are_mandatory_whole_objects(self):
-        self.assertEqual(len(gate.EXPECTED["whole_production_source_sha256"]), 4)
+    def test_all_five_production_modules_are_mandatory_whole_objects(self):
+        self.assertEqual(len(gate.EXPECTED["whole_production_source_sha256"]), 5)
         for path in gate.EXPECTED["whole_production_source_sha256"]:
             values = self.texts(); values[path] += "\n// candidate drift\n"
             with self.subTest(path=path), self.assertRaises(ValueError):
                 gate.check(copy.deepcopy(gate.EXPECTED), values)
 
-    def test_all_seventeen_signatures_and_seven_private_field_shapes_are_closed(self):
-        self.assertEqual(len(gate.EXPECTED["public_api"]), 17)
+    def test_all_eighteen_signatures_and_seven_private_field_shapes_are_closed(self):
+        self.assertEqual(len(gate.EXPECTED["public_api"]), 18)
         self.assertEqual(len(gate.EXPECTED["opaque_types"]), 7)
         values = self.texts(); values[BRIDGE] += "\npub fn caller_approval() {}\n"
         with self.assertRaises(ValueError): gate.inventory_and_orders(values)
@@ -216,11 +217,62 @@ class ApprovedServiceRequestTests(unittest.TestCase):
     def test_actual_process_corpus_source_and_limits_cannot_be_weakened(self):
         path = gate.EXPECTED["kernel_corpus"]["path"]
         for before in ("assert_ne!(control.child.id(), agent.child.id());",
-                       '"--property=RuntimeMaxSec=120"', "const GROUPS: usize = 15;",
+                       '"--property=RuntimeMaxSec=120"', "const GROUPS: usize = 19;",
                        "assert!(accepted_at.elapsed() >= AFTER_FIRST);",
                        "if self.creator == std::process::id() && !self.done {"):
             values = self.texts(); self.assertIn(before, values[path]); values[path] = values[path].replace(before, "", 1)
             with self.subTest(before=before), self.assertRaises(ValueError): gate.check(copy.deepcopy(gate.EXPECTED), values)
+
+    def test_root_transfer_checks_actual_admission_identity_not_only_held_clone(self):
+        self.mutate_order(TRANSFER, "scope.socket_identity != Identity::from(&stat(fd)?)", "false")
+        self.mutate_order(TRANSFER, "scope.cookie != option::<u64>(fd, libc::SO_COOKIE)?", "false")
+
+    def test_root_transfer_original_creator_and_instant_precede_actual_fd_access(self):
+        self.mutate_order(TRANSFER, "creator(scope.owner_pid)?;", "// omitted")
+        self.mutate_order(TRANSFER, "remaining(scope.owner_pid, scope.deadline)?;", "// omitted")
+
+    def test_root_transfer_requires_actual_peer_and_whole_held_scope(self):
+        self.mutate_order(TRANSFER, "scope.identity !=", "scope.identity ==")
+        values = self.texts(); values[TRANSFER] = values[TRANSFER].replace("scope.check()?;", "", 1)
+        with self.assertRaises(ValueError): gate.inventory_and_orders(values)
+
+    def test_root_transfer_keeps_original_legacy_delegate_and_full_post_proof(self):
+        self.mutate_order(TRANSFER, "self.consume_before(consumer)?;", "caller_result;")
+        text = self.texts()[TRANSFER]
+        needle = "if let Err(error) = verify_moved(&guard.scope, fd)"
+        self.assertEqual(text.count(needle), 1)
+        values = self.texts(); offset = text.rfind(needle)
+        values[TRANSFER] = text[:offset] + text[offset:].replace(needle, "if let Err(error) = caller_check()", 1)
+        with self.assertRaises(ValueError): gate.inventory_and_orders(values)
+
+    def test_post_failure_retires_before_callback_return_value_drop(self):
+        self.mutate_order(TRANSFER, "guard.scope.current.store(false, Ordering::Release);", "// omitted")
+
+    def test_uncompleted_unwind_guard_revokes_original_connection(self):
+        self.mutate_order(TRANSFER, "if !self.completed", "if self.completed")
+        self.mutate_order(TRANSFER, "self.scope.current.store(false, Ordering::Release);", "// omitted")
+        values = self.texts(); values[TRANSFER] = values[TRANSFER].replace("completed: false", "completed: true", 1)
+        with self.assertRaises(ValueError): gate.inventory_and_orders(values)
+
+    def test_transfer_failure_does_not_add_service_or_shared_path_retirement(self):
+        text = self.texts()[TRANSFER]
+        self.assertNotIn("snapshot.current.store", text)
+        self.assertNotIn("ServiceSessionState", text)
+        self.assertNotIn("libc::shutdown", text)
+        values = self.texts(); values[TRANSFER] += "\nimpl Default for OriginalTransferGuard {}\n"
+        with self.assertRaises(ValueError): gate.check(copy.deepcopy(gate.EXPECTED), values)
+
+    def test_product_service_factory_uses_only_explicit_root_transfer(self):
+        self.mutate_order(ROOTED, ".consume_service_control_before(", ".consume_before(")
+
+    def test_new_early_kernel_cases_preserve_denial_and_escape_observations(self):
+        path = gate.EXPECTED["kernel_corpus"]["path"]
+        self.assertEqual(gate.EXPECTED["kernel_corpus"]["early_root_transfer_groups"], [16, 17, 18, 19])
+        for before in ("connection.deadline().unwrap();", "assert!(!callback_ran);",
+                       "specific consumer-unwind stimulus", "guard.completed = true"):
+            source = TRANSFER if before == "guard.completed = true" else path
+            values = self.texts(); self.assertIn(before, values[source]); values[source] = values[source].replace(before, "", 1)
+            with self.assertRaises(ValueError): gate.check(copy.deepcopy(gate.EXPECTED), values)
 
 
 if __name__ == "__main__":

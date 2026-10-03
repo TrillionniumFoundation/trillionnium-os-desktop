@@ -18,7 +18,7 @@ impl RootPathAttestedHandoffReceiver {
     ) -> Result<Self, ControlOwnerError> {
         session.ensure_current().map_err(service_error)?;
         connection
-            .consume_before(|control, deadline, custody| {
+            .consume_service_control_before(|control, deadline, custody| {
                 let owner_pid = std::process::id();
                 session.ensure_current().map_err(service_error)?;
                 let path = Arc::new(RetainedRootPath::new(custody, deadline)?);

@@ -28,7 +28,8 @@
     "ApprovedServiceRequestVerifier::with_original_pair": "pub fn with_original_pair<T>(&self, session: &ApprovedServiceSessionVerifier, consumer: impl FnOnce(&ProcfsPeerAttestor, &AttestedPeer, &ControlRequestVerifier, Instant) -> T) -> Result<T, ApprovedPolicyError>",
     "ApprovedServiceRetainedReporter::original_deadline": "pub fn original_deadline(&mut self) -> Result<Instant, ApprovedPolicyError>",
     "ApprovedServiceRetainedReporter::poll_cancel": "pub fn poll_cancel(&mut self) -> Result<bool, ApprovedPolicyError>",
-    "ApprovedServiceRetainedReporter::send_remote_report": "pub fn send_remote_report(&mut self, report: RemoteRetirementReport) -> Result<(), ApprovedPolicyError>"
+    "ApprovedServiceRetainedReporter::send_remote_report": "pub fn send_remote_report(&mut self, report: RemoteRetirementReport) -> Result<(), ApprovedPolicyError>",
+    "RootPathControlConnection::consume_service_control_before": "pub fn consume_service_control_before<T>(self, consumer: impl FnOnce(OwnedFd, Instant, RootControlPathCustody) -> T) -> Result<T, RootControlPathError>"
   },
   "opaque_types": {
     "ApprovedServiceRequests": "original_owner:Option<ApprovedServiceOwnerBinding>,session:Arc<ServiceSessionState>,",
@@ -50,8 +51,9 @@
   "whole_production_source_sha256": {
     "crates/hepta-agent-transport/src/accepted_handoff/retained_control/service_control.rs": "7910294fbb13f09f8f9259b2b762cf4cac0a1e187150986a8aa827fa238e4baa",
     "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs": "13a4140e8d737ff380ade7a512974e87bc3e2eccbf82c7b3af805d40589e0dda",
-    "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs": "3107c0f6bd662290982bd7e28abc9033c9401d42cea01cb1da4b791a3a06efe0",
-    "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs": "e1ab614162f5b940667476a0bae3ed4b04d8af18a1a3d4e59e34a11f17f47405"
+    "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs": "d3998c7b14c641f44b33da797fbbb0fde9f9adb5293125cd7982693692be814c",
+    "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs": "e1ab614162f5b940667476a0bae3ed4b04d8af18a1a3d4e59e34a11f17f47405",
+    "crates/hepta-agent-transport/src/root_control_path/service_control.rs": "5df06aa83ffa80a6b08227f4aa24568992b2f97fa987ea3bf36a1f91b1173845"
   },
   "original_source_inverse": {
     "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs": {
@@ -233,6 +235,22 @@
         "blob": "5cdab6590d70897240569d844658b13e54eff91e",
         "scope": "SOURCE_ONLY_ACCEPTED_DB9"
       }
+    },
+    "crates/hepta-agent-transport/src/root_control_path.rs": {
+      "parent_bytes": 25926,
+      "parent_sha256": "c9363b23989c45ec2133f43d8e8f81c819a700fa1c58d792c683aefc2cd6a71e",
+      "offset": 25926,
+      "block": "\nmod service_control;\n",
+      "anchor": "",
+      "complete_bytes": 25948,
+      "complete_sha256": "9f06f4c71a08a346b89d8f09ce071aa16ace6d10e2d9213cd2db5edca306bb9c",
+      "parent_source": {
+        "head": "db9cb5399a16f794407be2c3561255e8d69fa537",
+        "path": "crates/hepta-agent-transport/src/root_control_path.rs",
+        "mode": "100644",
+        "blob": "2b9b4def2517a2bb31f4fd08c2eff88b33880bf4",
+        "scope": "SOURCE_ONLY_ACCEPTED_DB9"
+      }
     }
   },
   "lifetimes": {
@@ -287,7 +305,7 @@
   "kernel_corpus": {
     "path": "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs",
     "harness": false,
-    "groups": 15,
+    "groups": 19,
     "two_requests_minimum_seconds": 21,
     "request_seconds_maximum": 20,
     "unit_seconds_maximum": 120,
@@ -295,7 +313,9 @@
     "mock_or_observed_policy": false,
     "unsafe_fault_groups": [
       14,
-      15
+      15,
+      16,
+      17
     ],
     "execution": "NOT_EXECUTED",
     "protocol_fault_groups": [
@@ -304,7 +324,13 @@
     "exec_scope": "Actual unapproved ELF new Owner admission; no old proof survives exec",
     "fd_fault_scope": "Mechanism-only real same-credential endpoints, isolated single-thread syscall injection; no cleanup immunity",
     "same_source_two_requests": true,
-    "observed_policy_used": false
+    "observed_policy_used": false,
+    "early_root_transfer_groups": [
+      16,
+      17,
+      18,
+      19
+    ]
   },
   "known_legacy_inputs": {
     "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs": [
@@ -550,7 +576,7 @@
       "path": "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs",
       "markers": [
         "session.ensure_current()",
-        "connection.consume_before",
+        "connection.consume_service_control_before",
         "RetainedRootPath::new(custody, deadline)?",
         "session.control_policy()",
         "ControlPeerOwner::admit",
@@ -674,6 +700,45 @@
         "self.session.ensure_current()?",
         "remaining(self.session.source.creator.pid, self.deadline)"
       ]
+    },
+    "RootPathControlConnection::consume_service_control_before": {
+      "path": "crates/hepta-agent-transport/src/root_control_path/service_control.rs",
+      "markers": [
+        "creator(self.owner_pid)?",
+        "let mut guard = OriginalTransferGuard",
+        "completed: false",
+        "remaining(self.owner_pid, self.deadline)?",
+        "self.deadline()?",
+        "let fd = self.socket.as_ref()",
+        "verify_moved(&guard.scope, fd)?",
+        "self.consume_before(consumer)?",
+        "if let Err(error) = verify_moved(&guard.scope, fd)",
+        "guard.scope.current.store(false, Ordering::Release)",
+        "return Err(error)",
+        "guard.completed = true",
+        "Ok(result)"
+      ]
+    },
+    "verify_moved": {
+      "path": "crates/hepta-agent-transport/src/root_control_path/service_control.rs",
+      "markers": [
+        "creator(scope.owner_pid)?",
+        "remaining(scope.owner_pid, scope.deadline)?",
+        "scope.check()?",
+        "libc::fcntl(fd, libc::F_GETFD)",
+        "scope.socket_identity != Identity::from(&stat(fd)?)",
+        "scope.cookie != option::<u64>(fd, libc::SO_COOKIE)?",
+        "scope.identity !=",
+        "scope.check()?",
+        "remaining(scope.owner_pid, scope.deadline)?"
+      ]
+    },
+    "Drop:OriginalTransferGuard::drop": {
+      "path": "crates/hepta-agent-transport/src/root_control_path/service_control.rs",
+      "markers": [
+        "if !self.completed",
+        "self.scope.current.store(false, Ordering::Release)"
+      ]
     }
   },
   "preserved_source_sha256": {
@@ -696,6 +761,23 @@
     "apps/hepta-browserd/tests/control_readiness_kernel.rs": "10d846a7e356056d80895ff01bc82c08504e76fdf422c80ddbb96d27093c2453"
   },
   "kernel_source_sha256": {
-    "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs": "a8f065e7c55a57a45f6b231be467f2739074d55b57a205e2e3e6413b65664a31"
+    "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs": "37030aa98c252d6baff5dac709a8e897b3f25fd028dd8d6c9f9ca32ec85a17f4"
+  },
+  "early_root_transfer": {
+    "creation_identity": "original RootPathControlConnection admission capture; no channel-time recapture authority",
+    "actual_fd_pre_and_post": true,
+    "held_original_scope_pre_and_post": true,
+    "unchanged_old_consume_delegate_once": true,
+    "failure_or_unwind_retires": "only original ConnectionScope.current; no extra shared PathSnapshot or service Source writes",
+    "shared_path_failure": "legacy full check retains its existing direct pathname-drift retirement semantics",
+    "completed_false_until_post_proof": true,
+    "escaping_custody_or_verifier_revoked": true,
+    "callback_side_effect_authority": false,
+    "expected_public_methods": 18,
+    "expected_opaque_types": 7,
+    "production_children": 5,
+    "previous_source_draft": "93a73c063a6b19e0bb36f438e74465f2190524ca",
+    "previous_qualification": "NONE_EARLY_GAP_KNOWN",
+    "post_failure_before_T_drop": true
   }
 }

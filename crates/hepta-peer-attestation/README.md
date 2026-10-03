@@ -344,7 +344,7 @@ hardware, human approvals and production readiness are unimplemented.
 
 The additive `ApprovedServiceRequests` bridge now has authored source for
 root-selected persistent Source/Owner continuity and separate original bounded
-Control/Agent requests. Its seven opaque types and seventeen total peer/transport
+Control/Agent requests. Its seven opaque types and eighteen total peer/transport
 methods are documented in `docs/architecture/PERSISTENT_SERVICE_REQUEST_BRIDGE.md`
 and `contracts/approved-service-request-bridge.v2.json`. The previous Foundation
 paragraph records its earlier scope; this new source still has no Actor/Coordinator/
