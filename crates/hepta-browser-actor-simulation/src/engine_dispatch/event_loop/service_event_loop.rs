@@ -19,6 +19,7 @@ struct ServiceDispatchScope {
     request_id: String,
     original_deadline: Instant,
     dispatch_deadline: Instant,
+    shortened_deadline: OnceLock<Instant>,
     operation: BrowserOperation,
     original_request: BrowserRequest,
     original_canonical: Vec<u8>,
@@ -30,6 +31,26 @@ struct ServiceDispatchScope {
 }
 
 impl ServiceDispatchScope {
+    // Readonly diagnostic ceiling. The single installed value can only narrow
+    // the immutable registration/context and original Control/Agent clocks.
+    fn dispatch_cutoff(&self) -> Instant {
+        self.shortened_deadline
+            .get()
+            .copied()
+            .unwrap_or(self.dispatch_deadline)
+            .min(self.dispatch_deadline)
+            .min(self.original_deadline)
+    }
+
+    fn check_dispatch_cutoff(&self) -> Result<(), RuntimeFailure> {
+        if self.dispatch_deadline > self.original_deadline
+            || Instant::now() >= self.dispatch_cutoff()
+        {
+            return Err(RuntimeFailure::DeadlineExceeded);
+        }
+        Ok(())
+    }
+
     fn current(&self, engine: &Arc<ServiceEngineState>) -> Result<(), RuntimeFailure> {
         engine.creator()?;
         // The captured P1 creator/namespace proof precedes any inherited
@@ -40,6 +61,7 @@ impl ServiceDispatchScope {
         if self.retired.load(Ordering::SeqCst) {
             return Err(RuntimeFailure::PeerIdentityRevoked);
         }
+        self.check_dispatch_cutoff()?;
         let original = encode_request(&self.original_request)
             .map_err(|_| RuntimeFailure::PolicyDenied("original canonical container invalid"))?;
         let mut runtime_request = self.original_request.clone();
@@ -68,11 +90,7 @@ impl ServiceDispatchScope {
         if !Arc::ptr_eq(bound, &self.session) {
             return Err(RuntimeFailure::PeerIdentityRevoked);
         }
-        if self.dispatch_deadline > self.original_deadline
-            || Instant::now() >= self.dispatch_deadline
-        {
-            return Err(RuntimeFailure::DeadlineExceeded);
-        }
+        self.check_dispatch_cutoff()?;
         self.request
             .with_original_pair(&self.session, |_, _, _, original_deadline| {
                 if original_deadline != self.original_deadline {
@@ -84,9 +102,7 @@ impl ServiceDispatchScope {
         self.session
             .ensure_current()
             .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
-        if Instant::now() >= self.dispatch_deadline {
-            return Err(RuntimeFailure::DeadlineExceeded);
-        }
+        self.check_dispatch_cutoff()?;
         Ok(())
     }
 }
@@ -219,6 +235,14 @@ impl ServiceEngineCommand {
 ///     c.complete(Ok(b));
 /// }
 /// ```
+/// The denial cutoff installer requires exclusive custody of this completion.
+///
+/// ```compile_fail,E0596
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::ServiceEngineCompletion;
+/// fn shared(c: &ServiceEngineCompletion, cutoff: std::time::Instant) {
+///     let _ = c.shorten_deadline_once(cutoff);
+/// }
+/// ```
 pub struct ServiceEngineCompletion {
     inner: Option<EngineCompletion>,
     engine: Arc<ServiceEngineState>,
@@ -231,7 +255,50 @@ impl ServiceEngineCompletion {
     }
 
     pub fn deadline(&self) -> Instant {
-        self.scope.dispatch_deadline
+        self.scope.dispatch_cutoff()
+    }
+
+    /// Install one additional denial-only cutoff for this actual completion.
+    /// Future inputs are clamped to both captured ceilings. A second install,
+    /// expired cutoff or original proof failure permanently denies this pair.
+    /// This neither approves a native deadline nor renews a request budget.
+    pub fn shorten_deadline_once(&mut self, cutoff: Instant) -> Result<Instant, RuntimeFailure> {
+        // A fork copy is rejected before the inherited OnceLock or waker.
+        self.engine.creator()?;
+        let checked = (|| {
+            self.ensure_current_request()?;
+            let inner = self.inner.as_ref().ok_or(RuntimeFailure::BrowserCrashed)?;
+            if inner.request_id() != self.scope.request_id
+                || inner.deadline() != self.scope.dispatch_deadline
+                || !self.scope.runtime_started.load(Ordering::SeqCst)
+                || self.scope.runtime_finished.load(Ordering::SeqCst)
+            {
+                return Err(RuntimeFailure::PeerIdentityRevoked);
+            }
+            let cutoff = cutoff
+                .min(self.scope.dispatch_deadline)
+                .min(self.scope.original_deadline);
+            // There is exactly one private writer: this non-Clone completion's
+            // exclusive mutable method. Readers use nonblocking get only.
+            self.scope
+                .shortened_deadline
+                .set(cutoff)
+                .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+            self.ensure_current_request()?;
+            // Publishing a shorter wake deadline is denial, never native work.
+            if !notify_engine(inner.waker.as_ref()) {
+                return Err(RuntimeFailure::BrowserCrashed);
+            }
+            self.ensure_current_request()?;
+            Ok(self.scope.dispatch_cutoff())
+        })();
+        if checked.is_err() {
+            // Local sticky denial; no fabricated remote cancellation/report,
+            // registration lock, owning-slot release or terminal success.
+            self.scope.retired.store(true, Ordering::SeqCst);
+            self.engine.closed.store(true, Ordering::SeqCst);
+        }
+        checked
     }
 
     pub fn ensure_current_request(&self) -> Result<(), RuntimeFailure> {
@@ -422,6 +489,10 @@ impl ServiceEngineBridge {
         // Pre/post samples cannot make Source mutation atomic with this send.
         // A post failure retains uncertainty and retires; it never claims the
         // buffered value was not physically written or clears product history.
+        // The same installed cutoff is sampled immediately at the physical
+        // forward boundary, after all full Source/pair and result checks.
+        let result = active.scope.check_dispatch_cutoff().and(result);
+        let uncertain = uncertain || result.as_ref().is_err_and(is_uncertain_failure);
         let sent = active.call.reply.try_send(result);
         let current = active
             .call
@@ -466,7 +537,7 @@ impl ServiceEngineBridge {
     pub fn next_wake_deadline(&self) -> Option<Instant> {
         self.active
             .as_ref()
-            .map(|active| active.scope.dispatch_deadline)
+            .map(|active| active.scope.dispatch_cutoff())
     }
 
     pub fn retire(&mut self) {

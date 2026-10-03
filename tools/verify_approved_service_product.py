@@ -35,12 +35,22 @@ def _read(root, name):
     after = path.lstat()
     if identity(before) != identity(after_fd) or identity(before) != identity(after) or len(raw) > 1048576:
         raise ValueError('P2C Source changed during read')
-    return raw.decode('utf-8', 'strict')
+    value = raw.decode('utf-8', 'strict')
+    try:
+        from .verify_service_dispatch_denial_cutoff import parent_source as denial_parent_source
+    except ImportError:
+        from verify_service_dispatch_denial_cutoff import parent_source as denial_parent_source
+    return denial_parent_source(name, value)
 
 def parent_source(path, text):
     """Exact known-byte Source inverse; no process/principal exemption."""
     if type(text) is not str:
         raise ValueError('P2C Source type differs')
+    try:
+        from .verify_service_dispatch_denial_cutoff import parent_source as denial_parent_source
+    except ImportError:
+        from verify_service_dispatch_denial_cutoff import parent_source as denial_parent_source
+    text = denial_parent_source(path, text)
     rule = EXPECTED['finite_parent_inverse'].get(path)
     if rule is None:
         return text

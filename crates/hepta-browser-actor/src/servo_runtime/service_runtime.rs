@@ -78,6 +78,14 @@ impl ServiceServoRuntimeCommand {
 /// use hepta_browser_actor::ServiceServoRuntimeCompletion;
 /// fn raw(c: ServiceServoRuntimeCompletion) { let _ = c.inner; }
 /// ```
+/// The same original completion cannot be narrowed through a shared borrow.
+///
+/// ```compile_fail,E0596
+/// use hepta_browser_actor::ServiceServoRuntimeCompletion;
+/// fn shared(c: &ServiceServoRuntimeCompletion, cutoff: std::time::Instant) {
+///     let _ = c.shorten_deadline_once(cutoff);
+/// }
+/// ```
 pub struct ServiceServoRuntimeCompletion {
     inner: ServiceEngineCompletion,
 }
@@ -89,6 +97,13 @@ impl ServiceServoRuntimeCompletion {
 
     pub fn deadline(&self) -> Instant {
         self.inner.deadline()
+    }
+
+    /// Forward the same actual completion's denial-only single cutoff.
+    pub fn shorten_deadline_once(&mut self, cutoff: Instant) -> Result<Instant, ServoRuntimeError> {
+        self.inner
+            .shorten_deadline_once(cutoff)
+            .map_err(map_runtime_error)
     }
 
     pub fn ensure_current_request(&self) -> Result<(), ServoRuntimeError> {

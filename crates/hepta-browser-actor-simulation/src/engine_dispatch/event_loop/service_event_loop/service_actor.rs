@@ -564,6 +564,7 @@ fn capture_original(
         request_id: request.request_id.clone(),
         original_deadline,
         dispatch_deadline: context.effective_deadline,
+        shortened_deadline: OnceLock::new(),
         operation: request.operation.clone(),
         original_request: request.clone(),
         original_canonical: canonical,

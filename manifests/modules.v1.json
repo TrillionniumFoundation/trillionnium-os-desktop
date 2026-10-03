@@ -51,7 +51,8 @@
         "docs/architecture/MOZJS_SECONDARY_INPUT.md",
         "docs/architecture/RETAINED_CONTROL_READINESS.md",
         "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md",
-        "docs/architecture/PERSISTENT_SERVICE_PRODUCT_COORDINATOR.md"
+        "docs/architecture/PERSISTENT_SERVICE_PRODUCT_COORDINATOR.md",
+        "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
@@ -69,7 +70,8 @@
         "contracts/approved-constructor-route.v1.json",
         "contracts/retained-control-readiness.v1.json",
         "contracts/mozjs-authenticated-input.v2.json",
-        "contracts/approved-service-product.v2.json"
+        "contracts/approved-service-product.v2.json",
+        "contracts/service-dispatch-denial-cutoff.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -107,7 +109,8 @@
         "apps/hepta-browserd/src/product_dispatch/service_product/lifecycle.rs",
         "apps/hepta-browserd/src/product_dispatch/service_product/report.rs",
         "apps/hepta-browserd/src/product_dispatch/service_product/wire.rs",
-        "apps/hepta-browserd/src/product_dispatch/service_product/tests.rs"
+        "apps/hepta-browserd/src/product_dispatch/service_product/tests.rs",
+        "tests/test_service_dispatch_denial_cutoff.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
@@ -527,7 +530,8 @@
         "docs/architecture/APPROVED_REQUEST_BINDING.md",
         "docs/architecture/MOZJS_SECONDARY_INPUT.md",
         "docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md",
-        "docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md"
+        "docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md",
+        "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
@@ -542,7 +546,8 @@
         "contracts/approved-request-binding.v1.json",
         "contracts/mozjs-secondary-input.v1.json",
         "contracts/approved-service-runtime.v2.json",
-        "contracts/approved-service-actor.v2.json"
+        "contracts/approved-service-actor.v2.json",
+        "contracts/service-dispatch-denial-cutoff.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-actor/src/lib.rs",
@@ -569,7 +574,8 @@
         "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs",
         "tests/test_approved_service_actor.py",
         "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop/service_actor.rs",
-        "crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs"
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs",
+        "tests/test_service_dispatch_denial_cutoff.py"
       ],
       "workflows": [
         ".github/workflows/s06-browser-actor.yml",
@@ -597,7 +603,8 @@
         "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md",
         "docs/architecture/APPROVED_REQUEST_BINDING.md",
         "docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md",
-        "docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md"
+        "docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md",
+        "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
@@ -607,7 +614,8 @@
         "contracts/immutable-callback-url-scope.v1.json",
         "contracts/approved-request-binding.v1.json",
         "contracts/approved-service-runtime.v2.json",
-        "contracts/approved-service-actor.v2.json"
+        "contracts/approved-service-actor.v2.json",
+        "contracts/service-dispatch-denial-cutoff.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop_tests.rs",
@@ -623,7 +631,8 @@
         "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs",
         "tests/test_approved_service_actor.py",
         "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop/service_actor.rs",
-        "crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs"
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs",
+        "tests/test_service_dispatch_denial_cutoff.py"
       ],
       "workflows": [
         ".github/workflows/s06-browser-actor.yml",
