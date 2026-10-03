@@ -714,10 +714,12 @@ mod tests {
     #[test]
     fn create_other_mode_refuses_instead_of_normalizing_original_container() {
         let mut original = request();
+        let context = context(&original);
         if let BrowserOperation::SessionCreate { ui_mode, .. } = &mut original.operation {
             *ui_mode = "headless".into();
         }
-        assert!(canonical_domains(&context(&original), &original).is_err());
+        assert!(encode_request(&original).is_err());
+        assert!(canonical_domains(&context, &original).is_err());
     }
 
     #[test]
