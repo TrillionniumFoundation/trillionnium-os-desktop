@@ -345,7 +345,8 @@ def check_queue(text: str):
     if function(inventory, "ApprovedRetainedAdmission::ensure_creating_process") != tokens("creating(self.owner_pid)"):
         raise ValueError("creator-only admission check gains other authority")
     ordered(function(inventory, "ApprovedRetainedAdmission::serve"),
-            ["self.deadline()?", "coordinator.ensure_owner()?", "self.cancellation()?", "queue.activate",
+            ["self.deadline()?", "coordinator.ensure_owner()?", "self.original_cancellation()?", "queue.activate",
+             "self.original_scope()?",
              "self.monitor.take()", "let mut worker = ReportWorker", "worker.receiver = Some(receiver)",
              "self.deadline()?", "thread::Builder::new()", "monitor.run()",
              "self.deadline()", "coordinator.serve_approved_retained_connection", "product_time_remaining(deadline)",
@@ -360,10 +361,10 @@ def check_queue(text: str):
             ["creating(self.owner_pid).is_err()", "std::mem::forget(self.receiver.take())",
              "std::mem::forget(self.thread.take())"], "owned monitor fork cleanup")
     ordered(function(inventory, "ApprovedRetainedAdmission::coordinator"),
-            ["self.deadline()?", "ProductRequestCoordinator::from_approved_retained_connection", "self.deadline()?"], "coordinator construction")
+            ["self.original_scope()?", "ProductRequestCoordinator::from_approved_retained_connection", "self.deadline()?"], "coordinator construction")
     ordered(function(inventory, "ApprovedRetainedIngress::try_submit"),
             ["self.state.current()?", "admission.deadline()?", "deadline > ceiling", "admission.queue.is_some()",
-             "admission.cancellation()?", "admission.queue = Some(self.state.clone())", "admission.deadline()?", "try_send(admission)"], "bounded admission")
+             "admission.original_cancellation()?", "admission.queue = Some(self.state.clone())", "admission.deadline()?", "try_send(admission)"], "bounded admission")
     ordered(function(inventory, "ApprovedRetainedQueue::try_next"),
             ["self.state.current()?", "try_recv()", "Arc::ptr_eq", "admission.deadline()?"], "queue consumption")
     ordered(function(inventory, "QueueState::activate"),
@@ -552,6 +553,13 @@ def validate(root: Path = ROOT) -> None:
     check_composition(load(root / CONTRACT), source(root, QUEUE), source(root, NATIVE),
                       source(root, "apps/hepta-browserd/src/product_dispatch.rs"),
                       source(root, "experiments/servo-product-owner/src/native_owner.rs"))
+    # The additive private-scope profile pins the inexpensive root/pidfd gate
+    # and unchanged full checks at all externally effective boundaries.
+    try:
+        from .verify_approved_composition_scope import validate as check_private_scope
+    except ImportError:
+        from verify_approved_composition_scope import validate as check_private_scope
+    check_private_scope(root)
     approved = tokens(source(root, "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"))
     ordered(approved, ["selection.admit_retained(received)", "consume_with_request_binding", "ProcfsPeerAttestor::default()",
                        "connection.ensure_control_current()?"], "existing approved live admission")

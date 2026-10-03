@@ -114,3 +114,33 @@ refs are recorded in the job summary before the unchanged workspace checks.
 This verifies source identity at the guard's observation time. Ref drift after
 that observation, later runtime qualification and installed authority remain
 separate facts; these Git checks create no product permissions.
+
+## Private composition scope successor
+
+The additive [approved composition scope profile](../../contracts/approved-composition-scope.v1.json)
+keeps the existing public API and its complete live executable readback. Four
+internal helpers return only the captured original `Instant` or the same
+cancellation token. They cannot supply a peer snapshot, runtime permission,
+durable terminal fact or report seal. Their checks begin with the creator PID,
+then use the retained root policy/path, the actual original Control and Agent
+pidfds, cancellation and the queue's fixed ceiling. The temporary session
+metadata used to check that pair does not extend either lifetime. No ELF digest
+is cached or accepted as evidence that current executable bytes stayed equal.
+
+`try_submit` retains full checks before and after local queue association. The
+coordinator constructor retains its own complete admission checks and the
+return check. `serve` retains full checks at entry, immediately before the
+monitor thread starts, and after it starts before the coordinator consumes the
+connection. Only denial-token borrowing and local queue/worker preparation
+between those checks use the private scope. Existing actor rebind, dispatch,
+completion and report checks keep their full readback. The public deadline,
+cancellation and retained polling bodies are preserved.
+
+`tools/verify_approved_composition_scope.py` pins the finite helper bodies,
+retained root/pidfd sources and complete boundary order; mutation tests remove
+root gates and post-spawn checks, attempt public exposure and substitute
+literal/comment decoys. These are structural source checks. Existing actual
+default-proc kernel cases remain required, as do a fresh exact-pin native run
+of all original six cases with unchanged 20-second accepted and 5-second
+native budgets. The profile is disabled by default and supplies no installed,
+long-lived service, hardware, production policy or release qualification.

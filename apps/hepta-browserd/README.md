@@ -351,3 +351,10 @@ custody checks. The explicit new compile profile preserves the original native
 cases and deadlines. It does not prove actual Cargo archive consumption,
 attestation, native execution, installed qualification, G1 closure or production
 readiness. The existing status and claim ceiling remain unchanged.
+
+The [private composition scope profile](../../contracts/approved-composition-scope.v1.json)
+removes redundant complete readback only from denial-token and local preparation
+segments. Public full readback and actual constructor/spawn/dispatch/report
+boundaries remain required. Its [source validator](../../tools/verify_approved_composition_scope.py)
+and mutation tests establish finite source correspondence; a fresh unchanged
+native six-case run is a separate budget qualification.

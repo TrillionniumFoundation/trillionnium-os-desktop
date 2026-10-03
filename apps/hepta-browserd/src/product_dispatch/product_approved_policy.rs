@@ -111,6 +111,26 @@ impl ApprovedRetainedProductConnection {
         self.deadline()?;
         self.inner.cancellation()
     }
+
+    /// Internal original-scope observation; full public readback is separate.
+    /// It supplies no identity snapshot, dispatch permission or terminal seal.
+    pub(super) fn original_scope(&self) -> Result<Instant, ProductDispatchError> {
+        if self.owner_pid != std::process::id() {
+            return Err(ProductDispatchError::PeerRefused);
+        }
+        let deadline = self.inner.deadline()?;
+        self.binding.start_session().map_err(approved_error)?;
+        product_time_remaining(deadline)?;
+        Ok(deadline)
+    }
+
+    /// Borrow the same denial-only cancellation token within composition.
+    pub(super) fn original_cancellation(
+        &self,
+    ) -> Result<ProductConnectionCancellation, ProductDispatchError> {
+        self.original_scope()?;
+        self.inner.cancellation()
+    }
 }
 fn approved_error(error: hepta_peer_attestation::ApprovedPolicyError) -> ProductDispatchError {
     match error {

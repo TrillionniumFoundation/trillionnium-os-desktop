@@ -59,6 +59,34 @@ impl ApprovedRetainedAdmission {
             .ok_or(ProductDispatchError::Closed)?
             .cancellation()
     }
+
+    // This private observation is not complete executable attestation. It
+    // rechecks the retained root/path, both original pidfds and cancellation
+    // without extending either scope or changing the first Instant.
+    fn original_scope(&self) -> Result<Instant, ProductDispatchError> {
+        creating(self.owner_pid)?;
+        if let Some(queue) = &self.queue {
+            queue.current()?;
+        }
+        let current = self
+            .connection
+            .as_ref()
+            .ok_or(ProductDispatchError::Closed)?
+            .original_scope()?;
+        if current != self.original_deadline {
+            return Err(ProductDispatchError::PeerRefused);
+        }
+        product_time_remaining(self.original_deadline)?;
+        Ok(self.original_deadline)
+    }
+
+    fn original_cancellation(&self) -> Result<ProductConnectionCancellation, ProductDispatchError> {
+        self.original_scope()?;
+        self.connection
+            .as_ref()
+            .ok_or(ProductDispatchError::Closed)?
+            .original_cancellation()
+    }
     /// Generic composition only. The concrete native driver supplies its
     /// privately constructed immutable endpoint; this method grants no native
     /// or effect-success claim to an arbitrary caller-supplied endpoint.
@@ -68,7 +96,7 @@ impl ApprovedRetainedAdmission {
         journal: ReceiptJournal,
         image_id: String,
     ) -> Result<ProductRequestCoordinator, ProductDispatchError> {
-        self.deadline()?;
+        self.original_scope()?;
         let value = ProductRequestCoordinator::from_approved_retained_connection(
             self.connection
                 .as_ref()
@@ -90,12 +118,12 @@ impl ApprovedRetainedAdmission {
     ) -> Result<ApprovedRetainedObservation, ProductDispatchError> {
         let deadline = self.deadline()?;
         coordinator.ensure_owner()?;
-        let cancellation = self.cancellation()?;
+        let cancellation = self.original_cancellation()?;
         let active = match &self.queue {
             Some(queue) => Some(queue.activate(cancellation.clone())?),
             None => None,
         };
-        self.deadline()?;
+        self.original_scope()?;
         let monitor = self.monitor.take().ok_or(ProductDispatchError::Closed)?;
         let mut worker = ReportWorker {
             owner_pid: self.owner_pid,
@@ -403,7 +431,7 @@ impl ApprovedRetainedIngress {
         if admission.queue.is_some() {
             return Err(ProductDispatchError::PeerRefused);
         }
-        let cancellation = admission.cancellation()?;
+        let cancellation = admission.original_cancellation()?;
         admission.queue = Some(self.state.clone());
         admission.deadline()?;
         match self
