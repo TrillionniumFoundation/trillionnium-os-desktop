@@ -81,6 +81,22 @@ struct SocketIdentity {
     inode: u64,
 }
 
+// This is the Control endpoint captured at construction, not the submitted
+// Agent stream identity carried by a handoff/sideband packet.
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct OriginalControlIdentity(SocketIdentity);
+impl OriginalControlIdentity {
+    fn capture(fd: RawFd) -> Result<Self, HandoffError> {
+        socket_identity(fd).map(Self)
+    }
+    fn verify(&self, fd: RawFd) -> Result<(), HandoffError> {
+        if socket_identity(fd)? != self.0 {
+            return Err(HandoffError::WrongDescriptor);
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 struct TimeNamespace {
     device: u64,
@@ -188,6 +204,7 @@ struct ControlChannel {
     owner_pid: u32,
     peer: PeerIdentity,
     policy: PeerPolicy,
+    original_identity: OriginalControlIdentity,
 }
 impl ControlChannel {
     fn new(descriptor: OwnedFd, policy: PeerPolicy) -> Result<Self, HandoffError> {
@@ -222,11 +239,13 @@ impl ControlChannel {
                 return Err(HandoffError::Io);
             }
         }
+        let original_identity = OriginalControlIdentity::capture(fd)?;
         Ok(Self {
             stream: Some(stream),
             owner_pid: std::process::id(),
             peer,
             policy,
+            original_identity,
         })
     }
     fn owner(&self) -> Result<(), HandoffError> {

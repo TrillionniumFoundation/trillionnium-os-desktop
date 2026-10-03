@@ -11,6 +11,7 @@ validate:
 	python3 tools/verify_approved_request_binding.py
 	python3 tools/verify_approved_composition_scope.py
 	python3 tools/verify_approved_constructor_route.py
+	python3 tools/verify_retained_control_readiness.py
 	python3 tools/verify_mozjs_secondary_input.py
 	python3 tools/validate_repository.py
 	python3 tools/validate_contract_foundation.py

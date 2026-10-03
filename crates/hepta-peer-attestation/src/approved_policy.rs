@@ -547,6 +547,26 @@ pub(crate) struct ApprovedGuard {
     role: usize,
 }
 impl ApprovedGuard {
+    pub(crate) fn verify_control_reporting_source(
+        &self,
+        attested: &AttestedPeer,
+    ) -> Result<(), crate::ControlOwnerError> {
+        self.current()?;
+        if self.role != 0 {
+            return Err(crate::ControlOwnerError::PeerRefused);
+        }
+        let entry = &self.state.entries[0];
+        let snapshot = attested.snapshot();
+        if snapshot.uid != entry.uid
+            || snapshot.gid != entry.gid
+            || snapshot.systemd_unit.as_deref() != Some(entry.unit.as_str())
+            || snapshot.cgroup_v2_path != entry.cgroup
+            || snapshot.executable_sha256 != entry.pin
+        {
+            return Err(crate::ControlOwnerError::PeerRefused);
+        }
+        self.current()
+    }
     pub(crate) fn current(&self) -> Result<(), crate::ControlOwnerError> {
         self.state.inspect().map_err(control_error)
     }

@@ -173,3 +173,15 @@ groups and a fresh exact-pin run of all original six native cases remain
 required with the original 20-second accepted and 5-second native limits.
 There is no measured speedup, installed activation or production qualification
 claim from merging this private duplicate alone.
+
+
+## Versioned Control idle-wait successor
+
+The additive [retained Control readiness profile](RETAINED_CONTROL_READINESS.md)
+changes only explicitly approved private monitor routing. Its creation-time
+Control identity and reporting-only idle scope preserve original full message,
+report and effect checks and the first twenty-second ceiling. Legacy raw
+methods remain byte exact; finite inverse transfer reconstructs changed source
+for the original contracts. New default-proc host and transport corpora do not
+replace the unchanged original six-case native qualification. Product startup,
+installed policy and the separate sixty-second health gate remain open.

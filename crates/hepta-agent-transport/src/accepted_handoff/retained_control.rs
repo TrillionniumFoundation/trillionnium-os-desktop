@@ -69,6 +69,7 @@ struct Transaction {
     started: u64,
     monotonic_deadline: u64,
     deadline: Instant,
+    readiness_enabled: bool,
 }
 impl Transaction {
     fn verify(&self) -> Result<RawFd, HandoffError> {
@@ -78,6 +79,9 @@ impl Transaction {
         // Fork refusal precedes every clock, identity and descriptor access.
         channel.owner()?;
         let fd = channel.verify()?;
+        if self.readiness_enabled {
+            channel.original_identity.verify(fd)?;
+        }
         check_time(
             &self.boot,
             self.time_namespace,
@@ -86,6 +90,9 @@ impl Transaction {
         )?;
         if Instant::now() >= self.deadline {
             return Err(HandoffError::DeadlineExceeded);
+        }
+        if self.readiness_enabled {
+            channel.original_identity.verify(fd)?;
         }
         Ok(fd)
     }
@@ -101,6 +108,7 @@ impl Transaction {
             owner_pid: self.channel.owner_pid,
             peer: self.channel.peer,
             policy: self.channel.policy,
+            original_identity: self.channel.original_identity,
         })
     }
     fn ensure_current(&mut self) -> Result<Instant, HandoffError> {
@@ -371,6 +379,7 @@ impl HandoffSender {
                 started: custody.started,
                 monotonic_deadline: custody.deadline,
                 deadline,
+                readiness_enabled: false,
             },
             cancellation_attempted: false,
         };
@@ -404,6 +413,7 @@ impl HandoffReceiver {
                 started: received.started,
                 monotonic_deadline: received.monotonic_deadline,
                 deadline: received.deadline,
+                readiness_enabled: false,
             },
             cancellation_received: false,
             report_attempted: false,
@@ -428,3 +438,8 @@ fn readable_now(fd: RawFd) -> Result<bool, HandoffError> {
     }
     Ok(result != 0)
 }
+
+#[cfg(test)]
+mod readiness_tests;
+
+mod readiness;

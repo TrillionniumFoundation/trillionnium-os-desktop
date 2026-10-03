@@ -550,6 +550,12 @@ def check_workflow(text: str):
 
 
 def validate(root: Path = ROOT) -> None:
+    # Mandatory actual readiness profile plus exact bounded legacy transfer.
+    try:
+        from .verify_retained_control_readiness import validate as check_readiness
+    except ImportError:
+        from verify_retained_control_readiness import validate as check_readiness
+    check_readiness(root)
     check_composition(load(root / CONTRACT), source(root, QUEUE), source(root, NATIVE),
                       source(root, "apps/hepta-browserd/src/product_dispatch.rs"),
                       source(root, "experiments/servo-product-owner/src/native_owner.rs"))

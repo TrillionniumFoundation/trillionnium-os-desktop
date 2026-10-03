@@ -100,6 +100,12 @@ def digest(body):
 
 
 def check(contract, texts):
+    # Explicit finite successor inverse; original EXPECTED and rules are kept.
+    try:
+        from .verify_retained_control_readiness import legacy_texts
+    except ImportError:
+        from verify_retained_control_readiness import legacy_texts
+    texts = legacy_texts(texts)
     composition.typed_equal(contract, EXPECTED)
     inventories = {}
     for path, bindings in EXPECTED["function_token_sha256"].items():

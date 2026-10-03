@@ -1,7 +1,9 @@
 //! Configured-source product admission. The retained terminal path stays in
 //! its legacy module; this additive entry supplies no public principal grant.
 
-use super::product_control_wait::{ProductControlMonitor, RetainedProductConnection};
+use super::product_control_wait::{
+    CancelPollProfile, ProductControlMonitor, RetainedProductConnection,
+};
 use super::*;
 use hepta_peer_attestation::ControlRetainedAcceptedStream;
 
@@ -90,6 +92,7 @@ impl ApprovedRetainedProductConnection {
                             cancellation,
                             receiver: Some(receiver),
                             finished: false,
+                            cancel_profile: CancelPollProfile::ApprovedReadinessV1,
                         },
                     ))
                 },

@@ -278,3 +278,21 @@ through a bounded no-run compile, with a new initially empty target directory.
 It is separate from every existing default native command and budget. An
 official API digest match does not prove attestation or actual upstream archive
 consumption; native execution, installed acceptance and G1 closure remain open.
+
+
+## G2 retained Control readiness source candidate
+
+The [versioned Control readiness contract](../contracts/retained-control-readiness.v1.json)
+and [technical specification](architecture/RETAINED_CONTROL_READINESS.md)
+add a nonconsuming original-FD idle wait to the explicit approved monitor route.
+Creation-time Control dev/inode/cookie stays with the same stream; idle checks
+retain root source/path, creator, Control pidfd and original clocks. Ready
+messages and terminal reports still require original complete readbacks.
+Idle results carry no runtime or report authority and do not assert executable
+continuity between actual full boundaries. The original raw methods, native
+cases, PIN, Cargo dependency graph and 20/5-second budgets remain. Required
+checks are `python3 tools/verify_retained_control_readiness.py`,
+`python3 -m unittest tests.test_retained_control_readiness -v`, and both full
+unfiltered Cargo graphs, which include `control_readiness_kernel`. Actual
+native six-case, installed entrance and service-health qualifications remain
+separate. Default product activation remains disabled.

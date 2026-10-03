@@ -367,3 +367,18 @@ and first ceiling as a denial gate. Its [finite checker](../../tools/verify_appr
 and mutation corpus provide source correspondence; fresh actual kernel and
 original native six-case runs retain the 20/5-second budgets. This default-disabled
 source profile supplies no measured speedup or installed/production claim.
+
+
+## Retained Control readiness source profile
+
+The additive [readiness profile](../../docs/architecture/RETAINED_CONTROL_READINESS.md)
+exposes `PendingHandoffReceiver::cancel_readable_now` and
+`AttestedRetainedReceiver::poll_cancel_when_readable` without caller FD, clock
+or snapshot inputs. The actual Control dev/inode/cookie is captured at channel
+creation and retained through message and detached reporting checks. Idle
+root/source/Control-pidfd checks grant no action or report permission; actual
+ready packets and terminal reports retain complete default-proc readback. The
+independent reporting owner permits legitimate terminal reporting after action
+revocation. Legacy raw full methods and original budgets remain unchanged.
+The versioned contract, finite inverse source checker and actual new kernel
+target are separate from native, installed and production qualification.

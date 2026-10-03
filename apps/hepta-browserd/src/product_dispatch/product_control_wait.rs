@@ -89,6 +89,7 @@ impl RetainedProductConnection {
                         cancellation,
                         receiver: Some(receiver),
                         finished: false,
+                        cancel_profile: CancelPollProfile::FullV1,
                     },
                 ))
             })
@@ -140,20 +141,35 @@ pub struct ProductControlMonitor {
     pub(super) cancellation: ProductConnectionCancellation,
     pub(super) receiver: Option<mpsc::Receiver<MonitorMessage>>,
     pub(super) finished: bool,
+    pub(super) cancel_profile: CancelPollProfile,
+}
+pub(super) enum CancelPollProfile {
+    FullV1,
+    ApprovedReadinessV1,
 }
 impl ProductControlMonitor {
+    fn poll_original_cancel(&mut self) -> Result<bool, ProductDispatchError> {
+        if self.owner_pid != std::process::id() {
+            return Err(ProductDispatchError::PeerRefused);
+        }
+        let retained = self.retained.as_mut().ok_or(ProductDispatchError::Closed)?;
+        match self.cancel_profile {
+            CancelPollProfile::FullV1 => retained.poll_cancel().map_err(control_error),
+            CancelPollProfile::ApprovedReadinessV1 => {
+                retained.poll_cancel_when_readable().map_err(control_error)
+            }
+        }
+    }
     pub fn run(mut self) -> Result<ProductControlMonitorOutcome, ProductDispatchError> {
         if self.owner_pid != std::process::id() {
             return Err(ProductDispatchError::PeerRefused);
         }
         loop {
             product_time_remaining(self.deadline)?;
-            let retained = self.retained.as_mut().ok_or(ProductDispatchError::Closed)?;
-            // poll_cancel performs the complete current check before and after
-            // its own channel observation, retiring the same scope on failure.
-            if retained.poll_cancel().map_err(control_error)? {
+            if self.poll_original_cancel()? {
                 self.cancellation.cancel();
             }
+            let retained = self.retained.as_mut().ok_or(ProductDispatchError::Closed)?;
             let wait = product_time_remaining(self.deadline)?.min(Duration::from_millis(5));
             if self.owner_pid != std::process::id() {
                 return Err(ProductDispatchError::PeerRefused);

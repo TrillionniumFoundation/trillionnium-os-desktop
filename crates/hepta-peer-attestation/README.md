@@ -297,3 +297,18 @@ is provided. Legacy control constructors and their original tests remain.
 ## Rooted approved configuration source route
 
 `ApprovedPolicyDocument`, `ApprovedControlSelection`, `ApprovedAgentSelection` and `ApprovedAgentReceivedStream` load bounded root-owned explicit Control/Agent configuration and retain its current-source guard. No naked approved policy is exported. Missing default configuration refuses; live procfs pin/unit/cgroup/ID checks have no static fallback. The same source remains in original rooted Control action and reporting custody, with all original deadlines reduced by its fixed Instant. Local namespace-root observations are not installed host approval, TaskFlow authority or a PageOwner mapping. See [`APPROVED_MECHANISM_POLICY.md`](../../docs/architecture/APPROVED_MECHANISM_POLICY.md) and [`approved-mechanism-policy.v1.json`](../../contracts/approved-mechanism-policy.v1.json). The required new targets are `approved_policy_kernel` and `approved_policy_product_kernel`; their actual filesystem/process evidence and synthetic native callback limits are separate. `.github/workflows/approved-mechanism-policy.yml` executes their source head/merge graph.
+
+
+## Retained Control readiness source profile
+
+The additive [readiness profile](../../docs/architecture/RETAINED_CONTROL_READINESS.md)
+exposes `PendingHandoffReceiver::cancel_readable_now` and
+`AttestedRetainedReceiver::poll_cancel_when_readable` without caller FD, clock
+or snapshot inputs. The actual Control dev/inode/cookie is captured at channel
+creation and retained through message and detached reporting checks. Idle
+root/source/Control-pidfd checks grant no action or report permission; actual
+ready packets and terminal reports retain complete default-proc readback. The
+independent reporting owner permits legitimate terminal reporting after action
+revocation. Legacy raw full methods and original budgets remain unchanged.
+The versioned contract, finite inverse source checker and actual new kernel
+target are separate from native, installed and production qualification.

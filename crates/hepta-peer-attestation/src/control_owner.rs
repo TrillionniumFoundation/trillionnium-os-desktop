@@ -181,6 +181,30 @@ impl ControlPeerOwner {
         }
         remaining(self.owner_pid, self.deadline)
     }
+    // Denial-only reporting scope. The original action may already be revoked;
+    // actual packet consumption and reporting still use complete current().
+    fn idle_reporting_scope(&self) -> Result<Duration, ControlOwnerError> {
+        remaining(self.owner_pid, self.deadline)?;
+        let path = self
+            .root_path
+            .as_ref()
+            .ok_or(ControlOwnerError::PeerRefused)?;
+        path.current()?;
+        if self.approved.is_empty() {
+            return Err(ControlOwnerError::PeerRefused);
+        }
+        for policy in &self.approved {
+            policy.verify_control_reporting_source(&self.attested)?;
+        }
+        self.attested
+            .ensure_alive()
+            .map_err(|_| ControlOwnerError::PeerRefused)?;
+        path.current()?;
+        for policy in &self.approved {
+            policy.verify_control_reporting_source(&self.attested)?;
+        }
+        remaining(self.owner_pid, self.deadline)
+    }
     fn request_deadline(&self, accepted: Instant) -> Result<Instant, ControlOwnerError> {
         creator(self.owner_pid)?;
         // Legacy channels keep their accepted ceiling. A rooted channel also

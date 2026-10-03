@@ -48,7 +48,8 @@
         "docs/architecture/APPROVED_NATIVE_STARTUP.md",
         "docs/architecture/CONFIGURED_RETAINED_BOOTSTRAP.md",
         "docs/architecture/APPROVED_REQUEST_BINDING.md",
-        "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+        "docs/architecture/MOZJS_SECONDARY_INPUT.md",
+        "docs/architecture/RETAINED_CONTROL_READINESS.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
@@ -63,7 +64,8 @@
         "contracts/approved-request-binding.v1.json",
         "contracts/mozjs-secondary-input.v1.json",
         "contracts/approved-composition-scope.v1.json",
-        "contracts/approved-constructor-route.v1.json"
+        "contracts/approved-constructor-route.v1.json",
+        "contracts/retained-control-readiness.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -91,7 +93,9 @@
         "tests/test_approved_request_binding.py",
         "tests/test_mozjs_secondary_input.py",
         "tests/test_approved_composition_scope.py",
-        "tests/test_approved_constructor_route.py"
+        "tests/test_approved_constructor_route.py",
+        "tests/test_retained_control_readiness.py",
+        "apps/hepta-browserd/tests/control_readiness_kernel.rs"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
@@ -168,13 +172,15 @@
       "architecture": [
         "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md",
         "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
-        "docs/architecture/ROOT_OWNED_CONTROL_PATH.md"
+        "docs/architecture/ROOT_OWNED_CONTROL_PATH.md",
+        "docs/architecture/RETAINED_CONTROL_READINESS.md"
       ],
       "contracts": [
         "contracts/agent-transport.v1.json",
         "contracts/accepted-stream-handoff.v1.json",
         "contracts/retained-control-terminal.v1.json",
-        "contracts/root-owned-control-path.v1.json"
+        "contracts/root-owned-control-path.v1.json",
+        "contracts/retained-control-readiness.v1.json"
       ],
       "tests": [
         "crates/hepta-agent-transport/src/facade.rs",
@@ -186,7 +192,10 @@
         "crates/hepta-agent-transport/tests/retained_control_kernel.rs",
         "crates/hepta-agent-transport/tests/root_control_path_kernel.rs",
         "tests/test_root_control_path.py",
-        "tests/test_ci_pr_ref_identities.py"
+        "tests/test_ci_pr_ref_identities.py",
+        "tests/test_retained_control_readiness.py",
+        "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs",
+        "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
       ],
       "workflows": [
         ".github/workflows/agent-transport-reference.yml",
@@ -293,7 +302,8 @@
         "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
         "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md",
         "docs/architecture/APPROVED_MECHANISM_POLICY.md",
-        "docs/architecture/APPROVED_REQUEST_BINDING.md"
+        "docs/architecture/APPROVED_REQUEST_BINDING.md",
+        "docs/architecture/RETAINED_CONTROL_READINESS.md"
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
@@ -303,7 +313,8 @@
         "contracts/retained-control-terminal.v1.json",
         "contracts/root-path-retained-control.v1.json",
         "contracts/approved-mechanism-policy.v1.json",
-        "contracts/approved-request-binding.v1.json"
+        "contracts/approved-request-binding.v1.json",
+        "contracts/retained-control-readiness.v1.json"
       ],
       "tests": [
         "crates/hepta-peer-attestation/src/lib.rs",
@@ -320,7 +331,10 @@
         "tests/test_approved_mechanism_policy.py",
         "crates/hepta-peer-attestation/tests/approved_policy_kernel.rs",
         "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
-        "tests/test_approved_request_binding.py"
+        "tests/test_approved_request_binding.py",
+        "tests/test_retained_control_readiness.py",
+        "apps/hepta-browserd/tests/control_readiness_kernel.rs",
+        "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
       ],
       "workflows": [
         ".github/workflows/s04-transport-custody.yml",

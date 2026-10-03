@@ -268,3 +268,18 @@ restoring credentials through a descriptor alias cannot revive it. The explicit
 privileged kernel target retains the original ten groups and adds real relisten
 and nonblocking-status drift/restore groups. Observed O_NONBLOCK removal also
 retires the typed listener rather than risking an unbounded native accept.
+
+
+## Retained Control readiness source profile
+
+The additive [readiness profile](../../docs/architecture/RETAINED_CONTROL_READINESS.md)
+exposes `PendingHandoffReceiver::cancel_readable_now` and
+`AttestedRetainedReceiver::poll_cancel_when_readable` without caller FD, clock
+or snapshot inputs. The actual Control dev/inode/cookie is captured at channel
+creation and retained through message and detached reporting checks. Idle
+root/source/Control-pidfd checks grant no action or report permission; actual
+ready packets and terminal reports retain complete default-proc readback. The
+independent reporting owner permits legitimate terminal reporting after action
+revocation. Legacy raw full methods and original budgets remain unchanged.
+The versioned contract, finite inverse source checker and actual new kernel
+target are separate from native, installed and production qualification.
