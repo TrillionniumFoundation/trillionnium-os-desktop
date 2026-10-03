@@ -58,3 +58,21 @@ The independently frozen seventeen-method draft `93a73c063a6b19e0bb36f438e74465f
 A private guard starts uncompleted and owns the exact original connection scope. Error, mismatch or callback unwind retires that scope even if the consumer leaks its custody or retains its verifier. The guard performs no FD access, shutdown, lock acquisition, service Source retirement or extra shared pathname retirement. The normal original path checks retain their existing sticky response to a real pathname drift. Only successful actual-FD and held-scope post-proof disarms the guard. Callback side effects do not receive any authorization from this transport method; the P1 product factory only constructs a receiver still holding the same actual FD.
 
 The current corpus has 19 source-authored groups. New group 16 replaces the actual Root FD using another endpoint of the same actual Control PID and requires the old clone-only deadline check to remain current, then requires the explicit transfer to refuse before its callback. Group 17 replaces the actual FD inside the callback and proves denial of an escaped original verifier, while the same listener admits a separate new connection and the existing service Source remains current. Group 18 unwinds with escaped custody/verifier and requires refusal afterwards. Group 19 proves a successful ordinary transfer retains its original Instant and exact scope. Groups 16–17 are explicit isolated syscall faults, not a same-process arbitrary concurrency guarantee. The new groups and the previous fifteen have not been executed on this source object.
+
+## Source-only import correction after independent review
+
+Independent review of frozen `02fbd28f4fca8583a694c20638fcc4c19f8aa26f`
+found that the new `PostFailureDropProbe.verifier` field names
+`RootControlPathVerifier` without importing its public transport reexport.
+The prior 107 Python source checks and fourteen source validators did not
+perform Rust name resolution and therefore did not detect this omission.
+Those original results and the original frozen source remain retained; they
+do not establish successful Rust compilation.
+
+This narrow source successor adds that one explicit kernel import and rebinds
+the contract and mandatory checker to the new whole kernel digest. The five
+production children, eighteen APIs, seven opaque types, original parent
+insertions, old raw methods and all old test bodies remain byte-exact. A
+manual source import review is bounded inspection, not a compiler result.
+This successor has not been formatted, compiled, run with the real kernel or
+used by native/installed qualification; its nineteen groups remain source only.

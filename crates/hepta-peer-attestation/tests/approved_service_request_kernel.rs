@@ -4,7 +4,7 @@
 //! transport mechanism layer; they do not claim safe arbitrary concurrent dup2.
 use hepta_agent_transport::{
     AcceptedStreamCustody, HandoffReceiver, HandoffSender, PeerPolicy, RemoteRetirementReport,
-    RemoteTerminalState, RootControlPathCustody, RootControlPathPolicy, RootOwnedControlListener,
+    RemoteTerminalState, RootControlPathCustody, RootControlPathPolicy, RootControlPathVerifier, RootOwnedControlListener,
     RootPathControlConnection,
 };
 use hepta_peer_attestation::{
