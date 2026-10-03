@@ -40,9 +40,9 @@ fresh event/object; they must not be weakened to accept a stale parent.
 | G6 durable update ownership | [PR140](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/140), based on PR132 | Complete durable intent before concrete inactive staging, full retained-chain/image readback, issuer-bound results, source boot policy and unclean/nonterminal restart quarantine without replay; integrated private descriptor-owner cleanup | Installed owner/service journal wiring, boot/health/commit/rollback and trusted operator recovery; protected roots/time/floor and physical power-loss evidence |
 | G6 read-only boot diagnosis | [PR147](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/147), fixed PR145 base | Strict unchanged snapshots and bounded pending-update inspection; reports cannot authorize boot health, commit, rollback or signature acceptance | Actual installed two-boot lineage, production roots and trusted recovery authority remain open |
 | G1/G4 portable evidence semantics | [PR150](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/150), fixed PR145 base | Exact typed ceilings, actual carried Git source-tree binding, payload/build/boot consistency, root/parent/hardlink graph and Linux symlink-byte-size checks | Fresh main-target image qualification and independently rehashed omitted image payloads remain open |
-| G2 semantic retained action | [PR151](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/151), fixed PR145 base | Successor6586 prepares current-DOM accessibility reflow before observation and final same-task comparison; single semantic Servo owner, original retained six processes, exact scalar types and zero-click negatives preserved; real GNU whole-patch application required | Fresh complete pinned Servo compilation, unfiltered layout units and seven actual semantic cases; final peer/control/deadline gate, native traversal bounds and installed product remain open |
-| G2 retained terminal and root service path | Round4 source candidate, fresh main-based Draft pending | Local terminal seal follows actual response attempt and complete durable reread; unique root-path custody stays with retained requests through queue, execution and terminal wait; original stream, peer and deadline remain live | Root-owned approved policy delivery, cross-UID broker/principal, actual startup and final native effect integration |
-| G2 immutable native product owner | Round4 source candidate, fresh main-based Draft pending | Closed read-only Servo-owner profile exposes only Health/Create/Snapshot/Observe/Close and refuses effectful operations before journal/native entry; source-qualified fixed-pin assembly and fresh actual four-case workflow supplied | Actual pinned compilation/four native cases, retained installed owner and PageOwner integration; no default activation |
+| G2 semantic retained action | [PR151](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/151), fixed PR145 base | Successor98bf binds current declared DOM roles and retained ancestors after current-DOM accessibility reflow; single semantic Servo owner, original six retained processes and seven exact typed zero-click negatives preserved; official PIN borrow API and full GNU patch application independently verified | Fresh combined-tree runtime qualification; final peer/control/deadline gate, native traversal bounds and installed product remain open |
+| G2 retained terminal and root service path | [PR152](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/152), fixed main base | Local terminal seal follows actual response attempt and complete durable reread; unique root-path custody stays with retained requests through queue, execution and terminal wait; original stream, peer and deadline remain live | Root-owned approved policy delivery, cross-UID broker/principal, actual startup and final native effect integration |
+| G2 immutable native product owner | [PR152](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/152), fixed main base | Closed read-only Servo-owner profile exposes only Health/Create/Snapshot/Observe/Close and refuses effectful operations before journal/native entry; fixed-pin assembly and actual four-case workflow supplied; first actual assembly failed its formatter gate, requiring the official PIN configuration | Actual pinned compilation/four native cases, retained installed owner and PageOwner integration; no default activation |
 
 The original combined branch `codex/production-source-integration-20261002` exercises
 these candidates together and registers the top-level Python mechanisms with
@@ -201,7 +201,7 @@ failed with runtime exit 101, dependent acceptance not started and host timeout.
 Its bounded packet confirmed absent persistent runtime/acceptance logs; the
 specific panic cause remains unobserved. The separate startup diagnosis successor at head88a76549d5b03d43c01e6748c45fe00f6d63064a passed QEMU run37012392942 and fresh CodeQL. The complete normal packet independently verified90 outputs and424 source inputs; the explicit-negative packet verified7 raw digests, actual exit73, persisted original cause, no normal PASS and clean QEMU shutdown in29 seconds. Both packets bind the same prepared-image digest and tested merge41f2d7c279fa27a5200c53b32e2c536d02fa010f. Whole negative-clone pre/post hashes were produced by the host gate but not independently rehashed after artifact extraction; no whole-clone proof is inferred. This closes that candidate diagnosis scenario, while the earlier exit101 panic cause remains unobserved.
 
-## Current successor composition
+## Historical first successor composition
 
 The c61 combined source passed complete local checks (Python554/55/15,
 Rust411/424/13). Fresh source/prospective-merge checks and S08 run37010289458
@@ -413,7 +413,7 @@ main-based composition must rerun those workflows with fresh source/parent
 and artifact identities. No branch is self-merged and machine truth/default
 activation is unchanged.
 
-## Current round4 source checkpoint
+## Historical round4 source checkpoint before its complete CI results
 
 Round3 head113f8dd407377a32303e509dff1db8f74dbd44b5/tree
 df22f68ba35b1095b98449f373f994772d875e8f passes exact local
@@ -421,7 +421,7 @@ Python762/109/15, Rust413/426 and docs17. Its publication failed with HTTP408;
 it has no published review branch or PR. That local result does not qualify
 the current `codex/production-source-round4-20261003` source. Round4 combines
 separately frozen, independently reviewed successors; its exact final source
-and main-based synthetic merge require complete checks and fresh CI.
+and main-based synthetic merge required complete checks and fresh CI at that checkpoint. The later actual results are recorded in the fifth-round section below.
 
 The namespace staging successor492 failed on read-only private tmp before
 the new corpus. Intermediate tmp successors also failed bounded enumeration
@@ -517,6 +517,109 @@ entries and only appends reviewed document/contract/test/workflow paths.
 No integrated completion, default activation, independent release approval,
 machine qualification or production-ready field is advanced. Approved policy
 delivery remains a separate source work package, outside this frozen batch.
+
+## Fifth source round and actual fourth-round failures
+
+Published Draft PR152 head772837c6d0664474b2e0e67633466f5733c3e43d,
+base1281d7ac8376bd8837fa63636420b0afc5586eda and tested prospective
+c106ccaf9e92e7ade0c96fb4c95ed21d31562387 bind the same
+cc87af93ec874ffedc351409963dfac7eb277e98 tree and ordered base/head parents.
+All21 actual PR workflows completed: thirteen SUCCESS and eight FAILURE.
+The failed gates are S06, receipt ownership, D1, S04, D2I, S07, S08 and the
+immutable native owner. Fresh later source results do not rewrite those failures.
+
+The actual headed run37073557928/job111058292554 completed successfully.
+Its full236-file packet independently verifies the original normal five PNGs,
+two causal fault hashes, eleven input checkpoints/ten exact IDs, three held
+cases/twenty-one raw hashes, burst fifteen raw facts/eight source bindings/six
+ACKs and all eight real namespace cases. Official ZIP and all carried checksums
+match. This qualifies that particular headed candidate only: it does not supply
+native Actor four-case, S08 seven-case, image or fifth-round qualification.
+Portable metadata cannot independently rehash an omitted compiled ELF.
+
+The fifth round composes the separately reviewed source-test profile13,
+current declared-role6, approved mechanism-policy23 and CI repair packages.
+Eighteen existing source-only test/build steps use explicit DEBUG0/OPT1.
+Their original run bodies, production/image/Servo compilation profiles and
+original two/twenty/three-second custody budgets remain unchanged. Exact
+local profile source checks passed Python842/109/15, Rust417/430 and docs23.
+Its source freeze was captured during that make, and exact final bytes were
+rechecked afterwards; it is not represented as a pre-start freeze.
+
+Focused S08 predecessor6586 actually compiled and passed layout8, original
+retained6 and the original product10/9/30/one-click chain, but its second
+semantic case changed declared role to heading and still dispatched/clicked.
+That failure is retained. Successor98bf95950b9cbe57c24ea3441fe00152574ac3ec
+uses the exact official borrowed DOM attribute accessor before role fallback,
+with a128-byte UTF-8 bound, domain-separated presence/length/hash binding
+for the target and each retained ancestor, and sticky overflow refusal.
+Effective role mapping, original stimuli and all seven expected zero-click
+assertions are unchanged. This is an explicit new digest subprofile, not
+compatibility with the previous structural digest. Actual PR37076377965 and push37076375091 both completed successfully.
+Their complete24-file packets independently verify23 carried digests,
+unfiltered layout8, original retained6 fresh processes, original product
+10/9/30/one-click and all seven exact typed refusals with zero DOM clicks.
+Official ZIP digests and source/PIN bindings match. That focused98bf host
+qualification does not transfer to this combined source; the final peer/control
+same-task effect gate and installed product remain open.
+
+Approved policy source23 retains a bounded root-owned document and ancestors,
+file/dentry and thread-local namespace scope, exact predeclared Control/Agent
+credentials/unit/cgroup/executable hashes and semantic principals. Original
+Instant and the same loaded document remain with the consumed original stream
+through admission, queue, all verifier entries, execution and terminal report.
+Observed drift permanently retires the guard. Independent actual source checks
+passed seventeen filesystem/namespace and twelve live three-process/systemd
+groups,27/34 units, seven docs and47 Python. Native callbacks in those source
+checks are synthetic. Namespace-local root ownership does not establish host
+root trust, independent production approval or rollback protection. Installed
+policy delivery, broker and actual native startup remain open.
+
+CI repair separates fixed historical S07 patch-carrier metadata from current
+exact event/head and live ordered prospective parents. Historical f0e947e5
+is not asserted to be an ancestor of the current source. Current S06 source,
+compile-fail and export checks and the original complete patch/runtime gates
+remain required. S06 lexical public-export scanning separates private imports
+from actual external use/type exports; comments and strings cannot supply a
+public declaration. The immutable owner uses the byte-exact official Servo PIN
+rustfmt.toml, with only eight optional match-block commas in its existing Rust
+sources. All original four native case bodies and runtime patch inputs remain.
+
+Independent audit found two concrete source-CI scanner defects after the
+initial repair: pathlib enumeration consumed2,049 actual entries before the
+1,024-entry refusal, and a real EACCES module directory was silently omitted
+while the scanner returned success. The old ed4c freeze and its author863-test
+PASS remain historical; they do not overrule those independent failures.
+A separate retained-directory-FD scanner successor uses incremental scandir,
+a global entry limit, a fixed traversal-depth ceiling and managed file-leaf
+owners. A further real ordinary-line interruption exposed a leak in the old
+shared file reader; the new scanner no longer enters that unsafe walk. The
+shared reader itself remains a separate source repair. The latest managed-reader
+source21 freeze1a9c11d2 passed its complete877 Python author corpus. Independent
+review passed78 focused tests, six validators, the actual2,049-entry/real EACCES
+refusals, thirty-four ordinary-line/return cleanup cuts, two actual descriptor
+close/reuse probes and three late file/directory/parent-alias drift probes.
+Source21 bytes/modes and510 original files remain exact; the nineteen other
+package files retain the earlier exact formatting/provenance proofs.
+This remains scanner/source qualification. The approved-policy workflow also failed
+legitimate fork PR refs and could substitute a same-name repository branch for
+a changed PR head; its canonical refs/pull/n/head source2 successor independently passed twelve
+source/Git tests, eight extra actual Git probes and four strict shell bodies,
+preserving exact head/tree/live base and ordered merge-parent checks. The separate source7 repair for four older workflows independently passed
+ten new and fifty-four old tests, seven validators, thirty-three strict shell
+bodies and thirty-nine actual same-Git before/after pairs. It preserves all
+thirty-five original step objects except five identity bodies and two optional
+quote characters in one Git tree command; twenty-nine full objects are exact.
+Six source-test steps are appended. The wrong-ref substitution and S04
+three-parent acceptance now refuse, while legitimate fork refs are accepted.
+The exact frozen source7 has been locally composed; it does not yet qualify
+the complete fifth-round tree.
+
+All package freezes, failed predecessors and actual test objects remain
+separate. Complete frozen fifth-round make, independent whole-source review,
+new main-target CI and full actual portable artifacts are required for the new
+composition. No installed, integrated-main or production qualification follows
+from source package composition or a historical candidate PASS.
 
 ## Conditions still blocking production
 
