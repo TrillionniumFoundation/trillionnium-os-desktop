@@ -494,15 +494,15 @@ impl ProductRequestCoordinator {
         restart_policy: RestartPolicy,
         admission: ConnectionAdmissionScope<'_>,
     ) -> Result<Self, ProductDispatchError> {
+        if bootstrap.control.owner_pid != std::process::id() {
+            return Err(ProductDispatchError::PeerRefused);
+        }
+        bootstrap.ensure_control_current()?;
         let ConnectionAdmissionScope {
             acknowledged_requests,
             #[cfg(target_os = "linux")]
             approved,
         } = admission;
-        if bootstrap.control.owner_pid != std::process::id() {
-            return Err(ProductDispatchError::PeerRefused);
-        }
-        bootstrap.ensure_control_current()?;
         if !journal.is_managed()
             || image_id.is_empty()
             || image_id.len() > 128
