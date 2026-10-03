@@ -74,6 +74,9 @@ on:
       - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
       - "tests/test_approved_composition_scope.py"
       - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
   push:
     branches: [main, 'codex/**']
     paths:
@@ -143,6 +146,9 @@ on:
       - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
       - "tests/test_approved_composition_scope.py"
       - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
 permissions:
   contents: read
 concurrency:

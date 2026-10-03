@@ -754,3 +754,100 @@ exact immutable event object for prospective checkout; its original live
 parent/qualification bodies remain unchanged. This record is a development
 checkpoint. Exact final source, full make, independent source composition and
 new hosted native/image qualification must be recorded outside this text.
+
+
+## Eleventh-round immutable source and native checkpoint
+
+This addendum records source `1bde8f23fb4434a57c0fa01e24f6725af4c89c60`,
+tree `c2e6f447af017c06ee476955b470a27b5d42c11e`, with 632 tracked
+files. Earlier sections are historical snapshots, including their then-pending
+source/native checks and then-unconfigured repository controls. This section
+does not change the integrated project-state stage or qualify a later document,
+metadata or implementation successor's own head.
+
+The exact frozen source completed a fresh full Rust 1.93 source check with
+actual exit 0 in 383.234 seconds: Python 1204/109/15, Rust default/all-features
+430/443 and 29 documentation tests. All 632 file bytes, modes and Git blobs
+matched the original freeze after execution. This is source/host validation,
+not native Servo, installed-image or production qualification.
+
+The same source's exact-PIN native compile exited 0. Every original native
+case then actually ran with unchanged names, assertions, profiles and original
+five-second native/twenty-second accepted budgets. Five cases passed; the
+approved positive `actual_approved_startup_semantic_lifecycle` failed with exit
+101 and `DeadlineExceeded` at original fixture line 67. Its observed outer
+elapsed time was 20.211517699994147 seconds. Source copies, assembled inputs and
+ELF bytes were checked before and after. The original six-case target therefore
+remains unqualified; a separate diagnostic run cannot replace this failure.
+
+The source branch was published by an ordinary fast-forward to Draft PR152.
+Main remained `1281d7ac8376bd8837fa63636420b0afc5586eda`. Authenticated
+observation at 2026-10-03T06:10:56.678332Z bound current prospective merge
+`17b33582d55e58345fd1cae5755226fbf343a782` to ordered parents main then
+this source head. Of 40 observed workflow runs, 16 had succeeded and 24 were
+active; 80 check records included 35 active, 15 skipped and one neutral result.
+This is a pending observation, not a complete hosted qualification. The next
+actual observation must retain event/object provenance and original executed
+case counts rather than treating skipped checks as runtime evidence.
+
+At that observation repository protection was partially applied and read back:
+strict current-base policy; four unique `ci` required contexts bound to GitHub
+Actions app 15368; two required approvals; CODEOWNER/stale-dismissal/last-push
+approval; admin enforcement; conversation resolution; signed commits; and no
+force push or deletion. G0 is still open: approved maintainer/merge-service
+restrictions, protected production-publication, actual independent identities
+and approvals, and the required positive/negative setting probes are not supplied
+by these settings records. Hardware/BOM, independent builders and production
+offline/HSM signing facilities remain unprovided.
+
+G1 continues to mean documentation/API/schema source quality. The separate mozjs
+secondary-input profile is a foundation/build-input candidate: complete archive
+size/hash/seal custody is not actual Cargo consumption or producer attestation.
+The native execution above used the original unattested cache, not that new
+profile. G2's present two-role configuration and first twenty-second lifetime
+do not implement a persistent third Owner or a measured sixty-second service
+health window. Those need a separately versioned lifecycle and policy contract.
+G3–G5 installed native input, product packaging, app/portal/approval and complete
+browser egress integration remain open. G6a's accepted existing-data review is
+limited; its interrupted independent safety review remains incomplete. No new
+G6 safety review, physical power-cut, human approval or release is asserted here.
+
+The external Root checkpoint is
+`work/round11-scope632-published-checkpoint.json`, SHA-256
+`bdd7fe9909e23b66e16b347e59fa43873feb7d09b8dd43aebe02efcef32bb4c5`.
+The recorded evidence bundle is
+`outputs/第十一轮632文件完整检查与原生超时证据.zip`, SHA-256
+`1e523b3ce60945d15840cba3a3da8285ad6c1668dd717173a7f5cc7cc3205e3d`.
+These external records bind the original source, complete source result, native
+failure, independent source/metadata reviews and authenticated pending hosted
+observation. A subsequent source push, dependency change or main movement needs
+its own exact-object checks; neither this addendum nor the bundle changes
+`production_ready=false` or manufactures an independent reviewer.
+
+### Later hosted readback of the same eleventh-round source
+
+The authenticated 2026-10-03T06:42:30.681699Z observation still binds the same
+`1bde8f23fb4434a57c0fa01e24f6725af4c89c60` source and unchanged main/ordered
+prospective merge above. All 40 workflow runs completed: 38 succeeded and two
+failed. The 80 checks contain 62 successes, 15 skips and three failures: the two
+approved native jobs and the current CodeQL check. The six unconditional core
+CI checks succeeded. Their source checks do not qualify the failed native jobs.
+
+Both approved native jobs compiled the actual exact-PIN target successfully,
+then the first positive case failed at original fixture line 56 while waiting
+for an observation under the original twenty-second accepted deadline. Exit
+101 stopped each two-case loop before the policy-refusal case; that unexecuted
+case is not a pass. Recorded unit runtimes were 20.373 and 22.975 seconds. This
+hosted failure is distinct from the local original-six-case line-67 failure
+above. An `XDG_RUNTIME_DIR` diagnostic precedes both hosted failures, but its
+causal role is not established by these logs. The raw logs, actual source/ELF
+bindings, resolved argv and both artifact archives are retained in the external
+`work/round11-approved-native-hosted-failures-readonly-facts/final-readonly-report.json`,
+SHA-256 `cd7e8c659e988c333e86271fbbcb5fd05e4c4384c80f32ad77fd9a7667af4c95`.
+
+The current CodeQL flow reports literal peer field names through detailed S04
+source findings to the CLI. It does not prove numeric peer credentials leaked.
+The separately reviewed fixed-category CLI source successor is a proposed fix;
+the current failed hosted result remains recorded until its own new exact-object
+execution. This addendum neither reruns checks nor supplies native, installed,
+human, G6 safety-review or production qualification for any successor.
