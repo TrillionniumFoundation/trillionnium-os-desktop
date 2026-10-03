@@ -144,8 +144,10 @@ impl ProductRequestCoordinator {
             journal,
             image_id,
             restart_policy,
-            &[],
-            Some(&bootstrap.binding),
+            ConnectionAdmissionScope {
+                acknowledged_requests: &[],
+                approved: Some(&bootstrap.binding),
+            },
         )
     }
     pub fn serve_approved_retained_connection(

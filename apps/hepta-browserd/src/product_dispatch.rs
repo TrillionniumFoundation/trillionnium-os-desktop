@@ -430,6 +430,12 @@ pub struct ProductRequestCoordinator {
     last_retirement: Option<(RequestIdentity, ReceiptLifecycleState, Digest)>,
 }
 
+struct ConnectionAdmissionScope<'a> {
+    acknowledged_requests: &'a [(&'a str, Digest)],
+    #[cfg(target_os = "linux")]
+    approved: Option<&'a hepta_peer_attestation::ApprovedAgentRequestBinding>,
+}
+
 impl ProductRequestCoordinator {
     pub fn from_connection(
         principal: TaskFlowPrincipal,
@@ -471,9 +477,11 @@ impl ProductRequestCoordinator {
             journal,
             image_id,
             restart_policy,
-            acknowledged_requests,
-            #[cfg(target_os = "linux")]
-            None,
+            ConnectionAdmissionScope {
+                acknowledged_requests,
+                #[cfg(target_os = "linux")]
+                approved: None,
+            },
         )
     }
 
@@ -484,11 +492,13 @@ impl ProductRequestCoordinator {
         mut journal: ReceiptJournal,
         image_id: String,
         restart_policy: RestartPolicy,
-        acknowledged_requests: &[(&str, Digest)],
-        #[cfg(target_os = "linux")] approved: Option<
-            &hepta_peer_attestation::ApprovedAgentRequestBinding,
-        >,
+        admission: ConnectionAdmissionScope<'_>,
     ) -> Result<Self, ProductDispatchError> {
+        let ConnectionAdmissionScope {
+            acknowledged_requests,
+            #[cfg(target_os = "linux")]
+            approved,
+        } = admission;
         if bootstrap.control.owner_pid != std::process::id() {
             return Err(ProductDispatchError::PeerRefused);
         }
