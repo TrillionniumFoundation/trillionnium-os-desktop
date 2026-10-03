@@ -30,6 +30,18 @@ changes peer custody or product error handling. Tests exercise actual malformed
 unit bytes, a JSON reference hash and a missing-file exception with controlled,
 nonsecret canaries.
 
+Every CLI finding is selected from fixed labels: `S04 unexpected-field`,
+`S04 contract_sha256 mismatch`, the existing fixed custody/decoding/parsing
+diagnostic, or `S04 SOURCE_INVALID`. The first three labels require exact known
+finding messages; other source findings use the last label. No original finding
+text is formatted into CLI output. The detailed `validate_root()` findings remain
+available to local callers, and the CLI preserves the actual error count, failure
+status and success message. Real subprocess tests cover valid inputs and refused
+JSON, unit and source inputs containing controlled nonsecret Unicode, path and
+credential-shaped sentinels. This output boundary does not assert that the
+literal peer field names in the current scanner finding contain numeric peer
+credentials.
+
 
 ## Claim ceiling
 

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import copy
 import contextlib
+import hashlib
 import importlib.util
 import io
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -260,6 +262,115 @@ class S04InputDiagnosticTests(unittest.TestCase):
                 self.assertEqual(VALIDATOR.validate_reference_binding(), [
                     "transport reference result contract_sha256 does not match the current contract"])
                 self.assertIn("contract_sha256", self.diagnostic())
+
+
+class S04FixedCliCategoryTests(unittest.TestCase):
+    SENTINELS = (
+        "S04-CONTROLLED-NONSECRET-UNKNOWN-KEY",
+        "\u79d8\u5bc6\u7d4c\u8def-\u03bc",
+        "/controlled/private/credential-shaped-input",
+        "424242424242424242",
+    )
+
+    @contextlib.contextmanager
+    def source_copy(self):
+        inventory = subprocess.run(
+            ["git", "ls-files", "-z"], cwd=ROOT, check=True,
+            capture_output=True, timeout=10,
+        ).stdout.decode().split("\0")
+        with tempfile.TemporaryDirectory(prefix=".s04-cli-", dir=ROOT) as temporary:
+            root = Path(temporary)
+            for relative in filter(None, inventory):
+                destination = root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative, destination)
+            yield root
+
+    def run_cli(self, root):
+        return subprocess.run(
+            [sys.executable, str(root / "tools/validate_s04_transport_custody.py")],
+            cwd=root, check=False, capture_output=True, text=True, timeout=20,
+        )
+
+    def assert_refusal(self, completed, categories):
+        self.assertEqual(completed.returncode, 1, completed.stderr)
+        self.assertEqual(completed.stdout, "")
+        self.assertEqual(completed.stderr.splitlines(), [
+            *("ERROR: " + category for category in categories),
+            f"S04 validation failed with {len(categories)} error(s)",
+        ])
+        for sentinel in self.SENTINELS:
+            self.assertNotIn(sentinel, completed.stderr)
+
+    def test_actual_cli_valid_source_keeps_success_status_and_message(self):
+        with self.source_copy() as root:
+            completed = self.run_cli(root)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stderr, "")
+        self.assertEqual(completed.stdout,
+            "S04 transport, peer custody, AgentPort, and product-path validation passed\n")
+
+    def test_actual_cli_unknown_json_key_uses_only_its_fixed_category(self):
+        with self.source_copy() as root:
+            contract_path = root / "contracts/agent-transport.v1.json"
+            contract = json.loads(contract_path.read_text())
+            contract["public_api"]["\n".join(self.SENTINELS)] = {
+                "peer_pid": int(self.SENTINELS[3]),
+                "peer_uid": int(self.SENTINELS[3]),
+                "path": self.SENTINELS[2],
+            }
+            contract_path.write_text(json.dumps(contract, ensure_ascii=False))
+            reference_path = root / "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+            reference = json.loads(reference_path.read_text())
+            reference["contract_sha256"] = hashlib.sha256(contract_path.read_bytes()).hexdigest()
+            reference_path.write_text(json.dumps(reference))
+            self.assert_refusal(self.run_cli(root), ["S04 unexpected-field"])
+
+    def test_actual_cli_reference_value_uses_only_its_fixed_category(self):
+        with self.source_copy() as root:
+            path = root / "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+            reference = json.loads(path.read_text())
+            reference["contract_sha256"] = "\n".join(self.SENTINELS)
+            path.write_text(json.dumps(reference, ensure_ascii=False))
+            self.assert_refusal(self.run_cli(root), ["S04 contract_sha256 mismatch"])
+
+    def test_actual_cli_malformed_unit_uses_only_fixed_parse_category(self):
+        with self.source_copy() as root:
+            path = root / "packaging/debian/systemd/hepta-browserd-agent.socket"
+            path.write_text("[Unit]\n" + "\n".join(self.SENTINELS) + "\n")
+            self.assert_refusal(self.run_cli(root), [
+                "S04 source custody, decoding or parsing failed; inspect repository inputs locally",
+            ])
+
+    def test_actual_cli_source_field_finding_keeps_detail_out_of_stderr(self):
+        with self.source_copy() as root:
+            path = root / "apps/hepta-agent-portd/src/main.rs"
+            source = path.read_text()
+            source = source.replace("fn self_check_report() -> String {",
+                "fn self_check_report() -> String {\n    // peer_pid "
+                + " ".join(self.SENTINELS), 1)
+            path.write_text(source)
+            self.assert_refusal(self.run_cli(root), ["S04 SOURCE_INVALID"])
+
+    def test_only_exact_known_messages_receive_specific_cli_categories(self):
+        messages = [
+            "S04-PUBLIC-API-CONTRACT:transport:unexpected-field:" + self.SENTINELS[0],
+            "transport reference result contract_sha256 does not match the current contract\n"
+            + self.SENTINELS[2],
+            "S04 source custody, decoding or parsing failed; inspect repository inputs locally "
+            + self.SENTINELS[1],
+        ]
+        stream = io.StringIO()
+        with patch.object(VALIDATOR, "validate_root", return_value=messages):
+            with contextlib.redirect_stderr(stream):
+                result = VALIDATOR.main()
+        self.assertEqual(result, 1)
+        self.assertEqual(stream.getvalue().splitlines(), [
+            "ERROR: S04 SOURCE_INVALID", "ERROR: S04 SOURCE_INVALID",
+            "ERROR: S04 SOURCE_INVALID", "S04 validation failed with 3 error(s)",
+        ])
+        for sentinel in self.SENTINELS:
+            self.assertNotIn(sentinel, stream.getvalue())
 
 
 if __name__ == "__main__":

@@ -724,6 +724,23 @@ def validate_root() -> list[str]:
     return errors
 
 
+def _cli_failure_category(message: str) -> str:
+    """Return only fixed CLI labels; retain detailed findings in validate_root."""
+
+    if type(message) is not str:
+        return "S04 SOURCE_INVALID"
+    if message in (
+        "S04-PUBLIC-API-CONTRACT:transport:unexpected-field",
+        "S04-PUBLIC-API-CONTRACT:agent-transport.public_api:unexpected-field",
+    ):
+        return "S04 unexpected-field"
+    if message == "transport reference result contract_sha256 does not match the current contract":
+        return "S04 contract_sha256 mismatch"
+    if message == "S04 source custody, decoding or parsing failed; inspect repository inputs locally":
+        return "S04 source custody, decoding or parsing failed; inspect repository inputs locally"
+    return "S04 SOURCE_INVALID"
+
+
 def main() -> int:
     try:
         errors = validate_root()
@@ -740,7 +757,7 @@ def main() -> int:
         errors = ["S04 source custody, decoding or parsing failed; inspect repository inputs locally"]
     if errors:
         for error in errors:
-            print(f"ERROR: {error}", file=sys.stderr)
+            print("ERROR:", _cli_failure_category(error), file=sys.stderr)
         print(f"S04 validation failed with {len(errors)} error(s)", file=sys.stderr)
         return 1
     print("S04 transport, peer custody, AgentPort, and product-path validation passed")
