@@ -11,6 +11,7 @@ pub struct ApprovedRetainedProductConnection {
     owner_pid: u32,
     inner: RetainedProductConnection,
     principal: TaskFlowPrincipal,
+    binding: hepta_peer_attestation::ApprovedAgentRequestBinding,
 }
 impl ApprovedRetainedProductConnection {
     pub fn from_received(
@@ -20,8 +21,8 @@ impl ApprovedRetainedProductConnection {
         selection
             .admit_retained(received)
             .map_err(approved_error)?
-            .consume_before(
-                |stream, deadline, custody, mut retained, attested, principal_id| {
+            .consume_with_request_binding(
+                |stream, deadline, custody, mut retained, attested, principal_id, binding| {
                     let owner_pid = std::process::id();
                     product_time_remaining(deadline)?;
                     let snapshot = attested.snapshot();
@@ -73,6 +74,7 @@ impl ApprovedRetainedProductConnection {
                         Self {
                             owner_pid,
                             principal,
+                            binding,
                             inner: RetainedProductConnection {
                                 owner_pid,
                                 connection: Some(connection),
@@ -130,13 +132,20 @@ impl ProductRequestCoordinator {
         restart_policy: RestartPolicy,
     ) -> Result<Self, ProductDispatchError> {
         bootstrap.deadline()?;
-        Self::from_retained_connection(
+        let connection = bootstrap
+            .inner
+            .connection
+            .as_ref()
+            .ok_or(ProductDispatchError::Closed)?;
+        Self::from_connection_with_approval(
             bootstrap.principal.clone(),
-            &bootstrap.inner,
+            connection,
             endpoint,
             journal,
             image_id,
             restart_policy,
+            &[],
+            Some(&bootstrap.binding),
         )
     }
     pub fn serve_approved_retained_connection(
@@ -148,6 +157,27 @@ impl ProductRequestCoordinator {
         if connection.owner_pid != self.owner_pid || connection.principal != self.principal {
             return Err(ProductDispatchError::PeerRefused);
         }
+        if self.storage_failed {
+            return Err(ProductDispatchError::StorageUnavailable);
+        }
+        if self.state != RuntimeState::Ready || self.pending_reconciliation.is_some() {
+            return Err(ProductDispatchError::RecoveryRequired);
+        }
+        if self
+            .observer
+            .borrow_mut()
+            .as_mut()
+            .ok_or(ProductDispatchError::RecoveryRequired)?
+            .has_unresolved_receipts()
+            .map_err(|_| ProductDispatchError::StorageUnavailable)?
+        {
+            return Err(ProductDispatchError::RecoveryRequired);
+        }
+        self.actor
+            .as_mut()
+            .ok_or(ProductDispatchError::RecoveryRequired)?
+            .rebind_approved_request(&connection.binding)
+            .map_err(|_| ProductDispatchError::PeerRefused)?;
         self.serve_retained_connection(connection.inner)
     }
 }

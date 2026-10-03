@@ -553,8 +553,24 @@ def validate(root: Path = ROOT) -> None:
                       source(root, "apps/hepta-browserd/src/product_dispatch.rs"),
                       source(root, "experiments/servo-product-owner/src/native_owner.rs"))
     approved = tokens(source(root, "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"))
-    ordered(approved, ["selection.admit_retained(received)", "consume_before", "ProcfsPeerAttestor::default()",
+    ordered(approved, ["selection.admit_retained(received)", "consume_with_request_binding", "ProcfsPeerAttestor::default()",
                        "connection.ensure_control_current()?"], "existing approved live admission")
+    binding = rust_inventory(source(root, "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"))
+    consume_binding = function(binding, "ApprovedAgentReceivedStream::consume_with_request_binding")
+    ordered(consume_binding,
+            ["self.attested.request_custody()", "self.custody.verifier()",
+             "PeerIdentity::from_stream(&self.stream)", "self.consume_before"],
+            "same original approved custody delegation")
+    expected_binding = "pub fn consume_with_request_binding<T>(self, consumer: impl FnOnce(UnixStream, Instant, ControlRequestCustody, AttestedRetainedReceiver, AttestedPeer, &str, ApprovedAgentRequestBinding) -> T) -> Result<T, ApprovedPolicyError>"
+    if signature(binding["public_api"]["ApprovedAgentReceivedStream::consume_with_request_binding"]) != signature(expected_binding):
+        raise ValueError("opaque original seven-argument consumption signature differs")
+    if consume_binding.count("consume_before") != 1 or consume_binding.count("consumer") != 1:
+        raise ValueError("opaque original consumption must delegate/invoke exactly once")
+    for marker in ["self.guard.state.inspect()?", "remaining(self.guard.state.pid, self.deadline)?",
+                   "owner_pid: self.guard.state.pid", "deadline: self.deadline", "guard: self.guard.clone()",
+                   "peer.pid != Some(snapshot.pid)", "peer.uid != snapshot.uid", "peer.gid != snapshot.gid",
+                   "consumer(stream, deadline, custody, retained, attested, principal, binding)"]:
+        require(signature(" ".join(consume_binding)), marker, "original opaque pair and absolute ceiling")
     exports = tokens(source(root, "apps/hepta-browserd/src/lib.rs"))
     for name in ["ApprovedRetainedAdmission", "ApprovedRetainedIngress", "ApprovedRetainedQueue",
                  "ApprovedQueueRetirement", "approved_retained_queue_before"]:

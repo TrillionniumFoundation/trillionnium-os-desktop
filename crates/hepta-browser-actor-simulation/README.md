@@ -40,6 +40,16 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 
 ## Public API and binaries
 
+The additive bounded G2 approved request binding preserves one actor/session and
+managed receipt history across separately root-selected original Agent requests.
+Its opaque types, constructors, controlled dispatch gates, exact role comparison
+and fixed first Instant are specified in
+[`APPROVED_REQUEST_BINDING.md`](../../docs/architecture/APPROVED_REQUEST_BINDING.md)
+and [`approved-request-binding.v1.json`](../../contracts/approved-request-binding.v1.json).
+Legacy/raw actors retain fixed PID/start checks and cannot gain approval through
+a caller principal or snapshot. This source API supplies no persistent installed
+owner, native effect, health-window or production qualification.
+
 - Generic verification types include `BrowserActor<R>`, `PageRuntime`, `BrowserActorMessage`, `RequestControl`, `RuntimeReply` and `RuntimeFailure`.
 - Engine bridges include `EngineThreadRuntime`, `EngineThreadOwner`, `CallbackPageRuntime`, `CallbackEngineOwner`, `EngineCompletion` and pump results.
 - `DeterministicLocalRuntime`, principal/binding helpers, incarnation and receipt observer support tests.

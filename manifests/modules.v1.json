@@ -46,7 +46,8 @@
         "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md",
         "docs/architecture/APPROVED_MECHANISM_POLICY.md",
         "docs/architecture/APPROVED_NATIVE_STARTUP.md",
-        "docs/architecture/CONFIGURED_RETAINED_BOOTSTRAP.md"
+        "docs/architecture/CONFIGURED_RETAINED_BOOTSTRAP.md",
+        "docs/architecture/APPROVED_REQUEST_BINDING.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
@@ -57,7 +58,8 @@
         "contracts/root-path-retained-control.v1.json",
         "contracts/approved-mechanism-policy.v1.json",
         "contracts/approved-native-startup.v1.json",
-        "contracts/configured-retained-bootstrap.v1.json"
+        "contracts/configured-retained-bootstrap.v1.json",
+        "contracts/approved-request-binding.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -80,7 +82,9 @@
         "apps/hepta-browserd/tests/approved_native_startup_kernel.rs",
         "tests/test_approved_native_startup.py",
         "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs",
-        "tests/test_configured_retained_bootstrap.py"
+        "tests/test_configured_retained_bootstrap.py",
+        "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
+        "tests/test_approved_request_binding.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
@@ -281,7 +285,8 @@
         "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
         "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
         "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md",
-        "docs/architecture/APPROVED_MECHANISM_POLICY.md"
+        "docs/architecture/APPROVED_MECHANISM_POLICY.md",
+        "docs/architecture/APPROVED_REQUEST_BINDING.md"
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
@@ -290,7 +295,8 @@
         "contracts/dual-owner-request-custody.v1.json",
         "contracts/retained-control-terminal.v1.json",
         "contracts/root-path-retained-control.v1.json",
-        "contracts/approved-mechanism-policy.v1.json"
+        "contracts/approved-mechanism-policy.v1.json",
+        "contracts/approved-request-binding.v1.json"
       ],
       "tests": [
         "crates/hepta-peer-attestation/src/lib.rs",
@@ -305,7 +311,9 @@
         "tests/test_root_path_retained_control.py",
         "apps/hepta-browserd/tests/approved_policy_product_kernel.rs",
         "tests/test_approved_mechanism_policy.py",
-        "crates/hepta-peer-attestation/tests/approved_policy_kernel.rs"
+        "crates/hepta-peer-attestation/tests/approved_policy_kernel.rs",
+        "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
+        "tests/test_approved_request_binding.py"
       ],
       "workflows": [
         ".github/workflows/s04-transport-custody.yml",
@@ -452,7 +460,8 @@
         "docs/architecture/NATIVE_IMMUTABLE_PRODUCT_OWNER.md",
         "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md",
         "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md",
-        "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md"
+        "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md",
+        "docs/architecture/APPROVED_REQUEST_BINDING.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
@@ -463,7 +472,8 @@
         "contracts/dual-owner-request-custody.v1.json",
         "contracts/native-product-owner.v1.json",
         "contracts/s07-qualification-lineage.v1.json",
-        "contracts/immutable-callback-url-scope.v1.json"
+        "contracts/immutable-callback-url-scope.v1.json",
+        "contracts/approved-request-binding.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-actor/src/lib.rs",
@@ -481,7 +491,9 @@
         "tests/test_ci_source_dependency_filters.py",
         "tests/test_s07_event_checkout.py",
         "tests/test_immutable_callback_url_scope.py",
-        "crates/hepta-browser-actor-simulation/src/engine_dispatch/immutable_url_scope_tests.rs"
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/immutable_url_scope_tests.rs",
+        "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
+        "tests/test_approved_request_binding.py"
       ],
       "workflows": [
         ".github/workflows/s06-browser-actor.yml",
@@ -506,14 +518,16 @@
         "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
         "docs/architecture/ENGINE_THREAD_DISPATCH.md",
         "docs/architecture/EVENT_LOOP_COMPLETION.md",
-        "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md"
+        "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md",
+        "docs/architecture/APPROVED_REQUEST_BINDING.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
         "contracts/engine-thread-dispatch.v1.json",
         "contracts/event-loop-completion.v1.json",
         "contracts/dual-owner-request-custody.v1.json",
-        "contracts/immutable-callback-url-scope.v1.json"
+        "contracts/immutable-callback-url-scope.v1.json",
+        "contracts/approved-request-binding.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop_tests.rs",
@@ -521,7 +535,9 @@
         "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
         "tests/test_dual_owner_custody.py",
         "tests/test_immutable_callback_url_scope.py",
-        "crates/hepta-browser-actor-simulation/src/engine_dispatch/immutable_url_scope_tests.rs"
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/immutable_url_scope_tests.rs",
+        "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
+        "tests/test_approved_request_binding.py"
       ],
       "workflows": [
         ".github/workflows/s06-browser-actor.yml",

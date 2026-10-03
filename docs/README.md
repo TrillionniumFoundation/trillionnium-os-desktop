@@ -40,3 +40,10 @@ It does not promote the historical qualification baseline or release authority.
 describes the separate executable Debian/QEMU guest selector, real signed
 dm-verity roots and persistent attempt/fault matrix. Its test fixture does not
 qualify desktop health, firmware trust, production floor or release activation.
+
+## Bounded approved request replacement
+
+[Approved request binding](architecture/APPROVED_REQUEST_BINDING.md) specifies the
+G2 opaque per-request root-approved mechanism replacement, same PageOwner/receipt
+history and original twenty-second ceiling. Actual host callbacks and unchanged
+exact-PIN native cases have separate qualification requirements.

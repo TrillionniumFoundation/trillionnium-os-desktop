@@ -12,9 +12,9 @@ mod approved_policy;
 mod request_lease;
 #[cfg(target_os = "linux")]
 pub use approved_policy::{
-    ApprovedAgentReceivedStream, ApprovedAgentSelection, ApprovedControlSelection,
-    ApprovedPolicyDocument, ApprovedPolicyError, DEFAULT_APPROVED_POLICY_PATH,
-    MAX_APPROVED_POLICY_BYTES,
+    ApprovedAgentReceivedStream, ApprovedAgentRequestBinding, ApprovedAgentRequestVerifier,
+    ApprovedAgentSelection, ApprovedAgentSession, ApprovedControlSelection, ApprovedPolicyDocument,
+    ApprovedPolicyError, DEFAULT_APPROVED_POLICY_PATH, MAX_APPROVED_POLICY_BYTES,
 };
 
 pub use request_lease::{PeerRequestCustody, PeerRequestVerifier};

@@ -824,6 +824,9 @@ pub struct BrowserActor<R> {
     shared: Rc<RefCell<SharedActorState>>,
 }
 
+#[cfg(target_os = "linux")]
+mod approved_rebinding;
+
 // Restore the actor-local slot on every exit, including unwinding. A verifier
 // may outlive this slot, but its non-cloneable custody owner cannot be bypassed.
 struct RequestAuthorityScope {

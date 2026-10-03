@@ -31,6 +31,10 @@ use std::{
 pub const DEFAULT_APPROVED_POLICY_PATH: &str = "/etc/hepta/approved-mechanisms.v1.conf";
 pub const MAX_APPROVED_POLICY_BYTES: usize = 8192;
 const SCHEMA: &str = "trillionnium.approved-mechanisms.v1";
+mod request_binding;
+pub use request_binding::{
+    ApprovedAgentRequestBinding, ApprovedAgentRequestVerifier, ApprovedAgentSession,
+};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ApprovedPolicyError {
     InvalidConfiguration,
@@ -66,7 +70,7 @@ fn remaining(pid: u32, deadline: Instant) -> Result<(), ApprovedPolicyError> {
     }
     Ok(())
 }
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 struct Entry {
     uid: u32,
     gid: u32,

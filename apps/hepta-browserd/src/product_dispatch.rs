@@ -459,10 +459,35 @@ impl ProductRequestCoordinator {
         principal: TaskFlowPrincipal,
         bootstrap: &AcceptedProductConnection,
         endpoint: ServoRuntimeEndpoint,
+        journal: ReceiptJournal,
+        image_id: String,
+        restart_policy: RestartPolicy,
+        acknowledged_requests: &[(&str, Digest)],
+    ) -> Result<Self, ProductDispatchError> {
+        Self::from_connection_with_approval(
+            principal,
+            bootstrap,
+            endpoint,
+            journal,
+            image_id,
+            restart_policy,
+            acknowledged_requests,
+            #[cfg(target_os = "linux")]
+            None,
+        )
+    }
+
+    fn from_connection_with_approval(
+        principal: TaskFlowPrincipal,
+        bootstrap: &AcceptedProductConnection,
+        endpoint: ServoRuntimeEndpoint,
         mut journal: ReceiptJournal,
         image_id: String,
         restart_policy: RestartPolicy,
         acknowledged_requests: &[(&str, Digest)],
+        #[cfg(target_os = "linux")] approved: Option<
+            &hepta_peer_attestation::ApprovedAgentRequestBinding,
+        >,
     ) -> Result<Self, ProductDispatchError> {
         if bootstrap.control.owner_pid != std::process::id() {
             return Err(ProductDispatchError::PeerRefused);
@@ -506,6 +531,25 @@ impl ProductRequestCoordinator {
                 return Err(ProductDispatchError::RecoveryRequired);
             }
         }
+        #[cfg(target_os = "linux")]
+        let actor = if let Some(approved) = approved {
+            let actor = ServoBrowserActor::from_approved_request(approved, endpoint)
+                .map_err(|_| ProductDispatchError::PeerRefused)?;
+            if actor.principal() != &principal {
+                return Err(ProductDispatchError::PeerRefused);
+            }
+            actor
+        } else {
+            ServoBrowserActor::from_attested(
+                principal.clone(),
+                bootstrap.peer,
+                &bootstrap.attestor,
+                &bootstrap.attested,
+                endpoint,
+            )
+            .map_err(|_| ProductDispatchError::PeerRefused)?
+        };
+        #[cfg(not(target_os = "linux"))]
         let actor = ServoBrowserActor::from_attested(
             principal.clone(),
             bootstrap.peer,

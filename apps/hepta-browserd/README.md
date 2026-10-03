@@ -38,6 +38,16 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 
 ## Public API and binaries
 
+The additive bounded G2 approved request binding preserves one actor/session and
+managed receipt history across separately root-selected original Agent requests.
+Its opaque types, constructors, controlled dispatch gates, exact role comparison
+and fixed first Instant are specified in
+[`APPROVED_REQUEST_BINDING.md`](../../docs/architecture/APPROVED_REQUEST_BINDING.md)
+and [`approved-request-binding.v1.json`](../../contracts/approved-request-binding.v1.json).
+Legacy/raw actors retain fixed PID/start checks and cannot gain approval through
+a caller principal or snapshot. This source API supplies no persistent installed
+owner, native effect, health-window or production qualification.
+
 - `ACTIVE_PLAN_REVISION` and `IMPLEMENTATION_STAGE` are immutable build-truth sentinels.
 - `run_self_check()` returns a bounded `SelfCheckReport`; it is development evidence, not readiness.
 - Binary `hepta-browserd` supports `--self-check`, `--print-build-info`, and `--help`. Unknown arguments fail with exit status 2.

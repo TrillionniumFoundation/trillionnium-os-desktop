@@ -49,6 +49,16 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 
 ## Public API and binaries
 
+The additive bounded G2 approved request binding preserves one actor/session and
+managed receipt history across separately root-selected original Agent requests.
+Its opaque types, constructors, controlled dispatch gates, exact role comparison
+and fixed first Instant are specified in
+[`APPROVED_REQUEST_BINDING.md`](../../docs/architecture/APPROVED_REQUEST_BINDING.md)
+and [`approved-request-binding.v1.json`](../../contracts/approved-request-binding.v1.json).
+Legacy/raw actors retain fixed PID/start checks and cannot gain approval through
+a caller principal or snapshot. This source API supplies no persistent installed
+owner, native effect, health-window or production qualification.
+
 - `BrowserActor::from_attested` and `handle_attested` remain the deterministic S06 authority path.
 - `ServoBrowserActor::from_attested` admits only the concrete S08 callback bridge; callers cannot supply a generic runtime.
 - `ServoBrowserActor::preflight_attested` checks current custody, session/reference binding, arbitration, cancellation and supported operation without dispatching engine work or writing receipts. Refusal retires request cancellation registration; `handle_attested` still rechecks final custody/control after durable intent.

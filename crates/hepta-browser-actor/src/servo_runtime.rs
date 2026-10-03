@@ -73,9 +73,20 @@ pub struct ServoRuntimeEndpoint {
 /// This type is intentionally distinct from the deterministic [`crate::BrowserActor`].
 /// It accepts no generic runtime parameter or caller-implemented runtime trait.
 pub struct ServoBrowserActor {
+    #[cfg(target_os = "linux")]
+    approved_creator_pid: u32,
     profile: ServoProfile,
     inner: simulation::BrowserActor<simulation::engine_dispatch::EngineThreadRuntime>,
+    #[cfg(target_os = "linux")]
+    approved_session: Option<hepta_peer_attestation::ApprovedAgentSession>,
+    #[cfg(target_os = "linux")]
+    approved_request: Option<hepta_peer_attestation::ApprovedAgentRequestVerifier>,
+    #[cfg(target_os = "linux")]
+    approved_uncertain: bool,
 }
+
+#[cfg(target_os = "linux")]
+mod approved_binding;
 
 impl ServoBrowserActor {
     /// Bind one concrete Servo endpoint to a live, pidfd-backed principal.
@@ -94,8 +105,16 @@ impl ServoBrowserActor {
                 AgentPortError::Handler(format!("principal binding failed: {error}"))
             })?;
         Ok(Self {
+            #[cfg(target_os = "linux")]
+            approved_creator_pid: std::process::id(),
             profile: endpoint.profile,
             inner: simulation::BrowserActor::new(binding, endpoint.inner),
+            #[cfg(target_os = "linux")]
+            approved_session: None,
+            #[cfg(target_os = "linux")]
+            approved_request: None,
+            #[cfg(target_os = "linux")]
+            approved_uncertain: false,
         })
     }
 
@@ -107,6 +126,8 @@ impl ServoBrowserActor {
         attestor: &ProcfsPeerAttestor,
         attested: &AttestedPeer,
     ) -> Result<HandlerOutcome, AgentPortError> {
+        #[cfg(target_os = "linux")]
+        self.refuse_uncontrolled_approved_request()?;
         if matches!(self.profile, ServoProfile::ClosedImmutableReadOnly)
             && let Some(error) = self.preflight_attested(context, request, attestor, attested)?
         {
@@ -127,6 +148,8 @@ impl ServoBrowserActor {
         attestor: &ProcfsPeerAttestor,
         attested: &AttestedPeer,
     ) -> Result<Option<BrowserWireError>, AgentPortError> {
+        #[cfg(target_os = "linux")]
+        self.refuse_uncontrolled_approved_request()?;
         let refusal = self
             .inner
             .preflight_attested(context, request, attestor, attested)?;
@@ -144,9 +167,24 @@ impl ServoBrowserActor {
         attested: &AttestedPeer,
         custodian: &ControlRequestVerifier,
     ) -> Result<Option<BrowserWireError>, AgentPortError> {
-        let refusal = self
-            .inner
-            .preflight_attested_controlled(context, request, attestor, attested, custodian)?;
+        self.ensure_approved_request()?;
+        let refusal = if self.approved_session.is_some() {
+            self.with_approved_pair(
+                context,
+                |inner, original_attestor, original_attested, original_custodian| {
+                    inner.preflight_attested_controlled(
+                        context,
+                        request,
+                        original_attestor,
+                        original_attested,
+                        original_custodian,
+                    )
+                },
+            )?
+        } else {
+            self.inner
+                .preflight_attested_controlled(context, request, attestor, attested, custodian)?
+        };
         self.finish_profile_preflight(request, refusal)
     }
 
@@ -159,6 +197,7 @@ impl ServoBrowserActor {
         attested: &AttestedPeer,
         custodian: &ControlRequestVerifier,
     ) -> Result<HandlerOutcome, AgentPortError> {
+        self.ensure_approved_request()?;
         if matches!(self.profile, ServoProfile::ClosedImmutableReadOnly)
             && let Some(error) =
                 self.preflight_attested_controlled(context, request, attestor, attested, custodian)?
@@ -166,8 +205,12 @@ impl ServoBrowserActor {
             self.inner.retire_prepared_request(&request.request_id)?;
             return Ok(HandlerOutcome::Failure(error));
         }
-        self.inner
-            .handle_attested_controlled(context, request, attestor, attested, custodian)
+        if self.approved_session.is_some() {
+            self.handle_approved_controlled(context, request)
+        } else {
+            self.inner
+                .handle_attested_controlled(context, request, attestor, attested, custodian)
+        }
     }
 
     fn finish_profile_preflight(

@@ -39,6 +39,16 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 
 ## Public API and binaries
 
+The additive bounded G2 approved request binding preserves one actor/session and
+managed receipt history across separately root-selected original Agent requests.
+Its opaque types, constructors, controlled dispatch gates, exact role comparison
+and fixed first Instant are specified in
+[`APPROVED_REQUEST_BINDING.md`](../../docs/architecture/APPROVED_REQUEST_BINDING.md)
+and [`approved-request-binding.v1.json`](../../contracts/approved-request-binding.v1.json).
+Legacy/raw actors retain fixed PID/start checks and cannot gain approval through
+a caller principal or snapshot. This source API supplies no persistent installed
+owner, native effect, health-window or production qualification.
+
 - `ProcfsPeerAttestor`, `PeerRuntimePolicy`, `PeerRuntimeSnapshot`, `AttestedPeer`, `TrustedExecutableDigest`, `PeerRequestCustody`, `PeerRequestVerifier` and `AttestationError` are the main types.
 - Qualification/development static digest paths are feature-gated; `default` contains neither.
 - Account resolution and executable hashing are explicit fallible helpers.

@@ -255,3 +255,14 @@ actual interrupted publications. `tests/test_g6a_immutable_ab.py` separately
 tests real host OpenSSL and filesystem failure behavior. This fixture preserves
 historical D1/D2I recipes and provides no installed desktop health, protected
 boot chain/floor, production signing or release qualification.
+
+## G2 approved request continuity
+
+The [approved request binding](architecture/APPROVED_REQUEST_BINDING.md) API
+reuses an existing coordinator after a completed Agent exits, provided every new
+request independently proves its original live root-approved pair and the same
+complete two-role policy. Run `python3 tools/verify_approved_request_binding.py`
+and the actual host command documented there. Preserve the original absolute
+Instant, old fixed-PID route and original native six cases. An optimized source
+host pass does not qualify native Servo, an installed persistent owner, a
+60-second health window or production readiness.
