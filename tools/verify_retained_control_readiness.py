@@ -749,9 +749,11 @@ def parent_source(path, text):
     """
     try:
         from .verify_approved_service_owner import detach_for_readiness
+        from .verify_approved_service_runtime import parent_source as service_runtime_parent_source
     except ImportError:
         from verify_approved_service_owner import detach_for_readiness
-    text = detach_for_readiness(path, text)
+        from verify_approved_service_runtime import parent_source as service_runtime_parent_source
+    text = detach_for_readiness(path, service_runtime_parent_source(path, text))
     for step in reversed(TRANSFER.get(path, [])):
         if text.count(step["actual"]) != 1:
             raise ValueError("finite readiness inverse differs: " + path)
@@ -786,9 +788,11 @@ def unique_body(text, name):
 def check(contract, texts):
     try:
         from .verify_approved_service_owner import detach_for_readiness
+        from .verify_approved_service_runtime import parent_source as service_runtime_parent_source
     except ImportError:
         from verify_approved_service_owner import detach_for_readiness
-    texts = {path: detach_for_readiness(path, text) for path, text in texts.items()}
+        from verify_approved_service_runtime import parent_source as service_runtime_parent_source
+    texts = {path: detach_for_readiness(path, service_runtime_parent_source(path, text)) for path, text in texts.items()}
     composition.typed_equal(contract, EXPECTED)
     for path, wanted in EXPECTED["actual_source_sha256"].items():
         if hashlib.sha256(texts[path].encode()).hexdigest() != wanted:

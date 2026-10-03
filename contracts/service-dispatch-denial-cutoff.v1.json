@@ -206,7 +206,7 @@
       }
     }
   },
-  "checker_nonEXPECTED_whole_sha256": "fd68f81142650930c63c1b214be44928a5626cd9262109a153ff5cfdc89b9125",
+  "checker_nonEXPECTED_whole_sha256": "436f77b673dc88fa9cb5ad01b640806107a058efcd2ff3ed476bb19eb43046e0",
   "ci_composition_scope": {
     "Hosted_cleanup_qualified": false,
     "Native_qualified": false,
@@ -277,7 +277,7 @@
     "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
     "tools/verify_ci_namespace_python.py": "ebcb64dde0fc880c2808f5f3b3d2b19595267971aad9c2c4be8003eef97fa7cf",
-    "tools/verify_retained_control_readiness.py": "7e6d07c6c2522a7652534b8943457b7a0faea343d2cb057018fa2004dc7e71c0"
+    "tools/verify_retained_control_readiness.py": "7e10c66c31fc5842de91ec3c6f69d6a20caa238ff7cf954ba150876d41234772"
   },
   "ci_parent_inverse18": {
     ".github/workflows/approved-mechanism-policy.yml": {
@@ -699,10 +699,34 @@
           "complete_start": 10140,
           "complete_text": "                      '.github/workflows/g2-approved-native-startup.yml': '872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a',\n",
           "parent_text": "                      '.github/workflows/g2-approved-native-startup.yml': '5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228',\n"
+        },
+        {
+          "complete_end": 74711,
+          "complete_start": 74611,
+          "complete_text": "        from .verify_approved_service_runtime import parent_source as service_runtime_parent_source\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 74986,
+          "complete_start": 74806,
+          "complete_text": "        from verify_approved_service_runtime import parent_source as service_runtime_parent_source\n    text = detach_for_readiness(path, service_runtime_parent_source(path, text))\n",
+          "parent_text": "    text = detach_for_readiness(path, text)\n"
+        },
+        {
+          "complete_end": 76280,
+          "complete_start": 76180,
+          "complete_text": "        from .verify_approved_service_runtime import parent_source as service_runtime_parent_source\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 76596,
+          "complete_start": 76375,
+          "complete_text": "        from verify_approved_service_runtime import parent_source as service_runtime_parent_source\n    texts = {path: detach_for_readiness(path, service_runtime_parent_source(path, text)) for path, text in texts.items()}\n",
+          "parent_text": "    texts = {path: detach_for_readiness(path, text) for path, text in texts.items()}\n"
         }
       ],
-      "complete_bytes": 83605,
-      "complete_sha256": "7e6d07c6c2522a7652534b8943457b7a0faea343d2cb057018fa2004dc7e71c0",
+      "complete_bytes": 84077,
+      "complete_sha256": "7e10c66c31fc5842de91ec3c6f69d6a20caa238ff7cf954ba150876d41234772",
       "parent_bytes": 83605,
       "parent_sha256": "69be6939854841c9dbcdb67bbb8d5dcfa4720fa5ea9992fd03bbcc53da5e7f48"
     }
@@ -2401,7 +2425,7 @@
     "tools/verify_mozjs_authenticated_input.py": "6533b5bcf4b6513ff48aa8f4b32d5600e91f1410c3a139e6a5c4a0ceb0a865e0",
     "tools/verify_mozjs_secondary_input.py": "46cc8ce9bb50ab10dfdbda6eeab2afff7da60803bed842eb0bb3b9413c6d8270",
     "tools/verify_receipt_journal.py": "c19ddb04b813649ba73d12e67c3992aa948e45209c1884f43f5fb566e500b377",
-    "tools/verify_retained_control_readiness.py": "7e6d07c6c2522a7652534b8943457b7a0faea343d2cb057018fa2004dc7e71c0",
+    "tools/verify_retained_control_readiness.py": "7e10c66c31fc5842de91ec3c6f69d6a20caa238ff7cf954ba150876d41234772",
     "tools/verify_s07_qualification_lineage.py": "e30d6dbe2f892d2470874002d49b787e92c4c9187e550b16e6332611abc72d7b",
     "tools/verify_s08_semantic_custody.py": "5c9d9feaa50fecc0efa9894a571fcdf688ffce141f089f31c7b75fcf5462a418",
     "tools/verify_s12_release_qualification.py": "c8aa181dc108427edad7e7f50ef07f2c07ed2eb058ef2fc8daecb106debfc7bf",
@@ -2564,7 +2588,7 @@
     "contracts/ci-namespace-python.v1.json": "7285ea8aa9272b3a4ce37c7a5d8f6b291bd10a00f2314cd7efd2a6b5c061fd7e",
     "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md": "3100cf1ba31ab528e4fc5882f13d9846940dcc6f20226c1c6d2a7d381a71d280",
     "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
-    "tests/test_service_dispatch_denial_cutoff.py": "2a9abf97cb157476fec0094b577499f7926a49da576abca852518d2f88552315",
+    "tests/test_service_dispatch_denial_cutoff.py": "58a77074fff96a72c9945b7a8acec5f1b233759cff1cb39e4ef48b43c86fcc5a",
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
     "tools/verify_ci_namespace_python.py": "ebcb64dde0fc880c2808f5f3b3d2b19595267971aad9c2c4be8003eef97fa7cf"
   }

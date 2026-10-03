@@ -567,5 +567,92 @@ class CurrentCIPhysicalBoundaryTests(unittest.TestCase):
                 gate.check(rebound, texts)
 
 
+class RetainedFullFiniteHistoryCompositionTests(unittest.TestCase):
+    """Current physical success plus exact upstream inverse and rebound denial."""
+    @classmethod
+    def setUpClass(cls):
+        cls.texts = gate.inputs()
+
+    def _readiness_inputs(self):
+        from tools import verify_retained_control_readiness as retained
+        paths = set(retained.EXPECTED['actual_source_sha256']) | set(retained.EXPECTED['preserved_sha256'])
+        return {path: self.texts[path] for path in paths}
+
+    def _refuse_rebound_readiness(self, before, after):
+        path = 'tools/verify_retained_control_readiness.py'
+        self.assertEqual(self.texts[path].count(before), 1)
+        changed = self.texts[path].replace(before, after, 1)
+        harness = CurrentCIPhysicalBoundaryTests()
+        harness.texts = self.texts
+        # All derived catalogs, hashes, byte inverses, EXPECTED source and raw
+        # contract are rebound. The separately fixed current23 remains original.
+        rebound, texts = harness._fully_rebound_ci({path: changed})
+        self.assertEqual(rebound['ci_current_physical23'][path], gate._sha(changed.encode()))
+        self.assertEqual(rebound['preserved_original_sha256'][path], gate._sha(changed.encode()))
+        self.assertEqual(rebound['ci_parent_inverse18'][path]['complete_sha256'], gate._sha(changed.encode()))
+        self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(rebound))
+        self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                         rebound['checker_nonEXPECTED_whole_sha256'])
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            with self.assertRaisesRegex(ValueError, '^P3 independent current CI physical Source differs$'):
+                gate.check(rebound, texts)
+
+    def test_current_physical_readiness_inputs_reach_complete_success(self):
+        from tools import verify_retained_control_readiness as retained
+        current = self._readiness_inputs()
+        retained.check(copy.deepcopy(retained.EXPECTED), current)
+        historical = {path: retained.composition.source(gate.ROOT, path) for path in current}
+        retained.check(copy.deepcopy(retained.EXPECTED), historical)
+
+    def test_all_ten_physical_and_Native_views_restore_the_same_original_parent(self):
+        from tools import verify_retained_control_readiness as retained
+        from tools import verify_approved_service_runtime as runtime
+        current = self._readiness_inputs()
+        self.assertEqual(len(retained.TRANSFER), 10)
+        for path in retained.TRANSFER:
+            with self.subTest(path=path):
+                normalized = runtime.parent_source(path, current[path])
+                native = retained.composition.source(gate.ROOT, path)
+                self.assertEqual(normalized, native)
+                original = retained.parent_source(path, current[path])
+                self.assertEqual(original, retained.parent_source(path, normalized))
+                self.assertEqual(gate._sha(original.encode()), retained.EXPECTED['parent_source_sha256'][path])
+
+    def test_unknown_connected_denial_registration_is_not_a_normalizable_current_object(self):
+        from tools import verify_retained_control_readiness as retained
+        before = 'mod connected_denial;'
+        current = self._readiness_inputs()[retained.TRANSPORT]
+        self.assertEqual(current.count(before), 1)
+        changed = current.replace(before, '// literal decoy: "mod connected_denial;"', 1)
+        with self.assertRaisesRegex(ValueError, '^P2C complete parent object differs$'):
+            retained.parent_source(retained.TRANSPORT, changed)
+
+    def test_unknown_P1_plumbing_is_not_a_normalizable_current_object(self):
+        from tools import verify_retained_control_readiness as retained
+        current = self._readiness_inputs()[retained.RETAINED]
+        with self.assertRaisesRegex(ValueError, '^complete service bridge source differs$'):
+            retained.parent_source(retained.RETAINED, current + '\n// unknown P1 plumbing\n')
+
+    def test_parent_upstream_call_removal_refuses_after_complete_metadata_rebinding(self):
+        self._refuse_rebound_readiness(
+            '    text = detach_for_readiness(path, service_runtime_parent_source(path, text))\n',
+            '    text = detach_for_readiness(path, text)\n')
+
+    def test_parent_upstream_literal_decoy_refuses_after_complete_metadata_rebinding(self):
+        self._refuse_rebound_readiness(
+            '    text = detach_for_readiness(path, service_runtime_parent_source(path, text))\n',
+            '    text = detach_for_readiness(path, text)  # service_runtime_parent_source(path, text)\n')
+
+    def test_check_upstream_call_removal_refuses_after_complete_metadata_rebinding(self):
+        self._refuse_rebound_readiness(
+            '    texts = {path: detach_for_readiness(path, service_runtime_parent_source(path, text)) for path, text in texts.items()}\n',
+            '    texts = {path: detach_for_readiness(path, text) for path, text in texts.items()}\n')
+
+    def test_check_upstream_literal_decoy_refuses_after_complete_metadata_rebinding(self):
+        self._refuse_rebound_readiness(
+            '    texts = {path: detach_for_readiness(path, service_runtime_parent_source(path, text)) for path, text in texts.items()}\n',
+            '    texts = {path: detach_for_readiness(path, text) for path, text in texts.items()}  # service_runtime_parent_source(path, text)\n')
+
+
 if __name__ == '__main__':
     unittest.main()
