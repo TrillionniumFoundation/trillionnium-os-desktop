@@ -54,6 +54,12 @@ pub use servo_runtime::{
     servo_runtime_pair,
 };
 
+#[cfg(target_os = "linux")]
+pub use servo_runtime::{
+    ServiceServoRuntimeBridge, ServiceServoRuntimeCommand, ServiceServoRuntimeCompletion,
+    ServiceServoRuntimeEndpoint, closed_immutable_service_runtime_pair,
+};
+
 pub use hepta_agent_port::{AgentPortError, DispatchContext, HandlerOutcome};
 pub use hepta_agent_transport::PeerIdentity;
 pub use hepta_browser_codec::{

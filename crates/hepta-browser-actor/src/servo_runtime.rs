@@ -13,6 +13,14 @@
 //! upstream adapter.  No listener, external navigation, capability grant,
 //! automatic replay, hardware, signing, or release authority is introduced.
 
+#[cfg(target_os = "linux")]
+mod service_runtime;
+#[cfg(target_os = "linux")]
+pub use service_runtime::{
+    ServiceServoRuntimeBridge, ServiceServoRuntimeCommand, ServiceServoRuntimeCompletion,
+    ServiceServoRuntimeEndpoint, closed_immutable_service_runtime_pair,
+};
+
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
