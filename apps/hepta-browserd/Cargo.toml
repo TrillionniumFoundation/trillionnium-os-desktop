@@ -15,7 +15,11 @@ hepta-agent-port = { path = "../../crates/hepta-agent-port" }
 hepta-browser-actor = { path = "../../crates/hepta-browser-actor" }
 hepta-browser-contracts = { path = "../../crates/hepta-browser-contracts" }
 hepta-session-core = { path = "../../crates/hepta-session-core" }
+hepta-peer-attestation = { path = "../../crates/hepta-peer-attestation" }
 trillionnium-contract-core = { path = "../../crates/trillionnium-contract-core" }
+
+[dev-dependencies]
+libc = "=0.2.186"
 
 [lib]
 path = "src/lib.rs"
@@ -23,3 +27,59 @@ path = "src/lib.rs"
 [[bin]]
 name = "hepta-browserd"
 path = "src/main.rs"
+
+# Actual fork runs from a single-thread main, never from the unit-test harness.
+[[test]]
+name = "product_fork_custody"
+path = "tests/product_fork_custody.rs"
+harness = false
+# Opaque paired startup admission; real default-procfs three-process corpus.
+[[test]]
+name = "approved_native_startup_kernel"
+path = "tests/approved_native_startup_kernel.rs"
+harness = false
+
+[[test]]
+name = "configured_retained_bootstrap_kernel"
+path = "tests/configured_retained_bootstrap_kernel.rs"
+harness = false
+
+# Real Linux rights/pidfd/EOF/fork corpus runs from a single-thread main.
+[[test]]
+name = "product_handoff_kernel"
+path = "tests/product_handoff_kernel.rs"
+harness = false
+
+# Three actual processes and fork use one single-thread kernel entrypoint.
+[[test]]
+name = "product_control_custody_kernel"
+path = "tests/product_control_custody_kernel.rs"
+harness = false
+
+[[test]]
+name = "product_terminal_wait_kernel"
+path = "tests/product_terminal_wait_kernel.rs"
+harness = false
+
+# Same rooted control FD, live subprocesses and the existing journal coordinator.
+[[test]]
+name = "product_root_path_kernel"
+path = "tests/product_root_path_kernel.rs"
+harness = false
+
+# Explicit prelaunch unit/ELF configuration, original kernel custody and journal.
+[[test]]
+name = "approved_policy_product_kernel"
+path = "tests/approved_policy_product_kernel.rs"
+harness = false
+
+[[test]]
+name = "approved_request_binding_kernel"
+path = "tests/approved_request_binding_kernel.rs"
+harness = false
+
+# Additive actual Control-readiness source corpus; original targets unchanged.
+[[test]]
+name = "control_readiness_kernel"
+path = "tests/control_readiness_kernel.rs"
+harness = false

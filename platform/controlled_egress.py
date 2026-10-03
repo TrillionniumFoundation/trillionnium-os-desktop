@@ -1,0 +1,1064 @@
+"""Bounded offline-configured HTTPS observation mediator candidate.
+
+No ambient resolver, proxy, cookies, credentials or caller socket is accepted.
+Only this mediator's sockets are controlled; browser namespace confinement and
+resource-class integration remain separate installed obligations.
+"""
+from __future__ import annotations
+
+import hashlib
+import errno
+import ipaddress
+import math
+import json
+import os
+import re
+import secrets
+import select
+import socket
+import ssl
+import struct
+import threading
+import time
+import weakref
+from dataclasses import dataclass
+from urllib.parse import urljoin, urlsplit
+
+MAX_URL_BYTES = 8192
+MAX_CA_BYTES = 128 * 1024
+MAX_DNS_BYTES = 16384
+MAX_DNS_RECORDS = 64
+MAX_HOSTS = 32
+MAX_HEADER_BYTES = 16384
+MAX_HEADERS = 64
+MAX_BODY_BYTES = 1024 * 1024
+MAX_REDIRECTS = 3
+MAX_PERMITS = 64
+MAX_ACTIVE = 4
+POLL_SECONDS = 0.05
+_LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\Z", re.ASCII)
+_ID = re.compile(r"[A-Za-z0-9._:-]{1,128}\Z", re.ASCII)
+_HEADER = re.compile(r"[!#$%&'*+.^_`|~0-9A-Za-z-]+\Z", re.ASCII)
+_BAD_ESCAPE = re.compile(r"%(?![0-9A-Fa-f]{2})|%(?:0[0-9a-fA-F]|1[0-9a-fA-F]|7[fF]|5[cC])")
+_V4_DENY = tuple(ipaddress.ip_network(value) for value in (
+    "0.0.0.0/8", "10.0.0.0/8", "100.64.0.0/10", "127.0.0.0/8", "169.254.0.0/16",
+    "172.16.0.0/12", "192.0.0.0/24", "192.0.2.0/24", "192.88.99.0/24", "192.168.0.0/16",
+    "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "224.0.0.0/4", "240.0.0.0/4"))
+_V6_DENY = tuple(ipaddress.ip_network(value) for value in ("2001::/23", "2001:db8::/32", "2002::/16", "3fff::/20"))
+
+
+class EgressDenied(RuntimeError):
+    """Redacted policy/protocol refusal; never an automatic retry instruction."""
+
+
+class EgressCancelled(EgressDenied):
+    pass
+
+
+class EgressDeadlineExceeded(EgressDenied):
+    pass
+
+
+class EgressIndeterminate(EgressDenied):
+    def __init__(self, operation_id: str, connection: "ConnectionIdentity", hops: tuple["HopReceipt", ...], cause: BaseException):
+        super().__init__("an HTTPS request was attempted with uncertain outcome; this permit is consumed")
+        self.operation_id, self.connection, self.hops, self.cause = operation_id, connection, hops, cause
+
+
+class _PolicyLease:
+    """Own one cleanup acquisition, never a future holder of the same mutex."""
+
+    def __init__(self, lock, owner_pid):
+        # Construct before acquiring any resource, including the helper return.
+        self._lock, self._owner_pid = lock, owner_pid
+        self._thread = threading.get_ident()
+        self._held = False
+        self._reserved = False
+
+    def acquire(self):
+        if os.getpid() != self._owner_pid or threading.get_ident() != self._thread:
+            raise EgressDenied("cleanup lease belongs to its creating process and thread")
+        if self._held:
+            raise EgressDenied("cleanup lease already holds its mutex")
+        self._held = self._lock.acquire(timeout=POLL_SECONDS)
+        if not self._held:
+            raise EgressDenied("bounded observation cleanup could not acquire its mutex")
+
+    def close(self):
+        if self._held and os.getpid() == self._owner_pid and threading.get_ident() == self._thread:
+            # One Python line: retire ownership before the actual release. An
+            # after-release interruption must never release a future holder.
+            self._held = False; self._lock.release()
+
+    def __del__(self):
+        try:
+            self.close()
+        except BaseException:
+            pass
+
+
+class _PolicyAccess(_PolicyLease):
+    """Bounded public policy access, including refusal of reentrant callbacks."""
+
+    def __init__(self, client, deadline=None):
+        super().__init__(client._lock, client._owner_pid)
+        self._client = client
+        self._deadline = deadline
+
+    def _remaining(self):
+        now = time.monotonic()
+        if not math.isfinite(now):
+            self._client._clock_broken = True
+            raise EgressDenied("nonfinite policy timeout clock permanently revoked authority")
+        remaining = self._deadline - now
+        if remaining <= 0:
+            raise EgressDeadlineExceeded("whole-operation deadline expired")
+        return remaining
+
+    def __enter__(self):
+        try:
+            self._client._owner()
+            if os.getpid() != self._owner_pid or threading.get_ident() != self._thread:
+                raise EgressDenied("policy access belongs to its creating process and thread")
+            timeout = POLL_SECONDS if self._deadline is None else min(POLL_SECONDS, self._remaining())
+            self._held = self._lock.acquire(timeout=timeout)
+            if not self._held:
+                if self._deadline is not None:
+                    self._remaining()
+                raise EgressDenied("bounded policy access could not acquire its mutex")
+            self._client._owner()
+            if self._deadline is not None:
+                self._remaining()
+            return self
+        except BaseException:
+            try:
+                self.close()
+            finally:
+                self.close()
+            raise
+
+    def __exit__(self, *exception):
+        try:
+            self.close()
+        finally:
+            self.close()
+
+
+_SOCKET_OWNERS = weakref.WeakSet()
+
+
+class _SocketOwner:
+    """Register empty, then retain socket objects which own their native FDs."""
+
+    def __init__(self):
+        self._owner_pid = os.getpid()
+        self._raw = None
+        self._tls = None
+        self._child_retirement_error = None
+        if not hasattr(os, "register_at_fork"):
+            raise EgressDenied("native fork descriptor retirement is unavailable")
+        _SOCKET_OWNERS.add(self)
+
+    def _current(self):
+        if os.getpid() != self._owner_pid:
+            raise EgressDenied("egress socket belongs to its creating process")
+        return self._tls if self._tls is not None else self._raw
+
+    def __getattr__(self, name):
+        return getattr(self._current(), name)
+
+    def fileno(self):
+        stream = self._tls if self._tls is not None else self._raw
+        return -1 if stream is None else stream.fileno()
+
+    def close(self):
+        # These objects detach their own descriptor during real close. Never
+        # re-close a saved integer, shutdown, or acquire an inherited mutex.
+        error = None
+        for stream in (self.__dict__.get("_tls"), self.__dict__.get("_raw")):
+            if stream is not None:
+                try:
+                    try:
+                        stream.close()
+                    finally:
+                        stream.close()
+                except BaseException as fault:
+                    error = fault
+        if error is not None:
+            raise error
+
+    def __del__(self):
+        try:
+            self.close()
+        except BaseException:
+            pass
+
+
+def _retire_child_sockets():
+    # The child owns only copied descriptor references. Closing those copies
+    # cannot revoke the parent's connection or release its authority locks.
+    for owner in tuple(_SOCKET_OWNERS):
+        try:
+            owner.close()
+        except BaseException as error:
+            # Continue retiring the other retained sockets. The child still
+            # fails every creator-PID guard; retain a refusal diagnostic rather
+            # than treating a failed close as a successful retirement.
+            owner._child_retirement_error = error
+
+
+if hasattr(os, "register_at_fork"):
+    os.register_at_fork(after_in_child=_retire_child_sockets)
+
+
+def _host(value: object) -> str:
+    if type(value) is not str or not value or len(value) > 253 or value != value.lower() or value.endswith("."):
+        raise EgressDenied("host must be one canonical bounded ASCII DNS name")
+    labels = value.split(".")
+    if len(labels) < 2 or any(_LABEL.fullmatch(label) is None for label in labels):
+        raise EgressDenied("host must be one canonical bounded ASCII DNS name")
+    try:
+        ipaddress.ip_address(value)
+    except ValueError:
+        return value
+    raise EgressDenied("literal destination addresses are unsupported")
+
+
+def _port(value: object) -> int:
+    if type(value) is not int or not 1 <= value <= 65535:
+        raise EgressDenied("approved port is invalid")
+    return value
+
+
+def _external_host(value: object) -> str:
+    name = _host(value)
+    if name == "hepta.invalid" or name.endswith(".hepta.invalid"):
+        raise EgressDenied("synthetic local origins must never reach external DNS or sockets")
+    return name
+
+
+def public_address(value: str) -> str:
+    """Conservative version-independent policy including transition mechanisms."""
+    if type(value) is not str or "%" in value:
+        raise EgressDenied("scoped or malformed IP address")
+    try:
+        address = ipaddress.ip_address(value)
+    except ValueError as error:
+        raise EgressDenied("malformed IP address") from error
+    if not address.is_global or address.is_multicast or address.is_reserved:
+        raise EgressDenied("non-public address is forbidden")
+    if isinstance(address, ipaddress.IPv4Address):
+        if any(address in network for network in _V4_DENY):
+            raise EgressDenied("special-use IPv4 address is forbidden")
+    elif address not in ipaddress.ip_network("2000::/3") or address.ipv4_mapped is not None or any(address in network for network in _V6_DENY):
+        raise EgressDenied("special-use or transition IPv6 address is forbidden")
+    return str(address)
+
+
+def _origin(value: str) -> str:
+    if type(value) is not str or not 0 < len(value) <= MAX_URL_BYTES or any(ord(c) <= 32 or ord(c) >= 127 for c in value) or "\\" in value:
+        raise EgressDenied("initiating origin is invalid")
+    try:
+        parsed = urlsplit(value)
+        if parsed.scheme != "https" or parsed.path or parsed.query or parsed.fragment or parsed.username is not None or parsed.password is not None:
+            raise EgressDenied("initiating origin is not an exact synthetic HTTPS tuple")
+        name = _host(parsed.hostname)
+        port = parsed.port
+    except ValueError as error:
+        raise EgressDenied("origin port is invalid") from error
+    labels = name.split(".")
+    if name != "shell.system.hepta.invalid" and not (len(labels) == 5 and labels[2:] == ["apps", "hepta", "invalid"]):
+        raise EgressDenied("initiating origin is outside the frozen synthetic origin namespace")
+    normalized = f"https://{name}"
+    if port is not None or value != normalized:
+        raise EgressDenied("initiating origin must be a canonical port-free tuple")
+    return normalized
+
+
+@dataclass(frozen=True)
+class ApprovedHost:
+    hostname: str
+    port: int = 443
+
+    def __post_init__(self):
+        _external_host(self.hostname)
+        _port(self.port)
+
+
+@dataclass(frozen=True)
+class ApprovedResolver:
+    address: str
+    tls_hostname: str
+    ca_pem: bytes
+    port: int = 853
+
+    def __post_init__(self):
+        _external_host(self.tls_hostname)
+        _port(self.port)
+        _ca(self.ca_pem)
+        try:
+            if "%" in self.address or str(ipaddress.ip_address(self.address)) != self.address:
+                raise EgressDenied("resolver address is not canonical")
+        except (ValueError, TypeError) as error:
+            raise EgressDenied("approved resolver address is malformed") from error
+
+
+def _ca(data: bytes) -> None:
+    if type(data) is not bytes or not data or len(data) > MAX_CA_BYTES:
+        raise EgressDenied("explicit approved CA roots are empty or over limit")
+
+
+@dataclass(frozen=True)
+class EgressConfiguration:
+    hosts: tuple[ApprovedHost, ...] = ()
+    initiating_origins: frozenset[str] = frozenset()
+    resolver: ApprovedResolver | None = None
+    ca_pem: bytes | None = None
+
+    def __post_init__(self):
+        _configuration(self.hosts, self.initiating_origins, self.resolver, self.ca_pem)
+        if self.resolver is not None:
+            public_address(self.resolver.address)
+
+
+@dataclass(frozen=True)
+class QualificationProfile:
+    """Explicit loopback-only test profile; never accepted as production config."""
+    hosts: tuple[ApprovedHost, ...]
+    initiating_origins: frozenset[str]
+    resolver: ApprovedResolver
+    ca_pem: bytes
+    loopback_addresses: frozenset[str]
+
+    def __post_init__(self):
+        _configuration(self.hosts, self.initiating_origins, self.resolver, self.ca_pem)
+        if type(self.loopback_addresses) is not frozenset or not self.loopback_addresses or len(self.loopback_addresses) > 2:
+            raise EgressDenied("qualification addresses must be explicit and bounded")
+        for value in self.loopback_addresses:
+            try:
+                address = ipaddress.ip_address(value)
+            except ValueError as error:
+                raise EgressDenied("qualification address is invalid") from error
+            if value not in {"127.0.0.1", "::1"} or str(address) != value or not address.is_loopback:
+                raise EgressDenied("qualification permits only reviewed localhost literals")
+        if self.resolver.address not in self.loopback_addresses:
+            raise EgressDenied("qualification resolver is not an approved loopback endpoint")
+
+
+def _configuration(hosts, origins, resolver, ca):
+    if type(hosts) is not tuple or len(hosts) > MAX_HOSTS or any(type(item) is not ApprovedHost for item in hosts) or len(set(hosts)) != len(hosts):
+        raise EgressDenied("approved host set is not a bounded exact configuration")
+    if type(origins) is not frozenset or len(origins) > MAX_HOSTS:
+        raise EgressDenied("approved initiating-origin set is invalid")
+    for origin in origins:
+        _origin(origin)
+    if resolver is not None and type(resolver) is not ApprovedResolver:
+        raise EgressDenied("approved resolver configuration is invalid")
+    if ca is not None:
+        _ca(ca)
+    if hosts and (not origins or resolver is None or ca is None):
+        raise EgressDenied("enabled egress requires explicit origins, resolver and certificate roots")
+
+
+@dataclass(frozen=True)
+class SessionBinding:
+    session_id: str
+    generation: int
+    initiating_origin: str
+
+    def __post_init__(self):
+        if type(self.session_id) is not str or _ID.fullmatch(self.session_id) is None or type(self.generation) is not int or not 1 <= self.generation < 1 << 63:
+            raise EgressDenied("session binding is invalid")
+        _origin(self.initiating_origin)
+
+
+@dataclass(frozen=True)
+class ObservationPermit:
+    operation_id: str
+    initial_url: str
+    hosts: frozenset[ApprovedHost]
+    session: SessionBinding
+    epoch: int
+    _issuer: object
+
+
+@dataclass(frozen=True)
+class ConnectionIdentity:
+    session_id: str
+    session_generation: int
+    initiating_origin: str
+    url_sha256: str
+    host: ApprovedHost
+    dns_answers: tuple[str, ...]
+    connected_peer: str
+    certificate_sha256: str
+    resolver_peer: str
+    resolver_certificate_sha256: str
+    trust_policy_sha256: str
+
+
+@dataclass(frozen=True)
+class HopReceipt:
+    connection: ConnectionIdentity
+    status: int
+    body_bytes: int
+
+
+@dataclass(frozen=True)
+class ObservationResponse:
+    operation_id: str
+    body: bytes
+    body_sha256: str
+    headers: tuple[tuple[str, str], ...]
+    hops: tuple[HopReceipt, ...]
+    qualification_only: bool
+    browser_namespace_enforced: bool = False
+    external_mutation_enabled: bool = False
+
+
+class CancellationToken:
+    def __init__(self):
+        self._owner_pid = os.getpid()
+        self._cancelled = False
+        self._io_lock = threading.Lock()
+
+    def cancel(self):
+        if os.getpid() != self._owner_pid:
+            return
+        # Request revocation first. A successful return additionally crosses
+        # the gate barrier: an already admitted nonblocking call has finished.
+        self._cancelled = True
+        lease = _PolicyLease(self._io_lock, self._owner_pid)
+        try:
+            lease.acquire()
+        finally:
+            try:
+                lease.close()
+            finally:
+                lease.close()
+
+    @property
+    def cancelled(self):
+        return self._cancelled
+
+
+class _NativeIOGate:
+    """Serialize concrete native calls with cancellation and session revocation."""
+
+    def __init__(self, client, permit, session, token):
+        self._client, self._permit, self._session, self._token = client, permit, session, token
+        self._thread = threading.get_ident()
+
+    def perform(self, budget, stream, method, *arguments):
+        client, token = self._client, self._token
+        token_lease = _NativeIOLease(token._io_lock, client._owner_pid)
+        policy_lease = _NativeIOLease(client._lock, client._owner_pid)
+        try:
+            client._owner()
+            if threading.get_ident() != self._thread:
+                raise EgressDenied("native I/O gate belongs to its observing thread")
+            if token._owner_pid != client._owner_pid:
+                raise EgressDenied("cancellation token belongs to another process")
+            token_lease.acquire_before(budget)
+            policy_lease.acquire_before(budget)
+            client._validate_locked(self._permit, self._session, active=True)
+            if token.cancelled:
+                raise EgressCancelled("operation cancelled")
+            remaining = budget.deadline - client._clock_locked()
+            if remaining <= 0:
+                raise EgressDeadlineExceeded("whole-operation deadline expired")
+            client._validate_locked(self._permit, self._session, active=True)
+            if token.cancelled:
+                raise EgressCancelled("operation cancelled")
+            client._owner()
+            # Both authority locks stay held across this one nonblocking call.
+            # The registered at-fork hook closes child copies even if fork
+            # occurs after the last PID check. No wait/select occurs here.
+            return getattr(stream._current(), method)(*arguments)
+        finally:
+            try:
+                try:
+                    policy_lease.close()
+                finally:
+                    policy_lease.close()
+            finally:
+                try:
+                    token_lease.close()
+                finally:
+                    token_lease.close()
+
+
+class _NativeIOLease(_PolicyLease):
+    def acquire_before(self, budget):
+        if os.getpid() != self._owner_pid or threading.get_ident() != self._thread:
+            raise EgressDenied("native I/O lease belongs to its creating process and thread")
+        if self._held:
+            raise EgressDenied("native I/O lease already holds its mutex")
+        self._held = self._lock.acquire(timeout=budget.lock_timeout())
+        if not self._held:
+            raise EgressDenied("native I/O gate acquisition exceeded its bounded deadline")
+
+
+class _Budget:
+    def __init__(self, seconds, cancellation, validate, clock):
+        if type(seconds) not in {int, float} or not math.isfinite(seconds) or not 0.01 <= seconds <= 30:
+            raise EgressDenied("operation deadline must be finite and between 0.01 and 30 seconds")
+        if type(cancellation) is not CancellationToken:
+            raise EgressDenied("explicit cancellation token is required")
+        self.deadline = clock() + seconds
+        self.cancellation = cancellation
+        self.validate = lambda: validate(deadline=self.deadline)
+        self.clock = lambda: clock(deadline=self.deadline)
+        self.attempted: ConnectionIdentity | None = None
+
+    def check(self):
+        self.validate()
+        if self.cancellation.cancelled:
+            raise EgressCancelled("operation cancelled")
+        remaining = self.deadline - self.clock()
+        if remaining <= 0:
+            raise EgressDeadlineExceeded("whole-operation deadline expired")
+        self.validate()
+        if self.cancellation.cancelled:
+            raise EgressCancelled("operation cancelled")
+        return remaining
+
+    def lock_timeout(self):
+        # This only bounds acquiring the gate. The actual guarded clock sample
+        # inside the gate remains authoritative and never renews the deadline.
+        now = time.monotonic()
+        remaining = self.deadline - now
+        if not math.isfinite(now):
+            self._io_gate._client._clock_broken = True
+            raise EgressDenied("nonfinite gate timeout clock permanently revoked authority")
+        if remaining <= 0:
+            raise EgressDeadlineExceeded("whole-operation deadline expired")
+        return min(POLL_SECONDS, remaining)
+
+    def native(self, stream, method, *arguments):
+        return self._io_gate.perform(self, stream, method, *arguments)
+
+    def wait(self, stream, writable=False):
+        timeout = min(POLL_SECONDS, self.check())
+        select.select([] if writable else [stream], [stream] if writable else [], [], timeout)
+        self.check()
+
+
+@dataclass(frozen=True)
+class _Target:
+    url: str
+    host: ApprovedHost
+    path: str
+
+
+@dataclass(frozen=True)
+class _Resolution:
+    answers: tuple[str, ...]
+    resolver_peer: str
+    resolver_certificate_sha256: str
+
+
+def _target(url: str) -> _Target:
+    if type(url) is not str or not 0 < len(url) <= MAX_URL_BYTES or any(ord(c) <= 32 or ord(c) >= 127 for c in url) or "\\" in url or _BAD_ESCAPE.search(url):
+        raise EgressDenied("URL is not a bounded strict ASCII HTTPS target")
+    try:
+        value = urlsplit(url)
+        if value.scheme != "https" or value.username is not None or value.password is not None or "#" in url:
+            raise EgressDenied("only credential-free fragment-free HTTPS is supported")
+        host = ApprovedHost(_host(value.hostname), value.port or 443)
+    except ValueError as error:
+        raise EgressDenied("HTTPS target is malformed") from error
+    path = (value.path or "/") + ("?" + value.query if value.query else "")
+    authority = host.hostname + (f":{host.port}" if host.port != 443 else "")
+    canonical = f"https://{authority}{path}"
+    if value.netloc != authority or not path.startswith("/"):
+        raise EgressDenied("HTTPS authority is not canonical")
+    return _Target(canonical, host, path)
+
+
+def _context(ca: bytes, protocol: str) -> ssl.SSLContext:
+    _ca(ca)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context.check_hostname = True
+    context.verify_mode = ssl.CERT_REQUIRED
+    try:
+        context.load_verify_locations(cadata=ca.decode("ascii", "strict"))
+    except (UnicodeError, ssl.SSLError) as error:
+        raise EgressDenied("explicit certificate roots are invalid") from error
+    context.set_alpn_protocols([protocol])
+    return context
+
+
+def _peer(stream, expected, port):
+    actual = stream.getpeername()
+    if "%" in actual[0] or str(ipaddress.ip_address(actual[0])) != expected or actual[1] != port or (len(actual) == 4 and actual[3] != 0):
+        raise EgressDenied("connected peer does not match the approved resolved address")
+
+
+def _tls(address: str, port: int, name: str, context: ssl.SSLContext, budget: _Budget, protocol: str):
+    budget.check()
+    family = socket.AF_INET6 if ":" in address else socket.AF_INET
+    stream = _SocketOwner()
+    try:
+        stream._raw = socket.socket(family, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        stream.setblocking(False)
+        endpoint = (address, port, 0, 0) if family == socket.AF_INET6 else (address, port)
+        result = budget.native(stream, "connect_ex", endpoint)
+        if result not in {0, errno.EINPROGRESS, errno.EALREADY, errno.EWOULDBLOCK}:
+            raise EgressDenied("approved endpoint connect was refused")
+        while True:
+            budget.wait(stream, writable=True)
+            error = stream.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
+            if error:
+                raise EgressDenied("approved endpoint connect failed")
+            try:
+                _peer(stream, address, port)
+                break
+            except OSError:
+                continue
+        stream._tls = context.wrap_socket(stream._raw, server_hostname=name, do_handshake_on_connect=False)
+        stream.setblocking(False)
+        while True:
+            budget.check()
+            try:
+                budget.native(stream, "do_handshake")
+                break
+            except ssl.SSLWantReadError:
+                budget.wait(stream)
+            except ssl.SSLWantWriteError:
+                budget.wait(stream, writable=True)
+        _peer(stream, address, port)
+        if stream.selected_alpn_protocol() not in {None, protocol} or not stream.getpeercert(binary_form=True):
+            raise EgressDenied("TLS protocol or certificate identity is unsupported")
+        return stream
+    except BaseException:
+        try:
+            stream.close()
+        finally:
+            stream.close()
+        raise
+
+
+def _send(stream, data: bytes, budget: _Budget):
+    offset = 0
+    while offset < len(data):
+        budget.check()
+        try:
+            count = budget.native(stream, "send", data[offset:])
+            if count <= 0:
+                raise EgressDenied("TLS send made no progress")
+            offset += count
+        except (ssl.SSLWantWriteError, BlockingIOError):
+            budget.wait(stream, writable=True)
+        except ssl.SSLWantReadError:
+            budget.wait(stream)
+
+
+def _receive(stream, size, budget):
+    while True:
+        budget.check()
+        try:
+            return budget.native(stream, "recv", size)
+        except (ssl.SSLWantReadError, BlockingIOError):
+            budget.wait(stream)
+        except ssl.SSLWantWriteError:
+            budget.wait(stream, writable=True)
+
+
+def _exact(stream, size, budget):
+    result = bytearray()
+    while len(result) < size:
+        chunk = _receive(stream, size - len(result), budget)
+        if not chunk:
+            raise EgressDenied("TLS response was truncated")
+        result.extend(chunk)
+    return bytes(result)
+
+
+def _dns_name(data: bytes, offset: int):
+    position, end, visited, labels = offset, None, set(), []
+    for _ in range(128):
+        if position >= len(data) or position in visited:
+            raise EgressDenied("DNS name is truncated or cyclic")
+        visited.add(position)
+        length = data[position]
+        if length & 0xC0 == 0xC0:
+            if position + 1 >= len(data):
+                raise EgressDenied("DNS compression pointer is truncated")
+            pointer = ((length & 0x3F) << 8) | data[position + 1]
+            if pointer >= position:
+                raise EgressDenied("DNS compression must point backwards")
+            if end is None:
+                end = position + 2
+            position = pointer
+            continue
+        if length & 0xC0:
+            raise EgressDenied("DNS label encoding is unsupported")
+        position += 1
+        if length == 0:
+            return ".".join(labels), end if end is not None else position
+        if length > 63 or position + length > len(data):
+            raise EgressDenied("DNS label is truncated or over limit")
+        try:
+            label = data[position:position + length].decode("ascii").lower()
+        except UnicodeError as error:
+            raise EgressDenied("DNS label is not ASCII") from error
+        if _LABEL.fullmatch(label) is None:
+            raise EgressDenied("DNS label is malformed")
+        labels.append(label)
+        if sum(map(len, labels)) + len(labels) - 1 > 253:
+            raise EgressDenied("DNS name is over limit")
+        position += length
+    raise EgressDenied("DNS name exceeded its traversal bound")
+
+
+def _dns_response(data, query_id, host, query_type, address_policy):
+    if len(data) < 12 or len(data) > MAX_DNS_BYTES:
+        raise EgressDenied("DNS packet size is invalid")
+    identity, flags, questions, answers, authority, additional = struct.unpack_from("!6H", data)
+    if identity != query_id or flags & 0x8000 == 0 or flags & 0x784F or flags & 0x0200 or questions != 1 or answers + authority + additional > MAX_DNS_RECORDS:
+        raise EgressDenied("DNS response identity, status or count is invalid")
+    name, offset = _dns_name(data, 12)
+    if offset + 4 > len(data) or name != host or struct.unpack_from("!2H", data, offset) != (query_type, 1):
+        raise EgressDenied("DNS question does not bind the approved host")
+    offset += 4
+    result = []
+    for index in range(answers + authority + additional):
+        owner, offset = _dns_name(data, offset)
+        if offset + 10 > len(data):
+            raise EgressDenied("DNS record header is truncated")
+        record_type, record_class, _, length = struct.unpack_from("!2HIH", data, offset)
+        offset += 10
+        if offset + length > len(data) or record_class != 1:
+            raise EgressDenied("DNS record length or class is invalid")
+        if record_type in {1, 28}:
+            if length != (4 if record_type == 1 else 16):
+                raise EgressDenied("DNS address encoding has the wrong length")
+            address = address_policy(str(ipaddress.ip_address(data[offset:offset + length])))
+            if index < answers:
+                if owner != host or record_type != query_type:
+                    raise EgressDenied("DNS address answer is not bound to this question")
+                result.append(address)
+        elif index < answers:
+            raise EgressDenied("DNS aliases and non-address answers are unsupported")
+        offset += length
+    if offset != len(data):
+        raise EgressDenied("DNS packet contains unparsed trailing bytes")
+    return result
+
+
+def _resolve(host, resolver, context, budget, address_policy):
+    address_policy(resolver.address)
+    stream = _tls(resolver.address, resolver.port, resolver.tls_hostname, context, budget, "dot")
+    try:
+        encoded = b"".join(bytes([len(label)]) + label.encode("ascii") for label in host.split(".")) + b"\0"
+        answers = []
+        for query_type in (1, 28):
+            budget.check()
+            query_id = secrets.randbelow(65536)
+            query = struct.pack("!6H", query_id, 0x0100, 1, 0, 0, 0) + encoded + struct.pack("!2H", query_type, 1)
+            _send(stream, struct.pack("!H", len(query)) + query, budget)
+            length = struct.unpack("!H", _exact(stream, 2, budget))[0]
+            if not 12 <= length <= MAX_DNS_BYTES:
+                raise EgressDenied("DNS-over-TLS response is over limit")
+            answers.extend(_dns_response(_exact(stream, length, budget), query_id, host, query_type, address_policy))
+        if not answers or len(answers) > MAX_DNS_RECORDS:
+            raise EgressDenied("approved resolver returned no bounded usable addresses")
+        _peer(stream, resolver.address, resolver.port)
+        budget.check()
+        return _Resolution(tuple(sorted(set(answers), key=lambda value: (ipaddress.ip_address(value).version, ipaddress.ip_address(value).packed))),
+                           resolver.address, hashlib.sha256(stream.getpeercert(binary_form=True)).hexdigest())
+    finally:
+        stream.close()
+
+
+def _response(stream, budget):
+    data = bytearray()
+    while True:
+        split = data.find(b"\r\n\r\n")
+        if split >= 0:
+            if split + 4 > MAX_HEADER_BYTES:
+                raise EgressDenied("HTTPS headers exceed their byte bound")
+            break
+        if len(data) > MAX_HEADER_BYTES:
+            raise EgressDenied("HTTPS headers exceed their byte bound")
+        chunk = _receive(stream, 4096, budget)
+        if not chunk:
+            raise EgressDenied("HTTPS headers are truncated")
+        data.extend(chunk)
+    try:
+        lines = bytes(data[:split]).decode("ascii", "strict").split("\r\n")
+    except UnicodeError as error:
+        raise EgressDenied("HTTPS headers are not ASCII") from error
+    if re.fullmatch(r"HTTP/1\.1 [1-5][0-9]{2} [\x20-\x7e]*", lines[0]) is None or len(lines) - 1 > MAX_HEADERS:
+        raise EgressDenied("HTTPS status line or header count is unsupported")
+    status = int(lines[0][9:12])
+    headers = {}
+    for line in lines[1:]:
+        name, separator, value = line.partition(":")
+        if not separator or _HEADER.fullmatch(name) is None or any(ord(c) < 32 or ord(c) > 126 for c in value):
+            raise EgressDenied("HTTPS header is malformed or folded")
+        name, value = name.lower(), value.strip()
+        if name in headers:
+            raise EgressDenied("duplicate HTTPS headers are forbidden")
+        headers[name] = value
+    if any(name in headers for name in ("transfer-encoding", "set-cookie", "content-disposition", "upgrade")) or headers.get("content-encoding", "identity").lower() != "identity":
+        raise EgressDenied("streaming, cookies, downloads, upgrade or compressed content is unsupported")
+    length = headers.get("content-length", "")
+    if re.fullmatch(r"0|[1-9][0-9]{0,6}", length) is None or int(length) > MAX_BODY_BYTES:
+        raise EgressDenied("one exact bounded Content-Length is required")
+    size = int(length)
+    body = bytearray(data[split + 4:])
+    if len(body) > size:
+        raise EgressDenied("HTTPS response exceeds its declared length")
+    while len(body) < size:
+        chunk = _receive(stream, min(65536, size - len(body)), budget)
+        if not chunk:
+            raise EgressDenied("HTTPS response body is truncated")
+        body.extend(chunk)
+    return status, headers, bytes(body)
+
+
+class ControlledEgress:
+    def __init__(self, configuration: EgressConfiguration = EgressConfiguration()):
+        if type(configuration) is not EgressConfiguration:
+            raise EgressDenied("production client requires exact production configuration")
+        self._initialize(configuration, None)
+
+    def _initialize(self, configuration, qualification):
+        self._owner_pid = os.getpid()
+        self._clock_broken = False
+        self._cleanup_broken = False
+        self._last_monotonic = time.monotonic()
+        if not math.isfinite(self._last_monotonic):
+            raise EgressDenied("monotonic operation clock is invalid")
+        self._configuration, self._qualification = configuration, qualification
+        self._https_context = _context(configuration.ca_pem, "http/1.1") if configuration.ca_pem is not None else None
+        self._dns_context = _context(configuration.resolver.ca_pem, "dot") if configuration.resolver is not None else None
+        self._issuer = object()
+        self._session = None
+        self._epoch = 0
+        self._permits = {}
+        self._active = {}
+        self._lock = threading.Lock()
+        resolver = configuration.resolver
+        policy = {"hosts": sorted((host.hostname, host.port) for host in configuration.hosts),
+                  "origins": sorted(configuration.initiating_origins),
+                  "ca_sha256": hashlib.sha256(configuration.ca_pem).hexdigest() if configuration.ca_pem else None,
+                  "resolver": {"address": resolver.address, "port": resolver.port, "tls_hostname": resolver.tls_hostname,
+                               "ca_sha256": hashlib.sha256(resolver.ca_pem).hexdigest()} if resolver else None,
+                  "qualification_addresses": sorted(qualification.loopback_addresses) if qualification else None}
+        self._policy_sha256 = hashlib.sha256(json.dumps(policy, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("ascii")).hexdigest()
+
+    def _owner(self):
+        # This check precedes any lock: a fork may inherit a locked mutex.
+        if os.getpid() != self._owner_pid:
+            raise EgressDenied("egress authority belongs to its creating process")
+        if self._clock_broken:
+            raise EgressDenied("egress authority has a permanently invalid monotonic clock")
+        if self._cleanup_broken:
+            raise EgressDenied("egress authority is quarantined after uncertain observation cleanup")
+
+    def _clock(self, *, deadline=None):
+        self._owner()
+        with _PolicyAccess(self, deadline):
+            return self._clock_locked()
+
+    def _clock_locked(self):
+        self._owner()
+        value = time.monotonic()
+        if self._clock_broken or not math.isfinite(value) or value < self._last_monotonic:
+            self._clock_broken = True
+            self._session = None
+            self._permits.clear()
+            raise EgressDenied("monotonic clock regressed or became nonfinite; authority revoked")
+        self._last_monotonic = value
+        return value
+
+    def bind_session(self, session: SessionBinding):
+        self._owner()
+        if type(session) is not SessionBinding or session.initiating_origin not in self._configuration.initiating_origins:
+            raise EgressDenied("session origin is not externally approved")
+        with _PolicyAccess(self):
+            if self._epoch >= (1 << 63) - 1:
+                raise EgressDenied("egress session epoch exhausted")
+            self._epoch += 1
+            self._session = session
+            self._permits.clear()
+
+    def close(self):
+        self._owner()
+        with _PolicyAccess(self):
+            self._session = None
+            self._permits.clear()
+
+    def issue_observation_permit(self, session: SessionBinding, url: str, *, redirect_hosts: frozenset[ApprovedHost] = frozenset()) -> ObservationPermit:
+        self._owner()
+        if type(session) is not SessionBinding:
+            raise EgressDenied("an actual bound session is required")
+        target = _target(url)
+        configured = frozenset(self._configuration.hosts)
+        if target.host not in configured or type(redirect_hosts) is not frozenset or any(type(host) is not ApprovedHost for host in redirect_hosts) or not redirect_hosts <= configured:
+            raise EgressDenied("observation or redirect host is not externally approved")
+        with _PolicyAccess(self):
+            if self._session is not session or len(self._permits) >= MAX_PERMITS:
+                raise EgressDenied("session is stale or pending permit capacity is full")
+            permit = ObservationPermit(secrets.token_hex(32), target.url, redirect_hosts | {target.host}, session, self._epoch, self._issuer)
+            self._permits[permit.operation_id] = permit
+            return permit
+
+    def _validate(self, permit, session, *, active, deadline=None):
+        self._owner()
+        with _PolicyAccess(self, deadline):
+            self._validate_locked(permit, session, active=active)
+
+    def _validate_locked(self, permit, session, *, active):
+        self._owner()
+        records = self._active if active else self._permits
+        if type(session) is not SessionBinding or self._session is None or type(permit) is not ObservationPermit or permit._issuer is not self._issuer or records.get(permit.operation_id) is not permit or self._session is not session or permit.session is not session or permit.epoch != self._epoch:
+            raise EgressDenied("permit, session, origin or issuer is stale or unrelated")
+
+    def _address(self, value):
+        if self._qualification is None:
+            return public_address(value)
+        if type(value) is not str or value not in self._qualification.loopback_addresses:
+            raise EgressDenied("qualification network is restricted to its exact loopback set")
+        return value
+
+    def _admit_observation(self, permit, lease):
+        try:
+            self._owner()
+            lease.acquire()
+            self._owner()
+            if len(self._active) >= MAX_ACTIVE or self._permits.get(permit.operation_id) is not permit:
+                raise EgressDenied("active observation capacity is full or permit was already consumed")
+            # Retain ownership in the shared empty lease before mutations. A
+            # helper-return interrupt cannot lose this reservation, and a
+            # competing caller that loses the predicate never owns this slot.
+            lease._reserved = True
+            del self._permits[permit.operation_id]
+            self._active[permit.operation_id] = permit
+        finally:
+            try:
+                lease.close()
+            finally:
+                lease.close()
+
+    def _retire_observation(self, permit, lease):
+        try:
+            # Never enter or release a mutex copied from another process.
+            if os.getpid() != self._owner_pid:
+                raise EgressDenied("egress authority belongs to its creating process")
+            lease.acquire()
+            if self._permits.get(permit.operation_id) is permit:
+                del self._permits[permit.operation_id]
+            if self._active.get(permit.operation_id) is permit:
+                self._active.pop(permit.operation_id, None)
+        finally:
+            # The retained lease also covers acquire/helper return interruptions.
+            # The second call is safe whether the first failed before or after
+            # the detach; it never guesses ownership from lock.locked().
+            try:
+                lease.close()
+            finally:
+                lease.close()
+
+    def observe(self, permit: ObservationPermit, session: SessionBinding, *, timeout_seconds=10,
+                cancellation: CancellationToken | None = None, method="GET", resource_class="observation") -> ObservationResponse:
+        if type(method) is not str or type(resource_class) is not str or method != "GET" or resource_class != "observation":
+            raise EgressDenied("only explicit GET observation is supported; effects and resource protocols are disabled")
+        self._validate(permit, session, active=False)
+        token = CancellationToken() if cancellation is None else cancellation
+        budget = _Budget(timeout_seconds, token, lambda *, deadline=None: self._validate(permit, session, active=True, deadline=deadline), self._clock)
+        budget._io_gate = _NativeIOGate(self, permit, session, token)
+        cleanup_lease = _PolicyLease(self._lock, self._owner_pid)
+        hops = []
+        cleanup_complete = False
+        try:
+            try:
+                self._admit_observation(permit, cleanup_lease)
+                target = _target(permit.initial_url)
+                visited = set()
+                for hop in range(MAX_REDIRECTS + 1):
+                    budget.check()
+                    if target.host not in permit.hosts or target.host not in self._configuration.hosts or target.url in visited:
+                        raise EgressDenied("redirect escapes its approved scope or repeats a URL")
+                    visited.add(target.url)
+                    resolution = _resolve(target.host.hostname, self._configuration.resolver, self._dns_context, budget, self._address)
+                    answers = resolution.answers
+                    budget.check()
+                    address = answers[0]  # One exact connection attempt; no automatic fallback/retry.
+                    stream = _tls(address, target.host.port, target.host.hostname, self._https_context, budget, "http/1.1")
+                    try:
+                        identity = ConnectionIdentity(session.session_id, session.generation, session.initiating_origin,
+                                                      hashlib.sha256(target.url.encode("ascii")).hexdigest(), target.host,
+                                                      answers, address, hashlib.sha256(stream.getpeercert(binary_form=True)).hexdigest(),
+                                                      resolution.resolver_peer, resolution.resolver_certificate_sha256, self._policy_sha256)
+                        budget.check()
+                        authority = target.host.hostname + (f":{target.host.port}" if target.host.port != 443 else "")
+                        request = (f"GET {target.path} HTTP/1.1\r\nHost: {authority}\r\nConnection: close\r\n"
+                                   "Accept: text/plain, text/html, application/json\r\nAccept-Encoding: identity\r\n\r\n").encode("ascii")
+                        budget.attempted = identity  # Before send, including return-boundary interruptions.
+                        _send(stream, request, budget)
+                        status, headers, body = _response(stream, budget)
+                        _peer(stream, address, target.host.port)
+                        budget.check()
+                        hops.append(HopReceipt(identity, status, len(body)))
+                    finally:
+                        try:
+                            stream.close()
+                        finally:
+                            stream.close()
+                    if status in {301, 302, 303, 307, 308}:
+                        if hop == MAX_REDIRECTS or "location" not in headers:
+                            raise EgressDenied("redirect limit exceeded or Location absent")
+                        location = headers["location"]
+                        if not location or any(ord(c) <= 32 or ord(c) >= 127 for c in location) or "\\" in location:
+                            raise EgressDenied("redirect Location is malformed")
+                        target = _target(urljoin(target.url, location))
+                        continue
+                    if status != 200 or "location" in headers:
+                        raise EgressDenied("response status is unsupported; challenges are not bypassed")
+                    content_type = headers.get("content-type", "").lower()
+                    if re.fullmatch(r'(?:text/plain|text/html|application/json)(?:;\s*charset\s*=\s*(?:utf-8|us-ascii|"utf-8"|"us-ascii"))?', content_type) is None:
+                        raise EgressDenied("response type is unsupported; downloads are disabled")
+                    return ObservationResponse(permit.operation_id, body, hashlib.sha256(body).hexdigest(), tuple(headers.items()),
+                                               tuple(hops), self._qualification is not None)
+                raise EgressDenied("redirect bound exhausted")
+            finally:
+                if cleanup_lease._reserved:
+                    self._retire_observation(permit, cleanup_lease)
+                cleanup_complete = True
+        except BaseException as error:
+            if not cleanup_complete and os.getpid() == self._owner_pid:
+                # Bounded retained records are quarantine, never renewed permits.
+                # Check this latch before every future authority mutex.
+                self._cleanup_broken = True
+            try:
+                try:
+                    cleanup_lease.close()
+                finally:
+                    cleanup_lease.close()
+            except BaseException as cleanup_error:
+                if os.getpid() == self._owner_pid:
+                    self._cleanup_broken = True
+                error = cleanup_error
+            if budget.attempted is not None:
+                raise EgressIndeterminate(permit.operation_id, budget.attempted, tuple(hops), error) from error
+            if self._cleanup_broken:
+                raise EgressDenied("observation cleanup is uncertain; egress authority is quarantined") from error
+            if isinstance(error, EgressDenied):
+                raise error
+            if isinstance(error, (OSError, ssl.SSLError)):
+                raise EgressDenied("controlled resolver/connect/TLS operation failed") from error
+            if cleanup_lease._reserved and isinstance(error, (KeyboardInterrupt, SystemExit)):
+                raise EgressDenied("observation interrupted before HTTP send; permit remains consumed") from error
+            raise error
+
+
+class QualificationEgressClient(ControlledEgress):
+    def __init__(self, profile: QualificationProfile):
+        if type(profile) is not QualificationProfile:
+            raise EgressDenied("explicit qualification profile is required")
+        self._initialize(profile, profile)

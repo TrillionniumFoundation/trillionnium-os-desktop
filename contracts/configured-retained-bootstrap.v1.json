@@ -1,0 +1,135 @@
+{
+  "schema": "trillionnium.desktop.configured-retained-bootstrap.v1",
+  "status": "SOURCE_CANDIDATE_INSTALLED_NATIVE_INTEGRATION_PENDING",
+  "requirements": [
+    "G1",
+    "G2"
+  ],
+  "source": "apps/hepta-browserd/src/product_dispatch/configured_retained_bootstrap.rs",
+  "documentation": "docs/architecture/CONFIGURED_RETAINED_BOOTSTRAP.md",
+  "default_policy": "/etc/hepta/approved-mechanisms.v1.conf",
+  "default_activation": false,
+  "state_inventory": {
+    "creator_pid": "u32",
+    "original_deadline": "Instant",
+    "document": "ApprovedPolicyDocument",
+    "receiver": "RootPathAttestedHandoffReceiver"
+  },
+  "authority": {
+    "policy_type": "ApprovedPolicyDocument",
+    "root_custody": "existing_root_owned_component_descriptor_and_document_guard",
+    "role_selections": "same_original_shared_document_owner",
+    "attestor": "existing_ProcfsPeerAttestor_default",
+    "principal_from_caller": false,
+    "raw_stream_or_monitor_export": false,
+    "agent_result": "existing_ApprovedRetainedAdmission_complete_pair"
+  },
+  "scope": {
+    "creating_pid_checked": true,
+    "original_control_instant_preserved": true,
+    "accepted_seconds_maximum": 20,
+    "source_ceiling_may_refuse_earlier": true,
+    "receive_consumes_once": true,
+    "old_receiver_retired_after_transfer": true,
+    "renewed_budget": false,
+    "drop_preemptively_bounded": false,
+    "local_refusal_proves_remote_custodian_cleanup": false
+  },
+  "api": {
+    "ConfiguredRetainedBootstrap::from_control": {
+      "signature": "pub fn from_control(connection: RootPathControlConnection, expected_agent_path: &Path) -> Result<Self, ProductDispatchError>",
+      "arguments": {
+        "connection": "consumed_original_root_path_control_scope",
+        "expected_agent_path": "original_accepted_agent_socket_path"
+      },
+      "preconditions": [
+        "creating_process_current",
+        "original_connection_live",
+        "fixed_root_policy_source_safe_current"
+      ],
+      "result": "opaque_configured_bootstrap_control_challenge_may_be_published",
+      "errors": {
+        "InvalidConfiguration": "fixed_document_schema_or_original_bounds_invalid",
+        "PeerRefused": "source_missing_unsafe_changed_or_control_peer_path_refused",
+        "DeadlineExceeded": "original_control_or_configured_source_scope_expired"
+      }
+    },
+    "ConfiguredRetainedBootstrap::from_root_document": {
+      "signature": "pub fn from_root_document(connection: RootPathControlConnection, expected_agent_path: &Path, document: ApprovedPolicyDocument) -> Result<Self, ProductDispatchError>",
+      "arguments": {
+        "connection": "consumed_original_root_path_control_scope",
+        "expected_agent_path": "original_accepted_agent_socket_path",
+        "document": "consumed_opaque_root_owned_retained_configuration"
+      },
+      "preconditions": [
+        "creating_process_current",
+        "original_connection_live",
+        "document_custody_and_original_source_scope_current"
+      ],
+      "result": "opaque_configured_bootstrap_both_roles_select_same_moved_document",
+      "errors": {
+        "InvalidConfiguration": "existing_selected_policy_configuration_invalid",
+        "PeerRefused": "source_changed_or_control_peer_path_refused",
+        "DeadlineExceeded": "original_control_or_configured_source_scope_expired"
+      }
+    },
+    "ConfiguredRetainedBootstrap::original_deadline": {
+      "signature": "pub fn original_deadline(&mut self) -> Result<Instant, ProductDispatchError>",
+      "arguments": {
+        "self": "exclusive_borrow_of_original_bootstrap"
+      },
+      "preconditions": [
+        "creating_process_current",
+        "same_document_current",
+        "original_control_scope_current"
+      ],
+      "result": "unchanged_initial_control_instant_never_a_renewal_or_effective_minimum_grant",
+      "errors": {
+        "PeerRefused": "creating_process_source_or_control_custody_refused",
+        "DeadlineExceeded": "original_control_or_shorter_source_scope_expired"
+      }
+    },
+    "ConfiguredRetainedBootstrap::into_admission": {
+      "signature": "pub fn into_admission(mut self) -> Result<ApprovedRetainedAdmission, ProductDispatchError>",
+      "arguments": {
+        "self": "consumed_single_original_bootstrap"
+      },
+      "preconditions": [
+        "creating_process_current",
+        "same_control_and_agent_document_current",
+        "same_retained_handoff_and_original_agent_scope_current"
+      ],
+      "result": "original_complete_approved_agent_connection_private_terminal_monitor_pair",
+      "errors": {
+        "InvalidConfiguration": "existing_approved_admission_configuration_invalid",
+        "PeerRefused": "source_control_agent_path_cancellation_or_moved_custody_refused",
+        "DeadlineExceeded": "original_control_agent_or_shorter_source_scope_expired"
+      }
+    }
+  },
+  "verification": {
+    "validator": "tools/verify_configured_retained_bootstrap.py",
+    "contract_regressions": "tests/test_configured_retained_bootstrap.py",
+    "host_kernel": "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs",
+    "host_cases": [
+      "same-root-document-original-pair",
+      "policy-drift-before-receive",
+      "shorter-source-ceiling-no-renewal",
+      "foreign-process-refusal-parent-retained"
+    ],
+    "doctest": "ConfiguredRetainedBootstrap_not_Clone",
+    "kernel_support": "explicit_prelaunch_unit_and_owned_fixture_ELF_default_live_procfs",
+    "no_missing_support_skip": true
+  },
+  "non_claims": {
+    "installed_service_wired": false,
+    "actual_servo_execution": false,
+    "native_owner_lifetime_renewed": false,
+    "cross_uid_identity_broker": false,
+    "headed_input": false,
+    "hardware_qualification": false,
+    "production_policy_provisioned": false,
+    "independent_human_review": false,
+    "signing_release_production_ready": false
+  }
+}

@@ -1,19 +1,41 @@
 # S07 exact-pin Servo retained-node action boundary
 
-## Status and immutable parent
+## Status and historical provenance
 
-This document describes the bounded S07 source and real-test-harness candidate
-on `codex/s07-servo-retained-node-closure-v1`, based on exact S06 commit
-`f0e947e5e7267a3fcdd0a7d5437c0ae00c09ebfe`. Only the 15 S07-specific files from the rejected older candidate
-were extracted; no BrowserActor, daemon, platform, image, update, hardware,
-signing, publication, or release source was imported from frozen PR #73 or old
-PR #102.
+The original package was extracted on `codex/s07-servo-retained-node-closure-v1`
+from historical S06 commit `f0e947e5e7267a3fcdd0a7d5437c0ae00c09ebfe`,
+tree `b0b0304d70b209e26a08ed8a9d7e26f8a25cba02`, whose sole parent is
+`648b204618328c2f9b9271ed6eb6db8aea7d8987`. The original fifteen-file extraction
+and all eight ordered patch parts remain fixed. BrowserActor, daemon, platform,
+image, update, hardware, signing, publication, and release code was not imported
+from the rejected older carrier.
 
-The source manifest stores the immutable S06 parent and actual carrier branch.
-The S07 head cannot safely contain its own SHA without a self-referential commit;
-therefore the exact head and tree are asserted at runtime and recorded in the
-workflow evidence artifact and live pull request. Any parent restack changes the
-static parent field and fails the package tests until deliberately updated.
+`carrier_base_commit` and `carrier_branch` identify that historical extraction;
+they do not assert that every later qualification candidate descends from it.
+The official commit exists, but the published Round4 `772837c6` candidate is
+not its descendant. Its S07 job failed before qualification when the historical
+object was absent locally; fetching the object alone does not make the old
+ancestry assertion true. That failed run remains evidence of failure.
+
+The closed `contracts/s07-qualification-lineage.v1.json` separately binds this
+historical commit, tree, and single parent to the official repository URL, and
+requires each current checkout to match the external event SHA. The prospective
+job also requires the actual two-parent merge to contain the current live base
+and head in that order. No future head SHA or tree is embedded in its own source.
+The verifier reads actual Git commit bytes and emits only
+`PASS_GIT_METADATA_AND_SOURCE_CONTRACT_ONLY`; it cannot prove S06 or Servo
+execution, installation, or production activation.
+
+Both jobs fetch the fixed historical object from the explicit official URL,
+check the closed lineage contract, run the current S06 source and contract tests,
+run the actual public-export inventory/absence guard, and execute the actor's
+compile-fail documentation tests with Rust 1.93.0. Private imports and restricted
+`pub(crate)` declarations are allowed. The scanner removes Rust comments and
+literals before identifying `pub use` and `pub type`, preserves identifier
+boundaries and aliases, and refuses public wildcard exports or its bounded-read
+errors. This lexical gate does not expand macros or replace compiler API checks.
+Historical metadata success never substitutes for these current-source gates
+or the original actual-PIN patch and runtime qualification.
 
 ## Servo target and claim ceiling
 
@@ -57,7 +79,9 @@ and hardening digests, the allowed Servo path set, source invariants and claim
 ceiling. The production dispatcher is only a router, but its default path also
 depends on `_qualify_servo_exact_pin_v3_impl.py` and
 `qualify_servo_exact_pin.py`; all four transitive CLI sources are included in
-both pull-request and push workflow filters.
+both pull-request and push workflow filters. The lineage verifier, closed
+contract, current S06 sources, export scanner and their regression tests are
+additional explicit qualification inputs in both filters.
 
 The verifier rejects duplicate/escaping paths, digest or changed-path drift,
 missing retained-node tokens, and forbidden coordinate/JavaScript/WebDriver/

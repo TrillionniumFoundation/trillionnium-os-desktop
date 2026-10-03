@@ -1,0 +1,479 @@
+name: g2-approved-native-startup
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/g2-approved-native-startup.yml'
+      - 'crates/hepta-browser-actor/**'
+      - 'apps/hepta-browserd/**'
+      - 'crates/hepta-agent-port/**'
+      - 'crates/hepta-agent-transport/**'
+      - 'crates/hepta-peer-attestation/**'
+      - 'crates/hepta-session-core/**'
+      - 'crates/hepta-browser-codec/**'
+      - 'crates/hepta-browser-actor-simulation/**'
+      - 'experiments/servo-product-owner/**'
+      - 'contracts/approved-native-startup.v1.json'
+      - 'contracts/native-product-owner.v1.json'
+      - 'tools/prepare_approved_native_startup.py'
+      - 'tools/prepare_native_product_owner.py'
+      - 'tools/verify_approved_native_startup.py'
+      - 'tools/validate_native_product_owner.py'
+      - 'tools/artifact_evidence.py'
+      - 'tools/scan_s06_public_exports.py'
+      - 'tools/browser_codec_reference_security.py'
+      - 'tests/test_approved_native_startup.py'
+      - 'tests/test_native_product_owner.py'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "contracts/configured-retained-bootstrap.v1.json"
+      - "tools/verify_configured_retained_bootstrap.py"
+      - "tests/test_configured_retained_bootstrap.py"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/modules.v1.json"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tests/test_mozjs_secondary_input.py"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_approved_request_binding.py"
+      - "tools/verify_mozjs_secondary_input.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "contracts/retained-control-terminal.v1.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_retained_control_terminal.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_approved_service_actor.py"
+      - "tools/verify_approved_service_owner.py"
+      - "tools/verify_approved_service_product.py"
+      - "tools/verify_approved_service_request.py"
+      - "tools/verify_approved_service_runtime.py"
+      - "tools/verify_service_dispatch_denial_cutoff.py"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
+      - "tools/verify_ci_required_contexts.py"
+  push:
+    branches: [main, 'codex/**']
+    paths:
+      - '.github/workflows/g2-approved-native-startup.yml'
+      - 'crates/**'
+      - 'apps/hepta-browserd/**'
+      - 'experiments/servo-product-owner/**'
+      - 'contracts/approved-native-startup.v1.json'
+      - 'contracts/native-product-owner.v1.json'
+      - 'tools/prepare_approved_native_startup.py'
+      - 'tools/prepare_native_product_owner.py'
+      - 'tools/verify_approved_native_startup.py'
+      - 'tools/validate_native_product_owner.py'
+      - 'tools/artifact_evidence.py'
+      - 'tools/scan_s06_public_exports.py'
+      - 'tools/browser_codec_reference_security.py'
+      - 'tests/test_approved_native_startup.py'
+      - 'tests/test_native_product_owner.py'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "contracts/configured-retained-bootstrap.v1.json"
+      - "tools/verify_configured_retained_bootstrap.py"
+      - "tests/test_configured_retained_bootstrap.py"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/modules.v1.json"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tests/test_mozjs_secondary_input.py"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_approved_request_binding.py"
+      - "tools/verify_mozjs_secondary_input.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "contracts/retained-control-terminal.v1.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_retained_control_terminal.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_approved_service_actor.py"
+      - "tools/verify_approved_service_owner.py"
+      - "tools/verify_approved_service_product.py"
+      - "tools/verify_approved_service_request.py"
+      - "tools/verify_approved_service_runtime.py"
+      - "tools/verify_service_dispatch_denial_cutoff.py"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
+      - "tools/verify_ci_required_contexts.py"
+permissions:
+  contents: read
+concurrency:
+  group: g2-approved-native-startup-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-prospective:
+    if: github.event_name == 'pull_request'
+    name: g2-approved-native-startup / source-prospective
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
+      - name: Bind current canonical pull refs and ordered prospective parents
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+          EVENT_TESTED: ${{ github.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          test "$EVENT_NAME" = pull_request
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          for object in "$EVENT_HEAD" "$EVENT_BASE" "$EVENT_TESTED"; do
+            [[ "$object" =~ ^[0-9a-f]{40}$ ]]
+          done
+          base_query="refs/heads/$BASE_REF"
+          git check-ref-format "$base_query"
+          test "$(git check-ref-format --branch "$BASE_REF")" = "$BASE_REF"
+          head_query="refs/pull/$PR_NUMBER/head"
+          resolve_ref() {
+            git ls-remote --exit-code origin "$1" | awk -v ref="$1" '
+              { rows++; if (NF != 2 || $2 != ref || length($1) != 40 || $1 !~ /^[0-9a-f]+$/) bad=1; value=$1 }
+              END { if (rows != 1 || bad) exit 1; print value }
+            '
+          }
+          live_head="$(resolve_ref "$head_query")"
+          live_base="$(resolve_ref "$base_query")"
+          test "$live_head" = "$EVENT_HEAD"
+          test "$live_base" = "$EVENT_BASE"
+          test "$(git rev-parse HEAD)" = "$EVENT_TESTED"
+          read -r -a ordered_parents <<< "$(git show -s --format=%P HEAD)"
+          test "${#ordered_parents[@]}" -eq 2
+          test "${ordered_parents[0]}" = "$live_base"
+          test "${ordered_parents[1]}" = "$live_head"
+          tested_tree="$(git rev-parse 'HEAD^{tree}')"
+          {
+            printf 'tested_commit=%s\ntested_tree=%s\n' "$EVENT_TESTED" "$tested_tree"
+            printf 'live_base_ref=%s\nlive_base=%s\n' "$base_query" "$live_base"
+            printf 'live_head_ref=%s\nlive_head=%s\n' "$head_query" "$live_head"
+            printf 'ordered_parents=%s %s\n' "${ordered_parents[0]}" "${ordered_parents[1]}"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Provision job-private CI namespace Python
+        id: namespace_python_setup
+        run: |
+          set -euo pipefail
+          python3 tools/verify_ci_namespace_python.py
+          python3 tools/ci_namespace_python.py setup
+
+      - name: Source contract and original workspace regressions on prospective merge
+        shell: bash
+        env:
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+          python3 tools/verify_approved_native_startup.py
+          python3 tools/validate_native_product_owner.py
+          python3 -m unittest discover -s tests -p test_approved_native_startup.py -v
+          python3 -m unittest discover -s tests -p test_native_product_owner.py -v
+          make check
+      - name: Remove only owned CI namespace Python and profile
+        if: always()
+        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup
+
+  exact-pin-owner:
+    name: g2-approved-native-startup / exact-pin-owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      SERVO_PIN: 670ae8a70801b162e186f81cbb5bdd2d59c39108
+    steps:
+      - name: Check out exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
+      - name: Exact source contract and typed bridge checks
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse HEAD | tee "$RUNNER_TEMP/native-owner-source-head.txt"
+          git rev-parse 'HEAD^{tree}' | tee "$RUNNER_TEMP/native-owner-source-tree.txt"
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+          python3 tools/verify_approved_native_startup.py
+          python3 tools/validate_native_product_owner.py
+          python3 -m unittest discover -s tests -p test_approved_native_startup.py -v
+          python3 -m unittest discover -s tests -p test_native_product_owner.py -v
+          cargo fmt --all --check
+          cargo clippy --locked -p hepta-browser-actor -p hepta-browserd --all-targets --all-features -- -D warnings
+          cargo test --locked -p hepta-browser-actor -p hepta-browserd --all-targets --all-features
+          sha256sum experiments/servo-product-owner/src/*.rs \
+            crates/hepta-browser-actor/src/{lib,servo_runtime}.rs \
+            contracts/native-product-owner.v1.json \
+            tools/{prepare,validate}_native_product_owner.py \
+            tools/{prepare,verify}_approved_native_startup.py \
+            contracts/approved-native-startup.v1.json \
+            .github/workflows/g2-approved-native-startup.yml \
+            > "$RUNNER_TEMP/native-owner-source.sha256"
+      - name: Check out pristine exact Servo PIN
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: servo/servo
+          ref: ${{ env.SERVO_PIN }}
+          path: servo
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Assemble the actual reusable consumer and connected target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C servo rev-parse HEAD)" = "$SERVO_PIN"
+          cp servo/Cargo.lock "$RUNNER_TEMP/native-owner-original-Cargo.lock"
+          python3 tools/prepare_approved_native_startup.py prepare --upstream servo \
+            | tee "$RUNNER_TEMP/native-owner-source-assembly.json"
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang libclang-dev libunwind-dev pkg-config cmake ninja-build \
+            libfontconfig1-dev libfreetype6-dev libglib2.0-dev libegl1-mesa-dev \
+            libgl1-mesa-dev libx11-dev libxcb1-dev libxrandr-dev libxcursor-dev \
+            libxi-dev libxinerama-dev libxkbcommon-dev libasound2-dev \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            libudev-dev libdbus-1-dev libssl-dev
+          channel="$(sed -n 's/^channel = "\([^"]*\)"/\1/p' servo/rust-toolchain.toml)"
+          test "$channel" = 1.97.1
+          rustup toolchain install "$channel" --profile minimal --component rustfmt
+          rustup run "$channel" rustfmt --edition 2024 --config skip_children=true \
+            servo/components/servo/tests/trillionnium_native_owner.rs \
+            servo/components/servo/tests/trillionnium_product_owner.rs \
+            servo/components/servo/tests/trillionnium_approved_startup.rs \
+            servo/components/servo/tests/trillionnium_approved_test_support.rs \
+            servo/components/servo/tests/trillionnium_approved_connected.rs
+          cmp experiments/servo-product-owner/src/native_owner.rs servo/components/servo/tests/trillionnium_native_owner.rs
+          cmp experiments/servo-product-owner/src/connected_tests.rs servo/components/servo/tests/trillionnium_product_owner.rs
+          cmp experiments/servo-product-owner/src/approved_startup.rs servo/components/servo/tests/trillionnium_approved_startup.rs
+          cmp experiments/servo-product-owner/src/approved_test_support.rs servo/components/servo/tests/trillionnium_approved_test_support.rs
+          cmp experiments/servo-product-owner/src/approved_connected_tests.rs servo/components/servo/tests/trillionnium_approved_connected.rs
+          (cd servo && RUSTUP_TOOLCHAIN=1.97.1 cargo update -p libc --precise 0.2.186)
+          python3 tools/prepare_approved_native_startup.py verify-lock \
+            --before "$RUNNER_TEMP/native-owner-original-Cargo.lock" --after servo/Cargo.lock \
+            | tee "$RUNNER_TEMP/native-owner-lock-binding.json"
+      - name: Compile the actual exact-pin native module and connected target
+        shell: bash
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUST_BACKTRACE: '1'
+        run: |
+          set -euo pipefail
+          (cd servo && RUSTUP_TOOLCHAIN=1.97.1 cargo test --locked --profile checked-release -p servo \
+            --no-default-features --features bundled,js_jit \
+            --test trillionnium_approved_connected --no-run --message-format=json) \
+            > "$RUNNER_TEMP/native-owner-compile.jsonl"
+          python3 - "$RUNNER_TEMP/native-owner-compile.jsonl" "$RUNNER_TEMP/native-owner-binary.txt" <<'PY'
+          import json, os, sys
+          found = []
+          for line in open(sys.argv[1], encoding='utf-8'):
+              item = json.loads(line)
+              if item.get('reason') == 'compiler-artifact' and item.get('target', {}).get('name') == 'trillionnium_approved_connected' and item.get('executable'):
+                  found.append(item['executable'])
+          if len(found) != 1 or not os.path.isabs(found[0]):
+              raise SystemExit('one actual connected target executable is required')
+          open(sys.argv[2], 'w', encoding='utf-8').write(found[0] + '\n')
+          PY
+      - name: Actual explicit-root approved same-channel native startup cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          binary="$(cat "$RUNNER_TEMP/native-owner-binary.txt")"
+          binary_sha="$(sha256sum "$binary" | cut -d' ' -f1)"
+          sha256sum "$binary" | tee "$RUNNER_TEMP/native-owner-binary.sha256"
+          output="$RUNNER_TEMP/native-owner-connected-corpus"
+          install -d -m 0700 "$output"
+          count=0
+          for test_name in \
+            actual_approved_startup_semantic_lifecycle \
+            actual_approved_startup_policy_refusal_before_constructor; do
+            count=$((count + 1))
+            unit="hepta-approved-owner-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${count}"
+            sudo systemd-run --wait --pipe --collect --service-type=exec \
+              --unit "$unit" --uid 0 --gid 0 \
+              --property=NoNewPrivileges=yes --property=RuntimeMaxSec=60 --property=UMask=0077 \
+              --property="WorkingDirectory=$GITHUB_WORKSPACE/servo" \
+              "$binary" "$test_name" "$unit.service" \
+              2>&1 | tee "$RUNNER_TEMP/native-owner-$count.log"
+            grep -F "ACTUAL_APPROVED_NATIVE_STARTUP" "$RUNNER_TEMP/native-owner-$count.log"
+            test "$(sha256sum "$binary" | cut -d' ' -f1)" = "$binary_sha"
+          done
+          test "$count" = 2
+          sha256sum --check "$RUNNER_TEMP/native-owner-source.sha256"
+      - name: Preserve source, actual compile and connected/journal diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: approved-native-startup-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/native-owner-*

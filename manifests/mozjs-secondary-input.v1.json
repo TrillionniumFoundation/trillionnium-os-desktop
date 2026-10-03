@@ -1,0 +1,52 @@
+{
+  "schema": "trillionnium.mozjs-secondary-input.v1",
+  "servo_pin": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+  "cargo_package": {
+    "name": "mozjs_sys",
+    "version": "140.14.0-1",
+    "source": "registry+https://github.com/rust-lang/crates.io-index",
+    "checksum": "4cb5edb8729da5f2b09939fcad2559ba1c54e55d222f14d485b88c7d645890d5"
+  },
+  "secondary_input": {
+    "target": "x86_64-unknown-linux-gnu",
+    "asset_id": 527403045,
+    "name": "libmozjs-x86_64-unknown-linux-gnu.tar.gz",
+    "url": "https://github.com/servo/mozjs/releases/download/mozjs-sys-v140.14.0-1/libmozjs-x86_64-unknown-linux-gnu.tar.gz",
+    "bytes": 19381534,
+    "sha256": "c5f93d7f9f1b450e2a608b5e7378c95ec8fa9f3689bdfe1f6ad548e434c3107b"
+  },
+  "correspondence": {
+    "official_api_observation_sha256": "1c7cf8313eff2b28feb120c940d4e6e5197b3f65a529010108a72b23cc453e26",
+    "api_size_digest_match_observed": true,
+    "attestation_verified": false,
+    "cargo_lock_covers_secondary_archive": false,
+    "upstream_build_rs_sha256": "94b782be9a6ca00644c8ae85817bd6b946b993a96c59a9b7cda7cf9b095f5cf0",
+    "nonzero_attestation_status_observation": "static_only_no_fault_injection"
+  },
+  "build_profile": {
+    "status": "SOURCE_CANDIDATE_NOT_QUALIFIED",
+    "toolchain": "1.97.1",
+    "cargo_profile": "checked-release",
+    "features": "bundled,js_jit",
+    "default_features": false,
+    "locked": true,
+    "targets": {
+      "native-owner": "trillionnium_product_owner",
+      "approved-startup": "trillionnium_approved_connected"
+    },
+    "target_directory": "exclusive_initially_empty_per_invocation",
+    "archive_binding": "sealed_memfd_parent_pid_proc_fd_path_held_until_process_group_ends",
+    "timeout_seconds": 10800,
+    "termination_grace_seconds": 5,
+    "upstream_cached_archive_can_override_MOZJS_ARCHIVE": true,
+    "actual_cargo_archive_consumption_proven": false
+  },
+  "claims": {
+    "default_ci_changed": false,
+    "artifact_attestation": false,
+    "actual_native_execution": false,
+    "installed_qualified": false,
+    "human_approval": false,
+    "production_ready": false
+  }
+}

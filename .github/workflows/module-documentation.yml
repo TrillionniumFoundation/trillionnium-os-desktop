@@ -16,8 +16,147 @@ on:
       - "tools/validate_module_documentation.py"
       - "tests/test_module_documentation.py"
       - "tests/test_module_documentation_integration_hardening.py"
+      - "tests/test_module_documentation_source_guard.py"
       - "CONTRIBUTING.md"
       - "Makefile"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_contract.py"
+      - "tools/browser_codec_reference_legacy_audit.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_documentation_coherence.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_rust_browser_codec.py"
+      - "contracts/configured-retained-bootstrap.v1.json"
+      - "tools/verify_configured_retained_bootstrap.py"
+      - "tests/test_configured_retained_bootstrap.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "contracts/remaining-managed-consumers.v1.json"
+      - "docs/architecture/REMAINING_MANAGED_CONSUMERS.md"
+      - "tests/test_remaining_managed_consumers.py"
+      - "contracts/immutable-callback-url-scope.v1.json"
+      - "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md"
+      - "tests/test_immutable_callback_url_scope.py"
+      - "tools/verify_immutable_callback_url_scope.py"
+      - "contracts/g6a-immutable-ab.v1.json"
+      - "docs/architecture/G6A_IMMUTABLE_AB_FIXTURE.md"
+      - "manifests/debian-g6a.lock.v1.json"
+      - "manifests/debian-g6a.requirements.v1.json"
+      - "manifests/debian-g6a.selection.v1.json"
+      - "packaging/debian/g6a/fixture-init"
+      - "packaging/debian/g6a/guest_selector.py"
+      - "packaging/debian/g6a/init"
+      - "packaging/debian/g6a/root_probe.py"
+      - "tests/qemu/run_g6a_qualification.py"
+      - "tests/test_g6a_immutable_ab.py"
+      - "tools/build_g6a_fixture.py"
+      - "tools/resolve_g6a_inputs.py"
+      - "tools/verify_g6a_fixture.py"
+      - "tools/resolve_debian_snapshot.py"
+      - "tools/resolve_debian_snapshot_with_pinned_keys.py"
+      - "packaging/debian/README.md"
+      - "platform/README.md"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tests/test_mozjs_secondary_input.py"
+      - "tools/artifact_evidence.py"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "tools/verify_mozjs_secondary_input.py"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+      - "contracts/approved-composition-scope.v1.json"
+      - "crates/hepta-peer-attestation/src/control_owner/control_request.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request.rs"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "Cargo.lock"
+      - "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs"
+      - "crates/hepta-agent-transport/tests/retained_control_kernel.rs"
+      - "crates/hepta-peer-attestation/src/control_owner.rs"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -34,9 +173,148 @@ on:
       - "tools/validate_module_documentation.py"
       - "tests/test_module_documentation.py"
       - "tests/test_module_documentation_integration_hardening.py"
+      - "tests/test_module_documentation_source_guard.py"
       - "CONTRIBUTING.md"
       - "Makefile"
 
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_contract.py"
+      - "tools/browser_codec_reference_legacy_audit.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_documentation_coherence.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_rust_browser_codec.py"
+      - "contracts/configured-retained-bootstrap.v1.json"
+      - "tools/verify_configured_retained_bootstrap.py"
+      - "tests/test_configured_retained_bootstrap.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "contracts/remaining-managed-consumers.v1.json"
+      - "docs/architecture/REMAINING_MANAGED_CONSUMERS.md"
+      - "tests/test_remaining_managed_consumers.py"
+      - "contracts/immutable-callback-url-scope.v1.json"
+      - "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md"
+      - "tests/test_immutable_callback_url_scope.py"
+      - "tools/verify_immutable_callback_url_scope.py"
+      - "contracts/g6a-immutable-ab.v1.json"
+      - "docs/architecture/G6A_IMMUTABLE_AB_FIXTURE.md"
+      - "manifests/debian-g6a.lock.v1.json"
+      - "manifests/debian-g6a.requirements.v1.json"
+      - "manifests/debian-g6a.selection.v1.json"
+      - "packaging/debian/g6a/fixture-init"
+      - "packaging/debian/g6a/guest_selector.py"
+      - "packaging/debian/g6a/init"
+      - "packaging/debian/g6a/root_probe.py"
+      - "tests/qemu/run_g6a_qualification.py"
+      - "tests/test_g6a_immutable_ab.py"
+      - "tools/build_g6a_fixture.py"
+      - "tools/resolve_g6a_inputs.py"
+      - "tools/verify_g6a_fixture.py"
+      - "tools/resolve_debian_snapshot.py"
+      - "tools/resolve_debian_snapshot_with_pinned_keys.py"
+      - "packaging/debian/README.md"
+      - "platform/README.md"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tests/test_mozjs_secondary_input.py"
+      - "tools/artifact_evidence.py"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "tools/verify_mozjs_secondary_input.py"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+      - "contracts/approved-composition-scope.v1.json"
+      - "crates/hepta-peer-attestation/src/control_owner/control_request.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request.rs"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "Cargo.lock"
+      - "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs"
+      - "crates/hepta-agent-transport/tests/retained_control_kernel.rs"
+      - "crates/hepta-peer-attestation/src/control_owner.rs"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
 permissions:
   contents: read
 
@@ -46,6 +324,7 @@ concurrency:
 
 jobs:
   exact-head:
+    name: module-documentation / exact-head
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -55,6 +334,23 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
           persist-credentials: false
+
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
 
       - name: Validate module documentation contract
         run: /usr/bin/python3 -I tools/validate_module_documentation.py
@@ -79,6 +375,7 @@ jobs:
           python3 tools/validate_rust_browser_codec.py >/tmp/codec-audit.json
 
   prospective-merge:
+    name: module-documentation / prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -89,6 +386,23 @@ jobs:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
           fetch-depth: 2
           persist-credentials: false
+
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
 
       - name: Validate module documentation contract
         run: /usr/bin/python3 -I tools/validate_module_documentation.py

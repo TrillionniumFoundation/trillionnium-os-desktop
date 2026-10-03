@@ -61,7 +61,11 @@ required_overlay=(
   etc/systemd/system/trillionnium-d2i-runtime.service
   etc/systemd/system/trillionnium-d2i-acceptance.service
   etc/systemd/system/trillionnium-d2i-acceptance.target
+  etc/systemd/system/trillionnium-d2i-failure.service
+  etc/systemd/system/trillionnium-d1-wayland.service.d/20-d2i-failure.conf
   usr/local/libexec/trillionnium-d2i-acceptance
+  usr/local/libexec/trillionnium-d2i-wait-wayland
+  usr/local/libexec/trillionnium-d2i-capture-failure
 )
 for relative in "${required_overlay[@]}"; do
   [[ -f "$overlay/$relative" && ! -L "$overlay/$relative" ]] || {
@@ -110,26 +114,23 @@ write_file() {
 }
 
 write_file "$runtime_binary" /usr/libexec/hepta-workspace-runtime
-write_file "$overlay/etc/systemd/system/trillionnium-d2i-runtime.service" \
-  /etc/systemd/system/trillionnium-d2i-runtime.service
-write_file "$overlay/etc/systemd/system/trillionnium-d2i-acceptance.service" \
-  /etc/systemd/system/trillionnium-d2i-acceptance.service
-write_file "$overlay/etc/systemd/system/trillionnium-d2i-acceptance.target" \
-  /etc/systemd/system/trillionnium-d2i-acceptance.target
-write_file "$overlay/usr/local/libexec/trillionnium-d2i-acceptance" \
-  /usr/local/libexec/trillionnium-d2i-acceptance
+for relative in "${required_overlay[@]}"; do
+  write_file "$overlay/$relative" "/$relative"
+done
 write_file "$manifest" /usr/lib/trillionnium-d1/d2i-image-manifest.json
 
 run_debugfs "set_inode_field /usr/libexec/hepta-workspace-runtime mode 0100755"
-run_debugfs "set_inode_field /usr/local/libexec/trillionnium-d2i-acceptance mode 0100755"
 injected_paths=(
   /usr/libexec/hepta-workspace-runtime
-  /etc/systemd/system/trillionnium-d2i-runtime.service
-  /etc/systemd/system/trillionnium-d2i-acceptance.service
-  /etc/systemd/system/trillionnium-d2i-acceptance.target
-  /usr/local/libexec/trillionnium-d2i-acceptance
-  /usr/lib/trillionnium-d1/d2i-image-manifest.json
 )
+for relative in "${required_overlay[@]}"; do
+  injected_paths+=("/$relative")
+  case "$relative" in
+    usr/local/libexec/*) run_debugfs "set_inode_field /$relative mode 0100755" ;;
+    *) run_debugfs "set_inode_field /$relative mode 0100644" ;;
+  esac
+done
+injected_paths+=(/usr/lib/trillionnium-d1/d2i-image-manifest.json)
 for index in "${!injected_paths[@]}"; do
   path=${injected_paths[$index]}
   run_debugfs "set_inode_field $path uid 0"
@@ -147,6 +148,7 @@ done
 for path in \
   /usr/libexec \
   /etc/systemd/system \
+  /etc/systemd/system/trillionnium-d1-wayland.service.d \
   /usr/local/libexec \
   /usr/lib/trillionnium-d1; do
   run_debugfs "set_inode_field $path atime $source_epoch"
@@ -180,7 +182,7 @@ debugfs -R 'stat /usr/libexec/hepta-workspace-runtime' "$output_image" \
   >"$work/runtime-stat.txt" 2>&1
 dumpe2fs -h "$output_image" >"$work/dumpe2fs-header.txt" 2>&1
 python3 - "$evidence" "$base_sha" "$runtime_sha" "$image_sha" "$image_bytes" \
-  "$source_epoch" "$servo_revision" <<'PY'
+  "$source_epoch" "$servo_revision" "${injected_paths[@]}" <<'PY'
 import json
 import pathlib
 import sys
@@ -200,14 +202,7 @@ pathlib.Path(sys.argv[1]).write_text(json.dumps({
         "superblock_times": True,
         "superblock_kbytes_written": 0,
     },
-    "injected_paths": [
-        "/usr/libexec/hepta-workspace-runtime",
-        "/etc/systemd/system/trillionnium-d2i-runtime.service",
-        "/etc/systemd/system/trillionnium-d2i-acceptance.service",
-        "/etc/systemd/system/trillionnium-d2i-acceptance.target",
-        "/usr/local/libexec/trillionnium-d2i-acceptance",
-        "/usr/lib/trillionnium-d1/d2i-image-manifest.json",
-    ],
+    "injected_paths": sys.argv[8:],
     "product_agent_port_enabled": False,
     "network_device_expected": False,
     "release_ready": False,

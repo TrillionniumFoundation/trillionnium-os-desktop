@@ -305,6 +305,7 @@ class _Validator:
                 "cargo check --workspace --all-targets --locked",
                 "cargo clippy --workspace --all-targets --locked -- -D warnings",
                 "cargo test --workspace --all-targets --locked",
+                "cargo test --workspace --doc --locked",
                 "cargo run --locked -p hepta-browserd -- --self-check",
             ],
         )
@@ -313,11 +314,13 @@ class _Validator:
             [
                 "runs-on: ubuntu-24.04",
                 "python3 tools/validate_project_truth.py",
-                "python3 -m unittest discover -s tests "
-                "-p 'test_project_truth_status_documents.py'",
+                "python3 -m unittest discover -s tests -v",
+                "python3 -m unittest discover -s tests/d1 -v",
+                "python3 -m unittest discover -s tests/transport -v",
                 "cargo check --workspace --all-targets --locked",
                 "cargo clippy --workspace --all-targets --locked -- -D warnings",
                 "cargo test --workspace --all-targets --locked",
+                "cargo test --workspace --doc --locked",
                 "cargo run --locked -p hepta-browserd -- --self-check",
             ],
         )

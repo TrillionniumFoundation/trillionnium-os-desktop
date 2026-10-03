@@ -1,15 +1,40 @@
 #![forbid(unsafe_code)]
 
 //! D0 browser daemon scaffold. This is a deterministic contract, transport,
-//! codec, connected AgentPort, durable-receipt, and session self-check only:
-//! it does not start Servo, bind a listener, dispatch a BrowserActor, or
-//! perform an external network operation.
+//! codec, connected AgentPort, durable-receipt, and session self-check. Its
+//! executable does not start Servo or bind a listener. The library exposes a
+//! concrete request coordinator requiring a separately supplied native Servo
+//! owner; source composition does not activate an installed product runtime.
 
+mod product_dispatch;
 mod servo_product_runtime;
 
+pub use product_dispatch::{
+    AcceptedProductConnection, MAX_PRODUCT_CONNECTION_BUDGET, MAX_PRODUCT_PENDING_CONNECTIONS,
+    ProductConnectionCancellation, ProductConnectionIngress, ProductConnectionQueue,
+    ProductDispatchError, ProductRequestCoordinator, product_connection_queue,
+};
+#[cfg(target_os = "linux")]
+pub use product_dispatch::{
+    ApprovedQueueRetirement, ApprovedQueueRetirementState, ApprovedRetainedAdmission,
+    ApprovedRetainedIngress, ApprovedRetainedObservation, ApprovedRetainedQueue,
+    approved_retained_queue, approved_retained_queue_before,
+};
+#[cfg(target_os = "linux")]
+pub use product_dispatch::{
+    ApprovedRetainedProductConnection, ConfiguredRetainedBootstrap, ProductControlMonitor,
+    ProductControlMonitorOutcome, RetainedProductConnection,
+};
+
 pub use servo_product_runtime::{
-    BrowserdRuntimeSupervisor, DispatchCompletion, ProductRuntimeError, ProductServoRuntime,
-    RuntimeGeneration, RuntimeState, SemanticReference,
+    BrowserdRuntimeSupervisor, CrashTransition, DispatchCompletion, ProductRuntimeError,
+    ProductServoRuntime, RestartPolicy, RuntimeGeneration, RuntimeState, SemanticReference,
+};
+
+#[cfg(target_os = "linux")]
+pub use product_dispatch::{
+    ApprovedServiceProductCoordinator, ServiceProductPhase, ServiceReportObservation,
+    ServiceRetainedObservation,
 };
 
 use hepta_browser_contracts::BROWSER_API_PROTOCOL;

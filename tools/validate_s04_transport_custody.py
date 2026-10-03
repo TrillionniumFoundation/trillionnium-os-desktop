@@ -82,8 +82,8 @@ def _require_exact_typed_object(
     expected_keys = set(expected)
     for key in sorted(expected_keys - actual_keys):
         errors.append(f"{PUBLIC_API_FINDING}:{label}:missing:{key}")
-    for key in sorted(actual_keys - expected_keys):
-        errors.append(f"{PUBLIC_API_FINDING}:{label}:unexpected:{key}")
+    if actual_keys - expected_keys:
+        errors.append(f"{PUBLIC_API_FINDING}:{label}:unexpected-field")
     for key in sorted(actual_keys & expected_keys):
         actual = value[key]
         wanted = expected[key]
@@ -219,8 +219,8 @@ def validate_transport_sources(
 
     try:
         server_impl = _impl_body(facade, "ServerConnection")
-    except ValueError as error:
-        errors.append(str(error))
+    except ValueError:
+        errors.append("ServerConnection production impl is missing or unterminated")
     else:
         _require(
             len(re.findall(r"\bpub\s+fn\s+accept\s*\(", server_impl)) == 1,
@@ -402,21 +402,117 @@ def validate_attestation() -> list[str]:
     return errors
 
 
+_UNIT_KEYS = {
+    "Unit": {"Description", "Documentation", "ConditionPathExists", "Requires", "After"},
+    "Socket": {"ListenStream", "SocketUser", "SocketGroup", "SocketMode", "DirectoryMode",
+               "Accept", "Backlog", "MaxConnections", "RemoveOnStop"},
+    "Install": {"WantedBy"},
+    "Service": {"Type", "User", "Group", "SupplementaryGroups", "ExecStart", "StandardInput",
+                "StandardOutput", "StandardError", "Restart", "RuntimeMaxSec", "TimeoutStopSec",
+                "UMask", "NoNewPrivileges", "CapabilityBoundingSet", "AmbientCapabilities",
+                "PrivateNetwork", "PrivateTmp", "PrivateDevices", "ProtectSystem", "ProtectHome",
+                "ProtectKernelTunables", "ProtectKernelModules", "ProtectKernelLogs",
+                "ProtectControlGroups", "ProtectClock", "ProtectHostname", "ProtectProc", "ProcSubset",
+                "RestrictAddressFamilies", "RestrictNamespaces", "RestrictRealtime", "RestrictSUIDSGID",
+                "LockPersonality", "MemoryDenyWriteExecute", "RemoveIPC", "SystemCallArchitectures",
+                "SystemCallFilter", "DevicePolicy", "ReadWritePaths", "ReadOnlyPaths"},
+}
+_LIST_KEYS = {"SupplementaryGroups", "ReadWritePaths", "ReadOnlyPaths", "SystemCallFilter"}
+
+
 def _parse_assignments(relative: str) -> list[tuple[str, str, str]]:
     section = ""
     result: list[tuple[str, str, str]] = []
-    for raw in _read(relative).splitlines():
+    source = _read(relative)
+    if re.search(r"[^\x09\x0a\x0d\x20-\x7e]", source) is not None:
+        raise ValueError("unsupported unit syntax")
+    for line_number, raw in enumerate(source.splitlines(), 1):
         line = raw.strip()
         if not line or line.startswith(("#", ";")):
             continue
         if line.startswith("[") and line.endswith("]"):
             section = line[1:-1]
+            if section not in {"Unit", "Socket", "Service", "Install"}:
+                raise ValueError(f"malformed unit line in {relative} at line {line_number}")
             continue
         if not section or "=" not in line:
-            raise ValueError(f"malformed unit line in {relative}: {raw!r}")
+            raise ValueError(f"malformed unit line in {relative} at line {line_number}")
         key, value = line.split("=", 1)
+        key, value = key.strip(), value.strip()
+        if (
+            key not in _UNIT_KEYS[section]
+            or re.fullmatch(r"[A-Za-z0-9_./:@~+ \t-]*", value) is None
+        ):
+            # Admit the packaged literal grammar only: no continuations,
+            # quoting, specifiers, variable expansion or inline comments.
+            raise ValueError(f"malformed unit line in {relative} at line {line_number}")
+        if key not in _LIST_KEYS and any(old[:2] == (section, key) for old in result):
+            raise ValueError(f"malformed unit line in {relative} at line {line_number}")
         result.append((section, key, value))
     return result
+
+
+def _sysusers_records(source: str) -> list[tuple[str, ...]]:
+    if re.search(r"[^\x09\x0a\x0d\x20-\x7e]", source) is not None:
+        raise ValueError("unsupported configuration syntax")
+    records: list[tuple[str, ...]] = []
+    for raw in source.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("u"):
+            match = re.fullmatch(
+                r'u[ \t]+([a-z][a-z0-9-]*)[ \t]+-[ \t]+"([A-Za-z0-9 ._-]+)"'
+                r"[ \t]+(/[A-Za-z0-9_./-]+)[ \t]+(/[A-Za-z0-9_./-]+)",
+                line,
+            )
+            if match is None:
+                raise ValueError("malformed sysusers record")
+            record = ("u", match[1], "-", match[2], match[3], match[4])
+        else:
+            fields = tuple(line.split())
+            if (
+                len(fields) != 3
+                or fields[0] not in {"g", "m"}
+                or re.fullmatch(r"[a-z][a-z0-9-]*", fields[1]) is None
+                or (
+                    fields[0] == "g" and fields[2] != "-"
+                    or fields[0] == "m"
+                    and re.fullmatch(r"[a-z][a-z0-9-]*", fields[2]) is None
+                )
+            ):
+                raise ValueError("malformed sysusers record")
+            record = fields
+        if record in records or any(
+            old[:2] == record[:2] for old in records if record[0] in {"g", "u"}
+        ):
+            raise ValueError("duplicate sysusers record")
+        records.append(record)
+    return records
+
+
+def _tmpfiles_records(source: str) -> list[tuple[str, ...]]:
+    if re.search(r"[^\x09\x0a\x0d\x20-\x7e]", source) is not None:
+        raise ValueError("unsupported configuration syntax")
+    records: list[tuple[str, ...]] = []
+    for raw in source.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        fields = tuple(line.split())
+        if (
+            len(fields) != 7
+            or fields[0] != "d"
+            or re.fullmatch(r"/[A-Za-z0-9_./-]+", fields[1]) is None
+            or re.fullmatch(r"0[0-7]{3}", fields[2]) is None
+            or any(re.fullmatch(r"[a-z][a-z0-9-]*", field) is None for field in fields[3:5])
+            or fields[5:] != ("-", "-")
+        ):
+            raise ValueError("malformed tmpfiles record")
+        if any(old[1] == fields[1] for old in records):
+            raise ValueError("duplicate tmpfiles path")
+        records.append(fields)
+    return records
 
 
 def _list_value(
@@ -569,23 +665,34 @@ def validate_product_graph_and_path_custody() -> list[str]:
         errors,
     )
 
-    sysusers = _read("packaging/debian/sysusers.d/trillionnium-desktop.conf")
-    tmpfiles = _read("packaging/debian/tmpfiles.d/trillionnium-desktop.conf")
+    sysusers = _sysusers_records(_read("packaging/debian/sysusers.d/trillionnium-desktop.conf"))
+    tmpfiles = _tmpfiles_records(_read("packaging/debian/tmpfiles.d/trillionnium-desktop.conf"))
     install = _read("packaging/debian/hepta-agent-portd.install")
     preset = _read("packaging/debian/systemd-preset/90-trillionnium-desktop.preset")
     _require(
-        "m      hepta-agent      hepta-agent-socket" in sysusers,
+        {record for record in sysusers if record[0] == "m"} == {
+            ("m", "hepta-browserd", "hepta-agent"),
+            ("m", "hepta-agent", "hepta-agent-socket"),
+        },
+        "sysusers membership mapping changed",
+        errors,
+    )
+    _require(
+        ("m", "hepta-agent", "hepta-agent-socket") in sysusers,
         "Agent lacks parent traversal group",
         errors,
     )
     _require(
-        "m      hepta-browserd   hepta-agent-socket" not in sysusers,
+        ("m", "hepta-browserd", "hepta-agent-socket") not in sysusers,
         "browser mechanism gained parent custody group",
         errors,
     )
     _require(
-        "/run/hepta/browserd          0750 root            hepta-agent-socket"
-        in tmpfiles,
+        set(tmpfiles) == {
+            ("d", "/run/hepta", "0755", "root", "root", "-", "-"),
+            ("d", "/run/hepta/browserd", "0750", "root", "hepta-agent-socket", "-", "-"),
+            ("d", "/var/lib/hepta-browserd", "0700", "hepta-browserd", "hepta-browserd", "-", "-"),
+        },
         "root parent custody mapping changed",
         errors,
     )
@@ -647,7 +754,7 @@ def validate_reference_binding() -> list[str]:
     actual = result.get("contract_sha256")
     _require(
         actual == expected,
-        f"transport reference result contract_sha256 must be {expected}, found {actual!r}",
+        "transport reference result contract_sha256 does not match the current contract",
         errors,
     )
     _require(
@@ -724,6 +831,23 @@ def validate_root() -> list[str]:
     return errors
 
 
+def _cli_failure_category(message: str) -> str:
+    """Return only fixed CLI labels; retain detailed findings in validate_root."""
+
+    if type(message) is not str:
+        return "S04 SOURCE_INVALID"
+    if message in (
+        "S04-PUBLIC-API-CONTRACT:transport:unexpected-field",
+        "S04-PUBLIC-API-CONTRACT:agent-transport.public_api:unexpected-field",
+    ):
+        return "S04 unexpected-field"
+    if message == "transport reference result contract_sha256 does not match the current contract":
+        return "S04 contract_sha256 mismatch"
+    if message == "S04 source custody, decoding or parsing failed; inspect repository inputs locally":
+        return "S04 source custody, decoding or parsing failed; inspect repository inputs locally"
+    return "S04 SOURCE_INVALID"
+
+
 def main() -> int:
     try:
         errors = validate_root()
@@ -733,11 +857,14 @@ def main() -> int:
         ValueError,
         KeyError,
         tomllib.TOMLDecodeError,
-    ) as error:
-        errors = [str(error)]
+    ):
+        # Exception text can contain source bytes, unknown JSON keys or a
+        # pathname supplied by input. Keep the CLI diagnostic independent of
+        # those bytes; inspect the repository inputs locally to diagnose them.
+        errors = ["S04 source custody, decoding or parsing failed; inspect repository inputs locally"]
     if errors:
         for error in errors:
-            print(f"ERROR: {error}", file=sys.stderr)
+            print("ERROR:", _cli_failure_category(error), file=sys.stderr)
         print(f"S04 validation failed with {len(errors)} error(s)", file=sys.stderr)
         return 1
     print("S04 transport, peer custody, AgentPort, and product-path validation passed")

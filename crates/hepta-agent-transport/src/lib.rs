@@ -12,6 +12,24 @@ use std::time::Duration;
 
 mod facade;
 
+#[cfg(target_os = "linux")]
+mod root_control_path;
+#[cfg(target_os = "linux")]
+pub use root_control_path::{
+    RootControlPathCustody, RootControlPathError, RootControlPathPolicy, RootControlPathVerifier,
+    RootOwnedControlListener, RootPathControlConnection,
+};
+
+#[cfg(target_os = "linux")]
+mod accepted_handoff;
+#[cfg(target_os = "linux")]
+pub use accepted_handoff::{
+    AcceptedStreamCustody, HandoffError, HandoffReceiver, HandoffSender, MAX_HANDOFF_BUDGET,
+    MAX_HANDOFFS_PER_CHANNEL, OriginalConnectedDenial, PendingHandoffReceiver,
+    PendingHandoffSender, ReceivedAcceptedStream, RemoteRetirementReport, RemoteTerminalState,
+    RetainedReceivedAcceptedStream,
+};
+
 pub use facade::{
     ClientConnection, PeerIdentity, PeerPolicy, ReceivedRequest, ServerConnection, TransportError,
     self_check,

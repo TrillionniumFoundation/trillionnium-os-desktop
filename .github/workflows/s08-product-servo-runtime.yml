@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   exact-head:
+    name: s08-product-servo-runtime / exact-head
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -25,6 +26,23 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 2
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Verify exact source identity
         shell: bash
         run: |
@@ -37,13 +55,20 @@ jobs:
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
       - name: Qualify browserd product supervision
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         shell: bash
         run: |
           set -euo pipefail
           cargo fmt --all --check
           cargo check --locked -p hepta-browserd --all-targets
           cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
+          # Includes standalone actual three-process retained terminal source corpus.
           cargo test --locked -p hepta-browserd --all-targets
+          python3 -m unittest discover -s tests -p test_retained_control_terminal.py -v
           python3 tools/validate_s08_product_supervision.py
           python3 tools/validate_module_documentation.py
           python3 tools/validate_repository.py
@@ -51,6 +76,7 @@ jobs:
           git diff --check
 
   prospective-merge:
+    name: s08-product-servo-runtime / prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -61,6 +87,23 @@ jobs:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
           fetch-depth: 2
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Verify merge parents
         shell: bash
         env:
@@ -77,13 +120,20 @@ jobs:
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
       - name: Qualify prospective browserd product runtime
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         shell: bash
         run: |
           set -euo pipefail
           cargo fmt --all --check
           cargo check --locked -p hepta-browserd --all-targets
           cargo clippy --locked -p hepta-browserd --all-targets -- -D warnings
+          # Includes standalone actual three-process retained terminal source corpus.
           cargo test --locked -p hepta-browserd --all-targets
+          python3 -m unittest discover -s tests -p test_retained_control_terminal.py -v
           python3 tools/validate_s08_product_supervision.py
           python3 tools/validate_module_documentation.py
           python3 tools/validate_repository.py

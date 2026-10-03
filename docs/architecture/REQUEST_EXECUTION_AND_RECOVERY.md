@@ -4,7 +4,7 @@
 **Status:** proposed integration acceptance detail; implementation and qualification remain separate
 
 This document refines the S08–S11 work without activating a product listener,
-introducing a new API, declaring a test passed, or changing project truth. The
+declaring an installed test passed, or changing project truth. The
 existing transport, actor, journal, runtime-supervision and update contracts
 remain authoritative for their individual mechanisms. Resolve a disagreement
 by retaining the narrower authority and obtaining an explicit contract review.
@@ -57,6 +57,92 @@ in code. The journal and engine do not form an atomic distributed transaction;
 this protocol intentionally preserves an indeterminate window rather than
 promising exactly-once external effects.
 
+## Current source composition
+
+`apps/hepta-browserd/src/product_dispatch.rs` connects these boundaries using
+the original attested Unix stream, a bounded connection queue, concrete
+`ServoBrowserActor`, and managed `ReceiptLifecycleObserver`. AgentPort preflight
+rejects stale/unsupported/cancelled requests before admission facts. Journal
+append/sync acknowledges requested and dispatch-intent facts before the actor
+submits the engine command, then acknowledges terminal facts before response
+publication. Canonical request-ID deduplication reads the complete managed chain;
+transport loss after a durable terminal result does not permit reexecution.
+
+Connection admission and queue residence consume one original monotonic budget.
+On Linux, `AcceptedProductConnection::from_received` now consumes the opaque
+`ReceivedAcceptedStream` and its original absolute Instant through the same
+one-shot callback. The shared private admission helper checks the ceiling before
+and after kernel peer observation, live pidfd-backed attestation, interrupt
+clone/liveness and local setup; it does not allocate a fresh 20-second budget at
+receiver handoff. A read-only `deadline()` observation rechecks creator PID,
+cancellation and expiry and grants no dispatch authority. Procfs syscalls remain
+synchronous: a late result is refused, not represented as preemptively timed out.
+Real Linux same-UID/SCM_RIGHTS host tests verify this receiver bridge; approved
+principal/service custody, installed native startup and actual Servo execution
+still require separate integration and qualification.
+The additive Linux dual-owner path now uses `receive_custodied` and
+`AcceptedProductConnection::from_control_received`: the original Agent stream
+and accepted absolute Instant travel with unique custody of the same default-live
+control custodian. Both original process incarnations are refreshed at queue,
+preflight and controlled handler boundaries; paired opaque verifiers reach the
+concrete runtime completion check. The new constructor additionally requires a
+trusted configured canonical approved Agent executable pin and compares actual
+live bytes; the runtime-policy object alone never supplies that pin. There is no
+provisioned product policy. The original `receive`/`from_received` APIs remain
+unchanged. `contracts/dual-owner-request-custody.v1.json` records the exact
+additive inventory and ceiling.
+
+
+`retire_prepared_request(&mut self, &str) -> Result<(), AgentPortError>` is
+additive on the actor and concrete facade. It checks the actor creator PID
+before mutation, cancels an existing shared token and removes only that request's
+registration and cancellation marker. It creates no token, receipt, authority,
+new deadline or replay grant. Controlled preflight refusals/errors and every
+controlled handler return retire preparation, including successful preflight
+followed by custodian revocation or expiry. The product handler also retires on
+its own early cancellation, identity, replay and storage refusals. A retained
+token clone is cancelled even when the original legacy handler already removed
+the registration. Successful preflight keeps preparation for actual dispatch.
+The private product handler also owns preparation until Drop, so lifecycle or
+deadline errors that skip handle after preflight retire the same request. The
+added four source-callback cuts (including actual fork refusal before token
+mutation with unchanged parent FDs), ten product-refusal cases and actual observer
+failure followed by handler Drop prove this
+source lifecycle with actual control custody or explicitly synthetic Agent
+metadata as labeled; they do not execute Servo or qualify installed effects.
+
+The legacy one-shot control socket closes after receive; this is not permission
+for the custodian process to exit. The same live incarnation must remain until
+request retirement. The additive source candidate in
+[Retained control reporting](RETAINED_CONTROL_TERMINAL.md) keeps the original
+channel through remote cancellation and a private coordinator-owned exact
+journal terminal association. Its low-level report remains remote-asserted
+transport data, never a local durable proof or response delivery assertion.
+Installed service wiring remains absent. Three-process same-UID default-proc kernel tests cover identity
+and FD continuity. A separately labeled synthetic-Agent callback corpus covers
+source ordering only; neither tier proves native Servo effect execution.
+
+Revocation closes the same transport to wake blocking receive and cancels active
+actor work. The native owner must still perform the final peer/control/retained
+node check inside its reviewed engine action and withdraw stale pixels/input
+before notifying a crash. The installed native embedder, process/service handoff,
+trusted recovery UI/policy and approved cross-UID live-executable attestation
+broker/authority remain missing. Default daemon activation stays closed; the
+qualification mailbox and static attestation profile cannot fill these gaps.
+
+Existing request/coordinator regressions use real Unix framing/pidfds with
+explicitly synthetic procfs facts and controlled native completion callbacks. They test source ordering and
+failure behavior; they are not installed product or renderer qualification.
+
+The live coordinator/supervisor, queues, cancellation handles, journal/store
+custody and sealed facts are scoped to their creating process. Checks precede
+copied mutex/channel access and the requested/dispatch/terminal gates. Fork
+children cannot reuse a copied permit, publish a fact, translate old sealed
+facts, clear recovery or cancel/shutdown the parent's original stream. Child
+journal Drop closes only child descriptors and preserves the parent lease.
+Standalone single-thread actual-fork regressions exercise these boundaries;
+they do not establish an installed native owner or trusted policy/UI.
+
 ## Fault matrix required for the real product path
 
 | Fault/cutpoint | Expected result | Forbidden recovery |
@@ -96,6 +182,17 @@ A recovery decision must identify its actor, scope, source facts and allowed
 transition. Only an exact same-request durable reconciliation accepted by the
 journal may clear an indeterminate latch. Clearing a latch does not reconstruct
 an actor or repeat an operation. Reconstruction is a separate explicit step.
+
+The current coordinator's `reconcile_request` checks the exact blocked ID and
+canonical digest against a journal-issued terminal `DurableReceiptFact`.
+Storage ambiguity cannot be cleared through it. Default startup refuses both
+nonterminal history and terminal indeterminate/interrupted-after-dispatch facts
+from all segments. `from_connection_after_reconciliation` requires the trusted
+recovery caller to explicitly acknowledge every terminal uncertain identity and
+digest; incomplete, duplicate or mismatched acknowledgments fail closed. No
+receipt is rewritten, replayed or promoted to a known outcome. A persisted
+operator-decision protocol remains unimplemented, so reopening requires this
+explicit review again rather than inferring a decision from terminal syntax.
 
 When no reliable outcome evidence exists, retain indeterminate and hand control
 to the human. Do not offer a misleading "retry safely" button. Any intentional

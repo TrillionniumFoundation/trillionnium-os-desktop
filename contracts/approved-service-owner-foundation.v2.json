@@ -1,0 +1,272 @@
+{
+  "schema": "trillionnium.desktop.approved-service-owner-foundation.v2",
+  "status": "FOUNDATION_SOURCE_ONLY",
+  "requirements": [
+    "G1",
+    "G2"
+  ],
+  "platform": "Linux",
+  "default_product_activation": false,
+  "policy": {
+    "schema": "trillionnium.approved-mechanisms.v2",
+    "default_path": "/etc/hepta/approved-mechanisms.v2.conf",
+    "maximum_bytes": 8192,
+    "fields": [
+      "schema",
+      "control.uid",
+      "control.gid",
+      "control.unit",
+      "control.cgroup",
+      "control.elf_sha256",
+      "control.principal_id",
+      "agent.uid",
+      "agent.gid",
+      "agent.unit",
+      "agent.cgroup",
+      "agent.elf_sha256",
+      "agent.principal_id",
+      "owner.uid",
+      "owner.gid",
+      "owner.unit",
+      "owner.cgroup",
+      "owner.elf_sha256",
+      "owner.principal_id"
+    ],
+    "distinct_principal_ids": true,
+    "source": "root_owned_nofollow_retained_directory_and_leaf_full_identity_and_digest",
+    "canonical_ascii_lines": true,
+    "numeric_ids": "canonical_decimal_u32_excluding_MAX",
+    "bounds": {
+      "path_bytes": 1024,
+      "path_components": 32,
+      "unit_bytes": 128,
+      "cgroup_bytes": 512,
+      "component_bytes": 128,
+      "principal_bytes": 64,
+      "elf_hex_bytes": 64
+    }
+  },
+  "public_api": {
+    "ApprovedServicePolicyDocument::open_default": "pub fn open_default ( ) - > Result < Self , ApprovedPolicyError >",
+    "ApprovedServicePolicyDocument::open_root_owned": "pub fn open_root_owned ( path : & Path ) - > Result < Self , ApprovedPolicyError >",
+    "ApprovedServicePolicyDocument::ensure_current": "pub fn ensure_current ( & self ) - > Result < ( ) , ApprovedPolicyError >",
+    "ApprovedServicePolicyDocument::select_current_owner": "pub fn select_current_owner ( & self ) - > Result < ApprovedServiceOwnerBinding , ApprovedPolicyError >",
+    "ApprovedServiceOwnerBinding::ensure_current": "pub fn ensure_current ( & self ) - > Result < ( ) , ApprovedPolicyError >",
+    "ApprovedServiceOwnerBinding::verifier": "pub fn verifier ( & self ) - > Result < ApprovedServiceOwnerVerifier , ApprovedPolicyError >",
+    "ApprovedServiceOwnerVerifier::ensure_current": "pub fn ensure_current ( & self ) - > Result < ( ) , ApprovedPolicyError >"
+  },
+  "opaque_types": {
+    "ApprovedServicePolicyDocument": "state:Arc<ServiceState>,",
+    "ApprovedServiceOwnerBinding": "state:Arc<ServiceState>,original:PeerRequestCustody,",
+    "ApprovedServiceOwnerVerifier": "state:Arc<ServiceState>,original:crate::PeerRequestVerifier,"
+  },
+  "creator": {
+    "capture_before_policy_IO": true,
+    "ordinary_pid_mismatch_before_FD_access": true,
+    "numeric_collision_checks_private_socket_endpoints_and_fixed_pid_namespace": true,
+    "actual_endpoint_fields": [
+      "device",
+      "inode",
+      "cookie",
+      "SO_PEERCRED",
+      "FD_CLOEXEC",
+      "SO_TYPE"
+    ],
+    "namespace_path": "/proc/thread-self/ns/pid",
+    "namespace_kind": "NS_GET_NSTYPE_CLONE_NEWPID",
+    "namespace_follow": "intentional_fixed_proc_magic_link",
+    "numeric_collision_FD_free": false,
+    "creator_credentials": "creation_time_cached_peer_credentials_not_live_owner_authority"
+  },
+  "owner": {
+    "selection": "one_CAS_attempt_per_ServiceState",
+    "global_principal_singleton": false,
+    "observed_fields_mint_policy": false,
+    "caller_attestor_or_snapshot": false,
+    "fixed_attestor": "ProcfsPeerAttestor::default().attest(Live)",
+    "original_custody": "PeerRequestCustody",
+    "drop_binding": "sequential_verifiers_refuse_after_original_custody_drop",
+    "drop_document": "binding_retains_same_source",
+    "drop_verifier": "does_not_revoke_binding",
+    "source_failure": "sticky_retirement_same_creating_process",
+    "foreign_process_failure": "ProcessChanged_parent_not_retired",
+    "overlapping_revoke_completion_guarantee": false
+  },
+  "errors": {
+    "InvalidConfiguration": "strict_policy_or_path_shape_refused",
+    "SourceRefused": "root_source_or_kernel_creator_resource_cannot_be_acquired_or_checked",
+    "Changed": "source_identity_digest_namespace_or_creator_resource_changed_or_retired",
+    "ProcessChanged": "original_creator_numeric_or_actual_creator_context_refused",
+    "PeerRefused": "second_selection_owner_identity_pin_original_custody_or_current_peer_refused",
+    "DeadlineExceeded": "legacy_variant_not_new_source_lifetime_authority"
+  },
+  "legacy_inverse": {
+    "crates/hepta-peer-attestation/src/lib.rs": {
+      "bytes": 61121,
+      "sha256": "91a879f50a94954a6679ee5e973eb70f0aa3c086743c83e9c2858091a8ff6210",
+      "tail": "\n#[cfg(target_os = \"linux\")]\npub use approved_policy::{\n    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,\n    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,\n};\n",
+      "insertion": {
+        "schema": "trillionnium.foundation-lib-insertion.v1",
+        "offset_bytes": 43913,
+        "anchor": "\n#[cfg(test)]\nmod tests {\n",
+        "block": "\n#[cfg(target_os = \"linux\")]\npub use approved_policy::{\n    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,\n    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,\n};\n",
+        "complete_bytes": 61351,
+        "complete_sha256": "eb30e7800ade6089bfe26b05bd5c0f0cb3d669b2fd378436bbd1e15465c868ce"
+      }
+    },
+    "crates/hepta-peer-attestation/src/approved_policy.rs": {
+      "bytes": 28173,
+      "sha256": "0a6a079336ad842bc55c34fe3930707ece098182bd976e78c2dfb21e18d87882",
+      "tail": "\n// Additive service-policy v2; original request-scoped v1 stays unchanged.\nmod service_policy;\npub use service_policy::{\n    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,\n    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,\n};\n"
+    }
+  },
+  "whole_source_sha256": {
+    "crates/hepta-peer-attestation/src/approved_policy/service_policy.rs": "ace7e68730c50bf007863e39a83545892ecd392fb8f323d11e905da03b08168a",
+    "crates/hepta-peer-attestation/src/approved_policy/service_policy/creator_context.rs": "31c3b36ecb47b700b08df7e374b6ceadddb44527acf1ae6d8c5efb83a090eb06"
+  },
+  "preserved_source_sha256": {
+    "crates/hepta-peer-attestation/src/request_lease.rs": "54b80b2e94f4dc149d9af8f6e92815a2a8b88a9db987c34ec9a0b59d53850681"
+  },
+  "kernel_corpus": {
+    "path": "crates/hepta-peer-attestation/tests/approved_service_owner_kernel.rs",
+    "harness": false,
+    "groups": 12,
+    "source_continuity_seconds_minimum": 61,
+    "transient_unit_runtime_maximum_seconds": 90,
+    "root_policy_selected_before_owner_execution": true,
+    "default_proc_live_owner": true,
+    "nested_pid_collision_actual_API_required": true,
+    "new_proc_mount": false,
+    "unavailable_returncode": 77,
+    "unavailable_is_pass": false
+  },
+  "non_claims": {
+    "per_request_twenty_second_bridge": false,
+    "actor_coordinator_page": false,
+    "journal_integration": false,
+    "native_Servo": false,
+    "native_sixty_second_health": false,
+    "installed_activation": false,
+    "hardware": false,
+    "independent_human_approval": false,
+    "production_ready": false
+  },
+  "kernel_source_sha256": {
+    "crates/hepta-peer-attestation/tests/approved_service_owner_kernel.rs": "17be60a757254cf07adbb6dd3d6158ae6f990bc2cd6aecf4130c94965b785bda"
+  },
+  "cargo_inverse": {
+    "path": "crates/hepta-peer-attestation/Cargo.toml",
+    "old_bytes": 996,
+    "old_sha256": "1fac9d1b123cdfd9bb47321bcb98b2b3ce936a88f0fe6fdafe5cdfed0ca7bb83",
+    "tail": "\n# Persistent service-source continuity is a separate actual root test profile.\n[[test]]\nname = \"approved_service_owner_kernel\"\npath = \"tests/approved_service_owner_kernel.rs\"\nharness = false\n"
+  },
+  "mandatory_make_inverse": {
+    "path": "Makefile",
+    "old_sha256": "6df4be64e5ffe527caf41e00cb996d26e53e4f12c43200d751c62c2da8c1f329",
+    "line": "\tpython3 tools/verify_approved_service_owner.py\n"
+  },
+  "composition_receiver": {
+    "baseline_head": "99c4eb9ff6f11b5075487c7e9fc4b4f0ca794320",
+    "foundation_head": "d3353229c3574f3125e479e3616e2f4881d259fc",
+    "source_boundaries": {
+      "crates/hepta-peer-attestation/src/approved_policy.rs": {
+        "baseline": {
+          "bytes": 28911,
+          "sha256": "dfb42050e73dd7f1fc6ef46aa6b839b4bc3c1c3f201ac47c5106acaada27815e"
+        },
+        "composed": {
+          "bytes": 29207,
+          "sha256": "706254153615871c6a88d0b68bd36d1eb3288f3b23d7fb7688494142c98f953d"
+        },
+        "detach_suffix": "\n// Additive service-policy v2; original request-scoped v1 stays unchanged.\nmod service_policy;\npub use service_policy::{\n    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,\n    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,\n};\n",
+        "original_foundation": {
+          "bytes": 28469,
+          "sha256": "018612ed96c97f63d673487addacfe2bb4a48b55ca8d27048ffffa340a499dfc"
+        }
+      },
+      "tools/verify_approved_composition_scope.py": {
+        "baseline": {
+          "bytes": 9836,
+          "sha256": "7d7599a5cdd6aa27a0148d931f39677ad8851fb6d38b6e2bb973e893e625e4e8"
+        },
+        "composed": {
+          "bytes": 10019,
+          "sha256": "c5d8c547ccb6156c9e824339511bd76e35d429de6d4e85e70041c7493b92fe8c"
+        },
+        "inverse": [
+          {
+            "actual": "    try:\n        from .verify_approved_service_owner import legacy_source\n    except ImportError:\n        from verify_approved_service_owner import legacy_source\n",
+            "baseline": ""
+          },
+          {
+            "actual": "hashlib.sha256(legacy_source(path, texts[path]).encode(\"utf-8\")).hexdigest()",
+            "baseline": "hashlib.sha256(texts[path].encode(\"utf-8\")).hexdigest()"
+          }
+        ],
+        "original_foundation": {
+          "bytes": 9740,
+          "sha256": "3dd535955e3853ed5e1f40e547385951767384bdd2606f9363f04156ec5794f1"
+        },
+        "original_foundation_forward": [
+          {
+            "baseline": "def check(contract, texts):\n",
+            "actual": "def check(contract, texts):\n    try:\n        from .verify_approved_service_owner import legacy_source\n    except ImportError:\n        from verify_approved_service_owner import legacy_source\n"
+          },
+          {
+            "baseline": "hashlib.sha256(texts[path].encode(\"utf-8\")).hexdigest()",
+            "actual": "hashlib.sha256(legacy_source(path, texts[path]).encode(\"utf-8\")).hexdigest()"
+          }
+        ]
+      },
+      "tools/verify_approved_constructor_route.py": {
+        "baseline": {
+          "bytes": 12629,
+          "sha256": "50f2c13bc28324cfabc217ea1290cb9c511a5f885437c0ed890d3563020ca366"
+        },
+        "composed": {
+          "bytes": 12812,
+          "sha256": "1587db427042ba267d36ea863bd3113f31db5754f6ecc7e43824e7bf43b236b6"
+        },
+        "inverse": [
+          {
+            "actual": "    try:\n        from .verify_approved_service_owner import legacy_source\n    except ImportError:\n        from verify_approved_service_owner import legacy_source\n",
+            "baseline": ""
+          },
+          {
+            "actual": "hashlib.sha256(legacy_source(path, texts[path]).encode(\"utf-8\")).hexdigest()",
+            "baseline": "hashlib.sha256(texts[path].encode(\"utf-8\")).hexdigest()"
+          }
+        ],
+        "original_foundation": {
+          "bytes": 12533,
+          "sha256": "b732cdaad0e1c6f2c67ddfbb4a32e7f289cd7850415b034df3d2d44b0989a525"
+        },
+        "original_foundation_forward": [
+          {
+            "baseline": "def check(contract, texts):\n",
+            "actual": "def check(contract, texts):\n    try:\n        from .verify_approved_service_owner import legacy_source\n    except ImportError:\n        from verify_approved_service_owner import legacy_source\n"
+          },
+          {
+            "baseline": "hashlib.sha256(texts[path].encode(\"utf-8\")).hexdigest()",
+            "actual": "hashlib.sha256(legacy_source(path, texts[path]).encode(\"utf-8\")).hexdigest()"
+          }
+        ]
+      }
+    },
+    "make": {
+      "path": "Makefile",
+      "original_foundation": {
+        "bytes": 2492,
+        "sha256": "27ff7704fc6f326b24d725c34929aa3a73d11023773e43a4a946abb52acf42d9"
+      },
+      "composed": {
+        "bytes": 2595,
+        "sha256": "1906e964907c3f5e90886a64e60f0ade52146511c78cc360218378e640b5deef"
+      },
+      "remove_only_lines": [
+        "\tpython3 tools/verify_retained_control_readiness.py\n",
+        "\tpython3 tools/verify_mozjs_authenticated_input.py\n"
+      ]
+    }
+  }
+}

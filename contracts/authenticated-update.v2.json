@@ -1,0 +1,138 @@
+{
+  "schema": "trillionnium.desktop.authenticated-update-contract.v2",
+  "status": "SOURCE_CANDIDATE",
+  "domains": {
+    "event": "trillionnium.desktop.durable-update-event.v2",
+    "capsule": "trillionnium.desktop.update-signature-capsule.v2",
+    "signature": "trillionnium.desktop.update-manifest-signature.v1\\0",
+    "readback": "trillionnium.desktop.authenticated-update-readback.v2",
+    "owner_diagnostic": "trillionnium.desktop.authenticated-update-owner.v2"
+  },
+  "api": {
+    "AuthenticatedUpdateOwner": "inherits exact DurableUpdateOwner v1 constructor, methods, operation and result objects; profile-specific private hooks only",
+    "inspect_authenticated_update": "(state_root: 'Path', slot_root: 'Path', *, signature_verifier, clock, protected_rollback_floor: 'int') -> 'AuthenticatedUpdateReadback'",
+    "AuthenticatedUpdateReadback.public_json": "(self) -> 'bytes'",
+    "AuthenticatedUpdateReadback.private_json": "(self) -> 'bytes'",
+    "fact_construction": "observer factory only; dataclass init disabled; creator PID/thread required for delivery; no API consumes it as permission"
+  },
+  "public_fields": [
+    "booted_image_verified",
+    "bootloader_effect_performed",
+    "continuation_authorized",
+    "health_qualified",
+    "production_activation_enabled",
+    "reason_codes",
+    "schema",
+    "signatures_verified",
+    "signed_boot_image_mapping",
+    "status",
+    "stored_slot_images_verified"
+  ],
+  "status_codes": [
+    "no_pending_update",
+    "pending_identity_unknown",
+    "recovery_required",
+    "observation_unavailable"
+  ],
+  "reason_codes": [
+    "external_signature_configuration_unavailable",
+    "no_signed_pending_operation",
+    "legacy_detached_signature_unavailable",
+    "staging_completion_unconfirmed",
+    "signed_boot_image_mapping_unknown",
+    "recovery_marker_present",
+    "journal_invalid",
+    "custody_unavailable",
+    "owner_busy",
+    "kernel_observation_unavailable",
+    "kernel_observation_changed",
+    "persisted_signature_or_image_refused",
+    "unfinished_owner"
+  ],
+  "limits": {
+    "events": 256,
+    "record_bytes": 65536,
+    "exact_manifest_bytes": 16384,
+    "exact_signature_bytes": 16384,
+    "capsules": 1,
+    "v2_directory_entries": 259,
+    "v2_retained_scan_records": 258,
+    "v1_directory_entries_unchanged": 258,
+    "v1_retained_scan_records_unchanged": 257,
+    "image_bytes": 17179869184,
+    "image_stream_chunk_bytes": 1048576,
+    "private_diagnostic_bytes": 65536
+  },
+  "capsule": {
+    "name": "update-signature-<operation_id>.json",
+    "mode": "0600",
+    "root_mode": "0700",
+    "exact_fields": [
+      "schema",
+      "operation_id",
+      "owner_id",
+      "configuration",
+      "signature_admission",
+      "manifest_bytes_b64",
+      "signature_bytes_b64"
+    ],
+    "reference_exact_fields": [
+      "name",
+      "sha256",
+      "manifest_bytes_sha256",
+      "signature_sha256"
+    ],
+    "event_operation_fields": "exact v1 operation fields plus signature_capsule; all subsequent phases retain identical complete reference",
+    "binding": "canonical capsule digest, exact original byte digests, owner, operation, complete policy/admission/configuration and actual state/slot root identities",
+    "publication": "before manifest_verified; exact private one-link nofollow retained inode fsync and directory fsync readback using concrete AtomicStateStore; no overwrite of named capsule",
+    "restart_orphan": "capsule without its complete v2 operation is unknown evidence; refuse and retain, never adopt or replay",
+    "encoding": "canonical ASCII JSON, canonical padded base64 of exact byte envelopes; no normalization of original manifest bytes"
+  },
+  "verification": {
+    "default_roots": [],
+    "configured_roots": "separately approved exact bundled ExternalUpdateSignatureVerifier; no key in capsule is authoritative",
+    "native_process": "actual /usr/bin/openssl with v1 detached signature domain and sealed memfd preimage/signature/approved public key snapshots",
+    "policy": "current separately supplied policy must equal history configuration and actual admission signer/key/signature/preimage/policy/minimum_version fields",
+    "anchors": "explicit trusted configuration clock and protected floor; initial time at least original admission and last event; nondecreasing final time and current root/manifest validity; floor cannot weaken recorded or actual signer minimum",
+    "slots": "complete bounded actual active digest and target digest/length readback through private retained named single-link 0600 descriptors; no mapping of kernel root to either signed slot",
+    "final_readback": "complete retained event/capsule/image/root/lease metadata and inventory before and after trusted final clock callback; exact fixed kernel samples before and after read scan",
+    "failure": "signature, custody, interruption, stale policy, time or floor refusal cannot become a success fact, owner permit or effect"
+  },
+  "compatibility": {
+    "v1_record_reading": "structural history only; old pending v1 never becomes cryptographic authority",
+    "v1_to_v2": "only new owner_open after clean prior owner; no within-operation schema migration",
+    "v1_tools": "unchanged v1 structural observer rejects v2 evidence rather than claiming success",
+    "v1_tests": "unchanged test bodies and fixed v1 record/directory/descriptor budgets"
+  },
+  "custody": {
+    "reader": "unchanged bundled read-only observer component walk and shared nonblocking named leases; never constructs writable stores",
+    "cleanup": "retain managed record/image descriptors through final checks; detach-before-close all acquired descriptors; fork cleanup never LOCK_UN or writes",
+    "creator_scope": "actual creating process and thread; forked or foreign thread verifier/readback delivery refuses",
+    "interruption_scope": "finite actual OpenSSL/FS/substitution/fork/read interruption boundaries, not every asynchronous C-to-Python-store window"
+  },
+  "claims": {
+    "signature_and_stored_slot_readback": "only after complete current actual OpenSSL and actual stored file readback",
+    "signed_boot_image_mapping": "unknown",
+    "booted_image_verified": false,
+    "health_qualified": false,
+    "continuation_authorized": false,
+    "automatic_replay": false,
+    "automatic_resume": false,
+    "caller_health_commit_accepted": false,
+    "bootloader_effect_performed": false,
+    "production_activation_enabled": false,
+    "installed_two_boot_qualified": false,
+    "hardware_power_loss_qualified": false,
+    "production_trust_roots_provisioned": false,
+    "protected_monotonic_floor_storage": false,
+    "trusted_production_clock_provisioned": false,
+    "whole_directory_rollback_protection": false,
+    "privileged_arbitrary_in_process_or_filesystem_writer_isolated": false
+  },
+  "remaining_installed_obligations": [
+    "separately provisioned production roots and protected monotonic version/time anchors",
+    "immutable signed image to actual root/block device mapping",
+    "installed bootloader arm and root selection, measured monotonic health, durable commit/rollback and independently authorized recovery",
+    "actual QEMU two-boot corpus and physical hardware power-cut/long-duration qualification"
+  ]
+}

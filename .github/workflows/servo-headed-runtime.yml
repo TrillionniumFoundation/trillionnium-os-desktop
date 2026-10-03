@@ -5,22 +5,69 @@ on:
     paths:
       - ".github/workflows/servo-headed-runtime.yml"
       - "experiments/servo-headed-runtime/**"
+      - "tools/run_servo_headed_runtime_gate.sh"
+      - "tools/check_servo_resource_gate.py"
+      - "tests/test_servo_resource_gate.py"
+      - "tools/native_input_checkpoints.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tests/test_native_input_checkpoints.py"
+      - "tests/test_native_runtime_identities.py"
+      - "tools/servo_namespace_qualification.py"
+      - "tests/test_servo_namespace_qualification.py"
+      - "contracts/native-direct-inet-qualification.v1.json"
+      - "docs/architecture/NATIVE_DIRECT_INET_QUALIFICATION.md"
       - "contracts/workspace-composition.v1.json"
       - "crates/hepta-workspace-composition/**"
       - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
       - "manifests/servo.lock.json"
       - "manifests/servo-patch-ledger.v1.json"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/artifact_evidence.py"
+      - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   push:
     branches:
-      - codex/d0a02-headed-runtime-v3
+      - main
+      - "codex/**"
     paths:
       - ".github/workflows/servo-headed-runtime.yml"
       - "experiments/servo-headed-runtime/**"
+      - "tools/run_servo_headed_runtime_gate.sh"
+      - "tools/check_servo_resource_gate.py"
+      - "tests/test_servo_resource_gate.py"
+      - "tools/native_input_checkpoints.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tests/test_native_input_checkpoints.py"
+      - "tests/test_native_runtime_identities.py"
+      - "tools/servo_namespace_qualification.py"
+      - "tests/test_servo_namespace_qualification.py"
+      - "contracts/native-direct-inet-qualification.v1.json"
+      - "docs/architecture/NATIVE_DIRECT_INET_QUALIFICATION.md"
       - "contracts/workspace-composition.v1.json"
       - "crates/hepta-workspace-composition/**"
       - "docs/architecture/TRUSTED_WORKSPACE_COMPOSITION.md"
       - "manifests/servo.lock.json"
       - "manifests/servo-patch-ledger.v1.json"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/artifact_evidence.py"
+      - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   workflow_dispatch:
 
 permissions:
@@ -40,19 +87,40 @@ env:
 
 jobs:
   qualify:
+    name: servo-headed-runtime / qualify
     runs-on: ubuntu-24.04
     timeout-minutes: 300
     steps:
       - name: Check out desktop candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: event-source
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
 
       - name: Record exact source identities
         shell: bash
-        run: |
-          set -euo pipefail
-          printf 'TESTED_TREE_SHA=%s\n' "$(git rev-parse HEAD^{tree})" >> "$GITHUB_ENV"
-          printf 'candidate_head=%s\nbase=%s\ntested=%s\ntree=%s\n' \
-            "$CANDIDATE_HEAD_SHA" "$BASE_SHA" "$TESTED_SHA" "$(git rev-parse HEAD^{tree})"
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
+        run: bash tools/run_servo_headed_runtime_gate.sh identities
 
       - name: Check out exact Servo source pin
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -69,6 +137,7 @@ jobs:
           set -euo pipefail
           test "$(git -C servo-source rev-parse HEAD)" = "$SERVO_COMMIT"
           test -z "$(git -C servo-source status --porcelain=v1)"
+          python3 tools/check_servo_resource_gate.py --servo-source servo-source
           python3 - <<'PY'
           from pathlib import Path
           import json
@@ -91,7 +160,8 @@ jobs:
           sudo apt-get update
           xargs -r sudo apt-get install -y --no-install-recommends < /tmp/servo-packages.txt
           sudo apt-get install -y --no-install-recommends \
-            iproute2 mesa-utils x11-utils xdotool xvfb
+            iproute2 libx11-6 mesa-utils x11-utils xdotool xvfb
+          command -v xmessage
           sudo apt-get purge -y fonts-droid-fallback || true
 
       - name: Install Servo-declared Rust channel
@@ -117,7 +187,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             servo-source/target
-          key: servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('servo-source/Cargo.lock', 'servo-source/rust-toolchain.toml', 'experiments/servo-headed-runtime/src/main.rs') }}
+          key: servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-${{ hashFiles('servo-source/Cargo.lock', 'servo-source/rust-toolchain.toml', 'experiments/servo-headed-runtime/src/main.rs', 'experiments/servo-headed-runtime/src/input_ownership.rs', 'experiments/servo-headed-runtime/src/resource_gate.rs', 'experiments/servo-headed-runtime/src/network_confinement.rs', 'experiments/servo-headed-runtime/fixture/index.html') }}
           restore-keys: |
             servo-headed-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
             servo-${{ runner.os }}-${{ env.SERVO_COMMIT }}-
@@ -129,10 +199,33 @@ jobs:
           export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
           overlay="$RUNNER_TEMP/trillionnium_headed_runtime.rs"
           cp experiments/servo-headed-runtime/src/main.rs "$overlay"
+          install -D -m 0644 experiments/servo-headed-runtime/src/input_ownership.rs \
+            "$RUNNER_TEMP/input_ownership.rs"
+          install -D -m 0644 experiments/servo-headed-runtime/src/resource_gate.rs \
+            "$RUNNER_TEMP/resource_gate.rs"
+          install -D -m 0644 experiments/servo-headed-runtime/src/network_confinement.rs \
+            "$RUNNER_TEMP/network_confinement.rs"
           rustfmt --edition 2024 "$overlay"
           rustfmt --edition 2024 --check "$overlay"
           install -D -m 0644 "$overlay" \
             servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs
+          rustc --edition 2024 --test experiments/servo-headed-runtime/src/input_ownership.rs \
+            -o "$RUNNER_TEMP/native-input-ownership-tests"
+          "$RUNNER_TEMP/native-input-ownership-tests"
+          rustc --edition 2024 --test experiments/servo-headed-runtime/src/resource_gate.rs \
+            -o "$RUNNER_TEMP/http-resource-gate-tests"
+          "$RUNNER_TEMP/http-resource-gate-tests"
+          rustc --edition 2024 --test experiments/servo-headed-runtime/src/network_confinement.rs \
+            -o "$RUNNER_TEMP/native-network-entry-tests"
+          "$RUNNER_TEMP/native-network-entry-tests" --test-threads=1
+          python3 tools/servo_namespace_qualification.py validate-contract
+          python3 -m unittest discover -s tests -p test_servo_namespace_qualification.py -v
+          install -D -m 0644 "$RUNNER_TEMP/input_ownership.rs" \
+            servo-source/ports/servoshell/examples/input_ownership.rs
+          install -D -m 0644 "$RUNNER_TEMP/resource_gate.rs" \
+            servo-source/ports/servoshell/examples/resource_gate.rs
+          install -D -m 0644 "$RUNNER_TEMP/network_confinement.rs" \
+            servo-source/ports/servoshell/examples/network_confinement.rs
           install -D -m 0644 experiments/servo-headed-runtime/fixture/index.html \
             servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
           printf 'FORMATTED_OVERLAY_SHA256=%s\n' "$(sha256sum "$overlay" | cut -d' ' -f1)" \
@@ -142,6 +235,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          umask 077
           export RUSTUP_TOOLCHAIN="$SERVO_RUST_CHANNEL"
           mkdir -p artifacts/servo-headed-runtime
           cargo check --locked --manifest-path servo-source/Cargo.toml \
@@ -158,8 +252,11 @@ jobs:
         run: |
           set -euo pipefail
           output="$PWD/artifacts/servo-headed-runtime/runtime"
-          mkdir -p "$output"
+          mkdir -p "$(dirname "$output")"
+          mkdir -m 0700 "$output"
           export HEPTA_D0A02_OUTPUT="$output"
+          HEPTA_D0A02_INPUT_NONCE=$(python3 -c 'import secrets; print(secrets.token_hex(16))')
+          export HEPTA_D0A02_INPUT_NONCE
           export RUST_BACKTRACE=1
 
           Xvfb :99 -screen 0 1280x900x24 -nolisten tcp >"$output/xvfb.log" 2>&1 &
@@ -175,6 +272,7 @@ jobs:
           }
           trap cleanup EXIT
           export DISPLAY=:99
+          unset WAYLAND_DISPLAY
           for _ in $(seq 1 100); do
             xdpyinfo >/dev/null 2>&1 && break
             sleep 0.1
@@ -184,6 +282,8 @@ jobs:
           servo-source/target/debug/examples/trillionnium_headed_runtime \
             >"$output/runtime.log" 2>&1 &
           app_pid=$!
+          printf 'HEPTA_D0A02_INPUT_NONCE=%s\nHEPTA_D0A02_OWNER_PID=%s\n' \
+            "$HEPTA_D0A02_INPUT_NONCE" "$app_pid" >> "$GITHUB_ENV"
           for _ in $(seq 1 600); do
             [[ -f "$output/input-ready" ]] && break
             kill -0 "$app_pid" 2>/dev/null || {
@@ -196,21 +296,15 @@ jobs:
 
           window_id="$(xdotool search --name 'TrillionniumOS Desktop.*D0A-02' | head -n1)"
           test -n "$window_id"
+          test "$(xdotool getwindowpid "$window_id")" = "$app_pid"
           xwininfo -id "$window_id" >"$output/xwininfo.txt"
           xdotool windowfocus --sync "$window_id"
           test "$(xdotool getwindowfocus)" = "$window_id"
 
-          xdotool mousemove --sync --window "$window_id" 200 132
-          xdotool mousedown 1
-          xdotool mouseup 1
-          xdotool key k
-          xdotool mousemove --sync --window "$window_id" 400 164
-          xdotool mousedown 1
-          xdotool mouseup 1
-          xdotool click 5
-          xdotool mousemove --sync --window "$window_id" 200 132
-          xdotool mousedown 1
-          xdotool mouseup 1
+          # Issue the original chrome exclusion and exactly three content pairs.
+          # Actual matching pointer/Down/Up callbacks gate each next event.
+          python3 tools/native_input_checkpoints.py drive --output "$output" \
+            --pid "$app_pid" --window "$window_id" --nonce "$HEPTA_D0A02_INPUT_NONCE"
 
           ps -eo pid,ppid,stat,args >"$output/process-topology.txt"
           timeout 180 tail --pid="$app_pid" -f /dev/null
@@ -221,6 +315,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          unset PYTHONOPTIMIZE
+          python3 tools/native_input_checkpoints.py verify \
+            --output "$PWD/artifacts/servo-headed-runtime/runtime" \
+            --pid "$HEPTA_D0A02_OWNER_PID" --nonce "$HEPTA_D0A02_INPUT_NONCE"
           python3 - <<'PY'
           from pathlib import Path
           import hashlib
@@ -254,7 +352,8 @@ jobs:
 
           initial = report['initial_page_evidence']
           assert initial['generation'] == 1 and initial['loaded'] is True
-          assert initial['pointerMoves'] > 0 and initial['pointerDowns'] > 0
+          assert initial['pointerMoves'] > 0 and initial['pointerDowns'] == 3
+          assert 'x' not in [str(item).lower() for item in initial['keyDowns']]
           assert initial['clicks'] > 0 and initial['wheels'] > 0
           assert 'k' in [str(item).lower() for item in initial['keyDowns']]
           assert report['native_ime_events'] > 0
@@ -267,6 +366,14 @@ jobs:
           }
           assert initial['popupAttempted'] is True
           assert initial['externalNavigationAttempted'] is True
+          fault = report['fault_injection']
+          assert fault['mechanism'] == 'requested_SIGKILL'
+          assert fault['generation'] == 1 and fault['pid'] > 1 and fault['start_time'] > 0
+          assert fault['exact_termination_observed'] is True
+          selected = json.loads((root / 'content-process-identity.json').read_text())
+          sent = json.loads((root / 'content-sigkill-sent.json').read_text())
+          assert selected == {'generation': 1, 'pid': fault['pid'], 'start_time': fault['start_time']}
+          assert sent == {**selected, 'signal': 'SIGKILL'}
           recovery = report['recovery_page_evidence']
           assert recovery['generation'] == 2 and recovery['loaded'] is True
 
@@ -303,6 +410,10 @@ jobs:
           report['artifacts'] = artifacts
           report['evidence_identity'] = {
               'repository': os.environ['GITHUB_REPOSITORY'],
+              'event_name': os.environ['GITHUB_EVENT_NAME'],
+              'mode': os.environ['EVIDENCE_MODE'],
+              'parent_count': int(os.environ['TESTED_PARENT_COUNT']),
+              'promotion_authoritative': os.environ['EVIDENCE_MODE'] == 'exact_main_push',
               'base_sha': os.environ['BASE_SHA'],
               'candidate_head_sha': os.environ['CANDIDATE_HEAD_SHA'],
               'tested_sha': os.environ['TESTED_SHA'],
@@ -314,12 +425,51 @@ jobs:
                   Path('experiments/servo-headed-runtime/src/main.rs').read_bytes()
               ).hexdigest(),
               'formatted_overlay_sha256': os.environ['FORMATTED_OVERLAY_SHA256'],
+              'fault_record_sha256': {
+                  name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+                  for name in ('content-process-identity.json', 'content-sigkill-sent.json')
+              },
+              'input_ownership_sha256': hashlib.sha256(
+                  Path('experiments/servo-headed-runtime/src/input_ownership.rs').read_bytes()
+              ).hexdigest(),
+              'resource_gate_sha256': hashlib.sha256(
+                  Path('experiments/servo-headed-runtime/src/resource_gate.rs').read_bytes()
+              ).hexdigest(),
+              'fixture_sha256': hashlib.sha256(
+                  Path('experiments/servo-headed-runtime/fixture/index.html').read_bytes()
+              ).hexdigest(),
+              'resource_result_sha256': hashlib.sha256(
+                  (root / 'resource-gate-result.json').read_bytes()
+              ).hexdigest(),
               'servo_lock_sha256': hashlib.sha256(
                   Path('manifests/servo.lock.json').read_bytes()
               ).hexdigest(),
           }
           path.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
           PY
+          python3 tools/check_servo_resource_gate.py --runtime-dir artifacts/servo-headed-runtime/runtime
+
+      - name: Run default ordered rapid native pairs without ACK pacing
+        timeout-minutes: 5
+        shell: bash
+        run: bash tools/run_servo_headed_runtime_gate.sh run-native-burst-v1
+
+      - name: Run native held-gesture refusal corpus v1
+        timeout-minutes: 10
+        shell: bash
+        run: bash tools/run_servo_headed_runtime_gate.sh run-held-gestures-v1
+
+      - name: Qualify explicit native direct-INET namespace profile
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset PYTHONOPTIMIZE
+          python3 tools/servo_namespace_qualification.py run \
+            --binary "$PWD/servo-source/target/debug/examples/trillionnium_headed_runtime" \
+            --output "$PWD/artifacts/servo-headed-runtime/native-direct-inet-v1"
+          python3 tools/servo_namespace_qualification.py verify-corpus \
+            --output "$PWD/artifacts/servo-headed-runtime/native-direct-inet-v1"
 
       - name: Restore clean exact Servo checkout
         if: always()
@@ -327,6 +477,9 @@ jobs:
         run: |
           rm -f \
             servo-source/ports/servoshell/examples/trillionnium_headed_runtime.rs \
+            servo-source/ports/servoshell/examples/input_ownership.rs \
+            servo-source/ports/servoshell/examples/resource_gate.rs \
+            servo-source/ports/servoshell/examples/network_confinement.rs \
             servo-source/ports/servoshell/examples/trillionnium_headed_fixture.html
           test -z "$(git -C servo-source status --porcelain=v1)"
 

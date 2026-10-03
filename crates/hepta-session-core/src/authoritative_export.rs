@@ -217,6 +217,7 @@ mod tests {
     };
     use std::fs::{self, OpenOptions};
     use std::io::Write;
+    use std::os::unix::fs::DirBuilderExt;
     use std::path::PathBuf;
     use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -229,7 +230,10 @@ mod tests {
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&path);
-        fs::create_dir(&path).expect("create temp directory");
+        fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&path)
+            .expect("create private temp directory");
         path
     }
 

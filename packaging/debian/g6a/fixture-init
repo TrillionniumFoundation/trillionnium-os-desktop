@@ -1,0 +1,11 @@
+#!/bin/busybox sh
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+/usr/bin/python3 /usr/lib/g6a/root_probe.py
+status=$?
+/bin/busybox sync
+if [ "$status" -eq 42 ]; then
+  /bin/busybox reboot -f
+else
+  /bin/busybox poweroff -f
+fi
+exec /bin/busybox sleep 60

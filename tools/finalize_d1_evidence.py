@@ -12,6 +12,13 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+try:
+    from .artifact_evidence import artifact_destination, producer_workflow, validate_source_identity
+    from .d1_source_provenance import stage_source
+except ImportError:
+    from artifact_evidence import artifact_destination, producer_workflow, validate_source_identity
+    from d1_source_provenance import stage_source
+
 CHUNK_BYTES = 1024 * 1024
 MAX_RAW_EVIDENCE_BYTES = 4 * 1024 * 1024
 
@@ -119,6 +126,24 @@ def validate_results(root: Path) -> dict[str, Any]:
     )
     host_environment = load_json(evidence / "host-toolchain.json")
 
+    return validate_result_documents({
+        "pipeline": pipeline, "reproducibility": reproducibility,
+        "boot": boot, "acceptance": acceptance, "host_tool": host_tool,
+        "host_environment": host_environment, "product_check": product_check,
+        "qualification_check": qualification_check,
+    })
+
+
+def validate_result_documents(documents: dict[str, Any]) -> dict[str, Any]:
+    pipeline = documents["pipeline"]
+    reproducibility = documents["reproducibility"]
+    boot = documents["boot"]
+    acceptance = documents["acceptance"]
+    host_tool = documents["host_tool"]
+    host_environment = documents["host_environment"]
+    product_check = documents["product_check"]
+    qualification_check = documents["qualification_check"]
+
     if pipeline.get("status") != "PASS":
         raise ValueError("D1 pipeline is not a pass")
     if reproducibility.get("status") != "PASS_TWO_INDEPENDENT_BUILDS":
@@ -223,6 +248,9 @@ def stage_artifact(
     artifact: Path,
     results: dict[str, Any],
 ) -> None:
+    artifact = artifact_destination(artifact, (repository, root))
+    validate_source_identity(repository)
+    producing_workflow = producer_workflow(repository)
     if artifact.exists():
         shutil.rmtree(artifact)
     artifact.mkdir(parents=True)
@@ -234,6 +262,8 @@ def stage_artifact(
         json.dumps(source_manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+
+    source_provenance = stage_source(repository, artifact)
 
     canonical_files = {
         root / "pipeline-result.json": artifact / "pipeline/pipeline-result.json",
@@ -286,7 +316,7 @@ def stage_artifact(
             )
 
     product_binary = repository / "target/release/hepta-agent-portd"
-    qualification_binary = repository / "target/release/hepta-agent-d1-fixture"
+    qualification_binary = repository / "target/release/examples/hepta-agent-d1-fixture"
     binary_digests = {
         "schema": "trillionnium.desktop.d1-binary-digests.v1",
         "product": {
@@ -295,7 +325,7 @@ def stage_artifact(
             "bytes": product_binary.stat().st_size,
         },
         "qualification": {
-            "path": "target/release/hepta-agent-d1-fixture",
+            "path": "target/release/examples/hepta-agent-d1-fixture",
             "sha256": sha256(qualification_binary),
             "bytes": qualification_binary.stat().st_size,
         },
@@ -351,7 +381,7 @@ def stage_artifact(
         output_digests[relative.as_posix()] = sha256(path)
 
     receipt = {
-        "schema": "trillionnium.desktop.d1-final-qualification.v3",
+        "schema": "trillionnium.desktop.d1-final-qualification.v4",
         "status": "PASS",
         "repository": os.environ["GITHUB_REPOSITORY"],
         "event_name": os.environ["GITHUB_EVENT_NAME"],
@@ -365,6 +395,7 @@ def stage_artifact(
         "tested_sha": os.environ["TESTED_SHA"],
         "tree_sha": os.environ["TESTED_TREE_SHA"],
         "workflow": workflow,
+        "producer_workflow": producing_workflow,
         "runner_sha256": sha256(
             repository / "tools/run_d1_final_qualification.sh"
         ),
@@ -373,10 +404,11 @@ def stage_artifact(
         "source_input_manifest_sha256": sha256(source_manifest_path),
         "source_input_files_sha256": source_manifest["files_sha256"],
         "source_input_count": source_manifest["file_count"],
+        "source_provenance": source_provenance,
         "output_digests": output_digests,
         "product_fixture_separation": {
             "product_default_graph_fixture_free": True,
-            "qualification_feature": "d1-qualification",
+            "qualification_feature": "fixture",
             "qualification_binary": "hepta-agent-d1-fixture",
             "qualification_server_exec": results["acceptance"]["agent_port"][
                 "qualification_server_exec"
@@ -410,6 +442,15 @@ def stage_artifact(
         json.dumps(receipt, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    try:
+        try:
+            from .verify_d1_artifact import verify_artifact
+        except ImportError:
+            from verify_d1_artifact import verify_artifact
+        verify_artifact(artifact)
+    except Exception:
+        receipt_path.unlink()
+        raise
 
 
 def main() -> int:
@@ -421,7 +462,7 @@ def main() -> int:
 
     repository = args.repository.resolve()
     root = args.root.resolve()
-    artifact = args.artifact_root.resolve()
+    artifact = args.artifact_root.absolute()
     if not repository.is_dir() or not (repository / ".git").exists():
         raise SystemExit("repository path is not a Git worktree")
     if not root.is_dir() or root.is_symlink():

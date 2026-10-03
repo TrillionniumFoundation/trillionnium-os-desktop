@@ -44,6 +44,26 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 - `SessionMachine`, `SessionSnapshot`, `SessionEvent`, `SessionEffect`, `SessionPhase`, `ControlState`, `ArbiterQueue` and related errors model arbitration.
 - `ReceiptJournal`, `ManagedReceiptStore`, envelope/lifecycle/privacy/effect types, recovery reports, export and retention functions model durable facts.
 - Open/create/append/inspect/seal/rotate operations are explicit and fallible.
+- `contains_receipt`, `has_unresolved_receipts`, `receipt_fact` and `execution_reconciliation_facts` revalidate the complete locked journal chain, including sealed predecessors. Lookup never readmits a request.
+- `DurableReceiptFact` has private fields and can only be obtained by authoritative journal lookup. Its exact request digest, latest lifecycle and record digest are evidence, not execution or replay permission. Every accessor checks the creating PID and returns a fallible `Result`; an inherited fork fact cannot be translated into a new process's authority.
+
+The fact accessor signatures are:
+
+```rust
+receipt_id(&self) -> Result<&str, JournalError>
+request_sha256(&self) -> Result<Digest, JournalError>
+lifecycle(&self) -> Result<ReceiptLifecycleState, JournalError>
+record_sha256(&self) -> Result<Digest, JournalError>
+```
+
+These are checked source API signatures. The v1 on-disk record format is unchanged.
+
+Structural terminal state and execution certainty are distinct.
+`has_unresolved_receipts` reports nonterminal lifecycle history;
+`execution_reconciliation_facts` separately preserves `indeterminate` and
+`interrupted` after durable dispatch for explicit recovery review, even after
+rotation/reopen. An interruption before dispatch needs no execution decision.
+Neither query changes receipts or records an operator acknowledgment.
 
 This library registers no binary target. Cargo binary auto-discovery and package build scripts are disabled.
 
@@ -56,6 +76,14 @@ Registered Cargo features: none.
 ## State, concurrency, and failure semantics
 
 The session machine applies each event atomically or returns a typed error. Journal append encodes the complete record, writes at the known complete offset, syncs, then advances in-memory sequence/chain state. Uncertain writes poison the writer until reopen. Only a verified torn tail may be explicitly truncated; mid-log corruption fails hard.
+
+Live journals, managed directory custody and sealed facts belong to the creating
+process. A writer may move to another thread in that process. Fork copies are
+refused before file/lock validation, append, sync, lookup, sealing or rotation.
+Child Drop only closes its inherited descriptors; it never writes a clean-release
+marker or explicitly unlocks the parent's open file description. The parent
+retains its sole writer lease. A child must obtain a new independently admitted
+store after the original writer releases custody.
 
 Failures must preserve the last truthful state. A timeout, crash, peer loss, storage ambiguity or unsupported operation cannot be converted into successful completion by a caller, retry loop, fixture, log message or evidence generator.
 
@@ -75,6 +103,7 @@ Primary source or test references:
 
 - `crates/hepta-session-core/src/tests.rs`
 - `tests/test_s05_receipt_recovery.py`
+- `crates/hepta-session-core/tests/journal_fork_custody.rs` (single-thread actual fork; legacy and managed writers, inherited sealed facts and parent lease preservation)
 
 Applicable workflows:
 

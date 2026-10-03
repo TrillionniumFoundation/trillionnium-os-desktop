@@ -1,0 +1,683 @@
+{
+  "schema": "trillionnium.ci-source-identity.v1",
+  "profile": {
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "remote": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git",
+    "input_fields": [
+      "CI_SOURCE_ROLE",
+      "CI_SOURCE_EVENT",
+      "CI_SOURCE_REPOSITORY",
+      "CI_SOURCE_REF",
+      "CI_SOURCE_REF_NAME",
+      "CI_SOURCE_SHA",
+      "CI_SOURCE_PR_NUMBER",
+      "CI_SOURCE_PR_HEAD",
+      "CI_SOURCE_PR_BASE",
+      "CI_SOURCE_BASE_REF"
+    ],
+    "roles": [
+      "head",
+      "prospective-merge",
+      "event-source"
+    ],
+    "events": [
+      "pull_request",
+      "push",
+      "workflow_dispatch"
+    ],
+    "sha": "exact40lowercasehex",
+    "pr_number": "canonical positive decimal at most10digits",
+    "refs": "full canonical ref; one UTF8row with exactly SHA TAB queriedref",
+    "candidate": "live pull head matches event and checkout; parent count unrestricted",
+    "prospective": "live base+pull head+pull merge match event; checkout has exactly ordered2parents",
+    "push": "official current full branch ref matches event and checkout",
+    "manual": "official current full branch matches event and checkout; non-authoritative",
+    "snapshot": "same immutable commit/tree/rawparents before and after live lookups; clean checkout; bounded tracked bytes/type/mode match tree; no hidden index flags",
+    "limits": {
+      "total_seconds": 20,
+      "command_seconds": 5,
+      "combined_command_output_bytes": 262144,
+      "ref_utf8_bytes": 1024,
+      "cleanup_wait_seconds": 5,
+      "tracked_files": 4096,
+      "tracked_file_bytes": 16777216,
+      "tracked_total_bytes": 67108864,
+      "tracked_chunk_bytes": 65536
+    },
+    "subprocess": {
+      "retained_unreaped_group_before_signals": true,
+      "output_and_timeout_checked": true,
+      "fixed_cli_remote_no_override": true,
+      "checkout_local_remote_rewrite_ignored": true
+    },
+    "claims": {
+      "source_binding_only": true,
+      "promotion_authority": false,
+      "qualification": false,
+      "installed": false,
+      "production_ready": false,
+      "all_async_snapshot_windows_closed": false
+    }
+  },
+  "workflows": {
+    ".github/workflows/agent-port-custody.yml": {
+      "validate-custody": {
+        "role": "event-source",
+        "original_step_sha256": [
+          "6b73f5354b8dc1cb1c5668255ba054a5c888afeee0390fb90ab49ae52799ac15",
+          "6f6100018140f6c33f0d62fd67ea818839dfeeaddf90dedde5b4f3cb490275e3",
+          "4de5fea92daf69ef4f88d887aaeb3af6d543d6376d5cdf4e9ac4c2094a0a9d6e",
+          "312b4d162f63248a28085c994dfb7eb34dd6da50a1f8b9447d07bf39b6bd2367",
+          "128ae90c9d22900a7c7bcd94f709a5f5d764e5fe12609c97db2e570725e6b2f5",
+          "79082d45ee021a6fb0bd0a4bd59074be7fe01f73ccb31df1cda54eaa3e1f4219",
+          "eb9e835d8bd68b221d68689987b18eff66b000e5b675d93b2057a56febe89499",
+          "a9e9909e3a81cd8985a3597037d384d98af3ed2d8a77e04ec027f3942c642e82"
+        ]
+      }
+    },
+    ".github/workflows/agent-transport-reference.yml": {
+      "reference-exact-head": {
+        "role": "head",
+        "original_step_sha256": [
+          "5b51a1274275616d510aba04387702c24700a485e58acc29fe844035868f9db2",
+          "17bd692cdc6c5ca60ea32d6dbed461e531e66fa988fd04121258d4f61ad284ae",
+          "d34cd7abca04e81b4dd1e6300b563273517d1dee38645b5bc35d16f1a961513a",
+          "c6e226b85938ada1ac1810449ed39fb6a89844e3b9f3fd248f013013cef50aac",
+          "2954e952e87d62ef208dd362a9f68132dfafd76a7bdf3acc2252cb0bc0e01107",
+          "6faabbda800a2b29a8a4ee1002185ad91ed34f728b9a02e98c6b2a4914b9be1e",
+          "1a121b1c4defc5cab4bc20b76fb59fc1bcbe28c0000f6315ca289a81948b7adf",
+          "da3f40659eca5cb3fbc435640c3bcb6ab9e0284f9361a9225c10510533ad278f"
+        ]
+      },
+      "reference-prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "7745de0359e1a0da7edd37dfbe5ad6ed3d30a3b7c4f8186a1f147182a7750b38",
+          "c1ed9047f2c00aa80ca5ecbb26c831435760c730394b0a863a1fcee2623c93bb",
+          "d34cd7abca04e81b4dd1e6300b563273517d1dee38645b5bc35d16f1a961513a",
+          "39159d3154ca52ff187bd1a8c8fc10b360ddb41f8d3ccf073f93709c03613000"
+        ]
+      }
+    },
+    ".github/workflows/approved-mechanism-policy.yml": {
+      "actual-host-corpus": {
+        "role": "${{ matrix.object }}",
+        "original_step_sha256": [
+          "5afc5b0140ebd38f58665d133837b165bac9d54dbbd3c9318cc22b8c721b053b",
+          "f53aefa19cd4dfa127b6e8b0502aa2a5ba930f2b5a3862f11ada9f0aba8c426c",
+          "a11288f57b602d6b536e732c0af4f4df835518b5b0053bc14e03db53773aeaec",
+          "7348d8845cd9c716139737d764996eedceb62de8c7e7defe979c6ab2d0710176",
+          "722756143c004f30b74b7ace3533a4d1096de51e4c8d72b40e740d58a4fd44f2"
+        ]
+      }
+    },
+    ".github/workflows/authenticated-update-readback.yml": {
+      "actual-host-corpus": {
+        "role": "${{ matrix.object }}",
+        "original_step_sha256": [
+          "5afc5b0140ebd38f58665d133837b165bac9d54dbbd3c9318cc22b8c721b053b",
+          "ec557c0d3de6ce8963f8ae325ba84566d23a4b93fe7dd0f896573a5f56951463",
+          "136ef930d8c3dc706443e2199ad48cc7ad33ddb606095f5f9f496879f77e957a",
+          "d34cd7abca04e81b4dd1e6300b563273517d1dee38645b5bc35d16f1a961513a",
+          "e4599f83dd5419ec5201957fdb40c3f9a6bc23fcede36586f5a04a2cc023ec82",
+          "cc1b46736ab941da9a3469e0c937e190309b923243e7b2f86c5abc012feb7977"
+        ]
+      }
+    },
+    ".github/workflows/browser-codec-reference.yml": {
+      "reference-and-static-audit": {
+        "role": "event-source",
+        "original_step_sha256": [
+          "e2323c8b1257e83d2456aa61b6e54982bf98cb4fa99bfb782d7a1b07660529d8",
+          "c34ac52c6d66e1d2227698439bef400d2924be13669f3736f6ce372fe5277559",
+          "e540a57ba8bd6746ef5d3fce64f42c474411aaeffd25743198defaf3dc24b8b5",
+          "9373b2caab9237353a06dc2a4cca47a2b5ecad733d6d5992abd2b60a1b3d3e91",
+          "0f4ef2cedf9486f67bbd9333eb8b9ee42b2b1bd8498a9cf8c72035dcb64d61f5",
+          "284d5a7514eaca76309f93f4ab7eb1bd7da2041a4b501e9cae13bf8602db4aa7"
+        ]
+      },
+      "rust-exact-head": {
+        "role": "event-source",
+        "original_step_sha256": [
+          "0887fd22357b3e4eff6090a6ccb286619c7272c18c9aa1c80f97e971a13f0019",
+          "6f6100018140f6c33f0d62fd67ea818839dfeeaddf90dedde5b4f3cb490275e3",
+          "15b47323039fc1d7d95d8cf4477b04784951694ab12c0212467e9e18e22aad5c",
+          "f21cecac697d101a4943783ad466b1acb20d4789986fab7fd9457481409f6a7d",
+          "5a56393dd94ed145db62b8ec81b49ff0990b794d804df02e02662f275f275e61",
+          "531f2607c1c19ba431190934bd2bbb96e67bae6b2f5c5ce09f212a4397a816aa",
+          "b753da12469e08a84aa1aeac18e91db5135b5d095430e5ec4c63a9b741036982",
+          "d7d1d77ee0469a009b5e586015377d77135300eb8c27f2e5ce4ecc2d5be06d1a",
+          "274105eb7d18e62baec2bd17aa9e1c3c296de5fd28680f4ef7f251a195759d61"
+        ]
+      }
+    },
+    ".github/workflows/ci.yml": {
+      "repository-contracts": {
+        "role": "head",
+        "original_step_sha256": [
+          "5b51a1274275616d510aba04387702c24700a485e58acc29fe844035868f9db2",
+          "a6d02d2a5be50d758863950d49695e2514c7546bafc5ce1b28a7d3de69388f7e",
+          "d24e6f542e39b7ae28cbf4045de3da10780061c2ebf5e20c1633b73c30ac6d24",
+          "74a0a6fd584ac0636dc87cab83a9896a43e60fada8cb2fdab3c39d3c5b65c4d9",
+          "e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c",
+          "aebdf432913ae63489f6057c328b77b287cb21c50dc55021f3bac4c84a6fedee",
+          "b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479"
+        ]
+      },
+      "rust": {
+        "role": "head",
+        "original_step_sha256": [
+          "5b51a1274275616d510aba04387702c24700a485e58acc29fe844035868f9db2",
+          "2235e47019d59d121d81506cd6f9d42a74ecf3c699aeded5c8202a3d89bbe7c5",
+          "97dc23030b4c10be3680a6d40c12d19373ccacb1caf644b26e3503e033262909",
+          "7427da18d5a40dcd8dc3a3edeb9b195e98679622756815dbd4b5756caefa7c04",
+          "d16d745f283069b900d90e989d1f8c70abe443cedc3c0ddf6caa919830729e6a",
+          "3cfd0fcd86ec2fec3b5ee257635cdc5f3da5cdcafc0aea186a15b567326f5ef8",
+          "d511aada9c83ed633b1700f4a7e36dcdc455a992aca049624876e49a26aabd82",
+          "580a5646bc15e22bf30b107ef40bf13df23e62cc43a8f9a95c5835802e87deed",
+          "5236aaabde0a257e9b6512c03e29a4dfaa6ae66c2425dfbcb9cda3435477906c"
+        ]
+      },
+      "repository-contracts-prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "206a29e7e793d622a47ab3fb42728603fd4c02be856881c5db996ca97bcbd89b",
+          "a6d02d2a5be50d758863950d49695e2514c7546bafc5ce1b28a7d3de69388f7e",
+          "6f6a9ffd20bce509fd0c59f1dd30246be19597e9c40d575081be4345a8976195",
+          "5b2dd24c57d48dbbf4f392e796ef7d83a883cceb8e0d3c97b5cbdd2bbb15b787",
+          "e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c",
+          "ee2c74a91b3a7d2e195c58b83a00e3744ab538814ffb87b57d0ecbb7c1bf5303",
+          "b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479"
+        ]
+      },
+      "rust-prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "206a29e7e793d622a47ab3fb42728603fd4c02be856881c5db996ca97bcbd89b",
+          "2a626864d0531723d10e7fa4a5ac37588a4f486180dfb16271c4427931211529",
+          "97dc23030b4c10be3680a6d40c12d19373ccacb1caf644b26e3503e033262909",
+          "7427da18d5a40dcd8dc3a3edeb9b195e98679622756815dbd4b5756caefa7c04",
+          "d16d745f283069b900d90e989d1f8c70abe443cedc3c0ddf6caa919830729e6a",
+          "3cfd0fcd86ec2fec3b5ee257635cdc5f3da5cdcafc0aea186a15b567326f5ef8",
+          "d511aada9c83ed633b1700f4a7e36dcdc455a992aca049624876e49a26aabd82",
+          "580a5646bc15e22bf30b107ef40bf13df23e62cc43a8f9a95c5835802e87deed",
+          "5236aaabde0a257e9b6512c03e29a4dfaa6ae66c2425dfbcb9cda3435477906c"
+        ]
+      }
+    },
+    ".github/workflows/controlled-egress.yml": {
+      "actual-host-corpus": {
+        "role": "${{ matrix.object }}",
+        "original_step_sha256": [
+          "5afc5b0140ebd38f58665d133837b165bac9d54dbbd3c9318cc22b8c721b053b",
+          "8e82662140933d8828deb9aa92be06246a30541c83bd515bcfd6dfe5e3c34e9f",
+          "d34cd7abca04e81b4dd1e6300b563273517d1dee38645b5bc35d16f1a961513a",
+          "2ea9a1e8beec47382cbff64257a21e92c1a4f389af5464fb539b286ecddba62f",
+          "4c4c0091420d8f278dcb02113c7dacd60853591c897e0e810ce804cbcdc682bc"
+        ]
+      }
+    },
+    ".github/workflows/d1-final-qualification.yml": {
+      "exact-image": {
+        "role": "event-source",
+        "original_step_sha256": [
+          "142d081ec452ac8bcbc620871aabf078c2dc177eec30341e975159ded7327bac",
+          "997f581a6546ca69f3d883cfca395c9a3df0be7b1c05f42f4307502025d260d1",
+          "a5c84e4ece4752d1b5ae6ca7e1073a9869be85a0058a64df9dfca80663337f32",
+          "1d48e7384bb940d4ff745530162039b7671c5bae6fdec980d9c9f768495936b1",
+          "f7e484024d9c2e631fe864b89378921c5072f90bc02d2c59e37edc226fbcbf75",
+          "11e42260f452ae56ca1537a6b8ab5fa27c5b36287e352710282e11d449f8cdf3",
+          "7df1c58ad9ba2802fcf47975e3c61ace710c5d178e9bd671c385e5a9f77f22eb",
+          "324fd3ed7c054e55525e068a072541f0fabea687b5a18d5d14f799c13bd8252c",
+          "25d8660e7bc493e955f3d9a7fe1875edc7b50d7c18c655f77fff2b88820f94b9",
+          "5a05763502b17ea245a399b70f21a4c40eef382fc8f7b5e4ce52787be81d94a7",
+          "607e859e9394c4e46996fe959c5d85fe62383c724886c41a113f5e1d196b4153",
+          "b006ae98f319b0f9d33df55615e99ad20a502ce9eb9854e4a9841244e0b3eb61",
+          "8b956718aa060bf762de7a1742d98db9d6b6109bd08d6225bd3ad60cae65e521",
+          "f47ac10b9e4792a6a8c2608a546ecef631af95a51608f8abd4e08a21eb796498"
+        ]
+      }
+    },
+    ".github/workflows/d2i-integrated-image.yml": {
+      "exact-head-integrated-image": {
+        "role": "event-source",
+        "original_step_sha256": [
+          "499a912efdac1f6eeab2c8ae7db6012dd2a36437e351bdaf40f9e58609a28fdc",
+          "afa2d89443c8fec6217c98febf0dd886b3b0b80e8acb28f4182df82279f302b1",
+          "961fc201a10734fa513d9e46b32f06c8934666442064c5f38c5abd2370888e5d",
+          "2882875c4726596208937499b461de5183b0f434f852ba9bcb0ecf27b66c56c6",
+          "94e73b81685f16d89112cb7d535febbaa2559b070b2b46564da7d287f4379943",
+          "5a78df7030ad09aa62447b591495f66f0b82633e864aa4d190bbc2e9b9a7a835",
+          "97588277e667c4e878d9e96f4916e2161d2ee9fa530ae47c6d8e841464d741fa",
+          "1425f1b9d1963506886b7fadda1c578a2af82fab7f91c1e4e05b45fa55baeae3",
+          "57d1286b74d31a812cc9e602303fcd13043684d7cff73f0e216ede2f8b03c885",
+          "6e8c05acf29fda2b31fa1beb4fb3bbaa71f0c86fa7ad066cdc8fbf71c33f1108",
+          "7408f7b46b790225a9fe8e13ae6ef7b2381a6d33f66b677d521d9cc4db85ba04",
+          "5bb8b238bee3347f5080709757a4e4439e4e2fcd4f1a2e63173c104b599b12c8",
+          "30310d752e4b98d71b37910033d7c461991dd99cfb704d9dfe359d9c78f0e5f0",
+          "999b869e3617af7a9284b01e76849980cde74a7bbd6f84686270705ee39aa26d",
+          "af6ae624b5a4e7523edc316d35beb6aa41ef0265c9f2650c42b576557df32827",
+          "3ed54a4f7ba20533295faf7f5c37ffecd08999665f3c5747e0156f0ec7a4c8d6",
+          "fbf8af15cfec13589b3d0bb61ebd774073f4d13fb174ce3587f01464c8b08b3c",
+          "6d69c6f7c4e0f5d704a2fc3568b3ddc0bf65a0d3e7f25f19d47f2d33280ef1f1",
+          "d2fa6da1ba4d58a38c36eacfd97e8e921f87d5a3203c481740fa5cc1ab93ded6",
+          "01a082cb96eb0146c0a54c1d03ba2100703fe1496640f9af833d728dd762ff31",
+          "b6a582f2e0169b9913d1c339d1c8a98726f26166c91d0468f5bc96883cd9d343",
+          "10a9d629d1996be5a1408b784b22a42d07ad7c1b6ecaa3306819b0526971d34a",
+          "72af7955ddef07bb59db07c27c9a3b2528497057c9286c1634d98d545d676a8b",
+          "ae48fddfb914c696ae97700905b88394561ad3cb2d6e3ca79cc808176126419c",
+          "fd81b8d320774f90ac61b31709fd2567516022d10c61d7df31947a08b3ee2e66"
+        ]
+      }
+    },
+    ".github/workflows/g2-approved-native-startup.yml": {
+      "source-prospective": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "c18b43c03b3f178ce452836c6211a893c90b81c139b070bfc0e07c6af4368d35",
+          "de064efcd068782c298bd59cc2a781b8452406243dd41b66ecea269e2651ada3",
+          "e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c",
+          "bb7e6e27ce7d69bc9ca4d9fd10e6a33fda08f4050b7b4007060727a9d5b89c50",
+          "b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479"
+        ]
+      },
+      "exact-pin-owner": {
+        "role": "head",
+        "original_step_sha256": [
+          "5c482df4b1e8d8664095021d997e0aee5ed8b193802e818d7a1e57a88167440d",
+          "289bcf283dd6b28b60ee86656ca4474248d36d33f1c5decd5721a2b53c491568",
+          "686fbbbabf60499d2ed001ca5c27341e75e4fcb6653e2be3412973f9edfd79af",
+          "37db2321e2b5223c63205142c85a6cdc27c83782bd5ccb249ee010deb28bb8d2",
+          "6c59c2e266383a02eba78060c60a66d1c35b2ecb860cfa79547933ba87ca643b",
+          "17bce64e9c48c92a630b856a203704555e68af2c933c47b3a61447eb71c9f10d",
+          "d5170e0ca8c3928e2d78a20c9e6e4c09460e81437d95bc960b6561aca98ecd5a"
+        ]
+      }
+    },
+    ".github/workflows/g2-native-product-owner.yml": {
+      "source-prospective": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "c18b43c03b3f178ce452836c6211a893c90b81c139b070bfc0e07c6af4368d35",
+          "e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c",
+          "347fc164a5033dd2a3beb54884ce2a9e77d2c0986e4ef59b1a6697aa3b441b06",
+          "b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479"
+        ]
+      },
+      "exact-pin-owner": {
+        "role": "head",
+        "original_step_sha256": [
+          "5c482df4b1e8d8664095021d997e0aee5ed8b193802e818d7a1e57a88167440d",
+          "61baee649aad53a53c9b261a73b047f59f1f8d196bf1bc2d5f83db96ed9a8731",
+          "686fbbbabf60499d2ed001ca5c27341e75e4fcb6653e2be3412973f9edfd79af",
+          "027ebaf54562f8c0dbe45b4b0f5a4918d3758f18054e3e417af2d3660dd87f9f",
+          "fc17dadaf77321e50fc6960c16adf57bb3f2d7ad73b54c6112c296ff673ae167",
+          "e8e92b85e7f307f4badc2358152583017d0e4e601e96156a20d347680bf963d5",
+          "0e186e1d8270a0edecfba0a54640de61ec2eed51aa1b1e0af60fb4fc073265c0"
+        ]
+      }
+    },
+    ".github/workflows/module-documentation.yml": {
+      "exact-head": {
+        "role": "head",
+        "original_step_sha256": [
+          "5b51a1274275616d510aba04387702c24700a485e58acc29fe844035868f9db2",
+          "a6d02d2a5be50d758863950d49695e2514c7546bafc5ce1b28a7d3de69388f7e",
+          "1dbaee04731dc68b2b8ecb4b75d99abcde72226fae123aa87b62b87b57494e43",
+          "177d672448b2f7eaca85e30b5248a22a4225199879298f5a872d72e019b2335d",
+          "59ec4048fef9f7d54bd6579e393562ab7659abb6aa3cef52da9ff87cbb12c6da"
+        ]
+      },
+      "prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "206a29e7e793d622a47ab3fb42728603fd4c02be856881c5db996ca97bcbd89b",
+          "a6d02d2a5be50d758863950d49695e2514c7546bafc5ce1b28a7d3de69388f7e",
+          "1dbaee04731dc68b2b8ecb4b75d99abcde72226fae123aa87b62b87b57494e43",
+          "1552cb1e46197ad4360c08411128dc1c066f81c7ae838c320e62e8f2e7c71784",
+          "b1ca2e39ededb3889bc83b5098281a07e88fd4373c68d1a3cc23b9d9d575d18e"
+        ]
+      }
+    },
+    ".github/workflows/receipt-journal.yml": {
+      "exact-source": {
+        "role": "head",
+        "original_step_sha256": [
+          "5b51a1274275616d510aba04387702c24700a485e58acc29fe844035868f9db2",
+          "18d8a25f9a38129dfa87864c42f0c8326f4ef2d8745272f9ca8713c56dc3f695",
+          "6515c3e8640be747a004993267933719b8257a00a2ed87ebca37e15afd710c78",
+          "3c07a69ec514f985d97183cbfbbe68c239fa678870b08b02cd2c8a8a2bca4f8c",
+          "b30dcbf7215ab970ce5262231aa112ed0d907c8c4aaa083924386ba7733a11ae",
+          "0a7e639f3dbd5c5de346417aed25a927fb04048cdfc14dabf0685fa3ced5c4de"
+        ]
+      },
+      "prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "f753d5439913c8fcbae95e6cd6902bbfc40f016f5f0bf03e9c8997cfd420160d",
+          "0dc3d404ff6855942bfc1a25033065426fda610dd2012f4369c167abe774c2ce",
+          "6515c3e8640be747a004993267933719b8257a00a2ed87ebca37e15afd710c78",
+          "3c07a69ec514f985d97183cbfbbe68c239fa678870b08b02cd2c8a8a2bca4f8c",
+          "b30dcbf7215ab970ce5262231aa112ed0d907c8c4aaa083924386ba7733a11ae",
+          "0a7e639f3dbd5c5de346417aed25a927fb04048cdfc14dabf0685fa3ced5c4de"
+        ]
+      }
+    },
+    ".github/workflows/s04-transport-custody.yml": {
+      "source-policy": {
+        "role": "head",
+        "original_step_sha256": [
+          "b826c509443a20a6305456fa1002571a4df1fd682b24756c5218ea0adf365731",
+          "ff7840b50551230391cb4a3f97fcd5d78415c1da5b8f76fa4a9a7c877617304b",
+          "d34cd7abca04e81b4dd1e6300b563273517d1dee38645b5bc35d16f1a961513a",
+          "1587acded4da8a484bac84f78296e93e2adc195a88af8968beb76082bcf7c7da",
+          "645df7b23425a3bce23c7c3fddcb9c14850ecf619f09ef9b10a125110ecd087f",
+          "8a8daa1d3adeb622ab155cdaa5f79eaa75760a277000ba6437705a8e42450bad"
+        ]
+      },
+      "rust-all-features": {
+        "role": "head",
+        "original_step_sha256": [
+          "b826c509443a20a6305456fa1002571a4df1fd682b24756c5218ea0adf365731",
+          "9ab22162d20f4ca11ec3142657d51be8f14bc2ac92875a03c05943a9ad053b2b",
+          "6f6100018140f6c33f0d62fd67ea818839dfeeaddf90dedde5b4f3cb490275e3",
+          "20d150dbf03110db8647b0883960dd348659873bb7a5721f313020a9cb68c285",
+          "7d550d864284220475b3d8cf218ca901273e2151956b845e8befd74cf19e4c0e"
+        ]
+      },
+      "source-policy-prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "7745de0359e1a0da7edd37dfbe5ad6ed3d30a3b7c4f8186a1f147182a7750b38",
+          "3444bbf5ac905444935169015919cabfdc2fbad0944b3c49607d5896f323af2a",
+          "d34cd7abca04e81b4dd1e6300b563273517d1dee38645b5bc35d16f1a961513a",
+          "d9bed4b358ec932b540ff06b63e7bb9df26bf7a6f0d8ee78060444d3fb54ca3d"
+        ]
+      },
+      "rust-prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "7745de0359e1a0da7edd37dfbe5ad6ed3d30a3b7c4f8186a1f147182a7750b38",
+          "3444bbf5ac905444935169015919cabfdc2fbad0944b3c49607d5896f323af2a",
+          "6f6100018140f6c33f0d62fd67ea818839dfeeaddf90dedde5b4f3cb490275e3",
+          "deb0cfc63334161d6b22fdc620f3c96537aa0e7d0bc090e7283cc0b7e5885fcd"
+        ]
+      }
+    },
+    ".github/workflows/s06-browser-actor.yml": {
+      "exact-source": {
+        "role": "head",
+        "original_step_sha256": [
+          "5b51a1274275616d510aba04387702c24700a485e58acc29fe844035868f9db2",
+          "18d8a25f9a38129dfa87864c42f0c8326f4ef2d8745272f9ca8713c56dc3f695",
+          "6515c3e8640be747a004993267933719b8257a00a2ed87ebca37e15afd710c78",
+          "854480aefc6f16db0eccdc197ddce6de9c29453601f8b5cbbe6db847db717903",
+          "2c266c41bd44ebe3436e0592ab4624c85cee8a0e21835efcf7325686502c5276",
+          "884605e6ea22b27e0aafbd892f1cd13487669fc632ce8955d88807566e7d3126"
+        ]
+      },
+      "prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "f753d5439913c8fcbae95e6cd6902bbfc40f016f5f0bf03e9c8997cfd420160d",
+          "0dc3d404ff6855942bfc1a25033065426fda610dd2012f4369c167abe774c2ce",
+          "6515c3e8640be747a004993267933719b8257a00a2ed87ebca37e15afd710c78",
+          "854480aefc6f16db0eccdc197ddce6de9c29453601f8b5cbbe6db847db717903",
+          "5c742bc37c5e110207c66c800e5c257a37f9cef881dcb8aa1d9fe227a4118836",
+          "884605e6ea22b27e0aafbd892f1cd13487669fc632ce8955d88807566e7d3126"
+        ]
+      }
+    },
+    ".github/workflows/s07-servo-retained-node.yml": {
+      "real-servo-behavior": {
+        "role": "head",
+        "original_step_sha256": [
+          "5c482df4b1e8d8664095021d997e0aee5ed8b193802e818d7a1e57a88167440d",
+          "5af5a4adb0e2eca85b3c2da4aee4cf1e20325a4703b12fabc82231f5c6aa3bab",
+          "8ec16d7553625434c13e3fe7865d3080b645377ea53aa4c9eb4953270afd528c",
+          "f9d72ec65f56982ebeb2eb2675aa92408fbb51a65fc2427b40bafe2bbeb7c92d",
+          "1a30cfdcdf6a206d044dd1cf21deb74811f6a1c73465aa3f84ddc6058c5475f9",
+          "966409741a8bd1a055974e49c3a4d2513c6887f614034f2d76a27f94a31d0259",
+          "58d6cfce6acce5b409ce7335a69e089fd2d01b9ca6d63213e0f0631324a11da3",
+          "77852f0ce2748dcc2d8a371d9748df97afa4ba80fec0532af78975a9ba24129c",
+          "0811a2cf25939b7e2803584b22e73277a91cda92f1ac66aa425091904fbb4459",
+          "46389e9d5e0c625b3d677d5395d48fabe0fe5aa7f6e516ad09266be24bd18673"
+        ]
+      },
+      "prospective-merge-patch-package": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "e5446e667ec9b816ea7d69aa71df490ba95a35912631ae4b0d540af082ae0990",
+          "a4fa0d3b36067a76832941f7fea700fbb0979ba20a3c0ccf975a8dd9100a9ddb",
+          "8ec16d7553625434c13e3fe7865d3080b645377ea53aa4c9eb4953270afd528c",
+          "21d10416727135f00412302a24088e845ea5170085bef872de45988f64eeaff0",
+          "4d600ee6c907aa13047b57a59a9d1f2e94cb1abad042d2cef3e35ec6909a0fd7",
+          "fb83c8c4fe5f23683dd8708547b6f72a2ca25dc615d5050fe8680c9cf9d3d0db"
+        ]
+      }
+    },
+    ".github/workflows/s08-product-servo-runtime.yml": {
+      "exact-head": {
+        "role": "head",
+        "original_step_sha256": [
+          "67c06f972e84cef29680092c2ae84fed7bda272ebb8ff172fb42636fa3c44907",
+          "7afa1de7997d48e71e1ca32b647ce6b468e61c7499aa420e5f0d0adc66d79f7b",
+          "ce3b72dbe40923cb564255de2524f0e6d3569a89dc41322fccf1da4fd2450902",
+          "78351a8ce03d3f2d0d1cdf46b650af2a4d0affe4233a11da962b531d26a39a4b"
+        ]
+      },
+      "prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "f753d5439913c8fcbae95e6cd6902bbfc40f016f5f0bf03e9c8997cfd420160d",
+          "394713c55e42f24ece109b9bc652f3a1926f28a6cb287bee3232acce043d142d",
+          "ce3b72dbe40923cb564255de2524f0e6d3569a89dc41322fccf1da4fd2450902",
+          "8d7cea86cf05b696c7016727967090fe4f00f02c6e82f7cef72f3beda91844bd"
+        ]
+      }
+    },
+    ".github/workflows/s08-servo-vertical-slice.yml": {
+      "exact-source": {
+        "role": "head",
+        "original_step_sha256": [
+          "5c482df4b1e8d8664095021d997e0aee5ed8b193802e818d7a1e57a88167440d",
+          "5afb47c89a2d5280543ab2fcf45b3b1fbe3cd9b328342b2ea02dc1816b0115bd",
+          "7fe3922174cc8833089a987380d1dc27657afa3fe817f803434820c720bb835a",
+          "9f6934b0fb86a550f34d3f16938bc649d61a378d7582e5065b11e30667419eea",
+          "9918731de8b22b4a0fb59386cff4904ec64349addbe8e911f6b39d92fc45d694",
+          "a437d9d5e54527dc6c1db59d5740537ac35bd91db1839b09c9ebc658901bdd14",
+          "4812569bd2f9a63c4ed6557cab036b8d92d2d0e3fdd1adcb31a7da23fba00ad5",
+          "fbf683d6fa8bce13638dc8448d5231e098163fe200920a08a92b99f72916e67d",
+          "41977b986fd8c837a9318aed0e9aeb31df6f6c9a8587f382ea98c0b69ea71de2",
+          "7c60ac1c18b589e4203cf511739b9c6ad4a81a17e483dd15c132a2de070bf426",
+          "c96893b7a499972f11427cc1f893273d31ebaf4f5c5ba4b1d951e10648b56962",
+          "2ce652d8b820afe811b2b9c41576ab1157aa47ac986717b9167cd57e4630d6ea"
+        ]
+      },
+      "prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "f753d5439913c8fcbae95e6cd6902bbfc40f016f5f0bf03e9c8997cfd420160d",
+          "a29457dfe8f475eff62b622611e235e0846fd11a931d376e71b0860c0fad1e4e",
+          "ecdee5f765483d31d3e0503df8744480c54b7dd10b78e21469677d3a5e19b72d",
+          "b48adb85692448993959abdb6d3654e2c6808c2f66e80d41a55571c39e50859c",
+          "79b51f60457a240e19afc5ba78decfa5ca379fc664aa1e3c80b37ef76ab306ad",
+          "883be15a1228d7e21c277456c27387c90dd06eaaf550b309188557ff71404054"
+        ]
+      }
+    },
+    ".github/workflows/s09-linux-platform-adapters.yml": {
+      "exact-head": {
+        "role": "head",
+        "original_step_sha256": [
+          "5b51a1274275616d510aba04387702c24700a485e58acc29fe844035868f9db2",
+          "177d672448b2f7eaca85e30b5248a22a4225199879298f5a872d72e019b2335d",
+          "3b4c05503a0bd77bd8e07f30833c3bed7db201c142608f7379794394685c3b58"
+        ]
+      },
+      "prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "f753d5439913c8fcbae95e6cd6902bbfc40f016f5f0bf03e9c8997cfd420160d",
+          "8b4b3947a71057cb406f1a2e052101f258d8b335f3dd25231b2b8099c9e43da6",
+          "f3752ad6a6dea41bb8b06a6d9a5c997b60aec1dba807729c3303ad542ac9f851"
+        ]
+      }
+    },
+    ".github/workflows/s10-production-debian-qemu.yml": {
+      "manual-candidate-image": {
+        "role": "event-source",
+        "original_step_sha256": [
+          "499a912efdac1f6eeab2c8ae7db6012dd2a36437e351bdaf40f9e58609a28fdc",
+          "487fda69b419c431955032020b65e05fe24919df8ecceb628ab4b0d8096a9e50",
+          "961fc201a10734fa513d9e46b32f06c8934666442064c5f38c5abd2370888e5d",
+          "2882875c4726596208937499b461de5183b0f434f852ba9bcb0ecf27b66c56c6",
+          "921c6972e36a300c7c86344c0b1c4258b742827a81579ab39d978adb46fc141d",
+          "5a78df7030ad09aa62447b591495f66f0b82633e864aa4d190bbc2e9b9a7a835",
+          "12bf1002c2c231bf35f2b1963cbb09f1b8d1e0bf93a2e5e0233df460764d8e78",
+          "1425f1b9d1963506886b7fadda1c578a2af82fab7f91c1e4e05b45fa55baeae3",
+          "57d1286b74d31a812cc9e602303fcd13043684d7cff73f0e216ede2f8b03c885",
+          "6e8c05acf29fda2b31fa1beb4fb3bbaa71f0c86fa7ad066cdc8fbf71c33f1108",
+          "7408f7b46b790225a9fe8e13ae6ef7b2381a6d33f66b677d521d9cc4db85ba04",
+          "5bb8b238bee3347f5080709757a4e4439e4e2fcd4f1a2e63173c104b599b12c8",
+          "30310d752e4b98d71b37910033d7c461991dd99cfb704d9dfe359d9c78f0e5f0",
+          "f86d07edf4eea9996aaa092a629bd8cf03e1b937dda37e1dd1713292d1fcb846",
+          "af6ae624b5a4e7523edc316d35beb6aa41ef0265c9f2650c42b576557df32827",
+          "3ed54a4f7ba20533295faf7f5c37ffecd08999665f3c5747e0156f0ec7a4c8d6",
+          "fbf8af15cfec13589b3d0bb61ebd774073f4d13fb174ce3587f01464c8b08b3c",
+          "6d69c6f7c4e0f5d704a2fc3568b3ddc0bf65a0d3e7f25f19d47f2d33280ef1f1",
+          "01a082cb96eb0146c0a54c1d03ba2100703fe1496640f9af833d728dd762ff31",
+          "b6a582f2e0169b9913d1c339d1c8a98726f26166c91d0468f5bc96883cd9d343",
+          "10a9d629d1996be5a1408b784b22a42d07ad7c1b6ecaa3306819b0526971d34a",
+          "22249440c0a33106e44d0abf438d04f7b861a75c015b5c12c83bde761d84204e",
+          "fbe7afd0f78160032e2465d46f6ad76c9065e123ad9541de2e7f531919daafd8"
+        ]
+      }
+    },
+    ".github/workflows/s11-update-recovery.yml": {
+      "exact-head": {
+        "role": "head",
+        "original_step_sha256": [
+          "67c06f972e84cef29680092c2ae84fed7bda272ebb8ff172fb42636fa3c44907",
+          "06e282d2e72593a28581cf045434c02957fc8ff531977e8cf579575d8283c3e4",
+          "d68c24c2d905c0509978d1c2d46287c66c95fc8f0bca022f0b3ec8cad2bf34df"
+        ]
+      },
+      "prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "f753d5439913c8fcbae95e6cd6902bbfc40f016f5f0bf03e9c8997cfd420160d",
+          "70d59a46be4f9359552478ca396bd9c7e09e55d991313fa099879fbcaaeeb41e",
+          "c9ca7ca0bd5b9a7c8c85bf09b41ed15f458754af6f2874c073f84df01e39717d"
+        ]
+      }
+    },
+    ".github/workflows/s12-release-qualification.yml": {
+      "exact-head": {
+        "role": "head",
+        "original_step_sha256": [
+          "67c06f972e84cef29680092c2ae84fed7bda272ebb8ff172fb42636fa3c44907",
+          "06e282d2e72593a28581cf045434c02957fc8ff531977e8cf579575d8283c3e4",
+          "ad0ac6918875fbe162d0dd7f2a469cd886fa81d21a494c4a019ffa01bef7b5b7"
+        ]
+      },
+      "prospective-merge": {
+        "role": "prospective-merge",
+        "original_step_sha256": [
+          "f753d5439913c8fcbae95e6cd6902bbfc40f016f5f0bf03e9c8997cfd420160d",
+          "70d59a46be4f9359552478ca396bd9c7e09e55d991313fa099879fbcaaeeb41e",
+          "bbd45d02980d2a4b1be6d8cc8b396d84dd0f8d50d1cbc8280ad943363103f172"
+        ]
+      }
+    },
+    ".github/workflows/self-hosted-desktop-availability.yml": {
+      "runner-probe": {
+        "role": null,
+        "original_step_sha256": [
+          "5987ffc673c2f6712c09bc344cc322a3256cd48c7f3fccfd0a5cdd9426b46c44",
+          "49891ae57957c502f6729872f0b8ed7b4696b4ec1c98471b061a42c0a03b0dd4",
+          "b7d15987349d10131041730bd690670731d88f905817464e9cb7a73e0219e338",
+          "c18d959e60297885632b50a640de9c8230077e2ecce123e62f5a74a56e66c22d",
+          "60c1192b075da6d4a73d005da67294fe76b3e6846b18b4c3675ab01934c57b72"
+        ]
+      }
+    },
+    ".github/workflows/self-hosted-fleet-availability.yml": {
+      "rog": {
+        "role": null,
+        "original_step_sha256": [
+          "2448b7e1b0bb91d189f8413df15cf331da46b8ba6c1b78a4b1c7086ce9743968",
+          "696674d9f63336db1f2859cff4c7419e7a108c49f768fb563f5e39ec434b0670"
+        ]
+      },
+      "pocket4": {
+        "role": null,
+        "original_step_sha256": [
+          "b25ae65590190a8908641057b26711c25cc798c402fb621954480a8974d51bdf",
+          "9112a3e2f64aa4d511a52d2dc9747f3398c37564b8986ed1a3f408815190c2c6"
+        ]
+      }
+    },
+    ".github/workflows/servo-exact-pin.yml": {
+      "qualify": {
+        "role": "event-source",
+        "original_step_sha256": [
+          "caaed22d1dff41ae987d36ee1749ac3b70094d1c32fca689b74bcfdd2ac77a3a",
+          "8c1d6594c9ed1d049997e4ac09a1ca9ea5184cb4f4b610e8f2a95a8f5567210c",
+          "c7c399a0f29ab0e0611723b908d62b685a305feab2c544ee7ac18ca94b3789d1",
+          "d9d429ba2c93aff9cf49a88c4b9e13e96111c332464e3a21fbd9bbfd4289f2cb",
+          "bdb8b4e7a6101031e15f4831fbd60ae52bd5e3f0ac914c3577b08e13e0ffedf4",
+          "a85a7e46bc4ecc27021e6ad0855fa05ef3f43474c9f27a8cf346aac8c990ab64",
+          "680cde65bd52bfca4d25686a6a2cc828099dc37976ed98eae109a3238be7e999",
+          "464127a9341e70813f9b5659877d1768d8b3de1ad949cc2d510f431b6a9054ce",
+          "33d25efc15ee39cb61dfafc3a567f425a93fc8656d7a6d4f359003db5a6f5083",
+          "4312616dedfa0a555a0a4a85c992c20724908d98874e6b55aa5d29cc6f503f4d",
+          "bd52e6126f6170efc22cc4ea146965173e9b788829fb51398aa009a1747a26c2",
+          "6efa805ba79ec70dc133b59bc5277c21793e43f42761acc18070abb6c2e3961f"
+        ]
+      }
+    },
+    ".github/workflows/servo-headed-runtime.yml": {
+      "qualify": {
+        "role": "event-source",
+        "original_step_sha256": [
+          "65948ce9e8a358c5285e080046aa0ed596e5f0787c4f52740a19eb4a82c1dc10",
+          "9dc5d0a583aecdc35b820d2e8db0da557730f81cfa231d1b1815435f7f7e6278",
+          "8c1d6594c9ed1d049997e4ac09a1ca9ea5184cb4f4b610e8f2a95a8f5567210c",
+          "460a9e46f1aad887aae5c64cc94796e07c02cf1403bb59107a8810f083012cb4",
+          "b97a47bd5cf68777b908a7533ab69c1046b2f46f2bbb893de42ce5233e0566ec",
+          "c4e45e6d9052b75e2fadb530d206e24f5b92ed2108e4574b9585c7c82f3a4cd6",
+          "6ff861fbd3f1066c20526529f6065669a13d721248b825bca67e29bfbf29bec1",
+          "bbbb9dc946da4c55cdcb3a72799f72eb727af72d3fec0a395fa6ef1b23d75f48",
+          "0e9ec0e61ddc1f81f1fd51efe167a8fdf2c1ca439d4e4aaa89ee023680a64d49",
+          "74f8542a7cbe7299dbddd7c49dfd0c185bb9a84e914a2b03ea42bd5b3713c464",
+          "3a3626de2dd1788d42504da4d846ad429040dc872229ca1c0ce8477000957fe7",
+          "e438f207482b908b58483d99ee9530b3ada5e60aea8615c8dd6ca82c2a55f01f",
+          "e2f54f8c98914edb74d7bc4c88ac58b921b483bc56e25703d2e086cc433274be",
+          "b541e30d1dd5dea91501f8cb1326174a104d0ca3d13eb881bc502f432eb93b9a",
+          "ffac1911c2404a52a9b6a7d17afa8b9ff828e54bed60fb991288aa23d60d8cf2",
+          "bdd09589bfe83cb890b8ab2ff264429f25eae5f7e7d1e85cf343e9c31954021d",
+          "a2d31f0ba52b2d987ad4b31f00461a5821528fe263baf198d983131f39b7e4e8"
+        ]
+      }
+    },
+    ".github/workflows/update-boot-observer.yml": {
+      "actual-host-corpus": {
+        "role": "${{ matrix.object }}",
+        "original_step_sha256": [
+          "5afc5b0140ebd38f58665d133837b165bac9d54dbbd3c9318cc22b8c721b053b",
+          "ec557c0d3de6ce8963f8ae325ba84566d23a4b93fe7dd0f896573a5f56951463",
+          "d34cd7abca04e81b4dd1e6300b563273517d1dee38645b5bc35d16f1a961513a",
+          "af74504ac4d565a21a1a5475349bc082dff7023ac45659cb7d1bcfb7f2ebafa1",
+          "cc1b46736ab941da9a3469e0c937e190309b923243e7b2f86c5abc012feb7977"
+        ]
+      }
+    }
+  },
+  "source_index": {
+    "module": "hepta-browser-codec",
+    "tool": "tools/verify_ci_source_identity.py",
+    "test": "tests/test_ci_source_identity.py",
+    "documentation": "docs/architecture/CI_SOURCE_IDENTITY.md"
+  }
+}

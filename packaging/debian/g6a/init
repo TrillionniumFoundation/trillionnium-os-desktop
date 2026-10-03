@@ -1,0 +1,17 @@
+#!/bin/busybox sh
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+/bin/busybox mount -t proc proc /proc || exit 1
+/bin/busybox mount -t sysfs sysfs /sys || exit 1
+/bin/busybox mount -t devtmpfs devtmpfs /dev || exit 1
+/usr/sbin/modprobe virtio_pci
+/usr/sbin/modprobe virtio_blk
+/usr/sbin/modprobe ext4
+/usr/sbin/modprobe dm_mod
+/usr/sbin/modprobe dm_verity
+i=0
+while [ ! -b /dev/vde ] && [ "$i" -lt 80 ]; do
+  /bin/busybox sleep 0.1
+  i=$((i + 1))
+done
+/bin/busybox mount -t ext4 -o rw /dev/vda /state || exit 1
+exec /usr/bin/python3 /guest_selector.py

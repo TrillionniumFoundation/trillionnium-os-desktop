@@ -1,0 +1,64 @@
+{
+  "schema": "trillionnium.desktop.update-boot-observer-contract.v1",
+  "status": "SOURCE_CANDIDATE",
+  "implementation": "platform/update_boot_observer.py",
+  "api": {
+    "inspect_pending_update": "(state_root: 'Path', slot_root: 'Path') -> 'BootObservation'",
+    "BootObservation.public_json": "(self) -> 'bytes'",
+    "BootObservation.private_json": "(self) -> 'bytes'"
+  },
+  "observation_schema": "trillionnium.desktop.update-boot-observation.v1",
+  "public_fields": ["booted_image_verified", "bootloader_effect_performed", "continuation_authorized", "production_activation_enabled", "reason_codes", "schema", "signature_authority", "signed_boot_image_mapping", "status"],
+  "status_codes": ["no_pending_update", "pending_identity_unknown", "recovery_required", "observation_unavailable"],
+  "reason_codes": ["owner_busy", "custody_unavailable", "journal_invalid", "kernel_observation_unavailable", "kernel_observation_changed", "unfinished_owner", "recovery_marker_present", "signature_authority_unavailable", "signed_boot_image_mapping_unknown"],
+  "limits": {
+    "events": 256,
+    "record_bytes": 65536,
+    "mountinfo_bytes": 524288,
+    "mounts": 4096,
+    "private_diagnostic_bytes": 65536,
+    "absolute_path_components": 32
+  },
+  "kernel_sources": ["/proc/self", "/proc/sys/kernel/random/boot_id", "/proc/<creator-pid>/mountinfo", "/proc/<creator-pid>/ns/mnt", "/"],
+  "kernel_measurement": {
+    "filesystem_magic": {"procfs": 40864, "nsfs": 1853056627},
+    "samples": "before and after the complete scan; exact boot id, namespace identity, root device/inode and mountinfo bytes digest must match",
+    "root_mapping": "one root mount with the actual root st_dev major/minor; no mapping to a signed image or slot",
+    "procfs_zero_size": "bounded fixed procfs reads only; ordinary journal/image files must have positive size"
+  },
+  "custody": {
+    "existing_roots": "absolute bounded nofollow component walk; final private directory owned by root or actual euid; retain directory descriptors",
+    "existing_leases": "open the exact named .coordinator.lock inode read-only, one private regular hard link; LOCK_SH|LOCK_NB on both state and slots; retain and compare named inode before completion",
+    "writer_exclusion": "the existing coordinator uses LOCK_EX on the same named inode; busy is typed and no repair is attempted",
+    "journal": "canonical closed JSON; complete consecutive sha256 chain, source transitions, original root identities, immutable operation and receipt bindings, marker confirmed prefix; retain every opened record until final fstat/named-leaf and inventory checks",
+    "slot_files": "private 0600 regular single-link slot-A.img and slot-B.img; bounded positive size; retained inode/size/mtime/ctime only; no image reads or hashes",
+    "process_thread": "scan methods check actual creator PID and thread before descriptor acquisition or inspection",
+    "cleanup": "detach each owned descriptor before close; attempt all retained descriptors; fork and GC only close copied descriptors and never explicitly unlock or write",
+    "interruption_scope": "finite tested read/substitution/fork/close-and-reuse boundaries; not every C-to-Python-store or asynchronous interruption window"
+  },
+  "cli": {
+    "entrypoint": "tools/inspect_pending_update.py",
+    "arguments": ["--state-root", "--slot-root", "--output"],
+    "default": "read-only; stdout contains only the public closed enum/false-claim object",
+    "raw_output": "only explicit --output; exclusive nofollow new 0600 file under a pre-existing private retained parent, outside authority-root ancestry; same-fd fsync/readback and final metadata checks; no overwrite or recursive creation",
+    "exit_codes": {"no_pending_update": 0, "unknown_recovery_unavailable_output_or_argument_refusal": 2}
+  },
+  "claims": {
+    "approved_roots": [],
+    "signature_authority": "unavailable",
+    "signed_boot_image_mapping": "unknown",
+    "booted_image_verified": false,
+    "continuation_authorized": false,
+    "production_activation_enabled": false,
+    "bootloader_effect_performed": false,
+    "health_qualified": false,
+    "installed_two_boot_qualified": false,
+    "hardware_power_loss_qualified": false
+  },
+  "remaining_installed_obligations": [
+    "persisted detached signature plus separately provisioned production public-root policy and protected version/time anchors",
+    "immutable signed-image-to-actual-root/block-device mapping before any resume or effect; writable ext4 observation is insufficient",
+    "installed bootloader arm, root selection, monotonic measured health, durable commit/rollback and authenticated operator recovery",
+    "separate actual QEMU two-boot update/recovery corpus and hardware power-cut qualification"
+  ]
+}

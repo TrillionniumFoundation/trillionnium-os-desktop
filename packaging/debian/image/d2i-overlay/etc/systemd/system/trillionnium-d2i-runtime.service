@@ -2,6 +2,7 @@
 Description=TrillionniumOS D2I headed Servo workspace qualification
 Requires=trillionnium-d1-wayland.service
 After=trillionnium-d1-wayland.service
+OnFailure=trillionnium-d2i-failure.service
 ConditionPathExists=/usr/libexec/hepta-workspace-runtime
 
 [Service]
@@ -12,12 +13,16 @@ StateDirectory=trillionnium-d2i
 StateDirectoryMode=0700
 RuntimeDirectory=hepta-desktop
 RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
 Environment=XDG_RUNTIME_DIR=/run/hepta-desktop
 Environment=WAYLAND_DISPLAY=wayland-0
 Environment=WINIT_UNIX_BACKEND=wayland
 Environment=LIBGL_ALWAYS_SOFTWARE=1
 Environment=HEPTA_D0A02_OUTPUT=/var/lib/trillionnium-d2i
+ExecStartPre=/usr/bin/timeout --signal=TERM --kill-after=1s 22s /bin/bash /usr/local/libexec/trillionnium-d2i-wait-wayland
 ExecStart=/usr/libexec/hepta-workspace-runtime
+StandardOutput=journal+console
+StandardError=journal+console
 TimeoutStartSec=180s
 RemainAfterExit=yes
 KillMode=control-group

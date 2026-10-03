@@ -9,6 +9,7 @@ from __future__ import annotations
 import errno
 import hashlib
 import ipaddress
+import math
 import os
 import re
 import secrets
@@ -86,8 +87,10 @@ class PublicationIndeterminate(PlatformError):
 
 
 def _safe_components(relative: str) -> tuple[str, ...]:
+    if not isinstance(relative, str) or "\\" in relative:
+        raise PathRefused("path must be a canonical relative string")
     path = PurePosixPath(relative)
-    if path.is_absolute() or not path.parts:
+    if path.is_absolute() or not path.parts or path.as_posix() != relative:
         raise PathRefused("path must be non-empty and relative")
     if any(part in ("", ".", "..") for part in path.parts):
         raise PathRefused("path contains an unsafe component")
@@ -112,6 +115,22 @@ def _open_directory_chain(root_fd: int, components: Sequence[str]) -> list[int]:
     except Exception:
         for fd in reversed(opened):
             os.close(fd)
+        raise
+
+
+def _open_absolute_directory(path: Path, *, path_only: bool = False) -> int:
+    flags = (os.O_PATH if path_only else os.O_RDONLY) | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    descriptor = os.open("/", flags)
+    try:
+        for component in Path(path).absolute().parts[1:]:
+            if component in {".", ".."}:
+                raise PathRefused("absolute directory path contains traversal")
+            next_descriptor = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = next_descriptor
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
         raise
 
 
@@ -162,9 +181,7 @@ def _read_bounded_regular_at(root_fd: int, relative: str, maximum: int) -> bytes
 def read_bounded_regular_file(root: Path, relative: str, maximum: int) -> bytes:
     """Read one file through a descriptor-pinned, component no-follow walk."""
 
-    root_fd = os.open(
-        root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
-    )
+    root_fd = _open_absolute_directory(root)
     try:
         return _read_bounded_regular_at(root_fd, relative, maximum)
     finally:
@@ -187,7 +204,7 @@ class MonotonicClock:
         return value
 
     def deadline_ns(self, timeout_ns: int) -> int:
-        if timeout_ns <= 0:
+        if type(timeout_ns) is not int or timeout_ns <= 0:
             raise DeadlineExpired("timeout must be positive")
         now = self.now_ns()
         deadline = now + timeout_ns
@@ -201,7 +218,7 @@ class OsEntropy:
 
     @staticmethod
     def read(length: int) -> bytes:
-        if length <= 0 or length > MAX_ENTROPY_BYTES:
+        if type(length) is not int or length <= 0 or length > MAX_ENTROPY_BYTES:
             raise PlatformError("entropy request is outside the allowed range")
         try:
             value = os.getrandom(length)
@@ -229,14 +246,11 @@ class AtomicFileStore:
     """No-replace publication rooted in one retained directory identity."""
 
     def __init__(self, root: Path, maximum_bytes: int = MAX_ATOMIC_FILE_BYTES):
-        if maximum_bytes <= 0:
+        if type(maximum_bytes) is not int or maximum_bytes <= 0:
             raise PathRefused("store byte ceiling must be positive")
-        self._root_path = Path(root)
+        self._root_path = Path(root).absolute()
         try:
-            root_fd = os.open(
-                self._root_path,
-                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
-            )
+            root_fd = _open_absolute_directory(self._root_path)
         except OSError as error:
             raise PathRefused("store root cannot be acquired without following links") from error
         try:
@@ -283,10 +297,7 @@ class AtomicFileStore:
             raise PathRefused("store root custody changed")
         current_fd: int | None = None
         try:
-            current_fd = os.open(
-                self._root_path,
-                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
-            )
+            current_fd = _open_absolute_directory(self._root_path)
             current = os.fstat(current_fd)
             _validate_private_directory(current, expected_identity=self._root_identity)
             if current.st_uid != self._root_uid or stat.S_IMODE(current.st_mode) != self._root_mode:
@@ -336,6 +347,37 @@ class AtomicFileStore:
         finally:
             os.close(fd)
 
+    @staticmethod
+    def _check_staged_path(parent_fd: int, name: str, retained_fd: int, data: bytes, *, links: int) -> os.stat_result:
+        retained = os.fstat(retained_fd)
+        if not stat.S_ISREG(retained.st_mode) or retained.st_nlink != links or retained.st_uid not in {0, os.geteuid()} or stat.S_IMODE(retained.st_mode) != 0o600 or retained.st_size != len(data):
+            raise PathRefused("staged publication custody changed")
+        try:
+            named_fd = os.open(name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent_fd)
+        except OSError as error:
+            raise PathRefused("staged publication pathname was substituted") from error
+        try:
+            named = os.fstat(named_fd)
+            if (named.st_dev, named.st_ino) != (retained.st_dev, retained.st_ino) or os.pread(retained_fd, len(data) + 1, 0) != data:
+                raise PathRefused("staged publication pathname or bytes were substituted")
+            return retained
+        finally:
+            os.close(named_fd)
+
+    def _check_publication_parent(self, components: Sequence[str], retained: Sequence[int]) -> None:
+        root_fd = self._validated_root_fd()
+        current = _open_directory_chain(root_fd, components[:-1])
+        try:
+            for old, new in zip(retained, current):
+                old_metadata, new_metadata = os.fstat(old), os.fstat(new)
+                _validate_private_directory(old_metadata)
+                _validate_private_directory(new_metadata)
+                if (old_metadata.st_dev, old_metadata.st_ino) != (new_metadata.st_dev, new_metadata.st_ino):
+                    raise PathRefused("publication parent pathname was substituted")
+        finally:
+            for directory_fd in reversed(current):
+                os.close(directory_fd)
+
     def write(self, relative: str, data: bytes, mode: int = 0o600) -> AtomicWriteReceipt:
         if not isinstance(data, bytes):
             raise TypeError("data must be bytes")
@@ -352,12 +394,16 @@ class AtomicFileStore:
             temp_name = ".hepta-tmp-" + secrets.token_hex(16)
             parent_fd = root_fd
             published = False
+            created = False
+            temp_identity: tuple[int, int] | None = None
             try:
                 directories = _open_directory_chain(root_fd, components[:-1])
+                for directory_fd in directories:
+                    _validate_private_directory(os.fstat(directory_fd))
                 parent_fd = directories[-1] if directories else root_fd
                 temp_fd = os.open(
                     temp_name,
-                    os.O_WRONLY
+                    os.O_RDWR
                     | os.O_CREAT
                     | os.O_EXCL
                     | os.O_NOFOLLOW
@@ -365,7 +411,10 @@ class AtomicFileStore:
                     mode,
                     dir_fd=parent_fd,
                 )
+                created = True
                 os.fchmod(temp_fd, mode)
+                initial = os.fstat(temp_fd)
+                temp_identity = (initial.st_dev, initial.st_ino)
                 view = memoryview(data)
                 offset = 0
                 while offset < len(view):
@@ -375,12 +424,12 @@ class AtomicFileStore:
                     offset += written
                 os.fsync(temp_fd)
                 metadata = os.fstat(temp_fd)
-                if not stat.S_ISREG(metadata.st_mode):
+                if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
                     raise PathRefused("temporary publication is not a regular file")
                 if metadata.st_size != len(data):
                     raise PlatformError("temporary publication length mismatch")
-                os.close(temp_fd)
-                temp_fd = None
+                self._check_publication_parent(components, directories)
+                self._check_staged_path(parent_fd, temp_name, temp_fd, data, links=1)
 
                 try:
                     os.link(
@@ -398,11 +447,16 @@ class AtomicFileStore:
                 observed, destination = self._read_destination(
                     parent_fd, components[-1], self._maximum
                 )
-                if observed != data or stat.S_IMODE(destination.st_mode) != mode:
+                if observed != data or stat.S_IMODE(destination.st_mode) != mode or (destination.st_dev, destination.st_ino) != (metadata.st_dev, metadata.st_ino):
                     raise PlatformError("published destination readback mismatch")
+                self._check_staged_path(parent_fd, components[-1], temp_fd, data, links=2)
                 os.fsync(parent_fd)
+                self._check_publication_parent(components, directories)
+                self._check_staged_path(parent_fd, temp_name, temp_fd, data, links=2)
                 os.unlink(temp_name, dir_fd=parent_fd)
                 os.fsync(parent_fd)
+                self._check_publication_parent(components, directories)
+                self._check_staged_path(parent_fd, components[-1], temp_fd, data, links=1)
                 return receipt
             except Exception as error:
                 if published:
@@ -410,19 +464,24 @@ class AtomicFileStore:
                         parent_fd, components[-1]
                     )
                     try:
-                        os.unlink(temp_name, dir_fd=parent_fd)
+                        named = os.stat(temp_name, dir_fd=parent_fd, follow_symlinks=False)
+                        if (named.st_dev, named.st_ino) == temp_identity:
+                            os.unlink(temp_name, dir_fd=parent_fd)
                     except OSError:
                         pass
                     raise PublicationIndeterminate(
                         receipt, device, inode, error
                     ) from error
-                try:
-                    os.unlink(temp_name, dir_fd=parent_fd)
-                except OSError as cleanup_error:
-                    if cleanup_error.errno != errno.ENOENT:
-                        raise PlatformError(
-                            "pre-publication staging cleanup failed"
-                        ) from error
+                if created:
+                    try:
+                        named = os.stat(temp_name, dir_fd=parent_fd, follow_symlinks=False)
+                        if (named.st_dev, named.st_ino) == temp_identity:
+                            os.unlink(temp_name, dir_fd=parent_fd)
+                    except OSError as cleanup_error:
+                        if cleanup_error.errno != errno.ENOENT:
+                            raise PlatformError(
+                                "pre-publication staging cleanup failed"
+                            ) from error
                 raise
             finally:
                 if temp_fd is not None:
@@ -443,6 +502,7 @@ class AtomicFileStore:
         if (
             not isinstance(expected_sha256, str)
             or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
+            or type(expected_bytes) is not int
             or expected_bytes < 0
             or expected_bytes > self._maximum
             or mode != 0o600
@@ -452,17 +512,24 @@ class AtomicFileStore:
         with self._lock:
             root_fd = self._validated_root_fd()
             directories = _open_directory_chain(root_fd, components[:-1])
+            destination_fd: int | None = None
             try:
+                for directory_fd in directories:
+                    _validate_private_directory(os.fstat(directory_fd))
                 parent_fd = directories[-1] if directories else root_fd
-                observed, metadata = self._read_destination(
-                    parent_fd, components[-1], self._maximum
-                )
+                destination_fd = os.open(components[-1], os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent_fd)
+                observed, metadata = _read_regular_fd(destination_fd, self._maximum)
                 if (
                     len(observed) != expected_bytes
                     or hashlib.sha256(observed).hexdigest() != expected_sha256
                     or stat.S_IMODE(metadata.st_mode) != mode
                 ):
                     raise PathRefused("published destination does not match reconciliation")
+                self._check_staged_path(parent_fd, components[-1], destination_fd, observed, links=1)
+                os.fsync(destination_fd)
+                os.fsync(parent_fd)
+                self._check_publication_parent(components, directories)
+                self._check_staged_path(parent_fd, components[-1], destination_fd, observed, links=1)
                 return AtomicWriteReceipt(
                     relative_path=relative,
                     bytes_written=expected_bytes,
@@ -470,6 +537,8 @@ class AtomicFileStore:
                     mode=mode,
                 )
             finally:
+                if destination_fd is not None:
+                    os.close(destination_fd)
                 for fd in reversed(directories):
                     os.close(fd)
 
@@ -556,9 +625,7 @@ def read_process_identity(pid: int, proc_root: Path = Path("/proc")) -> ProcessI
 
     if pid <= 0:
         raise IdentityRefused("PID must be positive")
-    proc_fd = os.open(
-        proc_root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
-    )
+    proc_fd = _open_absolute_directory(proc_root)
     process_fd: int | None = None
     current_fd: int | None = None
     pidfd: int | None = None
@@ -665,7 +732,7 @@ def connect_wayland_endpoint(
 ) -> tuple[socket.socket, WaylandPeer]:
     """Connect through one descriptor-pinned Wayland socket inode."""
 
-    if timeout_seconds <= 0:
+    if type(timeout_seconds) not in {int, float} or not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
         raise DeadlineExpired("Wayland connection timeout must be positive")
     if "/" in display or display in ("", ".", "..") or "\x00" in display:
         raise PathRefused("WAYLAND_DISPLAY must be one safe basename")
@@ -674,10 +741,7 @@ def connect_wayland_endpoint(
     endpoint_fd: int | None = None
     try:
         try:
-            runtime_fd = os.open(
-                runtime_dir,
-                path_flag | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
-            )
+            runtime_fd = _open_absolute_directory(runtime_dir, path_only=True)
         except OSError as error:
             raise PathRefused(
                 "cannot acquire XDG_RUNTIME_DIR without following links"

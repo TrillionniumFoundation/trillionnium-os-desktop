@@ -1,0 +1,15 @@
+{
+  "schema": "trillionnium.desktop.update-observation-source-index.v1",
+  "plan_revision": "2026-08-29-d6",
+  "requirements": ["G6", "D7", "S11"],
+  "implementation": "platform/update_boot_observer.py",
+  "entrypoint": "tools/inspect_pending_update.py",
+  "documentation": "docs/architecture/UPDATE_BOOT_OBSERVER.md",
+  "contract": "contracts/update-boot-observer.v1.json",
+  "tests": "tests/test_update_boot_observer.py",
+  "workflow": ".github/workflows/update-boot-observer.yml",
+  "dependencies": ["platform/update_recovery.py", "platform/durable_update_owner.py"],
+  "claim_ceiling": "source-only read-only locked structural journal and fixed actual kernel observations; no signing, boot-image mapping, health, continuation, external effect, installed two-boot or hardware qualification authority",
+  "authority_mechanism": false,
+  "production_activation_enabled": false
+}

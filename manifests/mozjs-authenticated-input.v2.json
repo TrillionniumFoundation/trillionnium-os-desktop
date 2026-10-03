@@ -1,0 +1,100 @@
+{
+  "schema": "trillionnium.mozjs-authenticated-input.v2",
+  "status": "SOURCE_CANDIDATE_NOT_QUALIFIED",
+  "archive": {
+    "v1_manifest": "manifests/mozjs-secondary-input.v1.json",
+    "bytes": 19381534,
+    "sha256": "c5f93d7f9f1b450e2a608b5e7378c95ec8fa9f3689bdfe1f6ad548e434c3107b",
+    "name": "libmozjs-x86_64-unknown-linux-gnu.tar.gz",
+    "asset_id": 527403045
+  },
+  "bundle": {
+    "index": 1,
+    "bytes": 14373,
+    "sha256": "7077565ec6de92705ae4f742ed68f59cb88e5132a50153f578496cea023a2e88",
+    "media_type": "application/vnd.dev.sigstore.bundle.v0.3+json",
+    "delivery": "same bytes copied from held sealed FD to private readonly tmpfs; distinct consuming inode",
+    "original_memfd_inode_consumption_proven": false
+  },
+  "tool": {
+    "version": "2.102.0",
+    "bytes": 42086560,
+    "sha256": "7469124f706944133d6a169691dd1c6c3511b12e85878d255e044e2948df4c9b",
+    "bootstrap": "official HTTPS API/checksums/tar member; tool attestation not independently verified",
+    "tool_artifact_attestation_verified": false
+  },
+  "certificate": {
+    "certificateIssuer": "CN=sigstore-intermediate,O=sigstore.dev",
+    "subjectAlternativeName": "https://github.com/servo/mozjs/.github/workflows/publish.yml@refs/heads/main",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "githubWorkflowTrigger": "push",
+    "githubWorkflowSHA": "95cacf65a191aaf82f47fad5eebdd5a9cf827aa7",
+    "githubWorkflowName": "Publish",
+    "githubWorkflowRepository": "servo/mozjs",
+    "githubWorkflowRef": "refs/heads/main",
+    "buildSignerURI": "https://github.com/servo/mozjs/.github/workflows/publish.yml@refs/heads/main",
+    "buildSignerDigest": "95cacf65a191aaf82f47fad5eebdd5a9cf827aa7",
+    "runnerEnvironment": "github-hosted",
+    "sourceRepositoryURI": "https://github.com/servo/mozjs",
+    "sourceRepositoryDigest": "95cacf65a191aaf82f47fad5eebdd5a9cf827aa7",
+    "sourceRepositoryRef": "refs/heads/main",
+    "sourceRepositoryIdentifier": "4239178",
+    "sourceRepositoryOwnerURI": "https://github.com/servo",
+    "sourceRepositoryOwnerIdentifier": "2566135",
+    "buildConfigURI": "https://github.com/servo/mozjs/.github/workflows/publish.yml@refs/heads/main",
+    "buildConfigDigest": "95cacf65a191aaf82f47fad5eebdd5a9cf827aa7",
+    "buildTrigger": "push",
+    "runInvocationURI": "https://github.com/servo/mozjs/actions/runs/32706570219/attempts/1",
+    "sourceRepositoryVisibilityAtSigning": "public"
+  },
+  "der": {
+    "bytes": 1716,
+    "sha256": "9638f394598817acc8b609393a55efae1a094d40f8074edf59dc842c40dc491c",
+    "token_subject_oid": "1.3.6.1.4.1.57264.1.24",
+    "token_subject": "repo:servo/mozjs:ref:refs/heads/main",
+    "not_before": "2026-08-24T09:46:29+00:00",
+    "not_after": "2026-08-24T09:56:29+00:00"
+  },
+  "time": {
+    "verified_utc": "2026-08-24T09:46:29+00:00",
+    "run_start": "2026-08-24T08:29:23+00:00",
+    "run_end": "2026-08-24T10:22:14+00:00"
+  },
+  "limits": {
+    "archive": 33554432,
+    "bundle": 65536,
+    "tool": 67108864,
+    "policy": 16384,
+    "each_output": 262144,
+    "each_cargo_output": 16777216,
+    "verifier_seconds": 60,
+    "verifier_grace_seconds": 2,
+    "cache_entries": 128,
+    "cache_files": 64,
+    "cache_file_bytes": 1048576,
+    "cache_total_bytes": 8388608
+  },
+  "build": {
+    "profile": "checked-release",
+    "toolchain": "1.97.1",
+    "features": "bundled,js_jit",
+    "locked": true,
+    "default_features": false,
+    "timeout_seconds": 10800,
+    "grace_seconds": 5,
+    "targets": {
+      "native-owner": "trillionnium_product_owner",
+      "approved-startup": "trillionnium_approved_connected"
+    },
+    "actual_archive_consumption_proven": false
+  },
+  "claims": {
+    "caller_success_tokens_accepted": false,
+    "default_ci_changed": false,
+    "source_qualified": false,
+    "native_six_pass": false,
+    "installed_qualified": false,
+    "human_approval": false,
+    "production_ready": false
+  }
+}

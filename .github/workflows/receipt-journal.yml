@@ -17,6 +17,22 @@ on:
       - "tools/verify_receipt_journal.py"
       - "tools/validate_repository.py"
       - "tools/validate_project_truth.py"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -34,6 +50,22 @@ on:
       - "tools/validate_repository.py"
       - "tools/validate_project_truth.py"
 
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 permissions:
   contents: read
 
@@ -43,7 +75,7 @@ concurrency:
 
 jobs:
   exact-source:
-    name: exact-source-receipt-journal
+    name: receipt-journal / exact-source
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
@@ -55,6 +87,23 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
           persist-credentials: false
+
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
 
       - name: Assert exact source identity
         shell: bash
@@ -83,6 +132,11 @@ jobs:
           python3 -m unittest tests.test_s05_receipt_recovery -v
 
       - name: Enforce complete locked Rust graph and nonzero receipt corpus
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -128,7 +182,7 @@ jobs:
           PY
 
   prospective-merge:
-    name: prospective-merge-receipt-journal
+    name: receipt-journal / prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
@@ -140,6 +194,23 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Bind merge parents to live remote refs
         shell: bash
         env:
@@ -149,11 +220,18 @@ jobs:
         run: |
           set -euo pipefail
           git check-ref-format --branch "$BASE_REF"
-          test "$PR_NUMBER" -gt 0
+          git check-ref-format "refs/heads/$BASE_REF"
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          resolve_ref() {
+            git ls-remote --exit-code origin "$1" | awk -v ref="$1" '
+              $2 == ref { value = $1; matches++ }
+              END { if (matches != 1) exit 1; print value }
+            '
+          }
           test "$(git rev-parse HEAD)" = "${{ github.sha }}"
           test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
-          live_base="$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | awk 'NR == 1 {print $1}')"
-          live_head="$(git ls-remote --exit-code origin "refs/pull/$PR_NUMBER/head" | awk 'NR == 1 {print $1}')"
+          live_base="$(resolve_ref "refs/heads/$BASE_REF")"
+          live_head="$(resolve_ref "refs/pull/$PR_NUMBER/head")"
           test -n "$live_base"
           test -n "$live_head"
           test "$live_head" = "$EVENT_HEAD"
@@ -181,6 +259,11 @@ jobs:
           python3 -m unittest tests.test_s05_receipt_recovery -v
 
       - name: Enforce complete locked Rust graph and nonzero receipt corpus
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         shell: bash
         run: |
           set -euo pipefail

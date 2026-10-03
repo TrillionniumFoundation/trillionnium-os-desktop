@@ -1,0 +1,87 @@
+{
+  "schema": "trillionnium.desktop.native-product-owner.v1",
+  "status": "SOURCE_CANDIDATE_REAL_SERVO_EXECUTION_PENDING",
+  "requirements": ["G2", "G3", "S08"],
+  "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+  "default_activation": false,
+  "profile": {
+    "id": "immutable-read-only-v1",
+    "persistence": "ephemeral",
+    "content": "fixed_data_document_no_script_or_external_resource",
+    "admitted_operations": ["health", "session_create", "session_snapshot", "page_observe", "session_close"],
+    "unsupported_operations": ["page_navigate", "page_act", "page_extract", "page_wait"],
+    "unsupported_before_durable_admission": true,
+    "caller_capability_boolean": false
+  },
+  "ownership": {
+    "actor_pair": "closed_immutable_servo_runtime_pair",
+    "adapter": "ClosedImmutableNativeOwner",
+    "creator_pid_before_state_access": true,
+    "creator_thread_before_state_access": true,
+    "foreign_child_resource_cleanup": "process_exit_only_no_immediate_descriptor_claim",
+    "maximum_native_webviews": 1,
+    "commands_in_flight": 1,
+    "completion_use": "single",
+    "session_identity": "actual_actor_session_bound_to_one_native_webview",
+    "document_identity": "current_actual_accesskit_document_tree_id",
+    "semantic_source": "actual_owned_webview_delegate_tree_updates",
+    "same_owner_reconstruction_after_retirement": false
+  },
+  "bounds": {
+    "original_connection_seconds": 20,
+    "native_command_seconds": 5,
+    "native_deadline": "min_original_request_instant_and_first_command_receipt_plus_5_seconds",
+    "deadline_renewal": false,
+    "maximum_tree_updates": 64,
+    "maximum_tree_nodes": 256,
+    "maximum_node_text_bytes": 4096,
+    "maximum_result_bytes": 65536,
+    "native_syscall_preemption": false
+  },
+  "close": {
+    "native_binding_and_handle_release": "possible_effect",
+    "pipeline_retirement_confirmed": false,
+    "completion": "browser_crashed_error",
+    "durable_lifecycle": "indeterminate",
+    "coordinator_state": "replay_reconciliation_required",
+    "automatic_replay": false,
+    "successful_closed_response": false
+  },
+  "qualification": {
+    "formatting": {
+      "configuration": "experiments/servo-product-owner/rustfmt.toml",
+      "upstream_configuration": "rustfmt.toml",
+      "configuration_sha256": "9bac67039cd8f892bb9c1ff0780e6e1f2f8dbd8b6787552e4c827f9363452eda",
+      "workspace_rust": "1.93.0",
+      "upstream_rust": "1.97.1",
+      "formatter_and_byte_comparison_required": true
+    },
+    "consumer_module": "experiments/servo-product-owner/src/native_owner.rs",
+    "connected_target": "experiments/servo-product-owner/src/connected_tests.rs",
+    "source_preparation": "tools/prepare_native_product_owner.py",
+    "source_validator": "tools/validate_native_product_owner.py",
+    "workflow": ".github/workflows/g2-native-product-owner.yml",
+    "configured_policy": "explicit_same_uid_transient_unit_launcher_tuple_before_start",
+    "procfs_source": "default_live",
+    "managed_receipt_journal": true,
+    "mailbox": false,
+    "test_names": [
+      "actual_connected_immutable_semantic_snapshot",
+      "unsupported_operations_never_enter_durable_or_native_dispatch",
+      "native_handle_release_is_uncertain_and_blocks_reconstruction",
+      "wrong_live_policy_and_cancelled_original_connection_refuse_admission"
+    ]
+  },
+  "non_claims": {
+    "production_agent_port_enabled": false,
+    "browserd_cli_starts_servo": false,
+    "retained_terminal_handoff_integrated": false,
+    "externally_approved_production_policy_provisioned": false,
+    "cross_uid_live_identity_broker": false,
+    "human_session_arbitration_integrated": false,
+    "headed_gui_qualified": false,
+    "all_protocol_network_confinement": false,
+    "installed_topology_qualified": false,
+    "hardware_signing_or_release": false
+  }
+}
