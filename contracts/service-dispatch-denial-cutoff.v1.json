@@ -206,7 +206,507 @@
       }
     }
   },
-  "checker_nonEXPECTED_whole_sha256": "44197cd826d73f047e47c63b8493ed538d6df2e9cfaf4709914b6b33d9bc14b3",
+  "checker_nonEXPECTED_whole_sha256": "fd68f81142650930c63c1b214be44928a5626cd9262109a153ff5cfdc89b9125",
+  "ci_composition_scope": {
+    "Hosted_cleanup_qualified": false,
+    "Native_qualified": false,
+    "branch_Rust_results_transfer": false,
+    "branch_Source_results_transfer": false,
+    "ci_existing_modified18": [
+      ".github/workflows/approved-mechanism-policy.yml",
+      ".github/workflows/authenticated-update-readback.yml",
+      ".github/workflows/ci.yml",
+      ".github/workflows/controlled-egress.yml",
+      ".github/workflows/g2-approved-native-startup.yml",
+      ".github/workflows/g2-native-product-owner.yml",
+      ".github/workflows/module-documentation.yml",
+      ".github/workflows/s08-servo-vertical-slice.yml",
+      ".github/workflows/s09-linux-platform-adapters.yml",
+      ".github/workflows/update-boot-observer.yml",
+      "contracts/ci-required-contexts.v1.json",
+      "contracts/ci-source-identity.v1.json",
+      "contracts/retained-control-readiness.v1.json",
+      "crates/hepta-browser-codec/README.md",
+      "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md",
+      "manifests/lab-s08-semantic-custody.v1.json",
+      "manifests/modules.v1.json",
+      "tools/verify_retained_control_readiness.py"
+    ],
+    "ci_new5": [
+      ".github/apparmor/hepta-ci-namespace-python.v1.profile",
+      "contracts/ci-namespace-python.v1.json",
+      "tests/test_ci_namespace_python.py",
+      "tools/ci_namespace_python.py",
+      "tools/verify_ci_namespace_python.py"
+    ],
+    "ci_parent_files": 655,
+    "ci_parent_head": "c7007705b2b1551efbbee14d8e205681c8ae09ce",
+    "ci_parent_tree": "191a94ff2562cf137f0c538bb34154e2f1d43d0a",
+    "common_ancestor_head": "99c4eb9ff6f11b5075487c7e9fc4b4f0ca794320",
+    "common_ancestor_tracked_files": 650,
+    "current_ci_guard": "P3.check -> _check_current_ci_physical; independent fixed23 SHA literal before any historical inverse",
+    "current_ci_reader": "CI.inputs -> P3._read; actual physical FD9 bytes, no Native/parent inverse",
+    "current_physical_files": 699,
+    "de44_parent_files": 694,
+    "de44_parent_head": "de44c33de627ea041bc9d175998499976c0baee8",
+    "de44_parent_tree": "19a5433cc59bca29ff1a228aeda76ccff44a0f2b",
+    "history": "CI18 exact whole inverse to de44 only for correspondence; only C._read -> joint_parent_source composes CI inverse for non-finite paths. parent_source whole retains physical CI for Native/B/A/readiness. modules uses current699 full finite6 inverse including both service and CI registrations.",
+    "new_candidate_Source_qualified": false,
+    "production_ready": false
+  },
+  "ci_current_physical23": {
+    ".github/apparmor/hepta-ci-namespace-python.v1.profile": "9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be",
+    ".github/workflows/approved-mechanism-policy.yml": "231ed33683e7389918c6311afc386a80c2b437bf8657558f7d11633394ef777e",
+    ".github/workflows/authenticated-update-readback.yml": "f779e7ed6a1dd2d516cdc73fa685dca9555bb5689048652bfb48ab8aa414f602",
+    ".github/workflows/ci.yml": "be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826",
+    ".github/workflows/controlled-egress.yml": "2240ad5b078322f9d89a7dc125969e7d88c363addd88f348699b534fd09c2c6c",
+    ".github/workflows/g2-approved-native-startup.yml": "872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a",
+    ".github/workflows/g2-native-product-owner.yml": "a37826732869ed842e29de30b035cda684f055a9f2edbfb28231c6ab3044598a",
+    ".github/workflows/module-documentation.yml": "05401da3a9fc52c7daeb9687356bc1d68f48374ee0ac2a7b04c9d3c68c39f3ef",
+    ".github/workflows/s08-servo-vertical-slice.yml": "093861aa1206f584d1cc9731d00d681eac3fb610c1433f6a84185c02f82e5226",
+    ".github/workflows/s09-linux-platform-adapters.yml": "eb3f53661f6c459ce7ccfd49ae12a87964c2b5762a6567b746bfe05d3fac9a7e",
+    ".github/workflows/update-boot-observer.yml": "38254307bdb0a56fcf17e5e954a3cdc8c3b64225c8443b15c5cfc717a3ccf25a",
+    "contracts/ci-namespace-python.v1.json": "7285ea8aa9272b3a4ce37c7a5d8f6b291bd10a00f2314cd7efd2a6b5c061fd7e",
+    "contracts/ci-required-contexts.v1.json": "222fcf18b69fae5fab6077a190c253edc834258a65300ace14decba4e7dc9f2d",
+    "contracts/ci-source-identity.v1.json": "db33890a91bc70247571cf71a3ebe41a48dd52d2965187ba7b3605e8b08c42e3",
+    "contracts/retained-control-readiness.v1.json": "9e24e9fa600ad98da1ab0c2d580321cebf4c3ecb7991700161ab610e2c2d2b33",
+    "crates/hepta-browser-codec/README.md": "13ff0a57a72583e4619106ca530bb1192b3f6b407a9b3a1be668039063c04ede",
+    "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md": "c84fa492667e6bf3c59ef9be9d840189352516279848f2458f9912a43dddd6dd",
+    "manifests/lab-s08-semantic-custody.v1.json": "1d1d7cf9297645b9096378f2c0e44ccd2d2ab9aa095e774f368b6e84f2a69e5b",
+    "manifests/modules.v1.json": "2dda8f51480d0409b33f857eb92d8b0c2d9175b0833d85690ba66031a78258c5",
+    "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
+    "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
+    "tools/verify_ci_namespace_python.py": "ebcb64dde0fc880c2808f5f3b3d2b19595267971aad9c2c4be8003eef97fa7cf",
+    "tools/verify_retained_control_readiness.py": "7e6d07c6c2522a7652534b8943457b7a0faea343d2cb057018fa2004dc7e71c0"
+  },
+  "ci_parent_inverse18": {
+    ".github/workflows/approved-mechanism-policy.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 5832,
+          "complete_start": 5591,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 11596,
+          "complete_start": 11355,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 17629,
+      "complete_sha256": "231ed33683e7389918c6311afc386a80c2b437bf8657558f7d11633394ef777e",
+      "parent_bytes": 17147,
+      "parent_sha256": "6cab7c06fbaec82bd7038c3cec0691a481d8d0ee18fecae07a96ced06f203bce"
+    },
+    ".github/workflows/authenticated-update-readback.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 3162,
+          "complete_start": 2921,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 6247,
+          "complete_start": 6006,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 12078,
+      "complete_sha256": "f779e7ed6a1dd2d516cdc73fa685dca9555bb5689048652bfb48ab8aa414f602",
+      "parent_bytes": 11596,
+      "parent_sha256": "ff8b0b16e01a4a1aaec069ca222284900774622b511c25f94359e765eb1bdda6"
+    },
+    ".github/workflows/ci.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 2568,
+          "complete_start": 2326,
+          "complete_text": "      - name: Provision job-private CI namespace Python\n        id: namespace_python_setup\n        run: |\n          set -euo pipefail\n          python3 tools/verify_ci_namespace_python.py\n          python3 tools/ci_namespace_python.py setup\n\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 3277,
+          "complete_start": 3121,
+          "complete_text": "\n      - name: Remove only owned CI namespace Python and profile\n        if: always()\n        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 8395,
+          "complete_start": 8153,
+          "complete_text": "      - name: Provision job-private CI namespace Python\n        id: namespace_python_setup\n        run: |\n          set -euo pipefail\n          python3 tools/verify_ci_namespace_python.py\n          python3 tools/ci_namespace_python.py setup\n\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 9122,
+          "complete_start": 8966,
+          "complete_text": "\n      - name: Remove only owned CI namespace Python and profile\n        if: always()\n        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 12101,
+      "complete_sha256": "be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826",
+      "parent_bytes": 11305,
+      "parent_sha256": "a2392184e4099c5488be1c90ed886d9eefd9a1f88e183a0d94b83670a02638fe"
+    },
+    ".github/workflows/controlled-egress.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 1608,
+          "complete_start": 1367,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 3151,
+          "complete_start": 2910,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 8302,
+      "complete_sha256": "2240ad5b078322f9d89a7dc125969e7d88c363addd88f348699b534fd09c2c6c",
+      "parent_bytes": 7820,
+      "parent_sha256": "b49330b62bf6ef85801dfd335c5263bed1ffd506facb5a406101998d408584ae"
+    },
+    ".github/workflows/g2-approved-native-startup.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 5727,
+          "complete_start": 5131,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_approved_service_actor.py\"\n      - \"tools/verify_approved_service_owner.py\"\n      - \"tools/verify_approved_service_product.py\"\n      - \"tools/verify_approved_service_request.py\"\n      - \"tools/verify_approved_service_runtime.py\"\n      - \"tools/verify_service_dispatch_denial_cutoff.py\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n      - \"tools/verify_ci_required_contexts.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 11170,
+          "complete_start": 10574,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_approved_service_actor.py\"\n      - \"tools/verify_approved_service_owner.py\"\n      - \"tools/verify_approved_service_product.py\"\n      - \"tools/verify_approved_service_request.py\"\n      - \"tools/verify_approved_service_runtime.py\"\n      - \"tools/verify_service_dispatch_denial_cutoff.py\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n      - \"tools/verify_ci_required_contexts.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 14821,
+          "complete_start": 14579,
+          "complete_text": "      - name: Provision job-private CI namespace Python\n        id: namespace_python_setup\n        run: |\n          set -euo pipefail\n          python3 tools/verify_ci_namespace_python.py\n          python3 tools/ci_namespace_python.py setup\n\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 15805,
+          "complete_start": 15649,
+          "complete_text": "      - name: Remove only owned CI namespace Python and profile\n        if: always()\n        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup\n\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 24819,
+      "complete_sha256": "872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a",
+      "parent_bytes": 23229,
+      "parent_sha256": "5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228"
+    },
+    ".github/workflows/g2-native-product-owner.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 5780,
+          "complete_start": 5184,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_approved_service_actor.py\"\n      - \"tools/verify_approved_service_owner.py\"\n      - \"tools/verify_approved_service_product.py\"\n      - \"tools/verify_approved_service_request.py\"\n      - \"tools/verify_approved_service_runtime.py\"\n      - \"tools/verify_service_dispatch_denial_cutoff.py\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n      - \"tools/verify_ci_required_contexts.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 11279,
+          "complete_start": 10683,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_approved_service_actor.py\"\n      - \"tools/verify_approved_service_owner.py\"\n      - \"tools/verify_approved_service_product.py\"\n      - \"tools/verify_approved_service_request.py\"\n      - \"tools/verify_approved_service_runtime.py\"\n      - \"tools/verify_service_dispatch_denial_cutoff.py\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n      - \"tools/verify_ci_required_contexts.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 12772,
+          "complete_start": 12530,
+          "complete_text": "      - name: Provision job-private CI namespace Python\n        id: namespace_python_setup\n        run: |\n          set -euo pipefail\n          python3 tools/verify_ci_namespace_python.py\n          python3 tools/ci_namespace_python.py setup\n\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 13612,
+          "complete_start": 13456,
+          "complete_text": "      - name: Remove only owned CI namespace Python and profile\n        if: always()\n        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup\n\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 22379,
+      "complete_sha256": "a37826732869ed842e29de30b035cda684f055a9f2edbfb28231c6ab3044598a",
+      "parent_bytes": 20789,
+      "parent_sha256": "afbc7eab3d053fbdd935c3a40c33e0bd140f08440b4a83bce163d9e5736ac9d3"
+    },
+    ".github/workflows/module-documentation.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 7982,
+          "complete_start": 7741,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 15958,
+          "complete_start": 15717,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 20302,
+      "complete_sha256": "05401da3a9fc52c7daeb9687356bc1d68f48374ee0ac2a7b04c9d3c68c39f3ef",
+      "parent_bytes": 19820,
+      "parent_sha256": "4b50319a13cda27212ea6b4031f4f9e39b784b7510b9d3a37a86e8511214c3b8"
+    },
+    ".github/workflows/s08-servo-vertical-slice.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 6547,
+          "complete_start": 6306,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 13084,
+          "complete_start": 12843,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 34039,
+      "complete_sha256": "093861aa1206f584d1cc9731d00d681eac3fb610c1433f6a84185c02f82e5226",
+      "parent_bytes": 33557,
+      "parent_sha256": "2d8a1f4b427e22504b077667903f1c252087f6539c6a6d584f7951cfa8c2f0d4"
+    },
+    ".github/workflows/s09-linux-platform-adapters.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 1525,
+          "complete_start": 1284,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 3037,
+          "complete_start": 2796,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 7429,
+      "complete_sha256": "eb3f53661f6c459ce7ccfd49ae12a87964c2b5762a6567b746bfe05d3fac9a7e",
+      "parent_bytes": 6947,
+      "parent_sha256": "84f606f49009aa38fa339318434c93ddd9de848e217256ac9c712cd16daffad8"
+    },
+    ".github/workflows/update-boot-observer.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 2777,
+          "complete_start": 2536,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 5486,
+          "complete_start": 5245,
+          "complete_text": "      - \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n      - \"tools/ci_namespace_python.py\"\n      - \"contracts/ci-namespace-python.v1.json\"\n      - \"tools/verify_ci_namespace_python.py\"\n      - \"tests/test_ci_namespace_python.py\"\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 10950,
+      "complete_sha256": "38254307bdb0a56fcf17e5e954a3cdc8c3b64225c8443b15c5cfc717a3ccf25a",
+      "parent_bytes": 10468,
+      "parent_sha256": "e24e02bda9ba79d593a933eef53f6f0cad150c9acbf024c419206c8d07e4e074"
+    },
+    "contracts/ci-required-contexts.v1.json": {
+      "byte_edits": [
+        {
+          "complete_end": 3814,
+          "complete_start": 3699,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"98f6010e9e49b5f3755757526b0a494ab210b83b23374c092c30775c1fa301c3\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"72e55d25252635f440ebbe5f4c872dd521a99f6d6eb44c646eb824d73a79a8dc\",\n"
+        },
+        {
+          "complete_end": 4559,
+          "complete_start": 4444,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"3dba1bd590f95421b0adf14df3c6fa39b00f8cf9b38cd1084ab62067f67db122\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"8745734fea28ca4099c04bb5a5f8c04a2a0ba3a460fd34ab92a50e7d95e73639\",\n"
+        },
+        {
+          "complete_end": 6219,
+          "complete_start": 6104,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"fe62915eb56f65e8d8d24541989681f0a967a9bd33a431d5470471b9fc5f5997\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"7b9031666d7f1edfd58839a7d4c80236050a386eaeaba1159c5ad8e22d7c4689\",\n"
+        },
+        {
+          "complete_end": 7669,
+          "complete_start": 7554,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"cc8f9805f663d1692479637a7e90431296eeb6980c451576f8dc82c8b58abb5d\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"6bd5f8e1fb0976e3a0d975824b76e561b014e05d7c5c2774455c5714aba6f9d4\",\n"
+        },
+        {
+          "complete_end": 9689,
+          "complete_start": 9574,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"14a5ea508f703cf4499a00069acbb020f1cd962f0cea4e8ba080f721921f6474\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"0498c9f0fb1b5d74173a55c767df24b4bcfd42a9af1f1e317c0dbe866e760f59\",\n"
+        },
+        {
+          "complete_end": 10643,
+          "complete_start": 10528,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"747d216833570b3b56d7fbae46f27a60c87ddaf5507de4b74b5e35112f7e68a3\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"fdd8896c54c8f3eaed786d30e38d0e01a58d0763342c65942f69ae02c59a33e1\",\n"
+        },
+        {
+          "complete_end": 11582,
+          "complete_start": 11467,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"45de5b6963764476ef7b589de4a27b4f71b4b372acd2c8c56215700977d5cdec\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"360d418c165628a07d4b0be382e9e51634c571f0641d9ea5c571bf4453ba6b2a\",\n"
+        },
+        {
+          "complete_end": 17934,
+          "complete_start": 17819,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"5df451664c60c90c72ec31820b266d34e6710126e593a1e95a6c1311b86b959a\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"7456b2069b8d200063fd3ea7c27f6650da80ab5442ac01335720565aedc5fa81\",\n"
+        },
+        {
+          "complete_end": 18871,
+          "complete_start": 18756,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"57aa81377ebc8b6f8c12a0be355ffd6a50a03ed09f37b33140d9f85d2cfda07d\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"57792bb73d92bbd3583e2fbaf8752fd362991a430e271f6c8690baac6796376e\",\n"
+        },
+        {
+          "complete_end": 25014,
+          "complete_start": 24899,
+          "complete_text": "      \"body_without_job_display_names_sha256\": \"c03be15f9f34a8eb3498c5ceaf8130dfa96243fe70458eac0b94845295fed103\",\n",
+          "parent_text": "      \"body_without_job_display_names_sha256\": \"8509eb858e37e6a9a3f0bba0c05fe4171cf0655b13a02555394693443cdfe6db\",\n"
+        }
+      ],
+      "complete_bytes": 25573,
+      "complete_sha256": "222fcf18b69fae5fab6077a190c253edc834258a65300ace14decba4e7dc9f2d",
+      "parent_bytes": 25573,
+      "parent_sha256": "8916bd100d36023bd38d1bddef4ce6daf2b6c16b717983cb22962616c60c3dac"
+    },
+    "contracts/ci-source-identity.v1.json": {
+      "byte_edits": [
+        {
+          "complete_end": 7581,
+          "complete_start": 7348,
+          "complete_text": "          \"e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"aebdf432913ae63489f6057c328b77b287cb21c50dc55021f3bac4c84a6fedee\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479\"\n",
+          "parent_text": "          \"aebdf432913ae63489f6057c328b77b287cb21c50dc55021f3bac4c84a6fedee\"\n"
+        },
+        {
+          "complete_end": 9060,
+          "complete_start": 8827,
+          "complete_text": "          \"e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"ee2c74a91b3a7d2e195c58b83a00e3744ab538814ffb87b57d0ecbb7c1bf5303\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479\"\n",
+          "parent_text": "          \"ee2c74a91b3a7d2e195c58b83a00e3744ab538814ffb87b57d0ecbb7c1bf5303\"\n"
+        },
+        {
+          "complete_end": 14415,
+          "complete_start": 14182,
+          "complete_text": "          \"e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"bb7e6e27ce7d69bc9ca4d9fd10e6a33fda08f4050b7b4007060727a9d5b89c50\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479\"\n",
+          "parent_text": "          \"bb7e6e27ce7d69bc9ca4d9fd10e6a33fda08f4050b7b4007060727a9d5b89c50\"\n"
+        },
+        {
+          "complete_end": 15556,
+          "complete_start": 15323,
+          "complete_text": "          \"e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"347fc164a5033dd2a3beb54884ce2a9e77d2c0986e4ef59b1a6697aa3b441b06\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479\"\n",
+          "parent_text": "          \"347fc164a5033dd2a3beb54884ce2a9e77d2c0986e4ef59b1a6697aa3b441b06\"\n"
+        }
+      ],
+      "complete_bytes": 34547,
+      "complete_sha256": "db33890a91bc70247571cf71a3ebe41a48dd52d2965187ba7b3605e8b08c42e3",
+      "parent_bytes": 33923,
+      "parent_sha256": "8e0fb308c300f6999821ad9bccd7af9c39ec6aeb74ced6306438732ca84bbf84"
+    },
+    "contracts/retained-control-readiness.v1.json": {
+      "byte_edits": [
+        {
+          "complete_end": 7526,
+          "complete_start": 7402,
+          "complete_text": "    \".github/workflows/g2-approved-native-startup.yml\": \"872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a\",\n",
+          "parent_text": "    \".github/workflows/g2-approved-native-startup.yml\": \"5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228\",\n"
+        }
+      ],
+      "complete_bytes": 13293,
+      "complete_sha256": "9e24e9fa600ad98da1ab0c2d580321cebf4c3ecb7991700161ab610e2c2d2b33",
+      "parent_bytes": 13293,
+      "parent_sha256": "9051c732525ae813303df33ce9bc22b85928f1a5599c387062e7057a5e9f846b"
+    },
+    "crates/hepta-browser-codec/README.md": {
+      "byte_edits": [
+        {
+          "complete_end": 12223,
+          "complete_start": 7346,
+          "complete_text": "\n\n### CI-only namespace configuration source candidate\n\n`contracts/ci-namespace-python.v1.json`, `tools/verify_ci_namespace_python.py`, `tools/ci_namespace_python.py`, `.github/apparmor/hepta-ci-namespace-python.v1.profile` and `tests/test_ci_namespace_python.py` register the job-private interpreter configuration. The two existing `ci.yml` source jobs run the fixed checker before setup and always run fixed-system-Python cleanup after the unchanged full corpus. The real root-owned interpreter byte copy retains the normal runner UID/GID and standard-library prefixes; the named temporary debugging profile attaches only that unique path. Global AppArmor/sysctls, original workers and tests remain unchanged. Run `python3 tools/verify_ci_namespace_python.py` or the existing `make check` discovery to check source/ordinary-FS correspondence. Do not invoke privileged setup outside its fixed CI context. The unchanged `make validate` target does not separately register this CI-only gate. The helper/profile have not been activated in author validation, and no hosted, crypto-consumption, native, installed or production result follows from these tests. Architecture details and the preserved hosted failure are in `docs/architecture/MOZJS_AUTHENTICATED_INPUT.md`.\n\n\n### Four affected source jobs: expanded CI-only candidate\n\nThe configuration now covers four literal workflow/job pairs: `ci / repository-contracts`, `ci / repository-contracts-prospective-merge`, `g2-approved-native-startup / source-prospective`, and `g2-native-product-owner / source-prospective`. The two G2 source jobs execute the original complete Make corpus, so they require the same named private-interpreter preparation and always cleanup. Their original exact-pin owner bodies, native cases, flags and deadlines remain byte-preserved. The bounded fixed repository/file/ref check selects the literal workflow stem; profile and directory names include workflow, job, actual run ID and attempt, so the two same-named G2 jobs have distinct attachments. Ref text never becomes a pathname. GitHub documents `GITHUB_WORKFLOW_REF` as repository/workflow-file plus ref; supported PR merge syntax is `refs/pull/<positive-number>/merge`. The actual hosted values and profile permission still require new-run readback.\n\nThe earlier two-job source object is historical, rather than four-job qualification. The existing additional source failures are preserved under `work/round14-source650-hosted-failure-logs-1791022023626787005`; their raw SHA256 observations are retained externally without rewriting escaped traceback output. All five source failures were reported for the original readonly namespace case, before actual snapshot/capability-drop completion. This four-job candidate has performed only source and ordinary-file/model tests. It has not loaded a profile, invoked privileged setup or cleanup, created a new namespace, rerun Actions, or executed Cargo/native cases. Default Make discovery runs the tracked source-gate/negative tests; the unchanged Make validate recipe does not separately claim this CI gate. Neither the historical local Root success nor the new source checks establish hosted permission or production readiness.\n\n\n### CI-only serialized retirement ledger\n\nThe current four-job candidate adds a minimal non-secret root-owned retirement ledger, rather than claiming all root state is deleted. Its unique derived directory is mode0700, with a mode0600 create-new lock and finite `STARTED`/`READY`/`RETIRED` JSON. Setup and cleanup acquire a nonblocking flock on the same inode; state pins that inode. The actual setup worker PID/start ticks/PGID/SID and executable identity are written before any parser/profile action. Cleanup refuses a held lock, unknown or interrupted state, any remaining recorded setup session/group member, matching setup command, named-profile descendant, private executable inode or mapped private ELF. It checks absence before unload and again after unload/retirement. Timeout proves only the direct child was waited, rather than descendant termination; there is no broad process kill or cleanup retry that hides errors.\n\nAfter validated removal of the private interpreter directory and active named profile, only the tiny readonly-by-policy `RETIRED` deny ledger remains. Early cleanup also creates this tombstone: a delayed setup cannot recreate the namespace because setup requires create-new allocation, and phase revival is refused. No interpreter bytes, active profile, secret or production trust is retained in the ledger. Ordinary-file/model tests exercise real lock contention and phase/identity refusals, while root ownership, process inventory and parser activation are substituted explicitly. This source candidate still has no actual privileged setup, profile activation, new namespace, hosted permission, native or production qualification.\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 12223,
+      "complete_sha256": "13ff0a57a72583e4619106ca530bb1192b3f6b407a9b3a1be668039063c04ede",
+      "parent_bytes": 7346,
+      "parent_sha256": "df661f687f9eae045089e42df0acb26a0833419d7958c23409aba66ea24984e2"
+    },
+    "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md": {
+      "byte_edits": [
+        {
+          "complete_end": 31349,
+          "complete_start": 13306,
+          "complete_text": "\n\n## CI-only namespace interpreter configuration candidate\n\nThe versioned `contracts/ci-namespace-python.v1.json` describes a CI configuration candidate for the two existing `ci.yml` repository-contract jobs. The original production worker, G1 v2 APIs, native cases, corpus assertions and deadlines remain unchanged. Before the original full discovery command, `python3 tools/verify_ci_namespace_python.py` checks the fixed source correspondence and `python3 tools/ci_namespace_python.py setup` provisions a real byte-identical copy of `/usr/bin/python3.12` in one create-new root-owned `/var/lib` directory. A temporary named AppArmor debugging profile attaches only that literal interpreter path and explicitly admits user namespaces. The corpus continues as the original runner UID/GID. This configuration trusts the reviewed CI source; it is not a sandbox for hostile Python or a production confinement policy.\n\nThe setup records actual normal labels, UID/GID, security settings, whole interpreter bytes, non-setid/non-file-capability metadata, the private interpreter label and standard-library prefixes. Global AppArmor and namespace sysctls are read back without writes. The original real sealed memfd, distinct readonly snapshot inode, EROFS and after-exec five-zero-capability/NNP assertions remain required. Missing permission or readback fails; no fallback, skip, syscall restriction change or root corpus execution is admitted. The always-run cleanup uses the fixed system interpreter, refuses any executing private interpreter or named-profile descendant, and removes only its exact state and profile after unchanged unrelated-profile/global readback. Failed or partial allocation is an explicit cleanup failure unless its known complete state can be validated and removed.\n\n`tests/test_ci_namespace_python.py` is included by the unchanged default Make and CI discovery. It verifies source correspondence and ordinary-file refusal/cleanup semantics. Root ownership, kernel profile inventory and parser calls in its state-model tests are explicitly substituted: those tests do not activate AppArmor, sudo, create namespaces or establish hosted permission. The CI-only checker is called unconditionally by both new setup steps; the unchanged `make validate` recipe does not separately register this CI gate.\n\nThe original hosted failure is preserved in `work/round14-hosted-contract-failure-readonly-1791020396177565545/job.log`, SHA256 `b24298f5586ca33df72d38d6393380227b542fd4ccacf1648d107a0142cebd0d`. After user/mount namespace creation, opening `/proc/self/setgroups` for writing failed with EACCES, before snapshot construction or capability-drop assertions. The actual AppArmor label/audit was unavailable in that log; the Ubuntu/AppArmor explanation is an inference from the Linux capability check and documented default policy, rather than an observed denial label. The bounded read-only diagnosis is SHA256 `3425048e8d03b2293c8d95eb0e8d1588f2c5bda3af4577d766a9a127f952e210`; this source candidate has not activated its profile or rerun that hosted case. Local Root, supplier cryptographic, Cargo, native health, installed, firmware, hardware, human-approval and production qualifications do not transfer to this candidate.\n\n\n### Four affected source jobs: expanded CI-only candidate\n\nThe configuration now covers four literal workflow/job pairs: `ci / repository-contracts`, `ci / repository-contracts-prospective-merge`, `g2-approved-native-startup / source-prospective`, and `g2-native-product-owner / source-prospective`. The two G2 source jobs execute the original complete Make corpus, so they require the same named private-interpreter preparation and always cleanup. Their original exact-pin owner bodies, native cases, flags and deadlines remain byte-preserved. The bounded fixed repository/file/ref check selects the literal workflow stem; profile and directory names include workflow, job, actual run ID and attempt, so the two same-named G2 jobs have distinct attachments. Ref text never becomes a pathname. GitHub documents `GITHUB_WORKFLOW_REF` as repository/workflow-file plus ref; supported PR merge syntax is `refs/pull/<positive-number>/merge`. The actual hosted values and profile permission still require new-run readback.\n\nThe earlier two-job source object is historical, rather than four-job qualification. The existing additional source failures are preserved under `work/round14-source650-hosted-failure-logs-1791022023626787005`; their raw SHA256 observations are retained externally without rewriting escaped traceback output. All five source failures were reported for the original readonly namespace case, before actual snapshot/capability-drop completion. This four-job candidate has performed only source and ordinary-file/model tests. It has not loaded a profile, invoked privileged setup or cleanup, created a new namespace, rerun Actions, or executed Cargo/native cases. Default Make discovery runs the tracked source-gate/negative tests; the unchanged Make validate recipe does not separately claim this CI gate. Neither the historical local Root success nor the new source checks establish hosted permission or production readiness.\n\n\n### CI-only serialized retirement ledger\n\nThe current four-job candidate adds a minimal non-secret root-owned retirement ledger, rather than claiming all root state is deleted. Its unique derived directory is mode0700, with a mode0600 create-new lock and finite `STARTED`/`READY`/`RETIRED` JSON. Setup and cleanup acquire a nonblocking flock on the same inode; state pins that inode. The actual setup worker PID/start ticks/PGID/SID and executable identity are written before any parser/profile action. Cleanup refuses a held lock, unknown or interrupted state, any remaining recorded setup session/group member, matching setup command, named-profile descendant, private executable inode or mapped private ELF. It checks absence before unload and again after unload/retirement. Timeout proves only the direct child was waited, rather than descendant termination; there is no broad process kill or cleanup retry that hides errors.\n\nAfter validated removal of the private interpreter directory and active named profile, only the tiny readonly-by-policy `RETIRED` deny ledger remains. Early cleanup also creates this tombstone: a delayed setup cannot recreate the namespace because setup requires create-new allocation, and phase revival is refused. No interpreter bytes, active profile, secret or production trust is retained in the ledger. Ordinary-file/model tests exercise real lock contention and phase/identity refusals, while root ownership, process inventory and parser activation are substituted explicitly. This source candidate still has no actual privileged setup, profile activation, new namespace, hosted permission, native or production qualification.\n\nThe fixed-command subprocess capture uses PIPE with a 30-second direct-child timeout. Its 2 MiB limit for each stdout/stderr stream is a post-completion refusal threshold, not a strict in-flight memory/output bound. Ordinary-file, ledger and kernel-state reads are bounded while reading. Cleanup validates the exact private-directory inventory before unloading the named profile, and repeats the check before deletion; unknown files retain evidence and fail. A command timeout establishes neither descendant exit nor complete root cleanup.\n\nThe final import-closure check also registers the existing `tools/verify_ci_required_contexts.py` dependency in both events of the two G2 workflows. The actual new positive registration count is 94: 70 for seven filtered module-reader workflows and 24 for the two G2 workflows. The original prefixes and all original commands remain preserved. The earlier 90-entry preview and its closure failure remain separate historical facts.\n\n\n### Root operation session successor: preparation markers and post-wait acceptance\n\nThe prior frozen four-job `bc4554222e9397e3292df393ece25490a21533f6` object remains unaccepted: its inner parser created a separate session, and cleanup did not register its own root operation. Its 33 new ordinary/source tests, 46 related tests and ten validators passed as static facts; that did not close the lifecycle finding or authorize profile activation.\n\nThis successor invokes only the fixed root-owned `/usr/bin/setsid --fork --wait -- /usr/bin/python3.12` through sudo, preserving the outer 30-second direct-child timeout. Whole bytes and device/inode of both providers are checked before/after, including non-setid and absent file-capability checks. The actual Root writer must have PID=PGID=SID; its parent must be the actual UID0 fixed setsid executable with the complete expected argv, stable PID/start and parent relation. The ledger records both identities. Inner add/remove parser calls inherit the writer session. Changed argv or exec cannot remove descendants from that recorded group/session.\n\nCleanup adds one finite `cleanup_worker` field under the same inode lock before any parser call. Both sessions of a previous operation must be empty before identity handoff. While an operation is running, only its exact currently verifying Root writer can be excluded from its own session inventory; children and whole groups are never excluded. Its separate waiting setsid supervisor is explicitly still alive. Root returns only ready/retired markers with `root_worker_supervisor_all_exited=false`. The retirement ledger remains a deny tombstone, rather than evidence that root supervision has terminated.\n\nOnly the normal runner, after actual sudo/setsid direct-child termination, accepts setup or cleanup: it verifies the actual returned writer/supervisor fields and providers, then enumerates both sessions/groups with no exclusion. Related unknown/unreadable state or any remaining member refuses success and PATH publication. Normal returncode zero and phase RETIRED do not substitute for this readback. Existing parser failures, unknown-state refusal and evidence retention remain; no broad kill, cleanup retry, capability fallback or budget extension is added.\n\nNew ordinary process fixtures demonstrate real group-leader `setsid()` EPERM and the fixed fork/wait utility's isolated session as the same normal UID. Proc-shaped ordinary files and explicit state models cover changed parser argv/exec, cleanup children, exact-writer exclusion and post-wait refusal. Their UID0 file text is synthetic input; they do not prove root execution, AppArmor activation, hosted namespace permission or production readiness. No new privileged setup/profile load, user namespace, Cargo, native or G6 execution was performed for this source successor.\n\nThe successor replaces PIPE capture with owned anonymous temporary stdout/stderr files, keeping the fixed 30-second direct-child wait. It reads at most LIMIT+1 bytes per stream after completion and refuses oversized output. This avoids waiting for inherited descendant PIPE EOF; it does not impose a strict in-flight output or disk bound and does not prove descendant exit. The earlier PIPE accuracy declaration remains a historical prefix.\n\n\n### Exact source step catalog registration successor\n\nThe frozen `ed4e73ca7138536adf6a2e754b6115e08be4d458` complete Source check failed with actual exit2 after 1317 Python tests in 118.182 seconds: the original workflow identity catalog rejected the eight reviewed setup/cleanup step objects. Raw Make log SHA256 is `b16068a49bd60fd9198d93549e54aafbacda7715e9bcdf1c627c93107c6d044f`; all655 files remained physically and Git-byte exact. D1/transport and Rust graphs were not reached. Its different-author 84-test/10-validator narrow pass remains separate, rather than being upgraded to a complete Source pass.\n\nThis metadata successor preserves the original runtime identity helper, its original tests, source-role checkout position, limits, claims and every original step-object digest. Only four literal job arrays in `contracts/ci-source-identity.v1.json` gain the exact complete step-object hashes for reviewed preparation and always cleanup at their actual positions. Removing those eight entries restores the complete old serialized catalog byte for byte. The existing catalog field name remains; hashing a step is not qualification or promotion authority.\n\nThe CI namespace source gate now reads and pins this entire existing catalog before setup, with no change to its check function. Stale catalogs, missing or extra step entries and incorrect caller digest changes refuse. All existing workflow commands, eight new steps, 94 positive path appends, budgets and provider/session/capability rules remain byte-identical to the predecessor. The required catalog path already matches both events of all three affected workflows; no path filter or workflow/catalog digest rebind is needed. Tracked default discovery regressions test this closure as Source-only data, without activating sudo, AppArmor or namespaces. This successor has no complete Make, hosted, native, installed or production qualification until new exact-object evidence exists.\n\n\n### Closed diagnostics after the 655-file hosted cleanup failure\n\nThe exact `6c03f3c34f0318c9420b074d88e15d0650b1e0c7` push job\n111194602655 successfully provisioned its named interpreter and executed the\noriginal Python 1321/109/15 suites, then refused the always-cleanup step. The\n327301-byte raw job log has SHA256\n`5ef497a30407948387ecd3dfd1f5b2b2a18f310a82eb5f869920983a4bed5c36`.\nTwo independently captured PR jobs 111194615459 and 111194615257 also passed\nsetup and the same original suites before cleanup refused. Their raw log\nSHA256 values are `c8a7ad20e1776f338bd12fcf1ed7b46092ba504ee844ad3acde7f195d2d36dc3`\nand `5e5e9b86eb3c3a2e34c89b972557fb0fdf80423df3d05f2e881ef0aa8857c55e`.\nThese logs contain only the prior fixed refusal string and do not prove which\nRoot or caller readback rejected. No process leak, unrelated-profile drift or\npermission cause is inferred as an observed fact. The failed records remain\nunchanged.\n\nThis Source successor adds a strictly bounded diagnostic to an already\nadmitted fixed setup/cleanup/internal-preflight failure. Exactly one canonical\nASCII JSON object, at most 4096 bytes, names fixed domain/operation/stage/category\nenumerations and at most one validated child diagnostic. Unknown fields,\nwrong pairing, nested children, success/authority fields, duplicate JSON keys,\nnoncanonical or trailing bytes are refused. Error messages, paths, argv, PIDs,\ncredentials, environment and arbitrary child stderr are never copied. Error\ncategories use only exact built-in types and a closed errno mapping. Outside\nthe admitted CI protocol, the original fixed refusal string remains.\n\nThe diagnostic is an observation of a refusal. It cannot authorize setup,\ncleanup, a phase transition or PATH publication. All original return codes,\n30-second direct-child timeouts, 2 MiB post-completion output refusals, same UID,\ncapability and profile checks, ledger lock/inode identity, retirement, kernel\nprocess/group inventories and cleanup order remain. Neither a timeout nor a\nchild diagnostic proves descendants have exited. A mandatory source checker\nbinds the fixed inventory and every stage callsite; the default discovered\ntests retain the complete old file and append parser and ordinary-host fault\ncases. Those cases do not activate sudo, an AppArmor profile or a namespace.\n\nThis package has no new hosted cleanup success, NativeHealth, installed, human\nreview or production qualification. No artifact path or workflow/run/budget\nis changed. `production_ready=false`.\n\nThe stage field is the last entered fixed stage, not a proof of the exception\norigin. A successfully returned nested read can leave that observation before\nan enclosing comparison refuses. Domain and operation remain explicit; each\nhas its own finite allowed stage set. Child diagnostic pairing uses only the\ncurrent context already admitted by the original route and the entire fixed\nlauncher/operation/eight arguments, or the exact derived private interpreter\nand preflight arguments. It never reconstructs context from diagnostic JSON.\n\n\n### CI cleanup current-writer handoff correction (source candidate)\n\nThe published `bd839ab4cdbd2f7cb782177eb1338d768769ffff` push\n`ci / repository-contracts` job `111206746729` completed the original\nPython corpus and then refused cleanup. Its closed diagnostic recorded\nRoot cleanup `VALUE_REFUSED` with last-entered stage\n`PROCESS_COMMAND_READ`. The raw complete log SHA-256 is\n`ff341f9ef2861c778e643302451af6dfa0ecf0bf7337335fb27a9f5576207afa`.\nThat observation does not identify a failing proc read or expose an actual\nRoot PID, command line, or leader relationship.\n\nA source review and existing ordinary proc-shaped file model found a\ndeterministic self-denial in prior-operation checking: the historical\nsupervisor scan also matched the currently validating cleanup writer's\nfixed command, without applying the exact writer exclusion already used\nby the immediately preceding scan. The independent Root source proof\nSHA-256 is `103c39201e8a259f2031f0c08f49452d870b5c1547b2e7397f64382586334c35`.\nThe candidate passes that same current-writer identity to both scans.\nExclusion still requires the exact PID, start ticks, PGID, SID, UID0 and\nexecutable identity; it excludes neither a group nor any child. Historical\nwriter/supervisor members, changed-exec children, identity drift and reused\nhistorical PIDs continue to refuse. Ordinary runner post-wait checking\nretains no exclusions. The original 57 namespace source tests remain\ncomplete; added integration regressions exercise both actual inventory\ncalls together using synthetic proc-shaped files.\n\nNo local Root profile or AppArmor operation has been run for this candidate.\nThe ordinary model is source evidence, not a new Hosted cleanup result,\nNativeHealth, installed, human, hardware, G1 closure or production\nqualification. The published failure and all original deadlines, ledger\nphases, permissions, provider checks and cleanup ordering remain recorded.\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 31349,
+      "complete_sha256": "c84fa492667e6bf3c59ef9be9d840189352516279848f2458f9912a43dddd6dd",
+      "parent_bytes": 13306,
+      "parent_sha256": "7aa3c79d3b93bda31977857512e598eaffe8f6f6091265955629a8787c9e21ef"
+    },
+    "manifests/lab-s08-semantic-custody.v1.json": {
+      "byte_edits": [
+        {
+          "complete_end": 10992,
+          "complete_start": 10902,
+          "complete_text": "    \"workflow_sha256\": \"093861aa1206f584d1cc9731d00d681eac3fb610c1433f6a84185c02f82e5226\"\n",
+          "parent_text": "    \"workflow_sha256\": \"2d8a1f4b427e22504b077667903f1c252087f6539c6a6d584f7951cfa8c2f0d4\"\n"
+        }
+      ],
+      "complete_bytes": 11383,
+      "complete_sha256": "1d1d7cf9297645b9096378f2c0e44ccd2d2ab9aa095e774f368b6e84f2a69e5b",
+      "parent_bytes": 11383,
+      "parent_sha256": "1ea3a3aa40c085cb8e609ae91dcc5e2725cb3d8f892e9e21e2ccdb3d29817441"
+    },
+    "manifests/modules.v1.json": {
+      "byte_edits": [
+        {
+          "complete_end": 12655,
+          "complete_start": 12552,
+          "complete_text": "        \"contracts/mozjs-authenticated-input.v2.json\",\n        \"contracts/ci-namespace-python.v1.json\"\n",
+          "parent_text": "        \"contracts/mozjs-authenticated-input.v2.json\"\n"
+        },
+        {
+          "complete_end": 13730,
+          "complete_start": 13484,
+          "complete_text": "        \"tools/verify_approved_service_owner.py\",\n        \"tests/test_ci_namespace_python.py\",\n        \"tools/ci_namespace_python.py\",\n        \"tools/verify_ci_namespace_python.py\",\n        \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n",
+          "parent_text": "        \"tools/verify_approved_service_owner.py\"\n"
+        }
+      ],
+      "complete_bytes": 31462,
+      "complete_sha256": "2dda8f51480d0409b33f857eb92d8b0c2d9175b0833d85690ba66031a78258c5",
+      "parent_bytes": 31216,
+      "parent_sha256": "a1241b30b96cd5ba1fad70e56651e29a402a2e2616b2d1d684434432544fb735"
+    },
+    "tools/verify_retained_control_readiness.py": {
+      "byte_edits": [
+        {
+          "complete_end": 10282,
+          "complete_start": 10140,
+          "complete_text": "                      '.github/workflows/g2-approved-native-startup.yml': '872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a',\n",
+          "parent_text": "                      '.github/workflows/g2-approved-native-startup.yml': '5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228',\n"
+        }
+      ],
+      "complete_bytes": 83605,
+      "complete_sha256": "7e6d07c6c2522a7652534b8943457b7a0faea343d2cb057018fa2004dc7e71c0",
+      "parent_bytes": 83605,
+      "parent_sha256": "69be6939854841c9dbcdb67bbb8d5dcfa4720fa5ea9992fd03bbcc53da5e7f48"
+    }
+  },
   "default_activation": false,
   "effect_orders": {
     "ServiceDispatchScope::check_dispatch_cutoff": {
@@ -476,8 +976,8 @@
       "parent_sha256": "e92e49000524680c479da62b142c49bd2824943f4227e5089a052472d850f147"
     },
     "manifests/modules.v1.json": {
-      "complete_bytes": 31216,
-      "complete_sha256": "a1241b30b96cd5ba1fad70e56651e29a402a2e2616b2d1d684434432544fb735",
+      "complete_bytes": 31462,
+      "complete_sha256": "2dda8f51480d0409b33f857eb92d8b0c2d9175b0833d85690ba66031a78258c5",
       "edits": [
         {
           "complete_end": 2501,
@@ -498,38 +998,50 @@
           "parent_text": "        \"apps/hepta-browserd/src/product_dispatch/service_product/tests.rs\"\n"
         },
         {
-          "complete_end": 25493,
-          "complete_start": 25369,
+          "complete_end": 12655,
+          "complete_start": 12552,
+          "complete_text": "        \"contracts/mozjs-authenticated-input.v2.json\",\n        \"contracts/ci-namespace-python.v1.json\"\n",
+          "parent_text": "        \"contracts/mozjs-authenticated-input.v2.json\"\n"
+        },
+        {
+          "complete_end": 13730,
+          "complete_start": 13484,
+          "complete_text": "        \"tools/verify_approved_service_owner.py\",\n        \"tests/test_ci_namespace_python.py\",\n        \"tools/ci_namespace_python.py\",\n        \"tools/verify_ci_namespace_python.py\",\n        \".github/apparmor/hepta-ci-namespace-python.v1.profile\"\n",
+          "parent_text": "        \"tools/verify_approved_service_owner.py\"\n"
+        },
+        {
+          "complete_end": 25739,
+          "complete_start": 25615,
           "complete_text": "        \"docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md\",\n        \"docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md\"\n",
           "parent_text": "        \"docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md\"\n"
         },
         {
-          "complete_end": 26261,
-          "complete_start": 26150,
+          "complete_end": 26507,
+          "complete_start": 26396,
           "complete_text": "        \"contracts/approved-service-actor.v2.json\",\n        \"contracts/service-dispatch-denial-cutoff.v1.json\"\n",
           "parent_text": "        \"contracts/approved-service-actor.v2.json\"\n"
         },
         {
-          "complete_end": 27867,
-          "complete_start": 27723,
+          "complete_end": 28113,
+          "complete_start": 27969,
           "complete_text": "        \"crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs\",\n        \"tests/test_service_dispatch_denial_cutoff.py\"\n",
           "parent_text": "        \"crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs\"\n"
         },
         {
-          "complete_end": 29426,
-          "complete_start": 29302,
+          "complete_end": 29672,
+          "complete_start": 29548,
           "complete_text": "        \"docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md\",\n        \"docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md\"\n",
           "parent_text": "        \"docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md\"\n"
         },
         {
-          "complete_end": 29935,
-          "complete_start": 29824,
+          "complete_end": 30181,
+          "complete_start": 30070,
           "complete_text": "        \"contracts/approved-service-actor.v2.json\",\n        \"contracts/service-dispatch-denial-cutoff.v1.json\"\n",
           "parent_text": "        \"contracts/approved-service-actor.v2.json\"\n"
         },
         {
-          "complete_end": 31017,
-          "complete_start": 30873,
+          "complete_end": 31263,
+          "complete_start": 31119,
           "complete_text": "        \"crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs\",\n        \"tests/test_service_dispatch_denial_cutoff.py\"\n",
           "parent_text": "        \"crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs\"\n"
         }
@@ -1140,7 +1652,7 @@
   },
   "joint_source_scope": {
     "P1_guard": "actual d979 P1 checker/200methods whole; original16 historical input guard and9 full ingress bodies/sole route unchanged; mandatory P3 independently pins current16 physical modules and original7 current physical guards",
-    "P3_reader": "physical no-link dirfd bytes only; all694 including canonical raw own contract",
+    "P3_reader": "physical no-link dirfd bytes only; all699 including canonical raw own contract; current16 and CI23 independent literals",
     "base_head": "1d7e08801a0e9bd0b3077f43e868cccb8987a03f",
     "base_tree": "54980be1d3aa2a011d5067fa8a812cb0d85bb987",
     "current_P1_head": "d979140a23e76b6bdac7bbce915f30a73a5b2e19",
@@ -1169,7 +1681,7 @@
       "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md",
       "tools/verify_approved_service_product.py"
     ],
-    "tracked_files": 694
+    "tracked_files": 699
   },
   "joint_transport_input_roles": {
     "current_physical": {
@@ -1227,23 +1739,23 @@
     ".github/PULL_REQUEST_TEMPLATE.md": "484d1e9b885d62e70e795e3b08c12672a930e72fb8770b603a69f8ed9aa705b5",
     ".github/workflows/agent-port-custody.yml": "fcb60912b2a7da57bd1c48d39f44aac4d5b0228b889d8d2bcb453e2736029a9c",
     ".github/workflows/agent-transport-reference.yml": "9f4f35e90bb501184c52ce18fbb1e92317284b576bef117fe5bb817edfcf52c4",
-    ".github/workflows/approved-mechanism-policy.yml": "6cab7c06fbaec82bd7038c3cec0691a481d8d0ee18fecae07a96ced06f203bce",
-    ".github/workflows/authenticated-update-readback.yml": "ff8b0b16e01a4a1aaec069ca222284900774622b511c25f94359e765eb1bdda6",
+    ".github/workflows/approved-mechanism-policy.yml": "231ed33683e7389918c6311afc386a80c2b437bf8657558f7d11633394ef777e",
+    ".github/workflows/authenticated-update-readback.yml": "f779e7ed6a1dd2d516cdc73fa685dca9555bb5689048652bfb48ab8aa414f602",
     ".github/workflows/browser-codec-reference.yml": "8ea7398666557ae2bfec7dfd5c5033cb9d096b005d2831b1fa8a8e3d272e9a1a",
-    ".github/workflows/ci.yml": "a2392184e4099c5488be1c90ed886d9eefd9a1f88e183a0d94b83670a02638fe",
-    ".github/workflows/controlled-egress.yml": "b49330b62bf6ef85801dfd335c5263bed1ffd506facb5a406101998d408584ae",
+    ".github/workflows/ci.yml": "be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826",
+    ".github/workflows/controlled-egress.yml": "2240ad5b078322f9d89a7dc125969e7d88c363addd88f348699b534fd09c2c6c",
     ".github/workflows/d1-final-qualification.yml": "831d26b8a12f0427c1a40b6544375fc32e4ba43919ecc60d836d63565c30a3ca",
     ".github/workflows/d2i-integrated-image.yml": "74955498d473ff8b21478a86a243c026eb1417d4348e6413b0c1a82fd1e087de",
-    ".github/workflows/g2-approved-native-startup.yml": "5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228",
-    ".github/workflows/g2-native-product-owner.yml": "afbc7eab3d053fbdd935c3a40c33e0bd140f08440b4a83bce163d9e5736ac9d3",
-    ".github/workflows/module-documentation.yml": "4b50319a13cda27212ea6b4031f4f9e39b784b7510b9d3a37a86e8511214c3b8",
+    ".github/workflows/g2-approved-native-startup.yml": "872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a",
+    ".github/workflows/g2-native-product-owner.yml": "a37826732869ed842e29de30b035cda684f055a9f2edbfb28231c6ab3044598a",
+    ".github/workflows/module-documentation.yml": "05401da3a9fc52c7daeb9687356bc1d68f48374ee0ac2a7b04c9d3c68c39f3ef",
     ".github/workflows/receipt-journal.yml": "4eb762a1718b402008c22f9f0e26f4c9ee3cb0c7946f4722b4f04c435ab34b07",
     ".github/workflows/s04-transport-custody.yml": "9af018869b35acf6d9bcfbd9e9a672a04714518a0203519d02284d7798cecba4",
     ".github/workflows/s06-browser-actor.yml": "b40d6cac4d56d94097b3cd19744232da3736649ed1c024d58bf0c987d129c61b",
     ".github/workflows/s07-servo-retained-node.yml": "2fc42ae8e99000ca3664a26ce91000a26f1cbb1f05e10eb9343b3d14d230e032",
     ".github/workflows/s08-product-servo-runtime.yml": "c6909611358a3f1fceb94ec9a84c2e4da46179c3df07c0bc6bdeed0922f54814",
-    ".github/workflows/s08-servo-vertical-slice.yml": "2d8a1f4b427e22504b077667903f1c252087f6539c6a6d584f7951cfa8c2f0d4",
-    ".github/workflows/s09-linux-platform-adapters.yml": "84f606f49009aa38fa339318434c93ddd9de848e217256ac9c712cd16daffad8",
+    ".github/workflows/s08-servo-vertical-slice.yml": "093861aa1206f584d1cc9731d00d681eac3fb610c1433f6a84185c02f82e5226",
+    ".github/workflows/s09-linux-platform-adapters.yml": "eb3f53661f6c459ce7ccfd49ae12a87964c2b5762a6567b746bfe05d3fac9a7e",
     ".github/workflows/s10-production-debian-qemu.yml": "27ba1b977d688429905c000fc94876ea912ae55a681312569bb42a0195fdddfd",
     ".github/workflows/s11-update-recovery.yml": "f8f697144948826ffb79e80002e1d06f9177fa8a53f711c129278dff2248f8c9",
     ".github/workflows/s12-release-qualification.yml": "04795aa3e91764e77eeda6f995bcdadc66dc0a5b38c6a156a33f01e5ffb4b446",
@@ -1251,7 +1763,7 @@
     ".github/workflows/self-hosted-fleet-availability.yml": "852a07e2c1953dd0e9d42464ee21f41820f59ed85f93bbe5e466d29a60d01c4b",
     ".github/workflows/servo-exact-pin.yml": "fd9c1228323ee58672e083ebe42c8b6d3b20632da081ace2e177097d07bf8da5",
     ".github/workflows/servo-headed-runtime.yml": "a6fbbee184be2445d1de8cd521e4b1f155cb7fd89cbd02e01c26ca364616705f",
-    ".github/workflows/update-boot-observer.yml": "e24e02bda9ba79d593a933eef53f6f0cad150c9acbf024c419206c8d07e4e074",
+    ".github/workflows/update-boot-observer.yml": "38254307bdb0a56fcf17e5e954a3cdc8c3b64225c8443b15c5cfc717a3ccf25a",
     ".gitignore": "b1074bbf223d422de0fd7db402a46118ca32e569a1f645fdf48fef1dad03b0f6",
     "CONTRIBUTING.md": "bd412ee18b1397be40ceb5100c0f5bb1cc226ef8aebdc016660916b1c0e66403",
     "Cargo.lock": "fde6ce60b8b1564562efc6a15848dda3a07bf6d7a9b51e3322d0c42d25e356a2",
@@ -1317,8 +1829,8 @@
     "contracts/browser-response.v1.schema.json": "d24560192330acb9028d95bf9a2dcc839c74250fa36d5674dc81499be40b7f4d",
     "contracts/browser-wire.v1.schema.json": "0d3a7e914ef06a7fd47173dbd3c3ced0e07358e22133dfe87cf086fdfca1f89c",
     "contracts/capability-permit.v1.schema.json": "28d8e0ffa369671aa879e63bb87b3f66fc1f86737dbee70ca5dda8965201113a",
-    "contracts/ci-required-contexts.v1.json": "8916bd100d36023bd38d1bddef4ce6daf2b6c16b717983cb22962616c60c3dac",
-    "contracts/ci-source-identity.v1.json": "8e0fb308c300f6999821ad9bccd7af9c39ec6aeb74ced6306438732ca84bbf84",
+    "contracts/ci-required-contexts.v1.json": "222fcf18b69fae5fab6077a190c253edc834258a65300ace14decba4e7dc9f2d",
+    "contracts/ci-source-identity.v1.json": "db33890a91bc70247571cf71a3ebe41a48dd52d2965187ba7b3605e8b08c42e3",
     "contracts/configured-retained-bootstrap.v1.json": "02b011129bc0b65fcce16ebd0ad0dfc5e21faaa87b1ea9717e0ff7786ede804e",
     "contracts/contract-core-constraints.v1.json": "235899516bc39afff160399ef95947de131a3936f3997dacb9f399a29dfbbc89",
     "contracts/control-owner-handoff.v1.json": "5f05f5a7a50d61cf6d2ac8be32df4aff3f05ad30aecc5a7bc3687f2b6c870834",
@@ -1358,7 +1870,7 @@
     "contracts/receipt.v1.schema.json": "8610d2e9dd8ccc72b9803b2a51704aa282ccd96f50d19ac33074060e8cfc0eed",
     "contracts/remaining-managed-consumers.v1.json": "2be2c10879559bba8c10fa058c2d0abc770eac35694c84af35b2fae32cd82abd",
     "contracts/request-peer-custody.v1.json": "11c905470ee6777d920e36f1b0ccace04e3c074487b22e4dceaf3c81b7917201",
-    "contracts/retained-control-readiness.v1.json": "9051c732525ae813303df33ce9bc22b85928f1a5599c387062e7057a5e9f846b",
+    "contracts/retained-control-readiness.v1.json": "9e24e9fa600ad98da1ab0c2d580321cebf4c3ecb7991700161ab610e2c2d2b33",
     "contracts/retained-control-terminal.v1.json": "a5c8885cf6431685e69fbefc3afa8f9d21a46dd2dac2dfef991283db467095ac",
     "contracts/root-owned-control-path.v1.json": "ffe2c22b4be5964ae9a41f370133ca311965ddc98286d4f4b1eff410142e41d8",
     "contracts/root-path-retained-control.v1.json": "e96dda3a5707aace239fbea760fccb8cbf7ff49f69d671c94680ea42f462eea8",
@@ -1415,7 +1927,7 @@
     "crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs": "a27b8350c68bdbfb1ed24fead5f326dde11cee3774b2ad0b3c56f25361b7a4f5",
     "crates/hepta-browser-actor/tests/s08_servo_mailbox.rs": "279efb0fb1ac2583748b455244a8cffedb98fc4bf0a89d8f1b991c855c3a9429",
     "crates/hepta-browser-codec/Cargo.toml": "ba7f82043e6275bd172041775cdda87f9dd0106138edaa5588be0c7c8c335b28",
-    "crates/hepta-browser-codec/README.md": "df661f687f9eae045089e42df0acb26a0833419d7958c23409aba66ea24984e2",
+    "crates/hepta-browser-codec/README.md": "13ff0a57a72583e4619106ca530bb1192b3f6b407a9b3a1be668039063c04ede",
     "crates/hepta-browser-codec/src/json.rs": "7a1eda83f95c7f5754bcf922ceafbd203b97af560012c080e95548788d47fbbc",
     "crates/hepta-browser-codec/src/lib.rs": "753072763a9247c80a130d0e3a3716b0a80a1ad392d0a00e9ee44474204e2a7d",
     "crates/hepta-browser-codec/src/model.rs": "622e99633da35d4862b92451272d550e59106133f39f3fa95b748a76c5d495c9",
@@ -1529,7 +2041,7 @@
     "docs/architecture/LEGACY_RECEIPT_MIGRATION.md": "fcc8a5d460d9ba1fc25cd547a45e5d9f8602d428c1688063969e526c99a4c27f",
     "docs/architecture/MANAGED_EVIDENCE_CONSUMERS.md": "a09ea665d393aeb186d6a534ab69591863904a294b3f991525730486a4f3b585",
     "docs/architecture/MANAGED_RECEIPT_STORE.md": "68d2ee0d25cc6f409237d3dcdbafaba4f90b4c086ce4a63d14674ad9af796607",
-    "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md": "7aa3c79d3b93bda31977857512e598eaffe8f6f6091265955629a8787c9e21ef",
+    "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md": "c84fa492667e6bf3c59ef9be9d840189352516279848f2458f9912a43dddd6dd",
     "docs/architecture/MOZJS_SECONDARY_INPUT.md": "c99b42480a656f3681c75da0ffa42651d5ffec98f043374ae5d7376988baefb7",
     "docs/architecture/NATIVE_DIRECT_INET_QUALIFICATION.md": "c92f7f9afb2db49ba142b8372d3c418cece63a70c951f661332a81da2456ed67",
     "docs/architecture/NATIVE_IMMUTABLE_PRODUCT_OWNER.md": "8f919615b693912102cbe10028ac7fb1fc29ecd142a92647cbf526804eba89ee",
@@ -1641,7 +2153,7 @@
     "manifests/e2fsprogs-host-toolchain.v1.json": "bd90df024af8de55098cc512b5edc5a454204b647577a70e7d6b6947e204d0ff",
     "manifests/gates.v1.json": "9cf474ef972f238b009a6cca0c3a354d3bd148bf4423d650eea792499871660b",
     "manifests/lab-d3-servo-retained-node-action.v1.json": "2b94b328f830644f722dfd45af0f0c86818ee627db39d542d51ae625fa52d188",
-    "manifests/lab-s08-semantic-custody.v1.json": "1ea3a3aa40c085cb8e609ae91dcc5e2725cb3d8f892e9e21e2ccdb3d29817441",
+    "manifests/lab-s08-semantic-custody.v1.json": "1d1d7cf9297645b9096378f2c0e44ccd2d2ab9aa095e774f368b6e84f2a69e5b",
     "manifests/mozjs-authenticated-input.v2.json": "ce99c5631be10dbc12c9ea592f17b6667456a8eec2831728dd5d4f0670fcb260",
     "manifests/mozjs-secondary-input.v1.json": "729f1a5eeda51c076dd27a383a9987856c63059fc0622bd556f563dc23aeed22",
     "manifests/platform-mechanisms.v1.json": "13437c74c8213ad48bb7ec18e5b233e6110021a7aa0fde90e651d5fa1eb59256",
@@ -1889,7 +2401,7 @@
     "tools/verify_mozjs_authenticated_input.py": "6533b5bcf4b6513ff48aa8f4b32d5600e91f1410c3a139e6a5c4a0ceb0a865e0",
     "tools/verify_mozjs_secondary_input.py": "46cc8ce9bb50ab10dfdbda6eeab2afff7da60803bed842eb0bb3b9413c6d8270",
     "tools/verify_receipt_journal.py": "c19ddb04b813649ba73d12e67c3992aa948e45209c1884f43f5fb566e500b377",
-    "tools/verify_retained_control_readiness.py": "69be6939854841c9dbcdb67bbb8d5dcfa4720fa5ea9992fd03bbcc53da5e7f48",
+    "tools/verify_retained_control_readiness.py": "7e6d07c6c2522a7652534b8943457b7a0faea343d2cb057018fa2004dc7e71c0",
     "tools/verify_s07_qualification_lineage.py": "e30d6dbe2f892d2470874002d49b787e92c4c9187e550b16e6332611abc72d7b",
     "tools/verify_s08_semantic_custody.py": "5c9d9feaa50fecc0efa9894a571fcdf688ffce141f089f31c7b75fcf5462a418",
     "tools/verify_s12_release_qualification.py": "c8aa181dc108427edad7e7f50ef07f2c07ed2eb058ef2fc8daecb106debfc7bf",
@@ -1989,6 +2501,33 @@
     "production_ready": false
   },
   "source_scope": {
+    "ci_existing_modified_paths18": [
+      ".github/workflows/approved-mechanism-policy.yml",
+      ".github/workflows/authenticated-update-readback.yml",
+      ".github/workflows/ci.yml",
+      ".github/workflows/controlled-egress.yml",
+      ".github/workflows/g2-approved-native-startup.yml",
+      ".github/workflows/g2-native-product-owner.yml",
+      ".github/workflows/module-documentation.yml",
+      ".github/workflows/s08-servo-vertical-slice.yml",
+      ".github/workflows/s09-linux-platform-adapters.yml",
+      ".github/workflows/update-boot-observer.yml",
+      "contracts/ci-required-contexts.v1.json",
+      "contracts/ci-source-identity.v1.json",
+      "contracts/retained-control-readiness.v1.json",
+      "crates/hepta-browser-codec/README.md",
+      "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md",
+      "manifests/lab-s08-semantic-custody.v1.json",
+      "manifests/modules.v1.json",
+      "tools/verify_retained_control_readiness.py"
+    ],
+    "ci_new_paths5": [
+      ".github/apparmor/hepta-ci-namespace-python.v1.profile",
+      "contracts/ci-namespace-python.v1.json",
+      "tests/test_ci_namespace_python.py",
+      "tools/ci_namespace_python.py",
+      "tools/verify_ci_namespace_python.py"
+    ],
     "joint_additional_modified_paths12": [
       "contracts/approved-service-request-bridge.v2.json",
       "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs",
@@ -2017,11 +2556,16 @@
       "tests/test_service_dispatch_denial_cutoff.py",
       "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md"
     ],
-    "physical_source_files": 694
+    "physical_source_files": 699
   },
   "status": "SOURCE_CANDIDATE_RUNTIME_REQUALIFICATION_REQUIRED",
   "supplemental_source_sha256": {
-    "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md": "652ac6daa54a8334cde2cd7079adb19f19a7387aa8058b524236e467b881d9a8",
-    "tests/test_service_dispatch_denial_cutoff.py": "e82412f730c0fa88cca63ac7264d522513fb623ee178c38acca689fabe7da6c4"
+    ".github/apparmor/hepta-ci-namespace-python.v1.profile": "9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be",
+    "contracts/ci-namespace-python.v1.json": "7285ea8aa9272b3a4ce37c7a5d8f6b291bd10a00f2314cd7efd2a6b5c061fd7e",
+    "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md": "3100cf1ba31ab528e4fc5882f13d9846940dcc6f20226c1c6d2a7d381a71d280",
+    "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
+    "tests/test_service_dispatch_denial_cutoff.py": "2a9abf97cb157476fec0094b577499f7926a49da576abca852518d2f88552315",
+    "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
+    "tools/verify_ci_namespace_python.py": "ebcb64dde0fc880c2808f5f3b3d2b19595267971aad9c2c4be8003eef97fa7cf"
   }
 }

@@ -207,3 +207,138 @@ and assert refusal before admission/allocation, with no directory changes.
 The original 33 v2 and 24 v1 tests, fixed Cargo argv and budgets remain intact.
 This selector guard does not establish custody against a concurrent path
 rename, verify a Cargo run, or qualify installed/native/production execution.
+
+
+## CI-only namespace interpreter configuration candidate
+
+The versioned `contracts/ci-namespace-python.v1.json` describes a CI configuration candidate for the two existing `ci.yml` repository-contract jobs. The original production worker, G1 v2 APIs, native cases, corpus assertions and deadlines remain unchanged. Before the original full discovery command, `python3 tools/verify_ci_namespace_python.py` checks the fixed source correspondence and `python3 tools/ci_namespace_python.py setup` provisions a real byte-identical copy of `/usr/bin/python3.12` in one create-new root-owned `/var/lib` directory. A temporary named AppArmor debugging profile attaches only that literal interpreter path and explicitly admits user namespaces. The corpus continues as the original runner UID/GID. This configuration trusts the reviewed CI source; it is not a sandbox for hostile Python or a production confinement policy.
+
+The setup records actual normal labels, UID/GID, security settings, whole interpreter bytes, non-setid/non-file-capability metadata, the private interpreter label and standard-library prefixes. Global AppArmor and namespace sysctls are read back without writes. The original real sealed memfd, distinct readonly snapshot inode, EROFS and after-exec five-zero-capability/NNP assertions remain required. Missing permission or readback fails; no fallback, skip, syscall restriction change or root corpus execution is admitted. The always-run cleanup uses the fixed system interpreter, refuses any executing private interpreter or named-profile descendant, and removes only its exact state and profile after unchanged unrelated-profile/global readback. Failed or partial allocation is an explicit cleanup failure unless its known complete state can be validated and removed.
+
+`tests/test_ci_namespace_python.py` is included by the unchanged default Make and CI discovery. It verifies source correspondence and ordinary-file refusal/cleanup semantics. Root ownership, kernel profile inventory and parser calls in its state-model tests are explicitly substituted: those tests do not activate AppArmor, sudo, create namespaces or establish hosted permission. The CI-only checker is called unconditionally by both new setup steps; the unchanged `make validate` recipe does not separately register this CI gate.
+
+The original hosted failure is preserved in `work/round14-hosted-contract-failure-readonly-1791020396177565545/job.log`, SHA256 `b24298f5586ca33df72d38d6393380227b542fd4ccacf1648d107a0142cebd0d`. After user/mount namespace creation, opening `/proc/self/setgroups` for writing failed with EACCES, before snapshot construction or capability-drop assertions. The actual AppArmor label/audit was unavailable in that log; the Ubuntu/AppArmor explanation is an inference from the Linux capability check and documented default policy, rather than an observed denial label. The bounded read-only diagnosis is SHA256 `3425048e8d03b2293c8d95eb0e8d1588f2c5bda3af4577d766a9a127f952e210`; this source candidate has not activated its profile or rerun that hosted case. Local Root, supplier cryptographic, Cargo, native health, installed, firmware, hardware, human-approval and production qualifications do not transfer to this candidate.
+
+
+### Four affected source jobs: expanded CI-only candidate
+
+The configuration now covers four literal workflow/job pairs: `ci / repository-contracts`, `ci / repository-contracts-prospective-merge`, `g2-approved-native-startup / source-prospective`, and `g2-native-product-owner / source-prospective`. The two G2 source jobs execute the original complete Make corpus, so they require the same named private-interpreter preparation and always cleanup. Their original exact-pin owner bodies, native cases, flags and deadlines remain byte-preserved. The bounded fixed repository/file/ref check selects the literal workflow stem; profile and directory names include workflow, job, actual run ID and attempt, so the two same-named G2 jobs have distinct attachments. Ref text never becomes a pathname. GitHub documents `GITHUB_WORKFLOW_REF` as repository/workflow-file plus ref; supported PR merge syntax is `refs/pull/<positive-number>/merge`. The actual hosted values and profile permission still require new-run readback.
+
+The earlier two-job source object is historical, rather than four-job qualification. The existing additional source failures are preserved under `work/round14-source650-hosted-failure-logs-1791022023626787005`; their raw SHA256 observations are retained externally without rewriting escaped traceback output. All five source failures were reported for the original readonly namespace case, before actual snapshot/capability-drop completion. This four-job candidate has performed only source and ordinary-file/model tests. It has not loaded a profile, invoked privileged setup or cleanup, created a new namespace, rerun Actions, or executed Cargo/native cases. Default Make discovery runs the tracked source-gate/negative tests; the unchanged Make validate recipe does not separately claim this CI gate. Neither the historical local Root success nor the new source checks establish hosted permission or production readiness.
+
+
+### CI-only serialized retirement ledger
+
+The current four-job candidate adds a minimal non-secret root-owned retirement ledger, rather than claiming all root state is deleted. Its unique derived directory is mode0700, with a mode0600 create-new lock and finite `STARTED`/`READY`/`RETIRED` JSON. Setup and cleanup acquire a nonblocking flock on the same inode; state pins that inode. The actual setup worker PID/start ticks/PGID/SID and executable identity are written before any parser/profile action. Cleanup refuses a held lock, unknown or interrupted state, any remaining recorded setup session/group member, matching setup command, named-profile descendant, private executable inode or mapped private ELF. It checks absence before unload and again after unload/retirement. Timeout proves only the direct child was waited, rather than descendant termination; there is no broad process kill or cleanup retry that hides errors.
+
+After validated removal of the private interpreter directory and active named profile, only the tiny readonly-by-policy `RETIRED` deny ledger remains. Early cleanup also creates this tombstone: a delayed setup cannot recreate the namespace because setup requires create-new allocation, and phase revival is refused. No interpreter bytes, active profile, secret or production trust is retained in the ledger. Ordinary-file/model tests exercise real lock contention and phase/identity refusals, while root ownership, process inventory and parser activation are substituted explicitly. This source candidate still has no actual privileged setup, profile activation, new namespace, hosted permission, native or production qualification.
+
+The fixed-command subprocess capture uses PIPE with a 30-second direct-child timeout. Its 2 MiB limit for each stdout/stderr stream is a post-completion refusal threshold, not a strict in-flight memory/output bound. Ordinary-file, ledger and kernel-state reads are bounded while reading. Cleanup validates the exact private-directory inventory before unloading the named profile, and repeats the check before deletion; unknown files retain evidence and fail. A command timeout establishes neither descendant exit nor complete root cleanup.
+
+The final import-closure check also registers the existing `tools/verify_ci_required_contexts.py` dependency in both events of the two G2 workflows. The actual new positive registration count is 94: 70 for seven filtered module-reader workflows and 24 for the two G2 workflows. The original prefixes and all original commands remain preserved. The earlier 90-entry preview and its closure failure remain separate historical facts.
+
+
+### Root operation session successor: preparation markers and post-wait acceptance
+
+The prior frozen four-job `bc4554222e9397e3292df393ece25490a21533f6` object remains unaccepted: its inner parser created a separate session, and cleanup did not register its own root operation. Its 33 new ordinary/source tests, 46 related tests and ten validators passed as static facts; that did not close the lifecycle finding or authorize profile activation.
+
+This successor invokes only the fixed root-owned `/usr/bin/setsid --fork --wait -- /usr/bin/python3.12` through sudo, preserving the outer 30-second direct-child timeout. Whole bytes and device/inode of both providers are checked before/after, including non-setid and absent file-capability checks. The actual Root writer must have PID=PGID=SID; its parent must be the actual UID0 fixed setsid executable with the complete expected argv, stable PID/start and parent relation. The ledger records both identities. Inner add/remove parser calls inherit the writer session. Changed argv or exec cannot remove descendants from that recorded group/session.
+
+Cleanup adds one finite `cleanup_worker` field under the same inode lock before any parser call. Both sessions of a previous operation must be empty before identity handoff. While an operation is running, only its exact currently verifying Root writer can be excluded from its own session inventory; children and whole groups are never excluded. Its separate waiting setsid supervisor is explicitly still alive. Root returns only ready/retired markers with `root_worker_supervisor_all_exited=false`. The retirement ledger remains a deny tombstone, rather than evidence that root supervision has terminated.
+
+Only the normal runner, after actual sudo/setsid direct-child termination, accepts setup or cleanup: it verifies the actual returned writer/supervisor fields and providers, then enumerates both sessions/groups with no exclusion. Related unknown/unreadable state or any remaining member refuses success and PATH publication. Normal returncode zero and phase RETIRED do not substitute for this readback. Existing parser failures, unknown-state refusal and evidence retention remain; no broad kill, cleanup retry, capability fallback or budget extension is added.
+
+New ordinary process fixtures demonstrate real group-leader `setsid()` EPERM and the fixed fork/wait utility's isolated session as the same normal UID. Proc-shaped ordinary files and explicit state models cover changed parser argv/exec, cleanup children, exact-writer exclusion and post-wait refusal. Their UID0 file text is synthetic input; they do not prove root execution, AppArmor activation, hosted namespace permission or production readiness. No new privileged setup/profile load, user namespace, Cargo, native or G6 execution was performed for this source successor.
+
+The successor replaces PIPE capture with owned anonymous temporary stdout/stderr files, keeping the fixed 30-second direct-child wait. It reads at most LIMIT+1 bytes per stream after completion and refuses oversized output. This avoids waiting for inherited descendant PIPE EOF; it does not impose a strict in-flight output or disk bound and does not prove descendant exit. The earlier PIPE accuracy declaration remains a historical prefix.
+
+
+### Exact source step catalog registration successor
+
+The frozen `ed4e73ca7138536adf6a2e754b6115e08be4d458` complete Source check failed with actual exit2 after 1317 Python tests in 118.182 seconds: the original workflow identity catalog rejected the eight reviewed setup/cleanup step objects. Raw Make log SHA256 is `b16068a49bd60fd9198d93549e54aafbacda7715e9bcdf1c627c93107c6d044f`; all655 files remained physically and Git-byte exact. D1/transport and Rust graphs were not reached. Its different-author 84-test/10-validator narrow pass remains separate, rather than being upgraded to a complete Source pass.
+
+This metadata successor preserves the original runtime identity helper, its original tests, source-role checkout position, limits, claims and every original step-object digest. Only four literal job arrays in `contracts/ci-source-identity.v1.json` gain the exact complete step-object hashes for reviewed preparation and always cleanup at their actual positions. Removing those eight entries restores the complete old serialized catalog byte for byte. The existing catalog field name remains; hashing a step is not qualification or promotion authority.
+
+The CI namespace source gate now reads and pins this entire existing catalog before setup, with no change to its check function. Stale catalogs, missing or extra step entries and incorrect caller digest changes refuse. All existing workflow commands, eight new steps, 94 positive path appends, budgets and provider/session/capability rules remain byte-identical to the predecessor. The required catalog path already matches both events of all three affected workflows; no path filter or workflow/catalog digest rebind is needed. Tracked default discovery regressions test this closure as Source-only data, without activating sudo, AppArmor or namespaces. This successor has no complete Make, hosted, native, installed or production qualification until new exact-object evidence exists.
+
+
+### Closed diagnostics after the 655-file hosted cleanup failure
+
+The exact `6c03f3c34f0318c9420b074d88e15d0650b1e0c7` push job
+111194602655 successfully provisioned its named interpreter and executed the
+original Python 1321/109/15 suites, then refused the always-cleanup step. The
+327301-byte raw job log has SHA256
+`5ef497a30407948387ecd3dfd1f5b2b2a18f310a82eb5f869920983a4bed5c36`.
+Two independently captured PR jobs 111194615459 and 111194615257 also passed
+setup and the same original suites before cleanup refused. Their raw log
+SHA256 values are `c8a7ad20e1776f338bd12fcf1ed7b46092ba504ee844ad3acde7f195d2d36dc3`
+and `5e5e9b86eb3c3a2e34c89b972557fb0fdf80423df3d05f2e881ef0aa8857c55e`.
+These logs contain only the prior fixed refusal string and do not prove which
+Root or caller readback rejected. No process leak, unrelated-profile drift or
+permission cause is inferred as an observed fact. The failed records remain
+unchanged.
+
+This Source successor adds a strictly bounded diagnostic to an already
+admitted fixed setup/cleanup/internal-preflight failure. Exactly one canonical
+ASCII JSON object, at most 4096 bytes, names fixed domain/operation/stage/category
+enumerations and at most one validated child diagnostic. Unknown fields,
+wrong pairing, nested children, success/authority fields, duplicate JSON keys,
+noncanonical or trailing bytes are refused. Error messages, paths, argv, PIDs,
+credentials, environment and arbitrary child stderr are never copied. Error
+categories use only exact built-in types and a closed errno mapping. Outside
+the admitted CI protocol, the original fixed refusal string remains.
+
+The diagnostic is an observation of a refusal. It cannot authorize setup,
+cleanup, a phase transition or PATH publication. All original return codes,
+30-second direct-child timeouts, 2 MiB post-completion output refusals, same UID,
+capability and profile checks, ledger lock/inode identity, retirement, kernel
+process/group inventories and cleanup order remain. Neither a timeout nor a
+child diagnostic proves descendants have exited. A mandatory source checker
+binds the fixed inventory and every stage callsite; the default discovered
+tests retain the complete old file and append parser and ordinary-host fault
+cases. Those cases do not activate sudo, an AppArmor profile or a namespace.
+
+This package has no new hosted cleanup success, NativeHealth, installed, human
+review or production qualification. No artifact path or workflow/run/budget
+is changed. `production_ready=false`.
+
+The stage field is the last entered fixed stage, not a proof of the exception
+origin. A successfully returned nested read can leave that observation before
+an enclosing comparison refuses. Domain and operation remain explicit; each
+has its own finite allowed stage set. Child diagnostic pairing uses only the
+current context already admitted by the original route and the entire fixed
+launcher/operation/eight arguments, or the exact derived private interpreter
+and preflight arguments. It never reconstructs context from diagnostic JSON.
+
+
+### CI cleanup current-writer handoff correction (source candidate)
+
+The published `bd839ab4cdbd2f7cb782177eb1338d768769ffff` push
+`ci / repository-contracts` job `111206746729` completed the original
+Python corpus and then refused cleanup. Its closed diagnostic recorded
+Root cleanup `VALUE_REFUSED` with last-entered stage
+`PROCESS_COMMAND_READ`. The raw complete log SHA-256 is
+`ff341f9ef2861c778e643302451af6dfa0ecf0bf7337335fb27a9f5576207afa`.
+That observation does not identify a failing proc read or expose an actual
+Root PID, command line, or leader relationship.
+
+A source review and existing ordinary proc-shaped file model found a
+deterministic self-denial in prior-operation checking: the historical
+supervisor scan also matched the currently validating cleanup writer's
+fixed command, without applying the exact writer exclusion already used
+by the immediately preceding scan. The independent Root source proof
+SHA-256 is `103c39201e8a259f2031f0c08f49452d870b5c1547b2e7397f64382586334c35`.
+The candidate passes that same current-writer identity to both scans.
+Exclusion still requires the exact PID, start ticks, PGID, SID, UID0 and
+executable identity; it excludes neither a group nor any child. Historical
+writer/supervisor members, changed-exec children, identity drift and reused
+historical PIDs continue to refuse. Ordinary runner post-wait checking
+retains no exclusions. The original 57 namespace source tests remain
+complete; added integration regressions exercise both actual inventory
+calls together using synthetic proc-shaped files.
+
+No local Root profile or AppArmor operation has been run for this candidate.
+The ordinary model is source evidence, not a new Hosted cleanup result,
+NativeHealth, installed, human, hardware, G1 closure or production
+qualification. The published failure and all original deadlines, ledger
+phases, permissions, provider checks and cleanup ordering remain recorded.

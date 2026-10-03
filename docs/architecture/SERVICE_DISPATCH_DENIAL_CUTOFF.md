@@ -175,3 +175,49 @@ and original19 readback
 The present ten-path joint profile remains an external proposal. The already
 qualified joint945 Source profile still contains f243. No branch Rust, Kernel,
 Native or installed result is transferred to the proposed d979 combination.
+
+
+## Current CI composition candidate and earlier qualifications
+
+The new composition has 699 tracked Source files. It combines the complete
+23-path c700 CI closure with the de44 service closure, including all ten actual
+workflow files, both CI contexts/identity catalogs, the AppArmor profile, the
+complete cleanup helper and its 64 original namespace tests. The common Git ancestor is
+99c4eb9ff6f11b5075487c7e9fc4b4f0ca794320 (650 files). Fifteen CI leaves remain
+c700 whole after the necessary reader/filter and actual SHA binding adapters; the module catalog preserves every de44 service registration
+and adds only the five CI references to browser-codec. The retained-control
+checker preserves both de44 detach functions and binds the actual new workflow
+SHA. CI checker.inputs alone changes to the bounded P3 physical reader.
+
+P3 checks the current16 production modules with the unchanged independent
+function, then independently fixes all 23 current CI physical leaves. It
+requires all 699 actual physical files and canonical metadata. Eighteen CI
+whole inverses restore exact de44 objects only through C._read historical views;
+new CI files have no historical parent. The module's finite six-file inverse
+restores both registration additions as a complete current-to-original object.
+The other five finite rules, twelve P1 rules, implementation semantics and
+original API/effect inventories remain unchanged. P3.parent_source stays whole;
+Native/B/A/readiness retain current CI workflow views. Both G2 workflows add
+the six actual service checker imports to push and pull_request filters; their
+complete jobs, action pins, timeout/clock budgets and steps remain whole.
+Only actual context digests, workflow SHA bindings and the literal CI inverse
+filter inventory change accordingly. Current CI.inputs bypasses
+the Native historical chain and verifies actual workflows/contexts/helper/
+profile; replacing those inputs with historical views is rejected.
+
+The old 694-name positive test changes only its name and count assertion to
+699. The other 39 original P3 method bodies and every original test helper remain
+whole, including all seventeen precise independent mutant rejection targets.
+Four new methods exercise the actual positive CI route, all 23 changed current
+objects, all 18 historical substitutions and catalog-only rebinding. They bind
+the complete mutable contract/checker envelopes before testing the independent
+physical guard. The original 64 CI namespace methods and their helper implementation
+remain whole. The earlier c700 five Source suites ran 131 tests in total;
+those branch results do not qualify this candidate. These tests are authored; independent execution is pending.
+
+Earlier 693/694 Source and separate c700 Source/Make results remain historical
+branch evidence. This 699 candidate begins with no Source, Rust or Kernel
+execution qualification. The original nineteen-case corpus, observation clocks,
+Kernel/Native budgets and default activation remain unchanged. No Hosted
+AppArmor cleanup, Native5/20/60, installed image, hardware, HSM, independent
+human approval or production readiness follows from this Source composition.

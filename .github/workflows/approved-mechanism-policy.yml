@@ -110,6 +110,11 @@ on:
       - "tools/build_mozjs_locked_native.py"
       - "tools/mozjs_secondary_input.py"
       - "tools/verify_mozjs_secondary_input.py"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
   pull_request:
     paths:
       - ".github/workflows/approved-mechanism-policy.yml"
@@ -219,6 +224,11 @@ on:
       - "tools/build_mozjs_locked_native.py"
       - "tools/mozjs_secondary_input.py"
       - "tools/verify_mozjs_secondary_input.py"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
 permissions:
   contents: read
 

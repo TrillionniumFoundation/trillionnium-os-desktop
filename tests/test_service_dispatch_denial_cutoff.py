@@ -194,8 +194,8 @@ class JointPhysicalSourceBoundaryTests(unittest.TestCase):
     def setUpClass(cls):
         cls.texts = gate.inputs()
 
-    def test_actual694_is_physical_and_all12_complete_inverses_are_closed(self):
-        self.assertEqual(len(self.texts), 694)
+    def test_actual699_is_physical_and_all12_complete_inverses_are_closed(self):
+        self.assertEqual(len(self.texts), 699)
         self.assertEqual(len(gate.EXPECTED['preserved_original_sha256']), 672)
         self.assertEqual(len(gate.CLOSED_JOINT_SOURCE_RULES), 12)
         gate.check(gate.EXPECTED, self.texts)
@@ -468,6 +468,102 @@ class CurrentPhysicalIngressBoundaryTests(unittest.TestCase):
             self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
                              rebound['checker_nonEXPECTED_whole_sha256'])
             with self.assertRaisesRegex(ValueError, '^P3 independent current physical ingress catalog differs$'):
+                gate.check(rebound, texts)
+
+
+class CurrentCIPhysicalBoundaryTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.texts = gate.inputs()
+
+    def _fully_rebound_ci(self, replacements):
+        texts = dict(self.texts)
+        texts.update(replacements)
+        rebound = rebind_derived_metadata(gate.EXPECTED, texts, self.texts)
+        for group in ('finite_parent_inverse', 'joint_parent_inverse12', 'ci_parent_inverse18'):
+            for path, rule in rebound[group].items():
+                rule['complete_bytes'] = len(texts[path].encode())
+                rule['complete_sha256'] = gate._sha(texts[path].encode())
+        for path in rebound['ci_current_physical23']:
+            rebound['ci_current_physical23'][path] = gate._sha(texts[path].encode())
+        for path in rebound['ci_parent_inverse18']:
+            parent = gate.ci_parent_source(path, self.texts[path])
+            rule = inverse(parent, texts[path], rebound['ci_parent_inverse18'][path])
+            # inverse() uses character offsets. Rebuild this separate byte policy.
+            old, current = parent.splitlines(True), texts[path].splitlines(True)
+            oo, no = [0], [0]
+            for line in old:
+                oo.append(oo[-1] + len(line.encode()))
+            for line in current:
+                no.append(no[-1] + len(line.encode()))
+            rule.pop('edits', None)
+            rule['byte_edits'] = []
+            for tag, a, b, x, y in difflib.SequenceMatcher(None, old, current, autojunk=False).get_opcodes():
+                if tag != 'equal':
+                    rule['byte_edits'].append({'complete_start': no[x], 'complete_end': no[y],
+                                              'complete_text': ''.join(current[x:y]),
+                                              'parent_text': ''.join(old[a:b])})
+            rebound['ci_parent_inverse18'][path] = rule
+        assignment = gate.expected_assignment(gate.EXPECTED)
+        self.assertEqual(texts[gate.TOOL].count(assignment), 1)
+        texts[gate.TOOL] = texts[gate.TOOL].replace(assignment, gate.expected_assignment(rebound), 1)
+        texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+        return rebound, texts
+
+    def _assert_ci_refusal(self, replacements):
+        rebound, texts = self._fully_rebound_ci(replacements)
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))
+            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                             rebound['checker_nonEXPECTED_whole_sha256'])
+            with self.assertRaisesRegex(ValueError, '^P3 independent current CI physical Source differs$'):
+                gate.check(rebound, texts)
+
+    def test_positive_actual699_and_current_CI_checker_are_not_historical_views(self):
+        from tools import verify_ci_namespace_python as ci
+        gate.check(gate.EXPECTED, self.texts)
+        ci.validate(gate.ROOT)
+        current = ci.inputs(gate.ROOT)
+        self.assertEqual(len(self.texts), 699)
+        self.assertEqual(len(gate.EXPECTED['ci_current_physical23']), 23)
+        self.assertEqual(len(gate.CLOSED_CI_SOURCE_RULES), 18)
+        for path in current:
+            self.assertEqual(current[path], self.texts[path])
+            self.assertEqual(current[path], gate._read(gate.ROOT, path))
+        for path, rule in gate.CLOSED_CI_SOURCE_RULES.items():
+            restored = gate.ci_parent_source(path, self.texts[path])
+            self.assertNotEqual(restored, self.texts[path])
+            self.assertEqual([len(restored.encode()), gate._sha(restored.encode())],
+                             [rule['parent_bytes'], rule['parent_sha256']])
+            self.assertEqual(gate.ci_parent_source(path, restored), restored)
+        historical = dict(current)
+        workflow = '.github/workflows/ci.yml'
+        historical[workflow] = gate.ci_parent_source(workflow, current[workflow])
+        with self.assertRaisesRegex(ValueError, '^reviewed complete CI setup source differs$'):
+            ci.check(ci.EXPECTED, historical)
+
+    def test_all23_changed_current_CI_objects_refuse_after_complete_rebinding(self):
+        for path in gate.EXPECTED['ci_current_physical23']:
+            with self.subTest(path=path):
+                self._assert_ci_refusal({path: self.texts[path] + '\n# changed physical CI bytes\n'})
+
+    def test_all18_de44_historical_CI_objects_refuse_as_current_after_complete_rebinding(self):
+        for path in gate.CLOSED_CI_SOURCE_RULES:
+            with self.subTest(path=path):
+                self._assert_ci_refusal({path: gate.ci_parent_source(path, self.texts[path])})
+
+    def test_CI_catalog_only_rebinding_cannot_replace_independent_current23(self):
+        rebound = copy.deepcopy(gate.EXPECTED)
+        path = '.github/workflows/ci.yml'
+        rebound['ci_current_physical23'][path] = gate.CLOSED_CI_SOURCE_RULES[path]['parent_sha256']
+        texts = dict(self.texts)
+        assignment = gate.expected_assignment(gate.EXPECTED)
+        texts[gate.TOOL] = texts[gate.TOOL].replace(assignment, gate.expected_assignment(rebound), 1)
+        texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                             rebound['checker_nonEXPECTED_whole_sha256'])
+            with self.assertRaisesRegex(ValueError, '^P3 independent current CI physical catalog differs$'):
                 gate.check(rebound, texts)
 
 

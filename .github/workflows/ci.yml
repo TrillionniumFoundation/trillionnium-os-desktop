@@ -63,6 +63,13 @@ jobs:
           rustup override set 1.93.0
           rustc --version --verbose
 
+      - name: Provision job-private CI namespace Python
+        id: namespace_python_setup
+        run: |
+          set -euo pipefail
+          python3 tools/verify_ci_namespace_python.py
+          python3 tools/ci_namespace_python.py setup
+
       - name: Execute repository contracts and actual regression corpus
         run: |
           set -euo pipefail
@@ -74,6 +81,10 @@ jobs:
           python3 -m unittest discover -s tests -v
           python3 -m unittest discover -s tests/d1 -v
           python3 -m unittest discover -s tests/transport -v
+
+      - name: Remove only owned CI namespace Python and profile
+        if: always()
+        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup
 
   rust:
     name: ci / rust
@@ -197,6 +208,13 @@ jobs:
           rustup override set 1.93.0
           rustc --version --verbose
 
+      - name: Provision job-private CI namespace Python
+        id: namespace_python_setup
+        run: |
+          set -euo pipefail
+          python3 tools/verify_ci_namespace_python.py
+          python3 tools/ci_namespace_python.py setup
+
       - name: Execute prospective merge repository contracts and actual regression corpus
         run: |
           set -euo pipefail
@@ -208,6 +226,10 @@ jobs:
           python3 -m unittest discover -s tests -v
           python3 -m unittest discover -s tests/d1 -v
           python3 -m unittest discover -s tests/transport -v
+
+      - name: Remove only owned CI namespace Python and profile
+        if: always()
+        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup
 
   rust-prospective-merge:
     name: ci / rust-prospective-merge
