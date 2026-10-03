@@ -111,7 +111,7 @@ MUTANTS = [
     (SERVO, 'inner: Option<ServiceEngineEndpoint>', 'pub inner: Option<ServiceEngineEndpoint>'),
     (SERVO, 'inner: ServiceEngineCompletion', 'pub inner: ServiceEngineCompletion'),
     (SERVO, 'self.inner.ensure_current_request()', 'Ok::<(), RuntimeFailure>(())'),
-    (SERVO, 'completion.complete(Err(RuntimeFailure::PolicyDenied("closed service mapping refused")))',
+    (SERVO, 'completion.complete(Err(RuntimeFailure::PolicyDenied("closed service mapping refused",)))',
      'completion.complete(Ok(RuntimeReply { result: Default::default(), current_url: None }))'),
 ]
 
