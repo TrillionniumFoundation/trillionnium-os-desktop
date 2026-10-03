@@ -193,13 +193,13 @@ class D1SemanticEvidenceTests(unittest.TestCase):
         snapshot = semantics._Snapshot(self.root, {name: evidence.digest(path)
             for name, path in (("first.json", first), ("last.json", last))})
         snapshot.document("first.json"); snapshot.document("last.json")
-        real_open = semantics.open_file
+        real_open = semantics.open_managed_file
         def rewrite(path):
             descriptor = real_open(path)
             if path == last:
                 first.write_bytes(first.read_bytes() + b" ")
             return descriptor
-        with patch.object(semantics, "open_file", side_effect=rewrite):
+        with patch.object(semantics, "open_managed_file", side_effect=rewrite):
             with self.assertRaisesRegex(ValueError, "complete readback changed"):
                 snapshot.finish()
 

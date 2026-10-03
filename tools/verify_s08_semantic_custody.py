@@ -19,9 +19,9 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from .artifact_evidence import load, open_file, safe_relative, load_json_strict
+    from .artifact_evidence import load, open_file, open_managed_file, safe_relative, load_json_strict
 except ImportError:
-    from artifact_evidence import load, open_file, safe_relative, load_json_strict
+    from artifact_evidence import load, open_file, open_managed_file, safe_relative, load_json_strict
 
 PIN = "670ae8a70801b162e186f81cbb5bdd2d59c39108"
 MANIFEST = "manifests/lab-s08-semantic-custody.v1.json"
@@ -129,12 +129,12 @@ TEST_NAME = r"[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*"
 
 
 def read(path: Path, maximum: int = MAX_SOURCE_BYTES) -> bytes:
-    with os.fdopen(open_file(path.absolute()), "rb") as stream:
-        before = os.fstat(stream.fileno())
+    with open_managed_file(path.absolute()) as stream:
+        before = stream.stat()
         if before.st_size > maximum:
             raise ValueError("source input exceeds byte bound")
         data = stream.read(maximum + 1)
-        after = os.fstat(stream.fileno())
+        after = stream.stat()
         fields = lambda value: (value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
         if len(data) > maximum or len(data) != before.st_size or fields(before) != fields(after):
             raise ValueError("source input changed during retained read")

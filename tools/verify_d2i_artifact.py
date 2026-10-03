@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -11,13 +12,14 @@ import tarfile
 from typing import Any
 
 try:
-    from .artifact_evidence import artifact_file, artifact_root, digest, load, open_file, safe_relative, validate_role, verify_outputs, verify_workflow_binding, SHA256
+    from .artifact_evidence import artifact_file, artifact_root, digest, load, open_file, open_managed_file, safe_relative, validate_role, verify_outputs, verify_workflow_binding, SHA256
     from .verify_d1_artifact import verify_artifact as verify_d1_artifact
 except ImportError:
-    from artifact_evidence import artifact_file, artifact_root, digest, load, open_file, safe_relative, validate_role, verify_outputs, verify_workflow_binding, SHA256
+    from artifact_evidence import artifact_file, artifact_root, digest, load, open_file, open_managed_file, safe_relative, validate_role, verify_outputs, verify_workflow_binding, SHA256
     from verify_d1_artifact import verify_artifact as verify_d1_artifact
 
 RECEIPT = "evidence/d2i-final-qualification.json"
+MAX_SOURCE_ARCHIVE_BYTES = 64 * 1024 * 1024
 
 
 def _same_typed_value(actual: object, expected: object) -> bool:
@@ -86,6 +88,22 @@ def _git_tree_oid(nodes: dict[str, Any]) -> bytes:
     return hashlib.sha1(b"tree " + str(len(payload)).encode("ascii") + b"\0" + payload).digest()
 
 
+def _read_source_archive(path: Path) -> bytes:
+    """Parse and bind one bounded retained source archive without raw FD transfer."""
+    with open_managed_file(path) as stream:
+        before = stream.stat()
+        if before.st_size > MAX_SOURCE_ARCHIVE_BYTES:
+            raise ValueError("source archive exceeds its byte bound")
+        data = stream.read(MAX_SOURCE_ARCHIVE_BYTES + 1)
+        after = stream.stat()
+        fields = lambda value: (value.st_dev, value.st_ino, value.st_mode, value.st_nlink,
+                                value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+        if (len(data) > MAX_SOURCE_ARCHIVE_BYTES or len(data) != before.st_size
+                or fields(before) != fields(after)):
+            raise ValueError("source archive changed during retained read")
+    return data
+
+
 def verify_source(root: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     source_path = artifact_file(root, "source/source-input-digests.json")
     archive_path = artifact_file(root, "source/source.tar")
@@ -107,7 +125,8 @@ def verify_source(root: Path, receipt: dict[str, Any]) -> dict[str, Any]:
         expected[name] = entry
     observed: set[str] = set()
     git_nodes: dict[str, Any] = {}
-    with os.fdopen(open_file(archive_path), "rb") as archive_stream, tarfile.open(fileobj=archive_stream, mode="r:") as archive:
+    archive_bytes = _read_source_archive(archive_path)
+    with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r:") as archive:
         for member in archive:
             # Archives are inspected without extraction. Links and special files
             # cannot represent a tracked immutable source input.
@@ -160,7 +179,7 @@ def verify_source(root: Path, receipt: dict[str, Any]) -> dict[str, Any]:
                              "sha256": receipt.get("workflow_sha256")}, source_files, producer=False)
     binding = receipt.get("source")
     if not _same_typed_value(binding, {
-        "archive_sha256": digest(archive_path),
+        "archive_sha256": hashlib.sha256(archive_bytes).hexdigest(),
         "manifest_sha256": digest(source_path),
         "entry_count": len(entries),
     }):

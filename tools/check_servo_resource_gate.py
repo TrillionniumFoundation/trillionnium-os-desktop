@@ -11,9 +11,9 @@ import re
 import subprocess
 
 try:
-    from .artifact_evidence import open_file
+    from .artifact_evidence import open_file, open_managed_file
 except ImportError:
-    from artifact_evidence import open_file
+    from artifact_evidence import open_file, open_managed_file
 
 PIN = "670ae8a70801b162e186f81cbb5bdd2d59c39108"
 MAX_BYTES = 128 * 1024
@@ -122,12 +122,12 @@ def read_bounded(path: Path, limit: int) -> bytes:
     # The shared opener pins every absolute directory component, refuses
     # symlinks/FIFOs and requires one hard link. Parsing and hashing use the
     # same retained descriptor and the same bytes, never a pathname reopen.
-    with os.fdopen(open_file(path), "rb") as stream:
-        before = os.fstat(stream.fileno())
+    with open_managed_file(path) as stream:
+        before = stream.stat()
         if before.st_size > limit:
             raise ValueError("actual evidence exceeds size bound")
         data = stream.read(limit + 1)
-        after = os.fstat(stream.fileno())
+        after = stream.stat()
         identity = lambda value: (value.st_dev, value.st_ino, value.st_mode, value.st_nlink,
                                   value.st_size, value.st_mtime_ns, value.st_ctime_ns)
         if len(data) > limit or len(data) != before.st_size or identity(before) != identity(after):

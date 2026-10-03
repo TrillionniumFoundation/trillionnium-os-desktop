@@ -255,14 +255,14 @@ class ResourceGateVerifierTests(unittest.TestCase):
                 original_bytes = (root / name).read_bytes()
                 attacker = root / "attacker"
                 attacker.write_bytes(b'{}' if name.endswith(".json") else b"http://127.0.0.1:1")
-                real_open = checker.open_file
+                real_open = checker.open_managed_file
                 def swapped_open(path):
                     descriptor = real_open(path)
                     if path.name == name:
                         path.rename(root / "saved")
                         path.symlink_to(attacker)
                     return descriptor
-                with patch.object(checker, "open_file", swapped_open):
+                with patch.object(checker, "open_managed_file", swapped_open):
                     receipt = checker.verify_runtime(root)
                 field = {"resource-gate-result.json": "resource_result_sha256",
                          "runtime-result.json": "runtime_result_sha256",
@@ -282,14 +282,14 @@ class ResourceGateVerifierTests(unittest.TestCase):
                 original = b'{"original":true}' if name.endswith(".json") else b"http://127.0.0.1:43123"
                 (evidence / name).write_bytes(original)
                 (outside / name).write_bytes(b"attacker")
-                real_open = artifact_evidence.open_regular_beneath
+                real_open = artifact_evidence.open_managed_regular_beneath
                 def after_component(index, component, descriptor):
                     if component == "evidence":
                         evidence.rename(root / "saved")
                         evidence.symlink_to(outside, target_is_directory=True)
                 def swapped_open(*args, **kwargs):
                     return real_open(*args, **kwargs, after_component=after_component)
-                with patch.object(artifact_evidence, "open_regular_beneath", swapped_open):
+                with patch.object(artifact_evidence, "open_managed_regular_beneath", swapped_open):
                     self.assertEqual(checker.read_bounded(evidence / name, checker.MAX_BYTES), original)
                 with self.assertRaises(ValueError):
                     checker.read_bounded(evidence / name, checker.MAX_BYTES)

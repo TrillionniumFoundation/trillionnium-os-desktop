@@ -15,10 +15,10 @@ import re
 from typing import Any
 
 try:
-    from .artifact_evidence import open_file, safe_relative, SHA256, MAX_JSON_BYTES
+    from .artifact_evidence import open_file, open_managed_file, safe_relative, SHA256, MAX_JSON_BYTES
     from .browser_codec_reference_security import load_json_strict
 except ImportError:
-    from artifact_evidence import open_file, safe_relative, SHA256, MAX_JSON_BYTES
+    from artifact_evidence import open_file, open_managed_file, safe_relative, SHA256, MAX_JSON_BYTES
     from browser_codec_reference_security import load_json_strict
 
 STAGES = ("validate_committed_lock", "prepare_exact_inputs", "build_first", "build_second",
@@ -108,12 +108,12 @@ class _Snapshot:
     def read(self, name: str) -> bytes:
         safe_relative(name)
         path = self.root / name
-        with os.fdopen(open_file(path), "rb") as stream:
-            before = os.fstat(stream.fileno())
+        with open_managed_file(path) as stream:
+            before = stream.stat()
             if before.st_size > MAX_JSON_BYTES:
                 raise ValueError("D1 semantic payload exceeds bound")
             data = stream.read(MAX_JSON_BYTES + 1)
-            after = os.fstat(stream.fileno())
+            after = stream.stat()
             named = path.stat(follow_symlinks=False)
             if (len(data) != before.st_size or len(data) > MAX_JSON_BYTES
                     or metadata(before) != metadata(after) or metadata(before) != metadata(named)):
@@ -141,14 +141,14 @@ class _Snapshot:
             retained = []
             for name, (expected, identity) in tuple(self.cached.items()):
                 path = self.root / name
-                stream = stack.enter_context(os.fdopen(open_file(path), "rb"))
-                if metadata(os.fstat(stream.fileno())) != identity:
+                stream = stack.enter_context(open_managed_file(path))
+                if metadata(stream.stat()) != identity:
                     raise ValueError("D1 semantic readback identity drift")
                 data = stream.read(MAX_JSON_BYTES + 1)
                 same(data, expected, "complete semantic payload readback")
                 retained.append((path, stream, identity))
             for path, stream, identity in retained:
-                if (metadata(os.fstat(stream.fileno())) != identity
+                if (metadata(stream.stat()) != identity
                         or metadata(path.stat(follow_symlinks=False)) != identity):
                     raise ValueError("D1 semantic complete readback changed during scan")
 
@@ -405,7 +405,7 @@ def reproducibility(document: dict, snapshot: _Snapshot, builds: list[dict], man
 def validate_contract(value: object | None = None) -> None:
     if value is None:
         path = Path(__file__).absolute().parents[1] / "contracts/d1-portable-evidence.v1.json"
-        with os.fdopen(open_file(path), "rb") as stream:
+        with open_managed_file(path) as stream:
             data = stream.read(65537)
         if len(data) > 65536:
             raise ValueError("D1 evidence contract exceeds bound")

@@ -16,9 +16,9 @@ import subprocess
 import secrets
 import tomllib
 try:
-    from .artifact_evidence import open_file
+    from .artifact_evidence import open_file, open_managed_file
 except ImportError:
-    from artifact_evidence import open_file
+    from artifact_evidence import open_file, open_managed_file
 
 PIN = "670ae8a70801b162e186f81cbb5bdd2d59c39108"
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,12 +46,12 @@ DEPS = {
 FORMAT_CONFIG = "experiments/servo-product-owner/rustfmt.toml"
 
 def read(path: Path) -> bytes:
-    with os.fdopen(open_file(path.absolute()), "rb") as stream:
-        before = os.fstat(stream.fileno())
+    with open_managed_file(path.absolute()) as stream:
+        before = stream.stat()
         if before.st_size > MAX_SOURCE:
             raise ValueError("source exceeds its byte bound")
         data = stream.read(MAX_SOURCE + 1)
-        after = os.fstat(stream.fileno())
+        after = stream.stat()
         current = path.lstat()
         identity = lambda item: (item.st_dev, item.st_ino, item.st_mode, item.st_uid, item.st_nlink, item.st_size, item.st_mtime_ns, item.st_ctime_ns)
         if identity(before) != identity(after) or identity(current) != identity(after) or after.st_nlink != 1 or len(data) != before.st_size:
