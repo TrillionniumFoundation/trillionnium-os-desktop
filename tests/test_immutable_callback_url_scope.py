@@ -51,4 +51,48 @@ class ImmutableCallbackUrlScopeTests(unittest.TestCase):
                 with self.assertRaises(ValueError):v.check(**data)
     def test_native_result_preserves_actual_view_url(self):
         self.denied("native",[(".and_then(|v| v.url())",".map(|_| immutable_url())"),(".map(|url| url.to_string())",".map(|_| \"about:blank\".to_owned())")])
+class ImmutableCallbackActualSelectorTests(unittest.TestCase):
+    def test_hardcoded_selector_and_shadowed_endpoint_refuse(self):
+        original = ImmutableCallbackUrlScopeTests().inputs()
+        mutations = [
+            ("match profile {", "match ServoProfile::ExistingSemanticBridge {"),
+            ("match profile {", "match ServoProfile::ClosedImmutableReadOnly {"),
+            ("    (\n        ServoRuntimeEndpoint {\n            inner: endpoint,\n            profile,",
+             "    let (endpoint, owner) = callback_engine_pair(ServoCommandBridge { state: state.clone() }, waker);\n    (\n        ServoRuntimeEndpoint {\n            inner: endpoint,\n            profile,"),
+        ]
+        for before, after in mutations:
+            with self.subTest(before=before, after=after):
+                self.assertIn(before, original["servo"])
+                changed = dict(original)
+                changed["servo"] = original["servo"].replace(before, after, 1)
+                with self.assertRaises(ValueError): v.check(**changed)
+    def test_callback_and_original_engine_refusals_cannot_recover_into_success(self):
+        original = ImmutableCallbackUrlScopeTests().inputs()
+        recovery = '.or_else(|_| Ok(RuntimeReply { result: hepta_browser_codec::JsonObject::new(), current_url: None }))'
+        marker = '.and_then(|reply| bound_reply(reply, self.url_scope))'
+        self.assertEqual(original["callback"].count(marker), 2)
+        for position in [original["callback"].find(marker), original["callback"].rfind(marker)]:
+            changed = dict(original)
+            end = position + len(marker)
+            changed["callback"] = original["callback"][:end] + recovery + original["callback"][end:]
+            with self.subTest(callback_position=position):
+                with self.assertRaises(ValueError): v.check(**changed)
+        marker = '.and_then(|reply| bound_reply(reply, EngineUrlScope::D3Local))'
+        self.assertEqual(original["dispatch"].count(marker), 1)
+        changed = dict(original)
+        changed["dispatch"] = original["dispatch"].replace(marker, marker + recovery, 1)
+        with self.assertRaises(ValueError): v.check(**changed)
+
+    def test_actor_call_and_callback_ticket_cannot_replace_the_selected_scope(self):
+        original = ImmutableCallbackUrlScopeTests().inputs()
+        for group, before, after in [
+            ("dispatch", "validate_owner(owner, self.url_scope)?;", "self.url_scope = EngineUrlScope::D3Local; validate_owner(owner, self.url_scope)?;"),
+            ("callback", "url_scope: self.url_scope,", "url_scope: EngineUrlScope::D3Local,"),
+            ("callback", "let result = self\n            .control", "let result = Ok(RuntimeReply { result: hepta_browser_codec::JsonObject::new(), current_url: None }); let ignored = self\n            .control"),
+        ]:
+            with self.subTest(group=group, before=before):
+                self.assertIn(before, original[group])
+                changed = dict(original)
+                changed[group] = original[group].replace(before, after, 1)
+                with self.assertRaises(ValueError): v.check(**changed)
 if __name__=='__main__':unittest.main()

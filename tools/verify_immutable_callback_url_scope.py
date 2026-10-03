@@ -4,6 +4,7 @@ This bounded inventory neither expands Rust macros nor substitutes for compilati
 native Servo execution, principal approval, installed qualification or release.
 """
 from __future__ import annotations
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -44,6 +45,21 @@ EXPECTED = {
         "approved_principal_minted": False, "human_approval": False, "hardware_or_release": False},
 }
 
+# Entire control/URL pipelines are a finite lexical source inventory.
+BODY_TOKEN_SHA256 = {
+    DISPATCH: {
+        'engine_thread_pair': '4c8e5ad2a5f7a4ca6a46034778e0b164cfc71761966ddb1aab9abc4a83806c31',
+        'EngineThreadRuntime::preflight': '312f45b6369c7aa7c56f14ad72802bc8122d4935a8fb08e8d9d04311ad38deb6',
+        'EngineThreadRuntime::call': '4c2a6487f1fc79e1cf530cfee666b527d1c872dc655bcb8d542caad50e450f29',
+        '<::pump_one': '8c2c6fc8434e4c6ae0c015b45c6852ad0b6f06ef6134933c26f33546e6ec891a',
+    },
+    CALLBACK: {
+        'EngineCompletion::complete': '3f18a046628bcfc1a34351e1e83e155a742b9dc3d8053095f5ee90035c8e0f9a',
+        '<::poll_active': '2a018d7410d8e3f659327367220e8ce4356f1337c003eb4935ebda953c3be594',
+        '<::pump_one': '5e0e3b3b900091628602a3b0be45a4d8a2e6b08ed0b033b9a4064dfb68210e4c',
+    },
+}
+
 def literal_constant(text, name, public):
     pattern = r'(?m)^' + (r'pub ' if public else '') + r'const ' + re.escape(name) + r': &str = ("[^"\n]*");$'
     matches = list(re.finditer(pattern, text))
@@ -72,6 +88,11 @@ def check(contract, dispatch, callback, servo, native):
     literal_constant(dispatch, "CLOSED_IMMUTABLE_DOCUMENT_URL", False)
     literal_constant(native, "IMMUTABLE_DOCUMENT", True)
     base, cb = rust_inventory(dispatch), rust_inventory(callback)
+    for path, inventory in [(DISPATCH, base), (CALLBACK, cb)]:
+        for name, expected_digest in BODY_TOKEN_SHA256[path].items():
+            body = json.dumps(function(inventory, name), ensure_ascii=False, separators=(",", ":")).encode()
+            if hashlib.sha256(body).hexdigest() != expected_digest:
+                raise ValueError("whole callback/actor/engine URL control pipeline differs: " + name)
     if sorted(base["public_api"]) != ["<::pump_one", "engine_thread_pair"]:
         raise ValueError("original engine public API inventory differs")
     scope = base["types"].get("EngineUrlScope")
@@ -126,8 +147,18 @@ def check(contract, dispatch, callback, servo, native):
         raise ValueError("callback endpoints do not share the selected scope")
     require(function(cb, "<::pump_one"), "url_scope: self.url_scope", "completion scope propagation")
     selected = selected_function(servo, "runtime_pair")
-    require(selected, "ServoProfile::ExistingSemanticBridge => callback_engine_pair(bridge, waker)", "existing Servo default")
-    require(selected, "ServoProfile::ClosedImmutableReadOnly => { closed_immutable_callback_engine_pair(bridge, waker) }", "closed Servo selection")
+    if selected != tokens('''
+        let state = Rc::new(RefCell::new(ServoCommandState::default()));
+        let bridge = ServoCommandBridge { state: state.clone(), };
+        let waker = Arc::new(ServoWakerAdapter(waker));
+        let (endpoint, owner) = match profile {
+            ServoProfile::ExistingSemanticBridge => callback_engine_pair(bridge, waker),
+            ServoProfile::ClosedImmutableReadOnly => { closed_immutable_callback_engine_pair(bridge, waker) }
+        };
+        (ServoRuntimeEndpoint { inner: endpoint, profile, },
+         ServoRuntimeOwner { inner: owner, state, },)
+    '''):
+        raise ValueError("actual Servo profile selector or endpoint ownership differs")
     require(selected_function(native, "finish_ready"), "self.view.as_ref().and_then(|v| v.url()).map(|url| url.to_string())", "actual native URL correspondence")
 
 def validate(root=ROOT):
