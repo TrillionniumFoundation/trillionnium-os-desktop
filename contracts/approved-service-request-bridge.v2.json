@@ -51,7 +51,7 @@
   "whole_production_source_sha256": {
     "crates/hepta-agent-transport/src/accepted_handoff/retained_control/service_control.rs": "7910294fbb13f09f8f9259b2b762cf4cac0a1e187150986a8aa827fa238e4baa",
     "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs": "cbe3ff799af0be7dcc5cfa884e9ac43c494c7ce365ae5aa190ff5a9ca85674b6",
-    "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs": "2e4b7669bc2f645ad1ee0ed328ee6cda7f0bed7e2daaaa951ec9a56ef0471de8",
+    "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs": "f827c2c29700663428b88127eedc6fa907763655263bbff5b9350c68330dcb98",
     "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs": "97acc34300e354f81b348ff8ed82384ef5845c3e8f38bd9e3136e2cfbb77b3dd",
     "crates/hepta-agent-transport/src/root_control_path/service_control.rs": "b5f0ab8b979faf96a2d5c1e3f3bb8a6d1a532ff09cc5a7827b0f6eda90634054"
   },
@@ -848,7 +848,7 @@
     "apps/hepta-browserd/tests/control_readiness_kernel.rs": "10d846a7e356056d80895ff01bc82c08504e76fdf422c80ddbb96d27093c2453"
   },
   "kernel_source_sha256": {
-    "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs": "6f099409079351f5793a669e43f71cd9f0441befaec20f3003e910156ed5c8fa"
+    "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs": "9ce1ba9347cd0db67dd84fd3e81d93cc2dd77c36b2aac0f4322733d19dff952c"
   },
   "early_root_transfer": {
     "creation_identity": "original RootPathControlConnection admission capture; no channel-time recapture authority",
@@ -875,7 +875,7 @@
   },
   "private_helper_full_tokens_sha256": {
     "RootPathAttestedHandoffReceiver::from_service_control": "40d5923e6d7237e9f2a0b3e87709e653f5b6180ded9da9d2904e6faa83a37a6f",
-    "RootPathAttestedHandoffReceiver::receive_service_control": "a290425da7df59efcaa4e0c7bb77262c56e96e5cf5d6cd2488826c52c818cf32",
+    "RootPathAttestedHandoffReceiver::receive_service_control": "44492fb9152c0d076914484ede1a522ca6efa333c69ce1af18a8fc5a4544b5e4",
     "AttestedHandoffReceiver::receive_service_control": "e832350cf1b06b3819ff2261435edb93b3777633265ef21177195bf4d0c64a79",
     "ServiceSessionState::ensure_current": "fe3acf90888b2016273b0e64d562281105eac9b0747e5def32a6b065e59d0700",
     "ServiceSessionState::control_policy": "96d709fbdc5d722af5669abd9b1051e4764a1676c19147ccbd507b689d70ac4f",
@@ -919,7 +919,7 @@
     "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs": {
       "service_error": "bac7640713b5e64ad4471d246437914b3dae31f3c18ee1dbd978701919b56836",
       "RootPathAttestedHandoffReceiver::from_service_control": "f87779927657811a33029c93e8156898a1e576bc1f4b7389386099d2e57bda5c",
-      "RootPathAttestedHandoffReceiver::receive_service_control": "75d45e56cf8b2f0738bced5e929920ddc961cc2985f2e17b5bcc27694b6c016e",
+      "RootPathAttestedHandoffReceiver::receive_service_control": "78c8267fdf229183d4310c0676c24d091c4221cb2012057bf99669f8c1374167",
       "ControlPeerOwner::current_for_service": "a0883a5288368a9a8f97b014bc236e099bda644e636b5056e605213fdea5c164"
     },
     "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs": {
@@ -1030,6 +1030,48 @@
     "temporary_drift_identical_sampling_time_claim": false,
     "runtime_snapshot_counts_or_latency_measured": false,
     "kernel_on_current_source": "NOT_EXECUTED",
+    "production_ready": false
+  },
+  "service_receive_wrapper_guard_composition": {
+    "status": "SOURCE_ONE_PRIVATE_WRAPPER_ADJACENT_FULL_GUARD_COMPOSITION_RUNTIME_PENDING",
+    "only_production_body_changed": "RootPathAttestedHandoffReceiver::receive_service_control",
+    "new_functions": 0,
+    "same_immutable_session_reference_forwarded": true,
+    "inner_Creator_full_Session_original_SCM_Control_path_clock_retire_whole": true,
+    "outer_final_Source_Owner_after_received_check_and_retire_whole": true,
+    "original_Agent_Control_fresh_pair_and_channel_guards_whole": true,
+    "public18_signatures_opaque7_restricted9_headers_whole": true,
+    "static_successful_Trio_receive_full_executable_reads_39_to38": true,
+    "actual_failed_run_counts_or_latency_measured": false,
+    "temporary_drift_identical_sampling_time_claim": false,
+    "digest_cache_caller_proof_shared_authority_or_new_deadline": false,
+    "kernel_on_current_source": "NOT_EXECUTED",
+    "production_ready": false,
+    "actual_f243_previous_Kernel_exit": 101,
+    "actual_f243_previous_Kernel_failed_Trio_receive_line": 572,
+    "actual_f243_previous_Kernel_internal_phase": "UNKNOWN"
+  },
+  "kernel_unwind_escape_storage": {
+    "status": "SOURCE_CASE18_LOCAL_ESCAPE_STORAGE_LINT_FIX_RUNTIME_PENDING",
+    "kernel_path": "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs",
+    "only_changed_case": 18,
+    "groups": 19,
+    "actual_parent": {
+      "head": "00b51c8a95a215426787cb9c91668e505c268705",
+      "tree": "044bf3d8df1109dbb6e6b48450dd91a10991ab55"
+    },
+    "parent_kernel_sha256": "6f099409079351f5793a669e43f71cd9f0441befaec20f3003e910156ed5c8fa",
+    "proposed_kernel_sha256": "9ce1ba9347cd0db67dd84fd3e81d93cc2dd77c36b2aac0f4322733d19dff952c",
+    "only_three_case_local_literals": 3,
+    "old_other18_cases_whole": true,
+    "default_single_Kernel_format_whole_inverse_to_reviewed_FE08": true,
+    "same_original_fd_deadline_custody_verifier_tuple": true,
+    "original_panic_catch_AssertUnwindSafe_and_actual_scopeGuard_whole": true,
+    "post_catch_original_verifier_error_then_Source_then_drop_then_finish_whole": true,
+    "RefMut_statement_finishes_before_panic_Ref_before_Source_drop": true,
+    "warning_suppression_or_profile_budget_fixture_changes": false,
+    "unused_assignments_elimination_actually_compiled_or_Clippy_verified": false,
+    "current_original19_Kernel_executed": false,
     "production_ready": false
   }
 }

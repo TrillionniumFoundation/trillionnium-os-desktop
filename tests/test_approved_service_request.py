@@ -972,3 +972,283 @@ class ApprovedServiceReporterPairBoundaryTests(unittest.TestCase):
         self.assertIs(scope["runtime_snapshot_counts_or_latency_measured"], False)
         self.assertIs(scope["production_ready"], False)
 
+
+
+
+class ApprovedServiceInitialReceiveWrapperTests(unittest.TestCase):
+    """Fully rebound ingress mutations target the independent whole guard."""
+    texts = ApprovedServiceConsumeCompositionTests.texts
+
+    def refuse_rebound(self, values):
+        from unittest.mock import patch
+        expected = copy.deepcopy(gate.EXPECTED)
+        inventories = {path: gate.source_gate.rust_inventory(values[path])
+                       for path in expected["whole_production_source_sha256"]}
+        for key in ("whole_production_source_sha256", "preserved_source_sha256", "kernel_source_sha256"):
+            expected[key] = {path: gate.sha256(values[path]) for path in expected[key]}
+        expected["all_function_body_tokens_sha256"] = {
+            path: {name: hashlib.sha256(" ".join(body).encode()).hexdigest()
+                   for name, body in inventory["functions"].items()}
+            for path, inventory in inventories.items()}
+        expected["public_api"] = {name: header for inventory in inventories.values()
+                                  for name, header in inventory["public_api"].items()}
+        expected["opaque_types"] = {name: " ".join(value["body"])
+                                   for inventory in inventories.values()
+                                   for name, value in inventory["types"].items() if value["public"]}
+        for key in ("private_helper_inventory", "denial_scope_helper_inventory", "composed_service_helper_inventory"):
+            for name, rule in expected[key].items():
+                header = gate._private_header(values[rule["path"]], name)
+                body = gate.source_gate.function(inventories[rule["path"]], name)
+                rule["signature"] = header
+                expected["private_helper_full_tokens_sha256"][name] = hashlib.sha256(
+                    " ".join(gate.source_gate.signature(header) + body).encode()).hexdigest()
+        for name, rule in expected["consume_pair_boundary_helper_inventory"].items():
+            header = gate._private_header(values[rule["path"]], name)
+            body = gate.source_gate.function(inventories[rule["path"]], name)
+            rule["signature"] = header
+            rule["full_tokens_sha256"] = hashlib.sha256(
+                " ".join(gate.source_gate.signature(header) + body).encode()).hexdigest()
+        for rule in expected["effect_orders"].values(): rule["markers"] = []
+        rebound_guards = {path: gate.sha256(values[path]) for path in gate._CONSUME_GUARD_MODULES}
+        with patch.object(gate, "EXPECTED", expected), patch.object(gate, "_CONSUME_GUARD_MODULES", rebound_guards):
+            with self.assertRaisesRegex(ValueError, "receive wrapper independent whole guard differs"):
+                gate.inventory_and_orders(values)
+
+    def changed(self, path, before, after="", occurrence=0):
+        import re
+        values = self.texts()
+        offsets = [match.start() for match in re.finditer(re.escape(before), values[path])]
+        self.assertGreater(len(offsets), occurrence, "mutant must target actual current Source")
+        offset = offsets[occurrence]
+        values[path] = values[path][:offset] + after + values[path][offset + len(before):]
+        return values
+
+    def test_actual_one_wrapper_change_and_all_original_guard_boundaries(self):
+        values = self.texts()
+        gate.inventory_and_orders(values)
+        self.assertEqual(len(gate._CONSUME_GUARD_MODULES), 7)
+        self.assertEqual(len(gate.EXPECTED["private_helper_full_tokens_sha256"]), 9)
+        scope = gate.EXPECTED["service_receive_wrapper_guard_composition"]
+        self.assertEqual(scope["only_production_body_changed"], "RootPathAttestedHandoffReceiver::receive_service_control")
+        self.assertEqual(scope["new_functions"], 0)
+
+    def test_outer_final_full_Source_Owner_cannot_be_removed_or_denial_only(self):
+        for after in ("", "session.original_owner_root_scope().map_err(service_error)?;", "caller_cached_source()?;"):
+            with self.subTest(after=after):
+                self.refuse_rebound(self.changed(ROOTED, "        session.ensure_current().map_err(service_error)?;", after, 1))
+
+    def test_inner_initial_full_Source_remains_before_SCM(self):
+        for after in ("", "session.original_owner_root_scope().map_err(service_error)?;"):
+            with self.subTest(after=after):
+                self.refuse_rebound(self.changed(PACKING, "            session.ensure_current().map_err(service_error)?;", after, 0))
+
+    def test_inner_final_full_Source_remains_before_actual_return_and_retire(self):
+        self.refuse_rebound(self.changed(PACKING, "            session.ensure_current().map_err(service_error)?;", "", 1))
+
+    def test_inner_Creator_still_precedes_receiver_state_and_FD_access(self):
+        self.refuse_rebound(self.changed(PACKING, "        creator(self.owner_pid)?;", "", 0))
+
+    def test_actual_SCM_original_Control_checks_remain_before_and_after(self):
+        for before in ("self.ensure_service_current(session)?;", "owner.current_for_service(session)?;"):
+            for after in ("", "self.ensure_current()?;", "session.original_owner_root_scope().map_err(service_error)?;"):
+                with self.subTest(before=before, after=after):
+                    self.refuse_rebound(self.changed(PACKING, before, after))
+
+    def test_original_clock_wait_cannot_be_removed_or_renewed(self):
+        for after in ("let wait = Duration::from_secs(20);", "let wait = remaining(self.owner_pid, caller_future)?;"):
+            with self.subTest(after=after):
+                self.refuse_rebound(self.changed(PACKING, "let wait = remaining(self.owner_pid, self.deadline)?;", after))
+
+    def test_returned_stream_deadline_and_original_retire_are_complete(self):
+        for before in ("received.deadline()?;", "self.retire()?;"):
+            with self.subTest(before=before): self.refuse_rebound(self.changed(PACKING, before))
+
+    def test_cancelled_or_missing_original_receiver_cannot_be_replaced(self):
+        for before, after in (("if self.cancelled", "if !self.cancelled"),
+                              ("Err(ControlOwnerError::Cancelled)", "Ok(self.deadline)"),
+                              (".ok_or(ControlOwnerError::ChannelRetired)", ".ok_or(ControlOwnerError::PeerRefused)")):
+            with self.subTest(before=before): self.refuse_rebound(self.changed(PACKING, before, after))
+
+    def test_same_retained_actual_Channel_and_default_live_Control_cannot_be_cached(self):
+        cases = [(PACKING, "retained.ensure_current()?;", ""),
+                 (ROOTED, 'Path::new("/proc")', 'Path::new("/tmp/proc")'),
+                 ("crates/hepta-peer-attestation/src/control_owner/retained_request.rs",
+                  ".ensure_current()\n                .map_err(handoff)?;", ".caller_cached_current()\n                .map_err(handoff)?;")]
+        for path, before, after in cases:
+            with self.subTest(path=path): self.refuse_rebound(self.changed(path, before, after))
+
+    def test_original_root_path_and_same_Control_source_prepost_whole(self):
+        for before in ("path.current()?;", "session\n            .verify_control(&self.attested)\n            .map_err(service_error)?;"):
+            with self.subTest(before=before): self.refuse_rebound(self.changed(ROOTED, before))
+
+    def test_callback_original_Agent_Control_pair_and_Source_guards_whole(self):
+        for before, after in ((".verify_pair_current(&original.verifier())", ".verify_current()"),
+                              ("                session.ensure_current()?;", "")):
+            with self.subTest(before=before): self.refuse_rebound(self.changed(BRIDGE, before, after))
+
+    def test_full_proc_hash_and_Creator_endpoint_checks_cannot_be_rebound(self):
+        for path, before, after in [
+            ("crates/hepta-peer-attestation/src/lib.rs", "digest.update(&buffer[..read]);", "caller_cached_digest();"),
+            ("crates/hepta-peer-attestation/src/approved_policy/service_policy/creator_context.rs",
+             "self.pid != std::process::id()", "false")]:
+            with self.subTest(path=path): self.refuse_rebound(self.changed(path, before, after))
+
+    def test_wrapper_cannot_accept_caller_guard_or_return_new_authority(self):
+        values = self.texts()
+        start = values[ROOTED].index("    pub(crate) fn receive_service_control(")
+        end = values[ROOTED].index("\n    }", start) + len("\n    }")
+        body = values[ROOTED][start:end]
+        changed = body.replace("session: &ServiceSessionState,", "session: &ServiceSessionState, caller_guard: bool,", 1)
+        self.assertNotEqual(body, changed)
+        values[ROOTED] = values[ROOTED][:start] + changed + values[ROOTED][end:]
+        self.refuse_rebound(values)
+
+    def test_scope_keeps_original_failure_and_no_runtime_or_sampling_claim(self):
+        scope = gate.EXPECTED["service_receive_wrapper_guard_composition"]
+        self.assertEqual(scope["kernel_on_current_source"], "NOT_EXECUTED")
+        self.assertEqual(scope["actual_f243_previous_Kernel_exit"], 101)
+        self.assertEqual(scope["actual_f243_previous_Kernel_internal_phase"], "UNKNOWN")
+        for key in ("actual_failed_run_counts_or_latency_measured", "temporary_drift_identical_sampling_time_claim", "production_ready"):
+            self.assertIs(scope[key], False)
+
+
+
+
+class ApprovedServiceKernelUnwindEscapeTests(unittest.TestCase):
+    """Fully rebound metadata reaches the independent complete Kernel guard."""
+    kernel = "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs"
+    start = '    case!("consumer-unwind-revokes-even-escaped-original-proof", f, {\n'
+    end = '    case!(\n        "completed-original-fd-transfer-keeps-same-scope-and-instant",\n'
+    texts = ApprovedServiceConsumeCompositionTests.texts
+    assertion = 'assert!(\n            escaped\n                .borrow()\n                .as_ref()\n                .unwrap()\n                .3\n                .verify_current()\n                .is_err()\n        );'
+
+    def changed(self, before, after="", in_case=True):
+        values = self.texts()
+        text = values[self.kernel]
+        start = text.index(self.start) if in_case else 0
+        end = text.index(self.end, start) if in_case else len(text)
+        body = text[start:end]
+        self.assertEqual(body.count(before), 1, "mutant must hit exact current original stimulus")
+        values[self.kernel] = text[:start] + body.replace(before, after, 1) + text[end:]
+        return values
+
+    def refuse_fully_rebound(self, values):
+        from unittest.mock import patch
+        expected = copy.deepcopy(gate.EXPECTED)
+        inventories = {path: gate.source_gate.rust_inventory(values[path])
+                       for path in expected["whole_production_source_sha256"]}
+        for key in ("whole_production_source_sha256", "preserved_source_sha256", "kernel_source_sha256"):
+            expected[key] = {path: gate.sha256(values[path]) for path in expected[key]}
+        expected["all_function_body_tokens_sha256"] = {
+            path: {name: hashlib.sha256(" ".join(body).encode()).hexdigest()
+                   for name, body in inventory["functions"].items()}
+            for path, inventory in inventories.items()}
+        expected["public_api"] = {name: header for inventory in inventories.values()
+                                  for name, header in inventory["public_api"].items()}
+        expected["opaque_types"] = {name: " ".join(value["body"])
+                                   for inventory in inventories.values()
+                                   for name, value in inventory["types"].items() if value["public"]}
+        for key in ("private_helper_inventory", "denial_scope_helper_inventory", "composed_service_helper_inventory"):
+            for name, rule in expected[key].items():
+                header = gate._private_header(values[rule["path"]], name)
+                body = gate.source_gate.function(inventories[rule["path"]], name)
+                rule["signature"] = header
+                expected["private_helper_full_tokens_sha256"][name] = hashlib.sha256(
+                    " ".join(gate.source_gate.signature(header) + body).encode()).hexdigest()
+        for name, rule in expected["consume_pair_boundary_helper_inventory"].items():
+            header = gate._private_header(values[rule["path"]], name)
+            body = gate.source_gate.function(inventories[rule["path"]], name)
+            rule["signature"] = header
+            rule["full_tokens_sha256"] = hashlib.sha256(
+                " ".join(gate.source_gate.signature(header) + body).encode()).hexdigest()
+        for rule in expected["effect_orders"].values(): rule["markers"] = []
+        expected["kernel_unwind_escape_storage"]["proposed_kernel_sha256"] = gate.sha256(values[self.kernel])
+        expected["kernel_unwind_escape_storage"]["only_three_case_local_literals"] = 0
+        serialized_contract = json.dumps(expected, separators=(",", ":"), ensure_ascii=False)
+        rebound_contract = json.loads(serialized_contract)
+        self.assertEqual(rebound_contract["kernel_source_sha256"][self.kernel], gate.sha256(values[self.kernel]))
+        rebound_guards = {path: gate.sha256(values[path]) for path in gate._CONSUME_GUARD_MODULES}
+        with patch.object(gate, "EXPECTED", expected), patch.object(gate, "_CONSUME_GUARD_MODULES", rebound_guards):
+            with self.assertRaisesRegex(ValueError, "kernel unwind independent complete Source differs"):
+                gate.check(rebound_contract, values)
+
+    def test_actual_complete_Kernel_and_original_inverse_pass(self):
+        values = self.texts()
+        gate.check(copy.deepcopy(gate.EXPECTED), values)
+        current = values[self.kernel]
+        parent = gate._kernel_unwind_parent(current)
+        self.assertEqual(gate.sha256(parent), "6f099409079351f5793a669e43f71cd9f0441befaec20f3003e910156ed5c8fa")
+        self.assertEqual(gate._kernel_unwind_parent(parent), parent)
+        self.assertEqual(current.count("    case!("), 19)
+        self.assertEqual(len(gate._CONSUME_GUARD_MODULES), 7)
+        self.assertEqual(len(gate.EXPECTED["private_helper_full_tokens_sha256"]), 9)
+
+    def test_original_panic_stimulus_cannot_be_removed_or_replaced(self):
+        for after in ("", 'return ();', 'panic!("caller selected stimulus");'):
+            with self.subTest(after=after):
+                self.refuse_fully_rebound(self.changed('panic!("specific consumer-unwind stimulus");', after))
+
+    def test_actual_catch_unwind_cannot_be_removed_or_caller_error(self):
+        for after in ("caller_catch(", "caller_error("):
+            with self.subTest(after=after):
+                self.refuse_fully_rebound(self.changed("std::panic::catch_unwind(", after))
+
+    def test_AssertUnwindSafe_and_original_callback_capture_remain(self):
+        for before, after in (("std::panic::AssertUnwindSafe(|| {", "caller_safe(|| {"),
+                              ("connection.consume_service_control_before(|fd, deadline, custody| {", "connection.consume_before(|fd, deadline, custody| {")):
+            with self.subTest(before=before): self.refuse_fully_rebound(self.changed(before, after))
+
+    def test_original_fd_cannot_be_replaced_or_duplicated(self):
+        for after in ("Some((caller_fd, deadline, custody, verifier));", "Some((fd.try_clone().unwrap(), deadline, custody, verifier));"):
+            with self.subTest(after=after): self.refuse_fully_rebound(self.changed("Some((fd, deadline, custody, verifier));", after))
+
+    def test_same_original_custody_verifier_cannot_be_caller_proof(self):
+        self.refuse_fully_rebound(self.changed("let verifier = custody.verifier().unwrap();", "let verifier = caller_verifier();"))
+
+    def test_original_tuple_and_all_clock_budgets_cannot_be_extended(self):
+        self.refuse_fully_rebound(self.changed("Some((fd, deadline, custody, verifier));", "Some((fd, Instant::now() + WAIT, custody, verifier));"))
+        for before, after in (("const GROUPS: usize = 19;", "const GROUPS: usize = 7;"),
+                              ("const WAIT: Duration = Duration::from_secs(20);", "const WAIT: Duration = Duration::from_secs(40);"),
+                              ("const AFTER_FIRST: Duration = Duration::from_secs(21);", "const AFTER_FIRST: Duration = Duration::from_secs(42);"),
+                              ("Trio::new(&f, Duration::from_secs(6))", "Trio::new(&f, Duration::from_secs(30))")):
+            with self.subTest(before=before): self.refuse_fully_rebound(self.changed(before, after, in_case=False))
+
+    def test_actual_tuple_storage_cannot_be_omitted_or_faked(self):
+        for after in ("", "*escaped.borrow_mut() = caller_closed_tuple();"):
+            with self.subTest(after=after):
+                self.refuse_fully_rebound(self.changed("*escaped.borrow_mut() = Some((fd, deadline, custody, verifier));", after))
+
+    def test_escaped_tuple_cannot_be_discarded_before_panic(self):
+        self.refuse_fully_rebound(self.changed('panic!("specific consumer-unwind stimulus");', 'drop(escaped.take()); panic!("specific consumer-unwind stimulus");'))
+
+    def test_original_resources_cannot_drop_before_post_catch_verification(self):
+        self.refuse_fully_rebound(self.changed("assert!(result.is_err());", "drop(escaped.take()); assert!(result.is_err());"))
+
+    def test_actual_catch_error_assertion_cannot_be_deleted_or_inverted(self):
+        for after in ("", "assert!(result.is_ok());"):
+            with self.subTest(after=after): self.refuse_fully_rebound(self.changed("assert!(result.is_err());", after))
+
+    def test_original_escaped_verifier_must_refuse_after_actual_unwind(self):
+        for after in ("", "assert!(escaped.borrow().as_ref().unwrap().3.verify_current().is_ok());", "assert!(caller_verifier().verify_current().is_err());"):
+            with self.subTest(after=after):
+                self.refuse_fully_rebound(self.changed(self.assertion, after))
+
+    def test_persistent_Source_check_cannot_be_removed_or_before_proof_assertion(self):
+        self.refuse_fully_rebound(self.changed("requests.ensure_current().unwrap();"))
+        self.refuse_fully_rebound(self.changed("assert!(result.is_err());", "requests.ensure_current().unwrap(); assert!(result.is_err());"))
+
+    def test_tuple_drop_order_cannot_precede_verifier_or_follow_fixture(self):
+        self.refuse_fully_rebound(self.changed("drop(escaped);\n        trio.finish();", "trio.finish();\n        drop(escaped);"))
+        self.refuse_fully_rebound(self.changed("assert!(result.is_err());", "drop(escaped); assert!(result.is_err());"))
+
+    def test_all_other_original_cases_and_lint_strength_are_whole(self):
+        for before, after in (('"early-actual-root-fd-replacement-refuses-while-old-clone-still-current",', '"caller-case",'),
+                              ("const SIDEBAND_BYTES: usize = 192;", "#[allow(warnings)]\nconst SIDEBAND_BYTES: usize = 192;")):
+            with self.subTest(before=before): self.refuse_fully_rebound(self.changed(before, after, in_case=False))
+
+    def test_Source_scope_retains_all_runtime_and_Clippy_pending_claims(self):
+        scope = gate.EXPECTED["kernel_unwind_escape_storage"]
+        self.assertEqual(scope["only_changed_case"], 18)
+        self.assertEqual(scope["groups"], 19)
+        for name in ("warning_suppression_or_profile_budget_fixture_changes", "unused_assignments_elimination_actually_compiled_or_Clippy_verified", "current_original19_Kernel_executed", "production_ready"):
+            self.assertIs(scope[name], False)

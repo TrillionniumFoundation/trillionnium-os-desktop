@@ -367,5 +367,109 @@ class JointPhysicalSourceBoundaryTests(unittest.TestCase):
                 gate.check(gate.EXPECTED, texts)
 
 
+class CurrentPhysicalIngressBoundaryTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.texts = gate.inputs()
+
+    def _fully_rebound(self, replacements):
+        texts = dict(self.texts)
+        texts.update(replacements)
+        rebound = rebind_derived_metadata(gate.EXPECTED, texts, self.texts)
+        # Synchronize every mutable physical classification/whole identity;
+        # the independent current16 literal and all other CLOSED code stay fixed.
+        for group in ('preserved_original_sha256', 'supplemental_source_sha256'):
+            for path in rebound[group]:
+                rebound[group][path] = gate._sha(texts[path].encode())
+        for group in ('finite_parent_inverse', 'joint_parent_inverse12'):
+            for path, rule in rebound[group].items():
+                rule['complete_bytes'] = len(texts[path].encode())
+                rule['complete_sha256'] = gate._sha(texts[path].encode())
+        for path in rebound['joint_current_physical_ingress16']:
+            rebound['joint_current_physical_ingress16'][path] = gate._sha(texts[path].encode())
+        role = rebound['joint_transport_input_roles']
+        raw = texts[role['path']].encode()
+        role['current_physical']['bytes'] = len(raw)
+        role['current_physical']['sha256'] = gate._sha(raw)
+        role['existing_C_exact_inverse2']['complete_bytes'] = len(raw)
+        role['existing_C_exact_inverse2']['complete_sha256'] = gate._sha(raw)
+        assignment = gate.expected_assignment(gate.EXPECTED)
+        self.assertEqual(texts[gate.TOOL].count(assignment), 1)
+        texts[gate.TOOL] = texts[gate.TOOL].replace(assignment, gate.expected_assignment(rebound), 1)
+        texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+        return rebound, texts
+
+    def _assert_current_physical_refusal(self, replacements):
+        rebound, texts = self._fully_rebound(replacements)
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))
+            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                             rebound['checker_nonEXPECTED_whole_sha256'])
+            with self.assertRaisesRegex(ValueError, '^P3 independent current physical ingress differs$'):
+                gate.check(rebound, texts)
+
+    def test_current16_physical_and_exact_two_line_P1_history_are_distinct(self):
+        from tools import verify_approved_service_product as product
+        from tools import verify_approved_service_request as original
+        roles = gate.EXPECTED['joint_transport_input_roles']
+        path = roles['path']
+        physical = self.texts[path]
+        historical = product.parent_source(path, physical)
+        self.assertNotEqual(physical, historical)
+        self.assertEqual(len(physical.encode()), roles['current_physical']['bytes'])
+        self.assertEqual(gate._sha(physical.encode()), roles['current_physical']['sha256'])
+        self.assertEqual(len(historical.encode()), roles['historical_P1_input']['bytes'])
+        self.assertEqual(gate._sha(historical.encode()), roles['historical_P1_input']['sha256'])
+        self.assertEqual(physical.replace('mod connected_denial;\n', '', 1)
+                         .replace('pub use connected_denial::OriginalConnectedDenial;\n', '', 1),
+                         historical)
+        actual = original.inputs()
+        self.assertEqual(actual[path], historical)
+        original.check(original.EXPECTED, actual)
+        gate.check(gate.EXPECTED, self.texts)
+
+    def test_history_missing_exports_and_changed_Rooted_guard_refuse_after_full_rebinding(self):
+        from tools import verify_approved_service_product as product
+        path = 'crates/hepta-agent-transport/src/accepted_handoff.rs'
+        rootpath = 'crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs'
+        current = self.texts[path]
+        historical = product.parent_source(path, current)
+        deleted = current.replace('mod connected_denial;\n', '', 1)
+        deleted = deleted.replace('pub use connected_denial::OriginalConnectedDenial;\n', '', 1)
+        self.assertEqual(deleted, historical)
+        before = ('        let received = self.inner.receive_service_control(session)?;\n'
+                  '        session.ensure_current().map_err(service_error)?;\n'
+                  '        Ok(received)\n')
+        self.assertEqual(self.texts[rootpath].count(before), 1)
+        changed = self.texts[rootpath].replace(before,
+                  '        let received = self.inner.receive_service_control(session)?;\n'
+                  '        Ok(received)\n', 1)
+        for label, replacements in (('whole historical988', {path: historical}),
+                                    ('delete both current export lines', {path: deleted}),
+                                    ('Rooted final session guard removed', {rootpath: changed})):
+            with self.subTest(label=label):
+                self._assert_current_physical_refusal(replacements)
+
+    def test_all16_unknown_physical_bytes_refuse_after_all_mutable_metadata_rebinding(self):
+        for path in gate.EXPECTED['joint_current_physical_ingress16']:
+            with self.subTest(path=path):
+                self._assert_current_physical_refusal({path: self.texts[path] + '\n// changed physical Source\n'})
+
+    def test_current16_catalog_rebinding_cannot_replace_the_independent_combo(self):
+        texts = dict(self.texts)
+        rebound = copy.deepcopy(gate.EXPECTED)
+        roles = rebound['joint_transport_input_roles']
+        rebound['joint_current_physical_ingress16'][roles['path']] = roles['historical_P1_input']['sha256']
+        assignment = gate.expected_assignment(gate.EXPECTED)
+        texts[gate.TOOL] = texts[gate.TOOL].replace(assignment, gate.expected_assignment(rebound), 1)
+        texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))
+            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                             rebound['checker_nonEXPECTED_whole_sha256'])
+            with self.assertRaisesRegex(ValueError, '^P3 independent current physical ingress catalog differs$'):
+                gate.check(rebound, texts)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -829,17 +829,25 @@ fn root_corpus(policy: &Path) {
         let requests = f.requests();
         let mut trio = Trio::early(&f);
         let connection = trio.connection.take().unwrap();
-        let mut escaped = None;
+        let escaped = std::cell::RefCell::new(None);
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let _: Result<(), _> =
                 connection.consume_service_control_before(|fd, deadline, custody| {
                     let verifier = custody.verifier().unwrap();
-                    escaped = Some((fd, deadline, custody, verifier));
+                    *escaped.borrow_mut() = Some((fd, deadline, custody, verifier));
                     panic!("specific consumer-unwind stimulus");
                 });
         }));
         assert!(result.is_err());
-        assert!(escaped.as_ref().unwrap().3.verify_current().is_err());
+        assert!(
+            escaped
+                .borrow()
+                .as_ref()
+                .unwrap()
+                .3
+                .verify_current()
+                .is_err()
+        );
         requests.ensure_current().unwrap();
         drop(escaped);
         trio.finish();

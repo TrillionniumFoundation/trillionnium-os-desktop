@@ -389,3 +389,63 @@ hash/API/order rebinding. All original 139 tests remain whole; four of the 15
 earlier consume tests adapt moved guard locations with complete method inverses.
 The original Kernel, 19 groups, 6/20/21/120 seconds and owned 5+5 cleanup budgets
 remain unchanged. Cargo, Kernel, Native and production readiness remain pending.
+
+
+## Initial receive wrapper successor — Source verification only
+
+The f243 original 19-group execution remains exit 101, seven ordered PASS
+groups and eight actual Trio fixtures. Case eight returned DeadlineExceeded
+from Trio.receive at original Kernel572 before consume was reached. Trio.receive
+includes bind_control and receive_request; its internal failing phase remains
+unknown. The original six-second Owner deadline starts before Control spawn,
+and neither startup residence nor any original deadline is renewed here.
+
+Only the private Rooted receive wrapper removes its first adjacent duplicate
+Session check. It immediately forwards the same immutable Session reference
+to the unchanged inner receiver, whose creating PID check and complete full
+Source/Owner guard precede all receiver-state and actual SCM operations. The
+entire original Control/path/clock/retained-channel and returned stream checks,
+original inner retirement and outer final full Source/Owner check remain whole.
+Public receive/bind/consume bodies, same original Agent/Control pair, seven
+consume Guard modules, original nine restricted headers and all Kernel budgets
+are unchanged. No digest cache, caller proof or shared authority is introduced.
+
+The static complete successful Trio.receive callgraph has one fewer Owner
+executable read and three fewer Source inspections (39 to 38 executable reads).
+These are Source counts, not measurements of the failed run or a latency claim.
+Temporary drift sampling is not claimed identical. Default sha2 already has a
+reachable SHA-NI dispatch; no crypto backend, features or opt0 profile changes.
+All original 169 Python tests remain whole. Fifteen added tests include thirteen
+fully rebound refusals and two current-Source/claim checks. Independent fixed
+whole modules and nine full ingress bodies protect actual pre/post boundaries.
+Rust compilation, all original 19 Kernel groups and production remain pending.
+
+
+## Original unwind escape storage — Source lint successor
+
+The workspace requires default and all-feature Clippy over every target with
+`-D warnings`. The inherited original Kernel had one actual unused_assignments
+warning at line837 in its consumer-unwind case. The prior limited compilations
+did not establish either complete workspace Clippy gate.
+
+Only original group eighteen changes three local storage expressions. A local
+RefCell holds the same original fd, deadline, custody and verifier tuple before
+the unchanged specific panic. Its write borrow ends at that statement before
+unwind. After the same catch_unwind and AssertUnwindSafe, the same original
+verifier must refuse; the short read borrow ends before persistent Source check,
+the explicit original tuple drop and fixture cleanup. No original mechanism,
+scope guard, identity, FD, custody, deadline or tuple field order is replaced.
+
+All other eighteen original case bodies, all budgets and fixture/pin/profile
+settings remain whole. The Kernel has a complete independent fixed module and
+case guard plus a closed exact three-literal inverse to original6f099, separate
+from the rebound contract envelope. All184 existing Python methods stay whole;
+fourteen new fully rebound refusal methods target this independent Kernel guard
+and two positive methods cover exact restoration and truthful pending claims.
+The sixteen ingress modules, nine complete ingress bodies, seven consume Guard
+modules, sole call routes, eighteen public signatures and seven opaque types
+remain whole. Initial reception's original limits are unchanged.
+
+Source checks do not prove warning elimination, complete workspace Clippy or
+original19 Kernel execution. These qualifications and production remain pending;
+the f243 exit101 receive DeadlineExceeded still has unknown internal phase.

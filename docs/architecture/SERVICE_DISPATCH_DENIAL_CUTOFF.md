@@ -67,7 +67,7 @@ is claimed by this slice.
 
 ## Joint physical Source boundary
 
-The proposed joint profile selects the genuine f243 original-request bridge and
+The proposed joint profile selects the genuine d979 original-request bridge and
 corrected 40fd AgentPort custody validators alongside this shared cutoff. The
 physical gate classifies all 694 actual files: the original six complete
 inverses, 672 unchanged d933 files, twelve newly selected complete Source
@@ -79,7 +79,7 @@ behavior is not an admitted current object.
 
 Only C's private `_read` applies the separate twelve-file historical inverse.
 Its existing `parent_source` remains whole, so the Native/B/A/C parent chain
-still presents actual f243 original-request modules to P1's independent guard.
+still presents actual d979 original-request modules to P1's independent guard.
 The new reader never grants process identity, request custody or runtime proof.
 The existing mandatory physical checker remains in Makefile exactly once;
 historical C/A/B/Native correspondence cannot replace that physical stage.
@@ -114,3 +114,64 @@ Source checks, fresh joint Rust builds/tests/docs/Clippy and the original
 Kernel corpus under unchanged clocks. Installed cross-UID attestation, a
 Native service entry, default activation, image/recovery/HW/HSM and independent
 human approval remain unqualified.
+
+
+## Current physical ingress and historical P1 input
+
+This joint profile keeps the independently reviewed d979 P1 checker and all
+200 P1 methods whole. Its existing Native/B/A/C input chain deliberately
+presents the exact historical transport Source: `accepted_handoff.rs` has
+36790 bytes with SHA256
+`988ab3003afd3f4c4381b989b7581376c970e30af958470e0f47561cb4eea84f`.
+C's already registered complete inverse removes exactly two reviewed lines:
+`mod connected_denial;` and the `OriginalConnectedDenial` reexport. That whole
+historical object is an input view, and never a current physical substitute.
+
+The mandatory P3 physical gate requires the actual 36863-byte module with
+SHA256 `9d689df4fa59601e39b4598771fa2cad55d83d1733f137593e017e2b2cd11e23`.
+A separate private pure Source guard fixes this current module and fifteen
+whole d979 ingress modules independently of mutable contract hashes. It
+performs no file IO, historical normalization, process admission or runtime
+authorization. P3.check calls it once after the existing exact 694-name/count
+checks and before other implementation/inverse checks. The original P1
+nine complete ingress bodies, headers, sole sealed receive route and seven
+consume guard modules remain unchanged and independently reviewed. P1's
+sixteen historical input checks are not relabeled as current physical proof.
+
+New full-gate negative cases replace the actual module with whole history,
+remove both export lines or remove the Rooted receiver's final session guard.
+They synchronize all mutable classification/whole identity metadata and
+both the complete canonical contract and EXPECTED assignment. All sixteen
+unknown physical modules and catalog-only rebinding are also checked. The
+original P3 tests and their seventeen precise rejection targets stay whole.
+These methods are authored here; execution qualification requires fresh
+joint Source windows and independent Root review. Rust, the original Kernel
+corpus, installed cross-UID attestation and production readiness remain
+unqualified by this Source proposal.
+
+
+## Current independently observed branch results
+
+Root independently verified the d979 original three build commands and both
+required strict workspace Clippy commands, with all five actual exit codes
+zero and no compiler warnings. These close that branch's local compile/lint
+blocker; they are not fresh joint Rust execution or a production approval.
+
+The latest d979 original nineteen-case Kernel run executed once and exited
+101 after 82.72360858198954 seconds. Its first seven cases passed, and the
+initial receive in the eighth expiry case returned successfully. The failure
+occurred at line 394 while unpacking the actual received request through
+`consume_with_request_binding`: the Result unwrap reported `DeadlineExceeded`.
+The internal pre-callback/callback/post-callback phase remains unknown because
+that run has no stage markers. No causal performance improvement was measured,
+case18 was not reached and the nineteen-case corpus did not pass. The original
+six-second expiry budget was unchanged. The older initial-receive line572
+failure remains historical evidence, and is not the latest d979 failure.
+
+These branch facts are frozen in Root's original-three/strict-two readback
+(SHA256 `729feb730b972f43f4e43adf7dcac0b7dbc504d8849c6a6db9228fa0701933cd`)
+and original19 readback
+(SHA256 `b001459a83f5a3c984e41f0c0bbec33223e6aafdd8aaaf13e2f5d7d5793b465e`).
+The present ten-path joint profile remains an external proposal. The already
+qualified joint945 Source profile still contains f243. No branch Rust, Kernel,
+Native or installed result is transferred to the proposed d979 combination.

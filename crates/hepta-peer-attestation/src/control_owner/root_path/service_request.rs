@@ -53,7 +53,6 @@ impl RootPathAttestedHandoffReceiver {
         &mut self,
         session: &ServiceSessionState,
     ) -> Result<ControlRetainedAcceptedStream, ControlOwnerError> {
-        session.ensure_current().map_err(service_error)?;
         let received = self.inner.receive_service_control(session)?;
         session.ensure_current().map_err(service_error)?;
         Ok(received)
