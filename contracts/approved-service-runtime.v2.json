@@ -7,12 +7,12 @@
   ],
   "default_activation": false,
   "actual_parent": {
-    "head": "5aac2a8503c9d3b84fbb81a803edd22025d52656",
-    "tree": "bc641092b05a96163b8d96af01ddd331bffa9dff",
-    "scope": "SOURCE_ONLY_ROOT_ACCEPTED_NO_COMPILE_QUALIFICATION"
+    "head": "be2c4d6325929df70fee9e89f690ca27a272254e",
+    "tree": "7f34e1d29c990453302477674d81d27ace0be021",
+    "scope": "FROZEN_AUTHOR_SOURCE_PARENT_WITH_ROOT_CREATOR_LOCK_FINDING_NO_RUNTIME_QUALIFICATION"
   },
   "public_api": {
-    "ServiceEngineCommand::into_parts": "pub fn into_parts ( self ) - > ( Option < PageOwnerSnapshot > , BrowserActorMessage , ServiceEngineCompletion )",
+    "ServiceEngineCommand::into_parts": "pub fn into_parts ( self , ) - > ( Option < PageOwnerSnapshot > , BrowserActorMessage , ServiceEngineCompletion , )",
     "ServiceEngineCompletion::request_id": "pub fn request_id ( & self ) - > & str",
     "ServiceEngineCompletion::deadline": "pub fn deadline ( & self ) - > Instant",
     "ServiceEngineCompletion::ensure_current_request": "pub fn ensure_current_request ( & self ) - > Result < ( ) , RuntimeFailure >",
@@ -22,11 +22,11 @@
     "ServiceEngineBridge::next_wake_deadline": "pub fn next_wake_deadline ( & self ) - > Option < Instant >",
     "ServiceEngineBridge::retire": "pub fn retire ( & mut self )",
     "closed_immutable_service_engine_pair": "pub fn closed_immutable_service_engine_pair ( waker : Arc < dyn EngineEventLoopWaker > , ) - > ( ServiceEngineEndpoint , ServiceEngineBridge )",
-    "ServiceServoRuntimeCommand::into_parts": "pub fn into_parts ( self ) - > ( Option < PageOwnerSnapshot > , ServoRuntimeOperation , ServiceServoRuntimeCompletion )",
+    "ServiceServoRuntimeCommand::into_parts": "pub fn into_parts ( self , ) - > ( Option < PageOwnerSnapshot > , ServoRuntimeOperation , ServiceServoRuntimeCompletion , )",
     "ServiceServoRuntimeCompletion::request_id": "pub fn request_id ( & self ) - > & str",
     "ServiceServoRuntimeCompletion::deadline": "pub fn deadline ( & self ) - > Instant",
     "ServiceServoRuntimeCompletion::ensure_current_request": "pub fn ensure_current_request ( & self ) - > Result < ( ) , ServoRuntimeError >",
-    "ServiceServoRuntimeCompletion::complete_success": "pub fn complete_success ( self , result : JsonObject , current_url : Option < String > ) - > ServoCompletionDelivery",
+    "ServiceServoRuntimeCompletion::complete_success": "pub fn complete_success ( self , result : JsonObject , current_url : Option < String > , ) - > ServoCompletionDelivery",
     "ServiceServoRuntimeCompletion::complete_error": "pub fn complete_error ( self , error : ServoRuntimeError ) - > ServoCompletionDelivery",
     "ServiceServoRuntimeBridge::pump_one": "pub fn pump_one ( & mut self ) - > ServoPumpResult",
     "ServiceServoRuntimeBridge::take_command": "pub fn take_command ( & mut self ) - > Option < ServiceServoRuntimeCommand >",
@@ -45,15 +45,15 @@
     "ServiceServoRuntimeBridge": "inner : ServiceEngineBridge ,"
   },
   "production_sha256": {
-    "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs": "b1e7581d8134c47807b9841316a1c43c454311bcf4df7c44f0bae641d12fd13d",
-    "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs": "df07c1c8d45d62b0a9f6eb72914845e5c301a7d28a48e0fdf2787d05d9021a28"
+    "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs": "6c59dd60243cbf4ff5f21c26e56dc7cbe98e29c4a3cd03828c93481493be8e26",
+    "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs": "ca029ec2b6a8881a54d48b2c49958c52b241530a6f09b6afd224188e30e11bf4"
   },
   "all_function_tokens_sha256": {
     "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs": {
-      "ServiceDispatchScope::current": "21cdac5eebda176dc01c78d8185fd8adb1a471e48602a025e5115187d5ec3ed5",
+      "ServiceDispatchScope::current": "2473773cc0411c0d87b66398e62983b09668e3cfc420260498866218fe918a78",
       "ServiceEngineState::creator": "9e882074fb2f9da508ff4a88e01355c0f5f4167d743455135af7d91d0e238ea0",
-      "ServiceEngineState::service_current": "ba1ca37c8e1cde068d5a394996c0ddb522436c4b4e385a4b9542ebe6d1a7b651",
-      "ServiceEngineState::capture": "f92962bf244cd4d07518da86e424aae4ee95fa596beb74984d5a4051ee2909ce",
+      "ServiceEngineState::service_current": "c4d90f590cef4181affb411bdc64a569a5a83ef7c06f5feca68f358e5146f5d6",
+      "ServiceEngineState::capture": "504a658af0a4c233d524f441390acf722ebc9fae05efb3d746795ddc350bd640",
       "Drop:ServiceEngineEndpoint::drop": "43213cece9967df44c0f2f23981d277128aecf16d536952634093e23989001a5",
       "ServiceEngineCommand::into_parts": "572d79883f624855e433aac1e82303d9bccdffbc15ebf48a306cf6b3a39a2959",
       "ServiceEngineCompletion::request_id": "7c34d97f9f30d6f980c44f4dca506a2cba66ce5d75da7debaf2fa14349ad57a1",
@@ -62,29 +62,29 @@
       "ServiceEngineCompletion::complete": "8db2ad03bafb36a1e5fd4b0e3ab934a0d8157b04879cef82863f89bb984c522a",
       "Drop:ServiceEngineCompletion::drop": "8e43dcd90fa412a65dc0fa30a648352b16e4062d1752341477fdf667b74ca2a9",
       "ServiceEngineBridge::owner_current": "17358a92c923c78200e539a2fd1413666434fd858876acd46bfc5843b3553663",
-      "ServiceEngineBridge::pump_one": "6078b29d1f8511aef6da23fb905b2e958c87811a5bfeed306e7325576d42c4f9",
+      "ServiceEngineBridge::pump_one": "dff585e866f3ca36f5704c84cb83f604ea0a85936af7304b97aecfd3ac311692",
       "ServiceEngineBridge::poll_active": "c8952f200df5ce7893768a1bdd82ea8b4abcba225a86bfe547bcbf991460a38b",
       "ServiceEngineBridge::fail_active": "1801f94bc74f8a1a419eaf7a65584d25abd1e6fc8ae62ae23e7c77d54e376953",
       "ServiceEngineBridge::take_command": "8019d1032f5500398ca6ee0f8caf8848e80afb5aef29575ae5fbb4c35921cdb9",
       "ServiceEngineBridge::next_wake_deadline": "280cdaf357559da6e3c5d29341b2cee39e24300f6c4caf767c77cd611a06f7c8",
-      "ServiceEngineBridge::retire": "a3a64f220c3baf45b7a575a4db901bff35cfea00097b6008049a49b369c5cf2f",
+      "ServiceEngineBridge::retire": "4ebfb2ded7cb77f0dab7833366670be257bca281fe92dae512f672ee3d504398",
       "Drop:ServiceEngineBridge::drop": "47866b78d382bf79cc2b737ce49c13caf4401fbdd1972fa484f15eb9cd890d1c",
-      "closed_operation": "efe4c67bd0b862c85daa5f7cc9e6a9530449b254810e56ecf787dde99b3a73c7",
-      "closed_immutable_service_engine_pair": "2103f126649738eab3e37c5a6ec0a2ed031d1717a07de2d029287885e53397a8"
+      "closed_operation": "1428d17085d9ba3a72516cbd015c7a968ab5adfcb5234b99fb2c23831261ce4e",
+      "closed_immutable_service_engine_pair": "7245d8de4df9fc5ea8141a6bd3c1c53a70853999557a15712f79ed6c836c71f1"
     },
     "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs": {
       "Drop:ServiceServoRuntimeEndpoint::drop": "cec4a6d68785ea241c43edf60a3fb3a05e11bab8ff288ac27fb24fc0e6336396",
-      "ServiceServoRuntimeCommand::into_parts": "d1032fe3ad4a471115878124547d14d6f6170ff0d43aac7d5cb61411561c53b2",
+      "ServiceServoRuntimeCommand::into_parts": "92f3267c73c3600a017e0ed412ce79c7d2d22ec47cc526bb805a40d45b75be30",
       "ServiceServoRuntimeCompletion::request_id": "3d8e27d4aa3b294a71ffacc6841ade76787ca3117146a46501c1213057e85397",
       "ServiceServoRuntimeCompletion::deadline": "73c7695611ed334dc44c0b99d22222781da36a1aee8ed8cb8a055d6fd8dec01f",
       "ServiceServoRuntimeCompletion::ensure_current_request": "0686ac9e91b65ceff29e2be64a951cafec0ba4712c9d70198970b8afaf60089c",
-      "ServiceServoRuntimeCompletion::complete_success": "5182dc3a692ce9b8ef133da55e4bb119f88f300fa028eb063f53a156f8a7da2e",
+      "ServiceServoRuntimeCompletion::complete_success": "f0a201fc8cc104198243ae7667d8550be93705f4c5dcd03e2924625f99a50b3c",
       "ServiceServoRuntimeCompletion::complete_error": "de503ab8bd6d071fc93ff3d900cd8127729612e3e4b0436641a64c80bbd7f9cd",
       "ServiceServoRuntimeBridge::pump_one": "d5f5029817e6a9d4ead417c7c233f5368ddbb395ebd94708c2970698565c1db7",
       "ServiceServoRuntimeBridge::take_command": "32eb5df346e7a21efacbed9c007c5995dc1e93290ba4a4af4008dc8aeeaab64e",
       "ServiceServoRuntimeBridge::next_wake_deadline": "052563c1845f4f36c7d16e1f86cc3f88a7483ace643c4046df38dcf027d93157",
       "ServiceServoRuntimeBridge::retire": "ccd8521a33d99bfa541f14aec82bb4ef81c1ad17bf734c5e9954c34d52dfc44d",
-      "closed_immutable_service_runtime_pair": "0617fdf9d810018d40bccd8aef8eac1d5f6703ce992566b9840255ada90394d2"
+      "closed_immutable_service_runtime_pair": "5285a91e3a7872300fba48116ee0e6c965cf60fe7d7d195380d9ade85e84b6ac"
     }
   },
   "finite_parent_inverse": {
@@ -141,7 +141,7 @@
     "raw_endpoint_or_completion_escape": false,
     "fake_binding_or_observed_principal_approval": false,
     "scope_selection": "P2A private nested opaque core constructor NOT_IMPLEMENTED; only genuine original Binding/verifier on exact same engine Arc/session, fresh private nonce. No caller proof flag.",
-    "current_pair": "session=None and registration=None. No genuine owning slot is minted and no approved native command can be emitted by this P2B foundation.",
+    "current_pair": "session OnceLock is empty and registration None. No genuine owning slot is minted and no approved native command can be emitted by this P2B foundation.",
     "source_inside_final_pipeline": true,
     "original_pair_deadline_and_closed_URL_preserved": true,
     "async_proof": "capture original readonly scope once; no late registrar lookup; readonly Arc does not prolong Agent/Owner custody",
@@ -154,7 +154,9 @@
     "future_privacy_layout": "P2A core nested child of service_event_loop; ServoActor nested child of service_runtime. No public/pub(crate) registrar or raw getter is necessary.",
     "Drop": "local deny-only closure before old token drop; no Source filesystem refresh or inferred external effect rollback",
     "actual_original_clock_correspondence": "with_original_pair returns original P1 ceiling; every scope current requires exact equality to captured original_deadline, dispatch <= it",
-    "canonical_container_binding": "NOT_IMPLEMENTED: P2A must bind entire canonical BrowserRequest digest, session and operation from genuine original Binding on same engine; request ID text does not authorize registration or callback replay."
+    "canonical_container_binding": "NOT_IMPLEMENTED: P2A must bind entire canonical BrowserRequest digest, session and operation from genuine original Binding on same engine; request ID text does not authorize registration or callback replay.",
+    "immutable_service_session": "OnceLock<Arc<ApprovedServiceSessionVerifier>>, nonblocking get; P2A genuine original constructor may set exactly once. No Service session rebind or inherited Session Mutex.",
+    "creator_before_mutable_registration": "captured session.ensure_current runs actual P1 creator/namespace before continuity; State bound service_current full P1 before registration.lock, unbound capture rejects before lock. Denial/Drop never clears registration using a lock."
   },
   "API_preconditions_and_errors": {
     "factory": "creates unused fixed closed mechanism pair only; no approved Source, session, principal, URL/profile choice or future Instant parameter",
@@ -178,5 +180,9 @@
     "create_requires_exact_fixed_ephemeral_profile",
     "thin_unbound_pair_has_no_service_command_or_native_health",
     "thin_endpoint_drop_does_not_reopen_or_replay"
-  ]
+  ],
+  "legacy_inverse_parent": {
+    "head": "5aac2a8503c9d3b84fbb81a803edd22025d52656",
+    "tree": "bc641092b05a96163b8d96af01ddd331bffa9dff"
+  }
 }

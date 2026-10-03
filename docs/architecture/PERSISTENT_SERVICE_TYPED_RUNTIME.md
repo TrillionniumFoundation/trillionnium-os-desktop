@@ -6,6 +6,13 @@ The constructor leaves session and registration empty. An unbound pair never
 produces an approved command. No observed principal, supplied callback runtime,
 public registrar, raw endpoint or raw completion is accepted.
 
+Session is a nonblocking OnceLock, fixed once by the later genuine Core. Before
+any mutable registration lock, a bound service runs its actual P1 creator and
+PID namespace checks. A captured scope checks that original session before its
+continuity reads. Numeric PID comparison alone does not prove the creator.
+Unbound capture refuses before touching registration; permanent retirement
+closes admission without acquiring the registration lock during denial/Drop.
+
 The versioned API inventory and preconditions are in
 `contracts/approved-service-runtime.v2.json`. Its mandatory Source checker pins
 both full production children, all function tokens, 21 public APIs, 8 opaque

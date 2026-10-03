@@ -28,25 +28,43 @@ pub struct ServiceServoRuntimeCommand {
 }
 
 impl ServiceServoRuntimeCommand {
-    pub fn into_parts(self) -> (Option<PageOwnerSnapshot>, ServoRuntimeOperation, ServiceServoRuntimeCompletion) {
+    pub fn into_parts(
+        self,
+    ) -> (
+        Option<PageOwnerSnapshot>,
+        ServoRuntimeOperation,
+        ServiceServoRuntimeCompletion,
+    ) {
         let (owner, message, completion) = self.inner.into_parts();
         let operation = match message {
             BrowserActorMessage::Health => ServoRuntimeOperation::Health,
-            BrowserActorMessage::CreateSession { session_id, profile } => {
-                ServoRuntimeOperation::CreateSession { session_id, profile }
-            }
+            BrowserActorMessage::CreateSession {
+                session_id,
+                profile,
+            } => ServoRuntimeOperation::CreateSession {
+                session_id,
+                profile,
+            },
             BrowserActorMessage::Snapshot => ServoRuntimeOperation::Snapshot,
             BrowserActorMessage::Close => ServoRuntimeOperation::Close,
             BrowserActorMessage::Observe { fields } => ServoRuntimeOperation::Observe { fields },
             // The underlying opaque closed bridge never emits these values.
             // Refuse rather than choosing another native operation on drift.
-            BrowserActorMessage::Navigate { .. } | BrowserActorMessage::Wait { .. }
-            | BrowserActorMessage::Extract { .. } | BrowserActorMessage::Act { .. } => {
-                let _ = completion.complete(Err(RuntimeFailure::PolicyDenied("closed service mapping refused")));
+            BrowserActorMessage::Navigate { .. }
+            | BrowserActorMessage::Wait { .. }
+            | BrowserActorMessage::Extract { .. }
+            | BrowserActorMessage::Act { .. } => {
+                let _ = completion.complete(Err(RuntimeFailure::PolicyDenied(
+                    "closed service mapping refused",
+                )));
                 panic!("closed service bridge emitted an excluded operation");
             }
         };
-        (owner, operation, ServiceServoRuntimeCompletion { inner: completion })
+        (
+            owner,
+            operation,
+            ServiceServoRuntimeCompletion { inner: completion },
+        )
     }
 }
 
@@ -71,11 +89,22 @@ impl ServiceServoRuntimeCompletion {
     }
 
     pub fn ensure_current_request(&self) -> Result<(), ServoRuntimeError> {
-        self.inner.ensure_current_request().map_err(map_runtime_error)
+        self.inner
+            .ensure_current_request()
+            .map_err(map_runtime_error)
     }
 
-    pub fn complete_success(self, result: JsonObject, current_url: Option<String>) -> ServoCompletionDelivery {
-        self.inner.complete(Ok(RuntimeReply { result, current_url })).into()
+    pub fn complete_success(
+        self,
+        result: JsonObject,
+        current_url: Option<String>,
+    ) -> ServoCompletionDelivery {
+        self.inner
+            .complete(Ok(RuntimeReply {
+                result,
+                current_url,
+            }))
+            .into()
     }
 
     pub fn complete_error(self, error: ServoRuntimeError) -> ServoCompletionDelivery {
@@ -100,7 +129,9 @@ impl ServiceServoRuntimeBridge {
     }
 
     pub fn take_command(&mut self) -> Option<ServiceServoRuntimeCommand> {
-        self.inner.take_command().map(|inner| ServiceServoRuntimeCommand { inner })
+        self.inner
+            .take_command()
+            .map(|inner| ServiceServoRuntimeCommand { inner })
     }
 
     pub fn next_wake_deadline(&self) -> Option<Instant> {
@@ -117,8 +148,14 @@ impl ServiceServoRuntimeBridge {
 pub fn closed_immutable_service_runtime_pair(
     waker: Arc<dyn ServoEventLoopWaker>,
 ) -> (ServiceServoRuntimeEndpoint, ServiceServoRuntimeBridge) {
-    let (endpoint, bridge) = closed_immutable_service_engine_pair(Arc::new(ServoWakerAdapter(waker)));
-    (ServiceServoRuntimeEndpoint { inner: Some(endpoint) }, ServiceServoRuntimeBridge { inner: bridge })
+    let (endpoint, bridge) =
+        closed_immutable_service_engine_pair(Arc::new(ServoWakerAdapter(waker)));
+    (
+        ServiceServoRuntimeEndpoint {
+            inner: Some(endpoint),
+        },
+        ServiceServoRuntimeBridge { inner: bridge },
+    )
 }
 
 #[cfg(test)]

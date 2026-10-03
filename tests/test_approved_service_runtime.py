@@ -3,6 +3,7 @@ import copy
 import json
 import os
 from pathlib import Path
+import re
 import tempfile
 import unittest
 
@@ -85,6 +86,12 @@ SIMULATION = 'crates/hepta-browser-actor-simulation/src/engine_dispatch/event_lo
 SERVO = 'crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs'
 MUTANTS = [
     (SIMULATION, 'self.session.ensure_current()', 'Ok::<(), hepta_peer_attestation::ApprovedPolicyError>(())'),
+    (SIMULATION, 'session: OnceLock<Arc<ApprovedServiceSessionVerifier>>',
+     'session: Mutex<Option<Arc<ApprovedServiceSessionVerifier>>>'),
+    (SIMULATION, 'self.service_current()?;', 'self.creator()?;'),
+    (SIMULATION, 'if self.session.get().is_none()', 'if false'),
+    (SIMULATION, 'let bound = engine.session.get().ok_or(RuntimeFailure::PeerIdentityRevoked)?;',
+     'let bound = engine.session.wait();'),
     (SIMULATION, 'original_deadline != self.original_deadline', 'false'),
     (SIMULATION, '!Arc::ptr_eq(&origin, engine)', 'false'),
     (SIMULATION, '!Arc::ptr_eq(&registration.nonce, &scope.nonce)', 'false'),
@@ -98,7 +105,7 @@ MUTANTS = [
     (SIMULATION, '.and_then(|reply| active.scope.current(&self.state).map(|()| reply))',
      '.or_else(|_| Ok(RuntimeReply { result: Default::default(), current_url: None }))'),
     (SIMULATION, 'self.state.closed.store(true, Ordering::SeqCst)', 'self.state.closed.store(false, Ordering::SeqCst)'),
-    (SIMULATION, 'session: Mutex::new(None)', 'session: Mutex::new(caller_session)'),
+    (SIMULATION, 'session: OnceLock::new()', 'session: caller_session'),
     (SIMULATION, 'inner: Option<EngineThreadRuntime>', 'pub inner: Option<EngineThreadRuntime>'),
     (SIMULATION, 'inner: Option<EngineCompletion>', 'pub inner: Option<EngineCompletion>'),
     (SERVO, 'inner: Option<ServiceEngineEndpoint>', 'pub inner: Option<ServiceEngineEndpoint>'),
@@ -112,8 +119,13 @@ MUTANTS = [
 def mutation_test(path, old, new):
     def test(self):
         texts = gate.inputs()
-        self.assertIn(old, texts[path])
-        texts[path] = texts[path].replace(old, new, 1)
+        # Rustfmt may break a fixed expression across lines. Match only its
+        # exact identifiers/punctuation and literal bytes, allowing whitespace.
+        parts = re.findall(r'"(?:\\.|[^"\\])*"|[A-Za-z_][A-Za-z_0-9]*|[0-9]+|[^\s]', old)
+        pattern = r'\s*'.join(re.escape(part) for part in parts)
+        self.assertRegex(texts[path], pattern)
+        texts[path], count = re.subn(pattern, lambda _: new, texts[path], count=1)
+        self.assertEqual(count, 1)
         with self.assertRaises(ValueError):
             gate.check(json.loads(json.dumps(gate.EXPECTED)), texts)
     return test

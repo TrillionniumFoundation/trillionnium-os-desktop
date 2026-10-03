@@ -3,7 +3,7 @@
 //! from a genuine original request. No registrar or raw endpoint is exported.
 use super::*;
 use hepta_peer_attestation::{ApprovedServiceRequestVerifier, ApprovedServiceSessionVerifier};
-use std::sync::{Mutex, Weak};
+use std::sync::{Mutex, OnceLock, Weak};
 
 struct RegistrationNonce;
 
@@ -21,26 +21,41 @@ struct ServiceDispatchScope {
 impl ServiceDispatchScope {
     fn current(&self, engine: &Arc<ServiceEngineState>) -> Result<(), RuntimeFailure> {
         engine.creator()?;
-        let origin = self.engine.upgrade().ok_or(RuntimeFailure::BrowserCrashed)?;
+        // The captured P1 creator/namespace proof precedes any inherited
+        // mutable registration lock. Numeric PID alone is not that proof.
+        self.session
+            .ensure_current()
+            .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        let origin = self
+            .engine
+            .upgrade()
+            .ok_or(RuntimeFailure::BrowserCrashed)?;
         if !Arc::ptr_eq(&origin, engine) || engine.closed.load(Ordering::SeqCst) {
             return Err(RuntimeFailure::BrowserCrashed);
         }
-        let bound = engine.session.lock().map_err(|_| RuntimeFailure::BrowserCrashed)?;
-        let bound = bound.as_ref().ok_or(RuntimeFailure::PeerIdentityRevoked)?;
+        let bound = engine
+            .session
+            .get()
+            .ok_or(RuntimeFailure::PeerIdentityRevoked)?;
         if !Arc::ptr_eq(bound, &self.session) {
             return Err(RuntimeFailure::PeerIdentityRevoked);
         }
-        self.session.ensure_current().map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
-        if self.dispatch_deadline > self.original_deadline || Instant::now() >= self.dispatch_deadline {
+        if self.dispatch_deadline > self.original_deadline
+            || Instant::now() >= self.dispatch_deadline
+        {
             return Err(RuntimeFailure::DeadlineExceeded);
         }
-        self.request.with_original_pair(&self.session, |_, _, _, original_deadline| {
-            if original_deadline != self.original_deadline {
-                return Err(RuntimeFailure::PeerIdentityRevoked);
-            }
-            Ok(())
-        }).map_err(|_| RuntimeFailure::PeerIdentityRevoked)??;
-        self.session.ensure_current().map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        self.request
+            .with_original_pair(&self.session, |_, _, _, original_deadline| {
+                if original_deadline != self.original_deadline {
+                    return Err(RuntimeFailure::PeerIdentityRevoked);
+                }
+                Ok(())
+            })
+            .map_err(|_| RuntimeFailure::PeerIdentityRevoked)??;
+        self.session
+            .ensure_current()
+            .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
         if Instant::now() >= self.dispatch_deadline {
             return Err(RuntimeFailure::DeadlineExceeded);
         }
@@ -57,7 +72,7 @@ struct ServiceEngineState {
     creator_pid: u32,
     creator_thread: ThreadId,
     closed: Arc<AtomicBool>,
-    session: Mutex<Option<Arc<ApprovedServiceSessionVerifier>>>,
+    session: OnceLock<Arc<ApprovedServiceSessionVerifier>>,
     registration: Mutex<Option<ServiceRegistration>>,
 }
 
@@ -74,17 +89,30 @@ impl ServiceEngineState {
         if self.closed.load(Ordering::SeqCst) {
             return Err(RuntimeFailure::BrowserCrashed);
         }
-        if let Some(session) = self.session.lock().map_err(|_| RuntimeFailure::BrowserCrashed)?.as_ref() {
+        if let Some(session) = self.session.get() {
             // P1 checks its original creator namespace before policy/Owner I/O.
-            session.ensure_current().map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+            session
+                .ensure_current()
+                .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
         }
         Ok(())
     }
 
-    fn capture(self: &Arc<Self>, call: &PendingCall) -> Result<Arc<ServiceDispatchScope>, RuntimeFailure> {
+    fn capture(
+        self: &Arc<Self>,
+        call: &PendingCall,
+    ) -> Result<Arc<ServiceDispatchScope>, RuntimeFailure> {
         self.service_current()?;
-        let registration = self.registration.lock().map_err(|_| RuntimeFailure::BrowserCrashed)?
-            .take().ok_or(RuntimeFailure::PeerIdentityRevoked)?;
+        if self.session.get().is_none() {
+            // Unbound calls never query a possibly inherited mutable lock.
+            return Err(RuntimeFailure::PeerIdentityRevoked);
+        }
+        let registration = self
+            .registration
+            .lock()
+            .map_err(|_| RuntimeFailure::BrowserCrashed)?
+            .take()
+            .ok_or(RuntimeFailure::PeerIdentityRevoked)?;
         let scope = registration.scope;
         if !Arc::ptr_eq(&registration.nonce, &scope.nonce)
             || scope.request_id != call.control.request_id
@@ -130,7 +158,13 @@ pub struct ServiceEngineCommand {
 }
 
 impl ServiceEngineCommand {
-    pub fn into_parts(self) -> (Option<PageOwnerSnapshot>, BrowserActorMessage, ServiceEngineCompletion) {
+    pub fn into_parts(
+        self,
+    ) -> (
+        Option<PageOwnerSnapshot>,
+        BrowserActorMessage,
+        ServiceEngineCompletion,
+    ) {
         (self.owner, self.message, self.completion)
     }
 }
@@ -168,12 +202,17 @@ impl ServiceEngineCompletion {
 
     pub fn ensure_current_request(&self) -> Result<(), RuntimeFailure> {
         self.scope.current(&self.engine)?;
-        self.inner.as_ref().ok_or(RuntimeFailure::BrowserCrashed)?.ensure_current_peer()?;
+        self.inner
+            .as_ref()
+            .ok_or(RuntimeFailure::BrowserCrashed)?
+            .ensure_current_peer()?;
         self.scope.current(&self.engine)
     }
 
     pub fn complete(mut self, result: Result<RuntimeReply, RuntimeFailure>) -> CompletionDelivery {
-        let result = self.ensure_current_request().and(result)
+        let result = self
+            .ensure_current_request()
+            .and(result)
             .and_then(|reply| bound_reply(reply, EngineUrlScope::ClosedImmutableReadOnly))
             .and_then(|reply| self.ensure_current_request().map(|()| reply));
         let Some(inner) = self.inner.take() else {
@@ -278,22 +317,45 @@ impl ServiceEngineBridge {
         let (sender, completion) = mpsc::sync_channel(1);
         let valid = Arc::new(AtomicBool::new(true));
         let token = EngineCompletion {
-            sender: Some(sender), valid: valid.clone(), closed: self.state.closed.clone(),
-            control: call.control.clone(), waker: self.waker.clone(),
+            sender: Some(sender),
+            valid: valid.clone(),
+            closed: self.state.closed.clone(),
+            control: call.control.clone(),
+            waker: self.waker.clone(),
             url_scope: EngineUrlScope::ClosedImmutableReadOnly,
         };
-        self.active = Some(ServiceActiveCall { call, scope: scope.clone(), completion, valid });
-        let owner = self.active.as_ref().expect("active service call installed").call.owner.clone();
+        self.active = Some(ServiceActiveCall {
+            call,
+            scope: scope.clone(),
+            completion,
+            valid,
+        });
+        let owner = self
+            .active
+            .as_ref()
+            .expect("active service call installed")
+            .call
+            .owner
+            .clone();
         self.command = Some(ServiceEngineCommand {
-            owner, message,
-            completion: ServiceEngineCompletion { inner: Some(token), engine: self.state.clone(), scope },
+            owner,
+            message,
+            completion: ServiceEngineCompletion {
+                inner: Some(token),
+                engine: self.state.clone(),
+                scope,
+            },
         });
         self.poll_active()
     }
 
     fn poll_active(&mut self) -> CallbackPumpResult {
-        let active = self.active.as_ref().expect("service poll requires active call");
-        if let Err(error) = self.owner_current()
+        let active = self
+            .active
+            .as_ref()
+            .expect("service poll requires active call");
+        if let Err(error) = self
+            .owner_current()
             .and_then(|()| active.scope.current(&self.state))
             .and_then(|()| active.call.control.ensure_active())
         {
@@ -307,7 +369,9 @@ impl ServiceEngineBridge {
         };
         // This is the service pipeline itself, not an outer check around the
         // legacy poll. Keep the captured proof through the final result chain.
-        let result = active.scope.current(&self.state)
+        let result = active
+            .scope
+            .current(&self.state)
             .and_then(|()| active.call.control.ensure_current_peer())
             .and(result)
             .and_then(|reply| bound_reply(reply, EngineUrlScope::ClosedImmutableReadOnly))
@@ -315,13 +379,19 @@ impl ServiceEngineBridge {
             .and_then(|reply| active.call.control.ensure_active().map(|()| reply))
             .map_err(redact_failure);
         let uncertain = result.as_ref().is_err_and(is_uncertain_failure);
-        let active = self.active.take().expect("service active call remains installed");
+        let active = self
+            .active
+            .take()
+            .expect("service active call remains installed");
         active.valid.store(false, Ordering::SeqCst);
         // Pre/post samples cannot make Source mutation atomic with this send.
         // A post failure retains uncertainty and retires; it never claims the
         // buffered value was not physically written or clears product history.
         let sent = active.call.reply.try_send(result);
-        let current = active.call.control.ensure_active()
+        let current = active
+            .call
+            .control
+            .ensure_active()
             .and_then(|()| active.scope.current(&self.state));
         if sent.is_err() || uncertain || current.is_err() {
             self.retire();
@@ -340,7 +410,10 @@ impl ServiceEngineBridge {
 
     pub fn take_command(&mut self) -> Option<ServiceEngineCommand> {
         if self.owner_current().is_err()
-            || self.command.as_ref().is_some_and(|command| command.completion.ensure_current_request().is_err())
+            || self
+                .command
+                .as_ref()
+                .is_some_and(|command| command.completion.ensure_current_request().is_err())
         {
             self.retire();
             return None;
@@ -349,7 +422,9 @@ impl ServiceEngineBridge {
     }
 
     pub fn next_wake_deadline(&self) -> Option<Instant> {
-        self.active.as_ref().map(|active| active.scope.dispatch_deadline)
+        self.active
+            .as_ref()
+            .map(|active| active.scope.dispatch_deadline)
     }
 
     pub fn retire(&mut self) {
@@ -361,15 +436,17 @@ impl ServiceEngineBridge {
         if let Some(active) = self.active.take() {
             active.valid.store(false, Ordering::SeqCst);
             active.call.control.cancel();
-            let _ = active.call.reply.try_send(Err(RuntimeFailure::BrowserCrashed));
+            let _ = active
+                .call
+                .reply
+                .try_send(Err(RuntimeFailure::BrowserCrashed));
         }
         self.command.take();
         if let Ok(call) = self.receiver.try_recv() {
             call.control.cancel();
         }
-        if let Ok(mut registration) = self.state.registration.lock() {
-            registration.take();
-        }
+        // closed permanently refuses the retained registration. Denial/Drop
+        // must not acquire an inherited registration lock after Source refusal.
     }
 }
 
@@ -381,12 +458,19 @@ impl Drop for ServiceEngineBridge {
 
 fn closed_operation(operation: &BrowserOperation) -> Result<(), RuntimeFailure> {
     match operation {
-        BrowserOperation::Health | BrowserOperation::SessionSnapshot
-        | BrowserOperation::PageObserve { .. } | BrowserOperation::SessionClose => Ok(()),
+        BrowserOperation::Health
+        | BrowserOperation::SessionSnapshot
+        | BrowserOperation::PageObserve { .. }
+        | BrowserOperation::SessionClose => Ok(()),
         BrowserOperation::SessionCreate { profile, .. }
             if profile.profile_id == "immutable-read-only-v1"
-                && profile.persistence == hepta_browser_codec::ProfilePersistence::Ephemeral => Ok(()),
-        _ => Err(RuntimeFailure::PolicyDenied("closed service operation refused")),
+                && profile.persistence == hepta_browser_codec::ProfilePersistence::Ephemeral =>
+        {
+            Ok(())
+        }
+        _ => Err(RuntimeFailure::PolicyDenied(
+            "closed service operation refused",
+        )),
     }
 }
 
@@ -401,16 +485,33 @@ pub fn closed_immutable_service_engine_pair(
     let closed = Arc::new(AtomicBool::new(false));
     let owner_thread = thread::current().id();
     let state = Arc::new(ServiceEngineState {
-        creator_pid: std::process::id(), creator_thread: owner_thread,
-        closed: closed.clone(), session: Mutex::new(None), registration: Mutex::new(None),
+        creator_pid: std::process::id(),
+        creator_thread: owner_thread,
+        closed: closed.clone(),
+        session: OnceLock::new(),
+        registration: Mutex::new(None),
     });
     let endpoint = EngineThreadRuntime {
-        sender, closed, owner_thread, waker: waker.clone(), url_scope: EngineUrlScope::ClosedImmutableReadOnly,
+        sender,
+        closed,
+        owner_thread,
+        waker: waker.clone(),
+        url_scope: EngineUrlScope::ClosedImmutableReadOnly,
     };
     (
-        ServiceEngineEndpoint { inner: Some(endpoint), state: state.clone() },
-        ServiceEngineBridge { receiver, state, waker, active: None, command: None,
-                              retired: false, _thread_affinity: PhantomData },
+        ServiceEngineEndpoint {
+            inner: Some(endpoint),
+            state: state.clone(),
+        },
+        ServiceEngineBridge {
+            receiver,
+            state,
+            waker,
+            active: None,
+            command: None,
+            retired: false,
+            _thread_affinity: PhantomData,
+        },
     )
 }
 
@@ -448,7 +549,9 @@ mod tests {
                 condition: hepta_browser_codec::WaitCondition::DocumentReady,
                 timeout_ms: 1,
             },
-            BrowserOperation::PageExtract { schema_id: "not-approved".into() },
+            BrowserOperation::PageExtract {
+                schema_id: "not-approved".into(),
+            },
         ] {
             assert!(closed_operation(&operation).is_err());
         }
@@ -458,19 +561,31 @@ mod tests {
     fn create_requires_exact_fixed_ephemeral_profile() {
         for (id, persistence) in [
             ("wrong", hepta_browser_codec::ProfilePersistence::Ephemeral),
-            ("immutable-read-only-v1", hepta_browser_codec::ProfilePersistence::Persistent),
+            (
+                "immutable-read-only-v1",
+                hepta_browser_codec::ProfilePersistence::Persistent,
+            ),
         ] {
-            assert!(closed_operation(&BrowserOperation::SessionCreate {
-                profile: hepta_browser_codec::ProfileSpec { profile_id: id.into(), persistence },
-                ui_mode: "headed".into(),
-            }).is_err());
+            assert!(
+                closed_operation(&BrowserOperation::SessionCreate {
+                    profile: hepta_browser_codec::ProfileSpec {
+                        profile_id: id.into(),
+                        persistence
+                    },
+                    ui_mode: "headed".into(),
+                })
+                .is_err()
+            );
         }
-        assert!(closed_operation(&BrowserOperation::SessionCreate {
-            profile: hepta_browser_codec::ProfileSpec {
-                profile_id: "immutable-read-only-v1".into(),
-                persistence: hepta_browser_codec::ProfilePersistence::Ephemeral,
-            },
-            ui_mode: "headed".into(),
-        }).is_ok());
+        assert!(
+            closed_operation(&BrowserOperation::SessionCreate {
+                profile: hepta_browser_codec::ProfileSpec {
+                    profile_id: "immutable-read-only-v1".into(),
+                    persistence: hepta_browser_codec::ProfilePersistence::Ephemeral,
+                },
+                ui_mode: "headed".into(),
+            })
+            .is_ok()
+        );
     }
 }
