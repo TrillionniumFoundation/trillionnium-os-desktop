@@ -158,6 +158,106 @@ class RequiredContextSourceTests(unittest.TestCase):
                       self.texts[path].replace("\njobs:\n", "\njobs:\njobs:\n")):
             texts = dict(self.texts); texts[path] = value; self.refuse(texts=texts)
 
+    def test_in_check_added_unlisted_workflow_refuses_and_closes_all_readers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.private_source(directory); old_check = gate.check
+            before = len(list(Path("/proc/self/fd").iterdir()))
+            def added(catalog, texts):
+                result = old_check(catalog, texts)
+                (root / ".github/workflows/unreviewed.yml").write_text("jobs: {}\n")
+                return result
+            with patch.object(gate, "check", added):
+                with self.assertRaisesRegex(ValueError, "workflow directory changed"):
+                    gate.validate(root)
+            self.assertEqual(len(list(Path("/proc/self/fd").iterdir())), before)
+
+    def test_in_check_removed_visible_non_yaml_entry_refuses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.private_source(directory); extra = root / ".github/workflows/source-note"
+            extra.write_text("visible entries count even without a YAML suffix\n")
+            old_check = gate.check
+            def removed(catalog, texts):
+                result = old_check(catalog, texts); extra.unlink(); return result
+            with patch.object(gate, "check", removed):
+                with self.assertRaisesRegex(ValueError, "workflow directory changed"):
+                    gate.validate(root)
+
+    def test_in_check_removed_workflow_refuses_and_closes_all_readers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.private_source(directory); old_check = gate.check
+            before = len(list(Path("/proc/self/fd").iterdir()))
+            def removed(catalog, texts):
+                result = old_check(catalog, texts)
+                (root / ".github/workflows/ci.yml").unlink(); return result
+            with patch.object(gate, "check", removed):
+                with self.assertRaises((OSError, ValueError)): gate.validate(root)
+            self.assertEqual(len(list(Path("/proc/self/fd").iterdir())), before)
+
+    def test_directory_replacement_after_leaf_checks_refuses_real_filesystem(self):
+        # Mutate at the final inventory call, after all original leaf identity
+        # checks, so this exercises the added directory check itself.
+        for shape in ("real-directory", "symlink"):
+            with self.subTest(shape=shape), tempfile.TemporaryDirectory() as directory:
+                root = self.private_source(directory); workflow_dir = root / ".github/workflows"
+                old_snapshot = gate.workflow_directory_snapshot; calls = []
+                before = len(list(Path("/proc/self/fd").iterdir()))
+                def replaced(path):
+                    calls.append(path)
+                    if len(calls) == 2:
+                        saved = root / ".github/original-workflows"; workflow_dir.rename(saved)
+                        if shape == "symlink": workflow_dir.symlink_to(saved, target_is_directory=True)
+                        else: shutil.copytree(saved, workflow_dir)
+                    return old_snapshot(path)
+                with patch.object(gate, "workflow_directory_snapshot", replaced):
+                    with self.assertRaisesRegex(ValueError, "workflow (?:directory changed|inventory requires a real directory)"):
+                        gate.validate(root)
+                self.assertEqual(len(calls), 2)
+                self.assertEqual(len(list(Path("/proc/self/fd").iterdir())), before)
+
+    def test_all_visible_entries_are_bounded_with_early_stop(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.private_source(directory); workflow_dir = root / ".github/workflows"
+            for i in range(20): (workflow_dir / ("non-yaml-" + str(i))).write_text("entry\n")
+            original_scandir = gate.os.scandir; advances = []; closed = []
+            class CountedEntries:
+                def __enter__(self):
+                    self.entries = original_scandir(workflow_dir); self.entries.__enter__(); return self
+                def __exit__(self, *args):
+                    try: return self.entries.__exit__(*args)
+                    finally: closed.append(True)
+                def __iter__(self): return self
+                def __next__(self):
+                    entry = next(self.entries); advances.append(entry.name); return entry
+            before = len(list(Path("/proc/self/fd").iterdir()))
+            with patch.object(gate.os, "scandir", lambda path: CountedEntries()):
+                with self.assertRaisesRegex(ValueError, "visible-entry bound"): gate.validate(root)
+            self.assertEqual(len(advances), gate.MAX_DIRECTORY_ENTRIES + 1)
+            self.assertEqual(closed, [True])
+            self.assertEqual(len(list(Path("/proc/self/fd").iterdir())), before)
+
+    def test_enumeration_itself_detects_actual_directory_entry_change(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.private_source(directory); workflow_dir = root / ".github/workflows"
+            original_scandir = gate.os.scandir
+            class AddedDuringIteration:
+                def __enter__(self):
+                    self.entries = original_scandir(workflow_dir); self.entries.__enter__(); return self
+                def __exit__(self, *args): return self.entries.__exit__(*args)
+                def __iter__(self): return self
+                def __next__(self):
+                    entry = next(self.entries)
+                    (workflow_dir / "in-enumeration-note").write_text("changed directory\n")
+                    return entry
+            with patch.object(gate.os, "scandir", lambda path: AddedDuringIteration()):
+                with self.assertRaisesRegex(ValueError, "directory changed during inventory enumeration"):
+                    gate.validate(root)
+
+    def test_visible_entry_bound_is_closed_and_rejects_numeric_aliases(self):
+        for wrong in (29, 27, True, 28.0, "28"):
+            value = copy.deepcopy(self.catalog)
+            value["profile"]["limits"]["directory_visible_entries"] = wrong
+            with self.subTest(wrong=wrong): self.refuse(catalog=value)
+
 
 if __name__ == "__main__":
     unittest.main()

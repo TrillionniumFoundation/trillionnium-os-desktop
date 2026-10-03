@@ -48,8 +48,13 @@ unreviewed edits to source, catalog and validator.
 Reads retain managed regular-file owners through final source inventory
 validation; symlinks, multiple hard links, duplicate JSON keys, changed source
 identity and files above 128 KiB are rejected. The fixed inventory is bounded
-to 28 files and 64 jobs. This local snapshot does not promise that files remain
-unchanged after return or that all asynchronous mutation windows are closed.
+to 28 files and 64 jobs. Initial and final workflow-directory inventories must
+also retain the same directory identity, metadata and visible-entry names;
+enumeration stops and rejects at the 29th visible entry, including non-YAML
+entries. These checks reject an unlisted workflow added during validation,
+a removed entry or a replaced directory before return. This local snapshot
+does not promise that files remain unchanged after return or that all
+asynchronous mutation windows are closed.
 `tests/test_ci_required_contexts.py` exercises actual source files, hostile
 catalog variants, matrix/name/run/condition mutations and real filesystem
 replacement. Original test assertions are retained.

@@ -10,8 +10,10 @@ from __future__ import annotations
 from contextlib import ExitStack
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import stat
 import sys
 
 try:
@@ -22,6 +24,7 @@ except ImportError:
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = "contracts/ci-required-contexts.v1.json"
 MAX_FILE_BYTES = 131072
+MAX_DIRECTORY_ENTRIES = 28
 WORKFLOWS = (
     "agent-port-custody", "agent-transport-reference", "approved-mechanism-policy",
     "authenticated-update-readback", "browser-codec-reference", "ci", "controlled-egress",
@@ -48,7 +51,9 @@ PROFILE = {
     "matrix_expression": MATRIX_EXPRESSION,
     "matrix_lanes": {"pull_request": ["head", "prospective-merge"], "push": ["head"],
                      "workflow_dispatch": ["head"]},
-    "limits": {"files": 28, "file_bytes": MAX_FILE_BYTES, "jobs": 64, "context_utf8_bytes": 128},
+    "limits": {"files": 28, "file_bytes": MAX_FILE_BYTES,
+               "directory_visible_entries": MAX_DIRECTORY_ENTRIES,
+               "jobs": 64, "context_utf8_bytes": 128},
     "administration": {"status": "PROPOSAL_REQUIRES_CURRENT_HOSTED_READBACK_AND_ADMIN_REVIEW",
                        "strict_up_to_date_proposed": True, "any_application_allowed": False,
                        "apply_entire_inventory_as_global_requirements": False,
@@ -158,11 +163,36 @@ def check(catalog: object, texts: dict[str, str]) -> dict[str, object]:
             "hosted_names_observed": False, "G0_closed": False, "production_ready": False}
 
 
+def source_identity(metadata: os.stat_result) -> tuple[int, ...]:
+    return (metadata.st_dev, metadata.st_ino, metadata.st_mode, metadata.st_nlink,
+            metadata.st_size, metadata.st_mtime_ns, metadata.st_ctime_ns)
+
+
+def workflow_directory_snapshot(directory: Path) -> tuple[tuple[int, ...], tuple[str, ...]]:
+    """Bound every visible entry, and detect identity/metadata drift during enumeration."""
+    before = directory.lstat()
+    if not stat.S_ISDIR(before.st_mode):
+        raise ValueError("CI workflow inventory requires a real directory")
+    names = []
+    # Path.iterdir uses an eager os.listdir on supported Python versions. Keep
+    # iteration finite even when unexpected non-YAML entries fill the directory.
+    with os.scandir(directory) as entries:
+        for entry in entries:
+            if len(names) >= MAX_DIRECTORY_ENTRIES:
+                raise ValueError("CI workflow directory exceeds its visible-entry bound")
+            names.append(entry.name)
+    if source_identity(before) != source_identity(directory.lstat()):
+        raise ValueError("CI workflow directory changed during inventory enumeration")
+    return source_identity(before), tuple(sorted(names))
+
+
 def validate(root: Path = ROOT) -> dict[str, object]:
     root = root.absolute()
     paths = [CONTRACT, *[".github/workflows/" + stem + ".yml" for stem in WORKFLOWS]]
-    actual = sorted(str(p.relative_to(root)) for p in (root / ".github/workflows").iterdir()
-                    if p.suffix in {".yml", ".yaml"})
+    directory = root / ".github/workflows"
+    directory_before = workflow_directory_snapshot(directory)
+    actual = sorted(".github/workflows/" + name for name in directory_before[1]
+                    if Path(name).suffix in {".yml", ".yaml"})
     if actual != sorted(paths[1:]):
         raise ValueError("workflow files differ from the closed catalog")
     documents: dict[str, str] = {}
@@ -181,10 +211,11 @@ def validate(root: Path = ROOT) -> dict[str, object]:
             owners.append((path, reader, before))
         catalog = load_json_strict(documents.pop(CONTRACT))
         result = check(catalog, documents)
-        identity = lambda s: (s.st_dev, s.st_ino, s.st_mode, s.st_nlink, s.st_size, s.st_mtime_ns, s.st_ctime_ns)
         for path, reader, before in owners:
-            if identity(before) != identity(reader.stat()) or identity(before) != identity(path.lstat()):
+            if source_identity(before) != source_identity(reader.stat()) or source_identity(before) != source_identity(path.lstat()):
                 raise ValueError("CI context source changed through final inventory validation")
+        if directory_before != workflow_directory_snapshot(directory):
+            raise ValueError("CI workflow directory changed through final inventory validation")
         return result
 
 
