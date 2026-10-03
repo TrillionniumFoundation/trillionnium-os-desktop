@@ -19,16 +19,7 @@ impl AttestedHandoffReceiver {
         creator(self.owner_pid)?;
         let result = (|| {
             session.ensure_current().map_err(service_error)?;
-            self.ensure_current()?;
-            session
-                .verify_control(
-                    &self
-                        .owner
-                        .as_ref()
-                        .ok_or(ControlOwnerError::ChannelRetired)?
-                        .attested,
-                )
-                .map_err(service_error)?;
+            self.ensure_service_current(session)?;
             let wait = remaining(self.owner_pid, self.deadline)?;
             let transferred = self
                 .channel
@@ -40,10 +31,7 @@ impl AttestedHandoffReceiver {
             // identity and already enables it for all packet/report paths.
             let (received, channel) = transferred.into_parts().map_err(handoff)?;
             let owner = self.owner.take().ok_or(ControlOwnerError::ChannelRetired)?;
-            owner.current()?;
-            session
-                .verify_control(&owner.attested)
-                .map_err(service_error)?;
+            owner.current_for_service(session)?;
             let deadline = received.deadline().map_err(handoff)?;
             let effective = owner.request_deadline(deadline)?;
             let mut custody = ControlRequestCustody::from_control_peer(&owner.attested, effective)?;
@@ -68,6 +56,28 @@ impl AttestedHandoffReceiver {
             Ok(received)
         })();
         self.retire()?;
+        result
+    }
+
+    // Same original cancellation/retirement and deadline behavior as the complete
+    // legacy ensure_current, combined with the actual full selected service check.
+    pub(in crate::control_owner) fn ensure_service_current(
+        &mut self,
+        session: &ServiceSessionState,
+    ) -> Result<Instant, ControlOwnerError> {
+        creator(self.owner_pid)?;
+        let result = if self.cancelled {
+            Err(ControlOwnerError::Cancelled)
+        } else {
+            self.owner
+                .as_ref()
+                .ok_or(ControlOwnerError::ChannelRetired)
+                .and_then(|owner| owner.current_for_service(session))
+                .map(|_| self.deadline)
+        };
+        if result.is_err() {
+            self.retire()?;
+        }
         result
     }
 }

@@ -63,3 +63,46 @@ fail snippets are authored and require independent Rust verification. Default
 activation and installed status remain false. No Cargo, kernel lifecycle,
 Native5, Native60, installed image, hardware, G6 approval or production readiness
 is claimed by this slice.
+
+
+## Joint physical Source boundary
+
+The proposed joint profile selects the genuine f243 original-request bridge and
+corrected 40fd AgentPort custody validators alongside this shared cutoff. The
+physical gate classifies all 694 actual files: the original six complete
+inverses, 672 unchanged d933 files, twelve newly selected complete Source
+objects, the existing two supplemental files, this checker and its canonical
+raw contract. No normalized historical view is accepted as a current physical
+object. Each twelve-file rule requires the exact full current bytes and restores
+the exact full d933 parent with UTF-8 byte offsets. Rejected 8ac section padding
+behavior is not an admitted current object.
+
+Only C's private `_read` applies the separate twelve-file historical inverse.
+Its existing `parent_source` remains whole, so the Native/B/A/C parent chain
+still presents actual f243 original-request modules to P1's independent guard.
+The new reader never grants process identity, request custody or runtime proof.
+The existing mandatory physical checker remains in Makefile exactly once;
+historical C/A/B/Native correspondence cannot replace that physical stage.
+
+The physical reader opens an absolute directory chain with
+`O_NOFOLLOW` and directory descriptors. Relative input components must be
+nonempty and cannot be `.` or `..`. It rejects absolute input names, symbolic
+parent directories and symbolic, hardlinked,
+unbounded or nonregular leaves. It checks the captured leaf's full descriptor
+identity before and after reading and checks the directory lineage before
+closing every descriptor in `finally`. No `resolve()` masks a link under test.
+Directory content timestamps are not process or Source authority.
+
+Raw contract serialization must match the canonical closed object exactly,
+including its one final newline. The checker removes only its exact canonical
+one-line `EXPECTED = json.loads(...)` literal after checking the complete AST
+assignment offsets and full physical line. Extra same-line statements,
+comments, nonliteral/multiline assignments or appended EOF bytes are refused.
+The independent whole rules remain outside the mutable contract envelope.
+
+This joint proposal does not reuse any individual branch's execution result.
+It still requires Root review of every complete file and inverse, actual joint
+Source checks, fresh joint Rust builds/tests/docs/Clippy and the original
+Kernel corpus under unchanged clocks. Installed cross-UID attestation, a
+Native service entry, default activation, image/recovery/HW/HSM and independent
+human approval remain unqualified.

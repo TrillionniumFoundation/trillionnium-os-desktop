@@ -245,6 +245,8 @@ impl Fixture {
             .map(|v| {
                 if v.starts_with(&format!("{role}.unit=")) {
                     format!("{role}.unit=unapproved-role.service\n")
+                } else if v.starts_with(&format!("{role}.cgroup=")) {
+                    format!("{role}.cgroup=/system.slice/unapproved-role.service\n")
                 } else {
                     format!("{v}\n")
                 }

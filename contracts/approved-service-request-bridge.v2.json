@@ -50,9 +50,9 @@
   },
   "whole_production_source_sha256": {
     "crates/hepta-agent-transport/src/accepted_handoff/retained_control/service_control.rs": "7910294fbb13f09f8f9259b2b762cf4cac0a1e187150986a8aa827fa238e4baa",
-    "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs": "13a4140e8d737ff380ade7a512974e87bc3e2eccbf82c7b3af805d40589e0dda",
-    "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs": "d3998c7b14c641f44b33da797fbbb0fde9f9adb5293125cd7982693692be814c",
-    "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs": "e1ab614162f5b940667476a0bae3ed4b04d8af18a1a3d4e59e34a11f17f47405",
+    "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs": "cbe3ff799af0be7dcc5cfa884e9ac43c494c7ce365ae5aa190ff5a9ca85674b6",
+    "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs": "2e4b7669bc2f645ad1ee0ed328ee6cda7f0bed7e2daaaa951ec9a56ef0471de8",
+    "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs": "97acc34300e354f81b348ff8ed82384ef5845c3e8f38bd9e3136e2cfbb77b3dd",
     "crates/hepta-agent-transport/src/root_control_path/service_control.rs": "b5f0ab8b979faf96a2d5c1e3f3bb8a6d1a532ff09cc5a7827b0f6eda90634054"
   },
   "original_source_inverse": {
@@ -577,14 +577,14 @@
       "markers": [
         "session.ensure_current()",
         "connection.consume_service_control_before",
+        "session.original_owner_root_scope()",
         "RetainedRootPath::new(custody, deadline)?",
         "session.control_policy()",
         "ControlPeerOwner::admit",
-        "session.verify_control(&owner.attested)",
+        "owner.current_for_service(session)?",
         "remaining(owner_pid, deadline)?",
         "HandoffReceiver::from_control",
-        "owner.current()?",
-        "session.verify_control(&owner.attested)"
+        "owner.current_for_service(session)?"
       ]
     },
     "AttestedHandoffReceiver::receive_service_control": {
@@ -592,13 +592,11 @@
       "markers": [
         "creator(self.owner_pid)?",
         "session.ensure_current()",
-        "self.ensure_current()?",
-        "session.verify_control",
+        "self.ensure_service_current(session)?",
         "let wait = remaining(self.owner_pid, self.deadline)?",
         "receive_retained_service_control(wait)",
         "transferred.into_parts()",
-        "owner.current()?",
-        "session.verify_control(&owner.attested)",
+        "owner.current_for_service(session)?",
         "owner.request_deadline(deadline)?",
         "custody.retain_root_path",
         "retained.ensure_current()?",
@@ -662,12 +660,17 @@
     "ApprovedServiceReceivedRequest::consume_with_request_binding": {
       "path": "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs",
       "markers": [
-        "self.original_deadline()?",
-        "reporter.ensure_current()?",
-        "binding.state.current",
-        "consumer(stream, deadline, custody, reporter, attested, principal, binding)",
+        "self.binding.slot_current()?",
+        "remaining(self.session.source.creator.pid, self.deadline)?",
+        "let mut received = self",
+        "received.ensure_consume_current()?",
+        "let Self",
+        "} = received",
+        "let principal = session.source.entries[1].principal.as_str()",
+        "let result = consumer(",
         "session.ensure_current()?",
-        "remaining(session.source.creator.pid, deadline)?"
+        "remaining(session.source.creator.pid, deadline)?",
+        "Ok(result)"
       ]
     },
     "ApprovedServiceRetainedReporter::ensure_current": {
@@ -739,6 +742,90 @@
         "if !self.completed",
         "self.scope.current.store(false, Ordering::Release)"
       ]
+    },
+    "ServiceSessionState::original_owner_root_scope": {
+      "path": "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs",
+      "markers": [
+        "self.source.creator_current()?",
+        "Arc::ptr_eq(&self.source, &self.owner.state)",
+        "self.source.inspect()?",
+        "self.owner.original.ensure_alive()",
+        "self.owner.original.original_attested_peer()",
+        "original.attestor.proc_root != Path::new(\"/proc\")",
+        "crate::ExecutableSource::Live",
+        "snapshot.pid != self.source.creator.pid",
+        "snapshot.uid != entry.uid",
+        "snapshot.gid != entry.gid",
+        "snapshot.systemd_unit.as_deref()",
+        "snapshot.cgroup_v2_path != entry.cgroup",
+        "snapshot.executable_sha256 != entry.pin",
+        "self.source.inspect()?",
+        "self.owner.original.ensure_alive()",
+        "self.source.creator_current()?",
+        "if checked.is_err()",
+        "self.source.retired.store(true, Ordering::SeqCst)",
+        "checked"
+      ]
+    },
+    "ServiceSessionState::control_policy": {
+      "path": "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs",
+      "markers": [
+        "self.original_owner_root_scope()?",
+        "let policy = self.source.entries[0].control()?",
+        "self.original_owner_root_scope()?",
+        "Ok(policy)"
+      ]
+    },
+    "ControlPeerOwner::current_for_service": {
+      "path": "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs",
+      "markers": [
+        "creator(self.owner_pid)?",
+        "remaining(self.owner_pid, self.deadline)?",
+        "self.attestor.proc_root != Path::new(\"/proc\")",
+        "crate::ExecutableSource::Live",
+        "!self.approved.is_empty()",
+        "self.root_path.as_ref()",
+        "path.current()?",
+        "session.verify_control(&self.attested)",
+        "path.current()?",
+        "remaining(self.owner_pid, self.deadline)"
+      ]
+    },
+    "AttestedHandoffReceiver::ensure_service_current": {
+      "path": "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs",
+      "markers": [
+        "creator(self.owner_pid)?",
+        "if self.cancelled",
+        "Err(ControlOwnerError::Cancelled)",
+        "self.owner.as_ref().ok_or(ControlOwnerError::ChannelRetired)",
+        "owner.current_for_service(session)",
+        ".map(|_| self.deadline)",
+        "if result.is_err()",
+        "self.retire()?",
+        "result"
+      ]
+    },
+    "ApprovedServiceReceivedRequest::ensure_consume_current": {
+      "path": "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs",
+      "markers": [
+        "self.session.source.creator_current()?",
+        "!Arc::ptr_eq(&self.session, &self.reporter.session)",
+        "!Arc::ptr_eq(&self.session, &self.binding.state.session)",
+        "!Arc::ptr_eq(&self.reporter.slot, &self.binding.slot)",
+        "self.deadline != self.reporter.deadline",
+        "self.deadline != self.binding.state.deadline",
+        "self.reporter.ensure_current()?",
+        "let state = &self.binding.state",
+        "let checked = (||",
+        "remaining(state.session.source.creator.pid, state.deadline)?",
+        "state.retired.load(Ordering::SeqCst)",
+        "state.control.verify_pair_current(&self.binding.original.verifier())",
+        "state.session.ensure_current()?",
+        "remaining(state.session.source.creator.pid, state.deadline)",
+        "if checked.is_err()",
+        "state.retired.store(true, Ordering::SeqCst)",
+        "checked"
+      ]
     }
   },
   "preserved_source_sha256": {
@@ -761,7 +848,7 @@
     "apps/hepta-browserd/tests/control_readiness_kernel.rs": "10d846a7e356056d80895ff01bc82c08504e76fdf422c80ddbb96d27093c2453"
   },
   "kernel_source_sha256": {
-    "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs": "450f7d5698abf2a0200eb432362dc82bc119d64cd1824ffeb97f1358e971527e"
+    "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs": "6f099409079351f5793a669e43f71cd9f0441befaec20f3003e910156ed5c8fa"
   },
   "early_root_transfer": {
     "creation_identity": "original RootPathControlConnection admission capture; no channel-time recapture authority",
@@ -779,5 +866,170 @@
     "previous_source_draft": "93a73c063a6b19e0bb36f438e74465f2190524ca",
     "previous_qualification": "NONE_EARLY_GAP_KNOWN",
     "post_failure_before_T_drop": true
+  },
+  "denial_scope_helper_inventory": {
+    "ServiceSessionState::original_owner_root_scope": {
+      "path": "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs",
+      "signature": "pub(crate) fn original_owner_root_scope(&self) -> Result<(), ApprovedPolicyError>"
+    }
+  },
+  "private_helper_full_tokens_sha256": {
+    "RootPathAttestedHandoffReceiver::from_service_control": "40d5923e6d7237e9f2a0b3e87709e653f5b6180ded9da9d2904e6faa83a37a6f",
+    "RootPathAttestedHandoffReceiver::receive_service_control": "a290425da7df59efcaa4e0c7bb77262c56e96e5cf5d6cd2488826c52c818cf32",
+    "AttestedHandoffReceiver::receive_service_control": "e832350cf1b06b3819ff2261435edb93b3777633265ef21177195bf4d0c64a79",
+    "ServiceSessionState::ensure_current": "fe3acf90888b2016273b0e64d562281105eac9b0747e5def32a6b065e59d0700",
+    "ServiceSessionState::control_policy": "96d709fbdc5d722af5669abd9b1051e4764a1676c19147ccbd507b689d70ac4f",
+    "ServiceSessionState::verify_control": "bb037672973fb753ca44e3096b74a6cbbe2147ecce1f40f3cc9f7d8d60a557c8",
+    "ServiceSessionState::original_owner_root_scope": "a657ae8854f03207f23a2e25dfc7ef2132c4708287a9c5d368a5543f9ac50d38",
+    "ControlPeerOwner::current_for_service": "2f427d5ade33ff1c184eae3e2ba872d80571e8c5770e2a362a735250d2b72fa2",
+    "AttestedHandoffReceiver::ensure_service_current": "6793d5816f8560bb0c34b746590b1b044200eda2771275c3b2f108712cd8f480"
+  },
+  "all_function_body_tokens_sha256": {
+    "crates/hepta-agent-transport/src/accepted_handoff/retained_control/service_control.rs": {
+      "HandoffReceiver::receive_retained_service_control": "fc6434cb56f02d4deb5bba0f8e2f4a29eea9716fcd02260211f38fd7bae3670d",
+      "HandoffSender::send_retained_service_control": "e57e82acc94d53782aab6df31719d2ee3624a55a28ab42f296555fe8370ade15"
+    },
+    "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs": {
+      "ServiceSessionState::ensure_current": "db28511bdedd273cb0fec7608aab9ddfaee43128880afede9cc584fb1fed1f38",
+      "ServiceSessionState::original_owner_root_scope": "ba621e70dbf0d93586ec0115ab29c554981d955116aa1f117331a22b7c3feb12",
+      "ServiceSessionState::control_policy": "d2b0f36ae12599560bad16d485e2a5d24a392701ff5a55cce24de6193c7b2655",
+      "ServiceSessionState::verify_control": "1a6aedc2dafd574a25675b86a5bd3f812e94eac03329a6659a5c576f6f0de176",
+      "Drop:ServiceRequestSlot::drop": "73837881e3eeb4390bd5fcad92dffb5a65f14520f223f4f6bb0c5d4692eaea45",
+      "ServiceRequestState::same_session": "50e48fbe51c6911af07b47affdf513febe7397dfbacffe2522a989e330079025",
+      "ServiceRequestState::current": "c3924afb83c4d19ad72812a8da86a8b9119cc87007bf388e0e462ee389571f00",
+      "ApprovedServiceRequests::from_owner": "b212ec0eead39f8f63f255c2e32427db2a7fd4bee74facde0db77190ecd5dc7c",
+      "ApprovedServiceRequests::ensure_current": "14c40eb9e5c71776fc8033f3b9da996c14611d676a2e2d7892d4691bd6495fe6",
+      "ApprovedServiceRequests::session_verifier": "b31995605b9acc275b35970612c0c6ac704de039d3ef3414bd47f42619aee2a6",
+      "ApprovedServiceRequests::bind_control": "1e87e35df571e7596cd6f2beb9f0c0137352c92b15cd5e3bdff9431f8d868e2d",
+      "ApprovedServiceSessionVerifier::ensure_current": "5d56b69de50d4a76a9f6284bb4a54d9852f6f4356117f1748b42da3969fb8ea3",
+      "ApprovedServiceControlReceiver::receive_request": "861f035583b3285e448e0c85bacf3c759d7d6c8d63abdd38993c8092bc7fd39d",
+      "ApprovedServiceReceivedRequest::original_deadline": "baf14ce04ebcf23ea56d06084fdd0dd445fac0cec98391d14ef1cddb519c1bbe",
+      "ApprovedServiceReceivedRequest::consume_with_request_binding": "05e90ce06e37c67d005b3fdb83fea590b0b14673171e8b4b7e20baedd29e17a2",
+      "ApprovedServiceRequestBinding::slot_current": "7f2997eb99141e9a588c784479903e861983d0dcf41b79cc7ee804a6c3d8ce7e",
+      "ApprovedServiceRequestBinding::verify_for_service": "1eb76976c660040e6ddca326ae91b7b4685d815750ea3febd5768794a796844f",
+      "ApprovedServiceRequestBinding::verifier_for_service": "9ef9be32ec23e33ecfb9d6c82b7157dc07e13ee3e900a97a51c3ceff5e556c10",
+      "ApprovedServiceRequestVerifier::verify_for_service": "9007e7ec70eed0a9ec53fd392c1d73639d78695389f422c9eb458b7c72b4b18f",
+      "ApprovedServiceRequestVerifier::with_original_pair": "e7951c9578af2e573b3bc6e305732caaedeca7514fd8b0affe92616110a79eca",
+      "ApprovedServiceRetainedReporter::ensure_current": "777fd7af635a784bc282fd9aa1fb81d3cfc95d7dc5211f82fbed0ce30aa50372",
+      "ApprovedServiceRetainedReporter::original_deadline": "34436a63d3fc3c926b5d0b6e809e0dd4b592b3dc666969f1706f31a0aa9d1f96",
+      "ApprovedServiceRetainedReporter::poll_cancel": "24f9cc30a10577a84b29bb052ebd93d131f3112eeefba138e105edfd7c5e90c8",
+      "ApprovedServiceRetainedReporter::send_remote_report": "9bb269aa7d09cb48b809637b03f8d96e808df1e45410660a773c094b0b613ca6",
+      "ApprovedServiceReceivedRequest::ensure_consume_current": "524bd1ae14390182e6e3b7b5f984e3663072ffc9ae279d7b773b255657629850"
+    },
+    "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs": {
+      "service_error": "bac7640713b5e64ad4471d246437914b3dae31f3c18ee1dbd978701919b56836",
+      "RootPathAttestedHandoffReceiver::from_service_control": "f87779927657811a33029c93e8156898a1e576bc1f4b7389386099d2e57bda5c",
+      "RootPathAttestedHandoffReceiver::receive_service_control": "75d45e56cf8b2f0738bced5e929920ddc961cc2985f2e17b5bcc27694b6c016e",
+      "ControlPeerOwner::current_for_service": "a0883a5288368a9a8f97b014bc236e099bda644e636b5056e605213fdea5c164"
+    },
+    "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs": {
+      "service_error": "bac7640713b5e64ad4471d246437914b3dae31f3c18ee1dbd978701919b56836",
+      "AttestedHandoffReceiver::receive_service_control": "b4b08c43d1f83b182dacfbaee2e7a865739c98bc8079f51eb65bdab74f57b4a5",
+      "AttestedHandoffReceiver::ensure_service_current": "ada6c1539bb63975f8ae2b8014e4cd4150b05140a77969cf1768b3cb8cbd1633"
+    },
+    "crates/hepta-agent-transport/src/root_control_path/service_control.rs": {
+      "Drop:OriginalTransferGuard::drop": "7cb21670d4e2e579529f7668d9d6c3ab0c0058ca32126e75a5972a6d781a06e2",
+      "verify_moved": "e2c37265c02c2efd9348735f2fb9c9ed8be0daffc71256dacf4fdcc1ab1d5dfe",
+      "RootPathControlConnection::consume_service_control_before": "6eed48eab29f7c924aceb0ce112ce68371f3daecf814318f98a2f14bdff2da6e"
+    }
+  },
+  "denial_scope_call_inventory": {
+    "ServiceSessionState::control_policy": {
+      "path": "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs",
+      "count": 2
+    },
+    "RootPathAttestedHandoffReceiver::from_service_control": {
+      "path": "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs",
+      "count": 1
+    }
+  },
+  "private_owner_scope": {
+    "status": "SOURCE_PRIVATE_PURE_POLICY_COMPOSITION",
+    "total_restricted_helpers": 9,
+    "old_six_table_unchanged": true,
+    "new_scope_helper_count": 1,
+    "allowed_original_pure_stage_calls": 3,
+    "fresh_current_owner_executable_observed": false,
+    "same_original_owner_lease_pidfd": true,
+    "stored_root_selected_metadata_only": true,
+    "default_proc_live_original_binding": true,
+    "original_creator_and_root_path_namespaces": true,
+    "root_source_bytes_and_names_checked_before_after": true,
+    "real_effect_source_owner_control_full_before_after_unchanged": true,
+    "public_and_raw_full_methods_whole_unchanged": true,
+    "cross_transaction_cached_approval": false,
+    "new_action_or_report_authority": false,
+    "kernel_current_source_execution": "NOT_EXECUTED",
+    "performance_improvement": "NOT_MEASURED_OR_QUALIFIED"
+  },
+  "composed_service_helper_inventory": {
+    "ControlPeerOwner::current_for_service": {
+      "path": "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs",
+      "signature": "pub(in crate::control_owner) fn current_for_service(&self, session: &ServiceSessionState) -> Result<Duration, ControlOwnerError>"
+    },
+    "AttestedHandoffReceiver::ensure_service_current": {
+      "path": "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs",
+      "signature": "pub(in crate::control_owner) fn ensure_service_current(&mut self, session: &ServiceSessionState) -> Result<Instant, ControlOwnerError>"
+    }
+  },
+  "service_control_composition": {
+    "status": "SOURCE_PRIVATE_FULL_GUARD_COMPOSITION_RUNTIME_PENDING",
+    "old_six_helpers_and_denial_scope_one_unchanged": true,
+    "new_composed_helper_count": 2,
+    "actual_total_restricted_helpers": 9,
+    "actual_original_Control_challenge_count": 1,
+    "full_Source_Owner_prepost_and_original_live_Control_snapshot": true,
+    "Creator_original_deadline_before_after_and_Root_path_before_after": true,
+    "only_default_proc_Live_rooted_empty_legacy_guard_owner": true,
+    "original_cancellation_and_error_retirement": true,
+    "four_static_duplicate_Control_refresh_calls_removed": true,
+    "snapshot_call_counts_or_latency_actually_measured": false,
+    "original_source_parent": "0c94d5e66d35cd575028f51961c40af36c7f19cc",
+    "kernel_on_current_source": "NOT_EXECUTED",
+    "performance_improvement": "NOT_MEASURED_OR_QUALIFIED",
+    "production_ready": false
+  },
+  "service_consume_guard_composition": {
+    "status": "SOURCE_SINGLE_PUBLIC_BODY_GUARD_COMPOSITION_RUNTIME_PENDING",
+    "only_public_body_changed": "ApprovedServiceReceivedRequest::consume_with_request_binding",
+    "public_signatures18_and_opaque7_unchanged": true,
+    "other_public17_and_nine_private_helpers_whole_unchanged": true,
+    "same_original_Creator_slot_and_absolute_deadline": true,
+    "full_independent_reporter_Source_Owner_Control_channel_prepost": true,
+    "full_same_original_Agent_Control_pair_immediately_before_consumer": true,
+    "full_Source_Owner_and_original_deadline_after_callback": true,
+    "legitimate_callback_request_retirement_still_allowed": true,
+    "cross_transaction_or_cross_stage_cached_approval": false,
+    "static_removed_first_duplicate_request_current": true,
+    "actual_snapshot_call_counts_or_latency_measured": false,
+    "kernel_on_current_source": "NOT_EXECUTED",
+    "performance_improvement": "NOT_MEASURED_OR_QUALIFIED",
+    "production_ready": false
+  },
+  "consume_pair_boundary_helper_inventory": {
+    "ApprovedServiceReceivedRequest::ensure_consume_current": {
+      "path": "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs",
+      "signature": "fn ensure_consume_current(&mut self) -> Result<(), ApprovedPolicyError>",
+      "full_tokens_sha256": "b5a532294250f5abd756a3e92c95fae1f6694352f7c47ba73aecb564ae7d8355"
+    }
+  },
+  "service_consume_reporter_pair_boundary": {
+    "status": "SOURCE_PRIVATE_OWNED_ADJACENT_FULL_BOUNDARY_COMPOSITION_RUNTIME_PENDING",
+    "only_public_body_changed": "ApprovedServiceReceivedRequest::consume_with_request_binding",
+    "new_plain_private_helper": "ApprovedServiceReceivedRequest::ensure_consume_current",
+    "sole_owned_consume_call_count": 1,
+    "legacy_restricted_helpers9_whole": true,
+    "public18_signatures_and_opaque7_whole": true,
+    "Reporter_complete_guard_whole": true,
+    "same_original_session_slot_and_exact_captured_deadline": true,
+    "same_original_Agent_Control_full_pair_and_post_Source_Owner": true,
+    "original_clock_and_sticky_request_report_retirement": true,
+    "legitimate_callback_action_retirement_allowed": true,
+    "new_caller_proof_or_shared_authority_object_or_cache": false,
+    "static_adjacent_full_Owner_refreshes_before_callback_4_to_3": true,
+    "temporary_drift_identical_sampling_time_claim": false,
+    "runtime_snapshot_counts_or_latency_measured": false,
+    "kernel_on_current_source": "NOT_EXECUTED",
+    "production_ready": false
   }
 }

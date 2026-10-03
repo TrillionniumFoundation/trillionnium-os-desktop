@@ -18,29 +18,22 @@ def _sha(raw):
     return hashlib.sha256(raw).hexdigest()
 
 def _read(root, name):
-    path = root / name
-    before = path.lstat()
-    def identity(value):
-        return (value.st_dev, value.st_ino, value.st_mode, value.st_uid, value.st_gid, value.st_nlink,
-                value.st_size, value.st_mtime_ns, value.st_ctime_ns)
-    if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_size > 1048576:
-        raise ValueError('P2C Source is not bounded single-link regular')
-    fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)
-    with os.fdopen(fd, 'rb') as stream:
-        opened = os.fstat(stream.fileno())
-        if identity(before) != identity(opened):
-            raise ValueError('P2C Source changed before read')
-        raw = stream.read(1048577)
-        after_fd = os.fstat(stream.fileno())
-    after = path.lstat()
-    if identity(before) != identity(after_fd) or identity(before) != identity(after) or len(raw) > 1048576:
-        raise ValueError('P2C Source changed during read')
-    value = raw.decode('utf-8', 'strict')
+    # Only this historical C input view applies the independent joint12 inverse.
+    # C.parent_source remains whole and never hides P1's actual guard modules.
     try:
-        from .verify_service_dispatch_denial_cutoff import parent_source as denial_parent_source
+        from .verify_service_dispatch_denial_cutoff import (
+            _read as read_physical_source,
+            joint_parent_source,
+            parent_source as denial_parent_source,
+        )
     except ImportError:
-        from verify_service_dispatch_denial_cutoff import parent_source as denial_parent_source
-    return denial_parent_source(name, value)
+        from verify_service_dispatch_denial_cutoff import (
+            _read as read_physical_source,
+            joint_parent_source,
+            parent_source as denial_parent_source,
+        )
+    value = read_physical_source(root, name)
+    return denial_parent_source(name, joint_parent_source(name, value))
 
 def parent_source(path, text):
     """Exact known-byte Source inverse; no process/principal exemption."""

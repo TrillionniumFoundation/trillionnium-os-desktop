@@ -134,3 +134,258 @@ legacy objects remain exact to the parent. The parent's formatter pass does
 not qualify this new object: no formatter, compiler, kernel or native
 command has run on this successor. Its next limited window needs a new
 independent source review and explicit release.
+
+
+### First actual P1 kernel failure and valid negative static-role fixture successor
+
+The frozen `5aac2a8503c9d3b84fbb81a803edd22025d52656` object compiled in the
+fixed Rust 1.93.0 default-profile limited window, then its first actual kernel
+attempt (session 69687) exited 101 after 40.421912228 seconds. Two groups passed,
+including the same original Source/session accepting a new real request after
+its first request's asserted minimum of 21 seconds. This is a lower bound from
+the unchanged runtime assertion, not a measured nanosecond duration or native
+health qualification. The complete nineteen-group corpus did not pass.
+
+The third group's fixture changed `agent.unit` to `unapproved-role.service`
+while retaining the real unit's `agent.cgroup`. The production parser correctly
+refused this invalid pair when `Fixture::source` opened the document
+(`approved_service_request_kernel.rs:234:70`, `InvalidConfiguration`), before
+that group's actual Control/Agent Trio existed. Configuration rejection does
+not prove rejection of a live peer with the wrong approved role. The original
+result and both raw output files remain immutable under
+`work/persistent-v2-original-request-5aac2-root-kernel-facts-v1`; the result SHA is
+`6ebf2802e22e3e0f202eca495000ed21c59d5e9d184cf1fe4628ea52a4bf0096`.
+
+The separate successor changes only the negative root fixture's same selected
+role to the internally consistent static pair `unapproved-role.service` and
+`/system.slice/unapproved-role.service`, before any peer is created. The real
+unit, executable, UID/GID, principals and Owner selection stay fixed. The
+production parser and request implementations stay byte-exact; all nineteen
+labels, the 20-second original request maximum, 6-second expiry negative,
+21-second minimum assertion and 120-second unit bounds remain unchanged.
+The source gate rebinds only the complete kernel source SHA. This successor
+has source/static validation and single-file formatting evidence only until
+its own compile and actual nineteen-group kernel run are separately reviewed.
+The parent compile and two successful groups are not transferred to it.
+
+
+### Actual seven-group kernel result and narrow private Owner composition scope
+
+On frozen `22d43f9e60153dc40745080a8a4ab0c67ebd0033`, all three fixed limited
+Rust commands completed, with the retained `unused_assignments` kernel warning.
+The next actual original nineteen-group kernel run exited 101 after
+105.043296887 seconds: seven groups passed and the eighth group's initial
+6-second Trio admission returned `DeadlineExceeded` at the actual
+`trio.receive(&f, &mut requests).unwrap()` expression, before unpacking or the
+expiry stimulus. The run did not time out and does not establish which
+validation phase consumed the original interval. Its complete immutable result
+is `work/persistent-v2-original-request-22d43-root-kernel-facts-v1/actual-kernel-result.json`,
+SHA `ef5e28a5d6ab521c6f63b23ff49e75df76114d05759d633b9ec9cca953c801ea`.
+Neither the original six-second negative nor its 20-second request maximum,
+21-second lower-bound assertion or 120-second unit bound is changed here.
+
+This separate source successor adds exactly one private denial-only
+`ServiceSessionState::original_owner_root_scope` and uses it at three pure
+composition sites: around copying the immutable root-selected Control policy,
+and immediately inside the same original Root transfer callback before the
+actual Owner receiver factory. It retains original creator/namespace checks,
+same Source/Owner pointer identity, root source bytes/path inspection before and
+after, the original nonclone Owner custody's lease/pidfd and stored root-selected
+Live `/proc` metadata, and sticky Source retirement on a direct Owner/source
+failure. The stored metadata is not a fresh executable observation. This scope
+returns only `Result<(), ApprovedPolicyError>`; it cannot mint action or report
+permission, a new process proof or an extended deadline.
+
+Every actual challenge/SCM boundary retains its original full Source, Owner and
+Control checks before and after. All eighteen public methods, seven opaque
+shapes, old six restricted helper declarations, original raw poll/send bodies,
+seventeen known legacy normalization objects, nineteen kernel groups and old
+107 static tests retain their exact bodies. The mandatory gate merges the
+unchanged closed six-helper table with one separately closed scope helper and
+checks all seven actual restricted declarations, signatures and full tokens in
+all five production children. It also binds all actual function tokens and
+allows exactly the three listed scope calls. New mutation cases rebind token
+correspondence in memory before testing missing creator/pointer/lease/root
+checks and a scope substituted for a real challenge check; these cases must
+still fail the independent route/order inventory.
+
+This successor has source/static and two-child formatter evidence only. Its
+compiler, actual kernel and performance results are pending new independent
+review and separately released runs. The parent compile and seven successful
+groups do not qualify this new object; no speed improvement, installed service,
+native health or production readiness is claimed.
+
+
+### Actual unchanged six-second refusal and full Control guard composition
+
+The frozen `0c94d5e66d35cd575028f51961c40af36c7f19cc` source passed the three
+fixed Rust 1.93.0 limited commands, retaining one `unused_assignments` warning.
+Its separately released original nineteen-group kernel run exited 101 after
+88.842089882 seconds with the same seven completed groups. The eighth group's
+initial original six-second `trio.receive(&f, &mut requests).unwrap()` still
+returned `DeadlineExceeded`, before unpacking and before the expiry stimulus.
+The unchanged kernel source is `6f099409079351f5793a669e43f71cd9f0441befaec20f3003e910156ed5c8fa`;
+the complete actual result is
+`work/persistent-v2-original-request-0c94d-root-kernel-facts-v1/actual-kernel-result.json`,
+SHA `ee391173a29f66a96bc242dd365cb515b28d97a6d12f42a0a002027a42639a38`.
+The observations identify process CPU use, not validation call counts. They
+do not locate the failing phase inside binding or SCM or establish a speedup.
+
+This separate Source successor composes each adjacent legacy Control-current
+and complete selected service verification into one private full boundary.
+`ControlPeerOwner::current_for_service` requires the original creator and
+remaining deadline, default `/proc`, Live executable source, an empty legacy
+approval list and the original retained Root path. It checks that path before
+and after the unchanged full `ServiceSessionState::verify_control`, which
+checks Source/Owner before and after one actual complete Control snapshot
+through the same original live pidfd. It finally checks the same deadline.
+No Source/Owner full check is removed. The original single protocol challenge
+and actual SCM operation remain surrounded by these complete guards.
+
+`AttestedHandoffReceiver::ensure_service_current` preserves original creator,
+cancelled/absent-owner refusal, error retirement and the exact receiver
+deadline. Its method is placed in the original sole receiver impl. All public
+eighteen method bodies, seven opaque types, three pure denial-scope calls,
+seventeen legacy normalization objects and nineteen kernel groups remain
+whole. The mandatory finite inventory independently keeps old six helpers,
+denial-scope one and composition two: all nine actual restricted declarations,
+signatures and complete function tokens are closed across five children.
+Additional semantic rules preserve the two complete original Session guard
+bodies and both actual `/proc` literals even when test digests, signatures and
+configurable effect orders are rebound.
+
+Four previous test methods require finite adaptation: the old challenge
+location mutation, the old seven-helper total, the old challenge-to-denial-scope
+mutation and the rebinding utility's complete helper set. Each retains its
+original mutant strength, with an independently applied whole method inverse;
+the other original test methods remain byte-exact. New actual finite mutations
+remove or replace creator, each deadline and Root path, full selected Control,
+default-proc/Live/empty-approval state, cancellation and error retirement, or
+weaken/move either challenge and SCM boundary. They must refuse after complete
+token/whole-object rebinding; these are Source tests, not a runtime authority.
+
+The successful bind/receive call graph has four fewer consecutive duplicate
+Control refresh calls. That static count is neither an observed invocation
+count nor six-second qualification. The original 6/20/21/120-second budgets,
+Rust profiles, actual ingress boundary and negative expiry assertions remain
+unchanged. This candidate has two-child formatter and Python Source evidence
+only; its compiler and original nineteen-group run require new independent
+review and separately released execution. No latency improvement, native
+health, installed behavior or production readiness is claimed.
+
+
+### Actual E0425 and explicit private helper Duration import
+
+On frozen `bb50ded3e30881e96d78c97c50e2ee0cbbeb62de`, the separately released
+fixed Rust 1.93.0 sequence passed `cargo fmt --all --check` and then the peer
+library check exited 101 with E0425 at the new private Root helper's
+`Result<Duration, ControlOwnerError>` return type. Its module lacked the
+explicit `std::time::Duration` import; the inherited glob did not introduce
+that name. The previous 139 Python Source tests and fourteen validators did
+not perform Rust name resolution. The sequence stopped before kernel no-run,
+produced no new ELF and executed no kernel group. All 667 Source identities,
+bytes, modes and Git blobs remained exact through the failed window.
+
+The actual result under
+`work/persistent-v2-original-request-service-control-composition-successor-root-limited-compile-facts-v1/actual-limited-result.json`
+has SHA `8e5d543a065ee663fca09086410240c514057a606f63cafc7a1372cfb85c0297`.
+Its complete stderr has SHA
+`c5631127245cc927315b31a7ab0947e7507d9bd6031a9ab798b3cb5b965cb321`.
+Those original failed compiler facts, the frozen Source and independent
+Source review are retained separately and are not successful compilation.
+
+This four-path successor adds only `use std::time::Duration;`, rebinds that
+complete module's SHA in the contract and mandatory checker, and appends this
+factual record. All production function bodies and signatures, nine private
+helpers, eighteen public bodies, seven opaque types, three denial-scope calls,
+complete original 139 tests, seventeen legacy objects and the exact nineteen
+kernel groups remain whole. The original 6/20/21/120-second budgets and Rust
+profiles are unchanged. One-child formatting and Source checks do not qualify
+the repaired object: new independent Source review and separately released
+original three-command and nineteen-group runs are still required. No latency,
+native health, installed behavior or production readiness is claimed.
+
+
+### Source consume composition after the preserved original Kernel failure
+
+The import successor `6a77c27676f629ea24651957d7f54a73db0b9dd8` passed its
+separately released original three-command Rust sequence with the fixed
+default development profile. The original nineteen-group Kernel then ran once
+with the unchanged 6/20/21/120-second budgets and exited 101 after seven PASS
+groups. Case eight's initial `trio.receive` returned before `unpack` called
+`consume_with_request_binding`; the latter returned `DeadlineExceeded`, which
+the original Kernel unwrapped at line 394. There are no internal stage markers:
+whether the consumer executed, or a pre/post check reached expiry, is unknown.
+The preserved actual result SHA is
+`2f9f6f8a6712c64f93dddf6715890d95fc5ff7715c45640c0286ff27d5feb886`.
+The complete terminal readback SHA is
+`5f2cc8132be01cca6f112f755ee989d444b12a095103a4c72c856bdb0801eace`.
+Neither failure location nor seven PASS groups qualify the six-second deadline
+or establish a measured performance improvement.
+
+This Source successor changes one public method body and keeps all eighteen
+signatures, seven opaque types, nine restricted helpers and every other public
+body whole. In `consume_with_request_binding`, the initial duplicate complete
+request-current call becomes the original slot/Creator check plus the same
+captured absolute Instant check. Moving the private fields is pure composition.
+The complete independent reporter check still brackets its real channel identity
+and clock access with Source/Owner checks and refreshes the original Control.
+Immediately before the actual consumer, the unchanged request-current method
+still performs complete original Agent/Control pair verification surrounded by
+complete Source/Owner and original deadline checks. After the callback, the
+unchanged complete persistent Source/Owner and original deadline checks remain.
+The callback may legitimately retire action/report custody, so the original
+post-callback rule still does not demand live request custody after retirement.
+No earlier result or snapshot is cached or treated as current authority.
+
+An expired request can now fail at the original cheap clock before an Owner
+hash. An already-retired action can undergo independent report-channel identity
+inspection before the final pair refuses it. Neither path executes a consumer,
+SCM transfer, cancellation poll or report submission. Original custody cleanup,
+error retirement, selected roles, live proc attestors, pins and deadlines remain.
+The static removal is one duplicate `ServiceRequestState::current` path; its two
+Owner, one Agent and one Control refresh calls are not measured runtime counts.
+
+The checker independently fixes the complete consume signature/body, the original
+slot/current/reporter/session bodies and the seven complete actual Guard modules.
+Rebinding the contract hashes, API, private shapes and order table cannot replace
+those guards with cached or caller values. All 139 original Source tests remain
+whole, with additional complete-rebinding refusal cases. This is Source evidence;
+separate independent review, original three-command compilation and the unchanged
+nineteen-group Kernel must qualify this new object. Native health, installation,
+activation, latency and production readiness remain unqualified.
+
+
+### Adjacent Reporter / original-pair Source boundary candidate
+
+The b655 original 19-group execution remains failed: actual exit 101, seven
+ordered groups passed, and case eight returned `DeadlineExceeded` from consume
+at the unchanged Kernel line 394 after receive succeeded. Its internal phase
+is unknown. The complete original run and all Source/ELF/identity facts are
+retained; no same-object retry or deadline change qualifies it.
+
+The reviewed successor changes only the consume body and adds one plain private
+Received helper. It verifies its own creating process, same original session
+and slot Arcs, and exact captured deadline equality, then runs the complete
+unchanged independent Reporter guard. The Reporter's last full Source/Owner
+check supplies the immediately adjacent pre boundary of the original pair.
+The entire original pair checked tail still verifies the same Agent and actual
+Control, keeps original clocks and sticky retirement, and performs full
+Source/Owner post checks before the actual callback. The original complete
+Source/Owner and deadline checks after callback remain unchanged; legitimate
+callback action/report retirement remains allowed.
+
+Both real Control refreshes and the retained original channel identity, nonce,
+sequence, boot/time namespace and monotonic/Instant proof remain unchanged.
+The helper accepts no caller proof and exports no reusable authority or cache.
+One adjacent full Owner refresh is removed on the static success path. Actual
+invocation counts, bottleneck, latency and six-second runtime qualification are
+unmeasured. Removing one observation does not claim identical sampling times
+for temporary external drift restored between complete boundaries.
+
+Independent fixed whole helper/consume/guard bodies, sole call, exact copied
+pair tail, seven whole Guard modules and opaque fields reject complete catalog
+hash/API/order rebinding. All original 139 tests remain whole; four of the 15
+earlier consume tests adapt moved guard locations with complete method inverses.
+The original Kernel, 19 groups, 6/20/21/120 seconds and owned 5+5 cleanup budgets
+remain unchanged. Cargo, Kernel, Native and production readiness remain pending.

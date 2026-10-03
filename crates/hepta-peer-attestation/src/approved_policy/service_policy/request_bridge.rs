@@ -15,10 +15,59 @@ impl ServiceSessionState {
         self.owner.ensure_current()?;
         self.source.inspect()
     }
+    // Denial-only scope for pure immutable-policy construction within this
+    // original admission. Full Owner executable checks remain at the actual
+    // challenge/SCM boundaries; this scope cannot grant action/report authority.
+    pub(crate) fn original_owner_root_scope(&self) -> Result<(), ApprovedPolicyError> {
+        self.source.creator_current()?;
+        if !Arc::ptr_eq(&self.source, &self.owner.state) {
+            return Err(ApprovedPolicyError::PeerRefused);
+        }
+        let checked = (|| {
+            self.source.inspect()?;
+            self.owner
+                .original
+                .ensure_alive()
+                .map_err(|_| ApprovedPolicyError::PeerRefused)?;
+            let original = self
+                .owner
+                .original
+                .original_attested_peer()
+                .map_err(|_| ApprovedPolicyError::PeerRefused)?;
+            let snapshot = original.snapshot();
+            let entry = &self.source.entries[2];
+            // These are the original admitted metadata, not a fresh snapshot
+            // or a caller assertion of current executable continuity.
+            if original.attestor.proc_root != Path::new("/proc")
+                || !matches!(original.executable_source, crate::ExecutableSource::Live)
+                || snapshot.pid != self.source.creator.pid
+                || snapshot.uid != entry.uid
+                || snapshot.gid != entry.gid
+                || snapshot.systemd_unit.as_deref() != Some(entry.unit.as_str())
+                || snapshot.cgroup_v2_path != entry.cgroup
+                || snapshot.executable_sha256 != entry.pin
+            {
+                return Err(ApprovedPolicyError::PeerRefused);
+            }
+            self.source.inspect()?;
+            self.owner
+                .original
+                .ensure_alive()
+                .map_err(|_| ApprovedPolicyError::PeerRefused)?;
+            Ok(())
+        })();
+        self.source.creator_current()?;
+        if checked.is_err() {
+            // Direct original Owner/source failure retires service continuity,
+            // unlike cancellation/expiry of an individual accepted request.
+            self.source.retired.store(true, Ordering::SeqCst);
+        }
+        checked
+    }
     pub(crate) fn control_policy(&self) -> Result<ControlOwnerPolicy, ApprovedPolicyError> {
-        self.ensure_current()?;
+        self.original_owner_root_scope()?;
         let policy = self.source.entries[0].control()?;
-        self.ensure_current()?;
+        self.original_owner_root_scope()?;
         Ok(policy)
     }
     pub(crate) fn verify_control(
@@ -309,6 +358,38 @@ impl ApprovedServiceReceivedRequest {
             .current(&self.binding.original.verifier())?;
         Ok(self.deadline)
     }
+    // One owned consume only: the unchanged Reporter post guard is the
+    // immediately adjacent full Source/Owner pre guard of the original pair.
+    // This returns no reusable proof and keeps both real Control refreshes.
+    fn ensure_consume_current(&mut self) -> Result<(), ApprovedPolicyError> {
+        self.session.source.creator_current()?;
+        if !Arc::ptr_eq(&self.session, &self.reporter.session)
+            || !Arc::ptr_eq(&self.session, &self.binding.state.session)
+            || !Arc::ptr_eq(&self.reporter.slot, &self.binding.slot)
+            || self.deadline != self.reporter.deadline
+            || self.deadline != self.binding.state.deadline
+        {
+            return Err(ApprovedPolicyError::PeerRefused);
+        }
+        self.reporter.ensure_current()?;
+        let state = &self.binding.state;
+        let checked = (|| {
+            remaining(state.session.source.creator.pid, state.deadline)?;
+            if state.retired.load(Ordering::SeqCst) {
+                return Err(ApprovedPolicyError::PeerRefused);
+            }
+            state
+                .control
+                .verify_pair_current(&self.binding.original.verifier())
+                .map_err(approval_error)?;
+            state.session.ensure_current()?;
+            remaining(state.session.source.creator.pid, state.deadline)
+        })();
+        if checked.is_err() {
+            state.retired.store(true, Ordering::SeqCst);
+        }
+        checked
+    }
     pub fn consume_with_request_binding<T>(
         self,
         consumer: impl FnOnce(
@@ -321,18 +402,19 @@ impl ApprovedServiceReceivedRequest {
             ApprovedServiceRequestBinding,
         ) -> T,
     ) -> Result<T, ApprovedPolicyError> {
-        self.original_deadline()?;
+        self.binding.slot_current()?;
+        remaining(self.session.source.creator.pid, self.deadline)?;
+        let mut received = self;
+        received.ensure_consume_current()?;
         let Self {
             session,
             stream,
             deadline,
             custody,
-            mut reporter,
+            reporter,
             attested,
             binding,
-        } = self;
-        reporter.ensure_current()?;
-        binding.state.current(&binding.original.verifier())?;
+        } = received;
         let principal = session.source.entries[1].principal.as_str();
         let result = consumer(
             stream, deadline, custody, reporter, attested, principal, binding,
