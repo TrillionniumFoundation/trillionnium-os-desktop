@@ -14,6 +14,7 @@ from tools import verify_approved_service_actor as gate
 CORE = 'crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop/service_actor.rs'
 THIN = 'crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs'
 BRIDGE = 'crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs'
+ACTOR_ROOT = 'crates/hepta-browser-actor/src/lib.rs'
 
 
 class ServiceActorSourceTests(unittest.TestCase):
@@ -23,6 +24,31 @@ class ServiceActorSourceTests(unittest.TestCase):
         self.assertEqual(len(gate.EXPECTED['opaque_types']), 2)
         self.assertIn('ServiceScopedRuntime', gate.EXPECTED['private_type_inventory'][CORE])
         self.assertIn('await_final_forward', gate.EXPECTED['private_function_inventory'][CORE])
+
+    def test_linux_service_actor_export_has_exact_linux_cfg_and_no_legacy_escape(self):
+        text = gate.inputs()[ACTOR_ROOT]
+        blocks = list(re.finditer(r'pub use servo_runtime::\{([^}]*)\};', text))
+        self.assertEqual(len(blocks), 2)
+        selected = [block for block in blocks if 'ServiceServoBrowserActor' in block.group(1)]
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0], blocks[1])
+        self.assertRegex(text[:selected[0].start()], r'#\[cfg\(target_os = "linux"\)\]\s*$')
+        legacy = blocks[0].group(0)
+        restored = gate.parent_source(ACTOR_ROOT, text)
+        self.assertEqual(re.search(r'pub use servo_runtime::\{[^}]*\};', restored).group(0), legacy)
+
+    def test_moving_linux_actor_back_to_unconditional_export_refuses(self):
+        texts = gate.inputs()
+        text = texts[ACTOR_ROOT]
+        self.assertEqual(text.count('ServiceServoBrowserActor,'), 1)
+        text = text.replace('ServiceServoBrowserActor, ', '', 1)
+        text = text.replace('pub use servo_runtime::{',
+                            'pub use servo_runtime::{\n    ServiceServoBrowserActor,', 1)
+        first = re.search(r'pub use servo_runtime::\{([^}]*)\};', text)
+        self.assertIn('ServiceServoBrowserActor', first.group(1))
+        texts[ACTOR_ROOT] = text
+        with self.assertRaises(ValueError):
+            gate.check(gate.EXPECTED, texts)
 
     def test_exact_whole_parent_inverses_and_parent_view(self):
         for path, rule in gate.EXPECTED['finite_parent_inverse'].items():
@@ -114,6 +140,8 @@ class ServiceActorSourceTests(unittest.TestCase):
 
 
 MUTANTS = [
+    (ACTOR_ROOT, 'ServiceServoBrowserActor, ServiceServoRuntimeBridge,',
+     'ServiceServoRuntimeBridge,'),
     (CORE, 'inner: BrowserActor<ServiceScopedRuntime>', 'pub inner: BrowserActor<ServiceScopedRuntime>'),
     (CORE, 'inner: EngineThreadRuntime', 'pub inner: EngineThreadRuntime'),
     (CORE, '_binding: ApprovedServiceRequestBinding', '_binding: Option<ApprovedServiceRequestBinding>'),

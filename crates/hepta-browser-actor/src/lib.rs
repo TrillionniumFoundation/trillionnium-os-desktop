@@ -48,16 +48,17 @@ use hepta_browser_actor_simulation as simulation;
 mod servo_runtime;
 
 pub use servo_runtime::{
-    ServiceServoBrowserActor, ServoBrowserActor, ServoCompletionDelivery, ServoEventLoopWaker,
-    ServoPumpResult, ServoRuntimeCommand, ServoRuntimeCompletion, ServoRuntimeEndpoint,
-    ServoRuntimeError, ServoRuntimeOperation, ServoRuntimeOwner,
-    closed_immutable_servo_runtime_pair, servo_runtime_pair,
+    ServoBrowserActor, ServoCompletionDelivery, ServoEventLoopWaker, ServoPumpResult,
+    ServoRuntimeCommand, ServoRuntimeCompletion, ServoRuntimeEndpoint, ServoRuntimeError,
+    ServoRuntimeOperation, ServoRuntimeOwner, closed_immutable_servo_runtime_pair,
+    servo_runtime_pair,
 };
 
 #[cfg(target_os = "linux")]
 pub use servo_runtime::{
-    ServiceServoRuntimeBridge, ServiceServoRuntimeCommand, ServiceServoRuntimeCompletion,
-    ServiceServoRuntimeEndpoint, closed_immutable_service_runtime_pair,
+    ServiceServoBrowserActor, ServiceServoRuntimeBridge, ServiceServoRuntimeCommand,
+    ServiceServoRuntimeCompletion, ServiceServoRuntimeEndpoint,
+    closed_immutable_service_runtime_pair,
 };
 
 pub use hepta_agent_port::{AgentPortError, DispatchContext, HandlerOutcome};

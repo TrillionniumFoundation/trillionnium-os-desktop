@@ -278,16 +278,16 @@
     "crates/hepta-browser-actor/src/lib.rs": {
       "parent_bytes": 6267,
       "parent_sha256": "409645d29caac404f78218ef85e68faf0c3027d3927a21045416bdc988252a67",
-      "complete_bytes": 6293,
-      "complete_sha256": "4017e35df36c0f0e4d459cf63c9c280dde21a3895e897d2992087f45dfd4f517",
+      "complete_bytes": 6297,
+      "complete_sha256": "72bc0088481bcef0b9d6803a8ba90042beb5d0eabb7934942f05f81237425922",
       "edits": [
         {
-          "parent_start": 1709,
-          "parent_end": 1992,
-          "parent_text": "    ServoBrowserActor, ServoCompletionDelivery, ServoEventLoopWaker, ServoPumpResult,\n    ServoRuntimeCommand, ServoRuntimeCompletion, ServoRuntimeEndpoint, ServoRuntimeError,\n    ServoRuntimeOperation, ServoRuntimeOwner, closed_immutable_servo_runtime_pair,\n    servo_runtime_pair,\n",
-          "complete_start": 1709,
-          "complete_end": 2018,
-          "complete_text": "    ServiceServoBrowserActor, ServoBrowserActor, ServoCompletionDelivery, ServoEventLoopWaker,\n    ServoPumpResult, ServoRuntimeCommand, ServoRuntimeCompletion, ServoRuntimeEndpoint,\n    ServoRuntimeError, ServoRuntimeOperation, ServoRuntimeOwner,\n    closed_immutable_servo_runtime_pair, servo_runtime_pair,\n"
+          "parent_start": 2049,
+          "parent_end": 2211,
+          "parent_text": "    ServiceServoRuntimeBridge, ServiceServoRuntimeCommand, ServiceServoRuntimeCompletion,\n    ServiceServoRuntimeEndpoint, closed_immutable_service_runtime_pair,\n",
+          "complete_start": 2049,
+          "complete_end": 2241,
+          "complete_text": "    ServiceServoBrowserActor, ServiceServoRuntimeBridge, ServiceServoRuntimeCommand,\n    ServiceServoRuntimeCompletion, ServiceServoRuntimeEndpoint,\n    closed_immutable_service_runtime_pair,\n"
         }
       ]
     },
@@ -456,6 +456,7 @@
     "ownership": "Core uniquely owns original Binding in Prepared and Handled through final post; readonly verifier Arc cannot extend original Agent/Owner/Requests. Outer unique Requests/retained reporter remains P2C responsibility.",
     "quarantine": "local actor/engine unknown is sticky; no journal, raw observer, reset, fresh Source/owner/history, future clock or caller DurableFact API. Managed active/prepared/uncertain complete-chain quarantine remains P2C.",
     "wire": "P2C must actually decode original authenticated socket/transcript and bind actual context. Public context/hash do not self-prove wire provenance.",
+    "platform": "Linux-only Service symbol export; original unconditional legacy servo_runtime reexport preserved complete. No cross-target compilation claimed.",
     "default_installed": false,
     "actual_native_consumer": false,
     "native60": false,
