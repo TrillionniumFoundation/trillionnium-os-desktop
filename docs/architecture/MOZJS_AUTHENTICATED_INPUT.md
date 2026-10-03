@@ -260,3 +260,52 @@ The frozen `ed4e73ca7138536adf6a2e754b6115e08be4d458` complete Source check fail
 This metadata successor preserves the original runtime identity helper, its original tests, source-role checkout position, limits, claims and every original step-object digest. Only four literal job arrays in `contracts/ci-source-identity.v1.json` gain the exact complete step-object hashes for reviewed preparation and always cleanup at their actual positions. Removing those eight entries restores the complete old serialized catalog byte for byte. The existing catalog field name remains; hashing a step is not qualification or promotion authority.
 
 The CI namespace source gate now reads and pins this entire existing catalog before setup, with no change to its check function. Stale catalogs, missing or extra step entries and incorrect caller digest changes refuse. All existing workflow commands, eight new steps, 94 positive path appends, budgets and provider/session/capability rules remain byte-identical to the predecessor. The required catalog path already matches both events of all three affected workflows; no path filter or workflow/catalog digest rebind is needed. Tracked default discovery regressions test this closure as Source-only data, without activating sudo, AppArmor or namespaces. This successor has no complete Make, hosted, native, installed or production qualification until new exact-object evidence exists.
+
+
+### Closed diagnostics after the 655-file hosted cleanup failure
+
+The exact `6c03f3c34f0318c9420b074d88e15d0650b1e0c7` push job
+111194602655 successfully provisioned its named interpreter and executed the
+original Python 1321/109/15 suites, then refused the always-cleanup step. The
+327301-byte raw job log has SHA256
+`5ef497a30407948387ecd3dfd1f5b2b2a18f310a82eb5f869920983a4bed5c36`.
+Two independently captured PR jobs 111194615459 and 111194615257 also passed
+setup and the same original suites before cleanup refused. Their raw log
+SHA256 values are `c8a7ad20e1776f338bd12fcf1ed7b46092ba504ee844ad3acde7f195d2d36dc3`
+and `5e5e9b86eb3c3a2e34c89b972557fb0fdf80423df3d05f2e881ef0aa8857c55e`.
+These logs contain only the prior fixed refusal string and do not prove which
+Root or caller readback rejected. No process leak, unrelated-profile drift or
+permission cause is inferred as an observed fact. The failed records remain
+unchanged.
+
+This Source successor adds a strictly bounded diagnostic to an already
+admitted fixed setup/cleanup/internal-preflight failure. Exactly one canonical
+ASCII JSON object, at most 4096 bytes, names fixed domain/operation/stage/category
+enumerations and at most one validated child diagnostic. Unknown fields,
+wrong pairing, nested children, success/authority fields, duplicate JSON keys,
+noncanonical or trailing bytes are refused. Error messages, paths, argv, PIDs,
+credentials, environment and arbitrary child stderr are never copied. Error
+categories use only exact built-in types and a closed errno mapping. Outside
+the admitted CI protocol, the original fixed refusal string remains.
+
+The diagnostic is an observation of a refusal. It cannot authorize setup,
+cleanup, a phase transition or PATH publication. All original return codes,
+30-second direct-child timeouts, 2 MiB post-completion output refusals, same UID,
+capability and profile checks, ledger lock/inode identity, retirement, kernel
+process/group inventories and cleanup order remain. Neither a timeout nor a
+child diagnostic proves descendants have exited. A mandatory source checker
+binds the fixed inventory and every stage callsite; the default discovered
+tests retain the complete old file and append parser and ordinary-host fault
+cases. Those cases do not activate sudo, an AppArmor profile or a namespace.
+
+This package has no new hosted cleanup success, NativeHealth, installed, human
+review or production qualification. No artifact path or workflow/run/budget
+is changed. `production_ready=false`.
+
+The stage field is the last entered fixed stage, not a proof of the exception
+origin. A successfully returned nested read can leave that observation before
+an enclosing comparison refuses. Domain and operation remain explicit; each
+has its own finite allowed stage set. Child diagnostic pairing uses only the
+current context already admitted by the original route and the entire fixed
+launcher/operation/eight arguments, or the exact derived private interpreter
+and preflight arguments. It never reconstructs context from diagnostic JSON.

@@ -657,3 +657,180 @@ class NamespaceStepCatalogBindingTests(unittest.TestCase):
                 with self.subTest(workflow=stem, event=event):
                     self.assertTrue(dependencies.matches(workflow, event, path))
                     self.assertEqual(dependencies.uncovered(ROOT, workflow, event), [])
+
+
+class NamespaceClosedDiagnosticTests(unittest.TestCase):
+    """Parser and ordinary host faults; no actual sudo/profile activation."""
+    def setUp(self):
+        helper._diag_reset()
+
+    def tearDown(self):
+        helper._diag_reset()
+
+    def receipt(self, domain='root', operation='cleanup', stage='CLEANUP_OPERATION_REGISTRATION', category='PERMISSION_DENIED'):
+        return dict(schema=helper.DIAGNOSTIC_SCHEMA, domain=domain, operation=operation,
+                    stage=stage, category=category, child=None)
+
+    def test_diagnostic_exact_error_types_do_not_format_message_path_or_numeric_payload(self):
+        sentinel = 'private-秘密-/tmp/input\nPID=112233 UID=445566'
+        class MagicError(ValueError):
+            def __str__(self):
+                raise AssertionError('error string must never be evaluated')
+        for error, expected in ((PermissionError(13, sentinel, sentinel), 'PERMISSION_DENIED'),
+                                (FileNotFoundError(2, sentinel), 'OBJECT_MISSING'),
+                                (ValueError(sentinel), 'VALUE_REFUSED'),
+                                (KeyError(sentinel), 'KEY_MISSING'),
+                                (MagicError(sentinel), 'FIXED_REFUSAL')):
+            self.assertEqual(helper._diag_category(error), expected)
+
+    def test_complete_canonical_child_stderr_is_single_bounded_object(self):
+        value = self.receipt(); raw = helper._diag_bytes(value)
+        self.assertEqual(helper._diag_parse(raw, ('root', 'cleanup')), value)
+        for bad in (raw + b'\n', raw + b'private-token', b'prefix' + raw, raw + raw,
+                    json.dumps(value, indent=2).encode() + b'\n', b'x' * 4097,
+                    raw.replace(b'"schema":', b'"schema":"duplicate","schema":', 1)):
+            with self.subTest(size=len(bad)), self.assertRaises(ValueError):
+                helper._diag_parse(bad, ('root', 'cleanup'))
+
+    def test_fixed_schema_refuses_success_authority_fields_wrong_types_and_stage_pairs(self):
+        for key, wrong in (('success', True), ('authorized', True), ('path', '/secret'),
+                           ('category', 'credential-value'), ('operation', 'setup'),
+                           ('domain', 'caller'), ('stage', 'RUNNER_PATH_OUTPUT')):
+            value = self.receipt(); value[key] = wrong
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                helper._diag_check(value, ('root', 'cleanup'))
+        for key in ('domain', 'operation', 'stage', 'category'):
+            value = self.receipt(); value[key] = False
+            with self.subTest(key=key), self.assertRaises(ValueError): helper._diag_check(value)
+
+    def test_only_one_child_level_with_same_operation_and_fixed_domain(self):
+        child = self.receipt(); parent = self.receipt('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT', 'COMMAND_FAILED')
+        parent['child'] = child
+        self.assertEqual(helper._diag_check(parent), parent)
+        for wrong in ('nested', 'cross-operation', 'cross-domain', 'root-parent'):
+            value = copy.deepcopy(parent)
+            if wrong == 'nested': value['child']['child'] = self.receipt()
+            elif wrong == 'cross-operation': value['child']['operation'] = 'setup'
+            elif wrong == 'cross-domain': value['child']['domain'] = 'runner'
+            else: value['domain'] = 'root'; value['stage'] = 'CLEANUP_OPERATION_REGISTRATION'
+            with self.subTest(wrong=wrong), self.assertRaises(ValueError): helper._diag_check(value)
+
+    def test_actual_short_host_cli_failure_has_fixed_json_and_no_secret_payload(self):
+        # Admission is deliberately replaced only in this host fault fixture;
+        # this does not execute or qualify any Root setup/cleanup operation.
+        sentinel = 'secret-路径\nUID=123456 /tmp/private/config'
+        script = """import importlib.util,sys
+spec=importlib.util.spec_from_file_location('fixture_diag',sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+def fault(argv):
+ m._diag_begin('root','cleanup','CLEANUP_OPERATION_REGISTRATION')
+ raise PermissionError(13,sys.argv[2],sys.argv[2])
+m._main=fault
+raise SystemExit(m.main())
+"""
+        result = subprocess.run([sys.executable, '-c', script, str(ROOT / 'tools/ci_namespace_python.py'), sentinel],
+                                cwd=ROOT, capture_output=True, timeout=10, check=False)
+        self.assertEqual((result.returncode, result.stdout), (1, b''))
+        self.assertNotIn(sentinel.encode(), result.stderr)
+        self.assertEqual(helper._diag_parse(result.stderr, ('root', 'cleanup')), self.receipt())
+
+    def test_real_missing_file_fault_keeps_original_refusal_and_observed_category(self):
+        with tempfile.TemporaryDirectory() as directory:
+            helper._diag_begin('root', 'cleanup', 'CLEANUP_OWNED_STATE_READ')
+            try: helper._read(Path(directory) / 'missing-secret-路径')
+            except FileNotFoundError as error:
+                self.assertEqual(helper._diag_category(error), 'OBJECT_MISSING')
+            else: self.fail('the original missing-file refusal must remain')
+
+    def test_actual_ordinary_nonzero_child_cannot_supply_a_root_diagnostic_or_success(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        raw = helper._diag_bytes(self.receipt())
+        script = 'import os;os.write(2,' + repr(raw) + ');raise SystemExit(1)'
+        with self.assertRaises(ValueError): helper._command([sys.executable, '-c', script])
+        self.assertEqual(helper._DIAGNOSTIC['category'], 'COMMAND_FAILED')
+        self.assertIsNone(helper._DIAGNOSTIC['child'])
+
+    def test_fixed_root_child_receipt_is_observed_but_nonzero_still_refuses(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        helper._diag_bind(helper._context('ci', '1', '1', 'repository-contracts', 1000, 1000, 'a' * 40, 'b' * 40))
+        argv = ['/usr/bin/sudo', '--non-interactive', str(helper.SETSID), '--fork', '--wait', '--',
+                str(helper.PYTHON), str(Path(helper.__file__).resolve()), '_cleanup_root',
+                'ci', '1', '1', 'repository-contracts', '1000', '1000', 'a' * 40, 'b' * 40]
+        def nonzero(command, **kwargs):
+            self.assertEqual(command, argv); self.assertEqual(kwargs['timeout'], 30)
+            self.assertTrue(kwargs['start_new_session'])
+            kwargs['stderr'].write(helper._diag_bytes(self.receipt()))
+            return subprocess.CompletedProcess(command, 1)
+        with patch.object(helper.subprocess, 'run', side_effect=nonzero), self.assertRaises(ValueError): helper._command(argv)
+        self.assertEqual(helper._DIAGNOSTIC['child'], self.receipt())
+        self.assertEqual(helper._DIAGNOSTIC['category'], 'COMMAND_FAILED')
+
+    def test_invalid_child_error_payload_is_not_copied_to_the_observation(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        helper._diag_bind(helper._context('ci', '1', '1', 'repository-contracts', 1000, 1000, 'a' * 40, 'b' * 40))
+        argv = ['/usr/bin/sudo', '--non-interactive', str(helper.SETSID), '--fork', '--wait', '--',
+                str(helper.PYTHON), str(Path(helper.__file__).resolve()), '_cleanup_root'] + ['x'] * 8
+        for raw in ('secret-路径'.encode(), helper._diag_bytes(self.receipt()) + b'extra',
+                    json.dumps(dict(self.receipt(), success=True)).encode()):
+            helper._diag_command_refusal(argv, raw, 0, len(raw))
+            self.assertIsNone(helper._DIAGNOSTIC['child'])
+            self.assertEqual(helper._DIAGNOSTIC['category'], 'COMMAND_FAILED')
+
+    def test_actual_output_limit_preserves_nonzero_refusal_without_copying_stderr(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        script = 'import os;os.write(2,b"x"*' + str(helper.LIMIT + 1) + ')'
+        with self.assertRaises(ValueError): helper._command([sys.executable, '-c', script])
+        self.assertEqual(helper._DIAGNOSTIC['category'], 'COMMAND_OUTPUT_LIMIT')
+        self.assertIsNone(helper._DIAGNOSTIC['child'])
+
+    def test_direct_child_timeout_stays_a_timeout_not_group_cleanup_evidence(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        error = subprocess.TimeoutExpired(['secret'], 30, output=b'secret')
+        with patch.object(helper.subprocess, 'run', side_effect=error), self.assertRaises(subprocess.TimeoutExpired):
+            helper._command([sys.executable, '-c', 'pass'])
+        self.assertEqual(helper._diag_category(error), 'DIRECT_CHILD_TIMEOUT')
+        self.assertIsNone(helper._DIAGNOSTIC['child'])
+
+    def test_mandatory_stage_inventory_detects_removed_duplicate_and_new_callsites(self):
+        text = (ROOT / 'tools/ci_namespace_python.py').read_text()
+        gate._check_diagnostic_inventory(text)
+        for changed in (text.replace("_diag_stage('CLEANUP_OPERATION_REGISTRATION')", 'pass', 1),
+                        text + "\n_diag_stage('CLEANUP_OPERATION_REGISTRATION')\n",
+                        text + "\n_diag_stage('UNKNOWN_STAGE')\n",
+                        text + "\nDIAGNOSTIC_MAX_BYTES = 8192\n"):
+            with self.assertRaises(ValueError): gate._check_diagnostic_inventory(changed)
+
+    def test_contract_diagnostic_claims_and_mandatory_source_checker_cannot_be_detached(self):
+        value = copy.deepcopy(gate.EXPECTED); value['diagnostics']['diagnostic_is_authority_or_success'] = True
+        with self.assertRaises(ValueError): gate.check(value, gate.inputs(ROOT))
+        value = copy.deepcopy(gate.EXPECTED); value['diagnostics']['stage_count'] = 0
+        with self.assertRaises(ValueError): gate.check(value, gate.inputs(ROOT))
+
+
+    def test_child_context_and_derived_private_executable_must_match_current_admission(self):
+        context = helper._context('ci', '1', '1', 'repository-contracts', 1000, 1000, 'a' * 40, 'b' * 40)
+        arguments = ['ci', '1', '1', 'repository-contracts', '1000', '1000', 'a' * 40, 'b' * 40]
+        fixed = ['/usr/bin/sudo', '--non-interactive', str(helper.SETSID), '--fork', '--wait', '--', str(helper.PYTHON), str(Path(helper.__file__).resolve()), '_cleanup_root', *arguments]
+        raw = helper._diag_bytes(self.receipt())
+        for index in range(len(fixed)):
+            helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT'); helper._diag_bind(context)
+            wrong = list(fixed); wrong[index] = 'different-selector'
+            helper._diag_command_refusal(wrong, raw, 0, len(raw))
+            self.assertIsNone(helper._DIAGNOSTIC['child'])
+        raw = helper._diag_bytes(self.receipt('preflight', 'setup', 'PREFLIGHT_IDENTITY_CAPABILITY_LABEL'))
+        fixed = [context['directory'] + '/bin/python3', str(Path(helper.__file__).resolve()), '_runner_preflight', *arguments]
+        for index in range(len(fixed)):
+            helper._diag_begin('runner', 'setup', 'RUNNER_PRIVATE_PREFLIGHT_COMMAND_RESULT'); helper._diag_bind(context)
+            wrong = list(fixed); wrong[index] = 'different-selector'
+            helper._diag_command_refusal(wrong, raw, 0, len(raw))
+            self.assertIsNone(helper._DIAGNOSTIC['child'])
+        helper._diag_command_refusal(fixed, raw, 0, len(raw))
+        self.assertEqual(helper._DIAGNOSTIC['child']['domain'], 'preflight')
+
+    def test_domain_operation_inventory_refuses_all_unlisted_cross_stage_pairs(self):
+        for domain, operation in helper.DIAGNOSTIC_PAIRS:
+            allowed = helper.DIAGNOSTIC_PAIR_STAGES[domain + '/' + operation]
+            for stage in helper.DIAGNOSTIC_STAGES:
+                value = self.receipt(domain, operation, stage)
+                if stage in allowed: self.assertEqual(helper._diag_check(value), value)
+                else:
+                    with self.subTest(domain=domain, operation=operation, stage=stage), self.assertRaises(ValueError): helper._diag_check(value)

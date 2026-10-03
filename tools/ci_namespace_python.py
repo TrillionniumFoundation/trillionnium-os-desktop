@@ -37,6 +37,139 @@ SETTINGS = ('/sys/module/apparmor/parameters/enabled',
             '/proc/sys/kernel/unprivileged_userns_clone')
 
 
+# Closed diagnostic observations never authorize an operation or success.
+DIAGNOSTIC_SCHEMA = 'hepta.ci-namespace-python-diagnostic.v1'
+DIAGNOSTIC_MAX_BYTES = 4096
+DIAGNOSTIC_PAIRS = (('runner', 'setup'), ('runner', 'cleanup'),
+                    ('root', 'setup'), ('root', 'cleanup'), ('preflight', 'setup'))
+DIAGNOSTIC_CATEGORIES = ('PERMISSION_DENIED', 'OBJECT_MISSING', 'LOCK_BUSY', 'INTERRUPTED',
+                         'DIRECT_CHILD_TIMEOUT', 'COMMAND_OUTPUT_LIMIT', 'COMMAND_FAILED',
+                         'VALUE_REFUSED', 'KEY_MISSING', 'UNICODE_INVALID', 'RECURSION_REFUSED',
+                         'SUBPROCESS_ERROR', 'OS_ERROR', 'FIXED_REFUSAL')
+DIAGNOSTIC_STAGES = ('CLEANUP_ALLOCATION_LOOKUP', 'CLEANUP_DIRECTORY_INVENTORY', 'CLEANUP_EMPTY_LEDGER_RETIRE', 'CLEANUP_LEDGER_LOCK', 'CLEANUP_OPERATION_REGISTRATION', 'CLEANUP_ORIGINAL_HOST_INPUTS', 'CLEANUP_OWNED_ROOT_BOUNDARY', 'CLEANUP_OWNED_STATE', 'CLEANUP_OWNED_STATE_READ', 'CLEANUP_PRIOR_OPERATION_ABSENCE', 'CLEANUP_PRIVATE_INTERPRETER_INPUTS', 'CLEANUP_PROFILE_INVENTORY_COMPARE', 'CLEANUP_PROFILE_PARSER_RETIRE', 'CLEANUP_PROFILE_PROOF', 'CLEANUP_REMOVE_OWNED_ALLOCATION', 'CLEANUP_RETIRED_LEDGER_WRITE', 'CLEANUP_RETURNED_STATE_CONTEXT', 'CLEANUP_SECURITY_AFTER_RETIRE', 'CLEANUP_SETUP_READY_MARKER', 'CLEANUP_WORKER_CAPTURE', 'GLOBAL_SECURITY_READ', 'INTERNAL_FIXED_CONTEXT', 'LEDGER_ATOMIC_STATE_WRITE', 'LEDGER_LOCK_BOUNDARY', 'LEDGER_STATE_READ', 'LIFECYCLE_WRITER_GROUP_INVENTORY', 'PREFLIGHT_IDENTITY_CAPABILITY_LABEL', 'PRIVATE_PROCESS_EXECUTABLE_READ', 'PRIVATE_PROCESS_LABEL_READ', 'PRIVATE_PROCESS_MAPPING_READ', 'PROCESS_COMMAND_READ', 'PROCESS_STAT_READ', 'PROFILE_KERNEL_INVENTORY', 'ROOT_SUPERVISOR_CAPTURE', 'RUNNER_CLEANUP_RETURNED_MARKER', 'RUNNER_FIXED_PROVIDERS', 'RUNNER_NORMAL_AFTER', 'RUNNER_NORMAL_BEFORE', 'RUNNER_ORIGINAL_INTERPRETER', 'RUNNER_PATH_OUTPUT', 'RUNNER_POSTWAIT_ALL_GROUP_INVENTORY', 'RUNNER_POSTWAIT_PROVIDER_READBACK', 'RUNNER_PRIVATE_PREFLIGHT_COMMAND_RESULT', 'RUNNER_RETURNED_ROOT_CONTEXT', 'RUNNER_ROOT_COMMAND_RESULT', 'RUNNER_SOURCE_TUPLE', 'RUNNER_WORKFLOW_CONTEXT', 'SETUP_LEDGER_LOCK', 'SETUP_ORIGINAL_INTERPRETER', 'SETUP_OWNED_STATE_WRITE', 'SETUP_PRIVATE_INTERPRETER_COPY', 'SETUP_PROFILE_LOADED_MARKER', 'SETUP_PROFILE_PARSER_LOAD', 'SETUP_PROFILE_TEMPLATE', 'SETUP_READY_LEDGER', 'SETUP_STARTED_LEDGER', 'SETUP_WORKER_CAPTURE')
+DIAGNOSTIC_PAIR_STAGES = {'runner/setup': ('GLOBAL_SECURITY_READ', 'PROCESS_COMMAND_READ', 'PROCESS_STAT_READ', 'RUNNER_FIXED_PROVIDERS', 'RUNNER_NORMAL_AFTER', 'RUNNER_NORMAL_BEFORE', 'RUNNER_ORIGINAL_INTERPRETER', 'RUNNER_PATH_OUTPUT', 'RUNNER_POSTWAIT_ALL_GROUP_INVENTORY', 'RUNNER_POSTWAIT_PROVIDER_READBACK', 'RUNNER_PRIVATE_PREFLIGHT_COMMAND_RESULT', 'RUNNER_RETURNED_ROOT_CONTEXT', 'RUNNER_ROOT_COMMAND_RESULT', 'RUNNER_SOURCE_TUPLE', 'RUNNER_WORKFLOW_CONTEXT'), 'runner/cleanup': ('GLOBAL_SECURITY_READ', 'PROCESS_COMMAND_READ', 'PROCESS_STAT_READ', 'RUNNER_CLEANUP_RETURNED_MARKER', 'RUNNER_FIXED_PROVIDERS', 'RUNNER_NORMAL_AFTER', 'RUNNER_NORMAL_BEFORE', 'RUNNER_ORIGINAL_INTERPRETER', 'RUNNER_POSTWAIT_ALL_GROUP_INVENTORY', 'RUNNER_POSTWAIT_PROVIDER_READBACK', 'RUNNER_RETURNED_ROOT_CONTEXT', 'RUNNER_ROOT_COMMAND_RESULT', 'RUNNER_SOURCE_TUPLE', 'RUNNER_WORKFLOW_CONTEXT'), 'root/setup': ('GLOBAL_SECURITY_READ', 'INTERNAL_FIXED_CONTEXT', 'LEDGER_ATOMIC_STATE_WRITE', 'LEDGER_LOCK_BOUNDARY', 'LEDGER_STATE_READ', 'PROCESS_STAT_READ', 'PROFILE_KERNEL_INVENTORY', 'ROOT_SUPERVISOR_CAPTURE', 'SETUP_LEDGER_LOCK', 'SETUP_ORIGINAL_INTERPRETER', 'SETUP_OWNED_STATE_WRITE', 'SETUP_PRIVATE_INTERPRETER_COPY', 'SETUP_PROFILE_LOADED_MARKER', 'SETUP_PROFILE_PARSER_LOAD', 'SETUP_PROFILE_TEMPLATE', 'SETUP_READY_LEDGER', 'SETUP_STARTED_LEDGER', 'SETUP_WORKER_CAPTURE'), 'root/cleanup': ('CLEANUP_ALLOCATION_LOOKUP', 'CLEANUP_DIRECTORY_INVENTORY', 'CLEANUP_EMPTY_LEDGER_RETIRE', 'CLEANUP_LEDGER_LOCK', 'CLEANUP_OPERATION_REGISTRATION', 'CLEANUP_ORIGINAL_HOST_INPUTS', 'CLEANUP_OWNED_ROOT_BOUNDARY', 'CLEANUP_OWNED_STATE', 'CLEANUP_OWNED_STATE_READ', 'CLEANUP_PRIOR_OPERATION_ABSENCE', 'CLEANUP_PRIVATE_INTERPRETER_INPUTS', 'CLEANUP_PROFILE_INVENTORY_COMPARE', 'CLEANUP_PROFILE_PARSER_RETIRE', 'CLEANUP_PROFILE_PROOF', 'CLEANUP_REMOVE_OWNED_ALLOCATION', 'CLEANUP_RETIRED_LEDGER_WRITE', 'CLEANUP_RETURNED_STATE_CONTEXT', 'CLEANUP_SECURITY_AFTER_RETIRE', 'CLEANUP_SETUP_READY_MARKER', 'CLEANUP_WORKER_CAPTURE', 'GLOBAL_SECURITY_READ', 'INTERNAL_FIXED_CONTEXT', 'LEDGER_ATOMIC_STATE_WRITE', 'LEDGER_LOCK_BOUNDARY', 'LEDGER_STATE_READ', 'LIFECYCLE_WRITER_GROUP_INVENTORY', 'PRIVATE_PROCESS_EXECUTABLE_READ', 'PRIVATE_PROCESS_LABEL_READ', 'PRIVATE_PROCESS_MAPPING_READ', 'PROCESS_COMMAND_READ', 'PROCESS_STAT_READ', 'PROFILE_KERNEL_INVENTORY', 'ROOT_SUPERVISOR_CAPTURE'), 'preflight/setup': ('GLOBAL_SECURITY_READ', 'INTERNAL_FIXED_CONTEXT', 'PREFLIGHT_IDENTITY_CAPABILITY_LABEL')}
+_DIAGNOSTIC = None
+_DIAGNOSTIC_CONTEXT = None
+
+
+def _diag_reset():
+    global _DIAGNOSTIC, _DIAGNOSTIC_CONTEXT
+    _DIAGNOSTIC = None
+    _DIAGNOSTIC_CONTEXT = None
+
+
+def _diag_begin(domain, operation, stage):
+    global _DIAGNOSTIC, _DIAGNOSTIC_CONTEXT
+    if (domain, operation) not in DIAGNOSTIC_PAIRS or stage not in DIAGNOSTIC_STAGES:
+        raise ValueError('CI closed diagnostic constants refused')
+    _DIAGNOSTIC_CONTEXT = None
+    _DIAGNOSTIC = {'schema': DIAGNOSTIC_SCHEMA, 'domain': domain, 'operation': operation,
+                   'stage': stage, 'category': None, 'child': None}
+
+
+def _diag_bind(context):
+    global _DIAGNOSTIC_CONTEXT
+    if _DIAGNOSTIC is not None:
+        rebuilt = _context(*(context[key] for key in ('workflow', 'run', 'attempt', 'job', 'uid', 'gid', 'head', 'tree')))
+        if type(context) is not dict or context != rebuilt:
+            raise ValueError('CI diagnostic admitted context differs')
+        _DIAGNOSTIC_CONTEXT = dict(rebuilt)
+
+
+def _diag_stage(stage):
+    if stage not in DIAGNOSTIC_STAGES:
+        raise ValueError('CI closed diagnostic stage refused')
+    if _DIAGNOSTIC is not None:
+        _DIAGNOSTIC['stage'] = stage
+
+
+def _diag_check(value, expected_pair=None, *, child=False):
+    keys = {'schema', 'domain', 'operation', 'stage', 'category', 'child'}
+    if type(value) is not dict or set(value) != keys:
+        raise ValueError('CI closed diagnostic fields refused')
+    if any(type(value[key]) is not str for key in keys - {'child'}):
+        raise ValueError('CI closed diagnostic field types refused')
+    pair = (value['domain'], value['operation'])
+    if (value['schema'] != DIAGNOSTIC_SCHEMA or pair not in DIAGNOSTIC_PAIRS or
+            (expected_pair is not None and pair != expected_pair) or
+            value['stage'] not in DIAGNOSTIC_PAIR_STAGES[value['domain'] + '/' + value['operation']] or value['category'] not in DIAGNOSTIC_CATEGORIES):
+        raise ValueError('CI closed diagnostic inventory refused')
+    nested = value['child']
+    if nested is not None:
+        if child or value['domain'] != 'runner' or type(nested) is not dict:
+            raise ValueError('CI diagnostic depth refused')
+        wanted = (nested.get('domain'), value['operation'])
+        if wanted not in (('root', value['operation']), ('preflight', 'setup')) or wanted[1] != value['operation']:
+            raise ValueError('CI diagnostic child pairing refused')
+        _diag_check(nested, wanted, child=True)
+    return value
+
+
+def _diag_bytes(value):
+    _diag_check(value)
+    raw = (json.dumps(value, sort_keys=True, separators=(',', ':')) + '\n').encode('ascii')
+    if len(raw) > DIAGNOSTIC_MAX_BYTES:
+        raise ValueError('CI diagnostic byte bound refused')
+    return raw
+
+
+def _diag_parse(raw, expected_pair):
+    if type(raw) is not bytes or not 0 < len(raw) <= DIAGNOSTIC_MAX_BYTES:
+        raise ValueError('CI diagnostic stderr bound refused')
+    value = _diag_check(_strict_json(raw), expected_pair, child=True)
+    if _diag_bytes(value) != raw:
+        raise ValueError('CI diagnostic complete canonical stderr refused')
+    return value
+
+
+def _diag_category(error):
+    # Exact built-in types/closed errno values only; no message, args or paths.
+    pairs = {PermissionError: 'PERMISSION_DENIED', FileNotFoundError: 'OBJECT_MISSING',
+             BlockingIOError: 'LOCK_BUSY', InterruptedError: 'INTERRUPTED',
+             subprocess.TimeoutExpired: 'DIRECT_CHILD_TIMEOUT', ValueError: 'VALUE_REFUSED',
+             KeyError: 'KEY_MISSING', UnicodeDecodeError: 'UNICODE_INVALID',
+             UnicodeEncodeError: 'UNICODE_INVALID', UnicodeTranslateError: 'UNICODE_INVALID',
+             RecursionError: 'RECURSION_REFUSED', subprocess.SubprocessError: 'SUBPROCESS_ERROR'}
+    category = pairs.get(type(error))
+    if category is not None: return category
+    if type(error) is OSError:
+        errno = error.errno
+        if type(errno) is int:
+            return {1: 'PERMISSION_DENIED', 13: 'PERMISSION_DENIED', 2: 'OBJECT_MISSING',
+                    11: 'LOCK_BUSY', 16: 'LOCK_BUSY', 4: 'INTERRUPTED'}.get(errno, 'OS_ERROR')
+        return 'OS_ERROR'
+    return 'FIXED_REFUSAL'
+
+
+def _diag_command_refusal(argv, errors, output_bytes, error_bytes):
+    if _DIAGNOSTIC is None: return
+    _DIAGNOSTIC['category'] = ('COMMAND_OUTPUT_LIMIT' if output_bytes > LIMIT or error_bytes > LIMIT else 'COMMAND_FAILED')
+    pair = None
+    context = _DIAGNOSTIC_CONTEXT
+    if context is not None and _DIAGNOSTIC['domain'] == 'runner':
+        arguments = [context[key] for key in ('workflow', 'run', 'attempt', 'job')]
+        arguments += [str(context['uid']), str(context['gid']), context['head'], context['tree']]
+        operation = '_setup_root' if _DIAGNOSTIC['operation'] == 'setup' else '_cleanup_root'
+        fixed = ['/usr/bin/sudo', '--non-interactive', str(SETSID), '--fork', '--wait', '--', str(PYTHON), str(Path(__file__).resolve()), operation, *arguments]
+        private = [context['directory'] + '/bin/python3', str(Path(__file__).resolve()), '_runner_preflight', *arguments]
+        if type(argv) is list and argv == fixed and _DIAGNOSTIC['stage'] == 'RUNNER_ROOT_COMMAND_RESULT':
+            pair = ('root', _DIAGNOSTIC['operation'])
+        elif type(argv) is list and argv == private and (_DIAGNOSTIC['operation'], _DIAGNOSTIC['stage']) == ('setup', 'RUNNER_PRIVATE_PREFLIGHT_COMMAND_RESULT'):
+            pair = ('preflight', 'setup')
+    if pair is not None and error_bytes <= DIAGNOSTIC_MAX_BYTES:
+        try: _DIAGNOSTIC['child'] = _diag_parse(errors, pair)
+        except (OSError, ValueError, KeyError, UnicodeError, RecursionError): pass
+
+
+def _diag_emit(error):
+    if _DIAGNOSTIC is None:
+        print('CI_NAMESPACE_PYTHON_REFUSED', file=sys.stderr)
+        return
+    value = dict(_DIAGNOSTIC)
+    if value['category'] is None: value['category'] = _diag_category(error)
+    print(_diag_bytes(value).decode('ascii'), end='', file=sys.stderr)
+
+
 def _sha(raw):
     return hashlib.sha256(raw).hexdigest()
 
@@ -135,6 +268,7 @@ def _executable(path):
 
 
 def _global():
+    _diag_stage('GLOBAL_SECURITY_READ')
     values = {}
     for path in SETTINGS:
         try: values[path] = _kernel_read(Path(path), 16).decode('ascii', 'strict')
@@ -149,6 +283,7 @@ def _global():
 
 
 def _profiles():
+    _diag_stage('PROFILE_KERNEL_INVENTORY')
     raw = _kernel_read(Path('/sys/kernel/security/apparmor/profiles'), LIMIT)
     if len(raw) > LIMIT: raise ValueError('CI profile inventory bound refused')
     return sorted(raw.decode('utf-8', 'strict').splitlines())
@@ -220,11 +355,13 @@ def _command(argv, *, new_session=True):
         stdout.seek(0); output = stdout.read(LIMIT + 1)
         stderr.seek(0); errors = stderr.read(LIMIT + 1)
         if len(output) > LIMIT or len(errors) > LIMIT or result.returncode:
+            _diag_command_refusal(argv, errors, len(output), len(errors))
             raise ValueError('CI fixed operation refused')
         return output
 
 
 def _proc_record(pid, proc=Path('/proc')):
+    _diag_stage('PROCESS_STAT_READ')
     raw = _kernel_read(proc / str(pid) / 'stat', 8192)
     if not raw.startswith(str(pid).encode() + b' (') or b') ' not in raw:
         raise ValueError('CI process stat shape refused')
@@ -245,6 +382,7 @@ def _capture_root_worker(context, operation):
         raise ValueError('CI actual root worker executable refused')
     if result['pgid'] != result['pid'] or result['sid'] != result['pid']:
         raise ValueError('CI actual root operation session refused')
+    _diag_stage('ROOT_SUPERVISOR_CAPTURE')
     supervisor = _proc_record(os.getppid())
     status = _kernel_read(Path('/proc') / str(supervisor['pid']) / 'status', 65536).decode('ascii', 'strict')
     uid = [line.split()[1:] for line in status.splitlines() if line.startswith('Uid:')]
@@ -286,6 +424,7 @@ def _live_setup_workers(context, worker, proc=Path('/proc'), exclude=None):
     for pid in _process_entries(proc):
         try:
             record = _proc_record(pid, proc)
+            _diag_stage('PROCESS_COMMAND_READ')
             argv = _kernel_read(proc / str(pid) / 'cmdline', 65536).rstrip(b'\0').split(b'\0')
             if exclude is not None and pid == exclude['pid']:
                 # Exclude only the currently validating writer, never its
@@ -364,6 +503,7 @@ def _check_ledger_state(value, context):
 
 @contextmanager
 def _ledger_lock(context, create):
+    _diag_stage('LEDGER_LOCK_BOUNDARY')
     _root_owned(Path('/')); _root_owned(Path('/var')); _root_owned(BASE)
     directory = Path(context['ledger']); made = False
     try: directory.mkdir(mode=0o700); made = True
@@ -396,6 +536,7 @@ def _ledger_lock(context, create):
 
 
 def _ledger_write(directory, value, current):
+    _diag_stage('LEDGER_ATOMIC_STATE_WRITE')
     current(); target = directory / 'state.json'
     if target.exists(): _root_owned(target, 0o600)
     pending = directory / 'pending.json'
@@ -430,6 +571,7 @@ def _ledger_begin_cleanup(directory, context, cleanup_worker, current):
     if cleanup_worker in (previous['setup_worker'], previous['cleanup_worker']):
         raise ValueError('CI previous operation cannot be current writer')
     # No caller assertion can authorize replacing a previous operation record.
+    _diag_stage('CLEANUP_PRIOR_OPERATION_ABSENCE')
     _no_owned_lifecycle(context, previous, cleanup_worker)
     value = dict(previous); value['cleanup_worker'] = cleanup_worker
     _check_ledger_state(value, context)
@@ -438,6 +580,7 @@ def _ledger_begin_cleanup(directory, context, cleanup_worker, current):
 
 
 def _ledger_get(directory, context, current):
+    _diag_stage('LEDGER_STATE_READ')
     path = directory / 'state.json'; _root_owned(path, 0o600)
     value = _check_ledger_state(_strict_json(_read(path, 16384)[0]), context)
     if value['lock_identity'] != current(): raise ValueError('CI original ledger lock replaced')
@@ -447,6 +590,7 @@ def _ledger_get(directory, context, current):
 def _no_owned_lifecycle(context, state, current_writer=None):
     for field in ('setup_worker', 'cleanup_worker'):
         worker = state[field]
+        _diag_stage('LIFECYCLE_WRITER_GROUP_INVENTORY')
         if _live_setup_workers(context, worker, exclude=current_writer):
             raise ValueError('CI root operation session remains')
         if worker is not None and worker != current_writer and _live_setup_workers(context, worker['supervisor']):
@@ -456,20 +600,28 @@ def _no_owned_lifecycle(context, state, current_writer=None):
 
 
 def _root_setup(context):
+    _diag_stage('SETUP_LEDGER_LOCK')
     with _ledger_lock(context, True) as (ledger, made, current):
+        _diag_stage('SETUP_WORKER_CAPTURE')
         worker = _capture_root_worker(context, '_setup_root')
+        _diag_stage('SETUP_STARTED_LEDGER')
         _ledger_put(ledger, context, 'STARTED', worker, None, current)
         return _setup_locked(context, ledger, worker, current)
 
 
 def _root_cleanup(context):
+    _diag_stage('CLEANUP_LEDGER_LOCK')
     with _ledger_lock(context, False) as (ledger, made, current):
+        _diag_stage('CLEANUP_WORKER_CAPTURE')
         cleanup_worker = _capture_root_worker(context, '_cleanup_root')
         if made:
+            _diag_stage('CLEANUP_EMPTY_LEDGER_RETIRE')
             state = _ledger_put(ledger, context, 'RETIRED', None, None, current, cleanup_worker)
         else:
+            _diag_stage('CLEANUP_OPERATION_REGISTRATION')
             state = _ledger_begin_cleanup(ledger, context, cleanup_worker, current)
         _no_owned_lifecycle(context, state, cleanup_worker)
+        _diag_stage('CLEANUP_ALLOCATION_LOOKUP')
         directory = Path(context['directory'])
         if state['phase'] == 'RETIRED':
             if directory.exists() or any(line.split(' (', 1)[0] == context['profile'] for line in _profiles()):
@@ -479,8 +631,10 @@ def _root_cleanup(context):
                     'retirement_ledger_retained': True, 'active_profile_and_interpreter_absent': True,
                     'operation_worker': cleanup_worker, 'setsid_provider': _executable(SETSID),
                     'python_provider': _executable(PYTHON), 'root_worker_supervisor_all_exited': False}
+        _diag_stage('CLEANUP_OWNED_STATE')
         result = _cleanup_locked(context, state)
         _no_owned_lifecycle(context, state, cleanup_worker); current()
+        _diag_stage('CLEANUP_RETIRED_LEDGER_WRITE')
         _ledger_put(ledger, context, 'RETIRED', state['setup_worker'], state['private_identity'], current, cleanup_worker)
         _no_owned_lifecycle(context, state, cleanup_worker)
         result['retirement_ledger_retained'] = True
@@ -495,11 +649,14 @@ def _setup_locked(context, ledger, worker, current):
     before = _global(); profiles = _profiles()
     if any(line.split(' (', 1)[0] == context['profile'] for line in profiles):
         raise ValueError('CI named profile already exists')
+    _diag_stage('SETUP_ORIGINAL_INTERPRETER')
     original = _executable(PYTHON)
+    _diag_stage('SETUP_PROFILE_TEMPLATE')
     template, unused = _read(ROOT / TEMPLATE)
     profile = _render(context, template)
     directory.mkdir(mode=0o755); _root_owned(directory, 0o755)
     (directory / 'bin').mkdir(mode=0o755); _root_owned(directory / 'bin', 0o755)
+    _diag_stage('SETUP_PRIVATE_INTERPRETER_COPY')
     raw, observed = _read(PYTHON, 64 * 1024 * 1024)
     if _identity(observed) != original['identity'] or _sha(raw) != original['sha256']:
         raise ValueError('CI interpreter input changed')
@@ -512,13 +669,17 @@ def _setup_locked(context, ledger, worker, current):
     state = {'schema': 'hepta.ci-namespace-python-state.v1', 'context': context,
              'global': before, 'profiles_before': profiles, 'original': original,
              'private': copied, 'profile_sha256': _sha(profile), 'setup_worker': worker}
+    _diag_stage('SETUP_OWNED_STATE_WRITE')
     _write_new(directory / 'state.json', (json.dumps(state, sort_keys=True) + '\n').encode(), 0o600)
     _ledger_put(ledger, context, 'STARTED', worker, copied['identity'], current)
+    _diag_stage('SETUP_PROFILE_PARSER_LOAD')
     _command(['/sbin/apparmor_parser', '-a', str(directory / 'profile')], new_session=False)
     expected = [line for line in _profiles() if line.split(' (', 1)[0] == context['profile']]
     if len(expected) != 1 or _global() != before:
         raise ValueError('CI profile or global security readback differs')
+    _diag_stage('SETUP_PROFILE_LOADED_MARKER')
     _write_new(directory / 'loaded', b'verified\n', 0o600)
+    _diag_stage('SETUP_READY_LEDGER')
     _ledger_put(ledger, context, 'READY', worker, copied['identity'], current)
     return {'directory': str(directory), 'profile': context['profile'], 'private': copied,
             'global_unchanged': True, 'corpus_root': False,
@@ -534,16 +695,19 @@ def _live_private(identity, profile, proc=Path('/proc')):
             count += 1
             if count > 65536: raise ValueError('CI process inventory bound refused')
             if not entry.name.isdecimal(): continue
+            _diag_stage('PRIVATE_PROCESS_LABEL_READ')
             try: label = _kernel_read(proc / entry.name / 'attr/current', 4096).decode('utf-8', 'strict').rstrip('\n\0')
             except FileNotFoundError: continue
             if label.startswith(profile + ' ('):
                 live.append(int(entry.name)); continue
+            _diag_stage('PRIVATE_PROCESS_EXECUTABLE_READ')
             try: value = (proc / entry.name / 'exe').stat()
             except FileNotFoundError: continue
             # Other read failures remain failures; never infer absence.
             if identity is None: continue
             if [value.st_dev, value.st_ino] == identity[:2]:
                 live.append(int(entry.name)); continue
+            _diag_stage('PRIVATE_PROCESS_MAPPING_READ')
             try: maps = _kernel_read(proc / entry.name / 'maps', 4 * 1024 * 1024)
             except FileNotFoundError: continue
             for line in maps.splitlines():
@@ -559,6 +723,7 @@ def _live_private(identity, profile, proc=Path('/proc')):
 
 def _cleanup_locked(context, ledger_state):
     directory = Path(context['directory'])
+    _diag_stage('CLEANUP_OWNED_ROOT_BOUNDARY')
     _root_owned(Path('/')); _root_owned(Path('/var')); _root_owned(BASE)
     try: directory.lstat()
     except FileNotFoundError:
@@ -567,19 +732,24 @@ def _cleanup_locked(context, ledger_state):
         return {'cleanup': 'NO_ALLOCATION_RETIRED_MARKER_RECORDED', 'no_owned_profile_or_directory': True}
     _root_owned(directory, 0o755); _root_owned(directory / 'bin', 0o755)
     _root_owned(directory / 'state.json', 0o600); _root_owned(directory / 'profile', 0o600)
+    _diag_stage('CLEANUP_OWNED_STATE_READ')
     raw, unused = _read(directory / 'state.json')
     state = _strict_json(raw)
     if type(state) is not dict or set(state) != {'schema', 'context', 'global', 'profiles_before', 'original', 'private', 'profile_sha256', 'setup_worker'}:
         raise ValueError('CI closed state differs')
+    _diag_stage('CLEANUP_RETURNED_STATE_CONTEXT')
     if state['schema'] != 'hepta.ci-namespace-python-state.v1' or state['context'] != context:
         raise ValueError('CI cleanup context differs')
     if state['setup_worker'] != ledger_state['setup_worker'] or state['private']['identity'] != ledger_state['private_identity']:
         raise ValueError('CI ledger handoff differs')
+    _diag_stage('CLEANUP_ORIGINAL_HOST_INPUTS')
     if _global() != state['global'] or _executable(PYTHON) != state['original']:
         raise ValueError('CI original host input changed')
     private = directory / 'bin/python3'
+    _diag_stage('CLEANUP_PRIVATE_INTERPRETER_INPUTS')
     if _executable(private) != state['private'] or _live_private(state['private']['identity'], context['profile']):
         raise ValueError('CI private interpreter changed or still executing')
+    _diag_stage('CLEANUP_PROFILE_PROOF')
     profile, unused = _read(directory / 'profile')
     template, unused = _read(ROOT / TEMPLATE)
     if profile != _render(context, template) or _sha(profile) != state['profile_sha256']:
@@ -587,26 +757,33 @@ def _cleanup_locked(context, ledger_state):
     current = _profiles()
     owned = [line for line in current if line.split(' (', 1)[0] == context['profile']]
     loaded = directory / 'loaded'
+    _diag_stage('CLEANUP_SETUP_READY_MARKER')
     completed_setup = loaded.exists()
     if completed_setup:
         _root_owned(loaded, 0o600)
         if _read(loaded)[0] != b'verified\n': raise ValueError('CI setup marker differs')
+    _diag_stage('CLEANUP_PROFILE_INVENTORY_COMPARE')
     if ((completed_setup and len(owned) != 1) or len(owned) > 1 or
             sorted(line for line in current if line not in owned) != state['profiles_before']):
         raise ValueError('CI unrelated profile changed')
+    _diag_stage('CLEANUP_DIRECTORY_INVENTORY')
     if set(os.listdir(directory)) != {'bin', 'profile', 'state.json'} | ({'loaded'} if completed_setup else set()):
         raise ValueError('CI owned directory inventory differs')
     if os.listdir(directory / 'bin') != ['python3']:
         raise ValueError('CI owned bin inventory differs')
+    _diag_stage('CLEANUP_PROFILE_PARSER_RETIRE')
     if owned: _command(['/sbin/apparmor_parser', '-R', str(directory / 'profile')], new_session=False)
     _no_owned_lifecycle(context, ledger_state, ledger_state['cleanup_worker'])
+    _diag_stage('CLEANUP_SECURITY_AFTER_RETIRE')
     if (_profiles() != state['profiles_before'] or _global() != state['global'] or
             _live_private(state['private']['identity'], context['profile'])):
         raise ValueError('CI cleanup security or process readback differs')
+    _diag_stage('CLEANUP_DIRECTORY_INVENTORY')
     if set(os.listdir(directory)) != {'bin', 'profile', 'state.json'} | ({'loaded'} if completed_setup else set()):
         raise ValueError('CI owned directory inventory differs')
     if os.listdir(directory / 'bin') != ['python3']:
         raise ValueError('CI owned bin inventory differs')
+    _diag_stage('CLEANUP_REMOVE_OWNED_ALLOCATION')
     private.unlink(); (directory / 'bin').rmdir()
     if completed_setup: loaded.unlink()
     (directory / 'profile').unlink(); (directory / 'state.json').unlink(); directory.rmdir()
@@ -614,6 +791,7 @@ def _cleanup_locked(context, ledger_state):
 
 
 def _runner_preflight(context):
+    _diag_stage('PREFLIGHT_IDENTITY_CAPABILITY_LABEL')
     status = dict(line.split(':', 1) for line in _kernel_read(Path('/proc/self/status'), 65536).decode().splitlines() if ':' in line)
     label = _kernel_read(Path('/proc/self/attr/current'), 4096).decode().rstrip('\n\0')
     if os.getuid() != context['uid'] or os.getgid() != context['gid']:
@@ -643,56 +821,73 @@ def _completed_operation(context, result, provider, python_provider):
     # This runs only after sudo/setsid direct child wait completes. Neither
     # returncode nor RETIRED phase substitutes for actual remaining-process
     # readback. No writer/supervisor PID or whole group is excluded here.
+    _diag_stage('RUNNER_RETURNED_ROOT_CONTEXT')
     worker = _check_worker(result['operation_worker'])
     if type(result['root_worker_supervisor_all_exited']) is not bool or result['root_worker_supervisor_all_exited'] is not False:
         raise ValueError('CI premature root completion claim refused')
+    _diag_stage('RUNNER_POSTWAIT_PROVIDER_READBACK')
     if (result['setsid_provider'] != provider or _executable(SETSID) != provider or
             result['python_provider'] != python_provider or _executable(PYTHON) != python_provider or
             worker['exe_identity'] != python_provider['identity'] or worker['supervisor']['exe_identity'] != provider['identity']):
         raise ValueError('CI fixed setsid provider readback changed')
+    _diag_stage('RUNNER_POSTWAIT_ALL_GROUP_INVENTORY')
     if _live_setup_workers(context, worker) or _live_setup_workers(context, worker['supervisor']):
         raise ValueError('CI post-wait root operation or supervision remains')
 
 
 def _main(argv):
     if len(argv) == 9 and argv[0] in ('_setup_root', '_cleanup_root', '_runner_preflight'):
+        _diag_begin('preflight' if argv[0] == '_runner_preflight' else 'root',
+                    'cleanup' if argv[0] == '_cleanup_root' else 'setup', 'INTERNAL_FIXED_CONTEXT')
         context = _context(argv[1], argv[2], argv[3], argv[4], int(argv[5]), int(argv[6]), argv[7], argv[8])
+        _diag_bind(context)
         if argv[0] == '_runner_preflight': return _runner_preflight(context)
         if os.geteuid() != 0 or os.environ.get('SUDO_UID') != str(context['uid']) or os.environ.get('SUDO_GID') != str(context['gid']):
             raise ValueError('CI actual sudo caller differs')
         return (_root_setup if argv[0] == '_setup_root' else _root_cleanup)(context)
     if argv not in (['setup'], ['cleanup']) or os.environ.get('GITHUB_ACTIONS') != 'true' or os.geteuid() == 0:
         raise ValueError('CI fixed normal-runner invocation refused')
+    _diag_begin('runner', argv[0], 'RUNNER_ORIGINAL_INTERPRETER')
     if Path(sys.executable).resolve() != PYTHON:
         raise ValueError('CI original interpreter provider differs')
+    _diag_stage('RUNNER_SOURCE_TUPLE')
     head = _command(['/usr/bin/git', '-C', str(ROOT), 'rev-parse', 'HEAD']).decode().strip()
     tree = _command(['/usr/bin/git', '-C', str(ROOT), 'rev-parse', 'HEAD^{tree}']).decode().strip()
     if os.environ.get('GITHUB_REPOSITORY') != REPOSITORY:
         raise ValueError('CI runner repository differs')
+    _diag_stage('RUNNER_WORKFLOW_CONTEXT')
     workflow = _workflow_ref(os.environ['GITHUB_WORKFLOW_REF'])
     context = _context(workflow, os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT'], os.environ['GITHUB_JOB'],
                        os.getuid(), os.getgid(), head, tree)
+    _diag_bind(context)
     arguments = [context[key] for key in ('workflow', 'run', 'attempt', 'job')]
     arguments += [str(context['uid']), str(context['gid']), head, tree]
+    _diag_stage('RUNNER_NORMAL_BEFORE')
     normal = _normal_runner_fact()
     original_prefix = (sys.prefix, sys.base_prefix)
+    _diag_stage('RUNNER_FIXED_PROVIDERS')
     provider = _executable(SETSID); python_provider = _executable(PYTHON)
+    _diag_stage('RUNNER_ROOT_COMMAND_RESULT')
     result = _strict_json(_command(['/usr/bin/sudo', '--non-interactive', str(SETSID), '--fork', '--wait', '--', str(PYTHON), str(Path(__file__).resolve()),
                                    '_setup_root' if argv == ['setup'] else '_cleanup_root', *arguments]))
     _completed_operation(context, result, provider, python_provider)
+    _diag_stage('RUNNER_CLEANUP_RETURNED_MARKER')
     if argv == ['cleanup']:
         markers = {'RETIRED_MARKER_RECORDED': 'PASS', 'NO_ALLOCATION_RETIRED_MARKER_RECORDED': 'NO_ALLOCATION_RETIRED', 'ALREADY_RETIRED_MARKER_RECORDED': 'ALREADY_RETIRED'}
         result['cleanup'] = markers[result['cleanup']]
     result['root_worker_supervisor_all_exited'] = True
     result['actual_root_operation_and_supervision_absent_after_wait'] = True
+    _diag_stage('RUNNER_NORMAL_AFTER')
     if _normal_runner_fact() != normal:
         raise ValueError('CI normal runner or global security changed')
     result['actual_normal_runner_before_after'] = normal
     if argv == ['setup']:
         private = context['directory'] + '/bin/python3'
+        _diag_stage('RUNNER_PRIVATE_PREFLIGHT_COMMAND_RESULT')
         before = _strict_json(_command([private, str(Path(__file__).resolve()), '_runner_preflight', *arguments]))
         if (before['prefix'], before['base_prefix']) != original_prefix or before['executable'] != private:
             raise ValueError('CI private stdlib or actual executable differs')
+        _diag_stage('RUNNER_PATH_OUTPUT')
         path = Path(os.environ['GITHUB_PATH'])
         fd = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_NOFOLLOW | os.O_CLOEXEC)
         try:
@@ -707,12 +902,13 @@ def _main(argv):
 
 
 def main():
+    _diag_reset()
     try:
         result = _main(sys.argv[1:])
         print(json.dumps(result, sort_keys=True))
         return 0
     except (OSError, ValueError, KeyError, UnicodeError, RecursionError, subprocess.SubprocessError):
-        print('CI_NAMESPACE_PYTHON_REFUSED', file=sys.stderr)
+        _diag_emit(sys.exc_info()[1])
         return 1
 
 
