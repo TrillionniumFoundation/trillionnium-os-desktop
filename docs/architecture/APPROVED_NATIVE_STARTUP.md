@@ -85,7 +85,11 @@ check Requested versus issued cancellation; they do not attest production peers.
 The separate `g2-approved-native-startup.yml` workflow assembles pristine Servo
 `670ae8a70801b162e186f81cbb5bdd2d59c39108` with the unchanged original native
 adapter/target plus the additive startup/fixture/target. Original registry lock
-identities and edges use the existing lock verifier. All five Rust sources are
+identities and edges use the existing lock verifier. This additive target has
+one direct workspace `libc` dev dependency for its Linux credential/FD fixture;
+the approved profile permits exactly that one Servo dependency edge and requires
+the existing precise `libc` 0.2.186 registry identity and checksum. The original
+owner profile retains its original dependency edge guard. All five Rust sources are
 formatted with the exact PIN configuration and compared byte for byte before
 compiling with its Rust 1.97.1 toolchain. Fresh-process native cases use an
 explicit privileged transient-systemd test policy: unit/UID and a known owned

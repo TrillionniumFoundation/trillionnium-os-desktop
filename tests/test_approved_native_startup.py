@@ -506,5 +506,76 @@ class ApprovedNativeStartupGitIdentityTests(unittest.TestCase):
                 self.denied(checkout=variant)
 
 
+class ApprovedNativeStartupDirectLibcTests(unittest.TestCase):
+    """Finite additive lock profile; synthetic source checks, never native qualification."""
+    def locks(self):
+        before = (b'version=4\n[[package]]\nname="servo"\nversion="0.5.0"\n'
+                  b'dependencies=["original"]\n[[package]]\nname="original"\nversion="1.0.0"\n'
+                  b'[[package]]\nname="libc"\nversion="0.2.189"\n'
+                  b'source="registry+https://github.com/rust-lang/crates.io-index"\n'
+                  b'checksum="3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"\n')
+        after = before.replace(b'dependencies=["original"]', b'dependencies=["libc","original"]')
+        after = after.replace(b'0.2.189', b'0.2.186').replace(
+            b'3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2',
+            b'68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66')
+        return before, after
+
+    def check(self, before, after, **profile):
+        from unittest.mock import patch
+        from tools import prepare_native_product_owner as original
+        with tempfile.TemporaryDirectory(prefix="approved-libc-lock-") as temporary:
+            root = Path(temporary)
+            old, new = root / "before.lock", root / "after.lock"
+            old.write_bytes(before); new.write_bytes(after)
+            with patch.dict(original.PIN_FILES, {"Cargo.lock": original.digest(before)}):
+                return original.verify_lock(old, new, **profile)
+
+    def test_unique_precise_direct_edge_only_in_approved_profile(self):
+        before, after = self.locks()
+        self.assertFalse(self.check(before, before)["actual_servo_execution"])
+        self.assertFalse(self.check(before, after, approved_startup=True)["actual_servo_execution"])
+        with self.assertRaises(ValueError): self.check(before, after)
+        with self.assertRaises(ValueError): self.check(before, before, approved_startup=True)
+
+    def test_missing_duplicate_qualified_or_other_package_edge_refuses(self):
+        before, after = self.locks()
+        mutants = [after.replace(b'"libc","original"', b'"original"'),
+                   after.replace(b'"libc","original"', b'"libc","libc","original"'),
+                   after.replace(b'"libc","original"', b'"libc 0.2.186","original"'),
+                   after.replace(b'"libc","original"', b'"libc","changed"'),
+                   after.replace(b'name="original"\nversion="1.0.0"',
+                                 b'name="original"\nversion="1.0.0"\ndependencies=["libc"]'),
+                   after.replace(b'version="0.5.0"', b'version="0.6.0"')]
+        for mutant in mutants:
+            with self.subTest(mutant=mutant):
+                with self.assertRaises(ValueError): self.check(before, mutant, approved_startup=True)
+
+    def test_registry_checksum_fields_and_exact_bool_refuse(self):
+        before, after = self.locks()
+        for mutant in [after.replace(b'68ab91017fe', b'08ab91017fe'),
+                       after.replace(b'version="0.2.186"', b'version="0.2.189"'),
+                       after + b'dependencies=["original"]\n',
+                       after + b'unknown="field"\n']:
+            with self.subTest(mutant=mutant):
+                with self.assertRaises(ValueError): self.check(before, mutant, approved_startup=True)
+        for value in [1, 0, None, "true"]:
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError): self.check(before, after, approved_startup=value)
+
+    def test_closed_assembler_dependency_and_strict_lock_invocation(self):
+        from tools import prepare_approved_native_startup as approved
+        text = (ROOT / verifier.EXPECTED["qualification"]["prepare"]).read_text(encoding="utf-8")
+        verifier.check_prepare(text)
+        self.assertEqual(approved.TARGET.count(b"[dev-dependencies.libc]"), 1)
+        for before, after in [("[dev-dependencies.libc]", "[dependencies.libc]"),
+                              ("workspace = true", "version = '0.2'"),
+                              ("approved_startup=True", "approved_startup=False"),
+                              ("approved_startup=True", "approved_startup=1"),
+                              (", approved_startup=True", "")]:
+            with self.subTest(before=before):
+                self.assertIn(before, text)
+                with self.assertRaises(ValueError): verifier.check_prepare(text.replace(before, after, 1))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -149,7 +149,8 @@ ASSEMBLED_SOURCES = {
     "experiments/servo-product-owner/src/approved_connected_tests.rs": "components/servo/tests/trillionnium_approved_connected.rs",
 }
 ASSEMBLED_TARGET = (b'\n[[test]]\nname = "trillionnium_approved_connected"\n'
-                    b'path = "tests/trillionnium_approved_connected.rs"\nharness = false\n')
+                    b'path = "tests/trillionnium_approved_connected.rs"\nharness = false\n'
+                    b'\n[dev-dependencies.libc]\nworkspace = true\n')
 
 
 def typed_equal(actual, expected, path="contract"):
@@ -491,6 +492,14 @@ def check_prepare(text: str):
         writes = [node.lineno for node in calls if node.func.attr == "write_source"]
         if len(prerequisite) != 1 or len(writes) != 2 or min(writes) <= prerequisite[0]:
             raise ValueError("preparation bypasses original PIN assembly")
+        locks = [node for node in ast.walk(module) if isinstance(node, ast.Call)
+                 and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name)
+                 and node.func.value.id == "original" and node.func.attr == "verify_lock"]
+        if (len(locks) != 1 or len(locks[0].keywords) != 1
+                or locks[0].keywords[0].arg != "approved_startup"
+                or not isinstance(locks[0].keywords[0].value, ast.Constant)
+                or locks[0].keywords[0].value.value is not True):
+            raise ValueError("approved startup precise lock profile differs")
     except (SyntaxError, StopIteration, TypeError) as error:
         raise ValueError("preparation source differs from the closed inventory") from error
 

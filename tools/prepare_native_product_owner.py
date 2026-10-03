@@ -199,7 +199,9 @@ def prepare(upstream: Path, root: Path = ROOT) -> dict:
             "formatter_configuration_sha256": formatter_configuration_sha256,
             "qualification": "not_executed", "installed_activation": False}
 
-def verify_lock(before: Path, after: Path) -> dict:
+def verify_lock(before: Path, after: Path, *, approved_startup: bool = False) -> dict:
+    if type(approved_startup) is not bool:
+        raise ValueError("approved startup lock profile must be an exact bool")
     old = tomllib.loads(read(before).decode("utf-8"))
     new = tomllib.loads(read(after).decode("utf-8"))
     identity = lambda package: (package["name"], package["version"], package.get("source"), package.get("checksum"))
@@ -213,6 +215,10 @@ def verify_lock(before: Path, after: Path) -> dict:
     }
     if not (old_registry ^ new_registry) <= approved_libc:
         raise ValueError("unreviewed third-party dependency resolution drift")
+    if approved_startup and {entry for entry in new_registry if entry[0] == "libc"} != {
+        entry for entry in approved_libc if entry[1] == "0.2.186"
+    }:
+        raise ValueError("approved startup requires the existing precise libc identity")
     old_local = {identity(p) for p in old["package"] if not p.get("source")}
     new_local = {identity(p) for p in new["package"] if not p.get("source")}
     permitted = set(DEPS) | {"hepta-browser-actor-simulation", "hepta-browser-contracts", "trillionnium-contract-core"}
@@ -226,6 +232,7 @@ def verify_lock(before: Path, after: Path) -> dict:
     for package in new["package"]:
         if package["name"] == "libc" and (identity(package) not in approved_libc or set(package) != {"name", "version", "source", "checksum"}):
             raise ValueError("unreviewed libc package fields or dependency edges")
+    approved_edges = 0
     for package in old["package"]:
         if package["name"] == "libc":
             continue
@@ -238,10 +245,22 @@ def verify_lock(before: Path, after: Path) -> dict:
                 actual = normalize(updated.get(key, []))
                 if package["name"] == "servo":
                     actual = [value for value in actual if value.split(" ")[0] not in DEPS]
+                    if approved_startup:
+                        # Only this additive target imports libc directly. The
+                        # original CLI retains its original exact edge guard.
+                        if (package["version"] != "0.5.0" or package.get("source")
+                                or "libc" in expected
+                                or updated.get(key, []).count("libc") != 1
+                                or actual.count("libc") != 1):
+                            raise ValueError("approved startup direct libc edge differs")
+                        actual.remove("libc")
+                        approved_edges += 1
                 if actual != expected:
                     raise ValueError("original package dependency edges changed")
             elif updated.get(key) != package.get(key):
                 raise ValueError("original package fields changed")
+    if approved_startup and approved_edges != 1:
+        raise ValueError("approved startup requires exactly one direct Servo libc edge")
     return {"schema": "trillionnium.native-owner-lock-binding.v1", "original_sha256": digest(read(before)),
             "assembled_sha256": digest(read(after)), "actual_servo_execution": False}
 

@@ -18,7 +18,7 @@ SOURCES = {
     "experiments/servo-product-owner/src/approved_test_support.rs": "components/servo/tests/trillionnium_approved_test_support.rs",
     "experiments/servo-product-owner/src/approved_connected_tests.rs": "components/servo/tests/trillionnium_approved_connected.rs",
 }
-TARGET = b'\n[[test]]\nname = "trillionnium_approved_connected"\npath = "tests/trillionnium_approved_connected.rs"\nharness = false\n'
+TARGET = b'\n[[test]]\nname = "trillionnium_approved_connected"\npath = "tests/trillionnium_approved_connected.rs"\nharness = false\n\n[dev-dependencies.libc]\nworkspace = true\n'
 def prepare(upstream: Path, root: Path = ROOT) -> dict:
     upstream, root = upstream.absolute(), root.absolute()
     # Read the complete bounded source before modifying the pristine tree.
@@ -46,7 +46,7 @@ def main() -> int:
     lock = commands.add_parser("verify-lock")
     lock.add_argument("--before", type=Path, required=True); lock.add_argument("--after", type=Path, required=True)
     args = parser.parse_args()
-    result = prepare(args.upstream) if args.command == "prepare" else original.verify_lock(args.before, args.after)
+    result = prepare(args.upstream) if args.command == "prepare" else original.verify_lock(args.before, args.after, approved_startup=True)
     print(json.dumps(result, sort_keys=True)); return 0
 if __name__ == "__main__":
     raise SystemExit(main())
