@@ -149,5 +149,52 @@
     "production_release": false,
     "caller_supplied_runtime_authority": false,
     "raw_product_state_mutation_authority": false
+  },
+  "public_export_inventory": {
+    "schema": "hepta.browser-actor.closed-public-export-ledger.v1",
+    "scope": "SOURCE_ONLY_LEXICAL_PUBLIC_USE_AND_TYPE_DECLARATIONS",
+    "lexical_declaration_count": 10,
+    "lexical_declarations": [
+      "pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;",
+      "pub use servo_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;",
+      "pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;",
+      "pub use hepta_agent_transport : : PeerIdentity ;",
+      "pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;",
+      "pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;",
+      "pub use hepta_session_core : : ReceiptJournal ;",
+      "pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;",
+      "pub use service_actor : : ServiceServoBrowserActor ;",
+      "pub use service_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;"
+    ],
+    "retained_declaration_count": 7,
+    "Service_added_declaration_count": 3,
+    "Service_unique_names": [
+      "ServiceServoBrowserActor",
+      "ServiceServoRuntimeBridge",
+      "ServiceServoRuntimeCommand",
+      "ServiceServoRuntimeCompletion",
+      "ServiceServoRuntimeEndpoint",
+      "closed_immutable_service_runtime_pair"
+    ],
+    "Service_public_structs_private_state": 5,
+    "Service_declaration_paths": [
+      "crates/hepta-browser-actor/src/lib.rs",
+      "crates/hepta-browser-actor/src/servo_runtime.rs",
+      "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs"
+    ],
+    "separate_typed_API_contracts": [
+      "contracts/approved-service-runtime.v2.json",
+      "contracts/approved-service-actor.v2.json",
+      "contracts/service-dispatch-denial-cutoff.v1.json"
+    ],
+    "scanner_does_not_expand_macros_or_compile_Rust": true,
+    "genuine_session_verifier_and_original_binding_required_for_actor": true,
+    "unbound_pair_mints_request_authority": false,
+    "raw_handler_exposed": false,
+    "native_consumer_connected": false,
+    "default_product_enabled": false,
+    "installed_image_qualified": false,
+    "Native_qualified": false,
+    "production_release": false
   }
 }

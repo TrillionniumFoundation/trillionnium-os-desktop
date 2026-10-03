@@ -244,3 +244,43 @@ custody checks. The explicit new compile profile preserves the original native
 cases and deadlines. It does not prove actual Cargo archive consumption,
 attestation, native execution, installed qualification, G1 closure or production
 readiness. The existing status and claim ceiling remain unchanged.
+
+
+## Persistent Service facade and the S06 export ledger
+
+The Linux Service facade is a distinct reviewed concrete family. Its six names
+are `ServiceServoBrowserActor`, `ServiceServoRuntimeEndpoint`,
+`ServiceServoRuntimeBridge`, `ServiceServoRuntimeCommand`,
+`ServiceServoRuntimeCompletion`, and `closed_immutable_service_runtime_pair`.
+The five structs have private state. The actor consumes the endpoint together
+with the genuine P1 session verifier, original request binding, context and
+request; it exposes the ten delegating methods recorded in
+`contracts/approved-service-actor.v2.json`. It implements no raw request handler.
+The runtime pair returns an unbound endpoint and bridge, not request authority.
+Completion methods use the same original Service Scope; the one-shot shortening
+operation can only reduce its original deadline. The exact 23 runtime methods,
+eight opaque layouts and original-clock ordering are fixed by
+`contracts/service-dispatch-denial-cutoff.v1.json`.
+
+The crate root and `servo_runtime` each re-export all six names; the private
+`service_runtime` module also re-exports the actor from its private child. These
+are three lexical declarations for one family, rather than three independent
+capabilities. Together with the seven retained declarations, the S06 scanner
+requires exactly ten declarations when the actual product source directory is
+scanned. `contracts/browser-actor.v1.json` contains that closed Source ledger;
+an unknown declaration, a missing declaration, or a changed ledger is refused
+before any declaration output. Generic temporary absence-guard fixtures remain
+lexical scans, and `--closed-product` applies the fixed product gate explicitly.
+
+The current product coordinator consumes `ServiceServoRuntimeEndpoint` and
+`ServiceServoBrowserActor` after genuine Owner and original-wire admission.
+There is no current native consumer connecting the Service factory, bridge,
+command or completion to Servo WebView effects. The production default remains
+disabled; managed journal data, the unbound pair and this Source gate do not
+approve a Root-selected image, storage, namespace or endpoint. Native effect
+pre/post checks, the original local cutoff and installed tests remain pending.
+See `docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md`,
+`docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md`, and
+`docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md`. Existing historical S06
+fields and activation ceilings are retained; this ledger is not runtime,
+installed-image, Native or production-release qualification.

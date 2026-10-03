@@ -439,6 +439,8 @@ fn readable_now(fd: RawFd) -> Result<bool, HandoffError> {
     Ok(result != 0)
 }
 
+mod service_control;
+
 #[cfg(test)]
 mod readiness_tests;
 

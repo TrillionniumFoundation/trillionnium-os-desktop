@@ -31,6 +31,12 @@ pub use servo_product_runtime::{
     ProductServoRuntime, RestartPolicy, RuntimeGeneration, RuntimeState, SemanticReference,
 };
 
+#[cfg(target_os = "linux")]
+pub use product_dispatch::{
+    ApprovedServiceProductCoordinator, ServiceProductPhase, ServiceReportObservation,
+    ServiceRetainedObservation,
+};
+
 use hepta_browser_contracts::BROWSER_API_PROTOCOL;
 use hepta_session_core::{
     ControlSource, ControlState, DEFAULT_HUMAN_LEASE_TTL_MS, SessionEffect, SessionEvent,

@@ -57,6 +57,14 @@ pub use product_control_wait::{
     ProductControlMonitor, ProductControlMonitorOutcome, RetainedProductConnection,
 };
 
+#[cfg(target_os = "linux")]
+mod service_product;
+#[cfg(target_os = "linux")]
+pub use service_product::{
+    ApprovedServiceProductCoordinator, ServiceProductPhase, ServiceReportObservation,
+    ServiceRetainedObservation,
+};
+
 pub const MAX_PRODUCT_PENDING_CONNECTIONS: usize = 8;
 pub const MAX_PRODUCT_CONNECTION_BUDGET: Duration = Duration::from_secs(20);
 

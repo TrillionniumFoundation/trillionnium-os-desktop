@@ -9,6 +9,14 @@
 mod immediate;
 pub use immediate::ImmediateCallbacks;
 
+#[cfg(target_os = "linux")]
+mod service_event_loop;
+#[cfg(target_os = "linux")]
+pub use service_event_loop::{
+    ServiceBrowserActorCore, ServiceEngineBridge, ServiceEngineCommand, ServiceEngineCompletion,
+    ServiceEngineEndpoint, closed_immutable_service_engine_pair,
+};
+
 use super::{
     BrowserActorMessage, BrowserOperation, ENGINE_CANCEL_POLL, ENGINE_PENDING_LIMIT,
     ElementReference, EngineEventLoopWaker, EngineThreadRuntime, EngineUrlScope, PageAction,

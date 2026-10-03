@@ -1193,6 +1193,19 @@ impl std::error::Error for AttestationError {
     }
 }
 
+#[cfg(target_os = "linux")]
+pub use approved_policy::{
+    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,
+    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,
+};
+
+#[cfg(target_os = "linux")]
+pub use approved_policy::{
+    ApprovedServiceControlReceiver, ApprovedServiceReceivedRequest, ApprovedServiceRequestBinding,
+    ApprovedServiceRequestVerifier, ApprovedServiceRequests, ApprovedServiceRetainedReporter,
+    ApprovedServiceSessionVerifier,
+};
+
 #[cfg(test)]
 mod tests {
     use super::*;

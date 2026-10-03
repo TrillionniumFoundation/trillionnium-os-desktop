@@ -312,3 +312,46 @@ independent reporting owner permits legitimate terminal reporting after action
 revocation. Legacy raw full methods and original budgets remain unchanged.
 The versioned contract, finite inverse source checker and actual new kernel
 target are separate from native, installed and production qualification.
+
+## Persistent service Owner v2 FOUNDATION candidate
+
+The additive `ApprovedServicePolicyDocument`, `ApprovedServiceOwnerBinding`
+and `ApprovedServiceOwnerVerifier` APIs retain the same root nineteen-field
+Control/Agent/Owner policy and original current Owner custody. They grant
+source/process continuity only. `open_default` selects the v2 default root
+policy; `open_root_owned` is an explicit root-owned mechanism path. Selection
+uses fixed default procfs and one attempt per source state. Private original
+creator endpoints and the retained PID namespace refuse nested numeric PID
+collisions before inherited policy/Owner reads. Ordinary different PID refuses
+first. The old v1 APIs, thirteen fields and original request deadlines remain
+unchanged.
+
+See `docs/architecture/APPROVED_SERVICE_OWNER_FOUNDATION.md` and
+`contracts/approved-service-owner-foundation.v2.json` for all seven methods,
+three opaque types, errors, exact bounds and finite old-source inverse.
+`python3 tools/verify_approved_service_owner.py` is a mandatory source checker.
+`python3 -m unittest tests.test_approved_service_owner -v` runs finite source
+mutations. `cargo test --locked -p hepta-peer-attestation --test
+approved_service_owner_kernel` is the actual root oneshot source-kernel corpus;
+unsupported privilege/namespace refuses and is never passed or skipped. Its
+61-second source continuity does not qualify NativeHealth. Root-selected
+ELF/config inputs, every group FD inventory and final root file bytes require
+actual execution evidence. Per-request Control/Agent bridges, Actor/Coordinator/
+Page/journal integration, installed activation, native sixty-second health,
+hardware, human approvals and production readiness are unimplemented.
+
+## Original service requests v2 SOURCE candidate
+
+The additive `ApprovedServiceRequests` bridge now has authored source for
+root-selected persistent Source/Owner continuity and separate original bounded
+Control/Agent requests. Its seven opaque types and eighteen total peer/transport
+methods are documented in `docs/architecture/PERSISTENT_SERVICE_REQUEST_BRIDGE.md`
+and `contracts/approved-service-request-bridge.v2.json`. The previous Foundation
+paragraph records its earlier scope; this new source still has no Actor/Coordinator/
+Page/journal integration, installed activation or native health qualification.
+The new mandatory `tools/verify_approved_service_request.py` requires complete
+current modules and preserves the exact old bytes by finite inverse. Its
+`tests/test_approved_service_request.py` cases are source mutations only; the new
+`approved_service_request_kernel` harness is a separate real-process corpus,
+not yet compiled or run for this candidate. Old raw APIs, tests and budgets stay
+exact. Default product activation remains disabled.

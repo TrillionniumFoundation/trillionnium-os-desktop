@@ -373,5 +373,112 @@ class S04FixedCliCategoryTests(unittest.TestCase):
             self.assertNotIn(sentinel, stream.getvalue())
 
 
+class S04EffectiveCustodyGrammarTests(unittest.TestCase):
+    SYSUSERS = "packaging/debian/sysusers.d/trillionnium-desktop.conf"
+    TMPFILES = "packaging/debian/tmpfiles.d/trillionnium-desktop.conf"
+    SERVICE_DROPIN = "packaging/debian/systemd/hepta-browserd-agent@.service.d/10-root-path-custody.conf"
+    SOCKET_DROPIN = "packaging/debian/systemd/hepta-browserd-agent.socket.d/10-root-path-custody.conf"
+    source_copy = S04FixedCliCategoryTests.source_copy
+    run_cli = S04FixedCliCategoryTests.run_cli
+
+    def refuse_mutation(self, relative, mutate):
+        with self.source_copy() as root:
+            path = root / relative
+            path.write_text(mutate(path.read_text()))
+            completed = self.run_cli(root)
+        self.assertEqual(completed.returncode, 1, completed.stdout + completed.stderr)
+        self.assertEqual(completed.stdout, "")
+        lines = completed.stderr.splitlines()
+        self.assertTrue(lines[-1].startswith("S04 validation failed with "), lines)
+        self.assertTrue(all(line in {
+            "ERROR: S04 SOURCE_INVALID",
+            "ERROR: S04 source custody, decoding or parsing failed; inspect repository inputs locally",
+        } for line in lines[:-1]), lines)
+
+    def test_actual_gate_accepts_safe_spaces_tabs_and_list_resets(self):
+        with self.source_copy() as root:
+            for relative in (self.SYSUSERS, self.TMPFILES):
+                path = root / relative
+                text = path.read_text()
+                if relative == self.SYSUSERS:
+                    text = text.replace("m      hepta-browserd   hepta-agent", "  m\thepta-browserd\thepta-agent  ")
+                    text = text.replace("m      hepta-agent      hepta-agent-socket", "m hepta-agent hepta-agent-socket")
+                else:
+                    text = "\n".join("\t".join(line.split()) if line.startswith("d ") else line for line in text.splitlines()) + "\n"
+                path.write_text(text)
+            for relative in (self.SERVICE_DROPIN, self.SOCKET_DROPIN):
+                path = root / relative
+                text = path.read_text().replace("[Service]", "  [Service]  ").replace("[Socket]", "\t[Socket]\t")
+                text = text.replace("=", " \t=\t ")
+                path.write_text(text)
+            completed = self.run_cli(root)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stderr, "")
+        self.assertIn("product-path validation passed", completed.stdout)
+
+    def test_actual_gate_rejects_browser_parent_group_with_spaces_and_tabs(self):
+        for record in ("m hepta-browserd hepta-agent-socket\n", "m\thepta-browserd\thepta-agent-socket\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.SYSUSERS, lambda text: text + record)
+
+    def test_actual_gate_rejects_comment_only_agent_membership(self):
+        self.refuse_mutation(self.SYSUSERS, lambda text: text.replace(
+            "m      hepta-agent      hepta-agent-socket", "# m      hepta-agent      hepta-agent-socket"))
+
+    def test_actual_gate_rejects_duplicate_or_conflicting_membership(self):
+        for record in ("m hepta-agent hepta-agent-socket\n", "m hepta-agent hepta-browserd\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.SYSUSERS, lambda text: text + record)
+
+    def test_actual_gate_rejects_comment_decoy_parent_mapping(self):
+        self.refuse_mutation(self.TMPFILES, lambda text: text.replace(
+            "d      /run/hepta/browserd          0750 root            hepta-agent-socket   -   -",
+            "# d      /run/hepta/browserd          0750 root            hepta-agent-socket   -   -\n"
+            "d /run/hepta/browserd 0770 root hepta-browserd - -"))
+
+    def test_actual_gate_rejects_duplicate_or_conflicting_parent(self):
+        for record in ("d /run/hepta/browserd 0750 root hepta-agent-socket - -\n",
+                       "d /run/hepta/browserd 0770 root hepta-browserd - -\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.TMPFILES, lambda text: text + record)
+
+    def test_actual_gate_rejects_spaced_post_reset_authority(self):
+        for record in ("SupplementaryGroups = hepta-agent-socket\n",
+                       "ReadWritePaths \t= /run/hepta/browserd\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.SERVICE_DROPIN, lambda text: text + record)
+
+    def test_actual_gate_rejects_unsupported_unit_syntax_without_disclosure(self):
+        for record in ('SupplementaryGroups="hepta-agent-socket"\n',
+                       "SupplementaryGroups=hepta-agent-socket\\\n", "SupplementaryGroups=%g\n",
+                       "SupplementaryGroups=${CONTROLLED-CUSTODY-CANARY}\n", "UnknownCustodyKey=CONTROLLED-CUSTODY-CANARY\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.SERVICE_DROPIN, lambda text: text + record)
+
+    def test_actual_gate_rejects_unsupported_sysusers_and_tmpfiles_records(self):
+        for relative, record in ((self.SYSUSERS, 'm "hepta-browserd" hepta-agent-socket\n'),
+                                 (self.SYSUSERS, "m hepta-browserd hepta-agent-socket extra\n"),
+                                 (self.TMPFILES, "d /run/hepta/browserd 0750 root hepta-agent-socket - - extra\n")):
+            with self.subTest(relative=relative, record=record):
+                self.refuse_mutation(relative, lambda text: text + record)
+
+    def test_actual_gate_rejects_missing_custody_dropins(self):
+        for relative in (self.SERVICE_DROPIN, self.SOCKET_DROPIN):
+            with self.subTest(relative=relative):
+                with self.source_copy() as root:
+                    (root / relative).unlink()
+                    completed = self.run_cli(root)
+                self.assertEqual(completed.returncode, 1, completed.stderr)
+                self.assertEqual(completed.stdout, "")
+                self.assertIn("source custody, decoding or parsing failed", completed.stderr)
+
+    def test_actual_gate_rejects_internal_section_spaces_and_tabs(self):
+        for relative, section in ((self.SERVICE_DROPIN, "Service"), (self.SOCKET_DROPIN, "Socket")):
+            for header in ("[ " + section + "]", "[" + section + " ]",
+                           "[\t" + section + "]", "[" + section + "\t]", "[ " + section + " ]"):
+                with self.subTest(relative=relative, header=header):
+                    self.refuse_mutation(relative, lambda text: text.replace("[" + section + "]", header, 1))
+
+
 if __name__ == "__main__":
     unittest.main()

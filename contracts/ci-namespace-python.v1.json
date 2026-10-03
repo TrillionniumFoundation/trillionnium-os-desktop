@@ -74,8 +74,8 @@
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
     ".github/apparmor/hepta-ci-namespace-python.v1.profile": "9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be",
     ".github/workflows/ci.yml": "be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826",
-    ".github/workflows/g2-approved-native-startup.yml": "a484cdf5a3c9699031467e3e11d8b28adb3129148024edc4457166c22bd6401a",
-    ".github/workflows/g2-native-product-owner.yml": "7b2d84837afc9b3e07f24d07d3f6860fb4392006b0b4631b4c55cb4b6b62c40f",
+    ".github/workflows/g2-approved-native-startup.yml": "872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a",
+    ".github/workflows/g2-native-product-owner.yml": "a37826732869ed842e29de30b035cda684f055a9f2edbfb28231c6ab3044598a",
     "contracts/ci-source-identity.v1.json": "db33890a91bc70247571cf71a3ebe41a48dd52d2965187ba7b3605e8b08c42e3"
   },
   "non_claims": [
@@ -103,7 +103,13 @@
         "contracts/ci-namespace-python.v1.json",
         "tools/verify_ci_namespace_python.py",
         "tests/test_ci_namespace_python.py",
-        "tools/verify_ci_required_contexts.py"
+        "tools/verify_ci_required_contexts.py",
+        "tools/verify_approved_service_actor.py",
+        "tools/verify_approved_service_owner.py",
+        "tools/verify_approved_service_product.py",
+        "tools/verify_approved_service_request.py",
+        "tools/verify_approved_service_runtime.py",
+        "tools/verify_service_dispatch_denial_cutoff.py"
       ]
     },
     ".github/workflows/g2-native-product-owner.yml": {
@@ -117,7 +123,13 @@
         "contracts/ci-namespace-python.v1.json",
         "tools/verify_ci_namespace_python.py",
         "tests/test_ci_namespace_python.py",
-        "tools/verify_ci_required_contexts.py"
+        "tools/verify_ci_required_contexts.py",
+        "tools/verify_approved_service_actor.py",
+        "tools/verify_approved_service_owner.py",
+        "tools/verify_approved_service_product.py",
+        "tools/verify_approved_service_request.py",
+        "tools/verify_approved_service_runtime.py",
+        "tools/verify_service_dispatch_denial_cutoff.py"
       ]
     }
   },

@@ -730,6 +730,13 @@ impl ApprovedAgentReceivedStream {
     }
 }
 
+pub(crate) use service_policy::ServiceSessionState;
+pub use service_policy::{
+    ApprovedServiceControlReceiver, ApprovedServiceReceivedRequest, ApprovedServiceRequestBinding,
+    ApprovedServiceRequestVerifier, ApprovedServiceRequests, ApprovedServiceRetainedReporter,
+    ApprovedServiceSessionVerifier,
+};
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -836,3 +843,10 @@ mod tests {
         }
     }
 }
+
+// Additive service-policy v2; original request-scoped v1 stays unchanged.
+mod service_policy;
+pub use service_policy::{
+    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,
+    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,
+};

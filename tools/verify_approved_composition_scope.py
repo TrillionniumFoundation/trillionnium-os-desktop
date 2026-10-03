@@ -106,6 +106,10 @@ def check(contract, texts):
     except ImportError:
         from verify_retained_control_readiness import legacy_texts
     texts = legacy_texts(texts)
+    try:
+        from .verify_approved_service_owner import legacy_source
+    except ImportError:
+        from verify_approved_service_owner import legacy_source
     composition.typed_equal(contract, EXPECTED)
     inventories = {}
     for path, bindings in EXPECTED["function_token_sha256"].items():
@@ -115,7 +119,7 @@ def check(contract, texts):
             if digest(composition.function(inventory, name)) != wanted:
                 raise ValueError("private scope or complete effect boundary differs: " + name)
     for path, wanted in EXPECTED["retained_source_sha256"].items():
-        if hashlib.sha256(texts[path].encode("utf-8")).hexdigest() != wanted:
+        if hashlib.sha256(legacy_source(path, texts[path]).encode("utf-8")).hexdigest() != wanted:
             raise ValueError("original root/pidfd/full retained source differs: " + path)
     policy, queue = inventories[POLICY], inventories[QUEUE]
     for inventory in [policy, queue]:

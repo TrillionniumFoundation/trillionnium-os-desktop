@@ -172,6 +172,11 @@ def typed_equal(actual, expected, path="contract"):
 
 def source(root: Path, path: str) -> str:
     value = read(root / path)
+    try:
+        from .verify_approved_service_runtime import parent_source as service_runtime_parent_source
+    except ImportError:
+        from verify_approved_service_runtime import parent_source as service_runtime_parent_source
+    value = service_runtime_parent_source(path, value.decode("utf-8", "strict")).encode("utf-8")
     if len(value) > MAX_SOURCE_BYTES:
         raise ValueError("composition source exceeds its byte bound")
     return value.decode("utf-8", "strict")

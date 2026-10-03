@@ -101,7 +101,7 @@ EXPECTED = {'schema': 'trillionnium.desktop.retained-control-readiness.v1',
                       'experiments/servo-product-owner/src/connected_tests.rs': 'e22417fdccfadfb0eccaa7d253a7af9ed93f210d739cd16e32e952c29ccb7f5f',
                       'tools/prepare_approved_native_startup.py': '46ceb77d114f9ada6bec73377d0968c896a93c16c4f1e2caeff8412e3864c061',
                       'tools/prepare_native_product_owner.py': '5143645a7e7bcfb10cc8813787f9f73e02f805cd15de7ccbc91dfdc1bf3af0a7',
-                      '.github/workflows/g2-approved-native-startup.yml': 'a484cdf5a3c9699031467e3e11d8b28adb3129148024edc4457166c22bd6401a',
+                      '.github/workflows/g2-approved-native-startup.yml': '872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a',
                       'manifests/servo.lock.json': 'a64fc7f64926d0a3726ce50551aa879065bcfac285caa553494c7be59ad953f4',
                       'manifests/rust-toolchain.lock.json': '417f63317d52a3f4cbbd4160966e50a3b17824e096c823ce499481d866c319d7',
                       'manifests/cargo-external-allowlist.json': '65cdc01e7cc6de76827badbb9f4500119fdb12a98147d750b6d167f60c6a17ed'},
@@ -747,6 +747,13 @@ def parent_source(path, text):
     original token/whole-source rules after this bounded inverse transfer.
     Actual-profile check() additionally requires whole exact bytes below.
     """
+    try:
+        from .verify_approved_service_owner import detach_for_readiness
+        from .verify_approved_service_runtime import parent_source as service_runtime_parent_source
+    except ImportError:
+        from verify_approved_service_owner import detach_for_readiness
+        from verify_approved_service_runtime import parent_source as service_runtime_parent_source
+    text = detach_for_readiness(path, service_runtime_parent_source(path, text))
     for step in reversed(TRANSFER.get(path, [])):
         if text.count(step["actual"]) != 1:
             raise ValueError("finite readiness inverse differs: " + path)
@@ -779,6 +786,13 @@ def unique_body(text, name):
 
 
 def check(contract, texts):
+    try:
+        from .verify_approved_service_owner import detach_for_readiness
+        from .verify_approved_service_runtime import parent_source as service_runtime_parent_source
+    except ImportError:
+        from verify_approved_service_owner import detach_for_readiness
+        from verify_approved_service_runtime import parent_source as service_runtime_parent_source
+    texts = {path: detach_for_readiness(path, service_runtime_parent_source(path, text)) for path, text in texts.items()}
     composition.typed_equal(contract, EXPECTED)
     for path, wanted in EXPECTED["actual_source_sha256"].items():
         if hashlib.sha256(texts[path].encode()).hexdigest() != wanted:

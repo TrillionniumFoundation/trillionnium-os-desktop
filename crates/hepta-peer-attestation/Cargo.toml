@@ -34,3 +34,15 @@ harness = false
 name = "approved_policy_kernel"
 path = "tests/approved_policy_kernel.rs"
 harness = false
+
+# Persistent service-source continuity is a separate actual root test profile.
+[[test]]
+name = "approved_service_owner_kernel"
+path = "tests/approved_service_owner_kernel.rs"
+harness = false
+
+# Original requests bridge retained service identity, independently of health.
+[[test]]
+name = "approved_service_request_kernel"
+path = "tests/approved_service_request_kernel.rs"
+harness = false

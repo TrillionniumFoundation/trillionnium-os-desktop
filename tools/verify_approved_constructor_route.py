@@ -93,9 +93,13 @@ def check(contract, texts):
     except ImportError:
         from verify_retained_control_readiness import legacy_texts
     texts = legacy_texts(texts)
+    try:
+        from .verify_approved_service_owner import legacy_source
+    except ImportError:
+        from verify_approved_service_owner import legacy_source
     composition.typed_equal(contract, EXPECTED)
     for path, expected in EXPECTED["whole_source_sha256"].items():
-        if hashlib.sha256(texts[path].encode("utf-8")).hexdigest() != expected:
+        if hashlib.sha256(legacy_source(path, texts[path]).encode("utf-8")).hexdigest() != expected:
             raise ValueError("private constructor or retained source differs: " + path)
     inventories = {path: composition.rust_inventory(texts[path])
                    for path in EXPECTED["function_token_sha256"]}

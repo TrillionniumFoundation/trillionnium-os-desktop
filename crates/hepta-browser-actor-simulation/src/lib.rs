@@ -10,6 +10,9 @@
 //! external network or production-release authority.
 
 pub mod engine_dispatch;
+#[cfg(target_os = "linux")]
+pub use engine_dispatch::event_loop::ServiceBrowserActorCore;
+
 mod incarnation;
 pub use incarnation::scoped_frame_id;
 
