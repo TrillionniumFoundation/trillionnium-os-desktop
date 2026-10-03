@@ -101,11 +101,21 @@ def check(contract, dispatch, callback, servo, native):
         raise ValueError("URL scope is not the closed private selection")
     if function(base, "EngineUrlScope::allows") != tokens('match self { Self::D3Local => url == "about:blank" || crate::is_loopback_http(url), Self::ClosedImmutableReadOnly => { url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank" } }'):
         raise ValueError("constructor URL selection differs")
-    # tokens() deliberately discards literals; bind the new blank value as well.
-    closed_marker = 'Self::ClosedImmutableReadOnly => {\n                url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank"\n            }'
-    if dispatch.count(closed_marker) != 1:
-        raise ValueError("closed fixed/blank document literal predicate differs")
-    tokens(dispatch[:dispatch.index(closed_marker)])
+    # Bind the complete actual function, including literals. The global token
+    # inventory must also contain exactly one fn allows, even inside an
+    # unexpanded macro. A marker in a comment, literal or macro is insufficient.
+    raw_allows = '''fn allows(self, url: &str) -> bool {
+        match self {
+            Self::D3Local => url == "about:blank" || crate::is_loopback_http(url),
+            Self::ClosedImmutableReadOnly => {
+                url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank"
+            }
+        }
+    }'''
+    selected = selected_function(dispatch, "allows")
+    if selected != function(base, "EngineUrlScope::allows") or dispatch.count(raw_allows) != 1:
+        raise ValueError("actual unique URL scope function or raw literal body differs")
+    tokens(dispatch[:dispatch.index(raw_allows)])
     marker = 'Self::D3Local => url == "about:blank" || crate::is_loopback_http(url),'
     if dispatch.count(marker) != 1:
         raise ValueError("original D3 blank/local predicate differs")

@@ -121,4 +121,25 @@ class ImmutableCallbackBlankCompatibilityTests(unittest.TestCase):
             self.assertIn(before, original["dispatch"])
             changed["dispatch"] = original["dispatch"].replace(before, after, 1)
             with self.assertRaises(ValueError): v.check(**changed)
+class ImmutableCallbackRawFunctionBindingTests(unittest.TestCase):
+    def test_blank_literal_guard_cannot_move_into_an_unexpanded_macro(self):
+        original = ImmutableCallbackUrlScopeTests().inputs()
+        predicate = 'url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank"'
+        marker = 'Self::ClosedImmutableReadOnly => {\n                ' + predicate + '\n            }'
+        changed = dict(original)
+        changed["dispatch"] = original["dispatch"].replace(predicate, predicate.replace('"about:blank"', '"https://independent.invalid/"'), 1)
+        changed["dispatch"] += '\n#[allow(unused_macros)]\nmacro_rules! raw_marker_decoy { () => { ' + marker + ' }; }\n'
+        with self.assertRaises(ValueError): v.check(**changed)
+    def test_entire_scope_function_cannot_be_faked_in_macro_comment_or_string(self):
+        original = ImmutableCallbackUrlScopeTests().inputs()
+        start = original["dispatch"].index('fn allows(self, url: &str) -> bool {')
+        end = original["dispatch"].index('\n    }', start) + len('\n    }')
+        body = original["dispatch"][start:end]
+        predicate = 'url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank"'
+        modified = original["dispatch"].replace(predicate, predicate.replace('"about:blank"', '"https://independent.invalid/"'), 1)
+        for wrapper in ['\n#[allow(unused_macros)]\nmacro_rules! raw_function_decoy { () => { %s }; }\n', '\n/*\n%s\n*/\n', '\nconst RAW_FUNCTION_DECOY: &str = r#"%s"#;\n']:
+            changed = dict(original)
+            changed["dispatch"] = modified + wrapper % body
+            with self.subTest(wrapper=wrapper):
+                with self.assertRaises(ValueError): v.check(**changed)
 if __name__=='__main__':unittest.main()
