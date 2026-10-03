@@ -747,6 +747,11 @@ def parent_source(path, text):
     original token/whole-source rules after this bounded inverse transfer.
     Actual-profile check() additionally requires whole exact bytes below.
     """
+    try:
+        from .verify_approved_service_owner import detach_for_readiness
+    except ImportError:
+        from verify_approved_service_owner import detach_for_readiness
+    text = detach_for_readiness(path, text)
     for step in reversed(TRANSFER.get(path, [])):
         if text.count(step["actual"]) != 1:
             raise ValueError("finite readiness inverse differs: " + path)

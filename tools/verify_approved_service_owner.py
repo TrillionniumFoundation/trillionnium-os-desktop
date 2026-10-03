@@ -404,7 +404,7 @@ def receiver_profile_inputs(texts):
             except ImportError:
                 from verify_retained_control_readiness import parent_source
             if 'detach_suffix' in rule:
-                text = parent_source(path, text)
+                text = parent_source(path, detach_for_readiness(path, text)) + rule['detach_suffix']
             else:
                 text = parent_source(path, detach_for_readiness(path, text))
                 for pair in rule['original_foundation_forward']:
