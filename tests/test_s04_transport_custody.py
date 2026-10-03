@@ -4,6 +4,7 @@ import copy
 import contextlib
 import importlib.util
 import io
+import json
 import subprocess
 import sys
 import tempfile
@@ -242,6 +243,23 @@ class S04InputDiagnosticTests(unittest.TestCase):
         self.assertEqual(errors, [VALIDATOR.PUBLIC_API_FINDING + ":transport:unexpected-field"])
         with patch.object(VALIDATOR, "validate_root", return_value=errors):
             self.assertIn("unexpected-field", self.diagnostic())
+
+    def test_actual_reference_json_hash_value_is_refused_without_echo(self):
+        relative = "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+        original_json = VALIDATOR._json
+        reference = original_json(relative)
+        reference["contract_sha256"] = self.CANARY + "\n\u5bc6\u94a5"
+        with tempfile.TemporaryDirectory(prefix=".s04-diagnostic-", dir=ROOT) as temporary:
+            path = Path(temporary) / "reference.json"
+            path.write_text(json.dumps(reference))
+            def load(name):
+                if name == relative:
+                    return VALIDATOR.load_json_nofollow(path, label=relative)
+                return original_json(name)
+            with patch.object(VALIDATOR, "_json", load):
+                self.assertEqual(VALIDATOR.validate_reference_binding(), [
+                    "transport reference result contract_sha256 does not match the current contract"])
+                self.assertIn("contract_sha256", self.diagnostic())
 
 
 if __name__ == "__main__":

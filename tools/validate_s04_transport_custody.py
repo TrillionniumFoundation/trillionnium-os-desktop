@@ -219,8 +219,8 @@ def validate_transport_sources(
 
     try:
         server_impl = _impl_body(facade, "ServerConnection")
-    except ValueError as error:
-        errors.append(str(error))
+    except ValueError:
+        errors.append("ServerConnection production impl is missing or unterminated")
     else:
         _require(
             len(re.findall(r"\bpub\s+fn\s+accept\s*\(", server_impl)) == 1,
@@ -647,7 +647,7 @@ def validate_reference_binding() -> list[str]:
     actual = result.get("contract_sha256")
     _require(
         actual == expected,
-        f"transport reference result contract_sha256 must be {expected}, found {actual!r}",
+        "transport reference result contract_sha256 does not match the current contract",
         errors,
     )
     _require(
