@@ -12,7 +12,6 @@ import os
 import re
 import subprocess
 import tempfile
-import time
 import unittest
 from unittest.mock import patch
 
@@ -64,8 +63,9 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
                            "GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0",
                            # Every private carrier/checkout/origin Git process
                            # must finish writing before its tempfile is removed.
-                           # Process-local settings also reach Bash-body fetches
-                           # and their local Git server children; no user or
+                           # Process-local settings also reach Bash-body fetches.
+                           # Git clears caller config overrides for its local
+                           # server, configured separately below. No user or
                            # production-repository Git configuration is changed.
                            "GIT_CONFIG_PARAMETERS": "", "GIT_CONFIG_COUNT": "5",
                            "GIT_CONFIG_KEY_0": "gc.auto", "GIT_CONFIG_VALUE_0": "0",
@@ -140,6 +140,8 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
         self.merge = self.git("commit-tree", tree, "-p", self.base, "-p", self.head,
                               "-m", "private ordered prospective").strip()
         self.git("init", "--quiet", "--bare", str(self.remote), cwd=self.directory)
+        # The local receive-pack clears the caller's Git config environment.
+        self.git("--git-dir=" + str(self.remote), "config", "--local", "receive.autogc", "false")
         (self.remote / "objects/info/alternates").write_text(str(self.carrier / "objects") + "\n")
         if shallow.exists():
             (self.remote / "shallow").write_bytes(shallow.read_bytes())
@@ -316,6 +318,8 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
             self.git("config", "--local", key, "1" if key == "gc.auto" else "true")
             self.assertEqual(self.git("config", "--get", key).strip(),
                              "0" if key == "gc.auto" else "false")
+        self.assertEqual(self.git("--git-dir=" + str(self.remote), "config", "--local",
+                                  "--get", "receive.autogc").strip(), "false")
         self.seed_native_loose_objects()
         trace = self.output / "disabled-auto-trace2.jsonl"
         environment = {**self.environment, "GIT_TRACE2_EVENT": str(trace)}
@@ -336,7 +340,7 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
         self.assertFalse(self.directory.exists())
 
     def test_actual_native_gc_during_cleanup_remains_an_error(self):
-        # This negative scheduling variant enables GC only for this one native
+        # This negative scheduling variant enables foreground GC for one native
         # command. Capture .git entries, let actual Git add packed-refs/GC state,
         # then continue the original tempfile cleanup. No error suppression or
         # cleanup retry is installed in the fixture.
@@ -346,8 +350,8 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
         original_scandir = os.scandir
         observed = {}
         environment = {**self.environment, "GIT_CONFIG_VALUE_0": "1",
-                       "GIT_CONFIG_VALUE_1": "true", "GIT_CONFIG_VALUE_2": "true",
-                       "GIT_CONFIG_VALUE_3": "true"}
+                       "GIT_CONFIG_VALUE_1": "false", "GIT_CONFIG_VALUE_2": "true",
+                       "GIT_CONFIG_VALUE_3": "false"}
         class CapturedEntries:
             def __init__(self, entries): self.entries = iter(entries)
             def __enter__(self): return self
@@ -364,26 +368,16 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
                                     capture_output=True, text=True, timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue((gitdir / "packed-refs").exists())
-            pidfile = gitdir / "gc.pid"
-            if pidfile.exists(): observed["pid"] = int(pidfile.read_text().split()[0])
+            self.assertFalse((gitdir / "gc.pid").exists())
+            self.assertFalse((gitdir / "gc.log.lock").exists())
             return CapturedEntries(snapshot)
-        try:
-            with patch.object(os, "scandir", scanned):
-                with self.assertRaises(OSError) as raised: self.temp.cleanup()
-            self.assertEqual(raised.exception.errno, 39)
-            self.assertEqual(raised.exception.filename, ".git")
-            self.assertNotIn("packed-refs", observed["initial_names"])
-        finally:
-            # Observe the owned negative-variant Git worker before the existing
-            # addCleanup runs once. The unchanged positive fixture has no worker.
-            pid = observed.get("pid"); deadline = time.monotonic() + 30
-            while pid:
-                try: state = (Path("/proc") / str(pid) / "stat").read_text().split()[2]
-                except FileNotFoundError: break
-                if state == "Z": break
-                if time.monotonic() >= deadline:
-                    raise AssertionError("native negative-variant GC exceeded its observation bound")
-                time.sleep(0.01)
+        # Waiting on the foreground command avoids any missing-pidfile window;
+        # the original addCleanup can remove the expected-refusal remainder.
+        with patch.object(os, "scandir", scanned):
+            with self.assertRaises(OSError) as raised: self.temp.cleanup()
+        self.assertEqual(raised.exception.errno, 39)
+        self.assertEqual(raised.exception.filename, ".git")
+        self.assertNotIn("packed-refs", observed["initial_names"])
 
 
 if __name__ == "__main__":
