@@ -10,9 +10,13 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 try:
-    from .browser_codec_reference_security import load_json_strict, open_regular_beneath
+    from .browser_codec_reference_security import (
+        ManagedSourceReader, load_json_strict, open_managed_regular_beneath, open_regular_beneath,
+    )
 except ImportError:
-    from browser_codec_reference_security import load_json_strict, open_regular_beneath
+    from browser_codec_reference_security import (
+        ManagedSourceReader, load_json_strict, open_managed_regular_beneath, open_regular_beneath,
+    )
 
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 SHA1 = re.compile(r"[0-9a-f]{40}\Z")
@@ -87,38 +91,48 @@ def open_file(path: Path) -> int:
 
 
 def file_size(path: Path) -> int:
-    descriptor = open_file(path)
+    with open_managed_file(path) as reader:
+        return reader.stat().st_size
+
+
+def open_managed_file(path: Path) -> ManagedSourceReader:
+    """Retain regular single-link artifact ownership without raw-FD delivery."""
+    reader = open_managed_regular_beneath(Path("/"), path.absolute(), label="artifact file")
     try:
-        return os.fstat(descriptor).st_size
-    finally:
-        os.close(descriptor)
+        metadata = reader.stat()
+        if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+            raise ValueError("artifact file must be regular and have exactly one hard link")
+        return reader
+    except BaseException:
+        reader.close()
+        raise
 
 
 def digest(path: Path) -> str:
     value = hashlib.sha256()
-    with os.fdopen(open_file(path), "rb") as stream:
-        before = os.fstat(stream.fileno())
+    with open_managed_file(path) as reader:
+        before = reader.stat()
         if before.st_size > MAX_ARTIFACT_FILE_BYTES:
             raise ValueError("artifact file is over its byte bound")
         total = 0
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+        for chunk in iter(lambda: reader.read(1024 * 1024), b""):
             total += len(chunk)
             if total > MAX_ARTIFACT_FILE_BYTES:
                 raise ValueError("artifact file grew over its byte bound")
             value.update(chunk)
-        after = os.fstat(stream.fileno())
+        after = reader.stat()
         if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (after.st_size, after.st_mtime_ns, after.st_ctime_ns) or total != before.st_size:
             raise ValueError("artifact file changed while hashing")
     return value.hexdigest()
 
 
 def load(path: Path) -> dict[str, Any]:
-    with os.fdopen(open_file(path), "rb") as stream:
-        before = os.fstat(stream.fileno())
+    with open_managed_file(path) as reader:
+        before = reader.stat()
         if before.st_size > MAX_JSON_BYTES:
             raise ValueError("artifact JSON is over its byte bound")
-        data = stream.read(MAX_JSON_BYTES + 1)
-        after = os.fstat(stream.fileno())
+        data = reader.read(MAX_JSON_BYTES + 1)
+        after = reader.stat()
         if len(data) > MAX_JSON_BYTES:
             raise ValueError("artifact JSON grew over its byte bound")
         if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (after.st_size, after.st_mtime_ns, after.st_ctime_ns) or len(data) != before.st_size:
@@ -172,8 +186,8 @@ def artifact_file(root: Path, relative: object) -> Path:
         current = current / part
         if current.is_symlink():
             raise ValueError(f"artifact path traverses a symbolic link: {relative!r}")
-    descriptor = open_file(path)
-    os.close(descriptor)
+    with open_managed_file(path):
+        pass
     return path
 
 

@@ -417,7 +417,7 @@ class ArtifactEvidenceTests(unittest.TestCase):
             root = Path(directory)
             original = write(root, "bundle/evidence/receipt.json", {"status": "original"})
             write(root, "outside/receipt.json", {"status": "attacker"})
-            real_open = evidence.open_regular_beneath
+            real_open = evidence.open_managed_regular_beneath
 
             def after_component(index: int, component: str, descriptor: int) -> None:
                 if component == "evidence":
@@ -427,7 +427,7 @@ class ArtifactEvidenceTests(unittest.TestCase):
             def swapped_open(*args, **kwargs):
                 return real_open(*args, **kwargs, after_component=after_component)
 
-            with patch.object(evidence, "open_regular_beneath", swapped_open):
+            with patch.object(evidence, "open_managed_regular_beneath", swapped_open):
                 self.assertEqual(evidence.load(original)["status"], "original")
             with self.assertRaisesRegex(ValueError, "symlinked"):
                 evidence.load(original)

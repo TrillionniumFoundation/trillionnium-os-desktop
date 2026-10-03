@@ -7,6 +7,8 @@ import json
 import math
 import os
 import stat
+import sys
+import threading
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, IO
 
@@ -277,6 +279,128 @@ def _open_regular(path: Path, *, label: str) -> int:
     return open_regular_beneath(ROOT, path, label=label)
 
 
+class ManagedSourceReader:
+    """Keep descriptor ownership through reads and object/result delivery.
+
+    No public method transfers or exposes the descriptor. This is ordinary
+    Python object custody, not a sandbox or peer/signature authority. Native
+    call/opcode gaps and repeated cleanup interruption remain outside scope.
+    """
+
+    _MAX_OPERATION_FRAMES = 1024
+
+    def __init__(self) -> None:
+        self._creator_pid = os.getpid()
+        self._creator_thread = threading.current_thread()
+        self._owner: _SourceDescriptor | None = None
+        self._active = False
+
+    def _check_creator(self) -> None:
+        if self._creator_pid != os.getpid() or self._creator_thread is not threading.current_thread():
+            raise ValueError("managed source reader requires its creator process and thread")
+
+    def _descriptor(self) -> int:
+        self._check_creator()
+        if self._owner is None or self._owner.fd is None:
+            raise ValueError("managed source reader is closed")
+        return self._owner.fd
+
+    def _ensure_idle(self) -> None:
+        self._check_creator()
+        if self._active:
+            # Skip the public operation asking to enter. An older read/stat frame
+            # on this thread is still executing, even if a callback has an error.
+            # Exception traceback frames from a genuinely unwound operation are
+            # not members of this current call chain.
+            frame = sys._getframe(2)
+            try:
+                for _ in range(self._MAX_OPERATION_FRAMES):
+                    if frame is None:
+                        self._active = False
+                        return
+                    if frame.f_code in (ManagedSourceReader.read.__code__, ManagedSourceReader.stat.__code__) and frame.f_locals.get("self") is self:
+                        raise ValueError("managed source reader does not allow reentrant operations")
+                    frame = frame.f_back
+                raise ValueError("managed source reader operation stack exceeds its check bound")
+            finally:
+                del frame
+
+    def stat(self) -> os.stat_result:
+        self._ensure_idle()
+        try:
+            self._active = True
+            return os.fstat(self._descriptor())
+        finally:
+            self._active = False
+
+    def read(self, size: int = -1) -> bytes:
+        self._ensure_idle()
+        if type(size) is not int:
+            raise TypeError("managed read size must be an integer")
+        if size < -1:
+            raise ValueError("managed read size must be -1 or nonnegative")
+        if size > sys.maxsize:
+            raise OverflowError("managed read size exceeds the native integer bound")
+        try:
+            self._active = True
+            descriptor = self._descriptor()
+            remaining = None if size == -1 else size
+            chunks = []
+            while remaining is None or remaining:
+                self._check_creator()
+                chunk = os.read(descriptor, min(1024 * 1024, remaining) if remaining is not None else 1024 * 1024)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                if remaining is not None:
+                    remaining -= len(chunk)
+            return b"".join(chunks)
+        finally:
+            self._active = False
+
+    def close(self) -> None:
+        self._ensure_idle()
+        if self._owner is not None:
+            self._owner.close()
+
+    def __enter__(self) -> ManagedSourceReader:
+        self._ensure_idle()
+        self._descriptor()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        # A live method retains self. Actual last-reference cleanup can therefore
+        # release its descriptor even when an interrupted finally left _active set.
+        owner = getattr(self, "_owner", None)
+        if owner is not None:
+            try:
+                owner.close()
+            except BaseException:
+                pass
+
+
+def open_managed_regular_beneath(
+    root: Path,
+    path: Path,
+    *,
+    label: str,
+    after_component: AfterComponentHook | None = None,
+) -> ManagedSourceReader:
+    """Open the same regular-file policy without transferring a raw FD."""
+    reader = ManagedSourceReader()
+    try:
+        reader._owner = _open_regular_owned_beneath(
+            root, path, label=label, after_component=after_component,
+        )
+        return reader
+    except BaseException:
+        reader.close()
+        raise
+
+
 def read_bytes_beneath(
     root: Path,
     path: Path,
@@ -284,61 +408,34 @@ def read_bytes_beneath(
     label: str = "source file",
     after_component: AfterComponentHook | None = None,
 ) -> bytes:
-    descriptor = open_regular_beneath(
+    with open_managed_regular_beneath(
         root,
         path,
         label=label,
         after_component=after_component,
-    )
-    try:
-        with os.fdopen(descriptor, "rb", closefd=True) as stream:
-            descriptor = -1
-            return stream.read()
-    finally:
-        if descriptor >= 0:
-            os.close(descriptor)
+    ) as reader:
+        return reader.read()
 
 
 def read_text_nofollow(path: Path, *, label: str = "source file") -> str:
-    descriptor = _open_regular(path, label=label)
-    try:
-        with os.fdopen(descriptor, "r", encoding="utf-8", closefd=True) as stream:
-            descriptor = -1
-            return stream.read()
-    finally:
-        if descriptor >= 0:
-            os.close(descriptor)
+    # Preserve TextIOWrapper's UTF-8 and universal-newline result semantics.
+    return read_bytes_nofollow(path, label=label).decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
 
 
 def read_bytes_nofollow(path: Path, *, label: str = "source file") -> bytes:
-    descriptor = _open_regular(path, label=label)
-    try:
-        with os.fdopen(descriptor, "rb", closefd=True) as stream:
-            descriptor = -1
-            return stream.read()
-    finally:
-        if descriptor >= 0:
-            os.close(descriptor)
+    return read_bytes_beneath(ROOT, path, label=label)
 
 
 def load_json_nofollow(path: Path, *, label: str = "JSON source") -> object:
-    descriptor = _open_regular(path, label=label)
-    try:
-        with os.fdopen(descriptor, "r", encoding="utf-8", closefd=True) as stream:
-            descriptor = -1
-            return load_json_strict(stream)
-    finally:
-        if descriptor >= 0:
-            os.close(descriptor)
+    return load_json_strict(read_text_nofollow(path, label=label))
 
 
 def regular_file_exists_nofollow(path: Path, *, label: str) -> bool:
     try:
-        descriptor = _open_regular(path, label=label)
+        with open_managed_regular_beneath(ROOT, path, label=label):
+            return True
     except ValueError:
         return False
-    os.close(descriptor)
-    return True
 
 
 def sha256(path: Path) -> str:
