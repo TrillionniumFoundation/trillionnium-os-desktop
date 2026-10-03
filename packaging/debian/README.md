@@ -55,3 +55,21 @@ failed receipt, claim a manual run as protected promotion, install a fixture
 into the product map, or carry predecessor evidence across changed inputs.
 Neither recipe establishes physical hardware, signed A/B updates, production
 key custody, protected publication or release readiness.
+
+## G6a source fixture and claim ceiling
+
+The additive [G6a immutable A/B fixture](../../docs/architecture/G6A_IMMUTABLE_AB_FIXTURE.md)
+uses its separate signed package lock and fixed direct kernel/initramfs recipe
+under `g6a/`. Its closed contract is `contracts/g6a-immutable-ab.v1.json`.
+The source entry point is `python3 tools/verify_g6a_fixture.py`; the separate
+existing host corpus is `python3 -m unittest tests.test_g6a_immutable_ab -v`.
+Resolver, builder and same-disk runner commands are documented in the linked
+fixture architecture. Existing D1/D2I inputs, recipes and workflows retain
+their own acceptance requirements.
+
+Status: test-only source fixture integrated with recorded author evidence.
+The accepted data review covers frozen source preservation and consistency of
+already recorded packets; independent safety review is incomplete. Passing the
+source-only command or transferring an author packet does not qualify the
+combined source's VM execution, installed desktop, native health, firmware,
+protected rollback anchor, human approval or production activation.

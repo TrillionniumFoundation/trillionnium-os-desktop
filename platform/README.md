@@ -63,3 +63,22 @@ Candidates are tested without enabling product startup or external effects.
 Compositor/portal, installed network namespace, audio and device adapters still
 require implementation and their own native/image acceptance. Passing host
 mechanism tests does not establish an installed product or release claim.
+
+## G6a source fixture and claim ceiling
+
+The [G6a immutable A/B fixture](../docs/architecture/G6A_IMMUTABLE_AB_FIXTURE.md)
+adds a separate test guest selector and read-only root probe under
+`packaging/debian/g6a`, with `contracts/g6a-immutable-ab.v1.json` specifying its
+finite signature, mapping, attempt and interruption profile. Run
+`python3 tools/verify_g6a_fixture.py` for source/input consistency and
+`python3 -m unittest tests.test_g6a_immutable_ab -v` for its existing host tests.
+The fixed guest recipe and recorded packets are separate from these source
+commands and from the existing update owner/observer APIs.
+
+Status: test-only source fixture integrated with limited recorded-data review;
+independent safety review remains incomplete. A minimal read-only root probe
+does not measure installed desktop/native health or authorize commit, firmware,
+protected floor, production signer or human approval. G6b/G6c must separately
+bind the accepted product image and actual boot, service continuity, protected
+policy/time/floor and every durable commit or rollback effect. Existing update
+history formats, budgets and default product activation remain unchanged.
