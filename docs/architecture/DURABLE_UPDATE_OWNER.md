@@ -235,3 +235,8 @@ an original C `os.open`/`memfd_create` result and its assignment to a Python own
 field or raw record list. Python cannot prove delivery of a returned value to
 the caller. The core and wrapper tests remain host mechanism evidence; none of
 these cleanup corrections closes the installation prerequisites listed above.
+
+
+## Additive authenticated readback profile
+
+The v1 profile remains frozen. The additive `AuthenticatedUpdateOwner` in `platform/authenticated_update_owner.py` retains exact signed bytes in a crossbound v2 private capsule. The concrete read-only inspector re-verifies them with current externally approved roots and complete stored slot readback. See [Authenticated update journal and readback](AUTHENTICATED_UPDATE_READBACK.md). This adds no restart replay, bootloader, health, commit or production qualification authority.

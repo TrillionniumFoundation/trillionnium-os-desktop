@@ -237,3 +237,8 @@ The D1 portable v4 receipt also requires carried source bytes and the raw tested
 Git commit; offline verification rebuilds Git modes/tree/commit identity and
 ordered PR parents. See [D1 source provenance](architecture/D1_SOURCE_PROVENANCE.md).
 Historical v3 packets require a fresh exact-source run for v4 qualification.
+
+
+## Persisted signed update readback candidate
+
+The additive G6 / D7 / S11 v2 source package is registered by `manifests/authenticated-update.v2.json`, with its closed contract in `contracts/authenticated-update.v2.json`. [Authenticated update journal and readback](architecture/AUTHENTICATED_UPDATE_READBACK.md) documents exact original signed-byte custody, actual current-root OpenSSL verification and full stored slot readback after reopening existing read-only leases. V1 histories and budgets remain frozen. The new facts are diagnostics; installed boot-root binding, health/commit/rollback, protected production roots/time/floor and physical qualification remain incomplete.

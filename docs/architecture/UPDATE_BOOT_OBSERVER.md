@@ -189,3 +189,8 @@ measure health with a trusted elapsed clock and durably persist effect outcomes.
 Actual QEMU two-boot update/failure/recovery tests and hardware power-cut
 qualification must be supplied by their own installed adapter; this source
 diagnostic cannot stand in for them.
+
+
+## Additive signature readback
+
+This v1 structural observer remains unchanged and rejects unknown v2 journals. `platform/authenticated_update_observer.py` adds a separately configured actual OpenSSL readback path for exact persisted v2 signatures and complete private regular-file slots. See [Authenticated update journal and readback](AUTHENTICATED_UPDATE_READBACK.md). Its diagnostic still reports unknown signed boot-root mapping and no continuation, health, boot effect or production activation.

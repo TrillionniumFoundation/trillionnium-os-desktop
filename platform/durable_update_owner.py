@@ -189,6 +189,19 @@ class DurableUpdateOwner:
     clock and optional fault callbacks are trusted in-process configuration.
     """
 
+    _event_schema = EVENT_SCHEMA
+    _diagnostic_schema = SCHEMA
+    _directory_entry_limit = MAX_EVENTS + 2
+
+    def _history_extra_names(self, _names: set[str]) -> set[str]:
+        return set()
+
+    def _validate_history_extra(self, _history: list, _retained: list) -> None:
+        return None
+
+    def _prepare_operation(self, operation: dict, _payload, _signature, _fault) -> dict:
+        return operation
+
     def __init__(self, state_root: Path, slot_root: Path, *, active_slot: str,
                  current_version: int, current_image_sha256: str,
                  signature_verifier=None, protected_rollback_floor: int | None = None,
@@ -424,7 +437,7 @@ class DurableUpdateOwner:
         with os.scandir(root) as entries:
             for entry in entries:
                 names.add(entry.name)
-                if len(names) > MAX_EVENTS + 2:
+                if len(names) > self._directory_entry_limit:
                     raise DurableRecoveryRequired("durable owner directory exceeds its entry bound")
         return names
 
@@ -438,6 +451,7 @@ class DurableUpdateOwner:
         expected.update(events)
         if RECOVERY_FILE in names:
             expected.add(RECOVERY_FILE)
+        expected.update(self._history_extra_names(names))
         if names != expected:
             raise DurableRecoveryRequired("durable owner history contains unknown evidence")
         result: list[tuple[dict, str]] = []
@@ -475,6 +489,7 @@ class DurableUpdateOwner:
             expected_operation = None if prefix is None or prefix[0]["operation"] is None else prefix[0]["operation"]["operation_id"]
             if marker["last_event_sha256"] != expected_digest or marker["operation_id"] != expected_operation:
                 raise DurableRecoveryRequired("recovery marker differs from the confirmed operation prefix")
+        self._validate_history_extra(result, retained)
         for record in retained:
             if self._metadata(os.fstat(record.descriptor)) != record.metadata or self._metadata(os.stat(record.name, dir_fd=root, follow_symlinks=False)) != record.metadata:
                 raise DurableRecoveryRequired("complete durable history changed before scan completion")
@@ -488,7 +503,7 @@ class DurableUpdateOwner:
         if marker or len(current) >= MAX_EVENTS or not _same(current, self._history):
             raise DurableRecoveryRequired("durable history changed or cannot accept an event")
         sequence = len(current) + 1
-        event = {"schema": EVENT_SCHEMA, "sequence": sequence,
+        event = {"schema": self._event_schema, "sequence": sequence,
             "previous_sha256": _ZERO if not current else current[-1][1], "owner_id": self._owner_id,
             "kind": kind, "phase": _PHASES[kind], "observed_unix": self._guarded_clock(), "configuration": self._configuration,
             "operation": operation, "stage_receipt": receipt,
@@ -596,6 +611,7 @@ class DurableUpdateOwner:
             operation = {"operation_id": secrets.token_hex(32), "owner_id": self._owner_id,
                 "ticket_sequence": ticket.sequence, "manifest": recovery._strict_object(payload, recovery.MAX_MANIFEST_BYTES),
                 "signature_admission": admission}
+            operation = self._prepare_operation(operation, payload, signature, fault)
             self._append("manifest_verified", operation, None, fault=fault)
             issued = DurableUpdateOperation(operation["operation_id"], ticket.manifest.manifest_sha256,
                 ticket.manifest.signature_sha256, self._issuer, self._owner_pid, self._owner_thread, _SEAL)
@@ -682,7 +698,7 @@ class DurableUpdateOwner:
     def inspect(self) -> dict:
         """Diagnostic records, never a resumed ticket or activation permit."""
         history, marker = self._load_history()
-        return {"schema": SCHEMA, "phase": "recovery_required" if marker else self._phase,
+        return {"schema": self._diagnostic_schema, "phase": "recovery_required" if marker else self._phase,
             "events": [{"sequence": event["sequence"], "kind": event["kind"], "phase": event["phase"],
                         "event_sha256": digest, "operation_id": None if event["operation"] is None else event["operation"]["operation_id"]}
                        for event, digest in history],

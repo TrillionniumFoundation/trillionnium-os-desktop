@@ -30,3 +30,8 @@ Historical plans and evidence remain useful for archaeology, but they must not o
 The [2026-10-02 source audit](audit/PROJECT_AUDIT-2026-10-02.md) records reproduced
 defects, local regression validation and the remaining product acceptance gaps.
 It does not promote the historical qualification baseline or release authority.
+
+
+## Authenticated update readback
+
+[Authenticated update journal and readback](architecture/AUTHENTICATED_UPDATE_READBACK.md) describes the additive G6 / D7 / S11 exact-signature capsule and actual read-only OpenSSL/file readback candidate, preserving the v1 profile and installed qualification limits.

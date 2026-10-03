@@ -1152,6 +1152,252 @@ def _readonly_observer(root: Path) -> set[str]:
     return {index["implementation"]}
 
 
+
+_AUTHENTICATED_UPDATE_INDEX = {'schema': 'trillionnium.desktop.authenticated-update-source-index.v2',
+ 'plan_revision': '2026-08-29-d6',
+ 'requirements': ['G6', 'D7', 'S11'],
+ 'implementations': ['platform/authenticated_update_owner.py',
+                     'platform/authenticated_update_observer.py'],
+ 'documentation': 'docs/architecture/AUTHENTICATED_UPDATE_READBACK.md',
+ 'contract': 'contracts/authenticated-update.v2.json',
+ 'tests': 'tests/test_authenticated_update_readback.py',
+ 'workflow': '.github/workflows/authenticated-update-readback.yml',
+ 'dependencies': ['platform/update_recovery.py',
+                  'platform/durable_update_owner.py',
+                  'platform/update_boot_observer.py'],
+ 'claim_ceiling': 'source_and_host_exact_persisted_detached_signature_and_regular_file_slot_readback_no_boot_health_replay_or_installed_qualification',
+ 'authority_mechanism': False,
+ 'production_activation_enabled': False}
+_AUTHENTICATED_UPDATE_CONTRACT = {'schema': 'trillionnium.desktop.authenticated-update-contract.v2',
+ 'status': 'SOURCE_CANDIDATE',
+ 'domains': {'event': 'trillionnium.desktop.durable-update-event.v2',
+             'capsule': 'trillionnium.desktop.update-signature-capsule.v2',
+             'signature': 'trillionnium.desktop.update-manifest-signature.v1\\0',
+             'readback': 'trillionnium.desktop.authenticated-update-readback.v2',
+             'owner_diagnostic': 'trillionnium.desktop.authenticated-update-owner.v2'},
+ 'api': {'AuthenticatedUpdateOwner': 'inherits exact DurableUpdateOwner v1 constructor, methods, '
+                                     'operation and result objects; profile-specific private hooks '
+                                     'only',
+         'inspect_authenticated_update': "(state_root: 'Path', slot_root: 'Path', *, "
+                                         'signature_verifier, clock, protected_rollback_floor: '
+                                         "'int') -> 'AuthenticatedUpdateReadback'",
+         'AuthenticatedUpdateReadback.public_json': "(self) -> 'bytes'",
+         'AuthenticatedUpdateReadback.private_json': "(self) -> 'bytes'",
+         'fact_construction': 'observer factory only; dataclass init disabled; creator PID/thread '
+                              'required for delivery; no API consumes it as permission'},
+ 'public_fields': ['booted_image_verified',
+                   'bootloader_effect_performed',
+                   'continuation_authorized',
+                   'health_qualified',
+                   'production_activation_enabled',
+                   'reason_codes',
+                   'schema',
+                   'signatures_verified',
+                   'signed_boot_image_mapping',
+                   'status',
+                   'stored_slot_images_verified'],
+ 'status_codes': ['no_pending_update',
+                  'pending_identity_unknown',
+                  'recovery_required',
+                  'observation_unavailable'],
+ 'reason_codes': ['external_signature_configuration_unavailable',
+                  'no_signed_pending_operation',
+                  'legacy_detached_signature_unavailable',
+                  'staging_completion_unconfirmed',
+                  'signed_boot_image_mapping_unknown',
+                  'recovery_marker_present',
+                  'journal_invalid',
+                  'custody_unavailable',
+                  'owner_busy',
+                  'kernel_observation_unavailable',
+                  'kernel_observation_changed',
+                  'persisted_signature_or_image_refused',
+                  'unfinished_owner'],
+ 'limits': {'events': 256,
+            'record_bytes': 65536,
+            'exact_manifest_bytes': 16384,
+            'exact_signature_bytes': 16384,
+            'capsules': 1,
+            'v2_directory_entries': 259,
+            'v2_retained_scan_records': 258,
+            'v1_directory_entries_unchanged': 258,
+            'v1_retained_scan_records_unchanged': 257,
+            'image_bytes': 17179869184,
+            'image_stream_chunk_bytes': 1048576,
+            'private_diagnostic_bytes': 65536},
+ 'capsule': {'name': 'update-signature-<operation_id>.json',
+             'mode': '0600',
+             'root_mode': '0700',
+             'exact_fields': ['schema',
+                              'operation_id',
+                              'owner_id',
+                              'configuration',
+                              'signature_admission',
+                              'manifest_bytes_b64',
+                              'signature_bytes_b64'],
+             'reference_exact_fields': ['name',
+                                        'sha256',
+                                        'manifest_bytes_sha256',
+                                        'signature_sha256'],
+             'event_operation_fields': 'exact v1 operation fields plus signature_capsule; all '
+                                       'subsequent phases retain identical complete reference',
+             'binding': 'canonical capsule digest, exact original byte digests, owner, operation, '
+                        'complete policy/admission/configuration and actual state/slot root '
+                        'identities',
+             'publication': 'before manifest_verified; exact private one-link nofollow retained '
+                            'inode fsync and directory fsync readback using concrete '
+                            'AtomicStateStore; no overwrite of named capsule',
+             'restart_orphan': 'capsule without its complete v2 operation is unknown evidence; '
+                               'refuse and retain, never adopt or replay',
+             'encoding': 'canonical ASCII JSON, canonical padded base64 of exact byte envelopes; '
+                         'no normalization of original manifest bytes'},
+ 'verification': {'default_roots': [],
+                  'configured_roots': 'separately approved exact bundled '
+                                      'ExternalUpdateSignatureVerifier; no key in capsule is '
+                                      'authoritative',
+                  'native_process': 'actual /usr/bin/openssl with v1 detached signature domain and '
+                                    'sealed memfd preimage/signature/approved public key snapshots',
+                  'policy': 'current separately supplied policy must equal history configuration '
+                            'and actual admission '
+                            'signer/key/signature/preimage/policy/minimum_version fields',
+                  'anchors': 'explicit trusted configuration clock and protected floor; initial '
+                             'time at least original admission and last event; nondecreasing final '
+                             'time and current root/manifest validity; floor cannot weaken '
+                             'recorded or actual signer minimum',
+                  'slots': 'complete bounded actual active digest and target digest/length '
+                           'readback through private retained named single-link 0600 descriptors; '
+                           'no mapping of kernel root to either signed slot',
+                  'final_readback': 'complete retained event/capsule/image/root/lease metadata and '
+                                    'inventory before and after trusted final clock callback; '
+                                    'exact fixed kernel samples before and after read scan',
+                  'failure': 'signature, custody, interruption, stale policy, time or floor '
+                             'refusal cannot become a success fact, owner permit or effect'},
+ 'compatibility': {'v1_record_reading': 'structural history only; old pending v1 never becomes '
+                                        'cryptographic authority',
+                   'v1_to_v2': 'only new owner_open after clean prior owner; no within-operation '
+                               'schema migration',
+                   'v1_tools': 'unchanged v1 structural observer rejects v2 evidence rather than '
+                               'claiming success',
+                   'v1_tests': 'unchanged test bodies and fixed v1 record/directory/descriptor '
+                               'budgets'},
+ 'custody': {'reader': 'unchanged bundled read-only observer component walk and shared nonblocking '
+                       'named leases; never constructs writable stores',
+             'cleanup': 'retain managed record/image descriptors through final checks; '
+                        'detach-before-close all acquired descriptors; fork cleanup never LOCK_UN '
+                        'or writes',
+             'creator_scope': 'actual creating process and thread; forked or foreign thread '
+                              'verifier/readback delivery refuses',
+             'interruption_scope': 'finite actual OpenSSL/FS/substitution/fork/read interruption '
+                                   'boundaries, not every asynchronous C-to-Python-store window'},
+ 'claims': {'signature_and_stored_slot_readback': 'only after complete current actual OpenSSL and '
+                                                  'actual stored file readback',
+            'signed_boot_image_mapping': 'unknown',
+            'booted_image_verified': False,
+            'health_qualified': False,
+            'continuation_authorized': False,
+            'automatic_replay': False,
+            'automatic_resume': False,
+            'caller_health_commit_accepted': False,
+            'bootloader_effect_performed': False,
+            'production_activation_enabled': False,
+            'installed_two_boot_qualified': False,
+            'hardware_power_loss_qualified': False,
+            'production_trust_roots_provisioned': False,
+            'protected_monotonic_floor_storage': False,
+            'trusted_production_clock_provisioned': False,
+            'whole_directory_rollback_protection': False,
+            'privileged_arbitrary_in_process_or_filesystem_writer_isolated': False},
+ 'remaining_installed_obligations': ['separately provisioned production roots and protected '
+                                     'monotonic version/time anchors',
+                                     'immutable signed image to actual root/block device mapping',
+                                     'installed bootloader arm and root selection, measured '
+                                     'monotonic health, durable commit/rollback and independently '
+                                     'authorized recovery',
+                                     'actual QEMU two-boot corpus and physical hardware '
+                                     'power-cut/long-duration qualification']}
+_AUTHENTICATED_UPDATE_API = {'platform/authenticated_update_owner.py': [{'kind': 'class',
+                                             'name': 'AuthenticatedUpdateOwner',
+                                             'bases': ['durable.DurableUpdateOwner'],
+                                             'decorators': [],
+                                             'fields': [],
+                                             'methods': []}],
+ 'platform/authenticated_update_observer.py': [{'kind': 'class',
+                                                'name': 'AuthenticatedUpdateReadback',
+                                                'bases': [],
+                                                'decorators': ['dataclass(frozen=True, '
+                                                               'init=False)'],
+                                                'fields': [{'name': 'status',
+                                                            'type': 'str',
+                                                            'default': None},
+                                                           {'name': 'reason_codes',
+                                                            'type': 'tuple[str, ...]',
+                                                            'default': None},
+                                                           {'name': 'signatures_verified',
+                                                            'type': 'bool',
+                                                            'default': None},
+                                                           {'name': 'stored_slot_images_verified',
+                                                            'type': 'bool',
+                                                            'default': None}],
+                                                'methods': [{'name': '__post_init__',
+                                                             'async': False,
+                                                             'arguments': 'self',
+                                                             'returns': None,
+                                                             'decorators': []},
+                                                            {'name': '__getattribute__',
+                                                             'async': False,
+                                                             'arguments': 'self, name',
+                                                             'returns': None,
+                                                             'decorators': []},
+                                                            {'name': 'public_json',
+                                                             'async': False,
+                                                             'arguments': 'self',
+                                                             'returns': 'bytes',
+                                                             'decorators': []},
+                                                            {'name': 'private_json',
+                                                             'async': False,
+                                                             'arguments': 'self',
+                                                             'returns': 'bytes',
+                                                             'decorators': []}]},
+                                               {'kind': 'function',
+                                                'name': 'inspect_authenticated_update',
+                                                'async': False,
+                                                'decorators': [],
+                                                'arguments': 'state_root: Path, slot_root: Path, '
+                                                             '*, signature_verifier, clock, '
+                                                             'protected_rollback_floor: int',
+                                                'returns': 'AuthenticatedUpdateReadback'}]}
+
+def _authenticated_update(root: Path) -> set[str]:
+    relative = "manifests/authenticated-update.v2.json"
+    registered = [relative, *_AUTHENTICATED_UPDATE_INDEX["implementations"],
+                  *[_AUTHENTICATED_UPDATE_INDEX[field] for field in ("documentation", "contract", "tests", "workflow")]]
+    if not any(os.path.lexists(root / path) for path in registered):
+        return set()
+    canonical = lambda value: json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    index = load_json_strict(read(root, relative))
+    if canonical(index) != canonical(_AUTHENTICATED_UPDATE_INDEX):
+        raise ValueError("authenticated update source index identity, mappings or claim ceiling changed")
+    contract = load_json_strict(read(root, index["contract"]))
+    if canonical(contract) != canonical(_AUTHENTICATED_UPDATE_CONTRACT):
+        raise ValueError("authenticated update profile, limits, claims or domain changed")
+    for path, expected in _AUTHENTICATED_UPDATE_API.items():
+        if api_inventory(read(root, path)) != expected:
+            raise ValueError("authenticated update API inventory drift")
+    document = read(root, index["documentation"])
+    if not document.startswith("# ") or not all(path in document for path in index["implementations"]):
+        raise ValueError("authenticated update source documentation mapping changed")
+    tests = ast.parse(read(root, index["tests"]))
+    cases = [node for node in tests.body if isinstance(node, ast.ClassDef)
+             and any(ast.unparse(base) == "unittest.TestCase" for base in node.bases)]
+    if not any(isinstance(member, ast.FunctionDef) and member.name.startswith("test_")
+               for case in cases for member in case.body):
+        raise ValueError("authenticated update actual regression source absent")
+    workflow = read(root, index["workflow"])
+    if "test_authenticated_update_readback.py" not in workflow or "result.skipped" not in workflow:
+        raise ValueError("authenticated update actual non-skipping corpus workflow absent")
+    return set(index["implementations"])
+
+
 def validate(root: Path, *, refresh: bool = False) -> dict:
     original = read(root, REGISTRY)
     value = load_json_strict(original)
@@ -1215,6 +1461,7 @@ def validate(root: Path, *, refresh: bool = False) -> dict:
                    for case in cases for member in case.body):
             raise ValueError("registered test source has no direct unittest.TestCase test methods")
     implementations.update(_readonly_observer(root))
+    implementations.update(_authenticated_update(root))
     actual = {path.relative_to(root).as_posix() for path in (root / "platform").glob("*.py") if path.name != "__init__.py"}
     if actual != implementations:
         raise ValueError("top-level platform module is unregistered or absent")
