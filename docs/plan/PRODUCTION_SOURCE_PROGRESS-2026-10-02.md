@@ -674,3 +674,56 @@ device/portal/storage adapters and actual boot/update orchestration. The product
 executable and AgentPort remain default disabled until those boundaries and
 their independent acceptance are satisfied. No `all_gaps_closed` or production
 readiness flag is advanced by this work.
+
+## CI source tool dependency invalidation successor
+
+The isolated source successor extends path invalidation in 17 existing
+workflows. Named Python tool commands, their local imports and the fixed
+importlib loaders now trigger both existing push and pull-request events when
+only a consumed tool changes. This includes the native source assembler and
+artifact reader, the module registry's dynamically loaded implementation, and
+the generic repository/status validators actually invoked by each workflow.
+The source dependency regression derives those edges from the current command
+and Python AST; it does not infer a hosted run from a trigger match.
+
+The versioned Servo dispatcher is checked by its actual command. S08's
+`verify-d3-patch` lane includes the dispatcher and retained-patch verifier. It
+does not load the default exact-pin implementation. The exact-pin default lane
+does load that implementation and retains its existing branch policy. Dynamic
+loader analysis is restricted to the five reviewed source wrappers, with target
+filenames read from their actual AST. This is a closed tool-dependency audit,
+not a claim to enumerate all data reads, ambient packages or future Makefile
+execution.
+
+Only `on.paths` additions change workflow behavior. Branches, jobs, steps,
+complete run strings, toolchain/PIN identities, profiles, budgets and runtime
+assertions remain unchanged. The S08 manifest's workflow digest is rebound to
+those exact workflow bytes; its other fields and all claim ceilings remain
+unchanged. The unfiltered desktop source CI and main-only D1/D2I lanes keep
+their original event policies. A source-only path-filter correction requires a
+fresh exact-object hosted run and independent review for runtime qualification;
+old native, image, guest, installed, hardware, signing or release evidence is
+not transferred by this change.
+
+## Canonical live CI source identity follow-up
+
+The Root7 source candidate adds a separate preliminary source guard immediately
+after each existing repository checkout in 43 source jobs across 24 workflows.
+The three availability diagnostics in two workflows remain outside that scope.
+All 233 previous qualification run bodies, original steps, profiles, scenes and
+budgets are preserved. Both event path lists also include the reviewed named
+Python command/import/loader dependency additions and the four new guard inputs.
+
+Real private Git regressions bind fork pull refs, exact live base/head/merge refs
+and ordered two-parent prospective commits. The guard refuses hidden index
+flags and hashes bounded current source bytes, symlink text and executable mode
+against the immutable Git tree under its existing 20-second source budget. This
+closes reproduced assume-unchanged/skip-worktree and restored-mtime stat-cache
+false passes. The new helper is a sampled source binding check, never approval
+or production promotion. It does not promise the source stays unchanged after
+return. The architecture contract documents its count/byte/output/time limits.
+
+The combined focused source suites pass 28 local tests. Repository and project
+truth validation also pass. These facts do not establish hosted CI execution,
+headed/native runtime, installed image, hardware, release signature or production
+qualification. `production_ready` remains false.

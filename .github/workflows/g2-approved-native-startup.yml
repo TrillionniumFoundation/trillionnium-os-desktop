@@ -25,6 +25,10 @@ on:
       - 'tests/test_native_product_owner.py'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
   push:
     branches: [main, 'codex/**']
     paths:
@@ -45,6 +49,10 @@ on:
       - 'tests/test_native_product_owner.py'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
 permissions:
   contents: read
 concurrency:
@@ -60,6 +68,23 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Bind current canonical pull refs and ordered prospective parents
         shell: bash
         env:
@@ -130,6 +155,23 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Exact source contract and typed bridge checks
         shell: bash
         env:

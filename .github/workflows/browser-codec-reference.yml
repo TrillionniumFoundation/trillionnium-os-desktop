@@ -39,6 +39,16 @@ on:
       - "docs/plan/**"
       - "rust-toolchain.toml"
       - "docs/evidence/generated/d0c03-*.json"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
   push:
     branches: [main]
     paths:
@@ -79,6 +89,16 @@ on:
       - "rust-toolchain.toml"
       - "docs/evidence/generated/d0c03-*.json"
 
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
 permissions:
   contents: read
 
@@ -92,6 +112,23 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: event-source
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
 
       - name: Compile standard-library references and audits
         run: >-
@@ -203,6 +240,23 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: event-source
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
 
       - name: Install exact Rust toolchain
         run: |

@@ -24,6 +24,23 @@ on:
       - "tools/validate_module_documentation.py"
       - "tests/test_s08_servo_runtime.py"
       - "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/artifact_evidence.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/verify_d3_servo_patch.py"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -49,6 +66,23 @@ on:
       - "tests/test_s08_servo_runtime.py"
       - "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md"
 
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/artifact_evidence.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/qualify_servo_exact_pin_v3.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/verify_d3_servo_patch.py"
 permissions:
   contents: read
 
@@ -72,6 +106,23 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Assert exact source identity
         shell: bash
         env:
@@ -394,6 +445,23 @@ jobs:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
           fetch-depth: 2
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Assert prospective merge identity and parent order
         shell: bash
         run: |

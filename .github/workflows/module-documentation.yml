@@ -18,6 +18,24 @@ on:
       - "tests/test_module_documentation_integration_hardening.py"
       - "CONTRIBUTING.md"
       - "Makefile"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_contract.py"
+      - "tools/browser_codec_reference_legacy_audit.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_documentation_coherence.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_rust_browser_codec.py"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -37,6 +55,24 @@ on:
       - "CONTRIBUTING.md"
       - "Makefile"
 
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_contract.py"
+      - "tools/browser_codec_reference_legacy_audit.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_documentation_coherence.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_rust_browser_codec.py"
 permissions:
   contents: read
 
@@ -55,6 +91,23 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
           persist-credentials: false
+
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
 
       - name: Validate module documentation contract
         run: /usr/bin/python3 -I tools/validate_module_documentation.py
@@ -89,6 +142,23 @@ jobs:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
           fetch-depth: 2
           persist-credentials: false
+
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
 
       - name: Validate module documentation contract
         run: /usr/bin/python3 -I tools/validate_module_documentation.py
