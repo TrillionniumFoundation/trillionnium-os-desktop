@@ -70,6 +70,11 @@ on:
       - "tools/scan_s06_public_exports.py"
       - "tools/verify_approved_native_startup.py"
       - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
   pull_request:
     paths:
       - ".github/workflows/approved-mechanism-policy.yml"
@@ -139,6 +144,11 @@ on:
       - "tools/scan_s06_public_exports.py"
       - "tools/verify_approved_native_startup.py"
       - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
 permissions:
   contents: read
 

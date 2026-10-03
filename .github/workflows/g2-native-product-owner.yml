@@ -67,6 +67,11 @@ on:
       - "tools/verify_approved_native_startup.py"
       - "tools/verify_approved_request_binding.py"
       - "tools/verify_mozjs_secondary_input.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
   push:
     branches: [main, 'codex/**']
     paths:
@@ -129,6 +134,11 @@ on:
       - "tools/verify_approved_native_startup.py"
       - "tools/verify_approved_request_binding.py"
       - "tools/verify_mozjs_secondary_input.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
 permissions:
   contents: read
 concurrency:

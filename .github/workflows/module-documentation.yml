@@ -110,6 +110,14 @@ on:
       - "tools/verify_approved_native_startup.py"
       - "tools/verify_approved_request_binding.py"
       - "tools/verify_mozjs_secondary_input.py"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+      - "contracts/approved-composition-scope.v1.json"
+      - "crates/hepta-peer-attestation/src/control_owner/control_request.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request.rs"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -221,6 +229,14 @@ on:
       - "tools/verify_approved_native_startup.py"
       - "tools/verify_approved_request_binding.py"
       - "tools/verify_mozjs_secondary_input.py"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+      - "contracts/approved-composition-scope.v1.json"
+      - "crates/hepta-peer-attestation/src/control_owner/control_request.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request.rs"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
 permissions:
   contents: read
 

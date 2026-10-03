@@ -63,6 +63,15 @@ on:
       - "tools/prepare_native_product_owner.py"
       - "tools/verify_approved_native_startup.py"
       - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+      - "contracts/approved-composition-scope.v1.json"
+      - "crates/hepta-peer-attestation/src/control_owner/control_request.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request.rs"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
   push:
     branches: ["codex/s07-servo-retained-node-closure-v1"]
     paths:
@@ -126,6 +135,15 @@ on:
       - "tools/prepare_native_product_owner.py"
       - "tools/verify_approved_native_startup.py"
       - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+      - "contracts/approved-composition-scope.v1.json"
+      - "crates/hepta-peer-attestation/src/control_owner/control_request.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request.rs"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
   workflow_dispatch:
 
 permissions:
