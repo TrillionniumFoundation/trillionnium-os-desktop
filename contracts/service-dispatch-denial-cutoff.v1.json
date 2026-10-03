@@ -206,7 +206,7 @@
       }
     }
   },
-  "checker_nonEXPECTED_whole_sha256": "d75bcb981f858c02ad61d0b37c5a78ca8b0f9521bf2dbf2a7479718ebfe11199",
+  "checker_nonEXPECTED_whole_sha256": "7c614c87066b34e217256a316277b0b1432234b71d17afd27d26f38578dea267",
   "default_activation": false,
   "effect_orders": {
     "ServiceDispatchScope::check_dispatch_cutoff": {
@@ -552,18 +552,18 @@
       "parent_sha256": "5107b8893380964b40d0c2af749c67b80da7003878abe4ccb19b938dd119fc79"
     },
     "tools/verify_approved_service_product.py": {
-      "complete_bytes": 119511,
-      "complete_sha256": "8ecae022d8dca2c2d6c7ec9389d65bd8ebcf3320691660e6c6b339a3ca7c1ba2",
+      "complete_bytes": 120151,
+      "complete_sha256": "4ea9cf6e286b096353873749963f8922f43049fcc11b1b97acac57ad77340a13",
       "edits": [
         {
-          "complete_end": 114193,
-          "complete_start": 113488,
-          "complete_text": "    # Only this historical C input view applies the independent joint12 inverse.\n    # C.parent_source remains whole and never hides P1's actual guard modules.\n    try:\n        from .verify_service_dispatch_denial_cutoff import (\n            _read as read_physical_source,\n            joint_parent_source,\n            parent_source as denial_parent_source,\n        )\n    except ImportError:\n        from verify_service_dispatch_denial_cutoff import (\n            _read as read_physical_source,\n            joint_parent_source,\n            parent_source as denial_parent_source,\n        )\n    value = read_physical_source(root, name)\n    return denial_parent_source(name, joint_parent_source(name, value))\n",
-          "parent_text": "    path = root / name\n    before = path.lstat()\n    def identity(value):\n        return (value.st_dev, value.st_ino, value.st_mode, value.st_uid, value.st_gid, value.st_nlink,\n                value.st_size, value.st_mtime_ns, value.st_ctime_ns)\n    if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_size > 1048576:\n        raise ValueError('P2C Source is not bounded single-link regular')\n    fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)\n    with os.fdopen(fd, 'rb') as stream:\n        opened = os.fstat(stream.fileno())\n        if identity(before) != identity(opened):\n            raise ValueError('P2C Source changed before read')\n        raw = stream.read(1048577)\n        after_fd = os.fstat(stream.fileno())\n    after = path.lstat()\n    if identity(before) != identity(after_fd) or identity(before) != identity(after) or len(raw) > 1048576:\n        raise ValueError('P2C Source changed during read')\n    return raw.decode('utf-8', 'strict')\n"
+          "complete_end": 114833,
+          "complete_start": 114451,
+          "complete_text": "    value = raw.decode('utf-8', 'strict')\n    try:\n        from .verify_service_dispatch_denial_cutoff import joint_parent_source, parent_source as denial_parent_source\n    except ImportError:\n        from verify_service_dispatch_denial_cutoff import joint_parent_source, parent_source as denial_parent_source\n    return denial_parent_source(name, joint_parent_source(name, value))\n",
+          "parent_text": "    return raw.decode('utf-8', 'strict')\n"
         },
         {
-          "complete_end": 114652,
-          "complete_start": 114382,
+          "complete_end": 115292,
+          "complete_start": 115022,
           "complete_text": "    try:\n        from .verify_service_dispatch_denial_cutoff import parent_source as denial_parent_source\n    except ImportError:\n        from verify_service_dispatch_denial_cutoff import parent_source as denial_parent_source\n    text = denial_parent_source(path, text)\n",
           "parent_text": ""
         }
@@ -1933,7 +1933,7 @@
   },
   "status": "SOURCE_CANDIDATE_RUNTIME_REQUALIFICATION_REQUIRED",
   "supplemental_source_sha256": {
-    "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md": "0a1609ed3f6c8bbd03c059b447186353a03e38af43896381a2ece717329d0af2",
+    "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md": "f9536d86e91dfbafbefdacbb462486a8360de308700bba09ade71d5467316855",
     "tests/test_service_dispatch_denial_cutoff.py": "a93be2dcb4ee2640056581e41e8442d6c0f95dc9648a7f9753e8931772d21bfc"
   }
 }

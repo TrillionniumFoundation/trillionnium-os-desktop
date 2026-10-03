@@ -84,7 +84,7 @@ The new reader never grants process identity, request custody or runtime proof.
 The existing mandatory physical checker remains in Makefile exactly once;
 historical C/A/B/Native correspondence cannot replace that physical stage.
 
-The physical reader opens an absolute directory chain with
+The mandatory P3 physical reader opens an absolute directory chain with
 `O_NOFOLLOW` and directory descriptors. Relative input components must be
 nonempty and cannot be `.` or `..`. It rejects absolute input names, symbolic
 parent directories and symbolic, hardlinked,
@@ -92,6 +92,14 @@ unbounded or nonregular leaves. It checks the captured leaf's full descriptor
 identity before and after reading and checks the directory lineage before
 closing every descriptor in `finally`. No `resolve()` masks a link under test.
 Directory content timestamps are not process or Source authority.
+
+C keeps its original independent leaf FD9 reader, including nonblocking FIFO
+race refusal, and applies only the new twelve-file inverse before the existing
+six-file inverse. This historical reader does not claim directory-lineage
+hardening. Only the mandatory P3 physical 694-file stage supplies that guard;
+a historical C result cannot replace the physical stage. The exact earlier
+88d C checker is a registered historical whole object, never an admitted
+current physical substitute.
 
 Raw contract serialization must match the canonical closed object exactly,
 including its one final newline. The checker removes only its exact canonical
