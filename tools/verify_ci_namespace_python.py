@@ -47,7 +47,12 @@ EXPECTED = {'schema': 'hepta.ci-namespace-python.v1',
                               'or positive numbered pull merge ref',
               'retirement_ledger': 'unique derived /var/lib/.<profile>.ledger; root0:0 mode0700 '
                                    'with mode0600 create-new same-inode lock/state; no secrets, '
-                                   'interpreter bytes or active profile retained'},
+                                   'interpreter bytes or active profile retained',
+              'root_operation_launcher': 'fixed /usr/bin/sudo --non-interactive /usr/bin/setsid '
+                                         '--fork --wait -- /usr/bin/python3.12 and reviewed '
+                                         'helper; both provider whole bytes/devino/non-setid/no '
+                                         'filecaps checked before and after; root actual parent '
+                                         'UID0/exe/argv and PID/start handoff checked'},
  'profile': {'mode': 'temporary CI-only unconfined debugging profile with explicit userns '
                      'permission',
              'template': '.github/apparmor/hepta-ci-namespace-python.v1.profile',
@@ -71,7 +76,7 @@ EXPECTED = {'schema': 'hepta.ci-namespace-python.v1',
             'maximum_ledger_bytes': 16384,
             'maximum_proc_cmdline_bytes': 65536,
             'maximum_proc_maps_bytes': 4194304},
- 'source_sha256': {'tools/ci_namespace_python.py': '2470f7dc91d9b65630de3c8a49307eb1dc5ad2ea52b2a46df30a594c80145418',
+ 'source_sha256': {'tools/ci_namespace_python.py': '0f269ea663505db04a57ed02484c8392cf8830cae05d4a78b2b3be497889bbce',
                    '.github/apparmor/hepta-ci-namespace-python.v1.profile': '9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be',
                    '.github/workflows/ci.yml': 'be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826',
                    '.github/workflows/g2-approved-native-startup.yml': 'a484cdf5a3c9699031467e3e11d8b28adb3129148024edc4457166c22bd6401a',
@@ -188,8 +193,10 @@ EXPECTED = {'schema': 'hepta.ci-namespace-python.v1',
  'lifecycle': {'serialization': 'create-new root-owned ledger then nonblocking same-inode flock '
                                 'before profile/parser; phase state pins actual lock identity',
                'phases': ['STARTED', 'READY', 'RETIRED'],
-               'actual_setup_worker': 'PID/start ticks/PGID/SID/UID/executable inode recorded '
-                                      'before profile/parser; no caller verification token',
+               'actual_setup_worker': 'actual Root writer PID=PGID=SID and independently read '
+                                      'start ticks, UID0 and selfPython devino, plus real fixed '
+                                      'setsid supervisor PID/start/PGID/SID/UID0/exe/argv, all '
+                                      'registered before parser',
                'direct_child_timeout_proves_root_descendants_dead': False,
                'cleanup_requirements': 'bounded actual worker PID/start/session/group and private '
                                        'executable inode/label/mappings absent, before unload and '
@@ -200,14 +207,34 @@ EXPECTED = {'schema': 'hepta.ci-namespace-python.v1',
                'retired_ledger_retained': True,
                'all_root_state_deleted': False,
                'broad_or_arbitrary_process_kill': False,
-               'retirement_ledger_is_runtime_or_release_authority': False},
+               'retirement_ledger_is_runtime_or_release_authority': False,
+               'actual_cleanup_worker': 'single finite cleanup_worker registered under same inode '
+                                        'lock before any unload; prior writer and supervisor '
+                                        'groups must be empty; no same-writer handoff or phase '
+                                        'revival',
+               'parser_inherits_recorded_root_writer_session': True,
+               'root_marker_is_final_cleanup_success': False,
+               'in_worker_exclusion': 'only exact currently verifying writer '
+                                      'PID/start/PGID/SID/UID/exe, never its child or entire '
+                                      'group; current waiting supervisor is a separate recorded '
+                                      'session whose exit is checked after wait',
+               'normal_runner_success': 'only after actual sudo/setsid direct child terminal and '
+                                        'bounded kernel inventory of both returned actual '
+                                        'writer/supervisor sessions/groups empty; no exclusions; '
+                                        'unavailable related readback refuses',
+               'retired_ledger_proves_root_descendants_dead': False},
  'command_capture': {'fixed_commands_only': True,
                      'each_stdout_stderr_post_completion_refusal_bytes': 2097152,
                      'strict_inflight_output_or_memory_bound': False,
                      'timeout_seconds': 30,
                      'timeout_waits_direct_child_only': True,
                      'root_descendant_absence_proven_by_timeout': False,
-                     'ledger_and_process_readback_required_before_cleanup': True}}
+                     'ledger_and_process_readback_required_before_cleanup': True,
+                     'root_parser_starts_new_session': False,
+                     'normal_runner_sudo_starts_new_session': True,
+                     'method': 'owned anonymous temporary files; completed child output read at '
+                               'most LIMIT+1 per stream; no descendant PIPE EOF wait',
+                     'strict_inflight_output_or_disk_bound': False}}
 
 
 def inputs(root=ROOT):

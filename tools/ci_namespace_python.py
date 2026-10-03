@@ -17,10 +17,12 @@ import re
 import stat
 import subprocess
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = Path('/var/lib')
 PYTHON = Path('/usr/bin/python3.12')
+SETSID = Path('/usr/bin/setsid')
 TEMPLATE = '.github/apparmor/hepta-ci-namespace-python.v1.profile'
 TEMPLATE_SHA256 = '9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be'
 REPOSITORY = 'TrillionniumFoundation/trillionnium-os-desktop'
@@ -207,15 +209,19 @@ def _render(context, template):
     return text.replace('@@PROFILE@@', context['profile']).replace('@@INTERPRETER@@', interpreter).encode()
 
 
-def _command(argv):
-    # Fixed-command PIPE capture has a post-completion refusal threshold only.
-    # It does not impose a strict in-flight output or memory bound. Timeout
-    # waits/kills only the direct child; ledger checks account for root workers.
-    result = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, check=False, start_new_session=True)
-    if len(result.stdout) > LIMIT or len(result.stderr) > LIMIT or result.returncode:
-        raise ValueError('CI fixed operation refused')
-    return result.stdout
-
+def _command(argv, *, new_session=True):
+    # The output threshold is checked after the direct child completes, not a
+    # strict in-flight output/disk bound. Owned temporary files avoid PIPE EOF
+    # waits on descendants that inherited stdout. Timeout still waits/kills
+    # only the direct child; ledger checks account for actual root descendants.
+    with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
+        result = subprocess.run(argv, stdout=stdout, stderr=stderr, timeout=30,
+                                check=False, start_new_session=new_session)
+        stdout.seek(0); output = stdout.read(LIMIT + 1)
+        stderr.seek(0); errors = stderr.read(LIMIT + 1)
+        if len(output) > LIMIT or len(errors) > LIMIT or result.returncode:
+            raise ValueError('CI fixed operation refused')
+        return output
 
 
 def _proc_record(pid, proc=Path('/proc')):
@@ -231,14 +237,29 @@ def _proc_record(pid, proc=Path('/proc')):
     return result
 
 
-def _capture_setup_worker():
+def _capture_root_worker(context, operation):
     result = _proc_record(os.getpid())
     result['uid'] = os.getuid()
     result['exe_identity'] = _identity(Path('/proc/self/exe').stat())
     if result['uid'] != 0 or result['exe_identity'] != _executable(PYTHON)['identity']:
         raise ValueError('CI actual root worker executable refused')
-    if result['pgid'] != os.getpgrp() or result['sid'] != os.getsid(0):
-        raise ValueError('CI actual worker group changed')
+    if result['pgid'] != result['pid'] or result['sid'] != result['pid']:
+        raise ValueError('CI actual root operation session refused')
+    supervisor = _proc_record(os.getppid())
+    status = _kernel_read(Path('/proc') / str(supervisor['pid']) / 'status', 65536).decode('ascii', 'strict')
+    uid = [line.split()[1:] for line in status.splitlines() if line.startswith('Uid:')]
+    supervisor['uid'] = 0
+    supervisor['exe_identity'] = _identity((Path('/proc') / str(supervisor['pid']) / 'exe').stat())
+    arguments = [context[key] for key in ('workflow', 'run', 'attempt', 'job')]
+    arguments += [str(context['uid']), str(context['gid']), context['head'], context['tree']]
+    expected = [str(SETSID), '--fork', '--wait', '--', str(PYTHON), str(Path(__file__).resolve()), operation, *arguments]
+    argv = _kernel_read(Path('/proc') / str(supervisor['pid']) / 'cmdline', 65536).rstrip(b'\0').split(b'\0')
+    if (uid != [['0', '0', '0', '0']] or argv != [os.fsencode(part) for part in expected] or
+            supervisor['exe_identity'] != _executable(SETSID)['identity']):
+        raise ValueError('CI actual fixed setsid supervisor refused')
+    if os.getppid() != supervisor['pid'] or _proc_record(supervisor['pid']) != {key: supervisor[key] for key in ('pid', 'start_ticks', 'pgid', 'sid')}:
+        raise ValueError('CI supervisor handoff changed')
+    result['supervisor'] = supervisor
     return result
 
 
@@ -251,22 +272,35 @@ def _process_entries(proc=Path('/proc')):
             if entry.name.isdecimal(): yield int(entry.name)
 
 
-def _live_setup_workers(context, worker, proc=Path('/proc')):
+def _live_setup_workers(context, worker, proc=Path('/proc'), exclude=None):
     arguments = [context[key] for key in ('workflow', 'run', 'attempt', 'job')]
     arguments += [str(context['uid']), str(context['gid']), context['head'], context['tree']]
-    command = [str(PYTHON), str(Path(__file__).resolve()), '_setup_root', *arguments]
-    commands = [command, ['/usr/bin/sudo', '--non-interactive', *command],
-                ['/sbin/apparmor_parser', '-a', context['directory'] + '/profile']]
+    commands = []
+    for operation in ('_setup_root', '_cleanup_root'):
+        command = [str(PYTHON), str(Path(__file__).resolve()), operation, *arguments]
+        commands.append(command)
+    commands += [['/sbin/apparmor_parser', operation, context['directory'] + '/profile']
+                 for operation in ('-a', '-R')]
     encoded = [[os.fsencode(part) for part in row] for row in commands]
     live = []
     for pid in _process_entries(proc):
         try:
             record = _proc_record(pid, proc)
             argv = _kernel_read(proc / str(pid) / 'cmdline', 65536).rstrip(b'\0').split(b'\0')
-        except FileNotFoundError: continue
-        # A matching command also catches a worker before the STARTED handoff.
-        # Once recorded, any remaining group/session member is refusal, even
-        # after exec or if a PID/group number was reused. No process is killed.
+            if exclude is not None and pid == exclude['pid']:
+                # Exclude only the currently validating writer, never its
+                # group/session or any child after argv/exec has changed.
+                wanted = {key: exclude[key] for key in ('pid', 'start_ticks', 'pgid', 'sid')}
+                status = _kernel_read(proc / str(pid) / 'status', 65536).decode('ascii', 'strict')
+                uid = [line.split()[1:] for line in status.splitlines() if line.startswith('Uid:')]
+                if (record != wanted or uid != [['0', '0', '0', '0']] or
+                        _identity((proc / str(pid) / 'exe').stat()) != exclude['exe_identity']):
+                    raise ValueError('CI current writer exclusion identity changed')
+                continue
+        except FileNotFoundError:
+            if exclude is not None and pid == exclude['pid']:
+                raise ValueError('CI current writer readback disappeared')
+            continue
         if argv in encoded or (worker is not None and
                 (pid == worker['pid'] or record['pgid'] == worker['pgid'] or record['sid'] == worker['sid'])):
             if worker is not None and pid == worker['pid']:
@@ -275,8 +309,33 @@ def _live_setup_workers(context, worker, proc=Path('/proc')):
     return live
 
 
+def _check_process(value, leader):
+    if type(value) is not dict or set(value) != {'pid', 'start_ticks', 'pgid', 'sid', 'uid', 'exe_identity'}:
+        raise ValueError('CI worker schema refused')
+    for key in ('pid', 'start_ticks', 'pgid', 'sid', 'uid'):
+        if type(value[key]) is not int or value[key] < 0:
+            raise ValueError('CI worker numeric identity refused')
+    if any(value[key] == 0 for key in ('pid', 'pgid', 'sid')) or value['uid'] != 0:
+        raise ValueError('CI worker root identity refused')
+    if leader and (value['pgid'] != value['pid'] or value['sid'] != value['pid']):
+        raise ValueError('CI worker root session refused')
+    identity = value['exe_identity']
+    if type(identity) is not list or len(identity) != 9 or any(type(v) is not int for v in identity):
+        raise ValueError('CI worker executable identity refused')
+
+
+def _check_worker(value):
+    if type(value) is not dict or set(value) != {'pid', 'start_ticks', 'pgid', 'sid', 'uid', 'exe_identity', 'supervisor'}:
+        raise ValueError('CI worker and supervisor schema refused')
+    writer = {key: value[key] for key in value if key != 'supervisor'}
+    _check_process(writer, True); _check_process(value['supervisor'], False)
+    if value['pid'] == value['supervisor']['pid'] or value['sid'] == value['supervisor']['sid']:
+        raise ValueError('CI supervisor separation refused')
+    return value
+
+
 def _check_ledger_state(value, context):
-    if type(value) is not dict or set(value) != {'schema', 'context', 'phase', 'setup_worker', 'private_identity', 'lock_identity'}:
+    if type(value) is not dict or set(value) != {'schema', 'context', 'phase', 'setup_worker', 'cleanup_worker', 'private_identity', 'lock_identity'}:
         raise ValueError('CI ledger schema refused')
     supplied = value['context']
     if type(supplied) is not dict or set(supplied) != set(context):
@@ -288,20 +347,13 @@ def _check_ledger_state(value, context):
         raise ValueError('CI ledger lock identity refused')
     if value['phase'] not in ('STARTED', 'READY', 'RETIRED'):
         raise ValueError('CI ledger phase refused')
-    worker = value['setup_worker']
-    if worker is None:
-        if value['phase'] != 'RETIRED' or value['private_identity'] is not None:
-            raise ValueError('CI missing worker identity refused')
-    else:
-        if type(worker) is not dict or set(worker) != {'pid', 'start_ticks', 'pgid', 'sid', 'uid', 'exe_identity'}:
-            raise ValueError('CI worker schema refused')
-        for key in ('pid', 'start_ticks', 'pgid', 'sid', 'uid'):
-            if type(worker[key]) is not int or worker[key] < 0:
-                raise ValueError('CI worker numeric identity refused')
-        if any(worker[key] == 0 for key in ('pid', 'pgid', 'sid')) or worker['uid'] != 0:
-            raise ValueError('CI worker root identity refused')
-        if type(worker['exe_identity']) is not list or len(worker['exe_identity']) != 9 or any(type(v) is not int for v in worker['exe_identity']):
-            raise ValueError('CI worker executable identity refused')
+    for field in ('setup_worker', 'cleanup_worker'):
+        worker = value[field]
+        if worker is None:
+            if field == 'setup_worker' and (value['phase'] != 'RETIRED' or value['private_identity'] is not None):
+                raise ValueError('CI missing worker identity refused')
+            continue
+        _check_worker(worker)
     private = value['private_identity']
     if private is not None and (type(private) is not list or len(private) != 9 or any(type(v) is not int for v in private)):
         raise ValueError('CI ledger private identity refused')
@@ -343,20 +395,8 @@ def _ledger_lock(context, create):
     finally: os.close(fd)
 
 
-def _ledger_put(directory, context, phase, worker, private, current):
-    identity = current()
-    target = directory / 'state.json'
-    if target.exists():
-        previous = _ledger_get(directory, context, current)
-        if previous['phase'] == 'RETIRED' or (previous['phase'] == 'READY' and phase != 'RETIRED'):
-            raise ValueError('CI phase revival refused')
-        if previous['setup_worker'] != worker or (previous['private_identity'] is not None and previous['private_identity'] != private):
-            raise ValueError('CI phase handoff identity changed')
-    elif phase not in ('STARTED', 'RETIRED'):
-        raise ValueError('CI initial phase refused')
-    value = _check_ledger_state({'schema': 'hepta.ci-namespace-python-ledger.v1', 'context': context,
-                                'phase': phase, 'setup_worker': worker, 'private_identity': private, 'lock_identity': identity}, context)
-    target = directory / 'state.json'
+def _ledger_write(directory, value, current):
+    current(); target = directory / 'state.json'
     if target.exists(): _root_owned(target, 0o600)
     pending = directory / 'pending.json'
     _write_new(pending, (json.dumps(value, sort_keys=True) + '\n').encode(), 0o600)
@@ -368,6 +408,35 @@ def _ledger_put(directory, context, phase, worker, private, current):
     return value
 
 
+def _ledger_put(directory, context, phase, worker, private, current, cleanup_worker=None):
+    identity = current(); target = directory / 'state.json'
+    if target.exists():
+        previous = _ledger_get(directory, context, current)
+        if previous['phase'] == 'RETIRED' or (previous['phase'] == 'READY' and phase != 'RETIRED'):
+            raise ValueError('CI phase revival refused')
+        if (previous['setup_worker'] != worker or previous['cleanup_worker'] != cleanup_worker or
+                (previous['private_identity'] is not None and previous['private_identity'] != private)):
+            raise ValueError('CI phase handoff identity changed')
+    elif phase not in ('STARTED', 'RETIRED'):
+        raise ValueError('CI initial phase refused')
+    value = _check_ledger_state({'schema': 'hepta.ci-namespace-python-ledger.v1', 'context': context,
+                                'phase': phase, 'setup_worker': worker, 'cleanup_worker': cleanup_worker,
+                                'private_identity': private, 'lock_identity': identity}, context)
+    return _ledger_write(directory, value, current)
+
+
+def _ledger_begin_cleanup(directory, context, cleanup_worker, current):
+    previous = _ledger_get(directory, context, current)
+    if cleanup_worker in (previous['setup_worker'], previous['cleanup_worker']):
+        raise ValueError('CI previous operation cannot be current writer')
+    # No caller assertion can authorize replacing a previous operation record.
+    _no_owned_lifecycle(context, previous, cleanup_worker)
+    value = dict(previous); value['cleanup_worker'] = cleanup_worker
+    _check_ledger_state(value, context)
+    # RETIRED remains RETIRED; only the cleanup operation identity changes.
+    return _ledger_write(directory, value, current)
+
+
 def _ledger_get(directory, context, current):
     path = directory / 'state.json'; _root_owned(path, 0o600)
     value = _check_ledger_state(_strict_json(_read(path, 16384)[0]), context)
@@ -375,40 +444,50 @@ def _ledger_get(directory, context, current):
     return value
 
 
-def _no_owned_lifecycle(context, state):
-    if (_live_setup_workers(context, state['setup_worker']) or
-            _live_private(state['private_identity'], context['profile'])):
-        raise ValueError('CI root worker session or private interpreter remains')
+def _no_owned_lifecycle(context, state, current_writer=None):
+    for field in ('setup_worker', 'cleanup_worker'):
+        worker = state[field]
+        if _live_setup_workers(context, worker, exclude=current_writer):
+            raise ValueError('CI root operation session remains')
+        if worker is not None and worker != current_writer and _live_setup_workers(context, worker['supervisor']):
+            raise ValueError('CI previous root supervision session remains')
+    if _live_private(state['private_identity'], context['profile']):
+        raise ValueError('CI private interpreter remains')
 
 
 def _root_setup(context):
-    # This create-new ledger is acquired before any profile/parser action. It
-    # remains after retirement so a delayed worker can never recreate the job.
     with _ledger_lock(context, True) as (ledger, made, current):
-        worker = _capture_setup_worker()
+        worker = _capture_root_worker(context, '_setup_root')
         _ledger_put(ledger, context, 'STARTED', worker, None, current)
         return _setup_locked(context, ledger, worker, current)
 
 
 def _root_cleanup(context):
     with _ledger_lock(context, False) as (ledger, made, current):
+        cleanup_worker = _capture_root_worker(context, '_cleanup_root')
         if made:
-            state = _ledger_put(ledger, context, 'RETIRED', None, None, current)
-        else: state = _ledger_get(ledger, context, current)
-        _no_owned_lifecycle(context, state)
+            state = _ledger_put(ledger, context, 'RETIRED', None, None, current, cleanup_worker)
+        else:
+            state = _ledger_begin_cleanup(ledger, context, cleanup_worker, current)
+        _no_owned_lifecycle(context, state, cleanup_worker)
         directory = Path(context['directory'])
         if state['phase'] == 'RETIRED':
             if directory.exists() or any(line.split(' (', 1)[0] == context['profile'] for line in _profiles()):
                 raise ValueError('CI retired ledger still has active allocation')
-            _no_owned_lifecycle(context, state); current()
-            return {'cleanup': 'NO_ALLOCATION_RETIRED' if made else 'ALREADY_RETIRED',
-                    'retirement_ledger_retained': True, 'active_profile_and_interpreter_absent': True}
+            _no_owned_lifecycle(context, state, cleanup_worker); current()
+            return {'cleanup': 'NO_ALLOCATION_RETIRED_MARKER_RECORDED' if made else 'ALREADY_RETIRED_MARKER_RECORDED',
+                    'retirement_ledger_retained': True, 'active_profile_and_interpreter_absent': True,
+                    'operation_worker': cleanup_worker, 'setsid_provider': _executable(SETSID),
+                    'python_provider': _executable(PYTHON), 'root_worker_supervisor_all_exited': False}
         result = _cleanup_locked(context, state)
-        _no_owned_lifecycle(context, state); current()
-        _ledger_put(ledger, context, 'RETIRED', state['setup_worker'], state['private_identity'], current)
-        _no_owned_lifecycle(context, state)
+        _no_owned_lifecycle(context, state, cleanup_worker); current()
+        _ledger_put(ledger, context, 'RETIRED', state['setup_worker'], state['private_identity'], current, cleanup_worker)
+        _no_owned_lifecycle(context, state, cleanup_worker)
         result['retirement_ledger_retained'] = True
+        result['operation_worker'] = cleanup_worker; result['setsid_provider'] = _executable(SETSID)
+        result['python_provider'] = _executable(PYTHON); result['root_worker_supervisor_all_exited'] = False
         return result
+
 
 def _setup_locked(context, ledger, worker, current):
     _root_owned(Path('/')); _root_owned(Path('/var')); _root_owned(BASE)
@@ -435,14 +514,17 @@ def _setup_locked(context, ledger, worker, current):
              'private': copied, 'profile_sha256': _sha(profile), 'setup_worker': worker}
     _write_new(directory / 'state.json', (json.dumps(state, sort_keys=True) + '\n').encode(), 0o600)
     _ledger_put(ledger, context, 'STARTED', worker, copied['identity'], current)
-    _command(['/sbin/apparmor_parser', '-a', str(directory / 'profile')])
+    _command(['/sbin/apparmor_parser', '-a', str(directory / 'profile')], new_session=False)
     expected = [line for line in _profiles() if line.split(' (', 1)[0] == context['profile']]
     if len(expected) != 1 or _global() != before:
         raise ValueError('CI profile or global security readback differs')
     _write_new(directory / 'loaded', b'verified\n', 0o600)
     _ledger_put(ledger, context, 'READY', worker, copied['identity'], current)
     return {'directory': str(directory), 'profile': context['profile'], 'private': copied,
-            'global_unchanged': True, 'corpus_root': False}
+            'global_unchanged': True, 'corpus_root': False,
+            'operation_worker': worker, 'setsid_provider': _executable(SETSID),
+            'python_provider': original, 'operation_ready_marker_recorded': True,
+            'root_worker_supervisor_all_exited': False}
 
 
 def _live_private(identity, profile, proc=Path('/proc')):
@@ -482,7 +564,7 @@ def _cleanup_locked(context, ledger_state):
     except FileNotFoundError:
         if any(line.split(' (', 1)[0] == context['profile'] for line in _profiles()):
             raise ValueError('CI orphan named profile without owned state')
-        return {'cleanup': 'NO_ALLOCATION', 'no_owned_profile_or_directory': True}
+        return {'cleanup': 'NO_ALLOCATION_RETIRED_MARKER_RECORDED', 'no_owned_profile_or_directory': True}
     _root_owned(directory, 0o755); _root_owned(directory / 'bin', 0o755)
     _root_owned(directory / 'state.json', 0o600); _root_owned(directory / 'profile', 0o600)
     raw, unused = _read(directory / 'state.json')
@@ -516,7 +598,8 @@ def _cleanup_locked(context, ledger_state):
         raise ValueError('CI owned directory inventory differs')
     if os.listdir(directory / 'bin') != ['python3']:
         raise ValueError('CI owned bin inventory differs')
-    if owned: _command(['/sbin/apparmor_parser', '-R', str(directory / 'profile')])
+    if owned: _command(['/sbin/apparmor_parser', '-R', str(directory / 'profile')], new_session=False)
+    _no_owned_lifecycle(context, ledger_state, ledger_state['cleanup_worker'])
     if (_profiles() != state['profiles_before'] or _global() != state['global'] or
             _live_private(state['private']['identity'], context['profile'])):
         raise ValueError('CI cleanup security or process readback differs')
@@ -527,7 +610,7 @@ def _cleanup_locked(context, ledger_state):
     private.unlink(); (directory / 'bin').rmdir()
     if completed_setup: loaded.unlink()
     (directory / 'profile').unlink(); (directory / 'state.json').unlink(); directory.rmdir()
-    return {'cleanup': 'PASS', 'global_unchanged': True, 'no_owned_python_processes': True}
+    return {'cleanup': 'RETIRED_MARKER_RECORDED', 'global_unchanged': True, 'no_owned_python_processes': True}
 
 
 def _runner_preflight(context):
@@ -556,6 +639,21 @@ def _normal_runner_fact():
             'prefix': sys.prefix, 'base_prefix': sys.base_prefix}
 
 
+def _completed_operation(context, result, provider, python_provider):
+    # This runs only after sudo/setsid direct child wait completes. Neither
+    # returncode nor RETIRED phase substitutes for actual remaining-process
+    # readback. No writer/supervisor PID or whole group is excluded here.
+    worker = _check_worker(result['operation_worker'])
+    if type(result['root_worker_supervisor_all_exited']) is not bool or result['root_worker_supervisor_all_exited'] is not False:
+        raise ValueError('CI premature root completion claim refused')
+    if (result['setsid_provider'] != provider or _executable(SETSID) != provider or
+            result['python_provider'] != python_provider or _executable(PYTHON) != python_provider or
+            worker['exe_identity'] != python_provider['identity'] or worker['supervisor']['exe_identity'] != provider['identity']):
+        raise ValueError('CI fixed setsid provider readback changed')
+    if _live_setup_workers(context, worker) or _live_setup_workers(context, worker['supervisor']):
+        raise ValueError('CI post-wait root operation or supervision remains')
+
+
 def _main(argv):
     if len(argv) == 9 and argv[0] in ('_setup_root', '_cleanup_root', '_runner_preflight'):
         context = _context(argv[1], argv[2], argv[3], argv[4], int(argv[5]), int(argv[6]), argv[7], argv[8])
@@ -578,8 +676,15 @@ def _main(argv):
     arguments += [str(context['uid']), str(context['gid']), head, tree]
     normal = _normal_runner_fact()
     original_prefix = (sys.prefix, sys.base_prefix)
-    result = _strict_json(_command(['/usr/bin/sudo', '--non-interactive', str(PYTHON), str(Path(__file__).resolve()),
+    provider = _executable(SETSID); python_provider = _executable(PYTHON)
+    result = _strict_json(_command(['/usr/bin/sudo', '--non-interactive', str(SETSID), '--fork', '--wait', '--', str(PYTHON), str(Path(__file__).resolve()),
                                    '_setup_root' if argv == ['setup'] else '_cleanup_root', *arguments]))
+    _completed_operation(context, result, provider, python_provider)
+    if argv == ['cleanup']:
+        markers = {'RETIRED_MARKER_RECORDED': 'PASS', 'NO_ALLOCATION_RETIRED_MARKER_RECORDED': 'NO_ALLOCATION_RETIRED', 'ALREADY_RETIRED_MARKER_RECORDED': 'ALREADY_RETIRED'}
+        result['cleanup'] = markers[result['cleanup']]
+    result['root_worker_supervisor_all_exited'] = True
+    result['actual_root_operation_and_supervision_absent_after_wait'] = True
     if _normal_runner_fact() != normal:
         raise ValueError('CI normal runner or global security changed')
     result['actual_normal_runner_before_after'] = normal

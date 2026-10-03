@@ -305,13 +305,15 @@ class OwnedCleanupModelTests(unittest.TestCase):
             base = Path(directory); system = base / 'system-python'; system.write_bytes(b'real ordinary interpreter fixture')
             stack.enter_context(patch.object(helper, 'BASE', base))
             stack.enter_context(patch.object(helper, 'PYTHON', system))
+            stack.enter_context(patch.object(helper, 'SETSID', system))
             context = helper._context('ci', '123', '2', helper.JOBS['ci'][0], 1001, 1001, 'a' * 40, 'b' * 40)
             profiles = ['unrelated-original (enforce)']; settings = {'synthetic-global': 'unchanged'}; commands = []
             def executable(path):
                 raw, observed = helper._read(path, 64 * 1024 * 1024)
                 if observed.st_mode & 0o6000: raise ValueError('model setid refused')
                 return {'identity': helper._identity(observed), 'bytes': len(raw), 'sha256': helper._sha(raw)}
-            def parser(argv):
+            def parser(argv, *, new_session=True):
+                self.assertFalse(new_session)
                 commands.append(list(argv))
                 self.assertEqual(argv[0], '/sbin/apparmor_parser')
                 self.assertEqual(argv[2], context['directory'] + '/profile')
@@ -327,9 +329,16 @@ class OwnedCleanupModelTests(unittest.TestCase):
             stack.enter_context(patch.object(helper, '_global', side_effect=lambda: dict(settings)))
             stack.enter_context(patch.object(helper, '_command', side_effect=parser))
             stack.enter_context(patch.object(helper, '_live_private', return_value=[]))
-            worker = {'pid': 1000001, 'start_ticks': 12345, 'pgid': 1000002, 'sid': 1000002,
-                      'uid': 0, 'exe_identity': helper._identity(system.stat())}
-            stack.enter_context(patch.object(helper, '_capture_setup_worker', return_value=worker))
+            operation = 0
+            def capture(context, kind):
+                nonlocal operation
+                pid = 1000001 + operation * 10; operation += 1
+                return {'pid': pid, 'start_ticks': 12345 + operation, 'pgid': pid, 'sid': pid,
+                        'uid': 0, 'exe_identity': helper._identity(system.stat()),
+                        'supervisor': {'pid': pid + 2, 'start_ticks': 12344 + operation,
+                                       'pgid': pid + 1, 'sid': pid + 1,
+                                       'uid': 0, 'exe_identity': helper._identity(system.stat())}}
+            stack.enter_context(patch.object(helper, '_capture_root_worker', side_effect=capture))
             stack.enter_context(patch.object(helper, '_live_setup_workers', return_value=[]))
             yield context, profiles, settings, commands, system
 
@@ -338,7 +347,9 @@ class OwnedCleanupModelTests(unittest.TestCase):
             result = helper._root_setup(context)
             self.assertFalse(result['corpus_root']); self.assertTrue(result['global_unchanged'])
             self.assertEqual(helper._read(Path(context['directory']) / 'bin/python3')[0], system.read_bytes())
-            self.assertEqual(helper._root_cleanup(context), {'cleanup': 'PASS', 'global_unchanged': True, 'no_owned_python_processes': True, 'retirement_ledger_retained': True})
+            cleaned = helper._root_cleanup(context)
+            self.assertEqual({key: cleaned[key] for key in ('cleanup', 'global_unchanged', 'no_owned_python_processes', 'retirement_ledger_retained')}, {'cleanup': 'RETIRED_MARKER_RECORDED', 'global_unchanged': True, 'no_owned_python_processes': True, 'retirement_ledger_retained': True})
+            self.assertIn('supervisor', cleaned['operation_worker'])
             self.assertEqual(profiles, ['unrelated-original (enforce)'])
             self.assertFalse(Path(context['directory']).exists()); self.assertTrue(system.exists())
             ledger = Path(context['ledger'])
@@ -395,20 +406,20 @@ class OwnedCleanupModelTests(unittest.TestCase):
             with self.assertRaises(ValueError): helper._root_setup(context)
             self.assertFalse((Path(context['directory']) / 'loaded').exists())
             result = helper._root_cleanup(context)
-            self.assertEqual(result['cleanup'], 'PASS')
+            self.assertEqual(result['cleanup'], 'RETIRED_MARKER_RECORDED')
             self.assertEqual([argv[1] for argv in commands], ['-a', '-R'])
             self.assertTrue(system.exists())
 
     def test_early_cleanup_tombstone_permanently_refuses_late_setup(self):
         with self.model() as (context, profiles, settings, commands, system):
             result = helper._root_cleanup(context)
-            self.assertEqual(result['cleanup'], 'NO_ALLOCATION_RETIRED')
+            self.assertEqual(result['cleanup'], 'NO_ALLOCATION_RETIRED_MARKER_RECORDED')
             self.assertTrue(result['retirement_ledger_retained'])
             ledger = Path(context['ledger']); before = (ledger / 'state.json').read_bytes()
             with self.assertRaises(ValueError): helper._root_setup(context)
             self.assertEqual((ledger / 'state.json').read_bytes(), before)
             self.assertFalse(Path(context['directory']).exists()); self.assertEqual(commands, [])
-            self.assertEqual(helper._root_cleanup(context)['cleanup'], 'ALREADY_RETIRED')
+            self.assertEqual(helper._root_cleanup(context)['cleanup'], 'ALREADY_RETIRED_MARKER_RECORDED')
 
     def test_actual_same_inode_nonblocking_lock_contention_refuses_cleanup(self):
         with self.model() as (context, profiles, settings, commands, system):
@@ -464,8 +475,8 @@ class OwnedCleanupModelTests(unittest.TestCase):
     def test_parser_return_with_replaced_lock_cannot_publish_ready_state(self):
         with self.model() as (context, profiles, settings, commands, system):
             original = helper._command
-            def changed(argv):
-                result = original(argv); ledger = Path(context['ledger'])
+            def changed(argv, **kwargs):
+                result = original(argv, **kwargs); ledger = Path(context['ledger'])
                 (ledger / 'lock').replace(system.parent / 'saved-original-lock')
                 helper._write_new(ledger / 'lock', b'', 0o600)
                 return result
@@ -477,21 +488,112 @@ class OwnedCleanupModelTests(unittest.TestCase):
             self.assertEqual([argv[1] for argv in commands], ['-a'])
             self.assertTrue(Path(context['directory']).exists())
 
+    def test_cleanup_parser_child_remaining_keeps_state_and_never_retires(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            helper._root_setup(context); original = helper._command; remaining = False
+            def parser(argv, **kwargs):
+                nonlocal remaining
+                result = original(argv, **kwargs)
+                if argv[1] == '-R': remaining = True
+                return result
+            def live(*args, **kwargs): return [{'pid': 1000020}] if remaining else []
+            with patch.object(helper, '_command', side_effect=parser), patch.object(helper, '_live_setup_workers', side_effect=live), self.assertRaises(ValueError):
+                helper._root_cleanup(context)
+            state = json.loads((Path(context['ledger']) / 'state.json').read_text())
+            self.assertEqual(state['phase'], 'READY'); self.assertIsNotNone(state['cleanup_worker'])
+            self.assertTrue(Path(context['directory']).exists())
+            before = (Path(context['ledger']) / 'state.json').read_bytes()
+            with patch.object(helper, '_live_setup_workers', return_value=[{'pid': 1000020}]), self.assertRaises(ValueError):
+                helper._root_cleanup(context)
+            self.assertEqual((Path(context['ledger']) / 'state.json').read_bytes(), before)
+
+    def test_post_wait_requires_both_sessions_empty_and_unchanged_providers(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            result = helper._root_setup(context); provider = helper._executable(system)
+            self.assertFalse(result['root_worker_supervisor_all_exited'])
+            original = dict(result)
+            for variant in ('writer-child', 'supervisor-child', 'unreadable', 'premature', 'provider'):
+                with self.subTest(variant=variant):
+                    if variant in ('writer-child', 'supervisor-child'):
+                        calls = [[{'pid': 1000050}], []] if variant == 'writer-child' else [[], [{'pid': 1000051}]]
+                        with patch.object(helper, '_live_setup_workers', side_effect=calls), self.assertRaises(ValueError):
+                            helper._completed_operation(context, result, provider, provider)
+                    elif variant == 'unreadable':
+                        with patch.object(helper, '_live_setup_workers', side_effect=PermissionError('ordinary fixture unreadable')), self.assertRaises(PermissionError):
+                            helper._completed_operation(context, result, provider, provider)
+                    else:
+                        result = dict(original)
+                        if variant == 'premature': result['root_worker_supervisor_all_exited'] = True
+                        else: result['setsid_provider'] = {'wrong': 'fixture'}
+                        with self.assertRaises(ValueError): helper._completed_operation(context, result, provider, provider)
+            helper._completed_operation(context, original, provider, provider)
+
     def test_start_record_and_same_lock_precede_parser_ready_then_retired(self):
         with self.model() as (context, profiles, settings, commands, system):
             original = helper._command; observed = []
-            def inspect(argv):
+            def inspect(argv, **kwargs):
                 ledger = Path(context['ledger']); state = json.loads((ledger / 'state.json').read_text())
                 observed.append((argv[1], state['phase'], state['private_identity']))
                 self.assertEqual(state['lock_identity'][:2], helper._identity((ledger / 'lock').stat())[:2])
                 self.assertIsNotNone(state['setup_worker']); self.assertIsNotNone(state['private_identity'])
-                return original(argv)
+                return original(argv, **kwargs)
             with patch.object(helper, '_command', side_effect=inspect):
                 helper._root_setup(context)
                 self.assertEqual(json.loads((Path(context['ledger']) / 'state.json').read_text())['phase'], 'READY')
                 helper._root_cleanup(context)
             self.assertEqual([(operation, phase) for operation, phase, identity in observed], [('-a', 'STARTED'), ('-R', 'READY')])
             self.assertEqual(json.loads((Path(context['ledger']) / 'state.json').read_text())['phase'], 'RETIRED')
+
+
+class OrdinaryOperationSessionTests(unittest.TestCase):
+    def context(self):
+        return helper._context('ci', '123', '2', helper.JOBS['ci'][0], 1001, 1001, 'a' * 40, 'b' * 40)
+
+    def fixture(self, root, pid, pgid, sid, binary, *, argv=b'changed-exec\0', start=12345):
+        # Ordinary proc-shaped files only: the UID0 text is synthetic input,
+        # never a claim that this test obtained host root or a kernel authority.
+        entry = root / str(pid); entry.mkdir()
+        fields = ['S', '1', str(pgid), str(sid)] + ['0'] * 15 + [str(start)]
+        (entry / 'stat').write_text(str(pid) + ' (ordinary) ' + ' '.join(fields) + '\n')
+        (entry / 'cmdline').write_bytes(argv)
+        (entry / 'status').write_bytes(b'Uid:\t0\t0\t0\t0\n')
+        (entry / 'exe').symlink_to(binary)
+        return {'pid': pid, 'start_ticks': start, 'pgid': pgid, 'sid': sid,
+                'uid': 0, 'exe_identity': helper._identity(binary.stat())}
+
+    def test_changed_parser_argv_exec_remains_in_recorded_setup_session(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); binary = root / 'binary'; binary.write_bytes(b'ordinary alternate ELF fixture')
+            worker = {'pid': 101, 'start_ticks': 12345, 'pgid': 101, 'sid': 101}
+            self.fixture(root, 102, 101, 101, binary)
+            self.assertEqual([row['pid'] for row in helper._live_setup_workers(self.context(), worker, root)], [102])
+
+    def test_cleanup_session_excludes_only_exact_current_writer_not_its_child(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); binary = root / 'binary'; binary.write_bytes(b'ordinary alternate ELF fixture')
+            worker = self.fixture(root, 201, 201, 201, binary)
+            self.fixture(root, 202, 201, 201, binary)
+            rows = helper._live_setup_workers(self.context(), worker, root, exclude=worker)
+            self.assertEqual([row['pid'] for row in rows], [202])
+            wrong = dict(worker); wrong['start_ticks'] += 1
+            with self.assertRaises(ValueError): helper._live_setup_workers(self.context(), worker, root, exclude=wrong)
+            (root / '201/status').write_bytes(b'Uid:\t1001\t1001\t1001\t1001\n')
+            with self.assertRaises(ValueError): helper._live_setup_workers(self.context(), worker, root, exclude=worker)
+
+    def test_fixed_setsid_fork_wait_avoids_actual_ordinary_group_leader_eperm(self):
+        script = "import os,json; print(json.dumps({'pid':os.getpid(),'pgid':os.getpgrp(),'sid':os.getsid(0),'uid':os.getuid()}))"
+        argv = ['/usr/bin/setsid', '--fork', '--wait', '--', sys.executable, '-c', script]
+        result = subprocess.run(argv, start_new_session=True, capture_output=True, text=True, timeout=10, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        actual = json.loads(result.stdout)
+        self.assertEqual(actual['pid'], actual['pgid']); self.assertEqual(actual['pid'], actual['sid'])
+        self.assertEqual(actual['uid'], os.getuid())
+        failure = "import os,errno,json;\ntry: os.setsid()\nexcept OSError as e: print(json.dumps({'errno':e.errno}))\nelse: raise SystemExit(2)"
+        result = subprocess.run([sys.executable, '-c', failure], start_new_session=True,
+                                capture_output=True, text=True, timeout=10, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        import errno
+        self.assertEqual(json.loads(result.stdout), {'errno': errno.EPERM})
 
 
 if __name__ == '__main__':
