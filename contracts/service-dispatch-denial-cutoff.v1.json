@@ -222,7 +222,7 @@
       }
     }
   },
-  "checker_nonEXPECTED_whole_sha256": "40bf6ad8dc4c0a1a20ee9e3bf12857288fb8c2cb68a244953c9ce8f68d50526e",
+  "checker_nonEXPECTED_whole_sha256": "0198ce1a7812bc75db53bc4025d4550a3c227e088106ea1a15f580be29ebea49",
   "ci_composition_scope": {
     "Hosted_cleanup_qualified": false,
     "Native_qualified": false,
@@ -2359,7 +2359,7 @@
     "tests/test_approved_service_product.py": "7bf23b15e3e3686fdda818f5eedf20048de7bb4de761c28b73a6f07c0b2fd971",
     "tests/test_approved_service_runtime.py": "6d5feba0a53e863dee3d95cf38e22e853e082ed1824d2ca0877f8517fd73e367",
     "tests/test_authenticated_update_readback.py": "f4822052c6968b00016b2a2ef6dc03773be3fdbcce5ba238a65c314bace95a59",
-    "tests/test_ci_absence_guards.py": "924fed7609e3d9dd0049f1e3b6928b807e1bbe4aa67e33acf8dac469c80bd58e",
+    "tests/test_ci_absence_guards.py": "d5015a3374547ba2891a438cebe37a681482e1cd1d3ee59d506434a312b2adb7",
     "tests/test_ci_exact_live_ref_fields.py": "024372d9744f2785cdfbd24e615a52fe851017df355f4fd9142b7422ff43b78d",
     "tests/test_ci_pr_ref_identities.py": "28cf0d06d790839b6767245b13cdf477df2b8ba00b6ee3eed60240971cd256fc",
     "tests/test_ci_required_contexts.py": "36e515ec75638298f5d4ba483819e4c19404269097e46dbc7dc01818d468b296",
@@ -2595,6 +2595,83 @@
     "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs",
     "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs"
   ],
+  "s06_ci_fixture_Source_scope": {
+    "BrowserActor_pre_scan_regex_denial": 1,
+    "PrincipalBinding_closed_product_inventory_denial": 2,
+    "actual_closed_declarations": 10,
+    "actual_copied_Rust_files": 5,
+    "actual_parent_head": "2b907247a2c3bd75e7ba0df43fa187ae67d4a225",
+    "actual_parent_tree": "e116f44a028f608e561d302aded10ca5def645b1",
+    "changed_existing_paths": 3,
+    "files": 699,
+    "new_tests_NOT_EXECUTED": true,
+    "old_other_methods_whole": true,
+    "original_complete_workflows_and_shell_timeout10_whole": true,
+    "production_ready": false,
+    "qualification_transferred": false,
+    "scope": "SOURCE_ONLY_EXACT_C_ONLY_FIXTURE_HISTORY"
+  },
+  "s06_ci_fixture_current_physical1": {
+    "tests/test_ci_absence_guards.py": "d5015a3374547ba2891a438cebe37a681482e1cd1d3ee59d506434a312b2adb7"
+  },
+  "s06_ci_fixture_parent_inverse1": {
+    "tests/test_ci_absence_guards.py": {
+      "byte_edits": [
+        {
+          "complete_end": 122,
+          "complete_start": 83,
+          "complete_text": "import copy\nimport difflib\nimport json\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 171,
+          "complete_start": 157,
+          "complete_text": "import shutil\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 247,
+          "complete_start": 221,
+          "complete_text": "from unittest import mock\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 1783,
+          "complete_start": 291,
+          "complete_text": "\nCLOSED_ACTOR_DECLARATIONS = ['pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;', 'pub use servo_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;', 'pub use hepta_agent_transport : : PeerIdentity ;', 'pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;', 'pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;', 'pub use hepta_session_core : : ReceiptJournal ;', 'pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;', 'pub use service_actor : : ServiceServoBrowserActor ;', 'pub use service_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;']\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 3952,
+          "complete_start": 3619,
+          "complete_text": "        target.parent.mkdir(parents=True)\n        shutil.copytree(ROOT / \"crates/hepta-browser-actor/src\", target)\n        # The complete product already supplies from_attested/handle_attested.\n        # Only this case's forbidden marker is additive to its closed inventory.\n        (target / \"fixture.rs\").write_text(marker + \"\\n\")\n",
+          "parent_text": "        target.mkdir(parents=True)\n        (target / \"fixture.rs\").write_text(\"pub fn from_attested() {}\\n\"\n                                           \"pub fn handle_attested() {}\\n\" + marker + \"\\n\")\n"
+        },
+        {
+          "complete_end": 4761,
+          "complete_start": 4503,
+          "complete_text": "            for marker, expected, reason in (\n                    (\"pub struct BrowserActor<R> {}\", 1, b\"forbidden source match\"),\n                    (\"pub type PrincipalBinding = (); \", 2,\n                     b\"closed product export inventory differs\")):\n",
+          "parent_text": "            for marker in (\"pub struct BrowserActor<R> {}\", \"pub type PrincipalBinding = (); \"):\n"
+        },
+        {
+          "complete_end": 5150,
+          "complete_start": 5003,
+          "complete_text": "                    self.assertEqual(result.returncode, expected, result.stdout.decode())\n                    self.assertIn(reason, result.stdout)\n",
+          "parent_text": "                    self.assertEqual(result.returncode, 1, result.stdout.decode())\n                    self.assertIn(b\"forbidden source match\", result.stdout)\n"
+        },
+        {
+          "complete_end": 18399,
+          "complete_start": 8994,
+          "complete_text": "    def test_actual_actor_fixture_keeps_all_five_product_files_and_no_toy_exports(self):\n        source = ROOT / \"crates/hepta-browser-actor/src\"\n        retained = sorted(path.relative_to(source) for path in source.rglob(\"*.rs\"))\n        self.assertEqual(retained, [Path(\"lib.rs\"), Path(\"servo_runtime.rs\"),\n                                   Path(\"servo_runtime/approved_binding.rs\"),\n                                   Path(\"servo_runtime/service_runtime.rs\"),\n                                   Path(\"servo_runtime/service_runtime/service_actor.rs\")])\n        with tempfile.TemporaryDirectory() as temp:\n            directory = Path(temp)\n            self.actor_fixture(directory)\n            target = directory / \"crates/hepta-browser-actor/src\"\n            self.assertEqual(sorted(path.relative_to(target) for path in target.rglob(\"*.rs\")),\n                             sorted(retained + [Path(\"fixture.rs\")]))\n            for path in retained:\n                self.assertEqual((target / path).read_bytes(), (source / path).read_bytes())\n            self.assertEqual((target / \"fixture.rs\").read_bytes(), b\"\\n\")\n            for name in (\"scan_s06_public_exports.py\", \"artifact_evidence.py\",\n                         \"browser_codec_reference_security.py\"):\n                self.assertEqual((directory / \"tools\" / name).read_bytes(),\n                                 (ROOT / \"tools\" / name).read_bytes())\n            self.assertEqual((directory / \"contracts/browser-actor.v1.json\").read_bytes(),\n                             (ROOT / \"contracts/browser-actor.v1.json\").read_bytes())\n\n    def test_both_complete_actor_bodies_write_the_exact_ten_product_declarations(self):\n        # This independently fixed ordered oracle is never learned from CLI output.\n        declarations = CLOSED_ACTOR_DECLARATIONS\n        contract = json.loads((ROOT / \"contracts/browser-actor.v1.json\").read_text())\n        self.assertEqual(contract[\"public_export_inventory\"][\"lexical_declarations\"],\n                         declarations)\n        self.assertEqual(len(declarations), 10)\n        for index, body in enumerate(self.actor_bodies()):\n            with self.subTest(body=index), tempfile.TemporaryDirectory() as temp:\n                directory = Path(temp)\n                self.actor_fixture(directory)\n                result = shell(body, directory)\n                self.assertEqual(result.returncode, 0, result.stdout.decode())\n                self.assertEqual((directory / \"s06-public-exports.txt\").read_text(),\n                                 \"\\n\".join(declarations) + \"\\n\")\n\n    def test_both_complete_actor_bodies_refuse_missing_product_declaration_before_success(self):\n        for index, body in enumerate(self.actor_bodies()):\n            with self.subTest(body=index), tempfile.TemporaryDirectory() as temp:\n                directory = Path(temp)\n                self.actor_fixture(directory)\n                (directory / \"crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs\").unlink()\n                result = shell(body + \"printf reached-success\\n\", directory)\n                self.assertEqual(result.returncode, 2, result.stdout.decode())\n                self.assertIn(b\"closed product export inventory differs\", result.stdout)\n                self.assertNotIn(b\"reached-success\", result.stdout)\n\n    def _fully_rebound_fixture(self, replacement):\n        from tests.test_service_dispatch_denial_cutoff import CurrentPhysicalIngressBoundaryTests\n        from tools import verify_service_dispatch_denial_cutoff as gate\n        current = gate.inputs()\n        path = \"tests/test_ci_absence_guards.py\"\n        harness = CurrentPhysicalIngressBoundaryTests()\n        harness.texts = current\n        rebound, texts = harness._fully_rebound({path: replacement})\n        previous_assignment = gate.expected_assignment(rebound)\n        parent = gate.s06_ci_fixture_parent_source(path, current[path])\n        old, complete = parent.splitlines(True), replacement.splitlines(True)\n        complete_offsets = [0]\n        for line in complete:\n            complete_offsets.append(complete_offsets[-1] + len(line.encode()))\n        rule = copy.deepcopy(rebound[\"s06_ci_fixture_parent_inverse1\"][path])\n        rule.update(complete_bytes=len(replacement.encode()),\n                    complete_sha256=gate._sha(replacement.encode()))\n        rule[\"byte_edits\"] = []\n        for kind, a, b, x, y in difflib.SequenceMatcher(None, old, complete, autojunk=False).get_opcodes():\n            if kind != \"equal\":\n                rule[\"byte_edits\"].append({\"complete_start\": complete_offsets[x],\n                                          \"complete_end\": complete_offsets[y],\n                                          \"complete_text\": \"\".join(complete[x:y]),\n                                          \"parent_text\": \"\".join(old[a:b])})\n        rebound[\"s06_ci_fixture_parent_inverse1\"][path] = rule\n        rebound[\"s06_ci_fixture_current_physical1\"][path] = gate._sha(replacement.encode())\n        self.assertEqual(rebound[\"preserved_original_sha256\"][path], gate._sha(replacement.encode()))\n        self.assertEqual(texts[gate.TOOL].count(previous_assignment), 1)\n        texts[gate.TOOL] = texts[gate.TOOL].replace(previous_assignment, gate.expected_assignment(rebound), 1)\n        texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)\n        with mock.patch.object(gate, \"EXPECTED\", rebound):\n            rebound[\"checker_nonEXPECTED_whole_sha256\"] = gate._sha(gate.checker_body(texts[gate.TOOL]).encode())\n        # The checker body stayed whole; only its canonical mutable envelope changed.\n        self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(rebound))\n        self.assertIn(gate.expected_assignment(rebound), texts[gate.TOOL])\n        raw = replacement.encode()\n        for edit in reversed(rule[\"byte_edits\"]):\n            start, end = edit[\"complete_start\"], edit[\"complete_end\"]\n            self.assertEqual(raw[start:end], edit[\"complete_text\"].encode())\n            raw = raw[:start] + edit[\"parent_text\"].encode() + raw[end:]\n        self.assertEqual(raw, parent.encode())\n        return gate, current, rebound, texts\n\n    def test_unknown_fixture_is_refused_after_all_mutable_metadata_is_rebound(self):\n        from tools import verify_service_dispatch_denial_cutoff as original\n        path = \"tests/test_ci_absence_guards.py\"\n        changed = original.inputs()[path] + \"\\n# fully rebound unknown fixture bytes\\n\"\n        gate, current, rebound, texts = self._fully_rebound_fixture(changed)\n        self.assertNotEqual(gate._sha(changed.encode()), gate._sha(current[path].encode()))\n        with mock.patch.object(gate, \"EXPECTED\", rebound):\n            self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))\n            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),\n                             rebound[\"checker_nonEXPECTED_whole_sha256\"])\n            self.assertEqual(rebound[\"s06_ci_fixture_current_physical1\"][path], gate._sha(changed.encode()))\n            self.assertEqual(rebound[\"s06_ci_fixture_parent_inverse1\"][path][\"complete_bytes\"], len(changed.encode()))\n            self.assertEqual(rebound[\"s06_ci_fixture_parent_inverse1\"][path][\"complete_sha256\"], gate._sha(changed.encode()))\n            with self.assertRaisesRegex(ValueError, \"^P3 independent current S06 CI fixture physical Source differs$\"):\n                gate.check(rebound, texts)\n            with self.assertRaisesRegex(ValueError, \"^P3 unknown complete S06 CI fixture Source cannot normalize$\"):\n                gate.s06_ci_fixture_parent_source(path, changed)\n\n    def test_exact_old_fixture_is_history_only_and_cannot_rebind_current_physical_admission(self):\n        from tools import verify_service_dispatch_denial_cutoff as original\n        from tools import verify_approved_service_product as product\n        path = \"tests/test_ci_absence_guards.py\"\n        current = original.inputs()[path]\n        parent = original.s06_ci_fixture_parent_source(path, current)\n        self.assertNotEqual(current, parent)\n        self.assertEqual(original.s06_ci_fixture_parent_source(path, parent), parent)\n        self.assertEqual(original.joint_parent_source(path, current), parent)\n        self.assertEqual(product._read(ROOT, path), parent)\n        self.assertEqual(original.parent_source(path, current), current)\n        self.assertEqual(product.parent_source(path, current), current)\n        gate, baseline, rebound, texts = self._fully_rebound_fixture(parent)\n        with mock.patch.object(gate, \"EXPECTED\", rebound):\n            self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))\n            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),\n                             rebound[\"checker_nonEXPECTED_whole_sha256\"])\n            self.assertEqual(rebound[\"preserved_original_sha256\"][path], gate._sha(parent.encode()))\n            self.assertEqual(rebound[\"s06_ci_fixture_current_physical1\"][path], gate._sha(parent.encode()))\n            self.assertEqual(rebound[\"s06_ci_fixture_parent_inverse1\"][path][\"byte_edits\"], [])\n            with self.assertRaisesRegex(ValueError, \"^P3 independent current S06 CI fixture physical Source differs$\"):\n                gate.check(rebound, texts)\n            self.assertEqual(gate.s06_ci_fixture_parent_source(path, parent), parent)\n\n\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 18446,
+      "complete_sha256": "d5015a3374547ba2891a438cebe37a681482e1cd1d3ee59d506434a312b2adb7",
+      "parent_bytes": 7188,
+      "parent_sha256": "924fed7609e3d9dd0049f1e3b6928b807e1bbe4aa67e33acf8dac469c80bd58e"
+    }
+  },
   "s06_closed_Service_export_scope": {
     "Native_or_installed_qualified": false,
     "Rust_API_or_methods_changed": false,
