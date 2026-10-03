@@ -118,7 +118,7 @@ def hash_regular(path: Path, limit: int = 4 * 1024**3) -> str:
         total = 0
         deadline = time.monotonic() + 60
         while True:
-            block = reader.read(1024 * 1024)
+            block = reader.read_some(1024 * 1024)
             if not block:
                 break
             digest.update(block)
@@ -579,7 +579,7 @@ class Packet:
                     and before.st_mode & 0o022 == 0 and 0 < before.st_size <= limit, "packet metadata unsafe")
             chunks, total = [], 0
             while True:
-                block = reader.read(min(65536, limit + 1 - total))
+                block = reader.read_some(min(65536, limit + 1 - total))
                 if not block:
                     break
                 chunks.append(block)

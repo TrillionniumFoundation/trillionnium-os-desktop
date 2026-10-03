@@ -6,6 +6,24 @@ inputs, S12 evidence bytes, native input checkpoints, namespace hashes, namespac
 packets and the namespace contract now consume the existing
 `ManagedSourceReader`. Their parameters and result values stay unchanged.
 
+The additive `ManagedSourceReader.read_some(self, size: int) -> bytes` performs
+one native read. It accepts only exact integers from zero through `sys.maxsize`,
+rejecting booleans and other types with `TypeError`, negatives with `ValueError`
+and overflow with `OverflowError`. It requires the same creator process/thread,
+an open owner and no active read/stat operation. Native errors and interruptions
+propagate while the owner retains cleanup. Read, read_some, stat, close and
+context-exit callbacks refuse reentry on this owner. The existing `read` signature
+and fill-until-count/EOF behavior remain unchanged.
+
+Namespace hash/packet and native checkpoint consumers retain their original
+single-syscall short-read behavior through `read_some`. In particular the hash
+consumer checks its original 60-second deadline after each kernel read, including
+a one-byte short read. The former buffered consumers keep `read`. The rejected
+first migration used buffered fill reads for the hash; an actual 4096-byte file
+with one-byte reads and a deterministic advancing clock demonstrated 4097 calls
+before refusal instead of the original 60. That failed candidate remains
+unpublished; its observation is not a measurement of elapsed wall time.
+
 Each acquisition retains a cleanup owner through factory return and context
 entry. Reads and metadata checks operate on that owner; they never hand a raw FD
 to `os.fdopen` or publish one to their callers. Namespace pathname rechecks use a

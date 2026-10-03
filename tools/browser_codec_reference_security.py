@@ -318,7 +318,7 @@ class ManagedSourceReader:
                     if frame is None:
                         self._active = False
                         return
-                    if frame.f_code in (ManagedSourceReader.read.__code__, ManagedSourceReader.stat.__code__) and frame.f_locals.get("self") is self:
+                    if frame.f_code in (ManagedSourceReader.read.__code__, ManagedSourceReader.read_some.__code__, ManagedSourceReader.stat.__code__) and frame.f_locals.get("self") is self:
                         raise ValueError("managed source reader does not allow reentrant operations")
                     frame = frame.f_back
                 raise ValueError("managed source reader operation stack exceeds its check bound")
@@ -362,6 +362,26 @@ class ManagedSourceReader:
         self._ensure_idle()
         if self._owner is not None:
             self._owner.close()
+
+    def read_some(self, size: int) -> bytes:
+        """Perform one native read, retaining short-read/deadline granularity.
+
+        Size is an exact nonnegative int within sys.maxsize. This differs from
+        read's fill-until-count/EOF behavior, while keeping the same owner,
+        creator, non-reentry and interruption rules. No descriptor is returned.
+        """
+        self._ensure_idle()
+        if type(size) is not int:
+            raise TypeError("managed single read size must be an integer")
+        if size < 0:
+            raise ValueError("managed single read size must be nonnegative")
+        if size > sys.maxsize:
+            raise OverflowError("managed single read size exceeds the native integer bound")
+        try:
+            self._active = True
+            return os.read(self._descriptor(), size)
+        finally:
+            self._active = False
 
     def __enter__(self) -> ManagedSourceReader:
         self._ensure_idle()

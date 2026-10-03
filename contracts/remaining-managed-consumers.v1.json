@@ -1,6 +1,16 @@
 {
   "schema": "trillionnium.remaining-managed-consumers.v1",
   "reader": "tools/browser_codec_reference_security.py::ManagedSourceReader",
+  "added_api": {
+    "ManagedSourceReader.read_some": {
+      "signature": "(self, size: 'int') -> 'bytes'",
+      "size": "exact int 0..sys.maxsize; bool, other types and negatives refused",
+      "preconditions": "same creator process and thread; open owner; no read/read_some/stat reentry",
+      "result": "one native os.read result, including short bytes or actual EOF; no fill loop or FD transfer",
+      "errors": ["TypeError for non-exact int", "ValueError for negative, closed, foreign creator or reentry", "OverflowError above sys.maxsize", "native OSError and BaseException propagate with owner retained"],
+      "close_reentry": "close and context exit refuse while any read/read_some/stat frame is active"
+    }
+  },
   "consumers": [
     {"source": "tools/_validate_repository_impl.py", "function": "load_json", "reader_factory": "open_managed_regular_beneath"},
     {"source": "tools/validate_platform_mechanisms.py", "function": "read", "reader_factory": "open_managed_regular_beneath"},

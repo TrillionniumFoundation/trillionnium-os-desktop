@@ -4,6 +4,7 @@ from __future__ import annotations
 import ast
 import gc
 import hashlib
+import inspect
 import json
 import os
 from pathlib import Path
@@ -119,7 +120,7 @@ class RemainingManagedConsumerTests(unittest.TestCase):
         self.run_faults("return", {"open_managed_regular_beneath", "open_managed_file", "open_regular_beneath"})
 
     def test_all_seven_read_result_delivery_interruptions_retain_cleanup(self):
-        self.run_faults("return", {"read"})
+        self.run_faults("return", {"read", "read_some"})
 
     def test_all_six_existing_metadata_result_delivery_interruptions_retain_cleanup(self):
         self.run_faults("return", {"stat"}, metadata_consumers_only=True)
@@ -147,6 +148,7 @@ class RemainingManagedConsumerTests(unittest.TestCase):
         self.assertEqual([(row["source"], row["function"], row["reader_factory"]) for row in contract["consumers"]], SOURCES)
         self.assertIs(contract["fault_scope"]["legacy_raw_integer_delivery_protected"], False)
         self.assertIs(contract["claims"]["production_ready"], False)
+        self.assertEqual(str(inspect.signature(reader.ManagedSourceReader.read_some)), contract["added_api"]["ManagedSourceReader.read_some"]["signature"])
         for source, name, factory in SOURCES:
             tree = ast.parse((ROOT / source).read_text())
             parts = name.split(".")
@@ -161,6 +163,45 @@ class RemainingManagedConsumerTests(unittest.TestCase):
                 self.assertTrue({"open_file", "open_regular_beneath"}.isdisjoint(calls))
                 self.assertNotIn("fdopen", attributes)
                 self.assertNotIn("fileno", attributes)
+
+    def test_single_read_preserves_short_read_types_creator_closed_and_reentry_rules(self):
+        original = os.read
+        before = census()
+        with reader.open_managed_regular_beneath(self.root, self.path, label="single-read API") as owned:
+            for size in [True, False, 1.0, None, "1"]:
+                with self.subTest(size=size), self.assertRaises(TypeError): owned.read_some(size)
+            with self.assertRaises(ValueError): owned.read_some(-1)
+            with self.assertRaises(OverflowError): owned.read_some(sys.maxsize + 1)
+            with mock.patch.object(reader.os, "getpid", return_value=os.getpid()+1):
+                with self.assertRaises(ValueError): owned.read_some(1)
+            reentries = []
+            def short_read(descriptor, size):
+                for operation in (lambda: owned.read(1), lambda: owned.read_some(1), owned.stat,
+                                  owned.close, lambda: owned.__exit__(None, None, None)):
+                    with self.assertRaises(ValueError): operation()
+                    reentries.append(True)
+                return original(descriptor, min(size, 1))
+            with mock.patch.object(os, "read", side_effect=short_read):
+                self.assertEqual(owned.read_some(1024), self.payload[:1])
+            self.assertEqual(len(reentries), 5)
+            self.assertEqual(owned.read_some(0), b"")
+        with self.assertRaises(ValueError): owned.read_some(1)
+        gc.collect(); self.assertEqual(census(), before)
+
+    def test_each_actual_one_byte_hash_read_checks_original_sixty_second_deadline(self):
+        self.path.write_bytes(b"a" * 4096)
+        original = os.read
+        clock = [0]
+        def single(descriptor, size):
+            data = original(descriptor, min(size, 1))
+            clock[0] += 1
+            return data
+        before = census()
+        with mock.patch.object(os, "read", side_effect=single), mock.patch.object(namespace.time, "monotonic", side_effect=lambda: clock[0]):
+            with self.assertRaisesRegex(ValueError, "hash exceeded bounds"):
+                namespace.hash_regular(self.path)
+        self.assertEqual(clock[0], 60)
+        gc.collect(); self.assertEqual(census(), before)
 
 
 if __name__ == "__main__":

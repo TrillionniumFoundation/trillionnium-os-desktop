@@ -83,7 +83,7 @@ def load_private(root: Path, name: str, identity: tuple[int, int], *,
         require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1
                 and before.st_uid == os.getuid() and stat.S_IMODE(before.st_mode) == 0o600
                 and 0 < before.st_size <= MAX_BYTES, "input checkpoint is not private bounded regular data")
-        data = reader.read(MAX_BYTES + 1)
+        data = reader.read_some(MAX_BYTES + 1)
         after = reader.stat()
         try:
             named = (root / name).stat(follow_symlinks=False)
