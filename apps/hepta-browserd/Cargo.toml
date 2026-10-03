@@ -33,6 +33,11 @@ path = "src/main.rs"
 name = "product_fork_custody"
 path = "tests/product_fork_custody.rs"
 harness = false
+# Opaque paired startup admission; real default-procfs three-process corpus.
+[[test]]
+name = "approved_native_startup_kernel"
+path = "tests/approved_native_startup_kernel.rs"
+harness = false
 
 # Real Linux rights/pidfd/EOF/fork corpus runs from a single-thread main.
 [[test]]

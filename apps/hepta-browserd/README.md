@@ -296,3 +296,25 @@ in for those kernel runs or higher-tier qualification.
 ## Approved configuration retained source connection
 
 `ApprovedRetainedProductConnection` and the coordinator's additive `from_approved_retained_connection`/`serve_approved_retained_connection` consume the same original Agent stream and rooted live Control custody admitted by the opaque approved configuration route. The Agent mechanism principal is private and compared against the configured entry before use; it is not a TaskFlow action grant or PageOwner mapping. The source file, Control peer, Agent peer, original deadlines and report-only scope remain checked through the existing coordinator. Main/default activation is unchanged. See [`APPROVED_MECHANISM_POLICY.md`](../../docs/architecture/APPROVED_MECHANISM_POLICY.md), [`approved-mechanism-policy.v1.json`](../../contracts/approved-mechanism-policy.v1.json) and the actual default-procfs/transient-systemd `tests/approved_policy_product_kernel.rs`; its native completion is a synthetic source callback, not Servo or installed product qualification.
+
+The additive [approved native startup candidate](../../docs/architecture/APPROVED_NATIVE_STARTUP.md)
+stores `ApprovedRetainedAdmission` as one opaque approved connection/monitor
+pair. `approved_retained_queue` has capacity one; its `_before` variant preserves
+the first original ceiling. `ApprovedImmutableNativeStartup` constructs the
+existing actual closed immutable Servo owner on its creator native thread and
+the persistent coordinator on its actor worker. The public generic admission
+coordinator remains source composition, with no native-execution authority.
+Local observations cannot mint the private same-request own-journal terminal
+seal. New retirement uses try-lock and reports Requested when contended, never
+a completed native barrier. Startup Drop never joins, while unchanged old
+connection/monitor mutex waits and synchronous native/proc/filesystem calls
+remain non-preemptible.
+
+The [closed additive contract](../../contracts/approved-native-startup.v1.json),
+`tools/verify_approved_native_startup.py`, actual default-procfs three-process
+`approved_native_startup_kernel` target and new exact-PIN
+`g2-approved-native-startup.yml` gate are separate evidence levels. Host
+completions are synthetic source callbacks; fresh native startup execution is
+pending. Original native four tests and legacy approved APIs remain unchanged.
+Main binaries, services, features, installed broker/principal policy and default
+activation remain closed; no hardware/signing/release qualification follows.

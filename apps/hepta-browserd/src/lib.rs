@@ -16,6 +16,12 @@ pub use product_dispatch::{
 };
 #[cfg(target_os = "linux")]
 pub use product_dispatch::{
+    ApprovedQueueRetirement, ApprovedQueueRetirementState, ApprovedRetainedAdmission,
+    ApprovedRetainedIngress, ApprovedRetainedObservation, ApprovedRetainedQueue,
+    approved_retained_queue, approved_retained_queue_before,
+};
+#[cfg(target_os = "linux")]
+pub use product_dispatch::{
     ApprovedRetainedProductConnection, ProductControlMonitor, ProductControlMonitorOutcome,
     RetainedProductConnection,
 };

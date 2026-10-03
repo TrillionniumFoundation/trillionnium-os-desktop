@@ -1,0 +1,125 @@
+{
+  "schema": "trillionnium.desktop.approved-native-startup.v1",
+  "status": "SOURCE_CANDIDATE_EXACT_PIN_EXECUTION_PENDING",
+  "requirements": [
+    "G2",
+    "G3"
+  ],
+  "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+  "default_activation": false,
+  "admission": {
+    "constructor": "ApprovedRetainedAdmission::from_received",
+    "mechanism_policy": "externally_pinned_root_owned_retained_document",
+    "attestor": "ProcfsPeerAttestor::default",
+    "pair": "same_original_approved_connection_and_private_monitor",
+    "public_separation": false,
+    "principal_from_caller": false,
+    "durable_seal": "existing_coordinator_private_own_managed_same_request_terminal_reread"
+  },
+  "ownership": {
+    "native_constructor": "ClosedImmutableNativeOwner::new",
+    "native_endpoint_from_caller": false,
+    "native_creator_pid_and_thread": true,
+    "actor_coordinator_created_on_worker": true,
+    "one_shot_packet": true,
+    "maximum_active": 1,
+    "maximum_queued": 1,
+    "maximum_result_queue": 1,
+    "automatic_restart_or_replay": false,
+    "foreign_process_cleanup": "forget_inherited_channels_and_native_state_process_exit_only"
+  },
+  "deadlines": {
+    "accepted_seconds_maximum": 20,
+    "native_seconds_maximum": 5,
+    "driver_ceiling": "first_original_opaque_admission_instant",
+    "queued_deadline_must_not_exceed_first": true,
+    "monitor_uses_original_deadline": true,
+    "renewal": false,
+    "synchronous_native_proc_fs_preemptible": false
+  },
+  "retirement": {
+    "registry_acquisition": "try_lock",
+    "requested_means": "atomic_denial_requested_not_completed_barrier",
+    "active_cancellation_issued_means": "original_token_cancel_and_socket_shutdown_issued_not_native_barrier",
+    "drop_joins_worker": false,
+    "all_drop_bounded": false,
+    "legacy_cancellation_mutex_waits_remain": true,
+    "acknowledgment_is_agent_delivery_or_effect_success": false
+  },
+  "profile": {
+    "constructor": "closed_immutable_servo_runtime_pair",
+    "content": "fixed_data_document_no_script_or_external_resource",
+    "supported": [
+      "health",
+      "session_create",
+      "session_snapshot",
+      "page_observe",
+      "session_close"
+    ],
+    "unsupported": [
+      "page_navigate",
+      "page_act",
+      "page_extract",
+      "page_wait"
+    ],
+    "unsupported_before_durable_admission": true,
+    "close_lifecycle": "indeterminate_requires_reconciliation",
+    "close_success": false
+  },
+  "qualification": {
+    "core_source": "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs",
+    "native_source": "experiments/servo-product-owner/src/approved_startup.rs",
+    "test_support": "experiments/servo-product-owner/src/approved_test_support.rs",
+    "host_kernel": "apps/hepta-browserd/tests/approved_native_startup_kernel.rs",
+    "native_target": "experiments/servo-product-owner/src/approved_connected_tests.rs",
+    "prepare": "tools/prepare_approved_native_startup.py",
+    "validator": "tools/verify_approved_native_startup.py",
+    "source_tests": "tests/test_approved_native_startup.py",
+    "workflow": ".github/workflows/g2-approved-native-startup.yml",
+    "host_completions": "synthetic_source_callbacks_not_servo",
+    "native_test_profile": "explicit_root_transient_unit_known_owned_elf_pinned_before_peer_launch",
+    "native_case_names": [
+      "actual_approved_startup_semantic_lifecycle",
+      "actual_approved_startup_policy_refusal_before_constructor"
+    ],
+    "no_missing_capability_skip": true
+  },
+  "api_catalog": {
+    "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs": [
+      "ApprovedQueueRetirement::is_requested",
+      "ApprovedQueueRetirement::request",
+      "ApprovedRetainedAdmission::cancellation",
+      "ApprovedRetainedAdmission::coordinator",
+      "ApprovedRetainedAdmission::deadline",
+      "ApprovedRetainedAdmission::ensure_creating_process",
+      "ApprovedRetainedAdmission::from_received",
+      "ApprovedRetainedAdmission::serve",
+      "ApprovedRetainedIngress::try_submit",
+      "ApprovedRetainedObservation::original_deadline",
+      "ApprovedRetainedObservation::report",
+      "ApprovedRetainedObservation::runtime_state",
+      "ApprovedRetainedObservation::service",
+      "ApprovedRetainedQueue::try_next",
+      "approved_retained_queue",
+      "approved_retained_queue_before"
+    ],
+    "experiments/servo-product-owner/src/approved_startup.rs": [
+      "ApprovedImmutableNativeStartup::drive",
+      "ApprovedImmutableNativeStartup::next_wake_deadline",
+      "ApprovedImmutableNativeStartup::original_deadline",
+      "ApprovedImmutableNativeStartup::retire",
+      "ApprovedImmutableNativeStartup::start",
+      "ApprovedImmutableNativeStartup::try_observation"
+    ]
+  },
+  "non_claims": {
+    "installed_agentport_enabled": false,
+    "browserd_main_starts_servo": false,
+    "production_policy_provisioned": false,
+    "cross_uid_live_identity_broker": false,
+    "native_human_input_integrated": false,
+    "headed_or_hardware_qualified": false,
+    "all_protocol_network_confinement": false,
+    "signing_or_release": false
+  }
+}

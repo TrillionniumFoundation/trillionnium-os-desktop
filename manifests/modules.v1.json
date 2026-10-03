@@ -44,7 +44,8 @@
         "docs/architecture/REQUEST_EXECUTION_AND_RECOVERY.md",
         "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
         "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md",
-        "docs/architecture/APPROVED_MECHANISM_POLICY.md"
+        "docs/architecture/APPROVED_MECHANISM_POLICY.md",
+        "docs/architecture/APPROVED_NATIVE_STARTUP.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
@@ -53,7 +54,8 @@
         "contracts/dual-owner-request-custody.v1.json",
         "contracts/retained-control-terminal.v1.json",
         "contracts/root-path-retained-control.v1.json",
-        "contracts/approved-mechanism-policy.v1.json"
+        "contracts/approved-mechanism-policy.v1.json",
+        "contracts/approved-native-startup.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -71,7 +73,10 @@
         "apps/hepta-browserd/tests/product_root_path_kernel.rs",
         "tests/test_root_path_retained_control.py",
         "apps/hepta-browserd/tests/approved_policy_product_kernel.rs",
-        "tests/test_approved_mechanism_policy.py"
+        "tests/test_approved_mechanism_policy.py",
+        "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs",
+        "apps/hepta-browserd/tests/approved_native_startup_kernel.rs",
+        "tests/test_approved_native_startup.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
@@ -79,7 +84,8 @@
         ".github/workflows/s08-product-servo-runtime.yml",
         ".github/workflows/s04-transport-custody.yml",
         ".github/workflows/agent-port-custody.yml",
-        ".github/workflows/approved-mechanism-policy.yml"
+        ".github/workflows/approved-mechanism-policy.yml",
+        ".github/workflows/g2-approved-native-startup.yml"
       ],
       "binaries": [
         {

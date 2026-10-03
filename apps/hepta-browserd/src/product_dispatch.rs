@@ -39,6 +39,14 @@ mod product_approved_policy;
 #[cfg(target_os = "linux")]
 pub use product_approved_policy::ApprovedRetainedProductConnection;
 #[cfg(target_os = "linux")]
+mod product_approved_queue;
+#[cfg(target_os = "linux")]
+pub use product_approved_queue::{
+    ApprovedQueueRetirement, ApprovedQueueRetirementState, ApprovedRetainedAdmission,
+    ApprovedRetainedIngress, ApprovedRetainedObservation, ApprovedRetainedQueue,
+    approved_retained_queue, approved_retained_queue_before,
+};
+#[cfg(target_os = "linux")]
 mod product_control_wait;
 #[cfg(target_os = "linux")]
 pub use product_control_wait::{
