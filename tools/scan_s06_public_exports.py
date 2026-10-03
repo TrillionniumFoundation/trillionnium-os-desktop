@@ -8,6 +8,7 @@ tests. CI rejects wildcard public imports as well as the forbidden named types.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from pathlib import Path
 import re
@@ -22,6 +23,13 @@ MAX_ROOT_COMPONENTS = 64
 MAX_TOTAL_BYTES = 8 * 1024 * 1024
 MAX_STATEMENTS = 1024
 RAW_STRING = re.compile(r'(?:br|cr|r)(#*)"')
+
+
+PRODUCT_ROOT = Path(__file__).absolute().parents[1]
+PRODUCT_DIRECTORY = PRODUCT_ROOT / "crates/hepta-browser-actor/src"
+PRODUCT_CONTRACT = PRODUCT_ROOT / "contracts/browser-actor.v1.json"
+CLOSED_PRODUCT_EXPORTS = ['pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;', 'pub use servo_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;', 'pub use hepta_agent_transport : : PeerIdentity ;', 'pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;', 'pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;', 'pub use hepta_session_core : : ReceiptJournal ;', 'pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;', 'pub use service_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use service_actor : : ServiceServoBrowserActor ;']
+CLOSED_PRODUCT_CONTRACT = {'schema': 'hepta.browser-actor.closed-public-export-ledger.v1', 'scope': 'SOURCE_ONLY_LEXICAL_PUBLIC_USE_AND_TYPE_DECLARATIONS', 'lexical_declaration_count': 10, 'lexical_declarations': ['pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;', 'pub use servo_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;', 'pub use hepta_agent_transport : : PeerIdentity ;', 'pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;', 'pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;', 'pub use hepta_session_core : : ReceiptJournal ;', 'pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;', 'pub use service_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use service_actor : : ServiceServoBrowserActor ;'], 'retained_declaration_count': 7, 'Service_added_declaration_count': 3, 'Service_unique_names': ['ServiceServoBrowserActor', 'ServiceServoRuntimeBridge', 'ServiceServoRuntimeCommand', 'ServiceServoRuntimeCompletion', 'ServiceServoRuntimeEndpoint', 'closed_immutable_service_runtime_pair'], 'Service_public_structs_private_state': 5, 'Service_declaration_paths': ['crates/hepta-browser-actor/src/lib.rs', 'crates/hepta-browser-actor/src/servo_runtime.rs', 'crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs'], 'separate_typed_API_contracts': ['contracts/approved-service-runtime.v2.json', 'contracts/approved-service-actor.v2.json', 'contracts/service-dispatch-denial-cutoff.v1.json'], 'scanner_does_not_expand_macros_or_compile_Rust': True, 'genuine_session_verifier_and_original_binding_required_for_actor': True, 'unbound_pair_mints_request_authority': False, 'raw_handler_exposed': False, 'native_consumer_connected': False, 'default_product_enabled': False, 'installed_image_qualified': False, 'Native_qualified': False, 'production_release': False}
 
 
 def tokens(source: str) -> list[str]:
@@ -351,12 +359,87 @@ def inventory(directory: Path) -> list[str]:
         _close_all(owned)
 
 
+
+def _closed_contract_pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("closed product contract has duplicate JSON keys")
+        result[key] = value
+    return result
+
+
+def _closed_contract_constant(value):
+    raise ValueError("closed product contract has a non-JSON numeric constant")
+
+
+def _closed_contract():
+    """Read the fixed Source contract through the existing no-link FD owner."""
+    path = PRODUCT_CONTRACT
+    creator = os.getpid()
+    def current():
+        if creator != os.getpid():
+            raise ValueError("product contract scanner creating process changed")
+    current()
+    retained = _source(path)
+    try:
+        current()
+        before = os.fstat(retained.fd)
+        if before.st_size > MAX_SOURCE_BYTES:
+            raise ValueError("closed product contract exceeds its byte bound")
+        data = bytearray()
+        while len(data) <= before.st_size:
+            current()
+            chunk = os.read(retained.fd, min(64 * 1024, before.st_size + 1 - len(data)))
+            current()
+            if not chunk:
+                break
+            data.extend(chunk)
+        after = os.fstat(retained.fd)
+        named = path.lstat()
+        current()
+        if (len(data) != before.st_size or _identity(before) != _identity(after)
+                or _identity(named) != _identity(after)):
+            raise ValueError("closed product contract changed while scanning")
+        value = json.loads(data.decode("utf-8"), object_pairs_hook=_closed_contract_pairs,
+                           parse_constant=_closed_contract_constant)
+        if type(value) is not dict:
+            raise ValueError("closed product contract must be an object")
+        return value
+    finally:
+        retained.close()
+
+
+def closed_product_inventory(directory: Path) -> list[str]:
+    """The ten reviewed lexical declarations; no Rust/runtime qualification."""
+    actual = _closed_contract().get("public_export_inventory")
+    # Canonical JSON preserves boolean/integer/list/object distinctions. The
+    # independent literal is not replaced by hashes or caller-supplied metadata.
+    if (type(actual) is not dict
+            or json.dumps(actual, sort_keys=True, separators=(",", ":"))
+            != json.dumps(CLOSED_PRODUCT_CONTRACT, sort_keys=True, separators=(",", ":"))):
+        raise ValueError("closed product export contract differs")
+    statements = inventory(directory)
+    if statements != CLOSED_PRODUCT_EXPORTS:
+        raise ValueError("closed product export inventory differs")
+    return statements
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", type=Path)
+    parser.add_argument("--closed-product", action="store_true",
+                        help="require the fixed reviewed product Source export contract")
     arguments = parser.parse_args()
     try:
-        statements = inventory(arguments.directory)
+        directory = arguments.directory.absolute()
+        # The unchanged actual workflow supplies this exact product directory.
+        # Temporary lexical fixtures retain their generic absence-guard mode;
+        # this Source policy selection grants no runtime or installed authority.
+        if arguments.closed_product or directory == PRODUCT_DIRECTORY:
+            statements = closed_product_inventory(directory)
+        else:
+            statements = inventory(directory)
     except (OSError, ValueError, UnicodeError) as error:
         print(f"public export source scan failed: {error}", file=sys.stderr)
         return 2

@@ -7,6 +7,22 @@
     "publication_race": "OnceLock publication is single-install point. current initial/middle/final and actual send pre/post/actual Core post-ACK all reread same stored min. No approval from old transient read.",
     "scope_constructor": "Only genuine capture_original; original binding/session/nonce/immutable registration metadata retained; same shared Arc for completion, active call and Core."
   },
+  "G6_S06_joint_scope": {
+    "G6_fixed_physical3_and_parent_inverse3": true,
+    "S06_fixed_physical4_and_parent_inverse4": true,
+    "all_new_tests_NOT_EXECUTED": true,
+    "changed_existing_paths": 10,
+    "files": 699,
+    "independent_rules_not_combined_or_generalized": true,
+    "old52_P3_and19_G6_methods_whole": true,
+    "oldS06_other22_methods_whole": true,
+    "old_Modern16_CI23_CI18_joint12_Rust_API_profiles_budgets_and_workflows_unchanged": true,
+    "original_parent_head": "d96b38dd99307332ccb9770b90df7184c457a650",
+    "original_parent_tree": "bf9a7e91f4bd344b2127bdfb9443e466db4afeec",
+    "production_ready": false,
+    "qualification_transferred": false,
+    "scope": "SOURCE_ONLY_TWO_INDEPENDENT_CLOSED_SETS"
+  },
   "actual_parent": {
     "head": "d9335b75101c98a6be7f786d1a42bf526d0704d7",
     "tracked_files": 690,
@@ -206,7 +222,7 @@
       }
     }
   },
-  "checker_nonEXPECTED_whole_sha256": "436f77b673dc88fa9cb5ad01b640806107a058efcd2ff3ed476bb19eb43046e0",
+  "checker_nonEXPECTED_whole_sha256": "218ca10abd36b69eba1c87b9975d782e359140b783486770ec5d04c77296a69b",
   "ci_composition_scope": {
     "Hosted_cleanup_qualified": false,
     "Native_qualified": false,
@@ -1114,6 +1130,71 @@
       "parent_sha256": "02b5230c82a75e0ba8b03811f18982def1010823ba09fc243cbf1e777e04e16a"
     }
   },
+  "g6_current_physical3": {
+    "packaging/debian/g6a/guest_selector.py": "c612e0988306506922b99e0a83c422045094726b69db48b0324151ef1dac7287",
+    "tests/test_g6a_immutable_ab.py": "9cf3e9476cd432cb340217da9146e161d6e5b1d58410eff515775abfd411f95f",
+    "tools/build_g6a_fixture.py": "b579d1e8d728791a505452cc16fbbac3f7bc693c9d1c1af34d725b615a7fe7d7"
+  },
+  "g6_parent_inverse3": {
+    "packaging/debian/g6a/guest_selector.py": {
+      "byte_edits": [
+        {
+          "complete_end": 4985,
+          "complete_start": 4902,
+          "complete_text": "    fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)\n",
+          "parent_text": "    fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)\n"
+        }
+      ],
+      "complete_bytes": 16128,
+      "complete_sha256": "c612e0988306506922b99e0a83c422045094726b69db48b0324151ef1dac7287",
+      "parent_bytes": 16112,
+      "parent_sha256": "f955c94dea34a1f3da9f42a08ac0a0689e514d233f197dce9130e934cf36b1db"
+    },
+    "tests/test_g6a_immutable_ab.py": {
+      "byte_edits": [
+        {
+          "complete_end": 15585,
+          "complete_start": 11687,
+          "complete_text": "G6_FIFO_CHILD_CODE = \"\\nimport errno, importlib.util, json, os, subprocess, sys\\nfrom pathlib import Path\\nfrom unittest import mock\\nroot, mode, path = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])\\nmodule_path = root / ('packaging/debian/g6a/guest_selector.py' if mode == 'private' else 'tools/build_g6a_fixture.py')\\nspec = importlib.util.spec_from_file_location('bounded_g6_fifo_target', module_path)\\nmodule = importlib.util.module_from_spec(spec)\\nspec.loader.exec_module(module)\\noriginal_open, opened = os.open, []\\ndef tracked_open(name, flags, *args, **kwargs):\\n    descriptor = original_open(name, flags, *args, **kwargs)\\n    if Path(name) == path:\\n        opened.append(descriptor)\\n        assert flags & os.O_NONBLOCK\\n        assert flags & os.O_NOFOLLOW and flags & os.O_CLOEXEC\\n        assert os.get_blocking(descriptor) is False\\n    return descriptor\\nexpected = 'private_file_custody' if mode == 'private' else 'bounded regular signed package required'\\ndestination = path.parent / 'not-extracted'\\nwith mock.patch.object(os, 'open', side_effect=tracked_open), \\\\\\n        mock.patch.object(os, 'memfd_create', side_effect=AssertionError('FIFO reached memfd effect')), \\\\\\n        mock.patch.object(subprocess, 'run', side_effect=AssertionError('FIFO reached crypto/extractor effect')):\\n    try:\\n        if mode == 'private':\\n            module.private_read(path)\\n        else:\\n            module.extract_package(path, {'size': 1, 'sha256': '0' * 64}, destination)\\n    except (RuntimeError, module.Refused if mode == 'private' else RuntimeError) as error:\\n        assert str(error) == expected, str(error)\\n    else:\\n        raise AssertionError('FIFO accepted')\\nassert len(opened) == 1 and not destination.exists()\\nfor descriptor in opened:\\n    try:\\n        os.fstat(descriptor)\\n    except OSError as error:\\n        assert error.errno == errno.EBADF\\n    else:\\n        raise AssertionError('FIFO descriptor leaked')\\nprint(json.dumps({'refused': expected, 'actual_fifo_opened': True,\\n                  'actual_descriptor_closed': True, 'crypto_snapshot_extractor_effects': 0}, sort_keys=True))\\n\"\n\n\nclass BoundedLeafFifoHostTests(unittest.TestCase):\n    \"\"\"Real no-writer FIFO refusals; no signing/extraction prerequisite.\n\n    This class sorts before ImmutableABHostTests, and uses an ordinary bounded\n    child whose only target action is one leaf read. No installed selector runs.\n    \"\"\"\n    def _actual_fifo_refusal(self, mode, expected):\n        import sys\n        with tempfile.TemporaryDirectory(prefix='g6a-real-fifo-') as directory:\n            path = Path(directory) / 'no-writer-fifo'\n            os.mkfifo(path, 0o600)\n            environment = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',\n                           'TZ': 'UTC', 'PYTHONNOUSERSITE': '1', 'PYTHONDONTWRITEBYTECODE': '1'}\n            child = subprocess.run([sys.executable, '-B', '-c', G6_FIFO_CHILD_CODE,\n                                    str(ROOT), mode, str(path)], cwd=ROOT, env=environment,\n                                   stdin=subprocess.DEVNULL, capture_output=True, text=True,\n                                   timeout=5, check=False)\n            self.assertEqual(child.returncode, 0, child.stderr)\n            self.assertEqual(child.stderr, '')\n            self.assertEqual(json.loads(child.stdout),\n                             {'refused': expected, 'actual_fifo_opened': True,\n                              'actual_descriptor_closed': True, 'crypto_snapshot_extractor_effects': 0})\n            self.assertTrue(path.exists())\n\n    def test_actual_private_FIFO_refuses_before_any_crypto_effect(self):\n        self._actual_fifo_refusal('private', 'private_file_custody')\n\n    def test_actual_package_FIFO_refuses_before_snapshot_or_extractor(self):\n        self._actual_fifo_refusal('package', 'bounded regular signed package required')\n\n\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 15632,
+      "complete_sha256": "9cf3e9476cd432cb340217da9146e161d6e5b1d58410eff515775abfd411f95f",
+      "parent_bytes": 11734,
+      "parent_sha256": "fb70b339a9025353fc7f1a44160808497aa8db7b7308913736a63f1e2d8f01e2"
+    },
+    "tools/build_g6a_fixture.py": {
+      "byte_edits": [
+        {
+          "complete_end": 1785,
+          "complete_start": 1698,
+          "complete_text": "    source = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)\n",
+          "parent_text": "    source = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)\n"
+        }
+      ],
+      "complete_bytes": 13619,
+      "complete_sha256": "b579d1e8d728791a505452cc16fbbac3f7bc693c9d1c1af34d725b615a7fe7d7",
+      "parent_bytes": 13603,
+      "parent_sha256": "666439cc638e8c6a2cc211adef9936e9872116d325911b269ddc44aa52c4904b"
+    }
+  },
+  "g6_two_leaf_FIFO_scope": {
+    "G6b_G6c_health_commit_floor_firmware_closed": false,
+    "Source_old_results_transfer": false,
+    "VM_or_installed_fixture_qualified": false,
+    "current_physical_files": 699,
+    "current_reader": "P3._read original physical FD9 no-link reader; independent fixed3 before history",
+    "history": "Only C._read -> joint_parent_source -> g6_parent_source uses complete three known-byte inverses; Native/B/A/C.parent remain physical for these paths.",
+    "new_Source_qualified": false,
+    "new_host_FIFO_tests_NOT_EXECUTED": 2,
+    "old_host19_methods_changed": false,
+    "original_parent_head": "d96b38dd99307332ccb9770b90df7184c457a650",
+    "original_parent_tree": "bf9a7e91f4bd344b2127bdfb9443e466db4afeec",
+    "production_Rust_changed": false,
+    "production_ready": false,
+    "scope": "SOURCE_ONLY_TWO_NONBLOCK_LEAVES_AND_HOST_FIFO_REFUSAL"
+  },
   "joint_current_physical_ingress16": {
     "crates/hepta-agent-transport/src/accepted_handoff.rs": "9d689df4fa59601e39b4598771fa2cad55d83d1733f137593e017e2b2cd11e23",
     "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs": "8b92ac76f1ceda055be0f4a56a8a41e2d704229b24f337f65c028c443957eb35",
@@ -1846,7 +1927,7 @@
     "contracts/approved-service-product.v2.json": "568b9dc1930bf142602e14a1b80c48e0c4f572a6bbe8517efaf7ddc0ee235f27",
     "contracts/approved-service-runtime.v2.json": "0cb0389c42d086ff0b22446b08b71348ba6fbfa0186ab59803357c65f738a84f",
     "contracts/authenticated-update.v2.json": "d9bf477685b400e03ebf21278f5699550e01b932f7f4a5eb628a012b3d6bf53e",
-    "contracts/browser-actor.v1.json": "feeaa58d2b1f754ee3f551b3efd4093109b452fa674eb9e6015e29d604d2a76c",
+    "contracts/browser-actor.v1.json": "cfac25457895fd2fbf939b18531ec92d7767c5880b4fb99c1a570ee057779701",
     "contracts/browser-api.v1.schema.json": "51c40b8987b4077a15bb2b98a52034fdec74f0c1d4486e9c4476e64a2afb9582",
     "contracts/browser-codec-resource-limits.v1.json": "0e6077df5693578195833d4081bbd815979babecda17844ac6b432f5c9bd7ed9",
     "contracts/browser-codec.v1.json": "8164bfec5ff995a3a677cecbdade9a0db8dc0a641e65a2d8cc422e6de5eb6c4a",
@@ -1944,7 +2025,7 @@
     "crates/hepta-browser-actor-simulation/src/incarnation_tests.rs": "f78521dd550da60c5a43d6f3e58f329ac5e2475910bcc1f0e408806737fd0605",
     "crates/hepta-browser-actor-simulation/src/lib.rs": "5964ce4b56710f24e74d2703d64b80c3671139c9d44abed7aa19c7b4f820afa9",
     "crates/hepta-browser-actor/Cargo.toml": "a6926af722a424984e5e4ddb08f604430a9c39c004374c4fc397d7979fac8040",
-    "crates/hepta-browser-actor/README.md": "c79b78a77c654b52e55d94892b282f92527ddee065beebbd6692275b0113ae19",
+    "crates/hepta-browser-actor/README.md": "5edb0acac05eae72ecec36fbb32fc030761ea5413cc890dad13e0ff95707cfc8",
     "crates/hepta-browser-actor/src/lib.rs": "72bc0088481bcef0b9d6803a8ba90042beb5d0eabb7934942f05f81237425922",
     "crates/hepta-browser-actor/src/servo_runtime.rs": "d5d1fa6709605d6ee06694b1544947789f590973b6216855ef4770bb5f6b5c70",
     "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs": "9141043f5ec964492a88a48ea57d3c2e82b71dc96dfd07d30419967f607fb754",
@@ -2201,7 +2282,7 @@
     "manifests/upstream-reference-review.v1.json": "a85d22e5df439b980692ba5e265e2d68c223d12e41a0645f6f8665593d461ed6",
     "packaging/debian/README.md": "3f29b8b63b4f67de3b2b7e5ffae3e8b5349e555aec17eeadf77bcf01fa3df967",
     "packaging/debian/g6a/fixture-init": "e14d053e360f43dfe8c71fd509bcb91cdd04947fb9aa21a45ee019d7dd4980ee",
-    "packaging/debian/g6a/guest_selector.py": "f955c94dea34a1f3da9f42a08ac0a0689e514d233f197dce9130e934cf36b1db",
+    "packaging/debian/g6a/guest_selector.py": "c612e0988306506922b99e0a83c422045094726b69db48b0324151ef1dac7287",
     "packaging/debian/g6a/init": "98432886b8dfdb6fda174409f0f95722790beae605eac51f6515b9a0d9359d4c",
     "packaging/debian/g6a/root_probe.py": "31e741fa54ff5a62d8429f567afc4486e9ba060202a5c3d41fa86d5fe683a191",
     "packaging/debian/hepta-agent-portd.install": "06e519e14fdd7ec289afeca17ce8c62838318891a995b8d94a0e12ad596521bd",
@@ -2291,7 +2372,7 @@
     "tests/test_d1_source_provenance.py": "2cd436583361305c6e16baf4f111064e52401bb4aa60f55e0bcc3d1a6fb56b76",
     "tests/test_dual_owner_custody.py": "67cd76c94b65c2c16998ad4cb75cb91b5f1e5b0dced83a30ea31cf0d5e6949dc",
     "tests/test_durable_update_owner.py": "da48d41cca978794739f8809c7564351d9f9a514099007cfe354078c60c8901a",
-    "tests/test_g6a_immutable_ab.py": "fb70b339a9025353fc7f1a44160808497aa8db7b7308913736a63f1e2d8f01e2",
+    "tests/test_g6a_immutable_ab.py": "9cf3e9476cd432cb340217da9146e161d6e5b1d58410eff515775abfd411f95f",
     "tests/test_image_workflow_identities.py": "cb8af2194e12487167f8caad617c9f451d02d4c050d4b3f9017ab3cfeb029cea",
     "tests/test_immutable_callback_url_scope.py": "704c1c799154d3e979492795953538e9037f57ae679a5f7bff4da5ceebf51114",
     "tests/test_linux_platform_adapters.py": "2b265a01762e72ce4fd6d06204dff26e4874ac84aa89fa083b06991781e733d6",
@@ -2316,7 +2397,7 @@
     "tests/test_s05_receipt_recovery.py": "eb3a2ead7ebf025e8d0c1ca5a2dac0700ba9f316d2d5e6d5a0b79a54f95f9c09",
     "tests/test_s06_browser_actor.py": "7413f845337f1a934241c5c27cc22282e78b65f25d5139e3974240b435616336",
     "tests/test_s06_contract_paths.py": "366bcf941c5c0c5b5fb6c6740030999c858c05c542b906f87c4111b963b62a0e",
-    "tests/test_s06_public_exports.py": "249a3c6dcdc1b9dc2ea70bd0458bdea8aec8be8d86b55fd714ee98f9fd8bfddb",
+    "tests/test_s06_public_exports.py": "d4bb6d20a4bb5d0decc1ad9d9a5a71633ceb4ec4613fb5cad31039f0e24df446",
     "tests/test_s07_event_checkout.py": "49e20f32ca5b1938b2e3709122d9d21ee8a095d47d8c32e2a66a5765be2093e6",
     "tests/test_s07_qualification_lineage.py": "b1e3ffb36fb4e623e7c7c6cc2c6845aaa3d525501db4fc0b932fdb426bc03593",
     "tests/test_s07_servo_patch_package.py": "c10c7fb14fb2091038144b4a168952fffb07992374ba8b4ce05a54fdab3b552c",
@@ -2353,7 +2434,7 @@
     "tools/browser_codec_reference_contract.py": "40fc28a0e3e0f9da174e584a5cf7a162550b88675c0270747cecfee5e4f13481",
     "tools/browser_codec_reference_legacy_audit.py": "3f37db4791d556f3e2b401f9d6e1b4738f0ef130ef4792e59954dc4691c3aba5",
     "tools/browser_codec_reference_security.py": "12a80a5497924cbfa81a01d89e275307da87082b18d2a215ae4eb0ad847426df",
-    "tools/build_g6a_fixture.py": "666439cc638e8c6a2cc211adef9936e9872116d325911b269ddc44aa52c4904b",
+    "tools/build_g6a_fixture.py": "b579d1e8d728791a505452cc16fbbac3f7bc693c9d1c1af34d725b615a7fe7d7",
     "tools/build_mozjs_authenticated_native.py": "8c4b27a29dacc546227a88914e245e150befe31d63209b85d6af03e227661d05",
     "tools/build_mozjs_locked_native.py": "beeb44f08358d6034ed7c6ccdb57707ca15e4b289336971070fc48a63ece087d",
     "tools/build_pinned_e2fsprogs.sh": "06b4e8fad2f12a69f9ab4e5965b5261bf78bbc254173c878ea1a50069af425af",
@@ -2385,7 +2466,7 @@
     "tools/run_d1_final_qualification.sh": "2926c2ec72661dfd5a237347dbe576b6bdef2c595fc5a3bd945c4532e1b15651",
     "tools/run_d2i_integrated_image.sh": "7150107350fa2508980e46a270309757f46cd49f87c2af2d69174b00a025247c",
     "tools/run_servo_headed_runtime_gate.sh": "7d4a28d9a70db0a230f31a1e0a85fbf08824300733bd5abd9e23110afdb3b130",
-    "tools/scan_s06_public_exports.py": "c6ae060798b5263f8e05e316f171cde1542fb40e247c608dbde2d3d657f6cce4",
+    "tools/scan_s06_public_exports.py": "40507df4409525c326da7f2fc4b038fd35aa42c41fe6942953cfb07482f2677e",
     "tools/servo_namespace_qualification.py": "40d1c38593407c22b1bedbbf12b20ca4a669ea102cf21319592a0d411e65c1ce",
     "tools/source_state_model.py": "3b211caa7d2e2500b467ae3d352a2dbd7fd27d396ed91cb9d5bad1e7f0a88056",
     "tools/structured_status.py": "82b442897f728b105825c7c730e4e4e33c4a268f8bfe537657c21d5768341945",
@@ -2514,6 +2595,120 @@
     "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs",
     "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs"
   ],
+  "s06_closed_Service_export_scope": {
+    "Native_or_installed_qualified": false,
+    "Rust_API_or_methods_changed": false,
+    "Source_qualification_transferred": false,
+    "current_files": 699,
+    "history": "Only C._read -> joint_parent_source -> s06_parent_source restores four complete known parents",
+    "old_S06_22_other_methods_and_helpers_whole": true,
+    "original_parent_head": "d96b38dd99307332ccb9770b90df7184c457a650",
+    "original_parent_tree": "bf9a7e91f4bd344b2127bdfb9443e466db4afeec",
+    "physical": "P3._read remains non-normalizing FD9; independent fixed4 checked before history",
+    "production_release": false,
+    "scope": "SOURCE_ONLY_FOUR_CLOSED_EXPORT_LEDGER_OBJECTS",
+    "workflow_or_index_changed": false
+  },
+  "s06_current_physical4": {
+    "contracts/browser-actor.v1.json": "cfac25457895fd2fbf939b18531ec92d7767c5880b4fb99c1a570ee057779701",
+    "crates/hepta-browser-actor/README.md": "5edb0acac05eae72ecec36fbb32fc030761ea5413cc890dad13e0ff95707cfc8",
+    "tests/test_s06_public_exports.py": "d4bb6d20a4bb5d0decc1ad9d9a5a71633ceb4ec4613fb5cad31039f0e24df446",
+    "tools/scan_s06_public_exports.py": "40507df4409525c326da7f2fc4b038fd35aa42c41fe6942953cfb07482f2677e"
+  },
+  "s06_parent_inverse4": {
+    "contracts/browser-actor.v1.json": {
+      "byte_edits": [
+        {
+          "complete_end": 9235,
+          "complete_start": 6251,
+          "complete_text": "  },\n  \"public_export_inventory\": {\n    \"schema\": \"hepta.browser-actor.closed-public-export-ledger.v1\",\n    \"scope\": \"SOURCE_ONLY_LEXICAL_PUBLIC_USE_AND_TYPE_DECLARATIONS\",\n    \"lexical_declaration_count\": 10,\n    \"lexical_declarations\": [\n      \"pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;\",\n      \"pub use servo_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;\",\n      \"pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;\",\n      \"pub use hepta_agent_transport : : PeerIdentity ;\",\n      \"pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;\",\n      \"pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;\",\n      \"pub use hepta_session_core : : ReceiptJournal ;\",\n      \"pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;\",\n      \"pub use service_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;\",\n      \"pub use service_actor : : ServiceServoBrowserActor ;\"\n    ],\n    \"retained_declaration_count\": 7,\n    \"Service_added_declaration_count\": 3,\n    \"Service_unique_names\": [\n      \"ServiceServoBrowserActor\",\n      \"ServiceServoRuntimeBridge\",\n      \"ServiceServoRuntimeCommand\",\n      \"ServiceServoRuntimeCompletion\",\n      \"ServiceServoRuntimeEndpoint\",\n      \"closed_immutable_service_runtime_pair\"\n    ],\n    \"Service_public_structs_private_state\": 5,\n    \"Service_declaration_paths\": [\n      \"crates/hepta-browser-actor/src/lib.rs\",\n      \"crates/hepta-browser-actor/src/servo_runtime.rs\",\n      \"crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs\"\n    ],\n    \"separate_typed_API_contracts\": [\n      \"contracts/approved-service-runtime.v2.json\",\n      \"contracts/approved-service-actor.v2.json\",\n      \"contracts/service-dispatch-denial-cutoff.v1.json\"\n    ],\n    \"scanner_does_not_expand_macros_or_compile_Rust\": true,\n    \"genuine_session_verifier_and_original_binding_required_for_actor\": true,\n    \"unbound_pair_mints_request_authority\": false,\n    \"raw_handler_exposed\": false,\n    \"native_consumer_connected\": false,\n    \"default_product_enabled\": false,\n    \"installed_image_qualified\": false,\n    \"Native_qualified\": false,\n    \"production_release\": false\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 9241,
+      "complete_sha256": "cfac25457895fd2fbf939b18531ec92d7767c5880b4fb99c1a570ee057779701",
+      "parent_bytes": 6257,
+      "parent_sha256": "feeaa58d2b1f754ee3f551b3efd4093109b452fa674eb9e6015e29d604d2a76c"
+    },
+    "crates/hepta-browser-actor/README.md": {
+      "byte_edits": [
+        {
+          "complete_end": 21058,
+          "complete_start": 18493,
+          "complete_text": "\n\n## Persistent Service facade and the S06 export ledger\n\nThe Linux Service facade is a distinct reviewed concrete family. Its six names\nare `ServiceServoBrowserActor`, `ServiceServoRuntimeEndpoint`,\n`ServiceServoRuntimeBridge`, `ServiceServoRuntimeCommand`,\n`ServiceServoRuntimeCompletion`, and `closed_immutable_service_runtime_pair`.\nThe five structs have private state. The actor consumes the endpoint together\nwith the genuine P1 session verifier, original request binding, context and\nrequest; it exposes the ten delegating methods recorded in\n`contracts/approved-service-actor.v2.json`. It implements no raw request handler.\nThe runtime pair returns an unbound endpoint and bridge, not request authority.\nCompletion methods use the same original Service Scope; the one-shot shortening\noperation can only reduce its original deadline. The exact 23 runtime methods,\neight opaque layouts and original-clock ordering are fixed by\n`contracts/service-dispatch-denial-cutoff.v1.json`.\n\nThe crate root and `servo_runtime` each re-export all six names; the private\n`service_runtime` module also re-exports the actor from its private child. These\nare three lexical declarations for one family, rather than three independent\ncapabilities. Together with the seven retained declarations, the S06 scanner\nrequires exactly ten declarations when the actual product source directory is\nscanned. `contracts/browser-actor.v1.json` contains that closed Source ledger;\nan unknown declaration, a missing declaration, or a changed ledger is refused\nbefore any declaration output. Generic temporary absence-guard fixtures remain\nlexical scans, and `--closed-product` applies the fixed product gate explicitly.\n\nThe current product coordinator consumes `ServiceServoRuntimeEndpoint` and\n`ServiceServoBrowserActor` after genuine Owner and original-wire admission.\nThere is no current native consumer connecting the Service factory, bridge,\ncommand or completion to Servo WebView effects. The production default remains\ndisabled; managed journal data, the unbound pair and this Source gate do not\napprove a Root-selected image, storage, namespace or endpoint. Native effect\npre/post checks, the original local cutoff and installed tests remain pending.\nSee `docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md`,\n`docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md`, and\n`docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md`. Existing historical S06\nfields and activation ceilings are retained; this ledger is not runtime,\ninstalled-image, Native or production-release qualification.\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 21058,
+      "complete_sha256": "5edb0acac05eae72ecec36fbb32fc030761ea5413cc890dad13e0ff95707cfc8",
+      "parent_bytes": 18493,
+      "parent_sha256": "c79b78a77c654b52e55d94892b282f92527ddee065beebbd6692275b0113ae19"
+    },
+    "tests/test_s06_public_exports.py": {
+      "byte_edits": [
+        {
+          "complete_end": 2056,
+          "complete_start": 569,
+          "complete_text": "GOLDEN_PUBLIC_EXPORTS = ['pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;', 'pub use servo_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;', 'pub use hepta_agent_transport : : PeerIdentity ;', 'pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;', 'pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;', 'pub use hepta_session_core : : ReceiptJournal ;', 'pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;', 'pub use service_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use service_actor : : ServiceServoBrowserActor ;']\n",
+          "parent_text": "GOLDEN_PUBLIC_EXPORTS = [\n    \"pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;\",\n    \"pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;\",\n    \"pub use hepta_agent_transport : : PeerIdentity ;\",\n    \"pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;\",\n    \"pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;\",\n    \"pub use hepta_session_core : : ReceiptJournal ;\",\n    \"pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;\",\n]\n"
+        },
+        {
+          "complete_end": 5146,
+          "complete_start": 5056,
+          "complete_text": "        self.assertEqual(scanner.closed_product_inventory(source), GOLDEN_PUBLIC_EXPORTS)\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 33279,
+          "complete_start": 26627,
+          "complete_text": "class ClosedServiceExportLedgerTests(unittest.TestCase):\n    \"\"\"Execute the real fixed scanner CLI; this is a lexical Source gate only.\"\"\"\n    def setUp(self):\n        self.temporary = tempfile.TemporaryDirectory()\n        self.directory = Path(self.temporary.name)\n        self.source = self.directory / \"src\"\n        self.source.mkdir()\n\n    def tearDown(self):\n        self.temporary.cleanup()\n\n    def _closed_cli(self, statements, extra=\"\"):\n        (self.source / \"sample.rs\").write_text(\"\\n\".join(statements) + \"\\n\" + extra,\n                                              encoding=\"utf-8\")\n        return subprocess.run([sys.executable, \"-B\", str(ROOT / \"tools/scan_s06_public_exports.py\"),\n                               \"--closed-product\", str(self.source)], cwd=ROOT,\n                              env={\"PATH\": \"/usr/bin:/bin\", \"LANG\": \"C.UTF-8\", \"LC_ALL\": \"C.UTF-8\",\n                                   \"TZ\": \"UTC\", \"PYTHONNOUSERSITE\": \"1\", \"PYTHONDONTWRITEBYTECODE\": \"1\"},\n                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=15)\n\n    def _refused(self, statements, extra=\"\"):\n        result = self._closed_cli(statements, extra)\n        self.assertEqual(result.returncode, 2, result.stderr)\n        self.assertEqual(result.stdout, \"\")\n        self.assertIn(\"closed product export inventory differs\", result.stderr)\n\n    def _catalog(self, catalog):\n        path = self.directory / \"browser-actor.v1.json\"\n        path.write_text(json.dumps({\"public_export_inventory\": catalog}), encoding=\"utf-8\")\n        return path\n\n    def test_explicit_closed_CLI_accepts_exact_ten_lexical_declarations(self):\n        self.assertEqual(len(GOLDEN_PUBLIC_EXPORTS), 10)\n        result = self._closed_cli(GOLDEN_PUBLIC_EXPORTS)\n        self.assertEqual(result.returncode, 0, result.stderr)\n        self.assertEqual(result.stdout.splitlines(), GOLDEN_PUBLIC_EXPORTS)\n\n    def test_real_product_directory_is_closed_without_an_optional_flag(self):\n        self.assertEqual(scanner.PRODUCT_DIRECTORY, ROOT / \"crates/hepta-browser-actor/src\")\n        with mock.patch.object(scanner, \"closed_product_inventory\", side_effect=ValueError(\"closed route reached\")):\n            with mock.patch.object(sys, \"argv\", [\"scanner\", \"crates/hepta-browser-actor/src\"]):\n                output, errors = io.StringIO(), io.StringIO()\n                with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):\n                    self.assertEqual(scanner.main(), 2)\n                self.assertEqual(output.getvalue(), \"\")\n                self.assertIn(\"closed route reached\", errors.getvalue())\n\n    def test_unknown_allowed_looking_name_is_not_a_closed_Service_export(self):\n        self._refused(GOLDEN_PUBLIC_EXPORTS + [\"pub use safe::UnknownServiceCapability;\"])\n\n    def test_each_of_three_Service_declarations_is_mandatory(self):\n        for index in (1, 8, 9):\n            with self.subTest(index=index):\n                self._refused(GOLDEN_PUBLIC_EXPORTS[:index] + GOLDEN_PUBLIC_EXPORTS[index + 1:])\n\n    def test_old_seven_statement_surface_is_not_current_product(self):\n        self._refused([item for index, item in enumerate(GOLDEN_PUBLIC_EXPORTS) if index not in (1, 8, 9)])\n\n    def test_reordered_and_duplicated_public_declarations_are_not_closed(self):\n        for value in (list(reversed(GOLDEN_PUBLIC_EXPORTS)), GOLDEN_PUBLIC_EXPORTS + GOLDEN_PUBLIC_EXPORTS[-1:]):\n            with self.subTest(value=value):\n                self._refused(value)\n\n    def test_Service_comment_or_literal_decoy_does_not_replace_real_declaration(self):\n        value = GOLDEN_PUBLIC_EXPORTS[1]\n        for decoy in (\"// \" + value, 'const DECOY: &str = \"' + value + '\";'):\n            with self.subTest(decoy=decoy):\n                self._refused(GOLDEN_PUBLIC_EXPORTS[:1] + GOLDEN_PUBLIC_EXPORTS[2:], decoy)\n\n    def test_rebound_contract_cannot_whitelist_rebound_unknown_exports(self):\n        catalog = json.loads(json.dumps(scanner.CLOSED_PRODUCT_CONTRACT))\n        unknown = \"pub use safe : : UnknownServiceCapability ;\"\n        catalog[\"lexical_declarations\"].append(unknown)\n        catalog[\"lexical_declaration_count\"] = 11\n        path = self._catalog(catalog)\n        (self.source / \"sample.rs\").write_text(\"\\n\".join(GOLDEN_PUBLIC_EXPORTS + [unknown]), encoding=\"utf-8\")\n        with mock.patch.object(scanner, \"PRODUCT_CONTRACT\", path):\n            with self.assertRaisesRegex(ValueError, \"^closed product export contract differs$\"):\n                scanner.closed_product_inventory(self.source)\n\n    def test_contract_types_and_missing_ledger_fail_before_inventory(self):\n        catalog = json.loads(json.dumps(scanner.CLOSED_PRODUCT_CONTRACT))\n        catalog[\"production_release\"] = 0\n        for value in (catalog, None):\n            path = self._catalog(value)\n            with mock.patch.object(scanner, \"PRODUCT_CONTRACT\", path):\n                with mock.patch.object(scanner, \"inventory\", side_effect=AssertionError(\"invalid catalog reached inventory\")):\n                    with self.assertRaisesRegex(ValueError, \"^closed product export contract differs$\"):\n                        scanner.closed_product_inventory(self.source)\n\n    def test_duplicate_contract_keys_do_not_supply_a_later_safe_ledger(self):\n        path = self.directory / \"duplicate.json\"\n        ledger = json.dumps(scanner.CLOSED_PRODUCT_CONTRACT)\n        path.write_text('{\"public_export_inventory\":null,\"public_export_inventory\":' + ledger + '}', encoding=\"utf-8\")\n        before = descriptor_inventory()\n        with mock.patch.object(scanner, \"PRODUCT_CONTRACT\", path):\n            with self.assertRaisesRegex(ValueError, \"duplicate JSON keys\"):\n                scanner.closed_product_inventory(self.source)\n        self.assertEqual(descriptor_inventory(), before)\n\n    def test_actual_contract_late_byte_drift_refuses_and_closes_owned_descriptor(self):\n        path = self._catalog(scanner.CLOSED_PRODUCT_CONTRACT)\n        native, fired = os.read, []\n        def drift(fd, count):\n            value = native(fd, count)\n            if value and not fired:\n                fired.append(True)\n                with path.open(\"ab\") as stream:\n                    stream.write(b\" \")\n            return value\n        before = descriptor_inventory()\n        with mock.patch.object(scanner, \"PRODUCT_CONTRACT\", path), mock.patch.object(scanner.os, \"read\", side_effect=drift):\n            with self.assertRaisesRegex(ValueError, \"closed product contract changed while scanning\"):\n                scanner.closed_product_inventory(self.source)\n        self.assertTrue(fired)\n        self.assertEqual(descriptor_inventory(), before)\n\n\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 33326,
+      "complete_sha256": "d4bb6d20a4bb5d0decc1ad9d9a5a71633ceb4ec4613fb5cad31039f0e24df446",
+      "parent_bytes": 26115,
+      "parent_sha256": "249a3c6dcdc1b9dc2ea70bd0458bdea8aec8be8d86b55fd714ee98f9fd8bfddb"
+    },
+    "tools/scan_s06_public_exports.py": {
+      "byte_edits": [
+        {
+          "complete_end": 407,
+          "complete_start": 395,
+          "complete_text": "import json\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 5109,
+          "complete_start": 687,
+          "complete_text": "\n\nPRODUCT_ROOT = Path(__file__).absolute().parents[1]\nPRODUCT_DIRECTORY = PRODUCT_ROOT / \"crates/hepta-browser-actor/src\"\nPRODUCT_CONTRACT = PRODUCT_ROOT / \"contracts/browser-actor.v1.json\"\nCLOSED_PRODUCT_EXPORTS = ['pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;', 'pub use servo_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;', 'pub use hepta_agent_transport : : PeerIdentity ;', 'pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;', 'pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;', 'pub use hepta_session_core : : ReceiptJournal ;', 'pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;', 'pub use service_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use service_actor : : ServiceServoBrowserActor ;']\nCLOSED_PRODUCT_CONTRACT = {'schema': 'hepta.browser-actor.closed-public-export-ledger.v1', 'scope': 'SOURCE_ONLY_LEXICAL_PUBLIC_USE_AND_TYPE_DECLARATIONS', 'lexical_declaration_count': 10, 'lexical_declarations': ['pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;', 'pub use servo_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;', 'pub use hepta_agent_transport : : PeerIdentity ;', 'pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;', 'pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;', 'pub use hepta_session_core : : ReceiptJournal ;', 'pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;', 'pub use service_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use service_actor : : ServiceServoBrowserActor ;'], 'retained_declaration_count': 7, 'Service_added_declaration_count': 3, 'Service_unique_names': ['ServiceServoBrowserActor', 'ServiceServoRuntimeBridge', 'ServiceServoRuntimeCommand', 'ServiceServoRuntimeCompletion', 'ServiceServoRuntimeEndpoint', 'closed_immutable_service_runtime_pair'], 'Service_public_structs_private_state': 5, 'Service_declaration_paths': ['crates/hepta-browser-actor/src/lib.rs', 'crates/hepta-browser-actor/src/servo_runtime.rs', 'crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs'], 'separate_typed_API_contracts': ['contracts/approved-service-runtime.v2.json', 'contracts/approved-service-actor.v2.json', 'contracts/service-dispatch-denial-cutoff.v1.json'], 'scanner_does_not_expand_macros_or_compile_Rust': True, 'genuine_session_verifier_and_original_binding_required_for_actor': True, 'unbound_pair_mints_request_authority': False, 'raw_handler_exposed': False, 'native_consumer_connected': False, 'default_product_enabled': False, 'installed_image_qualified': False, 'Native_qualified': False, 'production_release': False}\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 20246,
+          "complete_start": 17646,
+          "complete_text": "\ndef _closed_contract_pairs(pairs):\n    result = {}\n    for key, value in pairs:\n        if key in result:\n            raise ValueError(\"closed product contract has duplicate JSON keys\")\n        result[key] = value\n    return result\n\n\ndef _closed_contract_constant(value):\n    raise ValueError(\"closed product contract has a non-JSON numeric constant\")\n\n\ndef _closed_contract():\n    \"\"\"Read the fixed Source contract through the existing no-link FD owner.\"\"\"\n    path = PRODUCT_CONTRACT\n    creator = os.getpid()\n    def current():\n        if creator != os.getpid():\n            raise ValueError(\"product contract scanner creating process changed\")\n    current()\n    retained = _source(path)\n    try:\n        current()\n        before = os.fstat(retained.fd)\n        if before.st_size > MAX_SOURCE_BYTES:\n            raise ValueError(\"closed product contract exceeds its byte bound\")\n        data = bytearray()\n        while len(data) <= before.st_size:\n            current()\n            chunk = os.read(retained.fd, min(64 * 1024, before.st_size + 1 - len(data)))\n            current()\n            if not chunk:\n                break\n            data.extend(chunk)\n        after = os.fstat(retained.fd)\n        named = path.lstat()\n        current()\n        if (len(data) != before.st_size or _identity(before) != _identity(after)\n                or _identity(named) != _identity(after)):\n            raise ValueError(\"closed product contract changed while scanning\")\n        value = json.loads(data.decode(\"utf-8\"), object_pairs_hook=_closed_contract_pairs,\n                           parse_constant=_closed_contract_constant)\n        if type(value) is not dict:\n            raise ValueError(\"closed product contract must be an object\")\n        return value\n    finally:\n        retained.close()\n\n\ndef closed_product_inventory(directory: Path) -> list[str]:\n    \"\"\"The ten reviewed lexical declarations; no Rust/runtime qualification.\"\"\"\n    actual = _closed_contract().get(\"public_export_inventory\")\n    # Canonical JSON preserves boolean/integer/list/object distinctions. The\n    # independent literal is not replaced by hashes or caller-supplied metadata.\n    if (type(actual) is not dict\n            or json.dumps(actual, sort_keys=True, separators=(\",\", \":\"))\n            != json.dumps(CLOSED_PRODUCT_CONTRACT, sort_keys=True, separators=(\",\", \":\"))):\n        raise ValueError(\"closed product export contract differs\")\n    statements = inventory(directory)\n    if statements != CLOSED_PRODUCT_EXPORTS:\n        raise ValueError(\"closed product export inventory differs\")\n    return statements\n\n\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 20526,
+          "complete_start": 20371,
+          "complete_text": "    parser.add_argument(\"--closed-product\", action=\"store_true\",\n                        help=\"require the fixed reviewed product Source export contract\")\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 21052,
+          "complete_start": 20571,
+          "complete_text": "        directory = arguments.directory.absolute()\n        # The unchanged actual workflow supplies this exact product directory.\n        # Temporary lexical fixtures retain their generic absence-guard mode;\n        # this Source policy selection grants no runtime or installed authority.\n        if arguments.closed_product or directory == PRODUCT_DIRECTORY:\n            statements = closed_product_inventory(directory)\n        else:\n            statements = inventory(directory)\n",
+          "parent_text": "        statements = inventory(arguments.directory)\n"
+        }
+      ],
+      "complete_bytes": 21332,
+      "complete_sha256": "40507df4409525c326da7f2fc4b038fd35aa42c41fe6942953cfb07482f2677e",
+      "parent_bytes": 13714,
+      "parent_sha256": "c6ae060798b5263f8e05e316f171cde1542fb40e247c608dbde2d3d657f6cce4"
+    }
+  },
   "schema": "trillionnium.desktop.service-dispatch-denial-cutoff.v1",
   "scope": {
     "G6_approval": false,
@@ -2588,7 +2783,7 @@
     "contracts/ci-namespace-python.v1.json": "7285ea8aa9272b3a4ce37c7a5d8f6b291bd10a00f2314cd7efd2a6b5c061fd7e",
     "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md": "3100cf1ba31ab528e4fc5882f13d9846940dcc6f20226c1c6d2a7d381a71d280",
     "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
-    "tests/test_service_dispatch_denial_cutoff.py": "2f034f93ac45f2a76f4f1cdcdf0d0216867019927a95f48350131172691941f9",
+    "tests/test_service_dispatch_denial_cutoff.py": "16459964c816edcc756eb652e1f936f8f2aef7e7cf512141d5e75dfdd5291fdc",
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
     "tools/verify_ci_namespace_python.py": "ebcb64dde0fc880c2808f5f3b3d2b19595267971aad9c2c4be8003eef97fa7cf"
   }

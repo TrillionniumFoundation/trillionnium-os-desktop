@@ -23,15 +23,7 @@ from tools import scan_s06_public_exports as scanner
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github/workflows/s06-browser-actor.yml"
-GOLDEN_PUBLIC_EXPORTS = [
-    "pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;",
-    "pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;",
-    "pub use hepta_agent_transport : : PeerIdentity ;",
-    "pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;",
-    "pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;",
-    "pub use hepta_session_core : : ReceiptJournal ;",
-    "pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;",
-]
+GOLDEN_PUBLIC_EXPORTS = ['pub use servo_runtime : : { ServoBrowserActor , ServoCompletionDelivery , ServoEventLoopWaker , ServoPumpResult , ServoRuntimeCommand , ServoRuntimeCompletion , ServoRuntimeEndpoint , ServoRuntimeError , ServoRuntimeOperation , ServoRuntimeOwner , closed_immutable_servo_runtime_pair , servo_runtime_pair , } ;', 'pub use servo_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use hepta_agent_port : : { AgentPortError , DispatchContext , HandlerOutcome } ;', 'pub use hepta_agent_transport : : PeerIdentity ;', 'pub use hepta_browser_codec : : { BrowserRequest , BrowserResponse , ElementReference , JsonObject , JsonValue , NavigationTarget , ObservationField , PageAction , ProfilePersistence , ProfileSpec , WaitCondition , } ;', 'pub use hepta_peer_attestation : : { AttestedPeer , ProcfsPeerAttestor } ;', 'pub use hepta_session_core : : ReceiptJournal ;', 'pub use simulation : : { CancellationToken , PageOwnerSnapshot , ReceiptLifecycleObserver , TaskFlowPrincipal , executable_sha256 , scoped_frame_id , } ;', 'pub use service_runtime : : { ServiceServoBrowserActor , ServiceServoRuntimeBridge , ServiceServoRuntimeCommand , ServiceServoRuntimeCompletion , ServiceServoRuntimeEndpoint , closed_immutable_service_runtime_pair , } ;', 'pub use service_actor : : ServiceServoBrowserActor ;']
 
 
 def actual_guard() -> tuple[str, str]:
@@ -111,6 +103,7 @@ class S06PublicExportGuardTests(unittest.TestCase):
     def test_actual_product_exports_match_closed_golden_and_guard(self):
         source = ROOT / "crates/hepta-browser-actor/src"
         self.assertEqual(scanner.inventory(source), GOLDEN_PUBLIC_EXPORTS)
+        self.assertEqual(scanner.closed_product_inventory(source), GOLDEN_PUBLIC_EXPORTS)
         result = self.run_guard(directory=source)
         self.assertEqual(result.returncode, 0, result.stderr)
 
@@ -526,6 +519,124 @@ pub type RuntimeReplyBox = u8;
                 gc.collect()
                 self.assertTrue(fired)
                 self.assertEqual(descriptor_inventory(), before)
+
+
+class ClosedServiceExportLedgerTests(unittest.TestCase):
+    """Execute the real fixed scanner CLI; this is a lexical Source gate only."""
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.directory = Path(self.temporary.name)
+        self.source = self.directory / "src"
+        self.source.mkdir()
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def _closed_cli(self, statements, extra=""):
+        (self.source / "sample.rs").write_text("\n".join(statements) + "\n" + extra,
+                                              encoding="utf-8")
+        return subprocess.run([sys.executable, "-B", str(ROOT / "tools/scan_s06_public_exports.py"),
+                               "--closed-product", str(self.source)], cwd=ROOT,
+                              env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8",
+                                   "TZ": "UTC", "PYTHONNOUSERSITE": "1", "PYTHONDONTWRITEBYTECODE": "1"},
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=15)
+
+    def _refused(self, statements, extra=""):
+        result = self._closed_cli(statements, extra)
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("closed product export inventory differs", result.stderr)
+
+    def _catalog(self, catalog):
+        path = self.directory / "browser-actor.v1.json"
+        path.write_text(json.dumps({"public_export_inventory": catalog}), encoding="utf-8")
+        return path
+
+    def test_explicit_closed_CLI_accepts_exact_ten_lexical_declarations(self):
+        self.assertEqual(len(GOLDEN_PUBLIC_EXPORTS), 10)
+        result = self._closed_cli(GOLDEN_PUBLIC_EXPORTS)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.splitlines(), GOLDEN_PUBLIC_EXPORTS)
+
+    def test_real_product_directory_is_closed_without_an_optional_flag(self):
+        self.assertEqual(scanner.PRODUCT_DIRECTORY, ROOT / "crates/hepta-browser-actor/src")
+        with mock.patch.object(scanner, "closed_product_inventory", side_effect=ValueError("closed route reached")):
+            with mock.patch.object(sys, "argv", ["scanner", "crates/hepta-browser-actor/src"]):
+                output, errors = io.StringIO(), io.StringIO()
+                with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                    self.assertEqual(scanner.main(), 2)
+                self.assertEqual(output.getvalue(), "")
+                self.assertIn("closed route reached", errors.getvalue())
+
+    def test_unknown_allowed_looking_name_is_not_a_closed_Service_export(self):
+        self._refused(GOLDEN_PUBLIC_EXPORTS + ["pub use safe::UnknownServiceCapability;"])
+
+    def test_each_of_three_Service_declarations_is_mandatory(self):
+        for index in (1, 8, 9):
+            with self.subTest(index=index):
+                self._refused(GOLDEN_PUBLIC_EXPORTS[:index] + GOLDEN_PUBLIC_EXPORTS[index + 1:])
+
+    def test_old_seven_statement_surface_is_not_current_product(self):
+        self._refused([item for index, item in enumerate(GOLDEN_PUBLIC_EXPORTS) if index not in (1, 8, 9)])
+
+    def test_reordered_and_duplicated_public_declarations_are_not_closed(self):
+        for value in (list(reversed(GOLDEN_PUBLIC_EXPORTS)), GOLDEN_PUBLIC_EXPORTS + GOLDEN_PUBLIC_EXPORTS[-1:]):
+            with self.subTest(value=value):
+                self._refused(value)
+
+    def test_Service_comment_or_literal_decoy_does_not_replace_real_declaration(self):
+        value = GOLDEN_PUBLIC_EXPORTS[1]
+        for decoy in ("// " + value, 'const DECOY: &str = "' + value + '";'):
+            with self.subTest(decoy=decoy):
+                self._refused(GOLDEN_PUBLIC_EXPORTS[:1] + GOLDEN_PUBLIC_EXPORTS[2:], decoy)
+
+    def test_rebound_contract_cannot_whitelist_rebound_unknown_exports(self):
+        catalog = json.loads(json.dumps(scanner.CLOSED_PRODUCT_CONTRACT))
+        unknown = "pub use safe : : UnknownServiceCapability ;"
+        catalog["lexical_declarations"].append(unknown)
+        catalog["lexical_declaration_count"] = 11
+        path = self._catalog(catalog)
+        (self.source / "sample.rs").write_text("\n".join(GOLDEN_PUBLIC_EXPORTS + [unknown]), encoding="utf-8")
+        with mock.patch.object(scanner, "PRODUCT_CONTRACT", path):
+            with self.assertRaisesRegex(ValueError, "^closed product export contract differs$"):
+                scanner.closed_product_inventory(self.source)
+
+    def test_contract_types_and_missing_ledger_fail_before_inventory(self):
+        catalog = json.loads(json.dumps(scanner.CLOSED_PRODUCT_CONTRACT))
+        catalog["production_release"] = 0
+        for value in (catalog, None):
+            path = self._catalog(value)
+            with mock.patch.object(scanner, "PRODUCT_CONTRACT", path):
+                with mock.patch.object(scanner, "inventory", side_effect=AssertionError("invalid catalog reached inventory")):
+                    with self.assertRaisesRegex(ValueError, "^closed product export contract differs$"):
+                        scanner.closed_product_inventory(self.source)
+
+    def test_duplicate_contract_keys_do_not_supply_a_later_safe_ledger(self):
+        path = self.directory / "duplicate.json"
+        ledger = json.dumps(scanner.CLOSED_PRODUCT_CONTRACT)
+        path.write_text('{"public_export_inventory":null,"public_export_inventory":' + ledger + '}', encoding="utf-8")
+        before = descriptor_inventory()
+        with mock.patch.object(scanner, "PRODUCT_CONTRACT", path):
+            with self.assertRaisesRegex(ValueError, "duplicate JSON keys"):
+                scanner.closed_product_inventory(self.source)
+        self.assertEqual(descriptor_inventory(), before)
+
+    def test_actual_contract_late_byte_drift_refuses_and_closes_owned_descriptor(self):
+        path = self._catalog(scanner.CLOSED_PRODUCT_CONTRACT)
+        native, fired = os.read, []
+        def drift(fd, count):
+            value = native(fd, count)
+            if value and not fired:
+                fired.append(True)
+                with path.open("ab") as stream:
+                    stream.write(b" ")
+            return value
+        before = descriptor_inventory()
+        with mock.patch.object(scanner, "PRODUCT_CONTRACT", path), mock.patch.object(scanner.os, "read", side_effect=drift):
+            with self.assertRaisesRegex(ValueError, "closed product contract changed while scanning"):
+                scanner.closed_product_inventory(self.source)
+        self.assertTrue(fired)
+        self.assertEqual(descriptor_inventory(), before)
 
 
 if __name__ == "__main__":

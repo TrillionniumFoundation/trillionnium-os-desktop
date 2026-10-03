@@ -49,7 +49,7 @@ def extract_package(path, entry, destination):
     A downloaded path can change after the inventory scan. dpkg-deb therefore
     never receives that mutable name as its authenticated input.
     """
-    source = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+    source = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)
     snapshot = None
     try:
         metadata = os.fstat(source)

@@ -227,5 +227,39 @@ class ImmutableABHostTests(unittest.TestCase):
         self.assertFalse(destination.exists())
 
 
+G6_FIFO_CHILD_CODE = "\nimport errno, importlib.util, json, os, subprocess, sys\nfrom pathlib import Path\nfrom unittest import mock\nroot, mode, path = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])\nmodule_path = root / ('packaging/debian/g6a/guest_selector.py' if mode == 'private' else 'tools/build_g6a_fixture.py')\nspec = importlib.util.spec_from_file_location('bounded_g6_fifo_target', module_path)\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\noriginal_open, opened = os.open, []\ndef tracked_open(name, flags, *args, **kwargs):\n    descriptor = original_open(name, flags, *args, **kwargs)\n    if Path(name) == path:\n        opened.append(descriptor)\n        assert flags & os.O_NONBLOCK\n        assert flags & os.O_NOFOLLOW and flags & os.O_CLOEXEC\n        assert os.get_blocking(descriptor) is False\n    return descriptor\nexpected = 'private_file_custody' if mode == 'private' else 'bounded regular signed package required'\ndestination = path.parent / 'not-extracted'\nwith mock.patch.object(os, 'open', side_effect=tracked_open), \\\n        mock.patch.object(os, 'memfd_create', side_effect=AssertionError('FIFO reached memfd effect')), \\\n        mock.patch.object(subprocess, 'run', side_effect=AssertionError('FIFO reached crypto/extractor effect')):\n    try:\n        if mode == 'private':\n            module.private_read(path)\n        else:\n            module.extract_package(path, {'size': 1, 'sha256': '0' * 64}, destination)\n    except (RuntimeError, module.Refused if mode == 'private' else RuntimeError) as error:\n        assert str(error) == expected, str(error)\n    else:\n        raise AssertionError('FIFO accepted')\nassert len(opened) == 1 and not destination.exists()\nfor descriptor in opened:\n    try:\n        os.fstat(descriptor)\n    except OSError as error:\n        assert error.errno == errno.EBADF\n    else:\n        raise AssertionError('FIFO descriptor leaked')\nprint(json.dumps({'refused': expected, 'actual_fifo_opened': True,\n                  'actual_descriptor_closed': True, 'crypto_snapshot_extractor_effects': 0}, sort_keys=True))\n"
+
+
+class BoundedLeafFifoHostTests(unittest.TestCase):
+    """Real no-writer FIFO refusals; no signing/extraction prerequisite.
+
+    This class sorts before ImmutableABHostTests, and uses an ordinary bounded
+    child whose only target action is one leaf read. No installed selector runs.
+    """
+    def _actual_fifo_refusal(self, mode, expected):
+        import sys
+        with tempfile.TemporaryDirectory(prefix='g6a-real-fifo-') as directory:
+            path = Path(directory) / 'no-writer-fifo'
+            os.mkfifo(path, 0o600)
+            environment = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',
+                           'TZ': 'UTC', 'PYTHONNOUSERSITE': '1', 'PYTHONDONTWRITEBYTECODE': '1'}
+            child = subprocess.run([sys.executable, '-B', '-c', G6_FIFO_CHILD_CODE,
+                                    str(ROOT), mode, str(path)], cwd=ROOT, env=environment,
+                                   stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                                   timeout=5, check=False)
+            self.assertEqual(child.returncode, 0, child.stderr)
+            self.assertEqual(child.stderr, '')
+            self.assertEqual(json.loads(child.stdout),
+                             {'refused': expected, 'actual_fifo_opened': True,
+                              'actual_descriptor_closed': True, 'crypto_snapshot_extractor_effects': 0})
+            self.assertTrue(path.exists())
+
+    def test_actual_private_FIFO_refuses_before_any_crypto_effect(self):
+        self._actual_fifo_refusal('private', 'private_file_custody')
+
+    def test_actual_package_FIFO_refuses_before_snapshot_or_extractor(self):
+        self._actual_fifo_refusal('package', 'bounded regular signed package required')
+
+
 if __name__ == "__main__":
     unittest.main()

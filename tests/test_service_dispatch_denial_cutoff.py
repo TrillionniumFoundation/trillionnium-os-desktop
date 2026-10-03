@@ -654,5 +654,181 @@ class RetainedFullFiniteHistoryCompositionTests(unittest.TestCase):
             '    texts = {path: detach_for_readiness(path, text) for path, text in texts.items()}  # service_runtime_parent_source(path, text)\n')
 
 
+class CurrentS06ExportPhysicalBoundaryTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.texts = gate.inputs()
+
+    def _fully_rebound_s06(self, replacements):
+        texts = dict(self.texts)
+        texts.update(replacements)
+        rebound = rebind_derived_metadata(gate.EXPECTED, texts, self.texts)
+        for path, rule in rebound['s06_parent_inverse4'].items():
+            parent = gate.s06_parent_source(path, self.texts[path])
+            old, current = parent.splitlines(True), texts[path].splitlines(True)
+            oo, no = [0], [0]
+            for line in old:
+                oo.append(oo[-1] + len(line.encode()))
+            for line in current:
+                no.append(no[-1] + len(line.encode()))
+            updated = copy.deepcopy(rule)
+            updated.update(complete_bytes=len(texts[path].encode()), complete_sha256=gate._sha(texts[path].encode()))
+            updated['byte_edits'] = []
+            for tag, a, b, x, y in difflib.SequenceMatcher(None, old, current, autojunk=False).get_opcodes():
+                if tag != 'equal':
+                    updated['byte_edits'].append({'complete_start': no[x], 'complete_end': no[y],
+                                                 'complete_text': ''.join(current[x:y]),
+                                                 'parent_text': ''.join(old[a:b])})
+            rebound['s06_parent_inverse4'][path] = updated
+            rebound['s06_current_physical4'][path] = gate._sha(texts[path].encode())
+        old_assignment = gate.expected_assignment(gate.EXPECTED)
+        self.assertEqual(texts[gate.TOOL].count(old_assignment), 1)
+        texts[gate.TOOL] = texts[gate.TOOL].replace(old_assignment, gate.expected_assignment(rebound), 1)
+        texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+        return rebound, texts
+
+    def _assert_s06_current_refusal(self, replacements):
+        rebound, texts = self._fully_rebound_s06(replacements)
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))
+            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                             rebound['checker_nonEXPECTED_whole_sha256'])
+            with self.assertRaisesRegex(ValueError, '^P3 independent current S06 physical Source differs$'):
+                gate.check(rebound, texts)
+
+    def test_current_four_leaves_and_C_only_old_views_are_whole(self):
+        from tools import verify_approved_service_product as product
+        gate.check(gate.EXPECTED, self.texts)
+        self.assertEqual(len(gate.CLOSED_S06_SOURCE_RULES), 4)
+        for path, rule in gate.CLOSED_S06_SOURCE_RULES.items():
+            self.assertEqual(gate._read(gate.ROOT, path), self.texts[path])
+            historical = gate.s06_parent_source(path, self.texts[path])
+            self.assertNotEqual(historical, self.texts[path])
+            self.assertEqual(gate._sha(historical.encode()), product.EXPECTED['preserved_original_sha256'][path])
+            self.assertEqual(product._read(gate.ROOT, path), historical)
+            self.assertEqual(gate.s06_parent_source(path, historical), historical)
+            self.assertEqual(gate.parent_source(path, self.texts[path]), self.texts[path])
+
+    def test_all_four_unknown_current_S06_leaves_refuse_after_full_metadata_rebinding(self):
+        for path in gate.CLOSED_S06_SOURCE_RULES:
+            with self.subTest(path=path):
+                self._assert_s06_current_refusal({path: self.texts[path] + '\n# unknown S06 physical leaf\n'})
+
+    def test_all_four_old_S06_views_cannot_replace_current_after_full_rebinding(self):
+        for path in gate.CLOSED_S06_SOURCE_RULES:
+            with self.subTest(path=path):
+                self._assert_s06_current_refusal({path: gate.s06_parent_source(path, self.texts[path])})
+
+    def test_unknown_S06_inverse_does_not_trust_rebound_catalog(self):
+        for path in gate.CLOSED_S06_SOURCE_RULES:
+            changed = self.texts[path] + '\n# arbitrary current S06 leaf\n'
+            rebound, texts = self._fully_rebound_s06({path: changed})
+            with self.subTest(path=path), mock.patch.object(gate, 'EXPECTED', rebound):
+                with self.assertRaisesRegex(ValueError, '^P3 unknown complete S06 Source cannot normalize$'):
+                    gate.s06_parent_source(path, changed)
+
+    def test_S06_catalog_only_rebinding_cannot_replace_independent_fixed4(self):
+        path = 'tools/scan_s06_public_exports.py'
+        rebound = copy.deepcopy(gate.EXPECTED)
+        rebound['s06_current_physical4'][path] = gate.CLOSED_S06_SOURCE_RULES[path]['parent_sha256']
+        texts = dict(self.texts)
+        texts[gate.TOOL] = texts[gate.TOOL].replace(gate.expected_assignment(gate.EXPECTED),
+                                                 gate.expected_assignment(rebound), 1)
+        texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                             rebound['checker_nonEXPECTED_whole_sha256'])
+            with self.assertRaisesRegex(ValueError, '^P3 independent current S06 physical catalog differs$'):
+                gate.check(rebound, texts)
+
+
+class CurrentG6LeafPhysicalBoundaryTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.texts = gate.inputs()
+
+    def _fully_rebound_g6(self, replacements):
+        texts = dict(self.texts)
+        texts.update(replacements)
+        rebound = rebind_derived_metadata(gate.EXPECTED, texts, self.texts)
+        for path, rule in rebound['g6_parent_inverse3'].items():
+            parent = gate.g6_parent_source(path, self.texts[path])
+            old, current = parent.splitlines(True), texts[path].splitlines(True)
+            oo, no = [0], [0]
+            for line in old:
+                oo.append(oo[-1] + len(line.encode()))
+            for line in current:
+                no.append(no[-1] + len(line.encode()))
+            updated = copy.deepcopy(rule)
+            updated.update(complete_bytes=len(texts[path].encode()), complete_sha256=gate._sha(texts[path].encode()))
+            updated['byte_edits'] = []
+            for tag, a, b, x, y in difflib.SequenceMatcher(None, old, current, autojunk=False).get_opcodes():
+                if tag != 'equal':
+                    updated['byte_edits'].append({'complete_start': no[x], 'complete_end': no[y],
+                                                 'complete_text': ''.join(current[x:y]),
+                                                 'parent_text': ''.join(old[a:b])})
+            rebound['g6_parent_inverse3'][path] = updated
+            rebound['g6_current_physical3'][path] = gate._sha(texts[path].encode())
+        old_assignment = gate.expected_assignment(gate.EXPECTED)
+        self.assertEqual(texts[gate.TOOL].count(old_assignment), 1)
+        texts[gate.TOOL] = texts[gate.TOOL].replace(old_assignment, gate.expected_assignment(rebound), 1)
+        texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+        return rebound, texts
+
+    def _assert_g6_current_refusal(self, replacements):
+        rebound, texts = self._fully_rebound_g6(replacements)
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))
+            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                             rebound['checker_nonEXPECTED_whole_sha256'])
+            with self.assertRaisesRegex(ValueError, '^P3 independent current G6 physical Source differs$'):
+                gate.check(rebound, texts)
+
+    def test_current_three_leaves_and_C_only_old_views_are_whole(self):
+        from tools import verify_approved_service_product as product
+        gate.check(gate.EXPECTED, self.texts)
+        self.assertEqual(len(gate.CLOSED_G6_SOURCE_RULES), 3)
+        for path, rule in gate.CLOSED_G6_SOURCE_RULES.items():
+            self.assertEqual(gate._read(gate.ROOT, path), self.texts[path])
+            historical = gate.g6_parent_source(path, self.texts[path])
+            self.assertNotEqual(historical, self.texts[path])
+            self.assertEqual(gate._sha(historical.encode()), product.EXPECTED['preserved_original_sha256'][path])
+            self.assertEqual(product._read(gate.ROOT, path), historical)
+            self.assertEqual(gate.g6_parent_source(path, historical), historical)
+            self.assertEqual(gate.parent_source(path, self.texts[path]), self.texts[path])
+
+    def test_all_three_unknown_current_G6_leaves_refuse_after_full_metadata_rebinding(self):
+        for path in gate.CLOSED_G6_SOURCE_RULES:
+            with self.subTest(path=path):
+                self._assert_g6_current_refusal({path: self.texts[path] + '\n# unknown G6 physical leaf\n'})
+
+    def test_all_three_old_G6_views_cannot_replace_current_after_full_rebinding(self):
+        for path in gate.CLOSED_G6_SOURCE_RULES:
+            with self.subTest(path=path):
+                self._assert_g6_current_refusal({path: gate.g6_parent_source(path, self.texts[path])})
+
+    def test_unknown_G6_inverse_does_not_trust_rebound_catalog(self):
+        for path in gate.CLOSED_G6_SOURCE_RULES:
+            changed = self.texts[path] + '\n# arbitrary current G6 leaf\n'
+            rebound, texts = self._fully_rebound_g6({path: changed})
+            with self.subTest(path=path), mock.patch.object(gate, 'EXPECTED', rebound):
+                with self.assertRaisesRegex(ValueError, '^P3 unknown complete G6 Source cannot normalize$'):
+                    gate.g6_parent_source(path, changed)
+
+    def test_G6_catalog_only_rebinding_cannot_replace_independent_fixed3(self):
+        path = 'packaging/debian/g6a/guest_selector.py'
+        rebound = copy.deepcopy(gate.EXPECTED)
+        rebound['g6_current_physical3'][path] = gate.CLOSED_G6_SOURCE_RULES[path]['parent_sha256']
+        texts = dict(self.texts)
+        texts[gate.TOOL] = texts[gate.TOOL].replace(gate.expected_assignment(gate.EXPECTED),
+                                                 gate.expected_assignment(rebound), 1)
+        texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                             rebound['checker_nonEXPECTED_whole_sha256'])
+            with self.assertRaisesRegex(ValueError, '^P3 independent current G6 physical catalog differs$'):
+                gate.check(rebound, texts)
+
+
 if __name__ == '__main__':
     unittest.main()

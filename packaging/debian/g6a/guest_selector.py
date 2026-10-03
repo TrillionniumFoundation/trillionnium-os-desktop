@@ -106,7 +106,7 @@ def custody(metadata):
 
 
 def private_read(path, maximum=MAX_DOCUMENT):
-    fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+    fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)
     try:
         before = os.fstat(fd)
         require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and before.st_uid == os.geteuid() and stat.S_IMODE(before.st_mode) == 0o600 and 0 < before.st_size <= maximum, "private_file_custody")
