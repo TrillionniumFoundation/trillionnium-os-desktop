@@ -45,7 +45,8 @@
         "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
         "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md",
         "docs/architecture/APPROVED_MECHANISM_POLICY.md",
-        "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+        "docs/architecture/APPROVED_NATIVE_STARTUP.md",
+        "docs/architecture/CONFIGURED_RETAINED_BOOTSTRAP.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
@@ -55,7 +56,8 @@
         "contracts/retained-control-terminal.v1.json",
         "contracts/root-path-retained-control.v1.json",
         "contracts/approved-mechanism-policy.v1.json",
-        "contracts/approved-native-startup.v1.json"
+        "contracts/approved-native-startup.v1.json",
+        "contracts/configured-retained-bootstrap.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -76,7 +78,9 @@
         "tests/test_approved_mechanism_policy.py",
         "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs",
         "apps/hepta-browserd/tests/approved_native_startup_kernel.rs",
-        "tests/test_approved_native_startup.py"
+        "tests/test_approved_native_startup.py",
+        "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs",
+        "tests/test_configured_retained_bootstrap.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",

@@ -5,7 +5,7 @@ source binding before existing qualification code. The default repository is
 the current directory. Its exact ten environment fields, role/event rules,
 bounds and workflow/job catalog are in
 [`ci-source-identity.v1.json`](../../contracts/ci-source-identity.v1.json).
-All 43 repository-source jobs in 24 workflows invoke the guard immediately
+All 44 repository-source jobs in 25 workflows invoke the guard immediately
 after their original checkout. Three runner-availability jobs in two workflows
 have no source checkout or source qualification and remain outside this scope.
 The original checkout, run, env, profiles, thresholds and budgets remain intact.
@@ -90,3 +90,9 @@ select PR code through this checkout expression. The source catalog changes
 only that one checkout-step hash; the original qualification run hashes remain
 unchanged. `test_s07_event_checkout.py` checks this execution boundary. Hosted
 CodeQL and qualification must still run on the new exact source object.
+
+The additive authenticated-update readback workflow uses the same preliminary
+closed identity guard in both exact-head and prospective-merge matrix lanes.
+Its original seven checkout/qualification step objects are recorded without
+changing their bodies, budgets, actual OpenSSL corpus counts or claim ceiling.
+The closed workflow catalog includes this source workflow explicitly.

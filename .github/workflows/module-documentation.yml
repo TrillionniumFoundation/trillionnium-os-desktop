@@ -37,6 +37,9 @@ on:
       - "tools/validate_project_truth.py"
       - "tools/validate_repository.py"
       - "tools/validate_rust_browser_codec.py"
+      - "contracts/configured-retained-bootstrap.v1.json"
+      - "tools/verify_configured_retained_bootstrap.py"
+      - "tests/test_configured_retained_bootstrap.py"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -75,6 +78,9 @@ on:
       - "tools/validate_project_truth.py"
       - "tools/validate_repository.py"
       - "tools/validate_rust_browser_codec.py"
+      - "contracts/configured-retained-bootstrap.v1.json"
+      - "tools/verify_configured_retained_bootstrap.py"
+      - "tests/test_configured_retained_bootstrap.py"
 permissions:
   contents: read
 

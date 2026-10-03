@@ -24,6 +24,23 @@ on:
       - "tests/test_s11_update_recovery.py"
       - "tests/test_durable_update_owner.py"
       - "tools/validate_platform_mechanisms.py"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_contract_foundation.py"
+      - "tools/validate_documentation_coherence.py"
+      - "tools/validate_module_documentation.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "contracts/ci-source-identity.v1.json"
+      - "tests/test_ci_source_identity.py"
+      - "tools/verify_ci_source_identity.py"
   pull_request:
     paths:
       - ".github/workflows/update-boot-observer.yml"
@@ -46,6 +63,23 @@ on:
       - "tests/test_s11_update_recovery.py"
       - "tests/test_durable_update_owner.py"
       - "tools/validate_platform_mechanisms.py"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_contract_foundation.py"
+      - "tools/validate_documentation_coherence.py"
+      - "tools/validate_module_documentation.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "contracts/ci-source-identity.v1.json"
+      - "tests/test_ci_source_identity.py"
+      - "tools/verify_ci_source_identity.py"
 
 permissions:
   contents: read
@@ -69,6 +103,22 @@ jobs:
           ref: ${{ matrix.object == 'prospective-merge' && format('refs/pull/{0}/merge', github.event.pull_request.number) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha) }}
           fetch-depth: 2
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: ${{ matrix.object }}
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
       - name: Bind exact source and current prospective parents
         shell: bash
         env:

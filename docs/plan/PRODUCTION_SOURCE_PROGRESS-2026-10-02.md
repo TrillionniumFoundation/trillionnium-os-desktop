@@ -727,3 +727,30 @@ The combined focused source suites pass 28 local tests. Repository and project
 truth validation also pass. These facts do not establish hosted CI execution,
 headed/native runtime, installed image, hardware, release signature or production
 qualification. `production_ready` remains false.
+
+
+## Authenticated update and configured ingress source successor
+
+The additive v2 update owner retains exact manifest/signature bytes before
+slot write, then the read-only restart observer verifies them through the same
+actual external signature verifier and rereads complete active/target slot
+files. The v1 historical path is not promoted. Creator-bound diagnostic facts
+allow no replay, boot-health commit, measured-root inference or activation.
+Different source authors ran the actual OpenSSL/FS/fork corpus and hostile
+rebound chains; installed boot/health/commit and protected monotonic roots
+remain separate pending requirements.
+
+ConfiguredRetainedBootstrap consumes one original root control connection and
+retained approved policy document, selecting both roles from that same owner
+and handing the original SCM_RIGHTS pair to approved native admission. It
+keeps the old first-packet lifetime, actual procfs custody and deadlines. The
+new public API has a versioned closed signature/semantics inventory. No binary
+main, service activation, cross-UID broker, long-running engine lifetime or
+trusted desktop approval is provisioned by this ingress API.
+
+The composition adds the update workflow to the closed CI source-role catalog
+and appends all named tool dependencies to both trigger lists. S07 uses the
+exact immutable event object for prospective checkout; its original live
+parent/qualification bodies remain unchanged. This record is a development
+checkpoint. Exact final source, full make, independent source composition and
+new hosted native/image qualification must be recorded outside this text.

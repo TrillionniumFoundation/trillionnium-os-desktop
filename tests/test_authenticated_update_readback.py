@@ -500,7 +500,7 @@ class AuthenticatedUpdateReadbackTests(unittest.TestCase):
                 gate.validate(root)
 
     def test_actual_candidate_workflow_uses_identical_live_ref_body_and_non_skipping_corpus(self):
-        from test_ci_pr_ref_identities import identity_body
+        from tests.test_ci_pr_ref_identities import identity_body
         new = (ROOT / ".github/workflows/authenticated-update-readback.yml").read_text()
         previous = (ROOT / ".github/workflows/update-boot-observer.yml").read_text()
         self.assertEqual(identity_body(new, "actual-host-corpus"), identity_body(previous, "actual-host-corpus"))

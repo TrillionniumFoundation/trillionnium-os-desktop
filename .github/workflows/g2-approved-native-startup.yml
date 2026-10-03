@@ -29,6 +29,9 @@ on:
       - "tests/test_ci_source_identity.py"
       - "contracts/ci-source-identity.v1.json"
       - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "contracts/configured-retained-bootstrap.v1.json"
+      - "tools/verify_configured_retained_bootstrap.py"
+      - "tests/test_configured_retained_bootstrap.py"
   push:
     branches: [main, 'codex/**']
     paths:
@@ -53,6 +56,9 @@ on:
       - "tests/test_ci_source_identity.py"
       - "contracts/ci-source-identity.v1.json"
       - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "contracts/configured-retained-bootstrap.v1.json"
+      - "tools/verify_configured_retained_bootstrap.py"
+      - "tests/test_configured_retained_bootstrap.py"
 permissions:
   contents: read
 concurrency:
