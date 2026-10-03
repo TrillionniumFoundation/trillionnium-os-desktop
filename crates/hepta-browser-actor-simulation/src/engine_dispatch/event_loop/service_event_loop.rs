@@ -321,7 +321,8 @@ impl ServiceEngineBridge {
         // A post failure retains uncertainty and retires; it never claims the
         // buffered value was not physically written or clears product history.
         let sent = active.call.reply.try_send(result);
-        let current = active.scope.current(&self.state);
+        let current = active.call.control.ensure_active()
+            .and_then(|()| active.scope.current(&self.state));
         if sent.is_err() || uncertain || current.is_err() {
             self.retire();
             return CallbackPumpResult::Retired;

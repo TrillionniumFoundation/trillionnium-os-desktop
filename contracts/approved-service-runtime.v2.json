@@ -45,7 +45,7 @@
     "ServiceServoRuntimeBridge": "inner : ServiceEngineBridge ,"
   },
   "production_sha256": {
-    "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs": "beb88f45b8b590eb613eee2a4863a77a18e2dbf59f19a473a8b4586381eb5807",
+    "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs": "b1e7581d8134c47807b9841316a1c43c454311bcf4df7c44f0bae641d12fd13d",
     "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs": "df07c1c8d45d62b0a9f6eb72914845e5c301a7d28a48e0fdf2787d05d9021a28"
   },
   "all_function_tokens_sha256": {
@@ -63,7 +63,7 @@
       "Drop:ServiceEngineCompletion::drop": "8e43dcd90fa412a65dc0fa30a648352b16e4062d1752341477fdf667b74ca2a9",
       "ServiceEngineBridge::owner_current": "17358a92c923c78200e539a2fd1413666434fd858876acd46bfc5843b3553663",
       "ServiceEngineBridge::pump_one": "6078b29d1f8511aef6da23fb905b2e958c87811a5bfeed306e7325576d42c4f9",
-      "ServiceEngineBridge::poll_active": "fa8d481dafcd99b644b76d1597299dbd416cff2500b0a42b11bbb05dba81fd97",
+      "ServiceEngineBridge::poll_active": "c8952f200df5ce7893768a1bdd82ea8b4abcba225a86bfe547bcbf991460a38b",
       "ServiceEngineBridge::fail_active": "1801f94bc74f8a1a419eaf7a65584d25abd1e6fc8ae62ae23e7c77d54e376953",
       "ServiceEngineBridge::take_command": "8019d1032f5500398ca6ee0f8caf8848e80afb5aef29575ae5fbb4c35921cdb9",
       "ServiceEngineBridge::next_wake_deadline": "280cdaf357559da6e3c5d29341b2cee39e24300f6c4caf767c77cd611a06f7c8",
@@ -146,14 +146,15 @@
     "original_pair_deadline_and_closed_URL_preserved": true,
     "async_proof": "capture original readonly scope once; no late registrar lookup; readonly Arc does not prolong Agent/Owner custody",
     "completion_queued_is_native_or_durable_success": false,
-    "postsend": "physical send may have happened; Source post failure retires and retains uncertainty, not a claim of rollback",
+    "postsend": "physical send may have happened; actual call cancellation/deadline then captured Source/original pair are sampled again. Post failure retires and retains uncertainty; neither atomic send nor rollback is claimed.",
     "request_and_native_budgets_changed": false,
     "actual_Servo_or_native60": false,
     "actor_coordinator_managed_factory_installed_activation": false,
     "layout_revision": "finite exact production-adjacent insertion; removing reviewed block restores all parent bytes, no items_after_test_module allow",
     "future_privacy_layout": "P2A core nested child of service_event_loop; ServoActor nested child of service_runtime. No public/pub(crate) registrar or raw getter is necessary.",
     "Drop": "local deny-only closure before old token drop; no Source filesystem refresh or inferred external effect rollback",
-    "actual_original_clock_correspondence": "with_original_pair returns original P1 ceiling; every scope current requires exact equality to captured original_deadline, dispatch <= it"
+    "actual_original_clock_correspondence": "with_original_pair returns original P1 ceiling; every scope current requires exact equality to captured original_deadline, dispatch <= it",
+    "canonical_container_binding": "NOT_IMPLEMENTED: P2A must bind entire canonical BrowserRequest digest, session and operation from genuine original Binding on same engine; request ID text does not authorize registration or callback replay."
   },
   "API_preconditions_and_errors": {
     "factory": "creates unused fixed closed mechanism pair only; no approved Source, session, principal, URL/profile choice or future Instant parameter",

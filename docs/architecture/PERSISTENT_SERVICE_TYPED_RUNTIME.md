@@ -19,6 +19,10 @@ thin service actor as a private child of service_runtime. The core alone will
 consume the private endpoint and genuine original Binding, capture the same
 session/engine Arc and fresh private nonce, and retain registration across one
 controlled call. No public or crate-visible registrar/raw getter is required.
+P2B has no canonical container binding. P2A must capture and compare the entire
+canonical BrowserRequest digest, session and operation from the genuine
+original Binding on that same engine; request ID text alone cannot authorize
+registration or callback replay.
 Readonly verifier Arcs cannot prolong original Agent or persistent Owner custody.
 The owning Requests object remains necessary in the later coordinator.
 
@@ -29,6 +33,9 @@ before and after forwarding. It does not wrap the old poll and claim equivalent
 coverage. A queued or physically sent value is not proof of delivered wire,
 durable outcome or native success. A post-send failure cannot undo bytes; it
 retires the pair and retains uncertainty for the future product coordinator.
+The post-send sample includes the actual call's cancellation/deadline and then
+the captured scope. Neither sample makes a concurrent send atomic or rolls it
+back.
 Lost callbacks close locally before the legacy token destructor runs.
 
 The operation set is Health, fixed ephemeral Create, Observe, Snapshot and

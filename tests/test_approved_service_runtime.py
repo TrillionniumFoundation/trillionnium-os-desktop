@@ -93,6 +93,8 @@ MUTANTS = [
     (SIMULATION, 'self.dispatch_deadline > self.original_deadline', 'false'),
     (SIMULATION, 'EngineUrlScope::ClosedImmutableReadOnly', 'EngineUrlScope::D3Local'),
     (SIMULATION, 'active.scope.current(&self.state)', 'Ok::<(), RuntimeFailure>(())'),
+    (SIMULATION, 'let current = active.call.control.ensure_active()\n            .and_then(|()| active.scope.current(&self.state));',
+     'let current = active.scope.current(&self.state);'),
     (SIMULATION, '.and_then(|reply| active.scope.current(&self.state).map(|()| reply))',
      '.or_else(|_| Ok(RuntimeReply { result: Default::default(), current_url: None }))'),
     (SIMULATION, 'self.state.closed.store(true, Ordering::SeqCst)', 'self.state.closed.store(false, Ordering::SeqCst)'),
