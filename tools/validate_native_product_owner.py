@@ -10,10 +10,10 @@ from pathlib import Path
 import sys
 try:
     from .artifact_evidence import load
-    from .prepare_native_product_owner import read, PIN
+    from .prepare_native_product_owner import read, PIN, PIN_FILES, FORMAT_CONFIG, digest
 except ImportError:
     from artifact_evidence import load
-    from prepare_native_product_owner import read, PIN
+    from prepare_native_product_owner import read, PIN, PIN_FILES, FORMAT_CONFIG, digest
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = "contracts/native-product-owner.v1.json"
 FALSE_CLAIMS = {
@@ -52,6 +52,9 @@ EXPECTED = {
         "workflow": ".github/workflows/g2-native-product-owner.yml",
         "configured_policy": "explicit_same_uid_transient_unit_launcher_tuple_before_start",
         "procfs_source": "default_live", "managed_receipt_journal": True, "mailbox": False,
+        "formatting": {"configuration": FORMAT_CONFIG, "upstream_configuration": "rustfmt.toml",
+            "configuration_sha256": PIN_FILES["rustfmt.toml"], "workspace_rust": "1.93.0",
+            "upstream_rust": "1.97.1", "formatter_and_byte_comparison_required": True},
         "test_names": ["actual_connected_immutable_semantic_snapshot", "unsupported_operations_never_enter_durable_or_native_dispatch",
             "native_handle_release_is_uncertain_and_blocks_reconstruction", "wrong_live_policy_and_cancelled_original_connection_refuse_admission"]},
     "non_claims": dict.fromkeys(FALSE_CLAIMS, False),
@@ -72,6 +75,8 @@ def typed_equal(actual: object, expected: object, path: str = "contract") -> Non
 
 def validate(root: Path = ROOT) -> None:
     typed_equal(load(root / CONTRACT), EXPECTED)
+    if digest(read(root / FORMAT_CONFIG)) != PIN_FILES["rustfmt.toml"]:
+        raise ValueError("native formatting configuration is not the fixed upstream configuration")
     native = read(root / EXPECTED["qualification"]["consumer_module"]).decode("utf-8")
     actor = read(root / "crates/hepta-browser-actor/src/servo_runtime.rs").decode("utf-8")
     target = read(root / EXPECTED["qualification"]["connected_target"]).decode("utf-8")

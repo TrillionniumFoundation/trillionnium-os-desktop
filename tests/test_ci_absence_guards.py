@@ -33,11 +33,20 @@ def helper(body, name):
 def shell(body, directory):
     return subprocess.run(["bash", "--noprofile", "--norc", "-e", "-o", "pipefail", "-c", body],
                           cwd=directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                          timeout=10, env={**os.environ, "LC_ALL": "C"})
+                          timeout=10, env={**os.environ, "LC_ALL": "C",
+                                           "RUNNER_TEMP": str(directory),
+                                           "export_inventory": str(Path(directory) / "s06-public-exports.txt")})
 
 
 class NativeCiAbsenceGuardTests(unittest.TestCase):
     def actor_fixture(self, directory, marker=""):
+        # Execute the actual scanner and retained-reader dependencies inside
+        # this owned fixture; production guards never import a host fallback.
+        tools = directory / "tools"
+        tools.mkdir()
+        for name in ("scan_s06_public_exports.py", "artifact_evidence.py",
+                     "browser_codec_reference_security.py"):
+            (tools / name).write_bytes((ROOT / "tools" / name).read_bytes())
         target = directory / "crates/hepta-browser-actor/src"
         target.mkdir(parents=True)
         (target / "fixture.rs").write_text("pub fn from_attested() {}\n"

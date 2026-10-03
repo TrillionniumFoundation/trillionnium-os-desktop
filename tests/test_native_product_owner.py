@@ -17,6 +17,12 @@ from tools import prepare_native_product_owner as assembly
 from tools import validate_native_product_owner as scope
 
 class NativeProductOwnerContractTests(unittest.TestCase):
+    def test_formatting_scope_cannot_disable_comparison_or_change_approved_config(self):
+        for field, value in [('formatter_and_byte_comparison_required', False), ('configuration_sha256', '0'*64), ('upstream_rust', '1.93.0')]:
+            item = copy.deepcopy(scope.EXPECTED)
+            item['qualification']['formatting'][field] = value
+            with self.assertRaises(ValueError): scope.typed_equal(item, scope.EXPECTED)
+
     def test_current_closed_source_contract_and_consumer_wiring(self):
         scope.validate()
 
@@ -46,6 +52,21 @@ class NativeProductOwnerContractTests(unittest.TestCase):
             with self.assertRaises(ValueError): scope.typed_equal(item, scope.EXPECTED)
 
 class NativeOwnerSourceAssemblyTests(unittest.TestCase):
+    def test_actual_formatting_files_bind_same_fixed_bytes_and_refuse_drift(self):
+        upstream = self.root/'upstream'; upstream.mkdir()
+        local = self.root/'local'; (local/assembly.FORMAT_CONFIG).parent.mkdir(parents=True)
+        data = (assembly.ROOT/assembly.FORMAT_CONFIG).read_bytes()
+        (upstream/'rustfmt.toml').write_bytes(data)
+        (local/assembly.FORMAT_CONFIG).write_bytes(data)
+        self.assertEqual(assembly.verify_format_config(upstream, local), assembly.PIN_FILES['rustfmt.toml'])
+        (local/assembly.FORMAT_CONFIG).write_bytes(data+b'max_width = 80\n')
+        with self.assertRaises(ValueError): assembly.verify_format_config(upstream, local)
+        (upstream/'rustfmt.toml').write_bytes(data+b'max_width = 80\n')
+        with self.assertRaises(ValueError): assembly.verify_format_config(upstream, local)
+        (upstream/'rustfmt.toml').write_bytes(data); (local/assembly.FORMAT_CONFIG).write_bytes(data)
+        os.link(local/assembly.FORMAT_CONFIG, self.root/'foreign-config-alias')
+        with self.assertRaises((ValueError, OSError)): assembly.verify_format_config(upstream, local)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(); self.root = Path(self.temp.name)
     def tearDown(self): self.temp.cleanup()

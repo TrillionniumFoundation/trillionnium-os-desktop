@@ -48,6 +48,14 @@
     "successful_closed_response": false
   },
   "qualification": {
+    "formatting": {
+      "configuration": "experiments/servo-product-owner/rustfmt.toml",
+      "upstream_configuration": "rustfmt.toml",
+      "configuration_sha256": "9bac67039cd8f892bb9c1ff0780e6e1f2f8dbd8b6787552e4c827f9363452eda",
+      "workspace_rust": "1.93.0",
+      "upstream_rust": "1.97.1",
+      "formatter_and_byte_comparison_required": true
+    },
     "consumer_module": "experiments/servo-product-owner/src/native_owner.rs",
     "connected_target": "experiments/servo-product-owner/src/connected_tests.rs",
     "source_preparation": "tools/prepare_native_product_owner.py",

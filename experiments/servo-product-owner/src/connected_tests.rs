@@ -140,7 +140,7 @@ impl Driver {
                 match queue.try_next() {
                     Ok(Some(connection)) => {
                         evidence.push(coordinator.serve_connection(connection).unwrap())
-                    }
+                    },
                     Ok(None) => thread::sleep(Duration::from_millis(1)),
                     Err(hepta_browserd::ProductDispatchError::Closed) => break,
                     Err(error) => panic!("owned queue: {error:?}"),

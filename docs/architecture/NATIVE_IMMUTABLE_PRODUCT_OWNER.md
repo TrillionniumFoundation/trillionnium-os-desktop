@@ -122,6 +122,18 @@ against the PIN's libc 0.2.189 resolution. Both lock digests are recorded; this 
 an explicit new graph needing new actual qualification. It is not the unchanged
 old Servo build. Unknown package/edge drift fails preparation verification.
 
+The experiment carries the exact PIN's three-line `rustfmt.toml`, including
+`match_block_trailing_comma = true`, with SHA-256
+`9bac67039cd8f892bb9c1ff0780e6e1f2f8dbd8b6787552e4c827f9363452eda`.
+Preparation checks both the original upstream configuration and the local copy
+before writing any target source. Rust 1.93.0 checks the repository source with
+that configuration; the actual upstream Rust 1.97.1 formatter runs normally and
+the original byte-for-byte source comparison remains required. Run
+`37073558008` on `772837c` failed this comparison before compilation: the source
+omitted optional match-arm commas required by the upstream configuration. That
+failure remains a failure; the successor's actual compilation and four cases
+need a new run.
+
 The new workflow compiles the target on Rust 1.97.1 using Servo's own
 `checked-release` profile, which keeps debug assertions and overflow checks while
 optimizing actual live executable hashing. It changes no production deadline or

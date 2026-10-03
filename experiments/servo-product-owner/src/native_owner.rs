@@ -316,7 +316,7 @@ impl NativeState {
                     && profile.profile_id == IMMUTABLE_PROFILE =>
             {
                 Ok(())
-            }
+            },
             ServoRuntimeOperation::Snapshot
             | ServoRuntimeOperation::Observe { .. }
             | ServoRuntimeOperation::Close => {
@@ -335,14 +335,14 @@ impl NativeState {
                 match &binding.actor_webview_token {
                     Some(token) if token != &owner.webview_token => {
                         Err(NativeOwnerError::Invalidated)
-                    }
+                    },
                     None => {
                         binding.actor_webview_token = Some(owner.webview_token.clone());
                         Ok(())
-                    }
+                    },
                     _ => Ok(()),
                 }
-            }
+            },
             _ => Err(NativeOwnerError::Invalidated),
         }
     }
@@ -446,7 +446,7 @@ impl NativeState {
                             .map(|v| JsonValue::String(v.to_string()))
                             .collect(),
                     )
-                }
+                },
                 Some(_) => return Err(NativeOwnerError::Bounds),
                 None => JsonValue::Null,
             };
@@ -548,7 +548,7 @@ impl NativeState {
                             .completion
                             .complete_error(ServoRuntimeError::BrowserCrashed),
                     ));
-                }
+                },
             };
             self.delegate.document_established.set(true);
             result
@@ -600,7 +600,7 @@ impl NativeState {
             None => {
                 self.bridge.retire();
                 NativeDrive::Retired
-            }
+            },
         }
     }
     fn retire_native(&mut self) {

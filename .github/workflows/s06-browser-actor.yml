@@ -24,6 +24,10 @@ on:
       - "docs/architecture/SESSION_INCARNATION.md"
       - "tests/test_s06_browser_actor.py"
       - "tests/test_s06_contract_paths.py"
+      - "tests/test_s06_public_exports.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/artifact_evidence.py"
+      - "tools/browser_codec_reference_security.py"
       - "tools/validate_repository.py"
       - "tools/_validate_repository_impl.py"
       - "tools/validate_project_truth.py"
@@ -50,6 +54,10 @@ on:
       - "docs/architecture/SESSION_INCARNATION.md"
       - "tests/test_s06_browser_actor.py"
       - "tests/test_s06_contract_paths.py"
+      - "tests/test_s06_public_exports.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/artifact_evidence.py"
+      - "tools/browser_codec_reference_security.py"
       - "tools/validate_repository.py"
       - "tools/_validate_repository_impl.py"
       - "tools/validate_project_truth.py"
@@ -102,6 +110,7 @@ jobs:
           python3 -m unittest \
             tests.test_s06_browser_actor \
             tests.test_s06_contract_paths \
+            tests.test_s06_public_exports \
             -v
 
       - name: Run complete locked source graph
@@ -142,7 +151,11 @@ jobs:
             exit "$grep_status"
           }
           reject_match -R -n -E 'pub struct BrowserActor<|impl<.*BrowserActor|runtime: R|pub fn new\(|pub fn handle\(' crates/hepta-browser-actor/src
-          reject_match -R -n -E 'pub (use|type).*PrincipalBinding|pub (use|type).*MechanismIdentity|PageRuntime,|RequestControl,|RuntimeReply,' crates/hepta-browser-actor/src
+          # Inventory real declarations after discarding Rust comments/literals;
+          # private use and pub(crate) use are not external public exports.
+          export_inventory="$RUNNER_TEMP/s06-public-exports.txt"
+          python3 tools/scan_s06_public_exports.py crates/hepta-browser-actor/src > "$export_inventory"
+          reject_match -R -n -E '(^|[^[:alnum:]_])(PrincipalBinding|MechanismIdentity|PageRuntime|CallbackPageRuntime|RequestControl|RuntimeReply)([^[:alnum:]_]|$)|^pub use [^;]*\*' "$export_inventory"
           grep -R -n 'pub fn from_attested' crates/hepta-browser-actor/src
           grep -R -n 'pub fn handle_attested' crates/hepta-browser-actor/src
           python3 - <<'PY'
@@ -231,6 +244,7 @@ jobs:
           python3 -m unittest \
             tests.test_s06_browser_actor \
             tests.test_s06_contract_paths \
+            tests.test_s06_public_exports \
             -v
 
       - name: Run complete locked merged graph
@@ -271,7 +285,11 @@ jobs:
             exit "$grep_status"
           }
           reject_match -R -n -E 'pub struct BrowserActor<|impl<.*BrowserActor|runtime: R|pub fn new\(|pub fn handle\(' crates/hepta-browser-actor/src
-          reject_match -R -n -E 'pub (use|type).*PrincipalBinding|pub (use|type).*MechanismIdentity|PageRuntime,|RequestControl,|RuntimeReply,' crates/hepta-browser-actor/src
+          # Inventory real declarations after discarding Rust comments/literals;
+          # private use and pub(crate) use are not external public exports.
+          export_inventory="$RUNNER_TEMP/s06-public-exports.txt"
+          python3 tools/scan_s06_public_exports.py crates/hepta-browser-actor/src > "$export_inventory"
+          reject_match -R -n -E '(^|[^[:alnum:]_])(PrincipalBinding|MechanismIdentity|PageRuntime|CallbackPageRuntime|RequestControl|RuntimeReply)([^[:alnum:]_]|$)|^pub use [^;]*\*' "$export_inventory"
           grep -R -n 'pub fn from_attested' crates/hepta-browser-actor/src
           grep -R -n 'pub fn handle_attested' crates/hepta-browser-actor/src
           python3 - <<'PY'

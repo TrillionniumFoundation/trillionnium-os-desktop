@@ -24,6 +24,7 @@ PIN = "670ae8a70801b162e186f81cbb5bdd2d59c39108"
 ROOT = Path(__file__).resolve().parents[1]
 MAX_SOURCE = 2 * 1024 * 1024
 PIN_FILES = {
+    "rustfmt.toml": "9bac67039cd8f892bb9c1ff0780e6e1f2f8dbd8b6787552e4c827f9363452eda",
     "Cargo.lock": "656009c8ff251607e66541c8ae1c36d3d5ac5ed8662b2c67d01bca544c4f035a",
     "Cargo.toml": "1543c16e43cc716a4e32ec0b541dce9b072ee171acefd611e9ca2c450f27c020",
     "components/servo/Cargo.toml": "0d8133a3297ad62c0a828e94eee4fdc44e866be83fdaed7cf6099cc350f5c9ef",
@@ -42,6 +43,7 @@ DEPS = {
     "hepta-agent-port": "crates/hepta-agent-port",
     "hepta-browserd": "apps/hepta-browserd",
 }
+FORMAT_CONFIG = "experiments/servo-product-owner/rustfmt.toml"
 
 def read(path: Path) -> bytes:
     with os.fdopen(open_file(path.absolute()), "rb") as stream:
@@ -157,6 +159,14 @@ def write_source(destination: Path, data: bytes, previous: bytes | None = None) 
         if failure is not None: raise failure
 
 
+def verify_format_config(upstream: Path, root: Path = ROOT) -> str:
+    original = read(upstream / "rustfmt.toml")
+    local = read(root / FORMAT_CONFIG)
+    if digest(original) != PIN_FILES["rustfmt.toml"] or local != original:
+        raise ValueError("native owner formatting configuration differs from exact PIN")
+    return digest(original)
+
+
 def prepare(upstream: Path, root: Path = ROOT) -> dict:
     upstream = upstream.absolute()
     root = root.absolute()
@@ -165,6 +175,7 @@ def prepare(upstream: Path, root: Path = ROOT) -> dict:
     for path, expected in PIN_FILES.items():
         if digest(read(upstream / path)) != expected:
             raise ValueError("upstream original API/manifests differ from PIN")
+    formatter_configuration_sha256 = verify_format_config(upstream, root)
     inputs = {source: read(root / source) for source in SOURCES}
     manifest = read(upstream / "components/servo/Cargo.toml")
     cargo = tomllib.loads(manifest.decode("utf-8"))
@@ -185,6 +196,7 @@ def prepare(upstream: Path, root: Path = ROOT) -> dict:
             raise ValueError("assembled source readback does not match input")
     return {"schema": "trillionnium.native-owner-source-assembly.v1", "servo_commit": PIN,
             "source_sha256": {name: digest(data) for name, data in inputs.items()},
+            "formatter_configuration_sha256": formatter_configuration_sha256,
             "qualification": "not_executed", "installed_activation": False}
 
 def verify_lock(before: Path, after: Path) -> dict:
