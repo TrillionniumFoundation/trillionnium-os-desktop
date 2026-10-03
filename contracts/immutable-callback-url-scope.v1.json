@@ -16,6 +16,7 @@
     "source": "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop.rs"
   },
   "api_version": "0.1.0",
+  "empty_document_url": "about:blank",
   "fixed_document_url": "data:text/html,<!DOCTYPE html><title>Immutable owner</title><main><h1>Owned semantic document</h1><p>Read only native Servo page</p></main>",
   "native_url_source": "actual_owned_WebView_url_not_replaced_by_constant_or_about_blank",
   "non_claims": {
@@ -28,7 +29,7 @@
   "qualification": {
     "native_approved_cases": 2,
     "native_original_cases": 4,
-    "synthetic_host_cases": 4,
+    "synthetic_host_cases": 6,
     "unchanged_connection_seconds": 20,
     "unchanged_native_seconds": 5
   },
@@ -42,7 +43,7 @@
       "callback_completion",
       "callback_owner_poll"
     ],
-    "closed_servo_profile": "ClosedImmutableReadOnly_exact_fixed_document",
+    "closed_servo_profile": "ClosedImmutableReadOnly_exact_fixed_or_blank_document",
     "existing_engine_and_callback_defaults": "D3Local_about_blank_or_loopback_http",
     "propagated_to": [
       "EngineThreadRuntime",

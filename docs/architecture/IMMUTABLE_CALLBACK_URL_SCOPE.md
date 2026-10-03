@@ -19,8 +19,10 @@ Send nor Sync. Selection supplies URL correspondence and grants no peer authorit
 
 The original `engine_thread_pair` and `callback_engine_pair` keep their existing
 D3 predicate: `about:blank` or loopback HTTP. The closed Servo profile selects
-this additive constructor. Its private scope accepts only the exact existing
-immutable document URL. Other data documents, HTTP URLs, files, queries and
+this additive constructor. Its private scope accepts the exact existing
+immutable document URL and the exact `about:blank` empty document value already
+used by the read-only bridge's source callback clients. An empty document reply
+does not prove that the fixed native HTML has loaded. Other data documents, HTTP URLs, files, queries and
 fragments fail closed. This scope travels inside the opaque actor endpoint,
 callback owner and single-use completion. Actor preflight and dispatch check
 owner URLs; both callback completion and owner polling check reply URLs.
@@ -39,9 +41,10 @@ reply URL guard. That path produced `Internal` after a real native completion;
 the same D3 owner guard also rejected subsequent semantic observations.
 The selected scope addresses both paths while preserving the D3 default.
 
-Four Rust regressions exercise real local callback/channel dispatch with
+Six Rust regressions exercise real local callback/channel dispatch with
 explicit synthetic replies, including the original rejection, additive success,
-subsequent owner snapshot, other-URL refusal and existing owner token checks.
+subsequent owner snapshot, retained blank health/owner compatibility, other-URL
+refusal and existing owner token checks for both accepted document values.
 The source validator binds the closed contract, signature, opaque fields,
 constructor defaults and guard propagation. These checks do not execute Servo,
 expand Rust macros, approve a principal or qualify an installed product. Actual

@@ -51,12 +51,13 @@ This library registers no binary target. Cargo binary auto-discovery and package
 ## Configuration and features
 
 `closed_immutable_callback_engine_pair` is an additive internal callback
-constructor with a fixed document URL scope. Its exact signature, creator-thread
+constructor with a closed scope for the exact fixed document URL and existing
+`about:blank` empty document value. Its exact signature, creator-thread
 preconditions and owner/reply refusal semantics are specified in
 [`IMMUTABLE_CALLBACK_URL_SCOPE.md`](../../docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md)
 and `contracts/immutable-callback-url-scope.v1.json`. The caller still supplies
 the separately reviewed operation profile and live request custody. The original
-callback and synchronous constructors keep their D3 local URL scope. Four new
+callback and synchronous constructors keep their D3 local URL scope. Six new
 Rust tests use synthetic replies through actual local channels; they do not
 qualify native Servo or an installed product.
 

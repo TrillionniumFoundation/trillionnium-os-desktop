@@ -41,7 +41,9 @@ impl EngineUrlScope {
     fn allows(self, url: &str) -> bool {
         match self {
             Self::D3Local => url == "about:blank" || crate::is_loopback_http(url),
-            Self::ClosedImmutableReadOnly => url == CLOSED_IMMUTABLE_DOCUMENT_URL,
+            Self::ClosedImmutableReadOnly => {
+                url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank"
+            }
         }
     }
 }

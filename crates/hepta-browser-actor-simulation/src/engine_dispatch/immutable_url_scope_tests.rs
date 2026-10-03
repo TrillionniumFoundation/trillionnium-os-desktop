@@ -102,7 +102,9 @@ fn closed_callback_preserves_real_url_through_subsequent_owner_snapshot() {
 #[test]
 fn closed_scope_refuses_every_other_document_and_original_scope_stays_local() {
     for url in [
-        "about:blank",
+        "about:blank#fragment",
+        "about:blank?query",
+        "about:blank ",
         "http://127.0.0.1:8000/fixture",
         "https://example.invalid/",
         "data:text/html,<!DOCTYPE html>",
@@ -134,6 +136,25 @@ fn closed_scope_refuses_every_other_document_and_original_scope_stays_local() {
         .is_err()
     );
     assert!(bound_reply(reply(None), EngineUrlScope::ClosedImmutableReadOnly).is_ok());
+}
+#[test]
+fn closed_callback_preserves_existing_blank_health_and_owner_snapshot() {
+    for snapshot in [false, true] {
+        let result = exchange(true, "about:blank", snapshot).unwrap();
+        assert_eq!(result.current_url.as_deref(), Some("about:blank"));
+    }
+}
+#[test]
+fn blank_compatibility_preserves_existing_owner_token_and_fixture_guards() {
+    for mutate in [0, 1, 2] {
+        let mut invalid = owner("about:blank");
+        match mutate {
+            0 => invalid.local_fixture_only = false,
+            1 => invalid.session_id = "bad/session".into(),
+            _ => invalid.webview_token = "bad/view".into(),
+        }
+        assert!(validate_owner(Some(&invalid), EngineUrlScope::ClosedImmutableReadOnly).is_err());
+    }
 }
 #[test]
 fn fixed_url_does_not_replace_existing_owner_token_and_fixture_guards() {

@@ -33,13 +33,14 @@ EXPECTED = {
         "result": "noncloneable_actor_endpoint_and_non_send_non_sync_callback_owner",
         "refusals": {"other_reply_url": "Internal_and_pair_retirement", "other_owner_url": "PolicyDenied_before_dispatch", "invalid_owner_token_or_fixture": "PolicyDenied_before_dispatch"}},
     "fixed_document_url": DOCUMENT,
+    "empty_document_url": "about:blank",
     "selection": {"caller_url_parameter": False, "caller_capability_parameter": False,
         "existing_engine_and_callback_defaults": "D3Local_about_blank_or_loopback_http",
-        "closed_servo_profile": "ClosedImmutableReadOnly_exact_fixed_document",
+        "closed_servo_profile": "ClosedImmutableReadOnly_exact_fixed_or_blank_document",
         "propagated_to": ["EngineThreadRuntime", "CallbackEngineOwner", "EngineCompletion"],
         "checked_at": ["actor_preflight", "actor_call", "callback_completion", "callback_owner_poll"]},
     "native_url_source": "actual_owned_WebView_url_not_replaced_by_constant_or_about_blank",
-    "qualification": {"synthetic_host_cases": 4, "native_original_cases": 4, "native_approved_cases": 2,
+    "qualification": {"synthetic_host_cases": 6, "native_original_cases": 4, "native_approved_cases": 2,
         "unchanged_native_seconds": 5, "unchanged_connection_seconds": 20},
     "non_claims": {"native_execution_passed": False, "installed_activation": False,
         "approved_principal_minted": False, "human_approval": False, "hardware_or_release": False},
@@ -98,8 +99,13 @@ def check(contract, dispatch, callback, servo, native):
     scope = base["types"].get("EngineUrlScope")
     if scope != {"kind": "enum", "body": ["D3Local", ",", "ClosedImmutableReadOnly", ","], "public": False}:
         raise ValueError("URL scope is not the closed private selection")
-    if function(base, "EngineUrlScope::allows") != tokens('match self { Self::D3Local => url == "about:blank" || crate::is_loopback_http(url), Self::ClosedImmutableReadOnly => url == CLOSED_IMMUTABLE_DOCUMENT_URL, }'):
+    if function(base, "EngineUrlScope::allows") != tokens('match self { Self::D3Local => url == "about:blank" || crate::is_loopback_http(url), Self::ClosedImmutableReadOnly => { url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank" } }'):
         raise ValueError("constructor URL selection differs")
+    # tokens() deliberately discards literals; bind the new blank value as well.
+    closed_marker = 'Self::ClosedImmutableReadOnly => {\n                url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank"\n            }'
+    if dispatch.count(closed_marker) != 1:
+        raise ValueError("closed fixed/blank document literal predicate differs")
+    tokens(dispatch[:dispatch.index(closed_marker)])
     marker = 'Self::D3Local => url == "about:blank" || crate::is_loopback_http(url),'
     if dispatch.count(marker) != 1:
         raise ValueError("original D3 blank/local predicate differs")

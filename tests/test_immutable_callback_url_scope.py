@@ -27,7 +27,7 @@ class ImmutableCallbackUrlScopeTests(unittest.TestCase):
     def test_public_constructor_cannot_take_url_or_capability_argument(self):
         self.denied("callback",[("pub fn closed_immutable_callback_engine_pair<R: CallbackPageRuntime>(","pub fn caller_url_callback_engine_pair<R: CallbackPageRuntime>("),("    runtime: R,\n    waker: Arc<dyn EngineEventLoopWaker>,\n) -> (EngineThreadRuntime, CallbackEngineOwner<R>) {\n    callback_pair(runtime, waker, EngineUrlScope::ClosedImmutableReadOnly)","    runtime: R,\n    caller_url: String,\n    waker: Arc<dyn EngineEventLoopWaker>,\n) -> (EngineThreadRuntime, CallbackEngineOwner<R>) {\n    callback_pair(runtime, waker, EngineUrlScope::ClosedImmutableReadOnly)")])
     def test_private_closed_scope_and_existing_defaults_cannot_widen(self):
-        self.denied("dispatch",[("enum EngineUrlScope {","pub enum EngineUrlScope {"),("ClosedImmutableReadOnly,\n}","ClosedImmutableReadOnly,\n    CallerSelected,\n}"),("Self::ClosedImmutableReadOnly => url == CLOSED_IMMUTABLE_DOCUMENT_URL","Self::ClosedImmutableReadOnly => crate::is_loopback_http(url)"),("url_scope: EngineUrlScope::D3Local","url_scope: EngineUrlScope::ClosedImmutableReadOnly")])
+        self.denied("dispatch",[("enum EngineUrlScope {","pub enum EngineUrlScope {"),("ClosedImmutableReadOnly,\n}","ClosedImmutableReadOnly,\n    CallerSelected,\n}"),("url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == \"about:blank\"","crate::is_loopback_http(url)"),("url_scope: EngineUrlScope::D3Local","url_scope: EngineUrlScope::ClosedImmutableReadOnly")])
         self.denied("callback",[("callback_pair(runtime, waker, EngineUrlScope::D3Local)","callback_pair(runtime, waker, EngineUrlScope::ClosedImmutableReadOnly)"),("callback_pair(runtime, waker, EngineUrlScope::ClosedImmutableReadOnly)","callback_pair(runtime, waker, EngineUrlScope::D3Local)")])
     def test_callback_completion_poll_and_constructor_scope_cannot_detach(self):
         self.denied("callback",[("bound_reply(reply, self.url_scope)","bound_reply(reply, EngineUrlScope::D3Local)"),("url_scope: self.url_scope","url_scope: EngineUrlScope::D3Local"),("            url_scope,","            url_scope: EngineUrlScope::D3Local,")])
@@ -95,4 +95,30 @@ class ImmutableCallbackActualSelectorTests(unittest.TestCase):
                 changed = dict(original)
                 changed[group] = original[group].replace(before, after, 1)
                 with self.assertRaises(ValueError): v.check(**changed)
+class ImmutableCallbackBlankCompatibilityTests(unittest.TestCase):
+    def test_closed_blank_literal_cannot_be_replaced_or_faked_in_a_comment(self):
+        original = ImmutableCallbackUrlScopeTests().inputs()
+        predicate = 'url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank"'
+        marker = 'Self::ClosedImmutableReadOnly => {\n                ' + predicate + '\n            }'
+        self.assertEqual(original["dispatch"].count(marker), 1)
+        for other in ["http://127.0.0.1:8000/", "data:text/html,arbitrary", "about:blank#fragment"]:
+            changed = dict(original)
+            changed["dispatch"] = original["dispatch"].replace(predicate, predicate.replace('"about:blank"', '"' + other + '"'), 1)
+            with self.subTest(other=other):
+                with self.assertRaises(ValueError): v.check(**changed)
+                changed["dispatch"] += '\n/*\n' + marker + '\n*/\n'
+                with self.assertRaises(ValueError): v.check(**changed)
+    def test_closed_empty_document_contract_and_exact_equality_cannot_widen(self):
+        original = ImmutableCallbackUrlScopeTests().inputs()
+        for value in ["about:blank#fragment", "http://127.0.0.1:8000/", None, True]:
+            changed = dict(original)
+            changed["contract"] = copy.deepcopy(original["contract"])
+            changed["contract"]["empty_document_url"] = value
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError): v.check(**changed)
+        for before, after in [('url == "about:blank"\n            }', 'url.starts_with("about:blank")\n            }'), ('url == CLOSED_IMMUTABLE_DOCUMENT_URL ||', 'url.starts_with(CLOSED_IMMUTABLE_DOCUMENT_URL) ||')]:
+            changed = dict(original)
+            self.assertIn(before, original["dispatch"])
+            changed["dispatch"] = original["dispatch"].replace(before, after, 1)
+            with self.assertRaises(ValueError): v.check(**changed)
 if __name__=='__main__':unittest.main()
