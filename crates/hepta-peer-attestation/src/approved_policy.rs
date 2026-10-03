@@ -730,12 +730,12 @@ impl ApprovedAgentReceivedStream {
     }
 }
 
+pub(crate) use service_policy::ServiceSessionState;
 pub use service_policy::{
     ApprovedServiceControlReceiver, ApprovedServiceReceivedRequest, ApprovedServiceRequestBinding,
     ApprovedServiceRequestVerifier, ApprovedServiceRequests, ApprovedServiceRetainedReporter,
     ApprovedServiceSessionVerifier,
 };
-pub(crate) use service_policy::ServiceSessionState;
 
 #[cfg(test)]
 mod tests {

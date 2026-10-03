@@ -53,7 +53,7 @@
     "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs": "13a4140e8d737ff380ade7a512974e87bc3e2eccbf82c7b3af805d40589e0dda",
     "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs": "d3998c7b14c641f44b33da797fbbb0fde9f9adb5293125cd7982693692be814c",
     "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs": "e1ab614162f5b940667476a0bae3ed4b04d8af18a1a3d4e59e34a11f17f47405",
-    "crates/hepta-agent-transport/src/root_control_path/service_control.rs": "5df06aa83ffa80a6b08227f4aa24568992b2f97fa987ea3bf36a1f91b1173845"
+    "crates/hepta-agent-transport/src/root_control_path/service_control.rs": "b43aac42b1a52001d7069fd04ed0a4ea6b681714e149e8a5bbe9bae6c74aa88a"
   },
   "original_source_inverse": {
     "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs": {
@@ -76,10 +76,10 @@
       "parent_bytes": 19753,
       "parent_sha256": "ace7e68730c50bf007863e39a83545892ecd392fb8f323d11e905da03b08168a",
       "offset": 15444,
-      "block": "\nmod request_bridge;\npub use request_bridge::{\n    ApprovedServiceControlReceiver, ApprovedServiceReceivedRequest, ApprovedServiceRequestBinding,\n    ApprovedServiceRequestVerifier, ApprovedServiceRequests, ApprovedServiceRetainedReporter,\n    ApprovedServiceSessionVerifier,\n};\npub(crate) use request_bridge::ServiceSessionState;\n",
+      "block": "\nmod request_bridge;\npub(crate) use request_bridge::ServiceSessionState;\npub use request_bridge::{\n    ApprovedServiceControlReceiver, ApprovedServiceReceivedRequest, ApprovedServiceRequestBinding,\n    ApprovedServiceRequestVerifier, ApprovedServiceRequests, ApprovedServiceRetainedReporter,\n    ApprovedServiceSessionVerifier,\n};\n",
       "anchor": "\n#[cfg(test)]\nmod tests {\n",
       "complete_bytes": 20084,
-      "complete_sha256": "1ee8a7a128297b5f97cc58a72360531b566397ae8ee0fbf235cb715b99b46aa8",
+      "complete_sha256": "4eaa341de7bc90935b993fe0fe5df6a04d282d637e8fce2da52498eb4e4fe033",
       "parent_source": {
         "head": "db9cb5399a16f794407be2c3561255e8d69fa537",
         "path": "crates/hepta-peer-attestation/src/approved_policy/service_policy.rs",
@@ -92,10 +92,10 @@
       "parent_bytes": 29207,
       "parent_sha256": "706254153615871c6a88d0b68bd36d1eb3288f3b23d7fb7688494142c98f953d",
       "offset": 25322,
-      "block": "\npub use service_policy::{\n    ApprovedServiceControlReceiver, ApprovedServiceReceivedRequest, ApprovedServiceRequestBinding,\n    ApprovedServiceRequestVerifier, ApprovedServiceRequests, ApprovedServiceRetainedReporter,\n    ApprovedServiceSessionVerifier,\n};\npub(crate) use service_policy::ServiceSessionState;\n",
+      "block": "\npub(crate) use service_policy::ServiceSessionState;\npub use service_policy::{\n    ApprovedServiceControlReceiver, ApprovedServiceReceivedRequest, ApprovedServiceRequestBinding,\n    ApprovedServiceRequestVerifier, ApprovedServiceRequests, ApprovedServiceRetainedReporter,\n    ApprovedServiceSessionVerifier,\n};\n",
       "anchor": "\n#[cfg(test)]\nmod tests {\n",
       "complete_bytes": 29518,
-      "complete_sha256": "fedb4a6858dab91e8cd398a9bf21f9b44d56284276c07b0f6a215229b3e1b32f",
+      "complete_sha256": "61f191a620ad65b111b4da467d6ca13d96d6ef98425a9ba095d60054fc32c808",
       "parent_source": {
         "head": "db9cb5399a16f794407be2c3561255e8d69fa537",
         "path": "crates/hepta-peer-attestation/src/approved_policy.rs",
@@ -761,7 +761,7 @@
     "apps/hepta-browserd/tests/control_readiness_kernel.rs": "10d846a7e356056d80895ff01bc82c08504e76fdf422c80ddbb96d27093c2453"
   },
   "kernel_source_sha256": {
-    "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs": "0d7e83545f1ed0c6309171bcb39ba940a03ee8b846d399dea2adb35263db83ae"
+    "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs": "450f7d5698abf2a0200eb432362dc82bc119d64cd1824ffeb97f1358e971527e"
   },
   "early_root_transfer": {
     "creation_identity": "original RootPathControlConnection admission capture; no channel-time recapture authority",

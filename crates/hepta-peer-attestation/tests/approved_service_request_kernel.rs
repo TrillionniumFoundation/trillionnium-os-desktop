@@ -4,8 +4,8 @@
 //! transport mechanism layer; they do not claim safe arbitrary concurrent dup2.
 use hepta_agent_transport::{
     AcceptedStreamCustody, HandoffReceiver, HandoffSender, PeerPolicy, RemoteRetirementReport,
-    RemoteTerminalState, RootControlPathCustody, RootControlPathPolicy, RootControlPathVerifier, RootOwnedControlListener,
-    RootPathControlConnection,
+    RemoteTerminalState, RootControlPathCustody, RootControlPathPolicy, RootControlPathVerifier,
+    RootOwnedControlListener, RootPathControlConnection,
 };
 use hepta_peer_attestation::{
     ApprovedPolicyError, ApprovedServicePolicyDocument, ApprovedServiceReceivedRequest,
@@ -26,7 +26,10 @@ use std::{
     },
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
-    sync::{Arc, atomic::{AtomicBool, Ordering}},
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
     time::{Duration, Instant},
 };
 
@@ -270,13 +273,22 @@ impl Trio {
         let first = Instant::now();
         let mut control = ChildOwner::spawn(f, "early", WAIT);
         control.expect("PATH_CURRENT");
-        let connection = listener.accept_before(kernel(control.child.id()), first + WAIT).unwrap();
+        let connection = listener
+            .accept_before(kernel(control.child.id()), first + WAIT)
+            .unwrap();
         let mut agent = ChildOwner::spawn(f, "agent", WAIT);
-        agent.expect("CONNECTED"); control.expect("EARLY_READY");
+        agent.expect("CONNECTED");
+        control.expect("EARLY_READY");
         assert_ne!(control.child.id(), agent.child.id());
         assert_ne!(control.child.id(), std::process::id());
         assert_ne!(agent.child.id(), std::process::id());
-        Self { control, agent, listener, connection: Some(connection), first }
+        Self {
+            control,
+            agent,
+            listener,
+            connection: Some(connection),
+            first,
+        }
     }
     fn new(f: &Fixture, budget: Duration) -> Self {
         assert!(!budget.is_zero() && budget <= WAIT);
@@ -349,7 +361,10 @@ struct PostFailureDropProbe {
 }
 impl Drop for PostFailureDropProbe {
     fn drop(&mut self) {
-        assert!(self.verifier.verify_current().is_err(), "post-failure T drop sees retired original scope");
+        assert!(
+            self.verifier.verify_current().is_err(),
+            "post-failure T drop sees retired original scope"
+        );
         self.dropped.store(true, Ordering::SeqCst);
     }
 }
@@ -748,66 +763,109 @@ fn root_corpus(policy: &Path) {
             drop(custody);
         }
     );
-    case!("early-actual-root-fd-replacement-refuses-while-old-clone-still-current", f, {
-        let requests = f.requests();
-        let mut trio = Trio::early(&f);
-        let connection = trio.connection.take().unwrap();
-        // Single-thread accept/admit creates the socket before its held clone.
-        // Requiring the old deadline after replacement to remain current proves
-        // this stimulus did not replace only the retained scope clone.
-        let target = seqpacket_to(trio.control.child.id());
-        let replacement = trio.replace_control(target);
-        connection.deadline().unwrap();
-        let mut callback_ran = false;
-        let result = connection.consume_service_control_before(|_, _, _| { callback_ran = true; });
-        assert!(result.is_err()); assert!(!callback_ran);
-        requests.ensure_current().unwrap(); drop(replacement); trio.finish();
-    });
-    case!("post-transfer-mismatch-revokes-escaped-original-custody", f, {
-        let requests = f.requests();
-        let mut trio = Trio::early(&f);
-        let connection = trio.connection.take().unwrap();
-        let mut escaped = None;
-        let observed_drop = Arc::new(AtomicBool::new(false));
-        let result = connection.consume_service_control_before(|fd, deadline, custody| {
-            let verifier = custody.verifier().unwrap();
-            let destructor_verifier = custody.verifier().unwrap();
-            let replacement = trio.replace_control(fd.as_raw_fd());
-            escaped = Some((fd, deadline, custody, verifier, replacement));
-            PostFailureDropProbe { verifier: destructor_verifier, dropped: Arc::clone(&observed_drop) }
-        });
-        assert!(result.is_err()); assert!(observed_drop.load(Ordering::SeqCst)); assert!(escaped.as_ref().unwrap().3.verify_current().is_err());
-        // No shared pathname or persistent Source is retired by this FD fault.
-        trio.control.command(b'r'); trio.control.expect("SECOND_PATH");
-        let next = trio.listener.accept_before(kernel(trio.control.child.id()), Instant::now() + WAIT).unwrap();
-        next.deadline().unwrap(); requests.ensure_current().unwrap();
-        drop(next); drop(escaped); trio.finish();
-    });
+    case!(
+        "early-actual-root-fd-replacement-refuses-while-old-clone-still-current",
+        f,
+        {
+            let requests = f.requests();
+            let mut trio = Trio::early(&f);
+            let connection = trio.connection.take().unwrap();
+            // Single-thread accept/admit creates the socket before its held clone.
+            // Requiring the old deadline after replacement to remain current proves
+            // this stimulus did not replace only the retained scope clone.
+            let target = seqpacket_to(trio.control.child.id());
+            let replacement = trio.replace_control(target);
+            connection.deadline().unwrap();
+            let mut callback_ran = false;
+            let result = connection.consume_service_control_before(|_, _, _| {
+                callback_ran = true;
+            });
+            assert!(result.is_err());
+            assert!(!callback_ran);
+            requests.ensure_current().unwrap();
+            drop(replacement);
+            trio.finish();
+        }
+    );
+    case!(
+        "post-transfer-mismatch-revokes-escaped-original-custody",
+        f,
+        {
+            let requests = f.requests();
+            let mut trio = Trio::early(&f);
+            let connection = trio.connection.take().unwrap();
+            let mut escaped = None;
+            let observed_drop = Arc::new(AtomicBool::new(false));
+            let result = connection.consume_service_control_before(|fd, deadline, custody| {
+                let verifier = custody.verifier().unwrap();
+                let destructor_verifier = custody.verifier().unwrap();
+                let replacement = trio.replace_control(fd.as_raw_fd());
+                escaped = Some((fd, deadline, custody, verifier, replacement));
+                PostFailureDropProbe {
+                    verifier: destructor_verifier,
+                    dropped: Arc::clone(&observed_drop),
+                }
+            });
+            assert!(result.is_err());
+            assert!(observed_drop.load(Ordering::SeqCst));
+            assert!(escaped.as_ref().unwrap().3.verify_current().is_err());
+            // No shared pathname or persistent Source is retired by this FD fault.
+            trio.control.command(b'r');
+            trio.control.expect("SECOND_PATH");
+            let next = trio
+                .listener
+                .accept_before(kernel(trio.control.child.id()), Instant::now() + WAIT)
+                .unwrap();
+            next.deadline().unwrap();
+            requests.ensure_current().unwrap();
+            drop(next);
+            drop(escaped);
+            trio.finish();
+        }
+    );
     case!("consumer-unwind-revokes-even-escaped-original-proof", f, {
         let requests = f.requests();
-        let mut trio = Trio::early(&f); let connection = trio.connection.take().unwrap();
+        let mut trio = Trio::early(&f);
+        let connection = trio.connection.take().unwrap();
         let mut escaped = None;
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _: Result<(), _> = connection.consume_service_control_before(|fd, deadline, custody| {
-                let verifier = custody.verifier().unwrap();
-                escaped = Some((fd, deadline, custody, verifier));
-                panic!("specific consumer-unwind stimulus");
-            });
+            let _: Result<(), _> =
+                connection.consume_service_control_before(|fd, deadline, custody| {
+                    let verifier = custody.verifier().unwrap();
+                    escaped = Some((fd, deadline, custody, verifier));
+                    panic!("specific consumer-unwind stimulus");
+                });
         }));
-        assert!(result.is_err()); assert!(escaped.as_ref().unwrap().3.verify_current().is_err());
-        requests.ensure_current().unwrap(); drop(escaped); trio.finish();
+        assert!(result.is_err());
+        assert!(escaped.as_ref().unwrap().3.verify_current().is_err());
+        requests.ensure_current().unwrap();
+        drop(escaped);
+        trio.finish();
     });
-    case!("completed-original-fd-transfer-keeps-same-scope-and-instant", f, {
-        let requests = f.requests();
-        let mut trio = Trio::early(&f); let connection = trio.connection.take().unwrap();
-        let original = connection.deadline().unwrap();
-        let (fd, deadline, custody, verifier) = connection.consume_service_control_before(|fd, deadline, custody| {
-            let verifier = custody.verifier().unwrap(); (fd, deadline, custody, verifier)
-        }).unwrap();
-        assert_eq!(deadline, original); verifier.verify_current().unwrap();
-        requests.ensure_current().unwrap(); drop(fd); drop(custody);
-        assert!(verifier.verify_current().is_err()); drop(verifier); trio.finish();
-    });
+    case!(
+        "completed-original-fd-transfer-keeps-same-scope-and-instant",
+        f,
+        {
+            let requests = f.requests();
+            let mut trio = Trio::early(&f);
+            let connection = trio.connection.take().unwrap();
+            let original = connection.deadline().unwrap();
+            let (fd, deadline, custody, verifier) = connection
+                .consume_service_control_before(|fd, deadline, custody| {
+                    let verifier = custody.verifier().unwrap();
+                    (fd, deadline, custody, verifier)
+                })
+                .unwrap();
+            assert_eq!(deadline, original);
+            verifier.verify_current().unwrap();
+            requests.ensure_current().unwrap();
+            drop(fd);
+            drop(custody);
+            assert!(verifier.verify_current().is_err());
+            drop(verifier);
+            trio.finish();
+        }
+    );
     assert_eq!(groups, GROUPS);
     assert_eq!(metadata(policy), original);
     assert_eq!(fs::read(policy).unwrap(), golden);
@@ -923,21 +981,33 @@ fn early_control(cp: &Path, ap: &Path) {
     let path = RootControlPathPolicy::new(cp, 0, 0o700, 0, 0o600).unwrap();
     let original = Instant::now() + WAIT;
     let first = RootPathControlConnection::connect_before(&path, kernel(parent), original).unwrap();
-    line("PATH_CURRENT"); poll(listener.as_raw_fd(), original);
+    line("PATH_CURRENT");
+    poll(listener.as_raw_fd(), original);
     let (stream, _) = listener.accept().unwrap();
-    let accepted = AcceptedStreamCustody::capture_before(stream, ap, Instant::now() + WAIT).unwrap();
-    line("EARLY_READY"); let mut extras = Vec::new();
+    let accepted =
+        AcceptedStreamCustody::capture_before(stream, ap, Instant::now() + WAIT).unwrap();
+    line("EARLY_READY");
+    let mut extras = Vec::new();
     loop {
         match input() {
             b'x' => break,
             b'r' => {
-                extras.push(RootPathControlConnection::connect_before(&path, kernel(parent), Instant::now() + WAIT).unwrap());
+                extras.push(
+                    RootPathControlConnection::connect_before(
+                        &path,
+                        kernel(parent),
+                        Instant::now() + WAIT,
+                    )
+                    .unwrap(),
+                );
                 line("SECOND_PATH");
             }
             other => panic!("unexpected early owned command {other}"),
         }
     }
-    drop(extras); drop(accepted); drop(first);
+    drop(extras);
+    drop(accepted);
+    drop(first);
 }
 fn prepare() -> i32 {
     assert_eq!(unsafe { libc::geteuid() }, 0);

@@ -25,7 +25,8 @@ fn verify_moved(scope: &ConnectionScope, fd: RawFd) -> Result<(), RootControlPat
     // Unlike the old clone-only scope check, these reads address the actual FD
     // moved into the consumer. The expected identity was captured at admission.
     let flags = unsafe { libc::fcntl(fd, libc::F_GETFD) };
-    if flags < 0 || flags & libc::FD_CLOEXEC == 0
+    if flags < 0
+        || flags & libc::FD_CLOEXEC == 0
         || option::<libc::c_int>(fd, libc::SO_DOMAIN)? != libc::AF_UNIX
         || option::<libc::c_int>(fd, libc::SO_TYPE)? != libc::SOCK_SEQPACKET
         || option::<libc::c_int>(fd, libc::SO_ACCEPTCONN)? != 0
@@ -36,7 +37,14 @@ fn verify_moved(scope: &ConnectionScope, fd: RawFd) -> Result<(), RootControlPat
         return Err(RootControlPathError::PeerRefused);
     }
     let cred = option::<libc::ucred>(fd, libc::SO_PEERCRED)?;
-    if cred.pid <= 0 || scope.identity != (PeerIdentity { pid: cred.pid as u32, uid: cred.uid, gid: cred.gid }) {
+    if cred.pid <= 0
+        || scope.identity
+            != (PeerIdentity {
+                pid: cred.pid as u32,
+                uid: cred.uid,
+                gid: cred.gid,
+            })
+    {
         return Err(RootControlPathError::PeerRefused);
     }
     scope.check()?;
@@ -54,11 +62,24 @@ impl RootPathControlConnection {
         consumer: impl FnOnce(OwnedFd, Instant, RootControlPathCustody) -> T,
     ) -> Result<T, RootControlPathError> {
         creator(self.owner_pid)?;
-        let scope = Arc::clone(&self.custody.as_ref().ok_or(RootControlPathError::Retired)?.scope);
-        let mut guard = OriginalTransferGuard { scope, completed: false };
+        let scope = Arc::clone(
+            &self
+                .custody
+                .as_ref()
+                .ok_or(RootControlPathError::Retired)?
+                .scope,
+        );
+        let mut guard = OriginalTransferGuard {
+            scope,
+            completed: false,
+        };
         remaining(self.owner_pid, self.deadline)?;
         self.deadline()?;
-        let fd = self.socket.as_ref().ok_or(RootControlPathError::Retired)?.as_raw_fd();
+        let fd = self
+            .socket
+            .as_ref()
+            .ok_or(RootControlPathError::Retired)?
+            .as_raw_fd();
         verify_moved(&guard.scope, fd)?;
         // Delegate the complete unchanged legacy movement once. No recapture,
         // duplicate FD, new future Instant or replacement custody is created.

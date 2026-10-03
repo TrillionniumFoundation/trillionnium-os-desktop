@@ -76,3 +76,37 @@ insertions, old raw methods and all old test bodies remain byte-exact. A
 manual source import review is bounded inspection, not a compiler result.
 This successor has not been formatted, compiled, run with the real kernel or
 used by native/installed qualification; its nineteen groups remain source only.
+
+## Actual formatter failure and finite source successor
+
+On frozen `e0fb9a554f2c3f53dfcd445fa5b9b84cb8d17094`, the released
+Rust 1.93.0 `cargo fmt --all --check` actually exited 1 after 0.817604 seconds.
+Its complete stdout contains seventeen format hunks in four Rust source files.
+All 667 physical source identities, Git blobs, modes and bytes remained exact
+before and after the check. The fixed execution sequence stopped there: the
+peer library check and new kernel no-run compilation were not launched, and
+no new kernel ELF or runtime result was produced. Those original failure facts
+and source bytes remain independently retained.
+
+This separate source successor applies only the emitted four-file formatting
+hunks: whitespace and optional trailing commas, plus the fixed ordering of the
+two newly inserted `ServiceSessionState` reexports relative to public reexports.
+The complete old parent bodies still restore exactly; eighteen API semantics,
+seven opaque shapes, six restricted helper signatures, original effect order
+and all old budgets remain unchanged. The contract and mandatory checker bind
+the actual formatted whole child/kernel and insertion bytes. Its repeated
+source checks are not a new formatter, compiler, native or kernel qualification.
+New heavy checks and all nineteen kernel groups still require a separate
+released window bound to the new final source tuple.
+
+The first formatted-source Python run actually completed 107 cases with
+106 passes and one failure. The new P1 peer-identity operator mutation had a
+single-line literal that no longer matched rustfmt's line break, so its
+`assertIn` failed before either inventory rejection was exercised. This
+separate approved one-line test adapter matches the actual whitespace and
+still changes only `!=` to `==`; the original `mutate_order`, `assertIn`,
+independent `inventory_and_orders` refusal and full gate refusal remain intact.
+The original seventy-one cases and the other thirty-five new cases retain
+their entire bytes. The initial failed run is retained, and a corrected run
+must actually enter the operator mutation before static acceptance. This
+is neither a compiler result nor detection merely through a whole-file hash.

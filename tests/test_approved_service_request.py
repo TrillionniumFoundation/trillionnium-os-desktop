@@ -232,7 +232,7 @@ class ApprovedServiceRequestTests(unittest.TestCase):
         self.mutate_order(TRANSFER, "remaining(scope.owner_pid, scope.deadline)?;", "// omitted")
 
     def test_root_transfer_requires_actual_peer_and_whole_held_scope(self):
-        self.mutate_order(TRANSFER, "scope.identity !=", "scope.identity ==")
+        self.mutate_order(TRANSFER, "scope.identity\n            !=", "scope.identity\n            ==")
         values = self.texts(); values[TRANSFER] = values[TRANSFER].replace("scope.check()?;", "", 1)
         with self.assertRaises(ValueError): gate.inventory_and_orders(values)
 
