@@ -12,7 +12,9 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = "1e7d4cc41eee8c7e6e72dde17ec6c4d8da40d762"
@@ -60,6 +62,16 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
         cls.carrier = Path(cls.carrier_temp.name) / "carrier.git"
         cls.environment = {**os.environ, "GIT_CONFIG_GLOBAL": "/dev/null",
                            "GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0",
+                           # Every private carrier/checkout/origin Git process
+                           # must finish writing before its tempfile is removed.
+                           # Process-local settings also reach Bash-body fetches
+                           # and their local Git server children; no user or
+                           # production-repository Git configuration is changed.
+                           "GIT_CONFIG_PARAMETERS": "", "GIT_CONFIG_COUNT": "4",
+                           "GIT_CONFIG_KEY_0": "gc.auto", "GIT_CONFIG_VALUE_0": "0",
+                           "GIT_CONFIG_KEY_1": "gc.autoDetach", "GIT_CONFIG_VALUE_1": "false",
+                           "GIT_CONFIG_KEY_2": "maintenance.auto", "GIT_CONFIG_VALUE_2": "false",
+                           "GIT_CONFIG_KEY_3": "maintenance.autoDetach", "GIT_CONFIG_VALUE_3": "false",
                            "PYTHONDONTWRITEBYTECODE": "1"}
         def native(*args, cwd=ROOT):
             return subprocess.run(["git", *args], cwd=cwd, env=cls.environment,
@@ -279,6 +291,98 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
                                  text=True, capture_output=True, timeout=10)
             self.assertEqual(old.returncode, 0)
             self.assertEqual(old.stdout, self.head + "\n")
+
+    def seed_native_loose_objects(self):
+        # Real Git 2.43 estimates its loose-object count from fanout 17. Keep
+        # this actual native-Git input finite and sufficient for gc.auto=1.
+        seeds = []
+        for number in range(100000):
+            raw = ("owned cleanup primitive " + str(number) + "\n").encode()
+            sha = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+            if not sha.startswith("17"): continue
+            result = subprocess.run(["git", "hash-object", "-w", "--stdin"],
+                                    cwd=self.repository, env=self.environment,
+                                    input=raw, capture_output=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout.strip().decode(), sha)
+            seeds.append(sha)
+            if len(seeds) == 2: break
+        self.assertEqual(len(seeds), 2)
+        return seeds
+
+    def test_private_environment_suppresses_native_auto_maintenance_and_cleans_normally(self):
+        for key in ("gc.auto", "gc.autoDetach", "maintenance.auto", "maintenance.autoDetach"):
+            self.git("config", "--local", key, "1" if key == "gc.auto" else "true")
+            self.assertEqual(self.git("config", "--get", key).strip(),
+                             "0" if key == "gc.auto" else "false")
+        self.seed_native_loose_objects()
+        trace = self.output / "disabled-auto-trace2.jsonl"
+        environment = {**self.environment, "GIT_TRACE2_EVENT": str(trace)}
+        for command in (["git", "commit", "--quiet", "--allow-empty", "-m", "private lifecycle"],
+                        ["git", "gc", "--auto", "--quiet"]):
+            result = subprocess.run(command, cwd=self.repository, env=environment,
+                                    capture_output=True, text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+        events = [json.loads(line) for line in trace.read_text().splitlines()]
+        self.assertTrue(any(row.get("event") == "start" for row in events))
+        for row in events:
+            if row.get("event") == "child_start":
+                self.assertNotIn("maintenance", row.get("argv", []))
+                self.assertNotIn("gc", row.get("argv", []))
+        self.assertFalse((self.repository / ".git/gc.pid").exists())
+        self.assertFalse((self.repository / ".git/gc.log.lock").exists())
+        self.temp.cleanup()
+        self.assertFalse(self.directory.exists())
+
+    def test_actual_native_gc_during_cleanup_remains_an_error(self):
+        # This negative scheduling variant enables GC only for this one native
+        # command. Capture .git entries, let actual Git add packed-refs/GC state,
+        # then continue the original tempfile cleanup. No error suppression or
+        # cleanup retry is installed in the fixture.
+        self.seed_native_loose_objects()
+        gitdir = self.repository / ".git"
+        self.assertFalse((gitdir / "packed-refs").exists())
+        original_scandir = os.scandir
+        observed = {}
+        environment = {**self.environment, "GIT_CONFIG_VALUE_0": "1",
+                       "GIT_CONFIG_VALUE_1": "true", "GIT_CONFIG_VALUE_2": "true",
+                       "GIT_CONFIG_VALUE_3": "true"}
+        class CapturedEntries:
+            def __init__(self, entries): self.entries = iter(entries)
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def __iter__(self): return self
+            def __next__(self): return next(self.entries)
+        def scanned(path):
+            name = Path(os.readlink("/proc/self/fd/" + str(path))) if type(path) is int else Path(path)
+            if name != gitdir or observed: return original_scandir(path)
+            with original_scandir(path) as entries: snapshot = list(entries)
+            observed["initial_names"] = [entry.name for entry in snapshot]
+            result = subprocess.run(["git", "gc", "--auto", "--quiet"],
+                                    cwd=self.repository, env=environment,
+                                    capture_output=True, text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((gitdir / "packed-refs").exists())
+            pidfile = gitdir / "gc.pid"
+            if pidfile.exists(): observed["pid"] = int(pidfile.read_text().split()[0])
+            return CapturedEntries(snapshot)
+        try:
+            with patch.object(os, "scandir", scanned):
+                with self.assertRaises(OSError) as raised: self.temp.cleanup()
+            self.assertEqual(raised.exception.errno, 39)
+            self.assertEqual(raised.exception.filename, ".git")
+            self.assertNotIn("packed-refs", observed["initial_names"])
+        finally:
+            # Observe the owned negative-variant Git worker before the existing
+            # addCleanup runs once. The unchanged positive fixture has no worker.
+            pid = observed.get("pid"); deadline = time.monotonic() + 30
+            while pid:
+                try: state = (Path("/proc") / str(pid) / "stat").read_text().split()[2]
+                except FileNotFoundError: break
+                if state == "Z": break
+                if time.monotonic() >= deadline:
+                    raise AssertionError("native negative-variant GC exceeded its observation bound")
+                time.sleep(0.01)
 
 
 if __name__ == "__main__":
