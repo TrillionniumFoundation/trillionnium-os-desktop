@@ -476,10 +476,17 @@ jobs:
           test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE_SHA"
           test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD_SHA"
           git check-ref-format --branch "$EXPECTED_BASE_REF"
+          git check-ref-format "refs/heads/$EXPECTED_BASE_REF"
           [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
           official_repository=https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git
-          live_base=$(git ls-remote --exit-code "$official_repository" "refs/heads/$EXPECTED_BASE_REF" | awk 'NR == 1 {print $1}')
-          live_head=$(git ls-remote --exit-code "$official_repository" "refs/pull/$PR_NUMBER/head" | awk 'NR == 1 {print $1}')
+          resolve_ref() {
+            git ls-remote --exit-code "$official_repository" "$1" | awk -v ref="$1" '
+              $2 == ref { value = $1; matches++ }
+              END { if (matches != 1) exit 1; print value }
+            '
+          }
+          live_base=$(resolve_ref "refs/heads/$EXPECTED_BASE_REF")
+          live_head=$(resolve_ref "refs/pull/$PR_NUMBER/head")
           test "$live_base" = "$EXPECTED_BASE_SHA"
           test "$live_head" = "$EXPECTED_HEAD_SHA"
           git fetch --no-tags https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git "$S06_HEAD"

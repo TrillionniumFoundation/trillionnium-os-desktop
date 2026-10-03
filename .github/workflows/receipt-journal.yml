@@ -154,11 +154,18 @@ jobs:
         run: |
           set -euo pipefail
           git check-ref-format --branch "$BASE_REF"
-          test "$PR_NUMBER" -gt 0
+          git check-ref-format "refs/heads/$BASE_REF"
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          resolve_ref() {
+            git ls-remote --exit-code origin "$1" | awk -v ref="$1" '
+              $2 == ref { value = $1; matches++ }
+              END { if (matches != 1) exit 1; print value }
+            '
+          }
           test "$(git rev-parse HEAD)" = "${{ github.sha }}"
           test "$(git rev-list --parents -n 1 HEAD | awk '{print NF}')" -eq 3
-          live_base="$(git ls-remote --exit-code origin "refs/heads/$BASE_REF" | awk 'NR == 1 {print $1}')"
-          live_head="$(git ls-remote --exit-code origin "refs/pull/$PR_NUMBER/head" | awk 'NR == 1 {print $1}')"
+          live_base="$(resolve_ref "refs/heads/$BASE_REF")"
+          live_head="$(resolve_ref "refs/pull/$PR_NUMBER/head")"
           test -n "$live_base"
           test -n "$live_head"
           test "$live_head" = "$EVENT_HEAD"

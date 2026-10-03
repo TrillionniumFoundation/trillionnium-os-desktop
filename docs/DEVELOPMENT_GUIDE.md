@@ -205,3 +205,30 @@ corpus rather than skip it. These Git/CI source facts grant no product,
 principal, runtime, image, signing or release authority. Existing runtime
 commands, deadlines, source-test profiles and acceptance thresholds remain
 unchanged; fresh exact-object CI must run after a workflow change.
+
+### Exact advertised refs in the remaining source lanes
+
+The S06 and receipt-journal prospective bodies now resolve only one exact
+advertised `refs/heads/<base>` and `refs/pull/<positive canonical decimal>/head`.
+S07 applies the same field/count check to its unchanged official repository
+URL, followed by its original fixed carrier fetch, lineage CLI and source
+regressions. A suffix branch, missing canonical ref, changed live head, or
+multiple exact advertisements cannot substitute for the expected parent.
+Existing event SHA, ordered two-parent checks and the full later gates remain.
+
+Run `python3 -B -m unittest discover -s tests -p test_ci_exact_live_ref_fields.py -v`.
+The ordinary private Git fixtures execute all three original complete bodies
+before and after the repair. Class setup reads the fixed historical carrier
+once with a 30-second native Git fetch: it uses available local objects first,
+otherwise the unchanged official public URL. The commit, tree, single parent
+and complete tree connectivity must match; a cold bootstrap error or timeout
+fails the corpus without a skip. This source-test network dependency carries
+no product permission or renewed operation budget. S07 then uses only
+fixture-local `url.insteadOf` to map
+the literal official URL to a private origin containing the actual historical
+carrier objects; positive cases perform a real fetch and the original lineage
+CLI and seventeen source tests. Duplicate advertisements are separately checked
+as controlled parser stdin; they are not represented as a native Git wire test.
+No compiler, Servo, installed service or production principal is qualified by
+these source cases. All original workflow filters, other step objects, runtime
+commands, source profiles, deadlines and thresholds retain their exact scope.
