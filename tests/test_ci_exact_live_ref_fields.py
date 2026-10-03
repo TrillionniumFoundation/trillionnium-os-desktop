@@ -67,11 +67,12 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
                            # Process-local settings also reach Bash-body fetches
                            # and their local Git server children; no user or
                            # production-repository Git configuration is changed.
-                           "GIT_CONFIG_PARAMETERS": "", "GIT_CONFIG_COUNT": "4",
+                           "GIT_CONFIG_PARAMETERS": "", "GIT_CONFIG_COUNT": "5",
                            "GIT_CONFIG_KEY_0": "gc.auto", "GIT_CONFIG_VALUE_0": "0",
                            "GIT_CONFIG_KEY_1": "gc.autoDetach", "GIT_CONFIG_VALUE_1": "false",
                            "GIT_CONFIG_KEY_2": "maintenance.auto", "GIT_CONFIG_VALUE_2": "false",
                            "GIT_CONFIG_KEY_3": "maintenance.autoDetach", "GIT_CONFIG_VALUE_3": "false",
+                           "GIT_CONFIG_KEY_4": "receive.autogc", "GIT_CONFIG_VALUE_4": "false",
                            "PYTHONDONTWRITEBYTECODE": "1"}
         def native(*args, cwd=ROOT):
             return subprocess.run(["git", *args], cwd=cwd, env=cls.environment,
@@ -311,7 +312,7 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
         return seeds
 
     def test_private_environment_suppresses_native_auto_maintenance_and_cleans_normally(self):
-        for key in ("gc.auto", "gc.autoDetach", "maintenance.auto", "maintenance.autoDetach"):
+        for key in ("gc.auto", "gc.autoDetach", "maintenance.auto", "maintenance.autoDetach", "receive.autogc"):
             self.git("config", "--local", key, "1" if key == "gc.auto" else "true")
             self.assertEqual(self.git("config", "--get", key).strip(),
                              "0" if key == "gc.auto" else "false")
