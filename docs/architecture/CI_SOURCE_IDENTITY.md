@@ -93,6 +93,6 @@ CodeQL and qualification must still run on the new exact source object.
 
 The additive authenticated-update readback workflow uses the same preliminary
 closed identity guard in both exact-head and prospective-merge matrix lanes.
-Its original seven checkout/qualification step objects are recorded without
+Its original six checkout/qualification step objects are recorded without
 changing their bodies, budgets, actual OpenSSL corpus counts or claim ceiling.
 The closed workflow catalog includes this source workflow explicitly.
