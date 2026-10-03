@@ -104,7 +104,15 @@
     "crates/hepta-peer-attestation/src/lib.rs": {
       "bytes": 61121,
       "sha256": "91a879f50a94954a6679ee5e973eb70f0aa3c086743c83e9c2858091a8ff6210",
-      "tail": "\n#[cfg(target_os = \"linux\")]\npub use approved_policy::{\n    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,\n    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,\n};\n"
+      "tail": "\n#[cfg(target_os = \"linux\")]\npub use approved_policy::{\n    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,\n    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,\n};\n",
+      "insertion": {
+        "schema": "trillionnium.foundation-lib-insertion.v1",
+        "offset_bytes": 43913,
+        "anchor": "\n#[cfg(test)]\nmod tests {\n",
+        "block": "\n#[cfg(target_os = \"linux\")]\npub use approved_policy::{\n    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,\n    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,\n};\n",
+        "complete_bytes": 61351,
+        "complete_sha256": "eb30e7800ade6089bfe26b05bd5c0f0cb3d669b2fd378436bbd1e15465c868ce"
+      }
     },
     "crates/hepta-peer-attestation/src/approved_policy.rs": {
       "bytes": 28173,
@@ -113,7 +121,7 @@
     }
   },
   "whole_source_sha256": {
-    "crates/hepta-peer-attestation/src/approved_policy/service_policy.rs": "a8f710d4f0cab66e6a8753807d543de63ba67e45cdf598f3099f0cf254e7c659",
+    "crates/hepta-peer-attestation/src/approved_policy/service_policy.rs": "ace7e68730c50bf007863e39a83545892ecd392fb8f323d11e905da03b08168a",
     "crates/hepta-peer-attestation/src/approved_policy/service_policy/creator_context.rs": "31c3b36ecb47b700b08df7e374b6ceadddb44527acf1ae6d8c5efb83a090eb06"
   },
   "preserved_source_sha256": {
@@ -159,7 +167,7 @@
   },
   "composition_receiver": {
     "baseline_head": "99c4eb9ff6f11b5075487c7e9fc4b4f0ca794320",
-    "foundation_head": "67c092aed55b97ac68afd15b3d7aee0f6bdffdbb",
+    "foundation_head": "d3353229c3574f3125e479e3616e2f4881d259fc",
     "source_boundaries": {
       "crates/hepta-peer-attestation/src/approved_policy.rs": {
         "baseline": {

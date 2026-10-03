@@ -95,7 +95,8 @@ class ApprovedServiceOwnerFoundationTests(unittest.TestCase):
     def test_old_v1_prefix_tail_and_detached_module_all_refuse(self):
         for path, rule in gate.EXPECTED['legacy_inverse'].items():
             value = self.texts()[path]
-            old = value[:-len(rule['tail'])]
+            old = (gate.legacy_source(path, value) if 'insertion' in rule
+                   else value[:-len(rule['tail'])])
             self.assertEqual(gate.legacy_source(path, old), old)
             self.assertEqual(gate.legacy_source(path, value), old)
             for changed in [value + '\nmod unreviewed;\n', old.replace('pub ', 'pub(crate) ', 1),
@@ -145,6 +146,41 @@ class ApprovedServiceOwnerFoundationTests(unittest.TestCase):
         self.change(cargo, 'name = "approved_service_owner_kernel"',
                     'test = false\nname = "approved_service_owner_kernel"')
         self.change('Makefile', '\tpython3 tools/verify_approved_service_owner.py\n', '')
+
+
+class ApprovedServiceOwnerInsertionTests(unittest.TestCase):
+    def test_fixed_insertion_rejects_displacement_duplicate_and_changed_block(self):
+        path = 'crates/hepta-peer-attestation/src/lib.rs'
+        texts = gate.inputs(ROOT)
+        value = texts[path]
+        rule = gate.EXPECTED['legacy_inverse'][path]
+        insertion = rule['insertion']
+        original = gate.legacy_source(path, value)
+        offset = insertion['offset_bytes']
+        block = insertion['block']
+        mutations = {
+            'displaced_one_byte': original[:offset + 1] + block + original[offset + 1:],
+            'duplicate': value[:offset] + block + value[offset:],
+            'changed_block': value.replace(block, block.replace('pub use', 'pub(crate) use'), 1),
+            'old_test_changed': value.replace('fn status_ids_must_be_uniform()',
+                                              'fn status_ids_must_be_uniform_changed()', 1),
+            'wrong_anchor': value.replace(insertion['anchor'],
+                                          insertion['anchor'].replace('mod tests', 'mod altered_tests'), 1),
+            'old_eof_layout': original + block,
+        }
+        for name, changed in mutations.items():
+            with self.subTest(name=name):
+                with self.assertRaises(ValueError): gate.legacy_source(path, changed)
+                with self.assertRaises(ValueError):
+                    gate.check(gate.EXPECTED, dict(texts, **{path: changed}))
+
+    def test_insertion_metadata_cannot_rebind_offset_anchor_or_complete_hash(self):
+        for key, value in [('offset_bytes', 0), ('anchor', '\nmod altered_tests {\n'),
+                           ('complete_bytes', 0), ('complete_sha256', '0' * 64)]:
+            changed = copy.deepcopy(gate.EXPECTED)
+            changed['legacy_inverse']['crates/hepta-peer-attestation/src/lib.rs']['insertion'][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                gate.check(changed, gate.inputs(ROOT))
 
 
 if __name__ == '__main__':

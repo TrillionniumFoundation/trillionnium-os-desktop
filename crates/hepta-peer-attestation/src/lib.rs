@@ -1193,6 +1193,12 @@ impl std::error::Error for AttestationError {
     }
 }
 
+#[cfg(target_os = "linux")]
+pub use approved_policy::{
+    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,
+    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,
+};
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1644,9 +1650,3 @@ mod tests {
         assert_eq!(resolve_group_id("root").expect("root group"), 0);
     }
 }
-
-#[cfg(target_os = "linux")]
-pub use approved_policy::{
-    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,
-    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,
-};

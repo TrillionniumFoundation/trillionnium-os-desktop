@@ -201,3 +201,34 @@ removed. Its refusal assertion and every other kernel line remain unchanged.
 No lint allowance, skipped case, permission change or shortened budget is
 introduced. New compilation, strict test-target lint and actual kernel results
 remain separate facts that must bind their own frozen successor.
+
+## Exact export placement and parser-fixture lint follow-up
+
+The frozen `67c092aed55b97ac68afd15b3d7aee0f6bdffdbb` limited compile
+completed formatting, library check, kernel no-run compilation and strict
+kernel-target Clippy, then lib/tests strict Clippy returned 101. Its original
+log `work/persistent-owner-v2-kernel-lint-compile-facts/limited-command-4.log`
+has SHA256 `d18e5c6e8b1c98dc6518e417b6912e9aa0460a0577eafb5febbfc37173b079e8`.
+The diagnostics were `items_after_test_module` for the additive export at EOF
+and `sliced_string_as_bytes` in the service-policy parser's missing-final-LF
+negative fixture. The following all-feature lint, parser-test and doc-test
+commands were not executed. That attempt supplies no complete strict-test
+lint pass or actual kernel execution.
+
+This source successor moves the same 230-byte export block immediately before
+the original unique test-module anchor. The versioned inverse binds its exact
+byte offset, anchor, complete length and SHA256; removing only that insertion
+restores the complete original library bytes. It refuses displaced, duplicated,
+modified or EOF copies of the export block and changes to the old test prefix.
+The original public APIs and production/test bytes remain otherwise unchanged.
+The parser negative fixture now takes the byte view before omitting its final
+ASCII LF, producing identical invalid fixture bytes. No lint allowance,
+skipped assertion, budget change or production-code rewrite is introduced.
+
+The one old Python source-profile case that previously removed the EOF tail
+uses the exact insertion inverse for this library while preserving both source
+paths, all its negative variants and refusal assertions. Other old case bodies
+remain byte-for-byte intact; new placement regressions run in the ordinary
+Python discovery corpus. Compilation, strict lint, twelve actual kernel groups,
+61-second source continuity, NativeHealth and installed qualification require
+new facts on their respective frozen tuples; none is supplied by this edit.

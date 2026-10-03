@@ -533,7 +533,7 @@ mod tests {
         for bad in [
             vec![],
             vec![0xff],
-            value[..value.len() - 1].as_bytes().to_vec(),
+            value.as_bytes()[..value.len() - 1].to_vec(),
             value.replace('\n', "\r\n").into_bytes(),
             vec![b'x'; MAX_APPROVED_SERVICE_POLICY_BYTES + 1],
         ] {

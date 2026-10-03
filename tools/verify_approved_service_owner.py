@@ -3,7 +3,7 @@
 
 Raw hashes bind all literals, attributes and macros. The supplemental finite
 Rust inventory documents the reviewed opaque API; it is not a Rust compiler.
-Legacy inverse accepts only the old source or one exact reviewed tail append.
+Legacy inverse accepts only original bytes or the exact registered insertion/tail.
 """
 from __future__ import annotations
 import hashlib
@@ -136,7 +136,7 @@ EXPECTED = {'schema': 'trillionnium.desktop.approved-service-owner-foundation.v2
                                                                                      'DEFAULT_APPROVED_SERVICE_POLICY_PATH, '
                                                                                      'MAX_APPROVED_SERVICE_POLICY_BYTES,\n'
                                                                                      '};\n'}},
- 'whole_source_sha256': {'crates/hepta-peer-attestation/src/approved_policy/service_policy.rs': 'a8f710d4f0cab66e6a8753807d543de63ba67e45cdf598f3099f0cf254e7c659',
+ 'whole_source_sha256': {'crates/hepta-peer-attestation/src/approved_policy/service_policy.rs': 'ace7e68730c50bf007863e39a83545892ecd392fb8f323d11e905da03b08168a',
                          'crates/hepta-peer-attestation/src/approved_policy/service_policy/creator_context.rs': '31c3b36ecb47b700b08df7e374b6ceadddb44527acf1ae6d8c5efb83a090eb06'},
  'preserved_source_sha256': {'crates/hepta-peer-attestation/src/request_lease.rs': '54b80b2e94f4dc149d9af8f6e92815a2a8b88a9db987c34ec9a0b59d53850681'},
  'kernel_corpus': {'path': 'crates/hepta-peer-attestation/tests/approved_service_owner_kernel.rs',
@@ -173,8 +173,20 @@ EXPECTED = {'schema': 'trillionnium.desktop.approved-service-owner-foundation.v2
                             'old_sha256': '6df4be64e5ffe527caf41e00cb996d26e53e4f12c43200d751c62c2da8c1f329',
                             'line': '\tpython3 tools/verify_approved_service_owner.py\n'}}
 
+EXPECTED['legacy_inverse']['crates/hepta-peer-attestation/src/lib.rs']['insertion'] = {'schema': 'trillionnium.foundation-lib-insertion.v1',
+ 'offset_bytes': 43913,
+ 'anchor': '\n#[cfg(test)]\nmod tests {\n',
+ 'block': '\n'
+          '#[cfg(target_os = "linux")]\n'
+          'pub use approved_policy::{\n'
+          '    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,\n'
+          '    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,\n'
+          '};\n',
+ 'complete_bytes': 61351,
+ 'complete_sha256': 'eb30e7800ade6089bfe26b05bd5c0f0cb3d669b2fd378436bbd1e15465c868ce'}
+
 EXPECTED['composition_receiver'] = {'baseline_head': '99c4eb9ff6f11b5075487c7e9fc4b4f0ca794320',
- 'foundation_head': '67c092aed55b97ac68afd15b3d7aee0f6bdffdbb',
+ 'foundation_head': 'd3353229c3574f3125e479e3616e2f4881d259fc',
  'source_boundaries': {'crates/hepta-peer-attestation/src/approved_policy.rs': {'baseline': {'bytes': 28911,
                                                                                              'sha256': 'dfb42050e73dd7f1fc6ef46aa6b839b4bc3c1c3f201ac47c5106acaada27815e'},
                                                                                 'composed': {'bytes': 29207,
@@ -316,7 +328,7 @@ def sha256(text: str) -> str:
 
 
 def legacy_source(path: str, text: str) -> str:
-    """Check the exact original byte prefix and sole reviewed additive tail.
+    """Check exact original bytes and the registered insertion or sole tail.
 
     Older profiles may also be tested alone: their exact original bytes remain
     accepted. An arbitrary module/comment tail, altered old byte or same-tail
@@ -338,6 +350,26 @@ def legacy_source(path: str, text: str) -> str:
     if rule is None:
         return text
     raw = text.encode('utf-8')
+    insertion = rule.get('insertion')
+    if insertion is not None:
+        # This profile accepts the exact v1 file or one reviewed insertion at
+        # its fixed byte offset. It never searches/removes an arbitrary block.
+        if len(raw) == rule['bytes'] and hashlib.sha256(raw).hexdigest() == rule['sha256']:
+            return text
+        offset = insertion['offset_bytes']
+        block = insertion['block'].encode('utf-8')
+        anchor = insertion['anchor'].encode('utf-8')
+        if (len(raw) != insertion['complete_bytes'] or
+                hashlib.sha256(raw).hexdigest() != insertion['complete_sha256'] or
+                raw[offset:offset + len(block)] != block or
+                raw[offset + len(block):offset + len(block) + len(anchor)] != anchor):
+            raise ValueError('reviewed v2 insertion position or complete bytes differ')
+        original = raw[:offset] + raw[offset + len(block):]
+        if (len(original) != rule['bytes'] or
+                hashlib.sha256(original).hexdigest() != rule['sha256'] or
+                original[offset:offset + len(anchor)] != anchor or original.count(anchor) != 1):
+            raise ValueError('original v1 complete bytes or unique insertion anchor differ')
+        return original.decode('utf-8', 'strict')
     prefix = raw[:rule['bytes']]
     tail = raw[rule['bytes']:]
     if len(prefix) != rule['bytes'] or hashlib.sha256(prefix).hexdigest() != rule['sha256']:
@@ -433,7 +465,12 @@ def check(value, texts):
     for path, rule in EXPECTED['legacy_inverse'].items():
         # FOUNDATION is not valid if its public module is detached from the
         # exact reviewed old prefix. The old-checker helper alone accepts v1.
-        if not texts[path].endswith(rule['tail']):
+        insertion = rule.get('insertion')
+        if insertion is not None:
+            if (len(texts[path].encode('utf-8')) != insertion['complete_bytes'] or
+                    sha256(texts[path]) != insertion['complete_sha256']):
+                raise ValueError('v2 public insertion is detached or displaced')
+        elif not texts[path].endswith(rule['tail']):
             raise ValueError('v2 public module is detached')
         legacy_source(path, texts[path])
     for group in ['whole_source_sha256', 'preserved_source_sha256', 'kernel_source_sha256']:
