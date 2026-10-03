@@ -14,8 +14,10 @@ from typing import Any
 
 try:
     from .artifact_evidence import artifact_destination, producer_workflow, validate_source_identity
+    from .d1_source_provenance import stage_source
 except ImportError:
     from artifact_evidence import artifact_destination, producer_workflow, validate_source_identity
+    from d1_source_provenance import stage_source
 
 CHUNK_BYTES = 1024 * 1024
 MAX_RAW_EVIDENCE_BYTES = 4 * 1024 * 1024
@@ -261,6 +263,8 @@ def stage_artifact(
         encoding="utf-8",
     )
 
+    source_provenance = stage_source(repository, artifact)
+
     canonical_files = {
         root / "pipeline-result.json": artifact / "pipeline/pipeline-result.json",
         root / "reproducibility-result.json": artifact
@@ -377,7 +381,7 @@ def stage_artifact(
         output_digests[relative.as_posix()] = sha256(path)
 
     receipt = {
-        "schema": "trillionnium.desktop.d1-final-qualification.v3",
+        "schema": "trillionnium.desktop.d1-final-qualification.v4",
         "status": "PASS",
         "repository": os.environ["GITHUB_REPOSITORY"],
         "event_name": os.environ["GITHUB_EVENT_NAME"],
@@ -400,6 +404,7 @@ def stage_artifact(
         "source_input_manifest_sha256": sha256(source_manifest_path),
         "source_input_files_sha256": source_manifest["files_sha256"],
         "source_input_count": source_manifest["file_count"],
+        "source_provenance": source_provenance,
         "output_digests": output_digests,
         "product_fixture_separation": {
             "product_default_graph_fixture_free": True,

@@ -13,10 +13,12 @@ try:
     from .artifact_evidence import artifact_file, artifact_root, digest as sha256, load, safe_relative, verify_outputs, verify_workflow_binding, validate_role, SHA256
     from .finalize_d1_evidence import validate_result_documents
     from .d1_evidence_semantics import verify_semantics
+    from .d1_source_provenance import verify_source
 except ImportError:
     from artifact_evidence import artifact_file, artifact_root, digest as sha256, load, safe_relative, verify_outputs, verify_workflow_binding, validate_role, SHA256
     from finalize_d1_evidence import validate_result_documents
     from d1_evidence_semantics import verify_semantics
+    from d1_source_provenance import verify_source
 
 
 RECEIPT_PATH = Path("evidence/d1-final-qualification.json")
@@ -38,7 +40,7 @@ def verify_artifact(path: Path) -> dict[str, Any]:
     root = artifact_root(path)
     receipt_path = artifact_file(root, RECEIPT_PATH.as_posix())
     receipt = load(receipt_path)
-    if receipt.get("schema") != "trillionnium.desktop.d1-final-qualification.v3":
+    if receipt.get("schema") != "trillionnium.desktop.d1-final-qualification.v4":
         raise ValueError("unexpected D1 qualification receipt schema")
     if receipt.get("status") != "PASS":
         raise ValueError("D1 qualification receipt is not a pass")
@@ -96,6 +98,7 @@ def verify_artifact(path: Path) -> dict[str, Any]:
             or type(receipt.get("source_input_count")) is not int
             or receipt["source_input_count"] != len(source_digests)):
         raise ValueError("receipt source aggregate or count is inconsistent")
+    verify_source(root, receipt, source_digests)
     verify_workflow_binding(receipt.get("workflow"), source_digests, producer=False)
     verify_workflow_binding(receipt.get("producer_workflow"), source_digests, producer=True,
                             tested_sha=receipt["tested_sha"])

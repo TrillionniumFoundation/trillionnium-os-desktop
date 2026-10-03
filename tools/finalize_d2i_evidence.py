@@ -137,7 +137,7 @@ def main() -> int:
     transform = load(artifact / "d2i/runtime/runtime-transformation.json")
     runner_transform = load(artifact / "d2i/runtime/boot-runner-transformation.json")
 
-    require(d1_receipt, "schema", "trillionnium.desktop.d1-final-qualification.v3")
+    require(d1_receipt, "schema", "trillionnium.desktop.d1-final-qualification.v4")
     require(d1_receipt, "status", "PASS")
     for prep in (prep_a, prep_b):
         require(prep, "status", "PASS_DETERMINISTIC_INPUT_INJECTION")

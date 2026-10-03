@@ -21,6 +21,7 @@ import artifact_evidence as evidence
 import verify_d1_artifact as d1
 import verify_d2i_artifact as d2i
 import finalize_d1_evidence as finalize_d1
+import d1_source_provenance as provenance
 
 SOURCE_FILES = {
     "src.txt": b"source",
@@ -46,7 +47,39 @@ def fixture_git_tree() -> str:
         return subprocess.check_output([*git, "write-tree"], cwd=root, text=True).strip()
 
 
-def workflow_binding(name: str, *, tested_sha: str = "b" * 40) -> dict:
+@lru_cache(maxsize=1)
+def fixture_git_commit() -> tuple[str, bytes]:
+    """Actual native Git commit fixture; no disk or guest qualification claim."""
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        payload = (f"tree {fixture_git_tree()}\n"
+                   "author Evidence test <evidence@example.invalid> 1 +0000\n"
+                   "committer Evidence test <evidence@example.invalid> 1 +0000\n\n"
+                   "SOURCE_FIXTURE_ONLY\n").encode()
+        result = subprocess.run(["git", "hash-object", "-t", "commit", "--stdin"], cwd=root,
+                                input=payload, capture_output=True, check=True)
+        return result.stdout.decode().strip(), payload
+
+
+def fixture_d1_source_proof(root: Path, receipt: dict) -> None:
+    (root / "source").mkdir(exist_ok=True)
+    with tarfile.open(root / provenance.ARCHIVE, "w") as archive:
+        for name, payload in SOURCE_FILES.items():
+            member = tarfile.TarInfo(name)
+            member.mode, member.size = 0o644, len(payload)
+            archive.addfile(member, io.BytesIO(payload))
+    (root / provenance.COMMIT).write_bytes(fixture_git_commit()[1])
+    receipt["source_provenance"] = {
+        "schema": "trillionnium.desktop.d1-source-provenance.v1",
+        "archive_sha256": evidence.digest(root / provenance.ARCHIVE),
+        "commit_sha256": evidence.digest(root / provenance.COMMIT),
+    }
+
+
+def workflow_binding(name: str, *, tested_sha: str | None = None) -> dict:
+    if tested_sha is None:
+        tested_sha = fixture_git_commit()[0]
     path = f".github/workflows/{name}"
     return {"path": path, "ref": f"TrillionniumFoundation/trillionnium-os-desktop/{path}@refs/heads/main",
             "workflow_sha": tested_sha,
@@ -194,11 +227,11 @@ def d1_fixture(root: Path, *, producer: str = "d1-final-qualification.yml") -> d
         "file_count": len(files), "files_sha256": aggregate,
     })
     receipt = {
-        "schema": "trillionnium.desktop.d1-final-qualification.v3", "status": "PASS",
+        "schema": "trillionnium.desktop.d1-final-qualification.v4", "status": "PASS",
         "repository": "TrillionniumFoundation/trillionnium-os-desktop",
         "event_name": "push", "ref": "refs/heads/main", "evidence_role": "exact_main_push",
-        "promotion_authoritative": True, "base_sha": "a" * 40,
-        "candidate_head_sha": "b" * 40, "tested_sha": "b" * 40, "tree_sha": fixture_git_tree(),
+        "promotion_authoritative": True, "base_sha": "0" * 40,
+        "candidate_head_sha": fixture_git_commit()[0], "tested_sha": fixture_git_commit()[0], "tree_sha": fixture_git_tree(),
         "source_input_manifest_sha256": evidence.digest(manifest),
         "source_input_files_sha256": aggregate, "source_input_count": len(files),
         "claim_ceiling": {key: False for key in (
@@ -216,6 +249,7 @@ def d1_fixture(root: Path, *, producer: str = "d1-final-qualification.yml") -> d
         "reproducibility_scope": {"same_run_two_build_byte_identity": True, "cross_run_identity_claimed": False,
             "hermetic_host_environment_claimed": False},
     }
+    fixture_d1_source_proof(root, receipt)
     bind(root, receipt, d1.RECEIPT_PATH.as_posix(), sized=False)
     return receipt
 
@@ -718,7 +752,7 @@ class ArtifactEvidenceTests(unittest.TestCase):
                 path.write_bytes(payload)
             source_files = {name: hashlib.sha256(payload).hexdigest() for name, payload in SOURCE_FILES.items()}
             for name in ("d1-final-qualification.yml", "d2i-integrated-image.yml", "s10-production-debian-qemu.yml"):
-                expected = workflow_binding(name)
+                expected = workflow_binding(name, tested_sha="b" * 40)
                 with self.subTest(lane=name), patch.dict(os.environ, {"GITHUB_WORKFLOW_REF": expected["ref"], "GITHUB_WORKFLOW_SHA": "b" * 40, "TESTED_SHA": "b" * 40}):
                     actual = evidence.producer_workflow(root)
                     self.assertEqual(actual, expected)
@@ -782,6 +816,7 @@ class ArtifactEvidenceTests(unittest.TestCase):
                             "source_input_manifest_sha256": evidence.digest(source_path),
                             "source_input_files_sha256": source["files_sha256"], "source_input_count": source["file_count"]})
             receipt["producer_workflow"]["workflow_sha"] = tested
+            receipt["source_provenance"] = provenance.stage_source(repository, canonical_d1)
             bind(canonical_d1, receipt, d1.RECEIPT_PATH.as_posix(), sized=False)
             inputs = workspace / "inputs"
             shutil.copytree(fixture / "d2i", inputs)

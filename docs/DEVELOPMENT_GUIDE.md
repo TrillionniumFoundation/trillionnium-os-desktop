@@ -232,3 +232,8 @@ as controlled parser stdin; they are not represented as a native Git wire test.
 No compiler, Servo, installed service or production principal is qualified by
 these source cases. All original workflow filters, other step objects, runtime
 commands, source profiles, deadlines and thresholds retain their exact scope.
+
+The D1 portable v4 receipt also requires carried source bytes and the raw tested
+Git commit; offline verification rebuilds Git modes/tree/commit identity and
+ordered PR parents. See [D1 source provenance](architecture/D1_SOURCE_PROVENANCE.md).
+Historical v3 packets require a fresh exact-source run for v4 qualification.
