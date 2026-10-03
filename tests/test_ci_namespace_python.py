@@ -598,3 +598,62 @@ class OrdinaryOperationSessionTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class NamespaceStepCatalogBindingTests(unittest.TestCase):
+    def catalogs(self):
+        try:
+            from . import test_ci_source_identity as identity_catalog
+        except ImportError:
+            import test_ci_source_identity as identity_catalog
+        texts = gate.inputs(ROOT)
+        path = 'contracts/ci-source-identity.v1.json'
+        return identity_catalog, texts, path, json.loads(texts[path])
+
+    def test_actual_complete_catalog_required_by_gate_and_original_validator(self):
+        identity_catalog, texts, path, value = self.catalogs()
+        self.assertIn(path, gate.EXPECTED['source_sha256'])
+        gate.check(gate.EXPECTED, texts)
+        identity_catalog.validate_workflows(ROOT, value)
+        missing = dict(texts); del missing[path]
+        with self.assertRaises(ValueError): gate.check(gate.EXPECTED, missing)
+
+    def test_stale_missing_extra_or_reordered_steps_refuse_fixed_gate_before_setup(self):
+        import io
+        from contextlib import redirect_stdout, redirect_stderr
+        identity_catalog, texts, path, original = self.catalogs()
+        setup = 'e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c'
+        cleanup = 'b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479'
+        for variant in ('stale', 'missing', 'extra', 'reordered'):
+            with self.subTest(variant=variant):
+                value = copy.deepcopy(original)
+                hashes = value['workflows']['.github/workflows/ci.yml']['repository-contracts']['original_step_sha256']
+                if variant == 'stale': hashes[:] = [item for item in hashes if item not in (setup, cleanup)]
+                elif variant == 'missing': hashes.remove(cleanup)
+                elif variant == 'extra': hashes.append('0' * 64)
+                else: hashes[4], hashes[5] = hashes[5], hashes[4]
+                with self.assertRaises(ValueError): identity_catalog.validate_workflows(ROOT, value)
+                changed = dict(texts); changed[path] = json.dumps(value)
+                with self.assertRaises(ValueError): gate.check(gate.EXPECTED, changed)
+                output = io.StringIO(); errors = io.StringIO()
+                with patch.object(gate, 'inputs', return_value=changed), redirect_stdout(output), redirect_stderr(errors):
+                    status = gate.main()
+                self.assertEqual((status, output.getvalue(), errors.getvalue()), (1, '', 'CI_NAMESPACE_PYTHON_SOURCE_INVALID\n'))
+
+    def test_catalog_digest_rebinding_unknown_fields_and_type_alias_refuse(self):
+        identity_catalog, texts, path, original = self.catalogs()
+        for wrong in ('0' * 64, True, None):
+            value = copy.deepcopy(gate.EXPECTED); value['source_sha256'][path] = wrong
+            with self.subTest(wrong=wrong), self.assertRaises(ValueError): gate.check(value, texts)
+        changed = dict(texts); value = copy.deepcopy(original); value['caller_approved_catalog'] = True
+        changed[path] = json.dumps(value)
+        with self.assertRaises(ValueError): gate.check(gate.EXPECTED, changed)
+
+    def test_catalog_and_gate_input_paths_match_original_push_and_pr_domains(self):
+        path = 'contracts/ci-source-identity.v1.json'
+        for stem in ('ci', 'g2-approved-native-startup', 'g2-native-product-owner'):
+            workflow = dependencies.workflow(ROOT / '.github/workflows' / (stem + '.yml'))
+            for event in ('push', 'pull_request'):
+                with self.subTest(workflow=stem, event=event):
+                    self.assertTrue(dependencies.matches(workflow, event, path))
+                    self.assertEqual(dependencies.uncovered(ROOT, workflow, event), [])
