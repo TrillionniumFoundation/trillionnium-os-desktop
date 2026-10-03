@@ -82,8 +82,8 @@ def _require_exact_typed_object(
     expected_keys = set(expected)
     for key in sorted(expected_keys - actual_keys):
         errors.append(f"{PUBLIC_API_FINDING}:{label}:missing:{key}")
-    for key in sorted(actual_keys - expected_keys):
-        errors.append(f"{PUBLIC_API_FINDING}:{label}:unexpected:{key}")
+    if actual_keys - expected_keys:
+        errors.append(f"{PUBLIC_API_FINDING}:{label}:unexpected-field")
     for key in sorted(actual_keys & expected_keys):
         actual = value[key]
         wanted = expected[key]
@@ -405,7 +405,7 @@ def validate_attestation() -> list[str]:
 def _parse_assignments(relative: str) -> list[tuple[str, str, str]]:
     section = ""
     result: list[tuple[str, str, str]] = []
-    for raw in _read(relative).splitlines():
+    for line_number, raw in enumerate(_read(relative).splitlines(), 1):
         line = raw.strip()
         if not line or line.startswith(("#", ";")):
             continue
@@ -413,7 +413,7 @@ def _parse_assignments(relative: str) -> list[tuple[str, str, str]]:
             section = line[1:-1]
             continue
         if not section or "=" not in line:
-            raise ValueError(f"malformed unit line in {relative}: {raw!r}")
+            raise ValueError(f"malformed unit line in {relative} at line {line_number}")
         key, value = line.split("=", 1)
         result.append((section, key, value))
     return result
@@ -733,8 +733,11 @@ def main() -> int:
         ValueError,
         KeyError,
         tomllib.TOMLDecodeError,
-    ) as error:
-        errors = [str(error)]
+    ):
+        # Exception text can contain source bytes, unknown JSON keys or a
+        # pathname supplied by input. Keep the CLI diagnostic independent of
+        # those bytes; inspect the repository inputs locally to diagnose them.
+        errors = ["S04 source custody, decoding or parsing failed; inspect repository inputs locally"]
     if errors:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)

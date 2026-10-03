@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import copy
+import contextlib
 import importlib.util
+import io
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
@@ -190,6 +194,54 @@ class PublicApiMutationTest(unittest.TestCase):
                     f"{VALIDATOR.PUBLIC_API_FINDING}:agent-transport.public_api:value:{key}",
                     errors,
                 )
+
+
+class S04InputDiagnosticTests(unittest.TestCase):
+    CANARY = "CONTROLLED-S04-CREDENTIAL-CANARY-DO-NOT-REPEAT"
+
+    def diagnostic(self):
+        stream = io.StringIO()
+        with contextlib.redirect_stderr(stream):
+            result = VALIDATOR.main()
+        self.assertEqual(result, 1)
+        self.assertNotIn(self.CANARY, stream.getvalue())
+        self.assertIn("S04 validation failed", stream.getvalue())
+        return stream.getvalue()
+
+    def test_actual_malformed_unit_bytes_fail_without_cli_disclosure(self):
+        relative = "packaging/debian/systemd/hepta-browserd-agent.socket"
+        original_read = VALIDATOR._read
+        with tempfile.TemporaryDirectory(prefix=".s04-diagnostic-", dir=ROOT) as temporary:
+            unit = Path(temporary) / "unit"
+            unit.write_text("[Unit]\n" + self.CANARY + "\n")
+            def read(name):
+                if name == relative:
+                    return VALIDATOR.read_text_nofollow(unit, label=relative)
+                return original_read(name)
+            with patch.object(VALIDATOR, "_read", read):
+                with self.assertRaises(ValueError) as raised:
+                    VALIDATOR._parse_assignments(relative)
+                self.assertIn(relative + " at line 2", str(raised.exception))
+                self.assertNotIn(self.CANARY, str(raised.exception))
+                self.assertIn("source custody, decoding or parsing failed", self.diagnostic())
+
+    def test_actual_missing_file_exception_does_not_echo_input_path(self):
+        with tempfile.TemporaryDirectory(prefix="s04-diagnostic-") as temporary:
+            path = Path(temporary) / self.CANARY
+            def missing():
+                return path.read_bytes()
+            with patch.object(VALIDATOR, "validate_root", missing):
+                self.diagnostic()
+
+    def test_unknown_public_api_key_remains_refused_without_echo(self):
+        errors = []
+        VALIDATOR._require_exact_typed_object(
+            {**VALIDATOR.EXPECTED_TRANSPORT_PUBLIC_API, self.CANARY: "unknown", self.CANARY + "2": "unknown"},
+            VALIDATOR.EXPECTED_TRANSPORT_PUBLIC_API, "transport", errors,
+        )
+        self.assertEqual(errors, [VALIDATOR.PUBLIC_API_FINDING + ":transport:unexpected-field"])
+        with patch.object(VALIDATOR, "validate_root", return_value=errors):
+            self.assertIn("unexpected-field", self.diagnostic())
 
 
 if __name__ == "__main__":

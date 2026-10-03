@@ -18,6 +18,15 @@ Identity loss before dispatch denies the request. Identity loss after an operati
 may have executed is indeterminate and never automatic. This source does not
 provide BrowserActor, semantic principal mapping, product activation, or Servo.
 
+The source validator also refuses malformed units, unknown public API fields and
+unreadable inputs. Its CLI does not echo input lines, unknown field names or
+exception text, which can contain credentials or private paths. It retains the
+fixed finding category and failing exit status. The local unit parser identifies
+the repository-relative filename and line number; operators inspect the original
+source locally. This diagnostic boundary neither accepts malformed input nor
+changes peer custody or product error handling. Tests exercise actual malformed
+unit bytes and a missing-file exception with controlled, nonsecret canaries.
+
 
 ## Claim ceiling
 
