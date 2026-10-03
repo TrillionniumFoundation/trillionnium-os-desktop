@@ -309,3 +309,36 @@ has its own finite allowed stage set. Child diagnostic pairing uses only the
 current context already admitted by the original route and the entire fixed
 launcher/operation/eight arguments, or the exact derived private interpreter
 and preflight arguments. It never reconstructs context from diagnostic JSON.
+
+
+### CI cleanup current-writer handoff correction (source candidate)
+
+The published `bd839ab4cdbd2f7cb782177eb1338d768769ffff` push
+`ci / repository-contracts` job `111206746729` completed the original
+Python corpus and then refused cleanup. Its closed diagnostic recorded
+Root cleanup `VALUE_REFUSED` with last-entered stage
+`PROCESS_COMMAND_READ`. The raw complete log SHA-256 is
+`ff341f9ef2861c778e643302451af6dfa0ecf0bf7337335fb27a9f5576207afa`.
+That observation does not identify a failing proc read or expose an actual
+Root PID, command line, or leader relationship.
+
+A source review and existing ordinary proc-shaped file model found a
+deterministic self-denial in prior-operation checking: the historical
+supervisor scan also matched the currently validating cleanup writer's
+fixed command, without applying the exact writer exclusion already used
+by the immediately preceding scan. The independent Root source proof
+SHA-256 is `103c39201e8a259f2031f0c08f49452d870b5c1547b2e7397f64382586334c35`.
+The candidate passes that same current-writer identity to both scans.
+Exclusion still requires the exact PID, start ticks, PGID, SID, UID0 and
+executable identity; it excludes neither a group nor any child. Historical
+writer/supervisor members, changed-exec children, identity drift and reused
+historical PIDs continue to refuse. Ordinary runner post-wait checking
+retains no exclusions. The original 57 namespace source tests remain
+complete; added integration regressions exercise both actual inventory
+calls together using synthetic proc-shaped files.
+
+No local Root profile or AppArmor operation has been run for this candidate.
+The ordinary model is source evidence, not a new Hosted cleanup result,
+NativeHealth, installed, human, hardware, G1 closure or production
+qualification. The published failure and all original deadlines, ledger
+phases, permissions, provider checks and cleanup ordering remain recorded.

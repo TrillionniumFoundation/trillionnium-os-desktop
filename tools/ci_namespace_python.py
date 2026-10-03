@@ -593,7 +593,7 @@ def _no_owned_lifecycle(context, state, current_writer=None):
         _diag_stage('LIFECYCLE_WRITER_GROUP_INVENTORY')
         if _live_setup_workers(context, worker, exclude=current_writer):
             raise ValueError('CI root operation session remains')
-        if worker is not None and worker != current_writer and _live_setup_workers(context, worker['supervisor']):
+        if worker is not None and worker != current_writer and _live_setup_workers(context, worker['supervisor'], exclude=current_writer):
             raise ValueError('CI previous root supervision session remains')
     if _live_private(state['private_identity'], context['profile']):
         raise ValueError('CI private interpreter remains')

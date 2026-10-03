@@ -834,3 +834,109 @@ raise SystemExit(m.main())
                 if stage in allowed: self.assertEqual(helper._diag_check(value), value)
                 else:
                     with self.subTest(domain=domain, operation=operation, stage=stage), self.assertRaises(ValueError): helper._diag_check(value)
+
+
+class PriorOperationCleanupWriterIntegrationTests(unittest.TestCase):
+    @contextmanager
+    def model(self):
+        # Existing ordinary proc-shaped fixtures exercise the real inventory
+        # and lifecycle methods together. UID0 text is synthetic; no actual
+        # host /proc, Root operation, parser or AppArmor call occurs here.
+        helper._diag_reset()
+        existing = OrdinaryOperationSessionTests(
+            'test_cleanup_session_excludes_only_exact_current_writer_not_its_child')
+        with tempfile.TemporaryDirectory() as directory:
+            proc = Path(directory); binary = proc / 'binary'
+            binary.write_bytes(b'ordinary retained interpreter fixture')
+            context = existing.context()
+            arguments = [context[key] for key in ('workflow', 'run', 'attempt', 'job')]
+            arguments += [str(context['uid']), str(context['gid']), context['head'], context['tree']]
+            argv = b'\0'.join(os.fsencode(part) for part in
+                [str(helper.PYTHON), str(Path(helper.__file__).resolve()), '_cleanup_root', *arguments]) + b'\0'
+            current = existing.fixture(proc, 201, 201, 201, binary, argv=argv)
+            current['supervisor'] = {'pid': 203, 'start_ticks': 12344, 'pgid': 202,
+                'sid': 202, 'uid': 0, 'exe_identity': helper._identity(binary.stat())}
+            previous = {'pid': 101, 'start_ticks': 12345, 'pgid': 101, 'sid': 101,
+                'uid': 0, 'exe_identity': helper._identity(binary.stat()),
+                'supervisor': {'pid': 103, 'start_ticks': 12344, 'pgid': 100,
+                    'sid': 100, 'uid': 0, 'exe_identity': helper._identity(binary.stat())}}
+            state = {'setup_worker': previous, 'cleanup_worker': None, 'private_identity': None}
+            calls = []; actual = helper._live_setup_workers
+            def scan(context, worker, unused=Path('/proc'), exclude=None):
+                rows = actual(context, worker, proc, exclude=exclude)
+                calls.append((None if worker is None else worker['pid'],
+                              None if exclude is None else exclude['pid'],
+                              [row['pid'] for row in rows]))
+                return rows
+            with patch.object(helper, '_live_setup_workers', side_effect=scan), \
+                    patch.object(helper, '_live_private', return_value=[]):
+                yield existing, proc, binary, context, state, current, calls
+        helper._diag_reset()
+
+    def test_exact_current_cleanup_writer_survives_both_prior_operation_scans(self):
+        with self.model() as (existing, proc, binary, context, state, current, calls):
+            helper._no_owned_lifecycle(context, state, current)
+            self.assertEqual(calls[:2], [(101, 201, []), (103, 201, [])])
+            self.assertTrue(all(excluded == 201 and not live for _, excluded, live in calls))
+
+    def test_current_writer_identity_drift_still_refuses_before_handoff(self):
+        for field in ('start_ticks', 'pgid', 'sid', 'uid', 'exe'):
+            with self.subTest(field=field), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                if field == 'uid': (proc / '201/status').write_bytes(b'Uid:\t1001\t1001\t1001\t1001\n')
+                elif field == 'exe':
+                    other = proc / 'other'; other.write_bytes(b'different ordinary interpreter')
+                    (proc / '201/exe').unlink(); (proc / '201/exe').symlink_to(other)
+                else:
+                    wrong = dict(current); wrong[field] += 1
+                    current = wrong
+                with self.assertRaisesRegex(ValueError, 'current writer exclusion identity changed'):
+                    helper._no_owned_lifecycle(context, state, current)
+
+    def test_previous_writer_supervisor_and_changed_exec_children_still_refuse(self):
+        for pid, pgid, sid in ((101, 101, 101), (102, 101, 101),
+                              (103, 100, 100), (104, 100, 100), (105, 105, 100)):
+            with self.subTest(pid=pid), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                existing.fixture(proc, pid, pgid, sid, binary, argv=b'changed-exec\0')
+                with self.assertRaises(ValueError): helper._no_owned_lifecycle(context, state, current)
+                self.assertTrue(any(pid in live for _, _, live in calls))
+
+    def test_current_writer_group_or_session_child_is_never_excluded(self):
+        for pgid, sid in ((201, 201), (204, 201)):
+            with self.subTest(pgid=pgid), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                state['cleanup_worker'] = current
+                existing.fixture(proc, 204, pgid, sid, binary, argv=b'changed-exec\0')
+                with self.assertRaises(ValueError): helper._no_owned_lifecycle(context, state, current)
+                self.assertTrue(any(204 in live for _, _, live in calls))
+
+    def test_postwait_keeps_no_exclusion_for_writer_and_supervisor(self):
+        for which in ('writer', 'supervisor'):
+            with self.subTest(which=which), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                if which == 'supervisor':
+                    for path in (proc / '201').iterdir(): path.unlink()
+                    (proc / '201').rmdir()
+                    existing.fixture(proc, 203, 202, 202, binary, argv=b'changed-exec\0', start=12344)
+                provider = {'identity': helper._identity(binary.stat()), 'bytes': binary.stat().st_size,
+                            'sha256': helper._sha(binary.read_bytes())}
+                result = {'operation_worker': current, 'root_worker_supervisor_all_exited': False,
+                          'setsid_provider': provider, 'python_provider': provider}
+                with patch.object(helper, '_executable', return_value=provider), self.assertRaises(ValueError):
+                    helper._completed_operation(context, result, provider, provider)
+                self.assertTrue(calls)
+                self.assertTrue(all(excluded is None for _, excluded, _ in calls))
+
+    def test_current_writer_unavailable_readback_remains_refusal(self):
+        for name in ('status', 'exe', 'stat'):
+            with self.subTest(name=name), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                (proc / '201' / name).unlink()
+                with self.assertRaises(ValueError): helper._no_owned_lifecycle(context, state, current)
+
+    def test_reused_former_writer_pid_is_not_treated_as_absent(self):
+        with self.model() as (existing, proc, binary, context, state, current, calls):
+            existing.fixture(proc, 101, 501, 501, binary, argv=b'changed-exec\0', start=99999)
+            with self.assertRaises(ValueError): helper._no_owned_lifecycle(context, state, current)
+            self.assertIn(101, calls[0][2])
