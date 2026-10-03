@@ -125,6 +125,9 @@ def main():
                 observations = [json.loads(line.partition(" ")[2]) for line in lines if line.startswith("G6A_ROOT_OBSERVED ")]
                 refusals = [json.loads(line.partition(" ")[2]) for line in lines if line.startswith("G6A_SELECTOR_REFUSED ")]
                 require(observations == boot["observed"] and refusals == boot["refused"], "carried observations differ")
+                actual_failure = "G6A_TARGET_FAILURE" in lines
+                require(boot["target_failure"] is actual_failure, "carried target failure differs from serial")
+                require(actual_failure == (name == "target_failure" and number < 3), "actual failure/fallback sequence differs")
                 if name.startswith("cut_") and number == 1:
                     require(boot["actual_vm_interrupted"] is True and boot["returncode"] == -9 and not observations and not refusals, "actual abrupt VM interruption differs")
                     cutpoints = [json.loads(line.partition(" ")[2])["name"] for line in lines if line.startswith("G6A_CUTPOINT ")]
