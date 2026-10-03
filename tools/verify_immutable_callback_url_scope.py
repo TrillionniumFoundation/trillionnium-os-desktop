@@ -115,7 +115,10 @@ def check(contract, dispatch, callback, servo, native):
     selected = selected_function(dispatch, "allows")
     if selected != function(base, "EngineUrlScope::allows") or dispatch.count(raw_allows) != 1:
         raise ValueError("actual unique URL scope function or raw literal body differs")
-    tokens(dispatch[:dispatch.index(raw_allows)])
+    start = dispatch.index(raw_allows)
+    if dispatch[:start].rpartition("\n")[2] != "    ":
+        raise ValueError("actual URL scope method header line differs")
+    tokens(dispatch[:start])
     marker = 'Self::D3Local => url == "about:blank" || crate::is_loopback_http(url),'
     if dispatch.count(marker) != 1:
         raise ValueError("original D3 blank/local predicate differs")

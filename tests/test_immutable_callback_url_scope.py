@@ -142,4 +142,20 @@ class ImmutableCallbackRawFunctionBindingTests(unittest.TestCase):
             changed["dispatch"] = modified + wrapper % body
             with self.subTest(wrapper=wrapper):
                 with self.assertRaises(ValueError): v.check(**changed)
+class ImmutableCallbackMethodLocationTests(unittest.TestCase):
+    def test_line_comment_header_cannot_supply_the_raw_scope_function(self):
+        original = ImmutableCallbackUrlScopeTests().inputs()
+        start = original["dispatch"].index('fn allows(self, url: &str) -> bool {')
+        end = original["dispatch"].index('\n    }', start) + len('\n    }')
+        body = original["dispatch"][start:end]
+        predicate = 'url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank"'
+        modified = original["dispatch"].replace(predicate, predicate.replace('"about:blank"', '"https://independent.invalid/"'), 1)
+        # The decoy retains the exact old textual D3 marker once; the actual
+        # D3 arm differs only in whitespace and has the same Rust semantics.
+        modified = modified.replace('Self::D3Local => url == "about:blank"', 'Self::D3Local =>  url == "about:blank"', 1)
+        for prefix in ['//', '// ', '    //']:
+            changed = dict(original)
+            changed["dispatch"] = modified + '\n#[allow(unused_macros)]\nmacro_rules! raw_line_comment_decoy { () => {\n' + prefix + body + '; }\n'
+            with self.subTest(prefix=prefix):
+                with self.assertRaises(ValueError): v.check(**changed)
 if __name__=='__main__':unittest.main()
