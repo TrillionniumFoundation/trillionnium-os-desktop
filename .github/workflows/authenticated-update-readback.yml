@@ -66,6 +66,11 @@ on:
       - "platform/README.md"
       - "docs/DEVELOPMENT_GUIDE.md"
       - "Makefile"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
   pull_request:
     paths:
       - ".github/workflows/update-boot-observer.yml"
@@ -131,6 +136,11 @@ on:
       - "docs/DEVELOPMENT_GUIDE.md"
       - "Makefile"
 
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
 permissions:
   contents: read
 

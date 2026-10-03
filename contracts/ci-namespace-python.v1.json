@@ -1,0 +1,71 @@
+{
+  "schema": "hepta.ci-namespace-python.v1",
+  "status": "CI_CONFIGURATION_CANDIDATE_NOT_HOSTED_QUALIFIED",
+  "platform": "Linux-Ubuntu24.04",
+  "jobs": [
+    "repository-contracts",
+    "repository-contracts-prospective-merge"
+  ],
+  "scope": "temporary named debug profile attaches only the unique root-owned real interpreter copy for this CI job",
+  "worker_and_original_tests_changed": false,
+  "corpus_as_host_root": false,
+  "global_AppArmor_or_sysctl_changes": false,
+  "interpreter_filecap_or_setid": false,
+  "namespace_or_security_fallback": false,
+  "production_activation": false,
+  "hosted_qualified": false,
+  "G1_closed": false,
+  "production_ready": false,
+  "entrypoints": {
+    "setup": "python3 tools/ci_namespace_python.py setup",
+    "cleanup": "/usr/bin/python3.12 tools/ci_namespace_python.py cleanup"
+  },
+  "identity": {
+    "normal_runner_uid_gid": "captured from actual normal process and checked against actual sudo caller",
+    "interpreter": "/usr/bin/python3.12 whole byte copy; fixed provider correspondence and stdlib prefix readback",
+    "allocation": "/var/lib/hepta-ci-g1-<bounded-run>-<bounded-attempt>-<literal-job>; root0:0 mode0755 create-new; no other global interpreter attachment"
+  },
+  "profile": {
+    "mode": "temporary CI-only unconfined debugging profile with explicit userns permission",
+    "template": ".github/apparmor/hepta-ci-namespace-python.v1.profile",
+    "initial_host_privilege_gained": false,
+    "production_confinement_profile": false,
+    "entire_host_Python_exempted": false
+  },
+  "acceptance": {
+    "same_host_uid_gid": true,
+    "before_after_global_AA_sysctl_label_readback": true,
+    "real_sealed_memfd_original_body_preserved": true,
+    "readonly_distinct_inode_EROFS_original_body_preserved": true,
+    "after_exec_five_caps_zero_NNP_original_body_preserved": true,
+    "unavailable_readback_is_success": false,
+    "full_original_corpus_required": true,
+    "cleanup_error_is_success": false,
+    "live_owned_interpreter_or_profile_process_refuses_cleanup": true
+  },
+  "bounds": {
+    "maximum_interpreter_bytes": 67108864,
+    "maximum_state_bytes": 2097152,
+    "maximum_proc_visible_entries": 65536,
+    "each_setup_cleanup_subcommand_timeout_seconds": 30,
+    "old_job_timeout_minutes": 20
+  },
+  "source_sha256": {
+    "tools/ci_namespace_python.py": "a7fef49ff154ba7e0ad6151fdaf6700112337f02acfba7ccfa175c6946e5e1d6",
+    ".github/apparmor/hepta-ci-namespace-python.v1.profile": "9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be",
+    ".github/workflows/ci.yml": "be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826"
+  },
+  "workflow_inverse": {
+    "path": ".github/workflows/ci.yml",
+    "original_sha256": "a2392184e4099c5488be1c90ed886d9eefd9a1f88e183a0d94b83670a02638fe",
+    "setup": "      - name: Provision job-private CI namespace Python\n        id: namespace_python_setup\n        run: |\n          set -euo pipefail\n          python3 tools/verify_ci_namespace_python.py\n          python3 tools/ci_namespace_python.py setup\n\n",
+    "cleanup": "      - name: Remove only owned CI namespace Python and profile\n        if: always()\n        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup\n\n",
+    "count_each": 2
+  },
+  "non_claims": [
+    "original99c hosted failure remains",
+    "localRoot success is not hosted qualification",
+    "no new crypto or Cargo consumption proof",
+    "no NativeHealth installed human hardware or production qualification"
+  ]
+}

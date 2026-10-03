@@ -111,3 +111,8 @@ a distinct proposed GitHub display context and expected application source.
 `tests/test_ci_required_contexts.py` exercises hostile names, matrices, source
 bodies, catalog aliases and real filesystem replacement. This source index
 provides no configured protection, independent approval or G0 closure.
+
+
+### CI-only namespace configuration source candidate
+
+`contracts/ci-namespace-python.v1.json`, `tools/verify_ci_namespace_python.py`, `tools/ci_namespace_python.py`, `.github/apparmor/hepta-ci-namespace-python.v1.profile` and `tests/test_ci_namespace_python.py` register the job-private interpreter configuration. The two existing `ci.yml` source jobs run the fixed checker before setup and always run fixed-system-Python cleanup after the unchanged full corpus. The real root-owned interpreter byte copy retains the normal runner UID/GID and standard-library prefixes; the named temporary debugging profile attaches only that unique path. Global AppArmor/sysctls, original workers and tests remain unchanged. Run `python3 tools/verify_ci_namespace_python.py` or the existing `make check` discovery to check source/ordinary-FS correspondence. Do not invoke privileged setup outside its fixed CI context. The unchanged `make validate` target does not separately register this CI-only gate. The helper/profile have not been activated in author validation, and no hosted, crypto-consumption, native, installed or production result follows from these tests. Architecture details and the preserved hosted failure are in `docs/architecture/MOZJS_AUTHENTICATED_INPUT.md`.

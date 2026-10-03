@@ -30,6 +30,11 @@ on:
       - "tests/test_ci_required_contexts.py"
       - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
       - ".github/workflows/**"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -61,6 +66,11 @@ on:
       - "tests/test_ci_required_contexts.py"
       - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
       - ".github/workflows/**"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
 permissions:
   contents: read
 
