@@ -17,9 +17,9 @@ import subprocess
 import time
 
 try:
-    from .browser_codec_reference_security import load_json_strict, open_regular_beneath
+    from .browser_codec_reference_security import load_json_strict, open_managed_regular_beneath
 except ImportError:
-    from browser_codec_reference_security import load_json_strict, open_regular_beneath
+    from browser_codec_reference_security import load_json_strict, open_managed_regular_beneath
 
 MAX_BYTES = 4096
 POINTS = ((200, 68), (400, 100), (200, 68))
@@ -73,18 +73,18 @@ def load_private(root: Path, name: str, identity: tuple[int, int], *,
                  snapshots: dict[str, tuple[int, ...]] | None = None) -> tuple[dict, str]:
     require(root_identity(root) == identity, "input output root was replaced")
     try:
-        descriptor = open_regular_beneath(Path("/"), root.absolute() / name, label="native input checkpoint")
+        reader = open_managed_regular_beneath(Path("/"), root.absolute() / name, label="native input checkpoint")
     except ValueError as error:
         if isinstance(error.__cause__, FileNotFoundError) and error.__cause__.filename == name:
             raise error.__cause__ from error
         raise
-    try:
-        before = os.fstat(descriptor)
+    with reader:
+        before = reader.stat()
         require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1
                 and before.st_uid == os.getuid() and stat.S_IMODE(before.st_mode) == 0o600
                 and 0 < before.st_size <= MAX_BYTES, "input checkpoint is not private bounded regular data")
-        data = os.read(descriptor, MAX_BYTES + 1)
-        after = os.fstat(descriptor)
+        data = reader.read(MAX_BYTES + 1)
+        after = reader.stat()
         try:
             named = (root / name).stat(follow_symlinks=False)
         except OSError as error:
@@ -97,8 +97,6 @@ def load_private(root: Path, name: str, identity: tuple[int, int], *,
         if snapshots is not None:
             snapshots[name] = metadata_identity(after)
         return value, hashlib.sha256(data).hexdigest()
-    finally:
-        os.close(descriptor)
 
 
 def process_start(pid: int) -> int:

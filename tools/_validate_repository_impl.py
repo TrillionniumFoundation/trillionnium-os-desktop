@@ -10,7 +10,7 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from browser_codec_reference_security import load_json_strict, open_regular_beneath
+from browser_codec_reference_security import load_json_strict, open_managed_regular_beneath
 from verify_ci_required_contexts import validate as validate_ci_required_contexts
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -120,8 +120,7 @@ def fail(message: str) -> None:
 
 def load_json(path: Path) -> Any:
     try:
-        descriptor = open_regular_beneath(ROOT, path, label="repository JSON")
-        with os.fdopen(descriptor, "rb") as stream:
+        with open_managed_regular_beneath(ROOT, path, label="repository JSON") as stream:
             encoded = stream.read(MAX_JSON_BYTES + 1)
         if len(encoded) > MAX_JSON_BYTES:
             raise ValueError(f"JSON exceeds {MAX_JSON_BYTES} bytes")

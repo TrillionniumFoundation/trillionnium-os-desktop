@@ -21,12 +21,12 @@ from pathlib import Path
 from typing import Any, Callable
 
 try:
-    from .browser_codec_reference_security import open_regular_beneath
+    from .browser_codec_reference_security import open_managed_regular_beneath
 except ImportError:
     try:
-        from browser_codec_reference_security import open_regular_beneath
+        from browser_codec_reference_security import open_managed_regular_beneath
     except ModuleNotFoundError:
-        from tools.browser_codec_reference_security import open_regular_beneath
+        from tools.browser_codec_reference_security import open_managed_regular_beneath
 
 REPOSITORY = "TrillionniumFoundation/trillionnium-os-desktop"
 PLAN_REVISION = "2026-08-29-d6"
@@ -796,17 +796,17 @@ def verify_packet(
 def _regular_bytes(path: Path, label: str, maximum: int | None = None) -> bytes:
     bound = MAX_PACKET_BYTES if maximum is None else maximum
     try:
-        descriptor = open_regular_beneath(Path("/"), path.absolute(), label=label)
+        reader = open_managed_regular_beneath(Path("/"), path.absolute(), label=label)
     except ValueError as error:
         raise QualificationError(f"{label} is not a regular non-symlink file") from error
-    with os.fdopen(descriptor, "rb") as stream:
-        before = os.fstat(stream.fileno())
+    with reader as stream:
+        before = stream.stat()
         if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
             raise QualificationError(f"{label} must be a regular file with one hard link")
         if before.st_size > bound:
             raise QualificationError(f"{label} exceeds its byte bound")
         data = stream.read(bound + 1)
-        after = os.fstat(stream.fileno())
+        after = stream.stat()
         if len(data) > bound:
             raise QualificationError(f"{label} exceeds its byte bound")
         if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (after.st_size, after.st_mtime_ns, after.st_ctime_ns) or len(data) != before.st_size:

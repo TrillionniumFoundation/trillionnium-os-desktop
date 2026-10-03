@@ -10,9 +10,9 @@ import secrets
 from pathlib import Path
 
 try:
-    from .browser_codec_reference_security import load_json_strict, open_regular_beneath
+    from .browser_codec_reference_security import load_json_strict, open_managed_regular_beneath
 except ImportError:
-    from browser_codec_reference_security import load_json_strict, open_regular_beneath
+    from browser_codec_reference_security import load_json_strict, open_managed_regular_beneath
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = "manifests/platform-mechanisms.v1.json"
@@ -859,9 +859,8 @@ def read(root: Path, relative: str) -> str:
     path = Path(relative)
     if path.is_absolute() or path.as_posix() != relative or any(part in {".", ".."} for part in relative.split("/")):
         raise ValueError("registry path is not a canonical repository-relative path")
-    descriptor = open_regular_beneath(root, root / relative, label="platform registry input")
-    with os.fdopen(descriptor, "rb") as stream:
-        metadata = os.fstat(stream.fileno())
+    with open_managed_regular_beneath(root, root / relative, label="platform registry input") as stream:
+        metadata = stream.stat()
         if metadata.st_nlink != 1:
             raise ValueError("registered source must have one link")
         if metadata.st_size > MAX_BYTES:

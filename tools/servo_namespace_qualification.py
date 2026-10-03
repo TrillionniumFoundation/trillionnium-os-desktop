@@ -28,11 +28,11 @@ import uuid
 try:
     from .browser_codec_reference_security import load_json_strict
     from .check_servo_resource_gate import validate as validate_resource
-    from .artifact_evidence import open_file
+    from .artifact_evidence import open_managed_file
 except ImportError:
     from browser_codec_reference_security import load_json_strict
     from check_servo_resource_gate import validate as validate_resource
-    from artifact_evidence import open_file
+    from artifact_evidence import open_managed_file
 
 ROOT = Path(__file__).absolute().parents[1]
 PROFILE = "immutable-origin-v1"
@@ -110,30 +110,24 @@ def snapshot(value: os.stat_result) -> tuple:
 
 
 def hash_regular(path: Path, limit: int = 4 * 1024**3) -> str:
-    descriptor = open_file(path.absolute())
-    try:
-        before = os.fstat(descriptor)
+    with open_managed_file(path.absolute()) as reader:
+        before = reader.stat()
         require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and before.st_uid == os.getuid()
             and before.st_mode & 0o022 == 0 and 0 < before.st_size <= limit, "compiled/source input unsafe")
         digest = hashlib.sha256()
         total = 0
         deadline = time.monotonic() + 60
         while True:
-            block = os.read(descriptor, 1024 * 1024)
+            block = reader.read(1024 * 1024)
             if not block:
                 break
             digest.update(block)
             total += len(block)
             require(total <= limit and time.monotonic() < deadline, "compiled/source input hash exceeded bounds")
-        require(snapshot(os.fstat(descriptor)) == snapshot(before) and total == before.st_size, "compiled/source input changed")
-        named = open_file(path.absolute())
-        try:
-            require(snapshot(os.fstat(named)) == snapshot(before), "compiled/source input name changed")
-        finally:
-            os.close(named)
+        require(snapshot(reader.stat()) == snapshot(before) and total == before.st_size, "compiled/source input changed")
+        with open_managed_file(path.absolute()) as named:
+            require(snapshot(named.stat()) == snapshot(before), "compiled/source input name changed")
         return digest.hexdigest()
-    finally:
-        os.close(descriptor)
 
 
 class _StagingDescriptor:
@@ -579,33 +573,27 @@ class Packet:
         require(type(name) is str and re.fullmatch(r"[A-Za-z0-9_.-]+", name) is not None,
                 "packet filename is not canonical")
         path = self.root / name
-        descriptor = open_file(path.absolute())
-        try:
-            before = os.fstat(descriptor)
+        with open_managed_file(path.absolute()) as reader:
+            before = reader.stat()
             require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and before.st_uid == os.getuid()
                     and before.st_mode & 0o022 == 0 and 0 < before.st_size <= limit, "packet metadata unsafe")
             chunks, total = [], 0
             while True:
-                block = os.read(descriptor, min(65536, limit + 1 - total))
+                block = reader.read(min(65536, limit + 1 - total))
                 if not block:
                     break
                 chunks.append(block)
                 total += len(block)
                 require(total <= limit, "packet exceeded bound")
-            require(snapshot(os.fstat(descriptor)) == snapshot(before) and total == before.st_size,
+            require(snapshot(reader.stat()) == snapshot(before) and total == before.st_size,
                     "packet changed during read")
-            named = open_file(path.absolute())
-            try:
-                require(snapshot(os.fstat(named)) == snapshot(before), "packet pathname changed")
-            finally:
-                os.close(named)
+            with open_managed_file(path.absolute()) as named:
+                require(snapshot(named.stat()) == snapshot(before), "packet pathname changed")
             data = b"".join(chunks)
             current = (snapshot(before), hashlib.sha256(data).hexdigest())
             require(name not in self.observed or self.observed[name] == current, "packet changed across reads")
             self.observed[name] = current
             return data
-        finally:
-            os.close(descriptor)
 
     def json(self, name: str) -> object:
         return load_json_strict(self.read(name).decode("utf-8"))
@@ -1606,8 +1594,7 @@ def verify_corpus(output: Path) -> dict:
 def validate_contract(value: object | None = None) -> None:
     """Fixed reviewed profile. This interface has no refresh or promotion mode."""
     if value is None:
-        descriptor = open_file(ROOT / "contracts/native-direct-inet-qualification.v1.json")
-        with os.fdopen(descriptor, "rb") as stream:
+        with open_managed_file(ROOT / "contracts/native-direct-inet-qualification.v1.json") as stream:
             data = stream.read(65537)
             require(len(data) <= 65536, "namespace contract exceeded bound")
         value = load_json_strict(data.decode())
