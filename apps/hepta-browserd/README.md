@@ -358,3 +358,12 @@ segments. Public full readback and actual constructor/spawn/dispatch/report
 boundaries remain required. Its [source validator](../../tools/verify_approved_composition_scope.py)
 and mutation tests establish finite source correspondence; a fresh unchanged
 native six-case run is a separate budget qualification.
+
+The additive [private constructor route](../../contracts/approved-constructor-route.v1.json)
+retains all public bodies, raw admission full checks and the actual actor and
+final constructor full checks. Only the adjacent private approved duplicate
+uses the same original pair, root policy/path, pidfds, creator, cancellation
+and first ceiling as a denial gate. Its [finite checker](../../tools/verify_approved_constructor_route.py)
+and mutation corpus provide source correspondence; fresh actual kernel and
+original native six-case runs retain the 20/5-second budgets. This default-disabled
+source profile supplies no measured speedup or installed/production claim.

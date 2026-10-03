@@ -249,6 +249,66 @@ impl AcceptedProductConnection {
         Ok(())
     }
 
+    /// Gate the private constructor immediately after the unchanged approved
+    /// public wrapper's full readback. This supplies no current snapshot or
+    /// effect permission; the actor constructor and final readback remain full.
+    #[cfg(target_os = "linux")]
+    fn ensure_approved_constructor_scope(
+        &self,
+        approved: &hepta_peer_attestation::ApprovedAgentRequestBinding,
+    ) -> Result<(), ProductDispatchError> {
+        if self.control.owner_pid != std::process::id() {
+            return Err(ProductDispatchError::PeerRefused);
+        }
+        let checked = (|| {
+            let deadline = self.deadline()?;
+            self.attested
+                .ensure_alive()
+                .map_err(|_| ProductDispatchError::PeerRefused)?;
+            let control = self
+                .control_verifier()?
+                .ok_or(ProductDispatchError::PeerRefused)?;
+            if control.deadline().map_err(control_error)? != deadline {
+                return Err(ProductDispatchError::PeerRefused);
+            }
+            let approved_error = |error| match error {
+                hepta_peer_attestation::ApprovedPolicyError::DeadlineExceeded => {
+                    ProductDispatchError::DeadlineExceeded
+                }
+                hepta_peer_attestation::ApprovedPolicyError::InvalidConfiguration => {
+                    ProductDispatchError::InvalidConfiguration
+                }
+                _ => ProductDispatchError::PeerRefused,
+            };
+            let session = approved.start_session().map_err(approved_error)?;
+            let verifier = approved
+                .verifier_for_session(&session)
+                .map_err(approved_error)?;
+            verifier
+                .with_original_pair(&session, |_, attested, custodian, ceiling| {
+                    if ceiling != deadline || attested.snapshot() != self.attested.snapshot() {
+                        return Err(ProductDispatchError::PeerRefused);
+                    }
+                    custodian.ensure_alive().map_err(control_error)?;
+                    self.attested
+                        .ensure_alive()
+                        .map_err(|_| ProductDispatchError::PeerRefused)?;
+                    self.deadline()?;
+                    Ok(())
+                })
+                .map_err(approved_error)??;
+            control.ensure_alive().map_err(control_error)?;
+            self.deadline()?;
+            Ok(())
+        })();
+        if checked.is_err()
+            && let Some(custody) = &self.control.custodian
+        {
+            let _ = custody.revoke();
+        }
+        checked
+    }
+
     fn attest_before(
         stream: UnixStream,
         attestor: ProcfsPeerAttestor,
@@ -497,6 +557,13 @@ impl ProductRequestCoordinator {
         if bootstrap.control.owner_pid != std::process::id() {
             return Err(ProductDispatchError::PeerRefused);
         }
+        #[cfg(target_os = "linux")]
+        if let Some(approved) = admission.approved {
+            bootstrap.ensure_approved_constructor_scope(approved)?;
+        } else {
+            bootstrap.ensure_control_current()?;
+        }
+        #[cfg(not(target_os = "linux"))]
         bootstrap.ensure_control_current()?;
         let ConnectionAdmissionScope {
             acknowledged_requests,

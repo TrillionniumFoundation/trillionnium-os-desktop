@@ -560,6 +560,13 @@ def validate(root: Path = ROOT) -> None:
     except ImportError:
         from verify_approved_composition_scope import validate as check_private_scope
     check_private_scope(root)
+    # The sole opaque approved wrapper retains its complete pre-constructor
+    # readback; only its adjacent private repeated check uses the denial gate.
+    try:
+        from .verify_approved_constructor_route import validate as check_constructor_route
+    except ImportError:
+        from verify_approved_constructor_route import validate as check_constructor_route
+    check_constructor_route(root)
     approved = tokens(source(root, "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"))
     ordered(approved, ["selection.admit_retained(received)", "consume_with_request_binding", "ProcfsPeerAttestor::default()",
                        "connection.ensure_control_current()?"], "existing approved live admission")

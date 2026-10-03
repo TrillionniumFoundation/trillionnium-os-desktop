@@ -144,3 +144,32 @@ default-proc kernel cases remain required, as do a fresh exact-pin native run
 of all original six cases with unchanged 20-second accepted and 5-second
 native budgets. The profile is disabled by default and supplies no installed,
 long-lived service, hardware, production policy or release qualification.
+
+## Private constructor route successor
+
+The additive [private constructor profile](../../contracts/approved-constructor-route.v1.json)
+preserves every public constructor body. The approved public wrapper performs
+the full original Agent and Control readback before passing the same privately
+held connection and binding through local field borrowing to the private
+constructor. Only that adjacent repeated check uses a private denial gate.
+The raw `None` branch retains its full readback. The actual approved actor
+factory, principal comparison, and final constructor full readback still run.
+
+The gate checks its creator before descriptor access, cancellation and the
+original `Instant`, the actual Agent pidfd and original Control custody, and
+the root-selected opaque binding's policy/path and original pair. It compares
+the original pair's captured peer fields and ceiling with the same factory's
+held connection. This comparison grants no authority to caller snapshots or
+principal fields. Failure revokes that connection's original custody. The gate
+returns only `Result<()>`; it supplies no live snapshot, runtime permit or
+report seal and caches no executable bytes across calls.
+
+`tools/verify_approved_constructor_route.py` binds this finite route, the sole
+approved caller, the unchanged public bodies and full actor/return boundaries.
+Its mutation corpus removes creator, root, pidfd, original custody, ceiling and
+final full checks and attempts caller authority, visibility and literal decoys.
+Those checks are source correspondence. The existing real default-proc kernel
+groups and a fresh exact-pin run of all original six native cases remain
+required with the original 20-second accepted and 5-second native limits.
+There is no measured speedup, installed activation or production qualification
+claim from merging this private duplicate alone.
