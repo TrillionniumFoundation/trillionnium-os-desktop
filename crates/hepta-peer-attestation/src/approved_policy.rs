@@ -836,3 +836,10 @@ mod tests {
         }
     }
 }
+
+// Additive service-policy v2; original request-scoped v1 stays unchanged.
+mod service_policy;
+pub use service_policy::{
+    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,
+    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,
+};

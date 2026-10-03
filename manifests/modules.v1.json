@@ -259,7 +259,8 @@
         "tools/mozjs_authenticated_input.py",
         "tools/build_mozjs_authenticated_native.py",
         "tools/verify_mozjs_authenticated_input.py",
-        "manifests/mozjs-authenticated-input.v2.json"
+        "manifests/mozjs-authenticated-input.v2.json",
+        "tools/verify_approved_service_owner.py"
       ],
       "workflows": [
         ".github/workflows/browser-codec-reference.yml",
@@ -313,7 +314,8 @@
         "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md",
         "docs/architecture/APPROVED_MECHANISM_POLICY.md",
         "docs/architecture/APPROVED_REQUEST_BINDING.md",
-        "docs/architecture/RETAINED_CONTROL_READINESS.md"
+        "docs/architecture/RETAINED_CONTROL_READINESS.md",
+        "docs/architecture/APPROVED_SERVICE_OWNER_FOUNDATION.md"
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
@@ -324,7 +326,8 @@
         "contracts/root-path-retained-control.v1.json",
         "contracts/approved-mechanism-policy.v1.json",
         "contracts/approved-request-binding.v1.json",
-        "contracts/retained-control-readiness.v1.json"
+        "contracts/retained-control-readiness.v1.json",
+        "contracts/approved-service-owner-foundation.v2.json"
       ],
       "tests": [
         "crates/hepta-peer-attestation/src/lib.rs",
@@ -344,7 +347,11 @@
         "tests/test_approved_request_binding.py",
         "tests/test_retained_control_readiness.py",
         "apps/hepta-browserd/tests/control_readiness_kernel.rs",
-        "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+        "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs",
+        "tests/test_approved_service_owner.py",
+        "crates/hepta-peer-attestation/tests/approved_service_owner_kernel.rs",
+        "crates/hepta-peer-attestation/src/approved_policy/service_policy.rs",
+        "crates/hepta-peer-attestation/src/approved_policy/service_policy/creator_context.rs"
       ],
       "workflows": [
         ".github/workflows/s04-transport-custody.yml",
