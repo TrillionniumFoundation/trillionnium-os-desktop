@@ -16,7 +16,9 @@ use std::time::{Duration, Instant};
 
 use crate::{PeerIdentity, PeerPolicy};
 
+mod connected_denial;
 mod retained_control;
+pub use connected_denial::OriginalConnectedDenial;
 pub use retained_control::{
     PendingHandoffReceiver, PendingHandoffSender, RemoteRetirementReport, RemoteTerminalState,
     RetainedReceivedAcceptedStream,

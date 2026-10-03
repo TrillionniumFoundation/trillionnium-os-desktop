@@ -25,8 +25,9 @@ mod accepted_handoff;
 #[cfg(target_os = "linux")]
 pub use accepted_handoff::{
     AcceptedStreamCustody, HandoffError, HandoffReceiver, HandoffSender, MAX_HANDOFF_BUDGET,
-    MAX_HANDOFFS_PER_CHANNEL, PendingHandoffReceiver, PendingHandoffSender, ReceivedAcceptedStream,
-    RemoteRetirementReport, RemoteTerminalState, RetainedReceivedAcceptedStream,
+    MAX_HANDOFFS_PER_CHANNEL, OriginalConnectedDenial, PendingHandoffReceiver, PendingHandoffSender,
+    ReceivedAcceptedStream, RemoteRetirementReport, RemoteTerminalState,
+    RetainedReceivedAcceptedStream,
 };
 
 pub use facade::{

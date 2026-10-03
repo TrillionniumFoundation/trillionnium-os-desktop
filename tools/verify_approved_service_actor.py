@@ -34,12 +34,28 @@ def _read(root, name):
         return (value.st_dev, value.st_ino, value.st_mode, value.st_nlink, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
     if identity(before) != identity(after_fd) or identity(before) != identity(after) or len(raw) > 1048576:
         raise ValueError('P2A Source changed during read')
-    return raw.decode('utf-8', 'strict')
+    value = raw.decode('utf-8', 'strict')
+    try:
+        from .verify_approved_service_product import parent_source as product_parent_source
+    except ImportError:
+        from verify_approved_service_product import parent_source as product_parent_source
+    return product_parent_source(name, value)
 
 def parent_source(path, text):
     """Exact denial-only Source view; never authorizes a runtime principal."""
     if type(text) is not str:
         raise ValueError('P2A Source type differs')
+    # Preserve the original exact known parent view's idempotence. This is
+    # already registered older Source, never an actual-input exemption.
+    original = EXPECTED['finite_parent_inverse'].get(path)
+    raw = text.encode('utf-8')
+    if original is not None and len(raw) == original['parent_bytes'] and _sha(raw) == original['parent_sha256']:
+        return text
+    try:
+        from .verify_approved_service_product import parent_source as product_parent_source
+    except ImportError:
+        from verify_approved_service_product import parent_source as product_parent_source
+    text = product_parent_source(path, text)
     rule = EXPECTED['finite_parent_inverse'].get(path)
     if rule is None:
         return text

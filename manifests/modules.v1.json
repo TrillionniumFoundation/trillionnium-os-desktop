@@ -50,7 +50,8 @@
         "docs/architecture/APPROVED_REQUEST_BINDING.md",
         "docs/architecture/MOZJS_SECONDARY_INPUT.md",
         "docs/architecture/RETAINED_CONTROL_READINESS.md",
-        "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+        "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md",
+        "docs/architecture/PERSISTENT_SERVICE_PRODUCT_COORDINATOR.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
@@ -67,7 +68,8 @@
         "contracts/approved-composition-scope.v1.json",
         "contracts/approved-constructor-route.v1.json",
         "contracts/retained-control-readiness.v1.json",
-        "contracts/mozjs-authenticated-input.v2.json"
+        "contracts/mozjs-authenticated-input.v2.json",
+        "contracts/approved-service-product.v2.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -98,7 +100,14 @@
         "tests/test_approved_constructor_route.py",
         "tests/test_retained_control_readiness.py",
         "apps/hepta-browserd/tests/control_readiness_kernel.rs",
-        "tests/test_mozjs_authenticated_input.py"
+        "tests/test_mozjs_authenticated_input.py",
+        "tests/test_approved_service_product.py",
+        "apps/hepta-browserd/src/product_dispatch/service_product.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/coordinator.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/lifecycle.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/report.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/wire.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/tests.rs"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
@@ -177,7 +186,8 @@
         "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
         "docs/architecture/ROOT_OWNED_CONTROL_PATH.md",
         "docs/architecture/RETAINED_CONTROL_READINESS.md",
-        "docs/architecture/PERSISTENT_SERVICE_REQUEST_BRIDGE.md"
+        "docs/architecture/PERSISTENT_SERVICE_REQUEST_BRIDGE.md",
+        "docs/architecture/PERSISTENT_SERVICE_PRODUCT_COORDINATOR.md"
       ],
       "contracts": [
         "contracts/agent-transport.v1.json",
@@ -185,7 +195,8 @@
         "contracts/retained-control-terminal.v1.json",
         "contracts/root-owned-control-path.v1.json",
         "contracts/retained-control-readiness.v1.json",
-        "contracts/approved-service-request-bridge.v2.json"
+        "contracts/approved-service-request-bridge.v2.json",
+        "contracts/approved-service-product.v2.json"
       ],
       "tests": [
         "crates/hepta-agent-transport/src/facade.rs",
@@ -203,7 +214,9 @@
         "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs",
         "tests/test_approved_service_request.py",
         "crates/hepta-agent-transport/src/accepted_handoff/retained_control/service_control.rs",
-        "crates/hepta-agent-transport/src/root_control_path/service_control.rs"
+        "crates/hepta-agent-transport/src/root_control_path/service_control.rs",
+        "tests/test_approved_service_product.py",
+        "crates/hepta-agent-transport/src/accepted_handoff/connected_denial.rs"
       ],
       "workflows": [
         ".github/workflows/agent-transport-reference.yml",
