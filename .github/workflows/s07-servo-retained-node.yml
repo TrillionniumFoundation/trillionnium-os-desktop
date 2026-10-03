@@ -12,6 +12,7 @@ on:
       - "manifests/servo-patches/d3-retained-node-action-v1/**"
       - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
       - "tests/test_s07_servo_patch_package.py"
+      - "tests/test_s07_event_checkout.py"
       - "tools/verify_s07_qualification_lineage.py"
       - ".github/workflows/s06-browser-actor.yml"
       - "contracts/s07-qualification-lineage.v1.json"
@@ -42,6 +43,7 @@ on:
       - "manifests/servo-patches/d3-retained-node-action-v1/**"
       - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
       - "tests/test_s07_servo_patch_package.py"
+      - "tests/test_s07_event_checkout.py"
       - "tools/verify_s07_qualification_lineage.py"
       - ".github/workflows/s06-browser-actor.yml"
       - "contracts/s07-qualification-lineage.v1.json"
@@ -481,7 +483,7 @@ jobs:
       - name: Check out prospective merge object
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          ref: ${{ github.sha }}
           fetch-depth: 2
           persist-credentials: false
 

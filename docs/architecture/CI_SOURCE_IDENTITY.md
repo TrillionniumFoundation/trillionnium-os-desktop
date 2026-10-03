@@ -81,3 +81,12 @@ does not promise refs stay unchanged after return, cover every native/opcode or
 repeated interruption window, certify the following tests, approve a release,
 change product activation or establish installed/native/hardware qualification.
 `promotion_authority` and `production_ready` remain false.
+
+S07 prospective checkout now uses the exact immutable event `github.sha`, rather
+than interpolating a pull-request number into a mutable checkout ref. Its
+pull-request-only job condition, preliminary live merge/base/head binding and
+original ordered-parent qualification body are unchanged. Manual runs cannot
+select PR code through this checkout expression. The source catalog changes
+only that one checkout-step hash; the original qualification run hashes remain
+unchanged. `test_s07_event_checkout.py` checks this execution boundary. Hosted
+CodeQL and qualification must still run on the new exact source object.
