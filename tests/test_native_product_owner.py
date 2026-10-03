@@ -12,11 +12,66 @@ import sys
 from pathlib import Path
 import tempfile
 import unittest
+import subprocess
 from unittest.mock import patch
 from tools import prepare_native_product_owner as assembly
 from tools import validate_native_product_owner as scope
 
 class NativeProductOwnerContractTests(unittest.TestCase):
+    def test_unit_return_event_loop_fragment_compiles_and_preserves_invalidation_refusal(self):
+        # A deliberately synthetic unit-return ABI typing check, not Servo or
+        # journal qualification. The actual fixed-PIN target still must compile
+        # and execute all four unchanged native cases in its workflow.
+        source = assembly.read(assembly.ROOT / scope.EXPECTED['qualification']['consumer_module']).decode()
+        start = source.index('        self.servo.spin_event_loop();')
+        end = source.index('        if self.apply_updates().is_err()', start)
+        fragment = source[start:end]
+        before = '''        if !self.servo.spin_event_loop() || self.delegate.invalidated.get() {
+            return Ok(self.fail_pending(ServoRuntimeError::BrowserCrashed));
+        }
+'''
+        skeleton = '''use std::cell::Cell;
+struct SyntheticUnitServo { spins: Cell<usize> }
+impl SyntheticUnitServo {
+    pub fn spin_event_loop(&self) { self.spins.set(self.spins.get() + 1); }
+}
+struct Delegate { invalidated: Cell<bool> }
+enum ServoRuntimeError { BrowserCrashed }
+#[derive(Debug, PartialEq)]
+enum NativeDrive { Idle, Retired }
+struct State { servo: SyntheticUnitServo, delegate: Delegate }
+impl State {
+    fn fail_pending(&mut self, _: ServoRuntimeError) -> NativeDrive { NativeDrive::Retired }
+    fn drive(&mut self) -> Result<NativeDrive, ServoRuntimeError> {
+FRAGMENT
+        Ok(NativeDrive::Idle)
+    }
+}
+fn main() {
+    let mut state = State { servo: SyntheticUnitServo { spins: Cell::new(0) },
+        delegate: Delegate { invalidated: Cell::new(false) } };
+    assert_eq!(state.drive().ok(), Some(NativeDrive::Idle));
+    assert_eq!(state.servo.spins.get(), 1);
+    state.delegate.invalidated.set(true);
+    assert_eq!(state.drive().ok(), Some(NativeDrive::Retired));
+    assert_eq!(state.servo.spins.get(), 2);
+}
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            env = dict(os.environ, RUSTUP_TOOLCHAIN='1.93.0')
+            for name, selected, expected in [('before', before, 1), ('after', fragment, 0)]:
+                file = path / (name + '.rs'); binary = path / name
+                file.write_text(skeleton.replace('FRAGMENT', selected))
+                compiled = subprocess.run(['rustc', '--edition=2024', str(file), '-o', str(binary)],
+                    cwd=assembly.ROOT, env=env, capture_output=True, text=True, timeout=30)
+                self.assertEqual(compiled.returncode, expected, compiled.stderr)
+                if expected:
+                    self.assertIn('E0600', compiled.stderr)
+                else:
+                    executed = subprocess.run([str(binary)], capture_output=True, text=True, timeout=5)
+                    self.assertEqual(executed.returncode, 0, executed.stderr)
+
     def test_formatting_scope_cannot_disable_comparison_or_change_approved_config(self):
         for field, value in [('formatter_and_byte_comparison_required', False), ('configuration_sha256', '0'*64), ('upstream_rust', '1.93.0')]:
             item = copy.deepcopy(scope.EXPECTED)

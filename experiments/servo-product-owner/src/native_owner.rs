@@ -237,7 +237,8 @@ impl NativeState {
                 return Ok(self.fail_pending(ServoRuntimeError::DeadlineExceeded));
             }
         }
-        if !self.servo.spin_event_loop() || self.delegate.invalidated.get() {
+        self.servo.spin_event_loop();
+        if self.delegate.invalidated.get() {
             return Ok(self.fail_pending(ServoRuntimeError::BrowserCrashed));
         }
         if self.apply_updates().is_err() {

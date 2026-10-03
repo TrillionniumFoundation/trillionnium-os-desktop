@@ -134,6 +134,18 @@ omitted optional match-arm commas required by the upstream configuration. That
 failure remains a failure; the successor's actual compilation and four cases
 need a new run.
 
+The later exact `653464e` PR/push runs `37083533857` and `37083529056`
+passed that formatting comparison, then failed actual target compilation with
+`E0600`: this consumer treated `Servo::spin_event_loop` as a boolean. The
+official fixed PIN declares `pub fn spin_event_loop(&self)`, returning unit.
+The successor calls that method and then checks the existing delegate
+invalidation state, followed by the unchanged peer, deadline and semantic-tree
+guards. Returning from the event-loop call does not certify engine health or
+pipeline retirement. A small synthetic unit-return typing regression checks
+the old compile failure and the corrected call/invalidation branch; it does
+not compile Servo or qualify any native case. Both original failed runs remain
+failures, and the unchanged four cases require a new actual PIN run.
+
 The new workflow compiles the target on Rust 1.97.1 using Servo's own
 `checked-release` profile, which keeps debug assertions and overflow checks while
 optimizing actual live executable hashing. It changes no production deadline or
