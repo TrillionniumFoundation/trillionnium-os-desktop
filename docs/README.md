@@ -47,3 +47,10 @@ qualify desktop health, firmware trust, production floor or release activation.
 G2 opaque per-request root-approved mechanism replacement, same PageOwner/receipt
 history and original twenty-second ceiling. Actual host callbacks and unchanged
 exact-PIN native cases have separate qualification requirements.
+
+## Reviewed secondary mozjs input candidate
+
+[Mozjs secondary-input custody](architecture/MOZJS_SECONDARY_INPUT.md) records the
+additive reviewed input manifest, bounded sealed archive lease and explicit
+compile profile. Source and host custody checks do not prove Cargo consumed the
+archive, artifact attestation, native execution, installed health or G1 closure.

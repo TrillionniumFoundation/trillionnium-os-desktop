@@ -8,6 +8,8 @@ validate:
 	python3 tools/validate_s08_product_supervision.py
 	python3 tools/verify_immutable_callback_url_scope.py
 	python3 tools/verify_g6a_fixture.py
+	python3 tools/verify_approved_request_binding.py
+	python3 tools/verify_mozjs_secondary_input.py
 	python3 tools/validate_repository.py
 	python3 tools/validate_contract_foundation.py
 	python3 tools/validate_s04_transport_custody.py

@@ -266,3 +266,15 @@ and the actual host command documented there. Preserve the original absolute
 Instant, old fixed-PID route and original native six cases. An optimized source
 host pass does not qualify native Servo, an installed persistent owner, a
 60-second health window or production readiness.
+
+## Explicit mozjs secondary-input source profile
+
+Run `python3 tools/verify_mozjs_secondary_input.py` for the additive
+[mozjs input contract](architecture/MOZJS_SECONDARY_INPUT.md) and source API
+correspondence. `tests/test_mozjs_secondary_input.py` exercises existing host
+custody and ordinary child-process lifetime cases. The explicit
+`tools/build_mozjs_locked_native.py` profile holds one verified sealed archive
+through a bounded no-run compile, with a new initially empty target directory.
+It is separate from every existing default native command and budget. An
+official API digest match does not prove attestation or actual upstream archive
+consumption; native execution, installed acceptance and G1 closure remain open.

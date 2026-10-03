@@ -232,3 +232,15 @@ admission, installed service or Servo execution. `tests/test_dual_owner_custody.
 checks closed source correspondence. Cargo all-targets CI runs the real kernel
 target in both exact-head and prospective-merge lanes; source tests cannot stand
 in for those kernel runs or higher-tier qualification.
+
+## Secondary mozjs source-input candidate
+
+The additive [mozjs input contract](../../docs/architecture/MOZJS_SECONDARY_INPUT.md)
+is registered in `contracts/mozjs-secondary-input.v1.json`, with its reviewed
+archive input in `manifests/mozjs-secondary-input.v1.json`. Run
+`python3 tools/verify_mozjs_secondary_input.py` and
+`python3 -m unittest tests.test_mozjs_secondary_input -v` for source/API and host
+custody checks. The explicit new compile profile preserves the original native
+cases and deadlines. It does not prove actual Cargo archive consumption,
+attestation, native execution, installed qualification, G1 closure or production
+readiness. The existing status and claim ceiling remain unchanged.
