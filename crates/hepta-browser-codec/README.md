@@ -102,3 +102,12 @@ Operational diagnosis must retain bounded/redacted evidence and must not weaken 
 Wire changes require a versioned schema/contract and explicit compatibility window. Unknown fields remain rejected. Any divergence between Rust, Python reference, JSON schemas, golden vectors or resource manifest is a release blocker.
 
 Required change sequence: update implementation and Cargo metadata; update machine contracts and hostile tests; update this README and `manifests/modules.v1.json`; run module, repository, project-truth and Rust checks; obtain independent review on the immutable final head; then perform the required exact-main or higher-tier rerun after protected promotion.
+
+The versioned CI required-context source inventory in
+`contracts/ci-required-contexts.v1.json` and
+`docs/architecture/CI_REQUIRED_CONTEXTS.md` gives every original workflow job
+a distinct proposed GitHub display context and expected application source.
+`tools/verify_ci_required_contexts.py` checks that closed correspondence;
+`tests/test_ci_required_contexts.py` exercises hostile names, matrices, source
+bodies, catalog aliases and real filesystem replacement. This source index
+provides no configured protection, independent approval or G0 closure.

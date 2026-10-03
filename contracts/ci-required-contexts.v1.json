@@ -1,0 +1,770 @@
+{
+  "schema": "trillionnium.ci-required-contexts.v1",
+  "profile": {
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "expected_application": {
+      "slug": "github-actions",
+      "app_id": 15368,
+      "binding": "required_status_checks.checks[].context+app_id"
+    },
+    "naming": "workflow_filename_stem / original_job_id / optional_original_matrix_object",
+    "matrix_expression": "${{ github.event_name == 'pull_request' && fromJSON('[\"head\",\"prospective-merge\"]') || fromJSON('[\"head\"]') }}",
+    "matrix_lanes": {
+      "pull_request": [
+        "head",
+        "prospective-merge"
+      ],
+      "push": [
+        "head"
+      ],
+      "workflow_dispatch": [
+        "head"
+      ]
+    },
+    "limits": {
+      "files": 28,
+      "file_bytes": 131072,
+      "jobs": 64,
+      "context_utf8_bytes": 128
+    },
+    "administration": {
+      "status": "PROPOSAL_REQUIRES_CURRENT_HOSTED_READBACK_AND_ADMIN_REVIEW",
+      "strict_up_to_date_proposed": true,
+      "any_application_allowed": false,
+      "apply_entire_inventory_as_global_requirements": false,
+      "path_filtered_missing_check_policy_review_required": true,
+      "conditional_and_skipped_check_execution_review_required": true,
+      "manual_context_is_required_pr_execution": false
+    },
+    "claims": {
+      "source_correspondence_only": true,
+      "hosted_names_observed": false,
+      "settings_applied": false,
+      "independent_approval": false,
+      "check_success_proves_actual_execution": false,
+      "G0_closed": false,
+      "installed_qualified": false,
+      "production_ready": false
+    }
+  },
+  "source_index": {
+    "module": "hepta-browser-codec",
+    "tool": "tools/verify_ci_required_contexts.py",
+    "test": "tests/test_ci_required_contexts.py",
+    "documentation": "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+  },
+  "workflows": {
+    ".github/workflows/agent-port-custody.yml": {
+      "body_without_job_display_names_sha256": "07316f0c84c48235c93970e040364b48d59e2dc7afc63f551649bab3f67433a3",
+      "jobs": {
+        "validate-custody": {
+          "display_name": "agent-port-custody / validate-custody",
+          "matrix_object": false,
+          "contexts": [
+            "agent-port-custody / validate-custody"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": []
+    },
+    ".github/workflows/agent-transport-reference.yml": {
+      "body_without_job_display_names_sha256": "8da5ee1f10bfb7236c5cbfc01d27db787b83151d914c6c83a1667eefcbc15e28",
+      "jobs": {
+        "reference-exact-head": {
+          "display_name": "agent-transport-reference / reference-exact-head",
+          "matrix_object": false,
+          "contexts": [
+            "agent-transport-reference / reference-exact-head"
+          ],
+          "kind": "repository_source_check"
+        },
+        "reference-prospective-merge": {
+          "display_name": "agent-transport-reference / reference-prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "agent-transport-reference / reference-prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "reference-prospective-merge"
+      ]
+    },
+    ".github/workflows/approved-mechanism-policy.yml": {
+      "body_without_job_display_names_sha256": "6f8d8868c4c5df1e641f1e76b7b968b94b9c5e45538507f79d269d3b3965102f",
+      "jobs": {
+        "actual-host-corpus": {
+          "display_name": "approved-mechanism-policy / actual-host-corpus / ${{ matrix.object }}",
+          "matrix_object": true,
+          "contexts": [
+            "approved-mechanism-policy / actual-host-corpus / head",
+            "approved-mechanism-policy / actual-host-corpus / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "push",
+        "pull_request"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": []
+    },
+    ".github/workflows/authenticated-update-readback.yml": {
+      "body_without_job_display_names_sha256": "f32ef73ed856ab25d4c464352bce02c6eafd7b0a0b8d5c26ab98e480a96ae728",
+      "jobs": {
+        "actual-host-corpus": {
+          "display_name": "authenticated-update-readback / actual-host-corpus / ${{ matrix.object }}",
+          "matrix_object": true,
+          "contexts": [
+            "authenticated-update-readback / actual-host-corpus / head",
+            "authenticated-update-readback / actual-host-corpus / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "push",
+        "pull_request"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": []
+    },
+    ".github/workflows/browser-codec-reference.yml": {
+      "body_without_job_display_names_sha256": "8b7e7945a3b547a5c2cbb9d28c6c4ba3c3b99112ebc7d53e69b3d83fd0e35c8f",
+      "jobs": {
+        "reference-and-static-audit": {
+          "display_name": "browser-codec-reference / reference-and-static-audit",
+          "matrix_object": false,
+          "contexts": [
+            "browser-codec-reference / reference-and-static-audit"
+          ],
+          "kind": "repository_source_check"
+        },
+        "rust-exact-head": {
+          "display_name": "browser-codec-reference / rust-exact-head",
+          "matrix_object": false,
+          "contexts": [
+            "browser-codec-reference / rust-exact-head"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": []
+    },
+    ".github/workflows/ci.yml": {
+      "body_without_job_display_names_sha256": "7b9031666d7f1edfd58839a7d4c80236050a386eaeaba1159c5ad8e22d7c4689",
+      "jobs": {
+        "repository-contracts": {
+          "display_name": "ci / repository-contracts",
+          "matrix_object": false,
+          "contexts": [
+            "ci / repository-contracts"
+          ],
+          "kind": "repository_source_check"
+        },
+        "rust": {
+          "display_name": "ci / rust",
+          "matrix_object": false,
+          "contexts": [
+            "ci / rust"
+          ],
+          "kind": "repository_source_check"
+        },
+        "repository-contracts-prospective-merge": {
+          "display_name": "ci / repository-contracts-prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "ci / repository-contracts-prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        },
+        "rust-prospective-merge": {
+          "display_name": "ci / rust-prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "ci / rust-prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "push",
+        "pull_request"
+      ],
+      "path_filtered": false,
+      "conditional_jobs": [
+        "repository-contracts-prospective-merge",
+        "rust-prospective-merge"
+      ]
+    },
+    ".github/workflows/controlled-egress.yml": {
+      "body_without_job_display_names_sha256": "128c3db3ac06f9b04033296b164eca239dc886ea1277f1d9a1cbec281cfd8df3",
+      "jobs": {
+        "actual-host-corpus": {
+          "display_name": "controlled-egress / actual-host-corpus / ${{ matrix.object }}",
+          "matrix_object": true,
+          "contexts": [
+            "controlled-egress / actual-host-corpus / head",
+            "controlled-egress / actual-host-corpus / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "push",
+        "pull_request"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": []
+    },
+    ".github/workflows/d1-final-qualification.yml": {
+      "body_without_job_display_names_sha256": "50a1dfb5134d583dd58813773d7f406da96afcf741ada13d4dca627f9e856ef8",
+      "jobs": {
+        "exact-image": {
+          "display_name": "d1-final-qualification / exact-image",
+          "matrix_object": false,
+          "contexts": [
+            "d1-final-qualification / exact-image"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "path_filtered": false,
+      "conditional_jobs": []
+    },
+    ".github/workflows/d2i-integrated-image.yml": {
+      "body_without_job_display_names_sha256": "4a2902a2c829fb8766ef54c935b2e720cb2b0adc616d3779b3531b1cf4883637",
+      "jobs": {
+        "exact-head-integrated-image": {
+          "display_name": "d2i-integrated-image / exact-head-integrated-image",
+          "matrix_object": false,
+          "contexts": [
+            "d2i-integrated-image / exact-head-integrated-image"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "path_filtered": false,
+      "conditional_jobs": []
+    },
+    ".github/workflows/g2-approved-native-startup.yml": {
+      "body_without_job_display_names_sha256": "445278d97b4f9d375ce7dd8dd5006fa351cb3c551e9711838a17d8059c0ed15a",
+      "jobs": {
+        "source-prospective": {
+          "display_name": "g2-approved-native-startup / source-prospective",
+          "matrix_object": false,
+          "contexts": [
+            "g2-approved-native-startup / source-prospective"
+          ],
+          "kind": "repository_source_check"
+        },
+        "exact-pin-owner": {
+          "display_name": "g2-approved-native-startup / exact-pin-owner",
+          "matrix_object": false,
+          "contexts": [
+            "g2-approved-native-startup / exact-pin-owner"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "source-prospective"
+      ]
+    },
+    ".github/workflows/g2-native-product-owner.yml": {
+      "body_without_job_display_names_sha256": "ba5eea937d1fbeef3c2af3cf76bf2900da76a3f619cc2a53d7cfa43d971f96c9",
+      "jobs": {
+        "source-prospective": {
+          "display_name": "g2-native-product-owner / source-prospective",
+          "matrix_object": false,
+          "contexts": [
+            "g2-native-product-owner / source-prospective"
+          ],
+          "kind": "repository_source_check"
+        },
+        "exact-pin-owner": {
+          "display_name": "g2-native-product-owner / exact-pin-owner",
+          "matrix_object": false,
+          "contexts": [
+            "g2-native-product-owner / exact-pin-owner"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "source-prospective"
+      ]
+    },
+    ".github/workflows/module-documentation.yml": {
+      "body_without_job_display_names_sha256": "9f612a831d43abb08d74ed093c23222e37421d3e50451844b8d45c9ec5a62a87",
+      "jobs": {
+        "exact-head": {
+          "display_name": "module-documentation / exact-head",
+          "matrix_object": false,
+          "contexts": [
+            "module-documentation / exact-head"
+          ],
+          "kind": "repository_source_check"
+        },
+        "prospective-merge": {
+          "display_name": "module-documentation / prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "module-documentation / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "prospective-merge"
+      ]
+    },
+    ".github/workflows/receipt-journal.yml": {
+      "body_without_job_display_names_sha256": "718e6a6fc8d3cecae2bbac13c6e42f0df86859e6565d58377b20c218c15a7cea",
+      "jobs": {
+        "exact-source": {
+          "display_name": "receipt-journal / exact-source",
+          "matrix_object": false,
+          "contexts": [
+            "receipt-journal / exact-source"
+          ],
+          "kind": "repository_source_check"
+        },
+        "prospective-merge": {
+          "display_name": "receipt-journal / prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "receipt-journal / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "prospective-merge"
+      ]
+    },
+    ".github/workflows/s04-transport-custody.yml": {
+      "body_without_job_display_names_sha256": "e465057d92a64f8092cd6961801b7cd5319b7f2c22db2e6d746ac45ab6e945ab",
+      "jobs": {
+        "source-policy": {
+          "display_name": "s04-transport-custody / source-policy",
+          "matrix_object": false,
+          "contexts": [
+            "s04-transport-custody / source-policy"
+          ],
+          "kind": "repository_source_check"
+        },
+        "rust-all-features": {
+          "display_name": "s04-transport-custody / rust-all-features",
+          "matrix_object": false,
+          "contexts": [
+            "s04-transport-custody / rust-all-features"
+          ],
+          "kind": "repository_source_check"
+        },
+        "source-policy-prospective-merge": {
+          "display_name": "s04-transport-custody / source-policy-prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "s04-transport-custody / source-policy-prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        },
+        "rust-prospective-merge": {
+          "display_name": "s04-transport-custody / rust-prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "s04-transport-custody / rust-prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "push",
+        "pull_request"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "source-policy-prospective-merge",
+        "rust-prospective-merge"
+      ]
+    },
+    ".github/workflows/s06-browser-actor.yml": {
+      "body_without_job_display_names_sha256": "2827b8487f1a96f662043cf9afaf0cde8bc7eb9491f60b9fecec35c0aae08672",
+      "jobs": {
+        "exact-source": {
+          "display_name": "s06-browser-actor / exact-source",
+          "matrix_object": false,
+          "contexts": [
+            "s06-browser-actor / exact-source"
+          ],
+          "kind": "repository_source_check"
+        },
+        "prospective-merge": {
+          "display_name": "s06-browser-actor / prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "s06-browser-actor / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "prospective-merge"
+      ]
+    },
+    ".github/workflows/s07-servo-retained-node.yml": {
+      "body_without_job_display_names_sha256": "1e5cc2444c98dcd3786f609ad6968052ad046bc6337babd489136460f8f9ae24",
+      "jobs": {
+        "real-servo-behavior": {
+          "display_name": "s07-servo-retained-node / real-servo-behavior",
+          "matrix_object": false,
+          "contexts": [
+            "s07-servo-retained-node / real-servo-behavior"
+          ],
+          "kind": "repository_source_check"
+        },
+        "prospective-merge-patch-package": {
+          "display_name": "s07-servo-retained-node / prospective-merge-patch-package",
+          "matrix_object": false,
+          "contexts": [
+            "s07-servo-retained-node / prospective-merge-patch-package"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "prospective-merge-patch-package"
+      ]
+    },
+    ".github/workflows/s08-product-servo-runtime.yml": {
+      "body_without_job_display_names_sha256": "9b6d92e6426ee50072d71728f71a545c1187d9e2f84bf1fe37b6a4eb4f69adb8",
+      "jobs": {
+        "exact-head": {
+          "display_name": "s08-product-servo-runtime / exact-head",
+          "matrix_object": false,
+          "contexts": [
+            "s08-product-servo-runtime / exact-head"
+          ],
+          "kind": "repository_source_check"
+        },
+        "prospective-merge": {
+          "display_name": "s08-product-servo-runtime / prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "s08-product-servo-runtime / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "push",
+        "pull_request"
+      ],
+      "path_filtered": false,
+      "conditional_jobs": [
+        "exact-head",
+        "prospective-merge"
+      ]
+    },
+    ".github/workflows/s08-servo-vertical-slice.yml": {
+      "body_without_job_display_names_sha256": "379ea0d315b6ebd768231a6cecc29007831b3b0bfc02fe194df174baa2788584",
+      "jobs": {
+        "exact-source": {
+          "display_name": "s08-servo-vertical-slice / exact-source",
+          "matrix_object": false,
+          "contexts": [
+            "s08-servo-vertical-slice / exact-source"
+          ],
+          "kind": "repository_source_check"
+        },
+        "prospective-merge": {
+          "display_name": "s08-servo-vertical-slice / prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "s08-servo-vertical-slice / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "prospective-merge"
+      ]
+    },
+    ".github/workflows/s09-linux-platform-adapters.yml": {
+      "body_without_job_display_names_sha256": "b78c60806f13afdd1f58a6b7fbc60fc6137a67c23c2edb8bcfac9246b2efd022",
+      "jobs": {
+        "exact-head": {
+          "display_name": "s09-linux-platform-adapters / exact-head",
+          "matrix_object": false,
+          "contexts": [
+            "s09-linux-platform-adapters / exact-head"
+          ],
+          "kind": "repository_source_check"
+        },
+        "prospective-merge": {
+          "display_name": "s09-linux-platform-adapters / prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "s09-linux-platform-adapters / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "prospective-merge"
+      ]
+    },
+    ".github/workflows/s10-production-debian-qemu.yml": {
+      "body_without_job_display_names_sha256": "d6d44072a874dbff8a1be377a9fe54b100904fb74435c84bdf7f1eddea99d262",
+      "jobs": {
+        "manual-candidate-image": {
+          "display_name": "s10-production-debian-qemu / manual-candidate-image",
+          "matrix_object": false,
+          "contexts": [
+            "s10-production-debian-qemu / manual-candidate-image"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "workflow_dispatch"
+      ],
+      "path_filtered": false,
+      "conditional_jobs": []
+    },
+    ".github/workflows/s11-update-recovery.yml": {
+      "body_without_job_display_names_sha256": "5f13fc841566d7eb70775c390f6b42344da4f448555f1afee38ddaeb78870889",
+      "jobs": {
+        "exact-head": {
+          "display_name": "s11-update-recovery / exact-head",
+          "matrix_object": false,
+          "contexts": [
+            "s11-update-recovery / exact-head"
+          ],
+          "kind": "repository_source_check"
+        },
+        "prospective-merge": {
+          "display_name": "s11-update-recovery / prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "s11-update-recovery / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "push",
+        "pull_request"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "exact-head",
+        "prospective-merge"
+      ]
+    },
+    ".github/workflows/s12-release-qualification.yml": {
+      "body_without_job_display_names_sha256": "944e24aea71efdd12e7bbe2eed91dabab3c24a54b069d4fb5bc310f16d54e1f0",
+      "jobs": {
+        "exact-head": {
+          "display_name": "s12-release-qualification / exact-head",
+          "matrix_object": false,
+          "contexts": [
+            "s12-release-qualification / exact-head"
+          ],
+          "kind": "repository_source_check"
+        },
+        "prospective-merge": {
+          "display_name": "s12-release-qualification / prospective-merge",
+          "matrix_object": false,
+          "contexts": [
+            "s12-release-qualification / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "push",
+        "pull_request"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": [
+        "exact-head",
+        "prospective-merge"
+      ]
+    },
+    ".github/workflows/self-hosted-desktop-availability.yml": {
+      "body_without_job_display_names_sha256": "728417adf3d1e38387f32d7ad33803c04141765eae7781780a50496efb446af3",
+      "jobs": {
+        "runner-probe": {
+          "display_name": "self-hosted-desktop-availability / runner-probe",
+          "matrix_object": false,
+          "contexts": [
+            "self-hosted-desktop-availability / runner-probe"
+          ],
+          "kind": "availability_diagnostic"
+        }
+      },
+      "trigger_events": [
+        "workflow_dispatch"
+      ],
+      "path_filtered": false,
+      "conditional_jobs": []
+    },
+    ".github/workflows/self-hosted-fleet-availability.yml": {
+      "body_without_job_display_names_sha256": "d506df7c66b8fb3f132deda93a99941fbde6593fe60646b7014379fc8acedf5f",
+      "jobs": {
+        "rog": {
+          "display_name": "self-hosted-fleet-availability / rog",
+          "matrix_object": false,
+          "contexts": [
+            "self-hosted-fleet-availability / rog"
+          ],
+          "kind": "availability_diagnostic"
+        },
+        "pocket4": {
+          "display_name": "self-hosted-fleet-availability / pocket4",
+          "matrix_object": false,
+          "contexts": [
+            "self-hosted-fleet-availability / pocket4"
+          ],
+          "kind": "availability_diagnostic"
+        }
+      },
+      "trigger_events": [
+        "workflow_dispatch"
+      ],
+      "path_filtered": false,
+      "conditional_jobs": []
+    },
+    ".github/workflows/servo-exact-pin.yml": {
+      "body_without_job_display_names_sha256": "c35e835cdb5b4efa9fbf97503584288cec859cf65072314d17dd406105ebdaae",
+      "jobs": {
+        "qualify": {
+          "display_name": "servo-exact-pin / qualify",
+          "matrix_object": false,
+          "contexts": [
+            "servo-exact-pin / qualify"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": []
+    },
+    ".github/workflows/servo-headed-runtime.yml": {
+      "body_without_job_display_names_sha256": "e7069cf5132ea0539ba1cfff18ec2f1901a0aa19005667e3ab63b532cdc3bfbd",
+      "jobs": {
+        "qualify": {
+          "display_name": "servo-headed-runtime / qualify",
+          "matrix_object": false,
+          "contexts": [
+            "servo-headed-runtime / qualify"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": []
+    },
+    ".github/workflows/update-boot-observer.yml": {
+      "body_without_job_display_names_sha256": "dfaf08dd8773916ca7f2ebbf7849c914dd22431e0123b6b3fb77f11167faace7",
+      "jobs": {
+        "actual-host-corpus": {
+          "display_name": "update-boot-observer / actual-host-corpus / ${{ matrix.object }}",
+          "matrix_object": true,
+          "contexts": [
+            "update-boot-observer / actual-host-corpus / head",
+            "update-boot-observer / actual-host-corpus / prospective-merge"
+          ],
+          "kind": "repository_source_check"
+        }
+      },
+      "trigger_events": [
+        "push",
+        "pull_request"
+      ],
+      "path_filtered": true,
+      "conditional_jobs": []
+    }
+  }
+}

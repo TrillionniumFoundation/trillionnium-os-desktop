@@ -15,7 +15,7 @@ permissions: {}
 
 jobs:
   rog:
-    name: ROG runner probe
+    name: self-hosted-fleet-availability / rog
     runs-on: [self-hosted, linux, x64, rog]
     timeout-minutes: 10
     steps:
@@ -39,7 +39,7 @@ jobs:
           done
 
   pocket4:
-    name: Pocket4 runner probe
+    name: self-hosted-fleet-availability / pocket4
     runs-on: [self-hosted, linux, x64, pocket4]
     timeout-minutes: 10
     steps:

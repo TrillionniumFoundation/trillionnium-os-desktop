@@ -40,6 +40,11 @@ on:
       - "contracts/configured-retained-bootstrap.v1.json"
       - "tools/verify_configured_retained_bootstrap.py"
       - "tests/test_configured_retained_bootstrap.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -59,6 +64,11 @@ on:
       - "tests/test_module_documentation_source_guard.py"
       - "CONTRIBUTING.md"
       - "Makefile"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -90,6 +100,7 @@ concurrency:
 
 jobs:
   exact-head:
+    name: module-documentation / exact-head
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -140,6 +151,7 @@ jobs:
           python3 tools/validate_rust_browser_codec.py >/tmp/codec-audit.json
 
   prospective-merge:
+    name: module-documentation / prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20

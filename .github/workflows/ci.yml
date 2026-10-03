@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   repository-contracts:
+    name: ci / repository-contracts
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -75,6 +76,7 @@ jobs:
           python3 -m unittest discover -s tests/transport -v
 
   rust:
+    name: ci / rust
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -147,6 +149,7 @@ jobs:
         run: cargo run --locked -p hepta-browserd -- --self-check
 
   repository-contracts-prospective-merge:
+    name: ci / repository-contracts-prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -207,6 +210,7 @@ jobs:
           python3 -m unittest discover -s tests/transport -v
 
   rust-prospective-merge:
+    name: ci / rust-prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 30

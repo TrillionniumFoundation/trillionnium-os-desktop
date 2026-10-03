@@ -41,6 +41,11 @@ on:
       - "tools/validate_project_truth.py"
       - "tools/validate_repository.py"
       - "tools/verify_d3_servo_patch.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -65,6 +70,11 @@ on:
       - "tools/validate_module_documentation.py"
       - "tests/test_s08_servo_runtime.py"
       - "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -96,7 +106,7 @@ env:
 
 jobs:
   exact-source:
-    name: Exact Source Head — real Servo AgentPort BrowserActor receipt chain
+    name: s08-servo-vertical-slice / exact-source
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
@@ -434,8 +444,8 @@ jobs:
           retention-days: 30
 
   prospective-merge:
+    name: s08-servo-vertical-slice / prospective-merge
     if: github.event_name == 'pull_request'
-    name: Prospective Merge — source and patch package
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:

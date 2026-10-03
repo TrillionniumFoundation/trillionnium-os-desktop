@@ -32,6 +32,11 @@ on:
       - "tools/validate_module_documentation_legacy.py"
       - "tools/validate_project_truth.py"
       - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - ".github/workflows/approved-mechanism-policy.yml"
@@ -45,6 +50,11 @@ on:
       - "manifests/modules.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -72,6 +82,7 @@ concurrency:
 
 jobs:
   actual-host-corpus:
+    name: approved-mechanism-policy / actual-host-corpus / ${{ matrix.object }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:

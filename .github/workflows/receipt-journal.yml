@@ -28,6 +28,11 @@ on:
       - "tools/structured_status.py"
       - "tools/structured_status_model.py"
       - "tools/structured_status_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -44,6 +49,11 @@ on:
       - "tools/verify_receipt_journal.py"
       - "tools/validate_repository.py"
       - "tools/validate_project_truth.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -65,7 +75,7 @@ concurrency:
 
 jobs:
   exact-source:
-    name: exact-source-receipt-journal
+    name: receipt-journal / exact-source
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
@@ -172,7 +182,7 @@ jobs:
           PY
 
   prospective-merge:
-    name: prospective-merge-receipt-journal
+    name: receipt-journal / prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 40

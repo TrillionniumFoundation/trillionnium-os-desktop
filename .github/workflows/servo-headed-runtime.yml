@@ -28,6 +28,11 @@ on:
       - "tools/_validate_repository_impl.py"
       - "tools/artifact_evidence.py"
       - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   push:
     branches:
       - main
@@ -58,6 +63,11 @@ on:
       - "tools/_validate_repository_impl.py"
       - "tools/artifact_evidence.py"
       - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   workflow_dispatch:
 
 permissions:
@@ -77,6 +87,7 @@ env:
 
 jobs:
   qualify:
+    name: servo-headed-runtime / qualify
     runs-on: ubuntu-24.04
     timeout-minutes: 300
     steps:

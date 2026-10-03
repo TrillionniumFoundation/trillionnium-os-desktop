@@ -41,6 +41,11 @@ on:
       - "contracts/ci-source-identity.v1.json"
       - "tests/test_ci_source_identity.py"
       - "tools/verify_ci_source_identity.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - ".github/workflows/update-boot-observer.yml"
@@ -80,6 +85,11 @@ on:
       - "contracts/ci-source-identity.v1.json"
       - "tests/test_ci_source_identity.py"
       - "tools/verify_ci_source_identity.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
 permissions:
   contents: read
@@ -90,6 +100,7 @@ concurrency:
 
 jobs:
   actual-host-corpus:
+    name: authenticated-update-readback / actual-host-corpus / ${{ matrix.object }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:

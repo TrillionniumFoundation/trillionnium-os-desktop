@@ -25,6 +25,11 @@ on:
       - "tools/structured_status.py"
       - "tools/structured_status_model.py"
       - "tools/structured_status_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - ".github/workflows/s11-update-recovery.yml"
@@ -35,6 +40,11 @@ on:
       - "docs/architecture/S11_UPDATE_RECOVERY.md"
       - "tools/validate_repository.py"
       - "tools/validate_project_truth.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -56,6 +66,7 @@ concurrency:
 
 jobs:
   exact-head:
+    name: s11-update-recovery / exact-head
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -104,6 +115,7 @@ jobs:
           git diff --check
 
   prospective-merge:
+    name: s11-update-recovery / prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 15

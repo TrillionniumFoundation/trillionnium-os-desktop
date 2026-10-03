@@ -40,6 +40,11 @@ on:
       - "tools/structured_status.py"
       - "tools/structured_status_model.py"
       - "tools/structured_status_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -70,6 +75,11 @@ on:
       - "tools/validate_repository.py"
       - "tools/_validate_repository_impl.py"
       - "tools/validate_project_truth.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -89,7 +99,7 @@ concurrency:
 
 jobs:
   exact-source:
-    name: exact-source-authority-boundary
+    name: s06-browser-actor / exact-source
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -227,7 +237,7 @@ jobs:
           PY
 
   prospective-merge:
-    name: prospective-merge-authority-boundary
+    name: s06-browser-actor / prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 45

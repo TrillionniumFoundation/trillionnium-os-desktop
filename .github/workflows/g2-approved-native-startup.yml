@@ -66,6 +66,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   source-prospective:
+    name: g2-approved-native-startup / source-prospective
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -150,6 +151,7 @@ jobs:
           python3 -m unittest discover -s tests -p test_native_product_owner.py -v
           make check
   exact-pin-owner:
+    name: g2-approved-native-startup / exact-pin-owner
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:

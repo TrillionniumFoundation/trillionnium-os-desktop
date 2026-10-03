@@ -38,6 +38,11 @@ on:
       - "tools/structured_status_model.py"
       - "tools/structured_status_repository.py"
       - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   push:
     branches:
       - main
@@ -68,6 +73,11 @@ on:
       - "manifests/gates.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -90,6 +100,7 @@ concurrency:
 
 jobs:
   validate-custody:
+    name: agent-port-custody / validate-custody
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:

@@ -27,6 +27,11 @@ on:
       - "tools/validate_module_documentation_legacy.py"
       - "tools/validate_project_truth.py"
       - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - ".github/workflows/controlled-egress.yml"
@@ -35,6 +40,11 @@ on:
       - "tests/test_controlled_egress.py"
       - "contracts/controlled-egress.v1.json"
       - "docs/architecture/CONTROLLED_EGRESS.md"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -62,6 +72,7 @@ concurrency:
 
 jobs:
   actual-host-corpus:
+    name: controlled-egress / actual-host-corpus / ${{ matrix.object }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:

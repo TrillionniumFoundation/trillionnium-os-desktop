@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   exact-head:
+    name: s08-product-servo-runtime / exact-head
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -75,6 +76,7 @@ jobs:
           git diff --check
 
   prospective-merge:
+    name: s08-product-servo-runtime / prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 30

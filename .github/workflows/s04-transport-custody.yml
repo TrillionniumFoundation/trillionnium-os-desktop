@@ -45,6 +45,11 @@ on:
       - "tools/validate_project_truth.py"
       - "tools/validate_repository.py"
       - "tools/validate_rust_browser_codec.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - ".github/workflows/s04-transport-custody.yml"
@@ -73,6 +78,11 @@ on:
       - "tests/test_s04_transport_custody.py"
       - "tests/transport/**"
       - "manifests/cargo-external-allowlist.json"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -98,6 +108,7 @@ concurrency:
 
 jobs:
   source-policy:
+    name: s04-transport-custody / source-policy
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -174,6 +185,7 @@ jobs:
             /tmp/d0c02-agent-transport-reference-result.json
 
   rust-all-features:
+    name: s04-transport-custody / rust-all-features
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -233,6 +245,7 @@ jobs:
           test ! -e /etc/hepta/enable-agent-port
 
   source-policy-prospective-merge:
+    name: s04-transport-custody / source-policy-prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -317,6 +330,7 @@ jobs:
             /tmp/d0c02-agent-transport-reference-result.json
 
   rust-prospective-merge:
+    name: s04-transport-custody / rust-prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 35

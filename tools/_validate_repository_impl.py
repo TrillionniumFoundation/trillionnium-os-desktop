@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from browser_codec_reference_security import load_json_strict, open_regular_beneath
+from verify_ci_required_contexts import validate as validate_ci_required_contexts
 
 ROOT = Path(__file__).resolve().parents[1]
 ERRORS: list[str] = []
@@ -53,6 +54,10 @@ EXPECTED_WORKSPACE_MEMBERS = [
 ]
 
 REQUIRED_PATHS = [
+    "contracts/ci-required-contexts.v1.json",
+    "tools/verify_ci_required_contexts.py",
+    "tests/test_ci_required_contexts.py",
+    "docs/architecture/CI_REQUIRED_CONTEXTS.md",
     ".github/workflows/ci.yml",
     ".github/CODEOWNERS",
     "SECURITY.md",
@@ -489,6 +494,10 @@ def main() -> int:
     check_toolchain()
     check_contract_alignment()
     check_filesystem_shape()
+    try:
+        validate_ci_required_contexts(ROOT)
+    except (OSError, ValueError, UnicodeError, RecursionError) as error:
+        fail(f"CI required-context source correspondence failed: {error}")
     if ERRORS:
         for error in ERRORS:
             print(f"ERROR: {error}", file=sys.stderr)

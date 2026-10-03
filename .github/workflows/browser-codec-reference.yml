@@ -49,6 +49,11 @@ on:
       - "tools/structured_status.py"
       - "tools/structured_status_model.py"
       - "tools/structured_status_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
   push:
     branches: [main]
     paths:
@@ -88,6 +93,11 @@ on:
       - "docs/plan/**"
       - "rust-toolchain.toml"
       - "docs/evidence/generated/d0c03-*.json"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -104,6 +114,7 @@ permissions:
 
 jobs:
   reference-and-static-audit:
+    name: browser-codec-reference / reference-and-static-audit
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -233,6 +244,7 @@ jobs:
           PY
 
   rust-exact-head:
+    name: browser-codec-reference / rust-exact-head
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
