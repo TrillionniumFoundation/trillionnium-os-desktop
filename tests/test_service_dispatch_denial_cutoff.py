@@ -591,9 +591,9 @@ class RetainedFullFiniteHistoryCompositionTests(unittest.TestCase):
         self.assertEqual(rebound['preserved_original_sha256'][path], gate._sha(changed.encode()))
         self.assertEqual(rebound['ci_parent_inverse18'][path]['complete_sha256'], gate._sha(changed.encode()))
         self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(rebound))
-        self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
-                         rebound['checker_nonEXPECTED_whole_sha256'])
         with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                             rebound['checker_nonEXPECTED_whole_sha256'])
             with self.assertRaisesRegex(ValueError, '^P3 independent current CI physical Source differs$'):
                 gate.check(rebound, texts)
 
