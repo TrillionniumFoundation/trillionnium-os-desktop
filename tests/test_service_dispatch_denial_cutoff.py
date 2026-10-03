@@ -256,7 +256,12 @@ class JointPhysicalSourceBoundaryTests(unittest.TestCase):
             texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
             self.assertEqual(texts[gate.TOOL].count(canonical), 1)
             texts[gate.TOOL] = texts[gate.TOOL].replace(canonical, gate.expected_assignment(rebound), 1)
-            guard = ('P3 unknown complete Source cannot normalize' if path == 'Makefile'
+            # Index12 first matches the real authored compile-fail expression:
+            # comments preserve Rust semantics but the independent whole inverse
+            # rejects its changed Source. Index16 restores the registered d933
+            # Makefile; the mandatory physical command guard refuses that view.
+            guard = ('P3 unknown complete Source cannot normalize' if index == 12
+                     else 'P3 mandatory physical Source gate differs' if index == 16
                      else 'P3 independent closed implementation')
             with mock.patch.object(gate, 'EXPECTED', rebound), self.subTest(index=index, target=guard):
                 self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))
