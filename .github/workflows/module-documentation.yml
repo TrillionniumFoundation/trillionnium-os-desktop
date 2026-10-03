@@ -48,6 +48,10 @@ on:
       - "contracts/remaining-managed-consumers.v1.json"
       - "docs/architecture/REMAINING_MANAGED_CONSUMERS.md"
       - "tests/test_remaining_managed_consumers.py"
+      - "contracts/immutable-callback-url-scope.v1.json"
+      - "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md"
+      - "tests/test_immutable_callback_url_scope.py"
+      - "tools/verify_immutable_callback_url_scope.py"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -97,6 +101,10 @@ on:
       - "contracts/remaining-managed-consumers.v1.json"
       - "docs/architecture/REMAINING_MANAGED_CONSUMERS.md"
       - "tests/test_remaining_managed_consumers.py"
+      - "contracts/immutable-callback-url-scope.v1.json"
+      - "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md"
+      - "tests/test_immutable_callback_url_scope.py"
+      - "tools/verify_immutable_callback_url_scope.py"
 permissions:
   contents: read
 

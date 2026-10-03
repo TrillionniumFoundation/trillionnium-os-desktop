@@ -50,6 +50,16 @@ This library registers no binary target. Cargo binary auto-discovery and package
 
 ## Configuration and features
 
+`closed_immutable_callback_engine_pair` is an additive internal callback
+constructor with a fixed document URL scope. Its exact signature, creator-thread
+preconditions and owner/reply refusal semantics are specified in
+[`IMMUTABLE_CALLBACK_URL_SCOPE.md`](../../docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md)
+and `contracts/immutable-callback-url-scope.v1.json`. The caller still supplies
+the separately reviewed operation profile and live request custody. The original
+callback and synchronous constructors keep their D3 local URL scope. Four new
+Rust tests use synthetic replies through actual local channels; they do not
+qualify native Servo or an installed product.
+
 There are no Cargo features. Queue capacity and cancellation polling are fixed bounded constants. Runtime implementations are injected only in tests/internal composition; this is precisely why the crate is unpublished and separated from the product facade.
 
 Registered Cargo features: none.

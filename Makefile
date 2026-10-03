@@ -6,6 +6,7 @@ validate:
 	python3 tools/validate_platform_mechanisms.py
 	python3 tools/validate_s08_servo_runtime.py
 	python3 tools/validate_s08_product_supervision.py
+	python3 tools/verify_immutable_callback_url_scope.py
 	python3 tools/validate_repository.py
 	python3 tools/validate_contract_foundation.py
 	python3 tools/validate_s04_transport_custody.py

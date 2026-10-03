@@ -64,6 +64,14 @@ This library registers no binary target. Cargo binary auto-discovery and package
 
 ## Configuration and features
 
+The closed immutable Servo profile uses the constructor-selected URL scope in
+[`IMMUTABLE_CALLBACK_URL_SCOPE.md`](../../docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md)
+and its versioned contract. It preserves the actual native WebView URL and admits
+only the existing fixed document. The existing semantic profile keeps its D3
+local URL rule. Scope selection does not approve a principal, extend a request
+deadline or make the daemon installable; original native qualification remains
+a separate gate.
+
 There are no Cargo features. The deterministic wrapper remains local-only, while S08 adds a concrete bridge whose real-Servo behavior is enabled only by the permanent qualification workflow. `HEPTA_S08_MAILBOX` is accepted solely by the integration test and must name an absolute private test directory; it is not runtime product configuration. Product activation remains controlled by higher-level profile and systemd custody.
 
 The closed immutable consumer is a separate source candidate. Its reusable real-Servo adapter is not the S08 mailbox and is not linked into the default browserd CLI. The existing full semantic bridge selection and all old tests remain present; new source selection does not qualify the known failing S08 action lane.

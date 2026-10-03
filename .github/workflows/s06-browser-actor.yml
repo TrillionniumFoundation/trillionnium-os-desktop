@@ -45,6 +45,11 @@ on:
       - "tests/test_ci_required_contexts.py"
       - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
       - ".github/workflows/**"
+      - "contracts/immutable-callback-url-scope.v1.json"
+      - "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md"
+      - "tests/test_immutable_callback_url_scope.py"
+      - "tools/verify_immutable_callback_url_scope.py"
+      - "Makefile"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -90,6 +95,11 @@ on:
       - "tests/test_ci_required_contexts.py"
       - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
       - ".github/workflows/**"
+      - "contracts/immutable-callback-url-scope.v1.json"
+      - "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md"
+      - "tests/test_immutable_callback_url_scope.py"
+      - "tools/verify_immutable_callback_url_scope.py"
+      - "Makefile"
 permissions:
   contents: read
 
