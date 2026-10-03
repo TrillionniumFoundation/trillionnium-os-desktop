@@ -186,17 +186,20 @@
       "documentation": "crates/hepta-browser-codec/README.md",
       "architecture": [
         "docs/architecture/CANONICAL_BROWSER_CODEC.md",
-        "docs/architecture/RUST_BROWSER_CODEC.md"
+        "docs/architecture/RUST_BROWSER_CODEC.md",
+        "docs/architecture/SHARED_SOURCE_READER.md"
       ],
       "contracts": [
         "contracts/browser-codec.v1.json",
         "contracts/browser-codec-resource-limits.v1.json",
         "contracts/browser-api.v1.schema.json",
-        "contracts/browser-wire.v1.schema.json"
+        "contracts/browser-wire.v1.schema.json",
+        "contracts/shared-source-reader.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-codec/src/tests.rs",
-        "tests/test_validate_rust_browser_codec.py"
+        "tests/test_validate_rust_browser_codec.py",
+        "tests/test_shared_source_reader.py"
       ],
       "workflows": [
         ".github/workflows/browser-codec-reference.yml",

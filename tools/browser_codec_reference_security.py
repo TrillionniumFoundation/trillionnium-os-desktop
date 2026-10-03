@@ -146,6 +146,106 @@ def _relative_parts(root: Path, path: Path, *, label: str) -> tuple[str, ...]:
     return tuple(relative.parts)
 
 
+class _SourceDescriptor:
+    """Own one FD until close is attempted or the public API transfers it."""
+
+    def __init__(self) -> None:
+        self.fd: int | None = None
+
+    def close(self) -> None:
+        descriptor = None
+        attempted = False
+        try:
+            descriptor, self.fd = self.fd, None
+            if descriptor is not None:
+                attempted = True; os.close(descriptor)
+        except BaseException:
+            if descriptor is not None and not attempted:
+                self.fd = descriptor
+            raise
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except BaseException:
+            pass
+
+
+def _close_source_descriptors(owners: list[_SourceDescriptor]) -> None:
+    failure = None
+    for owner in reversed(owners):
+        try:
+            owner.close()
+        except BaseException as error:
+            if failure is None:
+                failure = error
+    if failure is not None:
+        raise failure
+
+
+def _open_regular_owned_beneath(
+    root: Path,
+    path: Path,
+    *,
+    label: str,
+    after_component: AfterComponentHook | None = None,
+) -> _SourceDescriptor:
+
+    parts = _relative_parts(root, path, label=label)
+    root_flags = os.O_RDONLY | _O_CLOEXEC | _O_DIRECTORY | _O_NOFOLLOW
+    ancestors: list[_SourceDescriptor] = []
+    current = _SourceDescriptor()
+    ancestors.append(current)
+    leaf_owner = _SourceDescriptor()
+    try:
+        try:
+            current.fd = os.open(root, root_flags)
+        except OSError as error:
+            raise ValueError(f"{label} repository root is unsafe or unreadable") from error
+        if not stat.S_ISDIR(os.fstat(current.fd).st_mode):
+            raise ValueError(f"{label} repository root is not a directory")
+
+        for index, component in enumerate(parts[:-1]):
+            following = _SourceDescriptor()
+            ancestors.append(following)
+            try:
+                following.fd = os.open(
+                    component,
+                    os.O_RDONLY | _O_CLOEXEC | _O_DIRECTORY | _O_NOFOLLOW,
+                    dir_fd=current.fd,
+                )
+            except OSError as error:
+                raise ValueError(
+                    f"{label} parent is absent, non-directory, or symlinked: {component}"
+                ) from error
+            if not stat.S_ISDIR(os.fstat(following.fd).st_mode):
+                raise ValueError(f"{label} parent is not a directory: {component}")
+            if after_component is not None:
+                after_component(index, component, following.fd)
+            current.close()
+            current = following
+
+        leaf = parts[-1]
+        try:
+            leaf_owner.fd = os.open(
+                leaf,
+                os.O_RDONLY | _O_CLOEXEC | _O_NONBLOCK | _O_NOFOLLOW,
+                dir_fd=current.fd,
+            )
+        except OSError as error:
+            raise ValueError(
+                f"{label} leaf is absent, unsafe, or symlinked: {leaf}"
+            ) from error
+        if not stat.S_ISREG(os.fstat(leaf_owner.fd).st_mode):
+            raise ValueError(f"{label} is not a regular file: {path}")
+        return leaf_owner
+    except BaseException:
+        leaf_owner.close()
+        raise
+    finally:
+        _close_source_descriptors(ancestors)
+
+
 def open_regular_beneath(
     root: Path,
     path: Path,
@@ -155,65 +255,22 @@ def open_regular_beneath(
 ) -> int:
     """Open a regular file through pinned directory descriptors.
 
-    Every parent is opened relative to the previously pinned descriptor with
-    ``O_DIRECTORY|O_NOFOLLOW``; the leaf is opened with ``O_NOFOLLOW``. A
-    pathname rename or symlink swap cannot redirect a later component lookup
-    outside the already-open directory chain.
+    Every parent below ``root`` is opened relative to the pinned descriptor with
+    ``O_DIRECTORY|O_NOFOLLOW``; the leaf is opened with ``O_NOFOLLOW``. A rename
+    or symlink swap cannot redirect later lookup outside the opened chain.
+    Managed owners retain the new parent and leaf through ordinary Python line
+    interruption and owned-helper result loss. The returned raw ``int`` transfers
+    close responsibility to the caller; final raw-result delivery, every native
+    call/opcode window and repeated cleanup interruptions are not guaranteed.
     """
 
-    parts = _relative_parts(root, path, label=label)
-    root_flags = os.O_RDONLY | _O_CLOEXEC | _O_DIRECTORY | _O_NOFOLLOW
-    try:
-        directory_fd = os.open(root, root_flags)
-    except OSError as error:
-        raise ValueError(f"{label} repository root is unsafe or unreadable") from error
-
-    try:
-        if not stat.S_ISDIR(os.fstat(directory_fd).st_mode):
-            raise ValueError(f"{label} repository root is not a directory")
-
-        for index, component in enumerate(parts[:-1]):
-            try:
-                next_fd = os.open(
-                    component,
-                    os.O_RDONLY | _O_CLOEXEC | _O_DIRECTORY | _O_NOFOLLOW,
-                    dir_fd=directory_fd,
-                )
-            except OSError as error:
-                raise ValueError(
-                    f"{label} parent is absent, non-directory, or symlinked: {component}"
-                ) from error
-            try:
-                if not stat.S_ISDIR(os.fstat(next_fd).st_mode):
-                    raise ValueError(f"{label} parent is not a directory: {component}")
-                if after_component is not None:
-                    after_component(index, component, next_fd)
-            except BaseException:
-                os.close(next_fd)
-                raise
-            os.close(directory_fd)
-            directory_fd = next_fd
-
-        leaf = parts[-1]
-        try:
-            descriptor = os.open(
-                leaf,
-                os.O_RDONLY | _O_CLOEXEC | _O_NONBLOCK | _O_NOFOLLOW,
-                dir_fd=directory_fd,
-            )
-        except OSError as error:
-            raise ValueError(
-                f"{label} leaf is absent, unsafe, or symlinked: {leaf}"
-            ) from error
-        try:
-            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
-                raise ValueError(f"{label} is not a regular file: {path}")
-            return descriptor
-        except BaseException:
-            os.close(descriptor)
-            raise
-    finally:
-        os.close(directory_fd)
+    owner = _open_regular_owned_beneath(
+        root, path, label=label, after_component=after_component,
+    )
+    descriptor = owner.fd
+    if descriptor is None:
+        raise ValueError(f"{label} owned descriptor is unavailable")
+    owner.fd = None; return descriptor
 
 
 def _open_regular(path: Path, *, label: str) -> int:
