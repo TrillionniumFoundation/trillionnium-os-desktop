@@ -146,10 +146,10 @@ class NativeCiAbsenceGuardTests(unittest.TestCase):
     def test_actual_actor_fixture_keeps_all_five_product_files_and_no_toy_exports(self):
         source = ROOT / "crates/hepta-browser-actor/src"
         retained = sorted(path.relative_to(source) for path in source.rglob("*.rs"))
-        self.assertEqual(retained, [Path("lib.rs"), Path("servo_runtime.rs"),
+        self.assertEqual(retained, sorted([Path("lib.rs"), Path("servo_runtime.rs"),
                                    Path("servo_runtime/approved_binding.rs"),
                                    Path("servo_runtime/service_runtime.rs"),
-                                   Path("servo_runtime/service_runtime/service_actor.rs")])
+                                   Path("servo_runtime/service_runtime/service_actor.rs")]))
         with tempfile.TemporaryDirectory() as temp:
             directory = Path(temp)
             self.actor_fixture(directory)
