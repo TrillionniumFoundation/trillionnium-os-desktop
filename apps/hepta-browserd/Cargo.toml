@@ -39,6 +39,11 @@ name = "approved_native_startup_kernel"
 path = "tests/approved_native_startup_kernel.rs"
 harness = false
 
+[[test]]
+name = "configured_retained_bootstrap_kernel"
+path = "tests/configured_retained_bootstrap_kernel.rs"
+harness = false
+
 # Real Linux rights/pidfd/EOF/fork corpus runs from a single-thread main.
 [[test]]
 name = "product_handoff_kernel"

@@ -168,7 +168,7 @@ impl Fixture {
     fn path_policy(&self) -> RootControlPathPolicy {
         RootControlPathPolicy::new(&self.cp, NOBODY, 0o750, NOBODY, 0o660).unwrap()
     }
-    fn listener(&self) -> RootOwnedControlListener {
+    pub fn listener(&self) -> RootOwnedControlListener {
         let fd =
             unsafe { libc::socket(libc::AF_UNIX, libc::SOCK_SEQPACKET | libc::SOCK_CLOEXEC, 0) };
         assert!(fd >= 0);
@@ -190,8 +190,11 @@ impl Fixture {
         fs::set_permissions(&self.cp, fs::Permissions::from_mode(0o660)).unwrap();
         RootOwnedControlListener::from_inherited(owned, &self.path_policy()).unwrap()
     }
-    fn document(&self, deadline: Instant) -> ApprovedPolicyDocument {
+    pub fn document(&self, deadline: Instant) -> ApprovedPolicyDocument {
         ApprovedPolicyDocument::open_root_owned_before(&self.config, deadline).unwrap()
+    }
+    pub fn agent_path(&self) -> &Path {
+        &self.op
     }
     pub fn rewrite(&self, key: &str, value: &str) {
         let text = fs::read_to_string(&self.config).unwrap();
@@ -221,7 +224,7 @@ pub struct ChildOwner {
     done: bool,
 }
 impl ChildOwner {
-    fn spawn(f: &Fixture, mode: &str, op: &Path, nobody: bool) -> Self {
+    pub fn spawn(f: &Fixture, mode: &str, op: &Path, nobody: bool) -> Self {
         let mut command = Command::new(&f.binary);
         command
             .args(["--child", mode])
@@ -349,6 +352,12 @@ fn custodian(cp: &Path, op: &Path, config: &Path, mode: &str) {
     );
     assert_eq!(sender.ensure_control_current().unwrap(), deadline);
     println!("ARMED");
+    if mode == "bootstrap-refusal" {
+        // Additive configured-bootstrap refusal stimulus. No original native
+        // or retained-handshake case changes or acquires a replacement budget.
+        assert_eq!(input(), b'x');
+        return;
+    }
     assert_eq!(input(), b's');
     if mode == "expired" {
         thread::sleep(

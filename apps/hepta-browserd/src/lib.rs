@@ -22,8 +22,8 @@ pub use product_dispatch::{
 };
 #[cfg(target_os = "linux")]
 pub use product_dispatch::{
-    ApprovedRetainedProductConnection, ProductControlMonitor, ProductControlMonitorOutcome,
-    RetainedProductConnection,
+    ApprovedRetainedProductConnection, ConfiguredRetainedBootstrap, ProductControlMonitor,
+    ProductControlMonitorOutcome, RetainedProductConnection,
 };
 
 pub use servo_product_runtime::{

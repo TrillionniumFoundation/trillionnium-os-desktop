@@ -318,3 +318,14 @@ completions are synthetic source callbacks; fresh native startup execution is
 pending. Original native four tests and legacy approved APIs remain unchanged.
 Main binaries, services, features, installed broker/principal policy and default
 activation remain closed; no hardware/signing/release qualification follows.
+
+The additive [configured retained bootstrap](../../docs/architecture/CONFIGURED_RETAINED_BOOTSTRAP.md)
+consumes one original root-control connection and selects both configured roles
+from the same retained root-owned document. `from_control` reads the fixed
+product policy; `from_root_document` accepts the existing opaque verified
+document for explicit installation/qualification. `into_admission` preserves
+the original stream, deadline and terminal monitor without exposing a principal
+or starting a native owner. The `configured_retained_bootstrap_kernel` target
+checks real three-process admission, drift, shorter deadlines and fork custody.
+Its native and installed qualification remains open, including the native
+startup's original first-packet lifetime ceiling.

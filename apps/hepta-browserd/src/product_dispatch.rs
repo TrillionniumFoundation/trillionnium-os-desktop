@@ -35,7 +35,11 @@ use hepta_session_core::{Digest, DurableReceiptFact, ReceiptJournal, ReceiptLife
 use crate::{RestartPolicy, RuntimeGeneration, RuntimeState};
 
 #[cfg(target_os = "linux")]
+mod configured_retained_bootstrap;
+#[cfg(target_os = "linux")]
 mod product_approved_policy;
+#[cfg(target_os = "linux")]
+pub use configured_retained_bootstrap::ConfiguredRetainedBootstrap;
 #[cfg(target_os = "linux")]
 pub use product_approved_policy::ApprovedRetainedProductConnection;
 #[cfg(target_os = "linux")]
