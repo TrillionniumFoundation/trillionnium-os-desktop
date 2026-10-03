@@ -851,3 +851,77 @@ The separately reviewed fixed-category CLI source successor is a proposed fix;
 the current failed hosted result remains recorded until its own new exact-object
 execution. This addendum neither reruns checks nor supplies native, installed,
 human, G6 safety-review or production qualification for any successor.
+
+## Control-readiness source candidate and dependency composition
+
+The separately frozen author candidate
+`cb3e63dc3154584b9aac4704e4bb7b7e4e70ea90`, tree
+`a3050137b6a89f443f9b95c9de3b71519c4f206b`, contains 643 tracked
+files. Its eight new source paths implement the explicit retained Control
+readiness profile in `contracts/retained-control-readiness.v1.json`. The two
+new inherent methods are compiled in registered production child modules;
+the finite source checker requires all 38 methods, including the original
+36. Original raw poll, send, report and wait bodies, native six-case fixtures,
+PIN, Cargo lock and five/twenty-second budgets remain preserved. An idle
+result gives no action or report permission and does not renew the original
+lifetime. The persistent third Owner and measured sixty-second service health
+requirement remain open.
+
+The author's unfiltered Rust 1.93 default/all-features graphs actually exited
+0 with 441/454 tests and 29 documentation tests; both strict Clippy graphs and
+format checks also exited 0. These are observations on that author's frozen
+source, not full checks or native qualification of this metadata successor.
+The external author report is
+`work/g2-control-readiness-author-facts/author-review-report.json`, SHA-256
+`c57f9a05b2eb49aa07b4a1e4d0ed0926ea5362710c488eda483d0693b9173f6f`.
+Its original failed host/Clippy/legacy-transfer attempts remain separately
+recorded. The integrated source's full check and every unchanged original
+native case still require fresh execution and exact-source readback.
+
+This composition keeps the author's mandatory Make validator, module catalog
+registration and complete API rules. Its CI registration only appends positive
+tracked input paths to existing push/pull-request filters. Existing events,
+jobs, steps, commands, flags, conditions and budgets stay unchanged. The closed
+required-context catalog records the actual changed workflow digests; the S08
+runtime manifest changes only its actual workflow SHA. The new readiness
+contract and new checker rebind only their preserved G2 workflow digest to the
+same resulting workflow bytes. Neither digest correspondence nor a finite
+source checker supplies hosted runtime or production authority.
+
+The prior `c875ed3e3c6c876b716f415f7b766992d48e1572` tuple's original
+native six cases yielded five passes and one failure. That historical result,
+including its original waiting deadline failure, cannot qualify or predict the
+readiness successor's original six. No replacement diagnostic or altered
+budget is accepted as those cases. Root's full checks, current exact-PIN native
+compile and original six-case result on the final new tuple are pending here.
+
+G1 remains documentation/API/schema source quality. Supplier build-input
+verification is separate external work. The independently reviewed supplier
+signature identity report remains
+`work/mozjs-official-crypto-independent-facts/independent-crypto-policy-review.json`,
+SHA-256 `d9405a237fe20e0228a78c18d8cd5e96dfdf75bce5d4fcbd9f4cd2fad65f1f5c`.
+A distinct 642-file authenticated-input v2 author candidate records actual
+signature verification, immutable delivery custody and source/host tests in
+`work/mozjs-authenticated-input-v2-readonly-facts/final-author-facts.json`,
+SHA-256 `c1db1cd8da37bcd5382cec5083f676762e18bda5306e9ad49ea167b61734bbd0`.
+Its new source is not part of this readiness composition. Different-author
+build-entry review and its own execution remain required; no new v2 Cargo
+archive consumption, native, installed or production qualification is supplied
+by its actual signature result. Tool artifact attestation is still unverified.
+
+G0 independent human identities/approvals and protected release closure,
+G3–G5 installed product integration, hardware/HSM facilities and production
+qualification remain open. The limited existing G6 data review and interrupted
+independent safety review keep their prior scope; no G6 safety review or VM
+execution is added by this metadata work. Earlier document sections remain
+unchanged historical observations. `production_ready=false` remains unchanged.
+
+The readiness author's exact tuple also received a different-author narrow
+source review in
+`work/g2-control-readiness-root-facts/independent-review-report.json`, SHA-256
+`2a182b0ca52111693d22e581976869f49a7ee46d7d349cf1fe6d817d4240f4bf`.
+It actually ran 82 focused tests and four validators with exit 0, preserved
+617 unchanged parent files and restored all eleven changed source paths through
+the finite inverse. The review does not supply this metadata successor's
+complete check or any new original native-six result. Its initial spoken test
+count was corrected against the retained 82-test log.
