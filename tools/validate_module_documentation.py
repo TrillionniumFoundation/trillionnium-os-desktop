@@ -423,14 +423,40 @@ def _checkout_step_safe(step: dict[str, str], nested: list[str]) -> bool:
     )
 
 
+def _source_guard_step_safe(step: dict[str, str], nested: list[str], name: str) -> bool:
+    """Admit only the canonical preliminary source guard, never arbitrary run."""
+    if step != {
+        "name": "Verify canonical live source role", "shell": "bash", "env": "", "run": "|",
+    }:
+        return False
+    role = "prospective-merge" if "prospective" in name else "head"
+    fields = (
+        ("CI_SOURCE_ROLE", role),
+        ("CI_SOURCE_EVENT", "${{ github.event_name }}"),
+        ("CI_SOURCE_REPOSITORY", "${{ github.repository }}"),
+        ("CI_SOURCE_REF", "${{ github.ref }}"),
+        ("CI_SOURCE_REF_NAME", "${{ github.ref_name }}"),
+        ("CI_SOURCE_SHA", "${{ github.sha }}"),
+        ("CI_SOURCE_PR_NUMBER", "${{ github.event.pull_request.number }}"),
+        ("CI_SOURCE_PR_HEAD", "${{ github.event.pull_request.head.sha }}"),
+        ("CI_SOURCE_PR_BASE", "${{ github.event.pull_request.base.sha }}"),
+        ("CI_SOURCE_BASE_REF", "${{ github.event.pull_request.base.ref }}"),
+    )
+    expected = [f"          {key}: {value}" for key, value in fields]
+    expected += ["          set -euo pipefail", "          python3 -B tools/verify_ci_source_identity.py"]
+    return nested == expected
+
+
 def _job_executes(text: str, name: str) -> bool:
     """Require one closed, failure-propagating validator step in a named job.
 
     The admitted job uses Ubuntu 24.04, has no workflow/job defaults or mutable
     environment, and may use only the single pull-request condition used by the
     prospective jobs. The validator must be the first command-bearing step,
-    immediately after a fully pinned credential-free checkout. Its step mapping
-    is closed to ``name`` plus an exact isolated absolute-Python command.
+    immediately after a fully pinned credential-free checkout, optionally with
+    one exact canonical source guard between those two steps. No other prior
+    command is admitted. Its step mapping is closed to ``name`` plus an exact
+    isolated absolute-Python command.
     """
     if not _workflow_context_safe(text):
         return False
@@ -453,12 +479,15 @@ def _job_executes(text: str, name: str) -> bool:
         for index, (step, _nested) in enumerate(steps)
         if "run" in step and _exact_command(step["run"])
     ]
-    if candidates != [1] or len(steps) < 2:
+    guards = [index for index, (step, _nested) in enumerate(steps)
+              if step.get("name") == "Verify canonical live source role"]
+    offset = 2 if guards else 1
+    if (guards and (guards != [1] or not _source_guard_step_safe(*steps[1], name))) or candidates != [offset] or len(steps) <= offset:
         return False
     if not _checkout_step_safe(*steps[0]):
         return False
 
-    step, nested = steps[1]
+    step, nested = steps[offset]
     if nested:
         return False
     allowed_candidate_keys = {"name", "run"}

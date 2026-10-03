@@ -9,6 +9,10 @@ All 43 repository-source jobs in 24 workflows invoke the guard immediately
 after their original checkout. Three runner-availability jobs in two workflows
 have no source checkout or source qualification and remain outside this scope.
 The original checkout, run, env, profiles, thresholds and budgets remain intact.
+The module-documentation integration gate admits this exact guard as its sole
+preliminary command before the existing isolated validator. Its ten fields,
+role, body, placement and failure propagation are closed; arbitrary prior runs,
+skips and mutable environment additions remain refused.
 The new helper/test/contract/doc inputs appear in each affected PR/push path list.
 
 For a PR candidate-head role, the guard resolves only the official full
