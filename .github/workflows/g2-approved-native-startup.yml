@@ -91,6 +91,14 @@ on:
       - "manifests/servo.lock.json"
       - "rust-toolchain.toml"
       - "tests/test_retained_control_terminal.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
   push:
     branches: [main, 'codex/**']
     paths:
@@ -177,6 +185,14 @@ on:
       - "manifests/servo.lock.json"
       - "rust-toolchain.toml"
       - "tests/test_retained_control_terminal.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
 permissions:
   contents: read
 concurrency:

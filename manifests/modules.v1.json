@@ -49,7 +49,8 @@
         "docs/architecture/CONFIGURED_RETAINED_BOOTSTRAP.md",
         "docs/architecture/APPROVED_REQUEST_BINDING.md",
         "docs/architecture/MOZJS_SECONDARY_INPUT.md",
-        "docs/architecture/RETAINED_CONTROL_READINESS.md"
+        "docs/architecture/RETAINED_CONTROL_READINESS.md",
+        "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
@@ -65,7 +66,8 @@
         "contracts/mozjs-secondary-input.v1.json",
         "contracts/approved-composition-scope.v1.json",
         "contracts/approved-constructor-route.v1.json",
-        "contracts/retained-control-readiness.v1.json"
+        "contracts/retained-control-readiness.v1.json",
+        "contracts/mozjs-authenticated-input.v2.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
@@ -95,7 +97,8 @@
         "tests/test_approved_composition_scope.py",
         "tests/test_approved_constructor_route.py",
         "tests/test_retained_control_readiness.py",
-        "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+        "apps/hepta-browserd/tests/control_readiness_kernel.rs",
+        "tests/test_mozjs_authenticated_input.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
@@ -223,7 +226,8 @@
         "docs/architecture/MANAGED_EVIDENCE_CONSUMERS.md",
         "docs/architecture/CI_SOURCE_IDENTITY.md",
         "docs/architecture/CI_REQUIRED_CONTEXTS.md",
-        "docs/architecture/REMAINING_MANAGED_CONSUMERS.md"
+        "docs/architecture/REMAINING_MANAGED_CONSUMERS.md",
+        "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
       ],
       "contracts": [
         "contracts/browser-codec.v1.json",
@@ -236,7 +240,8 @@
         "contracts/managed-evidence-consumers.v1.json",
         "contracts/ci-source-identity.v1.json",
         "contracts/ci-required-contexts.v1.json",
-        "contracts/remaining-managed-consumers.v1.json"
+        "contracts/remaining-managed-consumers.v1.json",
+        "contracts/mozjs-authenticated-input.v2.json"
       ],
       "tests": [
         "crates/hepta-browser-codec/src/tests.rs",
@@ -249,7 +254,12 @@
         "tests/test_ci_source_identity.py",
         "tests/test_module_documentation_source_guard.py",
         "tests/test_ci_required_contexts.py",
-        "tests/test_remaining_managed_consumers.py"
+        "tests/test_remaining_managed_consumers.py",
+        "tests/test_mozjs_authenticated_input.py",
+        "tools/mozjs_authenticated_input.py",
+        "tools/build_mozjs_authenticated_native.py",
+        "tools/verify_mozjs_authenticated_input.py",
+        "manifests/mozjs-authenticated-input.v2.json"
       ],
       "workflows": [
         ".github/workflows/browser-codec-reference.yml",

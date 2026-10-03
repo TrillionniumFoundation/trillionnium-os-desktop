@@ -382,3 +382,24 @@ independent reporting owner permits legitimate terminal reporting after action
 revocation. Legacy raw full methods and original budgets remain unchanged.
 The versioned contract, finite inverse source checker and actual new kernel
 target are separate from native, installed and production qualification.
+
+## Authenticated mozjs source-input v2 composition candidate
+
+The opt-in Python build profile in `tools/build_mozjs_authenticated_native.py`
+uses the versioned `contracts/mozjs-authenticated-input.v2.json` and
+`manifests/mozjs-authenticated-input.v2.json`. Its two public source APIs and
+fixed supplier/tool policy are documented in
+`docs/architecture/MOZJS_AUTHENTICATED_INPUT.md`; the original v1 profile and
+all original Cargo/native commands and budgets remain unchanged.
+`python3 tools/verify_mozjs_authenticated_input.py` is registered under
+`make validate`; `tests/test_mozjs_authenticated_input.py` remains its finite
+parser/custody/host call-chain corpus. Caller paths select bytes, not approval,
+custom roots, arbitrary Cargo argv or an expiry bypass.
+
+Seven independently reviewed source paths from be5f890 are registered in
+module docs and positive CI input lists. This is source composition only;
+`make check` on this 650-file combination, actual Cargo archive consumption,
+new original-native-six execution, installed activation and production
+qualification require fresh evidence. The prior 643-file readiness make and
+G1 narrow actual verifier pass are separate facts. Tool checksum bootstrap
+does not constitute tool artifact attestation.

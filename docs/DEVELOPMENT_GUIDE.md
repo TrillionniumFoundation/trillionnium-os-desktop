@@ -296,3 +296,25 @@ checks are `python3 tools/verify_retained_control_readiness.py`,
 unfiltered Cargo graphs, which include `control_readiness_kernel`. Actual
 native six-case, installed entrance and service-health qualifications remain
 separate. Default product activation remains disabled.
+
+## Authenticated secondary-input v2 source composition
+
+The 650-file source receiver integrates the seven exact reviewed be5f890 G1
+build-input paths into the retained Control-readiness source successor.
+`python3 tools/verify_mozjs_authenticated_input.py` is the new mandatory
+source-only validation command; `make check` still requires the whole existing
+Python/Rust/default/all-feature/doc/native-source graph. The source manifest
+and contract are `manifests/mozjs-authenticated-input.v2.json` and
+`contracts/mozjs-authenticated-input.v2.json`; complete public signatures,
+policy fields, opaque custody, canonical target-path bounds and typed failures
+are in `docs/architecture/MOZJS_AUTHENTICATED_INPUT.md`.
+
+The new optional build entry requires the fixed profile, upstream, original
+lock, archive, bundle, tool and target-parent byte selectors. It verifies
+inside the entry, runs the original fixed Cargo command from the checked
+upstream and keeps inputs until its bounded group is resolved. A diagnostic
+verification return is not a transferable approval. Existing v1 APIs, defaults,
+workflows, native fixtures, PIN, Cargo graph and 5/20/60-second budgets remain
+unchanged. This registration performs no verifier invocation, archive download,
+Cargo build or native case; source-check success cannot establish actual
+archive consumption, installed activation or production readiness.

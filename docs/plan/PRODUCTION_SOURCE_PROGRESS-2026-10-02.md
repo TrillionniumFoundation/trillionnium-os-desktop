@@ -925,3 +925,40 @@ It actually ran 82 focused tests and four validators with exit 0, preserved
 the finite inverse. The review does not supply this metadata successor's
 complete check or any new original native-six result. Its initial spoken test
 count was corrected against the retained 82-test log.
+
+## Fourteenth-round authenticated-input source registration candidate
+
+The receiver baseline is 4d4a805af15867fbe1365693b54238c5d3f1d33a, tree
+3f4c933dc0384269e1224b97de10081180a4b18c, with 650 tracked source files.
+It copies seven exact G1 authenticated-input v2 paths from reviewed
+be5f8904f7fae7c1b20a92990f374783a13dd102 and adds only the mandatory
+source checker to the prior 960c0e6920f5eb179bfa95c075f10c6e841a621a
+readiness tuple. New module/technical-doc references and positive CI inputs
+are source invalidation registration. The original events/jobs/steps/run
+bodies, native fixtures, PIN, Cargo and budgets remain unchanged. Catalog
+body digests, S08 workflow digest and the two narrowly allowed readiness
+workflow-digest leaves bind the current source metadata; they grant no runtime
+or gate qualification.
+
+The independent G1 be5f89 review is
+`work/g1-authenticated-v2-canonical-independent-be5f89-facts/independent-review-report.json`,
+SHA256 24cfdf8f41fe71b8db563d475647354950a8b9b408de9c62c6ab73a62b45f815:
+62 host cases and nine source validators passed, including a fresh actual
+official verifier pass. The fixed-input policy/parser/namespace delivery
+observations are narrow facts; actual Cargo archive consumption, native
+qualification, tool artifact attestation and installed activation are false.
+The normative G1 document/API/schema gate is broader than this build-input
+package. No independent human, hardware or signing fact is created.
+
+As a separate historical source tuple, the 643-file readiness successor
+960c0e completed its actual whole make with exit0 in 411.255953 seconds,
+logged in `work/round13-readiness-complete-facts/complete-make-check.log`,
+SHA256 98c00b8627ac5d14d2761c24093f7c7ceeada4611e7dd5f2b988c002e9e24ab5.
+Its first native compile attempt returned101 during official dependency
+download, emitted zero Cargo JSON records and ran zero original native cases;
+that failure is retained. No 643 result qualifies this new 650 source tuple.
+Full 650 make, current-hosted CI, actual Cargo consumption and new original
+native-six results remain pending. Persistent Owner FOUNDATION is a separate
+owned candidate and is not included in this receiver. Installed G3–G5, G6
+security review, hardware, signing/HSM and independent release identities
+remain absent. production_ready=false.
