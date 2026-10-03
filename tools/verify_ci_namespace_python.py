@@ -16,7 +16,13 @@ CONTRACT = "contracts/ci-namespace-python.v1.json"
 EXPECTED = {'schema': 'hepta.ci-namespace-python.v1',
  'status': 'CI_CONFIGURATION_CANDIDATE_NOT_HOSTED_QUALIFIED',
  'platform': 'Linux-Ubuntu24.04',
- 'jobs': ['repository-contracts', 'repository-contracts-prospective-merge'],
+ 'jobs': [{'workflow': '.github/workflows/ci.yml', 'job_id': 'repository-contracts'},
+          {'workflow': '.github/workflows/ci.yml',
+           'job_id': 'repository-contracts-prospective-merge'},
+          {'workflow': '.github/workflows/g2-approved-native-startup.yml',
+           'job_id': 'source-prospective'},
+          {'workflow': '.github/workflows/g2-native-product-owner.yml',
+           'job_id': 'source-prospective'}],
  'scope': 'temporary named debug profile attaches only the unique root-owned real interpreter copy '
           'for this CI job',
  'worker_and_original_tests_changed': False,
@@ -34,8 +40,14 @@ EXPECTED = {'schema': 'hepta.ci-namespace-python.v1',
                                        'actual sudo caller',
               'interpreter': '/usr/bin/python3.12 whole byte copy; fixed provider correspondence '
                              'and stdlib prefix readback',
-              'allocation': '/var/lib/hepta-ci-g1-<bounded-run>-<bounded-attempt>-<literal-job>; '
-                            'root0:0 mode0755 create-new; no other global interpreter attachment'},
+              'allocation': '/var/lib/hepta-ci-g1-<bounded-run>-<bounded-attempt>-<fixed-workflow>-<literal-job>; '
+                            'root0:0 mode0755 create-new; no other global interpreter attachment',
+              'workflow_ref': 'actual runner GITHUB_WORKFLOW_REF under fixed repository and three '
+                              'literal filenames; whole suffix bounded to original main/codex push '
+                              'or positive numbered pull merge ref',
+              'retirement_ledger': 'unique derived /var/lib/.<profile>.ledger; root0:0 mode0700 '
+                                   'with mode0600 create-new same-inode lock/state; no secrets, '
+                                   'interpreter bytes or active profile retained'},
  'profile': {'mode': 'temporary CI-only unconfined debugging profile with explicit userns '
                      'permission',
              'template': '.github/apparmor/hepta-ci-namespace-python.v1.profile',
@@ -55,29 +67,147 @@ EXPECTED = {'schema': 'hepta.ci-namespace-python.v1',
             'maximum_state_bytes': 2097152,
             'maximum_proc_visible_entries': 65536,
             'each_setup_cleanup_subcommand_timeout_seconds': 30,
-            'old_job_timeout_minutes': 20},
- 'source_sha256': {'tools/ci_namespace_python.py': 'a7fef49ff154ba7e0ad6151fdaf6700112337f02acfba7ccfa175c6946e5e1d6',
+            'old_job_timeout_minutes': 20,
+            'maximum_ledger_bytes': 16384,
+            'maximum_proc_cmdline_bytes': 65536,
+            'maximum_proc_maps_bytes': 4194304},
+ 'source_sha256': {'tools/ci_namespace_python.py': '2470f7dc91d9b65630de3c8a49307eb1dc5ad2ea52b2a46df30a594c80145418',
                    '.github/apparmor/hepta-ci-namespace-python.v1.profile': '9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be',
-                   '.github/workflows/ci.yml': 'be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826'},
- 'workflow_inverse': {'path': '.github/workflows/ci.yml',
-                      'original_sha256': 'a2392184e4099c5488be1c90ed886d9eefd9a1f88e183a0d94b83670a02638fe',
-                      'setup': '      - name: Provision job-private CI namespace Python\n'
-                               '        id: namespace_python_setup\n'
-                               '        run: |\n'
-                               '          set -euo pipefail\n'
-                               '          python3 tools/verify_ci_namespace_python.py\n'
-                               '          python3 tools/ci_namespace_python.py setup\n'
-                               '\n',
-                      'cleanup': '      - name: Remove only owned CI namespace Python and profile\n'
-                                 '        if: always()\n'
-                                 '        run: /usr/bin/python3.12 tools/ci_namespace_python.py '
-                                 'cleanup\n'
-                                 '\n',
-                      'count_each': 2},
+                   '.github/workflows/ci.yml': 'be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826',
+                   '.github/workflows/g2-approved-native-startup.yml': 'a484cdf5a3c9699031467e3e11d8b28adb3129148024edc4457166c22bd6401a',
+                   '.github/workflows/g2-native-product-owner.yml': '7b2d84837afc9b3e07f24d07d3f6860fb4392006b0b4631b4c55cb4b6b62c40f'},
  'non_claims': ['original99c hosted failure remains',
                 'localRoot success is not hosted qualification',
                 'no new crypto or Cargo consumption proof',
-                'no NativeHealth installed human hardware or production qualification']}
+                'no NativeHealth installed human hardware or production qualification'],
+ 'workflows_inverse': {'.github/workflows/ci.yml': {'original_sha256': 'a2392184e4099c5488be1c90ed886d9eefd9a1f88e183a0d94b83670a02638fe',
+                                                    'setup': '      - name: Provision job-private '
+                                                             'CI namespace Python\n'
+                                                             '        id: namespace_python_setup\n'
+                                                             '        run: |\n'
+                                                             '          set -euo pipefail\n'
+                                                             '          python3 '
+                                                             'tools/verify_ci_namespace_python.py\n'
+                                                             '          python3 '
+                                                             'tools/ci_namespace_python.py setup\n'
+                                                             '\n',
+                                                    'cleanup': '      - name: Remove only owned CI '
+                                                               'namespace Python and profile\n'
+                                                               '        if: always()\n'
+                                                               '        run: /usr/bin/python3.12 '
+                                                               'tools/ci_namespace_python.py '
+                                                               'cleanup\n'
+                                                               '\n',
+                                                    'count_each': 2,
+                                                    'positive_paths': []},
+                       '.github/workflows/g2-approved-native-startup.yml': {'original_sha256': '5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228',
+                                                                            'setup': '      - '
+                                                                                     'name: '
+                                                                                     'Provision '
+                                                                                     'job-private '
+                                                                                     'CI namespace '
+                                                                                     'Python\n'
+                                                                                     '        id: '
+                                                                                     'namespace_python_setup\n'
+                                                                                     '        run: '
+                                                                                     '|\n'
+                                                                                     '          '
+                                                                                     'set -euo '
+                                                                                     'pipefail\n'
+                                                                                     '          '
+                                                                                     'python3 '
+                                                                                     'tools/verify_ci_namespace_python.py\n'
+                                                                                     '          '
+                                                                                     'python3 '
+                                                                                     'tools/ci_namespace_python.py '
+                                                                                     'setup\n'
+                                                                                     '\n',
+                                                                            'cleanup': '      - '
+                                                                                       'name: '
+                                                                                       'Remove '
+                                                                                       'only owned '
+                                                                                       'CI '
+                                                                                       'namespace '
+                                                                                       'Python and '
+                                                                                       'profile\n'
+                                                                                       '        '
+                                                                                       'if: '
+                                                                                       'always()\n'
+                                                                                       '        '
+                                                                                       'run: '
+                                                                                       '/usr/bin/python3.12 '
+                                                                                       'tools/ci_namespace_python.py '
+                                                                                       'cleanup\n'
+                                                                                       '\n',
+                                                                            'count_each': 1,
+                                                                            'positive_paths': ['.github/apparmor/hepta-ci-namespace-python.v1.profile',
+                                                                                               'tools/ci_namespace_python.py',
+                                                                                               'contracts/ci-namespace-python.v1.json',
+                                                                                               'tools/verify_ci_namespace_python.py',
+                                                                                               'tests/test_ci_namespace_python.py',
+                                                                                               'tools/verify_ci_required_contexts.py']},
+                       '.github/workflows/g2-native-product-owner.yml': {'original_sha256': 'afbc7eab3d053fbdd935c3a40c33e0bd140f08440b4a83bce163d9e5736ac9d3',
+                                                                         'setup': '      - name: '
+                                                                                  'Provision '
+                                                                                  'job-private CI '
+                                                                                  'namespace '
+                                                                                  'Python\n'
+                                                                                  '        id: '
+                                                                                  'namespace_python_setup\n'
+                                                                                  '        run: |\n'
+                                                                                  '          set '
+                                                                                  '-euo pipefail\n'
+                                                                                  '          '
+                                                                                  'python3 '
+                                                                                  'tools/verify_ci_namespace_python.py\n'
+                                                                                  '          '
+                                                                                  'python3 '
+                                                                                  'tools/ci_namespace_python.py '
+                                                                                  'setup\n'
+                                                                                  '\n',
+                                                                         'cleanup': '      - name: '
+                                                                                    'Remove only '
+                                                                                    'owned CI '
+                                                                                    'namespace '
+                                                                                    'Python and '
+                                                                                    'profile\n'
+                                                                                    '        if: '
+                                                                                    'always()\n'
+                                                                                    '        run: '
+                                                                                    '/usr/bin/python3.12 '
+                                                                                    'tools/ci_namespace_python.py '
+                                                                                    'cleanup\n'
+                                                                                    '\n',
+                                                                         'count_each': 1,
+                                                                         'positive_paths': ['.github/apparmor/hepta-ci-namespace-python.v1.profile',
+                                                                                            'tools/ci_namespace_python.py',
+                                                                                            'contracts/ci-namespace-python.v1.json',
+                                                                                            'tools/verify_ci_namespace_python.py',
+                                                                                            'tests/test_ci_namespace_python.py',
+                                                                                            'tools/verify_ci_required_contexts.py']}},
+ 'lifecycle': {'serialization': 'create-new root-owned ledger then nonblocking same-inode flock '
+                                'before profile/parser; phase state pins actual lock identity',
+               'phases': ['STARTED', 'READY', 'RETIRED'],
+               'actual_setup_worker': 'PID/start ticks/PGID/SID/UID/executable inode recorded '
+                                      'before profile/parser; no caller verification token',
+               'direct_child_timeout_proves_root_descendants_dead': False,
+               'cleanup_requirements': 'bounded actual worker PID/start/session/group and private '
+                                       'executable inode/label/mappings absent, before unload and '
+                                       'after unload/retirement; unreadable or unknown state '
+                                       'refuses',
+               'late_setup': 'early cleanup leaves RETIRED deny tombstone; existing ledger forbids '
+                             'every setup; phase revival forbidden',
+               'retired_ledger_retained': True,
+               'all_root_state_deleted': False,
+               'broad_or_arbitrary_process_kill': False,
+               'retirement_ledger_is_runtime_or_release_authority': False},
+ 'command_capture': {'fixed_commands_only': True,
+                     'each_stdout_stderr_post_completion_refusal_bytes': 2097152,
+                     'strict_inflight_output_or_memory_bound': False,
+                     'timeout_seconds': 30,
+                     'timeout_waits_direct_child_only': True,
+                     'root_descendant_absence_proven_by_timeout': False,
+                     'ledger_and_process_readback_required_before_cleanup': True}}
 
 
 def inputs(root=ROOT):
@@ -92,21 +222,27 @@ def check(value, texts):
     for path, wanted in EXPECTED["source_sha256"].items():
         if type(texts[path]) is not str or hashlib.sha256(texts[path].encode()).hexdigest() != wanted:
             raise ValueError("reviewed complete CI setup source differs")
-    inverse = EXPECTED["workflow_inverse"]
-    text = texts[inverse["path"]]
-    for block in [inverse["setup"], inverse["cleanup"]]:
-        if text.count(block) != inverse["count_each"]: raise ValueError("CI setup/always-cleanup detached")
-        text = text.replace(block, "")
-    if hashlib.sha256(text.encode()).hexdigest() != inverse["original_sha256"]:
-        raise ValueError("original complete CI workflow differs")
     catalog = contexts.load_json_strict(texts["contracts/ci-required-contexts.v1.json"].encode())
-    digest, jobs, events, filtered, conditional = contexts.inventory(inverse["path"], texts[inverse["path"]])
-    contexts.exact(catalog["workflows"][inverse["path"]],
-                   {"body_without_job_display_names_sha256": digest, "jobs": jobs,
-                    "trigger_events": events, "path_filtered": filtered,
-                    "conditional_jobs": conditional}, "CI setup exact contexts")
-    if events != ["push", "pull_request"] or filtered:
-        raise ValueError("new CI inputs require both unfiltered original events")
+    for path, inverse in EXPECTED["workflows_inverse"].items():
+        text = texts[path]
+        for block in [inverse["setup"], inverse["cleanup"]]:
+            if text.count(block) != inverse["count_each"]:
+                raise ValueError("CI setup/always-cleanup detached")
+            text = text.replace(block, "")
+        for value in inverse["positive_paths"]:
+            literal = '      - ' + json.dumps(value) + '\n'
+            if text.count(literal) != 2: raise ValueError("CI input registration differs")
+            text = text.replace(literal, "")
+        if hashlib.sha256(text.encode()).hexdigest() != inverse["original_sha256"]:
+            raise ValueError("original complete CI workflow differs")
+        digest, jobs, events, filtered, conditional = contexts.inventory(path, texts[path])
+        contexts.exact(catalog["workflows"][path],
+                       {"body_without_job_display_names_sha256": digest, "jobs": jobs,
+                        "trigger_events": events, "path_filtered": filtered,
+                        "conditional_jobs": conditional}, "CI setup exact contexts")
+        if set(events) != {"push", "pull_request"} or (path == ".github/workflows/ci.yml" and filtered):
+            raise ValueError("CI input original event domain differs")
+
 
 
 def validate(root=ROOT):

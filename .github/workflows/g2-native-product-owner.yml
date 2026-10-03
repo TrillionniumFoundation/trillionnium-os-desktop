@@ -100,6 +100,12 @@ on:
       - "tools/mozjs_authenticated_input.py"
       - "tools/verify_mozjs_authenticated_input.py"
       - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
+      - "tools/verify_ci_required_contexts.py"
   push:
     branches: [main, 'codex/**']
     paths:
@@ -195,6 +201,12 @@ on:
       - "tools/mozjs_authenticated_input.py"
       - "tools/verify_mozjs_authenticated_input.py"
       - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
+      - "tools/verify_ci_required_contexts.py"
 permissions:
   contents: read
 concurrency:
@@ -228,6 +240,13 @@ jobs:
           set -euo pipefail
           python3 -B tools/verify_ci_source_identity.py
 
+      - name: Provision job-private CI namespace Python
+        id: namespace_python_setup
+        run: |
+          set -euo pipefail
+          python3 tools/verify_ci_namespace_python.py
+          python3 tools/ci_namespace_python.py setup
+
       - name: Source contract and original workspace regressions on prospective merge
         shell: bash
         env:
@@ -242,6 +261,10 @@ jobs:
           python3 tools/validate_native_product_owner.py
           python3 -m unittest discover -s tests -p test_native_product_owner.py -v
           make check
+      - name: Remove only owned CI namespace Python and profile
+        if: always()
+        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup
+
   exact-pin-owner:
     name: g2-native-product-owner / exact-pin-owner
     runs-on: ubuntu-24.04

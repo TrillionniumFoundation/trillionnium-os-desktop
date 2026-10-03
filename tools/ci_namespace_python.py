@@ -7,6 +7,8 @@ AppArmor/sysctls remain enabled and unchanged outside the named attachment.
 This trusted CI configuration is not a hostile-Python-code sandbox.
 """
 from __future__ import annotations
+from contextlib import contextmanager
+import fcntl
 import hashlib
 import json
 import os
@@ -21,7 +23,10 @@ BASE = Path('/var/lib')
 PYTHON = Path('/usr/bin/python3.12')
 TEMPLATE = '.github/apparmor/hepta-ci-namespace-python.v1.profile'
 TEMPLATE_SHA256 = '9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be'
-JOBS = ('repository-contracts', 'repository-contracts-prospective-merge')
+REPOSITORY = 'TrillionniumFoundation/trillionnium-os-desktop'
+JOBS = {'ci': ('repository-contracts', 'repository-contracts-prospective-merge'),
+        'g2-approved-native-startup': ('source-prospective',),
+        'g2-native-product-owner': ('source-prospective',)}
 LIMIT = 2 * 1024 * 1024
 CAPS = ('CapEff', 'CapPrm', 'CapInh', 'CapAmb', 'CapBnd')
 SETTINGS = ('/sys/module/apparmor/parameters/enabled',
@@ -40,17 +45,40 @@ def _decimal(text, maximum):
     return text
 
 
-def _context(run, attempt, job, uid, gid, head, tree):
+def _workflow_ref(value):
+    if type(value) is not str or len(value) > 1024:
+        raise ValueError('CI workflow ref bound refused')
+    for workflow in JOBS:
+        prefix = REPOSITORY + '/.github/workflows/' + workflow + '.yml@'
+        if not value.startswith(prefix): continue
+        suffix = value[len(prefix):]
+        # These are the original three workflows' admitted push/PR domains.
+        # The ref never becomes a pathname or an attachment selector.
+        if re.fullmatch(r'refs/heads/(?:main|codex/[A-Za-z0-9._/-]+)', suffix):
+            if any(part in ('', '.', '..') for part in suffix.split('/')):
+                raise ValueError('CI workflow ref component refused')
+            return workflow
+        match = re.fullmatch(r'refs/pull/([1-9][0-9]{0,19})/merge', suffix)
+        if match:
+            _decimal(match[1], (1 << 64) - 1)
+            return workflow
+        raise ValueError('CI workflow ref suffix refused')
+    raise ValueError('CI workflow file or repository refused')
+
+
+def _context(workflow, run, attempt, job, uid, gid, head, tree):
     _decimal(run, (1 << 64) - 1); _decimal(attempt, 9999)
-    if type(job) is not str or job not in JOBS or type(uid) is not int or not 0 < uid < (1 << 32) - 1:
+    if (type(workflow) is not str or workflow not in JOBS or type(job) is not str or
+            job not in JOBS[workflow] or type(uid) is not int or not 0 < uid < (1 << 32) - 1):
         raise ValueError('CI job or non-root UID refused')
     if type(gid) is not int or not 0 <= gid < (1 << 32) - 1:
         raise ValueError('CI GID refused')
     if any(type(value) is not str or not re.fullmatch(r'[0-9a-f]{40}', value) for value in (head, tree)):
         raise ValueError('CI source tuple refused')
-    name = f'hepta-ci-g1-{run}-{attempt}-{job}'
-    return {'run': run, 'attempt': attempt, 'job': job, 'uid': uid, 'gid': gid,
-            'head': head, 'tree': tree, 'profile': name, 'directory': str(BASE / name)}
+    name = f'hepta-ci-g1-{run}-{attempt}-{workflow}-{job}'
+    return {'workflow': workflow, 'run': run, 'attempt': attempt, 'job': job, 'uid': uid, 'gid': gid,
+            'head': head, 'tree': tree, 'profile': name, 'directory': str(BASE / name),
+            'ledger': str(BASE / ('.' + name + '.ledger'))}
 
 
 def _read(path, maximum=LIMIT):
@@ -166,10 +194,10 @@ def _write_new(path, raw, mode):
 
 
 def _render(context, template):
-    keys = {'run', 'attempt', 'job', 'uid', 'gid', 'head', 'tree', 'profile', 'directory'}
+    keys = {'workflow', 'run', 'attempt', 'job', 'uid', 'gid', 'head', 'tree', 'profile', 'directory', 'ledger'}
     if type(context) is not dict or set(context) != keys or type(template) is not bytes:
         raise ValueError('CI closed attachment context refused')
-    expected = _context(*(context[key] for key in ('run', 'attempt', 'job', 'uid', 'gid', 'head', 'tree')))
+    expected = _context(*(context[key] for key in ('workflow', 'run', 'attempt', 'job', 'uid', 'gid', 'head', 'tree')))
     if context != expected: raise ValueError('CI fixed attachment differs')
     if _sha(template) != TEMPLATE_SHA256: raise ValueError('CI template changed')
     interpreter = context['directory'] + '/bin/python3'
@@ -180,13 +208,209 @@ def _render(context, template):
 
 
 def _command(argv):
-    result = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, check=False)
+    # Fixed-command PIPE capture has a post-completion refusal threshold only.
+    # It does not impose a strict in-flight output or memory bound. Timeout
+    # waits/kills only the direct child; ledger checks account for root workers.
+    result = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, check=False, start_new_session=True)
     if len(result.stdout) > LIMIT or len(result.stderr) > LIMIT or result.returncode:
         raise ValueError('CI fixed operation refused')
     return result.stdout
 
 
+
+def _proc_record(pid, proc=Path('/proc')):
+    raw = _kernel_read(proc / str(pid) / 'stat', 8192)
+    if not raw.startswith(str(pid).encode() + b' (') or b') ' not in raw:
+        raise ValueError('CI process stat shape refused')
+    fields = raw.rsplit(b') ', 1)[1].split()
+    if len(fields) < 20: raise ValueError('CI process stat fields refused')
+    result = {'pid': pid, 'start_ticks': int(fields[19]),
+              'pgid': int(fields[2]), 'sid': int(fields[3])}
+    if any(type(value) is not int or value < 0 for value in result.values()):
+        raise ValueError('CI process stat identity refused')
+    return result
+
+
+def _capture_setup_worker():
+    result = _proc_record(os.getpid())
+    result['uid'] = os.getuid()
+    result['exe_identity'] = _identity(Path('/proc/self/exe').stat())
+    if result['uid'] != 0 or result['exe_identity'] != _executable(PYTHON)['identity']:
+        raise ValueError('CI actual root worker executable refused')
+    if result['pgid'] != os.getpgrp() or result['sid'] != os.getsid(0):
+        raise ValueError('CI actual worker group changed')
+    return result
+
+
+def _process_entries(proc=Path('/proc')):
+    with os.scandir(proc) as entries:
+        count = 0
+        for entry in entries:
+            count += 1
+            if count > 65536: raise ValueError('CI process inventory bound refused')
+            if entry.name.isdecimal(): yield int(entry.name)
+
+
+def _live_setup_workers(context, worker, proc=Path('/proc')):
+    arguments = [context[key] for key in ('workflow', 'run', 'attempt', 'job')]
+    arguments += [str(context['uid']), str(context['gid']), context['head'], context['tree']]
+    command = [str(PYTHON), str(Path(__file__).resolve()), '_setup_root', *arguments]
+    commands = [command, ['/usr/bin/sudo', '--non-interactive', *command],
+                ['/sbin/apparmor_parser', '-a', context['directory'] + '/profile']]
+    encoded = [[os.fsencode(part) for part in row] for row in commands]
+    live = []
+    for pid in _process_entries(proc):
+        try:
+            record = _proc_record(pid, proc)
+            argv = _kernel_read(proc / str(pid) / 'cmdline', 65536).rstrip(b'\0').split(b'\0')
+        except FileNotFoundError: continue
+        # A matching command also catches a worker before the STARTED handoff.
+        # Once recorded, any remaining group/session member is refusal, even
+        # after exec or if a PID/group number was reused. No process is killed.
+        if argv in encoded or (worker is not None and
+                (pid == worker['pid'] or record['pgid'] == worker['pgid'] or record['sid'] == worker['sid'])):
+            if worker is not None and pid == worker['pid']:
+                record['recorded_start_matches'] = record['start_ticks'] == worker['start_ticks']
+            live.append(record)
+    return live
+
+
+def _check_ledger_state(value, context):
+    if type(value) is not dict or set(value) != {'schema', 'context', 'phase', 'setup_worker', 'private_identity', 'lock_identity'}:
+        raise ValueError('CI ledger schema refused')
+    supplied = value['context']
+    if type(supplied) is not dict or set(supplied) != set(context):
+        raise ValueError('CI ledger context shape refused')
+    rebuilt = _context(*(supplied[key] for key in ('workflow', 'run', 'attempt', 'job', 'uid', 'gid', 'head', 'tree')))
+    if value['schema'] != 'hepta.ci-namespace-python-ledger.v1' or supplied != context or supplied != rebuilt:
+        raise ValueError('CI ledger context refused')
+    if type(value['lock_identity']) is not list or len(value['lock_identity']) != 9 or any(type(v) is not int for v in value['lock_identity']):
+        raise ValueError('CI ledger lock identity refused')
+    if value['phase'] not in ('STARTED', 'READY', 'RETIRED'):
+        raise ValueError('CI ledger phase refused')
+    worker = value['setup_worker']
+    if worker is None:
+        if value['phase'] != 'RETIRED' or value['private_identity'] is not None:
+            raise ValueError('CI missing worker identity refused')
+    else:
+        if type(worker) is not dict or set(worker) != {'pid', 'start_ticks', 'pgid', 'sid', 'uid', 'exe_identity'}:
+            raise ValueError('CI worker schema refused')
+        for key in ('pid', 'start_ticks', 'pgid', 'sid', 'uid'):
+            if type(worker[key]) is not int or worker[key] < 0:
+                raise ValueError('CI worker numeric identity refused')
+        if any(worker[key] == 0 for key in ('pid', 'pgid', 'sid')) or worker['uid'] != 0:
+            raise ValueError('CI worker root identity refused')
+        if type(worker['exe_identity']) is not list or len(worker['exe_identity']) != 9 or any(type(v) is not int for v in worker['exe_identity']):
+            raise ValueError('CI worker executable identity refused')
+    private = value['private_identity']
+    if private is not None and (type(private) is not list or len(private) != 9 or any(type(v) is not int for v in private)):
+        raise ValueError('CI ledger private identity refused')
+    if value['phase'] == 'READY' and private is None:
+        raise ValueError('CI ready private identity missing')
+    return value
+
+
+@contextmanager
+def _ledger_lock(context, create):
+    _root_owned(Path('/')); _root_owned(Path('/var')); _root_owned(BASE)
+    directory = Path(context['ledger']); made = False
+    try: directory.mkdir(mode=0o700); made = True
+    except FileExistsError:
+        if create: raise ValueError('CI allocation or retired ledger already exists')
+    boundary = _root_owned(directory, 0o700)
+    lock = directory / 'lock'
+    if made: _write_new(lock, b'', 0o600)
+    _root_owned(lock, 0o600)
+    fd = os.open(lock, os.O_RDWR | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        observed = os.fstat(fd)
+        if not stat.S_ISREG(observed.st_mode) or observed.st_nlink != 1 or observed.st_size != 0:
+            raise ValueError('CI ledger lock object refused')
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        def current():
+            actual = _root_owned(directory, 0o700)
+            if (actual.st_dev, actual.st_ino) != (boundary.st_dev, boundary.st_ino):
+                raise ValueError('CI ledger directory replaced')
+            actual = _root_owned(lock, 0o600)
+            if _identity(actual) != _identity(os.fstat(fd)):
+                raise ValueError('CI ledger lock inode replaced')
+            if set(os.listdir(directory)) != ({'lock'} if made and not (directory / 'state.json').exists() else {'lock', 'state.json'}):
+                raise ValueError('CI ledger inventory or interrupted state refused')
+            return _identity(os.fstat(fd))
+        current()
+        yield directory, made, current
+        current()
+    finally: os.close(fd)
+
+
+def _ledger_put(directory, context, phase, worker, private, current):
+    identity = current()
+    target = directory / 'state.json'
+    if target.exists():
+        previous = _ledger_get(directory, context, current)
+        if previous['phase'] == 'RETIRED' or (previous['phase'] == 'READY' and phase != 'RETIRED'):
+            raise ValueError('CI phase revival refused')
+        if previous['setup_worker'] != worker or (previous['private_identity'] is not None and previous['private_identity'] != private):
+            raise ValueError('CI phase handoff identity changed')
+    elif phase not in ('STARTED', 'RETIRED'):
+        raise ValueError('CI initial phase refused')
+    value = _check_ledger_state({'schema': 'hepta.ci-namespace-python-ledger.v1', 'context': context,
+                                'phase': phase, 'setup_worker': worker, 'private_identity': private, 'lock_identity': identity}, context)
+    target = directory / 'state.json'
+    if target.exists(): _root_owned(target, 0o600)
+    pending = directory / 'pending.json'
+    _write_new(pending, (json.dumps(value, sort_keys=True) + '\n').encode(), 0o600)
+    os.replace(pending, target)
+    fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try: os.fsync(fd)
+    finally: os.close(fd)
+    current()
+    return value
+
+
+def _ledger_get(directory, context, current):
+    path = directory / 'state.json'; _root_owned(path, 0o600)
+    value = _check_ledger_state(_strict_json(_read(path, 16384)[0]), context)
+    if value['lock_identity'] != current(): raise ValueError('CI original ledger lock replaced')
+    return value
+
+
+def _no_owned_lifecycle(context, state):
+    if (_live_setup_workers(context, state['setup_worker']) or
+            _live_private(state['private_identity'], context['profile'])):
+        raise ValueError('CI root worker session or private interpreter remains')
+
+
 def _root_setup(context):
+    # This create-new ledger is acquired before any profile/parser action. It
+    # remains after retirement so a delayed worker can never recreate the job.
+    with _ledger_lock(context, True) as (ledger, made, current):
+        worker = _capture_setup_worker()
+        _ledger_put(ledger, context, 'STARTED', worker, None, current)
+        return _setup_locked(context, ledger, worker, current)
+
+
+def _root_cleanup(context):
+    with _ledger_lock(context, False) as (ledger, made, current):
+        if made:
+            state = _ledger_put(ledger, context, 'RETIRED', None, None, current)
+        else: state = _ledger_get(ledger, context, current)
+        _no_owned_lifecycle(context, state)
+        directory = Path(context['directory'])
+        if state['phase'] == 'RETIRED':
+            if directory.exists() or any(line.split(' (', 1)[0] == context['profile'] for line in _profiles()):
+                raise ValueError('CI retired ledger still has active allocation')
+            _no_owned_lifecycle(context, state); current()
+            return {'cleanup': 'NO_ALLOCATION_RETIRED' if made else 'ALREADY_RETIRED',
+                    'retirement_ledger_retained': True, 'active_profile_and_interpreter_absent': True}
+        result = _cleanup_locked(context, state)
+        _no_owned_lifecycle(context, state); current()
+        _ledger_put(ledger, context, 'RETIRED', state['setup_worker'], state['private_identity'], current)
+        _no_owned_lifecycle(context, state)
+        result['retirement_ledger_retained'] = True
+        return result
+
+def _setup_locked(context, ledger, worker, current):
     _root_owned(Path('/')); _root_owned(Path('/var')); _root_owned(BASE)
     directory = Path(context['directory'])
     before = _global(); profiles = _profiles()
@@ -208,13 +432,15 @@ def _root_setup(context):
     _write_new(directory / 'profile', profile, 0o600)
     state = {'schema': 'hepta.ci-namespace-python-state.v1', 'context': context,
              'global': before, 'profiles_before': profiles, 'original': original,
-             'private': copied, 'profile_sha256': _sha(profile)}
+             'private': copied, 'profile_sha256': _sha(profile), 'setup_worker': worker}
     _write_new(directory / 'state.json', (json.dumps(state, sort_keys=True) + '\n').encode(), 0o600)
+    _ledger_put(ledger, context, 'STARTED', worker, copied['identity'], current)
     _command(['/sbin/apparmor_parser', '-a', str(directory / 'profile')])
     expected = [line for line in _profiles() if line.split(' (', 1)[0] == context['profile']]
     if len(expected) != 1 or _global() != before:
         raise ValueError('CI profile or global security readback differs')
     _write_new(directory / 'loaded', b'verified\n', 0o600)
+    _ledger_put(ledger, context, 'READY', worker, copied['identity'], current)
     return {'directory': str(directory), 'profile': context['profile'], 'private': copied,
             'global_unchanged': True, 'corpus_root': False}
 
@@ -233,11 +459,23 @@ def _live_private(identity, profile, proc=Path('/proc')):
             try: value = (proc / entry.name / 'exe').stat()
             except FileNotFoundError: continue
             # Other read failures remain failures; never infer absence.
-            if [value.st_dev, value.st_ino] == identity[:2]: live.append(int(entry.name))
+            if identity is None: continue
+            if [value.st_dev, value.st_ino] == identity[:2]:
+                live.append(int(entry.name)); continue
+            try: maps = _kernel_read(proc / entry.name / 'maps', 4 * 1024 * 1024)
+            except FileNotFoundError: continue
+            for line in maps.splitlines():
+                fields = line.split(maxsplit=5)
+                if len(fields) < 5: raise ValueError('CI executable maps shape refused')
+                device = fields[3].split(b':')
+                if len(device) != 2: raise ValueError('CI executable maps device refused')
+                if ([int(device[0], 16), int(device[1], 16)] == [os.major(identity[0]), os.minor(identity[0])] and
+                        int(fields[4]) == identity[1]):
+                    live.append(int(entry.name)); break
     return live
 
 
-def _root_cleanup(context):
+def _cleanup_locked(context, ledger_state):
     directory = Path(context['directory'])
     _root_owned(Path('/')); _root_owned(Path('/var')); _root_owned(BASE)
     try: directory.lstat()
@@ -249,10 +487,12 @@ def _root_cleanup(context):
     _root_owned(directory / 'state.json', 0o600); _root_owned(directory / 'profile', 0o600)
     raw, unused = _read(directory / 'state.json')
     state = _strict_json(raw)
-    if type(state) is not dict or set(state) != {'schema', 'context', 'global', 'profiles_before', 'original', 'private', 'profile_sha256'}:
+    if type(state) is not dict or set(state) != {'schema', 'context', 'global', 'profiles_before', 'original', 'private', 'profile_sha256', 'setup_worker'}:
         raise ValueError('CI closed state differs')
     if state['schema'] != 'hepta.ci-namespace-python-state.v1' or state['context'] != context:
         raise ValueError('CI cleanup context differs')
+    if state['setup_worker'] != ledger_state['setup_worker'] or state['private']['identity'] != ledger_state['private_identity']:
+        raise ValueError('CI ledger handoff differs')
     if _global() != state['global'] or _executable(PYTHON) != state['original']:
         raise ValueError('CI original host input changed')
     private = directory / 'bin/python3'
@@ -272,6 +512,10 @@ def _root_cleanup(context):
     if ((completed_setup and len(owned) != 1) or len(owned) > 1 or
             sorted(line for line in current if line not in owned) != state['profiles_before']):
         raise ValueError('CI unrelated profile changed')
+    if set(os.listdir(directory)) != {'bin', 'profile', 'state.json'} | ({'loaded'} if completed_setup else set()):
+        raise ValueError('CI owned directory inventory differs')
+    if os.listdir(directory / 'bin') != ['python3']:
+        raise ValueError('CI owned bin inventory differs')
     if owned: _command(['/sbin/apparmor_parser', '-R', str(directory / 'profile')])
     if (_profiles() != state['profiles_before'] or _global() != state['global'] or
             _live_private(state['private']['identity'], context['profile'])):
@@ -313,8 +557,8 @@ def _normal_runner_fact():
 
 
 def _main(argv):
-    if len(argv) == 8 and argv[0] in ('_setup_root', '_cleanup_root', '_runner_preflight'):
-        context = _context(argv[1], argv[2], argv[3], int(argv[4]), int(argv[5]), argv[6], argv[7])
+    if len(argv) == 9 and argv[0] in ('_setup_root', '_cleanup_root', '_runner_preflight'):
+        context = _context(argv[1], argv[2], argv[3], argv[4], int(argv[5]), int(argv[6]), argv[7], argv[8])
         if argv[0] == '_runner_preflight': return _runner_preflight(context)
         if os.geteuid() != 0 or os.environ.get('SUDO_UID') != str(context['uid']) or os.environ.get('SUDO_GID') != str(context['gid']):
             raise ValueError('CI actual sudo caller differs')
@@ -325,9 +569,12 @@ def _main(argv):
         raise ValueError('CI original interpreter provider differs')
     head = _command(['/usr/bin/git', '-C', str(ROOT), 'rev-parse', 'HEAD']).decode().strip()
     tree = _command(['/usr/bin/git', '-C', str(ROOT), 'rev-parse', 'HEAD^{tree}']).decode().strip()
-    context = _context(os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT'], os.environ['GITHUB_JOB'],
+    if os.environ.get('GITHUB_REPOSITORY') != REPOSITORY:
+        raise ValueError('CI runner repository differs')
+    workflow = _workflow_ref(os.environ['GITHUB_WORKFLOW_REF'])
+    context = _context(workflow, os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT'], os.environ['GITHUB_JOB'],
                        os.getuid(), os.getgid(), head, tree)
-    arguments = [context[key] for key in ('run', 'attempt', 'job')]
+    arguments = [context[key] for key in ('workflow', 'run', 'attempt', 'job')]
     arguments += [str(context['uid']), str(context['gid']), head, tree]
     normal = _normal_runner_fact()
     original_prefix = (sys.prefix, sys.base_prefix)
