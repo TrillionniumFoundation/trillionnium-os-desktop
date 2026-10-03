@@ -13,8 +13,8 @@ pub use immediate::ImmediateCallbacks;
 mod service_event_loop;
 #[cfg(target_os = "linux")]
 pub use service_event_loop::{
-    ServiceEngineBridge, ServiceEngineCommand, ServiceEngineCompletion, ServiceEngineEndpoint,
-    closed_immutable_service_engine_pair,
+    ServiceBrowserActorCore, ServiceEngineBridge, ServiceEngineCommand, ServiceEngineCompletion,
+    ServiceEngineEndpoint, closed_immutable_service_engine_pair,
 };
 
 use super::{

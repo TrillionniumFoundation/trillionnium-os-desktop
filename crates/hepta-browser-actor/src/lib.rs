@@ -48,10 +48,10 @@ use hepta_browser_actor_simulation as simulation;
 mod servo_runtime;
 
 pub use servo_runtime::{
-    ServoBrowserActor, ServoCompletionDelivery, ServoEventLoopWaker, ServoPumpResult,
-    ServoRuntimeCommand, ServoRuntimeCompletion, ServoRuntimeEndpoint, ServoRuntimeError,
-    ServoRuntimeOperation, ServoRuntimeOwner, closed_immutable_servo_runtime_pair,
-    servo_runtime_pair,
+    ServiceServoBrowserActor, ServoBrowserActor, ServoCompletionDelivery, ServoEventLoopWaker,
+    ServoPumpResult, ServoRuntimeCommand, ServoRuntimeCompletion, ServoRuntimeEndpoint,
+    ServoRuntimeError, ServoRuntimeOperation, ServoRuntimeOwner,
+    closed_immutable_servo_runtime_pair, servo_runtime_pair,
 };
 
 #[cfg(target_os = "linux")]

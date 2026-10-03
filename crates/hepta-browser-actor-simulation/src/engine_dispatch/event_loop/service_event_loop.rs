@@ -1,7 +1,11 @@
 //! Typed fixed-profile service mechanism. An unbound pair cannot issue work.
 //! The future opaque service core alone may construct the private registration
 //! from a genuine original request. No registrar or raw endpoint is exported.
+mod service_actor;
+pub use service_actor::ServiceBrowserActorCore;
+
 use super::*;
+use hepta_browser_codec::{BrowserRequest, encode_request};
 use hepta_peer_attestation::{ApprovedServiceRequestVerifier, ApprovedServiceSessionVerifier};
 use std::sync::{Mutex, OnceLock, Weak};
 
@@ -16,6 +20,13 @@ struct ServiceDispatchScope {
     original_deadline: Instant,
     dispatch_deadline: Instant,
     operation: BrowserOperation,
+    original_request: BrowserRequest,
+    original_canonical: Vec<u8>,
+    canonical_sha256: String,
+    engine_canonical: Vec<u8>,
+    runtime_started: AtomicBool,
+    runtime_finished: AtomicBool,
+    retired: AtomicBool,
 }
 
 impl ServiceDispatchScope {
@@ -26,6 +37,23 @@ impl ServiceDispatchScope {
         self.session
             .ensure_current()
             .map_err(|_| RuntimeFailure::PeerIdentityRevoked)?;
+        if self.retired.load(Ordering::SeqCst) {
+            return Err(RuntimeFailure::PeerIdentityRevoked);
+        }
+        let original = encode_request(&self.original_request)
+            .map_err(|_| RuntimeFailure::PolicyDenied("original canonical container invalid"))?;
+        let mut runtime_request = self.original_request.clone();
+        runtime_request.deadline_unix_ms = None;
+        let expected_engine = encode_request(&runtime_request)
+            .map_err(|_| RuntimeFailure::PolicyDenied("closed runtime envelope invalid"))?;
+        if original != self.original_canonical
+            || crate::executable_sha256(&original) != self.canonical_sha256
+            || expected_engine != self.engine_canonical
+            || self.request_id != self.original_request.request_id
+            || self.operation != self.original_request.operation
+        {
+            return Err(RuntimeFailure::PeerIdentityRevoked);
+        }
         let origin = self
             .engine
             .upgrade()
@@ -122,6 +150,12 @@ impl ServiceEngineState {
             return Err(RuntimeFailure::PeerIdentityRevoked);
         }
         scope.current(self)?;
+        let call_canonical = encode_request(&call.request).map_err(|_| {
+            RuntimeFailure::PolicyDenied("pending canonical runtime envelope invalid")
+        })?;
+        if call_canonical != scope.engine_canonical {
+            return Err(RuntimeFailure::PeerIdentityRevoked);
+        }
         Ok(scope)
     }
 }
@@ -330,6 +364,7 @@ impl ServiceEngineBridge {
             completion,
             valid,
         });
+        scope.runtime_started.store(true, Ordering::SeqCst);
         let owner = self
             .active
             .as_ref()
@@ -394,14 +429,21 @@ impl ServiceEngineBridge {
             .ensure_active()
             .and_then(|()| active.scope.current(&self.state));
         if sent.is_err() || uncertain || current.is_err() {
+            self.state.closed.store(true, Ordering::SeqCst);
+            active.scope.retired.store(true, Ordering::SeqCst);
+            active.scope.runtime_finished.store(true, Ordering::SeqCst);
             self.retire();
             return CallbackPumpResult::Retired;
         }
+        active.scope.runtime_finished.store(true, Ordering::SeqCst);
         CallbackPumpResult::Replied
     }
 
     fn fail_active(&mut self, error: RuntimeFailure) {
         if let Some(active) = self.active.take() {
+            self.state.closed.store(true, Ordering::SeqCst);
+            active.scope.retired.store(true, Ordering::SeqCst);
+            active.scope.runtime_finished.store(true, Ordering::SeqCst);
             active.valid.store(false, Ordering::SeqCst);
             let _ = active.call.reply.try_send(Err(error));
         }
@@ -434,6 +476,8 @@ impl ServiceEngineBridge {
         self.retired = true;
         self.state.closed.store(true, Ordering::SeqCst);
         if let Some(active) = self.active.take() {
+            active.scope.retired.store(true, Ordering::SeqCst);
+            active.scope.runtime_finished.store(true, Ordering::SeqCst);
             active.valid.store(false, Ordering::SeqCst);
             active.call.control.cancel();
             let _ = active

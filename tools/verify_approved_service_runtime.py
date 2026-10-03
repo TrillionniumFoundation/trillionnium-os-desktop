@@ -34,12 +34,29 @@ def _read(root, name):
         return (value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
     if identity(before) != identity(after_fd) or identity(before) != identity(after) or len(raw) > 1048576:
         raise ValueError('P2B Source changed during read')
-    return raw.decode('utf-8', 'strict')
+    value = raw.decode('utf-8', 'strict')
+    try:
+        from .verify_approved_service_actor import parent_source as service_actor_parent_source
+    except ImportError:
+        from verify_approved_service_actor import parent_source as service_actor_parent_source
+    return service_actor_parent_source(name, value)
 
 def parent_source(path, text):
     """Exact denial-only inverse; the source hashes never approve a principal."""
     if type(text) is not str:
         raise ValueError('P2B Source type differs')
+    # Preserve the old normalizer's idempotent, exact original-parent view.
+    # The new A delegate accepts only B713/current; this earlier known whole
+    # object is a Source view, never an actual-input or principal exemption.
+    original = EXPECTED['finite_parent_inverse'].get(path)
+    raw = text.encode('utf-8')
+    if original is not None and len(raw) == original['parent_bytes'] and _sha(raw) == original['parent_sha256']:
+        return text
+    try:
+        from .verify_approved_service_actor import parent_source as service_actor_parent_source
+    except ImportError:
+        from verify_approved_service_actor import parent_source as service_actor_parent_source
+    text = service_actor_parent_source(path, text)
     rule = EXPECTED['finite_parent_inverse'].get(path)
     if rule is None:
         return text

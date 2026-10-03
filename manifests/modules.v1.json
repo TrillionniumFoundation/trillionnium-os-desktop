@@ -513,7 +513,8 @@
         "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md",
         "docs/architecture/APPROVED_REQUEST_BINDING.md",
         "docs/architecture/MOZJS_SECONDARY_INPUT.md",
-        "docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md"
+        "docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md",
+        "docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
@@ -527,7 +528,8 @@
         "contracts/immutable-callback-url-scope.v1.json",
         "contracts/approved-request-binding.v1.json",
         "contracts/mozjs-secondary-input.v1.json",
-        "contracts/approved-service-runtime.v2.json"
+        "contracts/approved-service-runtime.v2.json",
+        "contracts/approved-service-actor.v2.json"
       ],
       "tests": [
         "crates/hepta-browser-actor/src/lib.rs",
@@ -551,7 +553,10 @@
         "tests/test_mozjs_secondary_input.py",
         "tests/test_approved_service_runtime.py",
         "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs",
-        "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs"
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs",
+        "tests/test_approved_service_actor.py",
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop/service_actor.rs",
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs"
       ],
       "workflows": [
         ".github/workflows/s06-browser-actor.yml",
@@ -578,7 +583,8 @@
         "docs/architecture/EVENT_LOOP_COMPLETION.md",
         "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md",
         "docs/architecture/APPROVED_REQUEST_BINDING.md",
-        "docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md"
+        "docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md",
+        "docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
@@ -587,7 +593,8 @@
         "contracts/dual-owner-request-custody.v1.json",
         "contracts/immutable-callback-url-scope.v1.json",
         "contracts/approved-request-binding.v1.json",
-        "contracts/approved-service-runtime.v2.json"
+        "contracts/approved-service-runtime.v2.json",
+        "contracts/approved-service-actor.v2.json"
       ],
       "tests": [
         "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop_tests.rs",
@@ -600,7 +607,10 @@
         "tests/test_approved_request_binding.py",
         "tests/test_approved_service_runtime.py",
         "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs",
-        "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs"
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs",
+        "tests/test_approved_service_actor.py",
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop/service_actor.rs",
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs"
       ],
       "workflows": [
         ".github/workflows/s06-browser-actor.yml",

@@ -1,5 +1,8 @@
 //! Thin typed mapping of the closed simulation service mechanism. No legacy
 //! endpoint/completion extraction, Source constructor, actor or activation.
+mod service_actor;
+pub use service_actor::ServiceServoBrowserActor;
+
 use super::*;
 use simulation::engine_dispatch::event_loop::{
     ServiceEngineBridge, ServiceEngineCommand, ServiceEngineCompletion, ServiceEngineEndpoint,

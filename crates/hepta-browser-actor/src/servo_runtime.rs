@@ -17,8 +17,9 @@
 mod service_runtime;
 #[cfg(target_os = "linux")]
 pub use service_runtime::{
-    ServiceServoRuntimeBridge, ServiceServoRuntimeCommand, ServiceServoRuntimeCompletion,
-    ServiceServoRuntimeEndpoint, closed_immutable_service_runtime_pair,
+    ServiceServoBrowserActor, ServiceServoRuntimeBridge, ServiceServoRuntimeCommand,
+    ServiceServoRuntimeCompletion, ServiceServoRuntimeEndpoint,
+    closed_immutable_service_runtime_pair,
 };
 
 use std::cell::RefCell;
