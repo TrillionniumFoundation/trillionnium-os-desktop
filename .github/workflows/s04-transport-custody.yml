@@ -78,11 +78,6 @@ on:
       - "tests/test_s04_transport_custody.py"
       - "tests/transport/**"
       - "manifests/cargo-external-allowlist.json"
-      - "tools/verify_ci_required_contexts.py"
-      - "contracts/ci-required-contexts.v1.json"
-      - "tests/test_ci_required_contexts.py"
-      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
-      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -99,6 +94,11 @@ on:
       - "tools/validate_project_truth.py"
       - "tools/validate_repository.py"
       - "tools/validate_rust_browser_codec.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 permissions:
   contents: read
 

@@ -54,11 +54,6 @@ on:
       - "tests/test_s11_update_recovery.py"
       - "tests/test_durable_update_owner.py"
       - "tools/validate_platform_mechanisms.py"
-      - "tools/verify_ci_required_contexts.py"
-      - "contracts/ci-required-contexts.v1.json"
-      - "tests/test_ci_required_contexts.py"
-      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
-      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -77,6 +72,11 @@ on:
       - "tools/validate_module_documentation_legacy.py"
       - "tools/validate_project_truth.py"
       - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 permissions:
   contents: read
 

@@ -45,6 +45,9 @@ on:
       - "tests/test_ci_required_contexts.py"
       - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
       - ".github/workflows/**"
+      - "contracts/remaining-managed-consumers.v1.json"
+      - "docs/architecture/REMAINING_MANAGED_CONSUMERS.md"
+      - "tests/test_remaining_managed_consumers.py"
   push:
     branches: [main, "codex/**"]
     paths:
@@ -64,11 +67,6 @@ on:
       - "tests/test_module_documentation_source_guard.py"
       - "CONTRIBUTING.md"
       - "Makefile"
-      - "tools/verify_ci_required_contexts.py"
-      - "contracts/ci-required-contexts.v1.json"
-      - "tests/test_ci_required_contexts.py"
-      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
-      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -91,6 +89,14 @@ on:
       - "contracts/configured-retained-bootstrap.v1.json"
       - "tools/verify_configured_retained_bootstrap.py"
       - "tests/test_configured_retained_bootstrap.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "contracts/remaining-managed-consumers.v1.json"
+      - "docs/architecture/REMAINING_MANAGED_CONSUMERS.md"
+      - "tests/test_remaining_managed_consumers.py"
 permissions:
   contents: read
 

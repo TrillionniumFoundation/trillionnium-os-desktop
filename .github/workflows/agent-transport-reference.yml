@@ -45,11 +45,6 @@ on:
       - "tools/validate_repository.py"
       - "manifests/project-state.v1.json"
       - "manifests/gates.v1.json"
-      - "tools/verify_ci_required_contexts.py"
-      - "contracts/ci-required-contexts.v1.json"
-      - "tests/test_ci_required_contexts.py"
-      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
-      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -62,6 +57,11 @@ on:
       - "tools/structured_status.py"
       - "tools/structured_status_model.py"
       - "tools/structured_status_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
 permissions:
   contents: read
 

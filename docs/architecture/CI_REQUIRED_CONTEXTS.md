@@ -7,6 +7,10 @@ conditions, original matrices, checkouts, steps, commands, flags, deadlines,
 profiles and budgets. Their expanded inventory contains 51 distinct proposed
 contexts: 48 repository-source contexts and three availability diagnostics.
 The latter provide no source qualification. Workflow names are unchanged.
+The S07 real-Servo job retains its original `exact-head-real-servo-behavior`
+semantic label as a final segment after the unique workflow/job prefix.
+Original adjacency of the G2 prospective job ID and event condition is also
+retained; its display name follows that condition and precedes all steps.
 
 [`ci-required-contexts.v1.json`](../../contracts/ci-required-contexts.v1.json)
 records each path, ID, explicit name, expanded context, original matrix lanes,

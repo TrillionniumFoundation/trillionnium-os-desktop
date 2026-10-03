@@ -66,8 +66,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   source-prospective:
-    name: g2-approved-native-startup / source-prospective
     if: github.event_name == 'pull_request'
+    name: g2-approved-native-startup / source-prospective
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

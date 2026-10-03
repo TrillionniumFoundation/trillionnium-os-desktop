@@ -54,6 +54,9 @@ on:
       - "tests/test_ci_required_contexts.py"
       - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
       - ".github/workflows/**"
+      - "contracts/remaining-managed-consumers.v1.json"
+      - "docs/architecture/REMAINING_MANAGED_CONSUMERS.md"
+      - "tests/test_remaining_managed_consumers.py"
   push:
     branches: [main]
     paths:
@@ -93,11 +96,6 @@ on:
       - "docs/plan/**"
       - "rust-toolchain.toml"
       - "docs/evidence/generated/d0c03-*.json"
-      - "tools/verify_ci_required_contexts.py"
-      - "contracts/ci-required-contexts.v1.json"
-      - "tests/test_ci_required_contexts.py"
-      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
-      - ".github/workflows/**"
 
       - "tools/verify_ci_source_identity.py"
       - "tests/test_ci_source_identity.py"
@@ -109,6 +107,14 @@ on:
       - "tools/structured_status.py"
       - "tools/structured_status_model.py"
       - "tools/structured_status_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "contracts/remaining-managed-consumers.v1.json"
+      - "docs/architecture/REMAINING_MANAGED_CONSUMERS.md"
+      - "tests/test_remaining_managed_consumers.py"
 permissions:
   contents: read
 

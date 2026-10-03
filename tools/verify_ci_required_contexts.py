@@ -35,12 +35,16 @@ WORKFLOWS = (
 MATRIX_WORKFLOWS = frozenset({"approved-mechanism-policy", "authenticated-update-readback",
                                "controlled-egress", "update-boot-observer"})
 AVAILABILITY_WORKFLOWS = frozenset({"self-hosted-desktop-availability", "self-hosted-fleet-availability"})
+# Preserve the original S07 exact-head semantic label and its unchanged source
+# regression, while the workflow/job prefix gives it a unique binding.
+STATIC_ROLE_LABELS = {("s07-servo-retained-node", "real-servo-behavior"): "exact-head-real-servo-behavior"}
 MATRIX_EXPRESSION = "${{ github.event_name == 'pull_request' && fromJSON('[\"head\",\"prospective-merge\"]') || fromJSON('[\"head\"]') }}"
 PROFILE = {
     "repository": "TrillionniumFoundation/trillionnium-os-desktop",
     "expected_application": {"slug": "github-actions", "app_id": 15368,
                              "binding": "required_status_checks.checks[].context+app_id"},
-    "naming": "workflow_filename_stem / original_job_id / optional_original_matrix_object",
+    "naming": "workflow_filename_stem / original_job_id / optional_original_matrix_or_semantic_role",
+    "static_role_labels": {"s07-servo-retained-node/real-servo-behavior": "exact-head-real-servo-behavior"},
     "matrix_expression": MATRIX_EXPRESSION,
     "matrix_lanes": {"pull_request": ["head", "prospective-merge"], "push": ["head"],
                      "workflow_dispatch": ["head"]},
@@ -91,10 +95,13 @@ def inventory(path: str, text: str) -> tuple[str, dict[str, dict[str, object]], 
             raise ValueError("duplicate job ID")
         section = lines[marker + 1:end]
         found = [i for i in range(marker + 1, end) if lines[i].startswith("    name:")]
-        if len(found) != 1 or found[0] != marker + 1:
-            raise ValueError("one canonical display name must immediately follow its original job ID")
+        steps = [i for i in range(marker + 1, end) if lines[i] == "    steps:\n"]
+        if len(found) != 1 or len(steps) != 1 or found[0] >= steps[0]:
+            raise ValueError("one canonical display name must precede the original steps")
         name = lines[found[0]][len("    name: "):].removesuffix("\n")
         prefix = stem + " / " + job_id
+        if (stem, job_id) in STATIC_ROLE_LABELS:
+            prefix += " / " + STATIC_ROLE_LABELS[(stem, job_id)]
         matrix = stem in MATRIX_WORKFLOWS
         expected_name = prefix + (" / ${{ matrix.object }}" if matrix else "")
         if name != expected_name:

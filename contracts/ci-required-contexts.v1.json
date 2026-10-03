@@ -7,7 +7,10 @@
       "app_id": 15368,
       "binding": "required_status_checks.checks[].context+app_id"
     },
-    "naming": "workflow_filename_stem / original_job_id / optional_original_matrix_object",
+    "naming": "workflow_filename_stem / original_job_id / optional_original_matrix_or_semantic_role",
+    "static_role_labels": {
+      "s07-servo-retained-node/real-servo-behavior": "exact-head-real-servo-behavior"
+    },
     "matrix_expression": "${{ github.event_name == 'pull_request' && fromJSON('[\"head\",\"prospective-merge\"]') || fromJSON('[\"head\"]') }}",
     "matrix_lanes": {
       "pull_request": [
@@ -55,7 +58,7 @@
   },
   "workflows": {
     ".github/workflows/agent-port-custody.yml": {
-      "body_without_job_display_names_sha256": "07316f0c84c48235c93970e040364b48d59e2dc7afc63f551649bab3f67433a3",
+      "body_without_job_display_names_sha256": "9b4edc37e6cb21c875cb5a8728fed0959c694c14bffd264095d837bbc1b60ddf",
       "jobs": {
         "validate-custody": {
           "display_name": "agent-port-custody / validate-custody",
@@ -74,7 +77,7 @@
       "conditional_jobs": []
     },
     ".github/workflows/agent-transport-reference.yml": {
-      "body_without_job_display_names_sha256": "8da5ee1f10bfb7236c5cbfc01d27db787b83151d914c6c83a1667eefcbc15e28",
+      "body_without_job_display_names_sha256": "5d0e0cc5af6524f3d7778be95b1baa8c8f2152442a0e4b71e2bf0a252621c3f2",
       "jobs": {
         "reference-exact-head": {
           "display_name": "agent-transport-reference / reference-exact-head",
@@ -103,7 +106,7 @@
       ]
     },
     ".github/workflows/approved-mechanism-policy.yml": {
-      "body_without_job_display_names_sha256": "6f8d8868c4c5df1e641f1e76b7b968b94b9c5e45538507f79d269d3b3965102f",
+      "body_without_job_display_names_sha256": "bb4f9019cd57922e3ca57b9fd73607c4087457668b65f3e77b56ff8c1e5221ae",
       "jobs": {
         "actual-host-corpus": {
           "display_name": "approved-mechanism-policy / actual-host-corpus / ${{ matrix.object }}",
@@ -143,7 +146,7 @@
       "conditional_jobs": []
     },
     ".github/workflows/browser-codec-reference.yml": {
-      "body_without_job_display_names_sha256": "8b7e7945a3b547a5c2cbb9d28c6c4ba3c3b99112ebc7d53e69b3d83fd0e35c8f",
+      "body_without_job_display_names_sha256": "8ef03cc5584180c39e8fcdbf8b5fa5a160a9a5db6b7f94ade4bb261965f2de4a",
       "jobs": {
         "reference-and-static-audit": {
           "display_name": "browser-codec-reference / reference-and-static-audit",
@@ -216,7 +219,7 @@
       ]
     },
     ".github/workflows/controlled-egress.yml": {
-      "body_without_job_display_names_sha256": "128c3db3ac06f9b04033296b164eca239dc886ea1277f1d9a1cbec281cfd8df3",
+      "body_without_job_display_names_sha256": "6bd5f8e1fb0976e3a0d975824b76e561b014e05d7c5c2774455c5714aba6f9d4",
       "jobs": {
         "actual-host-corpus": {
           "display_name": "controlled-egress / actual-host-corpus / ${{ matrix.object }}",
@@ -334,7 +337,7 @@
       ]
     },
     ".github/workflows/module-documentation.yml": {
-      "body_without_job_display_names_sha256": "9f612a831d43abb08d74ed093c23222e37421d3e50451844b8d45c9ec5a62a87",
+      "body_without_job_display_names_sha256": "a5eea531cfe6b2ed44a0a0d1e9fb0e3a81e1313043dad6f584edce4436ebd3c0",
       "jobs": {
         "exact-head": {
           "display_name": "module-documentation / exact-head",
@@ -363,7 +366,7 @@
       ]
     },
     ".github/workflows/receipt-journal.yml": {
-      "body_without_job_display_names_sha256": "718e6a6fc8d3cecae2bbac13c6e42f0df86859e6565d58377b20c218c15a7cea",
+      "body_without_job_display_names_sha256": "a6d1cd1ac14d0e8b5a709c82d4b3e551cf87c258d70c7519758e81faa2ce8fb3",
       "jobs": {
         "exact-source": {
           "display_name": "receipt-journal / exact-source",
@@ -392,7 +395,7 @@
       ]
     },
     ".github/workflows/s04-transport-custody.yml": {
-      "body_without_job_display_names_sha256": "e465057d92a64f8092cd6961801b7cd5319b7f2c22db2e6d746ac45ab6e945ab",
+      "body_without_job_display_names_sha256": "a826d6944cb9abee84680cdecbbd745eb66f3d1de218dd9a31189e39a6e633f3",
       "jobs": {
         "source-policy": {
           "display_name": "s04-transport-custody / source-policy",
@@ -438,7 +441,7 @@
       ]
     },
     ".github/workflows/s06-browser-actor.yml": {
-      "body_without_job_display_names_sha256": "2827b8487f1a96f662043cf9afaf0cde8bc7eb9491f60b9fecec35c0aae08672",
+      "body_without_job_display_names_sha256": "57b2a3628a0bea0bcd702d0ab6ccbdc63faf50d8bb39007e0e56b2e424d26ef3",
       "jobs": {
         "exact-source": {
           "display_name": "s06-browser-actor / exact-source",
@@ -470,10 +473,10 @@
       "body_without_job_display_names_sha256": "1e5cc2444c98dcd3786f609ad6968052ad046bc6337babd489136460f8f9ae24",
       "jobs": {
         "real-servo-behavior": {
-          "display_name": "s07-servo-retained-node / real-servo-behavior",
+          "display_name": "s07-servo-retained-node / real-servo-behavior / exact-head-real-servo-behavior",
           "matrix_object": false,
           "contexts": [
-            "s07-servo-retained-node / real-servo-behavior"
+            "s07-servo-retained-node / real-servo-behavior / exact-head-real-servo-behavior"
           ],
           "kind": "repository_source_check"
         },
@@ -527,7 +530,7 @@
       ]
     },
     ".github/workflows/s08-servo-vertical-slice.yml": {
-      "body_without_job_display_names_sha256": "379ea0d315b6ebd768231a6cecc29007831b3b0bfc02fe194df174baa2788584",
+      "body_without_job_display_names_sha256": "1e04abdba95c03856272b12e761aa327b679af70d387c5ac5788b90299ad202c",
       "jobs": {
         "exact-source": {
           "display_name": "s08-servo-vertical-slice / exact-source",
@@ -556,7 +559,7 @@
       ]
     },
     ".github/workflows/s09-linux-platform-adapters.yml": {
-      "body_without_job_display_names_sha256": "b78c60806f13afdd1f58a6b7fbc60fc6137a67c23c2edb8bcfac9246b2efd022",
+      "body_without_job_display_names_sha256": "57792bb73d92bbd3583e2fbaf8752fd362991a430e271f6c8690baac6796376e",
       "jobs": {
         "exact-head": {
           "display_name": "s09-linux-platform-adapters / exact-head",
@@ -603,7 +606,7 @@
       "conditional_jobs": []
     },
     ".github/workflows/s11-update-recovery.yml": {
-      "body_without_job_display_names_sha256": "5f13fc841566d7eb70775c390f6b42344da4f448555f1afee38ddaeb78870889",
+      "body_without_job_display_names_sha256": "2b6f34e72a226c9569c8b67785b0c2d3a9df57d4a1726f723164f81cd1586923",
       "jobs": {
         "exact-head": {
           "display_name": "s11-update-recovery / exact-head",
@@ -633,7 +636,7 @@
       ]
     },
     ".github/workflows/s12-release-qualification.yml": {
-      "body_without_job_display_names_sha256": "944e24aea71efdd12e7bbe2eed91dabab3c24a54b069d4fb5bc310f16d54e1f0",
+      "body_without_job_display_names_sha256": "da3e4f964dcda62aec890de88fc127f89b3e534362482c391051587aab2f75ff",
       "jobs": {
         "exact-head": {
           "display_name": "s12-release-qualification / exact-head",
@@ -747,7 +750,7 @@
       "conditional_jobs": []
     },
     ".github/workflows/update-boot-observer.yml": {
-      "body_without_job_display_names_sha256": "dfaf08dd8773916ca7f2ebbf7849c914dd22431e0123b6b3fb77f11167faace7",
+      "body_without_job_display_names_sha256": "2c81743c12cef3d8a57de76f5f4e0b8fbf8e8b823900059f80f76d1e0cfb933c",
       "jobs": {
         "actual-host-corpus": {
           "display_name": "update-boot-observer / actual-host-corpus / ${{ matrix.object }}",
