@@ -11,6 +11,50 @@ and production signing/offline-HSM facilities are not provisioned, and requested
 source and CI work first. Disposable cryptographic test keys and collaborating
 code-review agents provide none of those independent release identities.
 
+## Sixth-round source successor awaiting complete qualification
+
+The fifth-round frozen head1e7d4cc41eee8c7e6e72dde17ec6c4d8da40d762
+and tree40389d9ad1e124a5bbdc9d478ed23bb64bea1cf8 completed a fresh
+Rust1.93 source-only DEBUG0/OPT1 make: Python903/109/15, Rust422/435
+and25 doc tests. Independent review nevertheless reproduced wrong live-PR
+acceptance through a native Git suffix branch in the full S06 and receipt
+bodies, with the same first-advertisement parser still present in S07. That
+candidate was held from publication; its PASS tests and NEEDS repair finding
+remain separate immutable records.
+
+This successor preserves the fifth-round source packages and adds two reviewed
+repairs. The three remaining prospective bodies now require one exact advertised
+full ref, a canonical positive decimal PR number and the original ordered
+parents. Full original bodies are exercised against real private Git refs;
+S07 still performs the fixed historical fetch, lineage CLI and its seventeen
+original source tests. A cold current checkout without historical Git objects
+must fetch the fixed official carrier once and fails without skipping when it
+cannot do so. Duplicate field input is only a controlled inline parser test.
+The first new remote-error expectation was wrong (strict pipefail reports1,
+not the old128); the failed source8754 snapshot is retained. Corrected source
+freeze cb7ff1315ab5770ca43eb672b4e8d1942c5c20999037038055a030ff125e0f34
+passed a separate Root source/Git review, including an independent cold run.
+All older tests, workflow filters, runtime commands, source profiles, operation
+deadlines and acceptance ceilings are preserved.
+
+Shared-reader source5 retains parent and leaf descriptor owners through
+ordinary directory-walk interruptions. Independent review passed137 focused
+tests (including eleven new), seven validators, forty-two ordinary-line cuts,
+a managed-return cut and two actual close/reused-integer cases. The original
+walk leak is reproduced before the fix. The public raw-integer final RETURN
+handoff still leaks under the observed lost-delivery cut; the probe closes the
+leak and leaves that remaining route explicit. A private owned return is safe
+within this tested scope; this is not proof of all descriptor routes.
+
+The exact sixth-round combined head/tree will be captured only after this
+ledger is committed, before a fresh complete make and whole-source review.
+At this committed snapshot these combined checks, new exact-object remote CI,
+Servo and image artifacts are pending. The previously qualified S08 head98bf
+and old headed/image candidates retain only their own object qualifications.
+Approved-policy-to-native startup is a separate unintegrated source successor.
+Product activation, installed broker/principal, hardware, protected review and
+signing/release remain open; production_ready stays false.
+
 ## Review objects and implemented source
 
 All review objects below are Draft candidates. PR130 supplies the shared audit
