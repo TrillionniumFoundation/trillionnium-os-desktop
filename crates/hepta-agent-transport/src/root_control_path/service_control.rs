@@ -40,7 +40,7 @@ fn verify_moved(scope: &ConnectionScope, fd: RawFd) -> Result<(), RootControlPat
     if cred.pid <= 0
         || scope.identity
             != (PeerIdentity {
-                pid: cred.pid as u32,
+                pid: Some(cred.pid as u32),
                 uid: cred.uid,
                 gid: cred.gid,
             })

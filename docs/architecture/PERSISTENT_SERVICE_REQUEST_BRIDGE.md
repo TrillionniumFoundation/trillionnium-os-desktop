@@ -110,3 +110,27 @@ The original seventy-one cases and the other thirty-five new cases retain
 their entire bytes. The initial failed run is retained, and a corrected run
 must actually enter the operator mutation before static acceptance. This
 is neither a compiler result nor detection merely through a whole-file hash.
+
+## Actual type-check failure and original PID representation
+
+On frozen `ace7068730675383e6f53e4410e42fd039822d63`, the fixed released
+Rust 1.93.0 window actually passed `cargo fmt --all --check`, then its peer
+library check exited 101 with E0308 in the new Root transfer child. The real
+transport `PeerIdentity.pid` field is `Option<u32>`, while the initializer
+used `cred.pid as u32`. The sequence stopped before the new kernel no-run
+command; it produced no kernel ELF or runtime result. All 667 source files
+and the selected tools remained exact before and after this failed window.
+Those source objects and complete actual failure facts remain retained.
+
+This separate four-path source successor changes only that initializer to
+`Some(cred.pid as u32)`, matching the actual transport type. It preserves the
+prior positive `SO_PEERCRED` PID check and full equality against the original
+Root admission identity, along with all original clock, pidfd, pathname,
+cookie, failure-retirement and pre/post boundaries. The child whole digest
+is rebound in the contract and mandatory checker, and this factual paragraph
+is appended. The other 663 files, kernel source, tests, eighteen APIs, seven
+opaque shapes, six restricted helpers, sixteen orders and seventeen known
+legacy objects remain exact to the parent. The parent's formatter pass does
+not qualify this new object: no formatter, compiler, kernel or native
+command has run on this successor. Its next limited window needs a new
+independent source review and explicit release.
