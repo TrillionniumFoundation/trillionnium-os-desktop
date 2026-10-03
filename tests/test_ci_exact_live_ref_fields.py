@@ -296,21 +296,25 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
             self.assertEqual(old.stdout, self.head + "\n")
 
     def seed_native_loose_objects(self):
-        # Real Git 2.43 estimates its loose-object count from fanout 17. Keep
-        # this actual native-Git input finite and sufficient for gc.auto=1.
+        # Two objects in every fanout satisfy the old single-bucket estimate
+        # and the newer rounded-up 256-object automatic GC threshold. Keep
+        # the actual native input finite; no Git executable is substituted.
         seeds = []
+        fanouts = {format(number, "02x"): 0 for number in range(256)}
         for number in range(100000):
             raw = ("owned cleanup primitive " + str(number) + "\n").encode()
             sha = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
-            if not sha.startswith("17"): continue
+            if fanouts[sha[:2]] == 2: continue
             result = subprocess.run(["git", "hash-object", "-w", "--stdin"],
                                     cwd=self.repository, env=self.environment,
                                     input=raw, capture_output=True, timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout.strip().decode(), sha)
             seeds.append(sha)
-            if len(seeds) == 2: break
-        self.assertEqual(len(seeds), 2)
+            fanouts[sha[:2]] += 1
+            if len(seeds) == 512: break
+        self.assertEqual(len(seeds), 512)
+        self.assertEqual(set(fanouts.values()), {2})
         return seeds
 
     def test_private_environment_suppresses_native_auto_maintenance_and_cleans_normally(self):
@@ -340,10 +344,11 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
         self.assertFalse(self.directory.exists())
 
     def test_actual_native_gc_during_cleanup_remains_an_error(self):
-        # This negative scheduling variant enables foreground GC for one native
-        # command. Capture .git entries, let actual Git add packed-refs/GC state,
-        # then continue the original tempfile cleanup. No error suppression or
-        # cleanup retry is installed in the fixture.
+        # This negative scheduling variant runs unconditional foreground GC
+        # for one private command. Git's --auto pack-refs heuristic varies by
+        # version and need not write packed-refs even if object GC runs. Capture
+        # .git entries, require actual Git's late publication, then continue the
+        # original cleanup without error suppression or a retry.
         self.seed_native_loose_objects()
         gitdir = self.repository / ".git"
         self.assertFalse((gitdir / "packed-refs").exists())
@@ -363,7 +368,7 @@ class ExactLiveRefFieldsTests(unittest.TestCase):
             if name != gitdir or observed: return original_scandir(path)
             with original_scandir(path) as entries: snapshot = list(entries)
             observed["initial_names"] = [entry.name for entry in snapshot]
-            result = subprocess.run(["git", "gc", "--auto", "--quiet"],
+            result = subprocess.run(["git", "gc", "--quiet"],
                                     cwd=self.repository, env=environment,
                                     capture_output=True, text=True, timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
