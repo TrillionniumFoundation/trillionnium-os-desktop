@@ -5,6 +5,7 @@ on:
     branches: [main, "codex/**"]
     paths:
       - ".github/workflows/s04-transport-custody.yml"
+      - "tests/test_ci_pr_ref_identities.py"
       - "Cargo.toml"
       - "Cargo.lock"
       - "apps/hepta-agent-portd/**"
@@ -32,6 +33,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/s04-transport-custody.yml"
+      - "tests/test_ci_pr_ref_identities.py"
       - "Cargo.toml"
       - "Cargo.lock"
       - "apps/hepta-agent-portd/**"
@@ -81,7 +83,12 @@ jobs:
           set -euo pipefail
           expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           test "$(git rev-parse HEAD)" = "$expected"
-          git rev-parse HEAD^{tree}
+          git rev-parse 'HEAD^{tree}'
+      - name: Run real Git PR-ref identity regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s tests -p test_ci_pr_ref_identities.py -v
       - name: Compile source-policy implementation
         run: |
           set -euo pipefail
@@ -175,14 +182,24 @@ jobs:
       - name: Verify merge identity against live branch refs
         shell: bash
         env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${{ github.sha }}"
-          live_base="$(git ls-remote origin "refs/heads/$BASE_REF" | awk 'NR == 1 {print $1}')"
-          live_head="$(git ls-remote origin "refs/heads/$HEAD_REF" | awk 'NR == 1 {print $1}')"
+          test "$(git show -s --format=%P HEAD | wc -w)" -eq 2
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          resolve_ref() {
+            git ls-remote --exit-code origin "$1" | awk -v ref="$1" '
+              $2 == ref { value = $1; matches++ }
+              END { if (matches != 1) exit 1; print value }
+            '
+          }
+          git check-ref-format "refs/heads/$BASE_REF"
+          live_base="$(resolve_ref "refs/heads/$BASE_REF")"
+          live_head="$(resolve_ref "refs/pull/$PR_NUMBER/head")"
           test -n "$live_base"
           test -n "$live_head"
           test "$live_head" = "$EVENT_HEAD"
@@ -191,6 +208,11 @@ jobs:
           printf 'merge=%s\nbase_ref=%s\nbase_sha=%s\nhead_ref=%s\nhead_sha=%s\n' \
             "$(git rev-parse HEAD)" "$BASE_REF" "$live_base" "$HEAD_REF" "$live_head" \
             >> "$GITHUB_STEP_SUMMARY"
+      - name: Run real Git PR-ref identity regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s tests -p test_ci_pr_ref_identities.py -v
       - name: Run prospective source-policy and reference gates
         run: |
           set -euo pipefail
@@ -227,14 +249,24 @@ jobs:
       - name: Verify merge identity against live branch refs
         shell: bash
         env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${{ github.sha }}"
-          live_base="$(git ls-remote origin "refs/heads/$BASE_REF" | awk 'NR == 1 {print $1}')"
-          live_head="$(git ls-remote origin "refs/heads/$HEAD_REF" | awk 'NR == 1 {print $1}')"
+          test "$(git show -s --format=%P HEAD | wc -w)" -eq 2
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          resolve_ref() {
+            git ls-remote --exit-code origin "$1" | awk -v ref="$1" '
+              $2 == ref { value = $1; matches++ }
+              END { if (matches != 1) exit 1; print value }
+            '
+          }
+          git check-ref-format "refs/heads/$BASE_REF"
+          live_base="$(resolve_ref "refs/heads/$BASE_REF")"
+          live_head="$(resolve_ref "refs/pull/$PR_NUMBER/head")"
           test -n "$live_base"
           test -n "$live_head"
           test "$live_head" = "$EVENT_HEAD"

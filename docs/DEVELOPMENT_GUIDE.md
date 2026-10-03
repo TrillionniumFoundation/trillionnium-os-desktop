@@ -184,3 +184,24 @@ and its own library/behavior tests keep their original profiles. Profile
 changes require exact source freezing, complete unfiltered source checks,
 independent review and fresh exact-object CI. Original failed objects stay
 failed; later passes never renew the original request budget.
+
+### Live PR refs in source CI
+
+The update-boot observer and controlled-egress matrices use an independently
+validated positive canonical decimal PR number to read exactly
+`refs/pull/<number>/head` from `origin`; push lanes still read their exact
+`refs/heads/<branch>`. Agent-transport reference and both S04 prospective lanes
+also use the PR ref. A same-named origin branch cannot substitute for a missing
+or changed fork PR. The resolver requires one exact advertised ref field,
+not a pattern suffix match. Prospective objects must have exactly two parents
+in live base/head order and still match the expected checked-out object.
+
+Run `python3 -B -m unittest discover -s tests -p test_ci_pr_ref_identities.py -v`
+for the complete five Bash identity bodies against private real Git refs.
+The reference body retains its fixed `/tmp` output; the test helper uses a
+privileged subprocess-only mount namespace and then drops to the fixture
+creator's UID/GID before running it. Missing namespace privileges fail the
+corpus rather than skip it. These Git/CI source facts grant no product,
+principal, runtime, image, signing or release authority. Existing runtime
+commands, deadlines, source-test profiles and acceptance thresholds remain
+unchanged; fresh exact-object CI must run after a workflow change.
