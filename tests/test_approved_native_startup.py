@@ -784,8 +784,8 @@ class ApprovedNativeBufferedPhaseTests(unittest.TestCase):
         body = verifier.function(verifier.rust_inventory(module), "run_case")
         verifier.ordered(body, ["start()", "catch_unwind(AssertUnwindSafe(case))",
                                "flush(&mut io::stderr().lock(), result.is_ok())",
-                               "match result", "resume_unwind(original)"], "unchanged case result")
-        self.assertIn("Ok(()) => ()", module)
+                               "if let Err(original) = result", "resume_unwind(original)"], "unchanged case result")
+        self.assertNotIn("match result", module)
         self.assertNotIn("assert", body)
         target = self.texts[verifier.EXPECTED["qualification"]["native_target"]]
         main = verifier.function(verifier.rust_inventory(target), "main")

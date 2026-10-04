@@ -815,9 +815,8 @@ pub mod phase_diagnostics {
         // Diagnostic I/O failure never changes the original case result.
         // Missing/partial output or lost=true is separate, incomplete evidence.
         let _diagnostic_result = flush(&mut io::stderr().lock(), result.is_ok());
-        match result {
-            Err(original) => resume_unwind(original),
-            Ok(()) => (),
+        if let Err(original) = result {
+            resume_unwind(original);
         }
     }
 }
