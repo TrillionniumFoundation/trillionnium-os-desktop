@@ -29,6 +29,25 @@ use std::time::Duration;
 pub const ENGINE_CANCEL_POLL: Duration = Duration::from_millis(5);
 pub const ENGINE_PENDING_LIMIT: usize = 1;
 
+// Selected only by constructors; no request, callback or owner snapshot can
+// choose a wider URL scope. This is URL correspondence, never peer authority.
+#[derive(Clone, Copy)]
+enum EngineUrlScope {
+    D3Local,
+    ClosedImmutableReadOnly,
+}
+const CLOSED_IMMUTABLE_DOCUMENT_URL: &str = "data:text/html,<!DOCTYPE html><title>Immutable owner</title><main><h1>Owned semantic document</h1><p>Read only native Servo page</p></main>";
+impl EngineUrlScope {
+    fn allows(self, url: &str) -> bool {
+        match self {
+            Self::D3Local => url == "about:blank" || crate::is_loopback_http(url),
+            Self::ClosedImmutableReadOnly => {
+                url == CLOSED_IMMUTABLE_DOCUMENT_URL || url == "about:blank"
+            }
+        }
+    }
+}
+
 /// Wake the existing engine event loop. Implementations must return promptly,
 /// never pump recursively, and never wait for the requesting actor thread.
 pub trait EngineEventLoopWaker: Send + Sync {
@@ -48,20 +67,21 @@ pub struct EngineThreadRuntime {
     closed: Arc<AtomicBool>,
     owner_thread: ThreadId,
     waker: Arc<dyn EngineEventLoopWaker>,
+    url_scope: EngineUrlScope,
 }
 
 /// Engine-side endpoint. Construct and pump it on the engine event-loop thread.
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::EngineThreadOwner;
-/// use hepta_browser_actor::DeterministicLocalRuntime;
+/// ```compile_fail,E0277
+/// use hepta_browser_actor_simulation::engine_dispatch::EngineThreadOwner;
+/// use hepta_browser_actor_simulation::DeterministicLocalRuntime;
 /// fn needs_send<T: Send>() {}
 /// needs_send::<EngineThreadOwner<DeterministicLocalRuntime>>();
 /// ```
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::EngineThreadOwner;
-/// use hepta_browser_actor::DeterministicLocalRuntime;
+/// ```compile_fail,E0277
+/// use hepta_browser_actor_simulation::engine_dispatch::EngineThreadOwner;
+/// use hepta_browser_actor_simulation::DeterministicLocalRuntime;
 /// fn needs_sync<T: Sync>() {}
 /// needs_sync::<EngineThreadOwner<DeterministicLocalRuntime>>();
 /// ```
@@ -105,6 +125,7 @@ pub fn engine_thread_pair<R: PageRuntime>(
             closed: closed.clone(),
             owner_thread,
             waker,
+            url_scope: EngineUrlScope::D3Local,
         },
         EngineThreadOwner {
             receiver,
@@ -151,7 +172,7 @@ impl EngineThreadRuntime {
         }
         crate::validate_token("request_id", &control.request_id, 128)
             .map_err(|_| RuntimeFailure::PolicyDenied("invalid engine request identifier"))?;
-        validate_owner(owner)
+        validate_owner(owner, self.url_scope)
     }
 
     fn call(
@@ -175,7 +196,7 @@ impl EngineThreadRuntime {
         encode_request(&request).map_err(|_| {
             RuntimeFailure::PolicyDenied("engine dispatch request violates Browser API bounds")
         })?;
-        validate_owner(owner)?;
+        validate_owner(owner, self.url_scope)?;
         if let Some(session) = &create_session_id {
             crate::validate_token("session_id", session, 128).map_err(|_| {
                 RuntimeFailure::PolicyDenied("invalid reserved engine session identifier")
@@ -363,12 +384,15 @@ fn request(
     }
 }
 
-fn validate_owner(owner: Option<&PageOwnerSnapshot>) -> Result<(), RuntimeFailure> {
+fn validate_owner(
+    owner: Option<&PageOwnerSnapshot>,
+    scope: EngineUrlScope,
+) -> Result<(), RuntimeFailure> {
     if let Some(owner) = owner {
         let valid = owner.local_fixture_only
             && crate::validate_token("session_id", &owner.session_id, 128).is_ok()
             && crate::validate_token("webview_token", &owner.webview_token, 128).is_ok()
-            && (owner.current_url == "about:blank" || crate::is_loopback_http(&owner.current_url));
+            && scope.allows(&owner.current_url);
         if !valid {
             return Err(RuntimeFailure::PolicyDenied(
                 "invalid or non-local D3 engine owner",
@@ -418,7 +442,7 @@ impl<R: PageRuntime> EngineThreadOwner<R> {
             .control
             .ensure_current_peer()
             .and(result)
-            .and_then(bound_reply)
+            .and_then(|reply| bound_reply(reply, EngineUrlScope::D3Local))
             .and_then(|reply| call.control.ensure_active().map(|()| reply))
             .map_err(|error| match error {
                 // Backend diagnostics may contain page data. Do not forward
@@ -500,11 +524,14 @@ fn ordinary_message(call: &PendingCall) -> Result<BrowserActorMessage, RuntimeFa
     })
 }
 
-fn bound_reply(mut reply: RuntimeReply) -> Result<RuntimeReply, RuntimeFailure> {
+fn bound_reply(
+    mut reply: RuntimeReply,
+    scope: EngineUrlScope,
+) -> Result<RuntimeReply, RuntimeFailure> {
     if reply
         .current_url
         .as_ref()
-        .is_some_and(|url| url != "about:blank" && !crate::is_loopback_http(url))
+        .is_some_and(|url| !scope.allows(url))
     {
         return Err(RuntimeFailure::Internal(
             "engine reply escaped D3 local URL policy".to_owned(),
@@ -556,3 +583,7 @@ mod transport_tests;
 #[cfg(test)]
 #[path = "engine_dispatch/authority_tests.rs"]
 mod authority_tests;
+
+#[cfg(test)]
+#[path = "engine_dispatch/immutable_url_scope_tests.rs"]
+mod immutable_url_scope_tests;

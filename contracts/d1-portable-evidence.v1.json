@@ -1,0 +1,78 @@
+{
+  "absent_payloads_metadata_bound_only": [
+    "rootfs.tar",
+    "trillionnium-d1.ext4",
+    "vmlinuz",
+    "initrd.img"
+  ],
+  "carried_payloads_rehashed": [
+    "inputs/prepared-inputs.json",
+    "inputs/expected-package-lock.tsv",
+    "evidence/binary-digests.json",
+    "evidence/product-cargo-tree.txt",
+    "evidence/qualification-cargo-tree.txt",
+    "raw-evidence/product-daemon.strings",
+    "raw-evidence/qualification-fixture.strings",
+    "evidence/product-daemon-self-check-host.json",
+    "evidence/d1-qualification-self-check-host.json",
+    "builds/build-a/build-result.json",
+    "builds/build-a/rootfs-content-manifest.json",
+    "builds/build-a/package-lock.tsv",
+    "builds/build-b/build-result.json",
+    "builds/build-b/rootfs-content-manifest.json",
+    "builds/build-b/package-lock.tsv",
+    "pipeline/pipeline-result.json",
+    "reproducibility/reproducibility-result.json",
+    "qemu/boot-result.json",
+    "qemu/acceptance.json"
+  ],
+  "comparison_artifacts": [
+    "package-lock.tsv",
+    "rootfs-content-manifest.json",
+    "rootfs.tar",
+    "trillionnium-d1.ext4",
+    "vmlinuz",
+    "initrd.img"
+  ],
+  "cross_run_identity_claimed": false,
+  "default_product_activation": false,
+  "execute_artifact_payloads": false,
+  "full_disk_rehash_claimed": false,
+  "hermetic_build_claimed": false,
+  "installed_qualification_created_by_reader": false,
+  "pipeline_stages": [
+    "validate_committed_lock",
+    "prepare_exact_inputs",
+    "build_first",
+    "build_second",
+    "compare_builds",
+    "qemu_acceptance",
+    "pipeline"
+  ],
+  "product_fixture_separation": {
+    "product_default_graph_fixture_free": true,
+    "product_handler_connected": false,
+    "production_install_map_contains_qualification_binary": false,
+    "qualification_binary": "hepta-agent-d1-fixture",
+    "qualification_feature": "fixture",
+    "qualification_server_exec": "/usr/libexec/hepta-agent-d1-fixture --mode server"
+  },
+  "production_ready": false,
+  "reproducibility_scope": {
+    "cross_run_identity_claimed": false,
+    "hermetic_host_environment_claimed": false,
+    "same_run_two_build_byte_identity": true
+  },
+  "rootfs_manifest_consistency": {
+    "actual_rootfs_payload_inspected": false,
+    "complete_inode_link_inventory_claimed": false,
+    "hardlink_group": "all carried members name the same head and have matching inode metadata",
+    "hardlink_head": "self-reference at the byte-lexicographic minimum carried group member",
+    "hardlink_member_count": "at most declared nlink; links outside the carried root may be absent",
+    "parents": "every nonroot path has an explicit immediate directory parent",
+    "root": "explicit '.' directory",
+    "symlink_target": "nonempty UTF-8/surrogateescape target bytes match recorded size"
+  },
+  "schema": "trillionnium.desktop.d1-portable-evidence-contract.v1",
+  "status": "SOURCE_ONLY_READER_SEMANTICS"
+}

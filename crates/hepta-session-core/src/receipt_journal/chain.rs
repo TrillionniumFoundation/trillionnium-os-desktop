@@ -280,6 +280,7 @@ impl ReceiptJournal {
             .seek(SeekFrom::Start(report.last_complete_offset))
             .map_err(map_io_error)?;
         Ok(Self {
+            owner_pid: std::process::id(),
             path: active.path,
             file: active.file,
             _lease: lease,

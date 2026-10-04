@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 import copy
+import contextlib
+import hashlib
 import importlib.util
+import io
+import json
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
@@ -190,6 +197,287 @@ class PublicApiMutationTest(unittest.TestCase):
                     f"{VALIDATOR.PUBLIC_API_FINDING}:agent-transport.public_api:value:{key}",
                     errors,
                 )
+
+
+class S04InputDiagnosticTests(unittest.TestCase):
+    CANARY = "CONTROLLED-S04-CREDENTIAL-CANARY-DO-NOT-REPEAT"
+
+    def diagnostic(self):
+        stream = io.StringIO()
+        with contextlib.redirect_stderr(stream):
+            result = VALIDATOR.main()
+        self.assertEqual(result, 1)
+        self.assertNotIn(self.CANARY, stream.getvalue())
+        self.assertIn("S04 validation failed", stream.getvalue())
+        return stream.getvalue()
+
+    def test_actual_malformed_unit_bytes_fail_without_cli_disclosure(self):
+        relative = "packaging/debian/systemd/hepta-browserd-agent.socket"
+        original_read = VALIDATOR._read
+        with tempfile.TemporaryDirectory(prefix=".s04-diagnostic-", dir=ROOT) as temporary:
+            unit = Path(temporary) / "unit"
+            unit.write_text("[Unit]\n" + self.CANARY + "\n")
+            def read(name):
+                if name == relative:
+                    return VALIDATOR.read_text_nofollow(unit, label=relative)
+                return original_read(name)
+            with patch.object(VALIDATOR, "_read", read):
+                with self.assertRaises(ValueError) as raised:
+                    VALIDATOR._parse_assignments(relative)
+                self.assertIn(relative + " at line 2", str(raised.exception))
+                self.assertNotIn(self.CANARY, str(raised.exception))
+                self.assertIn("source custody, decoding or parsing failed", self.diagnostic())
+
+    def test_actual_missing_file_exception_does_not_echo_input_path(self):
+        with tempfile.TemporaryDirectory(prefix="s04-diagnostic-") as temporary:
+            path = Path(temporary) / self.CANARY
+            def missing():
+                return path.read_bytes()
+            with patch.object(VALIDATOR, "validate_root", missing):
+                self.diagnostic()
+
+    def test_unknown_public_api_key_remains_refused_without_echo(self):
+        errors = []
+        VALIDATOR._require_exact_typed_object(
+            {**VALIDATOR.EXPECTED_TRANSPORT_PUBLIC_API, self.CANARY: "unknown", self.CANARY + "2": "unknown"},
+            VALIDATOR.EXPECTED_TRANSPORT_PUBLIC_API, "transport", errors,
+        )
+        self.assertEqual(errors, [VALIDATOR.PUBLIC_API_FINDING + ":transport:unexpected-field"])
+        with patch.object(VALIDATOR, "validate_root", return_value=errors):
+            self.assertIn("unexpected-field", self.diagnostic())
+
+    def test_actual_reference_json_hash_value_is_refused_without_echo(self):
+        relative = "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+        original_json = VALIDATOR._json
+        reference = original_json(relative)
+        reference["contract_sha256"] = self.CANARY + "\n\u5bc6\u94a5"
+        with tempfile.TemporaryDirectory(prefix=".s04-diagnostic-", dir=ROOT) as temporary:
+            path = Path(temporary) / "reference.json"
+            path.write_text(json.dumps(reference))
+            def load(name):
+                if name == relative:
+                    return VALIDATOR.load_json_nofollow(path, label=relative)
+                return original_json(name)
+            with patch.object(VALIDATOR, "_json", load):
+                self.assertEqual(VALIDATOR.validate_reference_binding(), [
+                    "transport reference result contract_sha256 does not match the current contract"])
+                self.assertIn("contract_sha256", self.diagnostic())
+
+
+class S04FixedCliCategoryTests(unittest.TestCase):
+    SENTINELS = (
+        "S04-CONTROLLED-NONSECRET-UNKNOWN-KEY",
+        "\u79d8\u5bc6\u7d4c\u8def-\u03bc",
+        "/controlled/private/credential-shaped-input",
+        "424242424242424242",
+    )
+
+    @contextlib.contextmanager
+    def source_copy(self):
+        inventory = subprocess.run(
+            ["git", "ls-files", "-z"], cwd=ROOT, check=True,
+            capture_output=True, timeout=10,
+        ).stdout.decode().split("\0")
+        with tempfile.TemporaryDirectory(prefix=".s04-cli-", dir=ROOT) as temporary:
+            root = Path(temporary)
+            for relative in filter(None, inventory):
+                destination = root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative, destination)
+            yield root
+
+    def run_cli(self, root):
+        return subprocess.run(
+            [sys.executable, str(root / "tools/validate_s04_transport_custody.py")],
+            cwd=root, check=False, capture_output=True, text=True, timeout=20,
+        )
+
+    def assert_refusal(self, completed, categories):
+        self.assertEqual(completed.returncode, 1, completed.stderr)
+        self.assertEqual(completed.stdout, "")
+        self.assertEqual(completed.stderr.splitlines(), [
+            *("ERROR: " + category for category in categories),
+            f"S04 validation failed with {len(categories)} error(s)",
+        ])
+        for sentinel in self.SENTINELS:
+            self.assertNotIn(sentinel, completed.stderr)
+
+    def test_actual_cli_valid_source_keeps_success_status_and_message(self):
+        with self.source_copy() as root:
+            completed = self.run_cli(root)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stderr, "")
+        self.assertEqual(completed.stdout,
+            "S04 transport, peer custody, AgentPort, and product-path validation passed\n")
+
+    def test_actual_cli_unknown_json_key_uses_only_its_fixed_category(self):
+        with self.source_copy() as root:
+            contract_path = root / "contracts/agent-transport.v1.json"
+            contract = json.loads(contract_path.read_text())
+            contract["public_api"]["\n".join(self.SENTINELS)] = {
+                "peer_pid": int(self.SENTINELS[3]),
+                "peer_uid": int(self.SENTINELS[3]),
+                "path": self.SENTINELS[2],
+            }
+            contract_path.write_text(json.dumps(contract, ensure_ascii=False))
+            reference_path = root / "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+            reference = json.loads(reference_path.read_text())
+            reference["contract_sha256"] = hashlib.sha256(contract_path.read_bytes()).hexdigest()
+            reference_path.write_text(json.dumps(reference))
+            self.assert_refusal(self.run_cli(root), ["S04 unexpected-field"])
+
+    def test_actual_cli_reference_value_uses_only_its_fixed_category(self):
+        with self.source_copy() as root:
+            path = root / "docs/evidence/generated/d0c02-agent-transport-reference-result.json"
+            reference = json.loads(path.read_text())
+            reference["contract_sha256"] = "\n".join(self.SENTINELS)
+            path.write_text(json.dumps(reference, ensure_ascii=False))
+            self.assert_refusal(self.run_cli(root), ["S04 contract_sha256 mismatch"])
+
+    def test_actual_cli_malformed_unit_uses_only_fixed_parse_category(self):
+        with self.source_copy() as root:
+            path = root / "packaging/debian/systemd/hepta-browserd-agent.socket"
+            path.write_text("[Unit]\n" + "\n".join(self.SENTINELS) + "\n")
+            self.assert_refusal(self.run_cli(root), [
+                "S04 source custody, decoding or parsing failed; inspect repository inputs locally",
+            ])
+
+    def test_actual_cli_source_field_finding_keeps_detail_out_of_stderr(self):
+        with self.source_copy() as root:
+            path = root / "apps/hepta-agent-portd/src/main.rs"
+            source = path.read_text()
+            source = source.replace("fn self_check_report() -> String {",
+                "fn self_check_report() -> String {\n    // peer_pid "
+                + " ".join(self.SENTINELS), 1)
+            path.write_text(source)
+            self.assert_refusal(self.run_cli(root), ["S04 SOURCE_INVALID"])
+
+    def test_only_exact_known_messages_receive_specific_cli_categories(self):
+        messages = [
+            "S04-PUBLIC-API-CONTRACT:transport:unexpected-field:" + self.SENTINELS[0],
+            "transport reference result contract_sha256 does not match the current contract\n"
+            + self.SENTINELS[2],
+            "S04 source custody, decoding or parsing failed; inspect repository inputs locally "
+            + self.SENTINELS[1],
+        ]
+        stream = io.StringIO()
+        with patch.object(VALIDATOR, "validate_root", return_value=messages):
+            with contextlib.redirect_stderr(stream):
+                result = VALIDATOR.main()
+        self.assertEqual(result, 1)
+        self.assertEqual(stream.getvalue().splitlines(), [
+            "ERROR: S04 SOURCE_INVALID", "ERROR: S04 SOURCE_INVALID",
+            "ERROR: S04 SOURCE_INVALID", "S04 validation failed with 3 error(s)",
+        ])
+        for sentinel in self.SENTINELS:
+            self.assertNotIn(sentinel, stream.getvalue())
+
+
+class S04EffectiveCustodyGrammarTests(unittest.TestCase):
+    SYSUSERS = "packaging/debian/sysusers.d/trillionnium-desktop.conf"
+    TMPFILES = "packaging/debian/tmpfiles.d/trillionnium-desktop.conf"
+    SERVICE_DROPIN = "packaging/debian/systemd/hepta-browserd-agent@.service.d/10-root-path-custody.conf"
+    SOCKET_DROPIN = "packaging/debian/systemd/hepta-browserd-agent.socket.d/10-root-path-custody.conf"
+    source_copy = S04FixedCliCategoryTests.source_copy
+    run_cli = S04FixedCliCategoryTests.run_cli
+
+    def refuse_mutation(self, relative, mutate):
+        with self.source_copy() as root:
+            path = root / relative
+            path.write_text(mutate(path.read_text()))
+            completed = self.run_cli(root)
+        self.assertEqual(completed.returncode, 1, completed.stdout + completed.stderr)
+        self.assertEqual(completed.stdout, "")
+        lines = completed.stderr.splitlines()
+        self.assertTrue(lines[-1].startswith("S04 validation failed with "), lines)
+        self.assertTrue(all(line in {
+            "ERROR: S04 SOURCE_INVALID",
+            "ERROR: S04 source custody, decoding or parsing failed; inspect repository inputs locally",
+        } for line in lines[:-1]), lines)
+
+    def test_actual_gate_accepts_safe_spaces_tabs_and_list_resets(self):
+        with self.source_copy() as root:
+            for relative in (self.SYSUSERS, self.TMPFILES):
+                path = root / relative
+                text = path.read_text()
+                if relative == self.SYSUSERS:
+                    text = text.replace("m      hepta-browserd   hepta-agent", "  m\thepta-browserd\thepta-agent  ")
+                    text = text.replace("m      hepta-agent      hepta-agent-socket", "m hepta-agent hepta-agent-socket")
+                else:
+                    text = "\n".join("\t".join(line.split()) if line.startswith("d ") else line for line in text.splitlines()) + "\n"
+                path.write_text(text)
+            for relative in (self.SERVICE_DROPIN, self.SOCKET_DROPIN):
+                path = root / relative
+                text = path.read_text().replace("[Service]", "  [Service]  ").replace("[Socket]", "\t[Socket]\t")
+                text = text.replace("=", " \t=\t ")
+                path.write_text(text)
+            completed = self.run_cli(root)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stderr, "")
+        self.assertIn("product-path validation passed", completed.stdout)
+
+    def test_actual_gate_rejects_browser_parent_group_with_spaces_and_tabs(self):
+        for record in ("m hepta-browserd hepta-agent-socket\n", "m\thepta-browserd\thepta-agent-socket\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.SYSUSERS, lambda text: text + record)
+
+    def test_actual_gate_rejects_comment_only_agent_membership(self):
+        self.refuse_mutation(self.SYSUSERS, lambda text: text.replace(
+            "m      hepta-agent      hepta-agent-socket", "# m      hepta-agent      hepta-agent-socket"))
+
+    def test_actual_gate_rejects_duplicate_or_conflicting_membership(self):
+        for record in ("m hepta-agent hepta-agent-socket\n", "m hepta-agent hepta-browserd\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.SYSUSERS, lambda text: text + record)
+
+    def test_actual_gate_rejects_comment_decoy_parent_mapping(self):
+        self.refuse_mutation(self.TMPFILES, lambda text: text.replace(
+            "d      /run/hepta/browserd          0750 root            hepta-agent-socket   -   -",
+            "# d      /run/hepta/browserd          0750 root            hepta-agent-socket   -   -\n"
+            "d /run/hepta/browserd 0770 root hepta-browserd - -"))
+
+    def test_actual_gate_rejects_duplicate_or_conflicting_parent(self):
+        for record in ("d /run/hepta/browserd 0750 root hepta-agent-socket - -\n",
+                       "d /run/hepta/browserd 0770 root hepta-browserd - -\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.TMPFILES, lambda text: text + record)
+
+    def test_actual_gate_rejects_spaced_post_reset_authority(self):
+        for record in ("SupplementaryGroups = hepta-agent-socket\n",
+                       "ReadWritePaths \t= /run/hepta/browserd\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.SERVICE_DROPIN, lambda text: text + record)
+
+    def test_actual_gate_rejects_unsupported_unit_syntax_without_disclosure(self):
+        for record in ('SupplementaryGroups="hepta-agent-socket"\n',
+                       "SupplementaryGroups=hepta-agent-socket\\\n", "SupplementaryGroups=%g\n",
+                       "SupplementaryGroups=${CONTROLLED-CUSTODY-CANARY}\n", "UnknownCustodyKey=CONTROLLED-CUSTODY-CANARY\n"):
+            with self.subTest(record=record):
+                self.refuse_mutation(self.SERVICE_DROPIN, lambda text: text + record)
+
+    def test_actual_gate_rejects_unsupported_sysusers_and_tmpfiles_records(self):
+        for relative, record in ((self.SYSUSERS, 'm "hepta-browserd" hepta-agent-socket\n'),
+                                 (self.SYSUSERS, "m hepta-browserd hepta-agent-socket extra\n"),
+                                 (self.TMPFILES, "d /run/hepta/browserd 0750 root hepta-agent-socket - - extra\n")):
+            with self.subTest(relative=relative, record=record):
+                self.refuse_mutation(relative, lambda text: text + record)
+
+    def test_actual_gate_rejects_missing_custody_dropins(self):
+        for relative in (self.SERVICE_DROPIN, self.SOCKET_DROPIN):
+            with self.subTest(relative=relative):
+                with self.source_copy() as root:
+                    (root / relative).unlink()
+                    completed = self.run_cli(root)
+                self.assertEqual(completed.returncode, 1, completed.stderr)
+                self.assertEqual(completed.stdout, "")
+                self.assertIn("source custody, decoding or parsing failed", completed.stderr)
+
+    def test_actual_gate_rejects_internal_section_spaces_and_tabs(self):
+        for relative, section in ((self.SERVICE_DROPIN, "Service"), (self.SOCKET_DROPIN, "Socket")):
+            for header in ("[ " + section + "]", "[" + section + " ]",
+                           "[\t" + section + "]", "[" + section + "\t]", "[ " + section + " ]"):
+                with self.subTest(relative=relative, header=header):
+                    self.refuse_mutation(relative, lambda text: text.replace("[" + section + "]", header, 1))
 
 
 if __name__ == "__main__":

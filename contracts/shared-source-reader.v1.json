@@ -1,0 +1,40 @@
+{
+  "schema": "trillionnium.shared-source-reader.v1",
+  "source": "tools/browser_codec_reference_security.py",
+  "api": {
+    "name": "open_regular_beneath",
+    "parameters": ["root", "path", "label", "after_component"],
+    "keyword_only": ["label", "after_component"],
+    "return": "int",
+    "hook": "after current parent open and directory check, before retiring previous parent"
+  },
+  "ownership": {
+    "empty_owner_before_open": true,
+    "ordinary_line_walk_cleanup": true,
+    "owned_helper_return_cleanup": true,
+    "attempted_close_never_retried": true,
+    "final_raw_int_delivery_protected": false,
+    "caller_fdopen_delivery_protected": false,
+    "all_native_opcode_repeated_fault_windows_protected": false
+  },
+  "paths": {
+    "root_and_parents": "O_DIRECTORY|O_NOFOLLOW",
+    "leaf": "O_NOFOLLOW|O_NONBLOCK",
+    "regular_file_required": true,
+    "root_absolute_ancestors_revalidated": false,
+    "single_hardlink_required_by_this_helper": false,
+    "pinned_parent_rename_keeps_original_lookup": true
+  },
+  "source_index": {
+    "module": "hepta-browser-codec",
+    "tests": "tests/test_shared_source_reader.py",
+    "documentation": "docs/architecture/SHARED_SOURCE_READER.md"
+  },
+  "claims": {
+    "source_io_mechanism_only": true,
+    "approved_peer_or_principal_authority": false,
+    "durable_or_signature_authority": false,
+    "installed_or_native_qualification": false,
+    "product_activation_changed": false
+  }
+}

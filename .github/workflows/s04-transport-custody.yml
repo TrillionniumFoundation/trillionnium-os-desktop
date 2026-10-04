@@ -5,13 +5,19 @@ on:
     branches: [main, "codex/**"]
     paths:
       - ".github/workflows/s04-transport-custody.yml"
+      - "tests/test_ci_pr_ref_identities.py"
       - "Cargo.toml"
       - "Cargo.lock"
       - "apps/hepta-agent-portd/**"
+      - "apps/hepta-browserd/**"
       - "crates/hepta-agent-transport/**"
       - "crates/hepta-peer-attestation/**"
       - "crates/hepta-agent-port/**"
       - "contracts/agent-transport.v1.json"
+      - "contracts/dual-owner-request-custody.v1.json"
+      - "tests/test_dual_owner_custody.py"
+      - "contracts/accepted-stream-handoff.v1.json"
+      - "tests/test_accepted_stream_handoff.py"
       - "contracts/agent-port-bridge.v1.json"
       - "contracts/agent-port-custody.v1.json"
       - "contracts/request-peer-custody.v1.json"
@@ -24,16 +30,115 @@ on:
       - "tests/test_s04_transport_custody.py"
       - "tests/transport/**"
       - "manifests/cargo-external-allowlist.json"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_legacy_audit.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_contract_foundation.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_rust_browser_codec.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/modules.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tools/artifact_evidence.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_mozjs_secondary_input.py"
   pull_request:
     paths:
       - ".github/workflows/s04-transport-custody.yml"
+      - "tests/test_ci_pr_ref_identities.py"
       - "Cargo.toml"
       - "Cargo.lock"
       - "apps/hepta-agent-portd/**"
+      - "apps/hepta-browserd/**"
       - "crates/hepta-agent-transport/**"
       - "crates/hepta-peer-attestation/**"
       - "crates/hepta-agent-port/**"
       - "contracts/agent-transport.v1.json"
+      - "contracts/dual-owner-request-custody.v1.json"
+      - "tests/test_dual_owner_custody.py"
+      - "contracts/accepted-stream-handoff.v1.json"
+      - "tests/test_accepted_stream_handoff.py"
       - "contracts/agent-port-bridge.v1.json"
       - "contracts/agent-port-custody.v1.json"
       - "contracts/request-peer-custody.v1.json"
@@ -47,6 +152,99 @@ on:
       - "tests/transport/**"
       - "manifests/cargo-external-allowlist.json"
 
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_legacy_audit.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_contract_foundation.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/validate_rust_browser_codec.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/modules.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tools/artifact_evidence.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_mozjs_secondary_input.py"
 permissions:
   contents: read
 
@@ -56,6 +254,7 @@ concurrency:
 
 jobs:
   source-policy:
+    name: s04-transport-custody / source-policy
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -65,13 +264,35 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Verify exact identity
         shell: bash
         run: |
           set -euo pipefail
           expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           test "$(git rev-parse HEAD)" = "$expected"
-          git rev-parse HEAD^{tree}
+          git rev-parse 'HEAD^{tree}'
+      - name: Run real Git PR-ref identity regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s tests -p test_ci_pr_ref_identities.py -v
       - name: Compile source-policy implementation
         run: |
           set -euo pipefail
@@ -81,6 +302,8 @@ jobs:
             tools/validate_s04_transport_custody.py \
             tools/agent_transport_reference.py \
             tests/test_s04_transport_custody.py \
+            tests/test_dual_owner_custody.py \
+            tests/test_accepted_stream_handoff.py \
             tests/transport/test_agent_transport_reference.py
       - name: Validate source, contracts, and project truth
         run: |
@@ -91,6 +314,8 @@ jobs:
           python3 tools/validate_rust_browser_codec.py
           python3 tools/validate_s04_transport_custody.py
           python3 -m unittest tests.test_s04_transport_custody -v
+          python3 -m unittest discover -s tests -p test_accepted_stream_handoff.py -v
+          python3 -m unittest discover -s tests -p test_dual_owner_custody.py -v
           python3 -m unittest discover -s tests/transport -p 'test_*.py' -v
       - name: Reproduce independent transport evidence
         run: |
@@ -106,6 +331,7 @@ jobs:
             /tmp/d0c02-agent-transport-reference-result.json
 
   rust-all-features:
+    name: s04-transport-custody / rust-all-features
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -115,6 +341,23 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Verify exact identity
         shell: bash
         run: |
@@ -127,6 +370,11 @@ jobs:
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
       - name: Rust format, build, lint, and test all S04 feature graphs
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         run: |
           set -euo pipefail
           cargo fmt --all --check
@@ -143,6 +391,7 @@ jobs:
           test ! -e /etc/hepta/enable-agent-port
 
   source-policy-prospective-merge:
+    name: s04-transport-custody / source-policy-prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -153,17 +402,44 @@ jobs:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
           fetch-depth: 2
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Verify merge identity against live branch refs
         shell: bash
         env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${{ github.sha }}"
-          live_base="$(git ls-remote origin "refs/heads/$BASE_REF" | awk 'NR == 1 {print $1}')"
-          live_head="$(git ls-remote origin "refs/heads/$HEAD_REF" | awk 'NR == 1 {print $1}')"
+          test "$(git show -s --format=%P HEAD | wc -w)" -eq 2
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          resolve_ref() {
+            git ls-remote --exit-code origin "$1" | awk -v ref="$1" '
+              $2 == ref { value = $1; matches++ }
+              END { if (matches != 1) exit 1; print value }
+            '
+          }
+          git check-ref-format "refs/heads/$BASE_REF"
+          live_base="$(resolve_ref "refs/heads/$BASE_REF")"
+          live_head="$(resolve_ref "refs/pull/$PR_NUMBER/head")"
           test -n "$live_base"
           test -n "$live_head"
           test "$live_head" = "$EVENT_HEAD"
@@ -172,6 +448,11 @@ jobs:
           printf 'merge=%s\nbase_ref=%s\nbase_sha=%s\nhead_ref=%s\nhead_sha=%s\n' \
             "$(git rev-parse HEAD)" "$BASE_REF" "$live_base" "$HEAD_REF" "$live_head" \
             >> "$GITHUB_STEP_SUMMARY"
+      - name: Run real Git PR-ref identity regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s tests -p test_ci_pr_ref_identities.py -v
       - name: Run prospective source-policy and reference gates
         run: |
           set -euo pipefail
@@ -181,6 +462,8 @@ jobs:
           python3 tools/validate_rust_browser_codec.py
           python3 tools/validate_s04_transport_custody.py
           python3 -m unittest tests.test_s04_transport_custody -v
+          python3 -m unittest discover -s tests -p test_accepted_stream_handoff.py -v
+          python3 -m unittest discover -s tests -p test_dual_owner_custody.py -v
           python3 -m unittest discover -s tests/transport -p 'test_*.py' -v
           python3 tools/agent_transport_reference.py \
             --contract contracts/agent-transport.v1.json \
@@ -193,6 +476,7 @@ jobs:
             /tmp/d0c02-agent-transport-reference-result.json
 
   rust-prospective-merge:
+    name: s04-transport-custody / rust-prospective-merge
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
@@ -203,17 +487,44 @@ jobs:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
           fetch-depth: 2
           persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Verify merge identity against live branch refs
         shell: bash
         env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${{ github.sha }}"
-          live_base="$(git ls-remote origin "refs/heads/$BASE_REF" | awk 'NR == 1 {print $1}')"
-          live_head="$(git ls-remote origin "refs/heads/$HEAD_REF" | awk 'NR == 1 {print $1}')"
+          test "$(git show -s --format=%P HEAD | wc -w)" -eq 2
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          resolve_ref() {
+            git ls-remote --exit-code origin "$1" | awk -v ref="$1" '
+              $2 == ref { value = $1; matches++ }
+              END { if (matches != 1) exit 1; print value }
+            '
+          }
+          git check-ref-format "refs/heads/$BASE_REF"
+          live_base="$(resolve_ref "refs/heads/$BASE_REF")"
+          live_head="$(resolve_ref "refs/pull/$PR_NUMBER/head")"
           test -n "$live_base"
           test -n "$live_head"
           test "$live_head" = "$EVENT_HEAD"
@@ -228,6 +539,11 @@ jobs:
           rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
           rustup override set 1.93.0
       - name: Run prospective Rust gate
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         run: |
           set -euo pipefail
           cargo fmt --all --check

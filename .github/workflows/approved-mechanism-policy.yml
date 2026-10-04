@@ -1,0 +1,359 @@
+name: approved-mechanism-policy-source
+
+on:
+  push:
+    branches: [main, "codex/**"]
+    paths:
+      - ".github/workflows/approved-mechanism-policy.yml"
+      - "crates/hepta-peer-attestation/**"
+      - "apps/hepta-browserd/**"
+      - "crates/hepta-agent-transport/**"
+      - "contracts/approved-mechanism-policy.v1.json"
+      - "contracts/fixtures/approved-mechanisms.v1.conf"
+      - "docs/architecture/APPROVED_MECHANISM_POLICY.md"
+      - "tests/test_approved_mechanism_policy.py"
+      - "manifests/modules.v1.json"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_contract_foundation.py"
+      - "tools/validate_documentation_coherence.py"
+      - "tools/validate_module_documentation.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "tests/test_approved_request_binding.py"
+      - "tools/artifact_evidence.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_mozjs_secondary_input.py"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
+  pull_request:
+    paths:
+      - ".github/workflows/approved-mechanism-policy.yml"
+      - "crates/hepta-peer-attestation/**"
+      - "apps/hepta-browserd/**"
+      - "crates/hepta-agent-transport/**"
+      - "contracts/approved-mechanism-policy.v1.json"
+      - "contracts/fixtures/approved-mechanisms.v1.conf"
+      - "docs/architecture/APPROVED_MECHANISM_POLICY.md"
+      - "tests/test_approved_mechanism_policy.py"
+      - "manifests/modules.v1.json"
+      - "Cargo.toml"
+      - "Cargo.lock"
+
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_contract_foundation.py"
+      - "tools/validate_documentation_coherence.py"
+      - "tools/validate_module_documentation.py"
+      - "tools/validate_module_documentation_legacy.py"
+      - "tools/validate_project_truth.py"
+      - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "tests/test_approved_request_binding.py"
+      - "tools/artifact_evidence.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_mozjs_secondary_input.py"
+      - ".github/apparmor/hepta-ci-namespace-python.v1.profile"
+      - "tools/ci_namespace_python.py"
+      - "contracts/ci-namespace-python.v1.json"
+      - "tools/verify_ci_namespace_python.py"
+      - "tests/test_ci_namespace_python.py"
+permissions:
+  contents: read
+
+concurrency:
+  group: approved-mechanism-policy-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actual-host-corpus:
+    name: approved-mechanism-policy / actual-host-corpus / ${{ matrix.object }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        object: ${{ github.event_name == 'pull_request' && fromJSON('["head","prospective-merge"]') || fromJSON('["head"]') }}
+    steps:
+      - name: Check out exact source object
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ matrix.object == 'prospective-merge' && format('refs/pull/{0}/merge', github.event.pull_request.number) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha) }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: ${{ matrix.object }}
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
+      - name: Bind exact source and current prospective parents
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SOURCE_OBJECT: ${{ matrix.object }}
+          EVENT_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          EVENT_TESTED: ${{ github.sha }}
+          HEAD_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          resolve_ref() {
+            git ls-remote --exit-code origin "$1" | awk -v ref="$1" '
+              $2 == ref { value = $1; matches++ }
+              END { if (matches != 1) exit 1; print value }
+            '
+          }
+          case "$EVENT_NAME" in
+            pull_request)
+              [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+              head_query="refs/pull/$PR_NUMBER/head"
+              ;;
+            push)
+              head_query="refs/heads/$HEAD_REF"
+              git check-ref-format "$head_query"
+              ;;
+            *) exit 1 ;;
+          esac
+          live_head="$(resolve_ref "$head_query")"
+          test "$live_head" = "$EVENT_HEAD"
+          if test "$SOURCE_OBJECT" = prospective-merge; then
+            git check-ref-format "refs/heads/$BASE_REF"
+            live_base="$(resolve_ref "refs/heads/$BASE_REF")"
+            test "$live_base" = "$EVENT_BASE"
+            test "$(git rev-parse HEAD)" = "$EVENT_TESTED"
+            test "$(git show -s --format=%P HEAD | wc -w)" -eq 2
+            test "$(git rev-parse HEAD^1)" = "$live_base"
+            test "$(git rev-parse HEAD^2)" = "$live_head"
+          else
+            test "$(git rev-parse HEAD)" = "$EVENT_HEAD"
+          fi
+          git rev-parse HEAD 'HEAD^{tree}'
+          sha256sum crates/hepta-peer-attestation/src/approved_policy.rs crates/hepta-peer-attestation/src/control_owner/root_path/approved.rs apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs contracts/approved-mechanism-policy.v1.json
+      - name: Install exact source toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal --component rustfmt,clippy
+          rustup override set 1.93.0
+      - name: Run actual rooted configuration and retained coordinator corpus
+        shell: bash
+        env:
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
+          CARGO_PROFILE_DEV_DEBUG: '0'
+          CARGO_PROFILE_DEV_OPT_LEVEL: '1'
+        run: |
+          set -euo pipefail
+          unset PYTHONOPTIMIZE
+          cargo test --locked -p hepta-peer-attestation --lib
+          cargo test --locked -p hepta-peer-attestation --lib --all-features
+          cargo test --locked -p hepta-peer-attestation --test approved_policy_kernel
+          cargo test --locked -p hepta-browserd --test approved_policy_product_kernel
+          cargo test --locked -p hepta-peer-attestation --doc
+          cargo clippy --locked -p hepta-peer-attestation -p hepta-browserd --all-targets --all-features -- -D warnings
+          cargo fmt --all --check
+          python3 - <<'PYTHON'
+          import unittest
+          suite = unittest.defaultTestLoader.discover('tests', pattern='test_approved_mechanism_policy.py')
+          expected = suite.countTestCases()
+          if expected < 7:
+              raise RuntimeError('approved source corpus missing')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if not result.wasSuccessful() or result.testsRun != expected or result.skipped:
+              raise SystemExit('approved source corpus failed, omitted or skipped')
+          PYTHON
+      - name: Validate source inventory and unchanged claim ceilings
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/validate_module_documentation.py
+          python3 tools/validate_documentation_coherence.py
+          python3 tools/validate_repository.py
+          python3 tools/validate_project_truth.py
+          python3 tools/validate_contract_foundation.py
+          git diff --exit-code

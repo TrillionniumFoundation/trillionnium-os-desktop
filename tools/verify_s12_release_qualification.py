@@ -10,11 +10,23 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
+import os
 import re
+import stat
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Callable
+
+try:
+    from .browser_codec_reference_security import open_managed_regular_beneath
+except ImportError:
+    try:
+        from browser_codec_reference_security import open_managed_regular_beneath
+    except ModuleNotFoundError:
+        from tools.browser_codec_reference_security import open_managed_regular_beneath
 
 REPOSITORY = "TrillionniumFoundation/trillionnium-os-desktop"
 PLAN_REVISION = "2026-08-29-d6"
@@ -107,8 +119,15 @@ def strict_json_bytes(data: bytes) -> dict[str, Any]:
     def constant(value: str) -> None:
         raise QualificationError(f"non-JSON numeric constant {value!r}")
 
+    def finite_float(value: str) -> float:
+        number = float(value)
+        if not math.isfinite(number):
+            raise QualificationError("non-finite JSON number")
+        return number
+
     try:
-        value = json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
+        value = json.loads(text, object_pairs_hook=pairs, parse_constant=constant,
+                           parse_float=finite_float)
     except (json.JSONDecodeError, ValueError) as error:
         raise QualificationError("evidence packet is malformed JSON") from error
     if not isinstance(value, dict):
@@ -227,7 +246,7 @@ def _matches_role(
     errors: list[str],
 ) -> None:
     expected = role_map.get(role)
-    if expected is None or (actor_id, actor_login) != expected:
+    if expected is None or type(actor_id) is not int or not isinstance(actor_login, str) or (actor_id, actor_login) != expected:
         errors.append(f"{label} is not bound to role {role}")
 
 
@@ -775,11 +794,23 @@ def verify_packet(
 
 
 def _regular_bytes(path: Path, label: str, maximum: int | None = None) -> bytes:
-    if path.is_symlink() or not path.is_file():
-        raise QualificationError(f"{label} is not a regular non-symlink file")
-    data = path.read_bytes()
-    if maximum is not None and len(data) > maximum:
-        raise QualificationError(f"{label} exceeds its byte bound")
+    bound = MAX_PACKET_BYTES if maximum is None else maximum
+    try:
+        reader = open_managed_regular_beneath(Path("/"), path.absolute(), label=label)
+    except ValueError as error:
+        raise QualificationError(f"{label} is not a regular non-symlink file") from error
+    with reader as stream:
+        before = stream.stat()
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+            raise QualificationError(f"{label} must be a regular file with one hard link")
+        if before.st_size > bound:
+            raise QualificationError(f"{label} exceeds its byte bound")
+        data = stream.read(bound + 1)
+        after = stream.stat()
+        if len(data) > bound:
+            raise QualificationError(f"{label} exceeds its byte bound")
+        if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (after.st_size, after.st_mtime_ns, after.st_ctime_ns) or len(data) != before.st_size:
+            raise QualificationError(f"{label} changed while reading")
     return data
 
 
@@ -790,30 +821,34 @@ def verify_detached_signature(
     expected_public_key_sha256: str,
     *,
     runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
+    packet_bytes: bytes | None = None,
 ) -> str:
     if SHA256_RE.fullmatch(expected_public_key_sha256) is None:
         raise QualificationError("expected public-key digest is invalid")
-    _regular_bytes(packet_path, "evidence packet", MAX_PACKET_BYTES)
-    _regular_bytes(signature_path, "evidence signature", 64 * 1024)
+    packet = _regular_bytes(packet_path, "evidence packet", MAX_PACKET_BYTES) if packet_bytes is None else packet_bytes
+    if not isinstance(packet, bytes) or not packet or len(packet) > MAX_PACKET_BYTES:
+        raise QualificationError("evidence packet is empty, non-bytes, or over limit")
+    signature = _regular_bytes(signature_path, "evidence signature", 64 * 1024)
     public_key = _regular_bytes(public_key_path, "release attestor public key", 64 * 1024)
     observed = hashlib.sha256(public_key).hexdigest()
     if observed != expected_public_key_sha256:
         raise QualificationError("public key does not match the external trust root")
-    completed = runner(
-        [
-            "openssl",
-            "dgst",
-            "-sha256",
-            "-verify",
-            str(public_key_path),
-            "-signature",
-            str(signature_path),
-            str(packet_path),
-        ],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    # OpenSSL sees private snapshots of the exact bytes already admitted above.
+    # A rename of any caller path cannot change the signed packet or trust key.
+    with tempfile.TemporaryDirectory(prefix="trillionnium-s12-") as directory:
+        snapshot = Path(directory)
+        for name, data in (("packet.json", packet), ("packet.sig", signature), ("public-key.pem", public_key)):
+            with (snapshot / name).open("xb") as stream:
+                os.fchmod(stream.fileno(), 0o600)
+                stream.write(data)
+        completed = runner(
+            [
+                "openssl", "dgst", "-sha256", "-verify",
+                str(snapshot / "public-key.pem"), "-signature",
+                str(snapshot / "packet.sig"), str(snapshot / "packet.json"),
+            ],
+            text=True, capture_output=True, check=False, timeout=30,
+        )
     if completed.returncode != 0:
         message = (completed.stderr or completed.stdout).strip()[-1024:]
         raise QualificationError(f"detached signature verification failed: {message}")
@@ -870,6 +905,7 @@ def main() -> int:
             args.signature,
             args.public_key,
             args.expected_public_key_sha256,
+            packet_bytes=packet_bytes,
         )
         packet = strict_json_bytes(packet_bytes)
         errors.extend(
@@ -883,7 +919,7 @@ def main() -> int:
                 now_unix=args.now_unix,
             )
         )
-    except (OSError, QualificationError) as error:
+    except (OSError, QualificationError, subprocess.TimeoutExpired) as error:
         errors.append(str(error))
     result = qualification_result(packet_bytes, packet, errors, args.current_main_sha)
     args.output.parent.mkdir(parents=True, exist_ok=True)

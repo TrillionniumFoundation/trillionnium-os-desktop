@@ -108,7 +108,7 @@
       "core semantic files remain changed",
       "real Servo retained-node positive, stale, disabled, hidden, non-element, unsupported-data and dropped-callback regressions",
       "actual closure branch trigger and every transitive qualification source",
-      "carrier base commit ancestry and live pull-request base equality",
+      "historical carrier exact commit/tree/parent provenance plus current event head and live prospective parent order",
       "complete base plus hardening application in the prospective merge job",
       "post-format tested Servo patch digest and staged tree identity",
       "post-behavior byte-for-byte tested patch and tree revalidation",
@@ -122,9 +122,56 @@
     ],
     "prospective_merge_applies_complete_package": true,
     "post_format_test_subject": "staged_servo_tree_plus_full_index_patch_sha256_recorded_before_behavior_and_rechecked_after",
-    "head_identity_location": "evidence.json.carrier_commit_and_pull_request_live_head"
+    "head_identity_location": "evidence.json.carrier_commit_and_pull_request_live_head",
+    "lineage_sources": [
+      "tools/verify_s07_qualification_lineage.py",
+      "contracts/s07-qualification-lineage.v1.json",
+      "tools/scan_s06_public_exports.py",
+      "tests/test_s07_qualification_lineage.py",
+      "tests/test_s06_public_exports.py",
+      "contracts/golden/s07-historical-git-metadata.v1.json",
+      "tools/artifact_evidence.py",
+      "tools/browser_codec_reference_security.py",
+      ".github/workflows/s06-browser-actor.yml"
+    ]
   },
   "claim_ceiling": "A green exact-head workflow proves clean complete-package application and the bounded retained-node corpus on the recorded post-format Servo tree in Servo's real test harness. A green prospective-merge job proves the live synthetic merge retains the same complete base-plus-hardening package, allowed changed paths, patch digest and staged Servo tree. Neither proves installed Trillionnium BrowserActor/receipt integration, independent image replay, release eligibility, physical hardware, protected-environment approval or HSM signing.",
-  "carrier_parent_binding": "pull_request_base_sha_equals_carrier_base_commit_and_commit_is_ancestor_of_exact_head",
-  "carrier_head_binding": "runtime_exact_checkout_plus_evidence_artifact_no_self_referential_static_sha"
+  "carrier_parent_binding": "historical_carrier_commit_tree_parent_exact_plus_current_pull_request_base_sha_head_sha_and_merge_parent_order",
+  "carrier_head_binding": "runtime_exact_checkout_plus_evidence_artifact_no_self_referential_static_sha",
+  "qualification_lineage": {
+    "schema": "trillionnium.desktop.s07-qualification-lineage.v1",
+    "status": "SOURCE_METADATA_AND_CI_CONTRACT_ONLY",
+    "historical_carrier": {
+      "repository_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git",
+      "commit": "f0e947e5e7267a3fcdd0a7d5437c0ae00c09ebfe",
+      "tree": "b0b0304d70b209e26a08ed8a9d7e26f8a25cba02",
+      "parents": [
+        "648b204618328c2f9b9271ed6eb6db8aea7d8987"
+      ],
+      "carrier_branch": "codex/s07-servo-retained-node-closure-v1",
+      "meaning": "historical_extracted_patch_provenance_only"
+    },
+    "current_qualification": {
+      "modes": [
+        "exact-head",
+        "prospective-merge"
+      ],
+      "external_expected_event_sha_required": true,
+      "current_checkout_clean_required": true,
+      "prospective_parents": "exact_current_live_base_then_current_head",
+      "historical_ancestor_required": false,
+      "current_s06_source_tests_and_compile_fail_required": true,
+      "current_public_export_guard_required": true,
+      "complete_original_patch_and_actual_pin_required": true,
+      "servo_commit": "670ae8a70801b162e186f81cbb5bdd2d59c39108",
+      "runtime_evidence": "new_exact_event_run_never_inherited_historical_pass"
+    },
+    "non_claims": {
+      "historical_git_metadata_is_current_s06_runtime": false,
+      "metadata_verifier_is_servo_execution": false,
+      "current_candidate_is_asserted_historical_descendant": false,
+      "installed_product_or_hardware_qualified": false,
+      "production_activation_or_release_authorized": false
+    }
+  }
 }

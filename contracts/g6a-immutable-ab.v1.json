@@ -1,0 +1,16 @@
+{
+  "schema": "trillionnium.desktop.g6a-immutable-ab-contract.v1",
+  "status": "TEST_ONLY_EXECUTABLE_QUALIFICATION_PROFILE",
+  "fixture_only": true,
+  "boot_entry": "fixed_direct_kernel_initramfs_owned_by_test_harness",
+  "slot_selection": "guest_only_fixed_device_mapping",
+  "devices": {"state": "/dev/vda", "A_data": "/dev/vdb", "A_hash": "/dev/vdc", "B_data": "/dev/vdd", "B_hash": "/dev/vde"},
+  "signature": {"domain": "trillionnium.desktop.g6a-fixture-root.v1", "domain_terminator": "NUL", "preimage": "closed_descriptor_canonical_ascii_except_signature_sha256", "verification": "actual_offline_openssl_with_three_sealed_memfd_snapshots", "key": "disposable_fixture_key_public_half_inside_fixed_initramfs"},
+  "immutable_root": {"filesystem": "ext4_ro_noload", "target": "dm_verity_v1", "algorithm": "sha256", "data_block_bytes": 4096, "hash_block_bytes": 4096, "hash_start_block": 0, "superblock": false, "full_data_and_hash_digest_before_mapping": true, "actual_userspace_verity_verify": true, "complete_kernel_mapping_read_before_switch_root": true, "actual_root_readonly_and_write_refusal": true, "optional_verity_options": []},
+  "attempts": {"source": "A", "pending_target": "B", "maximum_target_boots": 2, "consume_before_root_activation": true, "exhaustion": "guest_selects_exact_verified_source_A", "successful_root_probe_is_health_commit": false, "max_fixture_boots": 32, "interrupted_temporary_state": "retain_and_refuse_no_repair"},
+  "publication_boundaries": ["temporary_created", "temporary_written", "file_synced", "name_replaced", "directory_synced", "readback_confirmed"],
+  "interruption_recovery": {"post_kill_host_state_writes": false, "before_directory_fsync": "exact_valid_old_or_new_attempt_state_or_explicit_refusal", "after_directory_fsync": "exact_consumed_attempt_state", "orphan_repair": false},
+  "qemu": {"machine": "q35", "acceleration": "tcg", "network": "none", "disk_cache": "none", "root_disks_readonly": true, "same_state_disk_across_attempts": true, "non_graceful_interruption": "SIGKILL_running_virtual_machine"},
+  "fault_cases": ["source", "pending", "target_failure", "bad_signature", "unsigned_target", "target_data_corrupt", "target_hash_corrupt", "source_data_corrupt", "state_corrupt", "publication_orphan", "disk_full", "cut_temporary_created", "cut_temporary_written", "cut_file_synced", "cut_name_replaced", "cut_directory_synced", "cut_readback_confirmed"],
+  "authority": {"production_activation_enabled": false, "firmware_authenticated": false, "desktop_installed_qualified": false, "measured_health_qualified": false, "commit_performed": false, "protected_rollback_anchor": false, "physical_power_cut_qualified": false, "reproducible_build_qualified": false}
+}

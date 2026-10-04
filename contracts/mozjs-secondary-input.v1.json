@@ -1,0 +1,63 @@
+{
+  "schema": "trillionnium.mozjs-secondary-input-custody.v1",
+  "status": "SOURCE_CANDIDATE_NOT_QUALIFIED",
+  "manifest": "manifests/mozjs-secondary-input.v1.json",
+  "reader": "existing ManagedSourceReader and owned _SourceDescriptor; no original API changes",
+  "api": {
+    "lease_archive": "(path: 'Path') -> 'SealedArchiveLease'",
+    "SealedArchiveLease.readback": "(self) -> 'dict[str, object]'",
+    "SealedArchiveLease.stable_path": "(self) -> 'str'",
+    "SealedArchiveLease.close": "(self) -> 'None'",
+    "build": "(upstream: 'Path', original_lock: 'Path', archive_path: 'Path', target_parent: 'Path', profile: 'str') -> 'dict'"
+  },
+  "admission": {
+    "manifest": "entire typed reviewed profile only; duplicate JSON rejected",
+    "source": "bounded regular single-link file; no symlink component; exact size/digest; identity readback includes source mtime/ctime",
+    "snapshot": "Linux memfd; write/grow/shrink/seal four seals; retained object/mode/uid/gid/nlink/size and complete actual proc-path SHA readback",
+    "max_archive_bytes": 33554432,
+    "max_manifest_bytes": 16384,
+    "memfd_timestamp": "failed writes can change timestamps; sealed byte proof uses object/size/seals/full digest"
+  },
+  "lifetime": {
+    "public_use": "creator process and thread; no reentry, closed/foreign/replaced descriptor refused",
+    "path": "borrowed /proc/creator_pid/fd/n only while owner retained; not a transferable approval",
+    "release": "after fixed Cargo leader wait and ordinary process group termination; no retry of reused FD integer",
+    "shutdown_failure": "bounded wait failure retains process+lease custody in caller and cannot be qualified",
+    "native_opcode_windows_supervisor_death_escaping_groups": false
+  },
+  "build": {
+    "entrypoint": "tools/build_mozjs_locked_native.py",
+    "default_ci_changed": false,
+    "profiles": {
+      "native-owner": "trillionnium_product_owner",
+      "approved-startup": "trillionnium_approved_connected"
+    },
+    "no_run": true,
+    "locked": true,
+    "cargo_profile": "checked-release",
+    "toolchain": "1.97.1",
+    "features": "bundled,js_jit",
+    "default_features": false,
+    "new_target": "exclusive initially empty per invocation, outside upstream, no existing cache",
+    "timeout_seconds": 10800,
+    "termination_grace_seconds": 5,
+    "override_refusal": "all MOZJS_*; Cargo features/profile/target/build overrides; rustflags/wrappers/toolchain/incremental conflicts",
+    "upstream_semantics": "MOZJS_ARCHIVE tries URL base first then path fallback; cached OUT_DIR archive can override env; fresh target required",
+    "actual_archive_consumption_proven": false
+  },
+  "preservation": {
+    "old_native_four_approved_two_cases": true,
+    "original_case_deadlines": true,
+    "all_original_source_API_Cargo_PIN_CI": true
+  },
+  "claims": {
+    "source_custody_only": true,
+    "official_API_digest_is_attestation": false,
+    "signature_trust_minted": false,
+    "upstream_nonzero_status_fault_injection": false,
+    "actual_native_build_qualified": false,
+    "human_approval": false,
+    "installed_qualified": false,
+    "production_ready": false
+  }
+}

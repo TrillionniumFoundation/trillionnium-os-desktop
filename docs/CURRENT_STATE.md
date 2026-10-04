@@ -7,9 +7,13 @@
 **Integrated implementation stage:** `D0R_D0C06_D0A01_COMPILE_VALIDATED`
 **Machine truth:** [`manifests/project-state.v1.json`](../manifests/project-state.v1.json)
 **Structured projection record:** [`docs/status-documents.v1.json`](status-documents.v1.json)
-**Status scope:** integrated `main` facts only
+**Status scope:** recorded integrated qualification baseline; not the current source inventory
 
 This file is a deterministic projection of closed structured data. Read [`CANDIDATE_STATUS.md`](CANDIDATE_STATUS.md) for unmerged work and [`NON_CLAIMS.md`](NON_CLAIMS.md) for the claim ceiling.
+
+Newer implementation can be merged into the source tree without acquiring this qualification status. The current Cargo source inventory is [`source-state.v1.json`](source-state.v1.json), checked against `Cargo.toml`; [`modules/README.md`](modules/README.md) describes every source package, including BrowserActor and its simulation support. Neither inventory proves runtime activation or completion of a work package.
+
+The date above belongs to the recorded qualification baseline. Evidence from that baseline is historical when its source, workflow or other invalidation inputs change; a current successful rerun and required review are needed before any broader claim.
 
 ## Integrated work packages
 
@@ -29,7 +33,7 @@ This file is a deterministic projection of closed structured data. Read [`CANDID
 
 An integrated identifier does not widen its recorded claim ceiling.
 
-## Integrated workspace
+## Workspace at the recorded qualification baseline
 
 ```text
 apps/hepta-browserd

@@ -1,0 +1,942 @@
+"""CI source/ordinary-FS regressions; never load a profile, sudo or probe userns.
+
+The setup/cleanup model deliberately substitutes root ownership, kernel profile
+inventory and parser execution. It tests refusal/order/owned-state behavior,
+not AppArmor activation or hosted namespace permission. The original real G1
+readonly snapshot and five-capabilities/NNP case remains a separate unchanged
+test in the full discovery corpus.
+"""
+from __future__ import annotations
+
+from contextlib import ExitStack, contextmanager
+import copy
+import json
+import os
+from pathlib import Path
+import stat
+import subprocess
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+
+from tools import ci_namespace_python as helper
+from tools import verify_ci_namespace_python as gate
+try:
+    from . import test_ci_source_dependency_filters as dependencies
+except ImportError:
+    import test_ci_source_dependency_filters as dependencies
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class NamespaceConfigurationSourceTests(unittest.TestCase):
+    def test_actual_contract_checker_cli_is_source_only(self):
+        gate.validate(ROOT)
+        result = subprocess.run([sys.executable, str(ROOT / 'tools/verify_ci_namespace_python.py')],
+                                cwd=ROOT, capture_output=True, text=True, timeout=30, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), {
+            'scope': 'CI_CONFIGURATION_SOURCE_ONLY', 'hosted_qualified': False,
+            'global_security_changed': False, 'production_ready': False})
+
+    def test_closed_claims_types_bounds_and_input_inventory_refuse(self):
+        texts = gate.inputs(ROOT)
+        for key in ('corpus_as_host_root', 'global_AppArmor_or_sysctl_changes',
+                    'namespace_or_security_fallback', 'hosted_qualified', 'G1_closed', 'production_ready'):
+            for wrong in (True, 0):
+                value = copy.deepcopy(gate.EXPECTED); value[key] = wrong
+                with self.subTest(key=key, wrong=wrong), self.assertRaises(ValueError): gate.check(value, texts)
+        value = copy.deepcopy(gate.EXPECTED); value['bounds']['old_job_timeout_minutes'] = 21
+        with self.assertRaises(ValueError): gate.check(value, texts)
+        value = copy.deepcopy(gate.EXPECTED); value['caller_profile_verified'] = True
+        with self.assertRaises(ValueError): gate.check(value, texts)
+        for key in texts:
+            missing = dict(texts); del missing[key]
+            with self.subTest(missing=key), self.assertRaises(ValueError): gate.check(gate.EXPECTED, missing)
+
+    def test_profile_attachment_and_global_change_source_cannot_be_rebound(self):
+        for path in gate.EXPECTED['source_sha256']:
+            texts = gate.inputs(ROOT); texts[path] += '\n# additional unreviewed behavior\n'
+            with self.subTest(path=path), self.assertRaises(ValueError): gate.check(gate.EXPECTED, texts)
+        value = copy.deepcopy(gate.EXPECTED)
+        value['source_sha256'][helper.TEMPLATE] = '0' * 64
+        with self.assertRaises(ValueError): gate.check(value, gate.inputs(ROOT))
+
+    def test_setup_checker_always_cleanup_and_original_commands_cannot_be_detached(self):
+        path = '.github/workflows/ci.yml'
+        variants = [('python3 tools/verify_ci_namespace_python.py', 'true'),
+                    ('        if: always()', '        if: success()'),
+                    ('python3 -m unittest discover -s tests -v', 'true'),
+                    ('timeout-minutes: 20', 'timeout-minutes: 21'),
+                    ('/usr/bin/python3.12 tools/ci_namespace_python.py cleanup', 'true')]
+        for before, after in variants:
+            texts = gate.inputs(ROOT); self.assertIn(before, texts[path])
+            texts[path] = texts[path].replace(before, after, 1)
+            with self.subTest(before=before), self.assertRaises(ValueError): gate.check(gate.EXPECTED, texts)
+
+    def test_both_G2_source_only_steps_and_positive_inputs_are_bound(self):
+        for stem in ('g2-approved-native-startup', 'g2-native-product-owner'):
+            path = '.github/workflows/' + stem + '.yml'
+            for before, after in [
+                ('python3 tools/verify_ci_namespace_python.py', 'true'),
+                ('        if: always()', '        if: success()'),
+                ('      - "tools/ci_namespace_python.py"\n', ''),
+                ('          make check\n', '          true\n'),
+            ]:
+                texts = gate.inputs(ROOT); self.assertIn(before, texts[path])
+                texts[path] = texts[path].replace(before, after, 1)
+                with self.subTest(stem=stem, before=before), self.assertRaises(ValueError): gate.check(gate.EXPECTED, texts)
+
+    def test_actual_catalog_digest_and_duplicate_fields_refuse(self):
+        path = 'contracts/ci-required-contexts.v1.json'
+        texts = gate.inputs(ROOT); value = json.loads(texts[path])
+        value['workflows']['.github/workflows/ci.yml']['body_without_job_display_names_sha256'] = '0' * 64
+        texts[path] = json.dumps(value)
+        with self.assertRaises(ValueError): gate.check(gate.EXPECTED, texts)
+        texts = gate.inputs(ROOT)
+        texts[path] = texts[path].replace('"schema":', '"schema":"duplicate", "schema":', 1)
+        with self.assertRaises(ValueError): gate.check(gate.EXPECTED, texts)
+
+    def test_default_make_discovery_collects_this_gate_without_running_root_setup(self):
+        make = (ROOT / 'Makefile').read_text()
+        self.assertIn('check: validate truth test-python ', make)
+        self.assertIn('test-python:\n\tpython3 -m unittest discover -s tests -v\n', make)
+        script = ("import unittest\n"
+                  "def leaves(s):\n"
+                  " for x in s:\n"
+                  "  if isinstance(x,unittest.TestSuite): yield from leaves(x)\n"
+                  "  else: yield x.id()\n"
+                  "print('\\n'.join(x for x in leaves(unittest.TestLoader().discover('tests')) "
+                  "if x.startswith('test_ci_namespace_python.')))\n")
+        result = subprocess.run([sys.executable, '-c', script], cwd=ROOT,
+                                capture_output=True, text=True, timeout=30, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        collected = set(result.stdout.splitlines())
+        self.assertIn('test_ci_namespace_python.NamespaceConfigurationSourceTests.test_actual_contract_checker_cli_is_source_only', collected)
+        self.assertIn('test_ci_namespace_python.OwnedCleanupModelTests.test_running_owned_interpreter_refuses_before_profile_removal', collected)
+        self.assertGreaterEqual(len(collected), 20)
+
+    def test_new_module_references_trigger_every_actual_module_reader(self):
+        new = [helper.TEMPLATE, 'tools/ci_namespace_python.py', gate.CONTRACT,
+               'tools/verify_ci_namespace_python.py', 'tests/test_ci_namespace_python.py']
+        registry = json.loads((ROOT / 'manifests/modules.v1.json').read_text())
+        module = next(item for item in registry['modules'] if item['id'] == 'hepta-browser-codec')
+        for path in new:
+            self.assertIn(path, module['contracts'] + module['tests'])
+        readers = []
+        for path in sorted((ROOT / '.github/workflows').glob('*.yml')):
+            document = dependencies.workflow(path)
+            closure, unused = dependencies.dependencies(ROOT, document)
+            if 'tools/validate_module_documentation.py' not in closure: continue
+            readers.append(path.name)
+            for event in ('push', 'pull_request'):
+                if event not in document['on']: continue
+                for value in new:
+                    with self.subTest(workflow=path.name, event=event, value=value):
+                        self.assertTrue(dependencies.matches(document, event, value))
+        self.assertEqual(len(readers), 9)
+
+
+class FixedContextAndOrdinaryFileTests(unittest.TestCase):
+    def context(self):
+        return helper._context('ci', '123', '2', helper.JOBS['ci'][0], 1001, 1001, 'a' * 40, 'b' * 40)
+
+    def test_fixed_workflow_ref_accepts_original_PR_merge_and_push_domains(self):
+        for workflow in helper.JOBS:
+            prefix = helper.REPOSITORY + '/.github/workflows/' + workflow + '.yml@'
+            for suffix in ('refs/pull/152/merge', 'refs/heads/main', 'refs/heads/codex/production-source-round4-20261003'):
+                with self.subTest(workflow=workflow, suffix=suffix):
+                    self.assertEqual(helper._workflow_ref(prefix + suffix), workflow)
+
+    def test_entire_workflow_ref_suffix_and_fixed_file_repository_refuse_injection(self):
+        prefix = helper.REPOSITORY + '/.github/workflows/ci.yml@'
+        wrong = [prefix + suffix for suffix in (
+            'refs/pull/152/merge\n', 'refs/pull/152/merge/extra', 'refs/pull/0/merge',
+            'refs/pull/01/merge', 'refs/pull/' + str(1 << 64) + '/merge',
+            'refs/tags/main', 'refs/heads/other', 'refs/heads/main/extra',
+            'refs/heads/codex/../main', 'refs/heads/codex//branch', 'refs/heads/codex/branch@extra',
+        )]
+        wrong.extend([prefix.replace(helper.REPOSITORY, 'other/repository') + 'refs/pull/152/merge',
+                      prefix.replace('ci.yml', '../ci.yml') + 'refs/pull/152/merge',
+                      prefix.replace('ci.yml', 'ci.yml/extra') + 'refs/pull/152/merge',
+                      ' ' * 1025, True])
+        for value in wrong:
+            with self.subTest(value=value), self.assertRaises(ValueError): helper._workflow_ref(value)
+
+    def test_four_job_pairs_make_unique_attachments_for_same_run_and_attempt(self):
+        contexts = [helper._context(workflow, '123', '2', job, 1001, 1001, 'a' * 40, 'b' * 40)
+                    for workflow, jobs in helper.JOBS.items() for job in jobs]
+        self.assertEqual(len(contexts), 4)
+        self.assertEqual(len({value['profile'] for value in contexts}), 4)
+        self.assertEqual(len({value['directory'] for value in contexts}), 4)
+        template = (ROOT / helper.TEMPLATE).read_bytes()
+        for value in contexts:
+            rendered = helper._render(value, template).decode()
+            self.assertIn('"' + value['directory'] + '/bin/python3"', rendered)
+            for foreign in contexts:
+                if foreign == value: continue
+                self.assertNotIn('"' + foreign['directory'] + '/bin/python3"', rendered)
+        with self.assertRaises(ValueError):
+            helper._context('g2-approved-native-startup', '123', '2', 'repository-contracts', 1001, 1001, 'a' * 40, 'b' * 40)
+
+    def test_context_refuses_path_job_numeric_bool_and_source_tuple_injection(self):
+        good = ['ci', '123', '2', helper.JOBS['ci'][0], 1001, 1001, 'a' * 40, 'b' * 40]
+        for index, values in [(0, ['other', '../ci', True]),
+                              (1, ['0', '01', '../123', '1\n', str(1 << 64), True]),
+                              (2, ['0', '10000', '2/../3']),
+                              (3, ['rust', 'source-prospective', 'repository-contracts\n', '*', '../job']),
+                              (4, [0, True, -1]), (5, [True, -1]),
+                              (6, ['A' * 40, 'a' * 39]), (7, ['b' * 40 + '\n'])]:
+            for value in values:
+                args = list(good); args[index] = value
+                with self.subTest(index=index, value=value), self.assertRaises(ValueError): helper._context(*args)
+        context = self.context()
+        self.assertEqual(context['directory'], '/var/lib/hepta-ci-g1-123-2-ci-repository-contracts')
+
+    def test_template_only_attaches_exact_named_real_copy(self):
+        template = (ROOT / helper.TEMPLATE).read_bytes(); context = self.context()
+        rendered = helper._render(context, template).decode()
+        self.assertIn('profile ' + context['profile'] + ' "' + context['directory'] + '/bin/python3"', rendered)
+        self.assertIn('flags=(unconfined)', rendered); self.assertIn('  userns,', rendered)
+        self.assertNotIn('"/usr/bin/python', rendered)
+        for key, wrong in [('profile', 'unconfined'), ('directory', '/usr/bin'), ('uid', True)]:
+            changed = dict(context); changed[key] = wrong
+            with self.subTest(key=key), self.assertRaises(ValueError): helper._render(changed, template)
+        for wrong in (template.replace(b'userns,', b'capability,'), template + b'\nprofile wildcard /** {}\n'):
+            with self.assertRaises(ValueError): helper._render(context, wrong)
+
+    def test_duplicate_and_nonfinite_state_json_refuse(self):
+        for raw in (b'{"uid":1,"uid":2}', b'{"value":NaN}', b'{"value":Infinity}',
+                    b'{"uid":1001.0}', b'{"value":1e999}'):
+            with self.subTest(raw=raw), self.assertRaises(ValueError): helper._strict_json(raw)
+        for raw in ('{}', b' ' * (helper.LIMIT + 1)):
+            with self.assertRaises(ValueError): helper._strict_json(raw)
+
+    def test_actual_regular_read_bounds_symlink_hardlink_and_fd_lifetime(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); source = root / 'source'; source.write_bytes(b'abcdefgh')
+            before = set(os.listdir('/proc/self/fd'))
+            self.assertEqual(helper._read(source, 8)[0], b'abcdefgh')
+            with self.assertRaises(ValueError): helper._read(source, 7)
+            (root / 'alias').symlink_to(source)
+            with self.assertRaises(OSError): helper._read(root / 'alias')
+            os.link(source, root / 'hardlink')
+            with self.assertRaises(ValueError): helper._read(source)
+            self.assertEqual(set(os.listdir('/proc/self/fd')), before)
+
+    def test_actual_read_mutation_and_interrupted_read_close_owned_fd(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'source'; source.write_bytes(b'abcdefgh')
+            before = set(os.listdir('/proc/self/fd')); original = os.read; changed = False
+            def mutate(fd, size):
+                nonlocal changed
+                data = original(fd, size)
+                if not changed:
+                    changed = True; source.write_bytes(b'changed-length')
+                return data
+            with patch.object(helper.os, 'read', side_effect=mutate), self.assertRaises(ValueError): helper._read(source)
+            with patch.object(helper.os, 'read', side_effect=InterruptedError('ordinary host interruption')), self.assertRaises(InterruptedError): helper._read(source)
+            self.assertEqual(set(os.listdir('/proc/self/fd')), before)
+
+    def test_actual_kernel_style_bound_and_create_new_never_follow_alias(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); path = root / 'file'
+            helper._write_new(path, b'abcdefgh', 0o600)
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+            self.assertEqual(helper._kernel_read(path, 8), b'abcdefgh')
+            with self.assertRaises(ValueError): helper._kernel_read(path, 7)
+            with self.assertRaises(FileExistsError): helper._write_new(path, b'replace', 0o600)
+            alias = root / 'alias'; alias.symlink_to(path)
+            with self.assertRaises(FileExistsError): helper._write_new(alias, b'replace', 0o600)
+            self.assertEqual(path.read_bytes(), b'abcdefgh')
+
+    def test_actual_proc_shaped_inventory_catches_copy_inode_and_inherited_profile(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); binary = root / 'binary'; binary.write_bytes(b'ordinary fixture')
+            identity = helper._identity(binary.stat()); profile = self.context()['profile']
+            for pid, label in [(101, 'unconfined'), (102, profile + ' (unconfined)'), (103, 'unconfined'), (104, 'unconfined')]:
+                item = root / str(pid); (item / 'attr').mkdir(parents=True)
+                (item / 'attr/current').write_text(label + '\n')
+            (root / '101/exe').symlink_to(binary)
+            other = root / 'other'; other.write_bytes(b'other ordinary fixture')
+            (root / '104/exe').symlink_to(other)
+            device = f'{os.major(identity[0]):x}:{os.minor(identity[0]):x}'
+            (root / '104/maps').write_text(f'7f0000-7f1000 r-xp 00000000 {device} {identity[1]} /mapped-ordinary-file\n')
+            # A profile-labelled descendant is caught even after exec changed or
+            # after the exe link became unavailable; no real /proc is probed.
+            self.assertEqual(sorted(helper._live_private(identity, profile, root)), [101, 102, 104])
+
+    def test_proc_label_read_error_is_refusal_not_evidence_of_no_processes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); (root / '101').mkdir()
+            with patch.object(helper, '_kernel_read', side_effect=PermissionError('fixture unreadable')), self.assertRaises(PermissionError):
+                helper._live_private([1, 2], self.context()['profile'], root)
+
+    def test_normal_cli_rejects_context_without_sudo_and_never_prints_payload(self):
+        environment = dict(os.environ, GITHUB_ACTIONS='false', GITHUB_JOB='private-sentinel-路径\n1001')
+        for argv in (['setup'], ['cleanup'], ['custom-sentinel-路径']):
+            result = subprocess.run([sys.executable, str(ROOT / 'tools/ci_namespace_python.py'), *argv],
+                                    cwd=ROOT, env=environment, capture_output=True, text=True, timeout=10, check=False)
+            self.assertEqual((result.returncode, result.stdout, result.stderr), (1, '', 'CI_NAMESPACE_PYTHON_REFUSED\n'))
+
+    def test_private_preflight_requires_same_uid_label_and_no_host_caps(self):
+        context = self.context()
+        def status(cap='0000000000000000'):
+            return ('CapEff:' + cap + '\nCapPrm:0\nCapInh:0\nCapAmb:0\nCapBnd:00000000ffffffff\nNoNewPrivs:0\n').encode()
+        def read_for(raw, label):
+            return lambda path, maximum: raw if str(path).endswith('/status') else label.encode()
+        label = context['profile'] + ' (unconfined)\n'
+        with patch.object(helper.os, 'getuid', return_value=1001), patch.object(helper.os, 'getgid', return_value=1001):
+            with patch.object(helper, '_kernel_read', side_effect=read_for(status(), label)), patch.object(helper, '_global', return_value={'synthetic': 'unchanged'}):
+                actual = helper._runner_preflight(context)
+                self.assertEqual(actual['uid'], 1001); self.assertEqual(actual['caps']['CapEff'], 0)
+            for raw, wrong in [(status('1'), label), (status(), 'unconfined\n')]:
+                with patch.object(helper, '_kernel_read', side_effect=read_for(raw, wrong)), self.assertRaises(ValueError): helper._runner_preflight(context)
+            with patch.object(helper.os, 'getgid', return_value=1002), patch.object(helper, '_kernel_read', side_effect=read_for(status(), label)), self.assertRaises(ValueError): helper._runner_preflight(context)
+
+
+class OwnedCleanupModelTests(unittest.TestCase):
+    @contextmanager
+    def model(self, *, parser_failure=False):
+        # Real ordinary files; root ownership, kernel inventory and parser are
+        # explicitly synthetic. No sudo, AppArmor or namespace call occurs.
+        with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
+            base = Path(directory); system = base / 'system-python'; system.write_bytes(b'real ordinary interpreter fixture')
+            stack.enter_context(patch.object(helper, 'BASE', base))
+            stack.enter_context(patch.object(helper, 'PYTHON', system))
+            stack.enter_context(patch.object(helper, 'SETSID', system))
+            context = helper._context('ci', '123', '2', helper.JOBS['ci'][0], 1001, 1001, 'a' * 40, 'b' * 40)
+            profiles = ['unrelated-original (enforce)']; settings = {'synthetic-global': 'unchanged'}; commands = []
+            def executable(path):
+                raw, observed = helper._read(path, 64 * 1024 * 1024)
+                if observed.st_mode & 0o6000: raise ValueError('model setid refused')
+                return {'identity': helper._identity(observed), 'bytes': len(raw), 'sha256': helper._sha(raw)}
+            def parser(argv, *, new_session=True):
+                self.assertFalse(new_session)
+                commands.append(list(argv))
+                self.assertEqual(argv[0], '/sbin/apparmor_parser')
+                self.assertEqual(argv[2], context['directory'] + '/profile')
+                if argv[1] == '-a':
+                    profiles.append(context['profile'] + ' (unconfined)')
+                    if parser_failure: raise ValueError('model failure after load')
+                elif argv[1] == '-R': profiles.remove(context['profile'] + ' (unconfined)')
+                else: self.fail('unexpected parser operation')
+                return b''
+            stack.enter_context(patch.object(helper, '_root_owned', side_effect=lambda path, mode=None: path.lstat()))
+            stack.enter_context(patch.object(helper, '_executable', side_effect=executable))
+            stack.enter_context(patch.object(helper, '_profiles', side_effect=lambda: sorted(profiles)))
+            stack.enter_context(patch.object(helper, '_global', side_effect=lambda: dict(settings)))
+            stack.enter_context(patch.object(helper, '_command', side_effect=parser))
+            stack.enter_context(patch.object(helper, '_live_private', return_value=[]))
+            operation = 0
+            def capture(context, kind):
+                nonlocal operation
+                pid = 1000001 + operation * 10; operation += 1
+                return {'pid': pid, 'start_ticks': 12345 + operation, 'pgid': pid, 'sid': pid,
+                        'uid': 0, 'exe_identity': helper._identity(system.stat()),
+                        'supervisor': {'pid': pid + 2, 'start_ticks': 12344 + operation,
+                                       'pgid': pid + 1, 'sid': pid + 1,
+                                       'uid': 0, 'exe_identity': helper._identity(system.stat())}}
+            stack.enter_context(patch.object(helper, '_capture_root_worker', side_effect=capture))
+            stack.enter_context(patch.object(helper, '_live_setup_workers', return_value=[]))
+            yield context, profiles, settings, commands, system
+
+    def test_full_modeled_setup_cleanup_removes_only_known_own_state(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            result = helper._root_setup(context)
+            self.assertFalse(result['corpus_root']); self.assertTrue(result['global_unchanged'])
+            self.assertEqual(helper._read(Path(context['directory']) / 'bin/python3')[0], system.read_bytes())
+            cleaned = helper._root_cleanup(context)
+            self.assertEqual({key: cleaned[key] for key in ('cleanup', 'global_unchanged', 'no_owned_python_processes', 'retirement_ledger_retained')}, {'cleanup': 'RETIRED_MARKER_RECORDED', 'global_unchanged': True, 'no_owned_python_processes': True, 'retirement_ledger_retained': True})
+            self.assertIn('supervisor', cleaned['operation_worker'])
+            self.assertEqual(profiles, ['unrelated-original (enforce)'])
+            self.assertFalse(Path(context['directory']).exists()); self.assertTrue(system.exists())
+            ledger = Path(context['ledger'])
+            self.assertEqual(stat.S_IMODE(ledger.stat().st_mode), 0o700)
+            self.assertEqual(stat.S_IMODE((ledger / 'lock').stat().st_mode), 0o600)
+            self.assertEqual(json.loads((ledger / 'state.json').read_text())['phase'], 'RETIRED')
+            self.assertEqual(set(os.listdir(ledger)), {'lock', 'state.json'})
+            self.assertEqual([argv[1] for argv in commands], ['-a', '-R'])
+
+    def test_running_owned_interpreter_refuses_before_profile_removal(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            helper._root_setup(context)
+            with patch.object(helper, '_live_private', return_value=[101]), self.assertRaises(ValueError): helper._root_cleanup(context)
+            self.assertEqual([argv[1] for argv in commands], ['-a'])
+            self.assertTrue(Path(context['directory']).exists())
+
+    def test_changed_global_system_copy_or_profile_refuses_cleanup(self):
+        for variant in ('global', 'system', 'private', 'profile', 'state-context', 'loaded'):
+            with self.subTest(variant=variant), self.model() as (context, profiles, settings, commands, system):
+                helper._root_setup(context); directory = Path(context['directory'])
+                if variant == 'global': settings['synthetic-global'] = 'changed'
+                elif variant == 'system': system.write_bytes(b'changed-system')
+                elif variant == 'private': (directory / 'bin/python3').write_bytes(b'changed-copy')
+                elif variant == 'profile': (directory / 'profile').write_bytes(b'profile different {}')
+                elif variant == 'loaded': (directory / 'loaded').write_bytes(b'not-verified\n')
+                else:
+                    state = json.loads((directory / 'state.json').read_text()); state['context']['uid'] = 1002
+                    (directory / 'state.json').write_text(json.dumps(state))
+                with self.assertRaises(ValueError): helper._root_cleanup(context)
+                self.assertEqual([argv[1] for argv in commands], ['-a'])
+                self.assertTrue(system.exists()); self.assertTrue(directory.exists())
+
+    def test_orphan_profile_unrelated_profile_extra_inventory_and_preexisting_allocation_refuse(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            profiles.append(context['profile'] + ' (unconfined)')
+            with self.assertRaises(ValueError): helper._root_cleanup(context)
+            self.assertEqual(commands, [])
+        with self.model() as (context, profiles, settings, commands, system):
+            Path(context['directory']).mkdir()
+            with self.assertRaises(FileExistsError): helper._root_setup(context)
+            self.assertEqual(commands, [])
+        for variant in ('unrelated-profile', 'extra-file'):
+            with self.subTest(variant=variant), self.model() as (context, profiles, settings, commands, system):
+                helper._root_setup(context)
+                if variant == 'unrelated-profile': profiles.append('new-unrelated (enforce)')
+                else: (Path(context['directory']) / 'unexpected').write_bytes(b'do not delete')
+                with self.assertRaises(ValueError): helper._root_cleanup(context)
+                self.assertTrue(system.exists()); self.assertTrue(Path(context['directory']).exists())
+                if variant == 'extra-file': self.assertTrue((Path(context['directory']) / 'unexpected').exists())
+                self.assertEqual([argv[1] for argv in commands], ['-a'])
+
+    def test_partial_parser_failure_is_not_success_but_known_state_can_be_cleaned(self):
+        with self.model(parser_failure=True) as (context, profiles, settings, commands, system):
+            with self.assertRaises(ValueError): helper._root_setup(context)
+            self.assertFalse((Path(context['directory']) / 'loaded').exists())
+            result = helper._root_cleanup(context)
+            self.assertEqual(result['cleanup'], 'RETIRED_MARKER_RECORDED')
+            self.assertEqual([argv[1] for argv in commands], ['-a', '-R'])
+            self.assertTrue(system.exists())
+
+    def test_early_cleanup_tombstone_permanently_refuses_late_setup(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            result = helper._root_cleanup(context)
+            self.assertEqual(result['cleanup'], 'NO_ALLOCATION_RETIRED_MARKER_RECORDED')
+            self.assertTrue(result['retirement_ledger_retained'])
+            ledger = Path(context['ledger']); before = (ledger / 'state.json').read_bytes()
+            with self.assertRaises(ValueError): helper._root_setup(context)
+            self.assertEqual((ledger / 'state.json').read_bytes(), before)
+            self.assertFalse(Path(context['directory']).exists()); self.assertEqual(commands, [])
+            self.assertEqual(helper._root_cleanup(context)['cleanup'], 'ALREADY_RETIRED_MARKER_RECORDED')
+
+    def test_actual_same_inode_nonblocking_lock_contention_refuses_cleanup(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            helper._root_setup(context); ledger = Path(context['ledger'])
+            before = (ledger / 'state.json').read_bytes()
+            fd = os.open(ledger / 'lock', os.O_RDWR | os.O_NOFOLLOW | os.O_CLOEXEC)
+            try:
+                helper.fcntl.flock(fd, helper.fcntl.LOCK_EX | helper.fcntl.LOCK_NB)
+                with self.assertRaises(BlockingIOError): helper._root_cleanup(context)
+            finally: os.close(fd)
+            self.assertEqual((ledger / 'state.json').read_bytes(), before)
+            self.assertEqual([argv[1] for argv in commands], ['-a'])
+            self.assertTrue(Path(context['directory']).exists())
+
+    def test_setup_session_or_unknown_worker_prevents_unload_and_retirement(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            helper._root_setup(context); path = Path(context['ledger']) / 'state.json'; before = path.read_bytes()
+            with patch.object(helper, '_live_setup_workers', return_value=[{'pid': 1000001, 'recorded_start_matches': True}]), self.assertRaises(ValueError):
+                helper._root_cleanup(context)
+            with patch.object(helper, '_live_setup_workers', side_effect=PermissionError('synthetic unreadable proc')), self.assertRaises(PermissionError):
+                helper._root_cleanup(context)
+            self.assertEqual(path.read_bytes(), before)
+            self.assertEqual([argv[1] for argv in commands], ['-a'])
+
+    def test_ledger_unknown_phase_replaced_lock_and_interrupted_write_refuse(self):
+        for variant in ('phase', 'worker-bool', 'lock-replaced', 'pending'):
+            with self.subTest(variant=variant), self.model() as (context, profiles, settings, commands, system):
+                helper._root_setup(context); ledger = Path(context['ledger'])
+                if variant == 'lock-replaced':
+                    (ledger / 'lock').replace(system.parent / 'saved-original-lock')
+                    helper._write_new(ledger / 'lock', b'', 0o600)
+                elif variant == 'pending': (ledger / 'pending.json').write_bytes(b'{}')
+                else:
+                    state = json.loads((ledger / 'state.json').read_text())
+                    if variant == 'phase': state['phase'] = 'UNKNOWN'
+                    else: state['setup_worker']['pgid'] = True
+                    (ledger / 'state.json').write_text(json.dumps(state))
+                with self.assertRaises(ValueError): helper._root_cleanup(context)
+                self.assertEqual([argv[1] for argv in commands], ['-a'])
+                self.assertTrue(Path(context['directory']).exists())
+
+    def test_retired_phase_cannot_be_revived_even_under_owned_lock(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            helper._root_cleanup(context); ledger = Path(context['ledger'])
+            before = (ledger / 'state.json').read_bytes()
+            with helper._ledger_lock(context, False) as (directory, made, current):
+                self.assertFalse(made)
+                with self.assertRaises(ValueError):
+                    helper._ledger_put(directory, context, 'STARTED', None, None, current)
+            self.assertEqual((ledger / 'state.json').read_bytes(), before)
+            self.assertEqual(commands, [])
+
+    def test_parser_return_with_replaced_lock_cannot_publish_ready_state(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            original = helper._command
+            def changed(argv, **kwargs):
+                result = original(argv, **kwargs); ledger = Path(context['ledger'])
+                (ledger / 'lock').replace(system.parent / 'saved-original-lock')
+                helper._write_new(ledger / 'lock', b'', 0o600)
+                return result
+            with patch.object(helper, '_command', side_effect=changed), self.assertRaises(ValueError):
+                helper._root_setup(context)
+            ledger = Path(context['ledger'])
+            self.assertEqual(json.loads((ledger / 'state.json').read_text())['phase'], 'STARTED')
+            with self.assertRaises(ValueError): helper._root_cleanup(context)
+            self.assertEqual([argv[1] for argv in commands], ['-a'])
+            self.assertTrue(Path(context['directory']).exists())
+
+    def test_cleanup_parser_child_remaining_keeps_state_and_never_retires(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            helper._root_setup(context); original = helper._command; remaining = False
+            def parser(argv, **kwargs):
+                nonlocal remaining
+                result = original(argv, **kwargs)
+                if argv[1] == '-R': remaining = True
+                return result
+            def live(*args, **kwargs): return [{'pid': 1000020}] if remaining else []
+            with patch.object(helper, '_command', side_effect=parser), patch.object(helper, '_live_setup_workers', side_effect=live), self.assertRaises(ValueError):
+                helper._root_cleanup(context)
+            state = json.loads((Path(context['ledger']) / 'state.json').read_text())
+            self.assertEqual(state['phase'], 'READY'); self.assertIsNotNone(state['cleanup_worker'])
+            self.assertTrue(Path(context['directory']).exists())
+            before = (Path(context['ledger']) / 'state.json').read_bytes()
+            with patch.object(helper, '_live_setup_workers', return_value=[{'pid': 1000020}]), self.assertRaises(ValueError):
+                helper._root_cleanup(context)
+            self.assertEqual((Path(context['ledger']) / 'state.json').read_bytes(), before)
+
+    def test_post_wait_requires_both_sessions_empty_and_unchanged_providers(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            result = helper._root_setup(context); provider = helper._executable(system)
+            self.assertFalse(result['root_worker_supervisor_all_exited'])
+            original = dict(result)
+            for variant in ('writer-child', 'supervisor-child', 'unreadable', 'premature', 'provider'):
+                with self.subTest(variant=variant):
+                    if variant in ('writer-child', 'supervisor-child'):
+                        calls = [[{'pid': 1000050}], []] if variant == 'writer-child' else [[], [{'pid': 1000051}]]
+                        with patch.object(helper, '_live_setup_workers', side_effect=calls), self.assertRaises(ValueError):
+                            helper._completed_operation(context, result, provider, provider)
+                    elif variant == 'unreadable':
+                        with patch.object(helper, '_live_setup_workers', side_effect=PermissionError('ordinary fixture unreadable')), self.assertRaises(PermissionError):
+                            helper._completed_operation(context, result, provider, provider)
+                    else:
+                        result = dict(original)
+                        if variant == 'premature': result['root_worker_supervisor_all_exited'] = True
+                        else: result['setsid_provider'] = {'wrong': 'fixture'}
+                        with self.assertRaises(ValueError): helper._completed_operation(context, result, provider, provider)
+            helper._completed_operation(context, original, provider, provider)
+
+    def test_start_record_and_same_lock_precede_parser_ready_then_retired(self):
+        with self.model() as (context, profiles, settings, commands, system):
+            original = helper._command; observed = []
+            def inspect(argv, **kwargs):
+                ledger = Path(context['ledger']); state = json.loads((ledger / 'state.json').read_text())
+                observed.append((argv[1], state['phase'], state['private_identity']))
+                self.assertEqual(state['lock_identity'][:2], helper._identity((ledger / 'lock').stat())[:2])
+                self.assertIsNotNone(state['setup_worker']); self.assertIsNotNone(state['private_identity'])
+                return original(argv, **kwargs)
+            with patch.object(helper, '_command', side_effect=inspect):
+                helper._root_setup(context)
+                self.assertEqual(json.loads((Path(context['ledger']) / 'state.json').read_text())['phase'], 'READY')
+                helper._root_cleanup(context)
+            self.assertEqual([(operation, phase) for operation, phase, identity in observed], [('-a', 'STARTED'), ('-R', 'READY')])
+            self.assertEqual(json.loads((Path(context['ledger']) / 'state.json').read_text())['phase'], 'RETIRED')
+
+
+class OrdinaryOperationSessionTests(unittest.TestCase):
+    def context(self):
+        return helper._context('ci', '123', '2', helper.JOBS['ci'][0], 1001, 1001, 'a' * 40, 'b' * 40)
+
+    def fixture(self, root, pid, pgid, sid, binary, *, argv=b'changed-exec\0', start=12345):
+        # Ordinary proc-shaped files only: the UID0 text is synthetic input,
+        # never a claim that this test obtained host root or a kernel authority.
+        entry = root / str(pid); entry.mkdir()
+        fields = ['S', '1', str(pgid), str(sid)] + ['0'] * 15 + [str(start)]
+        (entry / 'stat').write_text(str(pid) + ' (ordinary) ' + ' '.join(fields) + '\n')
+        (entry / 'cmdline').write_bytes(argv)
+        (entry / 'status').write_bytes(b'Uid:\t0\t0\t0\t0\n')
+        (entry / 'exe').symlink_to(binary)
+        return {'pid': pid, 'start_ticks': start, 'pgid': pgid, 'sid': sid,
+                'uid': 0, 'exe_identity': helper._identity(binary.stat())}
+
+    def test_changed_parser_argv_exec_remains_in_recorded_setup_session(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); binary = root / 'binary'; binary.write_bytes(b'ordinary alternate ELF fixture')
+            worker = {'pid': 101, 'start_ticks': 12345, 'pgid': 101, 'sid': 101}
+            self.fixture(root, 102, 101, 101, binary)
+            self.assertEqual([row['pid'] for row in helper._live_setup_workers(self.context(), worker, root)], [102])
+
+    def test_cleanup_session_excludes_only_exact_current_writer_not_its_child(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); binary = root / 'binary'; binary.write_bytes(b'ordinary alternate ELF fixture')
+            worker = self.fixture(root, 201, 201, 201, binary)
+            self.fixture(root, 202, 201, 201, binary)
+            rows = helper._live_setup_workers(self.context(), worker, root, exclude=worker)
+            self.assertEqual([row['pid'] for row in rows], [202])
+            wrong = dict(worker); wrong['start_ticks'] += 1
+            with self.assertRaises(ValueError): helper._live_setup_workers(self.context(), worker, root, exclude=wrong)
+            (root / '201/status').write_bytes(b'Uid:\t1001\t1001\t1001\t1001\n')
+            with self.assertRaises(ValueError): helper._live_setup_workers(self.context(), worker, root, exclude=worker)
+
+    def test_fixed_setsid_fork_wait_avoids_actual_ordinary_group_leader_eperm(self):
+        script = "import os,json; print(json.dumps({'pid':os.getpid(),'pgid':os.getpgrp(),'sid':os.getsid(0),'uid':os.getuid()}))"
+        argv = ['/usr/bin/setsid', '--fork', '--wait', '--', sys.executable, '-c', script]
+        result = subprocess.run(argv, start_new_session=True, capture_output=True, text=True, timeout=10, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        actual = json.loads(result.stdout)
+        self.assertEqual(actual['pid'], actual['pgid']); self.assertEqual(actual['pid'], actual['sid'])
+        self.assertEqual(actual['uid'], os.getuid())
+        failure = "import os,errno,json;\ntry: os.setsid()\nexcept OSError as e: print(json.dumps({'errno':e.errno}))\nelse: raise SystemExit(2)"
+        result = subprocess.run([sys.executable, '-c', failure], start_new_session=True,
+                                capture_output=True, text=True, timeout=10, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        import errno
+        self.assertEqual(json.loads(result.stdout), {'errno': errno.EPERM})
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+class NamespaceStepCatalogBindingTests(unittest.TestCase):
+    def catalogs(self):
+        try:
+            from . import test_ci_source_identity as identity_catalog
+        except ImportError:
+            import test_ci_source_identity as identity_catalog
+        texts = gate.inputs(ROOT)
+        path = 'contracts/ci-source-identity.v1.json'
+        return identity_catalog, texts, path, json.loads(texts[path])
+
+    def test_actual_complete_catalog_required_by_gate_and_original_validator(self):
+        identity_catalog, texts, path, value = self.catalogs()
+        self.assertIn(path, gate.EXPECTED['source_sha256'])
+        gate.check(gate.EXPECTED, texts)
+        identity_catalog.validate_workflows(ROOT, value)
+        missing = dict(texts); del missing[path]
+        with self.assertRaises(ValueError): gate.check(gate.EXPECTED, missing)
+
+    def test_stale_missing_extra_or_reordered_steps_refuse_fixed_gate_before_setup(self):
+        import io
+        from contextlib import redirect_stdout, redirect_stderr
+        identity_catalog, texts, path, original = self.catalogs()
+        setup = 'e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c'
+        cleanup = 'b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479'
+        for variant in ('stale', 'missing', 'extra', 'reordered'):
+            with self.subTest(variant=variant):
+                value = copy.deepcopy(original)
+                hashes = value['workflows']['.github/workflows/ci.yml']['repository-contracts']['original_step_sha256']
+                if variant == 'stale': hashes[:] = [item for item in hashes if item not in (setup, cleanup)]
+                elif variant == 'missing': hashes.remove(cleanup)
+                elif variant == 'extra': hashes.append('0' * 64)
+                else: hashes[4], hashes[5] = hashes[5], hashes[4]
+                with self.assertRaises(ValueError): identity_catalog.validate_workflows(ROOT, value)
+                changed = dict(texts); changed[path] = json.dumps(value)
+                with self.assertRaises(ValueError): gate.check(gate.EXPECTED, changed)
+                output = io.StringIO(); errors = io.StringIO()
+                with patch.object(gate, 'inputs', return_value=changed), redirect_stdout(output), redirect_stderr(errors):
+                    status = gate.main()
+                self.assertEqual((status, output.getvalue(), errors.getvalue()), (1, '', 'CI_NAMESPACE_PYTHON_SOURCE_INVALID\n'))
+
+    def test_catalog_digest_rebinding_unknown_fields_and_type_alias_refuse(self):
+        identity_catalog, texts, path, original = self.catalogs()
+        for wrong in ('0' * 64, True, None):
+            value = copy.deepcopy(gate.EXPECTED); value['source_sha256'][path] = wrong
+            with self.subTest(wrong=wrong), self.assertRaises(ValueError): gate.check(value, texts)
+        changed = dict(texts); value = copy.deepcopy(original); value['caller_approved_catalog'] = True
+        changed[path] = json.dumps(value)
+        with self.assertRaises(ValueError): gate.check(gate.EXPECTED, changed)
+
+    def test_catalog_and_gate_input_paths_match_original_push_and_pr_domains(self):
+        path = 'contracts/ci-source-identity.v1.json'
+        for stem in ('ci', 'g2-approved-native-startup', 'g2-native-product-owner'):
+            workflow = dependencies.workflow(ROOT / '.github/workflows' / (stem + '.yml'))
+            for event in ('push', 'pull_request'):
+                with self.subTest(workflow=stem, event=event):
+                    self.assertTrue(dependencies.matches(workflow, event, path))
+                    self.assertEqual(dependencies.uncovered(ROOT, workflow, event), [])
+
+
+class NamespaceClosedDiagnosticTests(unittest.TestCase):
+    """Parser and ordinary host faults; no actual sudo/profile activation."""
+    def setUp(self):
+        helper._diag_reset()
+
+    def tearDown(self):
+        helper._diag_reset()
+
+    def receipt(self, domain='root', operation='cleanup', stage='CLEANUP_OPERATION_REGISTRATION', category='PERMISSION_DENIED'):
+        return dict(schema=helper.DIAGNOSTIC_SCHEMA, domain=domain, operation=operation,
+                    stage=stage, category=category, child=None)
+
+    def test_diagnostic_exact_error_types_do_not_format_message_path_or_numeric_payload(self):
+        sentinel = 'private-秘密-/tmp/input\nPID=112233 UID=445566'
+        class MagicError(ValueError):
+            def __str__(self):
+                raise AssertionError('error string must never be evaluated')
+        for error, expected in ((PermissionError(13, sentinel, sentinel), 'PERMISSION_DENIED'),
+                                (FileNotFoundError(2, sentinel), 'OBJECT_MISSING'),
+                                (ValueError(sentinel), 'VALUE_REFUSED'),
+                                (KeyError(sentinel), 'KEY_MISSING'),
+                                (MagicError(sentinel), 'FIXED_REFUSAL')):
+            self.assertEqual(helper._diag_category(error), expected)
+
+    def test_complete_canonical_child_stderr_is_single_bounded_object(self):
+        value = self.receipt(); raw = helper._diag_bytes(value)
+        self.assertEqual(helper._diag_parse(raw, ('root', 'cleanup')), value)
+        for bad in (raw + b'\n', raw + b'private-token', b'prefix' + raw, raw + raw,
+                    json.dumps(value, indent=2).encode() + b'\n', b'x' * 4097,
+                    raw.replace(b'"schema":', b'"schema":"duplicate","schema":', 1)):
+            with self.subTest(size=len(bad)), self.assertRaises(ValueError):
+                helper._diag_parse(bad, ('root', 'cleanup'))
+
+    def test_fixed_schema_refuses_success_authority_fields_wrong_types_and_stage_pairs(self):
+        for key, wrong in (('success', True), ('authorized', True), ('path', '/secret'),
+                           ('category', 'credential-value'), ('operation', 'setup'),
+                           ('domain', 'caller'), ('stage', 'RUNNER_PATH_OUTPUT')):
+            value = self.receipt(); value[key] = wrong
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                helper._diag_check(value, ('root', 'cleanup'))
+        for key in ('domain', 'operation', 'stage', 'category'):
+            value = self.receipt(); value[key] = False
+            with self.subTest(key=key), self.assertRaises(ValueError): helper._diag_check(value)
+
+    def test_only_one_child_level_with_same_operation_and_fixed_domain(self):
+        child = self.receipt(); parent = self.receipt('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT', 'COMMAND_FAILED')
+        parent['child'] = child
+        self.assertEqual(helper._diag_check(parent), parent)
+        for wrong in ('nested', 'cross-operation', 'cross-domain', 'root-parent'):
+            value = copy.deepcopy(parent)
+            if wrong == 'nested': value['child']['child'] = self.receipt()
+            elif wrong == 'cross-operation': value['child']['operation'] = 'setup'
+            elif wrong == 'cross-domain': value['child']['domain'] = 'runner'
+            else: value['domain'] = 'root'; value['stage'] = 'CLEANUP_OPERATION_REGISTRATION'
+            with self.subTest(wrong=wrong), self.assertRaises(ValueError): helper._diag_check(value)
+
+    def test_actual_short_host_cli_failure_has_fixed_json_and_no_secret_payload(self):
+        # Admission is deliberately replaced only in this host fault fixture;
+        # this does not execute or qualify any Root setup/cleanup operation.
+        sentinel = 'secret-路径\nUID=123456 /tmp/private/config'
+        script = """import importlib.util,sys
+spec=importlib.util.spec_from_file_location('fixture_diag',sys.argv[1]);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+def fault(argv):
+ m._diag_begin('root','cleanup','CLEANUP_OPERATION_REGISTRATION')
+ raise PermissionError(13,sys.argv[2],sys.argv[2])
+m._main=fault
+raise SystemExit(m.main())
+"""
+        result = subprocess.run([sys.executable, '-c', script, str(ROOT / 'tools/ci_namespace_python.py'), sentinel],
+                                cwd=ROOT, capture_output=True, timeout=10, check=False)
+        self.assertEqual((result.returncode, result.stdout), (1, b''))
+        self.assertNotIn(sentinel.encode(), result.stderr)
+        self.assertEqual(helper._diag_parse(result.stderr, ('root', 'cleanup')), self.receipt())
+
+    def test_real_missing_file_fault_keeps_original_refusal_and_observed_category(self):
+        with tempfile.TemporaryDirectory() as directory:
+            helper._diag_begin('root', 'cleanup', 'CLEANUP_OWNED_STATE_READ')
+            try: helper._read(Path(directory) / 'missing-secret-路径')
+            except FileNotFoundError as error:
+                self.assertEqual(helper._diag_category(error), 'OBJECT_MISSING')
+            else: self.fail('the original missing-file refusal must remain')
+
+    def test_actual_ordinary_nonzero_child_cannot_supply_a_root_diagnostic_or_success(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        raw = helper._diag_bytes(self.receipt())
+        script = 'import os;os.write(2,' + repr(raw) + ');raise SystemExit(1)'
+        with self.assertRaises(ValueError): helper._command([sys.executable, '-c', script])
+        self.assertEqual(helper._DIAGNOSTIC['category'], 'COMMAND_FAILED')
+        self.assertIsNone(helper._DIAGNOSTIC['child'])
+
+    def test_fixed_root_child_receipt_is_observed_but_nonzero_still_refuses(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        helper._diag_bind(helper._context('ci', '1', '1', 'repository-contracts', 1000, 1000, 'a' * 40, 'b' * 40))
+        argv = ['/usr/bin/sudo', '--non-interactive', str(helper.SETSID), '--fork', '--wait', '--',
+                str(helper.PYTHON), str(Path(helper.__file__).resolve()), '_cleanup_root',
+                'ci', '1', '1', 'repository-contracts', '1000', '1000', 'a' * 40, 'b' * 40]
+        def nonzero(command, **kwargs):
+            self.assertEqual(command, argv); self.assertEqual(kwargs['timeout'], 30)
+            self.assertTrue(kwargs['start_new_session'])
+            kwargs['stderr'].write(helper._diag_bytes(self.receipt()))
+            return subprocess.CompletedProcess(command, 1)
+        with patch.object(helper.subprocess, 'run', side_effect=nonzero), self.assertRaises(ValueError): helper._command(argv)
+        self.assertEqual(helper._DIAGNOSTIC['child'], self.receipt())
+        self.assertEqual(helper._DIAGNOSTIC['category'], 'COMMAND_FAILED')
+
+    def test_invalid_child_error_payload_is_not_copied_to_the_observation(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        helper._diag_bind(helper._context('ci', '1', '1', 'repository-contracts', 1000, 1000, 'a' * 40, 'b' * 40))
+        argv = ['/usr/bin/sudo', '--non-interactive', str(helper.SETSID), '--fork', '--wait', '--',
+                str(helper.PYTHON), str(Path(helper.__file__).resolve()), '_cleanup_root'] + ['x'] * 8
+        for raw in ('secret-路径'.encode(), helper._diag_bytes(self.receipt()) + b'extra',
+                    json.dumps(dict(self.receipt(), success=True)).encode()):
+            helper._diag_command_refusal(argv, raw, 0, len(raw))
+            self.assertIsNone(helper._DIAGNOSTIC['child'])
+            self.assertEqual(helper._DIAGNOSTIC['category'], 'COMMAND_FAILED')
+
+    def test_actual_output_limit_preserves_nonzero_refusal_without_copying_stderr(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        script = 'import os;os.write(2,b"x"*' + str(helper.LIMIT + 1) + ')'
+        with self.assertRaises(ValueError): helper._command([sys.executable, '-c', script])
+        self.assertEqual(helper._DIAGNOSTIC['category'], 'COMMAND_OUTPUT_LIMIT')
+        self.assertIsNone(helper._DIAGNOSTIC['child'])
+
+    def test_direct_child_timeout_stays_a_timeout_not_group_cleanup_evidence(self):
+        helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT')
+        error = subprocess.TimeoutExpired(['secret'], 30, output=b'secret')
+        with patch.object(helper.subprocess, 'run', side_effect=error), self.assertRaises(subprocess.TimeoutExpired):
+            helper._command([sys.executable, '-c', 'pass'])
+        self.assertEqual(helper._diag_category(error), 'DIRECT_CHILD_TIMEOUT')
+        self.assertIsNone(helper._DIAGNOSTIC['child'])
+
+    def test_mandatory_stage_inventory_detects_removed_duplicate_and_new_callsites(self):
+        text = (ROOT / 'tools/ci_namespace_python.py').read_text()
+        gate._check_diagnostic_inventory(text)
+        for changed in (text.replace("_diag_stage('CLEANUP_OPERATION_REGISTRATION')", 'pass', 1),
+                        text + "\n_diag_stage('CLEANUP_OPERATION_REGISTRATION')\n",
+                        text + "\n_diag_stage('UNKNOWN_STAGE')\n",
+                        text + "\nDIAGNOSTIC_MAX_BYTES = 8192\n"):
+            with self.assertRaises(ValueError): gate._check_diagnostic_inventory(changed)
+
+    def test_contract_diagnostic_claims_and_mandatory_source_checker_cannot_be_detached(self):
+        value = copy.deepcopy(gate.EXPECTED); value['diagnostics']['diagnostic_is_authority_or_success'] = True
+        with self.assertRaises(ValueError): gate.check(value, gate.inputs(ROOT))
+        value = copy.deepcopy(gate.EXPECTED); value['diagnostics']['stage_count'] = 0
+        with self.assertRaises(ValueError): gate.check(value, gate.inputs(ROOT))
+
+
+    def test_child_context_and_derived_private_executable_must_match_current_admission(self):
+        context = helper._context('ci', '1', '1', 'repository-contracts', 1000, 1000, 'a' * 40, 'b' * 40)
+        arguments = ['ci', '1', '1', 'repository-contracts', '1000', '1000', 'a' * 40, 'b' * 40]
+        fixed = ['/usr/bin/sudo', '--non-interactive', str(helper.SETSID), '--fork', '--wait', '--', str(helper.PYTHON), str(Path(helper.__file__).resolve()), '_cleanup_root', *arguments]
+        raw = helper._diag_bytes(self.receipt())
+        for index in range(len(fixed)):
+            helper._diag_begin('runner', 'cleanup', 'RUNNER_ROOT_COMMAND_RESULT'); helper._diag_bind(context)
+            wrong = list(fixed); wrong[index] = 'different-selector'
+            helper._diag_command_refusal(wrong, raw, 0, len(raw))
+            self.assertIsNone(helper._DIAGNOSTIC['child'])
+        raw = helper._diag_bytes(self.receipt('preflight', 'setup', 'PREFLIGHT_IDENTITY_CAPABILITY_LABEL'))
+        fixed = [context['directory'] + '/bin/python3', str(Path(helper.__file__).resolve()), '_runner_preflight', *arguments]
+        for index in range(len(fixed)):
+            helper._diag_begin('runner', 'setup', 'RUNNER_PRIVATE_PREFLIGHT_COMMAND_RESULT'); helper._diag_bind(context)
+            wrong = list(fixed); wrong[index] = 'different-selector'
+            helper._diag_command_refusal(wrong, raw, 0, len(raw))
+            self.assertIsNone(helper._DIAGNOSTIC['child'])
+        helper._diag_command_refusal(fixed, raw, 0, len(raw))
+        self.assertEqual(helper._DIAGNOSTIC['child']['domain'], 'preflight')
+
+    def test_domain_operation_inventory_refuses_all_unlisted_cross_stage_pairs(self):
+        for domain, operation in helper.DIAGNOSTIC_PAIRS:
+            allowed = helper.DIAGNOSTIC_PAIR_STAGES[domain + '/' + operation]
+            for stage in helper.DIAGNOSTIC_STAGES:
+                value = self.receipt(domain, operation, stage)
+                if stage in allowed: self.assertEqual(helper._diag_check(value), value)
+                else:
+                    with self.subTest(domain=domain, operation=operation, stage=stage), self.assertRaises(ValueError): helper._diag_check(value)
+
+
+class PriorOperationCleanupWriterIntegrationTests(unittest.TestCase):
+    @contextmanager
+    def model(self):
+        # Existing ordinary proc-shaped fixtures exercise the real inventory
+        # and lifecycle methods together. UID0 text is synthetic; no actual
+        # host /proc, Root operation, parser or AppArmor call occurs here.
+        helper._diag_reset()
+        existing = OrdinaryOperationSessionTests(
+            'test_cleanup_session_excludes_only_exact_current_writer_not_its_child')
+        with tempfile.TemporaryDirectory() as directory:
+            proc = Path(directory); binary = proc / 'binary'
+            binary.write_bytes(b'ordinary retained interpreter fixture')
+            context = existing.context()
+            arguments = [context[key] for key in ('workflow', 'run', 'attempt', 'job')]
+            arguments += [str(context['uid']), str(context['gid']), context['head'], context['tree']]
+            argv = b'\0'.join(os.fsencode(part) for part in
+                [str(helper.PYTHON), str(Path(helper.__file__).resolve()), '_cleanup_root', *arguments]) + b'\0'
+            current = existing.fixture(proc, 201, 201, 201, binary, argv=argv)
+            current['supervisor'] = {'pid': 203, 'start_ticks': 12344, 'pgid': 202,
+                'sid': 202, 'uid': 0, 'exe_identity': helper._identity(binary.stat())}
+            previous = {'pid': 101, 'start_ticks': 12345, 'pgid': 101, 'sid': 101,
+                'uid': 0, 'exe_identity': helper._identity(binary.stat()),
+                'supervisor': {'pid': 103, 'start_ticks': 12344, 'pgid': 100,
+                    'sid': 100, 'uid': 0, 'exe_identity': helper._identity(binary.stat())}}
+            state = {'setup_worker': previous, 'cleanup_worker': None, 'private_identity': None}
+            calls = []; actual = helper._live_setup_workers
+            def scan(context, worker, unused=Path('/proc'), exclude=None):
+                rows = actual(context, worker, proc, exclude=exclude)
+                calls.append((None if worker is None else worker['pid'],
+                              None if exclude is None else exclude['pid'],
+                              [row['pid'] for row in rows]))
+                return rows
+            with patch.object(helper, '_live_setup_workers', side_effect=scan), \
+                    patch.object(helper, '_live_private', return_value=[]):
+                yield existing, proc, binary, context, state, current, calls
+        helper._diag_reset()
+
+    def test_exact_current_cleanup_writer_survives_both_prior_operation_scans(self):
+        with self.model() as (existing, proc, binary, context, state, current, calls):
+            helper._no_owned_lifecycle(context, state, current)
+            self.assertEqual(calls[:2], [(101, 201, []), (103, 201, [])])
+            self.assertTrue(all(excluded == 201 and not live for _, excluded, live in calls))
+
+    def test_current_writer_identity_drift_still_refuses_before_handoff(self):
+        for field in ('start_ticks', 'pgid', 'sid', 'uid', 'exe'):
+            with self.subTest(field=field), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                if field == 'uid': (proc / '201/status').write_bytes(b'Uid:\t1001\t1001\t1001\t1001\n')
+                elif field == 'exe':
+                    other = proc / 'other'; other.write_bytes(b'different ordinary interpreter')
+                    (proc / '201/exe').unlink(); (proc / '201/exe').symlink_to(other)
+                else:
+                    wrong = dict(current); wrong[field] += 1
+                    current = wrong
+                with self.assertRaisesRegex(ValueError, 'current writer exclusion identity changed'):
+                    helper._no_owned_lifecycle(context, state, current)
+
+    def test_previous_writer_supervisor_and_changed_exec_children_still_refuse(self):
+        for pid, pgid, sid in ((101, 101, 101), (102, 101, 101),
+                              (103, 100, 100), (104, 100, 100), (105, 105, 100)):
+            with self.subTest(pid=pid), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                existing.fixture(proc, pid, pgid, sid, binary, argv=b'changed-exec\0')
+                with self.assertRaises(ValueError): helper._no_owned_lifecycle(context, state, current)
+                self.assertTrue(any(pid in live for _, _, live in calls))
+
+    def test_current_writer_group_or_session_child_is_never_excluded(self):
+        for pgid, sid in ((201, 201), (204, 201)):
+            with self.subTest(pgid=pgid), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                state['cleanup_worker'] = current
+                existing.fixture(proc, 204, pgid, sid, binary, argv=b'changed-exec\0')
+                with self.assertRaises(ValueError): helper._no_owned_lifecycle(context, state, current)
+                self.assertTrue(any(204 in live for _, _, live in calls))
+
+    def test_postwait_keeps_no_exclusion_for_writer_and_supervisor(self):
+        for which in ('writer', 'supervisor'):
+            with self.subTest(which=which), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                if which == 'supervisor':
+                    for path in (proc / '201').iterdir(): path.unlink()
+                    (proc / '201').rmdir()
+                    existing.fixture(proc, 203, 202, 202, binary, argv=b'changed-exec\0', start=12344)
+                provider = {'identity': helper._identity(binary.stat()), 'bytes': binary.stat().st_size,
+                            'sha256': helper._sha(binary.read_bytes())}
+                result = {'operation_worker': current, 'root_worker_supervisor_all_exited': False,
+                          'setsid_provider': provider, 'python_provider': provider}
+                with patch.object(helper, '_executable', return_value=provider), self.assertRaises(ValueError):
+                    helper._completed_operation(context, result, provider, provider)
+                self.assertTrue(calls)
+                self.assertTrue(all(excluded is None for _, excluded, _ in calls))
+
+    def test_current_writer_unavailable_readback_remains_refusal(self):
+        for name in ('status', 'exe', 'stat'):
+            with self.subTest(name=name), self.model() as values:
+                existing, proc, binary, context, state, current, calls = values
+                (proc / '201' / name).unlink()
+                with self.assertRaises(ValueError): helper._no_owned_lifecycle(context, state, current)
+
+    def test_reused_former_writer_pid_is_not_treated_as_absent(self):
+        with self.model() as (existing, proc, binary, context, state, current, calls):
+            existing.fixture(proc, 101, 501, 501, binary, argv=b'changed-exec\0', start=99999)
+            with self.assertRaises(ValueError): helper._no_owned_lifecycle(context, state, current)
+            self.assertIn(101, calls[0][2])

@@ -1,0 +1,71 @@
+{
+  "schema": "trillionnium.desktop.root-path-retained-control.v1",
+  "status": "SOURCE_SAME_FD_PATH_AND_LIVE_CONTROL_BRIDGE",
+  "platform": "Linux",
+  "implementation": {
+    "bridge": "crates/hepta-peer-attestation/src/control_owner/root_path.rs",
+    "peer": "crates/hepta-peer-attestation/src/control_owner.rs",
+    "request": "crates/hepta-peer-attestation/src/control_owner/control_request.rs",
+    "retained": "crates/hepta-peer-attestation/src/control_owner/retained_request.rs",
+    "coordinator": "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+  },
+  "ownership": {
+    "consumed_original_fd": true,
+    "unique_root_path_custody_retained": true,
+    "private_shared_path_lifetime": "one private Arc owns the sole non-cloneable path custody; reporting and action verifiers cannot mint another custody",
+    "bare_fd_or_legacy_receive_export": false,
+    "path_at_every_alive_and_current_boundary": true,
+    "action_drop_or_revoke": "permanently revokes execution; independent original reporting identity can still publish one existing sealed journal terminal while its path remains current",
+    "path_failure": "original path latch is irreversible; restore or replacement cannot revive the bridge",
+    "fork": "creator PID before path/peer/atomic checks; Drop closes only child descriptor copies, never shutdown/unlink or inherited channel synchronization",
+    "reconnect_or_retry": false
+  },
+  "deadline": {
+    "maximum_seconds": 20,
+    "input": "exact existing RootPathControlConnection Instant and opaque AcceptedStreamCustody original native ceiling; neither is recaptured or allocated another Duration",
+    "request": "minimum of received original accepted Instant and original root-control Instant; neither can increase",
+    "report": "original existing minimum accepted/control wait deadline; no renewal",
+    "renewal": false,
+    "synchronous_procfs_or_path_reads_preemptively_timed_out": false,
+    "sender_before_publication": "ensure_control_current checks only the original root-control ceiling; low-level send_retained checks the opaque accepted original ceiling before any descriptor packet",
+    "pre_custody_accept_wait_covered": false
+  },
+  "approval": {
+    "control_policy": "explicit existing ControlOwnerPolicy with approved executable SHA256 and unit/cgroup/UID/GID; fixed live /proc measurements only",
+    "observed_peer_grants_approval": false,
+    "static_fallback": false,
+    "cross_uid_procfs_permission_failure": "typed refusal; actual root fixture may read its own nobody child but nobody cannot substitute for inaccessible root executable",
+    "root_path_is_executable_unit_or_principal_approval": false
+  },
+  "public_api": {
+    "RootPathAttestedHandoffSender::from_accepted": "pub fn from_accepted( connection: RootPathControlConnection, accepted: AcceptedStreamCustody, policy: ControlOwnerPolicy, ) -> Result<Self, ControlOwnerError>",
+    "RootPathAttestedHandoffSender::ensure_control_current": "pub fn ensure_control_current(&mut self) -> Result<Instant, ControlOwnerError>",
+    "RootPathAttestedHandoffSender::send_retained": "pub fn send_retained(&mut self) -> Result<AttestedPendingHandoff, ControlOwnerError>",
+    "RootPathAttestedHandoffSender::cancel": "pub fn cancel(&mut self) -> Result<(), ControlOwnerError>",
+    "RootPathAttestedHandoffReceiver::from_control": "pub fn from_control( connection: RootPathControlConnection, policy: ControlOwnerPolicy, expected_local_path: &Path, ) -> Result<Self, ControlOwnerError>",
+    "RootPathAttestedHandoffReceiver::ensure_current": "pub fn ensure_current(&mut self) -> Result<Instant, ControlOwnerError>",
+    "RootPathAttestedHandoffReceiver::receive_retained_custodied": "pub fn receive_retained_custodied( &mut self, ) -> Result<ControlRetainedAcceptedStream, ControlOwnerError>",
+    "RootPathAttestedHandoffReceiver::cancel": "pub fn cancel(&mut self) -> Result<(), ControlOwnerError>"
+  },
+  "evidence": {
+    "kernel": "apps/hepta-browserd/tests/product_root_path_kernel.rs",
+    "contract_only": "tests/test_root_path_retained_control.py",
+    "workflow": ".github/workflows/agent-port-custody.yml",
+    "required_privileged_kernel_groups": 11,
+    "individual_verifier_entrypoints": 5,
+    "Agent": "actual distinct subprocess with fixed default live /proc, explicit pre-launch owned fixture policy",
+    "native_completion": "synthetic queued source callback only; never Servo execution",
+    "terminal": "existing private coordinator own complete managed journal readback and report request/record binding",
+    "fixture": "temporary owned root/nobody filesystem and root executable copy; missing sudo/kernel facts fail, no skip"
+  },
+  "non_claims": {
+    "installed_broker": false,
+    "approved_policy_loader": false,
+    "cross_uid_live_broker_qualified": false,
+    "product_ready": false,
+    "default_activation_changed": false,
+    "semantic_principal": false,
+    "actual_native_Servo_effect": false,
+    "all_async_windows_closed": false
+  }
+}

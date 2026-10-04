@@ -1,0 +1,92 @@
+{
+  "schema": "trillionnium.desktop.trusted-app-bundle.v1",
+  "status": "SOURCE_CANDIDATE",
+  "implementation": "platform/trusted_apps.py",
+  "manifest": {
+    "schema_reference": "contracts/app-manifest.v1.schema.json",
+    "archive_path": "manifest.json",
+    "encoding": "ASCII canonical JSON: recursively sorted object keys, compact separators, ensure_ascii=true, no newline, duplicate fields, floating point or nonfinite numbers",
+    "closed_field_set": true,
+    "signature_algorithm": "ed25519",
+    "signature_value_encoding": "RFC4648 canonical padded base64 of exactly 64 bytes",
+    "signing_domain_utf8": "trillionnium.desktop.app-manifest-signature.v1\u0000",
+    "signing_preimage": "signing_domain_utf8 bytes followed by canonical JSON of the complete manifest after deleting ONLY signature.value; signature.algorithm and signature.key_id remain",
+    "origin_host": "exactly <app_id>.<publisher>.apps.hepta.invalid",
+    "entrypoint": "existing canonical indexed path ending in lowercase .html",
+    "version_profile": "uint32 SemVer triple without leading zeros, optional nonempty dot-separated prerelease identifiers without leading zeros in numeric identifiers; max 128 characters",
+    "minimum_shell_version": "uint32 stable SemVer triple compared numerically",
+    "data_schema_version": "optional integer in [1, 9223372036854775807]",
+    "capabilities": "signed declarations only; this API issues no capability permit"
+  },
+  "content_index": {
+    "schema": "trillionnium.desktop.trusted-app-content-index.v1",
+    "object": "{files:[{path:<canonical path>,sha256:<lowercase SHA256 of exact bytes>,size:<byte count>}],schema:<schema string>}",
+    "ordering": "all non-manifest regular files sorted by ASCII path; no omitted or added archive entry",
+    "encoding": "same canonical JSON rules as manifest",
+    "hash_domain_utf8": "trillionnium.desktop.trusted-app-content-index.v1\u0000",
+    "content_root_sha256": "lowercase SHA256(hash_domain_utf8 bytes || canonical index bytes)",
+    "manifest_excluded": true,
+    "self_reference": "manifest.json holds the root and signature and is never an asset or an index member"
+  },
+  "archive": {
+    "format": "single-disk classic ZIP: contiguous local regular-file records from offset zero, complete central directory, 22-byte EOCD at exact EOF",
+    "methods": ["stored", "raw-deflate"],
+    "allowed_general_flags": ["UTF8"],
+    "creator_systems": ["DOS", "Unix"],
+    "maximum_extraction_version": 20,
+    "local_central_metadata_match": true,
+    "checks": ["all file lengths", "all CRC32 values", "complete deflate consumption", "complete signed content index"],
+    "rejected": ["ZIP64", "multi-disk", "encryption", "data descriptors", "extra fields", "entry or archive comments", "explicit directory records", "symlinks", "devices", "FIFOs", "sockets", "setuid/setgid/sticky entries", "preamble", "gaps", "overlap", "trailing bytes"],
+    "path_profile": "1..512 ASCII characters, slash-separated 1..128 character segments matching [A-Za-z0-9_-][A-Za-z0-9._-]*; no trailing dot or Windows device basename",
+    "collisions_rejected": ["duplicate paths", "ASCII case-fold collisions", "file/directory prefix collisions"],
+    "extraction": "none; content retained as immutable bytes after one bounded nofollow filesystem snapshot"
+  },
+  "limits": {
+    "archive_bytes": 33554432,
+    "content_bytes": 67108864,
+    "asset_bytes": 16777216,
+    "manifest_bytes": 65536,
+    "asset_count": 512,
+    "compression_ratio": 128,
+    "path_characters": 512,
+    "segment_characters": 128
+  },
+  "trust": {
+    "default_roots": [],
+    "root_source": "externally authenticated operator policy; never the ZIP or manifest",
+    "scope": "exact publisher plus key_id",
+    "pin": "external lowercase SHA256 of 32 immutable raw Ed25519 public key bytes",
+    "verification": "fixed /usr/bin/openssl pkeyutl -verify -rawin -pubin -keyform DER, fixed Ed25519 SPKI, sealed memfd inputs, 5-second timeout, OPENSSL_CONF=/dev/null, minimal environment",
+    "policy_fields": ["revision", "valid_from_unix", "valid_until_unix", "roots", "revoked_keys"],
+    "root_fields": ["publisher", "key_id", "public_key", "public_key_sha256", "valid_from_unix", "valid_until_unix"],
+    "time": "trusted caller clock; policy and root half-open intervals [valid_from_unix, valid_until_unix)",
+    "revocation": "exact (publisher,key_id) pairs; every admission and every local asset response checks current policy",
+    "rotation": "new key_id required for a new key; strict increasing policy revision and cumulative revocations within one admission owner",
+    "owner": "admission, policy replacement and asset response require the creating process and Python thread and refuse reentrancy; policy and remembered pins publish in one state assignment",
+    "bounds": {"active_roots": 256, "revocations": 1024, "remembered_key_pins": 4096},
+    "persistent_rollback_anchor_implemented": false
+  },
+  "local_response": {
+    "url": "exact lowercase https://<app_id>.<publisher>.apps.hepta.invalid/<indexed canonical asset path>",
+    "method": "GET",
+    "reject": ["different origin", "HTTP", "userinfo", "explicit port", "query including empty query", "fragment including empty fragment", "percent encoding", "backslash", "dot traversal", "missing asset", "manifest.json"],
+    "source": "owner-admitted immutable bytes only",
+    "supported_extensions": [".html", ".js", ".mjs", ".css", ".json", ".txt", ".bin", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".ico", ".woff", ".woff2", ".ttf", ".otf", ".wasm", ".mp3", ".mp4", ".webm"],
+    "mime": "fixed extension table with nosniff; .bin is explicitly application/octet-stream; unknown extensions refuse response",
+    "network_fallback": false,
+    "redirects": false,
+    "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; media-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'none'; worker-src 'none'",
+    "headers": {"X-Content-Type-Options": "nosniff", "Cross-Origin-Resource-Policy": "same-origin", "Referrer-Policy": "no-referrer", "Cache-Control": "no-store"},
+    "access_control_allow_origin": null,
+    "installed_origin_interception_implemented": false,
+    "installed_csp_and_egress_qualification": false
+  },
+  "remaining_installed_obligations": [
+    "authenticated policy provisioning and durable antirollback across restart",
+    "trusted time and independent publisher key custody",
+    "engine origin interception without DNS/network fallback on every relevant load path",
+    "CSP/CORS, unsupported protocol, worker/service-worker, navigation and cache enforcement",
+    "per-app storage partition, version floor, migration, upgrade/downgrade and uninstall",
+    "trusted capability approval and app activation"
+  ]
+}

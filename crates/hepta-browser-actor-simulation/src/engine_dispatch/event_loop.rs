@@ -9,11 +9,19 @@
 mod immediate;
 pub use immediate::ImmediateCallbacks;
 
+#[cfg(target_os = "linux")]
+mod service_event_loop;
+#[cfg(target_os = "linux")]
+pub use service_event_loop::{
+    ServiceBrowserActorCore, ServiceEngineBridge, ServiceEngineCommand, ServiceEngineCompletion,
+    ServiceEngineEndpoint, closed_immutable_service_engine_pair,
+};
+
 use super::{
     BrowserActorMessage, BrowserOperation, ENGINE_CANCEL_POLL, ENGINE_PENDING_LIMIT,
-    ElementReference, EngineEventLoopWaker, EngineThreadRuntime, PageAction, PageOwnerSnapshot,
-    PendingCall, RequestControl, RuntimeFailure, RuntimeReply, bound_reply, is_uncertain_failure,
-    notify_engine, ordinary_message,
+    ElementReference, EngineEventLoopWaker, EngineThreadRuntime, EngineUrlScope, PageAction,
+    PageOwnerSnapshot, PendingCall, RequestControl, RuntimeFailure, RuntimeReply, bound_reply,
+    is_uncertain_failure, notify_engine, ordinary_message,
 };
 use std::marker::PhantomData;
 use std::panic::{AssertUnwindSafe, catch_unwind};
@@ -69,13 +77,13 @@ pub trait CallbackPageRuntime {
 /// The original control remains revocable; retaining this token cannot extend
 /// its deadline or request peer custody. It contains no DOM/engine pointer.
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::event_loop::EngineCompletion;
+/// ```compile_fail,E0599
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::EngineCompletion;
 /// fn duplicate(done: EngineCompletion) { let _second = done.clone(); }
 /// ```
-/// ```compile_fail
-/// use hepta_browser_actor::{RuntimeReply};
-/// use hepta_browser_actor::engine_dispatch::event_loop::EngineCompletion;
+/// ```compile_fail,E0382
+/// use hepta_browser_actor_simulation::{RuntimeReply};
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::EngineCompletion;
 /// fn twice(done: EngineCompletion, reply: RuntimeReply) {
 ///     let _ = done.complete(Ok(reply.clone()));
 ///     let _ = done.complete(Ok(reply));
@@ -87,6 +95,7 @@ pub struct EngineCompletion {
     closed: Arc<AtomicBool>,
     control: RequestControl,
     waker: Arc<dyn EngineEventLoopWaker>,
+    url_scope: EngineUrlScope,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -136,7 +145,7 @@ impl EngineCompletion {
             .control
             .ensure_active()
             .and(result)
-            .and_then(bound_reply)
+            .and_then(|reply| bound_reply(reply, self.url_scope))
             .and_then(|reply| self.control.ensure_active().map(|()| reply))
             .map_err(redact_failure);
         if sender.try_send(result).is_err() {
@@ -189,16 +198,16 @@ struct ActiveCall {
 /// non-cloneable actor endpoint serializes requests. Native events must run
 /// between pumps; repeated pumping must not replace the application's loop.
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::event_loop::{CallbackEngineOwner, CallbackPageRuntime};
+/// ```compile_fail,E0277
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::{CallbackEngineOwner, CallbackPageRuntime};
 /// fn move_owner<R: CallbackPageRuntime + Send>() {
 ///     fn needs_send<T: Send>() {}
 ///     needs_send::<CallbackEngineOwner<R>>();
 /// }
 /// ```
 ///
-/// ```compile_fail
-/// use hepta_browser_actor::engine_dispatch::event_loop::{CallbackEngineOwner, CallbackPageRuntime};
+/// ```compile_fail,E0277
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::{CallbackEngineOwner, CallbackPageRuntime};
 /// fn share_owner<R: CallbackPageRuntime + Sync>() {
 ///     fn needs_sync<T: Sync>() {}
 ///     needs_sync::<CallbackEngineOwner<R>>();
@@ -212,6 +221,7 @@ pub struct CallbackEngineOwner<R: CallbackPageRuntime> {
     waker: Arc<dyn EngineEventLoopWaker>,
     owner_thread: ThreadId,
     retired: bool,
+    url_scope: EngineUrlScope,
     _thread_affinity: PhantomData<Rc<()>>,
 }
 
@@ -220,8 +230,8 @@ pub struct CallbackEngineOwner<R: CallbackPageRuntime> {
 /// thread/window/listener, or change the synchronous development backend.
 /// ```
 /// use std::sync::Arc;
-/// use hepta_browser_actor::{BrowserActorMessage, PageOwnerSnapshot};
-/// use hepta_browser_actor::engine_dispatch::event_loop::{
+/// use hepta_browser_actor_simulation::{BrowserActorMessage, PageOwnerSnapshot};
+/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::{
 ///     callback_engine_pair, CallbackPageRuntime, CallbackPumpResult, EngineCompletion,
 /// };
 /// struct Native;
@@ -240,6 +250,24 @@ pub fn callback_engine_pair<R: CallbackPageRuntime>(
     runtime: R,
     waker: Arc<dyn EngineEventLoopWaker>,
 ) -> (EngineThreadRuntime, CallbackEngineOwner<R>) {
+    callback_pair(runtime, waker, EngineUrlScope::D3Local)
+}
+
+/// Select the single fixed immutable document URL for replies and owner custody.
+/// The caller must separately enforce the closed operation profile and live
+/// peer authority. No caller URL, listener, grant or new deadline enters here.
+pub fn closed_immutable_callback_engine_pair<R: CallbackPageRuntime>(
+    runtime: R,
+    waker: Arc<dyn EngineEventLoopWaker>,
+) -> (EngineThreadRuntime, CallbackEngineOwner<R>) {
+    callback_pair(runtime, waker, EngineUrlScope::ClosedImmutableReadOnly)
+}
+
+fn callback_pair<R: CallbackPageRuntime>(
+    runtime: R,
+    waker: Arc<dyn EngineEventLoopWaker>,
+    url_scope: EngineUrlScope,
+) -> (EngineThreadRuntime, CallbackEngineOwner<R>) {
     let (sender, receiver) = mpsc::sync_channel(ENGINE_PENDING_LIMIT);
     let closed = Arc::new(AtomicBool::new(false));
     let owner_thread = thread::current().id();
@@ -249,6 +277,7 @@ pub fn callback_engine_pair<R: CallbackPageRuntime>(
             closed: closed.clone(),
             owner_thread,
             waker: waker.clone(),
+            url_scope,
         },
         CallbackEngineOwner {
             receiver,
@@ -258,6 +287,7 @@ pub fn callback_engine_pair<R: CallbackPageRuntime>(
             waker,
             owner_thread,
             retired: false,
+            url_scope,
             _thread_affinity: PhantomData,
         },
     )
@@ -320,6 +350,7 @@ impl<R: CallbackPageRuntime> CallbackEngineOwner<R> {
             closed: self.closed.clone(),
             control: call.control.clone(),
             waker: self.waker.clone(),
+            url_scope: self.url_scope,
         };
         // Publish active state before callbacks can fire synchronously.
         self.active = Some(ActiveCall {
@@ -373,7 +404,7 @@ impl<R: CallbackPageRuntime> CallbackEngineOwner<R> {
             .control
             .ensure_current_peer()
             .and(result)
-            .and_then(bound_reply)
+            .and_then(|reply| bound_reply(reply, self.url_scope))
             .and_then(|reply| active.call.control.ensure_active().map(|()| reply))
             .map_err(redact_failure);
         let uncertain = result.as_ref().is_err_and(is_uncertain_failure);
