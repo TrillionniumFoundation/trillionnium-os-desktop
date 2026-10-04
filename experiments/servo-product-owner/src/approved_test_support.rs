@@ -134,11 +134,39 @@ impl Fixture {
         // process and peers launch. No observed PID/snapshot generates policy.
         let unit = UNIT.get().unwrap().clone();
         let binary = root.join("fixture");
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::ReadBinary,
+            phase_diagnostics::Edge::Begin,
+        );
         let bytes = fs::read(std::env::current_exe().unwrap()).unwrap();
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::ReadBinary,
+            phase_diagnostics::Edge::End,
+        );
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::WriteBinary,
+            phase_diagnostics::Edge::Begin,
+        );
         fs::write(&binary, &bytes).unwrap();
         fs::set_permissions(&binary, fs::Permissions::from_mode(0o555)).unwrap();
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::WriteBinary,
+            phase_diagnostics::Edge::End,
+        );
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::VerifyCopy,
+            phase_diagnostics::Edge::Begin,
+        );
         assert_eq!(fs::read(&binary).unwrap(), bytes);
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::VerifyCopy,
+            phase_diagnostics::Edge::End,
+        );
         // Hash the known launcher-owned copied file before either peer exists.
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::HashBinary,
+            phase_diagnostics::Edge::Begin,
+        );
         let hash = Command::new("/usr/bin/sha256sum")
             .arg(&binary)
             .output()
@@ -148,6 +176,10 @@ impl Fixture {
         assert!(
             pin.bytes()
                 .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        );
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::HashBinary,
+            phase_diagnostics::Edge::End,
         );
         let config = root.join("approved-policy");
         let text = format!(
@@ -471,6 +503,10 @@ impl Trio {
         Self::setup(now + wait, mode, now + policy_wait)
     }
     fn setup(ceiling: Instant, mode: &str, policy_ceiling: Instant) -> Self {
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::FixtureSetup,
+            phase_diagnostics::Edge::Begin,
+        );
         let fixture = Fixture::new();
         let mut listener = fixture.listener();
         let mut custodian = ChildOwner::spawn(&fixture, mode, &fixture.op, false);
@@ -495,6 +531,10 @@ impl Trio {
             "same root control descriptor cookie through live admission"
         );
         custodian.expect("ARMED");
+        phase_diagnostics::mark(
+            phase_diagnostics::Phase::FixtureSetup,
+            phase_diagnostics::Edge::End,
+        );
         Self {
             fixture,
             custodian,
@@ -590,4 +630,194 @@ pub fn launch_host(run: fn()) {
         out.status.success(),
         "actual transient root fixture required, no skip"
     );
+}
+
+// Fixed, opt-in parent-fixture diagnostics. Other support consumers leave this
+// disabled. The complete lifecycle emits at most 90 samples; 128 allows a
+// bounded margin. No per-drive sample, authority object, path or payload enters.
+pub mod phase_diagnostics {
+    use std::cell::{Cell, RefCell};
+    use std::io::{self, Write};
+    use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
+    use std::time::{Duration, Instant};
+    const CAPACITY: usize = 128;
+    #[derive(Clone, Copy, Debug)]
+    pub enum Phase {
+        ReadBinary,
+        WriteBinary,
+        VerifyCopy,
+        HashBinary,
+        FixtureSetup,
+        Admission,
+        Enqueue,
+        Response,
+        Report,
+        ChildrenFinish,
+        ServoReady,
+        PeersReady,
+        AdmissionReady,
+        StartupReady,
+        RequestSend,
+        RequestObserved,
+    }
+    #[derive(Clone, Copy, Debug)]
+    pub enum Edge {
+        Begin,
+        End,
+        Sample,
+    }
+    #[derive(Clone, Copy, Debug)]
+    pub enum Request {
+        Health,
+        Create,
+        Observe,
+        Snapshot,
+        Unknown,
+    }
+    #[derive(Clone, Copy, Debug)]
+    pub enum Drive {
+        None,
+        Idle,
+        Pending,
+        Queued,
+        RetiredCompletion,
+        ReceiverGone,
+        WakeFailed,
+        Retired,
+    }
+    #[derive(Clone, Copy, Debug)]
+    pub enum Data {
+        Boundary,
+        Stage {
+            elapsed_ms: u128,
+        },
+        Startup {
+            elapsed_ms: u128,
+            remaining_ms: u128,
+        },
+        Send {
+            request: Request,
+            remaining_ms: u128,
+        },
+        Observation {
+            request: Request,
+            elapsed_ms: u128,
+            drives: u64,
+            drive_ms: u128,
+            last_drive: Drive,
+        },
+    }
+    #[derive(Clone, Copy, Debug)]
+    struct Sample {
+        phase: Phase,
+        edge: Edge,
+        since_start: Duration,
+        data: Data,
+    }
+    struct Trace {
+        origin: Instant,
+        samples: [Option<Sample>; CAPACITY],
+        len: usize,
+    }
+    thread_local! {
+        static TRACE: RefCell<Option<Trace>> = const { RefCell::new(None) };
+        static LOST: Cell<bool> = const { Cell::new(false) };
+    }
+    pub fn record(phase: Phase, edge: Edge, data: Data) {
+        // The hot path contains only an owner-thread borrow, clock read and
+        // fixed-array assignment. It cannot format, allocate, perform I/O,
+        // wait on a mutex or affect any request result. Clock cost is nonzero.
+        let _ = TRACE.try_with(|slot| {
+            let Ok(mut slot) = slot.try_borrow_mut() else {
+                LOST.set(true);
+                return;
+            };
+            let Some(trace) = slot.as_mut() else { return };
+            if trace.len == CAPACITY {
+                LOST.set(true);
+                return;
+            }
+            if matches!(
+                data,
+                Data::Send {
+                    request: Request::Unknown,
+                    ..
+                } | Data::Observation {
+                    request: Request::Unknown,
+                    ..
+                }
+            ) {
+                LOST.set(true);
+            }
+            trace.samples[trace.len] = Some(Sample {
+                phase,
+                edge,
+                since_start: trace.origin.elapsed(),
+                data,
+            });
+            trace.len += 1;
+        });
+    }
+    pub fn mark(phase: Phase, edge: Edge) {
+        record(phase, edge, Data::Boundary);
+    }
+    pub fn request(value: &str) -> Request {
+        match value {
+            "health" => Request::Health,
+            "create" => Request::Create,
+            "observe" => Request::Observe,
+            "snapshot" => Request::Snapshot,
+            _ => Request::Unknown,
+        }
+    }
+    fn start() {
+        TRACE.with(|slot| {
+            assert!(slot.borrow().is_none(), "one diagnostic case per process");
+            *slot.borrow_mut() = Some(Trace {
+                origin: Instant::now(),
+                samples: [None; CAPACITY],
+                len: 0,
+            });
+        });
+        LOST.set(false);
+    }
+    fn flush(sink: &mut impl Write, succeeded: bool) -> io::Result<()> {
+        let trace = TRACE
+            .with(|slot| slot.borrow_mut().take())
+            .ok_or_else(|| io::Error::other("diagnostic trace absent"))?;
+        // Formatting/I/O occurs only after the case returned or finished
+        // unwinding. No I/O or fallible diagnostic work runs from a Drop.
+        for sample in trace.samples[..trace.len].iter().flatten() {
+            writeln!(
+                sink,
+                "APPROVED_NATIVE_PHASE phase={:?} edge={:?} ns={} data={:?}",
+                sample.phase,
+                sample.edge,
+                sample.since_start.as_nanos(),
+                sample.data
+            )?;
+        }
+        let lost = LOST.get();
+        writeln!(
+            sink,
+            "APPROVED_NATIVE_PHASE_END count={} lost={} case_succeeded={}",
+            trace.len, lost, succeeded
+        )?;
+        sink.flush()?;
+        if lost {
+            return Err(io::Error::other("diagnostic trace incomplete"));
+        }
+        Ok(())
+    }
+    pub fn run_case(case: impl FnOnce()) {
+        start();
+        let result = catch_unwind(AssertUnwindSafe(case));
+        // Diagnostic I/O failure never changes the original case result.
+        // Missing/partial output or lost=true is separate, incomplete evidence.
+        let _diagnostic_result = flush(&mut io::stderr().lock(), result.is_ok());
+        match result {
+            Err(original) => resume_unwind(original),
+            Ok(()) => (),
+        }
+    }
 }

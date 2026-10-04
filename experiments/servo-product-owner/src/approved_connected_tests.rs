@@ -19,6 +19,7 @@ use hepta_session_core::{JournalId, ManagedOpenPolicy, ReceiptJournal, ReceiptLi
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
+use support::phase_diagnostics::{self as phases, Data, Edge, Phase};
 fn request(id: &str, binding: Option<(&str, u64)>, operation: BrowserOperation) -> BrowserRequest {
     BrowserRequest {
         request_id: id.into(),
@@ -29,9 +30,13 @@ fn request(id: &str, binding: Option<(&str, u64)>, operation: BrowserOperation) 
     }
 }
 fn admission(trio: &mut support::Trio) -> ApprovedRetainedAdmission {
+    phases::mark(Phase::Admission, Edge::Begin);
     let received = trio.receive();
-    ApprovedRetainedAdmission::from_received(received, trio.document.select_agent().unwrap())
-        .unwrap()
+    let admission =
+        ApprovedRetainedAdmission::from_received(received, trio.document.select_agent().unwrap())
+            .unwrap();
+    phases::mark(Phase::Admission, Edge::End);
+    admission
 }
 fn servo() -> common::ServoTest {
     common::ServoTest::new_with_builder(|builder| {
@@ -49,10 +54,13 @@ fn run(
 ) -> (JsonObject, (String, String)) {
     let started = Instant::now();
     let deadline = driver.original_deadline().unwrap();
-    eprintln!(
-        "APPROVED_NATIVE_DIAGNOSTIC request={} stage=send remaining_ms={}",
-        input.request_id,
-        deadline.saturating_duration_since(started).as_millis()
+    phases::record(
+        Phase::RequestSend,
+        Edge::Sample,
+        Data::Send {
+            request: phases::request(&input.request_id),
+            remaining_ms: deadline.saturating_duration_since(started).as_millis(),
+        },
     );
     trio.request(input);
     let mut drives = 0_u64;
@@ -86,12 +94,32 @@ fn run(
         }));
         thread::sleep(Duration::from_millis(1));
     };
-    eprintln!(
-        "APPROVED_NATIVE_DIAGNOSTIC request={} stage=observation elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}",
-        input.request_id,
-        started.elapsed().as_millis(),
-        drives,
-        drive_elapsed.as_millis()
+    let traced_drive = match last_drive {
+        None => phases::Drive::None,
+        Some(native_owner::NativeDrive::Idle) => phases::Drive::Idle,
+        Some(native_owner::NativeDrive::Pending) => phases::Drive::Pending,
+        Some(native_owner::NativeDrive::Retired) => phases::Drive::Retired,
+        Some(native_owner::NativeDrive::Completion(value)) => match value {
+            hepta_browser_actor::ServoCompletionDelivery::Queued => phases::Drive::Queued,
+            hepta_browser_actor::ServoCompletionDelivery::Retired => {
+                phases::Drive::RetiredCompletion
+            },
+            hepta_browser_actor::ServoCompletionDelivery::ReceiverGone => {
+                phases::Drive::ReceiverGone
+            },
+            hepta_browser_actor::ServoCompletionDelivery::WakeFailed => phases::Drive::WakeFailed,
+        },
+    };
+    phases::record(
+        Phase::RequestObserved,
+        Edge::Sample,
+        Data::Observation {
+            request: phases::request(&input.request_id),
+            elapsed_ms: started.elapsed().as_millis(),
+            drives,
+            drive_ms: drive_elapsed.as_millis(),
+            last_drive: traced_drive,
+        },
     );
     assert_eq!(
         observation.original_deadline(),
@@ -103,11 +131,14 @@ fn run(
         Ok(ProductControlMonitorOutcome::ReportEnqueued)
     ));
     assert_eq!(observation.runtime_state(), RuntimeState::Ready);
+    phases::mark(Phase::Response, Edge::Begin);
     trio.agent.expect("REQUEST");
     let response = trio.agent.line();
     let response = decode_response(response.strip_prefix("RESPONSE ").unwrap().as_bytes())
         .unwrap()
         .value;
+    phases::mark(Phase::Response, Edge::End);
+    phases::mark(Phase::Report, Edge::Begin);
     let report = trio.custodian.line();
     let words: Vec<_> = report.split_whitespace().collect();
     assert_eq!(words.len(), 4);
@@ -117,7 +148,10 @@ fn run(
         observation.service().as_ref().unwrap().request_sha256
     );
     assert_eq!(words[3].len(), 64);
+    phases::mark(Phase::Report, Edge::End);
+    phases::mark(Phase::ChildrenFinish, Edge::Begin);
     trio.finish();
+    phases::mark(Phase::ChildrenFinish, Edge::End);
     (
         response.outcome.unwrap(),
         (words[2].to_owned(), words[3].to_owned()),
@@ -150,19 +184,28 @@ fn open_receipts(path: &std::path::Path) -> ReceiptJournal {
 fn actual_approved_startup_semantic_lifecycle() {
     let started = Instant::now();
     let servo = servo();
-    eprintln!(
-        "APPROVED_NATIVE_DIAGNOSTIC stage=servo elapsed_ms={}",
-        started.elapsed().as_millis()
+    phases::record(
+        Phase::ServoReady,
+        Edge::Sample,
+        Data::Stage {
+            elapsed_ms: started.elapsed().as_millis(),
+        },
     );
     let mut first = support::Trio::new(support::WAIT);
-    eprintln!(
-        "APPROVED_NATIVE_DIAGNOSTIC stage=peers elapsed_ms={}",
-        started.elapsed().as_millis()
+    phases::record(
+        Phase::PeersReady,
+        Edge::Sample,
+        Data::Stage {
+            elapsed_ms: started.elapsed().as_millis(),
+        },
     );
     let packet = admission(&mut first);
-    eprintln!(
-        "APPROVED_NATIVE_DIAGNOSTIC stage=admission elapsed_ms={}",
-        started.elapsed().as_millis()
+    phases::record(
+        Phase::AdmissionReady,
+        Edge::Sample,
+        Data::Stage {
+            elapsed_ms: started.elapsed().as_millis(),
+        },
     );
     let original = packet.deadline().unwrap();
     let path = first.fixture.root.join("native-receipts");
@@ -177,12 +220,15 @@ fn actual_approved_startup_semantic_lifecycle() {
     )
     .unwrap();
     drop(servo);
-    eprintln!(
-        "APPROVED_NATIVE_DIAGNOSTIC stage=startup elapsed_ms={} remaining_ms={}",
-        started.elapsed().as_millis(),
-        original
-            .saturating_duration_since(Instant::now())
-            .as_millis()
+    phases::record(
+        Phase::StartupReady,
+        Edge::Sample,
+        Data::Startup {
+            elapsed_ms: started.elapsed().as_millis(),
+            remaining_ms: original
+                .saturating_duration_since(Instant::now())
+                .as_millis(),
+        },
     );
     assert_eq!(driver.original_deadline().unwrap(), original);
     let (health, health_fact) = run(
@@ -192,7 +238,9 @@ fn actual_approved_startup_semantic_lifecycle() {
     );
     assert_eq!(string(&health, "runtime"), "actual-servo-immutable-owner");
     let mut creating = support::Trio::new_before(original);
+    phases::mark(Phase::Enqueue, Edge::Begin);
     ingress.try_submit(admission(&mut creating)).unwrap();
+    phases::mark(Phase::Enqueue, Edge::End);
     let (created, created_digest) = run(
         &mut driver,
         &mut creating,
@@ -222,7 +270,9 @@ fn actual_approved_startup_semantic_lifecycle() {
         ("snapshot", BrowserOperation::SessionSnapshot),
     ] {
         let mut next = support::Trio::new_before(original);
+        phases::mark(Phase::Enqueue, Edge::Begin);
         ingress.try_submit(admission(&mut next)).unwrap();
+        phases::mark(Phase::Enqueue, Edge::End);
         let (value, digest) = run(
             &mut driver,
             &mut next,
@@ -292,7 +342,7 @@ fn main() {
     let args: Vec<_> = std::env::args().collect();
     assert_eq!(args.len(), 3);
     support::configure(&args[2]);
-    match args[1].as_str() {
+    phases::run_case(|| match args[1].as_str() {
         "actual_approved_startup_semantic_lifecycle" => {
             actual_approved_startup_semantic_lifecycle()
         },
@@ -300,5 +350,5 @@ fn main() {
             actual_approved_startup_policy_refusal_before_constructor()
         },
         _ => panic!("closed exact native case"),
-    }
+    });
 }

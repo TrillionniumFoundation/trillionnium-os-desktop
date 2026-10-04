@@ -207,3 +207,38 @@ Historical source contracts accept only the exact reviewed whole-byte inverse
 of these diagnostics. They do not substitute old source for native execution.
 Native startup, installed operation and production readiness remain unresolved
 until the actual successor's runtime and later qualification evidence exists.
+
+## Buffered fixed-phase diagnostic source successor
+
+The unchanged two official cases and all 20-second accepted / five-second native
+ceilings remain required. This source successor replaces the six synchronous
+parent diagnostic writes with a fixed 128-sample, owner-thread fixture buffer.
+The complete successful lifecycle has at most 90 samples: four startup samples,
+four Trio setups with ten fixture boundaries each, eight Admission boundaries,
+six enclosing Enqueue boundaries, eight request samples and twenty-four
+response/report/child-finish boundaries. Enqueue includes Admission; FixtureSetup
+includes binary subphases. Nested intervals must not be double-counted.
+
+Each sample stores only closed enums, monotonic time and integer counters. There
+is no per-drive sample, dynamic payload/path/identity, heap-growing collection,
+I/O, mutex wait or new thread in record. Clock and TLS work still have cost; this
+is not a zero-perturbation or measured-speedup claim. Other support consumers leave
+the local recorder disabled. No product owner, policy, IPC, journal or runtime
+permission changes, and no executable digest is cached.
+
+The original parent case runs inside catch_unwind with the default panic hook.
+Only after return or normal unwinding are buffered diagnostics written. An error
+resumes the identical original panic payload; diagnostic write/flush failure,
+loss or overflow never changes an original successful case into failure. Missing
+PHASE_END, lost=true, truncation, kill/abort or double panic means incomplete
+measurement, never fabricated zero duration or valid performance evidence. No
+Drop emits diagnostics, and the existing external 60-second process limit stays.
+
+The current six affected leaves receive independent whole-rule and physical
+identity checks before their finite c3cc historical view. The older six native
+diagnostic rules and historical evidence remain unchanged. A historical view is
+not current native execution. The actual two-case successor, original four native
+owner cases, exact-pin compilation and installed qualification remain pending;
+standalone recorder tests do not qualify Servo. Once the timing cause is measured
+and fixed, independently review removal or a bounded justification for keeping
+these local diagnostics; do not turn them into a product tracing framework.

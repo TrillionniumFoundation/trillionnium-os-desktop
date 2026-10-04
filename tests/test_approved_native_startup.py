@@ -683,7 +683,10 @@ case "$*" in *native-owner-1.log*) test "$TEE_FAILURE" != yes || exit 77 ;; esac
             self.assertIn(token, run)
         self.assertIn("Instant::now() < driver.original_deadline().unwrap()", text)
         self.assertIn("original accepted budget, no renewal", text)
-        self.assertEqual(text.count("APPROVED_NATIVE_DIAGNOSTIC"), 6)
+        self.assertNotIn("APPROVED_NATIVE_DIAGNOSTIC", text)
+        for phase in ("ServoReady", "PeersReady", "AdmissionReady", "StartupReady",
+                      "RequestSend", "RequestObserved"):
+            self.assertEqual(text.count("Phase::" + phase + ","), 1)
 
     def test_physical_diagnostics_and_exact_historical_inverse_are_both_required(self):
         from tools import verify_service_dispatch_denial_cutoff as gate
@@ -700,6 +703,95 @@ case "$*" in *native-owner-1.log*) test "$TEE_FAILURE" != yes || exit 77 ;; esac
                 mutant[path] = parent
                 with self.assertRaises(ValueError):
                     gate.check(gate.EXPECTED, mutant)
+
+
+class ApprovedNativeBufferedPhaseTests(unittest.TestCase):
+    """Actual current bytes and full rebinding refusal; no Servo runtime claim."""
+    def setUp(self):
+        from tools import verify_service_dispatch_denial_cutoff as gate
+        self.gate = gate
+        self.texts = gate.inputs(ROOT)
+
+    def test_current_phase_sources_and_exact_c3cc_inverse(self):
+        gate = self.gate
+        gate.check(gate.EXPECTED, self.texts)
+        self.assertEqual(len(gate.CLOSED_NATIVE_PHASE_RULE_SHA256), 6)
+        for path in gate.CLOSED_NATIVE_PHASE_RULE_SHA256:
+            with self.subTest(path=path):
+                rule = gate._native_phase_rule(path)
+                parent = gate.native_phase_parent_source(path, self.texts[path])
+                self.assertEqual([len(parent.encode()), gate._sha(parent.encode())],
+                                 [rule["parent_bytes"], rule["parent_sha256"]])
+                self.assertEqual(gate.native_phase_parent_source(path, parent), parent)
+
+    def test_unknown_current_bytes_and_c3cc_replacement_refuse_physical_guard(self):
+        gate = self.gate
+        for path in gate.CLOSED_NATIVE_PHASE_RULE_SHA256:
+            for changed in (self.texts[path] + "\n",
+                            gate.native_phase_parent_source(path, self.texts[path])):
+                with self.subTest(path=path):
+                    texts = dict(self.texts); texts[path] = changed
+                    with self.assertRaisesRegex(ValueError,
+                            "^current physical native phase Source differs$"):
+                        gate.check(gate.EXPECTED, texts)
+            with self.assertRaisesRegex(ValueError,
+                    "^unknown complete native phase Source cannot normalize$"):
+                gate.native_phase_parent_source(path, self.texts[path] + "\n")
+
+    def test_all_six_full_rebound_objects_hit_independent_phase_rule_guard(self):
+        from unittest import mock
+        gate = self.gate
+        for path in gate.CLOSED_NATIVE_PHASE_RULE_SHA256:
+            with self.subTest(path=path):
+                texts = dict(self.texts); texts[path] += "\n"
+                rebound = copy.deepcopy(gate.EXPECTED)
+                rule = rebound["native_phase_parent_inverse6"][path]
+                old_size = rule["complete_bytes"]
+                rule["complete_bytes"] = len(texts[path].encode())
+                rule["complete_sha256"] = gate._sha(texts[path].encode())
+                rule["edits"].append([old_size, rule["complete_bytes"], ""])
+                rebound["preserved_original_sha256"][path] = gate._sha(texts[path].encode())
+                texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+                texts[gate.TOOL] = texts[gate.TOOL].replace(
+                    gate.expected_assignment(gate.EXPECTED), gate.expected_assignment(rebound), 1)
+                with mock.patch.object(gate, "EXPECTED", rebound):
+                    self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
+                                     rebound["checker_nonEXPECTED_whole_sha256"])
+                    with self.assertRaisesRegex(ValueError,
+                            "^independent native phase whole Source rule differs$"):
+                        gate.check(rebound, texts)
+
+    def test_recording_is_bounded_fixed_data_without_hot_io_or_drop_output(self):
+        support = self.texts["experiments/servo-product-owner/src/approved_test_support.rs"]
+        module = support.split("pub mod phase_diagnostics {", 1)[1]
+        inventory = verifier.rust_inventory(module)
+        record = verifier.function(inventory, "record")
+        for forbidden in ("println", "eprintln", "writeln", "write", "flush", "lock",
+                          "format", "Vec", "String", "Box", "spawn", "sleep"):
+            self.assertNotIn(forbidden, record)
+        self.assertIn("const CAPACITY: usize = 128;", module)
+        self.assertIn("trace.len == CAPACITY", module)
+        self.assertIn("LOST.set(true)", module)
+        self.assertNotIn("impl Drop", module)
+        self.assertNotIn("String", module)
+        self.assertNotIn("Vec", module)
+        self.assertIn("Request::Unknown", module)
+        self.assertIn("try_borrow_mut", module)
+
+    def test_flush_is_after_case_and_never_changes_original_case_result(self):
+        support = self.texts["experiments/servo-product-owner/src/approved_test_support.rs"]
+        module = support.split("pub mod phase_diagnostics {", 1)[1]
+        body = verifier.function(verifier.rust_inventory(module), "run_case")
+        verifier.ordered(body, ["start()", "catch_unwind(AssertUnwindSafe(case))",
+                               "flush(&mut io::stderr().lock(), result.is_ok())",
+                               "match result", "resume_unwind(original)"], "unchanged case result")
+        self.assertIn("Ok(()) => ()", module)
+        self.assertNotIn("assert", body)
+        target = self.texts[verifier.EXPECTED["qualification"]["native_target"]]
+        main = verifier.function(verifier.rust_inventory(target), "main")
+        verifier.ordered(main, ["support::child_entry()", "support::configure(&args[2])",
+                               "phases::run_case", "actual_approved_startup_semantic_lifecycle()",
+                               "actual_approved_startup_policy_refusal_before_constructor()"], "closed native main")
 
 
 if __name__ == "__main__":
