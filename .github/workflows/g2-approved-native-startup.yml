@@ -452,22 +452,37 @@ jobs:
           output="$RUNNER_TEMP/native-owner-connected-corpus"
           install -d -m 0700 "$output"
           count=0
+          failures=0
+          printf 'case\tprocess_status\tlog_status\tmarker_status\n' > "$RUNNER_TEMP/native-owner-case-status.tsv"
           for test_name in \
             actual_approved_startup_semantic_lifecycle \
             actual_approved_startup_policy_refusal_before_constructor; do
             count=$((count + 1))
             unit="hepta-approved-owner-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${count}"
-            sudo systemd-run --wait --pipe --collect --service-type=exec \
+            if sudo systemd-run --wait --pipe --collect --service-type=exec \
               --unit "$unit" --uid 0 --gid 0 \
               --property=NoNewPrivileges=yes --property=RuntimeMaxSec=60 --property=UMask=0077 \
               --property="WorkingDirectory=$GITHUB_WORKSPACE/servo" \
               "$binary" "$test_name" "$unit.service" \
-              2>&1 | tee "$RUNNER_TEMP/native-owner-$count.log"
-            grep -F "ACTUAL_APPROVED_NATIVE_STARTUP" "$RUNNER_TEMP/native-owner-$count.log"
+              2>&1 | tee "$RUNNER_TEMP/native-owner-$count.log"; then
+              statuses=("${PIPESTATUS[@]}")
+            else
+              statuses=("${PIPESTATUS[@]}")
+            fi
+            marker_status=0
+            grep -F "ACTUAL_APPROVED_NATIVE_STARTUP" "$RUNNER_TEMP/native-owner-$count.log" || marker_status=$?
+            printf '%s\t%s\t%s\t%s\n' "$test_name" "${statuses[0]}" "${statuses[1]}" "$marker_status" \
+              >> "$RUNNER_TEMP/native-owner-case-status.tsv"
+            if test "${statuses[0]}" != 0 || test "${statuses[1]}" != 0 || test "$marker_status" != 0; then
+              failures=$((failures + 1))
+            fi
+            # A failed case does not suppress its independent successor. Changed
+            # executable bytes still stop immediately before any further launch.
             test "$(sha256sum "$binary" | cut -d' ' -f1)" = "$binary_sha"
           done
           test "$count" = 2
           sha256sum --check "$RUNNER_TEMP/native-owner-source.sha256"
+          test "$failures" = 0
       - name: Preserve source, actual compile and connected/journal diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

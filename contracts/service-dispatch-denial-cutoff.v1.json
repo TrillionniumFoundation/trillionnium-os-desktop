@@ -222,7 +222,7 @@
       }
     }
   },
-  "checker_nonEXPECTED_whole_sha256": "0410d3bd0960e7542f5cb94ef0bfbefd9d2a5c3ebb1feb398fd050a57c18d76c",
+  "checker_nonEXPECTED_whole_sha256": "77d7fd3879fc4ece5a9ebb0b0a91ec99e964de3d60b018878d49edb1c980e1a2",
   "ci_composition_scope": {
     "Hosted_cleanup_qualified": false,
     "Native_qualified": false,
@@ -276,15 +276,15 @@
     ".github/workflows/authenticated-update-readback.yml": "f779e7ed6a1dd2d516cdc73fa685dca9555bb5689048652bfb48ab8aa414f602",
     ".github/workflows/ci.yml": "be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826",
     ".github/workflows/controlled-egress.yml": "2240ad5b078322f9d89a7dc125969e7d88c363addd88f348699b534fd09c2c6c",
-    ".github/workflows/g2-approved-native-startup.yml": "872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a",
+    ".github/workflows/g2-approved-native-startup.yml": "85800c4a556c08b3b234a559b6511c45c3df50498f3dc9ab139fde75cf559816",
     ".github/workflows/g2-native-product-owner.yml": "a37826732869ed842e29de30b035cda684f055a9f2edbfb28231c6ab3044598a",
     ".github/workflows/module-documentation.yml": "05401da3a9fc52c7daeb9687356bc1d68f48374ee0ac2a7b04c9d3c68c39f3ef",
     ".github/workflows/s08-servo-vertical-slice.yml": "093861aa1206f584d1cc9731d00d681eac3fb610c1433f6a84185c02f82e5226",
     ".github/workflows/s09-linux-platform-adapters.yml": "eb3f53661f6c459ce7ccfd49ae12a87964c2b5762a6567b746bfe05d3fac9a7e",
     ".github/workflows/update-boot-observer.yml": "38254307bdb0a56fcf17e5e954a3cdc8c3b64225c8443b15c5cfc717a3ccf25a",
-    "contracts/ci-namespace-python.v1.json": "7285ea8aa9272b3a4ce37c7a5d8f6b291bd10a00f2314cd7efd2a6b5c061fd7e",
-    "contracts/ci-required-contexts.v1.json": "222fcf18b69fae5fab6077a190c253edc834258a65300ace14decba4e7dc9f2d",
-    "contracts/ci-source-identity.v1.json": "db33890a91bc70247571cf71a3ebe41a48dd52d2965187ba7b3605e8b08c42e3",
+    "contracts/ci-namespace-python.v1.json": "b78bc4729432c963a3661da00f3f0de4b170bcf35e32972a71727466401a6859",
+    "contracts/ci-required-contexts.v1.json": "1ffcc5ddd87b8ae85a954af9fa7f7f2eacf74db3a01829d1a1703361a424042b",
+    "contracts/ci-source-identity.v1.json": "18329b7788a65d2c3d7bab2a347a0f2ef35284d5ca7382746ad72fdc3d6914eb",
     "contracts/retained-control-readiness.v1.json": "9e24e9fa600ad98da1ab0c2d580321cebf4c3ecb7991700161ab610e2c2d2b33",
     "crates/hepta-browser-codec/README.md": "13ff0a57a72583e4619106ca530bb1192b3f6b407a9b3a1be668039063c04ede",
     "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md": "c84fa492667e6bf3c59ef9be9d840189352516279848f2458f9912a43dddd6dd",
@@ -292,7 +292,7 @@
     "manifests/modules.v1.json": "2dda8f51480d0409b33f857eb92d8b0c2d9175b0833d85690ba66031a78258c5",
     "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
-    "tools/verify_ci_namespace_python.py": "ebcb64dde0fc880c2808f5f3b3d2b19595267971aad9c2c4be8003eef97fa7cf",
+    "tools/verify_ci_namespace_python.py": "dff47eebdcdae4075ced55eb3b991dc201ea17406c7f203be405079c199c401e",
     "tools/verify_retained_control_readiness.py": "7e10c66c31fc5842de91ec3c6f69d6a20caa238ff7cf954ba150876d41234772"
   },
   "ci_parent_inverse18": {
@@ -535,100 +535,106 @@
     "contracts/ci-required-contexts.v1.json": {
       "byte_edits": [
         {
-          "complete_end": 3814,
-          "complete_start": 3699,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"98f6010e9e49b5f3755757526b0a494ab210b83b23374c092c30775c1fa301c3\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"72e55d25252635f440ebbe5f4c872dd521a99f6d6eb44c646eb824d73a79a8dc\",\n"
+          "complete_end": 3811,
+          "complete_start": 3747,
+          "complete_text": "98f6010e9e49b5f3755757526b0a494ab210b83b23374c092c30775c1fa301c3",
+          "parent_text": "72e55d25252635f440ebbe5f4c872dd521a99f6d6eb44c646eb824d73a79a8dc"
         },
         {
-          "complete_end": 4559,
-          "complete_start": 4444,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"3dba1bd590f95421b0adf14df3c6fa39b00f8cf9b38cd1084ab62067f67db122\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"8745734fea28ca4099c04bb5a5f8c04a2a0ba3a460fd34ab92a50e7d95e73639\",\n"
+          "complete_end": 4556,
+          "complete_start": 4492,
+          "complete_text": "3dba1bd590f95421b0adf14df3c6fa39b00f8cf9b38cd1084ab62067f67db122",
+          "parent_text": "8745734fea28ca4099c04bb5a5f8c04a2a0ba3a460fd34ab92a50e7d95e73639"
         },
         {
-          "complete_end": 6219,
-          "complete_start": 6104,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"fe62915eb56f65e8d8d24541989681f0a967a9bd33a431d5470471b9fc5f5997\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"7b9031666d7f1edfd58839a7d4c80236050a386eaeaba1159c5ad8e22d7c4689\",\n"
+          "complete_end": 6216,
+          "complete_start": 6152,
+          "complete_text": "fe62915eb56f65e8d8d24541989681f0a967a9bd33a431d5470471b9fc5f5997",
+          "parent_text": "7b9031666d7f1edfd58839a7d4c80236050a386eaeaba1159c5ad8e22d7c4689"
         },
         {
-          "complete_end": 7669,
-          "complete_start": 7554,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"cc8f9805f663d1692479637a7e90431296eeb6980c451576f8dc82c8b58abb5d\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"6bd5f8e1fb0976e3a0d975824b76e561b014e05d7c5c2774455c5714aba6f9d4\",\n"
+          "complete_end": 7666,
+          "complete_start": 7602,
+          "complete_text": "cc8f9805f663d1692479637a7e90431296eeb6980c451576f8dc82c8b58abb5d",
+          "parent_text": "6bd5f8e1fb0976e3a0d975824b76e561b014e05d7c5c2774455c5714aba6f9d4"
         },
         {
-          "complete_end": 9689,
-          "complete_start": 9574,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"14a5ea508f703cf4499a00069acbb020f1cd962f0cea4e8ba080f721921f6474\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"0498c9f0fb1b5d74173a55c767df24b4bcfd42a9af1f1e317c0dbe866e760f59\",\n"
+          "complete_end": 9686,
+          "complete_start": 9622,
+          "complete_text": "c426a9a5a618d4cf4009ccda2567c5214dd62e9c3242d6ed568f782c7a4000bd",
+          "parent_text": "0498c9f0fb1b5d74173a55c767df24b4bcfd42a9af1f1e317c0dbe866e760f59"
         },
         {
-          "complete_end": 10643,
-          "complete_start": 10528,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"747d216833570b3b56d7fbae46f27a60c87ddaf5507de4b74b5e35112f7e68a3\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"fdd8896c54c8f3eaed786d30e38d0e01a58d0763342c65942f69ae02c59a33e1\",\n"
+          "complete_end": 10640,
+          "complete_start": 10576,
+          "complete_text": "747d216833570b3b56d7fbae46f27a60c87ddaf5507de4b74b5e35112f7e68a3",
+          "parent_text": "fdd8896c54c8f3eaed786d30e38d0e01a58d0763342c65942f69ae02c59a33e1"
         },
         {
-          "complete_end": 11582,
-          "complete_start": 11467,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"45de5b6963764476ef7b589de4a27b4f71b4b372acd2c8c56215700977d5cdec\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"360d418c165628a07d4b0be382e9e51634c571f0641d9ea5c571bf4453ba6b2a\",\n"
+          "complete_end": 11579,
+          "complete_start": 11515,
+          "complete_text": "45de5b6963764476ef7b589de4a27b4f71b4b372acd2c8c56215700977d5cdec",
+          "parent_text": "360d418c165628a07d4b0be382e9e51634c571f0641d9ea5c571bf4453ba6b2a"
         },
         {
-          "complete_end": 17934,
-          "complete_start": 17819,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"5df451664c60c90c72ec31820b266d34e6710126e593a1e95a6c1311b86b959a\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"7456b2069b8d200063fd3ea7c27f6650da80ab5442ac01335720565aedc5fa81\",\n"
+          "complete_end": 17931,
+          "complete_start": 17867,
+          "complete_text": "5df451664c60c90c72ec31820b266d34e6710126e593a1e95a6c1311b86b959a",
+          "parent_text": "7456b2069b8d200063fd3ea7c27f6650da80ab5442ac01335720565aedc5fa81"
         },
         {
-          "complete_end": 18871,
-          "complete_start": 18756,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"57aa81377ebc8b6f8c12a0be355ffd6a50a03ed09f37b33140d9f85d2cfda07d\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"57792bb73d92bbd3583e2fbaf8752fd362991a430e271f6c8690baac6796376e\",\n"
+          "complete_end": 18868,
+          "complete_start": 18806,
+          "complete_text": "aa81377ebc8b6f8c12a0be355ffd6a50a03ed09f37b33140d9f85d2cfda07d",
+          "parent_text": "792bb73d92bbd3583e2fbaf8752fd362991a430e271f6c8690baac6796376e"
         },
         {
-          "complete_end": 25014,
-          "complete_start": 24899,
-          "complete_text": "      \"body_without_job_display_names_sha256\": \"c03be15f9f34a8eb3498c5ceaf8130dfa96243fe70458eac0b94845295fed103\",\n",
-          "parent_text": "      \"body_without_job_display_names_sha256\": \"8509eb858e37e6a9a3f0bba0c05fe4171cf0655b13a02555394693443cdfe6db\",\n"
+          "complete_end": 25011,
+          "complete_start": 24947,
+          "complete_text": "c03be15f9f34a8eb3498c5ceaf8130dfa96243fe70458eac0b94845295fed103",
+          "parent_text": "8509eb858e37e6a9a3f0bba0c05fe4171cf0655b13a02555394693443cdfe6db"
         }
       ],
       "complete_bytes": 25573,
-      "complete_sha256": "222fcf18b69fae5fab6077a190c253edc834258a65300ace14decba4e7dc9f2d",
+      "complete_sha256": "1ffcc5ddd87b8ae85a954af9fa7f7f2eacf74db3a01829d1a1703361a424042b",
       "parent_bytes": 25573,
       "parent_sha256": "8916bd100d36023bd38d1bddef4ce6daf2b6c16b717983cb22962616c60c3dac"
     },
     "contracts/ci-source-identity.v1.json": {
       "byte_edits": [
         {
-          "complete_end": 7581,
-          "complete_start": 7348,
-          "complete_text": "          \"e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"aebdf432913ae63489f6057c328b77b287cb21c50dc55021f3bac4c84a6fedee\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479\"\n",
-          "parent_text": "          \"aebdf432913ae63489f6057c328b77b287cb21c50dc55021f3bac4c84a6fedee\"\n"
+          "complete_end": 7579,
+          "complete_start": 7359,
+          "complete_text": "e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"aebdf432913ae63489f6057c328b77b287cb21c50dc55021f3bac4c84a6fedee\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479",
+          "parent_text": "aebdf432913ae63489f6057c328b77b287cb21c50dc55021f3bac4c84a6fedee"
         },
         {
-          "complete_end": 9060,
-          "complete_start": 8827,
-          "complete_text": "          \"e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"ee2c74a91b3a7d2e195c58b83a00e3744ab538814ffb87b57d0ecbb7c1bf5303\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479\"\n",
-          "parent_text": "          \"ee2c74a91b3a7d2e195c58b83a00e3744ab538814ffb87b57d0ecbb7c1bf5303\"\n"
+          "complete_end": 9058,
+          "complete_start": 8839,
+          "complete_text": "2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"ee2c74a91b3a7d2e195c58b83a00e3744ab538814ffb87b57d0ecbb7c1bf5303\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479",
+          "parent_text": "e2c74a91b3a7d2e195c58b83a00e3744ab538814ffb87b57d0ecbb7c1bf5303"
         },
         {
-          "complete_end": 14415,
-          "complete_start": 14182,
-          "complete_text": "          \"e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"bb7e6e27ce7d69bc9ca4d9fd10e6a33fda08f4050b7b4007060727a9d5b89c50\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479\"\n",
-          "parent_text": "          \"bb7e6e27ce7d69bc9ca4d9fd10e6a33fda08f4050b7b4007060727a9d5b89c50\"\n"
+          "complete_end": 14413,
+          "complete_start": 14193,
+          "complete_text": "e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"bb7e6e27ce7d69bc9ca4d9fd10e6a33fda08f4050b7b4007060727a9d5b89c50\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479",
+          "parent_text": "bb7e6e27ce7d69bc9ca4d9fd10e6a33fda08f4050b7b4007060727a9d5b89c50"
         },
         {
-          "complete_end": 15556,
-          "complete_start": 15323,
-          "complete_text": "          \"e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"347fc164a5033dd2a3beb54884ce2a9e77d2c0986e4ef59b1a6697aa3b441b06\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479\"\n",
-          "parent_text": "          \"347fc164a5033dd2a3beb54884ce2a9e77d2c0986e4ef59b1a6697aa3b441b06\"\n"
+          "complete_end": 14984,
+          "complete_start": 14920,
+          "complete_text": "ae292c593d984baf321604201a2e1133ec2f2f33f455352e6f95e82e0bac8530",
+          "parent_text": "17bce64e9c48c92a630b856a203704555e68af2c933c47b3a61447eb71c9f10d"
+        },
+        {
+          "complete_end": 15554,
+          "complete_start": 15334,
+          "complete_text": "e2521344d82b798761199017c0929069a67d543ad14b91e1ff0bef3d85078f8c\",\n          \"347fc164a5033dd2a3beb54884ce2a9e77d2c0986e4ef59b1a6697aa3b441b06\",\n          \"b6cc45525982cfb3ef3e3224f30c03e9bccf3a25df39c50b11e120bbaebbc479",
+          "parent_text": "347fc164a5033dd2a3beb54884ce2a9e77d2c0986e4ef59b1a6697aa3b441b06"
         }
       ],
       "complete_bytes": 34547,
-      "complete_sha256": "db33890a91bc70247571cf71a3ebe41a48dd52d2965187ba7b3605e8b08c42e3",
+      "complete_sha256": "18329b7788a65d2c3d7bab2a347a0f2ef35284d5ca7382746ad72fdc3d6914eb",
       "parent_bytes": 33923,
       "parent_sha256": "8e0fb308c300f6999821ad9bccd7af9c39ec6aeb74ced6306438732ca84bbf84"
     },
@@ -1838,6 +1844,178 @@
     },
     "path": "crates/hepta-agent-transport/src/accepted_handoff.rs"
   },
+  "native_diagnostic_parent_inverse6": {
+    ".github/workflows/g2-approved-native-startup.yml": {
+      "byte_edits": [
+        {
+          "complete_end": 23579,
+          "complete_start": 23443,
+          "complete_text": "          failures=0\n          printf 'case\\tprocess_status\\tlog_status\\tmarker_status\\n' > \"$RUNNER_TEMP/native-owner-case-status.tsv\"\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 23875,
+          "complete_start": 23872,
+          "complete_text": "if ",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 25027,
+          "complete_start": 24270,
+          "complete_text": "; then\n              statuses=(\"${PIPESTATUS[@]}\")\n            else\n              statuses=(\"${PIPESTATUS[@]}\")\n            fi\n            marker_status=0\n            grep -F \"ACTUAL_APPROVED_NATIVE_STARTUP\" \"$RUNNER_TEMP/native-owner-$count.log\" || marker_status=$?\n            printf '%s\\t%s\\t%s\\t%s\\n' \"$test_name\" \"${statuses[0]}\" \"${statuses[1]}\" \"$marker_status\" \\\n              >> \"$RUNNER_TEMP/native-owner-case-status.tsv\"\n            if test \"${statuses[0]}\" != 0 || test \"${statuses[1]}\" != 0 || test \"$marker_status\" != 0; then\n              failures=$((failures + 1))\n            fi\n            # A failed case does not suppress its independent successor. Changed\n            # executable bytes still stop immediately before any further launch.",
+          "parent_text": "\n            grep -F \"ACTUAL_APPROVED_NATIVE_STARTUP\" \"$RUNNER_TEMP/native-owner-$count.log\""
+        },
+        {
+          "complete_end": 25246,
+          "complete_start": 25215,
+          "complete_text": "          test \"$failures\" = 0\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 25654,
+      "complete_sha256": "85800c4a556c08b3b234a559b6511c45c3df50498f3dc9ab139fde75cf559816",
+      "known_historical_whole_views": [
+        [
+          23229,
+          "5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228"
+        ]
+      ],
+      "parent_bytes": 24819,
+      "parent_sha256": "872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a"
+    },
+    "contracts/approved-request-binding.v1.json": {
+      "byte_edits": [
+        {
+          "complete_end": 5912,
+          "complete_start": 5848,
+          "complete_text": "a3acc13594c818caa3b0a2d367bc6ec04bd084120adcd112128efa6ae12758c4",
+          "parent_text": "1825c758d95b46958ec71edeb747782e287df40019f5850a5439bc80deddc442"
+        }
+      ],
+      "complete_bytes": 6196,
+      "complete_sha256": "3716d93770cc8869c5fd5462d6f191788293ee4d58c2322224e348c5eefe2f4c",
+      "parent_bytes": 6196,
+      "parent_sha256": "c268659568907669d43abf76096588267c3ed61f128ea9c93ac66553575608d6"
+    },
+    "docs/architecture/APPROVED_NATIVE_STARTUP.md": {
+      "byte_edits": [
+        {
+          "complete_end": 13769,
+          "complete_start": 12372,
+          "complete_text": "\n## Exact-candidate failure diagnostics\n\nPR152 head `2e808950f294f0643019bb1ae840d1979d686b64` compiled the exact\nnative target, but run `37162156866`, job `111317645142` failed the first\nlifecycle case at the original accepted-budget assertion (service runtime\n21.111 seconds). The second policy-refusal case was unobserved because the\nshell stopped at that failure. The XDG warning and repeated live executable\nhashing are not established causes of this particular failure.\n\nThe diagnostic successor records only fixed fixture stages/request names,\nelapsed/remaining milliseconds, drive counts and typed drive outcomes. It does\nnot log environment values, peer identities, paths, payloads or policy content.\nBoth unchanged native case names run in fresh processes with the original\n20-second accepted and five-second native ceilings. Each process, log pipeline\nand required success-marker result is recorded in a bounded two-row status\nfile. A failure remains an aggregate failure; changed binary/source bytes\nstill fail closed, and changed executable bytes prevent another launch.\nHistorical source contracts accept only the exact reviewed whole-byte inverse\nof these diagnostics. They do not substitute old source for native execution.\nNative startup, installed operation and production readiness remain unresolved\nuntil the actual successor's runtime and later qualification evidence exists.\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 13769,
+      "complete_sha256": "b2336e319f4b70a92fdf589e7ad1a7a06786d208e0c4fd5936ed7adec8c7f597",
+      "parent_bytes": 12372,
+      "parent_sha256": "d20e54adccb48a67e5db6005466d39285323fc20da17077232bdd0172c52e093"
+    },
+    "experiments/servo-product-owner/src/approved_connected_tests.rs": {
+      "byte_edits": [
+        {
+          "complete_end": 2178,
+          "complete_start": 1900,
+          "complete_text": "    let started = Instant::now();\n    let deadline = driver.original_deadline().unwrap();\n    eprintln!(\n        \"APPROVED_NATIVE_DIAGNOSTIC request={} stage=send remaining_ms={}\",\n        input.request_id,\n        deadline.saturating_duration_since(started).as_millis()\n    );\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 2306,
+          "complete_start": 2203,
+          "complete_text": "    let mut drives = 0_u64;\n    let mut drive_elapsed = Duration::ZERO;\n    let mut last_drive = None;\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 2807,
+          "complete_start": 2600,
+          "complete_text": "; request={} elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}\",\n            input.request_id,\n            started.elapsed().as_millis(),\n            drives,\n            drive_elapsed.as_millis()",
+          "parent_text": "\""
+        },
+        {
+          "complete_end": 3346,
+          "complete_start": 2827,
+          "complete_text": "let drive_started = Instant::now();\n        let driven = driver.drive();\n        drive_elapsed += drive_started.elapsed();\n        drives = drives.saturating_add(1);\n        last_drive = Some(driven.unwrap_or_else(|error| {\n            panic!(\n                \"native drive refused; request={} elapsed_ms={} drives={} drive_ms={} error={error:?}\",\n                input.request_id,\n                started.elapsed().as_millis(),\n                drives,\n                drive_elapsed.as_millis()\n            )\n        })",
+          "parent_text": "driver.drive().unwrap("
+        },
+        {
+          "complete_end": 3671,
+          "complete_start": 3405,
+          "complete_text": "    eprintln!(\n        \"APPROVED_NATIVE_DIAGNOSTIC request={} stage=observation elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}\",\n        input.request_id,\n        started.elapsed().as_millis(),\n        drives,\n        drive_elapsed.as_millis()\n    );\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 5601,
+          "complete_start": 5567,
+          "complete_text": "    let started = Instant::now();\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 5750,
+          "complete_start": 5626,
+          "complete_text": "    eprintln!(\n        \"APPROVED_NATIVE_DIAGNOSTIC stage=servo elapsed_ms={}\",\n        started.elapsed().as_millis()\n    );\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 5929,
+          "complete_start": 5805,
+          "complete_text": "    eprintln!(\n        \"APPROVED_NATIVE_DIAGNOSTIC stage=peers elapsed_ms={}\",\n        started.elapsed().as_millis()\n    );\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 6097,
+          "complete_start": 5969,
+          "complete_text": "    eprintln!(\n        \"APPROVED_NATIVE_DIAGNOSTIC stage=admission elapsed_ms={}\",\n        started.elapsed().as_millis()\n    );\n",
+          "parent_text": ""
+        },
+        {
+          "complete_end": 6813,
+          "complete_start": 6573,
+          "complete_text": "    eprintln!(\n        \"APPROVED_NATIVE_DIAGNOSTIC stage=startup elapsed_ms={} remaining_ms={}\",\n        started.elapsed().as_millis(),\n        original\n            .saturating_duration_since(Instant::now())\n            .as_millis()\n    );\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 11383,
+      "complete_sha256": "a3acc13594c818caa3b0a2d367bc6ec04bd084120adcd112128efa6ae12758c4",
+      "parent_bytes": 9383,
+      "parent_sha256": "1825c758d95b46958ec71edeb747782e287df40019f5850a5439bc80deddc442"
+    },
+    "tests/test_approved_native_startup.py": {
+      "byte_edits": [
+        {
+          "complete_end": 39484,
+          "complete_start": 32687,
+          "complete_text": "class ApprovedNativeStartupDiagnosticTests(unittest.TestCase):\n    \"\"\"Run the complete corpus shell with harmless local process fixtures.\n\n    These are orchestration regressions, not native Servo or systemd evidence.\n    No privileged command, policy installation or network operation runs here.\n    \"\"\"\n    def body(self):\n        workflow = (ROOT / verifier.EXPECTED[\"qualification\"][\"workflow\"]).read_text()\n        tail = workflow.split(\"      - name: Actual explicit-root approved same-channel native startup cases\\n\", 1)[1]\n        block = tail.split(\"        run: |\\n\", 1)[1].split(\"      - name:\", 1)[0]\n        return \"\\n\".join(line[10:] for line in block.splitlines()) + \"\\n\"\n\n    def exercise(self, first=0, second=0, marker=\"yes\", tee_failure=\"no\", drift=\"no\"):\n        import hashlib\n        with tempfile.TemporaryDirectory(prefix=\"approved-native-diagnostics-\") as directory:\n            root = Path(directory)\n            fakebin = root / \"bin\"\n            fakebin.mkdir()\n            binary = root / \"fixture-binary\"\n            binary.write_text(\"harmless diagnostic executable fixture\\n\")\n            (root / \"native-owner-binary.txt\").write_text(str(binary) + \"\\n\")\n            source = root / \"source\"\n            source.write_text(\"unchanged source fixture\\n\")\n            (root / \"native-owner-source.sha256\").write_text(\n                hashlib.sha256(source.read_bytes()).hexdigest() + \"  \" + str(source) + \"\\n\")\n            sudo = fakebin / \"sudo\"\n            sudo.write_text(\"\"\"#!/bin/bash\nset -euo pipefail\nprintf '%s\\\\n' \"$*\" >> \"$RUNNER_TEMP/calls\"\ncase \" $* \" in\n  *\" actual_approved_startup_semantic_lifecycle \"*) status=$FIRST_STATUS; first=yes ;;\n  *\" actual_approved_startup_policy_refusal_before_constructor \"*) status=$SECOND_STATUS; first=no ;;\n  *) exit 91 ;;\nesac\nif test \"$DRIFT\" = yes; then printf 'changed fixture bytes\\\\n' > \"$(cat \"$RUNNER_TEMP/native-owner-binary.txt\")\"; fi\nif test \"$MARKER\" = yes || test \"$first\" = no; then printf 'ACTUAL_APPROVED_NATIVE_STARTUP fixture-only\\\\n'; fi\nexit \"$status\"\n\"\"\")\n            tee = fakebin / \"tee\"\n            tee.write_text(\"\"\"#!/bin/bash\n/usr/bin/tee \"$@\"\ncase \"$*\" in *native-owner-1.log*) test \"$TEE_FAILURE\" != yes || exit 77 ;; esac\n\"\"\")\n            sudo.chmod(0o700)\n            tee.chmod(0o700)\n            environment = {\"PATH\": str(fakebin) + \":/usr/bin:/bin\", \"LANG\": \"C.UTF-8\",\n                           \"RUNNER_TEMP\": str(root), \"GITHUB_WORKSPACE\": str(root),\n                           \"GITHUB_RUN_ID\": \"123\", \"GITHUB_RUN_ATTEMPT\": \"1\",\n                           \"FIRST_STATUS\": str(first), \"SECOND_STATUS\": str(second),\n                           \"MARKER\": marker, \"TEE_FAILURE\": tee_failure, \"DRIFT\": drift}\n            result = subprocess.run([\"/bin/bash\", \"-c\", self.body()], env=environment,\n                                    capture_output=True, text=True, timeout=10, check=False)\n            rows = (root / \"native-owner-case-status.tsv\").read_text().splitlines()\n            calls = (root / \"calls\").read_text().splitlines()\n            for call in calls:\n                self.assertIn(\"--property=RuntimeMaxSec=60\", call)\n                self.assertIn(\"--property=NoNewPrivileges=yes\", call)\n                self.assertIn(\"--service-type=exec\", call)\n            return result, rows, calls\n\n    def test_both_original_cases_succeed_only_with_successful_process_log_and_marker(self):\n        result, rows, calls = self.exercise()\n        self.assertEqual(result.returncode, 0, result.stderr)\n        self.assertEqual(len(calls), 2)\n        self.assertEqual(rows[0], \"case\\tprocess_status\\tlog_status\\tmarker_status\")\n        self.assertEqual([row.split(\"\\t\")[1:] for row in rows[1:]], [[\"0\", \"0\", \"0\"]] * 2)\n\n    def test_first_process_failure_preserves_failure_and_runs_second_case(self):\n        result, rows, calls = self.exercise(first=101)\n        self.assertNotEqual(result.returncode, 0)\n        self.assertEqual(len(calls), 2)\n        self.assertEqual(rows[1].split(\"\\t\")[1:], [\"101\", \"0\", \"0\"])\n        self.assertEqual(rows[2].split(\"\\t\")[1:], [\"0\", \"0\", \"0\"])\n\n    def test_second_process_failure_still_fails_aggregate(self):\n        result, rows, calls = self.exercise(second=42)\n        self.assertNotEqual(result.returncode, 0)\n        self.assertEqual(len(calls), 2)\n        self.assertEqual(rows[2].split(\"\\t\")[1:], [\"42\", \"0\", \"0\"])\n\n    def test_missing_first_marker_is_recorded_without_suppressing_second_case(self):\n        result, rows, calls = self.exercise(marker=\"no\")\n        self.assertNotEqual(result.returncode, 0)\n        self.assertEqual(len(calls), 2)\n        self.assertEqual(rows[1].split(\"\\t\")[1:], [\"0\", \"0\", \"1\"])\n\n    def test_log_pipeline_failure_is_separate_and_never_promoted_to_success(self):\n        result, rows, calls = self.exercise(tee_failure=\"yes\")\n        self.assertNotEqual(result.returncode, 0)\n        self.assertEqual(len(calls), 2)\n        self.assertEqual(rows[1].split(\"\\t\")[1:], [\"0\", \"77\", \"0\"])\n\n    def test_changed_executable_stops_before_any_additional_launch(self):\n        result, rows, calls = self.exercise(drift=\"yes\")\n        self.assertNotEqual(result.returncode, 0)\n        self.assertEqual(len(calls), 1)\n        self.assertEqual(len(rows), 2)\n\n    def test_diagnostics_preserve_native_assertion_and_one_drive_per_turn(self):\n        text = (ROOT / verifier.EXPECTED[\"qualification\"][\"native_target\"]).read_text()\n        run = verifier.function(verifier.rust_inventory(text), \"run\")\n        self.assertEqual(run.count(\"drive\"), 1)\n        for token in [\"original_deadline\", \"saturating_add\", \"try_observation\"]:\n            self.assertIn(token, run)\n        self.assertIn(\"Instant::now() < driver.original_deadline().unwrap()\", text)\n        self.assertIn(\"original accepted budget, no renewal\", text)\n        self.assertEqual(text.count(\"APPROVED_NATIVE_DIAGNOSTIC\"), 6)\n\n    def test_physical_diagnostics_and_exact_historical_inverse_are_both_required(self):\n        from tools import verify_service_dispatch_denial_cutoff as gate\n        texts = gate.inputs(ROOT)\n        gate.check(gate.EXPECTED, texts)\n        for path, rule in gate.CLOSED_NATIVE_DIAGNOSTIC_SOURCE_RULES.items():\n            with self.subTest(path=path):\n                parent = gate.native_diagnostics_parent_source(path, texts[path])\n                self.assertEqual(gate._sha(parent.encode()), rule[\"parent_sha256\"])\n                self.assertEqual(gate.native_diagnostics_parent_source(path, parent), parent)\n                with self.assertRaises(ValueError):\n                    gate.native_diagnostics_parent_source(path, texts[path] + \"\\n\")\n                mutant = dict(texts)\n                mutant[path] = parent\n                with self.assertRaises(ValueError):\n                    gate.check(gate.EXPECTED, mutant)\n\n\n",
+          "parent_text": ""
+        }
+      ],
+      "complete_bytes": 39531,
+      "complete_sha256": "65bbf95bd5931b15f8850c42fb7a55a8dbdbd567c618b49e0374d892e70be795",
+      "parent_bytes": 32734,
+      "parent_sha256": "eb032b474dca0bc11333f64c84c91ef795aaeb3e4301b517e225cf79410919d7"
+    },
+    "tools/verify_approved_request_binding.py": {
+      "byte_edits": [
+        {
+          "complete_end": 4949,
+          "complete_start": 4885,
+          "complete_text": "a3acc13594c818caa3b0a2d367bc6ec04bd084120adcd112128efa6ae12758c4",
+          "parent_text": "1825c758d95b46958ec71edeb747782e287df40019f5850a5439bc80deddc442"
+        }
+      ],
+      "complete_bytes": 15416,
+      "complete_sha256": "32c26eb283f7acb345885e44d97f3f5f7717222859840ac9917681407fca364b",
+      "parent_bytes": 15416,
+      "parent_sha256": "117bb1d424d06ea04654d578c4e4628e7a56e79d30b5f8ba63ec6afea2de5b9b"
+    }
+  },
+  "native_diagnostic_scope": {
+    "base_head": "2e808950f294f0643019bb1ae840d1979d686b64",
+    "native_execution": "pending exact successor CI",
+    "no_product_source_or_trust_boundary_change": true,
+    "no_runtime_qualification_claim": true,
+    "scope": "read-only fixed-fixture diagnostics and both original fresh-process cases with aggregate failure",
+    "unchanged_original_budgets": true
+  },
   "new_compile_fail_inventory_NOT_EXECUTED": {
     "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs": [
       "/// use hepta_browser_actor_simulation::engine_dispatch::event_loop::ServiceEngineCompletion;\n/// fn shared(c: &ServiceEngineCompletion, cutoff: std::time::Instant) {\n///     let _ = c.shorten_deadline_once(cutoff);\n/// }\n/// "
@@ -1864,7 +2042,7 @@
     ".github/workflows/controlled-egress.yml": "2240ad5b078322f9d89a7dc125969e7d88c363addd88f348699b534fd09c2c6c",
     ".github/workflows/d1-final-qualification.yml": "831d26b8a12f0427c1a40b6544375fc32e4ba43919ecc60d836d63565c30a3ca",
     ".github/workflows/d2i-integrated-image.yml": "74955498d473ff8b21478a86a243c026eb1417d4348e6413b0c1a82fd1e087de",
-    ".github/workflows/g2-approved-native-startup.yml": "872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a",
+    ".github/workflows/g2-approved-native-startup.yml": "85800c4a556c08b3b234a559b6511c45c3df50498f3dc9ab139fde75cf559816",
     ".github/workflows/g2-native-product-owner.yml": "a37826732869ed842e29de30b035cda684f055a9f2edbfb28231c6ab3044598a",
     ".github/workflows/module-documentation.yml": "05401da3a9fc52c7daeb9687356bc1d68f48374ee0ac2a7b04c9d3c68c39f3ef",
     ".github/workflows/receipt-journal.yml": "4eb762a1718b402008c22f9f0e26f4c9ee3cb0c7946f4722b4f04c435ab34b07",
@@ -1934,7 +2112,7 @@
     "contracts/approved-constructor-route.v1.json": "c1ca56e20fca6093be4cdbeec7c3afd6c3bc26cd059061af6f4fb4a915c158d2",
     "contracts/approved-mechanism-policy.v1.json": "f23de6e624e8201af75b22289a96ffcd266156d822b45b4dd9a6c33b51fb9789",
     "contracts/approved-native-startup.v1.json": "3d918519791af864bcfa4a423f14039e024eb1e14eaa7d8686f8a95a0d4ebe7e",
-    "contracts/approved-request-binding.v1.json": "c268659568907669d43abf76096588267c3ed61f128ea9c93ac66553575608d6",
+    "contracts/approved-request-binding.v1.json": "3716d93770cc8869c5fd5462d6f191788293ee4d58c2322224e348c5eefe2f4c",
     "contracts/approved-service-actor.v2.json": "5e3f41100d7b658cecddf4a2ac93c1b6b4b179051b4aa2a7e853c5eabc9fcf1e",
     "contracts/approved-service-owner-foundation.v2.json": "dfcde1f86806f4fb456507f73ffd23dc9c68db19a4c5fbbbb9058f63ecd216b5",
     "contracts/approved-service-product.v2.json": "568b9dc1930bf142602e14a1b80c48e0c4f572a6bbe8517efaf7ddc0ee235f27",
@@ -1947,8 +2125,8 @@
     "contracts/browser-response.v1.schema.json": "d24560192330acb9028d95bf9a2dcc839c74250fa36d5674dc81499be40b7f4d",
     "contracts/browser-wire.v1.schema.json": "0d3a7e914ef06a7fd47173dbd3c3ced0e07358e22133dfe87cf086fdfca1f89c",
     "contracts/capability-permit.v1.schema.json": "28d8e0ffa369671aa879e63bb87b3f66fc1f86737dbee70ca5dda8965201113a",
-    "contracts/ci-required-contexts.v1.json": "222fcf18b69fae5fab6077a190c253edc834258a65300ace14decba4e7dc9f2d",
-    "contracts/ci-source-identity.v1.json": "db33890a91bc70247571cf71a3ebe41a48dd52d2965187ba7b3605e8b08c42e3",
+    "contracts/ci-required-contexts.v1.json": "1ffcc5ddd87b8ae85a954af9fa7f7f2eacf74db3a01829d1a1703361a424042b",
+    "contracts/ci-source-identity.v1.json": "18329b7788a65d2c3d7bab2a347a0f2ef35284d5ca7382746ad72fdc3d6914eb",
     "contracts/configured-retained-bootstrap.v1.json": "02b011129bc0b65fcce16ebd0ad0dfc5e21faaa87b1ea9717e0ff7786ede804e",
     "contracts/contract-core-constraints.v1.json": "235899516bc39afff160399ef95947de131a3936f3997dacb9f399a29dfbbc89",
     "contracts/control-owner-handoff.v1.json": "5f05f5a7a50d61cf6d2ac8be32df4aff3f05ad30aecc5a7bc3687f2b6c870834",
@@ -2133,7 +2311,7 @@
     "docs/adr/0009-fixture-product-agentport-separation.md": "181511fa75cceacf7a8fa7cffc3bc7bf0441f605c8f6dfc41d466172b0732be3",
     "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md": "66fb082ce8e80d02c7408ca18baa24c7b1b502596a7edd09da7fa46198def255",
     "docs/architecture/APPROVED_MECHANISM_POLICY.md": "cecd8653c346ae0749e1aa700c3455cd845b559e9ab327e8b4731e2d98755181",
-    "docs/architecture/APPROVED_NATIVE_STARTUP.md": "d20e54adccb48a67e5db6005466d39285323fc20da17077232bdd0172c52e093",
+    "docs/architecture/APPROVED_NATIVE_STARTUP.md": "b2336e319f4b70a92fdf589e7ad1a7a06786d208e0c4fd5936ed7adec8c7f597",
     "docs/architecture/APPROVED_REQUEST_BINDING.md": "0cfe39ba12df495604b14dd0eea0570554619b3b2df8f10632999f9703e6579b",
     "docs/architecture/APPROVED_SERVICE_OWNER_FOUNDATION.md": "c8f2b10aa126527001b9ff5754ee7ab0c926cb9b57e86e770a7f6a1519c04f43",
     "docs/architecture/APP_STORAGE.md": "aed6cd9f2e1b1ec9c8fb8418e7feb009e36ab0a5b1971c413ceeb38cf3aefe85",
@@ -2246,7 +2424,7 @@
     "experiments/servo-headed-runtime/src/network_confinement.rs": "021ce7384de191d771a0c5197e88b7b11c3d44ec05bb6050d4515bb7d2d49147",
     "experiments/servo-headed-runtime/src/resource_gate.rs": "5e6857283d68a883c071a8acb19a9e67c50d9ec7708b5131850aa86240842fe0",
     "experiments/servo-product-owner/rustfmt.toml": "9bac67039cd8f892bb9c1ff0780e6e1f2f8dbd8b6787552e4c827f9363452eda",
-    "experiments/servo-product-owner/src/approved_connected_tests.rs": "1825c758d95b46958ec71edeb747782e287df40019f5850a5439bc80deddc442",
+    "experiments/servo-product-owner/src/approved_connected_tests.rs": "a3acc13594c818caa3b0a2d367bc6ec04bd084120adcd112128efa6ae12758c4",
     "experiments/servo-product-owner/src/approved_startup.rs": "582242f4826110a81f26fdec3ad497a2eb1dd76fb20d1e7601d95559b3296b25",
     "experiments/servo-product-owner/src/approved_test_support.rs": "19e1e5269027ab4b81fa4a5ac41517dd6dfea5665141486297f351bf01e4745d",
     "experiments/servo-product-owner/src/connected_tests.rs": "e22417fdccfadfb0eccaa7d253a7af9ed93f210d739cd16e32e952c29ccb7f5f",
@@ -2365,7 +2543,7 @@
     "tests/test_approved_composition_scope.py": "40d631f98f3119236a3443521919602fd803a551f0a9d603f7f69531a4a22a21",
     "tests/test_approved_constructor_route.py": "859eb71a27d7a01f6d21faeda6dea84626df178229141738e44410184677df73",
     "tests/test_approved_mechanism_policy.py": "4be4168db2c10ae86a82aece482557f0cfa0ca7212f1bc6c653bb767c327ed74",
-    "tests/test_approved_native_startup.py": "eb032b474dca0bc11333f64c84c91ef795aaeb3e4301b517e225cf79410919d7",
+    "tests/test_approved_native_startup.py": "65bbf95bd5931b15f8850c42fb7a55a8dbdbd567c618b49e0374d892e70be795",
     "tests/test_approved_request_binding.py": "96315e749caa827d49c29dbbed2344b08d8b1fed4f002b7c18ab306bfc568cf4",
     "tests/test_approved_service_actor.py": "277e8d814c5b71b1c4eec08c2d2dc019d150cbd16fab1d928a77f21b3b65274c",
     "tests/test_approved_service_owner.py": "a2a8236203d1d9b0800fd8807fa4dce875960f88133bb2e5a422c74a04d0cdac",
@@ -2504,7 +2682,7 @@
     "tools/verify_approved_composition_scope.py": "c5d8c547ccb6156c9e824339511bd76e35d429de6d4e85e70041c7493b92fe8c",
     "tools/verify_approved_constructor_route.py": "1587db427042ba267d36ea863bd3113f31db5754f6ecc7e43824e7bf43b236b6",
     "tools/verify_approved_native_startup.py": "d485dcc450e731b7f2cd9edaa2dd3d08bf026b344835733d89e18935fa651fa0",
-    "tools/verify_approved_request_binding.py": "117bb1d424d06ea04654d578c4e4628e7a56e79d30b5f8ba63ec6afea2de5b9b",
+    "tools/verify_approved_request_binding.py": "32c26eb283f7acb345885e44d97f3f5f7717222859840ac9917681407fca364b",
     "tools/verify_approved_service_actor.py": "def3050e113bd7d2e36c6321f879dafe5788622d958622ccc01f5b13351e2daf",
     "tools/verify_approved_service_owner.py": "d7c0f744b5dd05100f51869f5027fce8f1240337d500f02b980d5122dbc86bc9",
     "tools/verify_approved_service_runtime.py": "461ab0538e5e5d625b3b8cb36c34a1a665a6b63b82fb7fb4182ab2862a58325c",
@@ -2876,11 +3054,11 @@
   "status": "SOURCE_CANDIDATE_RUNTIME_REQUALIFICATION_REQUIRED",
   "supplemental_source_sha256": {
     ".github/apparmor/hepta-ci-namespace-python.v1.profile": "9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be",
-    "contracts/ci-namespace-python.v1.json": "7285ea8aa9272b3a4ce37c7a5d8f6b291bd10a00f2314cd7efd2a6b5c061fd7e",
+    "contracts/ci-namespace-python.v1.json": "b78bc4729432c963a3661da00f3f0de4b170bcf35e32972a71727466401a6859",
     "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md": "3100cf1ba31ab528e4fc5882f13d9846940dcc6f20226c1c6d2a7d381a71d280",
     "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
     "tests/test_service_dispatch_denial_cutoff.py": "16459964c816edcc756eb652e1f936f8f2aef7e7cf512141d5e75dfdd5291fdc",
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
-    "tools/verify_ci_namespace_python.py": "ebcb64dde0fc880c2808f5f3b3d2b19595267971aad9c2c4be8003eef97fa7cf"
+    "tools/verify_ci_namespace_python.py": "dff47eebdcdae4075ced55eb3b991dc201ea17406c7f203be405079c199c401e"
   }
 }

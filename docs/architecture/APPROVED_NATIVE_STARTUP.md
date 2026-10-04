@@ -185,3 +185,25 @@ methods remain byte exact; finite inverse transfer reconstructs changed source
 for the original contracts. New default-proc host and transport corpora do not
 replace the unchanged original six-case native qualification. Product startup,
 installed policy and the separate sixty-second health gate remain open.
+
+## Exact-candidate failure diagnostics
+
+PR152 head `2e808950f294f0643019bb1ae840d1979d686b64` compiled the exact
+native target, but run `37162156866`, job `111317645142` failed the first
+lifecycle case at the original accepted-budget assertion (service runtime
+21.111 seconds). The second policy-refusal case was unobserved because the
+shell stopped at that failure. The XDG warning and repeated live executable
+hashing are not established causes of this particular failure.
+
+The diagnostic successor records only fixed fixture stages/request names,
+elapsed/remaining milliseconds, drive counts and typed drive outcomes. It does
+not log environment values, peer identities, paths, payloads or policy content.
+Both unchanged native case names run in fresh processes with the original
+20-second accepted and five-second native ceilings. Each process, log pipeline
+and required success-marker result is recorded in a bounded two-row status
+file. A failure remains an aggregate failure; changed binary/source bytes
+still fail closed, and changed executable bytes prevent another launch.
+Historical source contracts accept only the exact reviewed whole-byte inverse
+of these diagnostics. They do not substitute old source for native execution.
+Native startup, installed operation and production readiness remain unresolved
+until the actual successor's runtime and later qualification evidence exists.

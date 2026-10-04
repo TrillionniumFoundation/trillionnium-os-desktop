@@ -74,9 +74,9 @@
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
     ".github/apparmor/hepta-ci-namespace-python.v1.profile": "9d6bf7dc994cc4b7e19444c1d1b633327ccc22bb202c4c7685a3125ae0b157be",
     ".github/workflows/ci.yml": "be49b338e5bc425b66c0eb27e785dd39a35d3120b9a8749bdfa33b2313768826",
-    ".github/workflows/g2-approved-native-startup.yml": "872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a",
+    ".github/workflows/g2-approved-native-startup.yml": "85800c4a556c08b3b234a559b6511c45c3df50498f3dc9ab139fde75cf559816",
     ".github/workflows/g2-native-product-owner.yml": "a37826732869ed842e29de30b035cda684f055a9f2edbfb28231c6ab3044598a",
-    "contracts/ci-source-identity.v1.json": "db33890a91bc70247571cf71a3ebe41a48dd52d2965187ba7b3605e8b08c42e3"
+    "contracts/ci-source-identity.v1.json": "18329b7788a65d2c3d7bab2a347a0f2ef35284d5ca7382746ad72fdc3d6914eb"
   },
   "non_claims": [
     "original99c hosted failure remains",
@@ -93,7 +93,7 @@
       "positive_paths": []
     },
     ".github/workflows/g2-approved-native-startup.yml": {
-      "original_sha256": "5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228",
+      "original_sha256": "a95afc697470ad82e4c0568201a08c8b20b6af1554b9680595a1318db79ae425",
       "setup": "      - name: Provision job-private CI namespace Python\n        id: namespace_python_setup\n        run: |\n          set -euo pipefail\n          python3 tools/verify_ci_namespace_python.py\n          python3 tools/ci_namespace_python.py setup\n\n",
       "cleanup": "      - name: Remove only owned CI namespace Python and profile\n        if: always()\n        run: /usr/bin/python3.12 tools/ci_namespace_python.py cleanup\n\n",
       "count_each": 1,

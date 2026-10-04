@@ -577,5 +577,130 @@ class ApprovedNativeStartupDirectLibcTests(unittest.TestCase):
                 with self.assertRaises(ValueError): verifier.check_prepare(text.replace(before, after, 1))
 
 
+class ApprovedNativeStartupDiagnosticTests(unittest.TestCase):
+    """Run the complete corpus shell with harmless local process fixtures.
+
+    These are orchestration regressions, not native Servo or systemd evidence.
+    No privileged command, policy installation or network operation runs here.
+    """
+    def body(self):
+        workflow = (ROOT / verifier.EXPECTED["qualification"]["workflow"]).read_text()
+        tail = workflow.split("      - name: Actual explicit-root approved same-channel native startup cases\n", 1)[1]
+        block = tail.split("        run: |\n", 1)[1].split("      - name:", 1)[0]
+        return "\n".join(line[10:] for line in block.splitlines()) + "\n"
+
+    def exercise(self, first=0, second=0, marker="yes", tee_failure="no", drift="no"):
+        import hashlib
+        with tempfile.TemporaryDirectory(prefix="approved-native-diagnostics-") as directory:
+            root = Path(directory)
+            fakebin = root / "bin"
+            fakebin.mkdir()
+            binary = root / "fixture-binary"
+            binary.write_text("harmless diagnostic executable fixture\n")
+            (root / "native-owner-binary.txt").write_text(str(binary) + "\n")
+            source = root / "source"
+            source.write_text("unchanged source fixture\n")
+            (root / "native-owner-source.sha256").write_text(
+                hashlib.sha256(source.read_bytes()).hexdigest() + "  " + str(source) + "\n")
+            sudo = fakebin / "sudo"
+            sudo.write_text("""#!/bin/bash
+set -euo pipefail
+printf '%s\\n' "$*" >> "$RUNNER_TEMP/calls"
+case " $* " in
+  *" actual_approved_startup_semantic_lifecycle "*) status=$FIRST_STATUS; first=yes ;;
+  *" actual_approved_startup_policy_refusal_before_constructor "*) status=$SECOND_STATUS; first=no ;;
+  *) exit 91 ;;
+esac
+if test "$DRIFT" = yes; then printf 'changed fixture bytes\\n' > "$(cat "$RUNNER_TEMP/native-owner-binary.txt")"; fi
+if test "$MARKER" = yes || test "$first" = no; then printf 'ACTUAL_APPROVED_NATIVE_STARTUP fixture-only\\n'; fi
+exit "$status"
+""")
+            tee = fakebin / "tee"
+            tee.write_text("""#!/bin/bash
+/usr/bin/tee "$@"
+case "$*" in *native-owner-1.log*) test "$TEE_FAILURE" != yes || exit 77 ;; esac
+""")
+            sudo.chmod(0o700)
+            tee.chmod(0o700)
+            environment = {"PATH": str(fakebin) + ":/usr/bin:/bin", "LANG": "C.UTF-8",
+                           "RUNNER_TEMP": str(root), "GITHUB_WORKSPACE": str(root),
+                           "GITHUB_RUN_ID": "123", "GITHUB_RUN_ATTEMPT": "1",
+                           "FIRST_STATUS": str(first), "SECOND_STATUS": str(second),
+                           "MARKER": marker, "TEE_FAILURE": tee_failure, "DRIFT": drift}
+            result = subprocess.run(["/bin/bash", "-c", self.body()], env=environment,
+                                    capture_output=True, text=True, timeout=10, check=False)
+            rows = (root / "native-owner-case-status.tsv").read_text().splitlines()
+            calls = (root / "calls").read_text().splitlines()
+            for call in calls:
+                self.assertIn("--property=RuntimeMaxSec=60", call)
+                self.assertIn("--property=NoNewPrivileges=yes", call)
+                self.assertIn("--service-type=exec", call)
+            return result, rows, calls
+
+    def test_both_original_cases_succeed_only_with_successful_process_log_and_marker(self):
+        result, rows, calls = self.exercise()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(rows[0], "case\tprocess_status\tlog_status\tmarker_status")
+        self.assertEqual([row.split("\t")[1:] for row in rows[1:]], [["0", "0", "0"]] * 2)
+
+    def test_first_process_failure_preserves_failure_and_runs_second_case(self):
+        result, rows, calls = self.exercise(first=101)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(rows[1].split("\t")[1:], ["101", "0", "0"])
+        self.assertEqual(rows[2].split("\t")[1:], ["0", "0", "0"])
+
+    def test_second_process_failure_still_fails_aggregate(self):
+        result, rows, calls = self.exercise(second=42)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(rows[2].split("\t")[1:], ["42", "0", "0"])
+
+    def test_missing_first_marker_is_recorded_without_suppressing_second_case(self):
+        result, rows, calls = self.exercise(marker="no")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(rows[1].split("\t")[1:], ["0", "0", "1"])
+
+    def test_log_pipeline_failure_is_separate_and_never_promoted_to_success(self):
+        result, rows, calls = self.exercise(tee_failure="yes")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(rows[1].split("\t")[1:], ["0", "77", "0"])
+
+    def test_changed_executable_stops_before_any_additional_launch(self):
+        result, rows, calls = self.exercise(drift="yes")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(rows), 2)
+
+    def test_diagnostics_preserve_native_assertion_and_one_drive_per_turn(self):
+        text = (ROOT / verifier.EXPECTED["qualification"]["native_target"]).read_text()
+        run = verifier.function(verifier.rust_inventory(text), "run")
+        self.assertEqual(run.count("drive"), 1)
+        for token in ["original_deadline", "saturating_add", "try_observation"]:
+            self.assertIn(token, run)
+        self.assertIn("Instant::now() < driver.original_deadline().unwrap()", text)
+        self.assertIn("original accepted budget, no renewal", text)
+        self.assertEqual(text.count("APPROVED_NATIVE_DIAGNOSTIC"), 6)
+
+    def test_physical_diagnostics_and_exact_historical_inverse_are_both_required(self):
+        from tools import verify_service_dispatch_denial_cutoff as gate
+        texts = gate.inputs(ROOT)
+        gate.check(gate.EXPECTED, texts)
+        for path, rule in gate.CLOSED_NATIVE_DIAGNOSTIC_SOURCE_RULES.items():
+            with self.subTest(path=path):
+                parent = gate.native_diagnostics_parent_source(path, texts[path])
+                self.assertEqual(gate._sha(parent.encode()), rule["parent_sha256"])
+                self.assertEqual(gate.native_diagnostics_parent_source(path, parent), parent)
+                with self.assertRaises(ValueError):
+                    gate.native_diagnostics_parent_source(path, texts[path] + "\n")
+                mutant = dict(texts)
+                mutant[path] = parent
+                with self.assertRaises(ValueError):
+                    gate.check(gate.EXPECTED, mutant)
+
+
 if __name__ == "__main__":
     unittest.main()

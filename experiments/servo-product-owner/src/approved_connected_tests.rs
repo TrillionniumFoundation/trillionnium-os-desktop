@@ -47,7 +47,17 @@ fn run(
     trio: &mut support::Trio,
     input: &BrowserRequest,
 ) -> (JsonObject, (String, String)) {
+    let started = Instant::now();
+    let deadline = driver.original_deadline().unwrap();
+    eprintln!(
+        "APPROVED_NATIVE_DIAGNOSTIC request={} stage=send remaining_ms={}",
+        input.request_id,
+        deadline.saturating_duration_since(started).as_millis()
+    );
     trio.request(input);
+    let mut drives = 0_u64;
+    let mut drive_elapsed = Duration::ZERO;
+    let mut last_drive = None;
     let observation = loop {
         match driver.try_observation().unwrap() {
             Some(value) => break value.unwrap(),
@@ -55,11 +65,34 @@ fn run(
         }
         assert!(
             Instant::now() < driver.original_deadline().unwrap(),
-            "original accepted budget, no renewal"
+            "original accepted budget, no renewal; request={} elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}",
+            input.request_id,
+            started.elapsed().as_millis(),
+            drives,
+            drive_elapsed.as_millis()
         );
-        driver.drive().unwrap();
+        let drive_started = Instant::now();
+        let driven = driver.drive();
+        drive_elapsed += drive_started.elapsed();
+        drives = drives.saturating_add(1);
+        last_drive = Some(driven.unwrap_or_else(|error| {
+            panic!(
+                "native drive refused; request={} elapsed_ms={} drives={} drive_ms={} error={error:?}",
+                input.request_id,
+                started.elapsed().as_millis(),
+                drives,
+                drive_elapsed.as_millis()
+            )
+        }));
         thread::sleep(Duration::from_millis(1));
     };
+    eprintln!(
+        "APPROVED_NATIVE_DIAGNOSTIC request={} stage=observation elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}",
+        input.request_id,
+        started.elapsed().as_millis(),
+        drives,
+        drive_elapsed.as_millis()
+    );
     assert_eq!(
         observation.original_deadline(),
         trio.deadline.min(observation.original_deadline())
@@ -115,9 +148,22 @@ fn open_receipts(path: &std::path::Path) -> ReceiptJournal {
     }
 }
 fn actual_approved_startup_semantic_lifecycle() {
+    let started = Instant::now();
     let servo = servo();
+    eprintln!(
+        "APPROVED_NATIVE_DIAGNOSTIC stage=servo elapsed_ms={}",
+        started.elapsed().as_millis()
+    );
     let mut first = support::Trio::new(support::WAIT);
+    eprintln!(
+        "APPROVED_NATIVE_DIAGNOSTIC stage=peers elapsed_ms={}",
+        started.elapsed().as_millis()
+    );
     let packet = admission(&mut first);
+    eprintln!(
+        "APPROVED_NATIVE_DIAGNOSTIC stage=admission elapsed_ms={}",
+        started.elapsed().as_millis()
+    );
     let original = packet.deadline().unwrap();
     let path = first.fixture.root.join("native-receipts");
     let journal = ReceiptJournal::create_managed(&path, JournalId([0x72; 16]), 1).unwrap();
@@ -131,6 +177,13 @@ fn actual_approved_startup_semantic_lifecycle() {
     )
     .unwrap();
     drop(servo);
+    eprintln!(
+        "APPROVED_NATIVE_DIAGNOSTIC stage=startup elapsed_ms={} remaining_ms={}",
+        started.elapsed().as_millis(),
+        original
+            .saturating_duration_since(Instant::now())
+            .as_millis()
+    );
     assert_eq!(driver.original_deadline().unwrap(), original);
     let (health, health_fact) = run(
         &mut driver,
