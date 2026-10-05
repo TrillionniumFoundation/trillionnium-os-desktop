@@ -6,6 +6,9 @@
 //! concrete request coordinator requiring a separately supplied native Servo
 //! owner; source composition does not activate an installed product runtime.
 
+#[cfg(feature = "approved-native-service-error")]
+pub mod approved_native_test_support;
+
 mod product_dispatch;
 mod servo_product_runtime;
 

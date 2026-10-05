@@ -242,3 +242,50 @@ owner cases, exact-pin compilation and installed qualification remain pending;
 standalone recorder tests do not qualify Servo. Once the timing cause is measured
 and fixed, independently review removal or a bounded justification for keeping
 these local diagnostics; do not turn them into a product tracing framework.
+
+## Qualification-only service error observation
+
+The optional browserd feature `approved-native-service-error` is disabled by
+default. Only the approved native assembler enables it on the existing browserd
+dev-dependency. It adds no dependency, Cargo lock entry, workflow, permission,
+security setting, deadline or product activation. Cargo `--all-features` also
+compiles the support API; it does not arm it. Feature-enabled unarmed callers
+incur bounded state checks without error capture or output. Feature-off builds
+have no diagnostic support API or service capture calls.
+
+The existing actor worker explicitly enrolls. The native fixture arms once after
+Health has completed, before the sole Create admission. Each service invocation
+remembers entry eligibility; pre-arm, foreign-thread, nested and late invocations
+cannot claim the Create result. One fixed atomic slot records only a finite class
+from an already returned AgentPort error immediately before its original generic
+collapse. The original error is borrowed, never retained, formatted or cloned;
+original error/drop ordering and DispatchFailed/StorageUnavailable behavior stay
+intact. Capture performs no I/O, allocation, lock, callback, clock read, retry,
+thread creation, pump or wait.
+
+The original failed deadline assertion freezes this slot before its existing
+Agent stdout sample and adds only `server_service_at_failure`. Successful Create
+closes the slot permanently. There is no reset or rearm. No catch/unwind wrapper,
+second log stream or hot-path output is added. Errors elsewhere need not reach
+this assertion and therefore have no additional diagnostic coverage.
+
+`no-capture-at-sample` is strictly inconclusive. Earlier admission/owner errors
+can return before this capture point; a service error may also arrive after the
+frozen sample. A recorded class does not identify the first stream-closing owner,
+locate an EOF within a frame, prove native execution, or establish that it happened
+before the original deadline. Codec remains one broad category; strings, payloads,
+credentials, process/thread IDs, paths, descriptors and panic values are absent.
+
+The feature-only deterministic host control uses a transport-valid Request frame
+with codec-invalid request bytes and retains a cancellation Arc. Its required
+outcome is the fixed codec class, unchanged outward DispatchFailed and client
+outer UnexpectedEof, with no handler/durable/native dispatch. Recorder controls
+cover unarmed, wrong-thread, pre-arm, nested, frozen/late-write, duplicate-arm and
+outward behavior. New Rust controls and actual native collection require the
+original hosted compiler/test workflows; source checks alone do not execute them.
+
+Current physical checks own this diagnostic profile separately from the retained
+original native contract. Six additional exact records in the existing finite
+phase restoration table preserve prior complete bytes for historical readers;
+no new restoration layer or generic cfg stripping is introduced. Physical input
+closure includes the new module and therefore grows from 699 to 700 paths.

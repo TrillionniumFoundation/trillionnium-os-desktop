@@ -79,6 +79,7 @@
         "apps/hepta-browserd/src/servo_product_runtime.rs",
         "tests/test_s08_product_supervision.py",
         "apps/hepta-browserd/src/product_dispatch/tests.rs",
+        "apps/hepta-browserd/src/approved_native_test_support.rs",
         "apps/hepta-browserd/tests/product_fork_custody.rs",
         "apps/hepta-browserd/tests/product_handoff_kernel.rs",
         "tests/test_accepted_stream_handoff.py",
@@ -128,7 +129,9 @@
           "required_features": []
         }
       ],
-      "features": []
+      "features": [
+        "approved-native-service-error"
+      ]
     },
     {
       "id": "hepta-agent-portd",

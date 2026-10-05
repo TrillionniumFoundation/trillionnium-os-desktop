@@ -715,7 +715,7 @@ class ApprovedNativeBufferedPhaseTests(unittest.TestCase):
     def test_current_phase_sources_and_exact_c3cc_inverse(self):
         gate = self.gate
         gate.check(gate.EXPECTED, self.texts)
-        self.assertEqual(len(gate.CLOSED_NATIVE_PHASE_RULE_SHA256), 6)
+        self.assertEqual(len(gate.CLOSED_NATIVE_PHASE_RULE_SHA256), 12)
         for path in gate.CLOSED_NATIVE_PHASE_RULE_SHA256:
             with self.subTest(path=path):
                 rule = gate._native_phase_rule(path)
@@ -796,3 +796,136 @@ class ApprovedNativeBufferedPhaseTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ApprovedNativeServiceErrorPhysicalTests(unittest.TestCase):
+    """Physical build/ownership controls; feature Rust execution remains separate."""
+
+    def setUp(self):
+        from tools import verify_service_dispatch_denial_cutoff as gate
+        self.texts = gate.inputs(ROOT)
+
+    def test_current_physical_profile_has_explicit_feature_and_fixed_failure_only_observation(self):
+        verifier.check_current_service_diagnostic(self.texts)
+
+    def test_default_activation_build_hook_and_unconditional_public_api_are_rejected(self):
+        cargo = "apps/hepta-browserd/Cargo.toml"
+        library = "apps/hepta-browserd/src/lib.rs"
+        cases = [
+            (cargo, 'approved-native-service-error = []',
+             'default = ["approved-native-service-error"]\napproved-native-service-error = []'),
+            (cargo, 'approved-native-service-error = []', 'approved-native-service-error = ["unrelated"]'),
+            (cargo, 'build = false', 'build = true'),
+            (library, '#[cfg(feature = "approved-native-service-error")]\n', ''),
+        ]
+        for path, before, after in cases:
+            with self.subTest(path=path, before=before):
+                self.assertIn(before, self.texts[path])
+                changed = dict(self.texts)
+                changed[path] = changed[path].replace(before, after, 1)
+                with self.assertRaises(ValueError):
+                    verifier.check_current_service_diagnostic(changed)
+
+    def test_current_product_authority_drop_and_error_mapping_cannot_hide_behind_old_view(self):
+        path = "apps/hepta-browserd/src/product_dispatch.rs"
+        entry = ('        self.ensure_owner()?;\n'
+                 '        #[cfg(feature = "approved-native-service-error")]\n'
+                 '        let mut approved_native_service = crate::approved_native_test_support::service_entry();')
+        mutations = [
+            (entry, entry.replace('        self.ensure_owner()?;\n', '') + '\n        self.ensure_owner()?;'),
+            ('        drop(handler);', '        // handler retained'),
+            ('        drop(trace);', '        // trace retained'),
+            ('            approved_native_service.capture(error);', '            // capture omitted'),
+            ('                    ProductDispatchError::DispatchFailed',
+             '                    ProductDispatchError::Cancelled'),
+            ('        self.ensure_owner()?;\n        if let Ok(mut active)',
+             '        if let Ok(mut active)'),
+        ]
+        for before, after in mutations:
+            with self.subTest(before=before):
+                self.assertIn(before, self.texts[path])
+                changed = dict(self.texts)
+                changed[path] = changed[path].replace(before, after, 1)
+                with self.assertRaises(ValueError):
+                    verifier.check_current_service_diagnostic(changed)
+
+    def test_fixture_rejects_pre_health_arm_missing_close_extra_sampling_and_changed_budget(self):
+        path = verifier.EXPECTED["qualification"]["native_target"]
+        health = '    assert_eq!(string(&health, "runtime"), "actual-servo-immutable-owner");\n'
+        arm = '    let _ = service_diagnostic::arm_create();\n'
+        close = '    service_diagnostic::close_after_success();\n'
+        mutations = [
+            (health + arm, arm + health),
+            (close, ''),
+            (arm, arm + arm),
+            ('service_diagnostic::freeze_create_failure(),', '"service-still-running",'),
+            ('request_marker_at_failure(trio.agent.child.stdout.as_mut())',
+             '{ request_marker_at_failure(trio.agent.child.stdout.as_mut()); request_marker_at_failure(trio.agent.child.stdout.as_mut()) }'),
+            ('Instant::now() < driver.original_deadline().unwrap()', 'true'),
+            ('let driven = driver.drive();', 'let driven = { driver.drive().unwrap(); driver.drive() };'),
+        ]
+        for before, after in mutations:
+            with self.subTest(before=before):
+                self.assertIn(before, self.texts[path])
+                changed = dict(self.texts)
+                changed[path] = changed[path].replace(before, after, 1)
+                with self.assertRaises(ValueError):
+                    verifier.check_current_service_diagnostic(changed)
+
+    def test_actor_enrollment_is_inside_the_original_worker_only(self):
+        path = verifier.NATIVE
+        line = ('                let _approved_native_actor =\n'
+                '                    hepta_browserd::approved_native_test_support::enroll_actor_thread();\n')
+        for replacement in ('', line + line):
+            with self.subTest(replacement=replacement):
+                changed = dict(self.texts)
+                changed[path] = changed[path].replace(line, replacement, 1)
+                with self.assertRaises(ValueError):
+                    verifier.check_current_service_diagnostic(changed)
+
+    def test_diagnostic_cannot_retain_original_error_or_add_formatting_and_io(self):
+        path = verifier.DIAGNOSTIC_MODULE
+        for before, after in [
+            ('struct Recorder {', 'struct Recorder {\n    original_error: Option<AgentPortError>,'),
+            ('pub fn arm_create() -> bool {', 'pub fn arm_create() -> bool {\n    eprintln!("unexpected");'),
+            ('pub fn arm_create() -> bool {', 'pub fn arm_create() -> bool {\n    let _ = String::new();'),
+            ('pub fn arm_create() -> bool {', 'pub fn arm_create() -> bool {\n    loop {}'),
+            ('"no-capture-at-sample"', '"service-has-not-returned"'),
+            ('pub fn close_after_success()', 'pub fn arbitrary_record_class()'),
+        ]:
+            with self.subTest(before=before, after=after):
+                self.assertIn(before, self.texts[path])
+                changed = dict(self.texts)
+                changed[path] = changed[path].replace(before, after, 1)
+                with self.assertRaises(ValueError):
+                    verifier.check_current_service_diagnostic(changed)
+
+    def test_assembler_changes_only_the_original_browserd_dev_edge(self):
+        from tools import prepare_approved_native_startup as assembler
+        root = Path('/qualification/source with spaces')
+        edge = '\n[dev-dependencies.hepta-browserd]\npath = ' + json.dumps(str(root / 'apps/hepta-browserd')) + '\n'
+        prefix = '[package]\nname = "servo-fixture"\nversion = "0.1.0"\n'
+        suffix = '\n[dev-dependencies.other]\npath = "unchanged"\n'
+        before = (prefix + edge + suffix).encode()
+        feature = b'features = ["approved-native-service-error"]\n'
+        actual = assembler.diagnostic_manifest(before, root)
+        self.assertEqual(actual, (prefix + edge).encode() + feature + suffix.encode())
+        self.assertEqual(actual.count(feature), 1)
+        self.assertEqual(actual.replace(feature, b'', 1), before)
+        with self.assertRaises(ValueError):
+            assembler.diagnostic_manifest(actual, root)
+
+    def test_assembler_rejects_duplicate_foreign_or_preconfigured_dependency(self):
+        from tools import prepare_approved_native_startup as assembler
+        root = Path('/qualification/source')
+        edge = '\n[dev-dependencies.hepta-browserd]\npath = ' + json.dumps(str(root / 'apps/hepta-browserd')) + '\n'
+        for manifest in [
+            edge + edge,
+            edge.replace('/qualification/source', '/different/source'),
+            edge + 'features = ["foreign"]\n',
+            edge + 'default-features = false\n',
+            edge.replace('[dev-dependencies.hepta-browserd]', '[dependencies.hepta-browserd]'),
+        ]:
+            with self.subTest(manifest=manifest):
+                with self.assertRaises(ValueError):
+                    assembler.diagnostic_manifest(manifest.encode(), root)

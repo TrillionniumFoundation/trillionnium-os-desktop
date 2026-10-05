@@ -151,9 +151,9 @@ Registered binaries:
 
 ## Configuration and features
 
-There are currently no Cargo features or runtime configuration files. The package intentionally starts no listener, window, network stack or credential profile. S08 may add an explicit non-default host-integration profile, but production activation must remain fail closed and must not be inferred from source presence.
+The default build has no enabled Cargo features or runtime configuration files. The optional `approved-native-service-error` feature exposes qualification-only test support for one explicitly armed Create service error. It starts no listener, thread, window, network stack or credential profile and grants no runtime authority. `--all-features` compiles the diagnostic, but capture additionally requires explicit arming and enrollment of the existing actor worker. Unarmed feature-enabled builds incur bounded checks and do not collect or emit error data. Production activation must remain fail closed and must not be inferred from source presence.
 
-Registered Cargo features: none.
+Registered Cargo features: `approved-native-service-error`.
 
 ## State, concurrency, and failure semantics
 
@@ -326,8 +326,9 @@ The [closed additive contract](../../contracts/approved-native-startup.v1.json),
 `g2-approved-native-startup.yml` gate are separate evidence levels. Host
 completions are synthetic source callbacks; fresh native startup execution is
 pending. Original native four tests and legacy approved APIs remain unchanged.
-Main binaries, services, features, installed broker/principal policy and default
-activation remain closed; no hardware/signing/release qualification follows.
+Main binaries, services, installed broker/principal policy and default
+activation remain closed; the optional diagnostic is qualification test support.
+No hardware/signing/release qualification follows.
 
 The additive [configured retained bootstrap](../../docs/architecture/CONFIGURED_RETAINED_BOOTSTRAP.md)
 consumes one original root-control connection and selects both configured roles

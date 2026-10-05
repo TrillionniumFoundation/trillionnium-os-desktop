@@ -14,6 +14,7 @@ use hepta_browser_codec::{
 };
 use hepta_browserd::{
     ApprovedRetainedAdmission, ProductControlMonitorOutcome, ProductDispatchError, RuntimeState,
+    approved_native_test_support as service_diagnostic,
 };
 use hepta_session_core::{JournalId, ManagedOpenPolicy, ReceiptJournal, ReceiptLifecycleState};
 use std::sync::Arc;
@@ -105,11 +106,12 @@ fn run(
         }
         assert!(
             Instant::now() < driver.original_deadline().unwrap(),
-            "original accepted budget, no renewal; request={} elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}; returns_idle_pending_completion_retired={drive_results:?}; first_pending_ms={first_pending_ms:?}; first_completion_ms={first_completion_ms:?}; agent_request_at_failure={}",
+            "original accepted budget, no renewal; request={} elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}; returns_idle_pending_completion_retired={drive_results:?}; first_pending_ms={first_pending_ms:?}; first_completion_ms={first_completion_ms:?}; server_service_at_failure={}; agent_request_at_failure={}",
             input.request_id,
             started.elapsed().as_millis(),
             drives,
             drive_elapsed.as_millis(),
+            service_diagnostic::freeze_create_failure(),
             request_marker_at_failure(trio.agent.child.stdout.as_mut())
         );
         let drive_started = Instant::now();
@@ -292,6 +294,7 @@ fn actual_approved_startup_semantic_lifecycle() {
         &request("health", None, BrowserOperation::Health),
     );
     assert_eq!(string(&health, "runtime"), "actual-servo-immutable-owner");
+    let _ = service_diagnostic::arm_create();
     let mut creating = support::Trio::new_before(original);
     phases::mark(Phase::Enqueue, Edge::Begin);
     ingress.try_submit(admission(&mut creating)).unwrap();
@@ -311,6 +314,7 @@ fn actual_approved_startup_semantic_lifecycle() {
             },
         ),
     );
+    service_diagnostic::close_after_success();
     let session = string(&created, "session_id").to_owned();
     let generation = integer(&created, "session_generation");
     let mut facts = vec![("health", health_fact), ("create", created_digest)];

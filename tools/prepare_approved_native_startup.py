@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import tomllib
 try:
     from . import prepare_native_product_owner as original
 except ImportError:
@@ -19,6 +20,25 @@ SOURCES = {
     "experiments/servo-product-owner/src/approved_connected_tests.rs": "components/servo/tests/trillionnium_approved_connected.rs",
 }
 TARGET = b'\n[[test]]\nname = "trillionnium_approved_connected"\npath = "tests/trillionnium_approved_connected.rs"\nharness = false\n\n[dev-dependencies.libc]\nworkspace = true\n'
+DIAGNOSTIC_FEATURE = "approved-native-service-error"
+def diagnostic_manifest(manifest: bytes, root: Path) -> bytes:
+    """Enable only this test-support feature on the already assembled edge."""
+    document = tomllib.loads(manifest.decode("utf-8", "strict"))
+    dependency = document.get("dev-dependencies", {}).get("hepta-browserd")
+    expected = {"path": str(root / "apps/hepta-browserd")}
+    if dependency != expected:
+        raise ValueError("approved diagnostic dependency is not the original path-only edge")
+    original_edge = ("\n[dev-dependencies.hepta-browserd]\npath = "
+                     + json.dumps(expected["path"]) + "\n").encode("utf-8")
+    if manifest.count(original_edge) != 1:
+        raise ValueError("approved diagnostic dependency table is not unique")
+    feature = ('features = ["' + DIAGNOSTIC_FEATURE + '"]\n').encode("utf-8")
+    qualified = manifest.replace(original_edge, original_edge + feature, 1)
+    document["dev-dependencies"]["hepta-browserd"]["features"] = [DIAGNOSTIC_FEATURE]
+    if tomllib.loads(qualified.decode("utf-8", "strict")) != document:
+        raise ValueError("approved diagnostic feature changed another dependency")
+    return qualified
+
 def prepare(upstream: Path, root: Path = ROOT) -> dict:
     upstream, root = upstream.absolute(), root.absolute()
     # Read the complete bounded source before modifying the pristine tree.
@@ -26,13 +46,14 @@ def prepare(upstream: Path, root: Path = ROOT) -> dict:
     result = original.prepare(upstream, root)
     path = upstream / "components/servo/Cargo.toml"
     manifest = original.read(path)
+    qualified = diagnostic_manifest(manifest, root)
     for source, target in SOURCES.items():
         original.write_source(upstream / target, inputs[source])
-    original.write_source(path, manifest + TARGET, manifest)
+    original.write_source(path, qualified + TARGET, manifest)
     for source, target in SOURCES.items():
         if original.read(upstream / target) != inputs[source]:
             raise ValueError("approved startup assembled bytes differ")
-    if original.read(path) != manifest + TARGET:
+    if original.read(path) != qualified + TARGET:
         raise ValueError("approved startup target manifest differs")
     return {"schema": "trillionnium.approved-native-startup-source.v1",
         "servo_commit": original.PIN,

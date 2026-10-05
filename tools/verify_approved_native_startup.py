@@ -7,10 +7,12 @@ Exact-pin compilation and actual native regressions remain separate gates.
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 from pathlib import Path
 import re
 import sys
+import tomllib
 
 try:
     from .artifact_evidence import load
@@ -554,7 +556,120 @@ def check_workflow(text: str):
             raise ValueError("workflow explicit target invocation correspondence differs")
 
 
+DIAGNOSTIC_FEATURE = "approved-native-service-error"
+DIAGNOSTIC_MODULE = "apps/hepta-browserd/src/approved_native_test_support.rs"
+
+
+def check_current_service_diagnostic(texts):
+    """Own the physical diagnostic profile; old source views do not qualify it."""
+    cargo = tomllib.loads(texts["apps/hepta-browserd/Cargo.toml"])
+    typed_equal(cargo.get("features"), {DIAGNOSTIC_FEATURE: []}, "diagnostic feature")
+    if cargo["package"].get("build") is not False:
+        raise ValueError("diagnostic adds a build hook")
+    library = texts["apps/hepta-browserd/src/lib.rs"]
+    export = ('#[cfg(feature = "approved-native-service-error")]\n'
+              'pub mod approved_native_test_support;\n\n')
+    if library.count(export) != 1:
+        raise ValueError("diagnostic default-off test-support export differs")
+    if hashlib.sha256(library.replace(export, "", 1).encode()).hexdigest() != (
+            "031e22ca30c47868c04df9c5532578596ecfd53852164e3e6e74132124c023df"):
+        raise ValueError("diagnostic changes the original product library")
+    product = texts["apps/hepta-browserd/src/product_dispatch.rs"]
+    entry = ('        self.ensure_owner()?;\n'
+             '        #[cfg(feature = "approved-native-service-error")]\n'
+             '        let mut approved_native_service = crate::approved_native_test_support::service_entry();\n')
+    capture = ('        drop(trace);\n'
+               '        #[cfg(feature = "approved-native-service-error")]\n'
+               '        if let Ok(Err(error)) = &result {\n'
+               '            approved_native_service.capture(error);\n'
+               '        }\n'
+               '        match result {\n')
+    if product.count(entry) != 1 or product.count(capture) != 1:
+        raise ValueError("diagnostic entry/capture placement differs")
+    original = product.replace(entry, '        self.ensure_owner()?;\n', 1)
+    original = original.replace(capture, '        drop(trace);\n        match result {\n', 1)
+    if hashlib.sha256(original.encode()).hexdigest() != (
+            "5d7d7c13088095eae123fd8b208211aac9f4d6493413f833ec9436f98820d1b4"):
+        raise ValueError("diagnostic changes original authority, drop or result behavior")
+    startup = texts[NATIVE]
+    enrolled = ('            .spawn(move || {\n'
+                '                let _approved_native_actor =\n'
+                '                    hepta_browserd::approved_native_test_support::enroll_actor_thread();\n')
+    if startup.count(enrolled) != 1:
+        raise ValueError("diagnostic actor enrollment differs")
+    if hashlib.sha256(startup.replace(enrolled, '            .spawn(move || {\n', 1).encode()).hexdigest() != (
+            "582242f4826110a81f26fdec3ad497a2eb1dd76fb20d1e7601d95559b3296b25"):
+        raise ValueError("diagnostic changes original startup ownership")
+    native = texts[EXPECTED["qualification"]["native_target"]]
+    health = '    assert_eq!(string(&health, "runtime"), "actual-servo-immutable-owner");\n'
+    arm = health + '    let _ = service_diagnostic::arm_create();\n'
+    created = '    let session = string(&created, "session_id").to_owned();\n'
+    close = '    service_diagnostic::close_after_success();\n' + created
+    sample = ('            service_diagnostic::freeze_create_failure(),\n'
+              '            request_marker_at_failure(trio.agent.child.stdout.as_mut())\n')
+    for value in [arm, close, sample]:
+        if native.count(value) != 1:
+            raise ValueError("diagnostic Create/failure association differs")
+    original = native.replace(arm, health, 1).replace(close, created, 1)
+    original = original.replace(sample, '            request_marker_at_failure(trio.agent.child.stdout.as_mut())\n', 1)
+    original = original.replace('    approved_native_test_support as service_diagnostic,\n', '', 1)
+    original = original.replace('; server_service_at_failure={}; agent_request_at_failure={}',
+                                '; agent_request_at_failure={}', 1)
+    if hashlib.sha256(original.encode()).hexdigest() != (
+            "21d8ed76607e46feb090b1c96a9f2bf7d83fd03701a7bf3a7a32346b25a53464"):
+        raise ValueError("diagnostic changes the original fixture or failure sampler")
+    module = texts[DIAGNOSTIC_MODULE]
+    production = module.split("#[cfg(test)]", 1)[0]
+    inventory = rust_inventory(production)
+    public = set(re.findall(r"^pub fn (\w+)\(", production, re.M))
+    if public != {"enroll_actor_thread", "arm_create", "freeze_create_failure", "close_after_success"}:
+        raise ValueError("diagnostic exposes another qualification entry")
+    for forbidden in ("unsafe", "println", "eprintln", "writeln", "print", "write", "flush",
+                      "format", "to_string", "Debug", "Display", "clone", "String", "Vec", "Box",
+                      "Mutex", "RwLock", "spawn", "sleep", "Instant", "SystemTime", "loop", "while"):
+        if forbidden in inventory["tokens"]:
+            raise ValueError("diagnostic retains data, adds authority or performs unbounded work")
+    required = ["AtomicU8", "Cell", "PhantomData", "Rc", "compare_exchange", "fetch_or", "try_with"]
+    for token in required:
+        if token not in inventory["tokens"]:
+            raise ValueError("diagnostic fixed state or thread scope differs")
+    fields = {
+        "Recorder": "slot: AtomicU8, enrollment: AtomicU8,",
+        "ThreadState": "enrolled: Cell<bool>, in_service: Cell<bool>, invalid: Cell<bool>,",
+        "Entry": "owns_scope: bool, eligible: bool,",
+        "ActorThreadEnrollment": "owns_scope: bool, not_send_or_sync: PhantomData<Rc<()>> ,",
+        "ServiceEntryGuard": "entry: Entry, not_send_or_sync: PhantomData<Rc<()>> ,",
+    }
+    for name, body in fields.items():
+        shape = inventory["types"].get(name)
+        if shape is None or shape["kind"] != "struct" or signature(" ".join(shape["body"])) != signature(body):
+            raise ValueError("diagnostic retains another state or product resource")
+    if '"no-capture-at-sample"' not in production:
+        raise ValueError("diagnostic empty observation overclaims service progress")
+    prepare = texts[EXPECTED["qualification"]["prepare"]]
+    check_prepare(prepare)
+    module_ast = ast.parse(prepare)
+    feature = [n for n in module_ast.body if isinstance(n, ast.Assign)
+               and any(isinstance(t, ast.Name) and t.id == "DIAGNOSTIC_FEATURE" for t in n.targets)]
+    if len(feature) != 1 or ast.literal_eval(feature[0].value) != DIAGNOSTIC_FEATURE:
+        raise ValueError("diagnostic assembler feature differs")
+    for line in ['qualified = diagnostic_manifest(manifest, root)',
+                 'original.write_source(path, qualified + TARGET, manifest)',
+                 'if original.read(path) != qualified + TARGET:']:
+        if prepare.count(line) != 1:
+            raise ValueError("diagnostic assembler does not verify the original dependency edge")
+
+
 def validate(root: Path = ROOT) -> None:
+    # One complete physical snapshot owns the new optional diagnostic. The
+    # retained historical contract and its original guards remain unchanged.
+    try:
+        from . import verify_service_dispatch_denial_cutoff as physical
+    except ImportError:
+        import verify_service_dispatch_denial_cutoff as physical
+    current = physical.inputs(root)
+    physical.check(json.loads(current[physical.CONTRACT]), current)
+    check_current_service_diagnostic(current)
     # Mandatory actual readiness profile plus exact bounded legacy transfer.
     try:
         from .verify_retained_control_readiness import validate as check_readiness

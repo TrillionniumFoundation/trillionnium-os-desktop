@@ -195,7 +195,7 @@ class JointPhysicalSourceBoundaryTests(unittest.TestCase):
         cls.texts = gate.inputs()
 
     def test_actual699_is_physical_and_all12_complete_inverses_are_closed(self):
-        self.assertEqual(len(self.texts), 699)
+        self.assertEqual(len(self.texts), 700)
         self.assertEqual(len(gate.EXPECTED['preserved_original_sha256']), 676)
         self.assertEqual(len(gate.CLOSED_JOINT_SOURCE_RULES), 9)
         gate.check(gate.EXPECTED, self.texts)
@@ -524,7 +524,7 @@ class CurrentCIPhysicalBoundaryTests(unittest.TestCase):
         gate.check(gate.EXPECTED, self.texts)
         ci.validate(gate.ROOT)
         current = ci.inputs(gate.ROOT)
-        self.assertEqual(len(self.texts), 699)
+        self.assertEqual(len(self.texts), 700)
         self.assertEqual(len(gate.EXPECTED['ci_current_physical23']), 23)
         self.assertEqual(len(gate.CLOSED_CI_SOURCE_RULES), 16)
         for path in current:
@@ -1000,7 +1000,7 @@ class SenderCurrentOwnershipTests(unittest.TestCase):
 
     def test_sender_registration_uses_current_ownership_without_new_historical_inverses(self):
         gate.check(gate.EXPECTED, self.texts)
-        self.assertEqual(len(self.texts), 699)
+        self.assertEqual(len(self.texts), 700)
         self.assertEqual(len(gate.CLOSED_CI_SOURCE_RULES), 16)
         self.assertEqual(len(gate.EXPECTED['ci_current_physical23']), 23)
         for path in self.paths:

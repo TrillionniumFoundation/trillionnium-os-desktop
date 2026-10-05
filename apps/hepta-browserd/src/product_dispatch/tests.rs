@@ -365,6 +365,85 @@ fn stale_session_is_refused_before_any_admitted_fact_or_engine_command() {
     );
 }
 
+#[cfg(feature = "approved-native-service-error")]
+#[test]
+fn approved_native_codec_error_preserves_dispatch_failure_and_outer_eof() {
+    use crate::approved_native_test_support::{
+        arm_create, enroll_actor_thread, freeze_create_failure,
+    };
+    use hepta_agent_transport::TransportError;
+    use std::sync::atomic::AtomicUsize;
+
+    let fixture = Fixture::new();
+    let wake_count = Arc::new(AtomicUsize::new(0));
+    let worker_wakes = Arc::clone(&wake_count);
+    let dispatch_wakes = Arc::clone(&wake_count);
+    let (endpoint, mut owner) = servo_runtime_pair(Arc::new(move || {
+        worker_wakes.fetch_add(1, Ordering::SeqCst);
+    }));
+    let journal = fixture.journal();
+    let (accepted, stream) = fixture.connection();
+    // This external Arc deliberately outlives both service-owned socket FDs.
+    // EOF must come from normal accepted-connection cleanup, not Arc teardown.
+    let cancellation = accepted.cancellation();
+    let principal = fixture.principal.clone();
+    assert!(arm_create());
+    let worker = thread::spawn(move || {
+        let _enrollment = enroll_actor_thread();
+        let mut coordinator = ProductRequestCoordinator::from_connection(
+            principal,
+            &accepted,
+            endpoint,
+            journal,
+            "image-source-test".into(),
+            RestartPolicy::new(3).unwrap(),
+        )
+        .unwrap();
+        let result = coordinator.serve_connection(accepted);
+        let records = coordinator
+            .observer
+            .borrow_mut()
+            .as_mut()
+            .unwrap()
+            .inspect()
+            .unwrap()
+            .records
+            .len();
+        (
+            result,
+            records,
+            coordinator.state(),
+            coordinator.pending_reconciliation.is_none(),
+            // EngineThreadRuntime Drop itself wakes the owner. Sample before
+            // that existing teardown so the control measures dispatch only.
+            dispatch_wakes.load(Ordering::SeqCst),
+        )
+    });
+    let peer = PeerIdentity::from_stream(&stream).unwrap();
+    let mut client = ClientConnection::connect(stream, PeerPolicy::exact(peer), BUDGET).unwrap();
+    // ClientConnection supplies a valid Request frame/digest/nonce/sequence.
+    // Its payload is deliberately noncanonical codec input, before preflight.
+    let canonical = encode_request(&Plan::Health("codec-control").request(&None)).unwrap();
+    let mut noncanonical = b" ".to_vec();
+    noncanonical.extend_from_slice(&canonical);
+    let sequence = client.send_request(noncanonical, BUDGET).unwrap();
+    let outer_error = client.receive_response(sequence, BUDGET).unwrap_err();
+    assert!(matches!(outer_error, TransportError::UnexpectedEof));
+    let (result, records, state, no_pending_request, dispatch_wakes) = worker.join().unwrap();
+    assert!(matches!(result, Err(ProductDispatchError::DispatchFailed)));
+    assert_eq!(freeze_create_failure(), "codec");
+    assert_eq!(records, 0);
+    assert_eq!(state, RuntimeState::Ready);
+    assert!(no_pending_request);
+    assert_eq!(dispatch_wakes, 0);
+    assert!(owner.take_command().is_none());
+    assert!(cancellation.0.active.lock().unwrap().is_none());
+    assert!(cancellation.0.transport.lock().unwrap().is_none());
+    assert!(!cancellation.0.cancelled.load(Ordering::SeqCst));
+    assert_eq!(Arc::strong_count(&cancellation.0), 1);
+    drop(cancellation);
+}
+
 #[test]
 fn engine_success_with_terminal_storage_loss_never_publishes_success() {
     let result = run(

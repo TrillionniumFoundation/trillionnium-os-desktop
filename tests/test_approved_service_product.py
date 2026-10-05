@@ -30,7 +30,7 @@ class ServiceProductSourceTests(unittest.TestCase):
         self.assertEqual(len(gate.EXPECTED['product_diagnostic_enums']), 2)
         self.assertEqual(len(gate.EXPECTED['transport_public_api']), 2)
         self.assertEqual(len(gate.EXPECTED['transport_opaque_types']), 1)
-        self.assertEqual(len(self.texts), 699)
+        self.assertEqual(len(self.texts), 700)
         self.assertEqual(gate.EXPECTED['current_source_integrity']['owner'], 'P3 physical source gate')
         self.assertFalse(gate.EXPECTED['scope']['actual_rust_compilation'])
         self.assertFalse(gate.EXPECTED['scope']['actual_kernel_corpus'])

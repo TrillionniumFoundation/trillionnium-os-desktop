@@ -681,6 +681,8 @@ impl ProductRequestCoordinator {
         mut connection: AcceptedProductConnection,
     ) -> Result<ServiceEvidence, ProductDispatchError> {
         self.ensure_owner()?;
+        #[cfg(feature = "approved-native-service-error")]
+        let mut approved_native_service = crate::approved_native_test_support::service_entry();
         #[cfg(target_os = "linux")]
         {
             self.last_retirement = None;
@@ -772,6 +774,10 @@ impl ProductRequestCoordinator {
             self.state = RuntimeState::Ready;
         }
         drop(trace);
+        #[cfg(feature = "approved-native-service-error")]
+        if let Ok(Err(error)) = &result {
+            approved_native_service.capture(error);
+        }
         match result {
             Ok(result) => result.map_err(|_| {
                 if self.storage_failed {

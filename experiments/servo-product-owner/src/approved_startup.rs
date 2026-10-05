@@ -62,6 +62,8 @@ impl ApprovedImmutableNativeStartup {
         let worker = thread::Builder::new()
             .name("hepta-approved-actor".into())
             .spawn(move || {
+                let _approved_native_actor =
+                    hepta_browserd::approved_native_test_support::enroll_actor_thread();
                 let mut coordinator = match first.coordinator(endpoint, journal, image_id) {
                     Ok(value) => value,
                     Err(error) => {
