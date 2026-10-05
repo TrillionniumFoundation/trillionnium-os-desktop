@@ -97,7 +97,7 @@ fn main() {
         self.assertIn('decode_response(&bytes).unwrap(); println!("RESPONSE {}", std::str::from_utf8(&bytes).unwrap());', ' '.join(agent.split()))
         self.assertEqual(agent.count('client.receive_response('), 1)
         self.assertEqual(agent.count('RESPONSE_REFUSED'), 1)
-        refusal = agent.split('        Err(error) => {', 1)[1].split('\n        },', 1)[0]
+        refusal = agent.split('    } else if let Err(error) = received {', 1)[1].split('\n    }', 1)[0]
         self.assertEqual(refusal.count('println!('), 1)
         self.assertIn('let token = agent_receive_error_token(&error);', refusal)
         self.assertLess(refusal.index('agent_receive_error_token(&error)'), refusal.index('drop(error);'))
@@ -146,7 +146,7 @@ fn main() {
         helpers = support[start:support.index('fn agent(op: &Path)', start)]
         start = facade.index('pub enum TransportError {')
         enum = facade[start:facade.index('\n}\n', start) + 3]
-        start = support.index('    match client.receive_response(sequence, WAIT) {')
+        start = support.index('    let received = client.receive_response(sequence, WAIT);')
         handling = support[start:support.index("    assert_eq!(input(), b'x');", start)]
         cancel = kernel.split('    trio.agent.expect("REQUEST");', 1)[1].split('    assert!(trio.custodian.line()', 1)[0]
         consumer = re.search(r'assert!\((trio\.agent\.line\(\)\.starts_with\(if cancel \{.*?\n    \}\))\);', cancel, re.S)

@@ -550,17 +550,15 @@ fn agent(op: &Path) {
     std::io::stdin().read_exact(&mut payload).unwrap();
     let sequence = client.send_request(payload, WAIT).unwrap();
     println!("REQUEST");
-    match client.receive_response(sequence, WAIT) {
-        Ok(bytes) => {
-            decode_response(&bytes).unwrap();
-            println!("RESPONSE {}", std::str::from_utf8(&bytes).unwrap());
-        },
-        Err(error) => {
-            let token = agent_receive_error_token(&error);
-            // Rust 2024 dropped the old if-let error before its else print.
-            drop(error);
-            println!("RESPONSE_REFUSED {token}");
-        },
+    let received = client.receive_response(sequence, WAIT);
+    if let Ok(bytes) = received {
+        decode_response(&bytes).unwrap();
+        println!("RESPONSE {}", std::str::from_utf8(&bytes).unwrap());
+    } else if let Err(error) = received {
+        let token = agent_receive_error_token(&error);
+        // Preserve the original error drop before the failure print.
+        drop(error);
+        println!("RESPONSE_REFUSED {token}");
     }
     assert_eq!(input(), b'x');
 }
