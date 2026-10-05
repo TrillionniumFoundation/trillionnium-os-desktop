@@ -47,6 +47,28 @@ fn servo() -> common::ServoTest {
         builder.preferences(preferences)
     })
 }
+fn request_marker_at_failure(reader: Option<&mut std::process::ChildStdout>) -> &'static str {
+    use std::io::Read;
+    use std::os::fd::AsRawFd;
+    let Some(reader) = reader else {
+        return "unknown";
+    };
+    // This Trio owns the only reader of this unbuffered child stdout pipe.
+    // No other reader can consume the bytes between poll and this single read.
+    let mut pending = libc::pollfd {
+        fd: reader.as_raw_fd(),
+        events: libc::POLLIN,
+        revents: 0,
+    };
+    if unsafe { libc::poll(&mut pending, 1, 0) } != 1 || pending.revents & libc::POLLIN == 0 {
+        return "unknown";
+    }
+    let mut bytes = [0; 8];
+    match reader.read(&mut bytes) {
+        Ok(8) if bytes == *b"REQUEST\n" => "request-observed",
+        _ => "unknown",
+    }
+}
 fn run(
     driver: &mut ApprovedImmutableNativeStartup,
     trio: &mut support::Trio,
@@ -76,11 +98,12 @@ fn run(
         }
         assert!(
             Instant::now() < driver.original_deadline().unwrap(),
-            "original accepted budget, no renewal; request={} elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}; returns_idle_pending_completion_retired={drive_results:?}; first_pending_ms={first_pending_ms:?}; first_completion_ms={first_completion_ms:?}",
+            "original accepted budget, no renewal; request={} elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}; returns_idle_pending_completion_retired={drive_results:?}; first_pending_ms={first_pending_ms:?}; first_completion_ms={first_completion_ms:?}; agent_request_at_failure={}",
             input.request_id,
             started.elapsed().as_millis(),
             drives,
-            drive_elapsed.as_millis()
+            drive_elapsed.as_millis(),
+            request_marker_at_failure(trio.agent.child.stdout.as_mut())
         );
         let drive_started = Instant::now();
         let driven = driver.drive();

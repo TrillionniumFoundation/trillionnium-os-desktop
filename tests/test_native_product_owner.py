@@ -72,6 +72,134 @@ fn main() {
                     executed = subprocess.run([str(binary)], capture_output=True, text=True, timeout=5)
                     self.assertEqual(executed.returncode, 0, executed.stderr)
 
+    def test_failure_request_marker_belongs_to_current_unbuffered_child(self):
+        source = (assembly.ROOT / 'experiments/servo-product-owner/src/approved_connected_tests.rs').read_text()
+        support = (assembly.ROOT / 'experiments/servo-product-owner/src/approved_test_support.rs').read_text()
+        self.assertEqual(source.count('request_marker_at_failure('), 2)
+        assertion = source.split('        assert!(\n            Instant::now() < driver.original_deadline().unwrap(),', 1)[1].split('        );', 1)[0]
+        self.assertIn('request_marker_at_failure(trio.agent.child.stdout.as_mut())', assertion)
+        self.assertIn('let reader = self.child.stdout.as_mut().unwrap();', support)
+        self.assertIn('.stdout(Stdio::piped())', support)
+        self.assertNotIn('BufReader', source + support)
+        self.assertNotIn('stdout.take()', source + support)
+        self.assertNotIn('stdout.try_clone()', source + support)
+        self.assertIn('let (health, health_fact) = run(\n        &mut driver,\n        &mut first,', source)
+        self.assertIn('let mut creating = support::Trio::new_before(original);', source)
+        self.assertIn('let (created, created_digest) = run(\n        &mut driver,\n        &mut creating,', source)
+        self.assertLess(source.index('trio.agent.expect("REQUEST");'), source.index('trio.finish();'))
+        agent = support.split('fn agent(op: &Path) {', 1)[1].split('pub struct Trio {', 1)[0]
+        self.assertEqual(agent.count('println!("REQUEST");'), 1)
+        self.assertLess(agent.index('ClientConnection::connect('), agent.index('client.send_request('))
+        self.assertLess(agent.index('client.send_request('), agent.index('println!("REQUEST");'))
+        self.assertIn('agent.expect("CONNECTED");', support)
+
+    def test_failure_request_marker_extracted_rust_with_pure_poll_and_reader_substitutes(self):
+        # No pipe, subprocess peer, native engine or real poll/read syscall is
+        # exercised by the extracted program. The original CI supplies rustc.
+        source = (assembly.ROOT / 'experiments/servo-product-owner/src/approved_connected_tests.rs').read_text()
+        start = source.index('fn request_marker_at_failure(')
+        fragment = source[start:source.index('fn run(', start)]
+        self.assertEqual(fragment.count('std::process::ChildStdout'), 1)
+        fragment = fragment.replace('std::process::ChildStdout', 'SyntheticStdout', 1)
+        skeleton = r"""use std::cell::RefCell;
+use std::io::{self, Read};
+use std::os::fd::{AsRawFd, RawFd};
+struct PollState { result: i32, events: i16, calls: usize }
+thread_local! {
+    static POLL: RefCell<PollState> = const { RefCell::new(PollState { result: 0, events: 0, calls: 0 }) };
+}
+mod libc {
+    #[allow(non_camel_case_types)]
+    pub struct pollfd { pub fd: i32, pub events: i16, pub revents: i16 }
+    pub const POLLIN: i16 = 1;
+    pub const POLLHUP: i16 = 16;
+    pub unsafe fn poll(p: *mut pollfd, count: usize, timeout: i32) -> i32 {
+        assert_eq!(count, 1);
+        assert_eq!(timeout, 0, "the observation cannot wait");
+        let p = unsafe { &mut *p };
+        assert_eq!(p.fd, 24);
+        assert_eq!(p.events, POLLIN);
+        super::POLL.with(|cell| {
+            let mut state = cell.borrow_mut();
+            state.calls += 1;
+            assert_eq!(state.calls, 1, "poll is never retried");
+            p.revents = state.events;
+            state.result
+        })
+    }
+}
+struct SyntheticStdout {
+    result: Result<usize, io::ErrorKind>,
+    payload: [u8; 8],
+    reads: usize,
+}
+impl AsRawFd for SyntheticStdout {
+    fn as_raw_fd(&self) -> RawFd { 24 }
+}
+impl Read for SyntheticStdout {
+    fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
+        assert_eq!(bytes.len(), 8, "never read arbitrary response data");
+        self.reads += 1;
+        assert_eq!(self.reads, 1, "partial/error reads are never retried");
+        match self.result {
+            Ok(n) => { bytes[..n].copy_from_slice(&self.payload[..n]); Ok(n) },
+            Err(kind) => Err(io::Error::from(kind)),
+        }
+    }
+}
+FRAGMENT
+fn case(poll_result: i32, events: i16, read_result: Result<usize, io::ErrorKind>,
+        payload: [u8; 8], expected: &str, reads: usize) {
+    POLL.with(|cell| *cell.borrow_mut() = PollState { result: poll_result, events, calls: 0 });
+    let mut reader = SyntheticStdout { result: read_result, payload, reads: 0 };
+    assert_eq!(request_marker_at_failure(Some(&mut reader)), expected);
+    assert_eq!(reader.reads, reads);
+    POLL.with(|cell| assert_eq!(cell.borrow().calls, 1));
+}
+fn main() {
+    assert_eq!(request_marker_at_failure(None), "unknown");
+    POLL.with(|cell| assert_eq!(cell.borrow().calls, 0));
+    let marker = *b"REQUEST\n";
+    for (result, events) in [(-1, 0), (0, 0), (2, libc::POLLIN), (1, 0), (1, libc::POLLHUP), (1, 32)] {
+        case(result, events, Ok(8), marker, "unknown", 0);
+    }
+    for bytes in 0..8 {
+        case(1, libc::POLLIN, Ok(bytes), marker, "unknown", 1);
+    }
+    for kind in [io::ErrorKind::WouldBlock, io::ErrorKind::Interrupted, io::ErrorKind::Other] {
+        case(1, libc::POLLIN, Err(kind), marker, "unknown", 1);
+    }
+    case(1, libc::POLLIN, Ok(8), *b"RESPONSE", "unknown", 1);
+    case(1, libc::POLLIN, Ok(8), marker, "request-observed", 1);
+    case(1, libc::POLLIN | libc::POLLHUP, Ok(8), marker, "request-observed", 1);
+    // Assertion formatting must stay lazy on the successful original branch.
+    POLL.with(|cell| *cell.borrow_mut() = PollState { result: 1, events: libc::POLLIN, calls: 0 });
+    let mut reader = SyntheticStdout { result: Ok(8), payload: marker, reads: 0 };
+    assert!(true, "original deadline failure: {}", request_marker_at_failure(Some(&mut reader)));
+    assert_eq!(reader.reads, 0);
+    POLL.with(|cell| assert_eq!(cell.borrow().calls, 0));
+    // Unavailable diagnostics cannot replace the original failed assertion.
+    let failure = std::panic::catch_unwind(|| {
+        assert!(false, "original deadline failure: {}", request_marker_at_failure(None));
+    }).expect_err("the original assertion must still fail");
+    let text = failure.downcast_ref::<String>().unwrap();
+    assert_eq!(text, "original deadline failure: unknown");
+    println!("PURE_REQUEST_MARKER_CONTROLS cases=23; no kernel/peer/native claim");
+}
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            rust_source = path / 'request_marker.rs'
+            binary = path / 'request_marker'
+            rust_source.write_text(skeleton.replace('FRAGMENT', fragment))
+            compiled = subprocess.run(['rustc', '--edition=2024', str(rust_source), '-o', str(binary)],
+                cwd=assembly.ROOT, env=dict(os.environ, RUSTUP_TOOLCHAIN='1.93.0'),
+                capture_output=True, text=True, timeout=30)
+            self.assertEqual(compiled.returncode, 0, compiled.stderr)
+            executed = subprocess.run([str(binary)], capture_output=True, text=True, timeout=5)
+            self.assertEqual(executed.returncode, 0, executed.stderr)
+            self.assertIn('PURE_REQUEST_MARKER_CONTROLS cases=23', executed.stdout)
+
     def test_formatting_scope_cannot_disable_comparison_or_change_approved_config(self):
         for field, value in [('formatter_and_byte_comparison_required', False), ('configuration_sha256', '0'*64), ('upstream_rust', '1.93.0')]:
             item = copy.deepcopy(scope.EXPECTED)
