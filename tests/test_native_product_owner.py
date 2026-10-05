@@ -92,6 +92,13 @@ fn main() {
         self.assertLess(agent.index('ClientConnection::connect('), agent.index('client.send_request('))
         self.assertLess(agent.index('client.send_request('), agent.index('println!("REQUEST");'))
         self.assertIn('agent.expect("CONNECTED");', support)
+        self.assertEqual(agent.count('println!('), 5)
+        self.assertIn('decode_response(&bytes).unwrap();\n        println!("RESPONSE {}", std::str::from_utf8(&bytes).unwrap());', agent)
+        self.assertIn('} else {\n        println!("RESPONSE_REFUSED");', agent)
+        self.assertLess(agent.index('client.receive_response('), agent.index('decode_response(&bytes)'))
+        self.assertNotIn('Command::', agent)
+        self.assertNotIn('.spawn(', agent)
+        self.assertNotIn('thread::', agent)
 
     def test_failure_request_marker_extracted_rust_with_pure_poll_and_reader_substitutes(self):
         # No pipe, subprocess peer, native engine or real poll/read syscall is
@@ -130,7 +137,7 @@ mod libc {
 }
 struct SyntheticStdout {
     result: Result<usize, io::ErrorKind>,
-    payload: [u8; 8],
+    payload: [u8; 17],
     reads: usize,
 }
 impl AsRawFd for SyntheticStdout {
@@ -138,7 +145,7 @@ impl AsRawFd for SyntheticStdout {
 }
 impl Read for SyntheticStdout {
     fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
-        assert_eq!(bytes.len(), 8, "never read arbitrary response data");
+        assert_eq!(bytes.len(), 17, "never read arbitrary response data");
         self.reads += 1;
         assert_eq!(self.reads, 1, "partial/error reads are never retried");
         match self.result {
@@ -149,7 +156,7 @@ impl Read for SyntheticStdout {
 }
 FRAGMENT
 fn case(poll_result: i32, events: i16, read_result: Result<usize, io::ErrorKind>,
-        payload: [u8; 8], expected: &str, reads: usize) {
+        payload: [u8; 17], expected: &str, reads: usize) {
     POLL.with(|cell| *cell.borrow_mut() = PollState { result: poll_result, events, calls: 0 });
     let mut reader = SyntheticStdout { result: read_result, payload, reads: 0 };
     assert_eq!(request_marker_at_failure(Some(&mut reader)), expected);
@@ -159,19 +166,33 @@ fn case(poll_result: i32, events: i16, read_result: Result<usize, io::ErrorKind>
 fn main() {
     assert_eq!(request_marker_at_failure(None), "unknown");
     POLL.with(|cell| assert_eq!(cell.borrow().calls, 0));
-    let marker = *b"REQUEST\n";
+    let mut marker = [0_u8; 17];
+    marker[..8].copy_from_slice(b"REQUEST\n");
+    let response = *b"REQUEST\nRESPONSE ";
+    let receive_error = *b"REQUEST\nRESPONSE_";
     for (result, events) in [(-1, 0), (0, 0), (2, libc::POLLIN), (1, 0), (1, libc::POLLHUP), (1, 32)] {
-        case(result, events, Ok(8), marker, "unknown", 0);
+        case(result, events, Ok(17), marker, "unknown", 0);
     }
-    for bytes in 0..8 {
-        case(1, libc::POLLIN, Ok(bytes), marker, "unknown", 1);
+    // Every partial length is exercised for both fixed response prefixes.
+    // Exactly eight bytes preserves the original complete REQUEST marker;
+    // zero through seven and nine through sixteen remain unknown.
+    for payload in [response, receive_error] {
+        for bytes in 0..17 {
+            let expected = if bytes == 8 { "request-observed" } else { "unknown" };
+            case(1, libc::POLLIN, Ok(bytes), payload, expected, 1);
+        }
     }
     for kind in [io::ErrorKind::WouldBlock, io::ErrorKind::Interrupted, io::ErrorKind::Other] {
         case(1, libc::POLLIN, Err(kind), marker, "unknown", 1);
     }
-    case(1, libc::POLLIN, Ok(8), *b"RESPONSE", "unknown", 1);
+    case(1, libc::POLLIN, Ok(8), [b'X'; 17], "unknown", 1);
+    case(1, libc::POLLIN, Ok(17), marker, "unknown", 1);
     case(1, libc::POLLIN, Ok(8), marker, "request-observed", 1);
+    case(1, libc::POLLIN, Ok(17), response, "response-envelope-observed", 1);
+    case(1, libc::POLLIN, Ok(17), receive_error, "agent-receive-error", 1);
     case(1, libc::POLLIN | libc::POLLHUP, Ok(8), marker, "request-observed", 1);
+    case(1, libc::POLLIN | libc::POLLHUP, Ok(17), response, "response-envelope-observed", 1);
+    case(1, libc::POLLIN | libc::POLLHUP, Ok(17), receive_error, "agent-receive-error", 1);
     // Assertion formatting must stay lazy on the successful original branch.
     POLL.with(|cell| *cell.borrow_mut() = PollState { result: 1, events: libc::POLLIN, calls: 0 });
     let mut reader = SyntheticStdout { result: Ok(8), payload: marker, reads: 0 };
@@ -184,7 +205,7 @@ fn main() {
     }).expect_err("the original assertion must still fail");
     let text = failure.downcast_ref::<String>().unwrap();
     assert_eq!(text, "original deadline failure: unknown");
-    println!("PURE_REQUEST_MARKER_CONTROLS cases=23; no kernel/peer/native claim");
+    println!("PURE_REQUEST_MARKER_CONTROLS cases=54; no kernel/peer/native claim");
 }
 """
         with tempfile.TemporaryDirectory() as directory:
@@ -198,7 +219,7 @@ fn main() {
             self.assertEqual(compiled.returncode, 0, compiled.stderr)
             executed = subprocess.run([str(binary)], capture_output=True, text=True, timeout=5)
             self.assertEqual(executed.returncode, 0, executed.stderr)
-            self.assertIn('PURE_REQUEST_MARKER_CONTROLS cases=23', executed.stdout)
+            self.assertIn('PURE_REQUEST_MARKER_CONTROLS cases=54', executed.stdout)
 
     def test_formatting_scope_cannot_disable_comparison_or_change_approved_config(self):
         for field, value in [('formatter_and_byte_comparison_required', False), ('configuration_sha256', '0'*64), ('upstream_rust', '1.93.0')]:

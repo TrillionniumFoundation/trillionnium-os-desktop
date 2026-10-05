@@ -63,9 +63,11 @@ fn request_marker_at_failure(reader: Option<&mut std::process::ChildStdout>) -> 
     if unsafe { libc::poll(&mut pending, 1, 0) } != 1 || pending.revents & libc::POLLIN == 0 {
         return "unknown";
     }
-    let mut bytes = [0; 8];
+    let mut bytes = [0; 17];
     match reader.read(&mut bytes) {
-        Ok(8) if bytes == *b"REQUEST\n" => "request-observed",
+        Ok(8) if bytes.starts_with(b"REQUEST\n") => "request-observed",
+        Ok(17) if bytes == *b"REQUEST\nRESPONSE " => "response-envelope-observed",
+        Ok(17) if bytes == *b"REQUEST\nRESPONSE_" => "agent-receive-error",
         _ => "unknown",
     }
 }
