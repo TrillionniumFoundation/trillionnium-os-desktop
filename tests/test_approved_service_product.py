@@ -30,7 +30,8 @@ class ServiceProductSourceTests(unittest.TestCase):
         self.assertEqual(len(gate.EXPECTED['product_diagnostic_enums']), 2)
         self.assertEqual(len(gate.EXPECTED['transport_public_api']), 2)
         self.assertEqual(len(gate.EXPECTED['transport_opaque_types']), 1)
-        self.assertEqual(len(gate.EXPECTED['preserved_original_sha256']) + len(gate.EXPECTED['finite_parent_inverse']), 679)
+        self.assertEqual(len(self.texts), 699)
+        self.assertEqual(gate.EXPECTED['current_source_integrity']['owner'], 'P3 physical source gate')
         self.assertFalse(gate.EXPECTED['scope']['actual_rust_compilation'])
         self.assertFalse(gate.EXPECTED['scope']['actual_kernel_corpus'])
         self.assertFalse(gate.EXPECTED['scope']['native60'])
@@ -215,6 +216,134 @@ def mutation_test(path, old, new):
 
 for index, mutant in enumerate(MUTANTS):
     setattr(ServiceProductSourceTests, 'test_source_mutant_%02d_refuses' % index, mutation_test(*mutant))
+
+
+class CurrentPhysicalSourceChainTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.texts = gate.inputs()
+
+    def test_composed_chain_admits_one_snapshot_once_before_both_current_semantics(self):
+        from tools import verify_service_dispatch_denial_cutoff as physical
+        from tools import verify_approved_service_request as request
+        events = []
+        original_physical = physical.check
+        original_request = request._check_current_semantics
+        original_product = gate._check_current_semantics
+
+        def admitted(contract, texts):
+            self.assertIs(texts, self.texts)
+            events.append('physical')
+            return original_physical(contract, texts)
+
+        def p1(contract, texts):
+            self.assertIs(texts, self.texts)
+            self.assertEqual(events, ['physical'])
+            events.append('P1')
+            return original_request(contract, texts)
+
+        def p2c(contract, texts):
+            self.assertIs(texts, self.texts)
+            self.assertEqual(events, ['physical', 'P1'])
+            events.append('P2C')
+            return original_product(contract, texts)
+
+        with mock.patch.object(physical, 'check', side_effect=admitted) as check, \
+                mock.patch.object(request, '_check_current_semantics', side_effect=p1), \
+                mock.patch.object(gate, '_check_current_semantics', side_effect=p2c), \
+                mock.patch.object(physical, 'inputs', side_effect=AssertionError('no second read')):
+            gate.check(copy.deepcopy(gate.EXPECTED), self.texts)
+        self.assertEqual(check.call_count, 1)
+        self.assertEqual(events, ['physical', 'P1', 'P2C'])
+
+    def test_altered_and_stale_actual_input_refuse_without_reading_clean_disk_again(self):
+        from tools import verify_service_dispatch_denial_cutoff as physical
+        path = 'crates/hepta-agent-transport/src/accepted_handoff.rs'
+        original = self.texts[path]
+        historical = gate.parent_source(path, original)
+        self.assertNotEqual(original, historical)
+        for changed in (original + '\n// changed actual dependency\n', historical):
+            texts = dict(self.texts)
+            texts[path] = changed
+            with self.subTest(historical=changed == historical), \
+                    mock.patch.object(physical, 'inputs', side_effect=AssertionError('must check supplied snapshot')), \
+                    self.assertRaisesRegex(ValueError, '^P3 independent current physical ingress differs$'):
+                gate.check(copy.deepcopy(gate.EXPECTED), texts)
+
+    def test_detached_product_contract_refuses_after_complete_P3_catalog_rebinding(self):
+        from tools import verify_service_dispatch_denial_cutoff as physical
+        from tests.test_service_dispatch_denial_cutoff import rebind_derived_metadata
+        texts = dict(self.texts)
+        actual = json.loads(texts[gate.CONTRACT])
+        actual['scope']['actual_rust_compilation'] = True
+        texts[gate.CONTRACT] = json.dumps(actual, indent=2) + '\n'
+        rebound = rebind_derived_metadata(physical.EXPECTED, texts, self.texts)
+        texts[physical.TOOL] = texts[physical.TOOL].replace(
+            physical.expected_assignment(physical.EXPECTED), physical.expected_assignment(rebound), 1)
+        texts[physical.CONTRACT] = physical.canonical_contract_text(rebound)
+        with mock.patch.object(physical, 'EXPECTED', rebound), \
+                mock.patch.object(physical, 'inputs', side_effect=AssertionError('no clean disk substitution')):
+            # P3 really accepts this authored metadata view; the P2C binding and
+            # semantic checks, not an unrelated early physical failure, must deny.
+            physical.check(rebound, texts)
+            with self.assertRaisesRegex(ValueError, '^P2C snapshot contract'):
+                gate.check(copy.deepcopy(gate.EXPECTED), texts)
+            with self.assertRaises(ValueError):
+                gate.check(actual, texts)
+
+    def test_P1_external_catalog_cannot_override_the_same_snapshot_contract(self):
+        from tools import verify_approved_service_request as request
+        rebound = copy.deepcopy(request.EXPECTED)
+        rebound['non_claims']['production_ready'] = True
+        with mock.patch.object(request, 'EXPECTED', rebound):
+            with self.assertRaisesRegex(ValueError, '^P1 snapshot contract'):
+                request.check(rebound, self.texts)
+
+    def test_P1_snapshot_contract_refuses_even_when_all_P3_catalogs_are_rebound(self):
+        from tools import verify_service_dispatch_denial_cutoff as physical
+        from tools import verify_approved_service_request as request
+        from tests.test_service_dispatch_denial_cutoff import rebind_derived_metadata
+        texts = dict(self.texts)
+        actual = json.loads(texts[request.CONTRACT])
+        actual['non_claims']['production_ready'] = True
+        texts[request.CONTRACT] = json.dumps(actual, indent=2) + '\n'
+        rebound = rebind_derived_metadata(physical.EXPECTED, texts, self.texts)
+        rebound['current_reference_physical4'][request.CONTRACT] = physical._sha(texts[request.CONTRACT].encode())
+        texts[physical.TOOL] = texts[physical.TOOL].replace(
+            physical.expected_assignment(physical.EXPECTED), physical.expected_assignment(rebound), 1)
+        texts[physical.CONTRACT] = physical.canonical_contract_text(rebound)
+        with mock.patch.object(physical, 'EXPECTED', rebound), \
+                mock.patch.object(physical, 'inputs', side_effect=AssertionError('no reread')):
+            self.assertEqual(physical._sha(physical.checker_body(texts[physical.TOOL]).encode()), rebound['checker_nonEXPECTED_whole_sha256'])
+            for argument in (copy.deepcopy(request.EXPECTED), actual):
+                with self.subTest(detached=argument != actual), \
+                        self.assertRaisesRegex(ValueError, '^P3 independent current reference Source differs$'):
+                    request.check(argument, texts)
+
+    def test_both_snapshot_contract_bindings_reject_boolean_integer_aliases(self):
+        from tools import verify_approved_service_request as request
+        for checker, group, field, label in (
+                (request, 'non_claims', 'production_ready', 'P1'),
+                (gate, 'scope', 'actual_rust_compilation', 'P2C')):
+            argument = json.loads(self.texts[checker.CONTRACT])
+            self.assertIs(argument[group][field], False)
+            argument[group][field] = 0
+            with self.subTest(checker=label), \
+                    self.assertRaisesRegex(ValueError, '^' + label + ' snapshot contract'):
+                checker.check(argument, self.texts)
+
+    def test_legacy_parent_views_never_perform_current_admission(self):
+        from tools import verify_service_dispatch_denial_cutoff as physical
+        from tools import verify_approved_service_request as request
+        path = 'crates/hepta-agent-transport/src/accepted_handoff.rs'
+        with mock.patch.object(physical, 'check', side_effect=AssertionError('legacy is not admission')), \
+                mock.patch.object(physical, 'inputs', side_effect=AssertionError('legacy must not read')):
+            historical = gate.parent_source(path, self.texts[path])
+            self.assertNotEqual(historical, self.texts[path])
+            self.assertEqual(gate.parent_source(path, historical), historical)
+            name = 'crates/hepta-peer-attestation/Cargo.toml'
+            parent = request.parent_source(name, self.texts[name])
+            self.assertEqual(request.parent_source(name, parent), parent)
 
 
 if __name__ == '__main__':

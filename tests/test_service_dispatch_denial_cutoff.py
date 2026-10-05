@@ -77,8 +77,8 @@ class ServiceDispatchDenialCutoffTests(unittest.TestCase):
         gate.validate()
         self.assertEqual(len(gate.EXPECTED['actual_runtime_public_api23']), 23)
         self.assertEqual(len(gate.EXPECTED['actual_runtime_opaque_types8']), 8)
-        self.assertEqual(len(gate.EXPECTED['finite_parent_inverse']), 6)
-        self.assertEqual(len(gate.EXPECTED['preserved_original_sha256']), 672)
+        self.assertEqual(len(gate.EXPECTED['finite_parent_inverse']), 5)
+        self.assertEqual(len(gate.EXPECTED['preserved_original_sha256']), 676)
         self.assertFalse(gate.EXPECTED['scope']['installed'])
         self.assertFalse(gate.EXPECTED['scope']['Native5'])
         self.assertFalse(gate.EXPECTED['scope']['Native60'])
@@ -196,8 +196,8 @@ class JointPhysicalSourceBoundaryTests(unittest.TestCase):
 
     def test_actual699_is_physical_and_all12_complete_inverses_are_closed(self):
         self.assertEqual(len(self.texts), 699)
-        self.assertEqual(len(gate.EXPECTED['preserved_original_sha256']), 672)
-        self.assertEqual(len(gate.CLOSED_JOINT_SOURCE_RULES), 12)
+        self.assertEqual(len(gate.EXPECTED['preserved_original_sha256']), 676)
+        self.assertEqual(len(gate.CLOSED_JOINT_SOURCE_RULES), 9)
         gate.check(gate.EXPECTED, self.texts)
         for path, rule in gate.CLOSED_JOINT_SOURCE_RULES.items():
             self.assertEqual(gate._read(gate.ROOT, path), self.texts[path])
@@ -424,7 +424,7 @@ class CurrentPhysicalIngressBoundaryTests(unittest.TestCase):
                          .replace('pub use connected_denial::OriginalConnectedDenial;\n', '', 1),
                          historical)
         actual = original.inputs()
-        self.assertEqual(actual[path], historical)
+        self.assertEqual(actual[path], physical)
         original.check(original.EXPECTED, actual)
         gate.check(gate.EXPECTED, self.texts)
 
@@ -704,7 +704,7 @@ class CurrentS06ExportPhysicalBoundaryTests(unittest.TestCase):
             self.assertEqual(gate._read(gate.ROOT, path), self.texts[path])
             historical = gate.s06_parent_source(path, self.texts[path])
             self.assertNotEqual(historical, self.texts[path])
-            self.assertEqual(gate._sha(historical.encode()), product.EXPECTED['preserved_original_sha256'][path])
+            self.assertEqual(gate._sha(historical.encode()), rule['parent_sha256'])
             self.assertEqual(product._read(gate.ROOT, path), historical)
             self.assertEqual(gate.s06_parent_source(path, historical), historical)
             self.assertEqual(gate.parent_source(path, self.texts[path]), self.texts[path])
@@ -792,7 +792,7 @@ class CurrentG6LeafPhysicalBoundaryTests(unittest.TestCase):
             self.assertEqual(gate._read(gate.ROOT, path), self.texts[path])
             historical = gate.g6_parent_source(path, self.texts[path])
             self.assertNotEqual(historical, self.texts[path])
-            self.assertEqual(gate._sha(historical.encode()), product.EXPECTED['preserved_original_sha256'][path])
+            self.assertEqual(gate._sha(historical.encode()), rule['parent_sha256'])
             self.assertEqual(product._read(gate.ROOT, path), historical)
             self.assertEqual(gate.g6_parent_source(path, historical), historical)
             self.assertEqual(gate.parent_source(path, self.texts[path]), self.texts[path])
@@ -936,6 +936,59 @@ class ClosedCIRuleStorageTests(unittest.TestCase):
                         self.assertNotEqual(result.returncode, 0)
                         self.assertNotIn('CI_RULE_INITIALIZED', result.stdout)
                         self.assertIn('P3 independent CI whole rule differs', result.stderr)
+
+
+class CurrentReferenceOwnershipTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.texts = gate.inputs()
+
+    def test_retired_reconstruction_paths_have_independent_current_admission(self):
+        paths = gate.EXPECTED['current_reference_physical4']
+        self.assertEqual(len(paths), 4)
+        gate.check(gate.EXPECTED, self.texts)
+        for path in paths:
+            self.assertNotIn(path, gate.CLOSED_NORMALIZER_RULES)
+            self.assertNotIn(path, gate.CLOSED_JOINT_SOURCE_RULES)
+            self.assertEqual(self.texts[path], gate._read(gate.ROOT, path))
+            # Returning an unrecognized historical input is not current admission.
+            unknown = self.texts[path] + '\n# unregistered reference bytes\n'
+            self.assertEqual(gate.parent_source(path, unknown), unknown)
+            self.assertEqual(gate.joint_parent_source(path, unknown), unknown)
+            changed = dict(self.texts)
+            changed[path] = unknown
+            with self.subTest(path=path), self.assertRaisesRegex(ValueError, '^P3 independent current reference Source differs$'):
+                gate.check(gate.EXPECTED, changed)
+
+    def test_all_four_changed_reference_leaves_refuse_after_complete_catalog_rebinding(self):
+        assignment = gate.expected_assignment(gate.EXPECTED)
+        for path in gate.EXPECTED['current_reference_physical4']:
+            texts = dict(self.texts)
+            texts[path] += '\n# caller rebound current source\n'
+            rebound = rebind_derived_metadata(gate.EXPECTED, texts, self.texts)
+            rebound['current_reference_physical4'][path] = gate._sha(texts[path].encode())
+            texts[gate.TOOL] = texts[gate.TOOL].replace(assignment, gate.expected_assignment(rebound), 1)
+            texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+            with self.subTest(path=path), mock.patch.object(gate, 'EXPECTED', rebound):
+                self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))
+                self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()), rebound['checker_nonEXPECTED_whole_sha256'])
+                with self.assertRaisesRegex(ValueError, '^P3 independent current reference Source differs$'):
+                    gate.check(rebound, texts)
+
+    def test_reference_catalog_missing_extra_or_changed_entry_cannot_define_independent_pins(self):
+        for mode in ('missing', 'extra', 'changed'):
+            rebound = copy.deepcopy(gate.EXPECTED)
+            table = rebound['current_reference_physical4']
+            path = next(iter(table))
+            if mode == 'missing':
+                del table[path]
+            elif mode == 'extra':
+                table['caller.py'] = '0' * 64
+            else:
+                table[path] = '0' * 64
+            with self.subTest(mode=mode), mock.patch.object(gate, 'EXPECTED', rebound):
+                with self.assertRaisesRegex(ValueError, '^P3 independent current reference catalog differs$'):
+                    gate._check_current_reference_physical(self.texts)
 
 
 if __name__ == '__main__':

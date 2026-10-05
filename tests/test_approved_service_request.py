@@ -67,7 +67,7 @@ class ApprovedServiceRequestTests(unittest.TestCase):
 
     def test_every_current_parent_insertion_restores_exact_whole_bytes(self):
         for path, rule in gate.EXPECTED["original_source_inverse"].items():
-            current = self.texts()[path]
+            current = gate.source_gate.source(ROOT, path)
             parent = gate.parent_source(path, current)
             self.assertEqual(len(parent.encode()), rule["parent_bytes"])
             self.assertEqual(hashlib.sha256(parent.encode()).hexdigest(), rule["parent_sha256"])
@@ -77,14 +77,14 @@ class ApprovedServiceRequestTests(unittest.TestCase):
 
     def test_detached_normalized_old_input_cannot_qualify_current_profile(self):
         for path in gate.EXPECTED["original_source_inverse"]:
-            values = self.texts(); values[path] = gate.parent_source(path, values[path])
+            values = self.texts(); values[path] = gate.parent_source(path, gate.source_gate.source(ROOT, path))
             with self.subTest(path=path), self.assertRaises(ValueError):
                 gate.check(copy.deepcopy(gate.EXPECTED), values)
 
     def test_wrong_position_duplicate_and_rewritten_insertions_refuse(self):
         for path, rule in gate.EXPECTED["original_source_inverse"].items():
             if rule.get("kind") == "exact_plumbing": continue
-            current = self.texts()[path]; block = rule["block"]
+            current = gate.source_gate.source(ROOT, path); block = rule["block"]
             parent = gate.parent_source(path, current)
             for value in (block + parent, current + block, current.replace(block, block + " ", 1)):
                 with self.subTest(path=path), self.assertRaises(ValueError): gate.parent_source(path, value)
@@ -93,7 +93,7 @@ class ApprovedServiceRequestTests(unittest.TestCase):
         path = "tools/verify_approved_service_owner.py"
         rule = gate.EXPECTED["original_source_inverse"][path]
         self.assertEqual(len(rule["steps"]), 4)
-        current = self.texts()[path]
+        current = gate.source_gate.source(ROOT, path)
         for step in rule["steps"]:
             for value in (current.replace(step["actual"], step["parent"], 1), current + step["actual"]):
                 with self.assertRaises(ValueError): gate.parent_source(path, value)
@@ -201,11 +201,12 @@ class ApprovedServiceRequestTests(unittest.TestCase):
         with self.assertRaises(ValueError): gate.check(value, values)
 
     def test_original_tests_pins_and_raw_methods_are_whole_preserved(self):
-        self.assertIn("tests/test_retained_control_readiness.py", gate.EXPECTED["preserved_source_sha256"])
-        self.assertIn("experiments/servo-product-owner/src/approved_connected_tests.rs", gate.EXPECTED["preserved_source_sha256"])
-        for path in gate.EXPECTED["preserved_source_sha256"]:
+        # The original mutation subjects stay current; P3 owns physical closure.
+        paths = ['crates/hepta-peer-attestation/src/request_lease.rs', 'crates/hepta-peer-attestation/src/approved_policy/service_policy/creator_context.rs', 'crates/hepta-agent-transport/src/accepted_handoff.rs', 'crates/hepta-peer-attestation/tests/approved_service_owner_kernel.rs', 'experiments/servo-product-owner/src/approved_connected_tests.rs', 'experiments/servo-product-owner/src/approved_test_support.rs', 'experiments/servo-product-owner/src/connected_tests.rs', 'manifests/servo.lock.json', 'manifests/rust-toolchain.lock.json', 'Cargo.lock', 'Cargo.toml', 'tests/test_approved_service_owner.py', 'tests/test_approved_composition_scope.py', 'tests/test_approved_constructor_route.py', 'tests/test_retained_control_readiness.py', 'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs', 'apps/hepta-browserd/tests/control_readiness_kernel.rs']
+        for path in paths:
             values = self.texts(); values[path] += " "
-            with self.subTest(path=path), self.assertRaises(ValueError): gate.check(copy.deepcopy(gate.EXPECTED), values)
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                gate.check(copy.deepcopy(gate.EXPECTED), values)
 
     def test_new_cargo_entry_is_only_exact_suffix_and_not_old_budget_change(self):
         path = "crates/hepta-peer-attestation/Cargo.toml"
@@ -684,7 +685,7 @@ class ApprovedServiceConsumeCompositionTests(unittest.TestCase):
         expected = copy.deepcopy(gate.EXPECTED)
         inventories = {path: gate.source_gate.rust_inventory(values[path])
                        for path in expected["whole_production_source_sha256"]}
-        for key in ("whole_production_source_sha256", "preserved_source_sha256", "kernel_source_sha256"):
+        for key in ("whole_production_source_sha256", "kernel_source_sha256"):
             expected[key] = {path: gate.sha256(values[path]) for path in expected[key]}
         expected["all_function_body_tokens_sha256"] = {
             path: {name: hashlib.sha256(" ".join(body).encode()).hexdigest()
@@ -829,7 +830,7 @@ class ApprovedServiceReporterPairBoundaryTests(unittest.TestCase):
         expected = copy.deepcopy(gate.EXPECTED)
         inventories = {path: gate.source_gate.rust_inventory(values[path])
                        for path in expected["whole_production_source_sha256"]}
-        for key in ("whole_production_source_sha256", "preserved_source_sha256", "kernel_source_sha256"):
+        for key in ("whole_production_source_sha256", "kernel_source_sha256"):
             expected[key] = {path: gate.sha256(values[path]) for path in expected[key]}
         expected["all_function_body_tokens_sha256"] = {
             path: {name: hashlib.sha256(" ".join(body).encode()).hexdigest()
@@ -984,7 +985,7 @@ class ApprovedServiceInitialReceiveWrapperTests(unittest.TestCase):
         expected = copy.deepcopy(gate.EXPECTED)
         inventories = {path: gate.source_gate.rust_inventory(values[path])
                        for path in expected["whole_production_source_sha256"]}
-        for key in ("whole_production_source_sha256", "preserved_source_sha256", "kernel_source_sha256"):
+        for key in ("whole_production_source_sha256", "kernel_source_sha256"):
             expected[key] = {path: gate.sha256(values[path]) for path in expected[key]}
         expected["all_function_body_tokens_sha256"] = {
             path: {name: hashlib.sha256(" ".join(body).encode()).hexdigest()
@@ -1137,7 +1138,7 @@ class ApprovedServiceKernelUnwindEscapeTests(unittest.TestCase):
         expected = copy.deepcopy(gate.EXPECTED)
         inventories = {path: gate.source_gate.rust_inventory(values[path])
                        for path in expected["whole_production_source_sha256"]}
-        for key in ("whole_production_source_sha256", "preserved_source_sha256", "kernel_source_sha256"):
+        for key in ("whole_production_source_sha256", "kernel_source_sha256"):
             expected[key] = {path: gate.sha256(values[path]) for path in expected[key]}
         expected["all_function_body_tokens_sha256"] = {
             path: {name: hashlib.sha256(" ".join(body).encode()).hexdigest()
@@ -1169,7 +1170,11 @@ class ApprovedServiceKernelUnwindEscapeTests(unittest.TestCase):
         self.assertEqual(rebound_contract["kernel_source_sha256"][self.kernel], gate.sha256(values[self.kernel]))
         rebound_guards = {path: gate.sha256(values[path]) for path in gate._CONSUME_GUARD_MODULES}
         with patch.object(gate, "EXPECTED", expected), patch.object(gate, "_CONSUME_GUARD_MODULES", rebound_guards):
+            # Keep the original deep semantic refusal independently of the
+            # newly mandatory earlier physical-current admission.
             with self.assertRaisesRegex(ValueError, "kernel unwind independent complete Source differs"):
+                gate._check_current_semantics(rebound_contract, values)
+            with self.assertRaisesRegex(ValueError, "^P3 actual current joint physical Source differs$"):
                 gate.check(rebound_contract, values)
 
     def test_actual_complete_Kernel_and_original_inverse_pass(self):
