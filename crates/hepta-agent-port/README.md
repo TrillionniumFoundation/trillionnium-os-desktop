@@ -39,9 +39,17 @@ The dependency direction is one-way. Lower-level mechanism and contract crates m
 ## Public API and binaries
 
 - `serve_one` and `serve_one_with_observer` execute the bounded lifecycle.
+- `serve_one_before_with_observer` preserves a caller's original absolute monotonic deadline across prior admission and queueing; the wire deadline may only shorten it.
 - `DispatchContext`, `HandlerOutcome`, `BrowserRequestHandler`, `OperationLifecycleObserver`, `ServiceEvidence` and `AgentPortError` describe the mechanism.
 - `D0FixtureHandler` is a development fixture that permits health only and denies potential effects.
 - Handler result limits cap members, depth, aggregate items, key bytes and string bytes.
+
+`BrowserRequestHandler::preflight` runs after canonical decoding and the effective
+deadline check, before `requested`, `dispatched` or `handle`. A typed refusal
+publishes one bounded response with original wire identity and no admitted or
+execution fact. A preflight error closes the connection. The default no-op hook
+preserves existing mechanism-only handlers; product composition must supply
+semantic admission and recheck custody/control at its final action boundary.
 
 This library registers no binary target. Cargo binary auto-discovery and package build scripts are disabled.
 

@@ -1,0 +1,76 @@
+{
+  "schema": "trillionnium.shared-managed-reader.v1",
+  "implementation": {
+    "shared": "tools/browser_codec_reference_security.py",
+    "artifact": "tools/artifact_evidence.py"
+  },
+  "public_api": {
+    "open_managed_regular_beneath": "(root: 'Path', path: 'Path', *, label: 'str', after_component: 'AfterComponentHook | None' = None) -> 'ManagedSourceReader'",
+    "ManagedSourceReader.__init__": "(self) -> 'None'",
+    "ManagedSourceReader.read": "(self, size: 'int' = -1) -> 'bytes'",
+    "ManagedSourceReader.stat": "(self) -> 'os.stat_result'",
+    "ManagedSourceReader.close": "(self) -> 'None'",
+    "ManagedSourceReader.__enter__": "(self) -> 'ManagedSourceReader'",
+    "ManagedSourceReader.__exit__": "(self, exc_type, exc_value, traceback) -> 'None'",
+    "open_managed_file": "(path: 'Path') -> 'ManagedSourceReader'"
+  },
+  "migrated": {
+    "shared": [
+      "read_bytes_beneath",
+      "read_bytes_nofollow",
+      "read_text_nofollow",
+      "load_json_nofollow",
+      "regular_file_exists_nofollow"
+    ],
+    "artifact": [
+      "file_size",
+      "digest",
+      "load",
+      "artifact_file"
+    ]
+  },
+  "read": {
+    "size": "exact int -1 or 0..sys.maxsize; bool and other negative values refused",
+    "short_read": "continue until requested count or actual EOF",
+    "native_interrupt": "propagate; retain owner for cleanup",
+    "shared_existing_unbounded_reads": true,
+    "artifact_json_bytes_maximum": 8388608,
+    "artifact_file_bytes_maximum": 8589934592,
+    "utf8_and_universal_newlines_preserved": true
+  },
+  "custody": {
+    "same_private_descriptor_owner": true,
+    "public_raw_fd_extraction": false,
+    "creator_pid_and_thread_operations": true,
+    "reentrant_read_stat_and_close_refused": true,
+    "last_reference_foreign_thread_descriptor_cleanup": true,
+    "owning_fdopen_transfer": false,
+    "managed_object_return_loss_cleanup": true,
+    "ordinary_line_and_data_return_cleanup": true,
+    "attempted_close_never_retried": true,
+    "all_c_opcode_and_repeated_cleanup_faults": false,
+    "reentrant_public_context_exit_refused": true,
+    "active_operation_stack_frames_maximum": 1024
+  },
+  "compatibility": {
+    "open_regular_beneath_returns_int": true,
+    "open_file_returns_int": true,
+    "raw_result_delivery_protected": false,
+    "external_raw_fdopen_consumers_migrated": false,
+    "old_path_regular_and_artifact_single_link_checks_preserved": true,
+    "old_readback_and_byte_bounds_preserved": true
+  },
+  "source_index": {
+    "module": "hepta-browser-codec",
+    "tests": "tests/test_shared_managed_reader.py",
+    "documentation": "docs/architecture/SHARED_MANAGED_READER.md",
+    "context_tests": "tests/test_shared_managed_context.py"
+  },
+  "claims": {
+    "source_file_io_only": true,
+    "peer_principal_or_signature_authority": false,
+    "installed_native_or_boot_qualification": false,
+    "product_activation_changed": false,
+    "production_ready": false
+  }
+}

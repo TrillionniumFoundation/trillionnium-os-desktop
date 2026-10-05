@@ -373,8 +373,13 @@ def check_atomic_write(text: str, tree: ast.Module) -> None:
 
     if reconcile is not None:
         reconcile_text = source_segment(text, reconcile)
-        if "self._read_destination" not in reconcile_text:
-            fail("reconcile does not read back the existing destination")
+        for marker in (
+            "_read_regular_fd(destination_fd", "os.fsync(destination_fd)",
+            "os.fsync(parent_fd)", "self._check_publication_parent",
+            "self._check_staged_path",
+        ):
+            if marker not in reconcile_text:
+                fail(f"reconcile lacks descriptor-pinned durable readback: {marker}")
         if ".write(" in reconcile_text or "self.write" in reconcile_text:
             fail("reconcile must not replay or replace the publication")
 

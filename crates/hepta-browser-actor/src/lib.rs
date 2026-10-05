@@ -50,7 +50,15 @@ mod servo_runtime;
 pub use servo_runtime::{
     ServoBrowserActor, ServoCompletionDelivery, ServoEventLoopWaker, ServoPumpResult,
     ServoRuntimeCommand, ServoRuntimeCompletion, ServoRuntimeEndpoint, ServoRuntimeError,
-    ServoRuntimeOperation, ServoRuntimeOwner, servo_runtime_pair,
+    ServoRuntimeOperation, ServoRuntimeOwner, closed_immutable_servo_runtime_pair,
+    servo_runtime_pair,
+};
+
+#[cfg(target_os = "linux")]
+pub use servo_runtime::{
+    ServiceServoBrowserActor, ServiceServoRuntimeBridge, ServiceServoRuntimeCommand,
+    ServiceServoRuntimeCompletion, ServiceServoRuntimeEndpoint,
+    closed_immutable_service_runtime_pair,
 };
 
 pub use hepta_agent_port::{AgentPortError, DispatchContext, HandlerOutcome};

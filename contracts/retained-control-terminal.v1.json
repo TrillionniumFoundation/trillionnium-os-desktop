@@ -1,0 +1,131 @@
+{
+  "schema": "trillionnium.desktop.retained-control-terminal.v1",
+  "status": "SOURCE_CANDIDATE_JOURNAL_ASSOCIATION_ONLY",
+  "platform": "Linux",
+  "implementation": {
+    "transport": "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs",
+    "peer": "crates/hepta-peer-attestation/src/control_owner/retained_request.rs",
+    "product": "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+  },
+  "wire": {
+    "bytes": 192,
+    "magic": "HPTAFDS1",
+    "version": 1,
+    "kinds": [
+      "Cancel",
+      "TerminalReport"
+    ],
+    "states": [
+      "Completed",
+      "Interrupted",
+      "Indeterminate"
+    ],
+    "rights": 0,
+    "binding": [
+      "original_control_channel",
+      "original_SO_PEERCRED_and_actual_SCM_CREDENTIALS",
+      "original_nonce",
+      "original_submission_sequence",
+      "original_socket_cookie",
+      "original_path_device_inode",
+      "original_boot",
+      "original_time_namespace",
+      "original_started_and_native_deadline"
+    ],
+    "report": [
+      "canonical_request_sha256",
+      "terminal_record_sha256",
+      "remote_terminal_lifecycle"
+    ],
+    "application_response_or_success_boolean": false,
+    "transport_report_is_local_durable_proof": false
+  },
+  "ownership": {
+    "transactions": 1,
+    "report_publication_attempts": 1,
+    "cancel_publication_attempts": 1,
+    "original_sender_retired_before_native_send": true,
+    "report_authority_retired_before_native_send": true,
+    "reporting_identity": "same original live default /proc approved control incarnation retained independently of revoked execution custody",
+    "fork": "creator PID before mutation or copied mutex/channel; foreign Drop closes only owned FD copies and forgets child channel heap references",
+    "drop_joins_thread": false,
+    "automatic_replay": false,
+    "automatic_reconnect": false
+  },
+  "deadline": {
+    "maximum_seconds": 20,
+    "monitor_poll_ms": 5,
+    "accepted": "unchanged received absolute Instant; queue/attestation/dispatch/response consume original ceiling",
+    "report": "minimum of original accepted and original local control ceiling; no fresh Duration allocation",
+    "renewal": false,
+    "preemptive_procfs_timeout": false
+  },
+  "journal_association": {
+    "issuer": "only current ProductRequestCoordinator private invocation and own managed ReceiptLifecycleObserver",
+    "source": "private OperationTrace exact request ID and digest plus original terminal record digest; reread complete own journal chain after Agent response attempt",
+    "accepted_proof_parameters": [],
+    "public_ServiceEvidence_is_proof": false,
+    "foreign_DurableReceiptFact_is_proof": false,
+    "report_is_Agent_response_delivery": false,
+    "report_is_effect_success": false,
+    "sealed_terminal_rewritten_on_lost_report_or_peer_exit": false,
+    "preflight_refusal": "no admission facts: no terminal report, even if unrelated terminal history exists",
+    "ambiguous_effect": "keep Indeterminate or interrupted-after-dispatch recovery latch; report never clears it"
+  },
+  "public_api": {
+    "RemoteRetirementReport::new": "pub fn new( state: RemoteTerminalState, request_sha256: [u8; 32], record_sha256: [u8; 32], ) -> Result<Self, HandoffError>",
+    "RemoteRetirementReport::state": "pub const fn state(&self) -> RemoteTerminalState",
+    "RemoteRetirementReport::request_sha256": "pub const fn request_sha256(&self) -> [u8; 32]",
+    "RemoteRetirementReport::record_sha256": "pub const fn record_sha256(&self) -> [u8; 32]",
+    "PendingHandoffSender::ensure_current": "pub fn ensure_current(&mut self) -> Result<Instant, HandoffError>",
+    "PendingHandoffSender::deadline": "pub fn deadline(&mut self) -> Result<Instant, HandoffError>",
+    "PendingHandoffSender::request_cancel": "pub fn request_cancel(&mut self) -> Result<(), HandoffError>",
+    "PendingHandoffSender::wait_report": "pub fn wait_report(&mut self) -> Result<RemoteRetirementReport, HandoffError>",
+    "PendingHandoffSender::poll_report": "pub fn poll_report(&mut self) -> Result<Option<RemoteRetirementReport>, HandoffError>",
+    "PendingHandoffReceiver::ensure_current": "pub fn ensure_current(&mut self) -> Result<Instant, HandoffError>",
+    "PendingHandoffReceiver::deadline": "pub fn deadline(&mut self) -> Result<Instant, HandoffError>",
+    "PendingHandoffReceiver::poll_cancel": "pub fn poll_cancel(&mut self) -> Result<bool, HandoffError>",
+    "PendingHandoffReceiver::send_report": "pub fn send_report(&mut self, report: RemoteRetirementReport) -> Result<(), HandoffError>",
+    "RetainedReceivedAcceptedStream::into_parts": "pub fn into_parts( mut self, ) -> Result<(ReceivedAcceptedStream, PendingHandoffReceiver), HandoffError>",
+    "HandoffSender::send_retained": "pub fn send_retained( mut self, custody: AcceptedStreamCustody, ) -> Result<PendingHandoffSender, HandoffError>",
+    "HandoffReceiver::receive_retained": "pub fn receive_retained( mut self, wait_budget: std::time::Duration, ) -> Result<RetainedReceivedAcceptedStream, HandoffError>",
+    "PeerReportedRetirement::state": "pub fn state(&self) -> RemoteTerminalState",
+    "PeerReportedRetirement::request_sha256": "pub fn request_sha256(&self) -> [u8; 32]",
+    "PeerReportedRetirement::record_sha256": "pub fn record_sha256(&self) -> [u8; 32]",
+    "AttestedPendingHandoff::ensure_current": "pub fn ensure_current(&mut self) -> Result<Instant, ControlOwnerError>",
+    "AttestedPendingHandoff::request_cancel": "pub fn request_cancel(&mut self) -> Result<(), ControlOwnerError>",
+    "AttestedPendingHandoff::wait_retirement": "pub fn wait_retirement(&mut self) -> Result<PeerReportedRetirement, ControlOwnerError>",
+    "AttestedPendingHandoff::poll_retirement": "pub fn poll_retirement(&mut self) -> Result<Option<PeerReportedRetirement>, ControlOwnerError>",
+    "AttestedRetainedReceiver::ensure_current": "pub fn ensure_current(&mut self) -> Result<Instant, ControlOwnerError>",
+    "AttestedRetainedReceiver::poll_cancel": "pub fn poll_cancel(&mut self) -> Result<bool, ControlOwnerError>",
+    "AttestedRetainedReceiver::send_remote_report": "pub fn send_remote_report( &mut self, report: RemoteRetirementReport, ) -> Result<(), ControlOwnerError>",
+    "ControlRetainedAcceptedStream::deadline": "pub fn deadline(&self) -> Result<Instant, ControlOwnerError>",
+    "ControlRetainedAcceptedStream::consume_before": "pub fn consume_before<T>( mut self, consumer: impl FnOnce(UnixStream, Instant, ControlRequestCustody, AttestedRetainedReceiver) -> T, ) -> Result<T, ControlOwnerError>",
+    "AttestedHandoffSender::send_retained": "pub fn send_retained(&mut self) -> Result<AttestedPendingHandoff, ControlOwnerError>",
+    "AttestedHandoffReceiver::receive_retained_custodied": "pub fn receive_retained_custodied( &mut self, ) -> Result<ControlRetainedAcceptedStream, ControlOwnerError>",
+    "RetainedProductConnection::from_control_retained_received": "pub fn from_control_retained_received( received: ControlRetainedAcceptedStream, policy: &PeerRuntimePolicy, approved_executable_sha256: &str, ) -> Result<(Self, ProductControlMonitor), ProductDispatchError>",
+    "RetainedProductConnection::deadline": "pub fn deadline(&self) -> Result<Instant, ProductDispatchError>",
+    "RetainedProductConnection::cancellation": "pub fn cancellation(&self) -> Result<ProductConnectionCancellation, ProductDispatchError>",
+    "ProductControlMonitor::run": "pub fn run(mut self) -> Result<ProductControlMonitorOutcome, ProductDispatchError>",
+    "ProductRequestCoordinator::from_retained_connection": "pub fn from_retained_connection( principal: TaskFlowPrincipal, bootstrap: &RetainedProductConnection, endpoint: ServoRuntimeEndpoint, journal: ReceiptJournal, image_id: String, restart_policy: RestartPolicy, ) -> Result<Self, ProductDispatchError>",
+    "ProductRequestCoordinator::serve_retained_connection": "pub fn serve_retained_connection( &mut self, mut connection: RetainedProductConnection, ) -> Result<ServiceEvidence, ProductDispatchError>"
+  },
+  "evidence": {
+    "transport_kernel": "crates/hepta-agent-transport/tests/retained_control_kernel.rs",
+    "three_process_kernel": "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs",
+    "contract_only": "tests/test_retained_control_terminal.py",
+    "native_completion": "controlled source callback only; no Servo execution",
+    "policy": "test controller selects known fixture executable; no installed approved policy provisioning"
+  },
+  "non_claims": {
+    "installed_daemon_owner": false,
+    "product_ready": false,
+    "default_activation_changed": false,
+    "cross_uid_live_attestation_qualified": false,
+    "root_owned_control_path_custody": false,
+    "semantic_principal": false,
+    "native_final_effect_gate": false,
+    "all_asynchronous_syscall_windows_closed": false,
+    "independent_hardware_qualification": false
+  }
+}

@@ -137,7 +137,7 @@ class ServoPatchPackageTests(unittest.TestCase):
         for required in (
             "exact-head-real-servo-behavior",
             "prospective-merge-patch-package",
-            "refs/pull/${{ github.event.pull_request.number }}/merge",
+            "ref: ${{ github.sha }}",
             'patch --batch --forward -d servo -p1 < "$RUNNER_TEMP/s07-hardening.patch"',
             'cmp "$RUNNER_TEMP/s07-allowed.txt" "$RUNNER_TEMP/s07-changed.txt"',
             "d3-servo-tested.patch",

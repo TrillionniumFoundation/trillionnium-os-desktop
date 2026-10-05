@@ -25,6 +25,7 @@ REQUIRED_TOP = {
     "required_proof",
     "non_claims",
     "required_paths",
+    "semantic_custody",
 }
 
 
@@ -131,6 +132,23 @@ def validate_contract(root: Path, errors: list[str]) -> dict[str, Any]:
     for key, expected in fixed.items():
         if contract.get(key) != expected:
             errors.append(f"S08 contract {key} must be {expected!r}")
+
+    semantic = contract.get("semantic_custody")
+    expected_semantic = {
+        "manifest": "manifests/lab-s08-semantic-custody.v1.json",
+        "expectation_version": 1,
+        "maximum_name_bytes": 1024,
+        "maximum_ancestry_nodes": 16,
+        "observation_source": "actual_current_script_layout_retained_accesskit_leaf_and_ancestry",
+        "observation_api": "WebView::observe_accessibility_semantics",
+        "actor_target_metadata": "derived_tree_node_role_name_sha256_and_structural_fingerprint",
+        "final_check": "after_reflow_before_click_same_script_task",
+        "checked_action_api": "WebView::perform_checked_accessibility_action",
+        "legacy_s07_api_and_tests_preserved": True,
+        "final_peer_control_custody_proven": False,
+    }
+    if json.dumps(semantic, sort_keys=True) != json.dumps(expected_semantic, sort_keys=True):
+        errors.append("S08 semantic_custody differs from closed bounded schema")
 
     bridge = _exact_keys(
         contract.get("product_bridge"),
@@ -346,11 +364,22 @@ def validate_sources(root: Path, errors: list[str]) -> None:
         "AccessibilityActionResult::Dispatched",
         "Click count 1",
         "s08-servo-result.json",
+        "s08_semantic_expectation",
+        "s08_perform_checked_action",
+        "perform_checked_accessibility_action",
+        "test_trillionnium_s08_semantic_custody",
+        "same_node_label",
+        "same_node_role",
+        "same_node_ancestry",
+        "checked_sub(1)",
     ):
         _require(servo, marker, "S08 exact-pin Servo adapter", errors)
     for forbidden in ("WebDriver", "TcpListener", "external_https", "unsafe {"):
         if forbidden in servo:
             errors.append(f"S08 Servo adapter contains forbidden token {forbidden!r}")
+    for fixture in ("a" * 64, "b" * 64, "servo-retained-button-1"):
+        if fixture in servo:
+            errors.append("S08 observation contains fixture target metadata")
 
     readme = _text(root, "crates/hepta-browser-actor/README.md", errors)
     for marker in (
@@ -381,6 +410,11 @@ def validate_workflow(root: Path, errors: list[str]) -> None:
         "s08-servo-result.json",
         "installed_image_proven",
         "retention-days: 30",
+        "verify_s08_semantic_custody.py --check-upstream servo",
+        "--fuzz=0",
+        "test_retained_accessibility",
+        "HEPTA_S08_SEMANTIC_RESULTS",
+        "--result",
     ):
         _require(workflow, marker, "S08 workflow", errors)
     for forbidden in (
@@ -442,6 +476,18 @@ def validate(root: Path = ROOT) -> list[str]:
     validate_sources(root, errors)
     validate_workflow(root, errors)
     validate_registry(root, errors)
+    try:
+        # This is source validation; actual final script execution requires exact-pin CI.
+        try:
+            from .verify_s08_semantic_custody import verify
+        except ImportError:
+            try:
+                from tools.verify_s08_semantic_custody import verify
+            except ImportError:
+                from verify_s08_semantic_custody import verify
+        verify(root)
+    except (OSError, ValueError, TypeError, KeyError) as error:
+        errors.append(f"S08 semantic source package refused: {type(error).__name__}")
     return errors
 
 

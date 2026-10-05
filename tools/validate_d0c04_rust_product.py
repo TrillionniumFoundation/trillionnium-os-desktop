@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Fail-closed static validation for the D0C-04 Rust product candidate."""
+"""Historical D0C-04 seven-package snapshot validator, not a current workspace gate.
+
+Use validate_contract_foundation.py and validate_project_truth.py for the current
+workspace. Keep these historical criteria intact rather than promoting old
+observations to the later twelve-package product source.
+"""
 
 from __future__ import annotations
 
@@ -75,7 +80,10 @@ def check_paths(checks: list[str]) -> None:
 
 def check_workspace(checks: list[str]) -> None:
     workspace = parse_toml("Cargo.toml").get("workspace", {})
-    require(workspace.get("members") == EXPECTED_MEMBERS, "workspace members drifted")
+    require(
+        workspace.get("members") == EXPECTED_MEMBERS,
+        "historical D0C-04 seven-package snapshot only; use validate_contract_foundation.py and validate_project_truth.py for current source",
+    )
     require(workspace.get("default-members") == EXPECTED_MEMBERS, "default members drifted")
     require(workspace.get("resolver") == "3", "resolver drifted")
     package = workspace.get("package", {})

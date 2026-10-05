@@ -1,0 +1,66 @@
+{
+  "schema": "trillionnium.managed-evidence-consumers.v1",
+  "dependency": "contracts/shared-managed-reader.v1.json",
+  "migrated": {
+    "tools/d1_evidence_semantics.py": {
+      "_Snapshot.read": "(self, name: 'str') -> 'bytes'",
+      "_Snapshot.finish": "(self) -> 'None'",
+      "validate_contract": "(value: 'object | None' = None) -> 'None'"
+    },
+    "tools/verify_d2i_artifact.py": {
+      "verify_source": "(root: 'Path', receipt: 'dict[str, Any]') -> 'dict[str, Any]'"
+    },
+    "tools/check_servo_resource_gate.py": {
+      "read_bounded": "(path: 'Path', limit: 'int') -> 'bytes'"
+    },
+    "tools/prepare_native_product_owner.py": {
+      "read": "(path: 'Path') -> 'bytes'"
+    },
+    "tools/verify_s08_semantic_custody.py": {
+      "read": "(path: 'Path', maximum: 'int' = 1048576) -> 'bytes'"
+    }
+  },
+  "limits": {
+    "d1_payload_bytes": 8388608,
+    "d1_contract_bytes": 65536,
+    "d2i_whole_source_archive_bytes": 67108864,
+    "resource_evidence_bytes": 131072,
+    "resource_origin_bytes": 64,
+    "native_source_bytes": 2097152,
+    "s08_source_bytes": 1048576,
+    "s08_patch_bytes": 262144,
+    "s08_result_bytes": 4096,
+    "artifact_json_bytes": 8388608,
+    "artifact_hash_bytes": 8589934592
+  },
+  "custody": {
+    "same_managed_owner_through_read_stat_and_close": true,
+    "raw_fdopen_or_public_descriptor_transfer": false,
+    "d1_complete_readback_retains_all_owners": true,
+    "d2i_parse_and_archive_digest_use_same_immutable_bytes": true,
+    "d2i_tarfile_seek_uses_bytesio": true,
+    "original_single_link_path_and_readback_checks_preserved": true,
+    "creator_pid_thread_and_public_context_reentry_guard_inherited": true,
+    "ordinary_return_loss_and_attempted_close_reuse_tested": true,
+    "all_native_call_opcode_or_repeated_fault_windows": false
+  },
+  "compatibility": {
+    "old_reader_signatures_preserved": true,
+    "raw_open_file_and_open_regular_beneath_abi_preserved": true,
+    "legacy_raw_result_delivery_protected": false,
+    "other_namespace_input_checkpoint_shell_release_consumers_migrated": false,
+    "d2i_archive_previously_streamed_now_whole_bytes_bounded": true
+  },
+  "source_index": {
+    "module": "hepta-browser-codec",
+    "tests": "tests/test_managed_evidence_consumers.py",
+    "documentation": "docs/architecture/MANAGED_EVIDENCE_CONSUMERS.md"
+  },
+  "claims": {
+    "source_file_io_only": true,
+    "production_ready": false,
+    "peer_principal_or_signing_authority": false,
+    "installed_native_or_boot_qualification": false,
+    "activation_or_workflow_stimulus_changed": false
+  }
+}

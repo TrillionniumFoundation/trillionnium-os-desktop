@@ -1,0 +1,101 @@
+{
+  "schema": "trillionnium.desktop.approved-request-binding.v1",
+  "status": "SOURCE_BOUNDED_APPROVED_REQUEST_REPLACEMENT",
+  "requirements": [
+    "G2"
+  ],
+  "platform": "Linux",
+  "sources": [
+    "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs",
+    "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs",
+    "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+  ],
+  "documentation": "docs/architecture/APPROVED_REQUEST_BINDING.md",
+  "opaque_types": [
+    "ApprovedAgentRequestBinding",
+    "ApprovedAgentSession",
+    "ApprovedAgentRequestVerifier"
+  ],
+  "api": {
+    "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs": {
+      "ApprovedAgentRequestVerifier::with_original_pair": "pub fn with_original_pair<T>(&self, session: &ApprovedAgentSession, consumer: impl FnOnce(&ProcfsPeerAttestor, &AttestedPeer, &ControlRequestVerifier, Instant) -> T) -> Result<T, ApprovedPolicyError>",
+      "ApprovedAgentRequestVerifier::ensure_pair_alive_for_session": "pub fn ensure_pair_alive_for_session(&self, session: &ApprovedAgentSession) -> Result<(), ApprovedPolicyError>",
+      "ApprovedAgentRequestVerifier::verify_for_session": "pub fn verify_for_session(&self, session: &ApprovedAgentSession) -> Result<(), ApprovedPolicyError>",
+      "ApprovedAgentReceivedStream::consume_with_request_binding": "pub fn consume_with_request_binding<T>(self, consumer: impl FnOnce(UnixStream, Instant, ControlRequestCustody, AttestedRetainedReceiver, AttestedPeer, &str, ApprovedAgentRequestBinding) -> T) -> Result<T, ApprovedPolicyError>",
+      "ApprovedAgentRequestBinding::start_session": "pub fn start_session(&self) -> Result<ApprovedAgentSession, ApprovedPolicyError>",
+      "ApprovedAgentRequestBinding::verifier_for_session": "pub fn verifier_for_session(&self, session: &ApprovedAgentSession) -> Result<ApprovedAgentRequestVerifier, ApprovedPolicyError>",
+      "ApprovedAgentRequestBinding::verify_for_session": "pub fn verify_for_session(&self, session: &ApprovedAgentSession) -> Result<(PeerIdentity, PeerRuntimeSnapshot, String), ApprovedPolicyError>"
+    },
+    "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs": {
+      "ServoBrowserActor::from_approved_request": "pub fn from_approved_request(request: &ApprovedAgentRequestBinding, endpoint: ServoRuntimeEndpoint) -> Result<Self, AgentPortError>",
+      "ServoBrowserActor::rebind_approved_request": "pub fn rebind_approved_request(&mut self, request: &ApprovedAgentRequestBinding) -> Result<(), AgentPortError>"
+    },
+    "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs": {
+      "BrowserActor::rebind_approved_request": "pub fn rebind_approved_request(&mut self, request: &ApprovedAgentRequestBinding, session: &ApprovedAgentSession) -> Result<(), AgentPortError>"
+    }
+  },
+  "authority": {
+    "proof": "consumed_same_approved_original_stream",
+    "attestor": "ProcfsPeerAttestor_default",
+    "selected_fields": 13,
+    "both_role_entries_equal": true,
+    "caller_principal_or_snapshot_mints_proof": false,
+    "old_request_peer_required_alive_for_replacement": false,
+    "current_original_pair_required_alive": true,
+    "source_drift_irreversible": true,
+    "legacy_fixed_pid_unchanged": true,
+    "legacy_actor_approval_retrofit": false,
+    "uncontrolled_approved_actor_dispatch": false,
+    "approved_controlled_arguments_supply_authority": false,
+    "approved_controlled_original_pair_from_opaque_verifier": true,
+    "borrowed_pair_keeps_original_nonclone_custody": true
+  },
+  "scope": {
+    "first_absolute_instant_preserved": true,
+    "maximum_seconds": 20,
+    "deadline_renewal": false,
+    "new_deadline_above_first_refused": true,
+    "creator_pid_checked": true,
+    "page_owner_and_receipts_preserved": true,
+    "prepared_active_poisoned_conflict_refused": true,
+    "unresolved_history_refused": true,
+    "full_exec_readback_before_rebinding": true,
+    "controlled_full_readback_before_runtime": true,
+    "cheap_gate_is_full_attestation": false,
+    "unknown_after_callback_cannot_rebind": true
+  },
+  "errors": {
+    "ApprovedPolicyError": "original typed process/deadline/source/peer refusal; no recovery or repair",
+    "AgentPortError": "Handler refusal, no binding mutation on failed replacement",
+    "ProductDispatchError": "PeerRefused/DeadlineExceeded/StorageUnavailable/RecoveryRequired at existing composition gates"
+  },
+  "evidence": {
+    "kernel": "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
+    "kernel_groups": 13,
+    "command": "cargo test --locked --release -p hepta-browserd --test approved_request_binding_kernel",
+    "zero_skips_required": true,
+    "callback": "synthetic_source_only",
+    "validator": "tools/verify_approved_request_binding.py",
+    "contract_tests": "tests/test_approved_request_binding.py",
+    "original_native_six_cases_unchanged": true,
+    "actual_native_qualification_pending": true
+  },
+  "non_claims": {
+    "installed_persistent_owner": false,
+    "sixty_second_health": false,
+    "firmware_root_approval": false,
+    "native_Servo_effect": false,
+    "default_activation_changed": false,
+    "production_ready": false,
+    "independent_review": false
+  },
+  "preserved_sources": {
+    "experiments/servo-product-owner/src/native_owner.rs": "5b9d5a3116617f1e4d5f973464e3f5e4c82466f40a98f870f272381b6be685e1",
+    "experiments/servo-product-owner/src/connected_tests.rs": "e22417fdccfadfb0eccaa7d253a7af9ed93f210d739cd16e32e952c29ccb7f5f",
+    "experiments/servo-product-owner/src/approved_startup.rs": "5c1ab17a9543e02f91d940e1133e8c7223f01901152e2224b0e39c112e530289",
+    "experiments/servo-product-owner/src/approved_test_support.rs": "1c7b15cb626ec3a3412a6fec31ddb1fa369adc6d73c89b6062e1092d94916866",
+    "experiments/servo-product-owner/src/approved_connected_tests.rs": "1afe6f9f66962855396349e4894b7c60ac115aa2222b2076d61311109b422870",
+    "apps/hepta-browserd/tests/approved_native_startup_kernel.rs": "0aed2dfaabfd529ddfb21ca1791091c864ad79b4787e42bba23621f625fec365",
+    "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs": "b8417a869e41b9dbf21028613ce754525f6a54aa9fdee90c5358c42afbb10118"
+  }
+}

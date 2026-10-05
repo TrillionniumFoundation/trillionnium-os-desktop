@@ -1,0 +1,205 @@
+# Retained Control readiness source profile v1
+
+This additive profile selects a nonconsuming idle wait on the original Control
+endpoint inside the explicitly root-approved source factory. Product `main`
+activation remains disabled. Source correspondence, real kernel tests and
+original native budget qualification are separate gates. This profile neither
+installs a service nor closes G2 or production readiness.
+
+## API and call direction
+
+`PendingHandoffReceiver::cancel_readable_now(&mut self) -> Result<bool,
+HandoffError>` accepts no descriptor, clock, peer snapshot or authority input.
+The private `ControlChannel::new` captures that actual Control socket's device,
+inode and `SO_COOKIE` before publication. This is a separate private
+`OriginalControlIdentity`: the existing `Transaction.identity` denotes the
+accepted Agent stream and cannot identify Control. Each channel carries its
+own creation-time identity, including when its stream moves into detached
+terminal reporting custody.
+
+The first explicit readiness call selects the profile's private transaction
+marker. It does not capture a new identity. Every subsequent private
+`Transaction::verify_channel` verifies the same captured Control identity
+before and after the original boot/time-namespace/monotonic/Instant checks.
+Thus the message and detached report paths retain the identity gate as well as
+the idle poll. The two new inherent methods live in explicitly registered production child
+modules `retained_control/readiness.rs` and `retained_request/readiness.rs`.
+Their compiled module declarations and full 38-method closure (36 original
+plus these two) are required by the new checker. The original public raw
+`poll_cancel`, `send_report`,
+`request_cancel`, `poll_report` and `wait_report` bodies remain byte exact.
+
+`AttestedRetainedReceiver::poll_cancel_when_readable(&mut self) -> Result<bool,
+ControlOwnerError>` requires the held reporting owner, original root pathname,
+whole root-approved source and its actual Control role, the original live
+Control pidfd, creator and original deadlines before and after observation.
+The held source checks all thirteen fields; its admitted Control UID/GID/unit,
+cgroup and executable pin must match the selected Control entry. It cannot
+use a caller policy, positional guard count or a revoked action lease as
+reporting authority. The policy pin comparison uses the originally admitted
+snapshot; it is explicitly not a fresh executable-byte assertion.
+
+`ProductControlMonitor` selects the private `ApprovedReadinessV1` route only
+when constructed through the real approved factory with the existing fixed
+`ProcfsPeerAttestor::default()` and opaque source selections. The legacy
+factory selects `FullV1`. The profile enum, monitor routing helper, reporting
+scope and Control identity are private; no caller boolean or raw descriptor
+can choose them. The same actor, principal, journal and receipt call chain
+continues to perform its existing full effect checks.
+
+## Idle and true full boundaries
+
+An idle `false` result grants no action, runtime, report or journal permission.
+The new idle scope observes root source/path drift and actual Control death,
+but does not rehash either executable on every five-millisecond local wait.
+A live process that executes another image while idle is therefore not asserted
+to retain its approved executable by that result. It must be refused by the
+unchanged complete default-proc readback before actual cancellation consumption
+or terminal reporting. An executable check already required at a native,
+queue, actor, callback, URL or journal effect boundary is not moved or omitted.
+There is no executable cache, future `Instant` or shared stale proof.
+
+Readable, HUP and error observations delegate the unchanged public raw full
+cancel poll. Its complete owner readbacks surround packet consumption, nonce,
+sequence and kernel-credential checks, and its existing cancellation latch
+revokes action custody. Terminal reporting still uses the unchanged full
+`send_remote_report` and transport `send_report`, including final readback,
+single send attempt and the original ceiling. Reporting after legitimate
+action revocation is possible only through the independent original reporting
+owner. A transport report by itself is a remote assertion; the product monitor
+requires its own sealed journal terminal and supplies no caller report permit.
+
+All accepted budgets remain at most twenty seconds, native budgets at most
+five seconds, and the separate sixty-second service-health requirement remains
+open. Readiness is not a lifetime renewal or a persistent service owner.
+
+## Failures and descriptor ownership limits
+
+Fork refusal precedes descriptor/clock access. Unknown source, path drift,
+Control death, cookie substitution and expiry retire the same scope without
+reconnect or automatic recovery. Observation does not consume a packet; a
+queued duplicate or malformed cancellation still reaches the original full
+parser and is rejected there.
+
+The existing `ControlChannel::retire` and Drop behavior are unchanged. A test
+that substitutes a same-credential socket proves refusal before parsing or
+sending; it does not prove that retiring the owned descriptor avoids closing a
+substituted duplicate. Querying identity and closing a descriptor also has a
+same-process concurrent `dup2` race. This package supplies no cleanup guarantee
+against arbitrary malicious unsafe descriptor manipulation within the process.
+
+## Required checks and evidence separation
+
+`contracts/retained-control-readiness.v1.json` defines the two public signatures,
+private authority boundary, exact source correspondence and claim limits.
+`tools/verify_retained_control_readiness.py` requires every actual new source
+byte and a finite inverse transfer that reconstructs each changed parent Rust
+source. Original source contracts and their mutation tests are byte preserved;
+the scope/constructor checkers apply only that explicit inverse before their
+unchanged rules. The native source validator also requires the actual new
+profile checker. Direct legacy checkers failed on the additive source before
+this transfer; those failures are retained separately from successor checks.
+
+The Cargo exception is one appended `harness = false` browserd test target.
+Removing its exact suffix must restore the whole original Cargo file. The old
+support, test cases, Cargo dependencies, lock, pinned native sources, workflow
+commands and 20/5-second budgets remain unchanged. Both full unfiltered Rust
+graphs run the new target; no original test is filtered or skipped.
+
+The new transport module has eleven groups: same-process real socket/SCM
+exchange, idle/nonconsumption, same-credential atomic replacement, isolated
+closed-descriptor reuse, cookie fault injection, repeated/malformed actual
+packets, HUP, creator fault injection and original expiry. The close/reuse gap
+runs in a self-exec single-case child so other unit harness threads cannot
+acquire that descriptor. The creator mutation is synthetic; it is not fork
+evidence. Old default unit harness parallelism remains enabled.
+
+The original receiver side of `control_readiness_kernel` has nine groups using real
+root-selected Control and Agent processes, default `/proc`, original pidfds,
+protected configuration and an actual transient root unit: idle/report after
+action revocation, cancellation/report, source drift/restore, Control death,
+real fork refusal with parent reporting, original twenty-second expiry, product
+journal/terminal completion, queued cancellation after Control exec, and idle
+exec followed by full terminal refusal. The exec stimulus preserves both real
+FDs of one original Control object only after their actual dev/inode/cookie
+agree; the second FD is the existing retained pathname-custody duplicate.
+Synthetic runtime callbacks and direct remote reports are recorded separately
+from real process/kernel observations. These tests do not execute native Servo,
+install a service, qualify cross-UID deployment or measure a speedup. A fresh
+exact-source original six-case native run is required after independent review
+and final composition.
+
+## Additive sender source candidate
+
+The same two registered readiness modules now declare four additive methods,
+for a closed 36-legacy-plus-four current API inventory. The new transport method
+`PendingHandoffSender::report_readable_now` is a nonconsuming observation of
+its construction-time Control identity. The new higher method
+`AttestedPendingHandoff::poll_retirement_when_readable` requires the original
+approved Control-role reporting scope before and after that observation.
+Idle `None` makes no fresh executable, terminal or effect claim. Ready event
+bits use the unchanged complete `poll_retirement`; same-process scope or
+observation errors retire directly. Creator mismatch returns before changing
+an inherited object. There is no replacement FD, budget, cache or authority
+argument, and the original cancellation and blocking/full report methods remain
+unchanged.
+
+Nine additive transport test groups are authored, bringing the actual source
+inventory to twenty. They cover repeated idle and nonconsumption, Agent/Control
+separation, cancellation, same-credential descriptor substitution before and
+after selection, full poll/wait/cancel identity retention, malformed/ancillary
+reports, HUP, a synthetic creator-field fault and original expiry. They are
+not execution evidence for the higher sender API. The existing nine actual
+receiver/kernel groups remain unchanged and do not become sender coverage.
+
+The native fixture caller is not switched by this dormant source candidate.
+Sender qualification still requires real default-proc/root-policy cases for
+both original ceilings, whole policy/path drift, unapproved construction,
+actual fork, and death/exec of the sender's opposite Control peer. Exec of the
+custodian in the existing receiver test proves a different direction. A queued
+report after opposite-peer exec must be denied by the full readback before
+any report value is returned. Actual transport compilation/execution, sender
+host qualification and the unchanged six-case native qualification remain
+separate gates. No measured speedup, deadline fix, installed activation or
+production claim is made.
+
+
+## Upper sender host source corpus
+
+Thirteen additional groups in the same kernel target are authored for sender
+behavior. The original nine receiver groups keep their bodies and order. Host
+execution remains unproven in the contract; caller adoption and production
+readiness remain false.
+
+Each new group starts in a fresh exec of the known test binary, using the same
+root unit selected by the original launcher. Old journal/report worker threads
+cannot carry Rust state through exec. Every new raw fork requires exactly one
+`/proc/self/task` entry immediately before the syscall; no sleep or wait is used
+to establish quiescence. A separate original Control receiver fork child and the
+existing Agent child provide the actual opposite peer and accepted stream.
+Root-selected protected policy, copied ELF pins and default `/proc` admission
+remain mandatory. This direction differs from the old custodian-exec tests.
+
+The groups cover idle followed by once-only report delivery; refusal to construct
+from a distinct protected policy with a wrong Control ELF pin; Control socket
+path rename/restore and whole-policy rewrite/restore with sticky retirement;
+actual peer pidfd death; opposite-peer exec while idle and with a queued report;
+real fork-child refusal with the parent's original report preserved; the original
+outer and accepted ceilings independently; cancellation and original reporting;
+malformed real packets; and HUP while the peer process remains alive.
+
+The receiver retains its real ControlRequestCustody. Cancellation asserts action
+validity before polling and revocation afterward. HUP releases retained owner,
+custody and verifier so no alias hides the closed Control endpoint. Exec tests
+prove the same original child is still running after PeerRefused and before
+cleanup; natural sleep termination cannot count as an exec refusal. If waitpid
+consumes or loses an identity, cleanup marks it reaped before asserting and never
+signals the reusable numeric PID.
+
+No request ceiling exceeds the original twenty seconds. The two expiry cases
+select tighter ten-second ceilings once before setup. Fresh-case supervision
+uses the existing twenty-second fixture wait and original 180-second transient
+unit limit. Native owner budgets and all production/native callers are unchanged.
+These source tests do not qualify Servo execution, installed behavior, speedup
+or a deadline repair. Privileged fixture and subprocess effects must be reviewed
+before the authored host cases run.

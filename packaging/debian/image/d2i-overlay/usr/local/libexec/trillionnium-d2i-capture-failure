@@ -1,0 +1,52 @@
+#!/bin/bash
+# Independent of runtime/acceptance success. Never write into renderer state.
+set -euo pipefail
+umask 077
+out=/var/lib/trillionnium-d2i-diagnostics
+reason=${1:-unit_failure}
+[[ $reason =~ ^[a-zA-Z0-9_:.=-]{1,160}$ ]] || reason=invalid_failure_reason
+for parent in /var /var/lib; do
+  [[ -d $parent && ! -L $parent && $(stat -c %u "$parent") == 0 ]] || exit 1
+  mode=$(stat -c %a "$parent")
+  (( (8#$mode & 0022) == 0 )) || exit 1
+done
+if [[ ! -e $out && ! -L $out ]]; then mkdir -m 0700 "$out"; fi
+[[ -d $out && ! -L $out && $(stat -c '%u:%a' "$out") == 0:700 ]] || exit 1
+lock="$out/.capture.lock"
+if [[ -e $lock || -L $lock ]]; then
+  [[ -f $lock && ! -L $lock && $(stat -c '%u:%a:%h' "$lock") == 0:600:1 ]] || exit 1
+fi
+exec 9> "$lock"
+flock -n 9 || exit 0
+for name in failure.json runtime-journal.txt acceptance-journal.txt weston.log unit-state.txt; do
+  path="$out/$name"
+  if [[ -e $path || -L $path ]]; then
+    [[ -f $path && ! -L $path && $(stat -c '%u:%a:%h' "$path") == 0:600:1 ]] || exit 1
+  fi
+done
+set +e
+timeout --signal=TERM --kill-after=1s 8s journalctl --no-pager -o short-monotonic -n 160 \
+  -u trillionnium-d2i-runtime.service -u trillionnium-d1-wayland.service \
+  2>&1 | tail -c 131072 > "$out/runtime-journal.txt"
+timeout --signal=TERM --kill-after=1s 8s journalctl --no-pager -o short-monotonic -n 120 \
+  -u trillionnium-d2i-acceptance.service -u trillionnium-d2i-failure.service \
+  2>&1 | tail -c 65536 > "$out/acceptance-journal.txt"
+{
+  for unit in trillionnium-d1-wayland.service trillionnium-d2i-runtime.service trillionnium-d2i-acceptance.service; do
+    printf '[%s]\n' "$unit"
+    timeout --signal=TERM --kill-after=1s 2s systemctl show "$unit" \
+      -p ActiveState -p SubState -p Result -p ExecMainCode -p ExecMainStatus
+  done
+} 2>&1 | tail -c 16384 > "$out/unit-state.txt"
+# Reading as the renderer prevents a planted Weston symlink from granting
+# root file-reading authority. The output is bounded and diagnostic-only.
+timeout --signal=TERM --kill-after=1s 3s runuser -u hepta-desktop -- \
+  tail -c 65536 /run/hepta-desktop/weston.log \
+  2>&1 | tail -c 65536 > "$out/weston.log"
+printf '{"schema":"trillionnium.desktop.d2i-startup-failure.v1","status":"FAIL","reason":"%s","qualification_only":true,"release_ready":false}\n' \
+  "$reason" > "$out/failure.json"
+printf 'TRILLIONNIUM_D2I_ACCEPTANCE_FAIL:%s\n' "$reason"
+cat "$out/unit-state.txt"
+cat "$out/runtime-journal.txt"
+sync
+systemctl poweroff --no-block || systemctl poweroff --force --no-block

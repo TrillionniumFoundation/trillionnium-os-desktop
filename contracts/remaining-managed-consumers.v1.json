@@ -1,0 +1,37 @@
+{
+  "schema": "trillionnium.remaining-managed-consumers.v1",
+  "reader": "tools/browser_codec_reference_security.py::ManagedSourceReader",
+  "added_api": {
+    "ManagedSourceReader.read_some": {
+      "signature": "(self, size: 'int') -> 'bytes'",
+      "size": "exact int 0..sys.maxsize; bool, other types and negatives refused",
+      "preconditions": "same creator process and thread; open owner; no read/read_some/stat reentry",
+      "result": "one native os.read result, including short bytes or actual EOF; no fill loop or FD transfer",
+      "errors": ["TypeError for non-exact int", "ValueError for negative, closed, foreign creator or reentry", "OverflowError above sys.maxsize", "native OSError and BaseException propagate with owner retained"],
+      "close_reentry": "close and context exit refuse while any read/read_some/stat frame is active"
+    }
+  },
+  "consumers": [
+    {"source": "tools/_validate_repository_impl.py", "function": "load_json", "reader_factory": "open_managed_regular_beneath"},
+    {"source": "tools/validate_platform_mechanisms.py", "function": "read", "reader_factory": "open_managed_regular_beneath"},
+    {"source": "tools/verify_s12_release_qualification.py", "function": "_regular_bytes", "reader_factory": "open_managed_regular_beneath"},
+    {"source": "tools/native_input_checkpoints.py", "function": "load_private", "reader_factory": "open_managed_regular_beneath"},
+    {"source": "tools/servo_namespace_qualification.py", "function": "hash_regular", "reader_factory": "open_managed_file"},
+    {"source": "tools/servo_namespace_qualification.py", "function": "Packet.read", "reader_factory": "open_managed_file"},
+    {"source": "tools/servo_namespace_qualification.py", "function": "validate_contract", "reader_factory": "open_managed_file"}
+  ],
+  "preservation": {
+    "consumer_signatures_and_return_values": true,
+    "original_path_metadata_byte_and_time_bounds": true,
+    "original_tests_unchanged": true,
+    "raw_compatibility_api_removed": false
+  },
+  "fault_scope": {
+    "ordinary_factory_return_loss": true,
+    "actual_read_then_interruption": true,
+    "metadata_result_interruption_in_six_existing_consumers": true,
+    "all_native_opcode_repeated_cleanup_windows": false,
+    "legacy_raw_integer_delivery_protected": false
+  },
+  "claims": {"source_io_only": true, "installed_qualified": false, "production_ready": false}
+}

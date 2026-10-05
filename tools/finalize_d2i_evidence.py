@@ -10,6 +10,15 @@ import shutil
 import subprocess
 from pathlib import Path
 
+try:
+    from .artifact_evidence import artifact_destination, artifact_root, producer_workflow, validate_source_identity
+    from .verify_d1_artifact import verify_artifact as verify_d1_artifact
+    from .verify_d2i_artifact import verify_artifact, require
+except ImportError:
+    from artifact_evidence import artifact_destination, artifact_root, producer_workflow, validate_source_identity
+    from verify_d1_artifact import verify_artifact as verify_d1_artifact
+    from verify_d2i_artifact import verify_artifact, require
+
 CHUNK = 1024 * 1024
 
 
@@ -44,9 +53,12 @@ def main() -> int:
     args = parser.parse_args()
 
     repository = args.repository.resolve()
-    d1_artifact = args.d1_artifact.resolve()
-    d2i = args.d2i_root.resolve()
-    artifact = args.artifact_root.resolve()
+    d1_artifact = artifact_root(args.d1_artifact)
+    d2i = artifact_root(args.d2i_root)
+    artifact = artifact_destination(args.artifact_root, (repository, d1_artifact, d2i))
+    validate_source_identity(repository)
+    producing_workflow = producer_workflow(repository)
+    verify_d1_artifact(d1_artifact)
     if artifact.exists():
         shutil.rmtree(artifact)
     artifact.mkdir(parents=True)
@@ -65,6 +77,11 @@ def main() -> int:
         "qemu/boot-result.json": d2i / "qemu/boot-result.json",
         "qemu/guest-acceptance.json": d2i / "qemu/guest-acceptance.json",
         "qemu/runtime-ready.json": d2i / "qemu/runtime-ready.json",
+        "qemu/content-process-identity.json": d2i / "qemu/content-process-identity.json",
+        "qemu/content-sigkill-sent.json": d2i / "qemu/content-sigkill-sent.json",
+        "qemu/process-topology-pre-fault.json": d2i / "qemu/process-topology-pre-fault.json",
+        "qemu/process-topology-post-termination.json": d2i / "qemu/process-topology-post-termination.json",
+        "qemu/process-topology-post-recovery.json": d2i / "qemu/process-topology-post-recovery.json",
         "qemu/servo-content-recovered.png": d2i / "qemu/servo-content-recovered.png",
         "qemu/runtime-journal.txt": d2i / "qemu/runtime-journal.txt",
         "qemu/qemu-command.txt": d2i / "qemu/qemu-command.txt",
@@ -120,19 +137,19 @@ def main() -> int:
     transform = load(artifact / "d2i/runtime/runtime-transformation.json")
     runner_transform = load(artifact / "d2i/runtime/boot-runner-transformation.json")
 
-    assert d1_receipt["status"] == "PASS_D1_FINAL_QUALIFICATION"
-    assert prep_a["status"] == "PASS_DETERMINISTIC_INPUT_INJECTION"
-    assert prep_b["status"] == "PASS_DETERMINISTIC_INPUT_INJECTION"
-    assert prep_a["integrated_image_sha256"] == prep_b["integrated_image_sha256"]
-    assert boot["status"] == "PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE"
-    assert guest["status"] == "PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE"
-    assert runtime["status"] == "PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY"
-    assert runtime["actual_content_process_crash_proven"] is True
-    assert runtime["crash_callback_required"] is False
-    assert runtime["zero_content_processes_after_termination"] is True
-    assert runtime["replacement_process_distinct"] is True
-    assert transform["callback_required"] is False
-    assert runner_transform["callback_required"] is False
+    require(d1_receipt, "schema", "trillionnium.desktop.d1-final-qualification.v4")
+    require(d1_receipt, "status", "PASS")
+    for prep in (prep_a, prep_b):
+        require(prep, "status", "PASS_DETERMINISTIC_INPUT_INJECTION")
+    require(prep_a, "integrated_image_sha256", prep_b["integrated_image_sha256"])
+    require(boot, "status", "PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE")
+    require(guest, "status", "PASS_D1_D2_INTEGRATED_IMAGE_CANDIDATE")
+    require(runtime, "status", "PASS_HEADED_SERVO_NATIVE_CHROME_SINGLE_CONTENT_RECOVERY")
+    for key in ("actual_content_process_crash_proven", "zero_content_processes_after_termination", "replacement_process_distinct"):
+        require(runtime, key, True)
+    require(runtime, "crash_callback_required", False)
+    require(transform, "callback_required", False)
+    require(runner_transform, "callback_required", False)
 
     receipt_path = artifact / "evidence/d2i-final-qualification.json"
     receipt_path.parent.mkdir(parents=True)
@@ -160,6 +177,7 @@ def main() -> int:
         "tested_sha": os.environ["TESTED_SHA"],
         "tree_sha": os.environ["TESTED_TREE_SHA"],
         "workflow_sha256": sha256(repository / ".github/workflows/d2i-integrated-image.yml"),
+        "producer_workflow": producing_workflow,
         "servo_commit": os.environ["SERVO_COMMIT"],
         "source": {
             "archive_sha256": sha256(source_tar),
@@ -204,6 +222,12 @@ def main() -> int:
     receipt_path.write_text(
         json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+    try:
+        validate_source_identity(repository)
+        verify_artifact(artifact)
+    except Exception:
+        receipt_path.unlink()
+        raise
     print(json.dumps({
         "status": receipt["status"],
         "outputs": len(output_digests),

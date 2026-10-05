@@ -1,13 +1,29 @@
-.PHONY: validate truth fmt check-rust check-rust-features clippy clippy-features test test-features self-check check
+.PHONY: validate truth test-python fmt check-rust check-rust-features clippy clippy-features test test-features test-doc self-check check
 
 validate:
 	/usr/bin/python3 -I tools/validate_module_documentation.py
 	python3 tools/validate_documentation_coherence.py
+	python3 tools/validate_platform_mechanisms.py
 	python3 tools/validate_s08_servo_runtime.py
 	python3 tools/validate_s08_product_supervision.py
+	python3 tools/verify_immutable_callback_url_scope.py
+	python3 tools/verify_g6a_fixture.py
+	python3 tools/verify_approved_request_binding.py
+	python3 tools/verify_approved_composition_scope.py
+	python3 tools/verify_approved_constructor_route.py
+	python3 tools/verify_approved_service_owner.py
+	python3 tools/verify_approved_service_request.py
+	python3 tools/verify_approved_service_runtime.py
+	python3 tools/verify_approved_service_actor.py
+	python3 tools/verify_approved_service_product.py
+	python3 tools/verify_service_dispatch_denial_cutoff.py
+	python3 tools/verify_retained_control_readiness.py
+	python3 tools/verify_mozjs_secondary_input.py
+	python3 tools/verify_mozjs_authenticated_input.py
 	python3 tools/validate_repository.py
 	python3 tools/validate_contract_foundation.py
 	python3 tools/validate_s04_transport_custody.py
+	python3 tools/verify_systemd_socket_custody.py
 	python3 -m unittest discover -s tests -p 'test_contract_foundation.py'
 	python3 -m unittest discover -s tests -p 'test_s04_transport_custody.py'
 	python3 -m unittest discover -s tests -p 'test_module_documentation*.py'
@@ -17,6 +33,11 @@ validate:
 truth:
 	python3 tools/validate_project_truth.py
 	python3 -m unittest discover -s tests -p 'test_project_truth_status_documents.py'
+
+test-python:
+	python3 -m unittest discover -s tests -v
+	python3 -m unittest discover -s tests/d1 -v
+	python3 -m unittest discover -s tests/transport -v
 
 fmt:
 	cargo fmt --all --check
@@ -39,9 +60,12 @@ test:
 test-features:
 	cargo test --workspace --all-targets --all-features --locked
 
+test-doc:
+	cargo test --workspace --doc --locked
+
 self-check:
 	cargo run --locked -p hepta-browserd -- --self-check
 	cargo run --locked -p hepta-agent-portd --bin hepta-agent-portd -- --self-check
 	cargo run --locked -p hepta-agent-portd --features fixture --bin hepta-agent-port-fixture -- --self-check
 
-check: validate truth fmt check-rust check-rust-features clippy clippy-features test test-features self-check
+check: validate truth test-python fmt check-rust check-rust-features clippy clippy-features test test-features test-doc self-check

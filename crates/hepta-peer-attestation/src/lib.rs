@@ -7,8 +7,27 @@
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
+#[cfg(target_os = "linux")]
+mod approved_policy;
 mod request_lease;
+#[cfg(target_os = "linux")]
+pub use approved_policy::{
+    ApprovedAgentReceivedStream, ApprovedAgentRequestBinding, ApprovedAgentRequestVerifier,
+    ApprovedAgentSelection, ApprovedAgentSession, ApprovedControlSelection, ApprovedPolicyDocument,
+    ApprovedPolicyError, DEFAULT_APPROVED_POLICY_PATH, MAX_APPROVED_POLICY_BYTES,
+};
+
 pub use request_lease::{PeerRequestCustody, PeerRequestVerifier};
+
+#[cfg(target_os = "linux")]
+mod control_owner;
+#[cfg(target_os = "linux")]
+pub use control_owner::{
+    AttestedHandoffReceiver, AttestedHandoffSender, AttestedPendingHandoff,
+    AttestedRetainedReceiver, ControlOwnerError, ControlOwnerPolicy, ControlReceivedAcceptedStream,
+    ControlRequestCustody, ControlRequestVerifier, ControlRetainedAcceptedStream,
+    PeerReportedRetirement, RootPathAttestedHandoffReceiver, RootPathAttestedHandoffSender,
+};
 
 use hepta_agent_transport::PeerIdentity;
 use sha2::{Digest as _, Sha256};
@@ -1173,6 +1192,19 @@ impl std::error::Error for AttestationError {
         }
     }
 }
+
+#[cfg(target_os = "linux")]
+pub use approved_policy::{
+    ApprovedServiceOwnerBinding, ApprovedServiceOwnerVerifier, ApprovedServicePolicyDocument,
+    DEFAULT_APPROVED_SERVICE_POLICY_PATH, MAX_APPROVED_SERVICE_POLICY_BYTES,
+};
+
+#[cfg(target_os = "linux")]
+pub use approved_policy::{
+    ApprovedServiceControlReceiver, ApprovedServiceReceivedRequest, ApprovedServiceRequestBinding,
+    ApprovedServiceRequestVerifier, ApprovedServiceRequests, ApprovedServiceRetainedReporter,
+    ApprovedServiceSessionVerifier,
+};
 
 #[cfg(test)]
 mod tests {

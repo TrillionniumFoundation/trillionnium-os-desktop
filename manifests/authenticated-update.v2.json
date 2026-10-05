@@ -1,0 +1,25 @@
+{
+  "schema": "trillionnium.desktop.authenticated-update-source-index.v2",
+  "plan_revision": "2026-08-29-d6",
+  "requirements": [
+    "G6",
+    "D7",
+    "S11"
+  ],
+  "implementations": [
+    "platform/authenticated_update_owner.py",
+    "platform/authenticated_update_observer.py"
+  ],
+  "documentation": "docs/architecture/AUTHENTICATED_UPDATE_READBACK.md",
+  "contract": "contracts/authenticated-update.v2.json",
+  "tests": "tests/test_authenticated_update_readback.py",
+  "workflow": ".github/workflows/authenticated-update-readback.yml",
+  "dependencies": [
+    "platform/update_recovery.py",
+    "platform/durable_update_owner.py",
+    "platform/update_boot_observer.py"
+  ],
+  "claim_ceiling": "source_and_host_exact_persisted_detached_signature_and_regular_file_slot_readback_no_boot_health_replay_or_installed_qualification",
+  "authority_mechanism": false,
+  "production_activation_enabled": false
+}

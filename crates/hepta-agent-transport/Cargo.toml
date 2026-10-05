@@ -13,3 +13,20 @@ publish = false
 [dependencies]
 libc = "=0.2.186"
 sha2 = "=0.10.9"
+
+# Real descriptor inventory and actual fork probes run from a single-thread
+# entry point, never alongside unrelated unit-test descriptor activity.
+[[test]]
+name = "accepted_handoff_kernel"
+path = "tests/accepted_handoff_kernel.rs"
+harness = false
+
+[[test]]
+name = "retained_control_kernel"
+path = "tests/retained_control_kernel.rs"
+harness = false
+
+[[test]]
+name = "root_control_path_kernel"
+path = "tests/root_control_path_kernel.rs"
+harness = false

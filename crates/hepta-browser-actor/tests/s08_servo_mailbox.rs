@@ -37,8 +37,6 @@ const BUDGET: Duration = Duration::from_secs(30);
 const MAILBOX_BUDGET: Duration = Duration::from_secs(180);
 const EXPECTED_REQUESTS: usize = 10;
 const EXPECTED_SERVO_COMMANDS: usize = 9;
-const NAME_SHA256: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-const STRUCTURAL_SHA256: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 static UNIQUE: AtomicU64 = AtomicU64::new(0);
 
 struct AttestedServoHandler {
@@ -776,8 +774,29 @@ fn real_servo_agent_port_browser_actor_receipt_chain() {
         ));
         let target = element_from_observation(&observed);
         assert_eq!(target.document_generation, first_document_generation);
-        assert_eq!(target.accessible_name_sha256.as_deref(), Some(NAME_SHA256));
-        assert_eq!(target.structural_fingerprint, STRUCTURAL_SHA256);
+        let name_digest = target
+            .accessible_name_sha256
+            .as_deref()
+            .expect("actual name digest");
+        for digest in [name_digest, target.structural_fingerprint.as_str()] {
+            assert_eq!(digest.len(), 64);
+            assert!(
+                digest
+                    .bytes()
+                    .all(|value| value.is_ascii_digit() || (b'a'..=b'f').contains(&value))
+            );
+            assert_ne!(digest, "a".repeat(64));
+            assert_ne!(digest, "b".repeat(64));
+        }
+        assert_ne!(name_digest, target.structural_fingerprint);
+        assert!(
+            target
+                .backend_node_key
+                .as_deref()
+                .expect("actual node identity")
+                .starts_with("accesskit-node-")
+        );
+        assert_ne!(target.frame_id, "main-frame");
 
         let waited = success(invoke(
             streams.next().unwrap(),

@@ -86,6 +86,14 @@ segment. It does not create per-segment PID lease sidecars. A terminated process
 releases the managed directory lock through the operating system; a stale
 sidecar is not used to select or authorize a new head.
 
+Directory custody, live journals and sealed facts bind to the creating PID.
+Inherited fork copies are refused before inventory/descriptor checks and before
+publication or sync. Child close never explicitly unlocks the parent's shared
+open file description. `is_managed` and `managed_rotation_due` return false for
+a foreign process; authoritative reads/writes and every fact getter return an
+error. This process scope leaves the v1 disk format and intended same-process
+thread handoff unchanged.
+
 The directory and marker descriptors are pinned. Marker inode, length, exact
 bytes, root identity and the complete inventory are checked on live operations.
 The active and predecessor paths/inodes retain the existing checks. Path or

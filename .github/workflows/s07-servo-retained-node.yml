@@ -12,6 +12,110 @@ on:
       - "manifests/servo-patches/d3-retained-node-action-v1/**"
       - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
       - "tests/test_s07_servo_patch_package.py"
+      - "tests/test_s07_event_checkout.py"
+      - "tools/verify_s07_qualification_lineage.py"
+      - ".github/workflows/s06-browser-actor.yml"
+      - "contracts/s07-qualification-lineage.v1.json"
+      - "contracts/golden/s07-historical-git-metadata.v1.json"
+      - "tests/test_s07_qualification_lineage.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/artifact_evidence.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tests/test_s06_public_exports.py"
+      - "tests/test_s06_browser_actor.py"
+      - "tests/test_s06_contract_paths.py"
+      - "contracts/browser-actor.v1.json"
+      - "crates/hepta-browser-actor/**"
+      - "crates/hepta-browser-actor-simulation/**"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/modules.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+      - "contracts/approved-composition-scope.v1.json"
+      - "crates/hepta-peer-attestation/src/control_owner/control_request.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request.rs"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - ".github/workflows/g2-approved-native-startup.yml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "crates/hepta-agent-transport/README.md"
+      - "crates/hepta-agent-transport/src/accepted_handoff.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs"
+      - "crates/hepta-agent-transport/tests/retained_control_kernel.rs"
+      - "crates/hepta-peer-attestation/src/control_owner.rs"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_mozjs_secondary_input.py"
   push:
     branches: ["codex/s07-servo-retained-node-closure-v1"]
     paths:
@@ -24,6 +128,110 @@ on:
       - "manifests/servo-patches/d3-retained-node-action-v1/**"
       - "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md"
       - "tests/test_s07_servo_patch_package.py"
+      - "tests/test_s07_event_checkout.py"
+      - "tools/verify_s07_qualification_lineage.py"
+      - ".github/workflows/s06-browser-actor.yml"
+      - "contracts/s07-qualification-lineage.v1.json"
+      - "contracts/golden/s07-historical-git-metadata.v1.json"
+      - "tests/test_s07_qualification_lineage.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/artifact_evidence.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tests/test_s06_public_exports.py"
+      - "tests/test_s06_browser_actor.py"
+      - "tests/test_s06_contract_paths.py"
+      - "contracts/browser-actor.v1.json"
+      - "crates/hepta-browser-actor/**"
+      - "crates/hepta-browser-actor-simulation/**"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/modules.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
+      - "contracts/approved-composition-scope.v1.json"
+      - "crates/hepta-peer-attestation/src/control_owner/control_request.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request.rs"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - ".github/workflows/g2-approved-native-startup.yml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "crates/hepta-agent-transport/README.md"
+      - "crates/hepta-agent-transport/src/accepted_handoff.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs"
+      - "crates/hepta-agent-transport/tests/retained_control_kernel.rs"
+      - "crates/hepta-peer-attestation/src/control_owner.rs"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_mozjs_secondary_input.py"
   workflow_dispatch:
 
 permissions:
@@ -40,7 +248,7 @@ env:
 
 jobs:
   real-servo-behavior:
-    name: exact-head-real-servo-behavior
+    name: s07-servo-retained-node / real-servo-behavior / exact-head-real-servo-behavior
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
@@ -51,18 +259,103 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: head
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
       - name: Assert exact source identity and package contract
+        id: lineage
         env:
           EXPECTED_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
-          git rev-parse HEAD^{tree}
-          test "$(git merge-base HEAD "$S06_HEAD")" = "$S06_HEAD"
+          git rev-parse 'HEAD^{tree}'
+          # This immutable carrier is provenance, not an ancestor assertion.
+          git fetch --no-tags https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git "$S06_HEAD"
+          python3 -B tools/verify_s07_qualification_lineage.py \
+            --mode exact-head --expected-sha "$EXPECTED_SOURCE_SHA" \
+            > "$RUNNER_TEMP/s07-current-source-lineage.json"
           test "$(jq -r '.carrier_base_commit' "$D3_SERVO_MANIFEST")" = "$S06_HEAD"
           test "$(jq -r '.carrier_branch' "$D3_SERVO_MANIFEST")" = "codex/s07-servo-retained-node-closure-v1"
-          python3 -m unittest discover -s tests -p 'test_s07_servo_patch_package.py' -v
+          python3 -B -m unittest tests.test_s07_servo_patch_package tests.test_s07_qualification_lineage -v
+
+      - name: Verify current sealed S06 source and compile-fail boundary
+        id: current_s06
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest tests.test_s06_browser_actor tests.test_s06_contract_paths tests.test_s06_public_exports -v
+          rustup toolchain install 1.93.0 --profile minimal
+          RUSTUP_TOOLCHAIN=1.93.0 cargo test --locked -p hepta-browser-actor --doc
+          reject_match() {
+            local grep_status
+            if grep "$@"; then
+              echo "forbidden source match" >&2
+              exit 1
+            else
+              grep_status=$?
+            fi
+            if [[ $grep_status -eq 1 ]]; then
+              return 0
+            fi
+            echo "source absence scan failed with status $grep_status" >&2
+            exit "$grep_status"
+          }
+          reject_match -R -n -E 'pub struct BrowserActor<|impl<.*BrowserActor|runtime: R|pub fn new\(|pub fn handle\(' crates/hepta-browser-actor/src
+          # Inventory real declarations after discarding Rust comments/literals;
+          # private use and pub(crate) use are not external public exports.
+          export_inventory="$RUNNER_TEMP/s06-public-exports.txt"
+          python3 tools/scan_s06_public_exports.py crates/hepta-browser-actor/src > "$export_inventory"
+          reject_match -R -n -E '(^|[^[:alnum:]_])(PrincipalBinding|MechanismIdentity|PageRuntime|CallbackPageRuntime|RequestControl|RuntimeReply)([^[:alnum:]_]|$)|^pub use [^;]*\*' "$export_inventory"
+          grep -R -n 'pub fn from_attested' crates/hepta-browser-actor/src
+          grep -R -n 'pub fn handle_attested' crates/hepta-browser-actor/src
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def reject_duplicate(pairs):
+              output = {}
+              for key, value in pairs:
+                  if key in output:
+                      raise ValueError(key)
+                  output[key] = value
+              return output
+
+          def reject_constant(value):
+              raise ValueError(value)
+
+          contract = json.loads(
+              Path('contracts/browser-actor.v1.json').read_text(encoding='utf-8'),
+              object_pairs_hook=reject_duplicate,
+              parse_constant=reject_constant,
+          )
+          authority = contract['authority_boundary']
+          assert authority['product_actor_generic_over_runtime'] is False
+          assert authority['caller_supplied_runtime_adapter'] is False
+          assert authority['runtime_trait_publicly_exported'] is False
+          assert authority['request_control_publicly_exported'] is False
+          assert authority['deferred_work_after_terminal_success_representable'] is False
+          assert contract['browser_actor']['agent_navigation_requires_idle_control_before_runtime'] is True
+          assert contract['browser_actor']['terminal_revision_reference_is_never_current'] is True
+          assert contract['activation']['product_agent_port_enabled'] is False
+          assert contract['activation']['servo_adapter_included'] is False
+          assert contract['activation']['production_release_authorized'] is False
+          PY
 
       - name: Check out exact Servo source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -108,7 +401,21 @@ jobs:
           git -C servo diff --name-only | sort > "$RUNNER_TEMP/d3-changed.txt"
           jq -r '.patch.allowed_paths[]' "$D3_SERVO_MANIFEST" | sort > "$RUNNER_TEMP/d3-allowed.txt"
           cmp "$RUNNER_TEMP/d3-allowed.txt" "$RUNNER_TEMP/d3-changed.txt"
-          ! grep -R -F "TODO(#4344): Forward action to Servo" servo/ports/servoshell/desktop/headed_window.rs
+          reject_match() {
+            local grep_status
+            if grep "$@"; then
+              echo "forbidden source match" >&2
+              exit 1
+            else
+              grep_status=$?
+            fi
+            if [[ $grep_status -eq 1 ]]; then
+              return 0
+            fi
+            echo "source absence scan failed with status $grep_status" >&2
+            exit "$grep_status"
+          }
+          reject_match -R -F "TODO(#4344): Forward action to Servo" servo/ports/servoshell/desktop/headed_window.rs
           git -C servo diff --check
 
       - name: Install exact Servo dependencies and Rust toolchain
@@ -242,6 +549,8 @@ jobs:
         if: always()
         shell: bash
         env:
+          LINEAGE_OUTCOME: ${{ steps.lineage.outcome }}
+          CURRENT_S06_OUTCOME: ${{ steps.current_s06.outcome }}
           VERIFY_OUTCOME: ${{ steps.verify.outcome }}
           DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
           FORMAT_OUTCOME: ${{ steps.format.outcome }}
@@ -251,7 +560,7 @@ jobs:
           evidence="$RUNNER_TEMP/s07-retained-node-evidence"
           mkdir -p "$evidence"
           cp "$D3_SERVO_MANIFEST" "$evidence/manifest.json"
-          for file in d3-servo.patch d3-servo-base.patch d3-servo-hardening.patch \
+          for file in s07-current-source-lineage.json d3-servo.patch d3-servo-base.patch d3-servo-hardening.patch \
             d3-servo-applied.patch d3-servo-tested.patch d3-servo-tested.patch.sha256 \
             d3-servo-tested-tree.txt d3-servo-after-behavior.patch \
             d3-patch-verification.json d3-changed.txt d3-changed-formatted.txt \
@@ -262,7 +571,7 @@ jobs:
             test ! -f "$RUNNER_TEMP/$file" || cp "$RUNNER_TEMP/$file" "$evidence/$file"
           done
           carrier=$(git rev-parse HEAD)
-          carrier_tree=$(git rev-parse HEAD^{tree})
+          carrier_tree=$(git rev-parse 'HEAD^{tree}')
           tested_patch_sha256=""
           tested_tree=""
           if test -f "$RUNNER_TEMP/d3-servo-tested.patch.sha256"; then
@@ -278,6 +587,8 @@ jobs:
             --arg servo "$D3_SERVO_COMMIT" \
             --arg tested_patch_sha256 "$tested_patch_sha256" \
             --arg tested_tree "$tested_tree" \
+            --arg lineage "$LINEAGE_OUTCOME" \
+            --arg current_s06 "$CURRENT_S06_OUTCOME" \
             --arg verify "$VERIFY_OUTCOME" \
             --arg dependencies "$DEPENDENCIES_OUTCOME" \
             --arg format "$FORMAT_OUTCOME" \
@@ -293,11 +604,14 @@ jobs:
               tested_servo_patch_sha256:$tested_patch_sha256,
               tested_servo_tree:$tested_tree,
               source_tree_rechecked_after_behavior:($behavior == "success"),
+              historical_carrier_meaning:"historical_extracted_patch_provenance_only",
+              lineage_outcome:$lineage,
+              current_s06_outcome:$current_s06,
               verify_outcome:$verify,
               dependencies_outcome:$dependencies,
               format_outcome:$format,
               behavior_outcome:$behavior,
-              evidence_complete:($verify == "success" and $dependencies == "success" and $format == "success" and $behavior == "success" and ($tested_patch_sha256|length) == 64 and ($tested_tree|length) == 40),
+              evidence_complete:($lineage == "success" and $current_s06 == "success" and $verify == "success" and $dependencies == "success" and $format == "success" and $behavior == "success" and ($tested_patch_sha256|length) == 64 and ($tested_tree|length) == 40),
               retained_node_valid_click_tested:($behavior == "success"),
               action_advertisement_enforced:($behavior == "success"),
               stale_node_and_tree_tested:($behavior == "success"),
@@ -331,7 +645,7 @@ jobs:
           retention-days: 30
 
   prospective-merge-patch-package:
-    name: prospective-merge-patch-package
+    name: s07-servo-retained-node / prospective-merge-patch-package
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -339,21 +653,125 @@ jobs:
       - name: Check out prospective merge object
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          ref: ${{ github.sha }}
           fetch-depth: 2
           persist-credentials: false
 
-      - name: Assert prospective merge identity and parent order
+      - name: Verify canonical live source role
+        shell: bash
         env:
+          CI_SOURCE_ROLE: prospective-merge
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
+
+      - name: Assert prospective merge identity and parent order
+        id: lineage
+        env:
+          EXPECTED_MERGE_SHA: ${{ github.sha }}
+          EXPECTED_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           EXPECTED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MERGE_SHA"
           test "$(git rev-list --parents -n1 HEAD | awk '{print NF - 1}')" -eq 2
           test "$(git rev-parse HEAD^1)" = "$EXPECTED_BASE_SHA"
           test "$(git rev-parse HEAD^2)" = "$EXPECTED_HEAD_SHA"
-          python3 -m unittest discover -s tests -p 'test_s07_servo_patch_package.py' -v
+          git check-ref-format --branch "$EXPECTED_BASE_REF"
+          git check-ref-format "refs/heads/$EXPECTED_BASE_REF"
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          official_repository=https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git
+          resolve_ref() {
+            git ls-remote --exit-code "$official_repository" "$1" | awk -v ref="$1" '
+              $2 == ref { value = $1; matches++ }
+              END { if (matches != 1) exit 1; print value }
+            '
+          }
+          live_base=$(resolve_ref "refs/heads/$EXPECTED_BASE_REF")
+          live_head=$(resolve_ref "refs/pull/$PR_NUMBER/head")
+          test "$live_base" = "$EXPECTED_BASE_SHA"
+          test "$live_head" = "$EXPECTED_HEAD_SHA"
+          git fetch --no-tags https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git "$S06_HEAD"
+          python3 -B tools/verify_s07_qualification_lineage.py \
+            --mode prospective-merge --expected-sha "$EXPECTED_MERGE_SHA" \
+            --expected-base "$EXPECTED_BASE_SHA" --expected-head "$EXPECTED_HEAD_SHA" \
+            > "$RUNNER_TEMP/s07-prospective-source-lineage.json"
+          python3 -B -m unittest tests.test_s07_servo_patch_package tests.test_s07_qualification_lineage -v
+
+      - name: Verify current sealed S06 source and compile-fail boundary
+        id: current_s06
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest tests.test_s06_browser_actor tests.test_s06_contract_paths tests.test_s06_public_exports -v
+          rustup toolchain install 1.93.0 --profile minimal
+          RUSTUP_TOOLCHAIN=1.93.0 cargo test --locked -p hepta-browser-actor --doc
+          reject_match() {
+            local grep_status
+            if grep "$@"; then
+              echo "forbidden source match" >&2
+              exit 1
+            else
+              grep_status=$?
+            fi
+            if [[ $grep_status -eq 1 ]]; then
+              return 0
+            fi
+            echo "source absence scan failed with status $grep_status" >&2
+            exit "$grep_status"
+          }
+          reject_match -R -n -E 'pub struct BrowserActor<|impl<.*BrowserActor|runtime: R|pub fn new\(|pub fn handle\(' crates/hepta-browser-actor/src
+          # Inventory real declarations after discarding Rust comments/literals;
+          # private use and pub(crate) use are not external public exports.
+          export_inventory="$RUNNER_TEMP/s06-public-exports.txt"
+          python3 tools/scan_s06_public_exports.py crates/hepta-browser-actor/src > "$export_inventory"
+          reject_match -R -n -E '(^|[^[:alnum:]_])(PrincipalBinding|MechanismIdentity|PageRuntime|CallbackPageRuntime|RequestControl|RuntimeReply)([^[:alnum:]_]|$)|^pub use [^;]*\*' "$export_inventory"
+          grep -R -n 'pub fn from_attested' crates/hepta-browser-actor/src
+          grep -R -n 'pub fn handle_attested' crates/hepta-browser-actor/src
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def reject_duplicate(pairs):
+              output = {}
+              for key, value in pairs:
+                  if key in output:
+                      raise ValueError(key)
+                  output[key] = value
+              return output
+
+          def reject_constant(value):
+              raise ValueError(value)
+
+          contract = json.loads(
+              Path('contracts/browser-actor.v1.json').read_text(encoding='utf-8'),
+              object_pairs_hook=reject_duplicate,
+              parse_constant=reject_constant,
+          )
+          authority = contract['authority_boundary']
+          assert authority['product_actor_generic_over_runtime'] is False
+          assert authority['caller_supplied_runtime_adapter'] is False
+          assert authority['runtime_trait_publicly_exported'] is False
+          assert authority['request_control_publicly_exported'] is False
+          assert authority['deferred_work_after_terminal_success_representable'] is False
+          assert contract['browser_actor']['agent_navigation_requires_idle_control_before_runtime'] is True
+          assert contract['browser_actor']['terminal_revision_reference_is_never_current'] is True
+          assert contract['activation']['product_agent_port_enabled'] is False
+          assert contract['activation']['servo_adapter_included'] is False
+          assert contract['activation']['production_release_authorized'] is False
+          PY
 
       - name: Check out exact Servo source for dry-run
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -389,7 +807,7 @@ jobs:
           tested_patch_sha256=$(sha256sum "$RUNNER_TEMP/s07-tested.patch" | awk '{print $1}')
           tested_tree=$(git -C servo write-tree)
           merge_commit=$(git rev-parse HEAD)
-          merge_tree=$(git rev-parse HEAD^{tree})
+          merge_tree=$(git rev-parse 'HEAD^{tree}')
           base_commit=$(git rev-parse HEAD^1)
           head_commit=$(git rev-parse HEAD^2)
           jq -n \
@@ -407,6 +825,8 @@ jobs:
               base_commit:$base_commit,
               head_commit:$head_commit,
               servo_commit:$servo_commit,
+              historical_carrier_meaning:"historical_extracted_patch_provenance_only",
+              current_s06_source_gate_completed:true,
               complete_base_and_hardening_applied:true,
               tested_patch_sha256:$tested_patch_sha256,
               tested_servo_tree:$tested_tree,
@@ -424,6 +844,7 @@ jobs:
         with:
           name: s07-prospective-${{ github.event.pull_request.head.sha }}
           path: |
+            ${{ runner.temp }}/s07-prospective-source-lineage.json
             ${{ runner.temp }}/s07-prospective-evidence.json
             ${{ runner.temp }}/s07-combined.patch
             ${{ runner.temp }}/s07-base.patch

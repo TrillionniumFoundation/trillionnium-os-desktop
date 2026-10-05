@@ -33,7 +33,7 @@ pub use authoritative_export::{
 pub use machine::{SessionMachine, SessionSnapshot};
 pub use queue::{ArbiterQueue, QueueError};
 pub use receipt_journal_impl::{
-    ArchivedSegment, CommittedRecord, CopiedReceiptSegment, Digest,
+    ArchivedSegment, CommittedRecord, CopiedReceiptSegment, Digest, DurableReceiptFact,
     EffectClass as ReceiptEffectClass, JournalError, JournalId,
     LifecycleState as ReceiptLifecycleState, MANAGED_ROTATION_THRESHOLD_BYTES, MAX_CHAIN_BYTES,
     MAX_CHAIN_RECORDS, MAX_CHAIN_SEGMENTS, ManagedOpenPolicy, OpenPolicy as JournalOpenPolicy,

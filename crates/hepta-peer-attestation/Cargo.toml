@@ -23,3 +23,26 @@ development-static-attestation = []
 hepta-agent-transport = { path = "../hepta-agent-transport" }
 libc = "=0.2.186"
 sha2 = "=0.10.9"
+
+# Actual fork and distinct-process descriptor custody use a single-thread main.
+[[test]]
+name = "control_owner_kernel"
+path = "tests/control_owner_kernel.rs"
+harness = false
+
+[[test]]
+name = "approved_policy_kernel"
+path = "tests/approved_policy_kernel.rs"
+harness = false
+
+# Persistent service-source continuity is a separate actual root test profile.
+[[test]]
+name = "approved_service_owner_kernel"
+path = "tests/approved_service_owner_kernel.rs"
+harness = false
+
+# Original requests bridge retained service identity, independently of health.
+[[test]]
+name = "approved_service_request_kernel"
+path = "tests/approved_service_request_kernel.rs"
+harness = false

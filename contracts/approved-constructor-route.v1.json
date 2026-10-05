@@ -1,0 +1,76 @@
+{
+  "schema": "trillionnium.desktop.approved-constructor-route.v1",
+  "default_activation": false,
+  "status": "SOURCE_CANDIDATE_NATIVE_BUDGET_REQUALIFICATION_PENDING",
+  "authority": {
+    "private_denial_only_gate": true,
+    "caller_snapshot_or_boolean_authority": false,
+    "original_binding_and_original_custodies_required": true,
+    "public_full_readback_unchanged": true,
+    "legacy_none_full_readback_unchanged": true,
+    "scope_mints_runtime_or_report_permission": false,
+    "cross_call_executable_cache": false
+  },
+  "lifetime": {
+    "accepted_seconds_maximum": 20,
+    "native_seconds_maximum": 5,
+    "original_instant_extended": false
+  },
+  "full_boundaries": [
+    "unchanged_public_approved_wrapper_before_private_constructor",
+    "actual_approved_actor_factory_identity_and_principal_equality",
+    "private_constructor_final_full_before_return",
+    "original_dispatch_completion_and_report_boundaries"
+  ],
+  "private_helper_signature": "fn ensure_approved_constructor_scope(&self, approved: &hepta_peer_attestation::ApprovedAgentRequestBinding) -> Result<(), ProductDispatchError>",
+  "whole_source_sha256": {
+    "apps/hepta-browserd/src/product_dispatch.rs": "d6dab75c5b40260f1f53df2b9ccdbdf1d6c84f4a2b21150036c43a8c83934bd3",
+    "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs": "39c227ccba6bdf249402cf1f48cc8e2e09e7bc8e74067f619b1a134275c4aea5",
+    "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs": "818919238281bcb71c367a943f1b6fe7276d8f11c518b637a8cba602d5b1679a",
+    "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs": "d87efdb8cdd22e38cca90aae0f776f823478bf3b2045482c81ba608eb79a019f",
+    "apps/hepta-browserd/src/product_dispatch/configured_retained_bootstrap.rs": "13f5f364c22462065347e2f520bd9cd16ac68bc6ef32167727ff2d8a6a58588c",
+    "crates/hepta-peer-attestation/src/approved_policy.rs": "0a6a079336ad842bc55c34fe3930707ece098182bd976e78c2dfb21e18d87882",
+    "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs": "604f35a1559901247341e51072207a7b31a768245324a82e35e3f31855421702",
+    "crates/hepta-peer-attestation/src/control_owner/control_request.rs": "4d4d6a80d2c6f93660b9ad09a1cefac43faa32177212d812c620315017a23eca",
+    "crates/hepta-peer-attestation/src/request_lease.rs": "54b80b2e94f4dc149d9af8f6e92815a2a8b88a9db987c34ec9a0b59d53850681",
+    "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs": "9141043f5ec964492a88a48ea57d3c2e82b71dc96dfd07d30419967f607fb754"
+  },
+  "function_token_sha256": {
+    "apps/hepta-browserd/src/product_dispatch.rs": {
+      "AcceptedProductConnection::ensure_approved_constructor_scope": "b21691ccd7862af9b28578c49552b45dd48c51953d9a9cfdeb259f25a7dde8f1",
+      "ProductRequestCoordinator::from_connection_with_approval": "8830bcc2e0950def13fa236eb03d81d0bb3054ed3471a105188d1515b7694182"
+    },
+    "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs": {
+      "ProductRequestCoordinator::from_approved_retained_connection": "1a5e124ec394f524f8c86176204cd4fbfdd58b57f4e9f2f05f2d3c202ea5f0ac",
+      "ApprovedRetainedProductConnection::from_received": "714f4c25da8d16fabb64b8fb0d81496322594fb8a6bbde83277ba7edc4d0292f"
+    }
+  },
+  "parent_public_api_token_bodies": {
+    "ProductConnectionCancellation::cancel": "684f2d7d565c5863913de92c2e2e14a9275051e72ac3ce8702ad4c619230081c",
+    "AcceptedProductConnection::attest": "b16b0fa5a89cd4cbd2e584232d8bb25cd3a0ccf0a162c4a430f9136745563518",
+    "AcceptedProductConnection::from_received": "37e398088329953ccd8289a2ca2de7c233d5772c7fec7518400f4da6c13b7107",
+    "AcceptedProductConnection::from_control_received": "f645636408c992edd75c19f55f8563873d84900c7f8a472752b682b5422303ad",
+    "AcceptedProductConnection::deadline": "2a1cab133124f8851aece6bb6d4c31052f7c302725f639b2029cc084bc522d1f",
+    "AcceptedProductConnection::cancellation": "2d6bc69b7ac3cb52517368fae6206aaebbdff2a12cf89682ed1a6713a64e3a47",
+    "product_connection_queue": "02e4569a3b3a8a89939fb7c8ea75f5c7e72ab8f6e00fd36182027bda9c889a26",
+    "ProductConnectionIngress::try_submit": "f18ff7b179226f46a1db378cd0bb6995fa64b42f81e32039a44a2655779f1f20",
+    "ProductConnectionQueue::try_next": "0864341e32fdcc27a164cdd7830e2e51d7e09d092afcc6ae0f0db6f0b32acf3d",
+    "ProductRequestCoordinator::from_connection": "5d431916692c0904709f317fb6741478fabc8d0195d64dbc0b0e055d08a10885",
+    "ProductRequestCoordinator::from_connection_after_reconciliation": "b84a3b1a64dcfab2a982a54f1a8e4b552d7d6df367cc7a9f234989e4eddb974d",
+    "ProductRequestCoordinator::serve_connection": "0cbcf0b6ca9e7047c394e382e646c6244e5f7097a591cf9cc8bb681b00a769df",
+    "ProductRequestCoordinator::reconcile_request": "b9e33199e0b617a5b36d882a9a53abd77b80c672c18bc8e18f764531fcb292a2",
+    "ProductRequestCoordinator::content_process_crashed": "edf071cff16509536c4d646a5d224fe9f1fd9b3101a72eba183630fe87a7a036",
+    "ProductRequestCoordinator::acknowledge_stable_cycle": "0f9566c9862616df3c581b374e0cc5b9c25589a0814bdacaf76b7410e7f0b1c1",
+    "ProductRequestCoordinator::reconstruct": "064672917c00fdcb15f3c2fefcc417f6e0de5276e9abb8546220ed4789a1ab7d"
+  },
+  "qualification": {
+    "structural_source_correspondence_only": true,
+    "existing_actual_default_proc_kernel_groups_required": 13,
+    "existing_approved_startup_kernel_groups_required": 8,
+    "native_original_six_cases_and_budgets_preserved": true,
+    "actual_native_requalification_pending": true,
+    "measured_speedup_claim": false,
+    "installed_activation": false,
+    "production_ready": false
+  }
+}

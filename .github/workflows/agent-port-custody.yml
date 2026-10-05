@@ -6,6 +6,14 @@ on:
       - ".github/workflows/agent-port-custody.yml"
       - "apps/hepta-agent-portd/**"
       - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-agent-transport/**"
+      - "contracts/root-owned-control-path.v1.json"
+      - "docs/architecture/ROOT_OWNED_CONTROL_PATH.md"
+      - "tests/test_root_control_path.py"
+      - "apps/hepta-browserd/**"
+      - "contracts/root-path-retained-control.v1.json"
+      - "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md"
+      - "tests/test_root_path_retained_control.py"
       - "packaging/debian/systemd/**"
       - "packaging/debian/sysusers.d/**"
       - "packaging/debian/tmpfiles.d/**"
@@ -18,15 +26,115 @@ on:
       - "manifests/gates.v1.json"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/modules.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tools/artifact_evidence.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_mozjs_secondary_input.py"
   push:
     branches:
       - main
       - codex/d0c05-systemd-custody-v2
       - codex/d3-agentport-fixture-separation-v1
+      - codex/g2-root-path-retained-control-20261003
     paths:
       - ".github/workflows/agent-port-custody.yml"
       - "apps/hepta-agent-portd/**"
       - "crates/hepta-peer-attestation/**"
+      - "crates/hepta-agent-transport/**"
+      - "contracts/root-owned-control-path.v1.json"
+      - "docs/architecture/ROOT_OWNED_CONTROL_PATH.md"
+      - "tests/test_root_control_path.py"
+      - "apps/hepta-browserd/**"
+      - "contracts/root-path-retained-control.v1.json"
+      - "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md"
+      - "tests/test_root_path_retained_control.py"
       - "packaging/debian/systemd/**"
       - "packaging/debian/sysusers.d/**"
       - "packaging/debian/tmpfiles.d/**"
@@ -40,6 +148,97 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
 
+      - "tools/verify_ci_source_identity.py"
+      - "tests/test_ci_source_identity.py"
+      - "contracts/ci-source-identity.v1.json"
+      - "docs/architecture/CI_SOURCE_IDENTITY.md"
+      - "tools/_validate_repository_impl.py"
+      - "tools/browser_codec_reference_security.py"
+      - "tools/non_status_project_truth.py"
+      - "tools/source_state_model.py"
+      - "tools/structured_status.py"
+      - "tools/structured_status_model.py"
+      - "tools/structured_status_repository.py"
+      - "tools/validate_repository.py"
+      - "tools/verify_ci_required_contexts.py"
+      - "contracts/ci-required-contexts.v1.json"
+      - "tests/test_ci_required_contexts.py"
+      - "docs/architecture/CI_REQUIRED_CONTEXTS.md"
+      - ".github/workflows/**"
+      - "apps/hepta-browserd/Cargo.toml"
+      - "apps/hepta-browserd/README.md"
+      - "apps/hepta-browserd/src/product_dispatch.rs"
+      - "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
+      - "apps/hepta-browserd/tests/approved_native_startup_kernel.rs"
+      - "apps/hepta-browserd/tests/approved_request_binding_kernel.rs"
+      - "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs"
+      - "contracts/approved-request-binding.v1.json"
+      - "crates/hepta-browser-actor-simulation/README.md"
+      - "crates/hepta-browser-actor-simulation/src/approved_rebinding.rs"
+      - "crates/hepta-browser-actor-simulation/src/lib.rs"
+      - "crates/hepta-browser-actor/README.md"
+      - "crates/hepta-browser-actor/src/servo_runtime.rs"
+      - "crates/hepta-browser-actor/src/servo_runtime/approved_binding.rs"
+      - "crates/hepta-peer-attestation/README.md"
+      - "crates/hepta-peer-attestation/src/approved_policy.rs"
+      - "crates/hepta-peer-attestation/src/approved_policy/request_binding.rs"
+      - "crates/hepta-peer-attestation/src/lib.rs"
+      - "crates/hepta-peer-attestation/src/request_lease.rs"
+      - "docs/DEVELOPMENT_GUIDE.md"
+      - "docs/README.md"
+      - "docs/architecture/APPROVED_REQUEST_BINDING.md"
+      - "experiments/servo-product-owner/src/approved_connected_tests.rs"
+      - "experiments/servo-product-owner/src/approved_startup.rs"
+      - "experiments/servo-product-owner/src/approved_test_support.rs"
+      - "experiments/servo-product-owner/src/connected_tests.rs"
+      - "experiments/servo-product-owner/src/native_owner.rs"
+      - "manifests/modules.v1.json"
+      - "tests/test_approved_request_binding.py"
+      - "tools/artifact_evidence.py"
+      - "tools/prepare_native_product_owner.py"
+      - "tools/scan_s06_public_exports.py"
+      - "tools/verify_approved_native_startup.py"
+      - "tools/verify_approved_request_binding.py"
+      - "Makefile"
+      - "contracts/approved-composition-scope.v1.json"
+      - "docs/architecture/APPROVED_NATIVE_STARTUP.md"
+      - "tests/test_approved_composition_scope.py"
+      - "tools/verify_approved_composition_scope.py"
+      - "contracts/approved-constructor-route.v1.json"
+      - "tests/test_approved_constructor_route.py"
+      - "tools/verify_approved_constructor_route.py"
+      - "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+      - "contracts/retained-control-readiness.v1.json"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs"
+      - "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs"
+      - "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs"
+      - "docs/architecture/RETAINED_CONTROL_READINESS.md"
+      - "tests/test_retained_control_readiness.py"
+      - "tools/verify_retained_control_readiness.py"
+      - "contracts/approved-native-startup.v1.json"
+      - "contracts/retained-control-terminal.v1.json"
+      - "manifests/cargo-external-allowlist.json"
+      - "manifests/rust-toolchain.lock.json"
+      - "manifests/servo.lock.json"
+      - "rust-toolchain.toml"
+      - "tests/test_approved_native_startup.py"
+      - "tests/test_retained_control_terminal.py"
+      - "tools/prepare_approved_native_startup.py"
+      - "contracts/mozjs-authenticated-input.v2.json"
+      - "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
+      - "manifests/mozjs-authenticated-input.v2.json"
+      - "tests/test_mozjs_authenticated_input.py"
+      - "tools/build_mozjs_authenticated_native.py"
+      - "tools/mozjs_authenticated_input.py"
+      - "tools/verify_mozjs_authenticated_input.py"
+      - "contracts/mozjs-secondary-input.v1.json"
+      - "docs/architecture/MOZJS_SECONDARY_INPUT.md"
+      - "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md"
+      - "experiments/servo-product-owner/rustfmt.toml"
+      - "manifests/mozjs-secondary-input.v1.json"
+      - "tools/build_mozjs_locked_native.py"
+      - "tools/mozjs_secondary_input.py"
+      - "tools/verify_mozjs_secondary_input.py"
 permissions:
   contents: read
 
@@ -49,11 +248,29 @@ concurrency:
 
 jobs:
   validate-custody:
+    name: agent-port-custody / validate-custody
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Verify canonical live source role
+        shell: bash
+        env:
+          CI_SOURCE_ROLE: event-source
+          CI_SOURCE_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REPOSITORY: ${{ github.repository }}
+          CI_SOURCE_REF: ${{ github.ref }}
+          CI_SOURCE_REF_NAME: ${{ github.ref_name }}
+          CI_SOURCE_SHA: ${{ github.sha }}
+          CI_SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          CI_SOURCE_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          CI_SOURCE_PR_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_SOURCE_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_ci_source_identity.py
 
       - name: Install exact Rust toolchain
         run: |
@@ -66,6 +283,8 @@ jobs:
           python3 tools/validate_repository.py
           python3 tools/validate_project_truth.py
           python3 tools/verify_systemd_socket_custody.py
+          python3 -m unittest discover -s tests -p test_root_control_path.py -v
+          python3 -m unittest discover -s tests -p test_root_path_retained_control.py -v
 
       - name: Verify systemd unit syntax and account mappings
         shell: bash
@@ -93,7 +312,13 @@ jobs:
           cargo clippy --locked -p hepta-agent-portd --all-targets --all-features -- -D warnings
 
       - name: Run product and explicit fixture regressions
+        env:
+          # Exclude test-only DWARF bytes from live self-image measurements; deadlines are unchanged.
+          CARGO_PROFILE_TEST_DEBUG: '0'
+          # Optimize the same source-test executable measurements without changing budgets.
+          CARGO_PROFILE_TEST_OPT_LEVEL: '1'
         run: |
+          # Includes the required root-path primitive and live retained bridge/kernel/coordinator profiles.
           cargo test --workspace --all-targets --locked
           cargo test --locked -p hepta-agent-portd --all-targets --all-features
           cargo run --locked -p hepta-browserd -- --self-check
@@ -109,23 +334,48 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          reject_match() {
+            local result
+            if grep "$@"; then
+              exit 1
+            else
+              result=$?
+              if [[ "$result" -ne 1 ]]; then
+                exit "$result"
+              fi
+            fi
+          }
           cargo clean -p hepta-agent-portd
           cargo build --release --locked -p hepta-agent-portd --bin hepta-agent-portd
           test -x target/release/hepta-agent-portd
           test ! -e target/release/hepta-agent-port-fixture
-          ! strings target/release/hepta-agent-portd | grep -F 'D0FixtureHandler'
-          ! strings target/release/hepta-agent-portd | grep -F 'agent-port-fixture-self-check'
-          ! grep -F 'hepta-agent-port-fixture' packaging/debian/hepta-agent-portd.install
+          strings_report="$(mktemp "${RUNNER_TEMP:?}/agent-portd-strings.XXXXXX")"
+          trap 'rm -f -- "$strings_report"' EXIT
+          strings target/release/hepta-agent-portd > "$strings_report"
+          reject_match -F 'D0FixtureHandler' "$strings_report"
+          reject_match -F 'agent-port-fixture-self-check' "$strings_report"
+          reject_match -F 'hepta-agent-port-fixture' packaging/debian/hepta-agent-portd.install
 
       - name: Reconfirm closed authority and activation ceiling
         shell: bash
         run: |
           set -euo pipefail
+          reject_match() {
+            local result
+            if grep "$@"; then
+              exit 1
+            else
+              result=$?
+              if [[ "$result" -ne 1 ]]; then
+                exit "$result"
+              fi
+            fi
+          }
           test ! -e enable-agent-port
           test ! -e /etc/hepta/enable-agent-port
-          ! grep -R -n -E 'TcpListener|UnixListener|WebDriver' \
-            apps/hepta-agent-portd crates/hepta-peer-attestation
-          ! grep -F 'D0FixtureHandler' apps/hepta-agent-portd/src/main.rs
+          reject_match -R -n --include='*.rs' -E 'TcpListener|UnixListener|WebDriver' \
+            apps/hepta-agent-portd crates/hepta-peer-attestation/src
+          reject_match -F 'D0FixtureHandler' apps/hepta-agent-portd/src/main.rs
           grep -F 'ProductHandlerUnavailable' apps/hepta-agent-portd/src/main.rs
           grep -F 'D0FixtureHandler' \
             apps/hepta-agent-portd/src/bin/hepta-agent-port-fixture.rs

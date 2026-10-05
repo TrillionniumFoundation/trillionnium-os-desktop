@@ -72,6 +72,10 @@ impl Drop for PeerRequestCustody {
 }
 
 impl PeerRequestVerifier {
+    pub(crate) fn original_attested_peer(&self) -> Result<&AttestedPeer, AttestationError> {
+        self.ensure_alive()?;
+        Ok(&self.state.peer)
+    }
     /// Cheap liveness check for wait loops: no procfs reads or image hashing.
     pub fn ensure_alive(&self) -> Result<(), AttestationError> {
         if self.state.revoked.load(Ordering::SeqCst) {

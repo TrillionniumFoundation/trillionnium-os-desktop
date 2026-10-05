@@ -39,19 +39,88 @@
       "architecture": [
         "docs/architecture/RUNTIME_TOPOLOGY_AND_FAILURE_MODEL.md",
         "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
-        "docs/architecture/SESSION_STATE_MACHINE.md"
+        "docs/architecture/SESSION_STATE_MACHINE.md",
+        "docs/architecture/S08_PRODUCT_SERVO_SUPERVISION.md",
+        "docs/architecture/REQUEST_EXECUTION_AND_RECOVERY.md",
+        "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
+        "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md",
+        "docs/architecture/APPROVED_MECHANISM_POLICY.md",
+        "docs/architecture/APPROVED_NATIVE_STARTUP.md",
+        "docs/architecture/CONFIGURED_RETAINED_BOOTSTRAP.md",
+        "docs/architecture/APPROVED_REQUEST_BINDING.md",
+        "docs/architecture/MOZJS_SECONDARY_INPUT.md",
+        "docs/architecture/RETAINED_CONTROL_READINESS.md",
+        "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md",
+        "docs/architecture/PERSISTENT_SERVICE_PRODUCT_COORDINATOR.md",
+        "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md"
       ],
       "contracts": [
         "contracts/browser-api.v1.schema.json",
-        "contracts/browser-actor.v1.json"
+        "contracts/browser-actor.v1.json",
+        "contracts/accepted-stream-handoff.v1.json",
+        "contracts/dual-owner-request-custody.v1.json",
+        "contracts/retained-control-terminal.v1.json",
+        "contracts/root-path-retained-control.v1.json",
+        "contracts/approved-mechanism-policy.v1.json",
+        "contracts/approved-native-startup.v1.json",
+        "contracts/configured-retained-bootstrap.v1.json",
+        "contracts/approved-request-binding.v1.json",
+        "contracts/mozjs-secondary-input.v1.json",
+        "contracts/approved-composition-scope.v1.json",
+        "contracts/approved-constructor-route.v1.json",
+        "contracts/retained-control-readiness.v1.json",
+        "contracts/mozjs-authenticated-input.v2.json",
+        "contracts/approved-service-product.v2.json",
+        "contracts/service-dispatch-denial-cutoff.v1.json"
       ],
       "tests": [
         "apps/hepta-browserd/src/lib.rs",
-        "tests/test_s06_browser_actor.py"
+        "tests/test_s06_browser_actor.py",
+        "apps/hepta-browserd/src/servo_product_runtime.rs",
+        "tests/test_s08_product_supervision.py",
+        "apps/hepta-browserd/src/product_dispatch/tests.rs",
+        "apps/hepta-browserd/src/approved_native_test_support.rs",
+        "apps/hepta-browserd/tests/product_fork_custody.rs",
+        "apps/hepta-browserd/tests/product_handoff_kernel.rs",
+        "tests/test_accepted_stream_handoff.py",
+        "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
+        "tests/test_dual_owner_custody.py",
+        "tests/test_retained_control_terminal.py",
+        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs",
+        "apps/hepta-browserd/tests/product_root_path_kernel.rs",
+        "tests/test_root_path_retained_control.py",
+        "apps/hepta-browserd/tests/approved_policy_product_kernel.rs",
+        "tests/test_approved_mechanism_policy.py",
+        "apps/hepta-browserd/src/product_dispatch/product_approved_queue.rs",
+        "apps/hepta-browserd/tests/approved_native_startup_kernel.rs",
+        "tests/test_approved_native_startup.py",
+        "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs",
+        "tests/test_configured_retained_bootstrap.py",
+        "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
+        "tests/test_approved_request_binding.py",
+        "tests/test_mozjs_secondary_input.py",
+        "tests/test_approved_composition_scope.py",
+        "tests/test_approved_constructor_route.py",
+        "tests/test_retained_control_readiness.py",
+        "apps/hepta-browserd/tests/control_readiness_kernel.rs",
+        "tests/test_mozjs_authenticated_input.py",
+        "tests/test_approved_service_product.py",
+        "apps/hepta-browserd/src/product_dispatch/service_product.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/coordinator.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/lifecycle.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/report.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/wire.rs",
+        "apps/hepta-browserd/src/product_dispatch/service_product/tests.rs",
+        "tests/test_service_dispatch_denial_cutoff.py"
       ],
       "workflows": [
         ".github/workflows/ci.yml",
-        ".github/workflows/s06-browser-actor.yml"
+        ".github/workflows/s06-browser-actor.yml",
+        ".github/workflows/s08-product-servo-runtime.yml",
+        ".github/workflows/s04-transport-custody.yml",
+        ".github/workflows/agent-port-custody.yml",
+        ".github/workflows/approved-mechanism-policy.yml",
+        ".github/workflows/g2-approved-native-startup.yml"
       ],
       "binaries": [
         {
@@ -60,7 +129,9 @@
           "required_features": []
         }
       ],
-      "features": []
+      "features": [
+        "approved-native-service-error"
+      ]
     },
     {
       "id": "hepta-agent-portd",
@@ -117,18 +188,46 @@
       "owner_class": "transport-security",
       "documentation": "crates/hepta-agent-transport/README.md",
       "architecture": [
-        "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md"
+        "docs/architecture/AUTHENTICATED_AGENT_TRANSPORT.md",
+        "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
+        "docs/architecture/ROOT_OWNED_CONTROL_PATH.md",
+        "docs/architecture/RETAINED_CONTROL_READINESS.md",
+        "docs/architecture/PERSISTENT_SERVICE_REQUEST_BRIDGE.md",
+        "docs/architecture/PERSISTENT_SERVICE_PRODUCT_COORDINATOR.md"
       ],
       "contracts": [
-        "contracts/agent-transport.v1.json"
+        "contracts/agent-transport.v1.json",
+        "contracts/accepted-stream-handoff.v1.json",
+        "contracts/retained-control-terminal.v1.json",
+        "contracts/root-owned-control-path.v1.json",
+        "contracts/retained-control-readiness.v1.json",
+        "contracts/approved-service-request-bridge.v2.json",
+        "contracts/approved-service-product.v2.json"
       ],
       "tests": [
         "crates/hepta-agent-transport/src/facade.rs",
-        "tests/transport/test_agent_transport_reference.py"
+        "crates/hepta-agent-transport/tests/accepted_handoff_kernel.rs",
+        "tests/test_accepted_stream_handoff.py",
+        "tests/transport/test_agent_transport_reference.py",
+        "tests/test_retained_control_terminal.py",
+        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs",
+        "crates/hepta-agent-transport/tests/retained_control_kernel.rs",
+        "crates/hepta-agent-transport/tests/root_control_path_kernel.rs",
+        "tests/test_root_control_path.py",
+        "tests/test_ci_pr_ref_identities.py",
+        "tests/test_retained_control_readiness.py",
+        "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs",
+        "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs",
+        "tests/test_approved_service_request.py",
+        "crates/hepta-agent-transport/src/accepted_handoff/retained_control/service_control.rs",
+        "crates/hepta-agent-transport/src/root_control_path/service_control.rs",
+        "tests/test_approved_service_product.py",
+        "crates/hepta-agent-transport/src/accepted_handoff/connected_denial.rs"
       ],
       "workflows": [
         ".github/workflows/agent-transport-reference.yml",
-        ".github/workflows/s04-transport-custody.yml"
+        ".github/workflows/s04-transport-custody.yml",
+        ".github/workflows/agent-port-custody.yml"
       ],
       "binaries": [],
       "features": []
@@ -144,17 +243,53 @@
       "documentation": "crates/hepta-browser-codec/README.md",
       "architecture": [
         "docs/architecture/CANONICAL_BROWSER_CODEC.md",
-        "docs/architecture/RUST_BROWSER_CODEC.md"
+        "docs/architecture/RUST_BROWSER_CODEC.md",
+        "docs/architecture/SHARED_SOURCE_READER.md",
+        "docs/architecture/SHARED_MANAGED_READER.md",
+        "docs/architecture/D1_SOURCE_PROVENANCE.md",
+        "docs/architecture/MANAGED_EVIDENCE_CONSUMERS.md",
+        "docs/architecture/CI_SOURCE_IDENTITY.md",
+        "docs/architecture/CI_REQUIRED_CONTEXTS.md",
+        "docs/architecture/REMAINING_MANAGED_CONSUMERS.md",
+        "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md"
       ],
       "contracts": [
         "contracts/browser-codec.v1.json",
         "contracts/browser-codec-resource-limits.v1.json",
         "contracts/browser-api.v1.schema.json",
-        "contracts/browser-wire.v1.schema.json"
+        "contracts/browser-wire.v1.schema.json",
+        "contracts/shared-source-reader.v1.json",
+        "contracts/shared-managed-reader.v1.json",
+        "contracts/d1-source-provenance.v1.json",
+        "contracts/managed-evidence-consumers.v1.json",
+        "contracts/ci-source-identity.v1.json",
+        "contracts/ci-required-contexts.v1.json",
+        "contracts/remaining-managed-consumers.v1.json",
+        "contracts/mozjs-authenticated-input.v2.json",
+        "contracts/ci-namespace-python.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-codec/src/tests.rs",
-        "tests/test_validate_rust_browser_codec.py"
+        "tests/test_validate_rust_browser_codec.py",
+        "tests/test_shared_source_reader.py",
+        "tests/test_shared_managed_reader.py",
+        "tests/test_shared_managed_context.py",
+        "tests/test_d1_source_provenance.py",
+        "tests/test_managed_evidence_consumers.py",
+        "tests/test_ci_source_identity.py",
+        "tests/test_module_documentation_source_guard.py",
+        "tests/test_ci_required_contexts.py",
+        "tests/test_remaining_managed_consumers.py",
+        "tests/test_mozjs_authenticated_input.py",
+        "tools/mozjs_authenticated_input.py",
+        "tools/build_mozjs_authenticated_native.py",
+        "tools/verify_mozjs_authenticated_input.py",
+        "manifests/mozjs-authenticated-input.v2.json",
+        "tools/verify_approved_service_owner.py",
+        "tests/test_ci_namespace_python.py",
+        "tools/ci_namespace_python.py",
+        "tools/verify_ci_namespace_python.py",
+        ".github/apparmor/hepta-ci-namespace-python.v1.profile"
       ],
       "workflows": [
         ".github/workflows/browser-codec-reference.yml",
@@ -203,19 +338,61 @@
       "architecture": [
         "docs/architecture/SYSTEMD_AGENT_PORT_CUSTODY.md",
         "docs/architecture/REQUEST_PEER_CUSTODY.md",
-        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md"
+        "docs/architecture/AGENT_PORT_PATHNAME_CUSTODY.md",
+        "docs/architecture/RETAINED_CONTROL_TERMINAL.md",
+        "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md",
+        "docs/architecture/APPROVED_MECHANISM_POLICY.md",
+        "docs/architecture/APPROVED_REQUEST_BINDING.md",
+        "docs/architecture/RETAINED_CONTROL_READINESS.md",
+        "docs/architecture/APPROVED_SERVICE_OWNER_FOUNDATION.md",
+        "docs/architecture/PERSISTENT_SERVICE_REQUEST_BRIDGE.md"
       ],
       "contracts": [
         "contracts/agent-port-custody.v1.json",
-        "contracts/request-peer-custody.v1.json"
+        "contracts/request-peer-custody.v1.json",
+        "contracts/control-owner-handoff.v1.json",
+        "contracts/dual-owner-request-custody.v1.json",
+        "contracts/retained-control-terminal.v1.json",
+        "contracts/root-path-retained-control.v1.json",
+        "contracts/approved-mechanism-policy.v1.json",
+        "contracts/approved-request-binding.v1.json",
+        "contracts/retained-control-readiness.v1.json",
+        "contracts/approved-service-owner-foundation.v2.json",
+        "contracts/approved-service-request-bridge.v2.json"
       ],
       "tests": [
         "crates/hepta-peer-attestation/src/lib.rs",
-        "tests/test_s04_transport_custody.py"
+        "tests/test_s04_transport_custody.py",
+        "crates/hepta-peer-attestation/tests/control_owner_kernel.rs",
+        "tests/test_control_owner_handoff.py",
+        "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
+        "tests/test_dual_owner_custody.py",
+        "tests/test_retained_control_terminal.py",
+        "apps/hepta-browserd/tests/product_terminal_wait_kernel.rs",
+        "apps/hepta-browserd/tests/product_root_path_kernel.rs",
+        "tests/test_root_path_retained_control.py",
+        "apps/hepta-browserd/tests/approved_policy_product_kernel.rs",
+        "tests/test_approved_mechanism_policy.py",
+        "crates/hepta-peer-attestation/tests/approved_policy_kernel.rs",
+        "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
+        "tests/test_approved_request_binding.py",
+        "tests/test_retained_control_readiness.py",
+        "apps/hepta-browserd/tests/control_readiness_kernel.rs",
+        "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs",
+        "tests/test_approved_service_owner.py",
+        "crates/hepta-peer-attestation/tests/approved_service_owner_kernel.rs",
+        "crates/hepta-peer-attestation/src/approved_policy/service_policy.rs",
+        "crates/hepta-peer-attestation/src/approved_policy/service_policy/creator_context.rs",
+        "tests/test_approved_service_request.py",
+        "crates/hepta-peer-attestation/tests/approved_service_request_kernel.rs",
+        "crates/hepta-peer-attestation/src/approved_policy/service_policy/request_bridge.rs",
+        "crates/hepta-peer-attestation/src/control_owner/root_path/service_request.rs",
+        "crates/hepta-peer-attestation/src/control_owner/retained_request/service_request.rs"
       ],
       "workflows": [
         ".github/workflows/s04-transport-custody.yml",
-        ".github/workflows/agent-port-custody.yml"
+        ".github/workflows/agent-port-custody.yml",
+        ".github/workflows/approved-mechanism-policy.yml"
       ],
       "binaries": [],
       "features": [
@@ -299,7 +476,10 @@
       ],
       "tests": [
         "crates/hepta-session-core/src/tests.rs",
-        "tests/test_s05_receipt_recovery.py"
+        "tests/test_s05_receipt_recovery.py",
+        "crates/hepta-session-core/tests/durable_receipt_fact.rs",
+        "crates/hepta-session-core/tests/journal_fork_custody.rs",
+        "tests/test_ci_exact_live_ref_fields.py"
       ],
       "workflows": [
         ".github/workflows/receipt-journal.yml",
@@ -350,23 +530,67 @@
         "docs/architecture/EVENT_LOOP_COMPLETION.md",
         "docs/architecture/SESSION_INCARNATION.md",
         "docs/architecture/RECEIPT_ADMISSION_IDENTITY.md",
-        "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md"
+        "docs/architecture/S08_SERVO_BROWSER_ACTOR_VERTICAL_SLICE.md",
+        "docs/architecture/NATIVE_IMMUTABLE_PRODUCT_OWNER.md",
+        "docs/implementation/D3_SERVO_RETAINED_NODE_ACTION.md",
+        "docs/plan/PRODUCTION_SOURCE_PROGRESS-2026-10-02.md",
+        "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md",
+        "docs/architecture/APPROVED_REQUEST_BINDING.md",
+        "docs/architecture/MOZJS_SECONDARY_INPUT.md",
+        "docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md",
+        "docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md",
+        "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
         "contracts/engine-thread-dispatch.v1.json",
         "contracts/event-loop-completion.v1.json",
         "contracts/session-incarnation.v1.json",
-        "contracts/s08-servo-runtime-bridge.v1.json"
+        "contracts/s08-servo-runtime-bridge.v1.json",
+        "contracts/dual-owner-request-custody.v1.json",
+        "contracts/native-product-owner.v1.json",
+        "contracts/s07-qualification-lineage.v1.json",
+        "contracts/immutable-callback-url-scope.v1.json",
+        "contracts/approved-request-binding.v1.json",
+        "contracts/mozjs-secondary-input.v1.json",
+        "contracts/approved-service-runtime.v2.json",
+        "contracts/approved-service-actor.v2.json",
+        "contracts/service-dispatch-denial-cutoff.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-actor/src/lib.rs",
         "tests/test_s06_browser_actor.py",
-        "crates/hepta-browser-actor/tests/s08_servo_mailbox.rs"
+        "crates/hepta-browser-actor/tests/s08_servo_mailbox.rs",
+        "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
+        "tests/test_dual_owner_custody.py",
+        "tests/test_s08_semantic_custody.py",
+        "tests/test_native_product_owner.py",
+        "apps/hepta-browserd/tests/immutable_profile_admission.rs",
+        "tests/test_s06_public_exports.py",
+        "tests/test_s07_servo_patch_package.py",
+        "tests/test_s07_qualification_lineage.py",
+        "tests/test_ci_exact_live_ref_fields.py",
+        "tests/test_ci_source_dependency_filters.py",
+        "tests/test_s07_event_checkout.py",
+        "tests/test_immutable_callback_url_scope.py",
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/immutable_url_scope_tests.rs",
+        "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
+        "tests/test_approved_request_binding.py",
+        "tests/test_mozjs_secondary_input.py",
+        "tests/test_approved_service_runtime.py",
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs",
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs",
+        "tests/test_approved_service_actor.py",
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop/service_actor.rs",
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs",
+        "tests/test_service_dispatch_denial_cutoff.py"
       ],
       "workflows": [
         ".github/workflows/s06-browser-actor.yml",
-        ".github/workflows/s08-servo-vertical-slice.yml"
+        ".github/workflows/s08-servo-vertical-slice.yml",
+        ".github/workflows/s04-transport-custody.yml",
+        ".github/workflows/g2-native-product-owner.yml",
+        ".github/workflows/s07-servo-retained-node.yml"
       ],
       "binaries": [],
       "features": []
@@ -383,19 +607,44 @@
       "architecture": [
         "docs/architecture/BROWSER_ACTOR_AUTHORITY_BOUNDARY.md",
         "docs/architecture/ENGINE_THREAD_DISPATCH.md",
-        "docs/architecture/EVENT_LOOP_COMPLETION.md"
+        "docs/architecture/EVENT_LOOP_COMPLETION.md",
+        "docs/architecture/IMMUTABLE_CALLBACK_URL_SCOPE.md",
+        "docs/architecture/APPROVED_REQUEST_BINDING.md",
+        "docs/architecture/PERSISTENT_SERVICE_TYPED_RUNTIME.md",
+        "docs/architecture/PERSISTENT_SERVICE_ACTOR_CORE.md",
+        "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md"
       ],
       "contracts": [
         "contracts/browser-actor.v1.json",
         "contracts/engine-thread-dispatch.v1.json",
-        "contracts/event-loop-completion.v1.json"
+        "contracts/event-loop-completion.v1.json",
+        "contracts/dual-owner-request-custody.v1.json",
+        "contracts/immutable-callback-url-scope.v1.json",
+        "contracts/approved-request-binding.v1.json",
+        "contracts/approved-service-runtime.v2.json",
+        "contracts/approved-service-actor.v2.json",
+        "contracts/service-dispatch-denial-cutoff.v1.json"
       ],
       "tests": [
         "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop_tests.rs",
-        "tests/test_s06_browser_actor.py"
+        "tests/test_s06_browser_actor.py",
+        "apps/hepta-browserd/tests/product_control_custody_kernel.rs",
+        "tests/test_dual_owner_custody.py",
+        "tests/test_immutable_callback_url_scope.py",
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/immutable_url_scope_tests.rs",
+        "apps/hepta-browserd/tests/approved_request_binding_kernel.rs",
+        "tests/test_approved_request_binding.py",
+        "tests/test_approved_service_runtime.py",
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop.rs",
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime.rs",
+        "tests/test_approved_service_actor.py",
+        "crates/hepta-browser-actor-simulation/src/engine_dispatch/event_loop/service_event_loop/service_actor.rs",
+        "crates/hepta-browser-actor/src/servo_runtime/service_runtime/service_actor.rs",
+        "tests/test_service_dispatch_denial_cutoff.py"
       ],
       "workflows": [
-        ".github/workflows/s06-browser-actor.yml"
+        ".github/workflows/s06-browser-actor.yml",
+        ".github/workflows/s04-transport-custody.yml"
       ],
       "binaries": [],
       "features": []

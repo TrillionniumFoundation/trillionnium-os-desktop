@@ -1,0 +1,89 @@
+{
+  "schema": "trillionnium.desktop.root-owned-control-path.v1",
+  "status": "SOURCE_PATH_AND_KERNEL_CUSTODY_CANDIDATE",
+  "platform": "Linux",
+  "implementation": "crates/hepta-agent-transport/src/root_control_path.rs",
+  "pathname": {
+    "maximum_bytes": 107,
+    "maximum_components": 32,
+    "encoding": "canonical ASCII alphanumeric slash dot underscore hyphen",
+    "ancestor_uid": 0,
+    "ancestor_group_world_write": false,
+    "direct_parent_modes": [
+      "0700",
+      "0750"
+    ],
+    "socket_uid": 0,
+    "socket_modes": [
+      "0600",
+      "0660"
+    ],
+    "socket_group": "exact externally configured GID",
+    "socket_links": 1,
+    "all_components_nofollow": true
+  },
+  "listener": {
+    "consumes_owned_fd": true,
+    "root_effective_uid_required": true,
+    "creator": "actual listener SO_PEERCRED PID equals creator process PID; foreign/PID1 inherited creator rejected; original full credential snapshot refreshed before/after accept; foreign alias relisten irreversibly retires shared scope",
+    "type": "AF_UNIX SOCK_SEQPACKET listening",
+    "bound_inode": "actual SIOCUNIXFILE O_PATH dentry exact device/inode equals independently walked named leaf",
+    "ioctl_requires_privileged_profile": true,
+    "missing_fact_fallback": false,
+    "bind_relisten_chmod_chown_unlink": false,
+    "capability_or_service_configuration_changed": false,
+    "nonblocking_status_retained": true
+  },
+  "connector": {
+    "approved_kernel_policy": "externally configured PeerPolicy; no approval derived from observed peer",
+    "evidence": "protected pathname snapshots before/after original nonblocking connect plus same kernel peer/cookie",
+    "independent_server_kernel_bound_inode_proof": false,
+    "approved_live_executable": false,
+    "approved_systemd_unit": false,
+    "semantic_principal": false
+  },
+  "custody": {
+    "same_original_fd_transferred": true,
+    "same_absolute_instant_transferred": true,
+    "unique_owner": true,
+    "peer_incarnation": "actual SO_PEERPIDFD adopted from connected socket, not later numeric lookup",
+    "later_verification": "creator PID first; original path/metadata/cookie/FD and same original pidfd before/after",
+    "observed_failure": "permanent scope retirement; restoring metadata cannot revive old scope",
+    "foreign_drop": "owned child descriptor copies only; no shutdown, unlink or parent mutex",
+    "later_consumer_must_preserve_verifier": true,
+    "raw_fd_escape_is_retained_proof": false,
+    "live_exec_drift_detection": false
+  },
+  "deadline": {
+    "maximum_seconds": 20,
+    "input": "caller original absolute Instant checked before pathname/connect/accept and afterward",
+    "renewal": false,
+    "synchronous_syscalls_preemptively_timed_out": false
+  },
+  "public_api": {
+    "RootControlPathPolicy::new": "pub fn new( path: &Path, directory_gid: u32, directory_mode: u32, socket_gid: u32, socket_mode: u32, ) -> Result<Self>",
+    "RootOwnedControlListener::from_inherited": "pub fn from_inherited(listener: OwnedFd, policy: &RootControlPathPolicy) -> Result<Self>",
+    "RootOwnedControlListener::accept_before": "pub fn accept_before( &mut self, approved_kernel_peer: PeerPolicy, deadline: Instant, ) -> Result<RootPathControlConnection>",
+    "RootPathControlConnection::connect_before": "pub fn connect_before( policy: &RootControlPathPolicy, approved_kernel_peer: PeerPolicy, deadline: Instant, ) -> Result<Self>",
+    "RootPathControlConnection::deadline": "pub fn deadline(&self) -> Result<Instant>",
+    "RootPathControlConnection::consume_before": "pub fn consume_before<T>( mut self, consumer: impl FnOnce(OwnedFd, Instant, RootControlPathCustody) -> T, ) -> Result<T>",
+    "RootControlPathCustody::verifier": "pub fn verifier(&self) -> Result<RootControlPathVerifier>",
+    "RootControlPathVerifier::verify_current": "pub fn verify_current(&self) -> Result<()>"
+  },
+  "tests": {
+    "kernel": "crates/hepta-agent-transport/tests/root_control_path_kernel.rs",
+    "contract_only": "tests/test_root_control_path.py",
+    "required_privileged_kernel_groups": 12,
+    "profile": "explicit privileged sudo root/non-root source fixture; missing facts fail, never skip"
+  },
+  "non_claims": {
+    "installed_activation": false,
+    "product_ready": false,
+    "approved_policy_loader": false,
+    "cross_uid_live_attestation_broker": false,
+    "approved_executable_or_unit": false,
+    "semantic_principal": false,
+    "native_effect_authority": false,
+    "all_async_or_admin_path_races_closed": false
+  }
+}

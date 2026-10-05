@@ -14,6 +14,9 @@ hepta-browser-contracts = { path = "../hepta-browser-contracts" }
 trillionnium-contract-core = { path = "../trillionnium-contract-core" }
 sha2 = "=0.10.9"
 
+[dev-dependencies]
+libc = "=0.2.186"
+
 [lib]
 path = "src/lib.rs"
 
@@ -21,6 +24,12 @@ path = "src/lib.rs"
 [[test]]
 name = "journal_persistence_process"
 path = "tests/journal_persistence_process.rs"
+harness = false
+
+# Single-thread process owns its writer before an actual fork custody probe.
+[[test]]
+name = "journal_fork_custody"
+path = "tests/journal_fork_custody.rs"
 harness = false
 
 # Independent process interruption tests for opt-in legacy copy, never installed.
