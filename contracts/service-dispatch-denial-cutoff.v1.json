@@ -222,7 +222,7 @@
       }
     }
   },
-  "checker_nonEXPECTED_whole_sha256": "53653650dbe2824f196fefa65ef5515044f55325ed247f0e33b49f1c926dfca0",
+  "checker_nonEXPECTED_whole_sha256": "1e6fa94c4e29e2a358d61f86f806cf0880c8681fd192f7c01f01ce0ce5c71dcb",
   "ci_composition_scope": {
     "Hosted_cleanup_qualified": false,
     "Native_qualified": false,
@@ -285,7 +285,7 @@
     "contracts/ci-namespace-python.v1.json": "b78bc4729432c963a3661da00f3f0de4b170bcf35e32972a71727466401a6859",
     "contracts/ci-required-contexts.v1.json": "1ffcc5ddd87b8ae85a954af9fa7f7f2eacf74db3a01829d1a1703361a424042b",
     "contracts/ci-source-identity.v1.json": "18329b7788a65d2c3d7bab2a347a0f2ef35284d5ca7382746ad72fdc3d6914eb",
-    "contracts/retained-control-readiness.v1.json": "d8955b5af8e7cda7bb60a3c52a0a9243e7d7cbf0560ddc7cb493d6f4807a3c63",
+    "contracts/retained-control-readiness.v1.json": "0c6e8e960286dc928b407a740ec504a9667c84b70cf6ef7c8d3e90d460dfd8de",
     "crates/hepta-browser-codec/README.md": "13ff0a57a72583e4619106ca530bb1192b3f6b407a9b3a1be668039063c04ede",
     "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md": "c84fa492667e6bf3c59ef9be9d840189352516279848f2458f9912a43dddd6dd",
     "manifests/lab-s08-semantic-custody.v1.json": "1d1d7cf9297645b9096378f2c0e44ccd2d2ab9aa095e774f368b6e84f2a69e5b",
@@ -293,7 +293,7 @@
     "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
     "tools/verify_ci_namespace_python.py": "dff47eebdcdae4075ced55eb3b991dc201ea17406c7f203be405079c199c401e",
-    "tools/verify_retained_control_readiness.py": "3eb717a8f3a29a7dd88d76b07a3681a302bcdae4d15a99bd7e198ade6efc44ba"
+    "tools/verify_retained_control_readiness.py": "e0e22922ac7a3d7070e0d6701bc63144994aaa6ed9159d18a2758cfee3a33634"
   },
   "ci_parent_inverse18": {
     ".github/workflows/approved-mechanism-policy.yml": {
@@ -2563,7 +2563,7 @@
     "apps/hepta-browserd/tests/approved_policy_product_kernel.rs": "24ee80f59497d507cd316c076406b6000267ea83a4952c3c3bab6104f85542f3",
     "apps/hepta-browserd/tests/approved_request_binding_kernel.rs": "ec8eb609f0e41d95ab95e8d2b27fb0766d7005a5b13291c1e45329576bcb76fb",
     "apps/hepta-browserd/tests/configured_retained_bootstrap_kernel.rs": "b8417a869e41b9dbf21028613ce754525f6a54aa9fdee90c5358c42afbb10118",
-    "apps/hepta-browserd/tests/control_readiness_kernel.rs": "fedd648edc920a5ad36c574076ef433bdf59bbb443f376b76738a1402a673928",
+    "apps/hepta-browserd/tests/control_readiness_kernel.rs": "a127d33bfe1775cfb4762e6001c0a5a470ede2d8fd414c21748d06e36c49eb45",
     "apps/hepta-browserd/tests/immutable_profile_admission.rs": "87d984bc959bc7c511f9b7f6967ff078f8b75d2a11795a3938dcc35dc08db7ef",
     "apps/hepta-browserd/tests/product_control_custody_kernel.rs": "200ec0cb4331e5201fd7820500e0570cb09a521d2127989984b902055f843b5c",
     "apps/hepta-browserd/tests/product_fork_custody.rs": "7cb7061f6e54943f82f12126d610c8400aa81082a89b5a5410b81899bbd4bf26",
@@ -2637,7 +2637,7 @@
     "contracts/receipt.v1.schema.json": "8610d2e9dd8ccc72b9803b2a51704aa282ccd96f50d19ac33074060e8cfc0eed",
     "contracts/remaining-managed-consumers.v1.json": "2be2c10879559bba8c10fa058c2d0abc770eac35694c84af35b2fae32cd82abd",
     "contracts/request-peer-custody.v1.json": "11c905470ee6777d920e36f1b0ccace04e3c074487b22e4dceaf3c81b7917201",
-    "contracts/retained-control-readiness.v1.json": "d8955b5af8e7cda7bb60a3c52a0a9243e7d7cbf0560ddc7cb493d6f4807a3c63",
+    "contracts/retained-control-readiness.v1.json": "0c6e8e960286dc928b407a740ec504a9667c84b70cf6ef7c8d3e90d460dfd8de",
     "contracts/retained-control-terminal.v1.json": "a5c8885cf6431685e69fbefc3afa8f9d21a46dd2dac2dfef991283db467095ac",
     "contracts/root-owned-control-path.v1.json": "ffe2c22b4be5964ae9a41f370133ca311965ddc98286d4f4b1eff410142e41d8",
     "contracts/root-path-retained-control.v1.json": "e96dda3a5707aace239fbea760fccb8cbf7ff49f69d671c94680ea42f462eea8",
@@ -3171,7 +3171,7 @@
     "tools/verify_mozjs_authenticated_input.py": "6533b5bcf4b6513ff48aa8f4b32d5600e91f1410c3a139e6a5c4a0ceb0a865e0",
     "tools/verify_mozjs_secondary_input.py": "46cc8ce9bb50ab10dfdbda6eeab2afff7da60803bed842eb0bb3b9413c6d8270",
     "tools/verify_receipt_journal.py": "c19ddb04b813649ba73d12e67c3992aa948e45209c1884f43f5fb566e500b377",
-    "tools/verify_retained_control_readiness.py": "3eb717a8f3a29a7dd88d76b07a3681a302bcdae4d15a99bd7e198ade6efc44ba",
+    "tools/verify_retained_control_readiness.py": "e0e22922ac7a3d7070e0d6701bc63144994aaa6ed9159d18a2758cfee3a33634",
     "tools/verify_s07_qualification_lineage.py": "e30d6dbe2f892d2470874002d49b787e92c4c9187e550b16e6332611abc72d7b",
     "tools/verify_s08_semantic_custody.py": "5c9d9feaa50fecc0efa9894a571fcdf688ffce141f089f31c7b75fcf5462a418",
     "tools/verify_s12_release_qualification.py": "c8aa181dc108427edad7e7f50ef07f2c07ed2eb058ef2fc8daecb106debfc7bf",
