@@ -260,3 +260,156 @@ fn readiness_original_expiry_not_restarted() {
     );
     assert!(f.receiver.send_report(report()).is_err());
 }
+
+#[test]
+fn report_readiness_idle_nonconsuming_original_clock_and_report() {
+    let mut f = fixture();
+    let deadline = f.sender.deadline().unwrap();
+    let captured = f.sender.transaction.channel.original_identity;
+    for _ in 0..50 {
+        assert!(!f.sender.report_readable_now().unwrap());
+        assert_eq!(f.sender.deadline().unwrap(), deadline);
+        assert!(f.sender.transaction.channel.original_identity == captured);
+    }
+    f.receiver.send_report(report()).unwrap();
+    assert!(f.sender.report_readable_now().unwrap());
+    assert!(
+        f.sender.report_readable_now().unwrap(),
+        "observation must not consume"
+    );
+    assert_eq!(f.sender.poll_report().unwrap(), Some(report()));
+    assert!(f.sender.report_readable_now().is_err());
+    assert!(f.sender.poll_report().is_err());
+}
+
+#[test]
+fn report_readiness_is_control_not_agent_stream_and_preserves_cancel() {
+    let mut f = fixture();
+    f.client.write_all(b"agent payload").unwrap();
+    assert!(!f.sender.report_readable_now().unwrap());
+    f.sender.request_cancel().unwrap();
+    assert!(f.receiver.poll_cancel().unwrap());
+    assert!(!f.sender.report_readable_now().unwrap());
+    f.receiver.send_report(report()).unwrap();
+    assert!(f.sender.report_readable_now().unwrap());
+    assert_eq!(f.sender.wait_report().unwrap(), report());
+}
+
+#[test]
+fn report_readiness_same_credentials_substitution_before_first_call_refuses() {
+    let mut f = fixture();
+    let fd = f
+        .sender
+        .transaction
+        .channel
+        .stream
+        .as_ref()
+        .unwrap()
+        .as_raw_fd();
+    let (replacement, _remote) = controls();
+    assert_eq!(unsafe { libc::dup2(replacement.as_raw_fd(), fd) }, fd);
+    assert_eq!(
+        f.sender.report_readable_now(),
+        Err(HandoffError::WrongDescriptor)
+    );
+    assert!(f.sender.poll_report().is_err());
+    assert!(unsafe { libc::fcntl(replacement.as_raw_fd(), libc::F_GETFD) } >= 0);
+}
+
+#[test]
+fn report_readiness_subsequent_full_paths_retain_original_identity() {
+    for path in ["poll", "wait", "cancel"] {
+        let mut f = fixture();
+        assert!(!f.sender.report_readable_now().unwrap());
+        let fd = f
+            .sender
+            .transaction
+            .channel
+            .stream
+            .as_ref()
+            .unwrap()
+            .as_raw_fd();
+        let (replacement, _remote) = controls();
+        assert_eq!(unsafe { libc::dup2(replacement.as_raw_fd(), fd) }, fd);
+        let result = match path {
+            "poll" => f.sender.poll_report().map(|_| ()),
+            "wait" => f.sender.wait_report().map(|_| ()),
+            "cancel" => f.sender.request_cancel(),
+            _ => unreachable!(),
+        };
+        assert_eq!(result, Err(HandoffError::WrongDescriptor), "{path}");
+        assert!(f.sender.report_readable_now().is_err());
+    }
+}
+
+#[test]
+fn report_readiness_private_wrong_agent_cookie_mutation_refuses() {
+    let mut f = fixture();
+    f.sender.transaction.channel.original_identity =
+        super::super::OriginalControlIdentity(f.sender.transaction.identity);
+    assert_eq!(
+        f.sender.report_readable_now(),
+        Err(HandoffError::WrongDescriptor)
+    );
+}
+
+#[test]
+fn report_readiness_bad_nonce_and_ancillary_packets_reach_full_parser() {
+    for rights in [false, true] {
+        let mut f = fixture();
+        let mut data = f.receiver.transaction.encode(REPORT, Some(report()));
+        if !rights {
+            data[96] ^= 1;
+        }
+        let fd = f.receiver.transaction.verify().unwrap();
+        send_packet(fd, &data, rights.then_some(fd)).unwrap();
+        assert!(f.sender.report_readable_now().unwrap());
+        assert_eq!(f.sender.poll_report(), Err(HandoffError::ProtocolRefused));
+        assert!(f.sender.report_readable_now().is_err());
+    }
+}
+
+#[test]
+fn report_readiness_hup_reaches_full_parser_and_retires() {
+    let mut f = fixture();
+    let deadline = f.sender.deadline().unwrap();
+    f.receiver.transaction.channel.retire();
+    while !f.sender.report_readable_now().unwrap() {
+        assert!(Instant::now() < deadline);
+        std::thread::sleep(Duration::from_millis(1));
+    }
+    assert_eq!(f.sender.poll_report(), Err(HandoffError::ConnectionClosed));
+    assert!(f.sender.report_readable_now().is_err());
+}
+
+#[test]
+fn report_readiness_private_foreign_creator_fault_precedes_profile_or_fd() {
+    let mut f = fixture();
+    let creator = f.sender.transaction.channel.owner_pid;
+    f.sender.transaction.channel.owner_pid = 0;
+    assert_eq!(
+        f.sender.report_readable_now(),
+        Err(HandoffError::ProcessChanged)
+    );
+    assert!(!f.sender.transaction.readiness_enabled);
+    f.sender.transaction.channel.owner_pid = creator;
+    assert!(!f.sender.report_readable_now().unwrap());
+    f.receiver.send_report(report()).unwrap();
+    assert_eq!(f.sender.wait_report().unwrap(), report());
+}
+
+#[test]
+fn report_readiness_original_expiry_not_restarted() {
+    let mut f = Fixture::new(Duration::from_millis(80));
+    let deadline = f.sender.deadline().unwrap();
+    assert!(!f.sender.report_readable_now().unwrap());
+    std::thread::sleep(
+        deadline.saturating_duration_since(Instant::now()) + Duration::from_millis(2),
+    );
+    assert_eq!(
+        f.sender.report_readable_now(),
+        Err(HandoffError::DeadlineExceeded)
+    );
+    assert!(f.sender.request_cancel().is_err());
+    assert!(f.sender.poll_report().is_err());
+}

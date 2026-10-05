@@ -128,3 +128,37 @@ from real process/kernel observations. These tests do not execute native Servo,
 install a service, qualify cross-UID deployment or measure a speedup. A fresh
 exact-source original six-case native run is required after independent review
 and final composition.
+
+## Additive sender source candidate
+
+The same two registered readiness modules now declare four additive methods,
+for a closed 36-legacy-plus-four current API inventory. The new transport method
+`PendingHandoffSender::report_readable_now` is a nonconsuming observation of
+its construction-time Control identity. The new higher method
+`AttestedPendingHandoff::poll_retirement_when_readable` requires the original
+approved Control-role reporting scope before and after that observation.
+Idle `None` makes no fresh executable, terminal or effect claim. Ready event
+bits use the unchanged complete `poll_retirement`; same-process scope or
+observation errors retire directly. Creator mismatch returns before changing
+an inherited object. There is no replacement FD, budget, cache or authority
+argument, and the original cancellation and blocking/full report methods remain
+unchanged.
+
+Nine additive transport test groups are authored, bringing the actual source
+inventory to twenty. They cover repeated idle and nonconsumption, Agent/Control
+separation, cancellation, same-credential descriptor substitution before and
+after selection, full poll/wait/cancel identity retention, malformed/ancillary
+reports, HUP, a synthetic creator-field fault and original expiry. They are
+not execution evidence for the higher sender API. The existing nine actual
+receiver/kernel groups remain unchanged and do not become sender coverage.
+
+The native fixture caller is not switched by this dormant source candidate.
+Sender qualification still requires real default-proc/root-policy cases for
+both original ceilings, whole policy/path drift, unapproved construction,
+actual fork, and death/exec of the sender's opposite Control peer. Exec of the
+custodian in the existing receiver test proves a different direction. A queued
+report after opposite-peer exec must be denied by the full readback before
+any report value is returned. Actual transport compilation/execution, sender
+host qualification and the unchanged six-case native qualification remain
+separate gates. No measured speedup, deadline fix, installed activation or
+production claim is made.

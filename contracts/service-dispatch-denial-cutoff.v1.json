@@ -222,7 +222,7 @@
       }
     }
   },
-  "checker_nonEXPECTED_whole_sha256": "bd935de4327be2a1768fe5873cc9f9f4a9f902575c1f7a8eafac62baa09283d5",
+  "checker_nonEXPECTED_whole_sha256": "5729488c60acc45801d23ac3a7231e10e989b15753a3e246cd5610b684470bad",
   "ci_composition_scope": {
     "Hosted_cleanup_qualified": false,
     "Native_qualified": false,
@@ -285,7 +285,7 @@
     "contracts/ci-namespace-python.v1.json": "b78bc4729432c963a3661da00f3f0de4b170bcf35e32972a71727466401a6859",
     "contracts/ci-required-contexts.v1.json": "1ffcc5ddd87b8ae85a954af9fa7f7f2eacf74db3a01829d1a1703361a424042b",
     "contracts/ci-source-identity.v1.json": "18329b7788a65d2c3d7bab2a347a0f2ef35284d5ca7382746ad72fdc3d6914eb",
-    "contracts/retained-control-readiness.v1.json": "9e24e9fa600ad98da1ab0c2d580321cebf4c3ecb7991700161ab610e2c2d2b33",
+    "contracts/retained-control-readiness.v1.json": "23adee40dd4f0006f165d40921f54e671c17446f47403fec7289d3ea7198a1ef",
     "crates/hepta-browser-codec/README.md": "13ff0a57a72583e4619106ca530bb1192b3f6b407a9b3a1be668039063c04ede",
     "docs/architecture/MOZJS_AUTHENTICATED_INPUT.md": "c84fa492667e6bf3c59ef9be9d840189352516279848f2458f9912a43dddd6dd",
     "manifests/lab-s08-semantic-custody.v1.json": "1d1d7cf9297645b9096378f2c0e44ccd2d2ab9aa095e774f368b6e84f2a69e5b",
@@ -293,7 +293,7 @@
     "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
     "tools/verify_ci_namespace_python.py": "dff47eebdcdae4075ced55eb3b991dc201ea17406c7f203be405079c199c401e",
-    "tools/verify_retained_control_readiness.py": "7e10c66c31fc5842de91ec3c6f69d6a20caa238ff7cf954ba150876d41234772"
+    "tools/verify_retained_control_readiness.py": "c9424edb8b8c4555ebb24030763c1fec4815b2f84484ceee829980cd2ca917a0"
   },
   "ci_parent_inverse18": {
     ".github/workflows/approved-mechanism-policy.yml": {
@@ -638,20 +638,6 @@
       "parent_bytes": 33923,
       "parent_sha256": "8e0fb308c300f6999821ad9bccd7af9c39ec6aeb74ced6306438732ca84bbf84"
     },
-    "contracts/retained-control-readiness.v1.json": {
-      "byte_edits": [
-        {
-          "complete_end": 7526,
-          "complete_start": 7402,
-          "complete_text": "    \".github/workflows/g2-approved-native-startup.yml\": \"872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a\",\n",
-          "parent_text": "    \".github/workflows/g2-approved-native-startup.yml\": \"5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228\",\n"
-        }
-      ],
-      "complete_bytes": 13293,
-      "complete_sha256": "9e24e9fa600ad98da1ab0c2d580321cebf4c3ecb7991700161ab610e2c2d2b33",
-      "parent_bytes": 13293,
-      "parent_sha256": "9051c732525ae813303df33ce9bc22b85928f1a5599c387062e7057a5e9f846b"
-    },
     "crates/hepta-browser-codec/README.md": {
       "byte_edits": [
         {
@@ -713,44 +699,6 @@
       "complete_sha256": "2dda8f51480d0409b33f857eb92d8b0c2d9175b0833d85690ba66031a78258c5",
       "parent_bytes": 31216,
       "parent_sha256": "a1241b30b96cd5ba1fad70e56651e29a402a2e2616b2d1d684434432544fb735"
-    },
-    "tools/verify_retained_control_readiness.py": {
-      "byte_edits": [
-        {
-          "complete_end": 10282,
-          "complete_start": 10140,
-          "complete_text": "                      '.github/workflows/g2-approved-native-startup.yml': '872e6157fb2fba02a088a2d9e209652c8039b635e1a045a0d3fb5161b0d4756a',\n",
-          "parent_text": "                      '.github/workflows/g2-approved-native-startup.yml': '5ad5c3ecc646082f8c66c4d09d4963e03c1aba34ad9fa2b0507bf21a2b785228',\n"
-        },
-        {
-          "complete_end": 74711,
-          "complete_start": 74611,
-          "complete_text": "        from .verify_approved_service_runtime import parent_source as service_runtime_parent_source\n",
-          "parent_text": ""
-        },
-        {
-          "complete_end": 74986,
-          "complete_start": 74806,
-          "complete_text": "        from verify_approved_service_runtime import parent_source as service_runtime_parent_source\n    text = detach_for_readiness(path, service_runtime_parent_source(path, text))\n",
-          "parent_text": "    text = detach_for_readiness(path, text)\n"
-        },
-        {
-          "complete_end": 76280,
-          "complete_start": 76180,
-          "complete_text": "        from .verify_approved_service_runtime import parent_source as service_runtime_parent_source\n",
-          "parent_text": ""
-        },
-        {
-          "complete_end": 76596,
-          "complete_start": 76375,
-          "complete_text": "        from verify_approved_service_runtime import parent_source as service_runtime_parent_source\n    texts = {path: detach_for_readiness(path, service_runtime_parent_source(path, text)) for path, text in texts.items()}\n",
-          "parent_text": "    texts = {path: detach_for_readiness(path, text) for path, text in texts.items()}\n"
-        }
-      ],
-      "complete_bytes": 84077,
-      "complete_sha256": "7e10c66c31fc5842de91ec3c6f69d6a20caa238ff7cf954ba150876d41234772",
-      "parent_bytes": 83605,
-      "parent_sha256": "69be6939854841c9dbcdb67bbb8d5dcfa4720fa5ea9992fd03bbcc53da5e7f48"
     }
   },
   "current_reference_physical4": {
@@ -1852,7 +1800,7 @@
   "native_phase_parent_inverse6": {
     "contracts/approved-request-binding.v1.json": {
       "complete_bytes": 6196,
-      "complete_sha256": "4bed857055242801c6536b4b7559c45e4b5ffbab055eb387c72d159f95e9bce4",
+      "complete_sha256": "ca340550c28266097ab2e6a7c1cb5c190d0199bf9583398a6321c169445287e2",
       "edits": [
         [
           5709,
@@ -1876,53 +1824,8 @@
         ],
         [
           5848,
-          5858,
-          ""
-        ],
-        [
-          5859,
-          5859,
-          "3acc13"
-        ],
-        [
-          5860,
-          5860,
-          "94"
-        ],
-        [
-          5862,
-          5866,
-          ""
-        ],
-        [
-          5867,
-          5871,
-          "8"
-        ],
-        [
-          5872,
-          5874,
-          ""
-        ],
-        [
-          5878,
-          5899,
-          "0"
-        ],
-        [
-          5901,
-          5909,
-          ""
-        ],
-        [
-          5910,
-          5911,
-          "367bc6ec04bd084120adcd112128e"
-        ],
-        [
           5912,
-          5912,
-          "a6ae12758c4"
+          "a3acc13594c818caa3b0a2d367bc6ec04bd084120adcd112128efa6ae12758c4"
         ]
       ],
       "known_historical_whole_views": [
@@ -1954,8 +1857,8 @@
       "parent_sha256": "b2336e319f4b70a92fdf589e7ad1a7a06786d208e0c4fd5936ed7adec8c7f597"
     },
     "experiments/servo-product-owner/src/approved_connected_tests.rs": {
-      "complete_bytes": 13256,
-      "complete_sha256": "eee151cbb9a5c8a8fd10bf2c6baa3b314576c7e7711974459c6a27ab1f783d5f",
+      "complete_bytes": 13362,
+      "complete_sha256": "b27fb01ea8bd0ccbf7b76b577f613beb913ece42c9b6b9cdd97d5b7025412530",
       "edits": [
         [
           866,
@@ -2148,278 +2051,283 @@
           ""
         ],
         [
-          5251,
-          5299,
+          5064,
+          5286,
+          "    assert!(matches!(\n        observation.report(),\n        Ok(ProductControlMonitorOutcome::ReportEnqueued)\n    ));"
+        ],
+        [
+          5357,
+          5405,
           ""
         ],
         [
-          5490,
-          5582,
+          5596,
+          5688,
           ""
         ],
         [
-          5916,
-          6014,
+          6022,
+          6120,
           ""
         ],
         [
-          6026,
-          6078,
+          6132,
+          6184,
           ""
         ],
         [
-          7117,
-          7121,
+          7223,
+          7227,
           ""
         ],
         [
-          7122,
-          7125,
+          7228,
+          7231,
           "p"
         ],
         [
-          7126,
-          7131,
+          7232,
+          7237,
           "intln!"
         ],
         [
-          7141,
-          7141,
+          7247,
+          7247,
           "\"A"
         ],
         [
-          7142,
-          7153,
+          7248,
+          7259,
           "P"
         ],
         [
-          7154,
-          7168,
+          7260,
+          7274,
           "OV"
         ],
         [
-          7169,
-          7190,
+          7275,
+          7296,
           ""
         ],
         [
-          7191,
-          7196,
+          7297,
+          7302,
           "_NATIVE_DIAGNO"
         ],
         [
-          7197,
-          7197,
+          7303,
+          7303,
           "TIC s"
         ],
         [
-          7201,
-          7215,
+          7307,
+          7321,
           "=servo"
         ],
         [
-          7226,
-          7227,
+          7332,
+          7333,
           "={}\",\n       "
         ],
         [
-          7257,
-          7269,
+          7363,
+          7375,
           ""
         ],
         [
-          7336,
-          7340,
+          7442,
+          7446,
           ""
         ],
         [
-          7341,
-          7344,
+          7447,
+          7450,
           "p"
         ],
         [
-          7345,
-          7350,
+          7451,
+          7456,
           "intln!"
         ],
         [
-          7360,
-          7360,
+          7466,
+          7466,
           "\"A"
         ],
         [
-          7361,
-          7367,
+          7467,
+          7473,
           ""
         ],
         [
-          7368,
-          7372,
+          7474,
+          7478,
           ""
         ],
         [
-          7373,
-          7387,
+          7479,
+          7493,
           "OV"
         ],
         [
-          7388,
-          7409,
+          7494,
+          7515,
           ""
         ],
         [
-          7410,
-          7415,
+          7516,
+          7521,
           "_NATIVE_DIAGNO"
         ],
         [
-          7416,
-          7416,
+          7522,
+          7522,
           "TIC s"
         ],
         [
-          7420,
-          7434,
+          7526,
+          7540,
           "=peers"
         ],
         [
-          7445,
-          7446,
+          7551,
+          7552,
           "={}\",\n       "
         ],
         [
-          7476,
-          7488,
+          7582,
+          7594,
           ""
         ],
         [
-          7540,
-          7544,
+          7646,
+          7650,
           ""
         ],
         [
-          7545,
-          7548,
+          7651,
+          7654,
           "p"
         ],
         [
-          7549,
-          7554,
+          7655,
+          7660,
           "intln!"
         ],
         [
-          7564,
-          7571,
+          7670,
+          7677,
           "\""
         ],
         [
-          7572,
-          7572,
+          7678,
+          7678,
           "PPROVED_NATIVE_DIAGNOSTIC stage=a"
         ],
         [
-          7580,
-          7642,
+          7686,
+          7748,
           ""
         ],
         [
-          7653,
-          7654,
+          7759,
+          7760,
           "={}\",\n       "
         ],
         [
-          7684,
-          7696,
+          7790,
+          7802,
           ""
         ],
         [
-          8184,
-          8188,
+          8290,
+          8294,
           ""
         ],
         [
-          8189,
-          8192,
+          8295,
+          8298,
           "p"
         ],
         [
-          8193,
-          8198,
+          8299,
+          8304,
           "intln!"
         ],
         [
-          8208,
-          8208,
+          8314,
+          8314,
           "\"A"
         ],
         [
-          8209,
-          8215,
+          8315,
+          8321,
           "PROVED_NATIVE_DIAGNO"
         ],
         [
-          8216,
-          8216,
+          8322,
+          8322,
           "TIC stage=s"
         ],
         [
-          8222,
-          8286,
+          8328,
+          8392,
           ""
         ],
         [
-          8297,
-          8298,
+          8403,
+          8404,
           "={} remaining_ms={}\",\n       "
         ],
         [
-          8338,
-          8356,
+          8444,
+          8462,
           ""
         ],
         [
-          8365,
-          8369,
+          8471,
+          8475,
           ""
         ],
         [
-          8436,
-          8440,
+          8542,
+          8546,
           ""
         ],
         [
-          8452,
-          8464,
+          8558,
+          8570,
           ""
         ],
         [
-          8820,
-          8867,
+          8926,
+          8973,
           ""
         ],
         [
-          8919,
-          8964,
+          9025,
+          9070,
           ""
         ],
         [
-          10058,
-          10109,
+          10164,
+          10215,
           ""
         ],
         [
-          10157,
-          10206,
+          10263,
+          10312,
           ""
         ],
         [
-          12870,
-          12890,
+          12976,
+          12996,
           ""
         ],
         [
-          13251,
-          13253,
+          13357,
+          13359,
           ""
         ]
       ],
@@ -2532,57 +2440,12 @@
     },
     "tools/verify_approved_request_binding.py": {
       "complete_bytes": 15416,
-      "complete_sha256": "dc75cb16738b29f078a42353ab99541c258abf4e7cb9a1a5d86085a1334375fa",
+      "complete_sha256": "ae07df899b011851f3e828cd88c73f86395e3425973a1fecab91b34d4d33a6f0",
       "edits": [
         [
           4885,
-          4895,
-          ""
-        ],
-        [
-          4896,
-          4896,
-          "3acc13"
-        ],
-        [
-          4897,
-          4897,
-          "94"
-        ],
-        [
-          4899,
-          4903,
-          ""
-        ],
-        [
-          4904,
-          4908,
-          "8"
-        ],
-        [
-          4909,
-          4911,
-          ""
-        ],
-        [
-          4915,
-          4936,
-          "0"
-        ],
-        [
-          4938,
-          4946,
-          ""
-        ],
-        [
-          4947,
-          4948,
-          "367bc6ec04bd084120adcd112128e"
-        ],
-        [
           4949,
-          4949,
-          "a6ae12758c4"
+          "a3acc13594c818caa3b0a2d367bc6ec04bd084120adcd112128efa6ae12758c4"
         ],
         [
           5144,
@@ -2719,7 +2582,7 @@
     "contracts/approved-constructor-route.v1.json": "c1ca56e20fca6093be4cdbeec7c3afd6c3bc26cd059061af6f4fb4a915c158d2",
     "contracts/approved-mechanism-policy.v1.json": "f23de6e624e8201af75b22289a96ffcd266156d822b45b4dd9a6c33b51fb9789",
     "contracts/approved-native-startup.v1.json": "3d918519791af864bcfa4a423f14039e024eb1e14eaa7d8686f8a95a0d4ebe7e",
-    "contracts/approved-request-binding.v1.json": "4bed857055242801c6536b4b7559c45e4b5ffbab055eb387c72d159f95e9bce4",
+    "contracts/approved-request-binding.v1.json": "ca340550c28266097ab2e6a7c1cb5c190d0199bf9583398a6321c169445287e2",
     "contracts/approved-service-actor.v2.json": "5e3f41100d7b658cecddf4a2ac93c1b6b4b179051b4aa2a7e853c5eabc9fcf1e",
     "contracts/approved-service-owner-foundation.v2.json": "dfcde1f86806f4fb456507f73ffd23dc9c68db19a4c5fbbbb9058f63ecd216b5",
     "contracts/approved-service-product.v2.json": "22893746f4f3575308c2b9a7a63aed5b2b9710737b18d91b9cb9b4421eba70f3",
@@ -2774,7 +2637,7 @@
     "contracts/receipt.v1.schema.json": "8610d2e9dd8ccc72b9803b2a51704aa282ccd96f50d19ac33074060e8cfc0eed",
     "contracts/remaining-managed-consumers.v1.json": "2be2c10879559bba8c10fa058c2d0abc770eac35694c84af35b2fae32cd82abd",
     "contracts/request-peer-custody.v1.json": "11c905470ee6777d920e36f1b0ccace04e3c074487b22e4dceaf3c81b7917201",
-    "contracts/retained-control-readiness.v1.json": "9e24e9fa600ad98da1ab0c2d580321cebf4c3ecb7991700161ab610e2c2d2b33",
+    "contracts/retained-control-readiness.v1.json": "23adee40dd4f0006f165d40921f54e671c17446f47403fec7289d3ea7198a1ef",
     "contracts/retained-control-terminal.v1.json": "a5c8885cf6431685e69fbefc3afa8f9d21a46dd2dac2dfef991283db467095ac",
     "contracts/root-owned-control-path.v1.json": "ffe2c22b4be5964ae9a41f370133ca311965ddc98286d4f4b1eff410142e41d8",
     "contracts/root-path-retained-control.v1.json": "e96dda3a5707aace239fbea760fccb8cbf7ff49f69d671c94680ea42f462eea8",
@@ -2797,8 +2660,8 @@
     "crates/hepta-agent-transport/src/accepted_handoff.rs": "9d689df4fa59601e39b4598771fa2cad55d83d1733f137593e017e2b2cd11e23",
     "crates/hepta-agent-transport/src/accepted_handoff/connected_denial.rs": "e438ab278f43c034573ea923b5b21da25f9cd3b208198313ac8f55eeeeb7943d",
     "crates/hepta-agent-transport/src/accepted_handoff/retained_control.rs": "8b92ac76f1ceda055be0f4a56a8a41e2d704229b24f337f65c028c443957eb35",
-    "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs": "9356ec45091ac1d12a6bcd14889a4e85660e5716a95e7b2aaf948909d7ff48b1",
-    "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs": "52968e54e45baf3cacb7beb03c6f4df6bb7e1c467156c6f564a32e859853a444",
+    "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs": "4f8fbaa6c940bff8eb471d255dc54096462dac84352d0fef82e2870eef060b48",
+    "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs": "7fa2c5aff2235ce62af7d3f0e5bfb3984a267d37f74403ccabfce7e985d3e68d",
     "crates/hepta-agent-transport/src/accepted_handoff/retained_control/service_control.rs": "7910294fbb13f09f8f9259b2b762cf4cac0a1e187150986a8aa827fa238e4baa",
     "crates/hepta-agent-transport/src/facade.rs": "ec9213b2ef90c3188b060ac16170ce0f1db27e6de4d2f310ee7b1f38cbc7bbe3",
     "crates/hepta-agent-transport/src/facade/wire.rs": "6fefd91ca867dbc97332b872689b4a64eff1313dc0db293f74e36212e66e63a5",
@@ -2854,7 +2717,7 @@
     "crates/hepta-peer-attestation/src/control_owner.rs": "486e09d97822a20132765447edfd68b7c1f5c58b14e9b9984cfe4b496e530735",
     "crates/hepta-peer-attestation/src/control_owner/control_request.rs": "4d4d6a80d2c6f93660b9ad09a1cefac43faa32177212d812c620315017a23eca",
     "crates/hepta-peer-attestation/src/control_owner/retained_request.rs": "fdac96f19d799e744236d0b49d9635e7a59e062018906ac88355c1b9be40eefc",
-    "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs": "c74a1c5b0c8d41632eae9c00f471966236f97f91f410345e01ca4ac19b5973f0",
+    "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs": "f67fde7fc98aadaf66c07589aca61593e1bcee6353a70ca18011f04325ef942c",
     "crates/hepta-peer-attestation/src/control_owner/root_path.rs": "a0078b77190ab5a7f935ce6e7fbff6522bf4704061748498edd2aee07d234c3c",
     "crates/hepta-peer-attestation/src/control_owner/root_path/approved.rs": "73c5072cfb6655b62e06c4ec077585e14c61bdeee19c025842c620c5228270bc",
     "crates/hepta-peer-attestation/src/lib.rs": "a2ee51523eee9cd55cd759ffc6b1d9b746451558f7f5281fa273a8d269937323",
@@ -2957,7 +2820,7 @@
     "docs/architecture/REMAINING_MANAGED_CONSUMERS.md": "932078a3aea24a0983353024f5f5664453dc4b5f9d4fea4914d5f511740e4bcc",
     "docs/architecture/REQUEST_EXECUTION_AND_RECOVERY.md": "645c5ec5de7c28e57eb525a15a21fc4a844211e1b37916131e299de47e17c0fc",
     "docs/architecture/REQUEST_PEER_CUSTODY.md": "16163057f5a66747f356a61609d1bb260f911b6b9057f1b72d09dbc543999d11",
-    "docs/architecture/RETAINED_CONTROL_READINESS.md": "3a35ff8e2a45052a569636ba5175fdc23f5ce47312241ac0c03608670a53b682",
+    "docs/architecture/RETAINED_CONTROL_READINESS.md": "05098ffbef634ab018542add3cd829f9e5316897d6f7f6dd39af14db69fca06d",
     "docs/architecture/RETAINED_CONTROL_TERMINAL.md": "6e8cb46883d8a76eaf74493bd22321526fbd44ce840d76aa2c1c16ccb5639892",
     "docs/architecture/ROOT_OWNED_CONTROL_PATH.md": "33a024c311881420f6361bbc192577158f801dd6c5dca3a099cf6cefec9ada1d",
     "docs/architecture/ROOT_PATH_RETAINED_CONTROL.md": "15bca630851aea07ac113272927fdacd053ed3f56680e23ffa7f2a942dd8b49a",
@@ -3032,7 +2895,7 @@
     "experiments/servo-headed-runtime/src/network_confinement.rs": "021ce7384de191d771a0c5197e88b7b11c3d44ec05bb6050d4515bb7d2d49147",
     "experiments/servo-headed-runtime/src/resource_gate.rs": "5e6857283d68a883c071a8acb19a9e67c50d9ec7708b5131850aa86240842fe0",
     "experiments/servo-product-owner/rustfmt.toml": "9bac67039cd8f892bb9c1ff0780e6e1f2f8dbd8b6787552e4c827f9363452eda",
-    "experiments/servo-product-owner/src/approved_connected_tests.rs": "eee151cbb9a5c8a8fd10bf2c6baa3b314576c7e7711974459c6a27ab1f783d5f",
+    "experiments/servo-product-owner/src/approved_connected_tests.rs": "b27fb01ea8bd0ccbf7b76b577f613beb913ece42c9b6b9cdd97d5b7025412530",
     "experiments/servo-product-owner/src/approved_startup.rs": "582242f4826110a81f26fdec3ad497a2eb1dd76fb20d1e7601d95559b3296b25",
     "experiments/servo-product-owner/src/approved_test_support.rs": "32a275958ee3dc7783df7b2bad0a3dc66eb0ec973a523aa7f0ddcfa9e053ee15",
     "experiments/servo-product-owner/src/connected_tests.rs": "e22417fdccfadfb0eccaa7d253a7af9ed93f210d739cd16e32e952c29ccb7f5f",
@@ -3190,7 +3053,7 @@
     "tests/test_project_truth_status_documents.py": "77e5f80f3431f79f05d0da519b219887fd6680fd45e428b000ddd6406d3612ef",
     "tests/test_remaining_managed_consumers.py": "64513ec66c32c3dd9488d0a1f5379e89010d0ef56dbcc3b15947057e3589762d",
     "tests/test_repository_source_scan.py": "d470fbc48942df337f3cdf83e40a5c9f5cbe12fd42e3fb5209c5d906ab15cc0c",
-    "tests/test_retained_control_readiness.py": "a94c33c71c8be280adf73675c0f711c7989868cb035a0e953d2deec69a484e35",
+    "tests/test_retained_control_readiness.py": "e1489dfe6f3691c9dad787d454b3acedc2acd0679d0be319360d9140a70d99f0",
     "tests/test_retained_control_terminal.py": "d2f174fafb41a5e039436c7ed8bdd042eeb5e3833c66935ff324ab1d5495b176",
     "tests/test_root_control_path.py": "1a67cb18e568f27deb125e98f44407289c0635a3846760b72b700acb18a08b71",
     "tests/test_root_path_retained_control.py": "aba6e64c2b9c1548bc6f6134e4df10a2ad029439e459804e6d88a0aaa07c8c0b",
@@ -3291,7 +3154,7 @@
     "tools/verify_approved_composition_scope.py": "c5d8c547ccb6156c9e824339511bd76e35d429de6d4e85e70041c7493b92fe8c",
     "tools/verify_approved_constructor_route.py": "1587db427042ba267d36ea863bd3113f31db5754f6ecc7e43824e7bf43b236b6",
     "tools/verify_approved_native_startup.py": "d485dcc450e731b7f2cd9edaa2dd3d08bf026b344835733d89e18935fa651fa0",
-    "tools/verify_approved_request_binding.py": "dc75cb16738b29f078a42353ab99541c258abf4e7cb9a1a5d86085a1334375fa",
+    "tools/verify_approved_request_binding.py": "ae07df899b011851f3e828cd88c73f86395e3425973a1fecab91b34d4d33a6f0",
     "tools/verify_approved_service_actor.py": "def3050e113bd7d2e36c6321f879dafe5788622d958622ccc01f5b13351e2daf",
     "tools/verify_approved_service_owner.py": "d7c0f744b5dd05100f51869f5027fce8f1240337d500f02b980d5122dbc86bc9",
     "tools/verify_approved_service_product.py": "268ba22a5f79182c841e1901f74e9fecffd330b968843f632308ef692a7f5763",
@@ -3308,7 +3171,7 @@
     "tools/verify_mozjs_authenticated_input.py": "6533b5bcf4b6513ff48aa8f4b32d5600e91f1410c3a139e6a5c4a0ceb0a865e0",
     "tools/verify_mozjs_secondary_input.py": "46cc8ce9bb50ab10dfdbda6eeab2afff7da60803bed842eb0bb3b9413c6d8270",
     "tools/verify_receipt_journal.py": "c19ddb04b813649ba73d12e67c3992aa948e45209c1884f43f5fb566e500b377",
-    "tools/verify_retained_control_readiness.py": "7e10c66c31fc5842de91ec3c6f69d6a20caa238ff7cf954ba150876d41234772",
+    "tools/verify_retained_control_readiness.py": "c9424edb8b8c4555ebb24030763c1fec4815b2f84484ceee829980cd2ca917a0",
     "tools/verify_s07_qualification_lineage.py": "e30d6dbe2f892d2470874002d49b787e92c4c9187e550b16e6332611abc72d7b",
     "tools/verify_s08_semantic_custody.py": "5c9d9feaa50fecc0efa9894a571fcdf688ffce141f089f31c7b75fcf5462a418",
     "tools/verify_s12_release_qualification.py": "c8aa181dc108427edad7e7f50ef07f2c07ed2eb058ef2fc8daecb106debfc7bf",
@@ -3668,7 +3531,7 @@
     "contracts/ci-namespace-python.v1.json": "b78bc4729432c963a3661da00f3f0de4b170bcf35e32972a71727466401a6859",
     "docs/architecture/SERVICE_DISPATCH_DENIAL_CUTOFF.md": "3100cf1ba31ab528e4fc5882f13d9846940dcc6f20226c1c6d2a7d381a71d280",
     "tests/test_ci_namespace_python.py": "c43ec278d0f864b5ca76d8ba767dffe8aef35753f287668a8ddc9b31bc701848",
-    "tests/test_service_dispatch_denial_cutoff.py": "a607c59a7a557ed2a82e1f083d3b228e569b2a447ee497975a6b14942139a2f5",
+    "tests/test_service_dispatch_denial_cutoff.py": "72256b97eae09975014886b5881d05a27152d04d53aa851bc0a8fa7f1e78aad8",
     "tools/ci_namespace_python.py": "937de555927e81f0b0b86be07cbaf98d27a2449e4d74a880f0689e89096017e8",
     "tools/verify_ci_namespace_python.py": "dff47eebdcdae4075ced55eb3b991dc201ea17406c7f203be405079c199c401e"
   }

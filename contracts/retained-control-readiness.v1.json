@@ -20,6 +20,8 @@
     "original_instant_extended": false
   },
   "public_api": {
+    "PendingHandoffSender::report_readable_now": "pub fn report_readable_now(&mut self) -> Result<bool, HandoffError>",
+    "AttestedPendingHandoff::poll_retirement_when_readable": "pub fn poll_retirement_when_readable(&mut self) -> Result<Option<PeerReportedRetirement>, ControlOwnerError>",
     "PendingHandoffReceiver::cancel_readable_now": "pub fn cancel_readable_now(&mut self) -> Result<bool, HandoffError>",
     "AttestedRetainedReceiver::poll_cancel_when_readable": "pub fn poll_cancel_when_readable(&mut self) -> Result<bool, ControlOwnerError>"
   },
@@ -35,9 +37,9 @@
     "tools/verify_approved_constructor_route.py": "50f2c13bc28324cfabc217ea1290cb9c511a5f885437c0ed890d3563020ca366",
     "tools/verify_approved_native_startup.py": "e86ac78e4b35e9856f545c96b6cdc25d9b4b84ea3317aeeb6bc9506199f85b38",
     "apps/hepta-browserd/tests/control_readiness_kernel.rs": "10d846a7e356056d80895ff01bc82c08504e76fdf422c80ddbb96d27093c2453",
-    "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs": "52968e54e45baf3cacb7beb03c6f4df6bb7e1c467156c6f564a32e859853a444",
-    "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs": "9356ec45091ac1d12a6bcd14889a4e85660e5716a95e7b2aaf948909d7ff48b1",
-    "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs": "c74a1c5b0c8d41632eae9c00f471966236f97f91f410345e01ca4ac19b5973f0",
+    "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs": "7fa2c5aff2235ce62af7d3f0e5bfb3984a267d37f74403ccabfce7e985d3e68d",
+    "crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs": "4f8fbaa6c940bff8eb471d255dc54096462dac84352d0fef82e2870eef060b48",
+    "crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs": "f67fde7fc98aadaf66c07589aca61593e1bcee6353a70ca18011f04325ef942c",
     "apps/hepta-browserd/Cargo.toml": "7871b88e3211d5a3348af124286d096af99be30143797ed8bb9a5cb231c20b0d"
   },
   "parent_source_sha256": {
@@ -122,8 +124,11 @@
   },
   "qualification": {
     "source_correspondence_only": true,
-    "transport_default_parallel_test_groups": 11,
+    "transport_default_parallel_test_groups": 20,
     "actual_default_proc_host_groups": 9,
+    "sender_default_proc_host_groups": 0,
+    "sender_default_proc_host_execution_proven": false,
+    "sender_caller_adopted": false,
     "actual_host_execution_not_proven_by_contract": true,
     "native_original_six_and_budgets_preserved": true,
     "measured_speedup_claim": false,

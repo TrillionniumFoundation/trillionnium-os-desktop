@@ -126,10 +126,14 @@ fn run(
         trio.deadline.min(observation.original_deadline())
     );
     assert!(observation.service().as_ref().unwrap().response_committed);
-    assert!(matches!(
-        observation.report(),
-        Ok(ProductControlMonitorOutcome::ReportEnqueued)
-    ));
+    assert!(
+        matches!(
+            observation.report(),
+            Ok(ProductControlMonitorOutcome::ReportEnqueued)
+        ),
+        "completed original report outcome={:?}",
+        observation.report()
+    );
     assert_eq!(observation.runtime_state(), RuntimeState::Ready);
     phases::mark(Phase::Response, Edge::Begin);
     trio.agent.expect("REQUEST");

@@ -526,7 +526,7 @@ class CurrentCIPhysicalBoundaryTests(unittest.TestCase):
         current = ci.inputs(gate.ROOT)
         self.assertEqual(len(self.texts), 699)
         self.assertEqual(len(gate.EXPECTED['ci_current_physical23']), 23)
-        self.assertEqual(len(gate.CLOSED_CI_SOURCE_RULES), 18)
+        self.assertEqual(len(gate.CLOSED_CI_SOURCE_RULES), 16)
         for path in current:
             self.assertEqual(current[path], self.texts[path])
             self.assertEqual(current[path], gate._read(gate.ROOT, path))
@@ -589,7 +589,7 @@ class RetainedFullFiniteHistoryCompositionTests(unittest.TestCase):
         rebound, texts = harness._fully_rebound_ci({path: changed})
         self.assertEqual(rebound['ci_current_physical23'][path], gate._sha(changed.encode()))
         self.assertEqual(rebound['preserved_original_sha256'][path], gate._sha(changed.encode()))
-        self.assertEqual(rebound['ci_parent_inverse18'][path]['complete_sha256'], gate._sha(changed.encode()))
+        self.assertNotIn(path, rebound['ci_parent_inverse18'])
         self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(rebound))
         with mock.patch.object(gate, 'EXPECTED', rebound):
             self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()),
@@ -839,7 +839,7 @@ class ClosedCIRuleStorageTests(unittest.TestCase):
     def test_validated_copy_preserves_all18_rules_and_nested_nonaliasing(self):
         copied = gate._copy_closed_ci_rules(self.rules)
         self.assertEqual(copied, self.rules)
-        self.assertEqual(len(copied), 18)
+        self.assertEqual(len(copied), 16)
         self.assertIsNot(copied, self.rules)
         for path in copied:
             self.assertIsNot(copied[path], self.rules[path])
@@ -989,6 +989,50 @@ class CurrentReferenceOwnershipTests(unittest.TestCase):
             with self.subTest(mode=mode), mock.patch.object(gate, 'EXPECTED', rebound):
                 with self.assertRaisesRegex(ValueError, '^P3 independent current reference catalog differs$'):
                     gate._check_current_reference_physical(self.texts)
+
+
+class SenderCurrentOwnershipTests(unittest.TestCase):
+    paths = ('contracts/retained-control-readiness.v1.json', 'tools/verify_retained_control_readiness.py')
+
+    @classmethod
+    def setUpClass(cls):
+        cls.texts = gate.inputs()
+
+    def test_sender_registration_uses_current_ownership_without_new_historical_inverses(self):
+        gate.check(gate.EXPECTED, self.texts)
+        self.assertEqual(len(self.texts), 699)
+        self.assertEqual(len(gate.CLOSED_CI_SOURCE_RULES), 16)
+        self.assertEqual(len(gate.EXPECTED['ci_current_physical23']), 23)
+        for path in self.paths:
+            self.assertNotIn(path, gate.CLOSED_CI_RULE_IDENTITIES)
+            self.assertNotIn(path, gate.CLOSED_CI_SOURCE_RULES)
+            self.assertEqual(gate.ci_parent_source(path, self.texts[path]), self.texts[path])
+            self.assertEqual(self.texts[path], gate._read(gate.ROOT, path))
+
+    def test_rebound_sender_registration_cannot_bypass_current23(self):
+        assignment = gate.expected_assignment(gate.EXPECTED)
+        for path in self.paths:
+            texts = dict(self.texts)
+            texts[path] += '\n# rebound sender source\n'
+            rebound = rebind_derived_metadata(gate.EXPECTED, texts, self.texts)
+            rebound['ci_current_physical23'][path] = gate._sha(texts[path].encode())
+            texts[gate.TOOL] = texts[gate.TOOL].replace(assignment, gate.expected_assignment(rebound), 1)
+            texts[gate.CONTRACT] = gate.canonical_contract_text(rebound)
+            with self.subTest(path=path), mock.patch.object(gate, 'EXPECTED', rebound):
+                self.assertEqual(gate._sha(gate.checker_body(texts[gate.TOOL]).encode()), rebound['checker_nonEXPECTED_whole_sha256'])
+                self.assertEqual(texts[gate.CONTRACT], gate.canonical_contract_text(gate.EXPECTED))
+                with self.assertRaisesRegex(ValueError, '^P3 independent current CI physical Source differs$'):
+                    gate.check(rebound, texts)
+
+    def test_pure_removed_history_routes_cannot_admit_unregistered_sender_bytes(self):
+        for path in self.paths:
+            unknown = self.texts[path] + '\n# not a registered current sender leaf\n'
+            self.assertEqual(gate.ci_parent_source(path, unknown), unknown)
+            self.assertEqual(gate.joint_parent_source(path, unknown), unknown)
+            texts = dict(self.texts)
+            texts[path] = unknown
+            with self.subTest(path=path), self.assertRaisesRegex(ValueError, '^P3 independent current CI physical Source differs$'):
+                gate.check(gate.EXPECTED, texts)
 
 
 if __name__ == '__main__':

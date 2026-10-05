@@ -149,10 +149,11 @@ class RetainedControlReadinessTests(unittest.TestCase):
 
     def test_complete_legacy36_plus_two_versioned_modules_and_compiled_route(self):
         self.assertEqual(len(verifier.EXPECTED["legacy_public_api"]), 36)
-        for path, method in [(verifier.TRANSPORT_READINESS, "PendingHandoffReceiver::cancel_readable_now"),
-                             (verifier.PEER_READINESS, "AttestedRetainedReceiver::poll_cancel_when_readable")]:
+        for path, methods in [(verifier.TRANSPORT_READINESS, {"PendingHandoffReceiver::cancel_readable_now", "PendingHandoffSender::report_readable_now"}),
+                              (verifier.PEER_READINESS, {"AttestedRetainedReceiver::poll_cancel_when_readable", "AttestedPendingHandoff::poll_retirement_when_readable"})]:
             actual = verifier.composition.rust_inventory(self.texts()[path])["public_api"]
-            self.assertEqual(set(actual), {method})
+            self.assertEqual(set(actual), methods)
+        self.assertEqual(len(verifier.EXPECTED["public_api"]), 4)
         for path in [verifier.RETAINED, verifier.REQUEST]:
             self.refuse(path, "mod readiness;", "// mod readiness;")
         self.refuse(verifier.TRANSPORT_READINESS, "impl PendingHandoffReceiver", "impl CallerReceiver")
@@ -183,6 +184,58 @@ class RetainedControlReadinessTests(unittest.TestCase):
         self.assertTrue(verifier.parent_source(verifier.PRODUCT, commented).endswith('// caller_prechecked\n'))
         changed = dict(values); changed[verifier.PRODUCT] = commented
         with self.assertRaises(ValueError): verifier.check(verifier.EXPECTED, changed)
+
+
+class SenderReadinessSourceTests(unittest.TestCase):
+    """Current physical sender guards; Rust/socket execution is a separate gate."""
+    texts = RetainedControlReadinessTests.texts
+
+    def test_sender_current_positive_and_closed_forty_api(self):
+        verifier.check(copy.deepcopy(verifier.EXPECTED), self.texts())
+        self.assertEqual(len(verifier.EXPECTED["legacy_public_api"]), 36)
+        self.assertEqual(len(verifier.EXPECTED["public_api"]), 4)
+        self.assertEqual(verifier.EXPECTED["qualification"]["transport_default_parallel_test_groups"], 20)
+        self.assertEqual(verifier.EXPECTED["qualification"]["sender_default_proc_host_groups"], 0)
+        self.assertFalse(verifier.EXPECTED["qualification"]["sender_default_proc_host_execution_proven"])
+        self.assertFalse(verifier.EXPECTED["qualification"]["sender_caller_adopted"])
+        self.assertFalse(verifier.EXPECTED["qualification"]["measured_speedup_claim"])
+        self.assertFalse(verifier.EXPECTED["qualification"]["production_ready"])
+
+    def test_sender_unknown_current_bytes_rebound_catalog_hits_independent_guard(self):
+        from unittest import mock
+        for path in verifier.SENDER_SOURCE_SHA256:
+            values = self.texts()
+            values[path] += "\n"
+            rebound = copy.deepcopy(verifier.EXPECTED)
+            rebound["actual_source_sha256"][path] = verifier.hashlib.sha256(values[path].encode()).hexdigest()
+            with self.subTest(path=path), mock.patch.object(verifier, "EXPECTED", rebound):
+                with self.assertRaisesRegex(ValueError, "^independent sender readiness physical Source differs$"):
+                    verifier.check(rebound, values)
+
+    def test_sender_order_authority_and_signature_mutations_rebound_to_exact_guard(self):
+        from unittest import mock
+        cases = [
+            (verifier.TRANSPORT_READINESS, "self.transaction.channel.owner()?;", ""),
+            (verifier.TRANSPORT_READINESS, "self.transaction.readiness_enabled = true;", "self.transaction.readiness_enabled = false;"),
+            (verifier.TRANSPORT_READINESS, "readable_now(self.transaction.verify()?)?", "false"),
+            (verifier.TRANSPORT_READINESS, "pub fn report_readable_now(&mut self)", "pub fn report_readable_now(&mut self, fd: i32)"),
+            (verifier.PEER_READINESS, "creator(self.owner_pid)?;", ""),
+            (verifier.PEER_READINESS, ".idle_reporting_scope()?;", ".current()?;"),
+            (verifier.PEER_READINESS, ".report_readable_now()", ".cancel_readable_now()"),
+            (verifier.PEER_READINESS, "self.poll_retirement()", "Ok(None)"),
+            (verifier.PEER_READINESS, "remaining(self.owner_pid, self.deadline)?;", "remaining(self.owner_pid, Instant::now() + Duration::from_secs(20))?;"),
+            (verifier.PEER_READINESS, "self.retire()?;", ""),
+            (verifier.PEER_READINESS, "Ok(None)", "mint_report_permission(); Ok(None)"),
+        ]
+        for path, before, after in cases:
+            values = self.texts()
+            self.assertIn(before, values[path])
+            values[path] = values[path].replace(before, after, 1)
+            rebound = copy.deepcopy(verifier.EXPECTED)
+            rebound["actual_source_sha256"][path] = verifier.hashlib.sha256(values[path].encode()).hexdigest()
+            with self.subTest(path=path, before=before), mock.patch.object(verifier, "EXPECTED", rebound):
+                with self.assertRaisesRegex(ValueError, "^independent sender readiness physical Source differs$"):
+                    verifier.check(rebound, values)
 
 
 if __name__ == "__main__":

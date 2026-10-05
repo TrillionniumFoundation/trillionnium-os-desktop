@@ -31,6 +31,7 @@ POLICY = "crates/hepta-peer-attestation/src/approved_policy.rs"
 MONITOR = "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
 PRODUCT = "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
 CARGO = "apps/hepta-browserd/Cargo.toml"
+SENDER_SOURCE_SHA256 = {'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs': '4f8fbaa6c940bff8eb471d255dc54096462dac84352d0fef82e2870eef060b48', 'crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs': 'f67fde7fc98aadaf66c07589aca61593e1bcee6353a70ca18011f04325ef942c', 'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs': '7fa2c5aff2235ce62af7d3f0e5bfb3984a267d37f74403ccabfce7e985d3e68d'}
 EXPECTED = {'schema': 'trillionnium.desktop.retained-control-readiness.v1',
  'default_activation': False,
  'parent_source_commit': 'c875ed3e3c6c876b716f415f7b766992d48e1572',
@@ -47,7 +48,9 @@ EXPECTED = {'schema': 'trillionnium.desktop.retained-control-readiness.v1',
               'native_seconds_maximum': 5,
               'service_health_seconds': 60,
               'original_instant_extended': False},
- 'public_api': {'PendingHandoffReceiver::cancel_readable_now': 'pub fn cancel_readable_now(&mut self) -> '
+ 'public_api': {'PendingHandoffSender::report_readable_now': 'pub fn report_readable_now(&mut self) -> Result<bool, HandoffError>',
+                'AttestedPendingHandoff::poll_retirement_when_readable': 'pub fn poll_retirement_when_readable(&mut self) -> Result<Option<PeerReportedRetirement>, ControlOwnerError>',
+                'PendingHandoffReceiver::cancel_readable_now': 'pub fn cancel_readable_now(&mut self) -> '
                                                                'Result<bool, HandoffError>',
                 'AttestedRetainedReceiver::poll_cancel_when_readable': 'pub fn '
                                                                        'poll_cancel_when_readable(&mut self) '
@@ -63,9 +66,9 @@ EXPECTED = {'schema': 'trillionnium.desktop.retained-control-readiness.v1',
                           'tools/verify_approved_constructor_route.py': '50f2c13bc28324cfabc217ea1290cb9c511a5f885437c0ed890d3563020ca366',
                           'tools/verify_approved_native_startup.py': 'e86ac78e4b35e9856f545c96b6cdc25d9b4b84ea3317aeeb6bc9506199f85b38',
                           'apps/hepta-browserd/tests/control_readiness_kernel.rs': '10d846a7e356056d80895ff01bc82c08504e76fdf422c80ddbb96d27093c2453',
-                          'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs': '52968e54e45baf3cacb7beb03c6f4df6bb7e1c467156c6f564a32e859853a444',
-                          'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs': '9356ec45091ac1d12a6bcd14889a4e85660e5716a95e7b2aaf948909d7ff48b1',
-                          'crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs': 'c74a1c5b0c8d41632eae9c00f471966236f97f91f410345e01ca4ac19b5973f0',
+                          'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs': '7fa2c5aff2235ce62af7d3f0e5bfb3984a267d37f74403ccabfce7e985d3e68d',
+                          'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs': '4f8fbaa6c940bff8eb471d255dc54096462dac84352d0fef82e2870eef060b48',
+                          'crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs': 'f67fde7fc98aadaf66c07589aca61593e1bcee6353a70ca18011f04325ef942c',
                           'apps/hepta-browserd/Cargo.toml': '7871b88e3211d5a3348af124286d096af99be30143797ed8bb9a5cb231c20b0d'},
  'parent_source_sha256': {'apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs': '39c227ccba6bdf249402cf1f48cc8e2e09e7bc8e74067f619b1a134275c4aea5',
                           'apps/hepta-browserd/src/product_dispatch/product_control_wait.rs': 'd87efdb8cdd22e38cca90aae0f776f823478bf3b2045482c81ba608eb79a019f',
@@ -218,8 +221,11 @@ EXPECTED = {'schema': 'trillionnium.desktop.retained-control-readiness.v1',
                                                                                '-> Result<ServiceEvidence, '
                                                                                'ProductDispatchError>'},
  'qualification': {'source_correspondence_only': True,
-                   'transport_default_parallel_test_groups': 11,
+                   'transport_default_parallel_test_groups': 20,
                    'actual_default_proc_host_groups': 9,
+                   'sender_default_proc_host_groups': 0,
+                   'sender_default_proc_host_execution_proven': False,
+                   'sender_caller_adopted': False,
                    'actual_host_execution_not_proven_by_contract': True,
                    'native_original_six_and_budgets_preserved': True,
                    'measured_speedup_claim': False,
@@ -794,6 +800,9 @@ def check(contract, texts):
         from verify_approved_service_runtime import parent_source as service_runtime_parent_source
     texts = {path: detach_for_readiness(path, service_runtime_parent_source(path, text)) for path, text in texts.items()}
     composition.typed_equal(contract, EXPECTED)
+    for path, digest in SENDER_SOURCE_SHA256.items():
+        if hashlib.sha256(texts[path].encode()).hexdigest() != digest:
+            raise ValueError("independent sender readiness physical Source differs")
     for path, wanted in EXPECTED["actual_source_sha256"].items():
         if hashlib.sha256(texts[path].encode()).hexdigest() != wanted:
             raise ValueError("complete readiness source differs: " + path)
@@ -819,8 +828,9 @@ def check(contract, texts):
     legacy_api.update(const_headers)
     if {key: composition.signature(value) for key, value in legacy_api.items()} != {key: composition.signature(value) for key, value in EXPECTED["legacy_public_api"].items()}:
         raise ValueError("closed legacy 36 API inventory differs")
-    for path, key in [(TRANSPORT_READINESS, "PendingHandoffReceiver::cancel_readable_now"), (PEER_READINESS, "AttestedRetainedReceiver::poll_cancel_when_readable")]:
-        if set(composition.rust_inventory(texts[path])["public_api"]) != {key}:
+    for path, keys in [(TRANSPORT_READINESS, {"PendingHandoffReceiver::cancel_readable_now", "PendingHandoffSender::report_readable_now"}),
+                       (PEER_READINESS, {"AttestedRetainedReceiver::poll_cancel_when_readable", "AttestedPendingHandoff::poll_retirement_when_readable"})]:
+        if set(composition.rust_inventory(texts[path])["public_api"]) != keys:
             raise ValueError("new versioned module API inventory differs")
     inventory = composition.rust_inventory(texts[TRANSPORT])
     composition.ordered(composition.function(inventory, "ControlChannel::new"),
@@ -840,7 +850,9 @@ def check(contract, texts):
                         "nonconsuming original Control ready observation")
     if composition.function(transaction, "Transaction::take_channel").count("original_identity") != 2:
         raise ValueError("detached report loses original Control identity")
-    for path, method, signature in [(TRANSPORT_READINESS, "PendingHandoffReceiver::cancel_readable_now", EXPECTED["public_api"]["PendingHandoffReceiver::cancel_readable_now"]),
+    for path, method, signature in [(TRANSPORT_READINESS, "PendingHandoffSender::report_readable_now", EXPECTED["public_api"]["PendingHandoffSender::report_readable_now"]),
+                                    (PEER_READINESS, "AttestedPendingHandoff::poll_retirement_when_readable", EXPECTED["public_api"]["AttestedPendingHandoff::poll_retirement_when_readable"]),
+                                    (TRANSPORT_READINESS, "PendingHandoffReceiver::cancel_readable_now", EXPECTED["public_api"]["PendingHandoffReceiver::cancel_readable_now"]),
                                     (PEER_READINESS, "AttestedRetainedReceiver::poll_cancel_when_readable", EXPECTED["public_api"]["AttestedRetainedReceiver::poll_cancel_when_readable"])]:
         actual = composition.rust_inventory(texts[path])["public_api"][method]
         if composition.signature(actual) != composition.signature(signature):
@@ -868,6 +880,19 @@ def check(contract, texts):
                         ["self.owner_pid != std::process::id()", "self.retained.as_mut()", "match self.cancel_profile",
                          "CancelPollProfile::FullV1", "retained.poll_cancel()", "CancelPollProfile::ApprovedReadinessV1",
                          "retained.poll_cancel_when_readable()"], "legacy/full and opaque profile monitor routes")
+    composition.ordered(composition.function(readiness, "PendingHandoffSender::report_readable_now"),
+                        ["self.transaction.channel.owner()?", "self.transaction.readiness_enabled = true",
+                         "readable_now(self.transaction.verify()?)?", "self.transaction.verify()?",
+                         "result.is_err()", "self.transaction.channel.retire()"],
+                        "sender original Control nonconsuming observation")
+    sender = unique_body(texts[PEER_READINESS], "poll_retirement_when_readable")
+    composition.ordered(sender,
+                        ["creator(self.owner_pid)?", "remaining(self.owner_pid, self.deadline)?", ".idle_reporting_scope()?",
+                         ".report_readable_now()", ".idle_reporting_scope()?", "remaining(self.owner_pid, self.deadline)?",
+                         "if ready", "self.poll_retirement()", "Ok(None)", "checked.is_err()", "self.retire()?"],
+                        "sender idle denial and original full report consumption")
+    if any(value in sender for value in ("action", "Instant", "Duration", "refresh_snapshot", "mint_report_permission")):
+        raise ValueError("sender idle scope grants authority or changes original budget")
     if texts[PRODUCT].count("cancel_profile: CancelPollProfile::ApprovedReadinessV1") != 1:
         raise ValueError("approved private profile factory differs")
     if texts[MONITOR].count("cancel_profile: CancelPollProfile::FullV1") != 1:
