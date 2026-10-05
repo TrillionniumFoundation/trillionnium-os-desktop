@@ -114,7 +114,7 @@ runs in a self-exec single-case child so other unit harness threads cannot
 acquire that descriptor. The creator mutation is synthetic; it is not fork
 evidence. Old default unit harness parallelism remains enabled.
 
-The new `control_readiness_kernel` target has nine groups using real
+The original receiver side of `control_readiness_kernel` has nine groups using real
 root-selected Control and Agent processes, default `/proc`, original pidfds,
 protected configuration and an actual transient root unit: idle/report after
 action revocation, cancellation/report, source drift/restore, Control death,
@@ -162,3 +162,44 @@ any report value is returned. Actual transport compilation/execution, sender
 host qualification and the unchanged six-case native qualification remain
 separate gates. No measured speedup, deadline fix, installed activation or
 production claim is made.
+
+
+## Upper sender host source corpus
+
+Thirteen additional groups in the same kernel target are authored for sender
+behavior. The original nine receiver groups keep their bodies and order. Host
+execution remains unproven in the contract; caller adoption and production
+readiness remain false.
+
+Each new group starts in a fresh exec of the known test binary, using the same
+root unit selected by the original launcher. Old journal/report worker threads
+cannot carry Rust state through exec. Every new raw fork requires exactly one
+`/proc/self/task` entry immediately before the syscall; no sleep or wait is used
+to establish quiescence. A separate original Control receiver fork child and the
+existing Agent child provide the actual opposite peer and accepted stream.
+Root-selected protected policy, copied ELF pins and default `/proc` admission
+remain mandatory. This direction differs from the old custodian-exec tests.
+
+The groups cover idle followed by once-only report delivery; refusal to construct
+from a distinct protected policy with a wrong Control ELF pin; Control socket
+path rename/restore and whole-policy rewrite/restore with sticky retirement;
+actual peer pidfd death; opposite-peer exec while idle and with a queued report;
+real fork-child refusal with the parent's original report preserved; the original
+outer and accepted ceilings independently; cancellation and original reporting;
+malformed real packets; and HUP while the peer process remains alive.
+
+The receiver retains its real ControlRequestCustody. Cancellation asserts action
+validity before polling and revocation afterward. HUP releases retained owner,
+custody and verifier so no alias hides the closed Control endpoint. Exec tests
+prove the same original child is still running after PeerRefused and before
+cleanup; natural sleep termination cannot count as an exec refusal. If waitpid
+consumes or loses an identity, cleanup marks it reaped before asserting and never
+signals the reusable numeric PID.
+
+No request ceiling exceeds the original twenty seconds. The two expiry cases
+select tighter ten-second ceilings once before setup. Fresh-case supervision
+uses the existing twenty-second fixture wait and original 180-second transient
+unit limit. Native owner budgets and all production/native callers are unchanged.
+These source tests do not qualify Servo execution, installed behavior, speedup
+or a deadline repair. Privileged fixture and subprocess effects must be reviewed
+before the authored host cases run.

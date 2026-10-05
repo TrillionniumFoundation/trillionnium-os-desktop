@@ -195,11 +195,73 @@ class SenderReadinessSourceTests(unittest.TestCase):
         self.assertEqual(len(verifier.EXPECTED["legacy_public_api"]), 36)
         self.assertEqual(len(verifier.EXPECTED["public_api"]), 4)
         self.assertEqual(verifier.EXPECTED["qualification"]["transport_default_parallel_test_groups"], 20)
-        self.assertEqual(verifier.EXPECTED["qualification"]["sender_default_proc_host_groups"], 0)
+        self.assertEqual(verifier.EXPECTED["qualification"]["sender_default_proc_host_groups"], 13)
         self.assertFalse(verifier.EXPECTED["qualification"]["sender_default_proc_host_execution_proven"])
         self.assertFalse(verifier.EXPECTED["qualification"]["sender_caller_adopted"])
         self.assertFalse(verifier.EXPECTED["qualification"]["measured_speedup_claim"])
         self.assertFalse(verifier.EXPECTED["qualification"]["production_ready"])
+
+    def test_upper_sender_host_registration_keeps_execution_unproven(self):
+        path = "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+        source = self.texts()[path]
+        self.assertIn(path, verifier.SENDER_SOURCE_SHA256)
+        inventory = verifier.composition.rust_inventory(source)
+        names = ["sender_default_proc_idle_report_once", "sender_unapproved_construction_has_no_pending_owner",
+                 "sender_root_path_restore_stays_retired", "sender_whole_policy_restore_stays_retired",
+                 "sender_actual_control_pidfd_death_refuses", "sender_actual_control_exec_idle_full_refuses",
+                 "sender_actual_control_exec_ready_full_refuses", "sender_actual_fork_parent_report_survives",
+                 "sender_outer_ceiling_never_renews", "sender_accepted_ceiling_never_renews",
+                 "sender_cancel_keeps_original_report_once", "sender_malformed_ready_is_sticky",
+                 "sender_hup_with_live_peer_is_sticky"]
+        corpus = verifier.composition.function(inventory, "sender_host_cases")
+        for name in names:
+            self.assertIn(name, inventory["functions"])
+            self.assertEqual(corpus.count(name), 1)
+        self.assertNotIn("ignore", inventory["tokens"])
+        self.assertFalse(verifier.EXPECTED["qualification"]["sender_default_proc_host_execution_proven"])
+        self.assertFalse(verifier.EXPECTED["qualification"]["sender_caller_adopted"])
+
+    def test_upper_sender_fork_isolation_and_exec_liveness_are_registered(self):
+        path = "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+        inventory = verifier.composition.rust_inventory(self.texts()[path])
+        for name in ["sender_host_corpus", "sender_host_case", "sender_require_single_thread",
+                     "SenderControlProcess::assert_running"]:
+            self.assertIn(name, inventory["functions"])
+        for name in ["SenderHostFixture::setup", "sender_actual_fork_parent_report_survives"]:
+            verifier.composition.ordered(verifier.composition.function(inventory, name),
+                ["sender_require_single_thread()", "libc::fork()"], "single task immediately before fork")
+        boundary = verifier.composition.function(inventory, "sender_actual_control_exec_boundary")
+        verifier.composition.ordered(boundary,
+            ["ControlOwnerError::PeerRefused", "f.control.assert_running()", "f.control.kill_owned()"],
+            "refusal before live peer proof before cleanup")
+        live = verifier.composition.function(inventory, "SenderControlProcess::assert_running")
+        verifier.composition.ordered(live, ["libc::waitpid", "self.reaped = true", "assert_eq!"],
+                                     "consume lost child identity before assertion")
+        self.assertIn("ECHILD", live)
+
+    def test_upper_sender_host_mutations_refuse_even_with_rebound_current_catalog(self):
+        from unittest import mock
+        path = "apps/hepta-browserd/tests/control_readiness_kernel.rs"
+        changes = [
+            ("let pid = unsafe { libc::fork() };", "let pid = 0;"),
+            ("sender_require_single_thread();", ""),
+            ("f.control.assert_running();", ""),
+            ("expected_pid: Some(pid as u32)", "expected_pid: None"),
+            (".poll_retirement_when_readable()", ".poll_retirement()"),
+            ('f.fixture.rewrite("agent.principal_id", "changed-agent");', ""),
+            ("f.control.kill_owned();", ""),
+            ("Some(ControlOwnerError::ProcessChanged)", "Some(ControlOwnerError::PeerRefused)"),
+            ('"sender-unapproved-construction-no-pending-owner",', '"claimed-source-only-case",'),
+        ]
+        for before, after in changes:
+            values = self.texts()
+            self.assertIn(before, values[path])
+            values[path] = values[path].replace(before, after, 1)
+            rebound = copy.deepcopy(verifier.EXPECTED)
+            rebound["actual_source_sha256"][path] = verifier.hashlib.sha256(values[path].encode()).hexdigest()
+            with self.subTest(before=before), mock.patch.object(verifier, "EXPECTED", rebound):
+                with self.assertRaisesRegex(ValueError, "^independent sender readiness physical Source differs$"):
+                    verifier.check(rebound, values)
 
     def test_sender_unknown_current_bytes_rebound_catalog_hits_independent_guard(self):
         from unittest import mock

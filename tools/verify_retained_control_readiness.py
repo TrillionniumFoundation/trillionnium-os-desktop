@@ -31,7 +31,7 @@ POLICY = "crates/hepta-peer-attestation/src/approved_policy.rs"
 MONITOR = "apps/hepta-browserd/src/product_dispatch/product_control_wait.rs"
 PRODUCT = "apps/hepta-browserd/src/product_dispatch/product_approved_policy.rs"
 CARGO = "apps/hepta-browserd/Cargo.toml"
-SENDER_SOURCE_SHA256 = {'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs': '4f8fbaa6c940bff8eb471d255dc54096462dac84352d0fef82e2870eef060b48', 'crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs': 'f67fde7fc98aadaf66c07589aca61593e1bcee6353a70ca18011f04325ef942c', 'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs': '7fa2c5aff2235ce62af7d3f0e5bfb3984a267d37f74403ccabfce7e985d3e68d'}
+SENDER_SOURCE_SHA256 = {'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs': '4f8fbaa6c940bff8eb471d255dc54096462dac84352d0fef82e2870eef060b48', 'crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs': 'f67fde7fc98aadaf66c07589aca61593e1bcee6353a70ca18011f04325ef942c', 'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs': '7fa2c5aff2235ce62af7d3f0e5bfb3984a267d37f74403ccabfce7e985d3e68d', 'apps/hepta-browserd/tests/control_readiness_kernel.rs': 'fedd648edc920a5ad36c574076ef433bdf59bbb443f376b76738a1402a673928'}
 EXPECTED = {'schema': 'trillionnium.desktop.retained-control-readiness.v1',
  'default_activation': False,
  'parent_source_commit': 'c875ed3e3c6c876b716f415f7b766992d48e1572',
@@ -65,7 +65,7 @@ EXPECTED = {'schema': 'trillionnium.desktop.retained-control-readiness.v1',
                           'tools/verify_approved_composition_scope.py': '7d7599a5cdd6aa27a0148d931f39677ad8851fb6d38b6e2bb973e893e625e4e8',
                           'tools/verify_approved_constructor_route.py': '50f2c13bc28324cfabc217ea1290cb9c511a5f885437c0ed890d3563020ca366',
                           'tools/verify_approved_native_startup.py': 'e86ac78e4b35e9856f545c96b6cdc25d9b4b84ea3317aeeb6bc9506199f85b38',
-                          'apps/hepta-browserd/tests/control_readiness_kernel.rs': '10d846a7e356056d80895ff01bc82c08504e76fdf422c80ddbb96d27093c2453',
+                          'apps/hepta-browserd/tests/control_readiness_kernel.rs': 'fedd648edc920a5ad36c574076ef433bdf59bbb443f376b76738a1402a673928',
                           'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness_tests.rs': '7fa2c5aff2235ce62af7d3f0e5bfb3984a267d37f74403ccabfce7e985d3e68d',
                           'crates/hepta-agent-transport/src/accepted_handoff/retained_control/readiness.rs': '4f8fbaa6c940bff8eb471d255dc54096462dac84352d0fef82e2870eef060b48',
                           'crates/hepta-peer-attestation/src/control_owner/retained_request/readiness.rs': 'f67fde7fc98aadaf66c07589aca61593e1bcee6353a70ca18011f04325ef942c',
@@ -223,7 +223,7 @@ EXPECTED = {'schema': 'trillionnium.desktop.retained-control-readiness.v1',
  'qualification': {'source_correspondence_only': True,
                    'transport_default_parallel_test_groups': 20,
                    'actual_default_proc_host_groups': 9,
-                   'sender_default_proc_host_groups': 0,
+                   'sender_default_proc_host_groups': 13,
                    'sender_default_proc_host_execution_proven': False,
                    'sender_caller_adopted': False,
                    'actual_host_execution_not_proven_by_contract': True,
