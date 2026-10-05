@@ -66,6 +66,9 @@ fn run(
     let mut drives = 0_u64;
     let mut drive_elapsed = Duration::ZERO;
     let mut last_drive = None;
+    let mut drive_results = [0_u64; 4];
+    let mut first_pending_ms = None;
+    let mut first_completion_ms = None;
     let observation = loop {
         match driver.try_observation().unwrap() {
             Some(value) => break value.unwrap(),
@@ -73,7 +76,7 @@ fn run(
         }
         assert!(
             Instant::now() < driver.original_deadline().unwrap(),
-            "original accepted budget, no renewal; request={} elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}",
+            "original accepted budget, no renewal; request={} elapsed_ms={} drives={} drive_ms={} last_drive={last_drive:?}; returns_idle_pending_completion_retired={drive_results:?}; first_pending_ms={first_pending_ms:?}; first_completion_ms={first_completion_ms:?}",
             input.request_id,
             started.elapsed().as_millis(),
             drives,
@@ -92,6 +95,24 @@ fn run(
                 drive_elapsed.as_millis()
             )
         }));
+        if let Some(value) = last_drive {
+            let result_index = match value {
+                native_owner::NativeDrive::Idle => 0,
+                native_owner::NativeDrive::Pending => 1,
+                native_owner::NativeDrive::Completion(_) => 2,
+                native_owner::NativeDrive::Retired => 3,
+            };
+            drive_results[result_index] = drive_results[result_index].saturating_add(1);
+            match value {
+                native_owner::NativeDrive::Pending if first_pending_ms.is_none() => {
+                    first_pending_ms = Some(started.elapsed().as_millis());
+                },
+                native_owner::NativeDrive::Completion(_) if first_completion_ms.is_none() => {
+                    first_completion_ms = Some(started.elapsed().as_millis());
+                },
+                _ => (),
+            }
+        }
         thread::sleep(Duration::from_millis(1));
     };
     let traced_drive = match last_drive {
