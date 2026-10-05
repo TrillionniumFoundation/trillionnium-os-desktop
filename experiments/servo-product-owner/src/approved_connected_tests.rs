@@ -68,9 +68,7 @@ fn request_marker_at_failure(reader: Option<&mut std::process::ChildStdout>) -> 
     let mut bytes = [0; 34];
     match reader.read(&mut bytes) {
         Ok(8) if bytes.starts_with(b"REQUEST\n") => "request-observed",
-        Ok(n) if n >= 17 && bytes[..17] == *b"REQUEST\nRESPONSE " => {
-            "response-envelope-observed"
-        },
+        Ok(n) if n >= 17 && bytes[..17] == *b"REQUEST\nRESPONSE " => "response-envelope-observed",
         Ok(17) if bytes[..17] == *b"REQUEST\nRESPONSE_" => "agent-receive-error",
         Ok(34) if bytes.starts_with(b"REQUEST\nRESPONSE_REFUSED ") => {
             support::agent_receive_error_label(&bytes[25..]).unwrap_or("unknown")
