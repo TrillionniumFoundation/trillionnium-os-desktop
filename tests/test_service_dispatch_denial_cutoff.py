@@ -830,5 +830,113 @@ class CurrentG6LeafPhysicalBoundaryTests(unittest.TestCase):
                 gate.check(rebound, texts)
 
 
+class ClosedCIRuleStorageTests(unittest.TestCase):
+    """Actual current rule initialization/access; no native qualification."""
+    def setUp(self):
+        self.rules = copy.deepcopy(gate.EXPECTED['ci_parent_inverse18'])
+        self.path = next(iter(gate.CLOSED_CI_RULE_IDENTITIES))
+
+    def test_validated_copy_preserves_all18_rules_and_nested_nonaliasing(self):
+        copied = gate._copy_closed_ci_rules(self.rules)
+        self.assertEqual(copied, self.rules)
+        self.assertEqual(len(copied), 18)
+        self.assertIsNot(copied, self.rules)
+        for path in copied:
+            self.assertIsNot(copied[path], self.rules[path])
+            self.assertIsNot(copied[path]['byte_edits'], self.rules[path]['byte_edits'])
+            for left, right in zip(copied[path]['byte_edits'], self.rules[path]['byte_edits']):
+                self.assertIsNot(left, right)
+        before = copy.deepcopy(copied)
+        self.rules[self.path]['complete_sha256'] = '0' * 64
+        self.assertEqual(copied, before)
+        self.assertEqual(gate.CLOSED_CI_SOURCE_RULES, gate.EXPECTED['ci_parent_inverse18'])
+        self.assertIsNot(gate.CLOSED_CI_SOURCE_RULES, gate.EXPECTED['ci_parent_inverse18'])
+
+    def test_missing_extra_path_and_container_type_refuse_initialization(self):
+        for mode in ('missing', 'extra', 'not-dict'):
+            rules = copy.deepcopy(self.rules)
+            if mode == 'missing':
+                del rules[self.path]
+            elif mode == 'extra':
+                rules['unknown/source.py'] = copy.deepcopy(rules[self.path])
+            else:
+                rules = list(rules.items())
+            with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, '^P3 independent CI rule path set differs$'):
+                gate._copy_closed_ci_rules(rules)
+
+    def test_complete_parent_offsets_and_non_json_type_rebinding_refuse(self):
+        for mode in ('complete-hash', 'parent-text', 'offset', 'float', 'tuple'):
+            rules = copy.deepcopy(self.rules)
+            rule = rules[self.path]
+            if mode == 'complete-hash':
+                rule['complete_sha256'] = '0' * 64
+            elif mode == 'parent-text':
+                rule['byte_edits'][0]['parent_text'] += '\n'
+            elif mode == 'offset':
+                rule['byte_edits'][0]['complete_start'] += 1
+            elif mode == 'float':
+                rule['complete_bytes'] = float(rule['complete_bytes'])
+            else:
+                rule['byte_edits'] = tuple(rule['byte_edits'])
+            with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, '^P3 independent CI whole rule differs$'):
+                gate._copy_closed_ci_rules(rules)
+
+    def test_post_initialization_mutation_refuses_direct_normalizer_without_full_gate(self):
+        current = gate._read(gate.ROOT, self.path)
+        for mode in ('value', 'missing', 'extra'):
+            rules = copy.deepcopy(self.rules)
+            if mode == 'value':
+                rules[self.path]['complete_sha256'] = '0' * 64
+            elif mode == 'missing':
+                del rules[self.path]
+            else:
+                rules['unknown/source.py'] = copy.deepcopy(rules[self.path])
+            with self.subTest(mode=mode), mock.patch.object(gate, 'CLOSED_CI_SOURCE_RULES', rules):
+                with self.assertRaisesRegex(ValueError, '^P3 independent CI (whole rule|rule path set) differs$'):
+                    gate.ci_parent_source(self.path, current)
+                with self.assertRaisesRegex(ValueError, '^P3 independent CI (whole rule|rule path set) differs$'):
+                    gate.check(gate.EXPECTED, gate.inputs(gate.ROOT))
+
+    def test_each_use_owns_a_verified_snapshot_and_unknown_paths_have_no_rule(self):
+        admitted = gate._checked_ci_source_rule(self.path)
+        self.assertEqual(admitted, self.rules[self.path])
+        self.assertIsNot(admitted, gate.CLOSED_CI_SOURCE_RULES[self.path])
+        admitted['byte_edits'][0]['parent_text'] += '\n'
+        self.assertEqual(gate._checked_ci_source_rule(self.path), self.rules[self.path])
+        self.assertIsNone(gate._checked_ci_source_rule('unknown/source.py'))
+        self.assertEqual(gate.ci_parent_source('unknown/source.py', 'raw current'), 'raw current')
+        rebound = copy.deepcopy(gate.EXPECTED)
+        rebound['ci_parent_inverse18'][self.path]['complete_sha256'] = '0' * 64
+        with mock.patch.object(gate, 'EXPECTED', rebound):
+            self.assertEqual(gate._checked_ci_source_rule(self.path), self.rules[self.path])
+
+    def test_actual_module_initialization_refuses_rebound_envelope(self):
+        # Execute the complete candidate module as an import-only subprocess;
+        # no main/check result, substituted helper or fake parser is used.
+        import subprocess
+        import sys
+        import tempfile
+        source = gate._read(gate.ROOT, gate.TOOL)
+        rebound = copy.deepcopy(gate.EXPECTED)
+        rebound['ci_parent_inverse18'][self.path]['complete_sha256'] = '0' * 64
+        changed = source.replace(gate.expected_assignment(gate.EXPECTED), gate.expected_assignment(rebound), 1)
+        self.assertNotEqual(source, changed)
+        probe = "import runpy,sys;sys.path.insert(0,sys.argv[1]);runpy.run_path(sys.argv[2],run_name='ci_rule_import_probe');print('CI_RULE_INITIALIZED')"
+        with tempfile.TemporaryDirectory(prefix='p3-ci-rule-import-') as directory:
+            path = Path(directory) / 'checker.py'
+            for text, succeeds in ((source, True), (changed, False)):
+                path.write_text(text, encoding='utf-8')
+                result = subprocess.run([sys.executable, '-B', '-c', probe, str(gate.ROOT / 'tools'), str(path)],
+                                        cwd=gate.ROOT, capture_output=True, text=True, timeout=15, check=False)
+                with self.subTest(succeeds=succeeds):
+                    if succeeds:
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        self.assertIn('CI_RULE_INITIALIZED', result.stdout)
+                    else:
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertNotIn('CI_RULE_INITIALIZED', result.stdout)
+                        self.assertIn('P3 independent CI whole rule differs', result.stderr)
+
+
 if __name__ == '__main__':
     unittest.main()
