@@ -449,6 +449,81 @@ fn custodian(cp: &Path, op: &Path, config: &Path, mode: &str) {
         thread::sleep(Duration::from_millis(2));
     }
 }
+// Fixed diagnostic tokens only: no error message, values, or payload output.
+const AGENT_RECEIVE_ERRORS: [(&str, &str); 29] = [
+    ("RXPLAT___", "unsupported-platform"),
+    ("RXCRED___", "invalid-peer-credentials"),
+    ("RXUNAUTH_", "unauthorized-peer"),
+    ("RXMAGIC__", "invalid-magic"),
+    ("RXVERS___", "unsupported-version"),
+    ("RXKIND___", "unknown-frame-kind"),
+    ("RXFLAGS__", "reserved-flags"),
+    ("RXNINVAL_", "invalid-session-nonce"),
+    ("RXSIZE___", "frame-too-large"),
+    ("RXDIGEST_", "payload-digest-mismatch"),
+    ("RXDEADLN_", "deadline-or-timeout"),
+    ("RXEOF____", "unexpected-eof"),
+    ("RXCHALL__", "invalid-challenge"),
+    ("RXEXPECT_", "unexpected-frame-kind"),
+    ("RXNONCE__", "session-nonce-mismatch"),
+    ("RXSEQ____", "sequence-mismatch"),
+    ("RXSEQEND_", "sequence-exhausted"),
+    ("RXPANIC__", "self-check-thread-panicked"),
+    ("RXRESET__", "io-connection-reset"),
+    ("RXABORT__", "io-connection-aborted"),
+    ("RXBROKEN_", "io-broken-pipe"),
+    ("RXNOTCON_", "io-not-connected"),
+    ("RXIOEOF__", "io-unexpected-eof"),
+    ("RXIOTIME_", "io-timed-out"),
+    ("RXIOBLCK_", "io-would-block"),
+    ("RXINTR___", "io-interrupted"),
+    ("RXINVAL__", "io-invalid-input"),
+    ("RXDENIED_", "io-permission-denied"),
+    ("RXIOOTHR_", "io-other"),
+];
+fn agent_receive_error_token(error: &hepta_agent_transport::TransportError) -> &'static str {
+    use hepta_agent_transport::TransportError;
+    let index = match error {
+        TransportError::UnsupportedPlatform => 0,
+        TransportError::InvalidPeerCredentials => 1,
+        TransportError::UnauthorizedPeer => 2,
+        TransportError::InvalidMagic => 3,
+        TransportError::UnsupportedVersion(_) => 4,
+        TransportError::UnknownFrameKind(_) => 5,
+        TransportError::ReservedFlags(_) => 6,
+        TransportError::InvalidSessionNonce => 7,
+        TransportError::FrameTooLarge { .. } => 8,
+        TransportError::PayloadDigestMismatch => 9,
+        TransportError::DeadlineExceeded => 10,
+        TransportError::UnexpectedEof => 11,
+        TransportError::InvalidChallenge => 12,
+        TransportError::UnexpectedFrameKind => 13,
+        TransportError::SessionNonceMismatch => 14,
+        TransportError::SequenceMismatch { .. } => 15,
+        TransportError::SequenceExhausted => 16,
+        TransportError::SelfCheckThreadPanicked => 17,
+        TransportError::Io(error) => match error.kind() {
+            std::io::ErrorKind::ConnectionReset => 18,
+            std::io::ErrorKind::ConnectionAborted => 19,
+            std::io::ErrorKind::BrokenPipe => 20,
+            std::io::ErrorKind::NotConnected => 21,
+            std::io::ErrorKind::UnexpectedEof => 22,
+            std::io::ErrorKind::TimedOut => 23,
+            std::io::ErrorKind::WouldBlock => 24,
+            std::io::ErrorKind::Interrupted => 25,
+            std::io::ErrorKind::InvalidInput => 26,
+            std::io::ErrorKind::PermissionDenied => 27,
+            _ => 28,
+        },
+    };
+    AGENT_RECEIVE_ERRORS[index].0
+}
+pub fn agent_receive_error_label(token: &[u8]) -> Option<&'static str> {
+    AGENT_RECEIVE_ERRORS
+        .iter()
+        .find(|(code, _)| code.as_bytes() == token)
+        .map(|(_, label)| *label)
+}
 fn agent(op: &Path) {
     let mut stream = UnixStream::connect(op).unwrap();
     println!("CONNECTED");
@@ -475,11 +550,17 @@ fn agent(op: &Path) {
     std::io::stdin().read_exact(&mut payload).unwrap();
     let sequence = client.send_request(payload, WAIT).unwrap();
     println!("REQUEST");
-    if let Ok(bytes) = client.receive_response(sequence, WAIT) {
-        decode_response(&bytes).unwrap();
-        println!("RESPONSE {}", std::str::from_utf8(&bytes).unwrap());
-    } else {
-        println!("RESPONSE_REFUSED");
+    match client.receive_response(sequence, WAIT) {
+        Ok(bytes) => {
+            decode_response(&bytes).unwrap();
+            println!("RESPONSE {}", std::str::from_utf8(&bytes).unwrap());
+        },
+        Err(error) => {
+            let token = agent_receive_error_token(&error);
+            // Rust 2024 dropped the old if-let error before its else print.
+            drop(error);
+            println!("RESPONSE_REFUSED {token}");
+        },
     }
     assert_eq!(input(), b'x');
 }

@@ -63,11 +63,18 @@ fn request_marker_at_failure(reader: Option<&mut std::process::ChildStdout>) -> 
     if unsafe { libc::poll(&mut pending, 1, 0) } != 1 || pending.revents & libc::POLLIN == 0 {
         return "unknown";
     }
-    let mut bytes = [0; 17];
+    // A successful response may contribute up to 17 JSON bytes to this fixed
+    // read. Only fixed prefixes are classified; those bytes are discarded.
+    let mut bytes = [0; 34];
     match reader.read(&mut bytes) {
         Ok(8) if bytes.starts_with(b"REQUEST\n") => "request-observed",
-        Ok(17) if bytes == *b"REQUEST\nRESPONSE " => "response-envelope-observed",
-        Ok(17) if bytes == *b"REQUEST\nRESPONSE_" => "agent-receive-error",
+        Ok(n) if n >= 17 && bytes[..17] == *b"REQUEST\nRESPONSE " => {
+            "response-envelope-observed"
+        },
+        Ok(17) if bytes[..17] == *b"REQUEST\nRESPONSE_" => "agent-receive-error",
+        Ok(34) if bytes.starts_with(b"REQUEST\nRESPONSE_REFUSED ") => {
+            support::agent_receive_error_label(&bytes[25..]).unwrap_or("unknown")
+        },
         _ => "unknown",
     }
 }
