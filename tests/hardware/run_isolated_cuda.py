@@ -19,9 +19,9 @@ except ImportError:
     from tests.hardware.bounded_process import run_bounded, OutputLimitExceeded
 
 try:
-    from cuda_gemm import BDF_RE, GOLDEN_OUTPUT
+    from cuda_gemm import BDF_RE, GOLDEN_OUTPUT, GOLDEN_INPUT_A, GOLDEN_INPUT_B, N
 except ImportError:  # importlib package use
-    from tests.hardware.cuda_gemm import BDF_RE, GOLDEN_OUTPUT
+    from tests.hardware.cuda_gemm import BDF_RE, GOLDEN_OUTPUT, GOLDEN_INPUT_A, GOLDEN_INPUT_B, N
 
 
 class Blocked(RuntimeError):
@@ -110,6 +110,12 @@ def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=None):
     expected = {
         "schema": "a09.cuda-gemm.v1",
         "status": "passed_on_reported_cuda_environment",
+        "test": "gemm16_f32",
+        "dimension": [N, N, N],
+        "input_a_sha256": GOLDEN_INPUT_A,
+        "input_b_sha256": GOLDEN_INPUT_B,
+        "driver_api": "CUDA Driver API",
+        "compiler": "NVRTC",
         "expected_output_sha256": GOLDEN_OUTPUT,
         "actual_output_sha256": GOLDEN_OUTPUT,
         "no_cpu_fallback": True,

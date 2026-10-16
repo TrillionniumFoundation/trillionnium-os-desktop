@@ -23,6 +23,9 @@ NONCE = re.compile(r"^[0-9a-f]{32,64}$")
 BACKEND_VENDOR = {"intel-vmx": "GenuineIntel", "amd-svm": "AuthenticAMD", "arm-el2": "ARM"}
 MAX_RAW_LOG_BYTES = 32 * 1024 * 1024
 MAX_MANIFEST_BYTES = 1024 * 1024
+GOLDEN_A = "0d9121c90b659969a44ca689809ebd3a6579f3f18b6aa5b9de5da1b98a9458ae"
+GOLDEN_B = "37ca62264050ddd6b8674649a77ec6047f3aa1a2d87f97858f7f6be38189df74"
+GOLDEN_C = "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847"
 
 
 def valid_bdf(value):
@@ -131,10 +134,14 @@ def validate(host, guest, host_log, guest_log):
     child = gemm.get("child_evidence") if isinstance(gemm.get("child_evidence"), dict) else {}
     check(child.get("schema") == "a09.cuda-gemm.v1" and
           child.get("status") == "passed_on_reported_cuda_environment" and
-          child.get("actual_output_sha256") ==
-          "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847" and
-          child.get("expected_output_sha256") ==
-          "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847" and
+          child.get("test") == "gemm16_f32" and
+          child.get("dimension") == [16, 16, 16] and
+          child.get("input_a_sha256") == GOLDEN_A and
+          child.get("input_b_sha256") == GOLDEN_B and
+          child.get("driver_api") == "CUDA Driver API" and
+          child.get("compiler") == "NVRTC" and
+          child.get("actual_output_sha256") == GOLDEN_C and
+          child.get("expected_output_sha256") == GOLDEN_C and
           child.get("device_access_attempted") is True and
           child.get("device_memory_allocated") is True and
           child.get("results_copied") is True and

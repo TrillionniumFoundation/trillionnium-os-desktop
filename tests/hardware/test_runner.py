@@ -17,6 +17,10 @@ BDF = "0000:03:00.0"
 def fake_good():
     return {
         "schema": "a09.cuda-gemm.v1", "status": "passed_on_reported_cuda_environment",
+        "test": "gemm16_f32", "dimension": [cuda_gemm.N] * 3,
+        "input_a_sha256": cuda_gemm.GOLDEN_INPUT_A,
+        "input_b_sha256": cuda_gemm.GOLDEN_INPUT_B,
+        "driver_api": "CUDA Driver API", "compiler": "NVRTC",
         "expected_output_sha256": cuda_gemm.GOLDEN_OUTPUT,
         "actual_output_sha256": cuda_gemm.GOLDEN_OUTPUT,
         "no_cpu_fallback": True, "device_access_attempted": True,
@@ -110,6 +114,23 @@ class LabRunnerTests(unittest.TestCase):
         code, result = lab.run_lab(BDF, "RTX 4060", True, runner=runner)
         self.assertEqual(code, 1)
         self.assertEqual(result["status"], "failed_unparseable_child")
+
+    def test_modified_fixed_input_or_shape_cannot_report_cuda_success(self):
+        for key, bad in (("input_a_sha256", "0" * 64),
+                         ("input_b_sha256", "0" * 64),
+                         ("dimension", [8, 8, 8]),
+                         ("test", "cpu_gemm"),
+                         ("driver_api", "software"),
+                         ("compiler", "fake-compiler")):
+            with self.subTest(key=key):
+                payload = fake_good()
+                payload[key] = bad
+                code, result = lab.run_lab(
+                    BDF, "RTX 4060", True,
+                    runner=Mock(return_value=self.result(payload))
+                )
+                self.assertEqual(code, 1)
+                self.assertEqual(result["status"], "failed_false_positive_child")
 
     def test_numeric_corruption_fails(self):
         payload = fake_good()

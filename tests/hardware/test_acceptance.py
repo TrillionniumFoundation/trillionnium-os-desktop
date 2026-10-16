@@ -49,6 +49,12 @@ class AcceptanceTests(unittest.TestCase):
                                         "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847",
                                         "expected_output_sha256":
                                         "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847",
+                                        "test": "gemm16_f32",
+                                        "dimension": [16, 16, 16],
+                                        "input_a_sha256": "0d9121c90b659969a44ca689809ebd3a6579f3f18b6aa5b9de5da1b98a9458ae",
+                                        "input_b_sha256": "37ca62264050ddd6b8674649a77ec6047f3aa1a2d87f97858f7f6be38189df74",
+                                        "driver_api": "CUDA Driver API",
+                                        "compiler": "NVRTC",
                                         "device_access_attempted": True,
                                         "device_memory_allocated": True,
                                         "results_copied": True,
@@ -101,6 +107,23 @@ class AcceptanceTests(unittest.TestCase):
         self.host["device"]["interrupt_remapping_enabled"] = False
         self.assertIn("iommu_dma_not_enforced", self.reasons())
         self.assertIn("interrupts_not_isolated", self.reasons())
+
+    def test_wrong_fixed_input_or_model_contract_invalidates_gpu_evidence(self):
+        record = self.guest["gemm"]["child_evidence"]
+        cases = {
+            "input_a_sha256": "0" * 64,
+            "input_b_sha256": "0" * 64,
+            "dimension": [32, 16, 16],
+            "test": "cpu_only",
+            "compiler": "software",
+            "driver_api": "fake",
+        }
+        for field, bad in cases.items():
+            with self.subTest(field=field):
+                previous = record[field]
+                record[field] = bad
+                self.assertIn("invalid_cuda_gemm_result", self.reasons())
+                record[field] = previous
 
     def test_missing_gpu_allocation_or_copy_invalidates_success_evidence(self):
         evidence = self.guest["gemm"]["child_evidence"]
