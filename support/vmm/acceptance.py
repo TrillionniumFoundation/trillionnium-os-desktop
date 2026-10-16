@@ -11,8 +11,10 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import stat
 
 KERNEL_PIN = "c4b7ed575b7b32773475b194d2ad41fb6d03765b"
 SHA = re.compile(r"^[0-9a-f]{64}$")
@@ -31,9 +33,15 @@ def bdf_lower(value):
 
 
 def bounded_log(path):
-    if not path.is_file() or path.stat().st_size > MAX_RAW_LOG_BYTES:
-        raise ValueError(f"raw evidence must be a regular log up to {MAX_RAW_LOG_BYTES} bytes")
-    data = path.read_bytes()
+    # Open exactly once. A pre-check of a pathname is racy; fstat this FD,
+    # and cap read() even if another writer extends the log afterwards.
+    with path.open("rb") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_RAW_LOG_BYTES:
+            raise ValueError(
+                f"raw evidence must be a regular log up to {MAX_RAW_LOG_BYTES} bytes"
+            )
+        data = stream.read(MAX_RAW_LOG_BYTES + 1)
     if len(data) > MAX_RAW_LOG_BYTES:
         raise ValueError("raw log changed/grew beyond size limit")
     return data
@@ -114,6 +122,11 @@ def validate(host, guest, host_log, guest_log):
           child.get("status") == "passed_on_reported_cuda_environment" and
           child.get("actual_output_sha256") ==
           "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847" and
+          child.get("expected_output_sha256") ==
+          "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847" and
+          child.get("device_access_attempted") is True and
+          child.get("device_memory_allocated") is True and
+          child.get("results_copied") is True and
           child.get("resources_released") is True and
           child.get("cuda_kernel_launched") is True and
           child.get("synchronization_completed") is True and
