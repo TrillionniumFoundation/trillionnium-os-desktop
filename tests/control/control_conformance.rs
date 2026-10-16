@@ -814,6 +814,71 @@ fn child_registration_and_parent_cap_update_cannot_cross() {
 }
 
 #[test]
+fn child_creation_inherits_parent_boottime_floor_without_cpu_credit() {
+    let root_domain = root(410_000, CPU_PERIOD_NS);
+    let now_ns = CPU_PERIOD_NS + 60;
+    root_domain.try_usage(now_ns).unwrap();
+    let child = with_parent(domain(410_001), object(410_001), &root_domain, 80).unwrap();
+    assert_eq!(
+        child.try_usage(now_ns - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    let snapshot = child.usage(0);
+    assert_eq!(snapshot.sample_boottime_ns, now_ns);
+    assert_eq!(snapshot.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(snapshot.window_consumed_ns, 0);
+    assert_eq!(snapshot.cumulative_cpu_ns, 0);
+
+    let grant = child.grant(publisher(410_002)).unwrap();
+    assert_eq!(
+        child.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 70, now_ns - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(child.revision(), 1);
+    assert_eq!(
+        child.charge_cpu(1, now_ns - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(
+        child
+            .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 70, now_ns + 1)
+            .unwrap()
+            .revision,
+        2
+    );
+}
+
+#[test]
+fn advanced_grandparent_clock_fences_stale_leaf_cas() {
+    let root_domain = root(411_000, CPU_PERIOD_NS);
+    let parent = with_parent(domain(411_001), object(411_001), &root_domain, 80).unwrap();
+    let child = with_parent(domain(411_002), object(411_002), &parent, 70).unwrap();
+    let who = publisher(411_003);
+    let grant = child.grant(who).unwrap();
+    root_domain.try_usage(CPU_PERIOD_NS + 80).unwrap();
+
+    // Leaf itself has not observed the new time. Its CAS still must not
+    // publish an older BOOTTIME than the grandparent has observed.
+    assert_eq!(
+        child.install_budget_for_host_model(
+            &grant,
+            1,
+            CPU_PERIOD_NS,
+            60,
+            CPU_PERIOD_NS + 79,
+        ),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(child.revision(), 1);
+    assert_eq!(child.try_usage(0).unwrap().event_sequence, 0);
+    let accepted = child
+        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 60, CPU_PERIOD_NS + 80)
+        .unwrap();
+    assert_eq!(accepted.revision, 2);
+    assert_eq!(accepted.consumed_at_apply_ns, 0);
+}
+
+#[test]
 fn budget_update_at_period_boundary_reports_current_window_consumption() {
     let target = root(909, 90);
     target.charge_cpu(60, 10).unwrap();

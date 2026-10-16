@@ -405,8 +405,8 @@ impl ResourceDomain {
                     budget,
                     consumed_ns: 0,
                     window_consumed_ns: 0,
-                    window_start_ns: 0,
-                    last_boottime_ns: 0,
+                    window_start_ns: parent_state.window_start_ns,
+                    last_boottime_ns: parent_state.last_boottime_ns,
                     event_sequence: 0,
                     dropped_events: 0,
                     alive: true,
@@ -805,6 +805,9 @@ impl ResourceDomain {
             let parent_state = parent.snapshot_state();
             if !parent_state.alive {
                 return Err(ResourceError::Revoked);
+            }
+            if now_ns < parent_state.last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
             }
             // Checking just the current alive flag permits an old child
             // grant to resurrect after an ancestor revoke + reactivation.

@@ -395,3 +395,15 @@ immutable original result. Zero publisher IDs return `InvalidIdentity`
 without consuming a sequence, separate from invalid sequence parsing.
 `Busy` remains eligible as a saved semantic refusal for integrations
 where an already-reserved resource mutation has a terminal busy result.
+
+## Ancestor BOOTTIME floor
+
+A03's ResourceDomain ancestry shares one boot-local monotonic timebase.
+A newly created child inherits its parent's last observed BOOTTIME and
+current window start, **without inheriting CPU consumption or credit**.
+Budget CAS rejects `now_ns` older than *any* ancestor's last observed
+sample under the family mutation gate, even if the child itself has not
+observed that later time. This prevents stale queued policy updates from
+committing a retroactive effective timestamp. The check is host-model
+only: A06 must sample and settle real boot-clock time atomically in the
+actual scheduler.
