@@ -545,14 +545,6 @@ impl ResourceDomain {
         {
             return Err(ResourceError::ParentConstraint);
         }
-        // Settle at the effective time, not the last unrelated usage read.
-        // A cap change in the same period must never recharge consumed CPU.
-        let window_start_ns = (now_ns / state.budget.period_ns) * state.budget.period_ns;
-        if window_start_ns != state.window_start_ns {
-            state.window_start_ns = window_start_ns;
-            state.window_consumed_ns = 0;
-        }
-        let consumed_at_apply_ns = state.window_consumed_ns;
         let previous_revision = state.revision;
         state.revision = state
             .revision
@@ -562,6 +554,7 @@ impl ResourceDomain {
         if let Some(parent) = &grant.domain.parent_domain_for_model() {
             lock_unpoisoned(&parent.inner.children).insert(state.id, cap_ns);
         }
+        let consumed_at_apply_ns = state.window_consumed_ns;
         Ok(BudgetReceipt {
             previous_revision,
             revision: state.revision,
