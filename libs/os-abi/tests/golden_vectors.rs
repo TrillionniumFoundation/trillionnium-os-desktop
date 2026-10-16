@@ -384,3 +384,129 @@ fn every_golden_header_refuses_version_reserved_or_zero_id_mutation() {
     }
     assert_eq!(count, 12);
 }
+
+fn next_mutation(seed: &mut u64) -> u64 {
+    // Fixed-seed xorshift: reproducible, non-cryptographic test data only.
+    let mut value = *seed;
+    value ^= value << 13;
+    value ^= value >> 7;
+    value ^= value << 17;
+    *seed = value;
+    value
+}
+
+#[test]
+fn golden_mutation_sweep_never_panics_or_reencodes_accepted_bytes_differently() {
+    let mut kind = "";
+    let mut seed = 0x42b3_791a_3a11_e765u64;
+    let mut vectors = 0usize;
+    let mut trials = 0usize;
+
+    for line in GOLDEN.lines() {
+        if let Some(value) = quoted_value(line, "kind") {
+            kind = value;
+        }
+        if let Some(value) = quoted_value(line, "hex") {
+            let baseline = decode_hex(value);
+            for _ in 0..4096 {
+                let mut mutated = baseline.clone();
+                let flips = 1 + next_mutation(&mut seed) % 4;
+                for _ in 0..flips {
+                    let offset = next_mutation(&mut seed) as usize % mutated.len();
+                    let bit = 1u8 << (next_mutation(&mut seed) as u8 & 7);
+                    mutated[offset] ^= bit;
+                }
+                match next_mutation(&mut seed) % 16 {
+                    0 => {
+                        let length = next_mutation(&mut seed) as usize % (baseline.len() + 1);
+                        mutated.truncate(length);
+                    }
+                    1 => mutated.push(next_mutation(&mut seed) as u8),
+                    2 => mutated.extend_from_slice(&[0xa5; 3]),
+                    _ => {}
+                }
+
+                match kind {
+                    "request" => {
+                        if let Ok(decoded) = decode_request(&mutated) {
+                            let mut rebuilt = vec![0xcc; mutated.len()];
+                            let size = encode_request(&decoded, &mut rebuilt)
+                                .expect("decoder accepted a request that encoder rejected");
+                            assert_eq!(size, mutated.len());
+                            assert_eq!(rebuilt, mutated);
+                        }
+                    }
+                    "response" => {
+                        if let Ok(decoded) = decode_response(&mutated) {
+                            let mut rebuilt = vec![0xcc; mutated.len()];
+                            let size = encode_response(&decoded, &mut rebuilt)
+                                .expect("decoder accepted a response that encoder rejected");
+                            assert_eq!(size, mutated.len());
+                            assert_eq!(rebuilt, mutated);
+                        }
+                    }
+                    other => panic!("unknown golden kind: {other}"),
+                }
+                trials += 1;
+            }
+            vectors += 1;
+        }
+    }
+
+    assert_eq!(vectors, 12);
+    assert_eq!(trials, 49_152);
+}
+
+#[test]
+fn all_golden_responses_decode_from_larger_copyout_capacity() {
+    let mut kind = "";
+    let mut count = 0usize;
+    for line in GOLDEN.lines() {
+        if let Some(value) = quoted_value(line, "kind") {
+            kind = value;
+        }
+        if let Some(value) = quoted_value(line, "hex") {
+            if kind != "response" {
+                continue;
+            }
+            let frame = decode_hex(value);
+            let mut copyout_buffer = frame.clone();
+            copyout_buffer.extend_from_slice(&[0xa5; 71]);
+
+            let (parsed, declared_len) =
+                hos2_os_abi::decode_response_prefix(&copyout_buffer).unwrap();
+            assert_eq!(declared_len, frame.len());
+            assert_eq!(
+                decode_response(&copyout_buffer),
+                Err(hos2_os_abi::Error::TrailingBytes)
+            );
+
+            let mut reencoded = vec![0u8; frame.len()];
+            let actual = encode_response(&parsed, &mut reencoded).unwrap();
+            assert_eq!(actual, frame.len());
+            assert_eq!(reencoded, frame);
+            count += 1;
+        }
+    }
+    assert_eq!(count, 7);
+}
+
+#[test]
+fn all_known_error_status_codes_accept_empty_error_responses() {
+    let mut frame = vector_hex("install_cas_rejection");
+    for status in 1..=11u16 {
+        frame[10..12].copy_from_slice(&status.to_le_bytes());
+        let parsed = decode_response(&frame).unwrap();
+        assert_eq!(parsed.status.as_u16(), status);
+        let mut out = vec![0u8; frame.len()];
+        assert_eq!(encode_response(&parsed, &mut out), Ok(frame.len()));
+        assert_eq!(out, frame);
+    }
+    for invalid_status in [12u16, u16::MAX] {
+        frame[10..12].copy_from_slice(&invalid_status.to_le_bytes());
+        assert_eq!(
+            decode_response(&frame),
+            Err(hos2_os_abi::Error::InvalidStatus)
+        );
+    }
+}

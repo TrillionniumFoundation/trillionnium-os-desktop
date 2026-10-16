@@ -351,3 +351,59 @@ rejected. This adds no wire layout of A03's own, no generated golden edits,
 and no production dependency on the wire crate. Lockfile pins the path-only
 dev dependency. Exact-head Cargo execution is still required; test source
 presence is not a passed result.
+
+## A02 history-sequence MAX compatibility
+
+HOS2 InstallBudget uses strictly executable D sequences
+`1..=u64::MAX-1`; write `u64::MAX` is permanently reserved as the
+non-executable next-sequence sentinel and never allocates a slot. The
+**separate history QueryDelivery/RetireThrough wire payload** permits any
+nonzero sequence, including `u64::MAX`. A read-only QueryDelivery for
+this sentinel returns `NotSeen` in a live namespace or `HistoryLost`
+after namespace loss, *not* a terminal/retired result. A03's fallible
+wire observation converter permits these two states at MAX but refuses
+to serialize forged Reserved/Terminal/Retired MAX observations. A02's
+independent no_std codec is the test oracle for the MAX history response.
+
+## Executable bounded-window invariant audit (host only)
+
+`ControlCore::validate_invariants_for_host_model()` inspects the live
+namespace and each result slot with the same namespace->slot lock order as
+query/retire. It checks monotonic `next_sequence` and `retired_through`,
+the **complete contiguous** unretired window (no missing sequence hidden by
+result reclamation), bounded slot count, publisher/request binding, terminal
+HOS2 result metadata shape, and absence of fenced slots in a still-live
+namespace. After explicit history loss, no slots may remain. Errors use
+`DeliveryInvariantError`; the check never creates new authority, touches a
+Hepta K ledger, or performs a resource effect.
+
+New Rust tests exercise the diagnostic across a permanently pending first
+sequence + exhausted eight-slot window, its eventual contiguous retirement,
+a 10,000-delivery bounded sequence, and an observer concurrently auditing
+512 producer CAS commits/retirements. This is **O(window)** host diagnostic
+work, not an IRQ-safe or production scheduler operation and not loom proof.
+
+## Pre-reservation status and invalid publisher classification
+
+The HOS2 `OutOfOrder` and `Retired` status values are decisions by the
+CapSpace namespace **before** a new sequence is reserved; a writer must not
+store either as a fabricated terminal publication after reservation.
+`PublishOutcome::Failure` now rejects those two values (and `Ok`), leaving
+the slot `Reserved` for a legitimate terminal result. When a real terminal
+is already committed, subsequent publisher calls only re-observe the exact
+immutable original result. Zero publisher IDs return `InvalidIdentity`
+without consuming a sequence, separate from invalid sequence parsing.
+`Busy` remains eligible as a saved semantic refusal for integrations
+where an already-reserved resource mutation has a terminal busy result.
+
+## Ancestor BOOTTIME floor
+
+A03's ResourceDomain ancestry shares one boot-local monotonic timebase.
+A newly created child inherits its parent's last observed BOOTTIME and
+current window start, **without inheriting CPU consumption or credit**.
+Budget CAS rejects `now_ns` older than *any* ancestor's last observed
+sample under the family mutation gate, even if the child itself has not
+observed that later time. This prevents stale queued policy updates from
+committing a retroactive effective timestamp. The check is host-model
+only: A06 must sample and settle real boot-clock time atomically in the
+actual scheduler.

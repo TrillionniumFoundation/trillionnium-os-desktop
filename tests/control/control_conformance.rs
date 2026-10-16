@@ -814,6 +814,71 @@ fn child_registration_and_parent_cap_update_cannot_cross() {
 }
 
 #[test]
+fn child_creation_inherits_parent_boottime_floor_without_cpu_credit() {
+    let root_domain = root(410_000, CPU_PERIOD_NS);
+    let now_ns = CPU_PERIOD_NS + 60;
+    root_domain.try_usage(now_ns).unwrap();
+    let child = with_parent(domain(410_001), object(410_001), &root_domain, 80).unwrap();
+    assert_eq!(
+        child.try_usage(now_ns - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    let snapshot = child.usage(0);
+    assert_eq!(snapshot.sample_boottime_ns, now_ns);
+    assert_eq!(snapshot.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(snapshot.window_consumed_ns, 0);
+    assert_eq!(snapshot.cumulative_cpu_ns, 0);
+
+    let grant = child.grant(publisher(410_002)).unwrap();
+    assert_eq!(
+        child.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 70, now_ns - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(child.revision(), 1);
+    assert_eq!(
+        child.charge_cpu(1, now_ns - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(
+        child
+            .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 70, now_ns + 1)
+            .unwrap()
+            .revision,
+        2
+    );
+}
+
+#[test]
+fn advanced_grandparent_clock_fences_stale_leaf_cas() {
+    let root_domain = root(411_000, CPU_PERIOD_NS);
+    let parent = with_parent(domain(411_001), object(411_001), &root_domain, 80).unwrap();
+    let child = with_parent(domain(411_002), object(411_002), &parent, 70).unwrap();
+    let who = publisher(411_003);
+    let grant = child.grant(who).unwrap();
+    root_domain.try_usage(CPU_PERIOD_NS + 80).unwrap();
+
+    // Leaf itself has not observed the new time. Its CAS still must not
+    // publish an older BOOTTIME than the grandparent has observed.
+    assert_eq!(
+        child.install_budget_for_host_model(
+            &grant,
+            1,
+            CPU_PERIOD_NS,
+            60,
+            CPU_PERIOD_NS + 79,
+        ),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(child.revision(), 1);
+    assert_eq!(child.try_usage(0).unwrap().event_sequence, 0);
+    let accepted = child
+        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 60, CPU_PERIOD_NS + 80)
+        .unwrap();
+    assert_eq!(accepted.revision, 2);
+    assert_eq!(accepted.consumed_at_apply_ns, 0);
+}
+
+#[test]
 fn budget_update_at_period_boundary_reports_current_window_consumption() {
     let target = root(909, 90);
     target.charge_cpu(60, 10).unwrap();
@@ -2273,6 +2338,72 @@ fn concurrent_window_invariant_audits_never_see_half_committed_results() {
     auditor.join().unwrap();
     assert_eq!(core.retired_through(), 512);
     assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+}
+
+#[test]
+fn pre_reservation_statuses_cannot_be_published_as_terminal_effects() {
+    let core = ControlCore::new(boot(430_000), space(430_000));
+    let target = root(430_000, CPU_PERIOD_NS);
+    let who = publisher(430_001);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+        .unwrap();
+    let view = core.delivery_view();
+
+    for status in [
+        DeliveryStatus::Ok,
+        DeliveryStatus::OutOfOrder,
+        DeliveryStatus::Retired,
+    ] {
+        assert_eq!(
+            core.publish(&token, who, PublishOutcome::Failure { status }),
+            Err(DeliveryError::InvalidPublish)
+        );
+        assert_eq!(
+            core.query_delivery(&view, 1).unwrap().state,
+            DeliveryState::Reserved
+        );
+    }
+    assert_eq!(target.revision(), 1);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+    let terminal = core
+        .publish(
+            &token,
+            who,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::Revoked,
+            },
+        )
+        .unwrap();
+    assert_eq!(terminal.status, Some(DeliveryStatus::Revoked));
+    for status in [DeliveryStatus::OutOfOrder, DeliveryStatus::Retired] {
+        // An already-terminal outcome is returned unchanged. No status
+        // mutation is allowed by reusing the original publisher token.
+        assert_eq!(
+            core.publish(&token, who, PublishOutcome::Failure { status }),
+            Ok(terminal)
+        );
+    }
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+}
+
+#[test]
+fn zero_publisher_fails_identity_validation_without_consuming_a_delivery() {
+    let core = ControlCore::new(boot(430_100), space(430_100));
+    let target = root(430_100, CPU_PERIOD_NS);
+    let who = publisher(430_101);
+    let request = request(1, target.grant(who).unwrap(), 1, 20);
+    assert_eq!(
+        core.reserve(request.clone(), publisher(0)).err(),
+        Some(DeliveryError::InvalidIdentity)
+    );
+    assert_eq!(core.next_sequence(), 1);
+    assert_eq!(core.window_len(), 0);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    let token = core.reserve(request, who).unwrap();
+    assert_eq!(core.commit(&token, who, 1).unwrap().status, Some(DeliveryStatus::Ok));
+    assert_eq!(target.revision(), 2);
 }
 
 #[test]

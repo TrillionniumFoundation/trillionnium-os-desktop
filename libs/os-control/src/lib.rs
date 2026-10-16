@@ -405,8 +405,8 @@ impl ResourceDomain {
                     budget,
                     consumed_ns: 0,
                     window_consumed_ns: 0,
-                    window_start_ns: 0,
-                    last_boottime_ns: 0,
+                    window_start_ns: parent_state.window_start_ns,
+                    last_boottime_ns: parent_state.last_boottime_ns,
                     event_sequence: 0,
                     dropped_events: 0,
                     alive: true,
@@ -821,6 +821,9 @@ impl ResourceDomain {
             let parent_state = parent.snapshot_state();
             if !parent_state.alive {
                 return Err(ResourceError::Revoked);
+            }
+            if now_ns < parent_state.last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
             }
             // Checking just the current alive flag permits an old child
             // grant to resurrect after an ancestor revoke + reactivation.
@@ -1461,8 +1464,11 @@ impl ControlCore {
         request: DeliveryRequest,
         publisher: PublisherId,
     ) -> Result<ReserveToken, DeliveryError> {
-        if !publisher.is_nonzero() || request.sequence == 0 || request.sequence == u64::MAX {
+        if request.sequence == 0 || request.sequence == u64::MAX {
             return Err(DeliveryError::InvalidSequence);
+        }
+        if !publisher.is_nonzero() {
+            return Err(DeliveryError::InvalidIdentity);
         }
         // Syntactic/static payload violations are checked *before* the
         // reservation table. They must not burn D or reserve a result slot.
@@ -1906,7 +1912,15 @@ fn published_result_from_outcome(
 ) -> Result<PublishedResult, DeliveryError> {
     match outcome {
         PublishOutcome::Failure { status } => {
-            if status == DeliveryStatus::Ok {
+            // OutOfOrder and Retired are D namespace admission decisions:
+            // they are returned before a new reservation exists. Do not
+            // manufacture them as immutable results for a reserved D.
+            // A terminal denial may legitimately be other non-Ok statuses
+            // after its already-reserved resource mutation was rejected.
+            if matches!(
+                status,
+                DeliveryStatus::Ok | DeliveryStatus::OutOfOrder | DeliveryStatus::Retired
+            ) {
                 return Err(DeliveryError::InvalidPublish);
             }
             Ok(PublishedResult {

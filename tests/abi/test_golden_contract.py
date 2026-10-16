@@ -14,6 +14,8 @@ def read_vector(name):
 
 
 def read_frame(raw, kind):
+    if kind not in ('request', 'response'):
+        raise ValueError('unknown fixture kind')
     if len(raw) < 64:
         raise ValueError('truncated header')
     if raw[:4] != (b'HOS2' if kind == 'request' else b'HOSR'):
@@ -65,6 +67,42 @@ def read_frame(raw, kind):
                 raise ValueError('invalid previous revision')
             if consumed > effective % PERIOD:
                 raise ValueError('impossible consumed_at_apply')
+    if kind == 'response' and flags == 0:
+        # These fixed-payload checks are an independent test oracle only;
+        # production decoding and response correlation remain in Rust.
+        if opcode == 1:
+            space, page, max_request, max_response, spare, ops, features = struct.unpack_from('<16sIIIIQQ', raw, 64)
+            if (not any(space) or not page or page & (page - 1) or spare or features
+                    or max_request > 65536 or max_response > 65536
+                    or ops & ~62 or not ops & 2):
+                raise ValueError('ABI advertisement')
+            if ops & 8 and ops & 52 != 52 or ops & 32 and not ops & 16:
+                raise ValueError('ABI operation dependency')
+            declared = [SIZES[op] for op in SIZES if ops & (1 << op)]
+            if max_request < max(size[0] for size in declared) or max_response < max(size[1] for size in declared):
+                raise ValueError('ABI advertised payload bounds')
+        elif opcode == 2:
+            sample, cumulative, start, used, cap, period, events, dropped = struct.unpack_from('<8Q', raw, 64)
+            if (period != PERIOD or start != sample // PERIOD * PERIOD
+                    or used > sample - start or cumulative < used
+                    or cap > period or dropped > events):
+                raise ValueError('usage accounting')
+        elif opcode == 4:
+            state, saved, spare, sequence, object_id, saved_revision, previous, effective, consumed = struct.unpack_from('<HHIQ16sQQQQ', raw, 64)
+            if state > 4 or saved > 11 or spare or not sequence:
+                raise ValueError('delivery state/status/sequence/reserved')
+            if state == 1 and saved == 0:
+                if (not any(object_id) or not 0 < previous < 2**64 - 1
+                        or saved_revision != previous + 1
+                        or consumed > effective % PERIOD):
+                    raise ValueError('terminal success metadata')
+            elif (any(object_id) or saved_revision or previous or effective or consumed
+                  or state != 1 and saved):
+                raise ValueError('non-success delivery metadata')
+        elif opcode == 5:
+            retired, next_sequence = struct.unpack_from('<QQ', raw, 64)
+            if next_sequence <= retired:
+                raise ValueError('retirement frontier')
     return opcode, raw[24:40], raw[40:56], raw[64:]
 
 
