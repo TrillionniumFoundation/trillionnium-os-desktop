@@ -884,7 +884,7 @@ fn namespace_bootstrap_rejects_zero_id_and_out_of_range_window_capacity() {
         assert_eq!(
             ControlCore::with_capacity_for_owner(
                 boot(2), space(3), invalid, owner(9000),
-            ).err().map(|error| error),
+            ).err(),
             Some(DeliveryError::InvalidCapacity)
         );
     }
