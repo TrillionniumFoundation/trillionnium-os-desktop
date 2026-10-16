@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Compile real Rust equality mutants and run the unchanged mutation_kill suite.
+"""Compile real Rust equality/encoder mutants and run unchanged Rust suites.
 
 Only temporary copies of the crate are changed. A mutant is killed only when it
-compiles successfully, all seven tests run without skips, and the corresponding
-same-sequence conflict test fails. Compiler errors never count as mutation kills.
-This checks host codec/canonical-request coverage, not a kernel delivery ledger.
+compiles successfully, its complete suite runs without skips, and the designated
+regression fails. Both production baselines must pass first. Compiler errors,
+timeouts and filtered tests never count as mutation kills. This checks host
+codec/canonical-request coverage, not a kernel delivery ledger.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ from typing import Any
 
 
 EXPECTED_TEST_COUNT = 7
+EXPECTED_SEMANTIC_TEST_COUNT = 12
 MUTANTS = (
     (
         "ignore_cap_ns",
@@ -38,7 +40,24 @@ INPUTS = (
     "Cargo.toml",
     "src/lib.rs",
     "tests/mutation_kill.rs",
+    "tests/semantic_edges.rs",
 )
+FIXTURES = ("tests/golden/hos2_edges.json",)
+SAVED_STATUS_TEST = "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes"
+SUITES = {
+    "mutation_kill": (
+        EXPECTED_TEST_COUNT,
+        tuple(expected for _, _, expected in MUTANTS),
+    ),
+    "semantic_edges": (
+        EXPECTED_SEMANTIC_TEST_COUNT,
+        (
+            SAVED_STATUS_TEST,
+            "every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity",
+            "every_semantic_edge_encoder_rejects_each_short_capacity_without_writing",
+        ),
+    ),
+}
 
 
 def mutated_source(source: str, omitted_field: str) -> str:
@@ -82,6 +101,21 @@ def mutated_source(source: str, omitted_field: str) -> str:
     return source[: match.start()] + replacement + source[match.end() :]
 
 
+def mutated_saved_status_source(source: str) -> str:
+    """Zero only QueryDelivery's encoded saved_status; fail if its shape changes."""
+    original = (
+        "        ResponsePayload::QueryDelivery(v) => {\n"
+        "            put_u16(out, 0, v.state.as_u16());\n"
+        "            put_u16(out, 2, v.saved_status.as_u16());"
+    )
+    if source.count(original) != 1:
+        raise ValueError("expected exactly one QueryDelivery saved_status encoder")
+    replacement = original.replace(
+        "put_u16(out, 2, v.saved_status.as_u16());", "put_u16(out, 2, 0);"
+    )
+    return source.replace(original, replacement, 1)
+
+
 def run_command(command: list[str], cwd: Path, timeout: float) -> dict[str, Any]:
     env = os.environ.copy()
     env["CARGO_TARGET_DIR"] = str(cwd / "target")
@@ -120,7 +154,9 @@ def run_command(command: list[str], cwd: Path, timeout: float) -> dict[str, Any]
     return result
 
 
-def test_outcome(output: str) -> dict[str, Any]:
+def test_outcome(
+    output: str, expected_count: int, required_tests: tuple[str, ...]
+) -> dict[str, Any]:
     summaries = re.findall(
         r"^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; "
         r"(\d+) ignored; (\d+) measured; (\d+) filtered out;",
@@ -142,12 +178,12 @@ def test_outcome(output: str) -> dict[str, Any]:
     )
     result.update(counts, status=status)
     result["complete"] = (
-        len(cases) == len(lines) == EXPECTED_TEST_COUNT
-        and counts["passed"] + counts["failed"] == EXPECTED_TEST_COUNT
+        len(cases) == len(lines) == expected_count
+        and counts["passed"] + counts["failed"] == expected_count
         and counts["ignored"] == counts["measured"] == counts["filtered_out"] == 0
         and sum(value == "ok" for value in cases.values()) == counts["passed"]
         and sum(value == "FAILED" for value in cases.values()) == counts["failed"]
-        and all(expected in cases for _, _, expected in MUTANTS)
+        and all(expected in cases for expected in required_tests)
     )
     return result
 
@@ -155,30 +191,54 @@ def test_outcome(output: str) -> dict[str, Any]:
 def run_suite(
     directory: Path,
     inputs: dict[str, bytes],
+    fixtures: dict[str, bytes],
     source: str,
     cargo: str,
     timeout: float,
+    suite: str,
 ) -> dict[str, Any]:
     directory.mkdir()
+    crate = directory / "libs/os-abi"
     for relative, content in inputs.items():
+        destination = crate / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(content)
+    for relative, content in fixtures.items():
         destination = directory / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(content)
-    (directory / "src/lib.rs").write_text(source, encoding="utf-8")
-    command = [cargo, "test", "--offline", "--color", "never", "--test", "mutation_kill"]
-    compilation = run_command(command + ["--no-run"], directory, timeout)
+    (crate / "src/lib.rs").write_text(source, encoding="utf-8")
+    expected_count, required_tests = SUITES[suite]
+    command = [cargo, "test", "--offline", "--color", "never", "--test", suite]
+    compilation = run_command(command + ["--no-run"], crate, timeout)
     result: dict[str, Any] = {
+        "suite": suite,
+        "expected_tests": expected_count,
+        "required_tests": required_tests,
         "source_sha256": hashlib.sha256(source.encode()).hexdigest(),
         "compilation": compilation,
-        "compiled": compilation["returncode"] == 0,
+        "compiled": compilation["returncode"] == 0 and not compilation["timed_out"],
         "test": None,
         "tests": None,
     }
     if result["compiled"]:
-        execution = run_command(command + ["--", "--test-threads=1"], directory, timeout)
+        execution = run_command(command + ["--", "--test-threads=1"], crate, timeout)
         result["test"] = execution
-        result["tests"] = test_outcome(execution["stdout"])
+        result["tests"] = test_outcome(execution["stdout"], expected_count, required_tests)
     return result
+
+
+def baseline_passed(result: dict[str, Any]) -> bool:
+    return bool(
+        result["compiled"]
+        and result["test"]
+        and not result["test"]["timed_out"]
+        and result["test"]["returncode"] == 0
+        and result["tests"]
+        and result["tests"]["complete"]
+        and result["tests"]["passed"] == result["expected_tests"]
+        and result["tests"]["failed"] == 0
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -199,16 +259,25 @@ def main(argv: list[str] | None = None) -> int:
         "schema": "hos2-rust-source-mutations-v1",
         "scope": "host Rust codec/canonical-request comparison; no kernel validation",
         "expected_tests_per_suite": EXPECTED_TEST_COUNT,
+        "expected_tests_by_suite": {
+            suite: expected for suite, (expected, _) in SUITES.items()
+        },
         "success": False,
         "baseline": None,
+        "baseline_semantic_edges": None,
         "mutants": [],
         "errors": [],
     }
     try:
-        crate = args.repo_root.resolve() / "libs/os-abi"
+        repo_root = args.repo_root.resolve()
+        crate = repo_root / "libs/os-abi"
         inputs = {relative: (crate / relative).read_bytes() for relative in INPUTS}
+        fixtures = {relative: (repo_root / relative).read_bytes() for relative in FIXTURES}
         report["input_sha256"] = {
             relative: hashlib.sha256(content).hexdigest() for relative, content in inputs.items()
+        }
+        report["fixture_sha256"] = {
+            relative: hashlib.sha256(content).hexdigest() for relative, content in fixtures.items()
         }
         source = inputs["src/lib.rs"].decode("utf-8")
         # Preserve a rustup proxy symlink: resolving it would invoke rustup
@@ -216,33 +285,61 @@ def main(argv: list[str] | None = None) -> int:
         cargo = str(Path(args.cargo).absolute()) if os.sep in args.cargo else args.cargo
         with tempfile.TemporaryDirectory(prefix="hos2-rust-mutations-") as temporary:
             temporary_root = Path(temporary)
-            baseline = run_suite(temporary_root / "baseline", inputs, source, cargo, args.timeout)
-            report["baseline"] = baseline
-            baseline["passed"] = bool(
-                baseline["compiled"]
-                and baseline["test"]["returncode"] == 0
-                and baseline["tests"]["complete"]
-                and baseline["tests"]["passed"] == EXPECTED_TEST_COUNT
-                and baseline["tests"]["failed"] == 0
-            )
-            if not baseline["passed"]:
-                report["errors"].append("production baseline did not pass all seven tests")
-            else:
-                for name, field, expected_test in MUTANTS:
+            for suite, baseline_key in (
+                ("mutation_kill", "baseline"),
+                ("semantic_edges", "baseline_semantic_edges"),
+            ):
+                baseline = run_suite(
+                    temporary_root / baseline_key,
+                    inputs,
+                    fixtures,
+                    source,
+                    cargo,
+                    args.timeout,
+                    suite,
+                )
+                baseline["passed"] = baseline_passed(baseline)
+                report[baseline_key] = baseline
+                if not baseline["passed"]:
+                    report["errors"].append(
+                        f"production {suite} baseline did not pass its complete suite"
+                    )
+            if not report["errors"]:
+                mutations = [
+                    (name, "mutation_kill", field, expected_test, mutated_source(source, field))
+                    for name, field, expected_test in MUTANTS
+                ]
+                mutations.append(
+                    (
+                        "zero_saved_status",
+                        "semantic_edges",
+                        "saved_status",
+                        SAVED_STATUS_TEST,
+                        mutated_saved_status_source(source),
+                    )
+                )
+                for name, suite, field, expected_test, changed_source in mutations:
                     mutant = run_suite(
                         temporary_root / name,
                         inputs,
-                        mutated_source(source, field),
+                        fixtures,
+                        changed_source,
                         cargo,
                         args.timeout,
+                        suite,
                     )
-                    mutant.update(name=name, omitted_field=field, expected_failure=expected_test)
+                    mutant.update(name=name, expected_failure=expected_test)
+                    if suite == "mutation_kill":
+                        mutant["omitted_field"] = field
+                    else:
+                        mutant["zeroed_field"] = field
                     mutant["expected_test_failed"] = bool(
                         mutant["tests"]
                         and mutant["tests"]["cases"].get(expected_test) == "FAILED"
                     )
                     mutant["killed"] = bool(
                         mutant["compiled"]
+                        and not mutant["test"]["timed_out"]
                         and mutant["test"]["returncode"] == 101
                         and mutant["tests"]["complete"]
                         and mutant["expected_test_failed"]
