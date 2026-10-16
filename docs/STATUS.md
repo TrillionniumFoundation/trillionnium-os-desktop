@@ -1,5 +1,14 @@
 # 当前状态
 
+## 2026-10-16：SMP 双线程配额、退出进程防 panic、ABI 主干加固
+
+- **A06 双CPU实际新故障与修复**：[PR #59](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/59) 已合入 A06 owner 开发分支，merge `31e49a3c29d5e19d30976cdfb55accba1d786aea`；**未合入 main**，其主PR #18 仍为 Draft。修改后 Asterinas ELF SHA256 `5c73b7fb84b6d8f160b5b037be8b5bca7d8e5507a2cf7b779405d054918819bf`。原修改后内核在 2vCPU/双 pthread/共享1%配额下发生 `PosixThread::process().unwrap(None)` panic（已退出的 Task 暂时仍在调度器中，原Process的 Weak 不再能升级）；未修改 Asterinas 对照同负载未panic，但 `cpu.max` 不执行，实际约100%。
+- **真实QEMU修复验收**：对已销毁进程进行有界的 Weak upgrade 检查，仅允许已退出线程继续清理；原始读数和运行路径在有进程owner时不变。真实双vCPU双线程同cgroup **7/7** 次 guest raw33、无panic：1% x3 `0.792/0.896/0.950%`；10% x2 `10.392/9.914%`；FIFO 10% `10.279%`；父域10%/子域不限额 `10.262%`。每次配额前不限额总CPU约197–200%，因此确有两CPU同时运行，而不是单CPU假SMP。单vCPU原1%探针 **2/2** `0.999/1.000%`；固定 `nightly-2026-07-21` 编译及实际 `aster-core` QEMU **153/153通过、0失败/过滤/软跳过**。可复跑 [SMP测试源](../tests/organ_backend/smp2/run_parallel_candidate.py) 和[机器结果](../results/organ-backend/2026-10-16/a06-smp-posix-exit-guard.json)均位于 A06 PR #59/owner 分支，**不是 main**。
+- **ABI主干实际交付**：[PR #53](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/53) 已合并，merge `a1c61d50fe281361ca04ad4bc3c6b3aba2c2260f`，强化 HOS2 `no_std` transport 越界、错误响应的有序 request_id 与 InstallBudget 版本校验。本轮修复测试源码的三处Rustfmt末尾换行后形成 `ee13b2d05f18c17b01ff10c1e487b9c3cba54290`；从该合并后的精确主干源独立执行 Cargo test、严格Clippy、fmt、12/12 golden及19项Python ABI测试全部通过。**这仍不是已实现的 HOS2 内核 ioctl、权限和真实效果。**
+- **仍需攻克**：退出后最后一段CPU运行时间若失去持久所属资源，仍需正确结算；未测CPU热插拔/跨CPU迁移/长期并发锁序、严格每100ms窗口上限。A05真实 HOS2 CapSpace/ioctl、A07沿既有Hepta owner完成可信K↔D持久确认/退役均未闭环；不因双CPU测试就升格 G1/G2 或production。
+
+---
+
 ## 2026-10-16：A00 归档 CI 防假阳性、A06 实际内核修复及 A03 接口收敛
 
 - **main 已合并实际 CI 代码**：[PR #49](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/49) merge `7b1e183951121c5e16618ef046612053b146e6bc`，仅修改已有 `.github/workflows/a01-boot-evidence.yml`，用 PR base/push before 的实际 Git commit 检查归档源码与回归测试是否被同时删除。A00 独立 Linux Bash/Git fixture **9/9 通过**，包括 source+test 同删、符号链接、非法 base SHA、缺项和真正失败测试。合法首次 bootstrap 只说 source 缺失，**不**计归档测试 pass；GitHub Actions 队列未当作成功。
