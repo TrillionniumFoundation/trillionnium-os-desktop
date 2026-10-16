@@ -284,3 +284,93 @@ fn encoders_match_independent_golden_bytes_for_all_operations() {
         assert_eq!(&output[..length], vector_hex(name).as_slice(), "{name}");
     }
 }
+
+#[test]
+fn each_golden_cut_is_rejected_not_just_selected_truncations() {
+    let mut kind = "";
+    let mut count = 0;
+    for line in GOLDEN.lines() {
+        if let Some(value) = quoted_value(line, "kind") {
+            kind = value;
+        }
+        if let Some(value) = quoted_value(line, "hex") {
+            let frame = decode_hex(value);
+            for cut in 0..frame.len() {
+                let accepted = match kind {
+                    "request" => decode_request(&frame[..cut]).is_ok(),
+                    "response" => decode_response(&frame[..cut]).is_ok(),
+                    other => panic!("unknown golden kind: {other}"),
+                };
+                assert!(!accepted, "{kind} accepted truncated length {cut} of {}", frame.len());
+            }
+            let mut trailing = frame;
+            trailing.push(0xa5);
+            let accepted = match kind {
+                "request" => decode_request(&trailing).is_ok(),
+                "response" => decode_response(&trailing).is_ok(),
+                other => panic!("unknown golden kind: {other}"),
+            };
+            assert!(!accepted, "{kind} accepted trailing bytes");
+            count += 1;
+        }
+    }
+    assert_eq!(count, 12);
+}
+
+#[test]
+fn every_golden_encoder_checks_capacity_before_writing() {
+    let mut kind = "";
+    let mut count = 0;
+    for line in GOLDEN.lines() {
+        if let Some(value) = quoted_value(line, "kind") {
+            kind = value;
+        }
+        if let Some(value) = quoted_value(line, "hex") {
+            let frame = decode_hex(value);
+            let mut output = vec![0xa5; frame.len() - 1];
+            let encoded = match kind {
+                "request" => encode_request(&decode_request(&frame).unwrap(), &mut output),
+                "response" => encode_response(&decode_response(&frame).unwrap(), &mut output),
+                other => panic!("unknown golden kind: {other}"),
+            };
+            assert_eq!(encoded, Err(hos2_os_abi::Error::InsufficientCapacity));
+            assert!(output.iter().all(|v| *v == 0xa5), "short encode wrote partial output");
+            count += 1;
+        }
+    }
+    assert_eq!(count, 12);
+}
+
+#[test]
+fn every_golden_header_refuses_version_reserved_or_zero_id_mutation() {
+    let mut kind = "";
+    let mut count = 0;
+    for line in GOLDEN.lines() {
+        if let Some(value) = quoted_value(line, "kind") {
+            kind = value;
+        }
+        if let Some(value) = quoted_value(line, "hex") {
+            let frame = decode_hex(value);
+            for (offset, replacement) in [(4usize, 3u8), (6, 1), (20, 1)] {
+                let mut invalid = frame.clone();
+                invalid[offset] = replacement;
+                let accepted = match kind {
+                    "request" => decode_request(&invalid).is_ok(),
+                    "response" => decode_response(&invalid).is_ok(),
+                    other => panic!("unknown golden kind: {other}"),
+                };
+                assert!(!accepted, "{kind} accepted corrupted header offset {offset}");
+            }
+            let mut invalid_id = frame;
+            invalid_id[24..40].fill(0);
+            let accepted = match kind {
+                "request" => decode_request(&invalid_id).is_ok(),
+                "response" => decode_response(&invalid_id).is_ok(),
+                other => panic!("unknown golden kind: {other}"),
+            };
+            assert!(!accepted, "{kind} accepted zero request ID");
+            count += 1;
+        }
+    }
+    assert_eq!(count, 12);
+}
