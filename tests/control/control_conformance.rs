@@ -849,6 +849,43 @@ fn child_creation_inherits_parent_boottime_floor_without_cpu_credit() {
 }
 
 #[test]
+fn grandchild_creation_inherits_newest_ancestor_clock_not_only_parent() {
+    let root_domain = root(415_000, CPU_PERIOD_NS);
+    let parent = with_parent(domain(415_001), object(415_001), &root_domain, 80).unwrap();
+    let parent_time = CPU_PERIOD_NS + 80;
+    let root_time = 3 * CPU_PERIOD_NS + 50;
+    parent.try_usage(parent_time).unwrap();
+    root_domain.try_usage(root_time).unwrap();
+
+    // Parent has not observed the newer root time. The new child inherits
+    // the *maximum* of every ancestor under the shared mutation gate.
+    let child = with_parent(domain(415_002), object(415_002), &parent, 70).unwrap();
+    assert_eq!(
+        child.try_usage(root_time - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    let observed = child.try_usage(root_time).unwrap();
+    assert_eq!(observed.sample_boottime_ns, root_time);
+    assert_eq!(observed.window_start_ns, 3 * CPU_PERIOD_NS);
+    assert_eq!(observed.window_consumed_ns, 0);
+    assert_eq!(observed.cumulative_cpu_ns, 0);
+    assert_eq!(observed.event_sequence, 0);
+
+    let grant = child.grant(publisher(415_003)).unwrap();
+    assert_eq!(
+        child.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 60, root_time - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(child.revision(), 1);
+    let applied = child
+        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 60, root_time)
+        .unwrap();
+    assert_eq!(applied.revision, 2);
+    assert_eq!(applied.consumed_at_apply_ns, 0);
+    assert_eq!(root_domain.usage(root_time).cumulative_cpu_ns, 0);
+}
+
+#[test]
 fn advanced_grandparent_clock_fences_stale_leaf_cas() {
     let root_domain = root(411_000, CPU_PERIOD_NS);
     let parent = with_parent(domain(411_001), object(411_001), &root_domain, 80).unwrap();

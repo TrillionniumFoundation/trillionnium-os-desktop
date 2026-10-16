@@ -367,8 +367,11 @@ impl ResourceDomain {
             if initial_cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
             }
-            // A revoked ancestor closes descendant creation even when the
-            // immediate parent's alive bit remains true.
+            // Both identity and BOOTTIME liveness span the whole ancestry.
+            // A newly created grandchild must not start earlier than a
+            // grandparent's observed clock just because its parent is stale.
+            // All reads are serialized with usage/revoke/commit by the family gate.
+            let mut newest_ancestor_boottime = parent_state.last_boottime_ns;
             let mut ancestor = Some(parent);
             while let Some(node) = ancestor {
                 let ancestor_state = node.snapshot_state();
@@ -378,6 +381,8 @@ impl ResourceDomain {
                 if ancestor_state.id == id {
                     return Err(ResourceError::DuplicateDomainId);
                 }
+                newest_ancestor_boottime =
+                    newest_ancestor_boottime.max(ancestor_state.last_boottime_ns);
                 ancestor = node.inner.parent.as_ref();
             }
             let mut registry = lock_unpoisoned(&parent.inner.family);
@@ -405,8 +410,9 @@ impl ResourceDomain {
                     budget,
                     consumed_ns: 0,
                     window_consumed_ns: 0,
-                    window_start_ns: parent_state.window_start_ns,
-                    last_boottime_ns: parent_state.last_boottime_ns,
+                    window_start_ns:
+                        (newest_ancestor_boottime / budget.period_ns) * budget.period_ns,
+                    last_boottime_ns: newest_ancestor_boottime,
                     event_sequence: 0,
                     dropped_events: 0,
                     alive: true,

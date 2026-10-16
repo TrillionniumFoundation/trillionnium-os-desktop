@@ -445,3 +445,16 @@ Tests check same-D exact-handle idempotency versus different slot,
 recycled generation, and structural-zero denial without consuming D. This
 does not itself implement A05's FD/session validation, generation security
 or kernel handle lifetime rules.
+
+## New descendant's full ancestry BOOTTIME floor
+
+A ResourceDomain created below a stale intermediate parent derives its initial
+monotonic BOOTTIME floor from the **maximum sampled time of every ancestor**
+under the family's existing mutation gate, not just the immediate parent.
+It derives the 100ms window start from that maximum, but inherits **zero**
+CPU consumption and no extra budget credit. Thus a child born after its
+root's newer sample cannot accept a retroactive usage read or budget CAS.
+A three-level Rust negative test covers root sampled in period 3, parent
+sampled only in period 1, new child creation, stale rollback rejection,
+future CAS, and retained zero usage. This is still host-model semantics;
+A06 owns the actual in-kernel clock and scheduler admission.
