@@ -77,7 +77,7 @@ status 数值：0 ok；1 invalid_input；2 permission_denied；3 stale_handle；
 
 QueryAbi 输出 offset 0 CapSpace ID[16]（非零，内核生成），16 page_size:u32（非零二次幂），20 max_payload:u32，24 max_response_payload:u32（均不超过65536），28 reserved:u32=0，32 supported_ops:u64（bit1/2/3 对应当前三项），40 features:u64=0。它是报告能力，不授予能力；内核仅宣告已真实实现的子集。未知 feature 必须协商，不偷偷忽略。初期最小响应尺寸限制是当前支持集所需尺寸。
 
-ReadUsage 输出八个 u64：sample_boottime_ns、cumulative_cpu_ns、window_start_ns、window_consumed_ns、charged_memory_bytes、memory_limit_bytes、event_sequence、dropped_events。响应头 revision 与这八项来自同一版本/序列快照；不能混拼不同预算版本。丢事件后做快照恢复，不推断没有效果。
+ReadUsage 输出八个 u64：sample_boottime_ns、cumulative_cpu_ns、window_start_ns、window_consumed_ns、active_cap_ns、active_period_ns、event_sequence、dropped_events。响应头 revision 与这八项来自同一版本/序列快照；不能混拼不同预算版本。active_period_ns=100000000、active_cap_ns≤active_period_ns；sample_boottime_ns≥window_start_ns，cumulative_cpu_ns≥window_consumed_ns。必须返回当前cap/period，才能在丢响应后查询实际策略；仅用量相同不足以确认策略。丢事件后做快照恢复，不推断没有效果。
 
 InstallBudget 输入四个 u64：expected_revision、period_ns、cap_ns、reserved=0。expected_revision 必须非零且不能溢出递增；首期 period_ns 固定100000000（100ms），单CPU cap_ns∈[0,period_ns]，cap=0 表示本域暂停可运行时间，但恢复服务不在该域。没有 priority、affinity、weight 或 deadline 隐含字段。
 
@@ -107,7 +107,7 @@ CPU 是累计运行时间上限，不是保底、权重或 deadline。首期固�
 
 内存目标规则：每个物理页/内核分配有稳定 charge_owner，祖先聚合；匿名页初次分配与 COW 新页向分配方计费；共享页、文件缓存页按第一次实际分配者计一次，其他映射另计页表/映射元数据。共享不擦除 owner，owner 退出但共享仍存活时账留存到最终释放。sockets/内核队列按创建方计费；固定 DMA 页仍计内存并另外占 pinned 子限额，两者不是总量重复收费。未授权跨域共享先拒绝，不因共享带来隐式赠予。
 
-首期 ReadUsage 可以报告现有计数，但内存限额写接口不属于本版。未来降硬限额低于实际使用必须 rejected 或进入显式 reclaiming；未回收不得报已满足；不可强行回收设备仍用页。reparent/迁移及 charge transfer 要在旧/新祖先共同受限临界区验证，首期不支持。
+首期 ReadUsage 只报告上述CPU策略/用量与事件；内存观测和内存限额写接口均不属于本版wire。未来降硬限额低于实际使用必须 rejected 或进入显式 reclaiming；未回收不得报已满足；不可强行回收设备仍用页。reparent/迁移及 charge transfer 要在旧/新祖先共同受限临界区验证，首期不支持。
 
 ## 10. 对象关闭、取消和后续设备路线
 
