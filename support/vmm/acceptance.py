@@ -50,7 +50,15 @@ def read_untrusted_regular_file(path, max_bytes):
             raise ValueError(f"evidence must be a regular file up to {max_bytes} bytes")
         payload = os.read(fd, max_bytes + 1)
         after = os.fstat(fd)
-        if len(payload) > max_bytes or after.st_size != before.st_size or len(payload) != after.st_size:
+        # Equal-length rewrites can silently change the evidence while the
+        # pathname/descriptor remains valid. Compare file identity plus both
+        # modification and metadata-change epochs, not length alone.
+        identity_before = (before.st_dev, before.st_ino, before.st_size,
+                           before.st_mtime_ns, before.st_ctime_ns)
+        identity_after = (after.st_dev, after.st_ino, after.st_size,
+                          after.st_mtime_ns, after.st_ctime_ns)
+        if (len(payload) > max_bytes or len(payload) != after.st_size
+                or identity_before != identity_after):
             raise ValueError("evidence mutated during bounded read or exceeded size cap")
         return payload
     finally:

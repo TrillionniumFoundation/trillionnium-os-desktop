@@ -69,3 +69,18 @@ attestation mechanism.
 
 The tool never opens device nodes, binds PCI, resets cards or touches H3,
 training or other production workloads. No remote inference counts as local.
+
+## In-place evidence mutation race
+
+The acceptance reader now compares the opened file descriptor's device/inode,
+size, nanosecond modification time and metadata change time before and after
+a bounded read. **Equal-length rewrites** or timestamp changes while reading
+are rejected rather than accepted as a consistent capture. This is only
+concurrent-modification detection: an attacker who controls the content and
+associated JSON digests before the read can still manufacture a consistent
+bundle. As before, even consistent unsigned evidence can only reach
+`independent_hardware_review_required`, never an automatic GPU success.
+
+CPU-only regression fixtures deliberately modify a same-size serial log and
+a JSON manifest during a patched read. These paths do not access any GPU,
+KVM, PCI devices or privileged kernel interfaces.

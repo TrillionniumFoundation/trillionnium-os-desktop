@@ -195,6 +195,44 @@ class AcceptanceTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     acceptance.load_json(p)
 
+    def test_equal_length_inplace_rewrite_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "guest.log"
+            path.write_bytes(b"old-serial-log")
+            original_read = os.read
+
+            def mutate_during_read(fd, size):
+                payload = original_read(fd, size)
+                # Same byte count and same inode; an ordinary size-only check
+                # would accept this document despite the concurrent rewrite.
+                path.write_bytes(b"new-serial-log")
+                record = path.stat()
+                os.utime(path, ns=(record.st_atime_ns,
+                                   record.st_mtime_ns + 2_000_000_000))
+                return payload
+
+            with patch.object(acceptance.os, "read", side_effect=mutate_during_read):
+                with self.assertRaisesRegex(ValueError, "mutated"):
+                    acceptance.bounded_log(path)
+
+    def test_same_length_manifest_metadata_change_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "guest.json"
+            path.write_text('{"valid": true}', encoding="utf-8")
+            original_read = os.read
+
+            def update_timestamp_during_read(fd, size):
+                payload = original_read(fd, size)
+                stat_info = path.stat()
+                os.utime(path, ns=(stat_info.st_atime_ns,
+                                   stat_info.st_mtime_ns + 2_000_000_000))
+                return payload
+
+            with patch.object(acceptance.os, "read",
+                              side_effect=update_timestamp_during_read):
+                with self.assertRaisesRegex(ValueError, "mutated"):
+                    acceptance.load_json(path)
+
     def test_oversized_raw_log_is_rejected_without_unbounded_read(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "huge.log"
