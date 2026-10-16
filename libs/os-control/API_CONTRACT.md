@@ -13,6 +13,13 @@ D = (BootId, CapSpaceId, sequence)
 The HOS2 wire layout remains owned by A02 and is not represented by a Rust
 memory-layout cast here.
 
+For A05 conversion, `DeliveryStatus::hos2_code` and
+`DeliveryState::hos2_code` expose the fixed numeric HOS2 0.3 values without a
+dependency on the wire crate. `ParentLimit` maps to wire `Conflict` because
+HOS2 0.3 has no separate parent-constraint status. A non-terminal
+`DeliveryObservation` always maps `saved_status` to wire `Ok`, as required by
+the QueryDelivery response rules.
+
 ## A05: kernel ioctl and CapSpace
 
 1. Construct `ControlCore::new(boot_id, cap_space_id)` after trusted boot

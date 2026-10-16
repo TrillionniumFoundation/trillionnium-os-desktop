@@ -665,6 +665,28 @@ pub enum DeliveryStatus {
     ParentLimit,
 }
 
+impl DeliveryStatus {
+    /// Numeric HOS2 status value without depending on the A02 codec crate.
+    /// ParentLimit is represented by the wire-level Conflict status because
+    /// HOS2 0.3 has no separate parent-constraint code.
+    pub const fn hos2_code(self) -> u16 {
+        match self {
+            Self::Ok => 0,
+            Self::InvalidInput => 1,
+            Self::PermissionDenied => 2,
+            Self::StaleHandle => 3,
+            Self::Revoked => 4,
+            Self::Conflict | Self::ParentLimit => 5,
+            Self::ResourceExhausted => 6,
+            Self::Unsupported => 7,
+            Self::Indeterminate => 8,
+            Self::Busy => 9,
+            Self::OutOfOrder => 10,
+            Self::Retired => 11,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DeliveryState {
     Reserved,
@@ -672,6 +694,19 @@ pub enum DeliveryState {
     Retired,
     NotSeen,
     HistoryLost,
+}
+
+impl DeliveryState {
+    /// Numeric QueryDelivery state value matching HOS2 0.3.
+    pub const fn hos2_code(self) -> u16 {
+        match self {
+            Self::Reserved => 0,
+            Self::Terminal => 1,
+            Self::Retired => 2,
+            Self::NotSeen => 3,
+            Self::HistoryLost => 4,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -687,6 +722,15 @@ pub struct DeliveryObservation {
 }
 
 impl DeliveryObservation {
+    /// QueryDelivery uses saved_status=Ok for non-terminal states, including
+    /// a pending reservation and all history-only states.
+    pub const fn hos2_saved_status_code(self) -> u16 {
+        match self.status {
+            Some(status) if matches!(self.state, DeliveryState::Terminal) => status.hos2_code(),
+            _ => 0,
+        }
+    }
+
     fn reserved(id: DeliveryId) -> Self {
         Self {
             state: DeliveryState::Reserved,

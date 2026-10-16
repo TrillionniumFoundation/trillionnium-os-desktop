@@ -140,6 +140,20 @@ fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
 }
 
 #[test]
+fn control_states_map_to_hos2_codes_without_importing_the_wire_crate() {
+    assert_eq!(DeliveryStatus::Ok.hos2_code(), 0);
+    assert_eq!(DeliveryStatus::ParentLimit.hos2_code(), 5);
+    assert_eq!(DeliveryStatus::Retired.hos2_code(), 11);
+    assert_eq!(DeliveryState::Reserved.hos2_code(), 0);
+    assert_eq!(DeliveryState::Terminal.hos2_code(), 1);
+    assert_eq!(DeliveryState::HistoryLost.hos2_code(), 4);
+
+    let core = ControlCore::new(boot(18), space(18));
+    let pending = core.query_delivery(&core.delivery_view(), 1).unwrap();
+    assert_eq!(pending.hos2_saved_status_code(), 0);
+}
+
+#[test]
 fn out_of_order_does_not_consume_sequence_and_wrong_history_owner_cannot_retire() {
     let core = ControlCore::new(boot(13), space(13));
     let target = root(13, CPU_PERIOD_NS);
