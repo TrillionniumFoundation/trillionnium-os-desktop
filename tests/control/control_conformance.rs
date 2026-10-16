@@ -889,13 +889,8 @@ fn grandchild_creation_inherits_newest_ancestor_clock_not_only_parent() {
 fn grandchild_creation_races_root_clock_sampling_without_backdating() {
     for n in 0..64_u128 {
         let root_domain = root(416_000 + n, CPU_PERIOD_NS);
-        let parent = with_parent(
-            domain(417_000 + n),
-            object(417_000 + n),
-            &root_domain,
-            80,
-        )
-        .unwrap();
+        let parent =
+            with_parent(domain(417_000 + n), object(417_000 + n), &root_domain, 80).unwrap();
         let sampled_time = 2 * CPU_PERIOD_NS + 11;
         let start = Arc::new(Barrier::new(3));
 
@@ -903,13 +898,7 @@ fn grandchild_creation_races_root_clock_sampling_without_backdating() {
         let create_start = Arc::clone(&start);
         let create = thread::spawn(move || {
             create_start.wait();
-            with_parent(
-                domain(418_000 + n),
-                object(418_000 + n),
-                &create_parent,
-                70,
-            )
-            .unwrap()
+            with_parent(domain(418_000 + n), object(418_000 + n), &create_parent, 70).unwrap()
         });
 
         let sample_root = root_domain.clone();
@@ -932,13 +921,7 @@ fn grandchild_creation_races_root_clock_sampling_without_backdating() {
         let who = publisher(419_000 + n);
         let grant = child.grant(who).unwrap();
         assert_eq!(
-            child.install_budget_for_host_model(
-                &grant,
-                1,
-                CPU_PERIOD_NS,
-                60,
-                sampled_time - 1,
-            ),
+            child.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 60, sampled_time - 1,),
             Err(ResourceError::ClockRollback)
         );
         assert_eq!(
@@ -964,13 +947,7 @@ fn advanced_grandparent_clock_fences_stale_leaf_cas() {
     // Leaf itself has not observed the new time. Its CAS still must not
     // publish an older BOOTTIME than the grandparent has observed.
     assert_eq!(
-        child.install_budget_for_host_model(
-            &grant,
-            1,
-            CPU_PERIOD_NS,
-            60,
-            CPU_PERIOD_NS + 79,
-        ),
+        child.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 60, CPU_PERIOD_NS + 79,),
         Err(ResourceError::ClockRollback)
     );
     assert_eq!(child.revision(), 1);
@@ -1014,13 +991,8 @@ fn existing_descendants_refuse_read_usage_older_than_ancestor_boottime() {
 fn concurrent_root_sample_and_child_read_usage_have_linearizable_clock_order() {
     for n in 0..64_u128 {
         let root_domain = root(421_000 + n, CPU_PERIOD_NS);
-        let child = with_parent(
-            domain(422_000 + n),
-            object(422_000 + n),
-            &root_domain,
-            80,
-        )
-        .unwrap();
+        let child =
+            with_parent(domain(422_000 + n), object(422_000 + n), &root_domain, 80).unwrap();
         let earlier = CPU_PERIOD_NS + 10;
         let later = earlier + 1;
         let start = Arc::new(Barrier::new(3));
@@ -1086,13 +1058,8 @@ fn parent_clock_sample_and_child_cas_linearize_under_family_gate() {
                 assert_eq!(child.revision(), 1);
                 let fresh = child.grant(who).unwrap();
                 let later = CPU_PERIOD_NS + 51;
-                let revised = child.install_budget_for_host_model(
-                    &fresh,
-                    1,
-                    CPU_PERIOD_NS,
-                    70,
-                    later,
-                );
+                let revised =
+                    child.install_budget_for_host_model(&fresh, 1, CPU_PERIOD_NS, 70, later);
                 assert_eq!(revised.unwrap().revision, 2);
             }
             other => panic!("unexpected clock/CAS race result: {other:?}"),
@@ -1669,8 +1636,14 @@ fn read_usage_parent_and_child_both_reject_unrepresentable_elapsed_cpu() {
     let child = with_parent(domain(251_001), object(251_001), &parent, CPU_PERIOD_NS).unwrap();
     child.charge_cpu(20, 1).unwrap();
 
-    assert_eq!(child.try_usage(1), Err(ResourceError::InconsistentAccounting));
-    assert_eq!(parent.try_usage(1), Err(ResourceError::InconsistentAccounting));
+    assert_eq!(
+        child.try_usage(1),
+        Err(ResourceError::InconsistentAccounting)
+    );
+    assert_eq!(
+        parent.try_usage(1),
+        Err(ResourceError::InconsistentAccounting)
+    );
     let child_observation = child.try_usage(20).unwrap();
     let parent_observation = parent.try_usage(20).unwrap();
     assert_eq!(child_observation.window_consumed_ns, 20);
@@ -2531,13 +2504,9 @@ fn a02_rejects_elapsed_cpu_forgery_even_without_a03_conversion_guard() {
 
 #[test]
 fn invariant_audit_keeps_hanging_prefix_and_capacity_exhaustion_nonterminal() {
-    let (core, authority) = ControlCore::with_capacity_for_owner(
-        boot(410_000),
-        space(410_000),
-        8,
-        owner(9000),
-    )
-    .unwrap();
+    let (core, authority) =
+        ControlCore::with_capacity_for_owner(boot(410_000), space(410_000), 8, owner(9000))
+            .unwrap();
     let target = root(410_000, CPU_PERIOD_NS);
     let who = publisher(410_001);
     let view = core.delivery_view_for(owner(9000)).unwrap();
@@ -2623,13 +2592,9 @@ fn invariant_audit_keeps_hanging_prefix_and_capacity_exhaustion_nonterminal() {
 
 #[test]
 fn concurrent_window_invariant_audits_never_see_half_committed_results() {
-    let (core, authority) = ControlCore::with_capacity_for_owner(
-        boot(420_000),
-        space(420_000),
-        16,
-        owner(9000),
-    )
-    .unwrap();
+    let (core, authority) =
+        ControlCore::with_capacity_for_owner(boot(420_000), space(420_000), 16, owner(9000))
+            .unwrap();
     let core = Arc::new(core);
     let target = root(420_000, CPU_PERIOD_NS);
     let who = publisher(420_001);
@@ -2642,7 +2607,10 @@ fn concurrent_window_invariant_audits_never_see_half_committed_results() {
         let view = producer_core.delivery_view_for(owner(9000)).unwrap();
         for sequence in 1..=512_u64 {
             let token = producer_core
-                .reserve(request(sequence, target.grant(who).unwrap(), target.revision(), 20), who)
+                .reserve(
+                    request(sequence, target.grant(who).unwrap(), target.revision(), 20),
+                    who,
+                )
                 .unwrap();
             let outcome = producer_core.commit(&token, who, sequence).unwrap();
             assert_eq!(outcome.status, Some(DeliveryStatus::Ok));
@@ -2731,7 +2699,10 @@ fn zero_publisher_fails_identity_validation_without_consuming_a_delivery() {
     assert_eq!(core.window_len(), 0);
     assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
     let token = core.reserve(request, who).unwrap();
-    assert_eq!(core.commit(&token, who, 1).unwrap().status, Some(DeliveryStatus::Ok));
+    assert_eq!(
+        core.commit(&token, who, 1).unwrap().status,
+        Some(DeliveryStatus::Ok)
+    );
     assert_eq!(target.revision(), 2);
 }
 
@@ -2749,7 +2720,10 @@ fn same_d_bound_to_hos2_handle_slot_and_generation() {
     let token = core.reserve(original.clone(), who).unwrap();
     assert_eq!(token.binding().wire_target_slot, 31);
     assert_eq!(token.binding().wire_target_generation, 7);
-    assert_eq!(core.reserve(original.clone(), who).err(), Some(DeliveryError::Busy));
+    assert_eq!(
+        core.reserve(original.clone(), who).err(),
+        Some(DeliveryError::Busy)
+    );
 
     // Same ResourceDomain Arc and stable object, but different HOS2 canonical
     // header bytes. Neither a new slot alias nor a recycled generation can

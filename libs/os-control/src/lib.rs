@@ -588,8 +588,7 @@ impl ResourceDomain {
         if sample_boottime_ns < state.last_boottime_ns {
             return Err(ResourceError::ClockRollback);
         }
-        let window_start = (sample_boottime_ns / state.budget.period_ns)
-            * state.budget.period_ns;
+        let window_start = (sample_boottime_ns / state.budget.period_ns) * state.budget.period_ns;
         let window_consumed = if window_start > state.window_start_ns {
             0
         } else {
@@ -1099,7 +1098,10 @@ impl DeliveryObservation {
             || !self.id.namespace.boot_id.is_nonzero()
             || !self.id.namespace.cap_space_id.is_nonzero()
             || (self.id.sequence == u64::MAX
-                && !matches!(self.state, DeliveryState::NotSeen | DeliveryState::HistoryLost))
+                && !matches!(
+                    self.state,
+                    DeliveryState::NotSeen | DeliveryState::HistoryLost
+                ))
         {
             return None;
         }
@@ -1786,8 +1788,8 @@ impl ControlCore {
             return Err(DeliveryInvariantError::LostHistoryRetainsSlots);
         }
 
-        let expected_len = usize::try_from(outstanding)
-            .map_err(|_| DeliveryInvariantError::CapacityExceeded)?;
+        let expected_len =
+            usize::try_from(outstanding).map_err(|_| DeliveryInvariantError::CapacityExceeded)?;
         if expected_len != ns.slots.len() {
             return Err(DeliveryInvariantError::NoncontiguousWindow);
         }
