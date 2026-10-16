@@ -22,6 +22,7 @@ BDF = re.compile(r"^[0-9a-fA-F]{4,8}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-7]$")
 NONCE = re.compile(r"^[0-9a-f]{32,64}$")
 BACKEND_VENDOR = {"intel-vmx": "GenuineIntel", "amd-svm": "AuthenticAMD", "arm-el2": "ARM"}
 MAX_RAW_LOG_BYTES = 32 * 1024 * 1024
+MAX_MANIFEST_BYTES = 1024 * 1024
 
 
 def valid_bdf(value):
@@ -32,27 +33,37 @@ def bdf_lower(value):
     return value.lower() if valid_bdf(value) else None
 
 
+def read_untrusted_regular_file(path, max_bytes):
+    """Single-fd, nonblocking, no-symlink bounded read on Linux.
+
+    Refuse FIFOs/devices before any read and do not follow symlinks. A file
+    changed while being read must be rejected, not used as host attestation.
+    """
+    flags = os.O_RDONLY | os.O_NONBLOCK | os.O_CLOEXEC | os.O_NOFOLLOW
+    fd = os.open(path, flags)
+    try:
+        before = os.fstat(fd)
+        if not stat.S_ISREG(before.st_mode) or before.st_size > max_bytes:
+            raise ValueError(f"evidence must be a regular file up to {max_bytes} bytes")
+        payload = os.read(fd, max_bytes + 1)
+        after = os.fstat(fd)
+        if len(payload) > max_bytes or after.st_size != before.st_size or len(payload) != after.st_size:
+            raise ValueError("evidence mutated during bounded read or exceeded size cap")
+        return payload
+    finally:
+        os.close(fd)
+
+
 def bounded_log(path):
-    # Open exactly once. A pre-check of a pathname is racy; fstat this FD,
-    # and cap read() even if another writer extends the log afterwards.
-    with path.open("rb") as stream:
-        info = os.fstat(stream.fileno())
-        if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_RAW_LOG_BYTES:
-            raise ValueError(
-                f"raw evidence must be a regular log up to {MAX_RAW_LOG_BYTES} bytes"
-            )
-        data = stream.read(MAX_RAW_LOG_BYTES + 1)
-    if len(data) > MAX_RAW_LOG_BYTES:
-        raise ValueError("raw log changed/grew beyond size limit")
-    return data
+    return read_untrusted_regular_file(path, MAX_RAW_LOG_BYTES)
 
 
 def load_json(path):
-    value = json.loads(Path(path).read_text(encoding="utf-8"))
+    raw = read_untrusted_regular_file(path, MAX_MANIFEST_BYTES)
+    value = json.loads(raw.decode("utf-8"))
     if not isinstance(value, dict):
         raise ValueError(f"{path}: must be a JSON object")
     return value
-
 
 def validate(host, guest, host_log, guest_log):
     failures = []
@@ -154,7 +165,7 @@ def main():
         host = load_json(args.host)
         guest = load_json(args.guest)
         failed = validate(host, guest, bounded_log(args.host_log), bounded_log(args.guest_log))
-    except (OSError, ValueError, UnicodeError) as exc:
+    except (OSError, ValueError, UnicodeError, RecursionError) as exc:
         failed = ["missing_invalid_evidence: " + str(exc)]
     evidence = {
         "schema": "a09.cross-layer-acceptance.v1",

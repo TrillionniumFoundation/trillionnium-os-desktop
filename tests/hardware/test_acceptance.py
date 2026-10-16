@@ -1,5 +1,6 @@
 """Adversarial synthetic cross-kernel evidence tests; never hardware tests."""
 import hashlib
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -114,32 +115,62 @@ class AcceptanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "guest.log"
             path.write_bytes(b"small fixture")
-            original_open = Path.open
+            original_read = os.read
+            sizes = []
 
-            class Meter:
-                def __init__(self, source):
-                    self.source = source
+            def monitored_read(fd, size):
+                sizes.append(size)
+                if size < 0 or size > acceptance.MAX_RAW_LOG_BYTES + 1:
+                    raise AssertionError("unbounded evidence read")
+                return original_read(fd, size)
 
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, *args):
-                    self.source.close()
-
-                def fileno(self):
-                    return self.source.fileno()
-
-                def read(self, size=-1):
-                    if size < 0 or size > acceptance.MAX_RAW_LOG_BYTES + 1:
-                        raise AssertionError("unbounded evidence read")
-                    return self.source.read(size)
-
-            def monitored_open(candidate, *args, **kwargs):
-                source = original_open(candidate, *args, **kwargs)
-                return Meter(source) if candidate == path else source
-
-            with patch.object(Path, "open", monitored_open):
+            with patch.object(acceptance.os, "read", monitored_read):
                 self.assertEqual(acceptance.bounded_log(path), b"small fixture")
+            self.assertEqual(sizes, [acceptance.MAX_RAW_LOG_BYTES + 1])
+
+    def test_symlink_evidence_is_refused_even_when_target_regular(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "real.log"
+            target.write_bytes(b"legitimate data")
+            link = root / "alias.log"
+            link.symlink_to(target)
+            with self.assertRaises(OSError):
+                acceptance.bounded_log(link)
+            with self.assertRaises(OSError):
+                acceptance.load_json(link)
+
+    def test_fifo_log_and_manifest_refused_without_blocking(self):
+        with tempfile.TemporaryDirectory() as directory:
+            pipe = Path(directory) / "fifo"
+            os.mkfifo(pipe)
+            with self.assertRaises(ValueError):
+                acceptance.bounded_log(pipe)
+            with self.assertRaises(ValueError):
+                acceptance.load_json(pipe)
+
+    def test_regular_small_manifest_loads(self):
+        with tempfile.TemporaryDirectory() as directory:
+            p = Path(directory) / "host.json"
+            p.write_text('{"schema": "test", "num": 4}', encoding="utf-8")
+            self.assertEqual(acceptance.load_json(p), {"schema": "test", "num": 4})
+
+    def test_oversized_manifest_rejected_by_fstat(self):
+        with tempfile.TemporaryDirectory() as directory:
+            p = Path(directory) / "huge.json"
+            with p.open("wb") as target:
+                target.seek(acceptance.MAX_MANIFEST_BYTES)
+                target.write(b"x")
+            with self.assertRaises(ValueError):
+                acceptance.load_json(p)
+
+    def test_truncated_file_read_is_fail_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            p = Path(directory) / "host.json"
+            p.write_bytes(b'{"schema": "valid"}')
+            with patch.object(acceptance.os, "read", return_value=b'{"schema":'):
+                with self.assertRaises(ValueError):
+                    acceptance.load_json(p)
 
     def test_oversized_raw_log_is_rejected_without_unbounded_read(self):
         with tempfile.TemporaryDirectory() as directory:
