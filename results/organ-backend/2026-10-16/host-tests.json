@@ -1,0 +1,37 @@
+{
+  "archive_tests": 5,
+  "normal_and_optimized_passed": true,
+  "runs": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/organ_backend",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/organ_backend",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "non_asterinas_host_refused": true,
+  "host_probe_exit": 2
+}

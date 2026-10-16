@@ -1,0 +1,63 @@
+{
+  "base_commit": "eb864e8cabe803c8d5d86bfd27b6e51e2b28f907",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "original_source_sha256": "ef3e11bf30edded5d338380f920ad2e59a1d3159a601bf10ebe5a6c7db35af7d",
+  "fixed_source_sha256": "932900e40ef96fc3efe4a2470d22a189da674f7d8ea7d5fb7882593c93951b47",
+  "regression_before_exit": 101,
+  "regression_tests_failed_before": 2,
+  "unit_tests_passed_after": 7,
+  "runs": [
+    {
+      "label": "test",
+      "exit_code": 0,
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--manifest-path",
+        "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a02/libs/os-abi/Cargo.toml"
+      ]
+    },
+    {
+      "label": "release",
+      "exit_code": 0,
+      "argv": [
+        "cargo",
+        "build",
+        "--offline",
+        "--release",
+        "--manifest-path",
+        "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a02/libs/os-abi/Cargo.toml"
+      ]
+    },
+    {
+      "label": "clippy",
+      "exit_code": 0,
+      "argv": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--all-targets",
+        "--manifest-path",
+        "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a02/libs/os-abi/Cargo.toml",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "label": "fmt",
+      "exit_code": 0,
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a02/libs/os-abi/Cargo.toml",
+        "--",
+        "--check"
+      ]
+    }
+  ],
+  "kernel_executed": false,
+  "original_remote_branch_modified": false
+}
