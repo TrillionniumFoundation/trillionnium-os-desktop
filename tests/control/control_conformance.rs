@@ -2081,3 +2081,56 @@ fn a02_rejects_elapsed_cpu_forgery_even_without_a03_conversion_guard() {
         Err(Error::InvalidField)
     );
 }
+
+#[test]
+fn read_usage_refuses_cpu_in_future_window_without_changing_clock_or_revision() {
+    // The point-charge host primitive can record 90ns at BOOTTIME=5ns.
+    // It does not imply the real A06 scheduler could have performed that work.
+    let target = root(250_000, CPU_PERIOD_NS);
+    target.charge_cpu(90, 5).unwrap();
+    assert_eq!(
+        target.try_usage(5),
+        Err(ResourceError::InconsistentAccounting)
+    );
+    assert_eq!(
+        target.try_usage(89),
+        Err(ResourceError::InconsistentAccounting)
+    );
+    assert_eq!(target.revision(), 1);
+
+    // Both failed queries must leave clock/window state untouched. Once the
+    // clock catches up, exactly the original cumulative work is observable.
+    let valid = target.try_usage(90).unwrap();
+    assert_eq!(valid.sample_boottime_ns, 90);
+    assert_eq!(valid.window_start_ns, 0);
+    assert_eq!(valid.window_consumed_ns, 90);
+    assert_eq!(valid.cumulative_cpu_ns, 90);
+    assert_eq!(valid.event_sequence, 1);
+    assert_eq!(target.try_usage(89), Err(ResourceError::ClockRollback));
+
+    // A real period rollover exposes no new-window work but preserves history.
+    let rollover = target.try_usage(CPU_PERIOD_NS + 1).unwrap();
+    assert_eq!(rollover.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(rollover.window_consumed_ns, 0);
+    assert_eq!(rollover.cumulative_cpu_ns, 90);
+    assert_eq!(rollover.revision, 1);
+}
+
+#[test]
+fn read_usage_parent_and_child_both_reject_unrepresentable_elapsed_cpu() {
+    let parent = root(251_000, CPU_PERIOD_NS);
+    let child = with_parent(domain(251_001), object(251_001), &parent, CPU_PERIOD_NS).unwrap();
+    child.charge_cpu(20, 1).unwrap();
+
+    // An ancestor cannot launder a physically impossible child charge into
+    // an A02-accepted ReadUsage success for either CapSpace observation.
+    assert_eq!(child.try_usage(1), Err(ResourceError::InconsistentAccounting));
+    assert_eq!(parent.try_usage(1), Err(ResourceError::InconsistentAccounting));
+    let child_observation = child.try_usage(20).unwrap();
+    let parent_observation = parent.try_usage(20).unwrap();
+    assert_eq!(child_observation.window_consumed_ns, 20);
+    assert_eq!(parent_observation.window_consumed_ns, 20);
+    assert_eq!(child_observation.cumulative_cpu_ns, 20);
+    assert_eq!(parent_observation.cumulative_cpu_ns, 20);
+    assert_eq!(parent_observation.event_sequence, 1);
+}
