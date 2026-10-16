@@ -27,7 +27,9 @@ def fake_good():
         "device_memory_allocated": True, "cuda_kernel_launched": True,
         "synchronization_completed": True, "results_copied": True,
         "resources_released": True,
-        "device": {"device_name": "NVIDIA GeForce RTX 4060", "device_bdf": BDF},
+        "device": {"device_name": "NVIDIA GeForce RTX 4060", "device_bdf": BDF,
+                   "device_index": 0, "cuda_driver_api_version": 12040,
+                   "nvrtc_version": "12.4", "compute_capability": "8.9"},
     }
 
 
@@ -73,6 +75,42 @@ class LabRunnerTests(unittest.TestCase):
         self.assertFalse(result["DMA_quiescence_attested"])
         self.assertEqual(runner.call_args.kwargs["check"], False)
         self.assertNotIn("shell", runner.call_args.kwargs)
+
+    def test_cuda_runtime_version_and_compute_capability_are_required(self):
+        invalids = (
+            ("compute_capability", "8.6"),
+            ("compute_capability", "garbled"),
+            ("cuda_driver_api_version", 0),
+            ("cuda_driver_api_version", True),
+            ("nvrtc_version", ""),
+            ("nvrtc_version", "invalid"),
+            ("device_index", -1),
+            ("device_index", False),
+        )
+        for key, value in invalids:
+            with self.subTest(key=key, value=value):
+                evidence = fake_good()
+                evidence["device"][key] = value
+                code, result = lab.run_lab(
+                    BDF, "RTX 4060", True,
+                    runner=Mock(return_value=self.result(evidence))
+                )
+                self.assertEqual(code, 1)
+                self.assertIn("CUDA device runtime", result["error"])
+                self.assertFalse(result["host_asterinas_execution_attested"])
+
+    def test_missing_runtime_metadata_is_not_a_gpu_pass(self):
+        for key in ("compute_capability", "nvrtc_version",
+                    "device_index", "cuda_driver_api_version"):
+            with self.subTest(key=key):
+                evidence = fake_good()
+                evidence["device"].pop(key)
+                code, result = lab.run_lab(
+                    BDF, "RTX 4060", True,
+                    runner=Mock(return_value=self.result(evidence))
+                )
+                self.assertEqual(code, 1)
+                self.assertEqual(result["status"], "failed_false_positive_child")
 
     def test_wrong_gpu_bdf_fails_even_if_child_says_success(self):
         payload = fake_good()

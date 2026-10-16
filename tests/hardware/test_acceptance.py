@@ -62,7 +62,12 @@ class AcceptanceTests(unittest.TestCase):
                                         "cuda_kernel_launched": True,
                                         "synchronization_completed": True,
                                         "no_cpu_fallback": True,
-                                        "device": {"device_bdf": "0000:03:00.0"}}},
+                                        "device": {"device_bdf": "0000:03:00.0",
+                                                   "device_name": "NVIDIA GeForce RTX 4060",
+                                                   "device_index": 0,
+                                                   "cuda_driver_api_version": 12040,
+                                                   "nvrtc_version": "12.4",
+                                                   "compute_capability": "8.9"}}},
         }
 
     def reasons(self):
@@ -245,6 +250,23 @@ class AcceptanceTests(unittest.TestCase):
     def test_guest_cpu_only_does_not_count(self):
         self.guest["gemm"]["child_evidence"]["cuda_kernel_launched"] = False
         self.assertIn("invalid_cuda_gemm_result", self.reasons())
+
+    def test_cuda_runtime_metadata_not_a_freeform_attestation(self):
+        device = self.guest["gemm"]["child_evidence"]["device"]
+        invalids = (
+            ("device_index", -1),
+            ("device_index", True),
+            ("cuda_driver_api_version", 0),
+            ("cuda_driver_api_version", False),
+            ("nvrtc_version", "garbled"),
+            ("compute_capability", "8.6"),
+        )
+        for field, bad in invalids:
+            with self.subTest(field=field, value=bad):
+                previous = device[field]
+                device[field] = bad
+                self.assertIn("cuda_runtime_identity_missing_or_inconsistent", self.reasons())
+                device[field] = previous
 
     def test_forged_child_cuda_bdf_rejected(self):
         self.guest["gemm"]["child_evidence"]["device"]["device_bdf"] = "0000:04:00.0"

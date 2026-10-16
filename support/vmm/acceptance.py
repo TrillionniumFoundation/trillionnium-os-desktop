@@ -158,6 +158,17 @@ def validate(host, guest, host_log, guest_log):
           child.get("synchronization_completed") is True and
           child.get("no_cpu_fallback") is True, "invalid_cuda_gemm_result")
     cuda_dev = child.get("device") if isinstance(child.get("device"), dict) else {}
+    # This first lab profile is the RTX 4060 (official CUDA CC 8.9).
+    # These remain *self-reported* runtime values, not hardware attestation.
+    device_index = cuda_dev.get("device_index")
+    driver_api = cuda_dev.get("cuda_driver_api_version")
+    nvrtc_version = cuda_dev.get("nvrtc_version")
+    check(type(device_index) is int and device_index >= 0 and
+          type(driver_api) is int and driver_api >= 1000 and
+          cuda_dev.get("compute_capability") == "8.9" and
+          isinstance(nvrtc_version, str) and
+          re.fullmatch(r"[1-9][0-9]*\.[0-9]+", nvrtc_version) is not None,
+          "cuda_runtime_identity_missing_or_inconsistent")
     check(bdf_lower(cuda_dev.get("device_bdf")) is not None and
           bdf_lower(cuda_dev.get("device_bdf")) == bdf_lower(guest_dev.get("guest_bdf")),
           "guest_cuda_pci_identity_mismatch")

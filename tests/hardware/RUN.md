@@ -242,3 +242,22 @@ Two CPU-only Mock subprocess tests check bounded unreapable-child handling and
 reaped-child handling; actual GPU uninterruptible-process recovery is **not**
 exercised. The 2-second limit is an operational safety bound, not a GPU reset
 or VMM recovery guarantee.
+
+## CUDA runtime/device self-report validation (A09 next phase)
+
+The CUDA runner now rejects a purported successful RTX 4060 GEMM if the
+guest reports missing/noninteger CUDA Driver API version, missing/bad NVRTC
+version, missing/invalid CUDA device index or compute capability other than
+**8.9**. NVIDIA's published RTX 4060 specification lists CUDA capability
+8.9: https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4060-4060ti/ .
+These values are returned by the CUDA Driver API/NVRTC code in
+`cuda_gemm.py`. The isolated subprocess verifier and cross-kernel evidence
+review enforce them independently. The same hardware-contract fields are
+included in both synthetic fixture sets with negative tests (invalid version,
+Boolean index, wrong compute capability).
+
+This is a **self-report consistency check**, not cryptographic provenance
+or proof of device ownership. A fabricated CUDA runtime could report these
+values. Only real Asterinas-host and Linux guest logs with verified physical
+PCI identity, IOMMU isolation and actual GPU numeric computation permit
+independent hardware review.

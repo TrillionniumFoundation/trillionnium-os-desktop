@@ -8,6 +8,7 @@ not reset devices, touch system drivers, or assert hardware DMA quiescence.
 import argparse
 from datetime import datetime, timezone
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -55,6 +56,29 @@ def canonical_gpu_model(value):
             model = model[len(prefix):]
             break
     return model or None
+
+
+def compute_runtime_metadata_valid(device, requested_model):
+    """Check CUDA Driver/NVRTC self-report; never treat it as physical attestation."""
+    if not isinstance(device, dict):
+        return False
+    index = device.get("device_index")
+    driver = device.get("cuda_driver_api_version")
+    nvrtc = device.get("nvrtc_version")
+    capability = device.get("compute_capability")
+    if type(index) is not int or index < 0:
+        return False
+    if type(driver) is not int or driver < 1000:
+        return False
+    if not isinstance(nvrtc, str) or re.fullmatch(r"[1-9][0-9]*\.[0-9]+", nvrtc) is None:
+        return False
+    if not isinstance(capability, str) or re.fullmatch(r"[1-9][0-9]*\.[0-9]+", capability) is None:
+        return False
+    # Official NVIDIA RTX 4060 hardware feature level. A false driver-reported
+    # feature level must not be called an RTX 4060 CUDA compute success.
+    if canonical_gpu_model(requested_model) == "rtx 4060" and capability != "8.9":
+        return False
+    return True
 
 
 def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=None):
@@ -135,6 +159,8 @@ def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=None):
             or observed_bdf.casefold() != bdf.casefold()
             or canonical_gpu_model(observed_model) != canonical_gpu_model(name)):
         errors.append("device PCI identity and model")
+    if not compute_runtime_metadata_valid(identity, name):
+        errors.append("CUDA device runtime/compute capability provenance")
     if errors:
         result.update(status="failed_false_positive_child", error="invalid: " + ", ".join(errors))
         return 1, result
