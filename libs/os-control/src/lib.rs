@@ -267,6 +267,7 @@ pub enum ResourceError {
     DuplicateDomainId,
     DuplicateObjectId,
     InvalidBudget,
+    InvalidInterval,
     InvalidRevision,
     RevisionConflict { expected: u64, actual: u64 },
     ParentConstraint,
@@ -557,6 +558,97 @@ impl ResourceDomain {
             state.consumed_ns = cumulative;
             state.event_sequence = event_sequence;
             state.last_boottime_ns = now_ns;
+        }
+        Ok(())
+    }
+
+    /// Deterministic single-CPU interval accounting for the A06 handoff.
+    /// Counts [start_ns, end_ns) in its exact fixed-period windows, including
+    /// both sides of a boundary. A rejected interval changes no domain.
+    /// This is still a host model, not a scheduler or actual runtime meter.
+    pub fn charge_interval_for_host_model(
+        &self,
+        start_ns: u64,
+        end_ns: u64,
+    ) -> Result<(), ResourceError> {
+        if end_ns <= start_ns {
+            return Err(ResourceError::InvalidInterval);
+        }
+        let _gate = lock_unpoisoned(&self.inner.gate);
+        let delta = end_ns - start_ns;
+        let mut pending = Vec::new();
+        let mut cursor = Some(self.clone());
+
+        while let Some(domain) = cursor {
+            let previous = domain.snapshot_state();
+            if start_ns < previous.last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
+            }
+            if !previous.alive {
+                return Err(ResourceError::Exhausted);
+            }
+            let period = previous.budget.period_ns;
+            let start_window = (start_ns / period) * period;
+            let end_window = (end_ns / period) * period;
+            let first_window_used = if previous.window_start_ns == start_window {
+                previous.window_consumed_ns
+            } else {
+                0
+            };
+
+            let new_window_used = if start_window == end_window {
+                first_window_used
+                    .checked_add(delta)
+                    .ok_or(ResourceError::Overflow)?
+            } else {
+                // A crossing may have a partially occupied first window,
+                // whole intermediate windows, and a partial final window.
+                // A full intermediate window is legal only at 100% cap.
+                let first_end = start_window
+                    .checked_add(period)
+                    .ok_or(ResourceError::Overflow)?;
+                let first_used = first_window_used
+                    .checked_add(first_end - start_ns)
+                    .ok_or(ResourceError::Overflow)?;
+                if first_used > previous.budget.cap_ns {
+                    return Err(ResourceError::Exhausted);
+                }
+                let full_periods = (end_window - first_end) / period;
+                if full_periods > 0 && previous.budget.cap_ns < period {
+                    return Err(ResourceError::Exhausted);
+                }
+                end_ns - end_window
+            };
+            if new_window_used > previous.budget.cap_ns {
+                return Err(ResourceError::Exhausted);
+            }
+            let cumulative = previous
+                .consumed_ns
+                .checked_add(delta)
+                .ok_or(ResourceError::Overflow)?;
+            let event_sequence = previous
+                .event_sequence
+                .checked_add(1)
+                .ok_or(ResourceError::Overflow)?;
+            cursor = domain.inner.parent.clone();
+            pending.push((
+                domain,
+                end_window,
+                new_window_used,
+                cumulative,
+                event_sequence,
+            ));
+        }
+
+        // The shared family gate excludes mutations and usage observations;
+        // the publish phase contains no checks that can partially fail.
+        for (domain, window_start, window_used, cumulative, event_sequence) in pending {
+            let mut state = lock_unpoisoned(&domain.inner.state);
+            state.window_start_ns = window_start;
+            state.window_consumed_ns = window_used;
+            state.consumed_ns = cumulative;
+            state.event_sequence = event_sequence;
+            state.last_boottime_ns = end_ns;
         }
         Ok(())
     }
@@ -1565,6 +1657,7 @@ fn map_resource_error(error: ResourceError) -> DeliveryStatus {
         ResourceError::ParentConstraint => DeliveryStatus::ParentLimit,
         ResourceError::Exhausted => DeliveryStatus::ResourceExhausted,
         ResourceError::InvalidBudget
+        | ResourceError::InvalidInterval
         | ResourceError::InvalidRevision
         | ResourceError::InvalidIdentity => DeliveryStatus::InvalidInput,
         ResourceError::Overflow | ResourceError::MissingParent | ResourceError::ClockRollback => {

@@ -1241,3 +1241,93 @@ fn concurrent_siblings_never_double_spend_shared_parent_quota() {
     assert_eq!(p.window_consumed_ns, l.window_consumed_ns + r.window_consumed_ns);
     assert_eq!(p.cumulative_cpu_ns, l.cumulative_cpu_ns + r.cumulative_cpu_ns);
 }
+
+#[test]
+fn exact_boundary_crossing_preserves_each_period_cap() {
+    let target = root(160_000, 10);
+    target
+        .charge_interval_for_host_model(CPU_PERIOD_NS - 7, CPU_PERIOD_NS + 7)
+        .unwrap();
+    let first = target.usage(CPU_PERIOD_NS + 7);
+    assert_eq!(first.cumulative_cpu_ns, 14);
+    assert_eq!(first.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(first.window_consumed_ns, 7);
+    assert_eq!(
+        target.charge_interval_for_host_model(
+            CPU_PERIOD_NS + 7,
+            CPU_PERIOD_NS + 11,
+        ),
+        Err(ResourceError::Exhausted)
+    );
+    // A rejected charge is not a time sample or a partial effect.
+    assert_eq!(
+        target.try_usage(CPU_PERIOD_NS + 7).unwrap().window_consumed_ns,
+        7
+    );
+    target
+        .charge_interval_for_host_model(CPU_PERIOD_NS + 7, CPU_PERIOD_NS + 10)
+        .unwrap();
+    assert_eq!(target.usage(CPU_PERIOD_NS + 10).window_consumed_ns, 10);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 10).cumulative_cpu_ns, 17);
+}
+
+#[test]
+fn multi_period_accounting_has_no_unused_quota_credit() {
+    let p = CPU_PERIOD_NS;
+    let full = root(170_000, p);
+    full.charge_interval_for_host_model(0, 3 * p + 7).unwrap();
+    let snapshot = full.usage(3 * p + 7);
+    assert_eq!(snapshot.cumulative_cpu_ns, 3 * p + 7);
+    assert_eq!(snapshot.window_start_ns, 3 * p);
+    assert_eq!(snapshot.window_consumed_ns, 7);
+    let limited = root(170_001, p - 1);
+    assert_eq!(
+        limited.charge_interval_for_host_model(0, p + 1),
+        Err(ResourceError::Exhausted)
+    );
+    assert_eq!(limited.try_usage(0).unwrap().cumulative_cpu_ns, 0);
+    assert_eq!(limited.try_usage(0).unwrap().event_sequence, 0);
+}
+
+#[test]
+fn interval_parent_failure_is_atomic_across_period_boundary() {
+    let p = CPU_PERIOD_NS;
+    let ancestor = root(180_000, 10);
+    let sibling = with_parent(domain(180_001), object(180_001), &ancestor, 10).unwrap();
+    let parent = with_parent(domain(180_002), object(180_002), &ancestor, 10).unwrap();
+    let leaf = with_parent(domain(180_003), object(180_003), &parent, 10).unwrap();
+
+    sibling.charge_cpu(5, p - 6).unwrap();
+    assert_eq!(
+        leaf.charge_interval_for_host_model(p - 6, p + 6),
+        Err(ResourceError::Exhausted)
+    );
+    assert_eq!(leaf.try_usage(0).unwrap().event_sequence, 0);
+    assert_eq!(parent.try_usage(0).unwrap().event_sequence, 0);
+    assert_eq!(ancestor.try_usage(p - 6).unwrap().window_consumed_ns, 5);
+    leaf.charge_interval_for_host_model(p - 6, p - 2).unwrap();
+    assert_eq!(ancestor.usage(p - 2).window_consumed_ns, 9);
+    assert_eq!(leaf.usage(p - 2).window_consumed_ns, 4);
+}
+
+#[test]
+fn invalid_and_overflow_adjacent_intervals_fail_closed() {
+    let target = root(190_000, CPU_PERIOD_NS);
+    assert_eq!(
+        target.charge_interval_for_host_model(42, 42),
+        Err(ResourceError::InvalidInterval)
+    );
+    assert_eq!(
+        target.charge_interval_for_host_model(43, 42),
+        Err(ResourceError::InvalidInterval)
+    );
+    assert_eq!(target.try_usage(0).unwrap().event_sequence, 0);
+    target
+        .charge_interval_for_host_model(u64::MAX - 3, u64::MAX)
+        .unwrap();
+    assert_eq!(target.usage(u64::MAX).cumulative_cpu_ns, 3);
+    assert_eq!(
+        target.charge_interval_for_host_model(0, 1),
+        Err(ResourceError::ClockRollback)
+    );
+}

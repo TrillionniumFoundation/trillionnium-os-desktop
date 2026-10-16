@@ -203,3 +203,19 @@ other object's terminal result. The bounded slot holds the instance until
 retirement. Descendant creation checks every ancestor's liveness; a revoked
 grandparent cannot be bypassed through a still-live parent. A05 must still
 guarantee global stable IDs for real kernel resources across distinct roots.
+
+## Exact cross-period host model seam for A06
+
+`ResourceDomain::charge_interval_for_host_model(start_ns, end_ns)` accepts a
+strict non-empty monotonic CPU execution span `[start, end)`, correctly
+splits it at fixed 100ms boundaries, checks the consumed first window, any
+complete intermediate windows, and the final partial window against the
+resource and every ancestor. The entire interval is atomic: invalid,
+clock-reversed, over-limit or overflowing intervals change no resource,
+cumulative accounting, event counter or BOOTTIME floor. A full intermediate
+window can only be consumed at a full-period cap, so no unused quota credit
+is carried into the next window. Exact endpoint boundaries and near-u64-max
+arithmetic are tested. The older `charge_cpu(delta, now)` method remains for
+legacy caller compatibility but **does not slice intervals**. Neither one is
+actual scheduler enforcement; A06 must settle real per-CPU runtime before
+calling into a shared resource gate and implement timer preemption/recovery.
