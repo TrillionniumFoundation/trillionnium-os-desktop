@@ -1,0 +1,15 @@
+[package]
+name = "os-control"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[[test]]
+name = "control_conformance"
+path = "../../tests/control/control_conformance.rs"
+
+[lints.rust]
+unsafe_code = "forbid"
