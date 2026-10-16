@@ -1,5 +1,6 @@
 """Exercise owned child groups and output-lock ordering without Rust or QEMU."""
 import fcntl
+import hashlib
 import importlib.util
 import json
 import os
@@ -332,6 +333,68 @@ class RunnerLifecycleTests(unittest.TestCase):
                     except ProcessLookupError:
                         pass
                     os.close(descriptor)
+
+
+class EncodedFlagEntryTests(unittest.TestCase):
+    def check_encoded_rejection_and_retry(self, value):
+        """Exercise public main/argv, replacing only the expensive run boundary."""
+        with tempfile.TemporaryDirectory() as temporary:
+            name = "integration-empty" if not value else "integration-nonempty"
+            setting = os.environ.get("A01_ENTRY_GUARDS_OUT")
+            root = Path(setting) / name if setting else Path(temporary)
+            if setting:
+                root.mkdir(parents=True, exist_ok=False)
+            project = root / "fixture-project"
+            script = project / "support/build/osdk-integration/run.py"
+            script.parent.mkdir(parents=True)
+            source = Path(os.environ.get("A01_ENTRY_GUARDS_SOURCE", str(HERE / "run.py")))
+            shutil.copyfile(source, script)
+            output, marker = root / "output-parent/evidence", root / "work-started"
+            wrapper = root / "public-entry-fixture.py"
+            wrapper.write_text(
+                "import importlib.util,sys\nfrom pathlib import Path\n"
+                f"spec=importlib.util.spec_from_file_location('entry_fixture',{str(script)!r})\n"
+                "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)\n"
+                "def host_run(args,here,project,upstream,output):\n"
+                f" Path({str(marker)!r}).write_text('host run_locked fixture, no Cargo or VM\\n')\n"
+                " (output/'host-fixture.json').write_text('{\"host_fixture\": true}\\n')\n"
+                " return 0\nmodule.run_locked=host_run\n"
+                f"sys.argv=[{str(script)!r},*sys.argv[1:]]\nraise SystemExit(module.main())\n")
+            command = [sys.executable, "-I", *(["-O"] if sys.flags.optimize else []),
+                       str(wrapper), "--output", str(output), "--local-tcp"]
+            env = os.environ.copy()
+            env["CARGO_ENCODED_RUSTFLAGS"] = value
+            observations = []
+            for phase in ("encoded", "retry-unset"):
+                if phase == "retry-unset":
+                    env.pop("CARGO_ENCODED_RUSTFLAGS")
+                result = subprocess.run(command, cwd=project, env=env, stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT, timeout=10)
+                (root / (phase + ".log")).write_bytes(result.stdout)
+                observations.append({"phase": phase, "argv": command, "returncode": result.returncode,
+                    "encoded_present": "CARGO_ENCODED_RUSTFLAGS" in env,
+                    "encoded_value": env.get("CARGO_ENCODED_RUSTFLAGS"),
+                    "output_exists": output.exists(), "output_parent_exists": output.parent.exists(),
+                    "lock_exists": (project / "support/build/out-osdk-integration.lock").exists(),
+                    "work_started": marker.exists()})
+            (root / "observation.json").write_text(json.dumps({
+                "kind": "actual_public_main_argv_with_host_run_locked_fixture_no_build_no_vm",
+                "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                "observations": observations}, indent=2) + "\n")
+            first, retry = observations
+            self.assertEqual(first["returncode"], 2, (root / "encoded.log").read_text())
+            self.assertIn("unset CARGO_ENCODED_RUSTFLAGS and retry", (root / "encoded.log").read_text())
+            for key in ("output_exists", "output_parent_exists", "lock_exists", "work_started"):
+                self.assertFalse(first[key], key)
+            self.assertEqual(retry["returncode"], 0, (root / "retry-unset.log").read_text())
+            self.assertTrue(retry["work_started"])
+            self.assertTrue((output / "host-fixture.json").is_file())
+
+    def test_empty_encoded_flags_rejected_before_lock_output_and_work_then_same_argv_retries(self):
+        self.check_encoded_rejection_and_retry("")
+
+    def test_nonempty_encoded_flags_rejected_before_lock_output_and_work_then_same_argv_retries(self):
+        self.check_encoded_rejection_and_retry("-Copt-level=0\x1f--cfg=host_fixture")
 
 
 if __name__ == "__main__":

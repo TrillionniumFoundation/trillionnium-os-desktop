@@ -344,5 +344,89 @@ class DebugTests(unittest.TestCase):
                         os.close(descriptor)
 
 
+class EncodedFlagEntryTests(unittest.TestCase):
+    def check_encoded_rejection_and_retry(self, value):
+        """Run public main/argv with explicit host substitutes for heavy work."""
+        with tempfile.TemporaryDirectory() as temporary:
+            name = "debug-empty" if not value else "debug-nonempty"
+            setting = os.environ.get("A01_ENTRY_GUARDS_OUT")
+            root = Path(setting) / name if setting else Path(temporary)
+            if setting:
+                root.mkdir(parents=True, exist_ok=False)
+            project = root / "fixture-project"
+            script = project / "support/build/debug/run.py"
+            script.parent.mkdir(parents=True)
+            source = Path(os.environ.get("A01_ENTRY_GUARDS_SOURCE", str(Path(__file__).with_name("run.py"))))
+            shutil.copyfile(source, script)
+            for relative in ["support/build/kernel.sh", "support/build/minimal.mk",
+                             "support/build/record-qemu.py", "support/build/check-boot.py",
+                             "support/build/minimal/OSDK.toml", "support/build/minimal/Cargo.lock",
+                             "support/upstream-lock.json", "kernel/asterinas/rust-toolchain.toml",
+                             "kernel/asterinas/Cargo.lock", "kernel/asterinas/osdk/Cargo.lock",
+                             "kernel/asterinas/ostd/src/boot/mod.rs",
+                             "kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin",
+                             "host-cargo/bin/cargo-osdk"]:
+                path = project / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("host entry fixture, not kernel source or ELF\n")
+            output, marker = root / "output-parent/evidence", root / "work-started"
+            wrapper = root / "public-entry-fixture.py"
+            wrapper.write_text(
+                "import importlib.util,sys,types\nfrom pathlib import Path\n"
+                f"spec=importlib.util.spec_from_file_location('entry_fixture',{str(script)!r})\n"
+                "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)\n"
+                "# This fixture tests entry ordering only; no tools, Cargo, GDB, or VM execute.\n"
+                "class HostSession:\n"
+                " def __init__(self,*args,**kwargs):\n"
+                f"  Path({str(marker)!r}).write_text('host OwnedSession fixture, no child tools or VM\\n')\n"
+                "  self.process=types.SimpleNamespace(pid=42);self.reaped=False;self.external_reap=False\n"
+                " def wait(self,*args): self.reaped=True;return 0\n"
+                " def stop(self): self.reaped=True;return 0\n"
+                "module.OwnedSession=HostSession\n"
+                "module.shutil.which=lambda name: sys.executable\n"
+                "module.subprocess.check_output=lambda *args,**kwargs: 'host-fixture\\n'\n"
+                "module.wait_for_qemu=lambda *args: {'host_fixture':True}\n"
+                "module.entry_address=lambda *args: 4096\n"
+                "module.bind_entry_artifacts=lambda *args: {'symbol_artifact':{'host_fixture':True},"
+                "'expected_bytes':'00'*32}\n"
+                "module.accept_gdb=lambda *args: {'host_fixture':True}\n"
+                "module.accept_boot=lambda *args: {'host_fixture':True}\n"
+                f"sys.argv=[{str(script)!r},*sys.argv[1:]]\nraise SystemExit(module.main())\n")
+            command = [sys.executable, "-I", *(["-O"] if sys.flags.optimize else []),
+                       str(wrapper), "--output", str(output)]
+            env = os.environ.copy()
+            env.update(CARGO_ENCODED_RUSTFLAGS=value, CARGO_HOME=str(project / "host-cargo"))
+            observations = []
+            for phase in ("encoded", "retry-unset"):
+                if phase == "retry-unset":
+                    env.pop("CARGO_ENCODED_RUSTFLAGS")
+                result = subprocess.run(command, cwd=project, env=env, stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT, timeout=10)
+                (root / (phase + ".log")).write_bytes(result.stdout)
+                observations.append({"phase": phase, "argv": command, "returncode": result.returncode,
+                    "encoded_present": "CARGO_ENCODED_RUSTFLAGS" in env,
+                    "encoded_value": env.get("CARGO_ENCODED_RUSTFLAGS"),
+                    "output_exists": output.exists(), "output_parent_exists": output.parent.exists(),
+                    "work_started": marker.exists()})
+            (root / "observation.json").write_text(json.dumps({
+                "kind": "actual_public_main_argv_with_explicit_host_debug_work_fixtures_no_build_no_vm",
+                "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                "observations": observations}, indent=2) + "\n")
+            first, retry = observations
+            self.assertEqual(first["returncode"], 2, (root / "encoded.log").read_text())
+            self.assertIn("unset CARGO_ENCODED_RUSTFLAGS and retry", (root / "encoded.log").read_text())
+            for key in ("output_exists", "output_parent_exists", "work_started"):
+                self.assertFalse(first[key], key)
+            self.assertEqual(retry["returncode"], 0, (root / "retry-unset.log").read_text())
+            self.assertTrue(retry["work_started"])
+            self.assertTrue(json.loads((output / "result.json").read_text())["passed"])
+
+    def test_empty_encoded_flags_rejected_before_output_and_tools_then_same_argv_retries(self):
+        self.check_encoded_rejection_and_retry("")
+
+    def test_nonempty_encoded_flags_rejected_before_output_and_tools_then_same_argv_retries(self):
+        self.check_encoded_rejection_and_retry("-Copt-level=0\x1f--cfg=host_fixture")
+
+
 if __name__ == "__main__":
     unittest.main()

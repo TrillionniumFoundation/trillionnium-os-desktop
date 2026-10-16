@@ -339,6 +339,10 @@ def debug_main(shutdown):
     parser.add_argument("--boot-timeout", type=float, default=120,
                         help="seconds for complete boot after GDB detach")
     args = parser.parse_args()
+    if "CARGO_ENCODED_RUSTFLAGS" in os.environ:
+        print("CARGO_ENCODED_RUSTFLAGS overrides mandatory OSDK kernel flags; "
+              "unset CARGO_ENCODED_RUSTFLAGS and retry", file=sys.stderr)
+        raise SystemExit(2)
     for timeout in (args.ready_timeout, args.gdb_timeout, args.boot_timeout):
         if not 0 < timeout < float("inf"):
             parser.error("timeouts must be positive finite seconds")

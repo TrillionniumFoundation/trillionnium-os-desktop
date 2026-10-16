@@ -360,6 +360,10 @@ def main():
     parser.add_argument("--target-dir", type=Path,
                         help="reuse this runner's previous independent Cargo target cache")
     args = parser.parse_args()
+    if "CARGO_ENCODED_RUSTFLAGS" in os.environ:
+        print("CARGO_ENCODED_RUSTFLAGS overrides mandatory OSDK kernel flags; "
+              "unset CARGO_ENCODED_RUSTFLAGS and retry", file=sys.stderr)
+        raise SystemExit(2)
     if args.case_timeout < 1:
         raise SystemExit("--case-timeout must be positive")
     if args.coverage_gdb and not args.local_tcp:
