@@ -559,12 +559,27 @@ impl ResourceDomain {
         Self::snapshot_usage_at(&mut state, effective_ns)
     }
 
-    /// A06 integration should reject stale BOOTTIME samples explicitly.
+    /// The fallible HOS2 ReadUsage boundary for a trusted A05 adapter.
+    ///
+    /// A02 rejects CPU consumption that exceeds elapsed BOOTTIME inside the
+    /// current period. The separate point-charge host helper may construct
+    /// such an impossible sample; never report it as wire-ready. Failed reads
+    /// must not advance the sampled time or reset a window.
     pub fn try_usage(&self, sample_boottime_ns: u64) -> Result<UsageSnapshot, ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
         let mut state = lock_unpoisoned(&self.inner.state);
         if sample_boottime_ns < state.last_boottime_ns {
             return Err(ResourceError::ClockRollback);
+        }
+        let window_start = (sample_boottime_ns / state.budget.period_ns)
+            * state.budget.period_ns;
+        let window_consumed = if window_start > state.window_start_ns {
+            0
+        } else {
+            state.window_consumed_ns
+        };
+        if window_consumed > sample_boottime_ns - window_start {
+            return Err(ResourceError::InconsistentAccounting);
         }
         Ok(Self::snapshot_usage_at(&mut state, sample_boottime_ns))
     }

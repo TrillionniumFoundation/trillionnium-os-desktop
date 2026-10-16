@@ -1461,6 +1461,108 @@ fn namespace_loss_and_commit_race_never_reports_lost_after_mutation() {
     }
 }
 #[test]
+fn read_usage_refuses_cpu_in_future_window_without_changing_clock_or_revision() {
+    // Point-charge is host-only and can record 90ns of CPU at BOOTTIME=5ns.
+    let target = root(250_000, CPU_PERIOD_NS);
+    target.charge_cpu(90, 5).unwrap();
+    assert_eq!(
+        target.try_usage(5),
+        Err(ResourceError::InconsistentAccounting)
+    );
+    assert_eq!(
+        target.try_usage(89),
+        Err(ResourceError::InconsistentAccounting)
+    );
+    assert_eq!(target.revision(), 1);
+
+    // The rejected samples must not advance the clock or rewrite counters.
+    let valid = target.try_usage(90).unwrap();
+    assert_eq!(valid.sample_boottime_ns, 90);
+    assert_eq!(valid.window_start_ns, 0);
+    assert_eq!(valid.window_consumed_ns, 90);
+    assert_eq!(valid.cumulative_cpu_ns, 90);
+    assert_eq!(valid.event_sequence, 1);
+    assert_eq!(target.try_usage(89), Err(ResourceError::ClockRollback));
+
+    let rollover = target.try_usage(CPU_PERIOD_NS + 1).unwrap();
+    assert_eq!(rollover.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(rollover.window_consumed_ns, 0);
+    assert_eq!(rollover.cumulative_cpu_ns, 90);
+    assert_eq!(rollover.revision, 1);
+}
+
+#[test]
+fn read_usage_parent_and_child_both_reject_unrepresentable_elapsed_cpu() {
+    let parent = root(251_000, CPU_PERIOD_NS);
+    let child = with_parent(domain(251_001), object(251_001), &parent, CPU_PERIOD_NS).unwrap();
+    child.charge_cpu(20, 1).unwrap();
+
+    assert_eq!(child.try_usage(1), Err(ResourceError::InconsistentAccounting));
+    assert_eq!(parent.try_usage(1), Err(ResourceError::InconsistentAccounting));
+    let child_observation = child.try_usage(20).unwrap();
+    let parent_observation = parent.try_usage(20).unwrap();
+    assert_eq!(child_observation.window_consumed_ns, 20);
+    assert_eq!(parent_observation.window_consumed_ns, 20);
+    assert_eq!(child_observation.cumulative_cpu_ns, 20);
+    assert_eq!(parent_observation.cumulative_cpu_ns, 20);
+    assert_eq!(parent_observation.event_sequence, 1);
+}
+
+#[test]
+fn independent_a02_read_usage_codec_rejects_future_cpu_and_accepts_later_sample() {
+    use hos2_os_abi::{
+        decode_response, encode_response, Error, Opcode, ReadUsageResponse, Response,
+        ResponsePayload, Status,
+    };
+
+    let target = root(252_000, CPU_PERIOD_NS);
+    target.charge_cpu(90, 5).unwrap();
+    let encode = |sample: os_control::UsageSnapshot| {
+        let response = Response {
+            opcode: Opcode::ReadUsage,
+            status: Status::Ok,
+            request_id: [0xA3; 16],
+            boot_id: [0xA4; 16],
+            revision: sample.revision,
+            payload: ResponsePayload::ReadUsage(ReadUsageResponse {
+                sample_boottime_ns: sample.sample_boottime_ns,
+                cumulative_cpu_ns: sample.cumulative_cpu_ns,
+                window_start_ns: sample.window_start_ns,
+                window_consumed_ns: sample.window_consumed_ns,
+                active_cap_ns: sample.active_cap_ns,
+                active_period_ns: sample.active_period_ns,
+                event_sequence: sample.event_sequence,
+                dropped_events: sample.dropped_events,
+            }),
+        };
+        let mut bytes = [0u8; 128];
+        match encode_response(&response, &mut bytes) {
+            Ok(used) => decode_response(&bytes[..used]),
+            Err(error) => Err(error),
+        }
+    };
+
+    // The infallible diagnostic may expose an impossible host-only state,
+    // but neither A02 wire encoding nor A03's fallible export may accept it.
+    let impossible = target.usage(5);
+    assert_eq!(encode(impossible), Err(Error::InvalidField));
+    assert_eq!(
+        target.try_usage(5),
+        Err(ResourceError::InconsistentAccounting)
+    );
+    let settled = target.try_usage(90).unwrap();
+    let wire = encode(settled).unwrap();
+    match wire.payload {
+        ResponsePayload::ReadUsage(payload) => {
+            assert_eq!(payload.sample_boottime_ns, 90);
+            assert_eq!(payload.window_consumed_ns, 90);
+            assert_eq!(payload.cumulative_cpu_ns, 90);
+        }
+        _ => panic!("expected a decoded HOS2 ReadUsage payload"),
+    }
+}
+
+#[test]
 fn stale_boottime_samples_never_replenish_window_budget() {
     // A 100ns cap with 30ns used leaves 70ns, so a 71ns charge must fail.
     let target = root(40_000, 100);

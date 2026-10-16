@@ -407,3 +407,18 @@ observed that later time. This prevents stale queued policy updates from
 committing a retroactive effective timestamp. The check is host-model
 only: A06 must sample and settle real boot-clock time atomically in the
 actual scheduler.
+
+## ReadUsage elapsed-time fail-closed boundary (A00 #74 integrated)
+
+The A02 no_std codec independently rejects a successful ReadUsage frame
+with `window_consumed_ns > sample_boottime_ns - window_start_ns`. Because
+A03's simplified `charge_cpu` point helper is a **host model** that can
+temporarily record physically impossible consumption, the A05-facing
+`ResourceDomain::try_usage(now_ns)` now validates the current-window
+elapsed-time bound under the family mutex before changing any sampled time
+or rolling its window. It returns `ResourceError::InconsistentAccounting`
+on failure, not an apparently valid HOS2 response. The legacy infallible
+`usage` remains strictly a local diagnostic; **A05 must never use it for
+wire ReadUsage**. Negative Rust tests reject the impossible host sample,
+preserve a recoverable later sample and verify A02's *independent*
+encoder rejects it. No A02 wire or Hepta durable store is changed.
