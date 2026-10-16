@@ -108,7 +108,19 @@ int main(int argc, char **argv) {
     if(fd<0){perror("HOS2 device unavailable");return 77;}
     int rc=ioctl(fd,number,desc),saved_errno=errno;
     close(fd);
-    if(rc!=0){errno=saved_errno;perror("HOS2 QueryAbi ioctl failed");return 77;}
+    if(rc!=0){
+        // A transport fault (EFAULT, EBADF, EPERM, etc.) is not proof that
+        // /dev/null rejected an unsupported ioctl with ENOTTY. Preserve the
+        // old generic exit code for callers, but emit an unambiguous marker
+        // only for the actual ENOTTY classification used by the host smoke.
+        if(rc==-1 && saved_errno==ENOTTY)
+            fputs("HOS2_IOCTL_ENOTTY\n",stderr);
+        else
+            fprintf(stderr,"HOS2_IOCTL_OTHER_ERROR rc=%d errno=%d\n",rc,saved_errno);
+        errno=saved_errno;
+        perror("HOS2 QueryAbi ioctl failed");
+        return 77;
+    }
     if(check_query(resp,sizeof(resp))){fputs("invalid HOS2 QueryAbi response\n",stderr);return 2;}
     printf("PASS actual HOS2 QueryAbi: page=%" PRIu32 ", supported_ops=0x%" PRIx64 "\n",
            r32(resp+HEADER+16),r64(resp+HEADER+32));

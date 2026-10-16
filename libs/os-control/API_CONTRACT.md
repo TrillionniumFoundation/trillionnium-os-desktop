@@ -13,6 +13,17 @@ D = (BootId, CapSpaceId, sequence)
 The HOS2 wire layout remains owned by A02 and is not represented by a Rust
 memory-layout cast here.
 
+For A05 conversion, `DeliveryStatus::hos2_code` and
+`DeliveryState::hos2_code` expose the fixed numeric HOS2 0.3 values without a
+dependency on the wire crate. `ParentLimit` maps to wire `Conflict` because
+HOS2 0.3 has no separate parent-constraint status. The fallible
+`DeliveryObservation::hos2_saved_status_code` returns `Some(0)` only for a
+consistent non-terminal observation without a stored terminal outcome, and
+`Some(code)` for a terminal with a saved outcome. It returns `None` for
+terminal-without-status or nonterminal-with-status rather than forging an
+`Ok` result. A05 must not emit a response on `None`; A02 separately checks
+the complete wire payload's metadata invariants.
+
 ## A05: kernel ioctl and CapSpace
 
 1. Construct `ControlCore::new(boot_id, cap_space_id)` after trusted boot
@@ -93,3 +104,61 @@ result.
 The Rust tests under `tests/control` are host-model evidence only. They do not
 claim native kernel capability, real copyout fault handling, power-loss
 durability, scheduler correctness, or A05/A06 integration.
+
+## A03 hardening: namespace loss and view rights
+
+The namespace owns the canonical request **including its publisher**. A
+duplicate D from another authorized principal conflicts even when target,
+period, revision, cap and digest happen to match.
+
+An observation-only `delivery_view()` may query but cannot retire. The
+`delivery_view_for(owner)` host-model view must be minted *only after* A05
+verifies an actual history.ack capability, and A07 must validate that the
+owner's receipt represents a durable contiguous confirmation. The
+`OwnerReceipt` digest is opaque model evidence, **not a cryptographic
+signature or a capability**, and a host-model caller can manufacture one.
+
+`lose_history` fences reserved result slots under the same per-slot lock
+that serializes `commit` and `publish`. An already linearized commit
+completes before loss obtains that lock; a token not yet admitted returns
+`HistoryLost` with no new mutation. Any effect handed off to an *external*
+kernel executor before `publish` still requires A05's own fencing and
+effect-journal discipline: the host model cannot cancel arbitrary external
+effects or prove power-loss persistence.
+
+## A06 time and parent hierarchy hardening (host model)
+
+Child registration now takes the same shared resource mutation gate as a
+concurrent parent cap reduction. Direct sibling and ancestor ID collisions
+are rejected; the kernel integration must guarantee unique IDs across roots
+and unrelated branches.
+
+`try_usage(boottime_ns)`, `charge_cpu(delta, now)` and budget CAS reject
+BOOTTIME rollback. Compatibility `usage` clamps old timestamps to the last
+observed time and returns the effective sample, never a newly credited
+earlier window. The budget CAS advances a 100ms window only after a real
+period boundary. Reactivation fails closed on epoch overflow.
+
+A06 remains responsible for runtime settlement, exact boundary-crossing
+CPU slicing, all scheduler classes, parent gate integration, IRQ lock order
+and timer wakeups. `charge_cpu` is **host-only** single-window accounting,
+not native scheduler enforcement.
+
+## Hierarchy linearization and identity collisions
+
+Child creation shares the root family's mutation gate with parent cap changes.
+Duplicate sibling ResourceDomain IDs or an ID equal to an ancestor are rejected
+rather than overwriting the parent's child-cap registry. Installing a budget
+in a later 100ms period advances window accounting at apply time; same-window
+updates retain already consumed runtime even when the cap value is unchanged.
+
+## Original-owner history retirement authority
+
+For namespaces with retirement, A05 trusted bootstrap creates the pair from
+`ControlCore::with_original_owner` or `with_capacity_for_owner`.
+The non-Clone `OriginalOwnerAuthority` binds the original owner to the
+specific in-memory namespace instance and its generation. The
+`retire_through(&view, ack, &authority)` API rejects arbitrary observer
+views, invented owner receipts, foreign same-byte namespaces and stale
+generations. A07 must *separately* validate its existing durable K ledger
+and fsync before invoking retirement; no new persistent database is created.

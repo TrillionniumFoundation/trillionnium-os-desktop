@@ -216,9 +216,70 @@ fn hepta_k_copies_bounded_owned_bytes_not_caller_mutable_storage() {
 }
 
 #[test]
+fn control_states_map_to_hos2_codes_without_importing_the_wire_crate() {
+    assert_eq!(DeliveryStatus::Ok.hos2_code(), 0);
+    assert_eq!(DeliveryStatus::ParentLimit.hos2_code(), 5);
+    assert_eq!(DeliveryStatus::Retired.hos2_code(), 11);
+    assert_eq!(DeliveryState::Reserved.hos2_code(), 0);
+    assert_eq!(DeliveryState::Terminal.hos2_code(), 1);
+    assert_eq!(DeliveryState::HistoryLost.hos2_code(), 4);
+
+    let core = ControlCore::new(boot(18), space(18));
+    let pending = core.query_delivery(&core.delivery_view(), 1).unwrap();
+    assert_eq!(pending.hos2_saved_status_code(), Some(0));
+}
+
+#[test]
+fn malformed_public_delivery_observation_never_becomes_false_wire_success() {
+    let core = ControlCore::new(boot(191), space(191));
+    let original = core.query_delivery(&core.delivery_view(), 1).unwrap();
+
+    // All nonterminal QueryDelivery states require saved_status=Ok/0.
+    for state in [
+        DeliveryState::Reserved,
+        DeliveryState::Retired,
+        DeliveryState::NotSeen,
+        DeliveryState::HistoryLost,
+    ] {
+        let mut observation = original;
+        observation.state = state;
+        observation.status = None;
+        assert_eq!(observation.hos2_saved_status_code(), Some(0));
+        observation.status = Some(DeliveryStatus::Revoked);
+        assert_eq!(observation.hos2_saved_status_code(), None);
+    }
+
+    // A terminal without a stored outcome is unknown, NEVER an Ok result.
+    let mut terminal = original;
+    terminal.state = DeliveryState::Terminal;
+    terminal.status = None;
+    assert_eq!(terminal.hos2_saved_status_code(), None);
+
+    // Every valid terminal status maps exactly to the pre-existing HOS2 code.
+    for (status, code) in [
+        (DeliveryStatus::Ok, 0),
+        (DeliveryStatus::InvalidInput, 1),
+        (DeliveryStatus::PermissionDenied, 2),
+        (DeliveryStatus::StaleHandle, 3),
+        (DeliveryStatus::Revoked, 4),
+        (DeliveryStatus::Conflict, 5),
+        (DeliveryStatus::ParentLimit, 5),
+        (DeliveryStatus::ResourceExhausted, 6),
+        (DeliveryStatus::Unsupported, 7),
+        (DeliveryStatus::Indeterminate, 8),
+        (DeliveryStatus::Busy, 9),
+        (DeliveryStatus::OutOfOrder, 10),
+        (DeliveryStatus::Retired, 11),
+    ] {
+        terminal.status = Some(status);
+        assert_eq!(terminal.hos2_saved_status_code(), Some(code));
+    }
+}
+
+#[test]
 fn out_of_order_does_not_consume_sequence_and_wrong_history_owner_cannot_retire() {
     let (core, owner_authority) =
-        ControlCore::with_capacity_for_owner(boot(13), space(13), 32, owner(1300)).unwrap();
+        ControlCore::with_original_owner(boot(13), space(13), owner(1300)).unwrap();
     let target = root(13, CPU_PERIOD_NS);
     let who = publisher(130);
     assert!(matches!(
@@ -386,6 +447,83 @@ fn parent_domain_caps_child_budget() {
 }
 
 #[test]
+fn duplicate_sibling_id_cannot_hide_a_larger_child_budget() {
+    let parent = root(910, 90);
+    let first = with_parent(domain(911), object(911), &parent, 80).unwrap();
+    assert_eq!(
+        with_parent(domain(911), object(912), &parent, 10).err(),
+        Some(ResourceError::DuplicateDomainId)
+    );
+    assert_eq!(
+        with_parent(domain(910), object(913), &parent, 10).err(),
+        Some(ResourceError::DuplicateDomainId)
+    );
+    let grant = parent.grant(publisher(910)).unwrap();
+    assert_eq!(
+        parent.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 10, 1),
+        Err(ResourceError::ParentConstraint)
+    );
+    assert_eq!(first.budget().cap_ns, 80);
+    assert_eq!(parent.budget().cap_ns, 90);
+}
+
+#[test]
+fn child_registration_and_parent_cap_update_cannot_cross() {
+    for i in 0..128_u128 {
+        let parent = root(920 + i, 90);
+        let child_parent = parent.clone();
+        let reduce_parent = parent.clone();
+        let who = publisher(920 + i);
+        let barrier = Arc::new(Barrier::new(3));
+        let create_barrier = Arc::clone(&barrier);
+        let shrink_barrier = Arc::clone(&barrier);
+        let create = thread::spawn(move || {
+            create_barrier.wait();
+            with_parent(domain(1100 + i), object(1100 + i), &child_parent, 80)
+        });
+        let shrink = thread::spawn(move || {
+            let grant = reduce_parent.grant(who).unwrap();
+            shrink_barrier.wait();
+            reduce_parent.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 10, 1)
+        });
+        barrier.wait();
+        let child = create.join().unwrap();
+        let reduced = shrink.join().unwrap();
+        match (child, reduced) {
+            (Ok(child), Err(ResourceError::ParentConstraint)) => {
+                assert_eq!(child.budget().cap_ns, 80);
+                assert_eq!(parent.budget().cap_ns, 90);
+            }
+            (Err(ResourceError::ParentConstraint), Ok(receipt)) => {
+                assert_eq!(receipt.revision, 2);
+                assert_eq!(parent.budget().cap_ns, 10);
+            }
+            _ => panic!("parent cap and child registration must linearize"),
+        }
+    }
+}
+
+#[test]
+fn budget_update_at_period_boundary_reports_current_window_consumption() {
+    let target = root(909, 90);
+    target.charge_cpu(60, 10).unwrap();
+    let who = publisher(909);
+    let grant = target.grant(who).unwrap();
+    let applied = target
+        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 90, CPU_PERIOD_NS + 7)
+        .unwrap();
+    assert_eq!(applied.consumed_at_apply_ns, 0);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 8).window_consumed_ns, 0);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 8).cumulative_cpu_ns, 60);
+    target.charge_cpu(25, CPU_PERIOD_NS + 9).unwrap();
+    let same_cap = target
+        .install_budget_for_host_model(&target.grant(who).unwrap(), 2, CPU_PERIOD_NS, 90, CPU_PERIOD_NS + 10)
+        .unwrap();
+    assert_eq!(same_cap.consumed_at_apply_ns, 25);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 11).window_consumed_ns, 25);
+}
+
+#[test]
 fn child_cpu_charge_is_counted_once_in_each_ancestor_and_parent_exhaustion_is_atomic() {
     let parent = root(601, 10);
     let child = with_parent(domain(602), object(602), &parent, 10).unwrap();
@@ -408,7 +546,7 @@ fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_availab
         ControlCore::with_capacity_for_owner(boot(7), space(7), 4, owner(9000)).unwrap();
     let target = root(8, CPU_PERIOD_NS);
     let who = publisher(70);
-    let view = core.delivery_view();
+    let view = core.delivery_view_for(owner(9000)).unwrap();
     let mut first = None;
     for sequence in 1..=4 {
         let grant = target.grant(who).unwrap();
@@ -474,7 +612,7 @@ fn ten_thousand_writes_are_bounded_and_old_sequences_do_not_reappear() {
         ControlCore::with_capacity_for_owner(boot(8), space(8), 32, owner(9000)).unwrap();
     let target = root(9, CPU_PERIOD_NS);
     let who = publisher(80);
-    let view = core.delivery_view();
+    let view = core.delivery_view_for(owner(9000)).unwrap();
     for sequence in 1..=10_000_u64 {
         let grant = target.grant(who).unwrap();
         let token = core
@@ -614,7 +752,7 @@ fn concurrent_query_publish_and_retire_observe_whole_states() {
     let token = core
         .reserve(request(1, target.grant(who).unwrap(), 1, 30), who)
         .unwrap();
-    let view = core.delivery_view();
+    let view = core.delivery_view_for(owner(9000)).unwrap();
     let barrier = Arc::new(Barrier::new(2));
     let query_core = Arc::clone(&core);
     let query_view = view.clone();
@@ -646,8 +784,7 @@ fn concurrent_query_publish_and_retire_observe_whole_states() {
     let published = publish.join().unwrap();
     query.join().unwrap();
     assert_eq!(published.status, Some(DeliveryStatus::Ok));
-    let retired = core.retire_through(&view, ack(&core, 1), &owner_authority)
-        .unwrap();
+    let retired = core.retire_through(&view, ack(&core, 1), &owner_authority).unwrap();
     assert_eq!(retired.retired_through, 1);
     assert_eq!(
         core.query_delivery(&view, 1).unwrap().state,
@@ -666,7 +803,7 @@ fn query_and_retire_race_has_only_terminal_or_retired_observations() {
         .reserve(request(1, target.grant(who).unwrap(), 1, 30), who)
         .unwrap();
     core.commit(&token, who, 1).unwrap();
-    let view = core.delivery_view();
+    let view = core.delivery_view_for(owner(9000)).unwrap();
     let barrier = Arc::new(Barrier::new(2));
     let query_core = Arc::clone(&core);
     let query_view = view.clone();
@@ -699,53 +836,6 @@ fn query_and_retire_race_has_only_terminal_or_retired_observations() {
 }
 
 #[test]
-fn fabricated_observer_receipt_cannot_retire_without_bootstrap_owner_authority() {
-    let (core, original_owner) =
-        ControlCore::with_original_owner(boot(901), space(901), owner(9000)).unwrap();
-    // Same public namespace bytes but a different Arc-backed namespace.
-    // A newly constructed ControlCore may not mint retirement authority for
-    // existing deliveries even if the asserted owner and digest match.
-    let (_alien_core, alien_owner) =
-        ControlCore::with_original_owner(boot(901), space(901), owner(9000)).unwrap();
-
-    let target = root(901, CPU_PERIOD_NS);
-    let who = publisher(901);
-    let token = core.reserve(
-        request(1, target.grant(who).unwrap(), 1, 20), who,
-    ).unwrap();
-    core.commit(&token, who, 20).unwrap();
-    let observer = core.delivery_view();
-    assert_eq!(
-        core.query_delivery(&observer, 1).unwrap().state,
-        DeliveryState::Terminal
-    );
-
-    // Neither a matching owner ID plus invented digest nor an owner handle
-    // issued for a separate ControlCore grants access to this namespace.
-    assert_eq!(
-        core.retire_through(&observer, ack(&core, 1), &alien_owner),
-        Err(DeliveryError::PermissionDenied)
-    );
-    let invented = HistoryAck::from_owner_receipt(
-        core.identity(), 1, OwnerReceipt::new(owner(9001), [9; 32]),
-    ).unwrap();
-    assert_eq!(
-        core.retire_through(&observer, invented, &original_owner),
-        Err(DeliveryError::PermissionDenied)
-    );
-    assert_eq!(core.window_len(), 1);
-    assert_eq!(
-        core.query_delivery(&observer, 1).unwrap().state,
-        DeliveryState::Terminal
-    );
-    // The trusted owner's explicit in-memory capability is necessary, but
-    // A07 must separately validate durability at the original Hepta owner.
-    let result = core.retire_through(&observer, ack(&core, 1), &original_owner)
-        .unwrap();
-    assert_eq!(result.retired_through, 1);
-}
-
-#[test]
 fn same_identity_different_core_instances_cannot_use_each_others_tokens() {
     let first = ControlCore::new(boot(700), space(700));
     let second = ControlCore::new(boot(700), space(700));
@@ -768,4 +858,278 @@ fn same_identity_different_core_instances_cannot_use_each_others_tokens() {
         ),
         Err(DeliveryError::PermissionDenied)
     );
+}
+
+#[test]
+fn same_d_different_authorized_publisher_is_a_conflict() {
+    let core = ControlCore::new(boot(750), space(750));
+    let target = root(750, CPU_PERIOD_NS);
+    let first = publisher(751);
+    let second = publisher(752);
+    let token = core
+        .reserve(request(1, target.grant(first).unwrap(), 1, 50), first)
+        .unwrap();
+    assert_eq!(
+        core.reserve(request(1, target.grant(second).unwrap(), 1, 50), second)
+            .err(),
+        Some(DeliveryError::Conflict)
+    );
+    assert_eq!(
+        core.reserve_or_get(request(1, target.grant(second).unwrap(), 1, 50), second)
+            .err(),
+        Some(DeliveryError::Conflict)
+    );
+    assert_eq!(
+        core.commit(&token, first, 1).unwrap().status,
+        Some(DeliveryStatus::Ok)
+    );
+    assert_eq!(target.revision(), 2);
+}
+
+#[test]
+fn read_only_history_view_cannot_advance_the_ack_frontier() {
+    let (core, owner_authority) =
+        ControlCore::with_original_owner(boot(760), space(760), owner(9000)).unwrap();
+    let target = root(760, CPU_PERIOD_NS);
+    let who = publisher(761);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+        .unwrap();
+    core.commit(&token, who, 1).unwrap();
+    let observer = core.delivery_view();
+    assert_eq!(
+        core.query_delivery(&observer, 1).unwrap().state,
+        DeliveryState::Terminal
+    );
+    assert_eq!(
+        core.retire_through(&observer, ack(&core, 1), &owner_authority),
+        Err(DeliveryError::PermissionDenied)
+    );
+    assert_eq!(core.retired_through(), 0);
+    let owner_view = core.delivery_view_for(owner(9000)).unwrap();
+    assert_eq!(
+        core.retire_through(&owner_view, ack(&core, 1), &owner_authority)
+            .unwrap()
+            .retired_through,
+        1
+    );
+}
+
+#[test]
+fn forged_ack_or_foreign_owner_handle_cannot_retire_terminal_history() {
+    let (core, original_owner) =
+        ControlCore::with_original_owner(boot(940), space(940), owner(9000)).unwrap();
+    let (_, alien_owner) =
+        ControlCore::with_original_owner(boot(940), space(940), owner(9000)).unwrap();
+    let target = root(940, CPU_PERIOD_NS);
+    let who = publisher(940);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 30), who)
+        .unwrap();
+    core.commit(&token, who, 1).unwrap();
+    let view = core.delivery_view_for(owner(9000)).unwrap();
+    assert_eq!(
+        core.retire_through(&view, ack(&core, 1), &alien_owner),
+        Err(DeliveryError::PermissionDenied)
+    );
+    let forged = HistoryAck::from_owner_receipt(
+        core.identity(), 1, OwnerReceipt::new(owner(9001), [1; 32]),
+    ).unwrap();
+    assert_eq!(
+        core.retire_through(&view, forged, &original_owner),
+        Err(DeliveryError::PermissionDenied)
+    );
+    assert_eq!(core.window_len(), 1);
+    assert_eq!(
+        core.query_delivery(&view, 1).unwrap().state,
+        DeliveryState::Terminal
+    );
+    assert_eq!(
+        core.retire_through(&view, ack(&core, 1), &original_owner)
+            .unwrap()
+            .retired_through,
+        1
+    );
+    core.lose_history();
+    assert_eq!(
+        core.retire_through(&view, ack(&core, 1), &original_owner),
+        Err(DeliveryError::HistoryLost)
+    );
+}
+
+#[test]
+fn namespace_loss_and_commit_race_never_reports_lost_after_mutation() {
+    for n in 0..128_u128 {
+        let core = Arc::new(ControlCore::new(boot(800 + n), space(800 + n)));
+        let target = root(800 + n, CPU_PERIOD_NS);
+        let who = publisher(2000 + n);
+        let token = core
+            .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+            .unwrap();
+        let start = Arc::new(Barrier::new(3));
+        let commit_core = Arc::clone(&core);
+        let commit_barrier = Arc::clone(&start);
+        let commit = thread::spawn(move || {
+            commit_barrier.wait();
+            commit_core.commit(&token, who, 1)
+        });
+        let loss_core = Arc::clone(&core);
+        let loss_barrier = Arc::clone(&start);
+        let loss = thread::spawn(move || {
+            loss_barrier.wait();
+            loss_core.lose_history();
+        });
+        start.wait();
+        let outcome = commit.join().unwrap();
+        loss.join().unwrap();
+        match outcome {
+            Ok(observed) => {
+                assert_eq!(observed.status, Some(DeliveryStatus::Ok));
+                assert_eq!(target.revision(), 2);
+            }
+            Err(DeliveryError::HistoryLost) => assert_eq!(target.revision(), 1),
+            _ => panic!("unexpected post-loss result"),
+        }
+        assert_eq!(
+            core.query_delivery(&core.delivery_view(), 1).unwrap().state,
+            DeliveryState::HistoryLost
+        );
+    }
+}
+#[test]
+fn stale_boottime_samples_never_replenish_window_budget() {
+    // A 100ns cap with 30ns used leaves 70ns, so a 71ns charge must fail.
+    let target = root(40_000, 100);
+    let who = publisher(40_001);
+    target.charge_cpu(30, CPU_PERIOD_NS + 30).unwrap();
+    assert_eq!(target.charge_cpu(20, 20), Err(ResourceError::ClockRollback));
+    let grant = target.grant(who).unwrap();
+    assert_eq!(
+        target.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 20, 20),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(target.try_usage(20), Err(ResourceError::ClockRollback));
+    let clamped = target.usage(10);
+    assert_eq!(clamped.sample_boottime_ns, CPU_PERIOD_NS + 30);
+    assert_eq!(clamped.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(clamped.window_consumed_ns, 30);
+    assert_eq!(target.revision(), 1);
+    assert_eq!(
+        target.charge_cpu(71, CPU_PERIOD_NS + 31).unwrap_err(),
+        ResourceError::Exhausted
+    );
+}
+
+#[test]
+fn budget_installation_advances_only_on_real_period_boundaries() {
+    let target = root(50_000, 90);
+    let who = publisher(50_001);
+    target.charge_cpu(40, 40).unwrap();
+    let grant = target.grant(who).unwrap();
+    let unchanged = target
+        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 90, 50)
+        .unwrap();
+    assert_eq!(unchanged.consumed_at_apply_ns, 40);
+    let next = target
+        .install_budget_for_host_model(
+            &grant, 2, CPU_PERIOD_NS, 20, CPU_PERIOD_NS + 1
+        )
+        .unwrap();
+    assert_eq!(next.consumed_at_apply_ns, 0);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 2).window_consumed_ns, 0);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 2).cumulative_cpu_ns, 40);
+}
+
+#[test]
+fn concurrent_publish_observe_never_yields_partial_terminal_metadata() {
+    let core = Arc::new(ControlCore::new(boot(60_000), space(60_000)));
+    let target = root(60_000, CPU_PERIOD_NS);
+    let who = publisher(60_001);
+    let token = core.reserve(request(1, target.grant(who).unwrap(), 1, 30), who).unwrap();
+    let view = core.delivery_view();
+    let start = Arc::new(Barrier::new(3));
+    let query_start = Arc::clone(&start);
+    let query_core = Arc::clone(&core);
+    let query = thread::spawn(move || {
+        query_start.wait();
+        for _ in 0..20_000 {
+            let observed = query_core.query_delivery(&view, 1).unwrap();
+            match observed.state {
+                DeliveryState::Reserved => {
+                    assert_eq!(observed.status, None);
+                    assert_eq!(observed.saved_revision, None);
+                    assert_eq!(observed.effective_ns, None);
+                }
+                DeliveryState::Terminal => {
+                    assert_eq!(observed.status, Some(DeliveryStatus::Ok));
+                    assert_eq!(observed.stable_object_id, Some(object(60_000)));
+                    assert_eq!(observed.previous_revision, Some(1));
+                    assert_eq!(observed.saved_revision, Some(2));
+                    assert_eq!(observed.effective_ns, Some(77));
+                    assert_eq!(observed.consumed_ns, Some(9));
+                    return;
+                }
+                _ => panic!("no retire/loss in this publication race"),
+            }
+            thread::yield_now();
+        }
+    });
+    let publish_start = Arc::clone(&start);
+    let publish_core = Arc::clone(&core);
+    let publish = thread::spawn(move || {
+        publish_start.wait();
+        publish_core.publish(&token, who, PublishOutcome::Success {
+            stable_object_id: object(60_000),
+            previous_revision: 1,
+            saved_revision: 2,
+            effective_ns: 77,
+            consumed_ns: 9,
+        })
+    });
+    start.wait();
+    let terminal = publish.join().unwrap().unwrap();
+    query.join().unwrap();
+    assert_eq!(terminal.consumed_ns, Some(9));
+    let final_observation = core.query_delivery(&core.delivery_view(), 1).unwrap();
+    assert_eq!(final_observation, terminal);
+}
+
+#[test]
+fn copyout_retry_racing_with_retirement_never_reopens_a_delivery() {
+    for n in 0..96_u128 {
+        let (control, authority) = ControlCore::with_original_owner(
+            boot(61_000 + n), space(61_000 + n), owner(9000),
+        ).unwrap();
+        let core = Arc::new(control);
+        let target = root(61_000 + n, CPU_PERIOD_NS);
+        let who = publisher(62_000 + n);
+        let grant = target.grant(who).unwrap();
+        let token = core.reserve(request(1, grant.clone(), 1, 30), who).unwrap();
+        core.commit(&token, who, 1).unwrap();
+        let view = core.delivery_view_for(owner(9000)).unwrap();
+        let start = Arc::new(Barrier::new(3));
+        let retry_start = Arc::clone(&start);
+        let retry_core = Arc::clone(&core);
+        let retry = thread::spawn(move || {
+            retry_start.wait();
+            retry_core.reserve_or_get(request(1, grant, 1, 30), who)
+        });
+        let retire_start = Arc::clone(&start);
+        let retire_core = Arc::clone(&core);
+        let retire = thread::spawn(move || {
+            retire_start.wait();
+            retire_core.retire_through(&view, ack(&retire_core, 1), &authority)
+        });
+        start.wait();
+        match retry.join().unwrap() {
+            Ok(ReserveAttempt::Existing(observed)) => {
+                assert_eq!(observed.state, DeliveryState::Terminal);
+            }
+            Err(DeliveryError::Retired) => {}
+            _ => panic!("retry must observe terminal or permanent retirement"),
+        }
+        assert_eq!(retire.join().unwrap().unwrap().retired_through, 1);
+        assert_eq!(target.revision(), 2);
+        assert_eq!(core.window_len(), 0);
+    }
 }

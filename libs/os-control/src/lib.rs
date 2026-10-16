@@ -297,6 +297,7 @@ struct DomainState {
     consumed_ns: u64,
     window_consumed_ns: u64,
     window_start_ns: u64,
+    last_boottime_ns: u64, // monotonic gate timestamp; no clock-rewind refresh
     event_sequence: u64,
     dropped_events: u64,
     alive: bool,
@@ -320,6 +321,7 @@ pub struct RevokeReceipt {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ResourceError {
     InvalidIdentity,
+    DuplicateDomainId,
     InvalidBudget,
     InvalidRevision,
     RevisionConflict { expected: u64, actual: u64 },
@@ -329,6 +331,7 @@ pub enum ResourceError {
     Exhausted,
     Overflow,
     MissingParent,
+    ClockRollback,
 }
 
 impl ResourceDomain {
@@ -343,9 +346,26 @@ impl ResourceDomain {
         }
         let budget = Budget::new(initial_cap_ns)?;
         if let Some(parent) = parent {
+            // Parent cap reduction and child creation share one mutation gate.
+            let _gate = lock_unpoisoned(&parent.inner.gate);
             let parent_state = parent.snapshot_state();
+            if !parent_state.alive {
+                return Err(ResourceError::Revoked);
+            }
             if initial_cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
+            }
+            // A05/A06 must supply globally unique IDs outside this tree.
+            let mut ancestor = Some(parent);
+            while let Some(node) = ancestor {
+                if node.id() == id {
+                    return Err(ResourceError::DuplicateDomainId);
+                }
+                ancestor = node.inner.parent.as_ref();
+            }
+            let mut children = lock_unpoisoned(&parent.inner.children);
+            if children.contains_key(&id) {
+                return Err(ResourceError::DuplicateDomainId);
             }
             let inner = Arc::new(ResourceDomainInner {
                 gate: Arc::clone(&parent.inner.gate),
@@ -358,6 +378,7 @@ impl ResourceDomain {
                     consumed_ns: 0,
                     window_consumed_ns: 0,
                     window_start_ns: 0,
+                    last_boottime_ns: 0,
                     event_sequence: 0,
                     dropped_events: 0,
                     alive: true,
@@ -367,7 +388,7 @@ impl ResourceDomain {
                 parent: Some(parent.clone()),
                 children: Mutex::new(BTreeMap::new()),
             });
-            lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
+            children.insert(id, initial_cap_ns);
             return Ok(Self { inner });
         }
         Ok(Self {
@@ -382,6 +403,7 @@ impl ResourceDomain {
                     consumed_ns: 0,
                     window_consumed_ns: 0,
                     window_start_ns: 0,
+                    last_boottime_ns: 0,
                     event_sequence: 0,
                     dropped_events: 0,
                     alive: true,
@@ -443,11 +465,10 @@ impl ResourceDomain {
     pub fn reactivate_for_host_model(&self) -> Result<(), ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
         let mut state = lock_unpoisoned(&self.inner.state);
+        // Failure to advance epoch must not re-enable authorization.
+        let next_epoch = state.grant_epoch.checked_add(1).ok_or(ResourceError::Overflow)?;
+        state.grant_epoch = next_epoch;
         state.alive = true;
-        state.grant_epoch = state
-            .grant_epoch
-            .checked_add(1)
-            .ok_or(ResourceError::Overflow)?;
         Ok(())
     }
 
@@ -460,19 +481,36 @@ impl ResourceDomain {
         self.snapshot_state().user_paused
     }
 
+    /// Legacy host sampler: never backdate or refresh the quota window.
+    /// The returned sample time reflects any monotonic clamp.
     pub fn usage(&self, sample_boottime_ns: u64) -> UsageSnapshot {
         let _gate = lock_unpoisoned(&self.inner.gate);
         let mut state = lock_unpoisoned(&self.inner.state);
-        let window_start_ns =
-            (sample_boottime_ns / state.budget.period_ns) * state.budget.period_ns;
-        if window_start_ns != state.window_start_ns {
-            state.window_start_ns = window_start_ns;
+        let effective_ns = sample_boottime_ns.max(state.last_boottime_ns);
+        Self::snapshot_usage_at(&mut state, effective_ns)
+    }
+
+    /// A06 integration should reject stale BOOTTIME samples explicitly.
+    pub fn try_usage(&self, sample_boottime_ns: u64) -> Result<UsageSnapshot, ResourceError> {
+        let _gate = lock_unpoisoned(&self.inner.gate);
+        let mut state = lock_unpoisoned(&self.inner.state);
+        if sample_boottime_ns < state.last_boottime_ns {
+            return Err(ResourceError::ClockRollback);
+        }
+        Ok(Self::snapshot_usage_at(&mut state, sample_boottime_ns))
+    }
+
+    fn snapshot_usage_at(state: &mut DomainState, now_ns: u64) -> UsageSnapshot {
+        let window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
+        if window_start > state.window_start_ns {
+            state.window_start_ns = window_start;
             state.window_consumed_ns = 0;
         }
+        state.last_boottime_ns = now_ns;
         UsageSnapshot {
             stable_object_id: state.stable_object_id,
             revision: state.revision,
-            sample_boottime_ns,
+            sample_boottime_ns: now_ns,
             cumulative_cpu_ns: state.consumed_ns,
             window_start_ns: state.window_start_ns,
             window_consumed_ns: state.window_consumed_ns,
@@ -495,8 +533,12 @@ impl ResourceDomain {
         let parent = self.inner.parent.clone();
         {
             let mut state = lock_unpoisoned(&self.inner.state);
+            if now_ns < state.last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
+            }
+            state.last_boottime_ns = now_ns;
             let new_window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
-            if new_window_start != state.window_start_ns {
+            if new_window_start > state.window_start_ns {
                 state.window_start_ns = new_window_start;
                 state.window_consumed_ns = 0;
             }
@@ -562,6 +604,9 @@ impl ResourceDomain {
         if grant.epoch != state.grant_epoch {
             return Err(ResourceError::GrantEpochMismatch);
         }
+        if now_ns < state.last_boottime_ns {
+            return Err(ResourceError::ClockRollback);
+        }
         if !Arc::ptr_eq(&grant.domain.inner, &self.inner) {
             return Err(ResourceError::GrantEpochMismatch);
         }
@@ -583,15 +628,19 @@ impl ResourceDomain {
                 return Err(ResourceError::ParentConstraint);
             }
         }
-        if self
-            .inner
-            .children
-            .lock()
-            .map(|children| children.values().any(|child_cap| *child_cap > cap_ns))
-            .unwrap_or(false)
+        if lock_unpoisoned(&self.inner.children)
+            .values()
+            .any(|child_cap| *child_cap > cap_ns)
         {
             return Err(ResourceError::ParentConstraint);
         }
+        // Reconcile at a genuine boundary without recharging same-cap writes.
+        let window_start = (now_ns / period_ns) * period_ns;
+        if window_start > state.window_start_ns {
+            state.window_start_ns = window_start;
+            state.window_consumed_ns = 0;
+        }
+        state.last_boottime_ns = now_ns;
         let previous_revision = state.revision;
         state.revision = state
             .revision
@@ -627,43 +676,13 @@ pub fn with_parent(
     parent: &ResourceDomain,
     initial_cap_ns: u64,
 ) -> Result<ResourceDomain, ResourceError> {
-    let budget = Budget::new(initial_cap_ns)?;
-    let parent_state = parent.snapshot_state();
-    if initial_cap_ns > parent_state.budget.cap_ns {
-        return Err(ResourceError::ParentConstraint);
-    }
-    if !id.is_nonzero() || !stable_object_id.is_nonzero() {
-        return Err(ResourceError::InvalidIdentity);
-    }
-    let child = ResourceDomain {
-        inner: Arc::new(ResourceDomainInner {
-            gate: Arc::clone(&parent.inner.gate),
-            state: Mutex::new(DomainState {
-                id,
-                stable_object_id,
-                parent: Some(parent_state.id),
-                revision: 1,
-                budget,
-                consumed_ns: 0,
-                window_consumed_ns: 0,
-                window_start_ns: 0,
-                event_sequence: 0,
-                dropped_events: 0,
-                alive: true,
-                grant_epoch: 1,
-                user_paused: false,
-            }),
-            parent: Some(parent.clone()),
-            children: Mutex::new(BTreeMap::new()),
-        }),
-    };
-    lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
-    Ok(child)
+    ResourceDomain::new(id, stable_object_id, Some(parent), initial_cap_ns)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RequestBinding {
     pub sequence: u64,
+    pub publisher: PublisherId,
     pub target: ResourceDomainId,
     pub stable_object_id: StableObjectId,
     pub expected_revision: u64,
@@ -703,6 +722,7 @@ impl DeliveryRequest {
     pub fn binding(&self) -> RequestBinding {
         RequestBinding {
             sequence: self.sequence,
+            publisher: self.grant.principal,
             target: self.grant.domain.id(),
             stable_object_id: self.grant.domain.stable_object_id(),
             expected_revision: self.expected_revision,
@@ -731,6 +751,28 @@ pub enum DeliveryStatus {
     ParentLimit,
 }
 
+impl DeliveryStatus {
+    /// Numeric HOS2 status value without depending on the A02 codec crate.
+    /// ParentLimit is represented by the wire-level Conflict status because
+    /// HOS2 0.3 has no separate parent-constraint code.
+    pub const fn hos2_code(self) -> u16 {
+        match self {
+            Self::Ok => 0,
+            Self::InvalidInput => 1,
+            Self::PermissionDenied => 2,
+            Self::StaleHandle => 3,
+            Self::Revoked => 4,
+            Self::Conflict | Self::ParentLimit => 5,
+            Self::ResourceExhausted => 6,
+            Self::Unsupported => 7,
+            Self::Indeterminate => 8,
+            Self::Busy => 9,
+            Self::OutOfOrder => 10,
+            Self::Retired => 11,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DeliveryState {
     Reserved,
@@ -738,6 +780,19 @@ pub enum DeliveryState {
     Retired,
     NotSeen,
     HistoryLost,
+}
+
+impl DeliveryState {
+    /// Numeric QueryDelivery state value matching HOS2 0.3.
+    pub const fn hos2_code(self) -> u16 {
+        match self {
+            Self::Reserved => 0,
+            Self::Terminal => 1,
+            Self::Retired => 2,
+            Self::NotSeen => 3,
+            Self::HistoryLost => 4,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -753,6 +808,21 @@ pub struct DeliveryObservation {
 }
 
 impl DeliveryObservation {
+    /// Translate only a consistent (state, saved_status) pair to HOS2.
+    ///
+    /// A public host-model observation can be modified by a caller, so
+    /// terminal without a saved outcome or non-terminal with a saved outcome
+    /// must fail closed rather than become a fabricated successful terminal.
+    /// The A02 wire codec separately validates response metadata and lengths.
+    pub const fn hos2_saved_status_code(self) -> Option<u16> {
+        match (self.state, self.status) {
+            (DeliveryState::Terminal, Some(status)) => Some(status.hos2_code()),
+            (DeliveryState::Terminal, None) => None,
+            (_, None) => Some(0),
+            (_, Some(_)) => None,
+        }
+    }
+
     fn reserved(id: DeliveryId) -> Self {
         Self {
             state: DeliveryState::Reserved,
@@ -830,6 +900,9 @@ struct Slot {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum SlotState {
     Reserved,
+    // Namespace destruction fences slots even if a token passed an earlier
+    // liveness check.  A fenced reservation can never mutate the resource.
+    Fenced,
     Terminal(PublishedResult),
 }
 
@@ -948,10 +1021,8 @@ impl HistoryAck {
     }
 }
 
-/// Retirement requires this non-forgeable, namespace-bound bootstrap handle.
-/// Only the existing trusted Hepta operation owner receives it from the
-/// privileged initial constructor. This is an in-memory permission object,
-/// NOT a second durable operation ledger or evidence of fsync by itself.
+/// Original Hepta owner capability minted only with a newly initialized
+/// namespace. Non-Clone and bound to the in-memory namespace instance.
 pub struct OriginalOwnerAuthority {
     namespace: Arc<NamespaceState>,
     owner: OwnerId,
@@ -1002,13 +1073,8 @@ impl ControlCore {
         Self::with_capacity(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY)
     }
 
-    /// Construct an owner-capable namespace during privileged boot handoff.
-    /// A later observer of ControlCore/DeliveryView cannot mint this handle
-    /// for the *existing* namespace. The caller must give the handle only to
-    /// the original Hepta operation owner AFTER authenticating that owner.
-    ///
-    /// A receipt digest is a reference to owner-persisted facts; this model
-    /// cannot prove durable storage. A07 must verify it at the existing owner.
+    /// The trusted bootstrap must authenticate the existing Hepta owner
+    /// before handing it the non-Clone retirement capability.
     pub fn with_original_owner(
         boot_id: BootId,
         cap_space_id: CapSpaceId,
@@ -1017,6 +1083,8 @@ impl ControlCore {
         Self::with_capacity_for_owner(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY, owner)
     }
 
+    /// The owner separately proves K journal durability; this memory handle
+    /// alone is not an fsync certificate or a kernel credential.
     pub fn with_capacity_for_owner(
         boot_id: BootId,
         cap_space_id: CapSpaceId,
@@ -1028,12 +1096,12 @@ impl ControlCore {
         }
         let core = Self::with_capacity(boot_id, cap_space_id, capacity);
         let generation = lock_unpoisoned(&core.namespace.state).generation;
-        let capability = OriginalOwnerAuthority {
+        let authority = OriginalOwnerAuthority {
             namespace: Arc::clone(&core.namespace),
             owner,
             generation,
         };
-        Ok((core, capability))
+        Ok((core, authority))
     }
 
     pub fn with_capacity(boot_id: BootId, cap_space_id: CapSpaceId, capacity: usize) -> Self {
@@ -1116,7 +1184,10 @@ impl ControlCore {
         }
         if request.sequence < ns.next_sequence {
             if let Some(slot) = ns.slots.get(&request.sequence) {
-                if slot.binding == request.binding() {
+                // A globally unique D binds the publisher as well as its
+                // canonical payload and stable target. Neither another
+                // publisher nor another target may claim the saved result.
+                if slot.publisher == publisher && slot.binding == request.binding() {
                     let observation =
                         observation_from_slot(self.identity(), request.sequence, slot);
                     return match observation.state {
@@ -1178,13 +1249,19 @@ impl ControlCore {
             Err(DeliveryError::Busy | DeliveryError::TerminalImmutable) => {
                 let view = self.delivery_view();
                 let observation = self.query_delivery(&view, sequence)?;
-                if observation.state == DeliveryState::Reserved
-                    || observation.state == DeliveryState::Terminal
-                        && observation.id.sequence == binding.sequence
-                {
-                    Ok(ReserveAttempt::Existing(observation))
-                } else {
-                    Err(DeliveryError::Conflict)
+                if observation.id.sequence != binding.sequence {
+                    return Err(DeliveryError::Conflict);
+                }
+                // Retire/loss may win between reserve and read. Both are
+                // permanent no-replay states, never new operations.
+                match observation.state {
+                    DeliveryState::Reserved | DeliveryState::Terminal => {
+                        Ok(ReserveAttempt::Existing(observation))
+                    }
+                    DeliveryState::Retired => Err(DeliveryError::Retired),
+                    DeliveryState::HistoryLost | DeliveryState::NotSeen => {
+                        Err(DeliveryError::HistoryLost)
+                    }
                 }
             }
             Err(error) => Err(error),
@@ -1221,10 +1298,6 @@ impl ControlCore {
         }
     }
 
-    /// Retire a contiguous terminal prefix only with the original owner's
-    /// bootstrap authority. An observer's delivery view and caller-invented
-    /// receipt digest cannot authorize retirement. Only the trusted owner
-    /// adapter may invoke this after verifying its existing durable K record.
     pub fn retire_through(
         &self,
         view: &DeliveryView,
@@ -1236,10 +1309,8 @@ impl ControlCore {
             || !Arc::ptr_eq(&view.namespace, &self.namespace)
             || !Arc::ptr_eq(&owner_authority.namespace, &self.namespace)
             || owner_authority.owner != ack.receipt.owner
-            || view
-                .owner
-                .map(|owner| owner != ack.receipt.owner)
-                .unwrap_or(false)
+            // An observation-only DeliveryView never grants history.ack.
+            || view.owner != Some(ack.receipt.owner)
         {
             return Err(DeliveryError::PermissionDenied);
         }
@@ -1287,6 +1358,17 @@ impl ControlCore {
     /// unknown and can never be replayed through this object.
     pub fn lose_history(&self) {
         let mut ns = lock_unpoisoned(&self.namespace.state);
+        // The namespace lock prevents new reservations, while each slot lock
+        // serializes this fence against in-flight commit/publish. A commit
+        // that already owns its slot finishes before loss takes effect; a
+        // commit that has only passed token_is_live observes Fenced instead
+        // of applying an effect after loss. No resource lock is taken here.
+        for slot in ns.slots.values() {
+            let mut state = lock_unpoisoned(&slot.state);
+            if matches!(*state, SlotState::Reserved) {
+                *state = SlotState::Fenced;
+            }
+        }
         ns.history_lost = true;
         ns.slots.clear();
         ns.generation = ns.generation.saturating_add(1);
@@ -1352,6 +1434,7 @@ impl ControlCore {
         }
         let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
         match *slot_state {
+            SlotState::Fenced => return Err(DeliveryError::HistoryLost),
             SlotState::Terminal(_) => {
                 return Ok(observation_from_published(
                     self.identity(),
@@ -1393,12 +1476,16 @@ impl ControlCore {
             return Err(DeliveryError::HistoryLost);
         }
         let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
-        if let SlotState::Terminal(result) = *slot_state {
-            return Ok(observation_from_published(
-                self.identity(),
-                token.id().sequence,
-                result,
-            ));
+        match *slot_state {
+            SlotState::Fenced => return Err(DeliveryError::HistoryLost),
+            SlotState::Terminal(result) => {
+                return Ok(observation_from_published(
+                    self.identity(),
+                    token.id().sequence,
+                    result,
+                ));
+            }
+            SlotState::Reserved => {}
         }
         let binding = token.binding();
         let applied = token.reservation.request.grant.domain.apply_budget(
@@ -1481,13 +1568,17 @@ fn published_result_from_outcome(
 fn map_resource_error(error: ResourceError) -> DeliveryStatus {
     match error {
         ResourceError::Revoked | ResourceError::GrantEpochMismatch => DeliveryStatus::Revoked,
-        ResourceError::RevisionConflict { .. } => DeliveryStatus::Conflict,
+        ResourceError::RevisionConflict { .. } | ResourceError::DuplicateDomainId => {
+            DeliveryStatus::Conflict
+        },
         ResourceError::ParentConstraint => DeliveryStatus::ParentLimit,
         ResourceError::Exhausted => DeliveryStatus::ResourceExhausted,
         ResourceError::InvalidBudget
         | ResourceError::InvalidRevision
         | ResourceError::InvalidIdentity => DeliveryStatus::InvalidInput,
-        ResourceError::Overflow | ResourceError::MissingParent => DeliveryStatus::Indeterminate,
+        ResourceError::Overflow | ResourceError::MissingParent | ResourceError::ClockRollback => {
+            DeliveryStatus::Indeterminate
+        },
     }
 }
 
@@ -1498,6 +1589,10 @@ fn observation_from_slot(
 ) -> DeliveryObservation {
     match *lock_unpoisoned(&slot.state) {
         SlotState::Reserved => DeliveryObservation::reserved(DeliveryId {
+            namespace,
+            sequence,
+        }),
+        SlotState::Fenced => DeliveryObservation::history_lost(DeliveryId {
             namespace,
             sequence,
         }),
@@ -1556,10 +1651,22 @@ mod tests {
     }
 
     #[test]
+    fn reactivation_epoch_overflow_must_remain_revoked() {
+        let (_, _, domain_id, object, publisher, _) = ids(100);
+        let target = ResourceDomain::new(domain_id, object, None, CPU_PERIOD_NS).unwrap();
+        {
+            let mut state = lock_unpoisoned(&target.inner.state);
+            state.grant_epoch = u64::MAX;
+            state.alive = false;
+        }
+        assert_eq!(target.reactivate_for_host_model(), Err(ResourceError::Overflow));
+        assert!(matches!(target.grant(publisher), Err(ResourceError::Revoked)));
+    }
+
+    #[test]
     fn basic_commit_and_observation() {
         let (boot, space, domain_id, object, publisher, owner) = ids(1);
-        let (core, owner_authority) =
-            ControlCore::with_original_owner(boot, space, owner).unwrap();
+        let (core, owner_authority) = ControlCore::with_original_owner(boot, space, owner).unwrap();
         let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
         let grant = domain.grant(publisher).unwrap();
         let token = core
@@ -1569,7 +1676,7 @@ mod tests {
         assert_eq!(observed.state, DeliveryState::Terminal);
         assert_eq!(observed.status, Some(DeliveryStatus::Ok));
         assert_eq!(observed.saved_revision, Some(2));
-        let view = core.delivery_view();
+        let view = core.delivery_view_for(owner).unwrap();
         assert_eq!(core.query_delivery(&view, 1).unwrap(), observed);
         let ack =
             HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
