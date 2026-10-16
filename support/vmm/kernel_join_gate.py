@@ -7,6 +7,8 @@ It does not touch a device node, sysfs, BIOS, driver or running service.
 import argparse
 import hashlib
 import json
+import os
+import stat
 from pathlib import Path
 import re
 
@@ -30,11 +32,20 @@ def audit(root):
         try:
             # The Git checkout is trusted as a code source, not as a hardware
             # observation. Bounds prevent unexpectedly huge source reads.
-            if not path.is_file() or path.stat().st_size > MAX_SOURCE_BYTES:
-                raise ValueError("missing or oversized source")
-            raw = path.read_bytes()
-            if len(raw) > MAX_SOURCE_BYTES:
-                raise ValueError("source grew beyond bounded read")
+            flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK
+            fd = os.open(path, flags)
+            try:
+                before = os.fstat(fd)
+                if not stat.S_ISREG(before.st_mode) or before.st_size > MAX_SOURCE_BYTES:
+                    raise ValueError("missing, non-regular or oversized source")
+                raw = os.read(fd, MAX_SOURCE_BYTES + 1)
+                after = os.fstat(fd)
+                identity = lambda v: (v.st_dev, v.st_ino, v.st_size,
+                                      v.st_mtime_ns, v.st_ctime_ns)
+                if len(raw) > MAX_SOURCE_BYTES or len(raw) != after.st_size or identity(before) != identity(after):
+                    raise ValueError("source changed during bounded read")
+            finally:
+                os.close(fd)
             source[name] = raw.decode("utf-8")
             sha256[name] = hashlib.sha256(raw).hexdigest()
         except (OSError, UnicodeError, ValueError):

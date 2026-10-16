@@ -53,6 +53,19 @@ let dev = PciDeviceLocation::zero();
         self.assertTrue(result["observations"]["ostd_guest_mode_primitive_visible"])
         self.assertTrue(result["observations"]["ostd_dma_stream_primitive_visible"])
 
+    def test_symlink_and_fifo_sources_remain_blocked(self):
+        import os
+        source = self.root / gate.SOURCE_PATHS["iommu_dma"]
+        target = self.root / "real_source.rs"
+        source.rename(target)
+        source.symlink_to(target)
+        result = gate.audit(self.root)
+        self.assertIn("required_source_missing_or_unreadable:iommu_dma", result["hard_blockers"])
+        source.unlink()
+        os.mkfifo(source)
+        result = gate.audit(self.root)
+        self.assertIn("required_source_missing_or_unreadable:iommu_dma", result["hard_blockers"])
+
     def test_missing_source_is_explicit_blocker(self):
         (self.root / gate.SOURCE_PATHS["iommu_dma"]).unlink()
         record = gate.audit(self.root)
