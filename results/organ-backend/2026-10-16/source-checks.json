@@ -1,0 +1,38 @@
+[
+  {
+    "repository": "asterinas/asterinas",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "path": "kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+    "sha256": "b17ed4428dca9272a38e9921f51481106fe4c91689c9ba3155f2b8b13080cb34",
+    "anchor": "`cpu.max` is accepted but not enforced yet",
+    "finding": "cpu_cap_not_enforced",
+    "verification": "static_source"
+  },
+  {
+    "repository": "asterinas/asterinas",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "path": "kernel/core/src/fs/fs_impls/cgroupfs/controller/memory.rs",
+    "sha256": "5070f5c289105f37424f7ab08a56c14dee6585de71d4fe95360f6ba315830f4b",
+    "anchor": "TODO: Add support for writing attributes.",
+    "finding": "memory_control_unimplemented",
+    "verification": "static_source"
+  },
+  {
+    "repository": "asterinas/asterinas",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "path": "ostd/src/task/scheduler/mod.rs",
+    "sha256": "adbe8fbb06789c6a9cce19a53987e3355d2c8c50bc0449c6db23066acbd3f979",
+    "anchor": "This function can only be called once",
+    "finding": "scheduler_injection_not_hot_swap",
+    "verification": "static_source"
+  },
+  {
+    "repository": "TrillionniumFoundation/hepta-private-ci",
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "path": "codex-rs/hepta-control-plane/src/organ_runtime.rs",
+    "sha256": "a6e8c367f2ef701eb81c0a3130b800719b442801528652ff21832dc81529f471",
+    "git_blob": "fe7f29cc636f7cc572f815dcc90e07c911b116b5",
+    "finding": "TrustedReadOnlyOrganV1 forbids I/O and capabilities; not a hardware effect adapter",
+    "verification": "static_source"
+  }
+]
