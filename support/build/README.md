@@ -106,6 +106,18 @@ A later fatal-panic rejection guard passed its focused checks and a fresh
 coverage guest. These are separate results from the retained default UNIX
 failures and the initial TCP-only coverage failures. Their exact source
 snapshots and logs are in `evidence/2026-10-16-debug-coverage/osdk/`.
+The subsequent review fixes were tested again as a complete **22/22** run at
+`f473a2ccc8dfeaed1223e8478a19c79c90b323e4`, including the fatal-panic guard,
+finite Cargo argument parser, owned-session cleanup, and private connected
+monitor FD. The host suite passed 38 tests with one ignored QEMU transport
+test; that transport test was separately run successfully and is not a kernel
+boot. Full kernel Rust-entry debugging also passed again with raw QEMU 33.
+See `evidence/2026-10-16-review/REPORT.md` for this phase and retained failures.
+
+The independent A04 same-ELF diagnostic is documented in
+`linux-guest/README.md`. Its 28 fixed workloads are separate from OSDK tests;
+read their actual pass/failure/timeout counts before making compatibility
+claims. A Linux-host reference pass does not establish a new-kernel pass.
 
 ## Full kernel Rust-entry debugging
 

@@ -25,8 +25,15 @@ hands its descriptor to QEMU, then creates the current case's readiness marker.
 Both basic GDB and VS Code clients wait for that marker before attaching.
 An occupied port fails without an alternate endpoint. The explicit monitor
 transport uses the production `--qemu-monitor-transport=tcp` interface: OSDK
-retains its own loopback listener and QEMU connects as a client. No wildcard or
-public control address is accepted. The exact transport/readiness test patch is
+creates a private connected TCP pair, rejects an unrelated client arriving
+first, and closes the listener before spawning QEMU. Only QEMU's connected
+endpoint is inherited on a descriptor numbered at least 64; the parent keeps
+CLOEXEC set and closes its copy after spawn. The recorder verifies the reserved
+chardev, connected loopback endpoints and exact fields, passes that descriptor
+to the actual QEMU child, and records its PID. This avoids trusting the first
+local process that connects; it is not protection against process injection or
+privileged access to another process's descriptors. No wildcard or public
+control address is accepted. The exact transport/readiness test patch is
 retained alongside the other harness adaptations; debugger and guest assertions
 remain unchanged.
 
@@ -80,6 +87,12 @@ the original list is retained in `upstream-test-list.txt`. Each case has a
 900-second bound, and each guest has a 300-second bound. Native QEMU, SeaBIOS,
 GCC, GDB and the pinned Rust toolchain must be available. `--target-dir` can
 reuse a previous runner's independent Cargo cache after validating its origin.
+The runner acquires its lock before creating the requested output directory.
+All commands have an owned session: timeout, SIGINT and SIGTERM stop that
+original group while its direct leader is still unreaped, then reap the leader
+before releasing the lock. Descendant exit after SIGKILL is asynchronous;
+descendants that leave the group are outside this contract. No numeric group
+signal is sent after leader reap, and ECHILD disarms such signalling.
 
 The production OSDK binary is built directly from `kernel/asterinas/osdk` with
 its original `Cargo.lock` and `--locked`. A separate test-only package copies
@@ -113,6 +126,13 @@ and disables automatic toolchain installation. The runner checks the compiler
 commit; command records include actual executable paths, versions and hashes.
 The `metadata --no-deps` path only reads manifests before upstream adds local
 OSTD. Actual dependency normalization always restarts from the complete seed.
+The adapter consumes Cargo's global option values and fixed toolchain selector
+before classifying commands, expands built-in short aliases, and inserts the
+enforced flags before any program/test `--` separator. This finite profile
+rejects custom commands, external `clippy`, configuration overrides, directory
+changes and redirected lockfiles; it is not a general-purpose Cargo wrapper or
+an execution sandbox. Manifest-only `new/init` and required read-only queries
+remain available.
 
 The OSDK adapter changes only `build/run/test` boot options to direct multiboot
 and the recording QEMU executable. The QEMU profile fixes q35, TCG, CPU `max`,
@@ -142,6 +162,12 @@ Coverage is accepted only with a nonempty saved raw profile, successful pinned
 `archive.py SOURCE DESTINATION` saves logs, command/guest records, hashes, the
 adaptation patch and locks, with deterministic gzip for large logs. It omits
 generated example source, Cargo targets and tool binaries.
+The source must be a nonempty directory and the destination must be new and
+outside it. Reads use the opened root directory and no-follow file descriptors;
+selected symlinks, hardlinks, special files, identity changes and index-name
+collisions fail closed. Limits are 128 MiB per selected file and 1 GiB total.
+The destination parent must be trusted; per-file checks do not establish an
+atomic snapshot of a concurrently changing entire run directory.
 
 Pure profile checks (no VM):
 
