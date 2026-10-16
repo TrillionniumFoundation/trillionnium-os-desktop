@@ -158,3 +158,12 @@ specific in-memory namespace instance and its generation. The
 views, invented owner receipts, foreign same-byte namespaces and stale
 generations. A07 must *separately* validate its existing durable K ledger
 and fsync before invoking retirement; no new persistent database is created.
+
+## Ancestor revocation
+
+Child grant issuance and child budget CAS both check the liveness of every
+ResourceDomain ancestor under the shared family mutation gate. If any
+ancestor revoke precedes admission, child mutation publishes terminal
+`Revoked`; if the child mutation wins, its already published result remains
+immutable after ancestor revoke. The real A05/A06 kernel must bind this to
+its actual grant epoch, capability lifetime and scheduler domain lock order.

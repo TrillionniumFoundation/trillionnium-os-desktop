@@ -308,6 +308,50 @@ fn cpu_usage_rolls_to_a_new_fixed_period_without_resetting_cumulative_usage() {
 }
 
 #[test]
+fn revoked_ancestor_fences_child_grants_and_pending_commit() {
+    let parent = root(75_000, 80);
+    let child = with_parent(domain(75_001), object(75_001), &parent, 60).unwrap();
+    let who = publisher(75_002);
+    let old_grant = child.grant(who).unwrap();
+    let core = ControlCore::new(boot(75_000), space(75_000));
+    let token = core.reserve(request(1, old_grant.clone(), 1, 55), who).unwrap();
+    parent.revoke();
+    assert!(matches!(child.grant(who), Err(ResourceError::Revoked)));
+    let denied = core.commit(&token, who, 10).unwrap();
+    assert_eq!(denied.status, Some(DeliveryStatus::Revoked));
+    assert_eq!(child.revision(), 1);
+    assert_eq!(parent.revision(), 1);
+    assert_eq!(
+        child.install_budget_for_host_model(&old_grant, 1, CPU_PERIOD_NS, 50, 11),
+        Err(ResourceError::Revoked)
+    );
+    match core.reserve_or_get(request(1, old_grant, 1, 55), who) {
+        Ok(ReserveAttempt::Existing(observed)) => assert_eq!(observed, denied),
+        _ => panic!("same D terminal rejection must be retrievable"),
+    }
+}
+
+#[test]
+fn child_commit_admitted_before_ancestor_revoke_is_immutable() {
+    let grandparent = root(76_000, 80);
+    let parent = with_parent(domain(76_001), object(76_001), &grandparent, 70).unwrap();
+    let child = with_parent(domain(76_002), object(76_002), &parent, 60).unwrap();
+    let who = publisher(76_003);
+    let grant = child.grant(who).unwrap();
+    let core = ControlCore::new(boot(76_000), space(76_000));
+    let token = core.reserve(request(1, grant.clone(), 1, 50), who).unwrap();
+    let admitted = core.commit(&token, who, 1).unwrap();
+    assert_eq!(admitted.status, Some(DeliveryStatus::Ok));
+    grandparent.revoke();
+    assert!(matches!(child.grant(who), Err(ResourceError::Revoked)));
+    assert_eq!(
+        core.query_delivery(&core.delivery_view(), 1).unwrap(),
+        admitted
+    );
+    assert_eq!(child.revision(), 2);
+}
+
+#[test]
 fn parent_domain_caps_child_budget() {
     let parent = root(6, 40);
     let child = with_parent(domain(7), object(7), &parent, 20).unwrap();

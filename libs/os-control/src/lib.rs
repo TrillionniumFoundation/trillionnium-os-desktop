@@ -371,9 +371,20 @@ impl ResourceDomain {
     }
 
     pub fn grant(&self, principal: PublisherId) -> Result<Grant, ResourceError> {
+        // The family mutation gate prevents a parent revoke from racing
+        // issuance of a descendant grant. Possession still does not
+        // guarantee admission: commit rechecks the same ancestor chain.
+        let _gate = lock_unpoisoned(&self.inner.gate);
         let state = self.snapshot_state();
         if !state.alive {
             return Err(ResourceError::Revoked);
+        }
+        let mut ancestor = self.inner.parent.as_ref();
+        while let Some(parent) = ancestor {
+            if !parent.snapshot_state().alive {
+                return Err(ResourceError::Revoked);
+            }
+            ancestor = parent.inner.parent.as_ref();
         }
         if !principal.is_nonzero() {
             return Err(ResourceError::InvalidIdentity);
@@ -556,11 +567,19 @@ impl ResourceDomain {
                 actual: state.revision,
             });
         }
-        if let Some(parent) = &grant.domain.parent_domain_for_model() {
+        // A revoked ancestor fences child management, even if the
+        // numeric parent cap has not changed. Every ancestor shares
+        // this family's mutation gate with commit and revoke.
+        let mut ancestor = self.inner.parent.as_ref();
+        while let Some(parent) = ancestor {
             let parent_state = parent.snapshot_state();
+            if !parent_state.alive {
+                return Err(ResourceError::Revoked);
+            }
             if cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
             }
+            ancestor = parent.inner.parent.as_ref();
         }
         if lock_unpoisoned(&self.inner.children)
             .values()
@@ -581,7 +600,7 @@ impl ResourceDomain {
             .checked_add(1)
             .ok_or(ResourceError::Overflow)?;
         state.budget = Budget { period_ns, cap_ns };
-        if let Some(parent) = &grant.domain.parent_domain_for_model() {
+        if let Some(parent) = self.inner.parent.as_ref() {
             lock_unpoisoned(&parent.inner.children).insert(state.id, cap_ns);
         }
         let consumed_at_apply_ns = state.window_consumed_ns;
@@ -591,10 +610,6 @@ impl ResourceDomain {
             effective_boottime_ns: now_ns,
             consumed_at_apply_ns,
         })
-    }
-
-    fn parent_domain_for_model(&self) -> Option<ResourceDomain> {
-        self.inner.parent.clone()
     }
 
     fn snapshot_state(&self) -> DomainState {
