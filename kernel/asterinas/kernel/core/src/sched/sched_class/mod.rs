@@ -342,15 +342,22 @@ impl ClassScheduler {
 
 impl PerCpuClassRqSet {
     fn replenish_throttled(&mut self, now: u64) {
-        // A task can be moved to another cgroup while parked.
-        let old = core::mem::take(&mut self.throttled);
-        for task in old {
-            if task_cpu_eligible(&task, now) {
-                let thread = task.as_thread().unwrap().clone();
-                self.enqueue_entity((task, thread), None);
-            } else {
-                self.throttled.push(task);
+        // Inspect the existing allocation in place. The former mem::take()
+        // discarded its capacity every tick and pushed blocked tasks into a
+        // fresh Vec while the IRQ-disabled runqueue spinlock was held.
+        // swap_remove leaves capacity intact and never reallocates this Vec.
+        let mut index = 0;
+        while index < self.throttled.len() {
+            if !task_cpu_eligible(&self.throttled[index], now) {
+                index += 1;
+                continue;
             }
+            let task = self.throttled.swap_remove(index);
+            if let Some(thread) = task.as_thread().cloned() {
+                self.enqueue_entity((task, thread), None);
+            }
+            // Examine the element swapped into this position next; if this
+            // was the last element, the loop exits naturally.
         }
     }
 
@@ -408,6 +415,17 @@ impl LocalRunQueue for PerCpuClassRqSet {
     }
 
     fn try_pick_next(&mut self) -> Option<&Arc<Task>> {
+        // OSTD's might_preempt() can call try_pick_next() directly after a
+        // runnable task is enqueued, without a preceding update_current().
+        // A switch in that path must not discard the outgoing task's TSC
+        // runtime when CurrentRuntime::new() replaces its old accounting
+        // state. Charge before pick_next_entity() checks another task's
+        // eligibility and potentially advances a shared cgroup ancestor.
+        if let Some(((task, _), rt)) = &mut self.current {
+            let from = rt.start;
+            rt.update();
+            charge_task_cpu(task, from, rt.start);
+        }
         self.pick_next_entity().and_then(|next| {
             // We guarantee that a task can appear at once in a `PerCpuClassRqSet`. So, the `next` cannot be the same
             // as the current task here.
@@ -423,8 +441,12 @@ impl LocalRunQueue for PerCpuClassRqSet {
     }
 
     fn update_current(&mut self, flags: UpdateFlags) -> bool {
-        // The per-CPU timer also fires on idle; replenishment is fully local.
-        self.replenish_throttled(sched_clock());
+        // Settle the running task FIRST. Replenishment invokes
+        // task_cpu_eligible() and can advance the same cgroup or a common
+        // ancestor's quota window before charge_task_cpu() sees a tick that
+        // straddles the boundary. That loses old-window CPU runtime and
+        // defeats positive overrun debt. N0 keeps all these transitions
+        // serialized inside the existing IRQ-disabled per-CPU runqueue lock.
         let mut quota_exhausted = false;
         let (should_preempt, mut lookahead) = if let Some(((task, cur), rt)) = &mut self.current {
             let from = rt.start;
@@ -442,6 +464,12 @@ impl LocalRunQueue for PerCpuClassRqSet {
         } else {
             (false, 4)
         };
+
+        // This timer callback also fires when idle. Once the current task's
+        // exact interval is charged, reconsider throttled tasks and update
+        // the available queues without letting an early eligibility check
+        // erase the last active cgroup period.
+        self.replenish_throttled(sched_clock());
 
         if matches!(flags, UpdateFlags::Wait | UpdateFlags::Exit) {
             lookahead = 4;
