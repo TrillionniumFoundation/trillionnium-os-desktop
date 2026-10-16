@@ -9,7 +9,7 @@ use ostd::{
     arch::{read_tsc, tsc_freq},
     cpu::CpuId,
     mm::{VmReader, VmWriter},
-    sync::SpinLock,
+    sync::{LocalIrqDisabled, SpinLock},
     task::{Task, atomic_mode::AsAtomicModeGuard},
     timer::Jiffies,
     warn,
@@ -50,7 +50,7 @@ struct CpuControl {
     /// A value stores the configured relative CPU share for scheduler integration.
     weight: AtomicU32,
     /// A value stores the configured CPU bandwidth limit for scheduler integration.
-    max: SpinLock<CpuMax>,
+    max: SpinLock<CpuMax, LocalIrqDisabled>,
 }
 
 /// A CPU bandwidth limit.
