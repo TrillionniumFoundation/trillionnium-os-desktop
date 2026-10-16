@@ -295,6 +295,20 @@ class CoverageBindingTests(unittest.TestCase):
                 item.record["capture"]["sidecar"][field] = value
                 self.rejected(bind_capture(item))
 
+    def test_gdb_capture_rejects_fatal_panic_even_when_all_serial_bindings_match(self):
+        for marker in (b"panicked at fixture.rs:1", b"pan\x1b[31micked\x1b[0m at fixture.rs:1",
+                       b"Uncaught\x1b]0;hidden\x07 panic:",
+                       b"Uncaught\x1b]0;hidden\x1b\\ panic:"):
+            with self.subTest(marker=marker), capture_fixture() as item:
+                data = item.serial.read_bytes() + marker + b"\n"
+                update_serial(item, data)
+                item.capture["serial_sha256"] = digest(data)
+                item.capture["serial_prefix"] = {"size": len(data), "sha256": digest(data)}
+                write_capture(item)
+                result = bind_capture(item)
+                self.rejected(result)
+                self.assertIn("fatal guest panic", result["error"])
+
 
 if __name__ == "__main__":
     unittest.main()
