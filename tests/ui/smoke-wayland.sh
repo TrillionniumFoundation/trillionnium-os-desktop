@@ -24,9 +24,11 @@ shell_pid=""
 task_id=""
 task2_id=""
 task3_id=""
+error_task_id=""
 app_pid=""
 app2_pid=""
 app3_pid=""
+error_app_pid=""
 
 # Reuse the same ownership-scoped cleanup tested without a compositor.
 source support/ui/smoke-cleanup.sh
@@ -40,11 +42,13 @@ cleanup() {
     if [[ -n "$task_id" ]]; then "$ctl" cancel "$task_id" "$instance" >/dev/null 2>&1 || true; fi
     if [[ -n "$task2_id" ]]; then "$ctl" cancel "$task2_id" "$instance" >/dev/null 2>&1 || true; fi
     if [[ -n "$task3_id" ]]; then "$ctl" cancel "$task3_id" "$instance" >/dev/null 2>&1 || true; fi
+    if [[ -n "$error_task_id" ]]; then "$ctl" cancel "$error_task_id" "$instance" >/dev/null 2>&1 || true; fi
     # The separate Session process may already have crashed, leaving native
     # clients running. Clean up only the exact, uniquely scoped test clients.
     kill_owned_app "$app_pid"
     kill_owned_app "$app2_pid"
     kill_owned_app "$app3_pid"
+    kill_owned_app "$error_app_pid"
     if [[ -n "$shell_pid" ]]; then kill "$shell_pid" 2>/dev/null || true; wait "$shell_pid" 2>/dev/null || true; fi
     if [[ -n "$session_pid" ]]; then kill "$session_pid" 2>/dev/null || true; wait "$session_pid" 2>/dev/null || true; fi
     [[ -d "$runtime" ]] && rm -rf -- "$runtime"
@@ -110,6 +114,48 @@ fi
 host_process_alive "$app_pid" || { echo "Notes died before shell restart" >&2; exit 1; }
 host_process_alive "$app2_pid" || { echo "Calculator died before shell restart" >&2; exit 1; }
 host_process_alive "$app3_pid" || { echo "Restricted Terminal died before shell restart" >&2; exit 1; }
+
+# Exercise a real failure path before the shell restart. Killing the owned
+# child is the test stimulus; only the session's subsequent wait observation
+# may classify it as FAILED. This is host-process evidence, not a Hepta
+# operation result or a compositor failure claim.
+error_response="$("$ctl" launch personal calculator)"
+error_task_id="$(printf '%s' "$error_response" | python3 -c 'import json,sys;print(json.load(sys.stdin)["task"]["id"])')"
+error_app_pid="$(printf '%s' "$error_response" | python3 -c 'import json,sys;d=json.load(sys.stdin)["task"];assert d["state"]=="running" and d["pid"];print(d["pid"])')"
+kill "$error_app_pid"
+error_state=""
+error_snapshot=""
+for _ in {1..100}; do
+    error_snapshot="$("$ctl" snapshot)"
+    error_state="$(printf '%s' "$error_snapshot" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+task=next(t for t in d["tasks"] if t["id"] == int(sys.argv[1]))
+print(task["state"])
+' "$error_task_id")"
+    if [[ "$error_state" == "failed" ]]; then
+        break
+    fi
+    sleep 0.1
+done
+[[ "$error_state" == "failed" ]] || {
+    echo "Killed child did not become an observed FAILED task" >&2
+    printf '%s\n' "$error_snapshot" >&2
+    exit 1
+}
+error_detail="$(printf '%s' "$error_snapshot" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+task=next(t for t in d["tasks"] if t["id"] == int(sys.argv[1]))
+print(task["detail"])
+' "$error_task_id")"
+[[ "$error_detail" == *"non-successful process exit"* ]] || {
+    echo "FAILED task did not preserve observed exit detail" >&2
+    exit 1
+}
+error_task_id=""
+error_app_pid=""
+
 kill "$shell_pid"
 wait "$shell_pid" 2>/dev/null || true
 shell_pid=""

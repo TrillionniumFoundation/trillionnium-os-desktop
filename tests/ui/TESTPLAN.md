@@ -30,12 +30,13 @@ Unit coverage:
   rejected before any host process can spawn
 - headless Weston + software Mesa runner: create and destroy a real Wayland
   compositor session in a private directory; require successful wayland-info
-  registry round-trip (socket creation alone is insufficient), then run the two-app smoke;
+  registry round-trip (socket creation alone is insufficient), then run the multi-app smoke;
   compositor-mapped surfaces/real GPU/Chinese IME are still NOT attested
-- isolated Wayland smoke: shell plus two independent native app processes (Notes
-  and Calculator), cross-workspace identities, both explicit first-egui-frame
-  markers, and shell restart with surviving children
-  and observed cancellation (requires actual host run)
+- isolated Wayland smoke: shell plus independent native app processes (Notes,
+  Calculator, and Restricted Terminal), cross-workspace identities, explicit
+  first-egui-frame markers, an externally killed child observed as FAILED with
+  exit detail, and shell restart with surviving children plus observed
+  cancellation (requires actual host run)
 - independent idle-time process reaping when no shell client is connected
 - a child GUI first-update layout completion signal must match the exact
   parent-owned marker; host process spawn alone never asserts rendering
