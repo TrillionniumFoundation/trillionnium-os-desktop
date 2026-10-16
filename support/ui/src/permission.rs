@@ -23,6 +23,30 @@ pub enum PermissionKind {
     GlobalKeyboard,
 }
 
+/// Opaque scope supplied by the trusted A05 owner.
+///
+/// The shell never derives this value from a workspace label, PID, UID or
+/// assistant message. It only uses the value to keep observations from one
+/// owner/workspace/trust-domain scope from authorizing another scope.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct PermissionScopeId(u128);
+
+impl PermissionScopeId {
+    /// Construct a scope identifier. Zero is reserved for "no trusted
+    /// scope" and cannot be used to authorize an action.
+    pub const fn new(value: u128) -> Option<Self> {
+        if value == 0 {
+            None
+        } else {
+            Some(Self(value))
+        }
+    }
+
+    pub const fn get(self) -> u128 {
+        self.0
+    }
+}
+
 /// A decision observed from the trusted owner.
 ///
 /// Every value, including `Granted`, is subject to the observation revision.
@@ -45,7 +69,7 @@ impl PermissionDecision {
 }
 
 /// An opaque monotonic revision supplied by the trusted owner alongside a
-/// decision.  It is intentionally not a grant token or an authentication
+/// decision. It is intentionally not a grant token or an authentication
 /// credential.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct PermissionObservation {
@@ -54,7 +78,7 @@ pub struct PermissionObservation {
 }
 
 impl PermissionObservation {
-    /// Construct an observation.  Revision zero is reserved for "no
+    /// Construct an observation. Revision zero is reserved for "no
     /// observation" and is rejected so a fabricated default cannot authorize
     /// an action.
     pub const fn new(decision: PermissionDecision, revision: u64) -> Option<Self> {
@@ -88,15 +112,16 @@ pub enum PermissionObservationUpdate {
     Unchanged,
 }
 
-/// A UI cache of the latest observation per capability.
+/// A UI cache of the latest observation per capability and trusted scope.
 ///
-/// The cache has no method that changes an observation based on a local user
-/// action.  A portal implementation can feed an observation through
-/// [`Self::observe`]; until then all capabilities remain `Unknown` and are
-/// denied by [`Self::allows`].
+/// Scope is an opaque owner-supplied identity. Requiring it at every lookup
+/// makes cross-workspace reuse impossible by construction. The cache has no
+/// method that changes an observation based on a local user action. A portal
+/// implementation can feed an observation through [`Self::observe`]; until
+/// then all capabilities remain `Unknown` and are denied by [`Self::allows`].
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct PermissionState {
-    observations: BTreeMap<PermissionKind, PermissionObservation>,
+    observations: BTreeMap<(PermissionScopeId, PermissionKind), PermissionObservation>,
 }
 
 impl PermissionState {
@@ -108,11 +133,12 @@ impl PermissionState {
 
     /// Apply an observation from the trusted owner.
     ///
-    /// Revisions are compared per capability.  Older observations cannot
-    /// resurrect a revoked or expired capability, and two different
+    /// Revisions are compared per scope and capability. Older observations
+    /// cannot resurrect a revoked or expired capability, and two different
     /// decisions with one revision are rejected as an ambiguous stream.
     pub fn observe(
         &mut self,
+        scope: PermissionScopeId,
         kind: PermissionKind,
         decision: PermissionDecision,
         revision: u64,
@@ -120,9 +146,9 @@ impl PermissionState {
         let incoming = PermissionObservation::new(decision, revision)
             .ok_or(PermissionObservationError::InvalidRevision)?;
 
-        match self.observations.get(&kind).copied() {
+        match self.observations.get(&(scope, kind)).copied() {
             None => {
-                self.observations.insert(kind, incoming);
+                self.observations.insert((scope, kind), incoming);
                 Ok(PermissionObservationUpdate::Inserted)
             }
             Some(current) if revision < current.revision => {
@@ -136,36 +162,43 @@ impl PermissionState {
                 Err(PermissionObservationError::ConflictingRevision)
             }
             Some(_) => {
-                self.observations.insert(kind, incoming);
+                self.observations.insert((scope, kind), incoming);
                 Ok(PermissionObservationUpdate::Updated)
             }
         }
     }
 
-    /// Return the latest observation, if one has been received.
-    pub fn observation(&self, kind: PermissionKind) -> Option<PermissionObservation> {
-        self.observations.get(&kind).copied()
+    /// Return the latest observation, if one has been received for this
+    /// trusted scope and capability.
+    pub fn observation(
+        &self,
+        scope: PermissionScopeId,
+        kind: PermissionKind,
+    ) -> Option<PermissionObservation> {
+        self.observations.get(&(scope, kind)).copied()
     }
 
     /// Return the latest decision, defaulting to `Unknown` when no trusted
-    /// observation exists.
-    pub fn decision(&self, kind: PermissionKind) -> PermissionDecision {
-        self.observation(kind)
+    /// observation exists for this scope.
+    pub fn decision(&self, scope: PermissionScopeId, kind: PermissionKind) -> PermissionDecision {
+        self.observation(scope, kind)
             .map(PermissionObservation::decision)
             .unwrap_or(PermissionDecision::Unknown)
     }
 
-    /// Whether the shell may proceed with a capability-dependent action.
-    pub fn allows(&self, kind: PermissionKind) -> bool {
-        self.decision(kind).allows()
+    /// Whether the shell may proceed with a capability-dependent action in
+    /// this trusted scope.
+    pub fn allows(&self, scope: PermissionScopeId, kind: PermissionKind) -> bool {
+        self.decision(scope, kind).allows()
     }
 
-    /// Local UI code cannot grant access.  It must hand this outcome to the
+    /// Local UI code cannot grant access. It must hand this outcome to the
     /// A05 portal/session integration once that owner exists.
-    pub fn request(&self, kind: PermissionKind) -> PermissionRequest {
+    pub fn request(&self, scope: PermissionScopeId, kind: PermissionKind) -> PermissionRequest {
         PermissionRequest::NeedsAuthoritativePortal {
+            scope,
             kind,
-            current: self.decision(kind),
+            current: self.decision(scope, kind),
         }
     }
 }
@@ -173,6 +206,7 @@ impl PermissionState {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PermissionRequest {
     NeedsAuthoritativePortal {
+        scope: PermissionScopeId,
         kind: PermissionKind,
         current: PermissionDecision,
     },
@@ -194,12 +228,24 @@ mod tests {
         PermissionKind::GlobalKeyboard,
     ];
 
+    const PERSONAL: PermissionScopeId = PermissionScopeId(1);
+    const WORK: PermissionScopeId = PermissionScopeId(2);
+
+    #[test]
+    fn zero_scope_cannot_be_constructed() {
+        assert_eq!(PermissionScopeId::new(0), None);
+        assert_eq!(
+            PermissionScopeId::new(7).map(PermissionScopeId::get),
+            Some(7)
+        );
+    }
+
     #[test]
     fn empty_state_is_unknown_and_denied_for_every_capability() {
         let state = PermissionState::new();
         for kind in ALL_KINDS {
-            assert_eq!(state.decision(kind), PermissionDecision::Unknown);
-            assert!(!state.allows(kind));
+            assert_eq!(state.decision(PERSONAL, kind), PermissionDecision::Unknown);
+            assert!(!state.allows(PERSONAL, kind));
         }
     }
 
@@ -211,11 +257,16 @@ mod tests {
         );
         let mut state = PermissionState::new();
         assert_eq!(
-            state.observe(PermissionKind::Clipboard, PermissionDecision::Granted, 0),
+            state.observe(
+                PERSONAL,
+                PermissionKind::Clipboard,
+                PermissionDecision::Granted,
+                0
+            ),
             Err(PermissionObservationError::InvalidRevision)
         );
         assert_eq!(
-            state.decision(PermissionKind::Clipboard),
+            state.decision(PERSONAL, PermissionKind::Clipboard),
             PermissionDecision::Unknown
         );
     }
@@ -224,33 +275,49 @@ mod tests {
     fn local_request_does_not_promote_unknown_to_granted() {
         let state = PermissionState::new();
         assert_eq!(
-            state.request(PermissionKind::ScreenShare),
+            state.request(PERSONAL, PermissionKind::ScreenShare),
             PermissionRequest::NeedsAuthoritativePortal {
+                scope: PERSONAL,
                 kind: PermissionKind::ScreenShare,
                 current: PermissionDecision::Unknown,
             }
         );
-        assert!(!state.allows(PermissionKind::ScreenShare));
+        assert!(!state.allows(PERSONAL, PermissionKind::ScreenShare));
     }
 
     #[test]
     fn stale_grant_cannot_resurrect_revoked_capability() {
         let mut state = PermissionState::new();
         assert_eq!(
-            state.observe(PermissionKind::Microphone, PermissionDecision::Granted, 4),
+            state.observe(
+                PERSONAL,
+                PermissionKind::Microphone,
+                PermissionDecision::Granted,
+                4
+            ),
             Ok(PermissionObservationUpdate::Inserted)
         );
         assert_eq!(
-            state.observe(PermissionKind::Microphone, PermissionDecision::Revoked, 5),
+            state.observe(
+                PERSONAL,
+                PermissionKind::Microphone,
+                PermissionDecision::Revoked,
+                5
+            ),
             Ok(PermissionObservationUpdate::Updated)
         );
-        assert!(!state.allows(PermissionKind::Microphone));
+        assert!(!state.allows(PERSONAL, PermissionKind::Microphone));
         assert_eq!(
-            state.observe(PermissionKind::Microphone, PermissionDecision::Granted, 4),
+            state.observe(
+                PERSONAL,
+                PermissionKind::Microphone,
+                PermissionDecision::Granted,
+                4
+            ),
             Err(PermissionObservationError::StaleRevision)
         );
         assert_eq!(
-            state.decision(PermissionKind::Microphone),
+            state.decision(PERSONAL, PermissionKind::Microphone),
             PermissionDecision::Revoked
         );
     }
@@ -259,15 +326,25 @@ mod tests {
     fn conflicting_decisions_with_one_revision_are_rejected() {
         let mut state = PermissionState::new();
         assert_eq!(
-            state.observe(PermissionKind::Camera, PermissionDecision::Denied, 9),
+            state.observe(
+                PERSONAL,
+                PermissionKind::Camera,
+                PermissionDecision::Denied,
+                9
+            ),
             Ok(PermissionObservationUpdate::Inserted)
         );
         assert_eq!(
-            state.observe(PermissionKind::Camera, PermissionDecision::Granted, 9),
+            state.observe(
+                PERSONAL,
+                PermissionKind::Camera,
+                PermissionDecision::Granted,
+                9
+            ),
             Err(PermissionObservationError::ConflictingRevision)
         );
         assert_eq!(
-            state.decision(PermissionKind::Camera),
+            state.decision(PERSONAL, PermissionKind::Camera),
             PermissionDecision::Denied
         );
     }
@@ -277,6 +354,7 @@ mod tests {
         let mut state = PermissionState::new();
         assert_eq!(
             state.observe(
+                PERSONAL,
                 PermissionKind::Notifications,
                 PermissionDecision::Granted,
                 2
@@ -285,13 +363,14 @@ mod tests {
         );
         assert_eq!(
             state.observe(
+                PERSONAL,
                 PermissionKind::Notifications,
                 PermissionDecision::Granted,
                 2
             ),
             Ok(PermissionObservationUpdate::Unchanged)
         );
-        assert!(state.allows(PermissionKind::Notifications));
+        assert!(state.allows(PERSONAL, PermissionKind::Notifications));
     }
 
     #[test]
@@ -299,27 +378,49 @@ mod tests {
         let mut state = PermissionState::new();
         state
             .observe(
+                PERSONAL,
                 PermissionKind::GlobalKeyboard,
                 PermissionDecision::Unknown,
                 1,
             )
             .unwrap();
-        assert!(!state.allows(PermissionKind::GlobalKeyboard));
+        assert!(!state.allows(PERSONAL, PermissionKind::GlobalKeyboard));
         state
             .observe(
+                PERSONAL,
                 PermissionKind::GlobalKeyboard,
                 PermissionDecision::Granted,
                 2,
             )
             .unwrap();
-        assert!(state.allows(PermissionKind::GlobalKeyboard));
+        assert!(state.allows(PERSONAL, PermissionKind::GlobalKeyboard));
         state
             .observe(
+                PERSONAL,
                 PermissionKind::GlobalKeyboard,
                 PermissionDecision::Expired,
                 3,
             )
             .unwrap();
-        assert!(!state.allows(PermissionKind::GlobalKeyboard));
+        assert!(!state.allows(PERSONAL, PermissionKind::GlobalKeyboard));
+    }
+
+    #[test]
+    fn grant_in_one_scope_never_authorizes_another_scope() {
+        let mut state = PermissionState::new();
+        state
+            .observe(
+                PERSONAL,
+                PermissionKind::Clipboard,
+                PermissionDecision::Granted,
+                1,
+            )
+            .unwrap();
+        assert!(state.allows(PERSONAL, PermissionKind::Clipboard));
+        assert!(!state.allows(WORK, PermissionKind::Clipboard));
+        assert_eq!(
+            state.decision(WORK, PermissionKind::Clipboard),
+            PermissionDecision::Unknown
+        );
     }
 }

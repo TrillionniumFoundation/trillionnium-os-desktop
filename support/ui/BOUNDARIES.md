@@ -47,8 +47,10 @@ Host /proc metrics are labeled Linux host readings, not A02/A07 HOS2 samples.
 OS permission prompts, screencasting, microphone, camera, file portal, D-Bus,
 Xwayland isolation, Android SurfaceFlinger and GPU reset are not implemented.
 `support/ui/src/permission.rs` contains only a consumer cache of externally
-observed permission decisions. Unknown/denied/revoked/expired decisions are
-fail-closed; the cache cannot issue a grant or infer scope from a workspace
+observed permission decisions. The cache is keyed by an opaque A05-supplied
+scope plus capability, so a grant from one workspace/trust-domain scope
+cannot authorize another. Unknown/denied/revoked/expired decisions are
+fail-closed; the cache cannot issue a grant or derive scope from a workspace
 label, process PID or assistant message. It is not an A05 portal or
 authorization protocol.
 
