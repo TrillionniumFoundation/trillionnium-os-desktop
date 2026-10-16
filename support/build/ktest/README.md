@@ -38,7 +38,8 @@ The kernel-test runner has its own entry point and needs no userspace initramfs.
 The runner shares the persistent `support/build/out-kernel.lock` inode with
 the ordinary boot wrapper. Output uses a fresh directory and every guest has
 its own serial log and QEMU JSON record. `--output DIR` refuses an existing
-directory. `--crate ostd` or `--crate aster-core` runs just that crate.
+directory. A busy workspace lock is rejected before creating the requested
+output or its parent. `--crate ostd` or `--crate aster-core` runs just that crate.
 `A01_KTEST_TIMEOUT` sets each guest timeout (default 300 seconds). A failed
 build, failed guest or rejected summary stops the command and retains evidence.
 
@@ -62,3 +63,28 @@ because the upstream test-kernel dependency also depends on OSTD.
 
 No test result is claimed by adding these entry points. Consult actual saved
 guest evidence for the completed, failed or filtered tests of each invocation.
+
+The CLI cooperatively handles SIGINT and SIGTERM, retaining the first request
+as status 130 or 143. Every subprocess, including source verification, compiler
+and Git metadata, runs in an owned session. The runner holds the workspace lock
+while sending TERM then KILL to the original process group and reaping its
+direct leader. `waitid(WNOWAIT)` anchors that group until its final signal; an
+externally reaped leader disarms group signals. Descendants must remain in the
+original group. Their exit after KILL is asynchronous; the runner does not
+adopt or claim to reap grandchildren.
+
+Each subprocess log has a sibling `<log filename>.command.json` recording its
+argv, cwd, raw child wait status (`raw_exit_code`), normalized effective
+`exit_code`, and direct-leader cleanup. Cancellation keeps the actual raw
+child status, such as -15 or -9, while its effective `exit_code` is 130 or 143. Cancelled invocations retain
+`result.json` with `passed: false`, `interrupted_by`, `received_signals` and
+`exit_code`. The aggregate result also records the runner SHA256, pinned
+toolchain and relative command-receipt paths. Existing evidence directories
+are never overwritten.
+
+Host-only lifecycle regression (fixture commands, no Rust build or QEMU):
+
+```sh
+python3 -I support/build/ktest/test_runner_lifecycle.py -v
+python3 -I -O support/build/ktest/test_runner_lifecycle.py -v
+```
