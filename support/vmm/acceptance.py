@@ -22,6 +22,7 @@ BDF = re.compile(r"^[0-9a-fA-F]{4,8}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-7]$")
 NONCE = re.compile(r"^[0-9a-f]{32,64}$")
 BACKEND_VENDOR = {"intel-vmx": "GenuineIntel", "amd-svm": "AuthenticAMD", "arm-el2": "ARM"}
 MAX_RAW_LOG_BYTES = 32 * 1024 * 1024
+MAX_EVIDENCE_JSON_BYTES = 8 * 1024 * 1024
 
 
 def valid_bdf(value):
@@ -50,7 +51,17 @@ def bounded_log(path):
 
 
 def load_json(path):
-    value = json.loads(Path(path).read_text(encoding="utf-8"))
+    # Reject symlink swaps and FIFO/block-device paths before any blocking read.
+    # Never materialize unbounded attacker-controlled host/guest JSON in memory.
+    fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC)
+    with os.fdopen(fd, "rb") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_EVIDENCE_JSON_BYTES:
+            raise ValueError("JSON evidence is not a bounded regular file")
+        raw = stream.read(MAX_EVIDENCE_JSON_BYTES + 1)
+    if len(raw) > MAX_EVIDENCE_JSON_BYTES:
+        raise ValueError("JSON evidence changed/grew beyond size limit")
+    value = json.loads(raw.decode("utf-8"))
     if not isinstance(value, dict):
         raise ValueError(f"{path}: must be a JSON object")
     return value

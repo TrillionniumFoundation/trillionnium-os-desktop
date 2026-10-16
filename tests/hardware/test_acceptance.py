@@ -174,6 +174,44 @@ class AcceptanceTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 acceptance.bounded_log(path)
 
+    def test_bounded_json_object_load_and_reject_nonobject(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            good = root / "valid.json"
+            good.write_text('{"schema":"a09.host","marker":"测试"}', encoding="utf-8")
+            self.assertEqual(acceptance.load_json(good)["marker"], "测试")
+            bad = root / "list.json"
+            bad.write_text('[1,2,3]')
+            with self.assertRaises(ValueError):
+                acceptance.load_json(bad)
+            bad.write_bytes(b"\xff")
+            with self.assertRaises(UnicodeError):
+                acceptance.load_json(bad)
+
+    def test_json_symlink_and_fifo_are_never_trusted_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            external = root / "original.json"
+            external.write_text('{"allowed":true}')
+            alias = root / "aliased.json"
+            alias.symlink_to(external)
+            with self.assertRaises(OSError):
+                acceptance.load_json(alias)
+            fifo = root / "pipe.json"
+            os.mkfifo(fifo)
+            # O_NONBLOCK must keep this immediate without any FIFO writer.
+            with self.assertRaises(ValueError):
+                acceptance.load_json(fifo)
+
+    def test_sparse_oversized_json_rejected_without_reading_entire_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "oversized.json"
+            with path.open("wb") as output:
+                output.seek(acceptance.MAX_EVIDENCE_JSON_BYTES)
+                output.write(b"x")
+            with self.assertRaises(ValueError):
+                acceptance.load_json(path)
+
     def test_guest_cpu_only_does_not_count(self):
         self.guest["gemm"]["child_evidence"]["cuda_kernel_launched"] = False
         self.assertIn("invalid_cuda_gemm_result", self.reasons())
