@@ -280,8 +280,14 @@ def _contains(source: str, *patterns: str) -> bool:
     return any(re.search(pattern, source, re.IGNORECASE) for pattern in patterns)
 
 
-def audit(root: Path | str):
-    """Inspect a checkout and return a JSON-serializable blocked report."""
+def audit(root: Path | str, target_arch: str = "x86_64"):
+    """Inspect a checkout and return a JSON-serializable blocked report.
+
+    Backend-source findings are scoped to the requested target. The selected
+    candidate is Intel x86_64, so absent AMD SVM and ARM EL2 are retained as
+    observations rather than being misreported as blockers for this route.
+    Hardware execution and device-assignment blockers remain unconditional.
+    """
 
     root = Path(root)
     files, raw_text, hashes = _read_sources(root)
@@ -339,12 +345,17 @@ def audit(root: Path | str):
         r"\bVGIC\b",
         r"\bvgic\b",
     )
-    if not vmx_visible:
-        blockers.append("intel_vmx_source_evidence_missing")
-    if not svm_visible:
-        blockers.append("amd_svm_source_evidence_missing")
-    if not el2_visible:
-        blockers.append("arm_el2_source_evidence_missing")
+    if target_arch == "x86_64":
+        if not vmx_visible:
+            blockers.append("intel_vmx_source_evidence_missing")
+    elif target_arch in ("aarch64", "arm64"):
+        if not el2_visible:
+            blockers.append("arm_el2_source_evidence_missing")
+    elif target_arch in ("x86_64-amd-svm", "amd64-svm"):
+        if not svm_visible:
+            blockers.append("amd_svm_source_evidence_missing")
+    else:
+        blockers.append("unsupported_target_architecture:" + str(target_arch))
 
     guest_visible = _contains(source["guest_mode"], r"\b(?:struct|enum)\s+GuestMode\b")
     dma_visible = _contains(source["dma_stream"], r"\b(?:struct|trait)\s+DmaStream\b")
@@ -396,6 +407,7 @@ def audit(root: Path | str):
         "passthrough_approved": False,
         "asterinas_gpu_verified": False,
         "scope": "bounded_static_source_inspection_only",
+        "target_arch": target_arch,
         "kernel_pin": KERNEL_PIN,
         "required_paths": SOURCE_PATHS,
         "source_sha256": hashes,
@@ -516,7 +528,7 @@ def main() -> int:
     result = (
         inspect_source(args.kernel_root, args.target_arch)
         if args.kernel_root is not None
-        else audit(args.repo_root)
+        else audit(args.repo_root, args.target_arch)
     )
     payload = json.dumps(result, sort_keys=True, indent=2) + "\n"
     if args.output == "-":

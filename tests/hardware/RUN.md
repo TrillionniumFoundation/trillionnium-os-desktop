@@ -13,7 +13,7 @@ CPU-only contract and fail-closed evidence tests (DO NOT count as GPU device tes
     python3 -m unittest discover -s tests/hardware -p 'test_*.py' -v
     python3 -m py_compile support/hardware/*.py support/vmm/*.py tests/hardware/*.py
 
-The latest rerun observed 86/86 CPU-only, evidence-gate and hardware-fixture
+The latest rerun observed 87/87 CPU-only, evidence-gate and hardware-fixture
 tests passed, 0 failures; py_compile passed; no NVIDIA PCI GPU and no CUDA
 runtime, /dev/kvm or /dev/vfio/vfio in the execution container.
 
@@ -31,7 +31,7 @@ Exit 0 means GPU compute succeeded **only in the reported execution kernel**, NO
 
 - [Read-only inventory](evidence/2026-10-16-container-probe-1349z.json): this execution snapshot saw an Intel Xeon Platinum 8573C virtual CPU, bridge plus VirtIO PCI functions, and no PCI accelerator. GPU model/ID, firmware, IOMMU, VRAM/memory model, DMA queues and reset details **unknown**, not invented. The earlier `container-probe.json` snapshot is retained separately because the execution container is dynamic.
 - [CUDA blocker](evidence/2026-10-16-cuda-gemm-supervised-blocked.json): process exit **2**, libcuda.so.1 unavailable, no device opened or compute dispatched; the worker was reaped by the Linux process supervisor and per-stage statuses remain `not_run`. The CPU golden SHA is still generated/verified. The earlier [pre-supervisor record](evidence/2026-10-16-cuda-gemm-blocked-v2-final.json) is retained as historical evidence of the retired in-process alarm path.
-- [Kernel join blocker](evidence/2026-10-16-kernel-join-blocked.json): source gate exit **2**; the pinned tree lacks device/group-scoped IOMMU mapping, AMD SVM and ARM EL2 evidence, and live hardware verification.
+- [Kernel join blocker](evidence/2026-10-16-kernel-join-blocked.json): source gate exit **2** for the selected Intel x86_64 route; the pinned tree still lacks device/group-scoped IOMMU mapping and live hardware verification. AMD SVM and ARM EL2 remain explicit non-target observations, not Intel-route approval evidence.
 - [VFIO preflight blocker](evidence/2026-10-16-vfio-preflight-blocked.json): exit **2** for the explicit disposable-lab placeholder BDF because no target PCI function is visible.
 - [Architecture decision](../../support/hardware/DECISION.md) and [VMX/SVM/EL2 VMM gates](../../support/vmm/GATES.md): design only, no new kernel guest boot.
 

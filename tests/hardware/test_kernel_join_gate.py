@@ -40,12 +40,15 @@ class KernelJoinGateTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(source, encoding="utf-8")
 
-    def test_global_page_table_and_missing_backends_are_blocked(self):
+    def test_global_page_table_is_blocked_and_non_target_backends_are_observations(self):
         result = gate.audit(self.root)
         self.assertIn("iommu_shared_device_page_table_detected", result["hard_blockers"])
         self.assertIn("iommu_device_scoped_map_unmap_not_found", result["hard_blockers"])
-        self.assertIn("amd_svm_source_evidence_missing", result["hard_blockers"])
-        self.assertIn("arm_el2_source_evidence_missing", result["hard_blockers"])
+        self.assertNotIn("amd_svm_source_evidence_missing", result["hard_blockers"])
+        self.assertNotIn("arm_el2_source_evidence_missing", result["hard_blockers"])
+        self.assertFalse(result["observations"]["amd_svm_source_visible"])
+        self.assertFalse(result["observations"]["arm_el2_source_visible"])
+        self.assertEqual(result["target_arch"], "x86_64")
         self.assertFalse(result["passthrough_approved"])
         self.assertFalse(result["asterinas_gpu_verified"])
         self.assertEqual(result["status"], "blocked")
@@ -92,6 +95,14 @@ class KernelJoinGateTests(unittest.TestCase):
         self.assertFalse(result["passthrough_approved"])
         self.assertFalse(result["asterinas_gpu_verified"])
         self.assertIn("hardware_virtualization_execution_not_verified", result["hard_blockers"])
+
+    def test_non_intel_backend_scope_is_checked_only_when_requested(self):
+        self.sources["amd_svm"] = "pub struct Vmcb {} fn vmrun() {}"
+        self.write_sources()
+        result = gate.audit(self.root, "x86_64-amd-svm")
+        self.assertNotIn("amd_svm_source_evidence_missing", result["hard_blockers"])
+        arm_result = gate.audit(self.root, "aarch64")
+        self.assertIn("arm_el2_source_evidence_missing", arm_result["hard_blockers"])
 
     def test_missing_symlink_fifo_and_oversized_sources_fail_closed(self):
         target = self.root / "outside.rs"
