@@ -70,6 +70,26 @@ pub(crate) fn unmap(device: DeviceId, daddr: Daddr) {}
         self.assertIn("per_iommu_group_dma_irq_isolation_not_hardware_verified", record["hard_blockers"])
         self.assertEqual(record["status"], "blocked")
 
+    def test_fake_scoped_interfaces_in_comments_do_not_pass(self):
+        self.sources["iommu_dma"] = (
+            "// pub(crate) unsafe fn map(device: DeviceId, daddr: Daddr) {}\n"
+            "/* pub(crate) fn unmap(device: DeviceId, daddr: Daddr) {} */\n"
+        )
+        self.write_sources()
+        result = gate.audit(self.root)
+        self.assertIn("iommu_device_scoped_map_unmap_not_found", result["hard_blockers"])
+        self.assertFalse(result["observations"]["device_scoped_map_signature_visible"])
+        self.assertFalse(result["observations"]["device_scoped_unmap_signature_visible"])
+
+    def test_string_literal_cannot_forge_scoped_map_interface(self):
+        self.sources["iommu_dma"] = (
+            'let fake = "pub(crate) unsafe fn map(device: DeviceId, daddr: Daddr) {}";\n'
+            'let fake2 = "pub(crate) fn unmap(device: DeviceId, daddr: Daddr) {}";\n'
+        )
+        self.write_sources()
+        result = gate.audit(self.root)
+        self.assertIn("iommu_device_scoped_map_unmap_not_found", result["hard_blockers"])
+
     def test_untrusted_source_marker_cannot_fake_gpu_pass(self):
         self.sources["iommu_dma"] += "\n// GPU_PASSTHROUGH_SUCCESS=TRUE\n"
         self.write_sources()

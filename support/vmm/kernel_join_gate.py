@@ -45,12 +45,17 @@ def audit(root):
     iommu = source["iommu_dma"]
     shared = ("page table of all devices is the same" in iommu.lower()
               or "PciDeviceLocation::zero()" in iommu)
+    # Comment or string text is not an actual callable Rust interface.
+    # This remains a conservative source heuristic and cannot approve DMA.
+    code_only = re.sub(r"/\*[\s\S]*?\*/", " ", iommu)
+    code_only = re.sub(r"//[^\n]*", " ", code_only)
+    code_only = re.sub(r'"(?:\\.|[^"\\])*"', " ", code_only)
     scoped_map = bool(re.search(
         r"(?:pub\([^)]*\)\s+)?(?:unsafe\s+)?fn\s+map\s*\([^)]*\bdevice\s*:",
-        iommu, re.S))
+        code_only, re.S))
     scoped_unmap = bool(re.search(
         r"(?:pub\([^)]*\)\s+)?fn\s+unmap\s*\([^)]*\bdevice\s*:",
-        iommu, re.S))
+        code_only, re.S))
     if shared:
         blocked.append("iommu_shared_device_page_table_detected")
     if iommu and not (scoped_map and scoped_unmap):
