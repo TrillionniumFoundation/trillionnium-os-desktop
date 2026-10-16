@@ -87,3 +87,18 @@ queue IDs; the real A05 kernel registry must enforce unique device ownership
 and namespace queue identities, while A06 charges pinned physical frames.
 A01 must validate the actual IOMMU group, MMIO/interrupt isolation and DMA
 quiescence. This model is not safe to wire directly to hardware as-is.
+
+## Hotplug and stale-BDF protection
+
+`DeviceHandle::new(pci_bdf, iommu_group, instance_id)` now requires a
+**nonzero, per-device-attachment lifetime ID** issued by A05's canonical
+kernel PCI registry. Buffer/Queue metadata bind to all three fields, not
+only the address and IOMMU group. A stale Buffer from a removed device
+must not be submitted to a replacement occupying the same BDF and group,
+even if both report generation 1 and share a ResourceDomain. The ID is
+pure metadata, never a capability or permission signer. The crate does
+NOT allocate IDs or guarantee uniqueness; the A05 owner must provide
+monotonically non-repeating device attachment identities per boot,
+including hotplug/reset/driver rebind. A01 still owns real IOMMU,
+DMA quiescence and IRQ isolation. Separate Rust tests cover BDF reuse
+and zero-ID refusal. Rust tests are unverified until actual CI runs.
