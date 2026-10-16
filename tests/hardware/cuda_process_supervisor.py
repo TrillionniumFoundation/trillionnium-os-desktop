@@ -39,7 +39,24 @@ def run_worker(argv, timeout_seconds):
     try:
         code = process.wait(timeout=timeout_seconds)
         record.update(worker_reaped=True, worker_exit_code=code)
-        return code, record
+        # Reaping the group leader does NOT mean its same-session children
+        # stopped. A native CUDA/NVRTC worker may fork a process, publish a
+        # result, and exit while that child keeps using device resources.
+        # An empty process group no longer exists after its leader is reaped.
+        try:
+            os.killpg(process.pid, 0)
+        except ProcessLookupError:
+            return code, record
+        # EPERM is not proof of absence; fail closed, even though our own
+        # worker session normally shares the same UID as this supervisor.
+        record['worker_group_incomplete'] = True
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        except OSError as exc:
+            record['worker_group_kill_error'] = str(exc)
+        return 125, record
     except subprocess.TimeoutExpired:
         record['timed_out'] = True
         # Kill the entire owned worker group. Never target the caller's group.
