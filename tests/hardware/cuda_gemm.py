@@ -417,6 +417,11 @@ def _supervised_main():
     """Never enter CUDA/FFI in the command's parent process."""
     from pathlib import Path
     from tempfile import TemporaryDirectory
+    # The fixed sibling helper is trusted code from this checked-out tree.
+    # Python -I omits the script directory from import lookup by default.
+    host_dir = str(Path(__file__).resolve().parent)
+    if host_dir not in sys.path:
+        sys.path.insert(0, host_dir)
     from cuda_process_supervisor import available, run_worker
 
     parser = argparse.ArgumentParser(description=__doc__)
