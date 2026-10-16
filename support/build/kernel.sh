@@ -6,6 +6,10 @@ project_dir=$(cd "$build_dir/../.." && pwd)
 kernel_dir="$project_dir/kernel/asterinas"
 target=${1:-kernel}
 case "$target" in kernel|run_kernel|gdb_server) ;; *) echo "usage: $0 [kernel|run_kernel|gdb_server]" >&2; exit 2 ;; esac
+if [[ ${CARGO_ENCODED_RUSTFLAGS+x} ]]; then
+    echo 'unset CARGO_ENCODED_RUSTFLAGS: it overrides the RUSTFLAGS required by OSDK for the kernel build' >&2
+    exit 2
+fi
 if [[ "$target" == gdb_server ]]; then
     [[ ${A01_GDB_PORT:-} =~ ^[0-9]+$ && ${A01_GDB_FD:-} =~ ^[0-9]+$ ]] || {
         echo 'gdb_server requires the owned listener from support/build/debug/run.py' >&2; exit 2;
@@ -18,6 +22,21 @@ fi
 if [[ ${A01_KERNEL_WORKER:-} != 1 ]]; then
     exec python3 -I "$build_dir/kernel-supervisor.py" "$target"
 fi
+# This is a fixed build invocation, including when launched from another make.
+# Inherited dry-run/touch/ignore-error flags or extra makefiles must not change
+# whether its recipes execute. Keep their exact shell-quoted values as evidence;
+# GNU make will establish normal recursion state for its own children.
+make_control_names=(MAKEFLAGS MFLAGS GNUMAKEFLAGS MAKEFILES MAKEOVERRIDES MAKELEVEL)
+make_control_records=()
+for make_control_name in "${make_control_names[@]}"; do
+    if [[ -v "$make_control_name" ]]; then
+        printf -v make_control_record '%s_INHERITED=%q' "$make_control_name" "${!make_control_name}"
+    else
+        make_control_record="${make_control_name}_INHERITED=<unset>"
+    fi
+    make_control_records+=("$make_control_record")
+    unset "$make_control_name"
+done
 export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 export RUSTUP_TOOLCHAIN=nightly-2026-07-21
 export CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS:-2}
@@ -94,6 +113,8 @@ python3 "$build_dir/verify-source.py" > "$run_dir/source-inputs.json"
     printf 'RUSTFLAGS=%s\nCARGO_ENCODED_RUSTFLAGS=%s\nCARGO_TARGET_DIR=%s\nASTER_BUILD_TIMESTAMP=%s\n' \
         "${RUSTFLAGS-<unset>}" "${CARGO_ENCODED_RUSTFLAGS-<unset>}" \
         "${CARGO_TARGET_DIR-<unset>}" "${ASTER_BUILD_TIMESTAMP-<unset>}"
+    printf '%s\n' "${make_control_records[@]}"
+    printf '%s_EFFECTIVE=<unset>\n' "${make_control_names[@]}"
     sha256sum "$VDSO_LIBRARY_DIR/vdso_x86_64.so"
     sha256sum "$OSDK_CARGO_LOCK"
     sha256sum "$build_dir/cleanup-manifest.py"

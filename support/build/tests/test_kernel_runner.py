@@ -97,7 +97,8 @@ class KernelRunnerTests(unittest.TestCase):
         self.environment = {
             key: value for key, value in os.environ.items()
             if not key.startswith(("A01_", "CARGO_", "RUSTUP_", "MOCK_"))
-            and key not in ("MAKEFLAGS", "MFLAGS", "VDSO_LIBRARY_DIR", "INITRAMFS")
+            and key not in ("MAKEFLAGS", "MFLAGS", "GNUMAKEFLAGS", "MAKEFILES",
+                            "MAKEOVERRIDES", "MAKELEVEL", "VDSO_LIBRARY_DIR", "INITRAMFS")
         }
         self.environment.update({
             "PATH": f"{self.mock}:/usr/bin:/bin",
@@ -119,6 +120,109 @@ class KernelRunnerTests(unittest.TestCase):
             env=environment, text=True, stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT, timeout=15,
         )
+
+    def use_real_make(self):
+        """Use GNU make's actual environment semantics with tiny host recipes."""
+        real_make = shutil.which("make", path="/usr/bin:/bin")
+        self.assertIsNotNone(real_make, "the native runner requires GNU make")
+        version = subprocess.check_output([real_make, "--version"], text=True)
+        self.assertIn("GNU Make", version)
+        self.write_tool("make", f"#!/bin/sh\nexec {shlex.quote(real_make)} \"$@\"\n")
+        upstream = self.kernel.parent
+        (upstream / "Makefile").write_text(
+            ".PHONY: kernel\nkernel:\n\t@python3 -I recipe.py\n"
+        )
+        (self.build / "minimal.mk").write_text("# host fixture overlay\n")
+        (upstream / "recipe.py").write_text(
+            "import json, os, pathlib, subprocess, sys\n"
+            "root = pathlib.Path(os.environ['MOCK_PROJECT'])\n"
+            "(root / 'recipe.json').write_text(json.dumps({'makelevel': os.environ.get('MAKELEVEL')}))\n"
+            f"subprocess.run([{real_make!r}, '--no-print-directory', '-f', 'nested.mk', 'nested'], check=True)\n"
+            "sys.exit(int(os.environ.get('MOCK_RECIPE_EXIT', '0')))\n"
+        )
+        (upstream / "nested.mk").write_text(
+            ".PHONY: nested\nnested:\n"
+            "\t@python3 -c 'import json, os, pathlib; "
+            "pathlib.Path(os.environ[\"MOCK_PROJECT\"], \"nested.json\").write_text("
+            "json.dumps({\"makelevel\": os.environ.get(\"MAKELEVEL\")}))'\n"
+        )
+
+    def check_encoded_rustflags_rejected_before_output_then_unset_retry(self, value):
+        result = self.run_runner(name="new-parent/evidence", extra={"CARGO_ENCODED_RUSTFLAGS": value})
+        self.assertEqual(result.returncode, 2, result.stdout)
+        self.assertIn("unset CARGO_ENCODED_RUSTFLAGS", result.stdout)
+        self.assertFalse((self.root / "new-parent").exists())
+        self.assertFalse((self.build / "out-kernel.lock").exists())
+        self.assertFalse((self.root / "make-call.json").exists())
+        retry = self.run_runner(name="new-parent/evidence")
+        self.assertEqual(retry.returncode, 0, retry.stdout)
+        self.assertTrue((self.root / "make-call.json").is_file())
+        self.assertEqual((self.root / "new-parent/evidence/run-exit-code.txt").read_text(), "0\n")
+
+    def test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry(self):
+        self.check_encoded_rustflags_rejected_before_output_then_unset_retry("")
+
+    def test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry(self):
+        self.check_encoded_rustflags_rejected_before_output_then_unset_retry("-Cdebuginfo=0")
+
+    def test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes(self):
+        self.use_real_make()
+        for index, (name, flags) in enumerate((
+                ("MAKEFLAGS", "n"), ("MAKEFLAGS", "t"),
+                ("MAKEFLAGS", "q"), ("GNUMAKEFLAGS", "--just-print"))):
+            with self.subTest(name=name, flags=flags):
+                for artifact in ("recipe.json", "nested.json"):
+                    (self.root / artifact).unlink(missing_ok=True)
+                run_name = f"real-make-{index}"
+                result = self.run_runner(name=run_name, extra={name: flags})
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertTrue((self.root / "recipe.json").is_file(), result.stdout)
+                self.assertTrue((self.root / "nested.json").is_file(), result.stdout)
+                environment = (self.root / run_name / "environment.log").read_text()
+                self.assertIn(f"{name}_INHERITED={flags}\n", environment)
+                self.assertIn(f"{name}_EFFECTIVE=<unset>\n", environment)
+
+    def test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure(self):
+        self.use_real_make()
+        result = self.run_runner(extra={"MAKEFLAGS": "i", "MOCK_RECIPE_EXIT": "42"})
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertTrue((self.root / "recipe.json").is_file(), result.stdout)
+        self.assertEqual((self.root / "evidence/make-exit-code.txt").read_text(), "2\n")
+        self.assertEqual((self.root / "evidence/run-exit-code.txt").read_text(), "2\n")
+
+    def test_inherited_makefiles_are_not_read_and_normal_retry_can_build(self):
+        self.use_real_make()
+        injected = self.root / "inherited.mk"
+        marker = self.root / "inherited-makefile-was-read"
+        injected.write_text(f"$(file >{marker},unexpected inherited makefile)\n")
+        result = self.run_runner(extra={"MAKEFILES": str(injected)})
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertFalse(marker.exists(), "GNU make read a caller-supplied makefile")
+        self.assertTrue((self.root / "recipe.json").is_file(), result.stdout)
+        environment = (self.root / "evidence/environment.log").read_text()
+        self.assertIn(f"MAKEFILES_INHERITED={injected}\n", environment)
+        self.assertIn("MAKEFILES_EFFECTIVE=<unset>\n", environment)
+        for artifact in ("recipe.json", "nested.json"):
+            (self.root / artifact).unlink()
+        retry = self.run_runner(name="retry")
+        self.assertEqual(retry.returncode, 0, retry.stdout)
+        self.assertTrue((self.root / "recipe.json").is_file(), retry.stdout)
+        self.assertFalse(marker.exists())
+
+    def test_outer_make_state_is_recorded_and_children_establish_normal_recursion(self):
+        self.use_real_make()
+        result = self.run_runner(extra={
+            "MAKELEVEL": "73", "MFLAGS": "-n", "MAKEOVERRIDES": "fixture=value",
+            "MAKEFLAGS": "", "GNUMAKEFLAGS": "",
+        })
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(json.loads((self.root / "recipe.json").read_text())["makelevel"], "1")
+        self.assertEqual(json.loads((self.root / "nested.json").read_text())["makelevel"], "2")
+        environment = (self.root / "evidence/environment.log").read_text()
+        for recorded in ("MAKELEVEL_INHERITED=73", "MFLAGS_INHERITED=-n",
+                         "MAKEOVERRIDES_INHERITED=fixture=value", "MAKEFLAGS_INHERITED=''",
+                         "GNUMAKEFLAGS_INHERITED=''", "MAKEFILES_INHERITED=<unset>"):
+            self.assertIn(recorded + "\n", environment)
 
     def test_existing_directory_and_stale_success_are_rejected(self):
         run = self.root / "evidence"

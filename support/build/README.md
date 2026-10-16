@@ -57,6 +57,20 @@ explicit packaged SeaBIOS, a serial console, and `isa-debug-exit`. It packages
 static BusyBox, a small init script, and the unmodified upstream
 `test/initramfs/src/boot_hello.sh` into a deterministic newc/gzip initramfs.
 
+The wrapper records and clears inherited `MAKEFLAGS`, `MFLAGS`,
+`GNUMAKEFLAGS`, `MAKEFILES`, `MAKEOVERRIDES` and `MAKELEVEL` before invoking
+GNU make. Dry-run, touch, ignore-error modes and caller-supplied makefiles
+must not turn a skipped or failed kernel recipe into a successful build.
+GNU make establishes normal recursion state for its own children. This is
+the fixed profile's environment contract, not a sandbox for untrusted tools.
+
+Unset `CARGO_ENCODED_RUSTFLAGS` before invoking the normal kernel or ktest
+entry, including when its current value is empty. Cargo gives its presence
+priority over the `RUSTFLAGS` that OSDK supplies for kernel linking and CPU
+configuration. These entries reject it before creating output or taking a
+workspace lock, so the same command and output path can be retried after
+unsetting it. Ordinary `RUSTFLAGS` continue to follow upstream OSDK behavior.
+
 Evidence is written to a new directory under `support/build/out/` by default.
 `A01_RUN_DIR` selects a destination that must not already exist;
 `A01_QEMU_TIMEOUT` sets the timeout in seconds (default 300).

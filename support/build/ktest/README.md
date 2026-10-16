@@ -4,6 +4,12 @@ These entry points run the fixed Asterinas `cargo osdk test` runner in real
 QEMU guests. They do not run host unit tests or the userspace boot script.
 They preserve the existing process, scheduler, OSTD and OSDK sources.
 
+`CARGO_ENCODED_RUSTFLAGS` must be unset, including an explicitly empty value.
+Cargo otherwise gives it priority over OSDK's required kernel `RUSTFLAGS`.
+The entry refuses that environment before creating output, acquiring a
+workspace lock or invoking tools; unset the variable and retry the same
+command and output path.
+
 After the host setup documented in `../README.md`, from the project root:
 
 ```sh

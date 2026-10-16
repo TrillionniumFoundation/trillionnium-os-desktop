@@ -211,6 +211,10 @@ def main():
 
 
 def run_main(args, shutdown):
+    if "CARGO_ENCODED_RUSTFLAGS" in os.environ:
+        print("CARGO_ENCODED_RUSTFLAGS overrides mandatory OSDK kernel flags; "
+              "unset CARGO_ENCODED_RUSTFLAGS and retry", file=sys.stderr)
+        raise SystemExit(2)
     here = Path(__file__).resolve().parent
     project = here.parents[2]
     upstream = project / "kernel/asterinas"
