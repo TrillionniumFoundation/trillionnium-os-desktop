@@ -613,4 +613,41 @@ mod quota_debt_regressions {
         budget.used_clocks = quota;
         assert!(!budget.eligible(start + period * 4));
     }
+    #[ktest]
+    fn charge_crossing_one_period_must_bill_both_sides() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period * 2;
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota;
+        let from = start + period - quota / 2;
+        let until = start + period + quota / 2;
+        budget.charge(from, until);
+        // The tail of the old window exceeded its cap and must reduce
+        // the next window's remaining runtime. The following half-tick
+        // belongs to the new window and must still be accounted.
+        assert_eq!(budget.carry_debt_clocks, quota / 2);
+        assert_eq!(budget.used_clocks, quota / 2);
+        assert!(!budget.eligible(until));
+    }
+
+    #[ktest]
+    fn charge_crossing_multiple_periods_cannot_erase_cpu_runtime() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period * 2;
+        let mut budget = sample(1_000, 100_000, start);
+        let from = start + period / 2;
+        let until = start + period * 3 + period / 2;
+        budget.charge(from, until);
+        let completed_runtime = start + period * 3 - from;
+        let completed_allowance = quota * 3;
+        assert_eq!(
+            budget.carry_debt_clocks,
+            completed_runtime - completed_allowance
+        );
+        assert_eq!(budget.used_clocks, period / 2);
+        assert!(!budget.eligible(until));
+    }
+
 }
