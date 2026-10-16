@@ -60,6 +60,8 @@ struct CpuMax {
     period_usec: u64,
     window_start: u64,
     used_clocks: u64,
+    /// Positive overrun from earlier quota windows. Never grants unused credit.
+    carry_debt_clocks: u64,
     nr_periods: u64,
     nr_throttled: u64,
     throttled_since: Option<u64>,
@@ -92,6 +94,19 @@ impl CpuMax {
                     .nr_periods
                     .saturating_add((start - self.window_start) / period);
             }
+            // When a 1000Hz tick preempts after a small quota is spent,
+            // discarding the overrun on every period would systematically
+            // grant another full quota. Repay *positive* debt from elapsed
+            // budgets; do not bank unused runtime as transferable credit.
+            let elapsed = start.saturating_sub(self.window_start) / period;
+            let allowance = if self.quota_usec == u64::MAX {
+                u64::MAX
+            } else {
+                Self::us_to_clocks(self.quota_usec).saturating_mul(elapsed)
+            };
+            self.carry_debt_clocks = self.carry_debt_clocks
+                .saturating_add(self.used_clocks)
+                .saturating_sub(allowance);
             self.window_start = start;
             self.used_clocks = 0;
         }
@@ -109,7 +124,10 @@ impl CpuMax {
 
     fn eligible(&mut self, now: u64) -> bool {
         self.advance(now);
-        if self.quota_usec == u64::MAX || self.used_clocks < Self::us_to_clocks(self.quota_usec) {
+        if self.quota_usec == u64::MAX
+            || self.used_clocks.saturating_add(self.carry_debt_clocks)
+                < Self::us_to_clocks(self.quota_usec)
+        {
             if let Some(since) = self.throttled_since.take() {
                 self.throttled_clocks = self
                     .throttled_clocks
@@ -261,6 +279,7 @@ impl CpuControl {
                 period_usec: DEFAULT_PERIOD_USEC,
                 window_start: 0,
                 used_clocks: 0,
+                carry_debt_clocks: 0,
                 nr_periods: 0,
                 nr_throttled: 0,
                 throttled_since: None,
