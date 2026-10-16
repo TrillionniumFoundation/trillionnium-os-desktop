@@ -16,9 +16,13 @@ memory-layout cast here.
 For A05 conversion, `DeliveryStatus::hos2_code` and
 `DeliveryState::hos2_code` expose the fixed numeric HOS2 0.3 values without a
 dependency on the wire crate. `ParentLimit` maps to wire `Conflict` because
-HOS2 0.3 has no separate parent-constraint status. A non-terminal
-`DeliveryObservation` always maps `saved_status` to wire `Ok`, as required by
-the QueryDelivery response rules.
+HOS2 0.3 has no separate parent-constraint status. The fallible
+`DeliveryObservation::hos2_saved_status_code` returns `Some(0)` only for a
+consistent non-terminal observation without a stored terminal outcome, and
+`Some(code)` for a terminal with a saved outcome. It returns `None` for
+terminal-without-status or nonterminal-with-status rather than forging an
+`Ok` result. A05 must not emit a response on `None`; A02 separately checks
+the complete wire payload's metadata invariants.
 
 ## A05: kernel ioctl and CapSpace
 

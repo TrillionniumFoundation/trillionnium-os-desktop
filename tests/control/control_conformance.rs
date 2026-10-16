@@ -150,7 +150,54 @@ fn control_states_map_to_hos2_codes_without_importing_the_wire_crate() {
 
     let core = ControlCore::new(boot(18), space(18));
     let pending = core.query_delivery(&core.delivery_view(), 1).unwrap();
-    assert_eq!(pending.hos2_saved_status_code(), 0);
+    assert_eq!(pending.hos2_saved_status_code(), Some(0));
+}
+
+#[test]
+fn malformed_public_delivery_observation_never_becomes_false_wire_success() {
+    let core = ControlCore::new(boot(191), space(191));
+    let original = core.query_delivery(&core.delivery_view(), 1).unwrap();
+
+    // All nonterminal QueryDelivery states require saved_status=Ok/0.
+    for state in [
+        DeliveryState::Reserved,
+        DeliveryState::Retired,
+        DeliveryState::NotSeen,
+        DeliveryState::HistoryLost,
+    ] {
+        let mut observation = original;
+        observation.state = state;
+        observation.status = None;
+        assert_eq!(observation.hos2_saved_status_code(), Some(0));
+        observation.status = Some(DeliveryStatus::Revoked);
+        assert_eq!(observation.hos2_saved_status_code(), None);
+    }
+
+    // A terminal without a stored outcome is unknown, NEVER an Ok result.
+    let mut terminal = original;
+    terminal.state = DeliveryState::Terminal;
+    terminal.status = None;
+    assert_eq!(terminal.hos2_saved_status_code(), None);
+
+    // Every valid terminal status maps exactly to the pre-existing HOS2 code.
+    for (status, code) in [
+        (DeliveryStatus::Ok, 0),
+        (DeliveryStatus::InvalidInput, 1),
+        (DeliveryStatus::PermissionDenied, 2),
+        (DeliveryStatus::StaleHandle, 3),
+        (DeliveryStatus::Revoked, 4),
+        (DeliveryStatus::Conflict, 5),
+        (DeliveryStatus::ParentLimit, 5),
+        (DeliveryStatus::ResourceExhausted, 6),
+        (DeliveryStatus::Unsupported, 7),
+        (DeliveryStatus::Indeterminate, 8),
+        (DeliveryStatus::Busy, 9),
+        (DeliveryStatus::OutOfOrder, 10),
+        (DeliveryStatus::Retired, 11),
+    ] {
+        terminal.status = Some(status);
+        assert_eq!(terminal.hos2_saved_status_code(), Some(code));
+    }
 }
 
 #[test]
