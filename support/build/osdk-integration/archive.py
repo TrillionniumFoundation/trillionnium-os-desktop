@@ -9,7 +9,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import shutil
 import stat
 
 EXCLUDED_DIRS = frozenset({"target", "harness", "work", "tmp", "bin", "fixed-tmp", "__pycache__"})
@@ -147,6 +146,12 @@ def archive(source, destination):
                 destination.mkdir(mode=0o700, parents=True, exist_ok=False)
                 destination_fd = os.open(destination, DIRECTORY_FLAGS)
                 created = os.fstat(destination_fd)
+                # A failure may occur after some output exists. Never perform
+                # pathname-based recursive cleanup: an attacker could replace
+                # this directory between inode verification and deletion.
+                # Keep a private, conspicuously incomplete archive on error.
+                write_archive_file(destination_fd, Path(".archive-incomplete"),
+                                   b"A01 evidence archive incomplete; never consume\n")
             output = archived
             payload = data
             if str(archived).endswith(".log") or str(archived).endswith(".metadata.json"):
@@ -168,13 +173,15 @@ def archive(source, destination):
         actual = destination.stat() if not destination.is_symlink() else None
         if actual is None or (actual.st_dev, actual.st_ino) != (created.st_dev, created.st_ino):
             raise ValueError("archive destination root changed during write")
+        # Removing the marker by FD cannot be redirected to a substituted
+        # pathname. A complete archive has both hashes and no marker.
+        os.unlink(".archive-incomplete", dir_fd=destination_fd)
     except BaseException:
-        # Only clean the exact directory inode created by this invocation.
-        # Never delete a pre-existing or concurrently replaced destination.
-        if created is not None and not destination.is_symlink():
-            current = destination.stat() if destination.exists() else None
-            if current and (current.st_dev, current.st_ino) == (created.st_dev, created.st_ino):
-                shutil.rmtree(destination)
+        # Never recursively delete a pathname on failure. Even verifying the
+        # inode immediately before rmtree is TOCTOU: another same-UID actor
+        # can replace it after the check and cause unrelated data loss.
+        # Partial outputs remain mode 0700 with .archive-incomplete and the
+        # caller gets an error, not a success-shaped evidence archive.
         raise
     finally:
         if destination_fd is not None:
