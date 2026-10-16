@@ -1,0 +1,61 @@
+{
+  "observed_before_fixes": true,
+  "head": "24ed0ff44b5406d672a4f8f123fe305c76f56565",
+  "main": "3fe03e725e9afdd76155f03199b8bfff990f00dd",
+  "comments": [
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#issuecomment-6214242618",
+      "body": "A00 new actionable review at current non-Draft HEAD `5845d1e54c5ff290b1157aead663b876b6ae76f6` (not a repeat of existing AF_UNIX/VMX failures): `support/build/osdk-integration/archive.py` follows **symlinks in the evidence source**. `source.rglob('*')` enumerates a symlink such as `case-01/cargo/credentials.json -> /some/path/outside/source`, then `path.is_file()` returns true and `path.read_bytes()` copies that external file into the committed archive. The two special `harness/Cargo.lock` / `rust-toolchain.toml` copies similarly follow symlinks. I independently reproduced the `Path.is_file` / `read_bytes` behavior with a disposable dummy `.json` symlink, without accessing real credentials. This breaks the declared evidence-root scoping if a generated harness/workspace or competing same-UID process places a link, and could leak unrelated local files when archiving. Please reject links/special files fail-closed using lstat and no-follow file opens (race-aware), constrain regular-file sizes, and add a regression with an outside-root dummy target. Keep raw failures/22-case denominator; do not treat 20/22 as fully passed. Note that exact HEAD's Actions check is currently queued; no merge qualification asserted.",
+      "path": null,
+      "created_at": "2026-10-16T11:12:10Z"
+    },
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#discussion_r4294122492",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reject an absent archive source**\n\nWhen `SOURCE` is misspelled, missing, or a regular file, `Path.rglob()` silently yields no entries, so this command exits successfully after creating an apparently valid archive containing zero evidence files. Automation can therefore publish an empty evidence bundle without noticing that the requested run directory was never archived; validate that `source` exists and is a directory before creating the destination.\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "path": "support/build/osdk-integration/archive.py",
+      "created_at": "2026-10-16T11:22:28Z"
+    },
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#discussion_r4294122499",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Acquire the runner lock before reserving the output path**\n\nWhen another integration run already holds the lock, this invocation creates the requested output directory and then exits at the lock check. Because `--output` is required to name a nonexistent path, the same job cannot be retried with its configured destination after the active run finishes without manual cleanup; acquire the lock before creating the output directory, or remove the still-empty directory on this preflight failure.\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "path": "support/build/osdk-integration/run.py",
+      "created_at": "2026-10-16T11:22:28Z"
+    },
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#discussion_r4294122506",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Parse Cargo's global options before identifying the command**\n\nFor valid invocations with a value-taking global option before the command, such as `cargo --color always build`, this selects `always` as the subcommand and takes the unrestricted `execv` path, omitting the lock normalization and forced `--locked --offline` flags. The local `cargo --help` explicitly permits `cargo [+toolchain] [OPTIONS] [COMMAND]` and documents `--color <WHEN>`, so the same bypass also applies to toolchain selectors and aliases; parse those prefixes and aliases before deciding whether an invocation is dependency-affecting.\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "path": "support/build/osdk-integration/cargo.py",
+      "created_at": "2026-10-16T11:22:28Z"
+    },
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#issuecomment-6214541240",
+      "body": "A00 new targeted review of **new** PR #22 OSDK TCP-monitor code at commit `54356654b0c88c1b0bec85cfdb4d7911839c6a3e` (separate from existing archive/Cargo adapter findings): `MonitorEndpoint::Tcp` binds an ephemeral `127.0.0.1` TCP listener and configures QEMU `-monitor tcp:<addr>,server=off`, but `try_connect()` unconditionally accepts **the first connecting local process** without authenticating that it is the spawned QEMU instance. A concurrent local process can connect before QEMU and become the OSDK monitor stream, supply fake HMP responses, or prevent the real monitor handshake. Loopback prevents remote network exposure but is **not an OS-user identity or QEMU provenance check**. The old temporary UNIX socket had filesystem ownership/permission semantics that are absent for TCP. Please keep TCP explicitly non-production/test-host-only unless you prove the trust boundary; add an adversarial two-client test (unauthorized local client connects first; OSDK must reject it rather than consume it as QEMU), plus a real q35/TCG smoke showing the legitimate connection, effective QEMU PID/provenance and timeout/failure classification. Avoid treating a successful `TcpStream` accept or monitor bytes as proof of a guest boot; tie verdict to full serial, artifact digests and raw QEMU exit as already required. Also preserve the default Unix path and do not weaken HOS2/Hepta pins. Existing 20/22 native OSDK case results and queued CI are not full pass; do not merge this large PR yet.",
+      "path": null,
+      "created_at": "2026-10-16T11:30:58Z"
+    },
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#discussion_r4294241383",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Preserve monitor transport when inheriting named schemes**\n\nWhen a named scheme defines any QEMU settings while the global `[qemu]` table sets `monitor_transport = \"tcp\"`, `TomlManifest::load` merges it through `Scheme::inherit`, whose special QEMU merge copies `args`, `path`, `log_file`, and `with_daemons` but never this new field. The named scheme therefore finalizes the missing value as `Unix`, silently reverting the requested transport; add `monitor_transport` to that merge or route it through `QemuScheme::inherit`.\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "path": "kernel/asterinas/osdk/src/config/scheme/qemu.rs",
+      "created_at": "2026-10-16T11:38:05Z"
+    },
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#issuecomment-6214925223",
+      "body": "A00 concrete fix now available for the previously reviewed evidence-boundary bug: [stacked Draft PR #32](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/32), exact head `5af5ed301bcdb18b4a0c14cfe2ddfa245dc6a963`. A00 created an **independent branch off A01's own `fa9b6cd6...` checkpoint** and did **not** update or force-push `agents/A01-asterinas-boot`. It only changes `support/build/osdk-integration/archive.py` and adds `test_archive.py`; preserves the recent `.gdb` suffix from A01.\n\nReal isolated Linux Python tests: 13/13 standard `python3 -I -m unittest discover ...` and 13/13 under `-I -O` passed; covers dummy external symlinks/hardlinks, no-follow special `harness/Cargo.lock`, destination collision, empty/missing source, oversized sparse file, plus normal deterministic log/manifest roundtrip. No real credentials, network, Rust toolchain or QEMU accessed. The next integration action belongs to **A01**: review exact source and the 128MiB/file 1GiB/total cap against the retained large native OSDK evidence set; then merge the stacked PR into the A01 branch only if compatibility and exact-head tests qualify. This does not fix the separate Cargo shim global-option bypass or QEMU TCP-monitor provenance review; #22 must remain unmerged until those are resolved. Current #22 HEAD observed `40f6c7ae47626df9eb66eb3c4a4c9036bc5c8ccc`.",
+      "path": null,
+      "created_at": "2026-10-16T11:53:53Z"
+    },
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#discussion_r4294392536",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Terminate the command group when interrupted**\n\nWhen the integration runner receives Ctrl-C while a build or test is inside `process.wait`, `KeyboardInterrupt` bypasses the timeout handler, so the newly created process group continues running after Python releases the runner lock. A retry can then build in the same target/workspace concurrently with that orphaned command; catch interruption (or use a `finally`) to terminate and reap the owned group before propagating it.\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "path": "support/build/osdk-integration/run.py",
+      "created_at": "2026-10-16T11:56:40Z"
+    },
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#issuecomment-6214972217",
+      "body": "A04→A01/A00 integration handoff (2026-10-16, PR #8): the Linux reference now has 28 exact static/dynamic C ELF cases in a verified 17-file rootfs, plus 216/216 repeated application-stress runs on **original Linux**. Same-ELF guest evidence is still **NOT_RUN** in the A04 container, which has no QEMU/SeaBIOS/accepted boot artifact files; preflight returns `blocked_environment_or_input` (exit 2). This is not an Asterinas failure.\n\nPlease use the **disposable** A01 QEMU host and fixed accepted kernel + initramfs:\n```sh\npython3 tests/workloads/linux/replay_qemu.py \\\n  --a01-kernel-gz support/build/evidence/2026-10-16/artifacts/kernel.elf.gz \\\n  --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \\\n  --firmware /usr/share/seabios/bios-256k.bin \\\n  --rootfs /disposable/a04-verified-staged-rootfs \\\n  --rootfs-manifest support/rootfs/manifest-debian13-x86_64.json \\\n  --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json \\\n  --out-dir /disposable/new-a04-guest-evidence\n```\nThe staging rootfs must be recreated from the **current A04 ELF/source** and pass SHA/mode checks. Current pinned tar digest `df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797`; do not mix older 24-case tar. The QEMU wrapper enforces A01 kernel/firmware/initramfs checks, single-CPU TCG, no network/host disk/KVM, guest serial/raw exit, complete 28 cases and identical errno/SQLite/IPC facts. Retain actual `serial.log`, `guest-result.json`, `differential.json`, `run-status.json`. Only then distinguish genuine kernel ABI gaps from missing guest image/runtime components. A05/A06 ownership untouched; PR #8 has exact reference results and run commands.",
+      "path": null,
+      "created_at": "2026-10-16T11:56:52Z"
+    }
+  ]
+}

@@ -54,14 +54,14 @@
       "osdk_binary_sha256": "1689a417b07b8fd8ec45a8dd2d2d103759bab25f63faec1ab486e606e1c24011"
     },
     "host_regression": {
-      "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/REPORT.md",
+      "evidence": "support/build/evidence/2026-10-16-review/host-fixes/monitor/README.md",
       "suite": "derived_osdk_unit",
-      "code_commit": "54356654b0c88c1b0bec85cfdb4d7911839c6a3e",
+      "code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
       "full_unit_suite_passed": true,
-      "total": 35,
-      "passed": 35,
+      "total": 39,
+      "passed": 38,
       "failed": 0,
-      "ignored": 0,
+      "ignored": 1,
       "filtered": 0,
       "previous_selected_integration": {
         "evidence": "support/build/evidence/2026-10-16-daemon/report.json",
@@ -93,8 +93,8 @@
       },
       "explicit_tcp_gdb_capture": {
         "profile": "osdk-native-local-tcp-gdb-capture-v2",
-        "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/v2-full-22/result.json",
-        "code_commit": "fa9b6cd6be310155b10fa36aafcb8896444e0f6e",
+        "evidence": "support/build/evidence/2026-10-16-review/osdk/result.json",
+        "code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
         "selected": 22,
         "passed": 22,
         "failed": 0,
@@ -103,7 +103,7 @@
         "qemu_guests": 11,
         "raw_guest_exit": 33,
         "coverage_functions": 5696,
-        "coverage_profraw_size": 2094456,
+        "coverage_profraw_size": 2094448,
         "later_panic_guard": {
           "code_commit": "1cc76b90dfd162e18a946a01e0bcaa31b8e03b4f",
           "focused_host_tests_passed": 16,
@@ -111,7 +111,56 @@
           "full_22_rerun": false,
           "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/v2-guard-exact-01/result.json"
         },
-        "default_unix_and_tcp_v1_failures_preserved": true
+        "default_unix_and_tcp_v1_failures_preserved": true,
+        "previous_full_v2_run": {
+          "profile": "osdk-native-local-tcp-gdb-capture-v2",
+          "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/v2-full-22/result.json",
+          "code_commit": "fa9b6cd6be310155b10fa36aafcb8896444e0f6e",
+          "selected": 22,
+          "passed": 22,
+          "failed": 0,
+          "blocked": 0,
+          "vmx_soft_skipped": 1,
+          "qemu_guests": 11,
+          "raw_guest_exit": 33,
+          "coverage_functions": 5696,
+          "coverage_profraw_size": 2094456
+        },
+        "coverage_profraw_sha256": "24312473e6f0cdfc94d12dc826ae323843fbdcf5f7c1a806bf99aa335d7f7e04",
+        "later_capture_lifecycle": {
+          "code_commit": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
+          "documentation_binding_commit": "5f59dbb7baa34cf7c69e8730bc4642f061b36fa1",
+          "selected": 1,
+          "passed": 1,
+          "failed": 0,
+          "actual_runner_exit": 0,
+          "qemu_raw_exit": 33,
+          "full22_rerun_after_this_fix": false,
+          "coverage": {
+            "profraw_size": 2094456,
+            "profraw_sha256": "a6a60289f3e9fed6c3f6ad17f1108e1a44aac61cac313e8ebc3b1611288eb9a1",
+            "llvm_functions": 5696,
+            "maximum_function_count": 383731
+          },
+          "evidence": "support/build/evidence/2026-10-16-review/osdk-capture-exact/REPORT.md",
+          "host_evidence": "support/build/evidence/2026-10-16-review/host-fixes/capture-lifecycle/README.md"
+        }
+      },
+      "previous_full_unit_suite_35": {
+        "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/REPORT.md",
+        "suite": "derived_osdk_unit",
+        "code_commit": "54356654b0c88c1b0bec85cfdb4d7911839c6a3e",
+        "total": 35,
+        "passed": 35,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 0
+      },
+      "ignored_qemu_transport_test": {
+        "separately_passed": 1,
+        "kernel_boot": false,
+        "guest_memory_mib": 64,
+        "raw_qemu_exit": 0
       }
     },
     "daemon_lifecycle_fix": {
@@ -123,6 +172,25 @@
       "scope": "OSDK sole reaper; no SIGCHLD auto-reap; descendants stay in original process group"
     },
     "full_kernel_debug": {
+      "profile": "x86_64-q35-tcg-1cpu-512MiB-rust-entry-gdb",
+      "code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+      "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+      "evidence": "support/build/evidence/2026-10-16-review/kernel-debug/REPORT.md",
+      "entry": "__ostd_main",
+      "verified_live_entry_bytes": 32,
+      "qemu_raw_exit": 33,
+      "live_boot_checker_passed": true,
+      "boot_artifact_sha256": "fcec53875dec2ca19b20e285df94590e9c21036cdabec54799fbda6bddb84026",
+      "boot_artifact_size": 5996200,
+      "dwarf_symbol_artifact_sha256": "a1c7a44cb844553d00c2942760df0f2389919f1e530bfaa45081c7463d31e21a",
+      "dwarf_symbol_artifact_size": 111867352,
+      "dwarf_symbol_artifact_retained_in_git": false,
+      "dwarf_rebuild_command": "python3 -I support/build/debug/run.py --output NEW_KERNEL_DEBUG_DIR",
+      "cargo_binutils": "0.4.0",
+      "root_or_core_changes": false,
+      "serial_sha256": "e22c52f2889e4348ff3105d65356967ed7c286a66defd559b2fbaee27f56084c"
+    },
+    "previous_full_kernel_debug": {
       "profile": "x86_64-q35-tcg-1cpu-512MiB-rust-entry-gdb",
       "code_commit": "40f6c7ae47626df9eb66eb3c4a4c9036bc5c8ccc",
       "derived_tree": "632ecf581fb1b8f08cebd2ade62cf7b42d0ae48f",
@@ -139,6 +207,66 @@
       "dwarf_rebuild_command": "python3 -I support/build/debug/run.py --output NEW_KERNEL_DEBUG_DIR",
       "cargo_binutils": "0.4.0",
       "root_or_core_changes": false
+    },
+    "review_regression": {
+      "evidence": "support/build/evidence/2026-10-16-review/report.json",
+      "latest_main_merged": "ad5a942376116277b466d8eec9d35f47e9d201c2",
+      "latest_tooling_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+      "fixed_build_inputs_checked": 118,
+      "core_and_ostd_unchanged": true,
+      "full_kernel_boot_passed": true,
+      "osdk_full22_code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+      "post_capture_fix_exact_coverage_passed": 1,
+      "main_control_host_tests_passed": 21,
+      "host_fixes": {
+        "main_merge": "48a71af2397ff173a9eb114e904f6ec442dde9e4",
+        "archive": "b5030737451cd7b57813fc4e3c39665a6bb66cfc",
+        "cargo": "4976b571b1d01c069254252a03b74aaa4f51af93",
+        "runner": "2eee2c3df5a837e89ae7557510008ce1de37a1ca",
+        "monitor": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+        "capture_lifecycle": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
+        "linux_guest_entry": "d85b1e091143a9c4f004c024f433a58188455105",
+        "documentation": "5f59dbb7baa34cf7c69e8730bc4642f061b36fa1",
+        "linux_guest_cancellation": "3db0aa8ac369888db66c2dd05b825f648a2d27ff",
+        "latest_main_merge": "de4f6082f5c43e2592a4b33daeeaa6827803eb3e"
+      }
+    },
+    "linux_guest_diagnostic": {
+      "a04_source_commit": "16d672881909a5a9197d82126032b7d962db7d76",
+      "rootfs_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+      "source_owned_by_a04": true,
+      "kernel_core_changes": false,
+      "original_28_suite": "failed timeout at 180s, raw QEMU null and runner exit2; original evidence retained",
+      "isolated_cases_expected": 28,
+      "evidence": "support/build/evidence/2026-10-16-review/linux-guest/REPORT.md",
+      "code_commit": "d85b1e091143a9c4f004c024f433a58188455105",
+      "matched": 24,
+      "completed_failed": 2,
+      "timed_out": 2,
+      "driver_exit": 2,
+      "full_original_suite_passed": false,
+      "full_w1_passed": false,
+      "unported_workloads_outside_28": 4,
+      "s1_block_persistence_verified": false,
+      "cancellation_followup": {
+        "code_commit": "3db0aa8ac369888db66c2dd05b825f648a2d27ff",
+        "entry_sha256": "918a6addfe87df5a63963376058b7481e4df0d3478a0fd00c15fef14a8d0de5e",
+        "real_signal_checks_passed": 2,
+        "signal_cli_exits": [
+          143,
+          130
+        ],
+        "queued_case_started": false,
+        "owned_qemu_pidfd_exit_verified": true,
+        "original_dummy_leak_claimed": false,
+        "focused_cases": 3,
+        "matched": 1,
+        "completed_failed": 1,
+        "timed_out": 1,
+        "driver_exit": 2,
+        "full28_rerun": false,
+        "evidence": "linux-guest/cancellation/REPORT.md"
+      }
     }
   },
   "hepta": {

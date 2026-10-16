@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "scope": "Fix capture helper session escape and direct-child cleanup; discussion_r4294528498",
+  "base_commit": "70598848b12a75cf18bc8dc5b68bfe0298b3f899",
+  "source": {
+    "support/build/osdk-integration/record-qemu.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/record-qemu.py",
+      "size": 32111,
+      "sha256": "975249776d9b08e0894b1112f876da0975825193215a3e6b88e1045895d3b504"
+    },
+    "support/build/osdk-integration/capture.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/capture.py",
+      "size": 11568,
+      "sha256": "7043aa006a901fcdb1e13a3adfade8e3f5f834d1841746343fea4a622bf585b1"
+    },
+    "support/build/osdk-integration/test_record_qemu.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_record_qemu.py",
+      "size": 29031,
+      "sha256": "780de328f13217d8146171c08e107002e401e3229a1e43e594a3f1b70b9180c8"
+    },
+    "support/build/osdk-integration/test_capture.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_capture.py",
+      "size": 2919,
+      "sha256": "32d3deb3db9286cf48504a9ff29e23a987df97c34197fb4f42e8d1fe92fe6bbd"
+    },
+    "support/build/osdk-integration/test_capture_lifecycle.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_capture_lifecycle.py",
+      "size": 15228,
+      "sha256": "3e682cd4c069bb809dde226510158eac0234aa000f9413534fe42f86a0c5ce64"
+    }
+  },
+  "unchanged": [
+    "kernel/asterinas/**",
+    "support/build/osdk-integration/run.py",
+    "support/build/osdk-integration/cargo.py"
+  ],
+  "results": {
+    "original_leak": {
+      "reproduced": true,
+      "command_outer_timeout_seconds": 4,
+      "helper_and_real_gdb_survived_outer_cleanup": true,
+      "gdb_tcp_lease_remained_busy": true,
+      "workload_is_kernel": false,
+      "observation": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-baseline/timeout/observation.json",
+        "size": 1596,
+        "sha256": "da1ceb77fc7fcaf78b4e852a9638a6daa70c6bda36c3d523c54246bfeef0cb53"
+      },
+      "log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-baseline.log",
+        "size": 113,
+        "sha256": "d163522403e1b26fa6e955b0985a77e9acf24687c68a0f693f61e3db9cd5c6cb"
+      },
+      "original_sources": {
+        "capture.py": {
+          "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-original/capture.py",
+          "size": 9013,
+          "sha256": "7d7477f655089b0e3af0ffae473eb1697afcc461f02778a4bc3a5206eb3f3dd1"
+        },
+        "record-qemu.py": {
+          "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-original/record-qemu.py",
+          "size": 32073,
+          "sha256": "0c21d913538af26be28f1897fcb6da912e3a7677092db351e63fd0b28dfb9ee2"
+        }
+      }
+    },
+    "patched_lifecycle": {
+      "passed": 5,
+      "failed": 0,
+      "log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish.log",
+        "size": 103,
+        "sha256": "f275cf876ddfaf875ef3e9f871cbb0879656e79c759eda595890624a2d62ef48"
+      },
+      "cases": {
+        "sigint": {
+          "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/sigint/observation.json",
+          "size": 1526,
+          "sha256": "388f912af45b39c1357352e2fa97a84b9c45882c94fd6702f8ac748a7e51899b"
+        },
+        "sigterm": {
+          "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/sigterm/observation.json",
+          "size": 1532,
+          "sha256": "f6da183690a5c2ec9735416ba5ef0f845ddc5507176a733405829463802d11c7"
+        },
+        "standalone": {
+          "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/standalone/observation.json",
+          "size": 2344,
+          "sha256": "2aee840342c983b62e08c1a9653217372ebcbb5185569ac55232ccba24c4a898"
+        },
+        "statuses": {
+          "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/statuses/observation.json",
+          "size": 2086,
+          "sha256": "c2a01048257270c4e70b4b33a46ff6fac71c6b138d03953f2555e9ecf4a2f10e"
+        },
+        "timeout": {
+          "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/timeout/observation.json",
+          "size": 1582,
+          "sha256": "b3c99bf8b096f60ce490d95a82ebcf67ddf99f5816246a2cc5bd01113c4dbcd5"
+        }
+      },
+      "claims": [
+        "Outer command timeout/SIGINT/SIGTERM stop capture and real GDB: pidfd readable plus held TCP leases released.",
+        "Standalone helper SIGTERM kills and reaps direct native GDB; sidecar reports failure and SIGTERM.",
+        "Real direct subprocess helper exit7 maps125; synthetic QEMU subprocess exit65 stays65. The latter are lifecycle/status fixtures, not VM guest boots."
+      ]
+    },
+    "recorder_unit": {
+      "passed": 35,
+      "failed": 0,
+      "normal": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-capture-recorder-02-final.log",
+        "size": 134,
+        "sha256": "659d333e0b4cc1dd66cb56ac5d2f5dd76780f4431901449ddb5ef7f1037db376"
+      },
+      "optimized": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-capture-recorder-04-final-optimized.log",
+        "size": 134,
+        "sha256": "e3ef9a22c972345e74c6485926df833a6b39580ed447979fd1a24f4478721d51"
+      }
+    },
+    "capture_unit": {
+      "passed": 4,
+      "failed": 0,
+      "normal": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-capture-unit-05-final.log",
+        "size": 102,
+        "sha256": "d094b1bd2c8318c96097f80c50da282add5b2972970a77046de8db6c8935f6ca"
+      },
+      "optimized": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-capture-unit-06-final-optimized.log",
+        "size": 102,
+        "sha256": "d094b1bd2c8318c96097f80c50da282add5b2972970a77046de8db6c8935f6ca"
+      },
+      "includes_real_SIGINT_SIGTERM_during_owner_publication": true
+    }
+  },
+  "commands": [
+    "python3 -I support/build/osdk-integration/test_record_qemu.py",
+    "python3 -I -O support/build/osdk-integration/test_record_qemu.py",
+    "python3 -I support/build/osdk-integration/test_capture.py",
+    "python3 -I -O support/build/osdk-integration/test_capture.py",
+    "A01_CAPTURE_LIFECYCLE_OUT=NEW_DIR A01_GDB_REAL=TASK_GDB LD_LIBRARY_PATH=TASK_GDB_LIB python3 -I support/build/osdk-integration/test_capture_lifecycle.py"
+  ],
+  "environment": {
+    "gdb": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+      "size": 8920528,
+      "sha256": "3832cc070ae1716e322105d3b39fb398695e5f031c9d39224cf227a8c2b889f6"
+    },
+    "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu",
+    "python": "Python 3.12.14"
+  },
+  "notes": [
+    "No new session for capture or GDB. Outer run.py remains sole group owner and WNOWAIT group cleanup unchanged.",
+    "Inner recorder signals only retained direct helper Popen; no numeric killpg after reap.",
+    "Capture owns direct GDB Popen with deferred signals during owner publication; failure cleanup kills/reaps only that child, suppressing repeat shutdown while cleaning.",
+    "No Git writes or Rust/Cargo/run.py changes. Full22 was run by parent on earlier code; it was not rerun for this fix. Parent should run exact coverage on frozen fix.",
+    "Previous passing intermediate lifecycle runs retained under next5-capture-lifecycle-patched-01,02-final,03-final."
+  ]
+}
