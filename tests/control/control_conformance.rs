@@ -632,6 +632,60 @@ fn concurrent_ancestor_revoke_and_child_commit_preserve_epoch_fence() {
 }
 
 #[test]
+fn concurrent_ancestor_revoke_and_child_grant_issuance_fails_closed() {
+    // If issuance linearizes first, the returned grant becomes invalid
+    // after revoke and reactivation. If revoke wins, issuance must fail.
+    for n in 0..128_u128 {
+        let root_domain = root(206_000 + n, CPU_PERIOD_NS);
+        let child = with_parent(
+            domain(207_000 + n),
+            object(207_000 + n),
+            &root_domain,
+            70,
+        )
+        .unwrap();
+        let who = publisher(208_000 + n);
+        let start = Arc::new(Barrier::new(3));
+
+        let grant_child = child.clone();
+        let grant_start = Arc::clone(&start);
+        let issue = thread::spawn(move || {
+            grant_start.wait();
+            grant_child.grant(who)
+        });
+        let revoke_root = root_domain.clone();
+        let revoke_start = Arc::clone(&start);
+        let revoke = thread::spawn(move || {
+            revoke_start.wait();
+            revoke_root.revoke()
+        });
+        start.wait();
+        let issued = issue.join().unwrap();
+        revoke.join().unwrap();
+        assert!(matches!(
+            &issued,
+            Ok(_) | Err(ResourceError::Revoked)
+        ));
+        root_domain.reactivate_for_host_model().unwrap();
+        if let Ok(stale) = issued {
+            assert_eq!(
+                child.install_budget_for_host_model(&stale, 1, CPU_PERIOD_NS, 60, 1),
+                Err(ResourceError::GrantEpochMismatch)
+            );
+        }
+        assert_eq!(child.revision(), 1);
+        let fresh = child.grant(who).unwrap();
+        assert_eq!(
+            child
+                .install_budget_for_host_model(&fresh, 1, CPU_PERIOD_NS, 60, 2)
+                .unwrap()
+                .revision,
+            2
+        );
+    }
+}
+
+#[test]
 fn child_commit_admitted_before_ancestor_revoke_is_immutable() {
     let grandparent = root(76_000, 80);
     let parent = with_parent(domain(76_001), object(76_001), &grandparent, 70).unwrap();
