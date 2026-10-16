@@ -83,7 +83,10 @@ impl CpuMax {
     fn advance(&mut self, now: u64) {
         let period = self.period_clocks();
         let start = now / period * period;
-        if start != self.window_start {
+        // A stale timestamp must not rewind the accounting window and grant
+        // the same CPU quota again. N0's invariant TSC is monotonic, but the
+        // state transition still needs to fail closed on an old observation.
+        if start > self.window_start {
             if let Some(since) = self.throttled_since.take() {
                 self.throttled_clocks = self
                     .throttled_clocks
@@ -112,11 +115,77 @@ impl CpuMax {
         }
     }
 
+    /// Settle the positive debt of completed windows touched by a runtime
+    /// interval. A timer tick may straddle a quota boundary: charging only
+    /// the current window loses the CPU time before that boundary.
+    ///
+    /// This is O(1), even if the scheduler reports an unusually long interval.
+    /// Empty periods repay existing debt but do not accumulate positive credit.
+    fn debt_after_crossing(&self, from: u64, new_start: u64, period: u64) -> u64 {
+        let quota = Self::us_to_clocks(self.quota_usec);
+        let old_end = self.window_start.saturating_add(period);
+        let old_spent = old_end.saturating_sub(from.max(self.window_start));
+        let mut debt = self
+            .carry_debt_clocks
+            .saturating_add(self.used_clocks)
+            .saturating_add(old_spent)
+            .saturating_sub(quota);
+
+        // Completed periods after the old window and before the new one.
+        let middle_start = old_end;
+        let middle_count = new_start.saturating_sub(middle_start) / period;
+        if middle_count == 0 {
+            return debt;
+        }
+        // Process completely idle periods before the first execution period.
+        let idle_count = (from.max(middle_start).saturating_sub(middle_start) / period)
+            .min(middle_count);
+        debt = debt.saturating_sub(quota.saturating_mul(idle_count));
+        let first_active = middle_start.saturating_add(period.saturating_mul(idle_count));
+        if first_active == new_start {
+            return debt;
+        }
+
+        // The first non-idle completed period may contain only a suffix of
+        // the interval; all remaining completed periods ran continuously.
+        let first_spent = first_active
+            .saturating_add(period)
+            .saturating_sub(from.max(first_active));
+        debt = debt.saturating_add(first_spent).saturating_sub(quota);
+        let full_count = new_start
+            .saturating_sub(first_active.saturating_add(period)) / period;
+        if period >= quota {
+            debt.saturating_add(period.saturating_sub(quota).saturating_mul(full_count))
+        } else {
+            debt.saturating_sub(quota.saturating_sub(period).saturating_mul(full_count))
+        }
+    }
+
     fn charge(&mut self, from: u64, until: u64) {
         if until < from {
             return;
         }
+        let period = self.period_clocks();
+        let new_start = until / period * period;
+        // Never re-open an earlier accounting window on a backward clock.
+        if new_start < self.window_start {
+            return;
+        }
+
+        // Save the true debt from completed periods before the normal advance
+        // updates nr_periods/throttled_usec and resets used_clocks. This avoids
+        // counting older idle periods as transferable positive CPU credit.
+        let corrected_debt = if new_start > self.window_start
+            && self.quota_usec != u64::MAX
+        {
+            Some(self.debt_after_crossing(from, new_start, period))
+        } else {
+            None
+        };
         self.advance(until);
+        if let Some(debt) = corrected_debt {
+            self.carry_debt_clocks = debt;
+        }
         self.used_clocks = self
             .used_clocks
             .saturating_add(until.saturating_sub(from.max(self.window_start)));
