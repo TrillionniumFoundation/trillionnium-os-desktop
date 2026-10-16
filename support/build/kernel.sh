@@ -40,13 +40,33 @@ flock -n 9 || { echo "another A01 build is using the kernel workspace" >&2; exit
 # to create and lock a different inode before this process releases its fd.
 manifest_file="$kernel_dir/kernel/OSDK.toml"
 manifest_temporary=
-manifest_identity=
+manifest_anchor_open=
 cleanup() {
-    if [[ -n "$manifest_identity" && -f "$manifest_file" ]] &&
-        [[ $(stat -c '%d:%i' "$manifest_file") == "$manifest_identity" ]]; then
-        rm -f "$manifest_file"
+    local original_status=$? cleanup_status=0
+    trap - EXIT
+    if [[ "$manifest_anchor_open" == 1 ]]; then
+        # FD 8 pins the actual owned inode. Capture the pathname atomically;
+        # checking stat followed by rm could unlink a foreign replacement.
+        if python3 -I "$build_dir/cleanup-manifest.py" \
+            --manifest "$manifest_file" --owned-fd 8 > "$run_dir/manifest-cleanup.json"; then
+            cleanup_status=0
+        else
+            cleanup_status=$?
+        fi
+        exec 8<&-
+        manifest_anchor_open=
+        printf '%s\n' "$cleanup_status" > "$run_dir/manifest-cleanup-exit-code.txt" || cleanup_status=1
     fi
-    if [[ -n "$manifest_temporary" ]]; then rm -f "$manifest_temporary"; fi
+    if [[ -n "$manifest_temporary" ]]; then
+        rm -f -- "$manifest_temporary" || cleanup_status=1
+    fi
+    if [[ "$original_status" == 0 && "$cleanup_status" != 0 ]]; then
+        original_status=$cleanup_status
+        printf '%s\n' "$original_status" > "$run_dir/run-exit-code.txt" || true
+    fi
+    # A failing EXIT trap return alone need not change a successful exit.
+    # Preserve an earlier build failure, otherwise propagate cleanup failure.
+    exit "$original_status"
 }
 trap cleanup EXIT
 if [[ -e "$kernel_dir/kernel/OSDK.toml" || -L "$kernel_dir/kernel/OSDK.toml" ]]; then
@@ -71,6 +91,7 @@ python3 "$build_dir/verify-source.py" > "$run_dir/source-inputs.json"
     printf 'CARGO_BUILD_JOBS=%s\nVDSO_LIBRARY_DIR=%s\n' "$CARGO_BUILD_JOBS" "$VDSO_LIBRARY_DIR"
     sha256sum "$VDSO_LIBRARY_DIR/vdso_x86_64.so"
     sha256sum "$OSDK_CARGO_LOCK"
+    sha256sum "$build_dir/cleanup-manifest.py"
     for tool in docker nix-build; do command -v "$tool" || true; done
     if [[ -e /dev/kvm ]]; then ls -l /dev/kvm; else echo '/dev/kvm absent; explicit TCG selected'; fi
 } > "$run_dir/environment.log" 2>&1
@@ -79,9 +100,10 @@ python3 "$build_dir/minimal/prepare-initramfs.py" \
     --output "$run_dir/initramfs.cpio.gz" --manifest "$run_dir/initramfs-manifest.json"
 manifest_temporary=$(mktemp "$kernel_dir/kernel/.a01-osdk-XXXXXX")
 cp "$build_dir/minimal/OSDK.toml" "$manifest_temporary"
-# Register ownership before publication so an interrupt immediately after ln
-# cannot leave our installed manifest behind with an uninitialized identity.
-manifest_identity=$(stat -c '%d:%i' "$manifest_temporary")
+# Pin ownership before publication, including an interrupt immediately after
+# ln. Reserved FD 8 stays open through cleanup; the workspace lock uses FD 9.
+exec 8<"$manifest_temporary"
+manifest_anchor_open=1
 ln -T "$manifest_temporary" "$manifest_file"
 rm "$manifest_temporary"
 manifest_temporary=

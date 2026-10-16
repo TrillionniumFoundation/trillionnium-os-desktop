@@ -27,9 +27,9 @@ existing verified inputs; the defaults are `support/build/out/linux-vdso` and
 `/usr/bin/busybox`.
 
 The wrapper invokes the **upstream `make kernel` and `make run_kernel` targets**,
-with `minimal.mk` replacing their initramfs prerequisite. It temporarily copies
-the minimal OSDK manifest to `kernel/asterinas/kernel/OSDK.toml`, refuses to
-replace an existing file, and removes its copy on exit. No full NixOS ISO,
+with `minimal.mk` replacing their initramfs prerequisite. It temporarily publishes
+the minimal OSDK manifest at `kernel/asterinas/kernel/OSDK.toml` and refuses to
+replace an existing entry. Its exit cleanup is described below. No full NixOS ISO,
 Nix installation, Docker daemon, GRUB image, writable data disk, network,
 display, or KVM is needed for this profile.
 
@@ -54,9 +54,16 @@ checker from their recorded acceptance commit, not a retroactively added hash.
 The wrapper rejects incomplete log capture, forces its initramfs prerequisite
 on, and shares a persistent workspace lock with the kernel-test runner. Its
 temporary manifest is installed without replacing an existing file, and
-cleanup removes only the inode installed by that invocation.
-The temporary inode is registered before publishing its manifest, including
-when a signal arrives immediately after the atomic link operation.
+FD 8 pins its owned regular-file inode before publication, including when a
+signal arrives immediately after the atomic link operation. Cleanup atomically
+moves the public entry into a fresh private directory before inspecting it.
+It deletes only the captured owned inode. A foreign regular file, symlink or
+directory is restored with `renameat2(RENAME_NOREPLACE)`. If restoration is
+unavailable or another writer has filled the public name, the captured entry
+is retained under `.a01-manifest-custody-*` with its recovery path reported.
+Cleanup failure makes an otherwise successful invocation fail; an earlier
+nonzero build status is preserved. `manifest-cleanup.json` records the outcome
+and helper source hash. The workspace lock stays held throughout cleanup.
 
 Standalone calls supervise one worker process group through interruption and
 completion. SIGINT/SIGTERM stop that group before reaping its waitable leader;
@@ -80,8 +87,9 @@ support/build/kernel.sh run_kernel
 Each worktree retains the existing refusal to overwrite a pre-existing
 `kernel/OSDK.toml`. Preserve and inspect such a file before another attempt;
 the wrapper does not guess that an existing manifest is safe to remove.
-An external writer can still replace files inside a worktree; isolation does
-not disable that writer or relax the manifest's inode ownership check.
+An external writer can still replace files inside a worktree. Custody protects
+the captured entry; it does not keep the public pathname continuously occupied
+or prevent a new entry from appearing there while cleanup runs.
 
 ## Kernel-mode regression tests
 
