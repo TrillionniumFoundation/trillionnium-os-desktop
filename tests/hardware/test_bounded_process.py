@@ -40,6 +40,16 @@ class BoundedProcessTests(unittest.TestCase):
             run_bounded([sys.executable, '-c', 'pass'], capture_output=True,
                         text=True, timeout=1, check=True)
 
+    def test_unrelated_file_write_is_not_size_limited(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as d:
+            path = str(Path(d) / "jit-cache.bin")
+            code = 'import pathlib;pathlib.Path(%r).write_bytes(b"x"*1048576);print("ok")' % path
+            result = self.run_code(code)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual((Path(d) / "jit-cache.bin").stat().st_size, 1048576)
+
     def test_strict_size_limit_is_nonzero(self):
         self.assertEqual(MAX_OUTPUT_BYTES, 65536)
 

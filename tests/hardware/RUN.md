@@ -188,23 +188,29 @@ GPU reset, host driver unbind, firmware or production service alteration.
 ## Linux subprocess output/timeout limits for disposable GPU lab
 
 `tests/hardware/bounded_process.py` is now the default process runner used by
-`run_isolated_cuda.py`. It does **not** run privileged device setup. It
-redirects stdout/stderr to anonymous temporary files and applies Linux
-`RLIMIT_FSIZE=65536` per file to the *child only*, avoiding unbounded pipe
-capture or disk growth. It uses a fresh child process group and on timeout
-kills only that group, then returns a `TimeoutExpired`; neither process
-termination nor the child-file-size limit is evidence that GPU DMA stopped.
+`run_isolated_cuda.py`. It does **not** run privileged device setup. Its
+nonblocking `selectors` loop reads the Linux child's stdout/stderr with a
+64 KiB **in-memory maximum per stream**, immediately stopping the isolated
+child process group when output exceeds the cap. It does NOT use
+`RLIMIT_FSIZE` or change the child file-size limit: CUDA/NVRTC must be
+allowed to write normal compiler caches and other unrelated files.
+There are no unbounded `subprocess.run(capture_output=True)` buffers.
 
-Returned output of 64 KiB or more is rejected with
+Timeout kills only the fresh child process group and returns a
+`TimeoutExpired`. Neither termination nor EOF is evidence that GPU DMA
+stopped; children that detach into a different process session are an
+independent host supervisor concern. The output-limit failure is mapped to
 `failed_output_limit_device_effect_unknown`. Queue/device effects remain
-`unknown`, not recovered, and no new GPU work should be admitted until the
-A01/A05 hardware owner verifies quiescence. Safe <64 KiB JSON is returned
-unchanged; nonzero child exits are not swallowed. The output limiter has no
-role in device MMIO/IOMMU or GPU firmware.
+`unknown`, not recovered, and no more GPU work should be admitted until
+the A01/A05 hardware owner verifies quiescence. Safe <64 KiB JSON is
+returned unchanged; nonzero child exits are not swallowed. The limiter
+has no MMIO/IOMMU or firmware authority.
 
-Seven subprocess-only Python tests (normal JSON, bounded stdout/stderr,
-timeout/group kill, nonzero child code, invalid capture settings, cap size)
-ran 7/7 in the execution container, with no GPU or KVM access. Two additional
-CPU-only integration assertions in `test_runner.py` cover overflow classification
-and default bounded-runner selection, pending the full CI run. Rust, Asterinas
-guest GPU computation and physical reset/recovery remain unverified.
+Eight subprocess-only Python tests (normal JSON, bounded stdout/stderr,
+timeout/group kill, nonzero child code, invalid capture settings, cap size,
+and a 1 MiB unrelated file write with no artificial RLIMIT interference)
+ran **8/8 in the execution container** with no GPU or KVM access. Two
+additional CPU-only integration assertions in `test_runner.py` cover
+overflow classification and default bounded-runner selection, pending
+the full CI run. Rust, Asterinas guest GPU computation and physical
+reset/recovery remain unverified.
