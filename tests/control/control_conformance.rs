@@ -637,3 +637,114 @@ fn same_identity_different_core_instances_cannot_use_each_others_tokens() {
         Err(DeliveryError::PermissionDenied)
     );
 }
+
+#[test]
+fn duplicate_child_domain_id_does_not_reduce_registered_parent_floor() {
+    let parent = root(8100, 100);
+    let live_child = with_parent(domain(8101), object(8101), &parent, 80).unwrap();
+
+    // Without an identity collision check, the second child overwrites the
+    // first child's 80ns registration with 10ns in the parent's BTreeMap.
+    assert!(matches!(
+        with_parent(domain(8101), object(8102), &parent, 10),
+        Err(ResourceError::InvalidIdentity)
+    ));
+    assert!(matches!(
+        ResourceDomain::new(domain(8101), object(8103), Some(&parent), 10),
+        Err(ResourceError::InvalidIdentity)
+    ));
+
+    let grant = parent.grant(publisher(8104)).unwrap();
+    assert_eq!(
+        parent.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 50, 1),
+        Err(ResourceError::ParentConstraint)
+    );
+    assert_eq!(live_child.budget().cap_ns, 80);
+}
+
+#[test]
+fn revoked_ancestor_and_reused_ancestor_id_cannot_create_child() {
+    let root = root(8200, 100);
+    let child = with_parent(domain(8201), object(8201), &root, 90).unwrap();
+    assert!(matches!(
+        with_parent(domain(8200), object(8202), &child, 10),
+        Err(ResourceError::InvalidIdentity)
+    ));
+    root.revoke();
+    assert!(matches!(
+        with_parent(domain(8203), object(8203), &child, 10),
+        Err(ResourceError::Revoked)
+    ));
+    assert!(matches!(
+        ResourceDomain::new(domain(8204), object(8204), Some(&root), 10),
+        Err(ResourceError::Revoked)
+    ));
+}
+
+#[test]
+fn install_budget_settles_cpu_window_at_effective_period_boundary() {
+    let target = root(8300, 100);
+    target.charge_cpu(80, CPU_PERIOD_NS - 1).unwrap();
+    let grant = target.grant(publisher(8301)).unwrap();
+
+    // No intervening charge_cpu or ReadUsage: the successful InstallBudget
+    // itself must roll the expired window; historical cumulative use remains.
+    let now_ns = CPU_PERIOD_NS + 11;
+    let receipt = target
+        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 90, now_ns)
+        .unwrap();
+    assert_eq!(receipt.consumed_at_apply_ns, 0);
+    assert_eq!(receipt.revision, 2);
+    let usage = target.usage(now_ns);
+    assert_eq!(usage.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(usage.window_consumed_ns, 0);
+    assert_eq!(usage.cumulative_cpu_ns, 80);
+
+    target.charge_cpu(7, now_ns + 1).unwrap();
+    let same_window = target
+        .install_budget_for_host_model(&grant, 2, CPU_PERIOD_NS, 90, now_ns + 2)
+        .unwrap();
+    assert_eq!(same_window.consumed_at_apply_ns, 7);
+    assert_eq!(target.usage(now_ns + 2).window_consumed_ns, 7);
+}
+
+#[test]
+fn concurrent_child_creation_and_parent_cap_decrease_cannot_both_succeed() {
+    // This is a race-safety property, not a deterministic historical-race
+    // reproducer: whichever mutation wins the shared gate excludes the other.
+    for index in 0..64_u128 {
+        let parent = root(8400 + index, 100);
+        let grant = parent.grant(publisher(8500 + index)).unwrap();
+        let barrier = Arc::new(Barrier::new(3));
+
+        let child_parent = parent.clone();
+        let child_barrier = Arc::clone(&barrier);
+        let create = thread::spawn(move || {
+            child_barrier.wait();
+            with_parent(
+                domain(8600 + index),
+                object(8600 + index),
+                &child_parent,
+                80,
+            )
+        });
+
+        let budget_parent = parent.clone();
+        let budget_barrier = Arc::clone(&barrier);
+        let decrease = thread::spawn(move || {
+            budget_barrier.wait();
+            budget_parent.install_budget_for_host_model(
+                &grant,
+                1,
+                CPU_PERIOD_NS,
+                50,
+                1,
+            )
+        });
+
+        barrier.wait();
+        let created = create.join().unwrap();
+        let decreased = decrease.join().unwrap();
+        assert!(!(created.is_ok() && decreased.is_ok()));
+    }
+}
