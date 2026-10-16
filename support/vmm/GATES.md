@@ -103,3 +103,34 @@ Confirmed actual merged main source interfaces: `kernel/asterinas/ostd/src/arch/
 **None is an A09-owned public device-passthrough API.** A00/A01 must coordinate
 export/integration and actual VMX or AMD SVM execution; A09 does not patch
 A05/A06 kernel core sources unilaterally.
+
+
+## Route C lab-host ISA/IOMMU preflight (CPU-only; not VM authorization)
+
+For a first disposable RTX 4060 passthrough prototype prefer a **real Intel
+VMX + VT-d reference host**, because pinned Asterinas v0.19.0 has concrete
+Intel VMX/EPT primitives. Visible AMD SVM CPU flags (such as those on the
+restricted AMD EPYC execution container) cannot be treated as evidence of
+VMX support. SVM/AMD-Vi is a separate implementation/qualification task.
+
+The read-only `support/vmm/platform_gate.py` consumes JSON from the existing
+`support/hardware/probe.py` with an additional CPU `vendor_id` field:
+
+```sh
+python3 support/hardware/probe.py --target-vendor nvidia --output inventory.json
+python3 support/vmm/platform_gate.py --inventory inventory.json --output -
+```
+
+It requires Linux inventory schema, GenuineIntel CPU vendor, exposed `vmx`
+CPU flag, a visible DMAR ACPI table, at least one IOMMU group, and an actual
+PCI NVIDIA accelerator. Missing any condition is `blocked` (exit 2). Even if
+all predicates match, it returns `manual_review_required` (exit 3), **never
+automatic passthrough approval**. CPU VMX and DMAR visibility do not prove
+that Asterinas owns active IOMMU mappings, isolated interrupts, the entire
+IOMMU group, or a safe device reset. Complete IOMMU-group membership and
+absence of productive work must be verified separately with read-only VFIO
+preflight and independent host log evidence.
+
+This check only selects a plausible *Linux reference-lab* machine. It does
+not claim that Linux itself is the new Rust host, that the GPU is isolated,
+or that either Linux/CUDA or the new kernel ran GPU compute.

@@ -57,6 +57,8 @@ def snapshot(root=Path("/"), target_vendor="nvidia"):
                   if s.startswith(("model name", "Hardware")) and ":" in s), None)
     flags_line = next((s.split(":", 1)[1].split() for s in cpuinfo.splitlines()
                        if s.startswith(("flags", "Features")) and ":" in s), [])
+    cpu_vendor = next((s.split(":", 1)[1].strip() for s in cpuinfo.splitlines()
+                       if s.startswith("vendor_id") and ":" in s), None)
     pci = pci_devices(root)
     vendor_id = {"nvidia": "0x10de", "amd": "0x1002"}[target_vendor]
     matches = [p for p in pci if p["vendor_id"] == vendor_id and p["is_accelerator_class"]]
@@ -75,7 +77,7 @@ def snapshot(root=Path("/"), target_vendor="nvidia"):
             "machine": platform.machine() if root == Path("/") else None,
             "container_marker": (root / ".dockerenv").exists(),
         },
-        "cpu": {"model": model, "visible_processor_entries": sum(s.startswith("processor\t") for s in cpuinfo.splitlines()),
+        "cpu": {"model": model, "vendor_id": cpu_vendor, "visible_processor_entries": sum(s.startswith("processor\t") for s in cpuinfo.splitlines()),
                 "vmx_flag": "vmx" in flags_line, "svm_flag": "svm" in flags_line},
         "pci_devices": pci,
         "candidate": {"target_vendor": target_vendor, "matching_visible_devices": [p["bdf"] for p in matches],

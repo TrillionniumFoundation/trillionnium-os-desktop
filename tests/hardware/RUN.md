@@ -214,3 +214,16 @@ additional CPU-only integration assertions in `test_runner.py` cover
 overflow classification and default bounded-runner selection, pending
 the full CI run. Rust, Asterinas guest GPU computation and physical
 reset/recovery remain unverified.
+
+
+## First-lab Intel VMX/VT-d feasibility check
+
+The `support/vmm/platform_gate.py` code reads the unmodified read-only
+`probe.py` inventory. The candidate policy is Intel `GenuineIntel` plus a
+visible `vmx` flag, DMAR table, IOMMU groups and NVIDIA GPU. AMD `svm` is
+**not** Intel VMX, and cannot substitute for the pinned upstream VMX backend.
+A passing synthetic inventory returns only `manual_review_required` (exit
+3), never permission to bind VFIO, reset or attach a physical device. Seven
+CPU-only negative/synthetic tests passed in the A09 container; an absent
+inventory file was also checked to return `blocked` (exit 2). No real
+suitable lab machine has yet been identified or exercised.
