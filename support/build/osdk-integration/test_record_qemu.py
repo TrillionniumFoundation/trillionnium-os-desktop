@@ -402,15 +402,38 @@ class CaptureTests(unittest.TestCase):
     def test_capture_failure_cancels_qemu_promptly(self):
         qemu, capture = MagicMock(), MagicMock()
         qemu.poll.return_value, capture.poll.return_value = None, 7
-        with patch.object(shim, "stop_capture_group") as stop:
+        with patch.object(shim, "stop_capture_child") as stop:
             self.assertEqual(shim.supervise_capture(qemu, capture, 10), (125, False))
         stop.assert_called_once_with(capture)
         qemu.kill.assert_called_once()
 
+    def test_qemu_guest_failure_65_is_preserved(self):
+        qemu, capture = MagicMock(), MagicMock()
+        qemu.poll.return_value, capture.poll.return_value = 65, None
+        with patch.object(shim, "stop_capture_child") as stop:
+            self.assertEqual(shim.supervise_capture(qemu, capture, 10), (65, False))
+        stop.assert_called_once_with(capture)
+        qemu.kill.assert_not_called()
+
+    def test_capture_cleanup_only_signals_unreaped_direct_child(self):
+        process = MagicMock()
+        process.poll.return_value = None
+        process.wait.side_effect = [subprocess.TimeoutExpired(["capture"], 1), -9]
+        shim.stop_capture_child(process)
+        process.terminate.assert_called_once()
+        process.kill.assert_called_once()
+        self.assertEqual(process.wait.call_count, 2)
+        reaped = MagicMock()
+        reaped.poll.return_value = 7
+        shim.stop_capture_child(reaped)
+        reaped.terminate.assert_not_called()
+        reaped.kill.assert_not_called()
+        reaped.wait.assert_called_once_with()
+
     def test_qemu_failure_cancels_capture_promptly(self):
         qemu, capture = MagicMock(), MagicMock()
         qemu.poll.return_value, capture.poll.return_value = 1, None
-        with patch.object(shim, "stop_capture_group") as stop:
+        with patch.object(shim, "stop_capture_child") as stop:
             self.assertEqual(shim.supervise_capture(qemu, capture, 10), (1, False))
         stop.assert_called_once_with(capture)
 
@@ -418,7 +441,7 @@ class CaptureTests(unittest.TestCase):
         qemu, capture = MagicMock(), MagicMock()
         qemu.poll.return_value = capture.poll.return_value = None
         with patch.object(shim.time, "monotonic", side_effect=[0, 0, 5]), \
-                patch.object(shim, "stop_capture_group") as stop:
+                patch.object(shim, "stop_capture_child") as stop:
             self.assertEqual(shim.supervise_capture(qemu, capture, 1), (124, True))
         stop.assert_called_once_with(capture)
         qemu.kill.assert_called_once()
