@@ -1,0 +1,28 @@
+{
+  "kind": "read_only_build_inputs_audit_no_build_no_vm",
+  "head": "692c9cf6ced7660304e2f94e31f034ab478830d6",
+  "inputs": {
+    "/usr/bin/busybox": {
+      "size": 2124608,
+      "sha256": "dbac288c29ba568459550a2da9e7ae0ded6b1fc728ee9fad3044c44e62d6ac14",
+      "static_x86_64_ELF_input_validator_passed": true
+    },
+    "/usr/share/seabios/bios-256k.bin": {
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    }
+  },
+  "tools_in_parent_PATH": {
+    "bash": "/usr/bin/bash",
+    "make": "/usr/bin/make",
+    "gcc": "/usr/bin/gcc",
+    "qemu-system-x86_64": "/usr/bin/qemu-system-x86_64",
+    "gdb": null,
+    "nm": "/usr/bin/nm",
+    "flock": "/usr/bin/flock",
+    "rustup": null,
+    "cargo": null,
+    "rust-strip": null
+  },
+  "note": "Custom toolchain and extracted GDB may require documented CARGO_HOME/RUSTUP_HOME/PATH/LD_LIBRARY_PATH. Null in inherited PATH is not a new build regression."
+}

@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "kind": "disposable_source_patch_restore_only_no_build",
+  "baseline_commit": "692c9cf6ced7660304e2f94e31f034ab478830d6",
+  "all_restorations_verified": true,
+  "results": [
+    {
+      "patch": "baseline-to-first-intermediate.patch",
+      "argv": [
+        "patch",
+        "--batch",
+        "--forward",
+        "-p1",
+        "-i",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-kernel-lifecycle/host-kernel/patches/baseline-to-first-intermediate.patch"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next6-kernel-patch-restoration/chain",
+      "exit": 0,
+      "restored_source_sha256": {
+        "support/build/kernel.sh": "67be1710836069b7b84a50ff5c97d5ccf9f190bbc98c99741d30869ec6ea04fd",
+        "support/build/kernel-supervisor.py": "146d634167b3313bdbcea8e1f36d0b967cb1eab6a5827a3b1822a0b8d6cea46e",
+        "support/build/tests/test_kernel_runner.py": "a9ce1498b93a0a94b332958623a7b501d051d7da23d39b2b0ab4dbbdd0d86e7a",
+        "support/build/tests/test_kernel_supervisor.py": "a8279909af097e138e2939768bc50f5a35711f3a4933ed205092ab56f13e02e9"
+      }
+    },
+    {
+      "patch": "first-intermediate-to-cooperative-final.patch",
+      "argv": [
+        "patch",
+        "--batch",
+        "--forward",
+        "-p1",
+        "-i",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-kernel-lifecycle/host-kernel/patches/first-intermediate-to-cooperative-final.patch"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next6-kernel-patch-restoration/chain",
+      "exit": 0,
+      "restored_source_sha256": {
+        "support/build/kernel.sh": "67be1710836069b7b84a50ff5c97d5ccf9f190bbc98c99741d30869ec6ea04fd",
+        "support/build/kernel-supervisor.py": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61",
+        "support/build/tests/test_kernel_runner.py": "a9ce1498b93a0a94b332958623a7b501d051d7da23d39b2b0ab4dbbdd0d86e7a",
+        "support/build/tests/test_kernel_supervisor.py": "f73c930f99a57167c6ffa3111c341ca371b36e28bc13a31f01c06e7f7c7c15ff"
+      }
+    },
+    {
+      "patch": "baseline-to-cooperative-final.patch",
+      "argv": [
+        "patch",
+        "--batch",
+        "--forward",
+        "-p1",
+        "-i",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-kernel-lifecycle/host-kernel/patches/baseline-to-cooperative-final.patch"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next6-kernel-patch-restoration/direct",
+      "exit": 0,
+      "restored_source_sha256": {
+        "support/build/kernel.sh": "67be1710836069b7b84a50ff5c97d5ccf9f190bbc98c99741d30869ec6ea04fd",
+        "support/build/kernel-supervisor.py": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61",
+        "support/build/tests/test_kernel_runner.py": "a9ce1498b93a0a94b332958623a7b501d051d7da23d39b2b0ab4dbbdd0d86e7a",
+        "support/build/tests/test_kernel_supervisor.py": "f73c930f99a57167c6ffa3111c341ca371b36e28bc13a31f01c06e7f7c7c15ff"
+      }
+    }
+  ],
+  "git_writes": false
+}

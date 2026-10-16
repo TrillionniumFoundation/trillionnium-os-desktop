@@ -1,0 +1,464 @@
+--- a/support/build/kernel.sh
++++ b/support/build/kernel.sh
+@@ -11,6 +11,12 @@
+         echo 'gdb_server requires the owned listener from support/build/debug/run.py' >&2; exit 2;
+     }
+     (( A01_GDB_PORT > 0 && A01_GDB_PORT <= 65535 && A01_GDB_FD >= 64 )) || exit 2
++fi
++# Public calls own one supervised worker group. The debug runner supplies this
++# private lifecycle route because it already owns the complete inherited group.
++# This flag selects cleanup ownership; it is not a security boundary.
++if [[ ${A01_KERNEL_WORKER:-} != 1 ]]; then
++    exec python3 -I "$build_dir/kernel-supervisor.py" "$target"
+ fi
+ export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+ export RUSTUP_TOOLCHAIN=nightly-2026-07-21
+--- /dev/null
++++ b/support/build/kernel-supervisor.py
+@@ -0,0 +1,177 @@
++#!/usr/bin/env python3
++"""Supervise a public kernel.sh call and its complete disposable worker group.
++
++The debug runner bypasses this entry with A01_KERNEL_WORKER=1 because its
++existing session owner must remain responsible for every inherited descendant.
++"""
++from contextlib import contextmanager
++import json
++import os
++from pathlib import Path
++import re
++import signal
++import subprocess
++import sys
++import time
++
++
++class RunnerInterrupted(Exception):
++    def __init__(self, signum):
++        self.signum = signum
++        super().__init__(signal.Signals(signum).name)
++
++
++@contextmanager
++def interruption_handlers():
++    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
++
++    def interrupted(signum, _frame):
++        for number in previous:
++            signal.signal(number, signal.SIG_IGN)
++        raise RunnerInterrupted(signum)
++
++    try:
++        for number in previous:
++            signal.signal(number, interrupted)
++        yield
++    finally:
++        for number, handler in previous.items():
++            signal.signal(number, handler)
++
++
++@contextmanager
++def publish_worker():
++    """Delay cooperative shutdown until the Popen owner has been assigned."""
++    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
++    pending = []
++
++    def remember(signum, _frame):
++        pending.append(signum)
++
++    try:
++        for number in previous:
++            signal.signal(number, remember)
++        yield
++    finally:
++        for number, handler in previous.items():
++            signal.signal(number, handler)
++        if pending:
++            for number in previous:
++                signal.signal(number, signal.SIG_IGN)
++            raise RunnerInterrupted(pending[0])
++
++
++@contextmanager
++def ignore_shutdown():
++    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
++    try:
++        for number in previous:
++            signal.signal(number, signal.SIG_IGN)
++        yield
++    finally:
++        for number, handler in previous.items():
++            signal.signal(number, handler)
++
++
++class OwnedWorker:
++    """Keep the direct leader unreaped until its group is terminated."""
++    def __init__(self, command, *, env, pass_fds=()):
++        self.process = subprocess.Popen(command, env=env, start_new_session=True, pass_fds=pass_fds)
++        self.reaped = False
++        self.external_reap = False
++        self.status = None
++
++    def exited(self):
++        if self.reaped:
++            return True
++        if self.external_reap:
++            raise RuntimeError("worker was externally reaped; group signals are disarmed")
++        try:
++            return os.waitid(os.P_PID, self.process.pid,
++                             os.WEXITED | os.WNOHANG | os.WNOWAIT) is not None
++        except ChildProcessError as error:
++            self.external_reap = True
++            raise RuntimeError("worker was externally reaped; group signals are disarmed") from error
++
++    def stop(self, grace=0.1):
++        if self.reaped or self.external_reap:
++            return self.status
++        with ignore_shutdown():
++            self.exited()
++            try:
++                os.killpg(self.process.pid, signal.SIGTERM)
++            except ProcessLookupError:
++                pass
++            deadline = time.monotonic() + grace
++            while time.monotonic() < deadline:
++                time.sleep(min(0.01, max(0, deadline - time.monotonic())))
++            # WNOWAIT retains the leader identity until both group signals have
++            # been sent. ECHILD permanently disarms this entry before signaling.
++            self.exited()
++            try:
++                os.killpg(self.process.pid, signal.SIGKILL)
++            except ProcessLookupError:
++                pass
++            self.status = self.process.wait()
++            self.reaped = True
++            return self.status
++
++    def wait(self):
++        while not self.exited():
++            time.sleep(0.05)
++        return self.stop()
++
++
++def inherited_descriptors(target, environment):
++    if target != "gdb_server":
++        return ()
++    value = environment.get("A01_GDB_FD", "")
++    if not re.fullmatch(r"[0-9]+", value) or not 64 <= int(value) <= 2**31 - 1:
++        raise ValueError("gdb_server requires its owned listener descriptor >=64")
++    descriptor = int(value)
++    os.fstat(descriptor)
++    return (descriptor,)
++
++
++def main():
++    target = sys.argv[1] if len(sys.argv) == 2 else ""
++    if target not in ("kernel", "run_kernel", "gdb_server"):
++        print("usage: kernel-supervisor.py [kernel|run_kernel|gdb_server]", file=sys.stderr)
++        return 2
++    environment = dict(os.environ, A01_KERNEL_WORKER="1")
++    command = ["bash", str(Path(__file__).with_name("kernel.sh")), target]
++    worker = None
++    status = 125
++    record = {"kind": "kernel_worker_group_supervision", "argv": command,
++              "group_owner": "standalone supervisor", "worker_reaped": False,
++              "external_reap_disarmed": False}
++    with interruption_handlers():
++        try:
++            descriptors = inherited_descriptors(target, environment)
++            record["pass_fds"] = list(descriptors)
++            with publish_worker():
++                worker = OwnedWorker(command, env=environment, pass_fds=descriptors)
++            record["leader_pid"] = worker.process.pid
++            raw = worker.wait()
++            status = raw if raw >= 0 else 128 - raw
++        except RunnerInterrupted as error:
++            status = 128 + error.signum
++            record["interrupted_by"] = signal.Signals(error.signum).name
++        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
++            record["error"] = str(error)
++        finally:
++            if worker is not None:
++                try:
++                    worker.stop()
++                except (OSError, RuntimeError, subprocess.SubprocessError) as error:
++                    record["cleanup_error"] = str(error)
++                    status = 125
++                record.update(leader_pid=worker.process.pid, raw_worker_exit=worker.status,
++                              worker_reaped=worker.reaped, external_reap_disarmed=worker.external_reap)
++            record["exit_code"] = status
++            print("A01_KERNEL_SUPERVISOR " + json.dumps(record, sort_keys=True), file=sys.stderr)
++    return status
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+--- a/support/build/tests/test_kernel_runner.py
++++ b/support/build/tests/test_kernel_runner.py
+@@ -80,7 +80,7 @@
+         self.vdso = self.root / "vdso"
+         for directory in (self.build / "minimal", self.kernel, self.mock, self.vdso):
+             directory.mkdir(parents=True)
+-        for name in ("kernel.sh", "check-boot.py"):
++        for name in ("kernel.sh", "kernel-supervisor.py", "check-boot.py"):
+             shutil.copyfile(BUILD / name, self.build / name)
+         (self.build / "verify-source.py").write_text("print('{}')\n")
+         (self.build / "minimal/prepare-initramfs.py").write_text(PREPARE_INITRAMFS)
+--- /dev/null
++++ b/support/build/tests/test_kernel_supervisor.py
+@@ -0,0 +1,255 @@
++#!/usr/bin/env python3
++"""Full wrapper cancellation with disposable TCP leases, never a kernel/VM."""
++import fcntl
++import importlib.util
++import json
++import os
++from pathlib import Path
++import select
++import signal
++import socket
++import subprocess
++import sys
++import time
++import unittest
++from unittest.mock import patch
++
++
++BUILD = Path(__file__).resolve().parents[1]
++
++
++def load(path, name):
++    spec = importlib.util.spec_from_file_location(name, path)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++supervisor = load(BUILD / "kernel-supervisor.py", "kernel_supervisor")
++fixtures = load(Path(__file__).with_name("test_kernel_runner.py"), "kernel_runner_fixtures")
++
++
++def exited(descriptor, timeout=0):
++    return bool(select.select([descriptor], [], [], timeout)[0])
++
++
++def lease_released(address):
++    deadline = time.monotonic() + 2
++    while time.monotonic() < deadline:
++        with socket.socket() as probe:
++            try:
++                probe.bind(tuple(address))
++                return True
++            except OSError:
++                time.sleep(.01)
++    return False
++
++
++class KernelSupervisorTests(unittest.TestCase):
++    def setUp(self):
++        self.fixture = fixtures.KernelRunnerTests("test_owned_manifest_removed_after_success")
++        self.fixture.setUp()
++        self.addCleanup(self.fixture.doCleanups)
++
++    def save(self, name, value, log=None):
++        setting = os.environ.get("A01_KERNEL_LIFECYCLE_OUT")
++        if setting:
++            root = Path(setting) / name
++            root.mkdir(parents=True, exist_ok=False)
++            (root / "observation.json").write_text(json.dumps(value, indent=2) + "\n")
++            if log is not None:
++                (root / "runner.log").write_bytes(log)
++
++    def wait_json(self, path):
++        deadline = time.monotonic() + 8
++        while time.monotonic() < deadline:
++            try:
++                return json.loads(path.read_text())
++            except (FileNotFoundError, json.JSONDecodeError):
++                time.sleep(.01)
++        self.fail(f"host fixture did not become ready: {path}")
++
++    def lifecycle(self, signum=None):
++        fixture = self.fixture
++        child_code = (
++            "import json,os,signal,socket,time;from pathlib import Path;"
++            "lease=socket.socket();lease.bind(('127.0.0.1',0));lease.listen(1);"
++            "signal.signal(signal.SIGTERM,signal.SIG_IGN);"
++            "Path('lease-child.json').write_text(json.dumps({'pid':os.getpid(),"
++            "'group':os.getpgrp(),'address':lease.getsockname()}));time.sleep(60)"
++        )
++        fixture.write_tool("make", """#!/usr/bin/python3
++import json,os,socket,subprocess,sys,time
++from pathlib import Path
++if '--version' in sys.argv: print('GNU Make host fixture');raise SystemExit(0)
++root=Path(os.environ['MOCK_PROJECT']);os.chdir(root)
++lease=socket.socket();lease.bind(('127.0.0.1',0));lease.listen(1)
++child=subprocess.Popen([sys.executable,'-c',CHILD],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,pass_fds=(9,))
++Path('lease-make.json').write_text(json.dumps({'pid':os.getpid(),'group':os.getpgrp(),'child_pid':child.pid,'address':lease.getsockname()}))
++while not Path('release-make').exists(): time.sleep(.01)
++""".replace("CHILD", repr(child_code)))
++        environment = dict(fixture.environment, A01_RUN_DIR=str(fixture.root / "evidence"))
++        command = ["bash", str(fixture.build / "kernel.sh"), "kernel"]
++        descriptors = {}
++        process = None
++        record = {"kind": "kernel_supervisor_host_fixture_no_kernel_no_vm", "argv": command,
++                  "signal": signal.Signals(signum).name if signum else None}
++        log = fixture.root / "supervisor.log"
++        try:
++            with log.open("wb") as output:
++                process = subprocess.Popen(command, env=environment, stdout=output,
++                                           stderr=subprocess.STDOUT, start_new_session=True)
++                descriptors["supervisor"] = os.pidfd_open(process.pid)
++                make = self.wait_json(fixture.root / "lease-make.json")
++                child = self.wait_json(fixture.root / "lease-child.json")
++                descriptors["worker"] = os.pidfd_open(make["group"])
++                descriptors["make"] = os.pidfd_open(make["pid"])
++                descriptors["lease_child"] = os.pidfd_open(child["pid"])
++                record.update(supervisor_pid=process.pid, make=make, lease_child=child)
++                self.assertNotEqual(make["group"], process.pid)
++                self.assertEqual(make["group"], child["group"])
++                self.assertTrue(all(not exited(fd) for fd in descriptors.values()))
++                lock = fixture.build / "out-kernel.lock"
++                lock_identity = (lock.stat().st_dev, lock.stat().st_ino)
++                self.assertTrue((fixture.kernel / "OSDK.toml").is_file())
++                if signum is not None:
++                    signal.pidfd_send_signal(descriptors["supervisor"], signum)
++                    # A repeat shutdown request must not unwind owned cleanup.
++                    time.sleep(.01)
++                    signal.pidfd_send_signal(descriptors["supervisor"], signal.SIGTERM)
++                else:
++                    (fixture.root / "release-make").touch()
++                process.wait(timeout=6)
++            states = {name: exited(fd, 2) for name, fd in descriptors.items()}
++            record.update(returncode=process.returncode, pidfd_exited=states,
++                          make_tcp_released=lease_released(make["address"]),
++                          child_tcp_released=lease_released(child["address"]),
++                          manifest_present=(fixture.kernel / "OSDK.toml").exists(),
++                          stable_lock_inode=(lock.stat().st_dev, lock.stat().st_ino) == lock_identity)
++            with lock.open("a") as stream:
++                fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
++                record["workspace_lock_released"] = True
++                fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
++            text = log.read_text()
++            receipts = [json.loads(line.removeprefix("A01_KERNEL_SUPERVISOR "))
++                        for line in text.splitlines() if line.startswith("A01_KERNEL_SUPERVISOR ")]
++            self.assertEqual(len(receipts), 1, text)
++            record["supervision_receipt"] = receipts[0]
++            self.assertTrue(receipts[0]["worker_reaped"])
++            self.assertFalse(receipts[0]["external_reap_disarmed"])
++            self.assertEqual(process.returncode, 128 + signum if signum else 0)
++            self.assertTrue(all(states.values()), states)
++            self.assertTrue(record["make_tcp_released"])
++            self.assertTrue(record["child_tcp_released"])
++            self.assertFalse(record["manifest_present"])
++            self.assertTrue(record["stable_lock_inode"])
++            record["passed"] = True
++        finally:
++            # Failure cleanup uses only retained pidfds, never guessed global
++            # PIDs/groups. Every fixture process is known through its receipt.
++            for descriptor in descriptors.values():
++                try:
++                    signal.pidfd_send_signal(descriptor, signal.SIGKILL)
++                except ProcessLookupError:
++                    pass
++            for descriptor in descriptors.values():
++                exited(descriptor, 2)
++                os.close(descriptor)
++            if process is not None:
++                process.wait(timeout=3)
++            name = signal.Signals(signum).name.lower() if signum else "normal-descendant"
++            self.save(name, record, log.read_bytes() if log.exists() else b"")
++
++    def test_sigint_stops_full_wrapper_and_owned_descendants(self):
++        self.lifecycle(signal.SIGINT)
++
++    def test_sigterm_stops_full_wrapper_and_owned_descendants(self):
++        self.lifecycle(signal.SIGTERM)
++
++    def test_normal_worker_exit_also_closes_remaining_descendant(self):
++        self.lifecycle()
++
++    def test_worker_route_inherits_existing_outer_group(self):
++        fixture = self.fixture
++        fixture.write_tool("make", """#!/usr/bin/python3
++import json,os,sys
++from pathlib import Path
++if '--version' in sys.argv: print('GNU Make host fixture');raise SystemExit(0)
++Path(os.environ['MOCK_PROJECT'],'worker-group.json').write_text(json.dumps({'group':os.getpgrp()}))
++""")
++        env = dict(fixture.environment, A01_RUN_DIR=str(fixture.root / "evidence"), A01_KERNEL_WORKER="1")
++        process = subprocess.Popen(["bash", str(fixture.build / "kernel.sh"), "kernel"],
++                                   env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
++                                   start_new_session=True)
++        output, _ = process.communicate(timeout=8)
++        self.assertEqual(process.returncode, 0, output)
++        self.assertEqual(json.loads((fixture.root / "worker-group.json").read_text())["group"], process.pid)
++        self.assertNotIn(b"A01_KERNEL_SUPERVISOR", output)
++
++    def test_gdb_listener_descriptor_survives_public_supervisor(self):
++        fixture = self.fixture
++        fixture.write_tool("make", """#!/usr/bin/python3
++import json,os,socket,sys
++from pathlib import Path
++if '--version' in sys.argv: print('GNU Make host fixture');raise SystemExit(0)
++stream=socket.socket(fileno=int(os.environ['A01_GDB_FD']))
++Path(os.environ['MOCK_PROJECT'],'gdb-fd.json').write_text(json.dumps({'fd':stream.fileno(),'address':stream.getsockname(),'listening':stream.getsockopt(socket.SOL_SOCKET,socket.SO_ACCEPTCONN),'argv':sys.argv}))
++""")
++        with socket.socket() as original:
++            original.bind(("127.0.0.1", 0))
++            original.listen(1)
++            descriptor = fcntl.fcntl(original.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
++            try:
++                env = dict(fixture.environment, A01_RUN_DIR=str(fixture.root / "evidence"),
++                           A01_GDB_FD=str(descriptor), A01_GDB_PORT=str(original.getsockname()[1]))
++                result = subprocess.run(["bash", str(fixture.build / "kernel.sh"), "gdb_server"],
++                                        env=env, pass_fds=(descriptor,), stdout=subprocess.PIPE,
++                                        stderr=subprocess.STDOUT, timeout=8)
++                # The fake make did not launch a kernel; ordinary live boot
++                # validation must still reject it after validating FD handoff.
++                self.assertNotEqual(result.returncode, 0)
++                record = json.loads((fixture.root / "gdb-fd.json").read_text())
++                self.assertEqual(record["fd"], descriptor)
++                self.assertEqual(record["address"], list(original.getsockname()))
++                self.assertTrue(record["listening"])
++                self.assertIn("gdb_server", record["argv"])
++            finally:
++                os.close(descriptor)
++
++    def test_pending_signals_wait_for_worker_owner_publication(self):
++        for number in (signal.SIGINT, signal.SIGTERM):
++            owner = None
++            with supervisor.interruption_handlers():
++                with self.assertRaises(supervisor.RunnerInterrupted) as error:
++                    with supervisor.publish_worker():
++                        os.kill(os.getpid(), number)
++                        owner = object()
++                self.assertIsNotNone(owner)
++                self.assertEqual(error.exception.signum, number)
++
++    def test_repeated_shutdown_does_not_interrupt_cleanup(self):
++        with supervisor.interruption_handlers():
++            with supervisor.ignore_shutdown():
++                os.kill(os.getpid(), signal.SIGINT)
++                os.kill(os.getpid(), signal.SIGTERM)
++
++    def test_reaped_entry_never_signals_numeric_group_again(self):
++        owned = supervisor.OwnedWorker([sys.executable, "-c", "pass"], env=os.environ.copy())
++        self.assertEqual(owned.wait(), 0)
++        with patch.object(supervisor.os, "killpg") as killpg:
++            self.assertEqual(owned.stop(), 0)
++            killpg.assert_not_called()
++
++    def test_external_reap_permanently_disarms_group_signaling(self):
++        owned = supervisor.OwnedWorker([sys.executable, "-c", "pass"], env=os.environ.copy())
++        self.assertEqual(owned.process.wait(timeout=3), 0)
++        with patch.object(supervisor.os, "killpg") as killpg:
++            with self.assertRaisesRegex(RuntimeError, "externally reaped"):
++                owned.stop()
++            self.assertTrue(owned.external_reap)
++            self.assertIsNone(owned.stop())
++            killpg.assert_not_called()
++
++
++if __name__ == "__main__":
++    unittest.main(verbosity=2)

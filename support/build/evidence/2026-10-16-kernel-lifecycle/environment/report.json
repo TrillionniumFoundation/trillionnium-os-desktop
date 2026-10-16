@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "scope": "Frozen read-only/low-impact preflight, not a build or VM result. The later live source build is outside this archive.",
+  "source_commit": "692c9cf6ced7660304e2f94e31f034ab478830d6",
+  "source_tree": "2e71a25d018a2746b6dd6903a36f056895b45a9c",
+  "detached_worktree": true,
+  "worktree": "/workspace/scratch/ae1a8cf05419/a01-next6-build",
+  "shared_git_common_dir": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/.git",
+  "same_git_object_store_not_a_second_kernel_implementation": true,
+  "preflight_archive": "raw.tar.gz",
+  "preflight_member": "next6-build-preflight.json",
+  "preflight_original_sha256": "0dec6fbb77ae74ec3a9a3dc1b52e0017c07db80c9c5cc45dd8731ffce44cc5a0",
+  "preflight_original_size": 371576,
+  "cleanup_receipt_member": "next6-cache-cleanup.json",
+  "cleanup_receipt_sha256": "d266fd7fe21d0523c7ee09e4463c887bf7837e57998e23f511be099c6fdcc9d0",
+  "cleanup_scope": "Four reproducible ignored Cargo target caches removed by parent before preflight; their adjacent logs/evidence preserved. Preflight performed no cleanup.",
+  "host_ready_for_clean_offline_attempt": true,
+  "actual_native_build_or_boot_proven": false,
+  "blocking_findings": [],
+  "warnings": [
+    {
+      "check": "unused_busybox_script_link",
+      "detail": "BusyBox v1.36.1 static lacks script. The packager lists a script symlink, but current minimal/init and fixed boot_hello.sh never invoke script. All actually used applets are present; no source change made."
+    }
+  ],
+  "offline_cache": {
+    "locks": [
+      {
+        "lock": "kernel/asterinas/Cargo.lock",
+        "registry_archives_verified": 173,
+        "registry_packages": 173,
+        "missing_archives": 0
+      },
+      {
+        "lock": "kernel/asterinas/osdk/Cargo.lock",
+        "registry_archives_verified": 115,
+        "registry_packages": 148,
+        "missing_archives": 33
+      },
+      {
+        "lock": "support/build/minimal/Cargo.lock",
+        "registry_archives_verified": 145,
+        "registry_packages": 145,
+        "missing_archives": 0
+      }
+    ],
+    "missing_osdk_package_details_field": "next6-build-preflight.json: cache_review.report.locks[1].registry_missing_archives",
+    "target_scope_notes": [
+      "cc-1.2.22 is referenced only by iana-time-zone-haiku-0.1.2 in the standalone OSDK lock; cached iana-time-zone manifest gates that package on target_os=haiku.",
+      "rustversion-1.0.20 is referenced only by wasm-bindgen-0.2.100; cached parent manifests gate wasm-bindgen branches on wasm targets.",
+      "jiff-static-0.2.13 is optional and also listed under cfg(any()) (always false); portable-atomic-util-0.2.4 is gated on not(target_has_atomic=\"ptr\"). These missing lock entries do not directly demonstrate an x86 build blocker.",
+      "Target-specific offline Cargo build is the remaining execution check; this read-only review deliberately did not resolve feature/target graphs."
+    ],
+    "graph_not_resolved_or_compiled": true,
+    "limitation": "33 whole-lock OSDK cache gaps are mostly non-native/inactive branches; the native target graph and actual offline build remain execution checks, not presumed failures or successes."
+  },
+  "command_output_storage": "Every actual tool argv, cwd, raw exit, full stdout/stderr, executable path/SHA and selected environment is embedded once in next6-build-preflight.json; no redundant per-tool log copies.",
+  "boundary": {
+    "git_head": "692c9cf6ced7660304e2f94e31f034ab478830d6",
+    "git_status": "",
+    "target_paths_unchanged": true,
+    "root_README_size": 0,
+    "temporary_manifest_absent": true,
+    "original_repository_preexisting_manifest": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/OSDK.toml",
+      "exists": true,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+      "action": "Read-only observation; never removed or modified by preflight."
+    }
+  },
+  "source_unchanged_before_after": true
+}

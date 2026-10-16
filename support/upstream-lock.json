@@ -93,8 +93,8 @@
       },
       "explicit_tcp_gdb_capture": {
         "profile": "osdk-native-local-tcp-gdb-capture-v2",
-        "evidence": "support/build/evidence/2026-10-16-review/osdk/result.json",
-        "code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+        "evidence": "support/build/evidence/2026-10-16-kernel-lifecycle/osdk/README.md",
+        "code_commit": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d",
         "selected": 22,
         "passed": 22,
         "failed": 0,
@@ -103,7 +103,7 @@
         "qemu_guests": 11,
         "raw_guest_exit": 33,
         "coverage_functions": 5696,
-        "coverage_profraw_size": 2094448,
+        "coverage_profraw_size": 2094456,
         "later_panic_guard": {
           "code_commit": "1cc76b90dfd162e18a946a01e0bcaa31b8e03b4f",
           "focused_host_tests_passed": 16,
@@ -126,7 +126,7 @@
           "coverage_functions": 5696,
           "coverage_profraw_size": 2094456
         },
-        "coverage_profraw_sha256": "24312473e6f0cdfc94d12dc826ae323843fbdcf5f7c1a806bf99aa335d7f7e04",
+        "coverage_profraw_sha256": "3d90660be68c63941c5884390c3d25ccd77c33a461c95b070147989117cf253d",
         "later_capture_lifecycle": {
           "code_commit": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
           "documentation_binding_commit": "5f59dbb7baa34cf7c69e8730bc4642f061b36fa1",
@@ -144,7 +144,24 @@
           },
           "evidence": "support/build/evidence/2026-10-16-review/osdk-capture-exact/REPORT.md",
           "host_evidence": "support/build/evidence/2026-10-16-review/host-fixes/capture-lifecycle/README.md"
-        }
+        },
+        "previous_review_full_runs": [
+          {
+            "profile": "osdk-native-local-tcp-gdb-capture-v2",
+            "evidence": "support/build/evidence/2026-10-16-review/osdk/result.json",
+            "code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+            "selected": 22,
+            "passed": 22,
+            "failed": 0,
+            "blocked": 0,
+            "vmx_soft_skipped": 1,
+            "qemu_guests": 11,
+            "raw_guest_exit": 33,
+            "coverage_functions": 5696,
+            "coverage_profraw_size": 2094448,
+            "coverage_profraw_sha256": "24312473e6f0cdfc94d12dc826ae323843fbdcf5f7c1a806bf99aa335d7f7e04"
+          }
+        ]
       },
       "previous_full_unit_suite_35": {
         "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/REPORT.md",
@@ -173,22 +190,25 @@
     },
     "full_kernel_debug": {
       "profile": "x86_64-q35-tcg-1cpu-512MiB-rust-entry-gdb",
-      "code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+      "code_commit": "9b381118fe8a1889d4523b4de999bbe45f1b0436",
       "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
-      "evidence": "support/build/evidence/2026-10-16-review/kernel-debug/REPORT.md",
+      "evidence": "support/build/evidence/2026-10-16-kernel-lifecycle/kernel-debug-clean/REPORT.md",
       "entry": "__ostd_main",
       "verified_live_entry_bytes": 32,
       "qemu_raw_exit": 33,
       "live_boot_checker_passed": true,
-      "boot_artifact_sha256": "fcec53875dec2ca19b20e285df94590e9c21036cdabec54799fbda6bddb84026",
-      "boot_artifact_size": 5996200,
-      "dwarf_symbol_artifact_sha256": "a1c7a44cb844553d00c2942760df0f2389919f1e530bfaa45081c7463d31e21a",
-      "dwarf_symbol_artifact_size": 111867352,
+      "boot_artifact_sha256": "89c7f0bab00172e4a8d038a3d5c38396d952ff44e4ab159bbe8765edbaa16313",
+      "boot_artifact_size": 5975720,
+      "dwarf_symbol_artifact_sha256": "855e92c82ac3745d40320fd4451e8862e38e2fbfbf7b2c6e98f60d514018d6a8",
+      "dwarf_symbol_artifact_size": 111709176,
       "dwarf_symbol_artifact_retained_in_git": false,
       "dwarf_rebuild_command": "python3 -I support/build/debug/run.py --output NEW_KERNEL_DEBUG_DIR",
       "cargo_binutils": "0.4.0",
       "root_or_core_changes": false,
-      "serial_sha256": "e22c52f2889e4348ff3105d65356967ed7c286a66defd559b2fbaee27f56084c"
+      "serial_sha256": "bbcb07e958137c8fd41674b8b7834266c1fd50bcc7f3e6e146d7b84ef0410e02",
+      "entry_pc": "0xffffffff88422840",
+      "fresh_target_before_build": true,
+      "offline_source_build": true
     },
     "previous_full_kernel_debug": {
       "profile": "x86_64-q35-tcg-1cpu-512MiB-rust-entry-gdb",
@@ -271,7 +291,119 @@
         "timed_out": 1,
         "driver_exit": 2,
         "full28_rerun": false,
-        "evidence": "linux-guest/cancellation/REPORT.md"
+        "evidence": "support/build/evidence/2026-10-16-review/linux-guest/cancellation/REPORT.md"
+      }
+    },
+    "artifact_sha256_role": "Original accepted minimal-boot baseline; current source-built products are recorded separately under latest_native_boot and full_kernel_debug.",
+    "latest_native_boot": {
+      "code_commit": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d",
+      "actual_tool_session": 2857,
+      "actual_tool_exit": 0,
+      "release_compilation_observed": true,
+      "target_cache_reused_from_clean_debug": true,
+      "passed": true,
+      "qemu_raw_exit": 33,
+      "supervisor_exit": 0,
+      "worker_reaped": true,
+      "boot_sha256": "490ca0406593c28e64a22333ba432de6122b9a796b0f7f20352b6b2c55e7df56",
+      "boot_size": 8290880,
+      "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "serial_sha256": "1b584b5f9e937a6c3f87e27422ef74f29133f29ae4f589388262f1ca12a73239",
+      "evidence": "support/build/evidence/2026-10-16-kernel-lifecycle/kernel-public/REPORT.md",
+      "profile": "x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
+      "source_directory": "kernel/asterinas",
+      "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+    },
+    "full_kernel_debug_history": [
+      {
+        "profile": "x86_64-q35-tcg-1cpu-512MiB-rust-entry-gdb",
+        "code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+        "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+        "evidence": "support/build/evidence/2026-10-16-review/kernel-debug/REPORT.md",
+        "entry": "__ostd_main",
+        "verified_live_entry_bytes": 32,
+        "qemu_raw_exit": 33,
+        "live_boot_checker_passed": true,
+        "boot_artifact_sha256": "fcec53875dec2ca19b20e285df94590e9c21036cdabec54799fbda6bddb84026",
+        "boot_artifact_size": 5996200,
+        "dwarf_symbol_artifact_sha256": "a1c7a44cb844553d00c2942760df0f2389919f1e530bfaa45081c7463d31e21a",
+        "dwarf_symbol_artifact_size": 111867352,
+        "dwarf_symbol_artifact_retained_in_git": false,
+        "dwarf_rebuild_command": "python3 -I support/build/debug/run.py --output NEW_KERNEL_DEBUG_DIR",
+        "cargo_binutils": "0.4.0",
+        "root_or_core_changes": false,
+        "serial_sha256": "e22c52f2889e4348ff3105d65356967ed7c286a66defd559b2fbaee27f56084c"
+      }
+    ],
+    "kernel_lifecycle_regression": {
+      "evidence": "support/build/evidence/2026-10-16-kernel-lifecycle/report.json",
+      "latest_main_merged": "f47540fb8165c8cc078d997f009f6f55ff731f06",
+      "source_commits": {
+        "debug_cancellation": "9b381118fe8a1889d4523b4de999bbe45f1b0436",
+        "kernel_supervisor": "4b3153079336ddea244c2ffecea1da0e006769b6",
+        "runner_repeated_signal": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d",
+        "complete_version_output": "22fcd9edeb8d4e1abee7ce2c3109df5d922c8ed5",
+        "main_sync": "ce4f3515c2c83bb602f6d811f102235ce9777c42"
+      },
+      "host_debug_passed_per_mode": 10,
+      "host_kernel_supervisor_passed_per_mode": 9,
+      "host_kernel_worker_passed_per_mode": 10,
+      "host_runner_passed_per_mode": {
+        "lifecycle": 14,
+        "timeout": 1,
+        "profiles": 7
+      },
+      "python_modes": [
+        "-I",
+        "-I -O"
+      ],
+      "clean_target_full_kernel_debug_passed": true,
+      "public_source_build_boot_passed": true,
+      "osdk_full_selected": 22,
+      "osdk_full_passed": 22,
+      "osdk_vmx_soft_skip": 1,
+      "real_debug_cancellation": {
+        "code_commit": "22fcd9edeb8d4e1abee7ce2c3109df5d922c8ed5",
+        "lifecycle_passed": true,
+        "attempt": 3,
+        "cli_exit": 143,
+        "result_passed": false,
+        "boot_pass_claimed": false,
+        "native_gdb_version": "15.1",
+        "entry_pc": "0xffffffff88422840",
+        "live_entry_bytes": 32,
+        "qemu_and_gdb_pidfd_alive_before_exited_after": true,
+        "debug_port_and_workspace_lock_released": true,
+        "direct_sessions_reaped": true,
+        "qemu_record_finalized": false,
+        "qemu_raw_exit": null,
+        "serial_scope": "post-cancellation pathname snapshot, not a finalized checker serial",
+        "gdb_script_adaptation": "copy generated GDB script and hold in native GDB Python after original live32 marker; no production source or ELF modification",
+        "earlier_attempts": [
+          {
+            "attempt": 1,
+            "driver_exit": 141,
+            "qemu_started": false,
+            "result": "version metadata pipeline failure; fixed by retaining full make/gcc --version output"
+          },
+          {
+            "attempt": 2,
+            "gdb_exit": 1,
+            "cancellation_signal_sent": false,
+            "result": "test shim generated invalid Python newline; original failure retained, controller fixed before attempt3"
+          }
+        ],
+        "evidence": "support/build/evidence/2026-10-16-kernel-lifecycle/real-debug-cancel/REPORT.md"
+      },
+      "fixed_build_inputs_checked": 118,
+      "all_kernel_directory_files_unchanged_this_phase": true,
+      "metadata_pipeline_failure_preserved": true,
+      "generated_manifest_external_writer_known": false,
+      "bit_reproducibility_established": false,
+      "local_main_ci_equivalent_tests": {
+        "boot_evidence_per_mode": 15,
+        "worker_manifest_per_mode": 10,
+        "remote_ci_green_claimed": false
       }
     }
   },

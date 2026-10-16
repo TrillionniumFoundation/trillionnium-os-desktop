@@ -1,0 +1,77 @@
+{
+  "scope": "All commands below ran host fixtures only; no build, VM, nm or GDB was executed by these tests.",
+  "source_remote_commit": "9b381118fe8a1889d4523b4de999bbe45f1b0436",
+  "source_remote_tree": "af84f6dfedc3db7d8a9dc4498ea1e1681ea6940c",
+  "same_tree_local_metadata_commit": "873cad",
+  "publish_mapping_evidence": "Commit/tree mapping supplied by parent publisher; these two source bytes independently match the frozen hashes.",
+  "invocations": [
+    {
+      "id": "first-fixture-failure",
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/debug/test_debug.py",
+        "DebugTests.test_sigterm_cleans_actual_cli_owned_driver_and_descendant"
+      ],
+      "environment": {
+        "A01_DEBUG_SOURCE": "/workspace/scratch/ae1a8cf05419/next6-debug-original",
+        "A01_DEBUG_EXPECT_ORIGINAL_LEAK": "1",
+        "A01_DEBUG_LIFECYCLE_OUT": "/workspace/scratch/ae1a8cf05419/next6-debug-baseline"
+      },
+      "raw_exit_code": 1,
+      "log": "logs/next6-debug-baseline.log",
+      "reason": "Test fixture omitted fcntl import. Not used as successful reproduction."
+    },
+    {
+      "id": "original-default-term-leak",
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/debug/test_debug.py",
+        "DebugTests.test_sigterm_cleans_actual_cli_owned_driver_and_descendant"
+      ],
+      "environment": {
+        "A01_DEBUG_SOURCE": "/workspace/scratch/ae1a8cf05419/next6-debug-original",
+        "A01_DEBUG_EXPECT_ORIGINAL_LEAK": "1",
+        "A01_DEBUG_LIFECYCLE_OUT": "/workspace/scratch/ae1a8cf05419/next6-debug-baseline-02"
+      },
+      "raw_exit_code": 0,
+      "test_result": "1/1 passed because expected old leak was reproduced",
+      "observation": "runs/original-leak/sigterm/observation.json",
+      "log": "logs/next6-debug-baseline-02.log"
+    },
+    {
+      "id": "final-ordinary",
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/debug/test_debug.py"
+      ],
+      "environment": {
+        "A01_DEBUG_LIFECYCLE_OUT": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final"
+      },
+      "raw_exit_code": 0,
+      "tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "log": "logs/next6-debug-patched-02-final.log"
+    },
+    {
+      "id": "final-optimized",
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/debug/test_debug.py"
+      ],
+      "environment": {
+        "A01_DEBUG_LIFECYCLE_OUT": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized"
+      },
+      "raw_exit_code": 0,
+      "tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "log": "logs/next6-debug-patched-03-final-optimized.log"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "kind": "kernel_supervisor_host_fixture_no_kernel_no_vm",
+  "argv": [
+    "bash",
+    "/tmp/a01-runner-test-wzuoshpt/support/build/kernel.sh",
+    "kernel"
+  ],
+  "signal": null,
+  "source_sha256": {
+    "kernel.sh": "67be1710836069b7b84a50ff5c97d5ccf9f190bbc98c99741d30869ec6ea04fd",
+    "kernel-supervisor.py": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61"
+  },
+  "supervisor_pid": 51,
+  "make": {
+    "pid": 87,
+    "group": 55,
+    "child_pid": 89,
+    "address": [
+      "127.0.0.1",
+      58851
+    ]
+  },
+  "lease_child": {
+    "pid": 89,
+    "group": 55,
+    "address": [
+      "127.0.0.1",
+      56545
+    ]
+  },
+  "returncode": 0,
+  "pidfd_exited": {
+    "supervisor": true,
+    "worker": true,
+    "make": true,
+    "lease_child": true
+  },
+  "make_tcp_released": true,
+  "child_tcp_released": true,
+  "manifest_present": false,
+  "stable_lock_inode": true,
+  "workspace_lock_released": true,
+  "supervision_receipt": {
+    "argv": [
+      "bash",
+      "/tmp/a01-runner-test-wzuoshpt/support/build/kernel.sh",
+      "kernel"
+    ],
+    "exit_code": 0,
+    "external_reap_disarmed": false,
+    "group_owner": "standalone supervisor",
+    "kind": "kernel_worker_group_supervision",
+    "leader_pid": 55,
+    "pass_fds": [],
+    "raw_worker_exit": 0,
+    "worker_reaped": true
+  },
+  "passed": true
+}
