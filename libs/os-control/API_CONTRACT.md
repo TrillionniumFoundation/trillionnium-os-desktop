@@ -312,3 +312,15 @@ Host `charge_cpu` and `charge_interval_for_host_model` now return
 `ResourceError::Revoked` for a revoked leaf or ancestor, reserving
 `Exhausted` for genuine CPU cap exhaustion. Both failures are atomic and
 leave all cumulative usage/event counters unchanged.
+
+## Fail-closed namespace window bootstrap
+
+For HOS2 0.3 the maximum in-memory unretired delivery window is 1024.
+`ControlCore::try_with_capacity(boot, space, capacity)` rejects zero
+identities and capacities outside `1..=DEFAULT_WINDOW_CAPACITY` before
+creating a namespace, returning `InvalidIdentity` or `InvalidCapacity`.
+The owner-bearing `with_capacity_for_owner` now propagates the same
+validation instead of panicking. Legacy `with_capacity` remains a trusted
+compatibility constructor; configurable A05 callers must use the fallible
+entry point. The reservation path still returns `ResourceExhausted`
+without consuming the next D when the valid bounded window fills.

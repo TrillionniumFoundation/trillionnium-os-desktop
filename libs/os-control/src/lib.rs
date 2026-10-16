@@ -1196,6 +1196,7 @@ pub enum DeliveryError {
     InvalidSequence,
     InvalidRequest,
     InvalidIdentity,
+    InvalidCapacity,
     OutOfOrder { expected: u64, got: u64 },
     Conflict,
     ResourceExhausted,
@@ -1329,7 +1330,7 @@ impl ControlCore {
         if !owner.is_nonzero() {
             return Err(DeliveryError::InvalidIdentity);
         }
-        let core = Self::with_capacity(boot_id, cap_space_id, capacity);
+        let core = Self::try_with_capacity(boot_id, cap_space_id, capacity)?;
         let generation = lock_unpoisoned(&core.namespace.state).generation;
         let authority = OriginalOwnerAuthority {
             namespace: Arc::clone(&core.namespace),
@@ -1339,17 +1340,25 @@ impl ControlCore {
         Ok((core, authority))
     }
 
-    pub fn with_capacity(boot_id: BootId, cap_space_id: CapSpaceId, capacity: usize) -> Self {
-        assert!(
-            boot_id.is_nonzero() && cap_space_id.is_nonzero(),
-            "HOS2 identities must be non-zero"
-        );
-        assert!(capacity > 0, "delivery capacity must be non-zero");
+    /// Fallible trusted namespace bootstrap. The first HOS2 version permits
+    /// at most DEFAULT_WINDOW_CAPACITY unretired writes, never an unbounded
+    /// host override. Reject invalid identity/capacity before allocating.
+    pub fn try_with_capacity(
+        boot_id: BootId,
+        cap_space_id: CapSpaceId,
+        capacity: usize,
+    ) -> Result<Self, DeliveryError> {
+        if !boot_id.is_nonzero() || !cap_space_id.is_nonzero() {
+            return Err(DeliveryError::InvalidIdentity);
+        }
+        if capacity == 0 || capacity > DEFAULT_WINDOW_CAPACITY {
+            return Err(DeliveryError::InvalidCapacity);
+        }
         let identity = NamespaceIdentity {
             boot_id,
             cap_space_id,
         };
-        Self {
+        Ok(Self {
             namespace: Arc::new(NamespaceState {
                 identity,
                 state: Mutex::new(NamespaceInner {
@@ -1361,7 +1370,14 @@ impl ControlCore {
                     generation: 1,
                 }),
             }),
-        }
+        })
+    }
+
+    /// Compatibility constructor for already-trusted bootstrap callers.
+    /// Use try_with_capacity when handling a configurable capacity.
+    pub fn with_capacity(boot_id: BootId, cap_space_id: CapSpaceId, capacity: usize) -> Self {
+        Self::try_with_capacity(boot_id, cap_space_id, capacity)
+            .expect("HOS2 boot/CapSpace identity and window capacity must be valid")
     }
 
     pub fn identity(&self) -> NamespaceIdentity {

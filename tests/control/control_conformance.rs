@@ -867,6 +867,37 @@ fn child_cpu_charge_is_counted_once_in_each_ancestor_and_parent_exhaustion_is_at
 }
 
 #[test]
+fn namespace_bootstrap_rejects_zero_id_and_out_of_range_window_capacity() {
+    assert_eq!(
+        ControlCore::try_with_capacity(boot(0), space(2), 1).err(),
+        Some(DeliveryError::InvalidIdentity)
+    );
+    assert_eq!(
+        ControlCore::try_with_capacity(boot(2), space(0), 1).err(),
+        Some(DeliveryError::InvalidIdentity)
+    );
+    for invalid in [0, os_control::DEFAULT_WINDOW_CAPACITY + 1, usize::MAX] {
+        assert_eq!(
+            ControlCore::try_with_capacity(boot(2), space(3), invalid).err(),
+            Some(DeliveryError::InvalidCapacity)
+        );
+        assert_eq!(
+            ControlCore::with_capacity_for_owner(
+                boot(2), space(3), invalid, owner(9000),
+            ).err().map(|error| error),
+            Some(DeliveryError::InvalidCapacity)
+        );
+    }
+    let valid = ControlCore::try_with_capacity(
+        boot(2), space(3), os_control::DEFAULT_WINDOW_CAPACITY,
+    )
+    .unwrap();
+    assert_eq!(valid.capacity(), os_control::DEFAULT_WINDOW_CAPACITY);
+    assert_eq!(valid.next_sequence(), 1);
+    assert_eq!(valid.window_len(), 0);
+}
+
+#[test]
 fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_available() {
     let (core, owner_authority) =
         ControlCore::with_capacity_for_owner(boot(7), space(7), 4, owner(9000)).unwrap();
