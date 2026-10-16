@@ -51,3 +51,9 @@ For a parent limit, use `--mode parent`; for SCHED_FIFO, use `--mode rt`. For on
 - **Kernel conformance:** selected A01 boot and isolated tests do not prove the full OSTD/upstream regression suite on this changed kernel.
 
 Keep this PR **Draft** until A00/A06 have reviewed lock ordering, supplied a quantified cap error contract, and run relevant kernel regressions. No need for a second control database, HOS3 protocol or full from-scratch kernel rewrite.
+
+## Independent kernel-mode regression and explicit pass/fail guard
+
+The modified kernel also passed the real `aster-core` OSDK kernel test suite: **141/141 tests executed and passed**, 0 failed, 0 filtered, 0 soft-skipped, QEMU raw exit 33. This is a pinned x86_64/TCG single-vCPU run, not SMP, OSTD's full matrix or physical-hardware qualification. The [original machine result](../results/organ-backend/2026-10-16/a06-aster-core-ktest.json) records the exact counts.
+
+The candidate runner now optionally supports `--max-cpu-percent` so a gross non-enforcement regression cannot be misreported as a green *quota* check merely because QEMU exited normally. In the real guest with 10% quota, `--max-cpu-percent 12` passed (exit 0, observed 11.245%), while `--max-cpu-percent 5` correctly failed (exit 2, guest still exited 33, observed 11.402%). The [guard results](../results/organ-backend/2026-10-16/a06-guard-checks.json) preserve both cases. This 12% bound is only an N0 1000Hz diagnostic tolerance; it is **not** a guaranteed precise hardware resource cap or a product SLO.
