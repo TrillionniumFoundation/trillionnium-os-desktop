@@ -33,9 +33,11 @@ def bdf_lower(value):
 
 
 def bounded_log(path):
-    # Open exactly once. A pre-check of a pathname is racy; fstat this FD,
-    # and cap read() even if another writer extends the log afterwards.
-    with path.open("rb") as stream:
+    # Use a nonblocking, no-follow FD: a symlink swap must not escape the
+    # evidence root, and a FIFO cannot hang before the regular-file check.
+    # Opening the pathname once also avoids the pre-stat/open TOCTOU.
+    fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC)
+    with os.fdopen(fd, "rb") as stream:
         info = os.fstat(stream.fileno())
         if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_RAW_LOG_BYTES:
             raise ValueError(

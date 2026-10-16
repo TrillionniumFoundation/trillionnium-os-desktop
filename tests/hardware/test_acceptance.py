@@ -1,6 +1,8 @@
 """Adversarial synthetic cross-kernel evidence tests; never hardware tests."""
 import hashlib
+import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -114,7 +116,7 @@ class AcceptanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "guest.log"
             path.write_bytes(b"small fixture")
-            original_open = Path.open
+            original_fdopen = os.fdopen
 
             class Meter:
                 def __init__(self, source):
@@ -134,12 +136,34 @@ class AcceptanceTests(unittest.TestCase):
                         raise AssertionError("unbounded evidence read")
                     return self.source.read(size)
 
-            def monitored_open(candidate, *args, **kwargs):
-                source = original_open(candidate, *args, **kwargs)
-                return Meter(source) if candidate == path else source
+            def monitored_fdopen(fd, *args, **kwargs):
+                return Meter(original_fdopen(fd, *args, **kwargs))
 
-            with patch.object(Path, "open", monitored_open):
+            with patch.object(acceptance.os, "fdopen", monitored_fdopen):
                 self.assertEqual(acceptance.bounded_log(path), b"small fixture")
+
+    def test_fifo_is_rejected_without_waiting_for_a_writer(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fifo = Path(directory) / "fake-serial.log"
+            os.mkfifo(fifo)
+            # A regression to Path.open() would block before the fstat().
+            # Bound this negative case in a disposable subprocess.
+            module_dir = str(Path(acceptance.__file__).resolve().parent)
+            command = (
+                "import sys\nfrom pathlib import Path\n"
+                f"sys.path.insert(0, {module_dir!r})\n"
+                "import acceptance\n"
+                "try:\n"
+                f"    acceptance.bounded_log(Path({str(fifo)!r}))\n"
+                "except ValueError:\n"
+                "    raise SystemExit(0)\n"
+                "raise SystemExit(3)\n"
+            )
+            run = subprocess.run(
+                [sys.executable, "-I", "-c", command],
+                capture_output=True, text=True, timeout=3,
+            )
+            self.assertEqual(run.returncode, 0, run.stderr)
 
     def test_oversized_raw_log_is_rejected_without_unbounded_read(self):
         with tempfile.TemporaryDirectory() as directory:
