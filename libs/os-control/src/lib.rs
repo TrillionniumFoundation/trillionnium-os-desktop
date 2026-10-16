@@ -870,9 +870,11 @@ impl DeliveryObservation {
                     self.effective_ns,
                     self.consumed_ns,
                 ) {
-                    (Some(object), Some(saved), Some(previous), Some(_), Some(_))
+                    (Some(object), Some(saved), Some(previous), Some(effective), Some(consumed))
                         if object.is_nonzero()
-                            && previous.checked_add(1) == Some(saved) =>
+                            && previous != 0
+                            && previous.checked_add(1) == Some(saved)
+                            && consumed <= effective % CPU_PERIOD_NS =>
                     {
                         Ok(DeliveryStatus::Ok.hos2_code())
                     }

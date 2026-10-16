@@ -344,6 +344,46 @@ fn real_terminal_query_delivery_values_are_wire_checked() {
 }
 
 #[test]
+fn terminal_success_requires_nonzero_previous_revision_and_elapsed_cpu_time() {
+    let core = ControlCore::new(boot(2022), space(2022));
+    let target = root(2022, CPU_PERIOD_NS);
+    let who = publisher(2022);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 10), who)
+        .unwrap();
+    let actual = core.commit(&token, who, 20).unwrap();
+    assert_eq!(actual.hos2_saved_status_code(), Ok(0));
+
+    // The A02 HOS2 decoder rejects zero previous_revision even if
+    // saved_revision=1 is its arithmetic successor.
+    let zero_previous = os_control::DeliveryObservation {
+        previous_revision: Some(0),
+        saved_revision: Some(1),
+        ..actual
+    };
+    assert_eq!(
+        zero_previous.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+
+    // Only 5 ns have elapsed within the current 100ms CPU window.
+    let beyond_elapsed = os_control::DeliveryObservation {
+        effective_ns: Some(CPU_PERIOD_NS + 5),
+        consumed_ns: Some(6),
+        ..actual
+    };
+    assert_eq!(
+        beyond_elapsed.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+    let within_elapsed = os_control::DeliveryObservation {
+        consumed_ns: Some(5),
+        ..beyond_elapsed
+    };
+    assert_eq!(within_elapsed.hos2_saved_status_code(), Ok(0));
+}
+
+#[test]
 fn all_hos2_terminal_status_codes_are_exhaustively_mapped() {
     let core = ControlCore::new(boot(2021), space(2021));
     let mut terminal = core.query_delivery(&core.delivery_view(), 1).unwrap();
