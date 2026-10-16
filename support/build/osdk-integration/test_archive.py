@@ -60,6 +60,14 @@ class ArchiveTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             archive(self.source, self.dest)
 
+    def test_external_hardlink_is_not_silently_archived(self):
+        outside = self.root / "dummy-private.json"
+        outside.write_text("stand-in data; not a real secret")
+        (self.source / "linked.json").hardlink_to(outside)
+        with self.assertRaises(ValueError):
+            archive(self.source, self.dest)
+        self.assertFalse(self.dest.exists())
+
     def test_special_fixed_lock_cannot_follow_symlink(self):
         (self.source / "evidence.log").write_text("regular")
         (self.source / "harness").mkdir()
@@ -68,6 +76,23 @@ class ArchiveTests(unittest.TestCase):
         (self.source / "harness" / "Cargo.lock").symlink_to(outside)
         with self.assertRaises(ValueError):
             archive(self.source, self.dest)
+
+    def test_special_pinned_inputs_are_archived_without_symlink_traversal(self):
+        (self.source / "regular.json").write_text("ordinary")
+        (self.source / "harness").mkdir()
+        (self.source / "harness" / "Cargo.lock").write_text("locked deps")
+        (self.source / "rust-toolchain.toml").write_text("pinned compiler")
+        self.assertEqual(archive(self.source, self.dest), 3)
+        self.assertEqual((self.dest / "harness.Cargo.lock").read_text(), "locked deps")
+        self.assertEqual((self.dest / "rust-toolchain.toml").read_text(), "pinned compiler")
+
+    def test_fixed_input_destination_name_collision_rejected(self):
+        (self.source / "harness.Cargo.lock").write_text("decoy")
+        (self.source / "harness").mkdir()
+        (self.source / "harness" / "Cargo.lock").write_text("real")
+        with self.assertRaises(ValueError):
+            archive(self.source, self.dest)
+        self.assertFalse(self.dest.exists())
 
     def test_empty_archive_fails_closed(self):
         (self.source / "code.rs").write_text("no evidence")
