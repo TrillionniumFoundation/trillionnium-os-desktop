@@ -30,7 +30,9 @@ enables the coverage feature and collect coverage data to `coverage.profraw` whe
 
 OSDK uses a temporary UNIX socket for its managed QEMU monitor by default.
 Use `--qemu-monitor-transport=tcp` to select an ephemeral IPv4 loopback connection.
-OSDK owns the listener on `127.0.0.1`, and QEMU connects to it as a client.
+OSDK creates both ends of a private connection on `127.0.0.1`, closes the
+listener before spawning QEMU, and passes QEMU its connected socket descriptor.
+An unrelated client arriving during setup is rejected.
 This option selects only the transport;
 the managed monitor still requires its usual configuration,
 such as `--coverage` together with a configured QEMU `log_file`.

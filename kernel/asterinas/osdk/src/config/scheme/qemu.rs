@@ -155,7 +155,7 @@ pub enum MonitorTransport {
     /// A temporary UNIX socket served by QEMU.
     #[default]
     Unix,
-    /// An ephemeral IPv4 loopback listener owned by OSDK.
+    /// A private preconnected IPv4 loopback socket inherited by QEMU.
     Tcp,
 }
 
