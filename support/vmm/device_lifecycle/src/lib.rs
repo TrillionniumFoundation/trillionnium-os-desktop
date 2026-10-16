@@ -2,8 +2,10 @@
 //! Device/queue/buffer *state transition model*, not a GPU driver or security authority.
 //!
 //! `#![no_std]` and no allocator: this logic can be reviewed for eventual Asterinas
-//! integration, but it does not perform HOS2 authentication, budget reservations,
-//! MMIO, IOMMU mapping, cache maintenance, IRQ acknowledgement, or hardware reset.
+//! integration, but it does not perform HOS2 authentication, canonical budget
+//! installation, MMIO, IOMMU mapping, cache maintenance, IRQ acknowledgement,
+//! or hardware reset. It does contain a metadata-only resource admission mirror
+//! so A06 can review the accounting and unknown-effect rules before integration.
 //! Only the canonical A05/A06 kernel owners may call these transitions after
 //! their real platform preconditions have completed. A forged `Completion` or
 //! externally asserted quiescence is NOT a physical completion proof.
@@ -82,6 +84,470 @@ pub enum Error {
     InvalidDeviceIdentity,
     InvalidQueueIdentity,
     InvalidDomainIdentity,
+    InvalidResourceRequest,
+    BudgetExceeded,
+    ParentAccountingRequired,
+    InvalidReservation,
+    ReservationState,
+}
+
+/// Admission limits mirrored from the canonical A06 ResourceDomain.
+///
+/// `vm_cpu_ns` is a reservation envelope, not observed scheduler usage. The
+/// other dimensions are byte/slot limits; this model never pins RAM, measures
+/// DMA, or allocates a queue. A06 must install and enforce the real limits.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ResourceLimits {
+    vm_cpu_ns: u64,
+    vm_ram_bytes: u64,
+    pinned_dma_bytes: u64,
+    queue_slots: u64,
+}
+
+impl ResourceLimits {
+    pub const fn new(
+        vm_cpu_ns: u64,
+        vm_ram_bytes: u64,
+        pinned_dma_bytes: u64,
+        queue_slots: u64,
+    ) -> Self {
+        Self {
+            vm_cpu_ns,
+            vm_ram_bytes,
+            pinned_dma_bytes,
+            queue_slots,
+        }
+    }
+
+    pub const fn vm_cpu_ns(&self) -> u64 {
+        self.vm_cpu_ns
+    }
+    pub const fn vm_ram_bytes(&self) -> u64 {
+        self.vm_ram_bytes
+    }
+    pub const fn pinned_dma_bytes(&self) -> u64 {
+        self.pinned_dma_bytes
+    }
+    pub const fn queue_slots(&self) -> u64 {
+        self.queue_slots
+    }
+}
+
+/// A single atomic admission request across all four VM/device dimensions.
+/// Zero requests are rejected so every reservation token represents a charge.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ResourceRequest {
+    vm_cpu_ns: u64,
+    vm_ram_bytes: u64,
+    pinned_dma_bytes: u64,
+    queue_slots: u64,
+}
+
+impl ResourceRequest {
+    pub const fn new(
+        vm_cpu_ns: u64,
+        vm_ram_bytes: u64,
+        pinned_dma_bytes: u64,
+        queue_slots: u64,
+    ) -> Self {
+        Self {
+            vm_cpu_ns,
+            vm_ram_bytes,
+            pinned_dma_bytes,
+            queue_slots,
+        }
+    }
+
+    pub const fn vm_cpu_ns(&self) -> u64 {
+        self.vm_cpu_ns
+    }
+    pub const fn vm_ram_bytes(&self) -> u64 {
+        self.vm_ram_bytes
+    }
+    pub const fn pinned_dma_bytes(&self) -> u64 {
+        self.pinned_dma_bytes
+    }
+    pub const fn queue_slots(&self) -> u64 {
+        self.queue_slots
+    }
+    pub const fn is_zero(&self) -> bool {
+        self.vm_cpu_ns == 0
+            && self.vm_ram_bytes == 0
+            && self.pinned_dma_bytes == 0
+            && self.queue_slots == 0
+    }
+}
+
+/// Usage charged by this metadata mirror. It is deliberately read-only to
+/// callers; only a reservation token can change a budget's usage.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ResourceUsage {
+    vm_cpu_ns: u64,
+    vm_ram_bytes: u64,
+    pinned_dma_bytes: u64,
+    queue_slots: u64,
+}
+
+impl ResourceUsage {
+    const ZERO: Self = Self {
+        vm_cpu_ns: 0,
+        vm_ram_bytes: 0,
+        pinned_dma_bytes: 0,
+        queue_slots: 0,
+    };
+
+    pub const fn vm_cpu_ns(&self) -> u64 {
+        self.vm_cpu_ns
+    }
+    pub const fn vm_ram_bytes(&self) -> u64 {
+        self.vm_ram_bytes
+    }
+    pub const fn pinned_dma_bytes(&self) -> u64 {
+        self.pinned_dma_bytes
+    }
+    pub const fn queue_slots(&self) -> u64 {
+        self.queue_slots
+    }
+
+    fn checked_add(self, request: ResourceRequest) -> Result<Self, Error> {
+        Ok(Self {
+            vm_cpu_ns: self
+                .vm_cpu_ns
+                .checked_add(request.vm_cpu_ns)
+                .ok_or(Error::ArithmeticOverflow)?,
+            vm_ram_bytes: self
+                .vm_ram_bytes
+                .checked_add(request.vm_ram_bytes)
+                .ok_or(Error::ArithmeticOverflow)?,
+            pinned_dma_bytes: self
+                .pinned_dma_bytes
+                .checked_add(request.pinned_dma_bytes)
+                .ok_or(Error::ArithmeticOverflow)?,
+            queue_slots: self
+                .queue_slots
+                .checked_add(request.queue_slots)
+                .ok_or(Error::ArithmeticOverflow)?,
+        })
+    }
+
+    fn checked_sub(self, request: ResourceRequest) -> Result<Self, Error> {
+        Ok(Self {
+            vm_cpu_ns: self
+                .vm_cpu_ns
+                .checked_sub(request.vm_cpu_ns)
+                .ok_or(Error::InvalidReservation)?,
+            vm_ram_bytes: self
+                .vm_ram_bytes
+                .checked_sub(request.vm_ram_bytes)
+                .ok_or(Error::InvalidReservation)?,
+            pinned_dma_bytes: self
+                .pinned_dma_bytes
+                .checked_sub(request.pinned_dma_bytes)
+                .ok_or(Error::InvalidReservation)?,
+            queue_slots: self
+                .queue_slots
+                .checked_sub(request.queue_slots)
+                .ok_or(Error::InvalidReservation)?,
+        })
+    }
+
+    fn fits(self, limits: ResourceLimits, request: ResourceRequest) -> Result<Self, Error> {
+        let next = self.checked_add(request)?;
+        if next.vm_cpu_ns > limits.vm_cpu_ns
+            || next.vm_ram_bytes > limits.vm_ram_bytes
+            || next.pinned_dma_bytes > limits.pinned_dma_bytes
+            || next.queue_slots > limits.queue_slots
+        {
+            return Err(Error::BudgetExceeded);
+        }
+        Ok(next)
+    }
+}
+
+/// State of an admission token. Unknown effect is intentionally sticky until
+/// an explicit platform-quiescence adapter releases the retained charge.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ReservationState {
+    Reserved,
+    UnknownEffect,
+    Released,
+}
+
+/// Non-forgeable metadata token for one atomic resource admission.
+///
+/// This is not a capability and does not authorize a device. A05 still owns
+/// CapSpace/device grants and A06 remains the only canonical budget authority.
+#[derive(Debug, PartialEq, Eq)]
+pub struct ResourceReservation {
+    reservation_id: u64,
+    domain: ResourceDomainId,
+    parent: Option<ResourceDomainId>,
+    request: ResourceRequest,
+    state: ReservationState,
+}
+
+impl ResourceReservation {
+    pub const fn reservation_id(&self) -> u64 {
+        self.reservation_id
+    }
+    pub const fn domain(&self) -> ResourceDomainId {
+        self.domain
+    }
+    pub const fn parent(&self) -> Option<ResourceDomainId> {
+        self.parent
+    }
+    pub const fn request(&self) -> ResourceRequest {
+        self.request
+    }
+    pub const fn state(&self) -> ReservationState {
+        self.state
+    }
+}
+
+/// Metadata-only ResourceDomain accounting mirror.
+///
+/// A root budget can reserve directly. A child budget must use
+/// `reserve_with_parent`, which checks and charges both budgets before any
+/// mutation. This no-allocator model intentionally supports one direct
+/// parent edge per atomic operation; A06 must compose deeper hierarchies under
+/// its canonical shared lock rather than treating this type as another
+/// authority.
+#[derive(Debug, PartialEq, Eq)]
+pub struct ResourceDomainBudget {
+    id: ResourceDomainId,
+    parent: Option<ResourceDomainId>,
+    limits: ResourceLimits,
+    used: ResourceUsage,
+}
+
+impl ResourceDomainBudget {
+    pub const fn new(
+        id: ResourceDomainId,
+        parent: Option<ResourceDomainId>,
+        limits: ResourceLimits,
+    ) -> Result<Self, Error> {
+        if !id.is_nonzero() {
+            return Err(Error::InvalidDomainIdentity);
+        }
+        if let Some(parent_id) = parent {
+            if !parent_id.is_nonzero() || same_domain(parent_id, id) {
+                return Err(Error::InvalidDomainIdentity);
+            }
+        }
+        Ok(Self {
+            id,
+            parent,
+            limits,
+            used: ResourceUsage::ZERO,
+        })
+    }
+
+    pub const fn id(&self) -> ResourceDomainId {
+        self.id
+    }
+    pub const fn parent_id(&self) -> Option<ResourceDomainId> {
+        self.parent
+    }
+    pub const fn limits(&self) -> ResourceLimits {
+        self.limits
+    }
+    pub const fn usage(&self) -> ResourceUsage {
+        self.used
+    }
+    pub fn available(&self) -> ResourceUsage {
+        ResourceUsage {
+            vm_cpu_ns: self.limits.vm_cpu_ns - self.used.vm_cpu_ns,
+            vm_ram_bytes: self.limits.vm_ram_bytes - self.used.vm_ram_bytes,
+            pinned_dma_bytes: self.limits.pinned_dma_bytes - self.used.pinned_dma_bytes,
+            queue_slots: self.limits.queue_slots - self.used.queue_slots,
+        }
+    }
+
+    /// Reserve a root-domain request. Child domains must use the paired API so
+    /// a parent cannot be overcommitted by a child-only update.
+    pub fn reserve(
+        &mut self,
+        reservation_id: u64,
+        request: ResourceRequest,
+    ) -> Result<ResourceReservation, Error> {
+        if self.parent.is_some() {
+            return Err(Error::ParentAccountingRequired);
+        }
+        validate_request(reservation_id, request)?;
+        let next = self.used.fits(self.limits, request)?;
+        self.used = next;
+        Ok(ResourceReservation {
+            reservation_id,
+            domain: self.id,
+            parent: None,
+            request,
+            state: ReservationState::Reserved,
+        })
+    }
+
+    /// Atomically reserve a child request against the root parent and child.
+    /// All checks and arithmetic complete before either usage field changes.
+    pub fn reserve_with_parent(
+        parent: &mut Self,
+        child: &mut Self,
+        reservation_id: u64,
+        request: ResourceRequest,
+    ) -> Result<ResourceReservation, Error> {
+        if parent.parent.is_some() || child.parent != Some(parent.id) || parent.id == child.id {
+            return Err(Error::ParentAccountingRequired);
+        }
+        validate_request(reservation_id, request)?;
+        let parent_next = parent.used.fits(parent.limits, request)?;
+        let child_next = child.used.fits(child.limits, request)?;
+        parent.used = parent_next;
+        child.used = child_next;
+        Ok(ResourceReservation {
+            reservation_id,
+            domain: child.id,
+            parent: Some(parent.id),
+            request,
+            state: ReservationState::Reserved,
+        })
+    }
+
+    /// Release a root reservation after ordinary completion.
+    pub fn release(&mut self, reservation: &mut ResourceReservation) -> Result<(), Error> {
+        if reservation.domain != self.id || reservation.parent.is_some() {
+            return Err(Error::InvalidReservation);
+        }
+        if reservation.state != ReservationState::Reserved {
+            return Err(Error::ReservationState);
+        }
+        let next = self.used.checked_sub(reservation.request)?;
+        self.used = next;
+        reservation.state = ReservationState::Released;
+        Ok(())
+    }
+
+    /// Mark a root reservation as unknown-effect. Usage remains charged and
+    /// cannot be released by the ordinary completion path.
+    pub fn mark_unknown_effect(
+        &mut self,
+        reservation: &mut ResourceReservation,
+    ) -> Result<(), Error> {
+        if reservation.domain != self.id || reservation.parent.is_some() {
+            return Err(Error::InvalidReservation);
+        }
+        if reservation.state != ReservationState::Reserved {
+            return Err(Error::ReservationState);
+        }
+        reservation.state = ReservationState::UnknownEffect;
+        Ok(())
+    }
+
+    /// Release retained charge only after A01 has proved DMA/device
+    /// quiescence. This method is a metadata transition and cannot prove that
+    /// effect itself; an adapter must not call it on an unverified timeout.
+    pub fn release_after_quiescence(
+        &mut self,
+        reservation: &mut ResourceReservation,
+    ) -> Result<(), Error> {
+        if reservation.domain != self.id || reservation.parent.is_some() {
+            return Err(Error::InvalidReservation);
+        }
+        if reservation.state != ReservationState::UnknownEffect {
+            return Err(Error::ReservationState);
+        }
+        let next = self.used.checked_sub(reservation.request)?;
+        self.used = next;
+        reservation.state = ReservationState::Released;
+        Ok(())
+    }
+
+    /// Release both sides of a paired child reservation after ordinary
+    /// completion. Checks and subtraction happen before either side mutates.
+    pub fn release_with_parent(
+        parent: &mut Self,
+        child: &mut Self,
+        reservation: &mut ResourceReservation,
+    ) -> Result<(), Error> {
+        validate_child_reservation(parent, child, reservation)?;
+        if reservation.state != ReservationState::Reserved {
+            return Err(Error::ReservationState);
+        }
+        let parent_next = parent.used.checked_sub(reservation.request)?;
+        let child_next = child.used.checked_sub(reservation.request)?;
+        parent.used = parent_next;
+        child.used = child_next;
+        reservation.state = ReservationState::Released;
+        Ok(())
+    }
+
+    /// Retain both parent and child charges after an unknown-effect failure.
+    pub fn mark_unknown_effect_with_parent(
+        parent: &mut Self,
+        child: &mut Self,
+        reservation: &mut ResourceReservation,
+    ) -> Result<(), Error> {
+        validate_child_reservation(parent, child, reservation)?;
+        if reservation.state != ReservationState::Reserved {
+            return Err(Error::ReservationState);
+        }
+        reservation.state = ReservationState::UnknownEffect;
+        Ok(())
+    }
+
+    /// Release both retained charges only after a trusted A01 quiescence
+    /// proof. No timeout or guest cancellation is sufficient by itself.
+    pub fn release_after_quiescence_with_parent(
+        parent: &mut Self,
+        child: &mut Self,
+        reservation: &mut ResourceReservation,
+    ) -> Result<(), Error> {
+        validate_child_reservation(parent, child, reservation)?;
+        if reservation.state != ReservationState::UnknownEffect {
+            return Err(Error::ReservationState);
+        }
+        let parent_next = parent.used.checked_sub(reservation.request)?;
+        let child_next = child.used.checked_sub(reservation.request)?;
+        parent.used = parent_next;
+        child.used = child_next;
+        reservation.state = ReservationState::Released;
+        Ok(())
+    }
+}
+
+fn validate_request(reservation_id: u64, request: ResourceRequest) -> Result<(), Error> {
+    if reservation_id == 0 {
+        return Err(Error::InvalidReservation);
+    }
+    if request.is_zero() {
+        return Err(Error::InvalidResourceRequest);
+    }
+    Ok(())
+}
+
+const fn same_domain(left: ResourceDomainId, right: ResourceDomainId) -> bool {
+    let left = left.bytes();
+    let right = right.bytes();
+    let mut index = 0;
+    while index < left.len() {
+        if left[index] != right[index] {
+            return false;
+        }
+        index += 1;
+    }
+    true
+}
+
+fn validate_child_reservation(
+    parent: &ResourceDomainBudget,
+    child: &ResourceDomainBudget,
+    reservation: &ResourceReservation,
+) -> Result<(), Error> {
+    if parent.parent.is_some()
+        || child.parent != Some(parent.id)
+        || reservation.domain != child.id
+        || reservation.parent != Some(parent.id)
+    {
+        return Err(Error::InvalidReservation);
+    }
+    Ok(())
 }
 
 impl DeviceHandle {
@@ -1168,6 +1634,250 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn root_resource_admission_accounts_all_four_dimensions() {
+        let limits = ResourceLimits::new(100, 10_000, 8_000, 4);
+        let mut budget = ResourceDomainBudget::new(D, None, limits).unwrap();
+        let request = ResourceRequest::new(25, 1024, 2048, 2);
+        let mut reservation = budget.reserve(1, request).unwrap();
+        assert_eq!(reservation.state(), ReservationState::Reserved);
+        assert_eq!(budget.usage().vm_cpu_ns(), 25);
+        assert_eq!(budget.usage().vm_ram_bytes(), 1024);
+        assert_eq!(budget.usage().pinned_dma_bytes(), 2048);
+        assert_eq!(budget.usage().queue_slots(), 2);
+        assert_eq!(budget.available().queue_slots(), 2);
+        budget.release(&mut reservation).unwrap();
+        assert_eq!(reservation.state(), ReservationState::Released);
+        assert_eq!(budget.usage(), ResourceUsage::ZERO);
+    }
+
+    #[test]
+    fn resource_admission_rejects_zero_ids_zero_requests_and_child_bypass() {
+        let zero = ResourceDomainId::new([0; 16]);
+        let limits = ResourceLimits::new(1, 1, 1, 1);
+        assert_eq!(
+            ResourceDomainBudget::new(zero, None, limits),
+            Err(Error::InvalidDomainIdentity)
+        );
+        assert_eq!(
+            ResourceDomainBudget::new(D, Some(D), limits),
+            Err(Error::InvalidDomainIdentity)
+        );
+        let mut root = ResourceDomainBudget::new(D, None, limits).unwrap();
+        assert_eq!(
+            root.reserve(0, ResourceRequest::new(1, 0, 0, 0)),
+            Err(Error::InvalidReservation)
+        );
+        assert_eq!(
+            root.reserve(1, ResourceRequest::new(0, 0, 0, 0)),
+            Err(Error::InvalidResourceRequest)
+        );
+        let mut child = ResourceDomainBudget::new(OTHER, Some(D), limits).unwrap();
+        assert_eq!(
+            child.reserve(1, ResourceRequest::new(1, 0, 0, 0)),
+            Err(Error::ParentAccountingRequired)
+        );
+    }
+
+    #[test]
+    fn child_admission_charges_parent_and_is_atomic_on_parent_overcommit() {
+        let parent_limits = ResourceLimits::new(10, 10, 10, 2);
+        let child_limits = ResourceLimits::new(10, 10, 10, 2);
+        let mut parent = ResourceDomainBudget::new(D, None, parent_limits).unwrap();
+        let mut child = ResourceDomainBudget::new(OTHER, Some(D), child_limits).unwrap();
+        let request = ResourceRequest::new(6, 6, 6, 1);
+        let mut first =
+            ResourceDomainBudget::reserve_with_parent(&mut parent, &mut child, 1, request).unwrap();
+        assert_eq!(parent.usage().vm_ram_bytes(), 6);
+        assert_eq!(child.usage().vm_ram_bytes(), 6);
+        assert_eq!(
+            ResourceDomainBudget::reserve_with_parent(
+                &mut parent,
+                &mut child,
+                2,
+                ResourceRequest::new(5, 0, 0, 0),
+            ),
+            Err(Error::BudgetExceeded)
+        );
+        assert_eq!(parent.usage().vm_cpu_ns(), 6);
+        assert_eq!(child.usage().vm_cpu_ns(), 6);
+        ResourceDomainBudget::release_with_parent(&mut parent, &mut child, &mut first).unwrap();
+        assert_eq!(parent.usage(), ResourceUsage::ZERO);
+        assert_eq!(child.usage(), ResourceUsage::ZERO);
+    }
+
+    #[test]
+    fn sibling_children_share_parent_queue_and_dma_capacity() {
+        let limits = ResourceLimits::new(100, 100, 100, 2);
+        let child_limits = ResourceLimits::new(100, 100, 100, 2);
+        let mut parent = ResourceDomainBudget::new(D, None, limits).unwrap();
+        let mut first_child = ResourceDomainBudget::new(OTHER, Some(D), child_limits).unwrap();
+        let third = ResourceDomainId::from_u128(11);
+        let mut second_child = ResourceDomainBudget::new(third, Some(D), child_limits).unwrap();
+        let mut first = ResourceDomainBudget::reserve_with_parent(
+            &mut parent,
+            &mut first_child,
+            1,
+            ResourceRequest::new(1, 1, 60, 1),
+        )
+        .unwrap();
+        assert_eq!(
+            ResourceDomainBudget::reserve_with_parent(
+                &mut parent,
+                &mut second_child,
+                2,
+                ResourceRequest::new(1, 1, 50, 1),
+            ),
+            Err(Error::BudgetExceeded)
+        );
+        assert_eq!(parent.usage().pinned_dma_bytes(), 60);
+        assert_eq!(parent.usage().queue_slots(), 1);
+        ResourceDomainBudget::release_with_parent(&mut parent, &mut first_child, &mut first)
+            .unwrap();
+    }
+
+    #[test]
+    fn child_limit_failure_does_not_consume_parent_headroom() {
+        let mut parent =
+            ResourceDomainBudget::new(D, None, ResourceLimits::new(10, 10, 10, 10)).unwrap();
+        let mut child =
+            ResourceDomainBudget::new(OTHER, Some(D), ResourceLimits::new(5, 5, 5, 5)).unwrap();
+        assert_eq!(
+            ResourceDomainBudget::reserve_with_parent(
+                &mut parent,
+                &mut child,
+                1,
+                ResourceRequest::new(6, 0, 0, 0),
+            ),
+            Err(Error::BudgetExceeded)
+        );
+        assert_eq!(parent.usage(), ResourceUsage::ZERO);
+        assert_eq!(child.usage(), ResourceUsage::ZERO);
+    }
+
+    #[test]
+    fn resource_admission_reports_arithmetic_overflow_without_mutation() {
+        let limits = ResourceLimits::new(u64::MAX, u64::MAX, u64::MAX, u64::MAX);
+        let mut budget = ResourceDomainBudget::new(D, None, limits).unwrap();
+        let mut first = budget
+            .reserve(1, ResourceRequest::new(u64::MAX, 0, 0, 0))
+            .unwrap();
+        assert_eq!(
+            budget.reserve(2, ResourceRequest::new(1, 0, 0, 0)),
+            Err(Error::ArithmeticOverflow)
+        );
+        assert_eq!(budget.usage().vm_cpu_ns(), u64::MAX);
+        budget.release(&mut first).unwrap();
+    }
+
+    #[test]
+    fn unknown_effect_retains_charge_until_explicit_quiescence_transition() {
+        let limits = ResourceLimits::new(10, 10, 10, 10);
+        let mut budget = ResourceDomainBudget::new(D, None, limits).unwrap();
+        let mut reservation = budget.reserve(1, ResourceRequest::new(2, 3, 4, 5)).unwrap();
+        budget.mark_unknown_effect(&mut reservation).unwrap();
+        assert_eq!(reservation.state(), ReservationState::UnknownEffect);
+        assert_eq!(budget.usage().queue_slots(), 5);
+        assert_eq!(
+            budget.release(&mut reservation),
+            Err(Error::ReservationState)
+        );
+        assert_eq!(budget.usage().pinned_dma_bytes(), 4);
+        budget.release_after_quiescence(&mut reservation).unwrap();
+        assert_eq!(reservation.state(), ReservationState::Released);
+        assert_eq!(budget.usage(), ResourceUsage::ZERO);
+    }
+
+    #[test]
+    fn paired_unknown_effect_retains_parent_and_child_charge() {
+        let limits = ResourceLimits::new(10, 10, 10, 10);
+        let mut parent = ResourceDomainBudget::new(D, None, limits).unwrap();
+        let mut child = ResourceDomainBudget::new(OTHER, Some(D), limits).unwrap();
+        let mut reservation = ResourceDomainBudget::reserve_with_parent(
+            &mut parent,
+            &mut child,
+            1,
+            ResourceRequest::new(2, 3, 4, 5),
+        )
+        .unwrap();
+        ResourceDomainBudget::mark_unknown_effect_with_parent(
+            &mut parent,
+            &mut child,
+            &mut reservation,
+        )
+        .unwrap();
+        assert_eq!(
+            ResourceDomainBudget::release_with_parent(&mut parent, &mut child, &mut reservation),
+            Err(Error::ReservationState)
+        );
+        assert_eq!(parent.usage().vm_cpu_ns(), 2);
+        assert_eq!(child.usage().vm_cpu_ns(), 2);
+        ResourceDomainBudget::release_after_quiescence_with_parent(
+            &mut parent,
+            &mut child,
+            &mut reservation,
+        )
+        .unwrap();
+        assert_eq!(parent.usage(), ResourceUsage::ZERO);
+        assert_eq!(child.usage(), ResourceUsage::ZERO);
+    }
+
+    #[test]
+    fn wrong_parent_and_double_release_do_not_mutate_accounting() {
+        let limits = ResourceLimits::new(10, 10, 10, 10);
+        let mut parent = ResourceDomainBudget::new(D, None, limits).unwrap();
+        let mut child = ResourceDomainBudget::new(OTHER, Some(D), limits).unwrap();
+        let wrong_id = ResourceDomainId::from_u128(12);
+        let mut wrong_parent = ResourceDomainBudget::new(wrong_id, None, limits).unwrap();
+        let mut reservation = ResourceDomainBudget::reserve_with_parent(
+            &mut parent,
+            &mut child,
+            1,
+            ResourceRequest::new(1, 1, 1, 1),
+        )
+        .unwrap();
+        assert_eq!(
+            ResourceDomainBudget::release_with_parent(
+                &mut wrong_parent,
+                &mut child,
+                &mut reservation,
+            ),
+            Err(Error::InvalidReservation)
+        );
+        assert_eq!(parent.usage().queue_slots(), 1);
+        ResourceDomainBudget::release_with_parent(&mut parent, &mut child, &mut reservation)
+            .unwrap();
+        assert_eq!(
+            ResourceDomainBudget::release_with_parent(&mut parent, &mut child, &mut reservation),
+            Err(Error::ReservationState)
+        );
+        assert_eq!(parent.usage(), ResourceUsage::ZERO);
+        assert_eq!(child.usage(), ResourceUsage::ZERO);
+    }
+
+    #[test]
+    fn nested_parent_is_rejected_in_one_hop_metadata_model() {
+        let limits = ResourceLimits::new(10, 10, 10, 10);
+        let root_id = D;
+        let parent_id = OTHER;
+        let child_id = ResourceDomainId::from_u128(11);
+        let root = ResourceDomainBudget::new(root_id, None, limits).unwrap();
+        let mut parent = ResourceDomainBudget::new(parent_id, Some(root_id), limits).unwrap();
+        let mut child = ResourceDomainBudget::new(child_id, Some(parent_id), limits).unwrap();
+        assert_eq!(
+            ResourceDomainBudget::reserve_with_parent(
+                &mut parent,
+                &mut child,
+                1,
+                ResourceRequest::new(1, 0, 0, 0),
+            ),
+            Err(Error::ParentAccountingRequired)
+        );
+        assert_eq!(root.usage(), ResourceUsage::ZERO);
+        assert_eq!(parent.usage(), ResourceUsage::ZERO);
+        assert_eq!(child.usage(), ResourceUsage::ZERO);
+    }
 }
 
 /// The public API does not expose mutable PCI identity.
@@ -1194,6 +1904,20 @@ mod tests {
 /// let fabricated = Completion {
 ///     memory_id: 1, queue_id: 2, queue_instance: 3, device_generation: 4,
 ///     queue_generation: 5, sequence: 6,
+/// };
+/// ```
+///
+/// Resource admission tokens are private and cannot be forged by callers.
+///
+/// ```compile_fail
+/// use a09_device_lifecycle::{ResourceDomainId, ResourceRequest, ResourceReservation,
+///     ReservationState};
+/// let fabricated = ResourceReservation {
+///     reservation_id: 1,
+///     domain: ResourceDomainId::from_u128(1),
+///     parent: None,
+///     request: ResourceRequest::new(1, 0, 0, 0),
+///     state: ReservationState::Reserved,
 /// };
 /// ```
 pub struct CompileFailApiBoundary;

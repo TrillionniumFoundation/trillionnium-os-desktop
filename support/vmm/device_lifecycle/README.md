@@ -20,6 +20,11 @@ metadata in memory and cannot protect device registers by themselves.
   submissions do not consume a sequence or mutate the buffer. `Completion`
   cross-checks memory ID, device generation, queue ID, queue generation and
   sequence before a trusted-driver completion changes buffer ownership.
+- `ResourceDomainBudget`: metadata-only, all-or-none admission for VM CPU
+  reservation nanoseconds, VM RAM bytes, pinned-DMA bytes and aggregate queue
+  slots. A child request charges its direct parent and child before either
+  usage value changes; overcommit, arithmetic overflow and child-only bypasses
+  fail closed.
 - Canceling in-flight work **fences queue, increments generation, retains
   outstanding charges and leaves buffer in `UnknownEffect`**. Does not pretend
   CUDA child timeout or VM shutdown stopped DMA. Hardware quiescence and
@@ -33,9 +38,12 @@ metadata in memory and cannot protect device registers by themselves.
 2. A05: the canonical identity/CapSpace/grant lifecycle is the ONLY signer of
    rights. Prohibit untrusted calls into these internal methods. An IRQ or guest
    `Completion` object alone is not trusted hardware proof.
-3. A06: charge and release pinned pages/VM CPUs/queue allocations using the
-   actual ResourceDomain hierarchy; reject parent overcommit. The pure
-   `ResourceDomainId` type does NOT enforce quotas or reserve capacity.
+3. A06: retain canonical ownership of all quotas and grants. The
+   `ResourceDomainBudget` type is only a no-allocator handoff mirror: it checks
+   a root or one direct parent edge, but cannot install quotas, pin pages,
+   measure CPU, allocate queues or enforce arbitrary ancestor chains. The A06
+   adapter must perform real parent propagation and scheduler charging in the
+   existing `ResourceDomain` implementation.
 4. A00: coordinate IPC/ABI object layouts before moving this logic into the
    Asterinas kernel. Do not start a second device registry or OS authority.
 
@@ -49,6 +57,31 @@ multiple Buffers to one MemoryObject; kernel must enforce overlapping writable
 mapping exclusion and address-space teardown separately. These limits are
 intentional to keep model state distinct from a real device driver.
 
+## Resource admission and failure recovery
+
+`ResourceDomainBudget` accounts four admission dimensions in one checked
+request: `vm_cpu_ns` is a VM-creation reservation envelope (not observed CPU
+execution), `vm_ram_bytes` is guest RAM metadata, `pinned_dma_bytes` is the
+future A01/A06 pin charge, and `queue_slots` is aggregate concurrent-submission
+capacity. Existing `Queue::capacity` remains the A05 queue-local invariant;
+the two values must not become competing authorities.
+
+Root reservations use `reserve`. Child reservations must use
+`reserve_with_parent`, which requires a root parent and charges parent plus
+child atomically. The pure model rejects nested-parent calls with
+`ParentAccountingRequired`; A06 must compose arbitrary ResourceDomain ancestor
+chains under its canonical shared lock. A duplicate `ResourceDomainId` created
+in two independent mirror values is not globally detectable here; the A06
+registry remains responsible for identity uniqueness.
+
+`mark_unknown_effect` (and its paired form) changes only the token state and
+retains every charge. Ordinary `release` rejects that token. Only an explicitly
+named `release_after_quiescence` transition may remove retained usage, and the
+platform adapter must call it only after A01 has proved device/DMA quiescence;
+the method itself is not such proof. Queue fencing and resource-token marking
+are separate metadata operations, so integration must fail closed if either
+operation fails and must never release from a guest timeout alone.
+
 ## Build/test gate
 
 ```sh
@@ -58,8 +91,8 @@ cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --of
 ```
 
 Rust code here uses edition 2021 and `#![no_std]`; tests use the standard test
-harness. The available host Rust 1.99.1 toolchain locally passed **28 unit
-tests, 3 compile-fail doctests, and the release test suite** with `--locked
+harness. The available host Rust 1.99.1 toolchain locally passed **38 unit
+tests, 4 compile-fail doctests, and the release test suite** with `--locked
 --offline`. This host result does not replace the pinned
 `nightly-2026-07-21` **kernel** toolchain or A00's required CI job. Python unit
 cases in `tests/hardware` remain separate from the Rust result.
@@ -136,7 +169,8 @@ unit tests cover high 64-bit distinctions, byte encoding and zero IDs.
 **No second identity authority:** this is only a value representation mirror
 so the canonical A05/A06 adapter can map the **full** stable ResourceDomain ID
 without truncation. It is not the actual in-kernel CapSpace/ResourceDomain type,
-does not install a permission, and cannot create a budget or exclusive PCI
-lease by itself. A00 must review byte encoding with A03/A05/A06 before
+does not install a permission or exclusive PCI lease by itself. The
+`ResourceDomainBudget` admission mirror is not a budget authority; A00 must
+review byte encoding with A03/A05/A06 before
 connecting to kernel state. Local compilation passes; canonical kernel
 integration remains pending CI and A00/A01/A05/A06 review.

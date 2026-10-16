@@ -51,9 +51,12 @@ a live device assignment, guest boot, DMA quiescence, GPU command execution,
 or reset recovery.
 
 The metadata-only Rust join model is checked independently with the three Cargo
-commands documented in [VMM gates](../../support/vmm/GATES.md). Its 28 unit
-tests and 3 compile-fail doctests validate state transitions only; they do not
-count as physical DMA, VMM, passthrough, or GPU-compute evidence.
+commands documented in [VMM gates](../../support/vmm/GATES.md). Its 38 unit
+tests and 4 compile-fail doctests validate state transitions and the
+four-dimensional ResourceDomain admission mirror only; they do not count as
+physical DMA, VMM, passthrough, or GPU-compute evidence. VM CPU is represented
+as a reservation envelope, not observed scheduler usage; A06 remains the
+canonical quota authority and must propagate arbitrary parent chains.
 
 - [Rust lifecycle evidence](evidence/2026-10-16-device-lifecycle-rust.json): debug/release unit tests and compile-fail doctests passed locally; all physical execution fields remain false.
 

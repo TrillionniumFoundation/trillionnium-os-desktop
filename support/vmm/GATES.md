@@ -54,17 +54,22 @@ not a passthrough or GPU-compute result.
 
 `support/vmm/device_lifecycle/` is now a dependency-free `no_std` transition
 model for the A01/A05/A06 review. It covers `DeviceHandle`, `MemoryObject`,
-`Buffer`, `Queue`, `Completion` and a full 16-byte `ResourceDomainId` value
-mirror. It rejects zero identities, stale device/queue generations, cross-
-device submissions, duplicate completions, queue overflow and unsafe release
-after cancellation; unknown-effect cancellation retains the outstanding charge
-and fences the queue.
+`Buffer`, `Queue`, `Completion`, a full 16-byte `ResourceDomainId` value mirror,
+and a `ResourceDomainBudget` admission mirror for VM CPU reservation
+nanoseconds, VM RAM bytes, pinned-DMA bytes and aggregate queue slots. It
+rejects zero identities, stale device/queue generations, cross-device
+submissions, duplicate completions, queue overflow and unsafe release after
+cancellation; unknown-effect cancellation retains the outstanding charge and
+fences the queue. Parent/child admission checks and mutations are atomic for
+one direct root edge; nested ResourceDomain propagation remains A06's
+canonical responsibility.
 
 The model does not pin frames, map IOVA, authenticate CapSpace grants, touch
 MMIO, acknowledge IRQs, prove GPU fences, or reset hardware. A05 remains the
 only device/queue owner and grant authority; A06 remains the canonical budget
 and pinned-DMA owner; A01 remains responsible for real IOMMU, IRQ, VMM and
-quiescence. It must not be wired directly to production DMA in this state.
+quiescence. `vm_cpu_ns` is an admission envelope, not observed scheduler
+usage. The mirror must not be wired directly to production DMA in this state.
 
 Local verification on the host Rust 1.99.1 toolchain:
 
@@ -72,5 +77,5 @@ Local verification on the host Rust 1.99.1 toolchain:
     cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --doc
     cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --release
 
-All three commands passed: 28 unit tests and 3 compile-fail doctests. This is
+All three commands passed: 38 unit tests and 4 compile-fail doctests. This is
 metadata-state verification only, not a GPU, VMM or passthrough result.
