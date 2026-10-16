@@ -25,6 +25,8 @@ def read_regular(directory_fd, name):
     before = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
     if not stat.S_ISREG(before.st_mode):
         raise ValueError(f"evidence source is not a regular file: {name}")
+    if before.st_nlink != 1:
+        raise ValueError(f"hard-linked evidence source is not isolated: {name}")
     if before.st_size > MAX_FILE_BYTES:
         raise ValueError(f"evidence source is too large: {name}")
     descriptor = os.open(name, OPEN_FLAGS, dir_fd=directory_fd)
@@ -97,6 +99,7 @@ def archive(source, destination):
     root_fd = os.open(source, DIRECTORY_FLAGS)
     records = []
     total = 0
+    archived_names = set()
     created = None
     try:
         for item in source_files(source, root_fd):
@@ -105,15 +108,18 @@ def archive(source, destination):
             else:
                 archived, data = item
                 original = str(archived)
+            if archived in archived_names:
+                raise ValueError(f"duplicate archive destination: {archived}")
+            archived_names.add(archived)
             total += len(data)
             if total > MAX_TOTAL_BYTES:
                 raise ValueError("evidence archive exceeds total size limit")
             if created is None:
                 # Delayed allocation: empty/invalid sources never create a fake bundle.
-                destination.mkdir(parents=True, exist_ok=False)
+                destination.mkdir(mode=0o700, parents=True, exist_ok=False)
                 created = destination.stat()
             target = destination / archived
-            target.parent.mkdir(parents=True, exist_ok=True)
+            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
             if str(archived).endswith(".log") or str(archived).endswith(".metadata.json"):
                 target = target.with_name(target.name + ".gz")
                 target.write_bytes(gzip.compress(data, mtime=0))
