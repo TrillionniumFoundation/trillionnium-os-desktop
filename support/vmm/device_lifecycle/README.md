@@ -119,3 +119,22 @@ crate cannot mint, authenticate, or globally enforce unique queue instances;
 A05 must allocate and enforce them inside its existing kernel registry.
 A06 still owns queue/RAM accounting and A01 owns real driver interrupt/fence
 evidence. None of these Rust tests establishes physical DMA quiescence.
+
+
+## HOS2 16-byte ResourceDomain identity (A03/A05/A06 handoff)
+
+The canonical `libs/os-control/src/lib.rs` host model declares
+`Id16([u8; 16])` and `id_type!(ResourceDomainId)`, with `from_u128()`
+encoding in **big-endian** byte order. A09's former `ResourceDomainId(pub u64)`
+was incompatible and could truncate/reinterpret a domain during integration.
+The standalone A09 `no_std` metadata mirror now holds the full private
+`[u8; 16]`, exposes `new([u8;16])`, `from_u128(u128)`, `bytes()` and
+`is_nonzero()`; zero-domain DMA/device/queue admission is rejected. Rust
+unit tests cover high 64-bit distinctions, byte encoding and zero IDs.
+
+**No second identity authority:** this is only a value representation mirror
+so the canonical A05/A06 adapter can map the **full** stable ResourceDomain ID
+without truncation. It is not the actual in-kernel CapSpace/ResourceDomain type,
+does not install a permission, and cannot create a budget or exclusive PCI
+lease by itself. A00 must review byte encoding with A03/A05/A06 before
+connecting to kernel state. Rust compilation on this HEAD remains pending CI.

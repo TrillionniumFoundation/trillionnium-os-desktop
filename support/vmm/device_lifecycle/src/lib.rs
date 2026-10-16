@@ -10,9 +10,27 @@
 #![no_std]
 #![forbid(unsafe_code)]
 
-/// An identifier of the pre-existing A06 ResourceDomainId, never a capability.
+/// A value-only *mirror* of the canonical 16-byte HOS2 ResourceDomainId.
+///
+/// This is NOT the A03/A05/A06 kernel identity type, nor a capability.
+/// The authoritative kernel owner must convert/validate the full 16 bytes;
+/// no truncation to a u64 or additional GPU identity namespace is allowed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct ResourceDomainId(pub u64);
+pub struct ResourceDomainId([u8; 16]);
+
+impl ResourceDomainId {
+    pub const fn new(bytes: [u8; 16]) -> Self { Self(bytes) }
+    pub const fn from_u128(value: u128) -> Self { Self(value.to_be_bytes()) }
+    pub const fn bytes(self) -> [u8; 16] { self.0 }
+    pub const fn is_nonzero(self) -> bool {
+        let mut i = 0;
+        while i < self.0.len() {
+            if self.0[i] != 0 { return true; }
+            i += 1;
+        }
+        false
+    }
+}
 
 // Device binding is only an identity check, not a device capability.
 // The canonical A05 PCI registry must still reject independent duplicate handles.
@@ -55,6 +73,7 @@ pub enum Error {
     InvalidCompletion,
     InvalidDeviceIdentity,
     InvalidQueueIdentity,
+    InvalidDomainIdentity,
 }
 
 impl DeviceHandle {
@@ -81,6 +100,7 @@ impl DeviceHandle {
     /// Model transition. Caller MUST have independently proven A05 admission,
     /// isolated IOMMU group, and exclusive device ownership before calling.
     pub fn assign_after_kernel_checks(&mut self, owner: ResourceDomainId) -> Result<(), Error> {
+        if !owner.is_nonzero() { return Err(Error::InvalidDomainIdentity); }
         if self.state != DeviceState::Unassigned { return Err(Error::InvalidState); }
         self.state = DeviceState::Assigned(owner);
         Ok(())
@@ -170,6 +190,7 @@ pub struct Buffer {
 impl Buffer {
     pub fn new(memory: &MemoryObject, offset: usize, len: usize,
                direction: DmaDirection) -> Result<Self, Error> {
+        if !memory.owner.is_nonzero() { return Err(Error::InvalidDomainIdentity); }
         if len == 0 || offset.checked_add(len).filter(|end| *end <= memory.len).is_none() {
             return Err(Error::InvalidRange);
         }
@@ -265,6 +286,7 @@ impl Queue {
     /// open/recreate lifetime; it is NOT a capability or a permission grant.
     pub fn new(id: u64, queue_instance: u64, device: &DeviceHandle,
                owner: ResourceDomainId, capacity: u32) -> Result<Self, Error> {
+        if !owner.is_nonzero() { return Err(Error::InvalidDomainIdentity); }
         if queue_instance == 0 { return Err(Error::InvalidQueueIdentity); }
         if capacity == 0 { return Err(Error::QueueFull); }
         device.ensure_owner(owner, device.generation)?;
@@ -363,8 +385,8 @@ impl Queue {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const D: ResourceDomainId = ResourceDomainId(9);
-    const OTHER: ResourceDomainId = ResourceDomainId(10);
+    const D: ResourceDomainId = ResourceDomainId::from_u128(9);
+    const OTHER: ResourceDomainId = ResourceDomainId::from_u128(10);
 
     fn setup() -> (DeviceHandle, Queue, Buffer) {
         let mut dev = DeviceHandle::new(0x00000300, 27, 1).unwrap();
@@ -373,6 +395,34 @@ mod tests {
         let mem = MemoryObject { id: 3, owner: D, len: 4096 };
         let buffer = Buffer::new(&mem, 512, 1024, DmaDirection::Bidirectional).unwrap();
         (dev, queue, buffer)
+    }
+
+    #[test]
+    fn domain_id_preserves_all_16_bytes_without_u64_truncation() {
+        const VALUE: u128 = 0x112233445566778899aabbccddeeff00;
+        let id = ResourceDomainId::from_u128(VALUE);
+        assert_eq!(id.bytes(), VALUE.to_be_bytes());
+        assert!(id.is_nonzero());
+        assert_ne!(ResourceDomainId::from_u128(1), ResourceDomainId::from_u128(1u128 << 80));
+    }
+
+    #[test]
+    fn zero_domain_identity_cannot_assign_device_or_allocate_dma_buffer() {
+        let zero = ResourceDomainId::new([0; 16]);
+        assert!(!zero.is_nonzero());
+        let mut dev = DeviceHandle::new(0x300, 27, 1).unwrap();
+        assert_eq!(dev.assign_after_kernel_checks(zero), Err(Error::InvalidDomainIdentity));
+        assert_eq!(dev.state(), DeviceState::Unassigned);
+        let memory = MemoryObject::new(7, zero, 4096);
+        assert_eq!(Buffer::new(&memory, 0, 64, DmaDirection::ToDevice),
+                   Err(Error::InvalidDomainIdentity));
+    }
+
+    #[test]
+    fn zero_queue_domain_refused_before_device_owner_check() {
+        let (dev, _, _) = setup();
+        assert_eq!(Queue::new(9, 1010, &dev, ResourceDomainId::new([0; 16]), 1),
+                   Err(Error::InvalidDomainIdentity));
     }
 
     #[test]
@@ -763,7 +813,7 @@ mod tests {
 ///
 /// ```compile_fail
 /// use a09_device_lifecycle::{MemoryObject, ResourceDomainId, Buffer, DmaDirection};
-/// let memory = MemoryObject::new(7, ResourceDomainId(1), 4096);
+/// let memory = MemoryObject::new(7, ResourceDomainId::from_u128(1), 4096);
 /// let mut buffer = Buffer::new(&memory, 0, 64, DmaDirection::ToDevice).unwrap();
 /// buffer.direction = DmaDirection::Bidirectional;
 /// ```
