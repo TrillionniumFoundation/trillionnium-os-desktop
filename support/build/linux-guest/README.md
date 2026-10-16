@@ -71,3 +71,17 @@ The runner verifies both its compressed hash and decompressed byte hash.
 Later changes to the `serial.log` pathname are reported separately and do not
 replace the captured snapshot. Such a pathname change was actually observed
 in this environment; its writer and cause remain unknown.
+
+SIGINT and SIGTERM cancel queued work and stop each active direct QEMU child
+with terminate, bounded wait, then kill if needed; the child is always reaped.
+The signal handler only sets cancellation state, so interruption during child
+launch cannot skip ownership cleanup. Partial serial snapshots are retained,
+aborted attempts never qualify as matches, and the CLI exits 130 or 143.
+`qemu_reaped_exit_code` records actual cleanup termination separately from the
+compatibility field's `null` timeout status.
+
+The complete 28-case result above is frozen at commit
+`d85b1e091143a9c4f004c024f433a58188455105`. The cancellation fix was checked
+with real SCM guests under both signals and a focused positive, completed
+failure and timeout case. Those repeated checks are separate from the 28-case
+coverage count; see the evidence directory's `cancellation/REPORT.md`.

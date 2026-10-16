@@ -13,7 +13,9 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
+import threading
 import time
 
 PROFILE = "a01-a04-isolated-case-v1"
@@ -105,8 +107,18 @@ def main():
         "full_original_suite_passed": False, "full_w1_passed": False,
         "jobs": args.jobs, "per_guest_timeout_seconds": args.timeout,
     })
+    cancelled = threading.Event()
+    received_signal = None
+
+    def cancel(signum, _frame):
+        nonlocal received_signal
+        if received_signal is None:
+            received_signal = signum
+        cancelled.set()
 
     def run(item):
+        if cancelled.is_set():
+            return None
         name, _, _ = item
         out = args.out_dir / name
         out.mkdir(mode=0o700)
@@ -125,13 +137,42 @@ def main():
         })
         started = time.time()
         timed_out = False
+        aborted = False
+        proc = None
+        raw_exit = None
         with (out / "serial.log").open("x+b") as log:
             try:
-                raw_exit = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT,
-                                          timeout=args.timeout, check=False).returncode
-            except subprocess.TimeoutExpired:
-                raw_exit = None
-                timed_out = True
+                # The handler only sets an Event: a signal between spawn and
+                # publication cannot unwind before this worker owns the child.
+                if not cancelled.is_set():
+                    proc = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT)
+                    dump(out / "qemu-process.json", {"qemu_pid": proc.pid})
+                    deadline = time.monotonic() + args.timeout
+                    while proc.poll() is None:
+                        if cancelled.is_set():
+                            break
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0:
+                            timed_out = True
+                            break
+                        try:
+                            proc.wait(timeout=min(0.1, remaining))
+                        except subprocess.TimeoutExpired:
+                            pass
+                aborted = cancelled.is_set()
+            finally:
+                # QEMU is our direct child. Always reap it, including when
+                # publication, recording or a worker exception fails.
+                if proc is not None:
+                    if proc.poll() is None:
+                        proc.terminate()
+                        try:
+                            proc.wait(timeout=2)
+                        except subprocess.TimeoutExpired:
+                            proc.kill()
+                            proc.wait()
+                    if not timed_out:
+                        raw_exit = proc.returncode
             log.flush()
             log.seek(0)
             serial_data = log.read()
@@ -151,9 +192,12 @@ def main():
         record = {
             "case": name, "elapsed_seconds": time.time() - started,
             "raw_qemu_exit_code": raw_exit, "timed_out": timed_out,
-            "guest_execution_verified": result["guest_execution_verified"],
+            "aborted": aborted,
+            "qemu_pid": proc.pid if proc is not None else None,
+            "qemu_reaped_exit_code": proc.returncode if proc is not None else None,
+            "guest_execution_verified": not aborted and result["guest_execution_verified"],
             "case_result": observed,
-            "exact_match": not timed_out and result["guest_execution_verified"]
+            "exact_match": not aborted and not timed_out and result["guest_execution_verified"]
             and result["guest_compatibility_passed"] and observed.get("status") == "pass",
             "serial_sha256": hashlib.sha256(serial_data).hexdigest(),
             "serial_snapshot_sha256": guest.sha_file(snapshot),
@@ -168,7 +212,28 @@ def main():
                           ("case", "exact_match", "timed_out", "raw_qemu_exit_code")}), flush=True)
         return record
 
-    results = list(concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs).map(run, cases))
+    previous_handlers = {sig: signal.signal(sig, cancel) for sig in
+                         (signal.SIGINT, signal.SIGTERM)}
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs)
+    futures = []
+    try:
+        futures = [executor.submit(run, case) for case in cases]
+        pending = set(futures)
+        while pending and not cancelled.is_set():
+            done, pending = concurrent.futures.wait(
+                pending, timeout=0.1, return_when=concurrent.futures.FIRST_COMPLETED
+            )
+            for future in done:
+                future.result()
+    except BaseException:
+        cancelled.set()
+        raise
+    finally:
+        executor.shutdown(wait=True, cancel_futures=True)
+        for sig, handler in previous_handlers.items():
+            signal.signal(sig, handler)
+    results = [future.result() for future in futures if not future.cancelled()]
+    results = [record for record in results if record is not None]
     for record in results:
         snapshot = args.out_dir / record["case"] / "serial-captured.log.gz"
         data = gzip.decompress(snapshot.read_bytes())
@@ -179,9 +244,15 @@ def main():
         record["raw_serial_changed_after_capture"] = guest.sha_file(serial) != record["serial_sha256"]
     summary = {
         "profile": PROFILE, "case_count": len(results),
+        "selected_case_count": len(cases),
+        "aborted": cancelled.is_set(),
+        "received_signal": signal.Signals(received_signal).name if received_signal else None,
+        "aborted_cases": sum(item["aborted"] for item in results),
+        "skipped_cases": len(cases) - len(results),
         "matched": sum(item["exact_match"] for item in results),
         "timed_out": sum(item["timed_out"] for item in results),
         "failed_completed": sum(not item["exact_match"] and not item["timed_out"]
+                                and not item["aborted"]
                                 for item in results),
         "original_unmodified_suite_passed": False, "full_w1_passed": False,
         "results": results,
@@ -189,7 +260,9 @@ def main():
     dump(args.out_dir / "summary.json", summary)
     print(json.dumps({key: value for key, value in summary.items() if key != "results"}),
           flush=True)
-    return 0 if summary["matched"] == len(results) else 2
+    if received_signal:
+        return 128 + received_signal
+    return 0 if summary["matched"] == len(cases) else 2
 
 
 if __name__ == "__main__":
