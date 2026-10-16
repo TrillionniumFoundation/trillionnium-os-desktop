@@ -423,8 +423,12 @@ impl LocalRunQueue for PerCpuClassRqSet {
     }
 
     fn update_current(&mut self, flags: UpdateFlags) -> bool {
-        // The per-CPU timer also fires on idle; replenishment is fully local.
-        self.replenish_throttled(sched_clock());
+        // Settle the running task FIRST. Replenishment invokes
+        // task_cpu_eligible() and can advance the same cgroup or a common
+        // ancestor's quota window before charge_task_cpu() sees a tick that
+        // straddles the boundary. That loses old-window CPU runtime and
+        // defeats positive overrun debt. N0 keeps all these transitions
+        // serialized inside the existing IRQ-disabled per-CPU runqueue lock.
         let mut quota_exhausted = false;
         let (should_preempt, mut lookahead) = if let Some(((task, cur), rt)) = &mut self.current {
             let from = rt.start;
@@ -442,6 +446,12 @@ impl LocalRunQueue for PerCpuClassRqSet {
         } else {
             (false, 4)
         };
+
+        // This timer callback also fires when idle. Once the current task's
+        // exact interval is charged, reconsider throttled tasks and update
+        // the available queues without letting an early eligibility check
+        // erase the last active cgroup period.
+        self.replenish_throttled(sched_clock());
 
         if matches!(flags, UpdateFlags::Wait | UpdateFlags::Exit) {
             lookahead = 4;
