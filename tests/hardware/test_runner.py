@@ -78,6 +78,26 @@ class LabRunnerTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertEqual(result["status"], "failed_false_positive_child")
 
+    def test_requested_gpu_model_must_not_match_ti_variant(self):
+        payload = fake_good()
+        payload["device"]["device_name"] = "NVIDIA GeForce RTX 4060 Ti"
+        code, result = lab.run_lab(BDF, "RTX 4060", True,
+                                   runner=Mock(return_value=self.result(payload)))
+        self.assertEqual(code, 1)
+        self.assertEqual(result["status"], "failed_false_positive_child")
+
+    def test_malformed_gpu_identity_types_are_denied_without_crash(self):
+        for field, invalid in (("device_bdf", None), ("device_bdf", 1234),
+                               ("device_name", None), ("device_name", ["RTX 4060"])):
+            with self.subTest(field=field):
+                payload = fake_good()
+                payload["device"][field] = invalid
+                code, result = lab.run_lab(
+                    BDF, "RTX 4060", True, runner=Mock(return_value=self.result(payload))
+                )
+                self.assertEqual(code, 1)
+                self.assertEqual(result["status"], "failed_false_positive_child")
+
     def test_fake_or_incomplete_cleanup_fails(self):
         payload = fake_good()
         payload["resources_released"] = False

@@ -45,6 +45,18 @@ def initial_evidence(bdf, name, timeout_seconds):
            "no_driver_rebind_no_device_reset": True}
 
 
+def canonical_gpu_model(value):
+    """Compare the *full* model, allowing only explicit vendor-name prefixes."""
+    if not isinstance(value, str):
+        return None
+    model = " ".join(value.casefold().split())
+    for prefix in ("nvidia geforce ", "nvidia ", "geforce "):
+        if model.startswith(prefix):
+            model = model[len(prefix):]
+            break
+    return model or None
+
+
 def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=None):
     if not isolated_lab:
         raise Blocked("--isolated-lab is mandatory; NEVER test H3/training/production GPU")
@@ -110,7 +122,12 @@ def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=None):
     }
     errors = [k for k, v in expected.items() if child.get(k) != v]
     identity = child.get("device")
-    if not isinstance(identity, dict) or identity.get("device_bdf", "").lower() != bdf.lower() or name.lower() not in identity.get("device_name", "").lower():
+    observed_bdf = identity.get("device_bdf") if isinstance(identity, dict) else None
+    observed_model = identity.get("device_name") if isinstance(identity, dict) else None
+    if (not isinstance(observed_bdf, str)
+            or BDF_RE.fullmatch(observed_bdf) is None
+            or observed_bdf.casefold() != bdf.casefold()
+            or canonical_gpu_model(observed_model) != canonical_gpu_model(name)):
         errors.append("device PCI identity and model")
     if errors:
         result.update(status="failed_false_positive_child", error="invalid: " + ", ".join(errors))

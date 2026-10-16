@@ -2,7 +2,9 @@
 import hashlib
 from pathlib import Path
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "support/vmm"))
 import acceptance
@@ -44,6 +46,11 @@ class AcceptanceTests(unittest.TestCase):
                                         "status": "passed_on_reported_cuda_environment",
                                         "actual_output_sha256":
                                         "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847",
+                                        "expected_output_sha256":
+                                        "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847",
+                                        "device_access_attempted": True,
+                                        "device_memory_allocated": True,
+                                        "results_copied": True,
                                         "resources_released": True,
                                         "cuda_kernel_launched": True,
                                         "synchronization_completed": True,
@@ -93,6 +100,55 @@ class AcceptanceTests(unittest.TestCase):
         self.host["device"]["interrupt_remapping_enabled"] = False
         self.assertIn("iommu_dma_not_enforced", self.reasons())
         self.assertIn("interrupts_not_isolated", self.reasons())
+
+    def test_missing_gpu_allocation_or_copy_invalidates_success_evidence(self):
+        evidence = self.guest["gemm"]["child_evidence"]
+        for field in ("device_access_attempted", "device_memory_allocated",
+                      "results_copied", "expected_output_sha256"):
+            with self.subTest(field=field):
+                original = evidence.pop(field)
+                self.assertIn("invalid_cuda_gemm_result", self.reasons())
+                evidence[field] = original
+
+    def test_bounded_reader_never_requests_unlimited_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "guest.log"
+            path.write_bytes(b"small fixture")
+            original_open = Path.open
+
+            class Meter:
+                def __init__(self, source):
+                    self.source = source
+
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *args):
+                    self.source.close()
+
+                def fileno(self):
+                    return self.source.fileno()
+
+                def read(self, size=-1):
+                    if size < 0 or size > acceptance.MAX_RAW_LOG_BYTES + 1:
+                        raise AssertionError("unbounded evidence read")
+                    return self.source.read(size)
+
+            def monitored_open(candidate, *args, **kwargs):
+                source = original_open(candidate, *args, **kwargs)
+                return Meter(source) if candidate == path else source
+
+            with patch.object(Path, "open", monitored_open):
+                self.assertEqual(acceptance.bounded_log(path), b"small fixture")
+
+    def test_oversized_raw_log_is_rejected_without_unbounded_read(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "huge.log"
+            with path.open("wb") as output:
+                output.seek(acceptance.MAX_RAW_LOG_BYTES)
+                output.write(b"x")
+            with self.assertRaises(ValueError):
+                acceptance.bounded_log(path)
 
     def test_guest_cpu_only_does_not_count(self):
         self.guest["gemm"]["child_evidence"]["cuda_kernel_launched"] = False
