@@ -1,0 +1,62 @@
+{
+  "schema": "a09.gpu-lab-profile.v1",
+  "state": "candidate_not_detected_or_authorized_on_accessible_hardware",
+  "base_main": "4b88b637e520f5a8f10d0e280fb9ee450abee8e4",
+  "kernel_pin": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "selected_route": "linux_guest_driver_exclusive_gpu_passthrough_on_asterinas_vmm",
+  "target_gpu": {
+    "model": "NVIDIA GeForce RTX 4060",
+    "expected_cc_from_vendor": "8.9",
+    "observed_pci_vendor": null,
+    "observed_pci_device": null,
+    "observed_pci_bdf": null,
+    "observed_firmware": null,
+    "observed_driver": null,
+    "observed_iommu_group": null,
+    "reset_qualified": false
+  },
+  "physical_host": {
+    "cpu": null,
+    "board": null,
+    "iommu": null,
+    "hypervisor_backend": null,
+    "verified_isolated_machine": false
+  },
+  "guest": {
+    "kernel": "Linux (future)",
+    "nvidia_driver_version": null,
+    "cuda_driver_runtime": "libcuda.so.1 (not installed in execution container)",
+    "nvrtc": "libnvrtc.so (unverified)",
+    "nvidia_gsp_firmware": null
+  },
+  "test": {
+    "name": "gemm16_f32",
+    "shape": [
+      16,
+      16,
+      16
+    ],
+    "dtype": "float32",
+    "reference_sha256": "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847",
+    "compare": "all_256_exact",
+    "gpu_execution_required": true,
+    "reset_fault_injection_enabled": false
+  },
+  "gates": {
+    "linux_host_baseline": false,
+    "asterinas_vmm_boot": false,
+    "gpu_pci_passthrough": false,
+    "gemm_gpu_result": false,
+    "cleanup": false,
+    "failure_recovery": false,
+    "local_gpu_inference": false
+  },
+  "safety": {
+    "allowed_environment": "authorized_idle_disposable_lab_only",
+    "driver_rebind": false,
+    "firmware_flash": false,
+    "bios_modify": false,
+    "prod_reset": false,
+    "ollama": false
+  }
+}
