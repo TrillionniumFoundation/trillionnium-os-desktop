@@ -5,7 +5,7 @@
             "name": "Debug Asterinas(#PROFILE#)",
             "type": "lldb",
             "request": "custom",
-            "targetCreateCommands": ["target create ${workspaceFolder}/target/osdk/#CRATE_NAME#/#BIN_NAME#"],
+            "targetCreateCommands": [#TARGET_CREATE_COMMAND#],
             "processCreateCommands": ["gdb-remote #ADDR_PORT#"]
         }
     ]
