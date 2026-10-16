@@ -268,6 +268,42 @@ fn real_terminal_query_delivery_values_are_wire_checked() {
 }
 
 #[test]
+fn all_hos2_terminal_status_codes_are_exhaustively_mapped() {
+    let core = ControlCore::new(boot(2021), space(2021));
+    let mut terminal = core.query_delivery(&core.delivery_view(), 1).unwrap();
+    terminal.state = DeliveryState::Terminal;
+
+    for (status, wire_code) in [
+        (DeliveryStatus::Ok, 0_u16),
+        (DeliveryStatus::InvalidInput, 1),
+        (DeliveryStatus::PermissionDenied, 2),
+        (DeliveryStatus::StaleHandle, 3),
+        (DeliveryStatus::Revoked, 4),
+        (DeliveryStatus::Conflict, 5),
+        (DeliveryStatus::ParentLimit, 5),
+        (DeliveryStatus::ResourceExhausted, 6),
+        (DeliveryStatus::Unsupported, 7),
+        (DeliveryStatus::Indeterminate, 8),
+        (DeliveryStatus::Busy, 9),
+        (DeliveryStatus::OutOfOrder, 10),
+        (DeliveryStatus::Retired, 11),
+    ] {
+        assert_eq!(status.hos2_code(), wire_code);
+        terminal.status = Some(status);
+        if status == DeliveryStatus::Ok {
+            // Cannot report an invented terminal success without revision
+            // and resource-effect fields, even if its code would be zero.
+            assert_eq!(
+                terminal.hos2_saved_status_code(),
+                Err(DeliveryError::InvalidPublish)
+            );
+        } else {
+            assert_eq!(terminal.hos2_saved_status_code(), Ok(wire_code));
+        }
+    }
+}
+
+#[test]
 fn out_of_order_does_not_consume_sequence_and_wrong_history_owner_cannot_retire() {
     let core = ControlCore::new(boot(13), space(13));
     let target = root(13, CPU_PERIOD_NS);
