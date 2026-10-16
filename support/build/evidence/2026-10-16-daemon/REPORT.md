@@ -122,8 +122,12 @@ Run `sha256sum -c evidence.sha256` from this directory to verify saved files.
 Source pins remain Asterinas v0.19.0 commit
 `c4b7ed575b7b32773475b194d2ad41fb6d03765b`, original tree
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`, nightly-2026-07-21. This code's
-kernel subtree is `85cf10d7c0daa074c747871dfb91d1d25b75ef97`. Actual main remains
-`47afb8229bd3a3ff05077c7b01aac6fa8ef6f956`. PR #5 targets main; A00 integrates.
+kernel subtree is `85cf10d7c0daa074c747871dfb91d1d25b75ef97`. Main at this round's start was
+`47afb8229bd3a3ff05077c7b01aac6fa8ef6f956`. A00 subsequently merged the source
+through PR #5 at `c757c709652f9a9701765ff8a9e7c3026fc1019e`. This evidence and
+lock update follow separately in [PR #15](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/15)
+from the same A01 branch; its base at creation was
+`e44c92ac885eb003665ff2e1e5c6fab1f104b2d6`.
 Root README remains 0 bytes. The existing A05/A06 interface map and ownership
 handoff remain in [`../../README.md`](../../README.md).
 
@@ -134,3 +138,10 @@ libibverbs1 package-configuration restriction remain. HOS2, CapSpace,
 exec_epoch, ResourceDomain, Hepta, Android and GPU functionality are outside
 this A01 host-tool fix. The formerly observed daemon lifetime defect is no
 longer a failing result within the tested process-group/sole-reaper scope.
+
+A residual untracked minimal OSDK profile was preserved outside tracked source
+under the shared workspace lock after testing; no bytes were discarded. It
+matched the committed minimal profile exactly. Its original stat/hash and
+retention location are in `regression/preserved-profile.json`; the cause of
+the observed ownership/inode change was not established. This is recorded
+without attributing it to another actor or treating cleanup as a new test.
