@@ -11,7 +11,9 @@ fn fixture() -> [u8; TRANSPORT_LEN] {
     let ascii = GOLDEN.trim().as_bytes();
     assert_eq!(ascii.len(), TRANSPORT_LEN * 2);
     let mut output = [0u8; TRANSPORT_LEN];
-    for (index, pair) in ascii.chunks_exact(2).enumerate() {
+    let (pairs, remainder) = ascii.as_chunks::<2>();
+    assert!(remainder.is_empty());
+    for (index, pair) in pairs.iter().enumerate() {
         let high = (pair[0] as char).to_digit(16).expect("fixed hex") as u8;
         let low = (pair[1] as char).to_digit(16).expect("fixed hex") as u8;
         output[index] = (high << 4) | low;
