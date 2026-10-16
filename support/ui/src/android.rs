@@ -335,6 +335,7 @@ pub enum BufferLifecycle {
 pub enum BufferRetireReason {
     GenerationChanged,
     DisplayDestroyed,
+    DisplayFailed,
     AcquireFenceFailed,
     ReleaseFenceFailed,
 }
@@ -632,6 +633,22 @@ impl AndroidDisplaySurface {
         Ok(())
     }
 
+    /// Record a trusted provider failure.  A failed display cannot continue
+    /// importing or routing input, and all outstanding buffers are retired;
+    /// callers must negotiate a fresh generation before using the surface.
+    pub fn fail(&mut self, reason: FailureReason) -> Result<(), AndroidDisplayError> {
+        if matches!(self.lifecycle, DisplayLifecycle::Destroyed { .. }) {
+            return Err(AndroidDisplayError::DisplayDestroyed);
+        }
+        if matches!(self.lifecycle, DisplayLifecycle::Failed { .. }) {
+            return Err(AndroidDisplayError::InvalidTransition);
+        }
+        self.retire_buffers(BufferRetireReason::DisplayFailed);
+        self.lifecycle = DisplayLifecycle::Failed { reason };
+        self.ime = ImeState::Inactive;
+        Ok(())
+    }
+
     pub fn register_buffer(
         &mut self,
         description: BufferDescription,
@@ -681,6 +698,9 @@ impl AndroidDisplaySurface {
             )
         {
             return Err(AndroidDisplayError::BufferBusy);
+        }
+        if matches!(acquire_fence, FenceState::Failed(_)) {
+            return Err(AndroidDisplayError::FenceNotReady);
         }
         buffer.owner = BufferOwner::Compositor;
         buffer.lifecycle = BufferLifecycle::Queued;
@@ -749,6 +769,9 @@ impl AndroidDisplaySurface {
             return Err(AndroidDisplayError::BufferNotOwned);
         }
         if !buffer.acquire_fence.ready() {
+            return Err(AndroidDisplayError::FenceNotReady);
+        }
+        if matches!(release_fence, FenceState::Failed(_)) {
             return Err(AndroidDisplayError::FenceNotReady);
         }
         buffer.lifecycle = BufferLifecycle::Displaying;
@@ -1147,6 +1170,34 @@ mod tests {
                 ..description(&display, 2)
             }),
             Err(AndroidDisplayError::DisplayDestroyed)
+        );
+    }
+
+    #[test]
+    fn provider_failure_retires_buffers_and_blocks_input() {
+        let mut display = surface();
+        display.activate().unwrap();
+        display.register_buffer(description(&display, 1)).unwrap();
+        display.fail(FailureReason::ImportRejected).unwrap();
+        assert_eq!(
+            display.lifecycle(),
+            DisplayLifecycle::Failed {
+                reason: FailureReason::ImportRejected
+            }
+        );
+        assert_eq!(
+            display.buffer(BufferId::new(1).unwrap()).unwrap().lifecycle,
+            BufferLifecycle::Retired {
+                reason: BufferRetireReason::DisplayFailed
+            }
+        );
+        assert_eq!(
+            display.route_input(InputEvent::Home),
+            Err(AndroidDisplayError::DisplayFailed)
+        );
+        assert_eq!(
+            display.register_buffer(description(&display, 2)),
+            Err(AndroidDisplayError::DisplayFailed)
         );
     }
 }
