@@ -722,12 +722,48 @@ pub struct DeliveryObservation {
 }
 
 impl DeliveryObservation {
-    /// QueryDelivery uses saved_status=Ok for non-terminal states, including
-    /// a pending reservation and all history-only states.
-    pub const fn hos2_saved_status_code(self) -> u16 {
-        match self.status {
-            Some(status) if matches!(self.state, DeliveryState::Terminal) => status.hos2_code(),
-            _ => 0,
+    /// Convert a complete QueryDelivery observation into the HOS2 saved
+    /// status only when state, status, and terminal metadata agree.
+    ///
+    /// `Terminal` without a saved result must never be serialized as `Ok`.
+    /// Likewise, a non-terminal state cannot carry a terminal status or its
+    /// resource mutation metadata. A05 must reject these impossible model
+    /// states rather than manufacture an apparent successful effect.
+    pub const fn hos2_saved_status_code(self) -> Result<u16, DeliveryError> {
+        let has_metadata = self.stable_object_id.is_some()
+            || self.saved_revision.is_some()
+            || self.previous_revision.is_some()
+            || self.effective_ns.is_some()
+            || self.consumed_ns.is_some();
+
+        match (self.state, self.status) {
+            (DeliveryState::Terminal, Some(DeliveryStatus::Ok)) => {
+                match (
+                    self.stable_object_id,
+                    self.saved_revision,
+                    self.previous_revision,
+                    self.effective_ns,
+                    self.consumed_ns,
+                ) {
+                    (Some(object), Some(saved), Some(previous), Some(_), Some(_))
+                        if object.is_nonzero()
+                            && previous.checked_add(1) == Some(saved) =>
+                    {
+                        Ok(DeliveryStatus::Ok.hos2_code())
+                    }
+                    _ => Err(DeliveryError::InvalidPublish),
+                }
+            }
+            (DeliveryState::Terminal, Some(status)) => {
+                if has_metadata {
+                    Err(DeliveryError::InvalidPublish)
+                } else {
+                    Ok(status.hos2_code())
+                }
+            }
+            (DeliveryState::Terminal, None) => Err(DeliveryError::InvalidPublish),
+            (_, None) if !has_metadata => Ok(DeliveryStatus::Ok.hos2_code()),
+            _ => Err(DeliveryError::InvalidPublish),
         }
     }
 
