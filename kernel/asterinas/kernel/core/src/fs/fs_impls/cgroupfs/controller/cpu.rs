@@ -3,16 +3,14 @@
 use alloc::sync::Arc;
 use core::sync::atomic::{AtomicU32, Ordering};
 
-use ostd::arch::{read_tsc, tsc_freq};
-use ostd::task::Task;
-
 use aster_systree::{Error, MAX_ATTR_SIZE, Result, SysAttrSetBuilder, SysPerms, SysStr};
 use aster_util::{per_cpu_counter::PerCpuCounter, printer::VmPrinter};
 use ostd::{
+    arch::{read_tsc, tsc_freq},
     cpu::CpuId,
     mm::{VmReader, VmWriter},
     sync::SpinLock,
-    task::atomic_mode::AsAtomicModeGuard,
+    task::{Task, atomic_mode::AsAtomicModeGuard},
     timer::Jiffies,
     warn,
 };
@@ -72,7 +70,8 @@ impl CpuMax {
     /// N0 uses a single vCPU and invariant TSC; these fields are not nanoseconds.
     fn us_to_clocks(us: u64) -> u64 {
         (u128::from(tsc_freq()) * u128::from(us) / 1_000_000)
-            .try_into().unwrap_or(u64::MAX)
+            .try_into()
+            .unwrap_or(u64::MAX)
     }
 
     fn period_clocks(&self) -> u64 {
@@ -84,12 +83,14 @@ impl CpuMax {
         let start = now / period * period;
         if start != self.window_start {
             if let Some(since) = self.throttled_since.take() {
-                self.throttled_clocks = self.throttled_clocks.saturating_add(
-                    start.max(since).min(now).saturating_sub(since));
+                self.throttled_clocks = self
+                    .throttled_clocks
+                    .saturating_add(start.max(since).min(now).saturating_sub(since));
             }
             if self.window_start != 0 && start > self.window_start {
-                self.nr_periods = self.nr_periods.saturating_add(
-                    (start - self.window_start) / period);
+                self.nr_periods = self
+                    .nr_periods
+                    .saturating_add((start - self.window_start) / period);
             }
             self.window_start = start;
             self.used_clocks = 0;
@@ -97,19 +98,22 @@ impl CpuMax {
     }
 
     fn charge(&mut self, from: u64, until: u64) {
-        if until < from { return; }
+        if until < from {
+            return;
+        }
         self.advance(until);
-        self.used_clocks = self.used_clocks.saturating_add(
-            until.saturating_sub(from.max(self.window_start)));
+        self.used_clocks = self
+            .used_clocks
+            .saturating_add(until.saturating_sub(from.max(self.window_start)));
     }
 
     fn eligible(&mut self, now: u64) -> bool {
         self.advance(now);
-        if self.quota_usec == u64::MAX ||
-            self.used_clocks < Self::us_to_clocks(self.quota_usec) {
+        if self.quota_usec == u64::MAX || self.used_clocks < Self::us_to_clocks(self.quota_usec) {
             if let Some(since) = self.throttled_since.take() {
-                self.throttled_clocks = self.throttled_clocks.saturating_add(
-                    now.saturating_sub(since));
+                self.throttled_clocks = self
+                    .throttled_clocks
+                    .saturating_add(now.saturating_sub(since));
             }
             return true;
         }
@@ -130,17 +134,21 @@ impl CpuMax {
         self.used_clocks = already_used;
         if quota_usec == u64::MAX {
             if let Some(since) = self.throttled_since.take() {
-                self.throttled_clocks = self.throttled_clocks.saturating_add(
-                    now.saturating_sub(since));
+                self.throttled_clocks = self
+                    .throttled_clocks
+                    .saturating_add(now.saturating_sub(since));
             }
         }
     }
 
     fn throttled_usec(&self, now: u64) -> u64 {
         let clocks = self.throttled_clocks.saturating_add(
-            self.throttled_since.map_or(0, |since| now.saturating_sub(since)));
+            self.throttled_since
+                .map_or(0, |since| now.saturating_sub(since)),
+        );
         (u128::from(clocks) * 1_000_000 / u128::from(tsc_freq()))
-            .try_into().unwrap_or(u64::MAX)
+            .try_into()
+            .unwrap_or(u64::MAX)
     }
 }
 
@@ -452,25 +460,43 @@ impl super::Controller {
 
 /// Uses the existing cgroup controller for both Linux and future HOS callers.
 pub(crate) fn task_cpu_eligible(task: &Task, now: u64) -> bool {
-    let Some(thread) = task.as_posix_thread() else { return true; };
+    let Some(thread) = task.as_posix_thread() else {
+        return true;
+    };
     let process = thread.process();
     let guard = process.cgroup();
     if let Some(group) = guard.get() {
-        group.controller().cpu.read_with(&guard).bandwidth_available_hierarchy(now)
+        group
+            .controller()
+            .cpu
+            .read_with(&guard)
+            .bandwidth_available_hierarchy(now)
     } else {
-        CgroupSystem::singleton().controller().cpu.read_with(&guard)
+        CgroupSystem::singleton()
+            .controller()
+            .cpu
+            .read_with(&guard)
             .bandwidth_available_hierarchy(now)
     }
 }
 
 pub(crate) fn charge_task_cpu(task: &Task, from: u64, until: u64) {
-    let Some(thread) = task.as_posix_thread() else { return; };
+    let Some(thread) = task.as_posix_thread() else {
+        return;
+    };
     let process = thread.process();
     let guard = process.cgroup();
     if let Some(group) = guard.get() {
-        group.controller().cpu.read_with(&guard).charge_bandwidth_hierarchy(from, until);
+        group
+            .controller()
+            .cpu
+            .read_with(&guard)
+            .charge_bandwidth_hierarchy(from, until);
     } else {
-        CgroupSystem::singleton().controller().cpu.read_with(&guard)
+        CgroupSystem::singleton()
+            .controller()
+            .cpu
+            .read_with(&guard)
             .charge_bandwidth_hierarchy(from, until);
     }
 }
