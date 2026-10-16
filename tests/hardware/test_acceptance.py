@@ -1,0 +1,136 @@
+"""Adversarial synthetic cross-kernel evidence tests; never hardware tests."""
+import hashlib
+from pathlib import Path
+import sys
+import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "support/vmm"))
+import acceptance
+
+
+class AcceptanceTests(unittest.TestCase):
+    def setUp(self):
+        self.hostlog = b"ASTERINAS-BOOT-A09-MARKER guest spawned\n"
+        self.guestlog = b"LINUX-GUEST-A09-MARKER CUDA program started\n"
+        self.host = {
+            "schema": "a09.asterinas-host-vmm-evidence.v1",
+            "host_kernel": "asterinas-derived",
+            "upstream_pin": acceptance.KERNEL_PIN,
+            "host_boot_log_sha256": hashlib.sha256(self.hostlog).hexdigest(),
+            "host_boot_marker": "ASTERINAS-BOOT-A09-MARKER",
+            "vm": {"backend": "intel-vmx", "host_cpu_vendor": "GenuineIntel",
+                   "hardware_virtualization_executed": True, "guest_linux_booted": True,
+                   "vm_id": "evidence-test-vm", "boot_nonce": "ab" * 16},
+            "device": {"owner": "asterinas-host-vmm", "iommu_group_complete": True,
+                       "iommu_dma_translation_enabled": True, "interrupt_remapping_enabled": True,
+                       "host_driver_detached_from_prod": False,
+                       "device_idle_isolated_lab": True,
+                       "DMA_quiescence_on_teardown_verified": True,
+                       "no_device_reset_during_test": True,
+                       "vendor_id": "0x10de", "device_id": "0x28a0", "host_bdf": "0000:05:00.0"},
+        }
+        self.guest = {
+            "schema": "a09.linux-guest-gpu-evidence.v1",
+            "guest_boot_log_sha256": hashlib.sha256(self.guestlog).hexdigest(),
+            "guest_boot_marker": "LINUX-GUEST-A09-MARKER",
+            "vm": {"vm_id": "evidence-test-vm", "boot_nonce": "ab" * 16},
+            "device": {"vendor_id": "0x10de", "device_id": "0x28a0",
+                       "guest_bdf": "0000:03:00.0", "nvidia_driver_version": "fixture",
+                       "firmware_manifest_sha256": "f" * 64},
+            "gemm": {"schema": "a09.cuda-bounded-run.v1",
+                     "status": "guest_cuda_reported_pass_not_asterinas_attestation",
+                     "requested_guest_bdf": "0000:03:00.0", "child_exit_code": 0,
+                     "child_evidence": {"schema": "a09.cuda-gemm.v1",
+                                        "status": "passed_on_reported_cuda_environment",
+                                        "actual_output_sha256":
+                                        "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847",
+                                        "resources_released": True,
+                                        "cuda_kernel_launched": True,
+                                        "synchronization_completed": True,
+                                        "no_cpu_fallback": True,
+                                        "device": {"device_bdf": "0000:03:00.0"}}},
+        }
+
+    def reasons(self):
+        return acceptance.validate(self.host, self.guest, self.hostlog, self.guestlog)
+
+    def test_consistent_synthetic_evidence_never_auto_passes_hardware(self):
+        self.assertEqual(self.reasons(), [])  # Eligible for independent review ONLY.
+
+    def test_malformed_non_string_fields_fail_closed_without_exception(self):
+        self.host["vm"]["backend"] = []
+        self.host["device"]["host_bdf"] = None
+        self.guest["device"]["guest_bdf"] = 5
+        self.guest["gemm"]["child_evidence"]["device"]["device_bdf"] = None
+        reasons = self.reasons()
+        self.assertIn("unknown_vmm_backend", reasons)
+        self.assertIn("host_pci_bdf_missing", reasons)
+        self.assertIn("guest_pci_bdf_missing", reasons)
+        self.assertIn("guest_cuda_pci_identity_mismatch", reasons)
+
+    def test_zero_log_missing(self):
+        self.hostlog = b""
+        self.assertIn("host_raw_log_missing", self.reasons())
+
+    def test_linux_host_rejected(self):
+        self.host["host_kernel"] = "linux"
+        self.assertIn("not_asterinas_host", self.reasons())
+
+    def test_wrong_upstream_pin_rejected(self):
+        self.host["upstream_pin"] = "e" * 40
+        self.assertIn("wrong_asterinas_source_pin", self.reasons())
+
+    def test_vmx_on_amd_cpu_rejected(self):
+        self.host["vm"]["host_cpu_vendor"] = "AuthenticAMD"
+        self.assertIn("vm_backend_cpu_mismatch", self.reasons())
+
+    def test_no_virtualization_executed_rejected(self):
+        self.host["vm"]["hardware_virtualization_executed"] = False
+        self.assertIn("vmm_hardware_not_executed", self.reasons())
+
+    def test_dma_and_irq_must_be_proven(self):
+        self.host["device"]["iommu_dma_translation_enabled"] = False
+        self.host["device"]["interrupt_remapping_enabled"] = False
+        self.assertIn("iommu_dma_not_enforced", self.reasons())
+        self.assertIn("interrupts_not_isolated", self.reasons())
+
+    def test_guest_cpu_only_does_not_count(self):
+        self.guest["gemm"]["child_evidence"]["cuda_kernel_launched"] = False
+        self.assertIn("invalid_cuda_gemm_result", self.reasons())
+
+    def test_forged_child_cuda_bdf_rejected(self):
+        self.guest["gemm"]["child_evidence"]["device"]["device_bdf"] = "0000:04:00.0"
+        self.assertIn("guest_cuda_pci_identity_mismatch", self.reasons())
+
+    def test_host_and_guest_pci_id_mismatch(self):
+        self.guest["device"]["device_id"] = "0xbeef"
+        self.assertIn("physical_guest_pci_id_mismatch", self.reasons())
+
+    def test_cross_vm_replay_rejected(self):
+        self.guest["vm"]["boot_nonce"] = "cd" * 16
+        self.assertIn("boot_nonce_mismatch", self.reasons())
+
+    def test_wrong_raw_log_digest_rejected(self):
+        self.hostlog = b"host Linux instead of Asterinas\n"
+        self.assertIn("host_raw_log_digest_mismatch", self.reasons())
+        self.assertIn("host_boot_marker_not_in_log", self.reasons())
+
+    def test_no_hardware_dma_recovery_proof_rejected(self):
+        self.host["device"]["DMA_quiescence_on_teardown_verified"] = False
+        self.assertIn("dma_reclamation_unverified", self.reasons())
+
+    def test_no_production_host_mutation(self):
+        self.host["device"]["host_driver_detached_from_prod"] = True
+        self.assertIn("production_driver_mutation_forbidden", self.reasons())
+
+    def test_invalid_guest_gpu_firmware_manifest_rejected(self):
+        self.guest["device"]["firmware_manifest_sha256"] = None
+        self.assertIn("guest_firmware_manifest_not_verified", self.reasons())
+
+    def test_no_guest_kernel_boot_rejected(self):
+        self.host["vm"]["guest_linux_booted"] = False
+        self.assertIn("linux_guest_not_booted", self.reasons())
+
+
+if __name__ == "__main__":
+    unittest.main()
