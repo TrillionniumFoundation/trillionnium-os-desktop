@@ -4,6 +4,8 @@
 
 use std::{path::PathBuf, process};
 
+use clap::ValueEnum;
+
 use crate::{
     arch::{Arch, get_default_arch},
     config::unix_args::{apply_kv_array, get_key, split_to_kv_array},
@@ -34,6 +36,8 @@ pub struct QemuScheme {
     pub path: Option<PathBuf>,
     /// Whether to run QEMU as daemon and connect to it in monitor mode.
     pub with_monitor: Option<bool>,
+    /// The transport used by OSDK's managed QEMU monitor.
+    pub monitor_transport: Option<MonitorTransport>,
     /// The QEMU output log used for panic translation and coverage collection.
     /// Relative paths are resolved from the OSDK working directory.
     pub log_file: Option<PathBuf>,
@@ -52,6 +56,9 @@ pub struct Qemu {
     pub path: PathBuf,
     /// Whether to run QEMU as daemon and connect to it in monitor mode.
     pub with_monitor: bool,
+    /// The transport used by OSDK's managed QEMU monitor.
+    #[serde(default)]
+    pub monitor_transport: MonitorTransport,
     /// The QEMU output log used for panic translation and coverage collection.
     pub log_file: Option<PathBuf>,
     /// Host daemons and their arguments to run for the duration of QEMU.
@@ -66,6 +73,7 @@ impl Default for Qemu {
             bootdev_append_options: None,
             path: PathBuf::from(get_default_arch().system_qemu()),
             with_monitor: false,
+            monitor_transport: MonitorTransport::default(),
             log_file: None,
             with_daemons: Vec::new(),
         }
@@ -84,6 +92,7 @@ impl PartialEq for Qemu {
             && self.bootdev_append_options == other.bootdev_append_options
             && self.path == other.path
             && self.with_monitor == other.with_monitor
+            && self.monitor_transport == other.monitor_transport
             && self.log_file == other.log_file
             && self.with_daemons == other.with_daemons
     }
@@ -115,6 +124,9 @@ impl QemuScheme {
         if self.with_monitor.is_none() {
             self.with_monitor.clone_from(&from.with_monitor);
         }
+        if self.monitor_transport.is_none() {
+            self.monitor_transport = from.monitor_transport;
+        }
         if self.log_file.is_none() {
             self.log_file.clone_from(&from.log_file);
         }
@@ -129,10 +141,22 @@ impl QemuScheme {
             bootdev_append_options: self.bootdev_append_options,
             path: self.path.unwrap_or(PathBuf::from(arch.system_qemu())),
             with_monitor: self.with_monitor.unwrap_or(false),
+            monitor_transport: self.monitor_transport.unwrap_or_default(),
             log_file: self.log_file,
             with_daemons: self.with_daemons.unwrap_or_default(),
         }
     }
+}
+
+/// The connection used to control QEMU's managed monitor.
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize, ValueEnum)]
+#[serde(rename_all = "lowercase")]
+pub enum MonitorTransport {
+    /// A temporary UNIX socket served by QEMU.
+    #[default]
+    Unix,
+    /// An ephemeral IPv4 loopback listener owned by OSDK.
+    Tcp,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -177,5 +201,42 @@ fn check_qemu_arg(arg: &str) {
     {
         error_msg!("`{}` should have value", arg);
         process::exit(Errno::ParseMetadata as _);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn monitor_transport_defaults_to_unix_for_old_configs() {
+        let qemu = QemuScheme::default().finalize(Arch::X86_64);
+        assert_eq!(qemu.monitor_transport, MonitorTransport::Unix);
+        let mut old_config = toml::Value::try_from(&qemu).unwrap();
+        old_config
+            .as_table_mut()
+            .unwrap()
+            .remove("monitor_transport");
+        let restored: Qemu = old_config.try_into().unwrap();
+        assert_eq!(restored.monitor_transport, MonitorTransport::Unix);
+        assert_eq!(qemu, restored);
+    }
+
+    #[test]
+    fn monitor_transport_inherits_and_can_be_overridden() {
+        let parent: QemuScheme = toml::from_str("monitor_transport = 'tcp'").unwrap();
+        let mut inherited = QemuScheme::default();
+        inherited.inherit(&parent);
+        assert_eq!(
+            inherited.finalize(Arch::X86_64).monitor_transport,
+            MonitorTransport::Tcp
+        );
+        let mut overridden: QemuScheme = toml::from_str("monitor_transport = 'unix'").unwrap();
+        overridden.inherit(&parent);
+        assert_eq!(
+            overridden.finalize(Arch::X86_64).monitor_transport,
+            MonitorTransport::Unix
+        );
+        assert!(toml::from_str::<QemuScheme>("monitor_transport = 'udp'").is_err());
     }
 }

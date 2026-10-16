@@ -2,17 +2,17 @@
 
 pub mod bin;
 pub mod file;
+mod monitor;
 pub mod vm_image;
 
 use bin::{AsterBin, AsterBinType};
 use file::{BundleFile, Initramfs};
+use monitor::{MonitorEndpoint, MonitorStream};
 use std::{
     io::{BufRead, BufReader, Write},
-    os::unix::net::UnixStream,
     process::{self, ExitStatus},
-    time::Duration,
+    time::{Duration, Instant},
 };
-use tempfile::NamedTempFile;
 use vm_image::{AsterVmImage, AsterVmImageType};
 
 use std::{
@@ -35,6 +35,7 @@ use crate::{
 /// Timeout for monitor reads; this is intentionally longer than the daemon
 /// supervision poll interval because monitor responses are socket-based.
 const MONITOR_POLL_INTERVAL: Duration = Duration::from_millis(100);
+const MONITOR_CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// The osdk bundle artifact that stores as `bundle` directory.
 ///
@@ -343,19 +344,29 @@ impl Bundle {
             && let Some(qemu_log_file) = &action.qemu.log_file
         {
             let qemu_log_path = config.work_dir.join(qemu_log_file);
-            let qemu_monitor_socket_path = NamedTempFile::new().unwrap().into_temp_path();
-            qemu_cmd.arg("-monitor").arg(format!(
-                "unix:{},server,nowait",
-                qemu_monitor_socket_path.to_string_lossy()
-            ));
+            let endpoint =
+                MonitorEndpoint::new(action.qemu.monitor_transport).unwrap_or_else(|error| {
+                    error_msg!("failed to prepare QEMU monitor: {error}");
+                    daemon_supervisor.abort(None, Errno::ExecuteCommand);
+                });
+            let monitor_argument = endpoint.qemu_argument().unwrap_or_else(|error| {
+                error_msg!("failed to configure QEMU monitor: {error}");
+                daemon_supervisor.abort(None, Errno::ExecuteCommand);
+            });
+            qemu_cmd.arg("-monitor").arg(monitor_argument);
 
             info!("Running QEMU: {qemu_cmd:#?}");
             let Ok(mut qemu_child) = qemu_cmd.spawn() else {
                 daemon_supervisor.abort(None, Errno::ExecuteCommand);
             };
-            std::thread::sleep(Duration::from_secs(1)); // Wait for QEMU to start
-            let Ok(mut qemu_monitor_stream) = UnixStream::connect(&qemu_monitor_socket_path) else {
-                daemon_supervisor.abort(Some(&mut qemu_child), Errno::ExecuteCommand);
+            let mut qemu_monitor_stream = match connect_monitor(
+                &endpoint,
+                &mut qemu_child,
+                &signal_guard,
+                &mut daemon_supervisor,
+            ) {
+                Ok(stream) => stream,
+                Err(errno) => daemon_supervisor.abort(Some(&mut qemu_child), errno),
             };
             wait_until_guest_kernel_shutdown(
                 config,
@@ -365,7 +376,7 @@ impl Bundle {
                 &signal_guard,
                 &mut daemon_supervisor,
             );
-            info!("VM is paused (shutdown)");
+            info!("QEMU monitor wait ended; inspecting guest output");
 
             self.post_run_action(config, action, Some(&mut qemu_monitor_stream));
 
@@ -387,10 +398,62 @@ impl Bundle {
             exit_status
         };
 
+        fn connect_monitor(
+            endpoint: &MonitorEndpoint,
+            qemu_child: &mut process::Child,
+            signal: &SignalGuard,
+            daemon_supervisor: &mut DaemonSupervisor<'_>,
+        ) -> Result<MonitorStream, Errno> {
+            if matches!(endpoint, MonitorEndpoint::Unix(_)) {
+                // Preserve the existing UNIX monitor startup delay.
+                std::thread::sleep(Duration::from_secs(1));
+            }
+            let deadline = Instant::now() + MONITOR_CONNECT_TIMEOUT;
+            loop {
+                if signal.received_signal().is_some() {
+                    return Err(Errno::Interrupted);
+                }
+                daemon_supervisor.reap_exited_daemons()?;
+                match qemu_child.try_wait() {
+                    Ok(Some(status)) => {
+                        error_msg!("QEMU exited before connecting its monitor: {status}");
+                        return Err(Errno::ExecuteCommand);
+                    }
+                    Ok(None) => {}
+                    Err(error) => {
+                        error_msg!("failed to inspect QEMU monitor startup: {error}");
+                        return Err(Errno::ExecuteCommand);
+                    }
+                }
+                match endpoint.try_connect() {
+                    Ok(stream) => {
+                        stream
+                            .set_write_timeout(Some(MONITOR_POLL_INTERVAL))
+                            .map_err(|error| {
+                                error_msg!("failed to set QEMU monitor write timeout: {error}");
+                                Errno::ExecuteCommand
+                            })?;
+                        return Ok(stream);
+                    }
+                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                        if Instant::now() >= deadline {
+                            error_msg!("timed out connecting to QEMU monitor");
+                            return Err(Errno::ExecuteCommand);
+                        }
+                        std::thread::sleep(MONITOR_POLL_INTERVAL);
+                    }
+                    Err(error) => {
+                        error_msg!("failed to connect to QEMU monitor: {error}");
+                        return Err(Errno::ExecuteCommand);
+                    }
+                }
+            }
+        }
+
         fn wait_until_guest_kernel_shutdown(
             config: &Config,
             qemu_log_path: &Path,
-            qemu_monitor_stream: &mut UnixStream,
+            qemu_monitor_stream: &mut MonitorStream,
             qemu_child: &mut process::Child,
             signal: &SignalGuard,
             daemon_supervisor: &mut DaemonSupervisor<'_>,
@@ -485,7 +548,7 @@ impl Bundle {
         &self,
         config: &Config,
         action: &Action,
-        qemu_monitor_stream: Option<&mut UnixStream>,
+        qemu_monitor_stream: Option<&mut MonitorStream>,
     ) {
         let Some(qemu_log_file) = &action.qemu.log_file else {
             return;
