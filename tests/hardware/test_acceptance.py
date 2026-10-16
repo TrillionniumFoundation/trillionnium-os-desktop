@@ -219,6 +219,17 @@ class AcceptanceTests(unittest.TestCase):
             with self.assertRaises(OSError):
                 acceptance.load_json(link)
 
+    def test_output_symlink_is_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target.json"
+            target.write_text("keep", encoding="utf-8")
+            link = root / "output.json"
+            link.symlink_to(target)
+            with self.assertRaises(OSError):
+                acceptance.write_output(link, "{}\n")
+            self.assertEqual(target.read_text(encoding="utf-8"), "keep")
+
     def test_fifo_log_and_manifest_refused_without_blocking(self):
         with tempfile.TemporaryDirectory() as directory:
             pipe = Path(directory) / "fifo"

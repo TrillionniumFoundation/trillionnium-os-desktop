@@ -93,6 +93,28 @@ def load_json(path):
         raise ValueError(f"{path}: must be a JSON object")
     return value
 
+
+def write_output(path, raw):
+    """Write generated status without following a hostile output symlink."""
+    if path == "-":
+        print(raw, end="")
+        return
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_CLOEXEC | os.O_NOFOLLOW
+    fd = os.open(path, flags, 0o600)
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError("acceptance output must be a regular file")
+        payload = raw.encode("utf-8")
+        offset = 0
+        while offset < len(payload):
+            written = os.write(fd, payload[offset:])
+            if written <= 0:
+                raise OSError("acceptance output write made no progress")
+            offset += written
+    finally:
+        os.close(fd)
+
 def validate(host, guest, host_log, guest_log):
     failures = []
 
@@ -244,10 +266,7 @@ def main():
         "notes": "JSON and raw logs are self-reporting and can be forged; no automatic hardware pass",
     }
     raw = json.dumps(evidence, sort_keys=True, indent=2) + "\n"
-    if args.output == "-":
-        print(raw, end="")
-    else:
-        Path(args.output).write_text(raw, encoding="utf-8")
+    write_output(args.output, raw)
     return 2 if failed else 3
 
 

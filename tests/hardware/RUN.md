@@ -13,7 +13,7 @@ CPU-only contract and fail-closed evidence tests (DO NOT count as GPU device tes
     python3 -m unittest discover -s tests/hardware -p 'test_*.py' -v
     python3 -m py_compile support/hardware/*.py support/vmm/*.py tests/hardware/*.py
 
-The latest rerun observed 85/85 CPU-only, evidence-gate and hardware-fixture
+The latest rerun observed 86/86 CPU-only, evidence-gate and hardware-fixture
 tests passed, 0 failures; py_compile passed; no NVIDIA PCI GPU and no CUDA
 runtime, /dev/kvm or /dev/vfio/vfio in the execution container.
 
