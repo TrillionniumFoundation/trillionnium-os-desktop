@@ -330,7 +330,10 @@ pub enum ResourceError {
     InvalidCapacity,
     InvalidInterval,
     InvalidRevision,
-    RevisionConflict { expected: u64, actual: u64 },
+    RevisionConflict {
+        expected: u64,
+        actual: u64,
+    },
     ParentConstraint,
     Revoked,
     GrantEpochMismatch,
@@ -529,7 +532,10 @@ impl ResourceDomain {
         let _gate = lock_unpoisoned(&self.inner.gate);
         let mut state = lock_unpoisoned(&self.inner.state);
         // Failure to advance epoch must not re-enable authorization.
-        let next_epoch = state.grant_epoch.checked_add(1).ok_or(ResourceError::Overflow)?;
+        let next_epoch = state
+            .grant_epoch
+            .checked_add(1)
+            .ok_or(ResourceError::Overflow)?;
         state.grant_epoch = next_epoch;
         state.alive = true;
         Ok(())
@@ -603,8 +609,7 @@ impl ResourceDomain {
             if now_ns < old.last_boottime_ns {
                 return Err(ResourceError::ClockRollback);
             }
-            let window_start =
-                (now_ns / old.budget.period_ns) * old.budget.period_ns;
+            let window_start = (now_ns / old.budget.period_ns) * old.budget.period_ns;
             let previous_in_window = if window_start > old.window_start_ns {
                 0
             } else {
@@ -1041,7 +1046,10 @@ impl DeliveryObservation {
                         && previous > 0
                         && previous < u64::MAX
                         && saved == previous + 1
-                        && consumed_ns <= effective_ns % CPU_PERIOD_NS => Some(0),
+                        && consumed_ns <= effective_ns % CPU_PERIOD_NS =>
+                    {
+                        Some(0)
+                    }
                     _ => None,
                 }
             }
@@ -1932,8 +1940,14 @@ mod tests {
             state.grant_epoch = u64::MAX;
             state.alive = false;
         }
-        assert_eq!(target.reactivate_for_host_model(), Err(ResourceError::Overflow));
-        assert!(matches!(target.grant(publisher), Err(ResourceError::Revoked)));
+        assert_eq!(
+            target.reactivate_for_host_model(),
+            Err(ResourceError::Overflow)
+        );
+        assert!(matches!(
+            target.grant(publisher),
+            Err(ResourceError::Revoked)
+        ));
     }
 
     #[test]
@@ -1950,14 +1964,20 @@ mod tests {
         let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
         let grant = domain.grant(publisher).unwrap();
         let token = core
-            .reserve(DeliveryRequest::new(u64::MAX - 1, grant.clone(), 1, 25), publisher)
+            .reserve(
+                DeliveryRequest::new(u64::MAX - 1, grant.clone(), 1, 25),
+                publisher,
+            )
             .unwrap();
         assert_eq!(core.next_sequence(), u64::MAX);
         let terminal = core.commit(&token, publisher, 1).unwrap();
         assert_eq!(terminal.status, Some(DeliveryStatus::Ok));
         assert_eq!(
-            core.reserve(DeliveryRequest::new(u64::MAX, grant.clone(), 1, 25), publisher)
-                .err(),
+            core.reserve(
+                DeliveryRequest::new(u64::MAX, grant.clone(), 1, 25),
+                publisher
+            )
+            .err(),
             Some(DeliveryError::InvalidSequence)
         );
         let view = core.delivery_view_for(owner).unwrap();
