@@ -1,0 +1,31 @@
+{
+  "schema": "a09.device-lifecycle-rust.v1",
+  "timestamp_utc": "2026-10-16T14:49:04Z",
+  "toolchain": {
+    "rustc": "1.99.1 (58cf8f9c9 2026-10-13)",
+    "cargo": "1.99.1 (5f94df478 2026-08-27)",
+    "mode": "offline_locked"
+  },
+  "commands": {
+    "debug_unit": "cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --all-targets",
+    "doctest": "cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --doc",
+    "release_unit": "cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --release"
+  },
+  "result": {
+    "debug_unit_tests": 28,
+    "debug_failures": 0,
+    "compile_fail_doctests": 3,
+    "doctest_failures": 0,
+    "release_unit_tests": 28,
+    "release_failures": 0,
+    "status": "passed"
+  },
+  "scope": {
+    "metadata_only": true,
+    "gpu_compute_verified": false,
+    "vmm_execution_verified": false,
+    "pci_passthrough_verified": false,
+    "dma_quiescence_verified": false,
+    "reset_recovery_verified": false
+  }
+}

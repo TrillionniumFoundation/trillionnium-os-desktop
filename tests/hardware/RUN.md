@@ -50,6 +50,13 @@ fixture returns exit **3** (`manual_review_required`); no fixture result proves
 a live device assignment, guest boot, DMA quiescence, GPU command execution,
 or reset recovery.
 
+The metadata-only Rust join model is checked independently with the three Cargo
+commands documented in [VMM gates](../../support/vmm/GATES.md). Its 28 unit
+tests and 3 compile-fail doctests validate state transitions only; they do not
+count as physical DMA, VMM, passthrough, or GPU-compute evidence.
+
+- [Rust lifecycle evidence](evidence/2026-10-16-device-lifecycle-rust.json): debug/release unit tests and compile-fail doctests passed locally; all physical execution fields remain false.
+
 ## Seven-stage GPU test scorecard
 
 | Step | Status |

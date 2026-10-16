@@ -49,3 +49,28 @@ assignment. Missing hardware returns exit **2**; a coherent synthetic fixture
 returns `manual_review_required` and exit **3**. There is deliberately no
 hardware-assignment success exit, so this remains a prerequisite observation,
 not a passthrough or GPU-compute result.
+
+## Metadata-only kernel join model
+
+`support/vmm/device_lifecycle/` is now a dependency-free `no_std` transition
+model for the A01/A05/A06 review. It covers `DeviceHandle`, `MemoryObject`,
+`Buffer`, `Queue`, `Completion` and a full 16-byte `ResourceDomainId` value
+mirror. It rejects zero identities, stale device/queue generations, cross-
+device submissions, duplicate completions, queue overflow and unsafe release
+after cancellation; unknown-effect cancellation retains the outstanding charge
+and fences the queue.
+
+The model does not pin frames, map IOVA, authenticate CapSpace grants, touch
+MMIO, acknowledge IRQs, prove GPU fences, or reset hardware. A05 remains the
+only device/queue owner and grant authority; A06 remains the canonical budget
+and pinned-DMA owner; A01 remains responsible for real IOMMU, IRQ, VMM and
+quiescence. It must not be wired directly to production DMA in this state.
+
+Local verification on the host Rust 1.99.1 toolchain:
+
+    cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline
+    cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --doc
+    cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --release
+
+All three commands passed: 28 unit tests and 3 compile-fail doctests. This is
+metadata-state verification only, not a GPU, VMM or passthrough result.
