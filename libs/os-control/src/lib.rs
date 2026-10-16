@@ -1040,6 +1040,7 @@ pub struct ReservationMarker {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DeliveryError {
     InvalidSequence,
+    InvalidRequest,
     InvalidIdentity,
     OutOfOrder { expected: u64, got: u64 },
     Conflict,
@@ -1251,6 +1252,17 @@ impl ControlCore {
     ) -> Result<ReserveToken, DeliveryError> {
         if !publisher.is_nonzero() || request.sequence == 0 || request.sequence == u64::MAX {
             return Err(DeliveryError::InvalidSequence);
+        }
+        // Syntactic/static payload violations are checked *before* the
+        // reservation table. They must not burn D or reserve a result slot.
+        // Runtime grant/revision/parent/clock failures after reservation do
+        // become immutable terminal results.
+        if request.expected_revision == 0
+            || request.expected_revision == u64::MAX
+            || request.period_ns != CPU_PERIOD_NS
+            || request.cap_ns > CPU_PERIOD_NS
+        {
+            return Err(DeliveryError::InvalidRequest);
         }
         if publisher != request.grant.principal {
             return Err(DeliveryError::PermissionDenied);

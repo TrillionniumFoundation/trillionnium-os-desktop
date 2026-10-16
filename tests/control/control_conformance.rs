@@ -233,6 +233,40 @@ fn copyout_failure_retry_reuses_terminal_result_without_second_effect() {
 }
 
 #[test]
+fn malformed_install_budget_is_rejected_before_consuming_global_sequence() {
+    let core = ControlCore::with_capacity(boot(145_000), space(145_000), 1);
+    let target = root(145_000, CPU_PERIOD_NS);
+    let who = publisher(145_001);
+    let grant = target.grant(who).unwrap();
+    let mut bad_requests = [
+        request(1, grant.clone(), 0, 20),
+        request(1, grant.clone(), u64::MAX, 20),
+        request(1, grant.clone(), 1, CPU_PERIOD_NS + 1),
+        request(1, grant.clone(), 1, 20),
+    ];
+    bad_requests[3].period_ns = CPU_PERIOD_NS + 1;
+    for bad in bad_requests {
+        assert_eq!(core.reserve(bad, who).err(), Some(DeliveryError::InvalidRequest));
+        assert_eq!(core.next_sequence(), 1);
+        assert_eq!(core.window_len(), 0);
+        assert_eq!(
+            core.query_delivery(&core.delivery_view(), 1).unwrap().state,
+            DeliveryState::NotSeen
+        );
+    }
+    // Static rejection did not poison D, so a valid payload can claim it.
+    let token = core.reserve(request(1, grant.clone(), 1, 20), who).unwrap();
+    assert_eq!(core.next_sequence(), 2);
+    assert_eq!(core.window_len(), 1);
+    let first = core.commit(&token, who, 1).unwrap();
+    assert_eq!(first.status, Some(DeliveryStatus::Ok));
+    // Once reserved, stale revision is a semantic *terminal* rejection.
+    let token2_error = core.reserve(request(2, grant, 1, 20), who);
+    assert_eq!(token2_error.err(), Some(DeliveryError::ResourceExhausted));
+    assert_eq!(core.next_sequence(), 2);
+}
+
+#[test]
 fn invalid_history_sequence_is_rejected_before_and_after_history_loss() {
     let core = ControlCore::new(boot(90_000), space(90_000));
     let view = core.delivery_view();

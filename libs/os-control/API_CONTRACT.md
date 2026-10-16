@@ -219,3 +219,13 @@ arithmetic are tested. The older `charge_cpu(delta, now)` method remains for
 legacy caller compatibility but **does not slice intervals**. Neither one is
 actual scheduler enforcement; A06 must settle real per-CPU runtime before
 calling into a shared resource gate and implement timer preemption/recovery.
+
+## Pre-reservation validation
+
+A05 must parse/check the HOS2 transport and static InstallBudget payload
+before reserving D. The host core also rejects invalid expected revision
+(0 or u64::MAX), non-100ms period, or out-of-range cap via
+`DeliveryError::InvalidRequest`, without consuming the next sequence or
+allocating a result slot. Post-reservation grant/CAS/parent/clock denials
+are stored as immutable terminal outcomes. A05 maps structural validation
+to its protocol error path, not to an invented terminal effect.
