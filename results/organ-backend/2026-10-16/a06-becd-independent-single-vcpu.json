@@ -1,0 +1,35 @@
+{
+  "source_commit": "becd1fe3a106afd02d755cefebb4dc139704e390",
+  "kernel_sha256": "6dd63979a531762d1ca2df649a5fd510d847ec9994455623de02965b275b40db",
+  "cases": [
+    {
+      "name": "single1",
+      "cap_us": 1000,
+      "repeat": 2,
+      "exit": 0,
+      "percents": [
+        1.1,
+        1.1
+      ],
+      "pass": true
+    },
+    {
+      "name": "single10",
+      "cap_us": 10000,
+      "repeat": 2,
+      "exit": 0,
+      "percents": [
+        9.909,
+        10.457
+      ],
+      "pass": true
+    }
+  ],
+  "all_pass": true,
+  "not_hard_cap_proof": true,
+  "toolchain": "nightly-2026-07-21",
+  "qemu": "x86_64 q35/TCG, 1 vCPU, 512 MiB, statically linked original CPU cgroup probe",
+  "a01_initrd_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "host_cgroup_changed": false,
+  "guest_result_interpretation": "bounded average CPU diagnostic; not precise per-window guarantee"
+}
