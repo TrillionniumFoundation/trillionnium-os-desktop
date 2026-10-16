@@ -16,6 +16,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -262,11 +263,9 @@ def mutated_profile_source(source: str, changes: tuple[tuple[str, str], ...]) ->
     return changed
 
 
-def run_command(command: list[str], cwd: Path, timeout: float) -> dict[str, Any]:
-    env = os.environ.copy()
-    env["CARGO_TARGET_DIR"] = str(cwd / "target")
-    env["CARGO_TERM_COLOR"] = "never"
-    env["CARGO_NET_OFFLINE"] = "true"
+def run_command(
+    command: list[str], cwd: Path, timeout: float, env: dict[str, str]
+) -> dict[str, Any]:
     result: dict[str, Any] = {"command": command, "returncode": None}
     try:
         completed = subprocess.run(
@@ -298,6 +297,85 @@ def run_command(command: list[str], cwd: Path, timeout: float) -> dict[str, Any]
     except OSError as error:
         result.update(stdout="", stderr="", timed_out=False, error=str(error))
     return result
+
+
+def suite_environment(base_env: dict[str, str], cwd: Path) -> dict[str, str]:
+    """Keep one frozen toolchain selection for identity probes and Cargo runs."""
+    env = base_env.copy()
+    env["CARGO_TARGET_DIR"] = str(cwd / "target")
+    env["CARGO_TERM_COLOR"] = "never"
+    env["CARGO_NET_OFFLINE"] = "true"
+    return env
+
+
+def executable_path(executable: str, cwd: Path, env: dict[str, str]) -> str | None:
+    """Resolve relative commands/PATH entries as subprocess does in its cwd."""
+    if os.sep in executable:
+        path = Path(executable)
+        candidate = str(path if path.is_absolute() else cwd / path)
+        return shutil.which(candidate)
+    search_path = os.pathsep.join(
+        str(Path(entry) if Path(entry).is_absolute() else cwd / entry)
+        for entry in env.get("PATH", os.defpath).split(os.pathsep)
+    )
+    return shutil.which(executable, path=search_path)
+
+
+def toolchain_identity(
+    cargo: str, cwd: Path, timeout: float, env: dict[str, str]
+) -> dict[str, Any]:
+    """Probe the compiler Cargo will use, from the suite's cwd and fixed env.
+
+    Temporary crates do not inherit the repository's rust-toolchain.toml. In
+    particular, an absolute path to a rustup proxy is not a toolchain pin.
+    RUSTC is honored because callers may resolve a compiler with rustup which.
+    Only the selection and executable paths are recorded, never the whole env.
+    """
+    rustc = env.get("RUSTC") or "rustc"
+    cargo_probe = run_command([cargo, "--version"], cwd, timeout, env)
+    rustc_probe = run_command([rustc, "-vV"], cwd, timeout, env)
+    identity: dict[str, Any] = {
+        "cwd": str(cwd),
+        "effective_environment": {
+            "RUSTUP_TOOLCHAIN": env.get("RUSTUP_TOOLCHAIN"),
+            "RUSTC": env.get("RUSTC"),
+        },
+        "selection": "RUSTUP_TOOLCHAIN" if env.get("RUSTUP_TOOLCHAIN") else "rustup-default",
+        "cargo_executable": cargo,
+        "cargo_path": executable_path(cargo, cwd, env),
+        "rustc_executable": rustc,
+        "rustc_path": executable_path(rustc, cwd, env),
+        "cargo": cargo_probe,
+        "rustc": rustc_probe,
+        "valid": False,
+    }
+    identity["valid"] = all(
+        probe["returncode"] == 0
+        and not probe["timed_out"]
+        and bool(probe["stdout"].strip())
+        for probe in (cargo_probe, rustc_probe)
+    ) and bool(identity["cargo_path"] and identity["rustc_path"])
+    return identity
+
+
+def same_toolchain(identity: dict[str, Any], reference: dict[str, Any]) -> bool:
+    """Missing identity or a change in either executable/version fails closed."""
+    return bool(
+        identity["valid"]
+        and reference["valid"]
+        and all(
+            identity[key] == reference[key]
+            for key in (
+                "effective_environment",
+                "cargo_executable",
+                "cargo_path",
+                "rustc_executable",
+                "rustc_path",
+            )
+        )
+        and identity["cargo"]["stdout"].strip() == reference["cargo"]["stdout"].strip()
+        and identity["rustc"]["stdout"].strip() == reference["rustc"]["stdout"].strip()
+    )
 
 
 def test_outcome(
@@ -342,6 +420,8 @@ def run_suite(
     cargo: str,
     timeout: float,
     suite: str,
+    base_env: dict[str, str],
+    reference_identity: dict[str, Any],
 ) -> dict[str, Any]:
     directory.mkdir()
     crate = directory / "libs/os-abi"
@@ -356,19 +436,36 @@ def run_suite(
     (crate / "src/lib.rs").write_text(source, encoding="utf-8")
     expected_count, required_tests = SUITES[suite]
     command = [cargo, "test", "--offline", "--color", "never", "--test", suite]
-    compilation = run_command(command + ["--no-run"], crate, timeout)
+    env = suite_environment(base_env, crate)
+    identity = toolchain_identity(cargo, crate, timeout, env)
     result: dict[str, Any] = {
         "suite": suite,
         "expected_tests": expected_count,
         "required_tests": required_tests,
         "source_sha256": hashlib.sha256(source.encode()).hexdigest(),
-        "compilation": compilation,
-        "compiled": compilation["returncode"] == 0 and not compilation["timed_out"],
+        "toolchain_identity": identity,
+        "toolchain_matches_reference": same_toolchain(identity, reference_identity),
+        "compilation": None,
+        "compiled": False,
+        "test_toolchain_identity": None,
         "test": None,
         "tests": None,
     }
+    if not result["toolchain_matches_reference"]:
+        result["error"] = "toolchain identity missing, failed or differs from reference"
+        return result
+    compilation = run_command(command + ["--no-run"], crate, timeout, env)
+    result["compilation"] = compilation
+    result["compiled"] = compilation["returncode"] == 0 and not compilation["timed_out"]
     if result["compiled"]:
-        execution = run_command(command + ["--", "--test-threads=1"], crate, timeout)
+        test_identity = toolchain_identity(cargo, crate, timeout, env)
+        result["test_toolchain_identity"] = test_identity
+        if not same_toolchain(test_identity, reference_identity):
+            result["toolchain_matches_reference"] = False
+            result["compiled"] = False
+            result["error"] = "toolchain identity changed between compilation and test"
+            return result
+        execution = run_command(command + ["--", "--test-threads=1"], crate, timeout, env)
         result["test"] = execution
         result["tests"] = test_outcome(execution["stdout"], expected_count, required_tests)
     return result
@@ -391,6 +488,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cargo", default="cargo", help="Cargo executable (default: cargo)")
     parser.add_argument(
+        "--toolchain",
+        default=os.environ.get("RUSTUP_TOOLCHAIN"),
+        help="explicit RUSTUP_TOOLCHAIN for every probe/build/test (default: inherit env or rustup default)",
+    )
+    parser.add_argument(
         "--repo-root", type=Path, default=Path(__file__).resolve().parents[2]
     )
     parser.add_argument("--output", type=Path, help="also save the complete JSON report here")
@@ -400,9 +502,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.timeout <= 0:
         parser.error("--timeout must be positive")
+    if args.toolchain is not None and not args.toolchain.strip():
+        parser.error("--toolchain must not be empty")
 
     report: dict[str, Any] = {
-        "schema": "hos2-rust-source-mutations-v2",
+        "schema": "hos2-rust-source-mutations-v3",
         "scope": (
             "host Rust canonical equality, fixed-byte response encoding and "
             "documented QueryAbi/ReadUsage validation boundaries; "
@@ -415,6 +519,8 @@ def main(argv: list[str] | None = None) -> int:
             suite: expected for suite, (expected, _) in SUITES.items()
         },
         "success": False,
+        "requested_toolchain": args.toolchain,
+        "reference_toolchain_identity": None,
         "baseline": None,
         "baseline_semantic_edges": None,
         "baseline_profile_boundaries": None,
@@ -436,8 +542,22 @@ def main(argv: list[str] | None = None) -> int:
         # Preserve a rustup proxy symlink: resolving it would invoke rustup
         # under its own name instead of dispatching to Cargo.
         cargo = str(Path(args.cargo).absolute()) if os.sep in args.cargo else args.cargo
+        base_env = os.environ.copy()
+        if args.toolchain is not None:
+            base_env["RUSTUP_TOOLCHAIN"] = args.toolchain
         with tempfile.TemporaryDirectory(prefix="hos2-rust-mutations-") as temporary:
             temporary_root = Path(temporary)
+            reference_directory = temporary_root / "toolchain-reference"
+            reference_directory.mkdir()
+            reference_identity = toolchain_identity(
+                cargo,
+                reference_directory,
+                args.timeout,
+                suite_environment(base_env, reference_directory),
+            )
+            report["reference_toolchain_identity"] = reference_identity
+            if not reference_identity["valid"]:
+                raise ValueError("reference toolchain identity is missing or failed")
             for suite, baseline_key in (
                 ("mutation_kill", "baseline"),
                 ("semantic_edges", "baseline_semantic_edges"),
@@ -451,6 +571,8 @@ def main(argv: list[str] | None = None) -> int:
                     cargo,
                     args.timeout,
                     suite,
+                    base_env,
+                    reference_identity,
                 )
                 baseline["passed"] = baseline_passed(baseline)
                 report[baseline_key] = baseline
@@ -508,6 +630,8 @@ def main(argv: list[str] | None = None) -> int:
                         cargo,
                         args.timeout,
                         suite,
+                        base_env,
+                        reference_identity,
                     )
                     mutant.update(name=name, expected_failure=expected_test, **mutation)
                     mutant["expected_test_failed"] = bool(

@@ -1,5 +1,14 @@
 # 当前状态
 
+## 2026-10-16：A00 持久 K 主键纠偏与 G0 严格 CI 交付
+
+- **已合并真正 CI 源码**：[PR #69](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/69)，merge `5aeff7b60e8c96aa14676e1642efddc6ad63a607`，现有 `.github/workflows/g0-contracts.yml` 对 A02/A03 Cargo+fmt+strict Clippy、A05 QueryAbi/ENOTTY 改为必需检查，`tests/control/**` 纳入 PR/push 触发。A00 在独立 Bash fixture 实际测 **9/9** 文件缺失保护场景通过；**当前新主干 GitHub Actions 仍需自身真实完成，不能报通过**。
+- **重要 Hepta 事实校正（取代下方 A00 历史错误 K 描述）：** 固定 `hepta-private-ci@f8c9419d...` 的 `kernel.operations` 持久 `OperationIntentV1` 含独立的 `scope_id: StableId`、`operation_id: StableId`、`payload_digest: Digest32`，其固定 SQL 主键是 `PRIMARY KEY(scope_id, operation_id)`；摘要不是主键，参与 `semantic_digest` 和权限/最终效果的独立校验。此前 A00 草稿 #35/#48 曾把 `model.rs::OperationKey {id,payload_digest}` **参考模型**误当该持久账本的 K，两个草稿均未合主干；这一定义现明确撤回。A03 owner 的两个无损 StableId 字段方向正确，不能被旧草稿覆盖。A07 仍要在原唯一 Hepta owner 里分别验证摘要、授权、代际和 K→D 绑定。
+- **当前真实限制：** A03 仍为 Rust **host model**、A05 五操作真实 CapSpace/ioctl 与 A07 持久执行/恢复仍未闭环，G1/G2 不合格；A06 CPU 配额实测不能替代生命周期/权限/严格窗口验收，A09 GPU/VMM 仍需隔离执行及物理硬件验证。固定 Asterinas/Hepta/toolchain 未升级，根 README 0 字节。
+
+---
+
+
 ## 2026-10-16：HOS2 ABI 独立复核与主干合并
 
 - **已完成：**[PR #72](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/72) 的 `no_std` HOS2 transport snapshot/preflight/typed codec 修复已独立测试并合入 `main`，merge `02a0e4f6e11ed04039179165726ae43a0caab78a`。独立对精确 PR HEAD `eef96afd4c3fcdc5bcdc2b8ba00260e1fb116b91` 在 Linux host 执行 `cargo test --offline`、`cargo clippy --offline --all-targets -- -D warnings`、`cargo fmt -- --check`、`cargo check --offline --no-default-features` 和 `python3 -m unittest discover -s tests/abi -p test_*.py -v`，全部返回 0；Python ABI 30/30 通过。这是**真实源码宿主测试**，不是内核 HOS2 功能验收。

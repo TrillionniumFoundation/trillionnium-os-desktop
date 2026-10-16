@@ -18,7 +18,9 @@ fn hex(bytes: &str) -> Vec<u8> {
     assert_eq!(bytes.len() % 2, 0);
     bytes
         .as_bytes()
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| {
             let hi = (pair[0] as char).to_digit(16).unwrap() as u8;
             let lo = (pair[1] as char).to_digit(16).unwrap() as u8;
