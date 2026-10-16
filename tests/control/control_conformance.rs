@@ -915,3 +915,97 @@ fn budget_installation_advances_only_on_real_period_boundaries() {
     assert_eq!(target.usage(CPU_PERIOD_NS + 2).window_consumed_ns, 0);
     assert_eq!(target.usage(CPU_PERIOD_NS + 2).cumulative_cpu_ns, 40);
 }
+
+#[test]
+fn concurrent_publish_observe_never_yields_partial_terminal_metadata() {
+    let core = Arc::new(ControlCore::new(boot(60_000), space(60_000)));
+    let target = root(60_000, CPU_PERIOD_NS);
+    let who = publisher(60_001);
+    let token = core.reserve(request(1, target.grant(who).unwrap(), 1, 30), who).unwrap();
+    let view = core.delivery_view();
+    let start = Arc::new(Barrier::new(3));
+    let query_start = Arc::clone(&start);
+    let query_core = Arc::clone(&core);
+    let query = thread::spawn(move || {
+        query_start.wait();
+        for _ in 0..20_000 {
+            let observed = query_core.query_delivery(&view, 1).unwrap();
+            match observed.state {
+                DeliveryState::Reserved => {
+                    assert_eq!(observed.status, None);
+                    assert_eq!(observed.saved_revision, None);
+                    assert_eq!(observed.effective_ns, None);
+                }
+                DeliveryState::Terminal => {
+                    assert_eq!(observed.status, Some(DeliveryStatus::Ok));
+                    assert_eq!(observed.stable_object_id, Some(object(60_000)));
+                    assert_eq!(observed.previous_revision, Some(1));
+                    assert_eq!(observed.saved_revision, Some(2));
+                    assert_eq!(observed.effective_ns, Some(77));
+                    assert_eq!(observed.consumed_ns, Some(9));
+                    return;
+                }
+                _ => panic!("no retire/loss in this publication race"),
+            }
+            thread::yield_now();
+        }
+    });
+    let publish_start = Arc::clone(&start);
+    let publish_core = Arc::clone(&core);
+    let publish = thread::spawn(move || {
+        publish_start.wait();
+        publish_core.publish(&token, who, PublishOutcome::Success {
+            stable_object_id: object(60_000),
+            previous_revision: 1,
+            saved_revision: 2,
+            effective_ns: 77,
+            consumed_ns: 9,
+        })
+    });
+    start.wait();
+    let terminal = publish.join().unwrap().unwrap();
+    query.join().unwrap();
+    assert_eq!(terminal.consumed_ns, Some(9));
+    let final_observation = core.query_delivery(&core.delivery_view(), 1).unwrap();
+    assert_eq!(final_observation, terminal);
+}
+
+#[test]
+fn copyout_retry_racing_with_retirement_never_reopens_a_delivery() {
+    for n in 0..96_u128 {
+        let (control, authority) = ControlCore::with_original_owner(
+            boot(61_000 + n), space(61_000 + n), owner(9000),
+        ).unwrap();
+        let core = Arc::new(control);
+        let target = root(61_000 + n, CPU_PERIOD_NS);
+        let who = publisher(62_000 + n);
+        let grant = target.grant(who).unwrap();
+        let token = core.reserve(request(1, grant.clone(), 1, 30), who).unwrap();
+        core.commit(&token, who, 1).unwrap();
+        let view = core.delivery_view_for(owner(9000)).unwrap();
+        let start = Arc::new(Barrier::new(3));
+        let retry_start = Arc::clone(&start);
+        let retry_core = Arc::clone(&core);
+        let retry = thread::spawn(move || {
+            retry_start.wait();
+            retry_core.reserve_or_get(request(1, grant, 1, 30), who)
+        });
+        let retire_start = Arc::clone(&start);
+        let retire_core = Arc::clone(&core);
+        let retire = thread::spawn(move || {
+            retire_start.wait();
+            retire_core.retire_through(&view, ack(&retire_core, 1), &authority)
+        });
+        start.wait();
+        match retry.join().unwrap() {
+            Ok(ReserveAttempt::Existing(observed)) => {
+                assert_eq!(observed.state, DeliveryState::Terminal);
+            }
+            Err(DeliveryError::Retired) => {}
+            _ => panic!("retry must observe terminal or permanent retirement"),
+        }
+        assert_eq!(retire.join().unwrap().unwrap().retired_through, 1);
+        assert_eq!(target.revision(), 2);
+        assert_eq!(core.window_len(), 0);
+    }
+}

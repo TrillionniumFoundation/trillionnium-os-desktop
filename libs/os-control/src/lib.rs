@@ -1177,13 +1177,19 @@ impl ControlCore {
             Err(DeliveryError::Busy | DeliveryError::TerminalImmutable) => {
                 let view = self.delivery_view();
                 let observation = self.query_delivery(&view, sequence)?;
-                if observation.state == DeliveryState::Reserved
-                    || observation.state == DeliveryState::Terminal
-                        && observation.id.sequence == binding.sequence
-                {
-                    Ok(ReserveAttempt::Existing(observation))
-                } else {
-                    Err(DeliveryError::Conflict)
+                if observation.id.sequence != binding.sequence {
+                    return Err(DeliveryError::Conflict);
+                }
+                // Retire/loss may win between reserve and read. Both are
+                // permanent no-replay states, never new operations.
+                match observation.state {
+                    DeliveryState::Reserved | DeliveryState::Terminal => {
+                        Ok(ReserveAttempt::Existing(observation))
+                    }
+                    DeliveryState::Retired => Err(DeliveryError::Retired),
+                    DeliveryState::HistoryLost | DeliveryState::NotSeen => {
+                        Err(DeliveryError::HistoryLost)
+                    }
                 }
             }
             Err(error) => Err(error),
