@@ -117,8 +117,10 @@ impl NamespaceIdentity {
 /// ledger and checks OperationIntentV1::semantic_digest before issuing a D.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct LogicalOperationId {
-    pub stable_id: String,
-    pub payload_digest: [u8; 32],
+    // Private: direct struct initialization or post-validation mutation would
+    // bypass the exact pinned Hepta StableId/Digest32 invariants.
+    stable_id: String,
+    payload_digest: [u8; 32],
 }
 
 impl LogicalOperationId {
@@ -139,6 +141,14 @@ impl LogicalOperationId {
             stable_id,
             payload_digest,
         })
+    }
+
+    pub fn stable_id(&self) -> &str {
+        &self.stable_id
+    }
+
+    pub const fn payload_digest(&self) -> [u8; 32] {
+        self.payload_digest
     }
 }
 

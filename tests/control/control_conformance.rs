@@ -134,8 +134,8 @@ fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
     let binding = OperationBinding::new(k.clone(), d);
     assert_eq!(binding.logical, k);
     assert_eq!(binding.delivery, d);
-    assert_eq!(binding.logical.stable_id, "scope:some-operation.with-longer-id");
-    assert_eq!(binding.logical.payload_digest, [0xA7; 32]);
+    assert_eq!(binding.logical.stable_id(), "scope:some-operation.with-longer-id");
+    assert_eq!(binding.logical.payload_digest(), [0xA7; 32]);
 
     // Independent K value changes never conflate with the same boot-local D.
     let different_payload =
@@ -156,7 +156,7 @@ fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
 fn pinned_hepta_k_stable_id_bounds_and_nonzero_digest_are_enforced() {
     let maximum = "k".repeat(128);
     let k = LogicalOperationId::new(maximum.clone(), [0x55; 32]).unwrap();
-    assert_eq!(k.stable_id, maximum);
+    assert_eq!(k.stable_id(), maximum);
     for invalid in ["", "space is invalid", "unicode-测试", "/etc/passwd"] {
         assert_eq!(
             LogicalOperationId::new(invalid, [1; 32]),
