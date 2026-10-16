@@ -1128,8 +1128,72 @@ fn concurrent_cousin_registration_same_identity_has_one_winner() {
         start.wait();
         let a = one.join().unwrap();
         let b = two.join().unwrap();
-        assert_eq!(usize::from(a.is_ok()) + usize::from(b.is_ok()), 1);
+        assert_eq!((a.is_ok() as usize) + (b.is_ok() as usize), 1);
         let rejected = if a.is_err() { a.err() } else { b.err() };
         assert_eq!(rejected, Some(ResourceError::DuplicateDomainId));
     }
+}
+
+#[test]
+fn failed_ancestor_charge_never_advances_descendant_clock_or_counters() {
+    let parent = root(130_000, 10);
+    let busy = with_parent(domain(130_001), object(130_001), &parent, 10).unwrap();
+    let idle = with_parent(domain(130_002), object(130_002), &parent, 10).unwrap();
+    busy.charge_cpu(8, 100).unwrap();
+    assert_eq!(idle.charge_cpu(5, 200), Err(ResourceError::Exhausted));
+    let unchanged = idle.try_usage(0).unwrap();
+    assert_eq!(unchanged.sample_boottime_ns, 0);
+    assert_eq!(unchanged.cumulative_cpu_ns, 0);
+    assert_eq!(unchanged.window_consumed_ns, 0);
+    assert_eq!(unchanged.event_sequence, 0);
+    idle.charge_cpu(2, 150).unwrap();
+    assert_eq!(parent.usage(200).window_consumed_ns, 10);
+    assert_eq!(idle.usage(200).window_consumed_ns, 2);
+    assert_eq!(parent.usage(200).event_sequence, 2);
+}
+
+#[test]
+fn exhausted_grandparent_does_not_modify_either_descendant() {
+    let grandparent = root(140_000, 10);
+    let competitor =
+        with_parent(domain(140_001), object(140_001), &grandparent, 10).unwrap();
+    let parent = with_parent(domain(140_002), object(140_002), &grandparent, 10).unwrap();
+    let leaf = with_parent(domain(140_003), object(140_003), &parent, 10).unwrap();
+
+    competitor.charge_cpu(9, 100).unwrap();
+    assert_eq!(leaf.charge_cpu(2, 200), Err(ResourceError::Exhausted));
+    assert_eq!(leaf.try_usage(0).unwrap().event_sequence, 0);
+    assert_eq!(parent.try_usage(0).unwrap().event_sequence, 0);
+    leaf.charge_cpu(1, 150).unwrap();
+    assert_eq!(grandparent.usage(200).window_consumed_ns, 10);
+    assert_eq!(parent.usage(200).window_consumed_ns, 1);
+    assert_eq!(leaf.usage(200).window_consumed_ns, 1);
+}
+
+#[test]
+fn concurrent_siblings_never_double_spend_shared_parent_quota() {
+    let parent = root(150_000, 20);
+    let left = with_parent(domain(150_001), object(150_001), &parent, 20).unwrap();
+    let right = with_parent(domain(150_002), object(150_002), &parent, 20).unwrap();
+    let start = Arc::new(Barrier::new(65));
+    let mut workers = Vec::new();
+    for i in 0..64 {
+        let child = if i % 2 == 0 { left.clone() } else { right.clone() };
+        let ready = Arc::clone(&start);
+        workers.push(thread::spawn(move || {
+            ready.wait();
+            child.charge_cpu(1, 10)
+        }));
+    }
+    start.wait();
+    let successes = workers.into_iter().map(|handle| handle.join().unwrap())
+        .filter(Result::is_ok).count();
+    assert_eq!(successes, 20);
+    let p = parent.usage(11);
+    let l = left.usage(11);
+    let r = right.usage(11);
+    assert_eq!(p.window_consumed_ns, 20);
+    assert_eq!(p.event_sequence, 20);
+    assert_eq!(p.window_consumed_ns, l.window_consumed_ns + r.window_consumed_ns);
+    assert_eq!(p.cumulative_cpu_ns, l.cumulative_cpu_ns + r.cumulative_cpu_ns);
 }

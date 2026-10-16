@@ -180,3 +180,16 @@ actual kernel must use its preexisting stable object owner/registry to enforce
 uniqueness **across distinct root families** and to bound/retire the registry
 safely during namespace destruction. The family gate serializes simultaneous
 cousin registration and parent budget changes.
+
+## Atomic host ancestry charging
+
+`charge_cpu(delta_ns, now_ns)` now uses a two-phase, family-gate-serialized
+transaction: stage current-window, cumulative and event-sequence changes
+against **every ancestor**, rejecting overflow, revoked/exhausted ancestor or
+clock rollback before touching any node; then publish the validated updates.
+This closes an observable failure mode where a rejected parent's quota left a
+child window/time advanced, blocking a legitimate earlier later retry and
+claiming false progress. The 3-level rejection and 64-thread sibling quota
+races are in Rust tests. Unlike a real scheduler, this compatibility host
+method places the entire delta in the window of `now_ns`, so A06 still needs
+exact CPU interval slicing at true boundary-crossing runtime settlement.

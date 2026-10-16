@@ -491,54 +491,68 @@ impl ResourceDomain {
         }
     }
 
-    /// Charge actual CPU execution to this domain and each ancestor once.
-    /// This is a host-model accounting primitive; it is not a scheduler hook.
+    /// Charge each domain of the ancestry atomically under the family gate.
+    /// A rejection at an ancestor must not move the child clock, reset its
+    /// quota window, or increment a partial event sequence. This simplified
+    /// host primitive attributes delta_ns to the single window containing
+    /// now_ns; it does not replace A06 scheduler interval slicing.
     pub fn charge_cpu(&self, delta_ns: u64, now_ns: u64) -> Result<(), ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
-        self.charge_locked(delta_ns, now_ns)
-    }
+        let mut updates = Vec::new();
+        let mut cursor = Some(self.clone());
 
-    fn charge_locked(&self, delta_ns: u64, now_ns: u64) -> Result<(), ResourceError> {
-        let parent = self.inner.parent.clone();
-        {
-            let mut state = lock_unpoisoned(&self.inner.state);
-            if now_ns < state.last_boottime_ns {
+        // Phase 1: read, validate and stage every ancestor without modifying
+        // any state. Every node is protected against concurrent mutation by
+        // the same family gate, including parent revoke and quota changes.
+        while let Some(domain) = cursor {
+            let old = domain.snapshot_state();
+            if now_ns < old.last_boottime_ns {
                 return Err(ResourceError::ClockRollback);
             }
-            state.last_boottime_ns = now_ns;
-            let new_window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
-            if new_window_start > state.window_start_ns {
-                state.window_start_ns = new_window_start;
-                state.window_consumed_ns = 0;
-            }
-            if !state.alive
-                || delta_ns > state.budget.cap_ns.saturating_sub(state.window_consumed_ns)
+            let window_start =
+                (now_ns / old.budget.period_ns) * old.budget.period_ns;
+            let previous_in_window = if window_start > old.window_start_ns {
+                0
+            } else {
+                old.window_consumed_ns
+            };
+            if !old.alive
+                || delta_ns > old.budget.cap_ns.saturating_sub(previous_in_window)
             {
                 return Err(ResourceError::Exhausted);
             }
-            if state.consumed_ns.checked_add(delta_ns).is_none()
-                || state.window_consumed_ns.checked_add(delta_ns).is_none()
-                || state.event_sequence.checked_add(1).is_none()
-            {
-                return Err(ResourceError::Overflow);
-            }
+            let cumulative = old
+                .consumed_ns
+                .checked_add(delta_ns)
+                .ok_or(ResourceError::Overflow)?;
+            let window_consumed = previous_in_window
+                .checked_add(delta_ns)
+                .ok_or(ResourceError::Overflow)?;
+            let event_sequence = old
+                .event_sequence
+                .checked_add(1)
+                .ok_or(ResourceError::Overflow)?;
+            cursor = domain.inner.parent.clone();
+            updates.push((
+                domain,
+                window_start,
+                cumulative,
+                window_consumed,
+                event_sequence,
+            ));
         }
-        if let Some(parent) = parent {
-            parent.charge_locked(delta_ns, now_ns)?;
+
+        // Phase 2: publish the prevalidated values. No failing arithmetic,
+        // admission checks, or callbacks remain in this phase. Readers of
+        // usage/try_usage share the gate and cannot see a half-family charge.
+        for (domain, window_start, cumulative, window_consumed, event_sequence) in updates {
+            let mut state = lock_unpoisoned(&domain.inner.state);
+            state.window_start_ns = window_start;
+            state.window_consumed_ns = window_consumed;
+            state.consumed_ns = cumulative;
+            state.event_sequence = event_sequence;
+            state.last_boottime_ns = now_ns;
         }
-        let mut state = lock_unpoisoned(&self.inner.state);
-        state.consumed_ns = state
-            .consumed_ns
-            .checked_add(delta_ns)
-            .ok_or(ResourceError::Overflow)?;
-        state.window_consumed_ns = state
-            .window_consumed_ns
-            .checked_add(delta_ns)
-            .ok_or(ResourceError::Overflow)?;
-        state.event_sequence = state
-            .event_sequence
-            .checked_add(1)
-            .ok_or(ResourceError::Overflow)?;
         Ok(())
     }
 
