@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "date": "2026-10-16",
+  "agent": "A01",
+  "phase": "next",
+  "result": "two_real_kernel_crates_and_boot_passed_with_one_original_host_unit_failure",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5",
+  "integrated_main": "47afb8229bd3a3ff05077c7b01aac6fa8ef6f956",
+  "merge_commit": "a93113e0d1c24d9cb823b9d35ad450efcef609a9",
+  "tested_build_code_commit": "94139171cdf84f2b920a8cad94801540055c3040",
+  "tested_kernel_subtree": "9752b3abdc895d435d33cedc3062bf952c78beeb",
+  "upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "toolchain": "nightly-2026-07-21",
+  "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+  "source_directory": "kernel/asterinas",
+  "upstream_modified_paths": [
+    "kernel/asterinas/osdk/src/commands/build/mod.rs"
+  ],
+  "kernel_core_process_ioctl_scheduler_modified": false,
+  "root_readme_bytes": 0,
+  "kernel_mode_tests": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "ostd",
+            "declared": 221,
+            "passed": 221,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 3,
+            "soft_skip_reasons": [
+              "VMX unavailable",
+              "VMX unavailable",
+              "VMX/EPT invalidation unavailable"
+            ],
+            "exercised_passed_lower_bound": 218,
+            "observed_test_starts": 221,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      },
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 141,
+            "passed": 141,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 141,
+            "observed_test_starts": 141,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "kernel_mode_totals": {
+    "reported_passed": 362,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 359,
+    "crate_sets": 2,
+    "actual_qemu_guests_in_committed_run": 2
+  },
+  "test_scope": "All discovered tests for the two selected crates only; no positional test filter; fixed single-vCPU TCG profile; not the complete upstream crate/userspace/device matrix.",
+  "repeat_scope": "Each crate also passed once before this code commit; initial full source compilation and original logs are retained separately. Counts above describe the committed replay, not a sum across repetitions.",
+  "initial_test_provenance": "Initial-kernel-tests records a93113e0d HEAD with then-uncommitted changes later published as 94139171c; use acceptance/kernel-tests for final committed-code provenance and per-file build input hashes.",
+  "profile": {
+    "arch": "x86_64",
+    "machine": "q35",
+    "accelerator": "tcg",
+    "cpu": "max",
+    "vcpus": 1,
+    "memory_mib": 512,
+    "qemu_version": "8.2.2",
+    "firmware": "SeaBIOS",
+    "network": false,
+    "writable_data_disks": false
+  },
+  "boot": {
+    "raw_qemu_exit": 33,
+    "timed_out": false,
+    "make_exit": 0,
+    "log_exit": 0,
+    "run_exit": 0,
+    "inherited_INITRAMFS": "off",
+    "effective_INITRAMFS": "on",
+    "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+    "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "exact_qemu_record": "acceptance/boot/qemu.json",
+    "serial": "acceptance/boot/serial.log"
+  },
+  "retained_artifacts": "artifacts/manifest.json",
+  "host_original_unit_suite": {
+    "passed": 13,
+    "failed": 1,
+    "filtered": 0,
+    "failed_test": "daemon::supervisor::tests::stop_all_terminates_daemon_descendants",
+    "exit": 101,
+    "evidence": "host-tools/results.json"
+  },
+  "host_selected_non_vm_integration": {
+    "passed": 13,
+    "failed": 0,
+    "unselected": 9
+  },
+  "added_build_lock_tests": {
+    "passed": 3,
+    "failed": 0,
+    "upstream_filtered": 14
+  },
+  "kernel_runner_tests": {
+    "passed": 9,
+    "failed": 0
+  },
+  "kernel_evidence_checker_tests": {
+    "passed": 12,
+    "failed": 0
+  },
+  "main_host_contracts": {
+    "abi_tests": 6,
+    "spec_tests": 14,
+    "golden_vectors": 12,
+    "passed": true
+  },
+  "source_build_input_integrity": {
+    "checked_files": 118,
+    "passed": true
+  },
+  "host_tools": {
+    "gdb_version": "15.1",
+    "gdb_availability_test": "passed",
+    "ptrace_tested": false,
+    "full_host_suite_passed": false
+  },
+  "limitations": [
+    "Three OSTD tests explicitly soft-skip unavailable VMX/EPT hardware paths under TCG; they are not exercised passes.",
+    "Original OSDK host unit suite has one preserved failure. PID and proc namespaces are mismatched; the original child state was not observed, so sole attribution of that failure is an inference. Three focused diagnostic passes do not replace it.",
+    "A separate daemon descendant lifecycle risk remains unresolved. The fixed guest profile configures no host daemons.",
+    "One isolated proc namespace attempt failed before the harness: uid_map Operation not permitted. No bypass or retry was made.",
+    "BusyBox explicit applet workaround for script /proc/self/exe remains; no A05 core fix.",
+    "Native package configuration limitation for libibverbs1 remains from prior evidence, although QEMU and the isolated GDB executable worked.",
+    "Native QEMU8.2.2 differs from the complete upstream development image. Full upstream matrix, KVM/VMX/EPT, controlled SMP, physical hardware and cross-host bit reproducibility are not established.",
+    "HOS2/CapSpace/exec_epoch/ResourceDomain/Hepta/Android/GPU functionality is outside this A01 baseline."
+  ]
+}

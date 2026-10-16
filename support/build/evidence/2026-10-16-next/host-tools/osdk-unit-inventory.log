@@ -1,0 +1,16 @@
+base_crate::tests::changed_linker_script_prevents_base_crate_reuse: test
+commands::debug::have_gdb_installed: test
+commands::profile::test_profile_parse_raw: test
+config::test::conditional_manifest: test
+config::test::deserialize_toml_manifest: test
+config::test::parse_quoted_daemon_arguments: test
+config::unix_args::test::test_apply_kv_array: test
+config::unix_args::test::test_get_key: test
+config::unix_args::test::test_split_kv_array: test
+daemon::supervisor::tests::nonzero_daemon_exit_aborts_startup: test
+daemon::supervisor::tests::stop_all_escalates_when_daemon_ignores_sigterm: test
+daemon::supervisor::tests::stop_all_terminates_daemon_descendants: test
+daemon::supervisor::tests::stop_all_terminates_running_daemon: test
+daemon::supervisor::tests::successful_daemon_exit_is_reaped: test
+
+14 tests, 0 benchmarks

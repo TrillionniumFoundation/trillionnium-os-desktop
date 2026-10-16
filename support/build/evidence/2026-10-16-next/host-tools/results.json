@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "rust_toolchain": "nightly-2026-07-21",
+  "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+  "toolchain_changed": false,
+  "gdb": {
+    "version": "GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1",
+    "method": "apt-get download followed by dpkg-deb -x into a fresh scratch root; no installation/postinst",
+    "root": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root",
+    "binary_sha256": "3832cc070ae1716e322105d3b39fb398695e5f031c9d39224cf227a8c2b889f6",
+    "version_exit": 0,
+    "ptrace_tested": false,
+    "remote_debugger_tested": false,
+    "packages_downloaded": 8,
+    "all_package_sizes_and_sha256_verified_against_apt_metadata": true,
+    "all_unpacked_regular_files_verified_against_archive_size_mode_and_sha256": true
+  },
+  "original_unit_suite": {
+    "command": "cargo +nightly-2026-07-21 test --locked --bin cargo-osdk -- --test-threads=1",
+    "total": 14,
+    "passed": 13,
+    "failed": 1,
+    "ignored": 0,
+    "filtered": 0,
+    "exit": 101,
+    "failed_test": "daemon::supervisor::tests::stop_all_terminates_daemon_descendants",
+    "gdb_availability_test": "passed",
+    "scope_note": "The original 14-test upstream set was compiled before subsequent parent edits that add build-lock regression tests. Those later tests are outside this binary/evidence."
+  },
+  "non_vm_integration_subset": {
+    "suite_inventory_total": 22,
+    "selected_unique": 13,
+    "passed": 13,
+    "failed": 0,
+    "ignored": 0,
+    "groups": {
+      "cli": 8,
+      "workspace_create": 3,
+      "book_create": 2
+    },
+    "unselected": 9,
+    "selection_basis": "Read test source first; exclude all cases that call run/test or start QEMU. Direct test harness execution from scratch avoids generated project files in source."
+  },
+  "daemon_diagnostics": {
+    "additional_focused_runs": 3,
+    "passed": 3,
+    "failed": 0,
+    "replaces_original_failed_full_suite": false,
+    "proc_pid_namespace_mismatch_demonstrated": true,
+    "initial_failed_test_child_host_pid_observed": false,
+    "third_diagnostic_true_daemon_group_stopped": true,
+    "diagnostic_limit": "Numeric /proc/<namespace_pid> is not a reliable predicate here. Focused passes do not establish that descendant supervision is correct.",
+    "production_risk_open": "Supervisor waits for the direct leader; kill/terminate skip once leader is reaped, so a TERM-ignoring descendant may remain. Not resolved or tested by these ordinary sleep diagnostics."
+  },
+  "package_configuration_changed": false,
+  "new_vm_started": false,
+  "project_source_or_test_modified": false,
+  "proc_alignment_attempt": {
+    "attempts": 1,
+    "command": [
+      "unshare",
+      "--user",
+      "--map-root-user",
+      "--pid",
+      "--fork",
+      "--mount-proc",
+      "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/cargo_osdk-87e58130b1b091d4",
+      "--test-threads=1"
+    ],
+    "exit": 1,
+    "error": "unshare: write failed /proc/self/uid_map: Operation not permitted",
+    "unit_harness_started": false,
+    "retried_or_bypassed": false
+  }
+}

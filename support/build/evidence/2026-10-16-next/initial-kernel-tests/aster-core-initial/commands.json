@@ -1,0 +1,19 @@
+[
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "osdk",
+      "test",
+      "--release",
+      "--boot-method=vmm-direct",
+      "--grub-boot-protocol=multiboot",
+      "--qemu-exe=/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/record-qemu.py",
+      "--kcmd-args=loglevel=error",
+      "--kcmd-args=earlycon",
+      "--kcmd-args=console=ttyS0"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/core",
+    "lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+  }
+]
