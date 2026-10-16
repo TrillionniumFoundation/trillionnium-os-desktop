@@ -1406,3 +1406,40 @@ fn invalid_and_overflow_adjacent_intervals_fail_closed() {
         Err(ResourceError::ClockRollback)
     );
 }
+
+#[test]
+fn resource_identity_registry_has_bounded_capacity_and_no_id_reanimation() {
+    assert!(matches!(
+        ResourceDomain::root_with_capacity_for_host_model(
+            domain(200_000), object(200_000), 50, 0
+        ),
+        Err(ResourceError::InvalidCapacity)
+    ));
+
+    let root = ResourceDomain::root_with_capacity_for_host_model(
+        domain(200_000), object(200_000), 50, 2
+    ).unwrap();
+    let child = with_parent(domain(200_001), object(200_001), &root, 40).unwrap();
+    assert_eq!(
+        with_parent(domain(200_002), object(200_002), &root, 10).err(),
+        Some(ResourceError::Exhausted)
+    );
+    // Even if the last host handle is dropped, a stable ID must not revive.
+    drop(child);
+    assert_eq!(
+        with_parent(domain(200_001), object(200_003), &root, 1).err(),
+        Some(ResourceError::DuplicateDomainId)
+    );
+    assert_eq!(
+        with_parent(domain(200_003), object(200_001), &root, 1).err(),
+        Some(ResourceError::DuplicateObjectId)
+    );
+    assert_eq!(
+        with_parent(domain(200_003), object(200_003), &root, 1).err(),
+        Some(ResourceError::Exhausted)
+    );
+    // Exhaustion has not mutated parent cap, revision, or admission counter.
+    assert_eq!(root.revision(), 1);
+    assert_eq!(root.budget().cap_ns, 50);
+    assert_eq!(root.usage(0).event_sequence, 0);
+}

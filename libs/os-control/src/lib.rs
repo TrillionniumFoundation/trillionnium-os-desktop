@@ -12,6 +12,9 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 pub const CPU_PERIOD_NS: u64 = 100_000_000;
 pub const DEFAULT_WINDOW_CAPACITY: usize = 1024;
+/// Host-model resource family identity tombstones. Kernel integration must
+/// use its real bounded stable-object registry and lifecycle policy.
+pub const DEFAULT_FAMILY_ID_CAPACITY: usize = 65_536;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Id16([u8; 16]);
@@ -228,6 +231,7 @@ struct ResourceDomainInner {
 struct FamilyIdentityRegistry {
     domain_ids: BTreeSet<ResourceDomainId>,
     object_ids: BTreeSet<StableObjectId>,
+    capacity: usize,
 }
 
 #[derive(Clone, Copy)]
@@ -267,6 +271,7 @@ pub enum ResourceError {
     DuplicateDomainId,
     DuplicateObjectId,
     InvalidBudget,
+    InvalidCapacity,
     InvalidInterval,
     InvalidRevision,
     RevisionConflict { expected: u64, actual: u64 },
@@ -320,6 +325,9 @@ impl ResourceDomain {
             if registry.object_ids.contains(&stable_object_id) {
                 return Err(ResourceError::DuplicateObjectId);
             }
+            if registry.domain_ids.len() >= registry.capacity {
+                return Err(ResourceError::Exhausted);
+            }
             let mut children = lock_unpoisoned(&parent.inner.children);
             if children.contains_key(&id) {
                 return Err(ResourceError::DuplicateDomainId);
@@ -357,6 +365,7 @@ impl ResourceDomain {
                 family: Arc::new(Mutex::new(FamilyIdentityRegistry {
                     domain_ids: BTreeSet::from([id]),
                     object_ids: BTreeSet::from([stable_object_id]),
+                    capacity: DEFAULT_FAMILY_ID_CAPACITY,
                 })),
                 state: Mutex::new(DomainState {
                     id,
@@ -378,6 +387,22 @@ impl ResourceDomain {
                 children: Mutex::new(BTreeMap::new()),
             }),
         })
+    }
+
+    /// Construct an independent root with a small capacity for negative
+    /// host tests. Includes the root itself and never reuses expired IDs.
+    pub fn root_with_capacity_for_host_model(
+        id: ResourceDomainId,
+        stable_object_id: StableObjectId,
+        cap_ns: u64,
+        family_capacity: usize,
+    ) -> Result<Self, ResourceError> {
+        if family_capacity == 0 {
+            return Err(ResourceError::InvalidCapacity);
+        }
+        let root = Self::new(id, stable_object_id, None, cap_ns)?;
+        lock_unpoisoned(&root.inner.family).capacity = family_capacity;
+        Ok(root)
     }
 
     pub fn id(&self) -> ResourceDomainId {
@@ -1674,6 +1699,7 @@ fn map_resource_error(error: ResourceError) -> DeliveryStatus {
         ResourceError::ParentConstraint => DeliveryStatus::ParentLimit,
         ResourceError::Exhausted => DeliveryStatus::ResourceExhausted,
         ResourceError::InvalidBudget
+        | ResourceError::InvalidCapacity
         | ResourceError::InvalidInterval
         | ResourceError::InvalidRevision
         | ResourceError::InvalidIdentity => DeliveryStatus::InvalidInput,
