@@ -279,9 +279,27 @@ impl ResourceDomain {
         }
         let budget = Budget::new(initial_cap_ns)?;
         if let Some(parent) = parent {
+            // Serialize child admission with parent cap, revocation and ID
+            // registry changes under the same hierarchy mutation gate.
+            let _gate = lock_unpoisoned(&parent.inner.gate);
             let parent_state = parent.snapshot_state();
             if initial_cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
+            }
+            let mut ancestor = Some(parent);
+            while let Some(current) = ancestor {
+                let state = current.snapshot_state();
+                if !state.alive {
+                    return Err(ResourceError::Revoked);
+                }
+                if state.id == id {
+                    return Err(ResourceError::InvalidIdentity);
+                }
+                ancestor = current.inner.parent.as_ref();
+            }
+            let mut children = lock_unpoisoned(&parent.inner.children);
+            if children.contains_key(&id) {
+                return Err(ResourceError::InvalidIdentity);
             }
             let inner = Arc::new(ResourceDomainInner {
                 gate: Arc::clone(&parent.inner.gate),
@@ -303,7 +321,7 @@ impl ResourceDomain {
                 parent: Some(parent.clone()),
                 children: Mutex::new(BTreeMap::new()),
             });
-            lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
+            children.insert(id, initial_cap_ns);
             return Ok(Self { inner });
         }
         Ok(Self {
@@ -581,38 +599,9 @@ pub fn with_parent(
     parent: &ResourceDomain,
     initial_cap_ns: u64,
 ) -> Result<ResourceDomain, ResourceError> {
-    let budget = Budget::new(initial_cap_ns)?;
-    let parent_state = parent.snapshot_state();
-    if initial_cap_ns > parent_state.budget.cap_ns {
-        return Err(ResourceError::ParentConstraint);
-    }
-    if !id.is_nonzero() || !stable_object_id.is_nonzero() {
-        return Err(ResourceError::InvalidIdentity);
-    }
-    let child = ResourceDomain {
-        inner: Arc::new(ResourceDomainInner {
-            gate: Arc::clone(&parent.inner.gate),
-            state: Mutex::new(DomainState {
-                id,
-                stable_object_id,
-                parent: Some(parent_state.id),
-                revision: 1,
-                budget,
-                consumed_ns: 0,
-                window_consumed_ns: 0,
-                window_start_ns: 0,
-                event_sequence: 0,
-                dropped_events: 0,
-                alive: true,
-                grant_epoch: 1,
-                user_paused: false,
-            }),
-            parent: Some(parent.clone()),
-            children: Mutex::new(BTreeMap::new()),
-        }),
-    };
-    lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
-    Ok(child)
+    // The public helper and direct constructor must share the same atomic
+    // ancestor admission, identity collision and parent constraint path.
+    ResourceDomain::new(id, stable_object_id, Some(parent), initial_cap_ns)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
