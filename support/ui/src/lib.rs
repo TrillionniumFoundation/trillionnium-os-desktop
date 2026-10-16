@@ -1,4 +1,3 @@
-107cfbba18862eceb203051cd34d50c21b1c47c1
 //! Boundary state for the host UI prototype.
 //!
 //! This crate is deliberately a small, pure Rust model.  It does not start a
