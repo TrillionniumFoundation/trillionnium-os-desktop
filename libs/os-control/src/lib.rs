@@ -92,10 +92,20 @@ id_type!(StableObjectId);
 id_type!(PublisherId);
 id_type!(OwnerId);
 
+/// A checked HOS2 boot/CapSpace namespace. Untrusted callers cannot forge
+/// zero identifiers via public struct literals.
+///
+/// ```compile_fail
+/// use os_control::{BootId, CapSpaceId, NamespaceIdentity};
+/// let _invalid = NamespaceIdentity {
+///     boot_id: BootId::from_u128(0),
+///     cap_space_id: CapSpaceId::from_u128(0),
+/// };
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct NamespaceIdentity {
-    pub boot_id: BootId,
-    pub cap_space_id: CapSpaceId,
+    boot_id: BootId,
+    cap_space_id: CapSpaceId,
 }
 
 impl NamespaceIdentity {
@@ -107,6 +117,14 @@ impl NamespaceIdentity {
             boot_id,
             cap_space_id,
         })
+    }
+
+    pub const fn boot_id(self) -> BootId {
+        self.boot_id
+    }
+
+    pub const fn cap_space_id(self) -> CapSpaceId {
+        self.cap_space_id
     }
 }
 
@@ -162,10 +180,18 @@ impl LogicalOperationId {
     }
 }
 
+/// The boot-local D can only be created with a checked nonzero namespace and
+/// a sequence other than 0 or the reserved terminal u64::MAX value.
+///
+/// ```compile_fail
+/// use os_control::{BootId, CapSpaceId, NamespaceIdentity, DeliveryId};
+/// let ns = NamespaceIdentity::new(BootId::from_u128(1), CapSpaceId::from_u128(1)).unwrap();
+/// let _invalid = DeliveryId { namespace: ns, sequence: 0 };
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct DeliveryId {
-    pub namespace: NamespaceIdentity,
-    pub sequence: u64,
+    namespace: NamespaceIdentity,
+    sequence: u64,
 }
 
 impl DeliveryId {
@@ -177,6 +203,14 @@ impl DeliveryId {
             namespace,
             sequence,
         })
+    }
+
+    pub const fn namespace(self) -> NamespaceIdentity {
+        self.namespace
+    }
+
+    pub const fn sequence(self) -> u64 {
+        self.sequence
     }
 }
 
