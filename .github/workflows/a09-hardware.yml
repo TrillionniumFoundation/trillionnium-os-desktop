@@ -1,0 +1,33 @@
+name: A09 hardware-model regressions
+
+on:
+  pull_request:
+    paths:
+      - 'support/hardware/**'
+      - 'support/vmm/**'
+      - 'tests/hardware/**'
+      - '.github/workflows/a09-hardware.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'support/hardware/**'
+      - 'support/vmm/**'
+      - 'tests/hardware/**'
+      - '.github/workflows/a09-hardware.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  host-device-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: CPU-only VFIO, CUDA-gate and cross-kernel evidence unit tests
+        run: python3 -m unittest discover -s tests/hardware -p 'test_*.py' -v
+      - name: Rust no_std device lifecycle unit and release tests
+        if: hashFiles('support/vmm/device_lifecycle/Cargo.toml') != ''
+        run: |
+          cargo test --offline --manifest-path support/vmm/device_lifecycle/Cargo.toml
+          cargo test --offline --release --manifest-path support/vmm/device_lifecycle/Cargo.toml
