@@ -376,7 +376,8 @@ impl PerCpuClassRqSet {
             }
             self.throttled.push(task);
         }
-        self.idle.pick_next()
+        self.idle
+            .pick_next()
             .and_then(|task| task.as_thread().cloned().map(|thread| (task, thread)))
     }
 
@@ -390,8 +391,9 @@ impl PerCpuClassRqSet {
     }
 
     fn load_stats(&self) -> PerCpuLoadStats {
-        let queue_len = (self.stop.len() + self.real_time.len() +
-            self.fair.len() + self.throttled.len()) as u32;
+        let queue_len =
+            (self.stop.len() + self.real_time.len() + self.fair.len() + self.throttled.len())
+                as u32;
         let is_idle = match &self.current {
             Some(((_, thread), _)) => thread.sched_attr().policy_kind() == SchedPolicyKind::Idle,
             None => true,
@@ -445,7 +447,8 @@ impl LocalRunQueue for PerCpuClassRqSet {
             lookahead = 4;
         }
 
-        quota_exhausted || should_preempt
+        quota_exhausted
+            || should_preempt
             || (lookahead >= 1 && !self.stop.is_empty())
             || (lookahead >= 2 && !self.real_time.is_empty())
             || (lookahead >= 3 && !self.fair.is_empty())
