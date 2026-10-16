@@ -116,6 +116,16 @@ impl CpuMax {
         if until < from {
             return;
         }
+        // Charge all CPU time completed before this window closes, including
+        // an interval straddling one or more period boundaries. Otherwise the
+        // part before the new window is erased by advance(), creating free
+        // runtime that defeats positive overshoot debt.
+        let period = self.period_clocks();
+        let new_window = until / period * period;
+        if new_window > self.window_start {
+            let completed = new_window.saturating_sub(from.max(self.window_start));
+            self.used_clocks = self.used_clocks.saturating_add(completed);
+        }
         self.advance(until);
         self.used_clocks = self
             .used_clocks
