@@ -13,13 +13,17 @@ import json
 import math
 import os
 import platform
-import signal
 import struct
 import sys
-import threading
+import tempfile
 import time
 
+import cuda_process_supervisor as process_supervisor
+
 N = 16
+MAX_CUDA_ENUM_DEVICES = 64
+MAX_NVRTC_LOG_BYTES = 64 * 1024
+MAX_NVRTC_PTX_BYTES = 8 * 1024 * 1024
 CUDA_SOURCE = r'''
 extern "C" __global__ void gemm16(const float *a, const float *b, float *c) {
     int r = blockIdx.x;
@@ -41,7 +45,14 @@ class GpuError(RuntimeError):
 
 
 class TimeoutExpired(GpuError):
-    """The bounded test window expired before the device operation finished."""
+    """A worker-local test hook; production deadlines are OS-supervised."""
+
+
+def checked_nvrtc_size(size, limit, purpose):
+    """Reject compiler-reported sizes before allocating Python memory."""
+    if type(size) is not int or size < 1 or size > limit:
+        raise GpuError(f"NVRTC {purpose} size outside 1..{limit} bytes: {size}")
+    return size
 
 
 STAGES = (
@@ -69,35 +80,20 @@ def _mark_in_progress_stages_failed(stages):
             stages[name] = "failed"
 
 
-def _alarm_handler(_signum, _frame):
-    raise TimeoutExpired("bounded CUDA test timeout expired")
-
-
 def timeout_available():
-    """Whether this process can enforce the requested wall-clock bound safely."""
-    return (hasattr(signal, "SIGALRM") and
-            threading.current_thread() is threading.main_thread())
+    """Whether a separate Linux worker can be killed and reaped safely."""
+    return process_supervisor.available()
 
 
 def run_bounded(fn, timeout_seconds):
-    """Run ``fn`` with a process-local alarm; no unbounded device wait is allowed."""
-    if timeout_seconds is None or timeout_seconds <= 0:
-        return fn()
-    if not timeout_available():
-        raise Blocked("bounded CUDA timeout unavailable on this platform/thread")
-    previous_handler = signal.getsignal(signal.SIGALRM)
-    previous_timer = signal.setitimer(signal.ITIMER_REAL, 0.0)
-    signal.signal(signal.SIGALRM, _alarm_handler)
-    # Install the handler before arming the timer. This avoids a race where a
-    # very small timeout could deliver SIGALRM to the previous handler.
-    signal.setitimer(signal.ITIMER_REAL, float(timeout_seconds))
-    try:
-        return fn()
-    finally:
-        signal.setitimer(signal.ITIMER_REAL, 0.0)
-        signal.signal(signal.SIGALRM, previous_handler)
-        if previous_timer[0] > 0:
-            signal.setitimer(signal.ITIMER_REAL, previous_timer[0], previous_timer[1])
+    """Reject the retired in-process deadline path.
+
+    A Python signal cannot safely bound a foreign CUDA/NVRTC call: the handler
+    may run only after the C call returns while the device effect continues.
+    The command-line path below always uses ``cuda_process_supervisor``.
+    """
+    del fn, timeout_seconds
+    raise Blocked("in-process CUDA deadline disabled; use the OS worker supervisor")
 
 
 def inputs():
@@ -166,6 +162,9 @@ def gpu_gemm(required_name, required_bdf, stages=None):
     if count.value < 1:
         stages["enumerate_device"] = "blocked"
         raise Blocked("CUDA driver reports zero usable devices")
+    if count.value > MAX_CUDA_ENUM_DEVICES:
+        stages["enumerate_device"] = "blocked"
+        raise Blocked("CUDA driver reports an unreasonable device count; refusing unbounded enumeration")
     selected = None
     seen = []
     for index in range(count.value):
@@ -219,12 +218,14 @@ def gpu_gemm(required_name, required_bdf, stages=None):
             log_len = C.c_size_t()
             nvrtc.call("nvrtcGetProgramLogSize", [C.c_void_p, C.POINTER(C.c_size_t)],
                        program, C.byref(log_len))
-            log = C.create_string_buffer(max(1, log_len.value))
+            log = C.create_string_buffer(
+                checked_nvrtc_size(log_len.value, MAX_NVRTC_LOG_BYTES, "diagnostic log"))
             nvrtc.call("nvrtcGetProgramLog", [C.c_void_p, C.c_void_p], program, log)
             raise GpuError(f"NVRTC compile {rc}: {log.value.decode(errors='replace')[:2000]}")
         ptx_len = C.c_size_t()
         nvrtc.call("nvrtcGetPTXSize", [C.c_void_p, C.POINTER(C.c_size_t)], program, C.byref(ptx_len))
-        ptx = C.create_string_buffer(ptx_len.value)
+        ptx = C.create_string_buffer(
+            checked_nvrtc_size(ptx_len.value, MAX_NVRTC_PTX_BYTES, "PTX program"))
         nvrtc.call("nvrtcGetPTX", [C.c_void_p, C.c_void_p], program, ptx)
         stages["compile_kernel"] = "passed"
     finally:
@@ -357,6 +358,7 @@ def _base_evidence(expected, a, b, timeout_seconds):
         },
         "timeout_seconds": timeout_seconds,
         "no_cpu_fallback": True,
+        "device_access_attempted": False,
         "device": None,
         "stages": new_stage_status(),
         # This test never resets or fault-injects a device. A separate isolated
@@ -365,26 +367,30 @@ def _base_evidence(expected, a, b, timeout_seconds):
     }
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--require-name", default="RTX 4060")
-    parser.add_argument("--require-bdf", default="", help="optional exact PCI BDF from read-only probe")
-    parser.add_argument("--timeout-seconds", type=float, default=30.0,
-                        help="bounded wall-clock window for CUDA calls (default: 30)")
-    parser.add_argument("--output", default="-", help="'-' prints JSON")
-    args = parser.parse_args()
-    if not math.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0:
-        parser.error("--timeout-seconds must be a finite positive number")
+def _write_evidence(evidence, output):
+    payload = json.dumps(evidence, indent=2, sort_keys=True) + "\n"
+    if output == "-":
+        print(payload, end="")
+    else:
+        from pathlib import Path
+        Path(output).write_text(payload, encoding="utf-8")
+
+
+def _run_local(args):
+    """Run inside an already-supervised worker or a unit-test-only seam."""
     a, b = inputs()
     expected = reference(a, b)
     evidence = _base_evidence(expected, a, b, args.timeout_seconds)
-    evidence["timeout_enforced"] = timeout_available()
+    # This path has no deadline guarantee. The production parent overwrites
+    # this field only after the OS worker has been reaped or a timeout recorded.
+    evidence["timeout_enforced"] = False
+    evidence["execution_provenance"]["execution_layer"] = (
+        "linux_worker_cuda_driver_api")
     started = time.monotonic()
     try:
-        device, output = run_bounded(
-            lambda: gpu_gemm(args.require_name, args.require_bdf, evidence["stages"]),
-            args.timeout_seconds,
-        )
+        # No signal/alarm is allowed around foreign CUDA/NVRTC calls. The
+        # parent process supervisor owns the deadline and kill/reap boundary.
+        device, output = gpu_gemm(args.require_name, args.require_bdf, evidence["stages"])
         evidence["device"] = device
         evidence["actual_output_sha256"] = digest(output)
         evidence["stages"]["compare_reference"] = "in_progress"
@@ -394,6 +400,7 @@ def main():
             raise GpuError(f"GPU numerical mismatch: {mismatch}")
         evidence["stages"]["compare_reference"] = "passed"
         evidence.update(status="passed_on_reported_cuda_environment", error=None,
+                        device_access_attempted=True,
                         device_memory_allocated=(
                             evidence["stages"]["allocate_device_memory"] == "passed"),
                         cuda_kernel_launched=(evidence["stages"]["submit_command"] == "passed"),
@@ -416,13 +423,99 @@ def main():
         rc = 1
     evidence["elapsed_seconds"] = round(time.monotonic() - started, 6)
     evidence["stages"]["failure_recovery"] = "not_run"
-    payload = json.dumps(evidence, indent=2, sort_keys=True) + "\n"
-    if args.output == "-":
-        print(payload, end="")
-    else:
-        from pathlib import Path
-        Path(args.output).write_text(payload, encoding="utf-8")
+    _write_evidence(evidence, args.output)
     return rc
+
+
+def _unknown_effect_evidence(args, record, error):
+    a, b = inputs()
+    evidence = _base_evidence(reference(a, b), a, b, args.timeout_seconds)
+    evidence.update(status="timeout", error=error, timeout_enforced=True,
+                    supervisor=record, failure_recovery_verified=False)
+    evidence["execution_provenance"]["execution_layer"] = (
+        "linux_supervised_worker_cuda_driver_api")
+    evidence["execution_provenance"]["supervisor"] = record
+    # The parent cannot know which native CUDA call was active when SIGKILL
+    # arrived. Every obligation remains unknown-effect until an external
+    # device-quiescence/reset procedure proves otherwise.
+    for name in evidence["stages"]:
+        evidence["stages"][name] = "unknown_effect"
+    return evidence
+
+
+def _run_supervised(args):
+    """Launch CUDA in an isolated process session with a kill/reap deadline."""
+    started = time.monotonic()
+    if not timeout_available():
+        a, b = inputs()
+        evidence = _base_evidence(reference(a, b), a, b, args.timeout_seconds)
+        evidence.update(status="blocked",
+                        error="OS process supervisor unavailable",
+                        timeout_enforced=False)
+        _write_evidence(evidence, args.output)
+        return 2
+
+    with tempfile.TemporaryDirectory(prefix="a09-cuda-worker-") as directory:
+        worker_output = os.path.join(directory, "worker-evidence.json")
+        worker_args = [
+            sys.executable, os.path.realpath(__file__), "--worker",
+            "--require-name", args.require_name,
+            "--timeout-seconds", str(args.timeout_seconds),
+            "--output", worker_output,
+        ]
+        if args.require_bdf:
+            worker_args.extend(("--require-bdf", args.require_bdf))
+        try:
+            code, record = process_supervisor.run_worker(
+                worker_args, args.timeout_seconds)
+        except (OSError, ValueError) as exc:
+            a, b = inputs()
+            evidence = _base_evidence(reference(a, b), a, b, args.timeout_seconds)
+            evidence.update(status="blocked", error=f"worker supervisor: {exc}",
+                            timeout_enforced=False)
+            _write_evidence(evidence, args.output)
+            return 2
+
+        if code == 124 or not record.get("worker_reaped", False):
+            evidence = _unknown_effect_evidence(
+                args, record, "CUDA worker deadline expired; device effect is unknown")
+            evidence["elapsed_seconds"] = round(time.monotonic() - started, 6)
+            _write_evidence(evidence, args.output)
+            return 1
+
+        try:
+            from pathlib import Path
+            evidence = json.loads(Path(worker_output).read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, ValueError) as exc:
+            a, b = inputs()
+            evidence = _base_evidence(reference(a, b), a, b, args.timeout_seconds)
+            evidence.update(status="failed",
+                            error=f"worker evidence unavailable: {exc}")
+            code = 1
+        evidence["timeout_enforced"] = True
+        evidence["supervisor"] = record
+        evidence["execution_provenance"]["execution_layer"] = (
+            "linux_supervised_worker_cuda_driver_api")
+        evidence["execution_provenance"]["supervisor"] = record
+        evidence["elapsed_seconds"] = round(time.monotonic() - started, 6)
+        _write_evidence(evidence, args.output)
+        return code if code in (0, 1, 2) else 1
+
+
+def main(supervise=True):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--require-name", default="RTX 4060")
+    parser.add_argument("--require-bdf", default="", help="optional exact PCI BDF from read-only probe")
+    parser.add_argument("--timeout-seconds", type=float, default=30.0,
+                        help="bounded wall-clock window for CUDA worker (default: 30)")
+    parser.add_argument("--output", default="-", help="'-' prints JSON")
+    parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
+    args = parser.parse_args()
+    if not math.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0:
+        parser.error("--timeout-seconds must be a finite positive number")
+    if args.worker or not supervise:
+        return _run_local(args)
+    return _run_supervised(args)
 
 
 if __name__ == "__main__":

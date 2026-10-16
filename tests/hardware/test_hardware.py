@@ -83,15 +83,15 @@ class GemmTests(unittest.TestCase):
             with patch.object(cuda_gemm, "library",
                               side_effect=cuda_gemm.Blocked("no driver")), \
                     patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
-                self.assertEqual(cuda_gemm.main(), 2)
+                self.assertEqual(cuda_gemm.main(supervise=False), 2)
             evidence = json.loads(output.read_text())
         self.assertEqual(evidence["schema"], "a09.cuda-gemm.v2")
         self.assertEqual(evidence["status"], "blocked")
         provenance = evidence["execution_provenance"]
-        self.assertEqual(provenance["execution_layer"], "linux_process_cuda_driver_api")
+        self.assertEqual(provenance["execution_layer"], "linux_worker_cuda_driver_api")
         self.assertFalse(provenance["asterinas_execution_verified"])
         self.assertTrue(provenance["process_id"] > 0)
-        self.assertTrue(evidence["timeout_enforced"])
+        self.assertFalse(evidence["timeout_enforced"])
         self.assertEqual(evidence["reported_execution_kernel"],
                          f"{cuda_gemm.platform.system()} {cuda_gemm.platform.release()}")
         self.assertTrue(all(value == "not_run" for value in evidence["stages"].values()))
@@ -106,10 +106,68 @@ class GemmTests(unittest.TestCase):
 
             with patch.object(cuda_gemm, "gpu_gemm", side_effect=fake_gpu), \
                     patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
-                self.assertEqual(cuda_gemm.main(), 1)
+                self.assertEqual(cuda_gemm.main(supervise=False), 1)
             evidence = json.loads(output.read_text())
         self.assertEqual(evidence["status"], "timeout")
         self.assertEqual(evidence["stages"]["synchronize"], "failed")
+        self.assertFalse(evidence["failure_recovery_verified"])
+
+    def test_production_entrypoint_uses_reaped_worker_supervisor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "supervised.json"
+
+            def fake_worker(argv, timeout_seconds):
+                self.assertGreater(timeout_seconds, 0)
+                self.assertIn("--worker", argv)
+                worker_output = Path(argv[argv.index("--output") + 1])
+                a, b = cuda_gemm.inputs()
+                evidence = cuda_gemm._base_evidence(
+                    cuda_gemm.reference(a, b), a, b, timeout_seconds)
+                evidence.update(status="blocked", error="no driver")
+                worker_output.write_text(json.dumps(evidence), encoding="utf-8")
+                return 2, {
+                    "supervisor": "linux_start_new_session_killpg",
+                    "worker_pid": 123,
+                    "timeout_seconds": timeout_seconds,
+                    "worker_reaped": True,
+                    "worker_exit_code": 2,
+                    "timed_out": False,
+                    "effect_result_known": False,
+                    "device_reset_verified": False,
+                }
+
+            with patch.object(cuda_gemm.process_supervisor, "run_worker",
+                              side_effect=fake_worker), \
+                    patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
+                self.assertEqual(cuda_gemm.main(), 2)
+            evidence = json.loads(output.read_text())
+        self.assertTrue(evidence["timeout_enforced"])
+        self.assertEqual(evidence["supervisor"]["worker_reaped"], True)
+        self.assertEqual(evidence["execution_provenance"]["execution_layer"],
+                         "linux_supervised_worker_cuda_driver_api")
+
+    def test_unreaped_worker_is_unknown_effect_and_never_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "unknown.json"
+            record = {
+                "supervisor": "linux_start_new_session_killpg",
+                "worker_pid": 456,
+                "timeout_seconds": 0.01,
+                "worker_reaped": False,
+                "worker_exit_code": None,
+                "timed_out": True,
+                "effect_result_known": False,
+                "device_reset_verified": False,
+            }
+            with patch.object(cuda_gemm.process_supervisor, "run_worker",
+                              return_value=(124, record)), \
+                    patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
+                self.assertEqual(cuda_gemm.main(), 1)
+            evidence = json.loads(output.read_text())
+        self.assertEqual(evidence["status"], "timeout")
+        self.assertTrue(evidence["timeout_enforced"])
+        self.assertTrue(all(value == "unknown_effect"
+                            for value in evidence["stages"].values()))
         self.assertFalse(evidence["failure_recovery_verified"])
 
 
