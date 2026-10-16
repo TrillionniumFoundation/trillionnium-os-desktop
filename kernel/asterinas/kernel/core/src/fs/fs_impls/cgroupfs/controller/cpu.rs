@@ -60,6 +60,9 @@ struct CpuMax {
     period_usec: u64,
     window_start: u64,
     used_clocks: u64,
+    /// Unpaid CPU time above the quota in completed periods (TSC clocks).
+    /// Idle periods repay debt, but never accumulate positive CPU credit.
+    debt_clocks: u64,
     nr_periods: u64,
     nr_throttled: u64,
     throttled_since: Option<u64>,
@@ -88,9 +91,19 @@ impl CpuMax {
                     .saturating_add(start.max(since).min(now).saturating_sub(since));
             }
             if self.window_start != 0 && start > self.window_start {
-                self.nr_periods = self
-                    .nr_periods
-                    .saturating_add((start - self.window_start) / period);
+                let periods = (start - self.window_start) / period;
+                self.nr_periods = self.nr_periods.saturating_add(periods);
+                if self.quota_usec == u64::MAX {
+                    self.debt_clocks = 0;
+                } else {
+                    // Pay back overshoot using only *completed* periods.
+                    // Missing/idle periods reduce debt but never earn credit.
+                    let allowance = u128::from(Self::us_to_clocks(self.quota_usec))
+                        .saturating_mul(u128::from(periods));
+                    let due = u128::from(self.debt_clocks) + u128::from(self.used_clocks);
+                    self.debt_clocks = due.saturating_sub(allowance)
+                        .min(u128::from(u64::MAX)) as u64;
+                }
             }
             self.window_start = start;
             self.used_clocks = 0;
@@ -101,15 +114,27 @@ impl CpuMax {
         if until < from {
             return;
         }
+        // On a scheduling tick crossing a period boundary, charge the
+        // pre-boundary portion *before* closing the old windows. The
+        // remainder is charged in the new window. This handles even
+        // multiple crossed periods without allocating or looping in IRQ.
+        let period = self.period_clocks();
+        let next_start = until / period * period;
+        if next_start > self.window_start {
+            let old_portion = next_start.saturating_sub(from.max(self.window_start));
+            self.used_clocks = self.used_clocks.saturating_add(old_portion);
+        }
         self.advance(until);
-        self.used_clocks = self
-            .used_clocks
+        self.used_clocks = self.used_clocks
             .saturating_add(until.saturating_sub(from.max(self.window_start)));
     }
 
     fn eligible(&mut self, now: u64) -> bool {
         self.advance(now);
-        if self.quota_usec == u64::MAX || self.used_clocks < Self::us_to_clocks(self.quota_usec) {
+        // Do not permit another full 1ms tick merely because a new 100ms
+        // period started after we already overshot the previous one.
+        let available = Self::us_to_clocks(self.quota_usec).saturating_sub(self.debt_clocks);
+        if self.quota_usec == u64::MAX || self.used_clocks < available {
             if let Some(since) = self.throttled_since.take() {
                 self.throttled_clocks = self
                     .throttled_clocks
@@ -133,6 +158,7 @@ impl CpuMax {
         self.window_start = now / period * period;
         self.used_clocks = already_used;
         if quota_usec == u64::MAX {
+            self.debt_clocks = 0;
             if let Some(since) = self.throttled_since.take() {
                 self.throttled_clocks = self
                     .throttled_clocks
@@ -261,6 +287,7 @@ impl CpuControl {
                 period_usec: DEFAULT_PERIOD_USEC,
                 window_start: 0,
                 used_clocks: 0,
+                debt_clocks: 0,
                 nr_periods: 0,
                 nr_throttled: 0,
                 throttled_since: None,
