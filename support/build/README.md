@@ -96,6 +96,10 @@ Derivative changes are confined to OSDK's host build tooling. Its
 to the generated-crate build. The daemon supervisor also cleans its original
 process group before reaping the leader; its regression fixtures use a TCP
 lease rather than interpreting namespace-local PIDs through `/proc`.
+The boot ELF is published through an independent temporary file, so QEMU's
+x86 ELF-header conversion cannot modify the original Cargo symbol ELF through
+a hard link. VSC launch configuration points to that actual symbol ELF and
+quotes target paths. Debugger integration waits are bounded.
 Lock installation uses a temporary file and atomic replacement, including
 when the supplied lock is the destination itself or a hard link to it.
 The generated OSDK base crate is a separate Cargo workspace; upstream's root
@@ -155,6 +159,12 @@ focused diagnostic passes do not supersede the original failure. Follow-up
 daemon fixes and their actual results are recorded separately in
 `evidence/2026-10-16-daemon/`. A05/A06 can use the saved kernel crate results
 as an upstream baseline.
+The subsequent `evidence/2026-10-16-boot-binding/REPORT.md` records the serial
+binding and symbol-ELF fixes, complete 28/28 OSDK host units, and a fresh full
+Asterinas `make kernel` / `make run_kernel` boot with raw QEMU exit 33. It also
+retains the manifest signal reproducer, an unexplained replacement inode from
+one real build, and the explicit missing-log limitation from an initial
+missing-GDB test attempt.
 
 The host supervisor uses `waitid(WNOWAIT)` to observe a leader without
 releasing its PID, kills remaining members of that original group, then reaps

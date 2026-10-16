@@ -1,0 +1,35 @@
+   Compiling hos2-os-abi v0.1.0 (/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/libs/os-abi)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.76s
+     Running unittests src/lib.rs (/workspace/scratch/ae1a8cf05419/next3-main-abi-target/debug/deps/hos2_os_abi-e285e22209df9f81)
+
+running 3 tests
+test tests::malformed_usage_is_rejected ... ok
+test tests::request_header_and_payload_round_trip ... ok
+test tests::transport_explicit_little_endian ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/golden_vectors.rs (/workspace/scratch/ae1a8cf05419/next3-main-abi-target/debug/deps/golden_vectors-f9ac9ce0a46b7dd7)
+
+running 2 tests
+test fixed_golden_vectors_are_consumed_by_rust_codec ... ok
+test encoders_match_independent_golden_bytes_for_all_operations ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/negative_vectors.rs (/workspace/scratch/ae1a8cf05419/next3-main-abi-target/debug/deps/negative_vectors-28eda1c1f02d2c8f)
+
+running 4 tests
+test encoders_report_insufficient_output_capacity ... ok
+test correlation_and_capacity_helpers_are_stable ... ok
+test response_structure_mutations_are_rejected ... ok
+test request_structure_mutations_are_rejected ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests hos2_os_abi
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

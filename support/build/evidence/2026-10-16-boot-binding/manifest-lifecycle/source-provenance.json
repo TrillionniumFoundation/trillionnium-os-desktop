@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "fix_commit": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
+  "measured_before_commit": "3d561fed0f106a3c7af0330e1d722d31b8ce7a9a",
+  "measured_before_kernel_sha256": "9176bf7bdb80aae53f75723b5c372771167d7e1c36e3e7a0786bf1472a42430f",
+  "measured_after_kernel_sha256": "3a5a210c365a565c2d1e57def0413e5a7c33e972130e2d0879b68ed678c60740",
+  "measured_test_sha256": "8f2e1a8ae03304aa3ff40ef3f02ec9df0f3e4d49c5df4f7fe72a34113d546b3b",
+  "final_commit_runner_not_byte_identical_to_measured_after": true,
+  "post_measurement_change": "Final commit additionally passes --live-artifacts to the boot checker; reconstruct.py reverses only this argument for the exact measured runner hash.",
+  "after_helper_hash_recorded_in_original_measurement": false,
+  "reconstruction_fixture_checker": "Unexecuted in focused signal case; supplied from pre-change Git commit. Full-suite rerun with that helper is a new reconstruction check, not a relabelled original measurement.",
+  "original_record_files": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next3-manifest/before.log",
+      "exists": true,
+      "bytes": 961,
+      "sha256": "db6c11810d8f0c591747e4e7d9c981a103b17aaabac64042aba631ae2dcf34d7"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next3-manifest/before.exit",
+      "exists": true,
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next3-manifest/before-command.json",
+      "exists": true,
+      "bytes": 411,
+      "sha256": "7390e5de9928ff8eace26732b49297e3833de88fc662b9bc500ba922f0112207"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next3-manifest/after.log",
+      "exists": true,
+      "bytes": 1511,
+      "sha256": "8a4c4dbfdc904b29a36aef12f863b82051cf3019af93de62fa434bc8349de65e"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next3-manifest/after.exit",
+      "exists": true,
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next3-manifest/after-command.json",
+      "exists": true,
+      "bytes": 417,
+      "sha256": "d0106a92c7bcbb7cd6c90e6fa2750c4dc22c81d4270e7240e5812ef6197078c7"
+    }
+  ]
+}
