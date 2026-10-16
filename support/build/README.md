@@ -22,6 +22,15 @@ See [cloud blocker closure](evidence/2026-10-16-blocker-closure/REPORT.md)
 for exact commands, counts, actual artifacts, and the hardware/owner blockers
 that remain open. Kernel core, upstream pin and root README are unchanged.
 
+Afterward A01 merged actual main `bc294f75...` through `be86dc41...`, importing
+A00-approved ABI/CI updates while preserving the kernel and build subtrees.
+All45 current-main host inputs match the merge's exact Git bytes/blobs/modes.
+Rust83 and Python98 executions passed; fmt and control Clippy passed. Strict
+fixed-nightly ABI Clippy still fails for three original helpers. The exact-base
+candidate still applies cleanly and remains pending owner adoption. See the
+[current main sync evidence](evidence/2026-10-16-cloud-main-sync/REPORT.md).
+This host-only integration does not claim another kernel build or QEMU run.
+
 The preceding phase fixed inherited GNU make controls that could return success
 without executing a kernel recipe, and rejects encoded Rust flags that would
 override OSDK's required kernel flags. At published source
