@@ -381,22 +381,18 @@ fn malformed_install_budget_is_rejected_before_consuming_global_sequence() {
 }
 
 #[test]
-fn invalid_history_sequence_is_rejected_before_and_after_history_loss() {
+fn zero_history_sequence_is_rejected_before_and_after_history_loss() {
     let core = ControlCore::new(boot(90_000), space(90_000));
     let view = core.delivery_view();
-    for invalid in [0, u64::MAX] {
-        assert_eq!(
-            core.query_delivery(&view, invalid),
-            Err(DeliveryError::InvalidSequence)
-        );
-    }
+    assert_eq!(
+        core.query_delivery(&view, 0),
+        Err(DeliveryError::InvalidSequence)
+    );
     core.lose_history();
-    for invalid in [0, u64::MAX] {
-        assert_eq!(
-            core.query_delivery(&view, invalid),
-            Err(DeliveryError::InvalidSequence)
-        );
-    }
+    assert_eq!(
+        core.query_delivery(&view, 0),
+        Err(DeliveryError::InvalidSequence)
+    );
     assert_eq!(
         core.query_delivery(&view, 1).unwrap().state,
         DeliveryState::HistoryLost
@@ -2023,6 +2019,63 @@ fn a02_codec_accepts_every_real_a03_delivery_state() {
     core.lose_history();
     let lost = a02_roundtrip_delivery(core.query_delivery(&view, 1).unwrap()).unwrap();
     assert_eq!(lost.state, WireState::HistoryLost);
+}
+
+#[test]
+fn a02_history_max_query_is_read_only_and_never_an_executable_delivery() {
+    use hos2_os_abi::DeliveryState as WireState;
+
+    let (core, authority) =
+        ControlCore::with_original_owner(boot(330_000), space(330_000), owner(9000)).unwrap();
+    let domain = root(330_000, CPU_PERIOD_NS);
+    let who = publisher(330_001);
+    let view = core.delivery_view_for(owner(9000)).unwrap();
+
+    assert_eq!(
+        core.reserve(request(u64::MAX, domain.grant(who).unwrap(), 1, 20), who)
+            .err(),
+        Some(DeliveryError::InvalidSequence)
+    );
+    assert_eq!(core.next_sequence(), 1);
+    let unknown = core.query_delivery(&view, u64::MAX).unwrap();
+    assert_eq!(unknown.state, DeliveryState::NotSeen);
+    assert_eq!(unknown.id.sequence(), u64::MAX);
+    assert_eq!(unknown.hos2_saved_status_code(), Some(0));
+    let encoded = a02_roundtrip_delivery(unknown).unwrap();
+    assert_eq!(encoded.state, WireState::NotSeen);
+    assert_eq!(encoded.sequence, u64::MAX);
+
+    // Public observations cannot rebrand this sentinel as an executed D.
+    let mut forged = unknown;
+    forged.state = DeliveryState::Reserved;
+    assert_eq!(forged.hos2_saved_status_code(), None);
+    forged.state = DeliveryState::Terminal;
+    forged.status = Some(DeliveryStatus::Revoked);
+    assert_eq!(forged.hos2_saved_status_code(), None);
+    forged.state = DeliveryState::Retired;
+    forged.status = None;
+    assert_eq!(forged.hos2_saved_status_code(), None);
+
+    let invalid_retirement = HistoryAck::from_owner_receipt(
+        core.identity(),
+        u64::MAX,
+        OwnerReceipt::new(owner(9000), [1; 32]),
+    )
+    .unwrap();
+    assert_eq!(
+        core.retire_through(&view, invalid_retirement, &authority),
+        Err(DeliveryError::NotSeen)
+    );
+    assert_eq!(core.retired_through(), 0);
+
+    core.lose_history();
+    let lost = core.query_delivery(&view, u64::MAX).unwrap();
+    assert_eq!(lost.state, DeliveryState::HistoryLost);
+    assert_eq!(lost.hos2_saved_status_code(), Some(0));
+    assert_eq!(
+        a02_roundtrip_delivery(lost).unwrap().state,
+        WireState::HistoryLost
+    );
 }
 
 #[test]

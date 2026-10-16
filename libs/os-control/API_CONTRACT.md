@@ -351,3 +351,16 @@ rejected. This adds no wire layout of A03's own, no generated golden edits,
 and no production dependency on the wire crate. Lockfile pins the path-only
 dev dependency. Exact-head Cargo execution is still required; test source
 presence is not a passed result.
+
+## A02 history-sequence MAX compatibility
+
+HOS2 InstallBudget uses strictly executable D sequences
+`1..=u64::MAX-1`; write `u64::MAX` is permanently reserved as the
+non-executable next-sequence sentinel and never allocates a slot. The
+**separate history QueryDelivery/RetireThrough wire payload** permits any
+nonzero sequence, including `u64::MAX`. A read-only QueryDelivery for
+this sentinel returns `NotSeen` in a live namespace or `HistoryLost`
+after namespace loss, *not* a terminal/retired result. A03's fallible
+wire observation converter permits these two states at MAX but refuses
+to serialize forged Reserved/Terminal/Retired MAX observations. A02's
+independent no_std codec is the test oracle for the MAX history response.

@@ -1015,10 +1015,14 @@ impl DeliveryObservation {
     /// become HOS2 saved_status=0. Likewise rejected and nonterminal states
     /// cannot carry successful resource metadata. A05 must reject None.
     pub const fn hos2_saved_status_code(self) -> Option<u16> {
+        // A02 permits any nonzero *history* query sequence. MAX is a
+        // non-executable sentinel: it can be NotSeen/HistoryLost, but may
+        // never claim to be a reserved, retired, or terminal write.
         if self.id.sequence == 0
-            || self.id.sequence == u64::MAX
             || !self.id.namespace.boot_id.is_nonzero()
             || !self.id.namespace.cap_space_id.is_nonzero()
+            || (self.id.sequence == u64::MAX
+                && !matches!(self.state, DeliveryState::NotSeen | DeliveryState::HistoryLost))
         {
             return None;
         }
@@ -1554,9 +1558,10 @@ impl ControlCore {
         if view.identity != self.identity() || !Arc::ptr_eq(&view.namespace, &self.namespace) {
             return Err(DeliveryError::PermissionDenied);
         }
-        // A structurally invalid query sequence is not a recoverable D,
-        // even if this namespace has lost its history.
-        if sequence == 0 || sequence == u64::MAX {
+        // The A02 history payload permits any nonzero sequence. In
+        // particular MAX can be queried as NotSeen/HistoryLost, while
+        // InstallBudget must never reserve or execute that sentinel D.
+        if sequence == 0 {
             return Err(DeliveryError::InvalidSequence);
         }
         let ns = lock_unpoisoned(&self.namespace.state);
