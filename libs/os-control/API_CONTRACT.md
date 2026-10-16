@@ -229,3 +229,17 @@ before reserving D. The host core also rejects invalid expected revision
 allocating a result slot. Post-reservation grant/CAS/parent/clock denials
 are stored as immutable terminal outcomes. A05 maps structural validation
 to its protocol error path, not to an invented terminal effect.
+
+## Bounded resource-family identity namespace
+
+The host-model family ID and stable-object-ID tombstone registry now has an
+explicit default limit of `DEFAULT_FAMILY_ID_CAPACITY = 65_536` including
+the root. Attempts to create another domain fail with `ResourceError::Exhausted`
+without overwriting an existing child or consuming an identity. For adversarial
+tests, `ResourceDomain::root_with_capacity_for_host_model(..., family_capacity)`
+can use a tiny limit. Dropped resource handles do not revive a previously
+used stable ID: unlike transient slot numbers, a stable identity is never
+silently reassigned. **This is only a host-model lifetime bound**; an actual
+kernel requires bounded residual-domain reclamation and a globally scoped
+object-ID registry across roots. A03 does not implement a new persistent
+ledger or substitute its in-memory registry for A05/A06's lifecycle owner.
