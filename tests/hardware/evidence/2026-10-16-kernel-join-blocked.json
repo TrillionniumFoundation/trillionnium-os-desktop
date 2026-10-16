@@ -1,0 +1,139 @@
+{
+  "asterinas_gpu_verified": false,
+  "hard_blockers": [
+    "amd_svm_source_evidence_missing",
+    "arm_el2_source_evidence_missing",
+    "gpu_reset_recovery_not_hardware_verified",
+    "hardware_virtualization_execution_not_verified",
+    "iommu_device_scoped_map_unmap_not_found",
+    "iommu_shared_device_page_table_detected",
+    "linux_guest_gpu_passthrough_not_hardware_verified",
+    "per_iommu_group_dma_irq_isolation_not_hardware_verified",
+    "quiescence_and_dma_pin_accounting_not_hardware_verified"
+  ],
+  "kernel_pin": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "next_owner_actions": {
+    "A00": "Review source pin, compiler evidence and independent isolated hardware logs; source scanning cannot approve passthrough.",
+    "A01": "Add device/group-scoped IOMMU domains, IRQ remapping, DMA quiescence and a real VM backend/lifecycle.",
+    "A05": "Bind one physical group and queue incarnation to the canonical CapSpace/grant owner and revoke future admission.",
+    "A06": "Charge pinned DMA pages, VM RAM and queue work in the existing ResourceDomain hierarchy without refund before quiescence."
+  },
+  "observations": {
+    "amd_svm_source_visible": false,
+    "arm_el2_source_visible": false,
+    "device_scoped_map_signature_visible": false,
+    "device_scoped_unmap_signature_visible": false,
+    "host_resource_domain_type_visible": true,
+    "intel_vmx_source_visible": true,
+    "map_signature": {
+      "all_definitions_device_scoped": false,
+      "definitions_found": 1,
+      "signatures": [
+        "fn map(daddr: Daddr, paddr: Paddr)"
+      ]
+    },
+    "ostd_dma_stream_primitive_visible": true,
+    "ostd_guest_mode_primitive_visible": true,
+    "ostd_interrupt_remapping_primitive_visible": true,
+    "shared_iommu_page_table_source_pattern": true,
+    "unmap_signature": {
+      "all_definitions_device_scoped": false,
+      "definitions_found": 1,
+      "signatures": [
+        "fn unmap(daddr: Daddr)"
+      ]
+    }
+  },
+  "passthrough_approved": false,
+  "required_paths": {
+    "amd_svm": "kernel/asterinas/ostd/src/arch/x86/vm/svm/mod.rs",
+    "arm_el2": "kernel/asterinas/ostd/src/arch/arm/vm/mod.rs",
+    "dma_stream": "kernel/asterinas/ostd/src/mm/dma/dma_stream.rs",
+    "guest_mode": "kernel/asterinas/ostd/src/vm/guest_mode.rs",
+    "iommu_dma": "kernel/asterinas/ostd/src/arch/x86/iommu/dma_remapping/mod.rs",
+    "iommu_irq": "kernel/asterinas/ostd/src/arch/x86/iommu/interrupt_remapping/mod.rs",
+    "resource_domain": "libs/os-control/src/lib.rs",
+    "x86_vm": "kernel/asterinas/ostd/src/arch/x86/vm/mod.rs",
+    "x86_vmx": "kernel/asterinas/ostd/src/arch/x86/vm/vmx/mod.rs"
+  },
+  "schema": "a09.asterinas-gpu-kernel-join-source-gate.v1",
+  "scope": "bounded_static_source_inspection_only",
+  "source_files": {
+    "amd_svm": {
+      "bytes": null,
+      "error": "[Errno 2] No such file or directory: 'kernel/asterinas/ostd/src/arch/x86/vm/svm/mod.rs'",
+      "path": "kernel/asterinas/ostd/src/arch/x86/vm/svm/mod.rs",
+      "present": false,
+      "sha256": null
+    },
+    "arm_el2": {
+      "bytes": null,
+      "error": "[Errno 2] No such file or directory: 'kernel/asterinas/ostd/src/arch/arm/vm/mod.rs'",
+      "path": "kernel/asterinas/ostd/src/arch/arm/vm/mod.rs",
+      "present": false,
+      "sha256": null
+    },
+    "dma_stream": {
+      "bytes": 15906,
+      "error": null,
+      "path": "kernel/asterinas/ostd/src/mm/dma/dma_stream.rs",
+      "present": true,
+      "sha256": "cf05c96a57657810ac905737ba1c4d767936d160ac8da9be38f7d0995e8725fb"
+    },
+    "guest_mode": {
+      "bytes": 3707,
+      "error": null,
+      "path": "kernel/asterinas/ostd/src/vm/guest_mode.rs",
+      "present": true,
+      "sha256": "ccf0e2f9958ed3705ad77f58a05642a946d39ee2de9695446edef28bbe4232b7"
+    },
+    "iommu_dma": {
+      "bytes": 5501,
+      "error": null,
+      "path": "kernel/asterinas/ostd/src/arch/x86/iommu/dma_remapping/mod.rs",
+      "present": true,
+      "sha256": "c80ff2ac2f3c47aae0881f4fc6c9709bbaf3bbf3c4b443814ae2639ac61c2da0"
+    },
+    "iommu_irq": {
+      "bytes": 1797,
+      "error": null,
+      "path": "kernel/asterinas/ostd/src/arch/x86/iommu/interrupt_remapping/mod.rs",
+      "present": true,
+      "sha256": "72818c110d6b491d79956c379feed090290dda823be79a63f5f07424ea55c6de"
+    },
+    "resource_domain": {
+      "bytes": 44907,
+      "error": null,
+      "path": "libs/os-control/src/lib.rs",
+      "present": true,
+      "sha256": "ad017779337eb44eaf30847408fe8ad4d8016aaa0e6c1cf37e82b1ebf1204ab6"
+    },
+    "x86_vm": {
+      "bytes": 564,
+      "error": null,
+      "path": "kernel/asterinas/ostd/src/arch/x86/vm/mod.rs",
+      "present": true,
+      "sha256": "1333075fcd389dcd1daec33af26b9c6cf8ecb919ca8b578a4f814d1434b2bcab"
+    },
+    "x86_vmx": {
+      "bytes": 14248,
+      "error": null,
+      "path": "kernel/asterinas/ostd/src/arch/x86/vm/vmx/mod.rs",
+      "present": true,
+      "sha256": "34a93defd1a918da0341ca2a8b62647ba1d1e18534f4863cee81f94851b43327"
+    }
+  },
+  "source_sha256": {
+    "amd_svm": null,
+    "arm_el2": null,
+    "dma_stream": "cf05c96a57657810ac905737ba1c4d767936d160ac8da9be38f7d0995e8725fb",
+    "guest_mode": "ccf0e2f9958ed3705ad77f58a05642a946d39ee2de9695446edef28bbe4232b7",
+    "iommu_dma": "c80ff2ac2f3c47aae0881f4fc6c9709bbaf3bbf3c4b443814ae2639ac61c2da0",
+    "iommu_irq": "72818c110d6b491d79956c379feed090290dda823be79a63f5f07424ea55c6de",
+    "resource_domain": "ad017779337eb44eaf30847408fe8ad4d8016aaa0e6c1cf37e82b1ebf1204ab6",
+    "x86_vm": "1333075fcd389dcd1daec33af26b9c6cf8ecb919ca8b578a4f814d1434b2bcab",
+    "x86_vmx": "34a93defd1a918da0341ca2a8b62647ba1d1e18534f4863cee81f94851b43327"
+  },
+  "status": "blocked",
+  "timestamp_utc": "2026-10-16T14:15:54.886401+00:00"
+}

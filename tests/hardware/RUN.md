@@ -29,7 +29,26 @@ Exit 0 means GPU compute succeeded **only in the reported execution kernel**, NO
 
 - [Read-only inventory](evidence/2026-10-16-container-probe-1349z.json): this execution snapshot saw an Intel Xeon Platinum 8573C virtual CPU, bridge plus VirtIO PCI functions, and no PCI accelerator. GPU model/ID, firmware, IOMMU, VRAM/memory model, DMA queues and reset details **unknown**, not invented. The earlier `container-probe.json` snapshot is retained separately because the execution container is dynamic.
 - [CUDA blocker](evidence/2026-10-16-cuda-gemm-blocked-v2-final.json): process exit **2**, libcuda.so.1 unavailable, no device opened or compute dispatched; per-stage statuses remain `not_run`, with Linux process provenance recorded. The CPU golden SHA is still generated/verified.
+- [Kernel join blocker](evidence/2026-10-16-kernel-join-blocked.json): source gate exit **2**; the pinned tree lacks device/group-scoped IOMMU mapping, AMD SVM and ARM EL2 evidence, and live hardware verification.
+- [VFIO preflight blocker](evidence/2026-10-16-vfio-preflight-blocked.json): exit **2** for the explicit disposable-lab placeholder BDF because no target PCI function is visible.
 - [Architecture decision](../../support/hardware/DECISION.md) and [VMX/SVM/EL2 VMM gates](../../support/vmm/GATES.md): design only, no new kernel guest boot.
+
+## Kernel join and VFIO preflight gates
+
+These commands are read-only prerequisite checks. They do not bind a driver,
+open VFIO, reset a device, or authorize assignment:
+
+    python3 support/vmm/kernel_join_gate.py --kernel-root kernel/asterinas \
+      --target-arch x86_64 --output -
+    python3 support/hardware/vfio_preflight.py --bdf '0000:XX:YY.Z' \
+      --expected-member '0000:XX:YY.Z' --expected-driver vfio-pci --output -
+
+The current source gate exits **2** because the pinned Asterinas IOMMU mapping
+is global rather than device/group scoped. The current preflight exits **2**
+because no target BDF is visible in this container. A coherent synthetic
+fixture returns exit **3** (`manual_review_required`); no fixture result proves
+a live device assignment, guest boot, DMA quiescence, GPU command execution,
+or reset recovery.
 
 ## Seven-stage GPU test scorecard
 

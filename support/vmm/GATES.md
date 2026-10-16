@@ -22,3 +22,30 @@ Execution-tool container: Linux 6.18.44, x86_64, no /dev/kvm, no forwarded vmx/s
 7. Record *both* Asterinas-derived host kernel boot identity and Linux guest kernel identity with selected physical PCI GPU BDF/driver/runtime, successful CUDA result, DMA cleanup, VM death and recovery in disposable lab.
 
 Only the above can eventually qualify "local GPU in a Linux guest under a Rust host". QEMU/KVM VM on Linux host or reference VMX snippet is categorically different. Performance and GPU reset behavior remain unmeasured.
+
+## Read-only source and assignment gates
+
+The next implementation step is executable but still fail-closed. Run the source
+gate against the exact checked-out Asterinas tree:
+
+    python3 support/vmm/kernel_join_gate.py --kernel-root kernel/asterinas --target-arch x86_64
+
+At the current pinned tree it exits **2** because `dma_remapping::map` and
+`unmap` do not accept a device/group identity, use
+`PciDeviceLocation::zero()`, and state that all devices share one page table.
+The gate fingerprints the files and never treats a source match as live DMA or
+VMM evidence; an otherwise complete source fixture returns exit **3** for
+manual hardware review.
+
+Before any future assignment review, the read-only VFIO preflight requires an
+exact BDF, the complete IOMMU-group allowlist, DMAR/IVRS evidence, all group
+functions bound to `vfio-pci`, and reset capability for every member:
+
+    python3 support/hardware/vfio_preflight.py --bdf 0000:XX:YY.Z \
+      --expected-member 0000:XX:YY.Z --expected-driver vfio-pci
+
+It never opens `/dev/vfio`, writes a bind file, resets a device, or authorizes
+assignment. Missing hardware returns exit **2**; a coherent synthetic fixture
+returns `manual_review_required` and exit **3**. There is deliberately no
+hardware-assignment success exit, so this remains a prerequisite observation,
+not a passthrough or GPU-compute result.
