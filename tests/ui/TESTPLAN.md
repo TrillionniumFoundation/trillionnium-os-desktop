@@ -1,11 +1,19 @@
 # A10 test matrix and provenance
 
 Automated Rust commands (from repository root):
-- cargo test --manifest-path ui/Cargo.toml --workspace
-- cargo build --manifest-path ui/Cargo.toml --workspace --bins
+- cargo test --manifest-path ui/Cargo.toml --workspace --lib --bins --locked --offline
+- cargo test --manifest-path support/ui/Cargo.toml --locked --offline
+- cargo test --manifest-path tests/ui/Cargo.toml --locked --offline
+- cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked --offline
+- cargo check --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline
+- cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline -- -D warnings
 - cargo fmt --manifest-path ui/Cargo.toml --all -- --check
 
-These are **commands to run**; command completion must be recorded separately.
+The UI `--all-targets` test command is also attempted in host validation, but
+the sandbox denies AF_UNIX socket creation (`EPERM`) in
+`ui/session/tests/ipc_reconnect.rs`; that limitation is recorded below.
+These commands never claim a Wayland compositor, live IME, GPU, or target
+kernel pass.
 On a CI host, `check-host.sh` saves `$RUNNER_TEMP/a10/rustfmt.patch` when
 the strict rustfmt check fails, then exits nonzero. It never reports success
 until that patch is reviewed, committed, and rerun.
