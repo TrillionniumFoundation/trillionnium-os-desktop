@@ -293,6 +293,76 @@ fn cpu_usage_rolls_to_a_new_fixed_period_without_resetting_cumulative_usage() {
 }
 
 #[test]
+fn stale_read_usage_cannot_rewind_window_or_recharge_old_budget() {
+    let target = root(720, 10);
+    let sample = CPU_PERIOD_NS + 20;
+    target.charge_cpu(8, sample).unwrap();
+
+    let previous_period = target.usage(CPU_PERIOD_NS - 1);
+    assert!(previous_period.sample_boottime_ns < previous_period.window_start_ns);
+    assert_eq!(previous_period.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(previous_period.window_consumed_ns, 8);
+    assert_eq!(previous_period.cumulative_cpu_ns, 8);
+    assert_eq!(target.charge_cpu(3, sample + 1), Err(ResourceError::Exhausted));
+    assert_eq!(
+        target.charge_cpu(1, CPU_PERIOD_NS - 1),
+        Err(ResourceError::ClockRegression)
+    );
+    assert_eq!(target.usage(sample + 2).window_consumed_ns, 8);
+}
+
+#[test]
+fn install_budget_after_boundary_settles_receipt_without_read_usage() {
+    let target = root(721, 10);
+    let who = publisher(721);
+    target.charge_cpu(8, 70).unwrap();
+    let grant = target.grant(who).unwrap();
+    let receipt = target
+        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 10, CPU_PERIOD_NS + 10)
+        .unwrap();
+    assert_eq!(receipt.consumed_at_apply_ns, 0);
+    assert_eq!(receipt.effective_boottime_ns, CPU_PERIOD_NS + 10);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 11).window_consumed_ns, 0);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 11).cumulative_cpu_ns, 8);
+    target.charge_cpu(9, CPU_PERIOD_NS + 12).unwrap();
+    assert_eq!(target.usage(CPU_PERIOD_NS + 13).window_consumed_ns, 9);
+}
+
+#[test]
+fn stale_install_budget_fails_without_cas_increment_or_credit_reset() {
+    let target = root(722, 10);
+    let who = publisher(722);
+    target.charge_cpu(8, CPU_PERIOD_NS + 20).unwrap();
+    let grant = target.grant(who).unwrap();
+    assert_eq!(
+        target.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 10, CPU_PERIOD_NS - 5),
+        Err(ResourceError::ClockRegression)
+    );
+    assert_eq!(target.revision(), 1);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 21).window_consumed_ns, 8);
+    assert_eq!(
+        target.charge_cpu(3, CPU_PERIOD_NS + 22),
+        Err(ResourceError::Exhausted)
+    );
+}
+
+#[test]
+fn stale_child_charge_does_not_debit_a_newer_ancestor_window() {
+    let parent = root(723, 10);
+    let child = with_parent(domain(724), object(724), &parent, 10).unwrap();
+    parent.charge_cpu(4, 2 * CPU_PERIOD_NS + 10).unwrap();
+    assert_eq!(
+        child.charge_cpu(3, CPU_PERIOD_NS + 10),
+        Err(ResourceError::ClockRegression)
+    );
+    assert_eq!(child.usage(2 * CPU_PERIOD_NS + 11).cumulative_cpu_ns, 0);
+    assert_eq!(parent.usage(2 * CPU_PERIOD_NS + 11).window_consumed_ns, 4);
+    child.charge_cpu(3, 2 * CPU_PERIOD_NS + 12).unwrap();
+    assert_eq!(child.usage(2 * CPU_PERIOD_NS + 13).window_consumed_ns, 3);
+    assert_eq!(parent.usage(2 * CPU_PERIOD_NS + 13).window_consumed_ns, 7);
+}
+
+#[test]
 fn parent_domain_caps_child_budget() {
     let parent = root(6, 40);
     let child = with_parent(domain(7), object(7), &parent, 20).unwrap();
