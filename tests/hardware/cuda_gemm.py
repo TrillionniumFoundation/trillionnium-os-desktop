@@ -96,6 +96,33 @@ class Api:
             raise GpuError(f"{self.prefix}.{symbol} returned {rc}")
 
 
+def cleanup_device_resources(cuda, ptrs, module, ctx, submission_attempted, synchronized):
+    """No explicit CUDA frees on potentially in-flight GPU work.
+
+    Does not prove that process teardown or GPU reset is safe. Such cases need
+    the independent host/VMM DMA-quiescence gate and are not a recovery pass.
+    """
+    if submission_attempted and not synchronized:
+        return ["UNKNOWN_DMA_EFFECT: explicit device allocations/module/context release suppressed; host quarantine required"]
+    errors = []
+    for ptr in reversed(ptrs):
+        try:
+            cuda.call("cuMemFree_v2", [C.c_uint64], ptr)
+        except Exception as exc:
+            errors.append(str(exc))
+    if module.value:
+        try:
+            cuda.call("cuModuleUnload", [C.c_void_p], module)
+        except Exception as exc:
+            errors.append(str(exc))
+    if ctx.value:
+        try:
+            cuda.call("cuCtxDestroy_v2", [C.c_void_p], ctx)
+        except Exception as exc:
+            errors.append(str(exc))
+    return errors
+
+
 def gpu_gemm(required_name, required_bdf, *, lab_isolated=False):
     if not lab_isolated or not BDF_RE.fullmatch(required_bdf) or not required_name.strip():
         raise Blocked("direct CUDA calls require isolated-lab opt-in, pinned BDF and device name")
@@ -169,6 +196,8 @@ def gpu_gemm(required_name, required_bdf, *, lab_isolated=False):
     cleanup_errors = []
     failure = None
     output = None
+    submission_attempted = False
+    synchronized = False
     try:
         cuda.call("cuCtxCreate_v2", [C.POINTER(C.c_void_p), C.c_uint, C.c_int],
                   C.byref(ctx), 0, device)
@@ -189,32 +218,25 @@ def gpu_gemm(required_name, required_bdf, *, lab_isolated=False):
             cuda.call("cuMemcpyHtoD_v2", [C.c_uint64, C.c_void_p, C.c_size_t],
                       dev_ptr, C.cast(host, C.c_void_p), C.sizeof(host))
         kernel_args = (C.c_void_p * 3)(*[C.cast(C.byref(p), C.c_void_p) for p in ptrs])
+        # A CUDA launch error may still leave partial hardware side effects.
+        # Mark the attempt before entering the driver; only a successful
+        # synchronization can authorize explicit device memory reclamation.
+        submission_attempted = True
         cuda.call("cuLaunchKernel", [C.c_void_p, C.c_uint, C.c_uint, C.c_uint,
                                      C.c_uint, C.c_uint, C.c_uint, C.c_uint,
                                      C.c_void_p, C.POINTER(C.c_void_p), C.c_void_p],
                   function, N, 1, 1, N, 1, 1, 0, None, kernel_args, None)
         cuda.call("cuCtxSynchronize", [])
+        synchronized = True
         cuda.call("cuMemcpyDtoH_v2", [C.c_void_p, C.c_uint64, C.c_size_t],
                   C.cast(host_c, C.c_void_p), ptrs[2], C.sizeof(host_c))
         output = list(host_c)
     except Exception as exc:
         failure = exc
     finally:
-        for ptr in reversed(ptrs):
-            try:
-                cuda.call("cuMemFree_v2", [C.c_uint64], ptr)
-            except Exception as exc:
-                cleanup_errors.append(str(exc))
-        if module.value:
-            try:
-                cuda.call("cuModuleUnload", [C.c_void_p], module)
-            except Exception as exc:
-                cleanup_errors.append(str(exc))
-        if ctx.value:
-            try:
-                cuda.call("cuCtxDestroy_v2", [C.c_void_p], ctx)
-            except Exception as exc:
-                cleanup_errors.append(str(exc))
+        cleanup_errors.extend(cleanup_device_resources(
+            cuda, ptrs, module, ctx, submission_attempted, synchronized
+        ))
     if failure:
         raise GpuError(str(failure) + (f"; cleanup errors: {cleanup_errors}" if cleanup_errors else ""))
     if cleanup_errors:

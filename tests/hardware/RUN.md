@@ -156,3 +156,30 @@ A01's pinned complete Asterinas kernel and QEMU boot baseline (merged PR #5).
 This means source checkout/boot is available **in the repository**, not in
 the limited A09 execution container, which still has no Rust compiler, QEMU,
 GPU or KVM. No Rust VMM or GPU computing has been run by A09 on that kernel.
+
+
+## A09 fail-closed CUDA submission cleanup (2026-10-16 follow-up)
+
+The CUDA Driver API test previously attempted explicit `cuMemFree_v2`,
+`cuModuleUnload`, and `cuCtxDestroy_v2` in `finally` even after a kernel launch
+was attempted but no successful `cuCtxSynchronize` had been observed. This
+risked treating an unknown-effect hardware command as quiescent. The corrected
+test records `submission_attempted=True` immediately before `cuLaunchKernel`
+and only grants explicit resource release after `cuCtxSynchronize` returns
+success. If launch or synchronize reports an error, explicit frees are
+suppressed and `UNKNOWN_DMA_EFFECT` is included in the error. Neither the
+GPU driver nor the test claims that process exit stops DMA: independent host
+quiescence / IOMMU fencing and quarantine remain required.
+
+`tests/hardware/test_cuda_cleanup.py` exercises five CPU-only fake-driver
+cases: uncertain launch (zero explicit frees), successful synchronization
+(full cleanup), failure before submission (cleanup), cleanup errors reported,
+and uninitialized context. The isolated test fixture ran 5/5 successfully
+in the execution container; **a physical CUDA driver and new Rust kernel have
+NOT been exercised**. This is not proof that GPU hardware has been recovered.
+
+A test runner must **not** retry hardware work automatically after an
+unknown-effect submission; the canonical A01/A05 device owner must mark the
+device instance and outstanding queue generation unsafe until physical
+quiescence is confirmed, and A06 must retain pinned-DMA charges. No automatic
+GPU reset, host driver unbind, firmware or production service alteration.
