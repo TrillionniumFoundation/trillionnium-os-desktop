@@ -415,6 +415,17 @@ impl LocalRunQueue for PerCpuClassRqSet {
     }
 
     fn try_pick_next(&mut self) -> Option<&Arc<Task>> {
+        // OSTD's might_preempt() can call try_pick_next() directly after a
+        // runnable task is enqueued, without a preceding update_current().
+        // A switch in that path must not discard the outgoing task's TSC
+        // runtime when CurrentRuntime::new() replaces its old accounting
+        // state. Charge before pick_next_entity() checks another task's
+        // eligibility and potentially advances a shared cgroup ancestor.
+        if let Some(((task, _), rt)) = &mut self.current {
+            let from = rt.start;
+            rt.update();
+            charge_task_cpu(task, from, rt.start);
+        }
         self.pick_next_entity().and_then(|next| {
             // We guarantee that a task can appear at once in a `PerCpuClassRqSet`. So, the `next` cannot be the same
             // as the current task here.
