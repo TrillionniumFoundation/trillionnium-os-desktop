@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """CPU-only contract tests; NEVER count as accelerator execution."""
 import math
+import json
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -74,6 +76,41 @@ class GemmTests(unittest.TestCase):
         with patch.object(cuda_gemm, "library", side_effect=cuda_gemm.Blocked("no driver")):
             with self.assertRaises(cuda_gemm.Blocked):
                 cuda_gemm.gpu_gemm("RTX 4060", "")
+
+    def test_blocked_evidence_keeps_host_provenance_and_unrun_stages_explicit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "blocked.json"
+            with patch.object(cuda_gemm, "library",
+                              side_effect=cuda_gemm.Blocked("no driver")), \
+                    patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
+                self.assertEqual(cuda_gemm.main(), 2)
+            evidence = json.loads(output.read_text())
+        self.assertEqual(evidence["schema"], "a09.cuda-gemm.v2")
+        self.assertEqual(evidence["status"], "blocked")
+        provenance = evidence["execution_provenance"]
+        self.assertEqual(provenance["execution_layer"], "linux_process_cuda_driver_api")
+        self.assertFalse(provenance["asterinas_execution_verified"])
+        self.assertTrue(provenance["process_id"] > 0)
+        self.assertTrue(evidence["timeout_enforced"])
+        self.assertEqual(evidence["reported_execution_kernel"],
+                         f"{cuda_gemm.platform.system()} {cuda_gemm.platform.release()}")
+        self.assertTrue(all(value == "not_run" for value in evidence["stages"].values()))
+
+    def test_timeout_marks_inflight_stage_and_never_claims_recovery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "timeout.json"
+
+            def fake_gpu(_name, _bdf, stages):
+                stages["synchronize"] = "in_progress"
+                raise cuda_gemm.TimeoutExpired("test timeout")
+
+            with patch.object(cuda_gemm, "gpu_gemm", side_effect=fake_gpu), \
+                    patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
+                self.assertEqual(cuda_gemm.main(), 1)
+            evidence = json.loads(output.read_text())
+        self.assertEqual(evidence["status"], "timeout")
+        self.assertEqual(evidence["stages"]["synchronize"], "failed")
+        self.assertFalse(evidence["failure_recovery_verified"])
 
 
 if __name__ == "__main__":
