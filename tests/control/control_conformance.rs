@@ -2274,3 +2274,69 @@ fn concurrent_window_invariant_audits_never_see_half_committed_results() {
     assert_eq!(core.retired_through(), 512);
     assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
 }
+
+#[test]
+fn pre_reservation_statuses_cannot_be_published_as_terminal_effects() {
+    let core = ControlCore::new(boot(430_000), space(430_000));
+    let target = root(430_000, CPU_PERIOD_NS);
+    let who = publisher(430_001);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+        .unwrap();
+    let view = core.delivery_view();
+
+    for status in [
+        DeliveryStatus::Ok,
+        DeliveryStatus::OutOfOrder,
+        DeliveryStatus::Retired,
+    ] {
+        assert_eq!(
+            core.publish(&token, who, PublishOutcome::Failure { status }),
+            Err(DeliveryError::InvalidPublish)
+        );
+        assert_eq!(
+            core.query_delivery(&view, 1).unwrap().state,
+            DeliveryState::Reserved
+        );
+    }
+    assert_eq!(target.revision(), 1);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+    let terminal = core
+        .publish(
+            &token,
+            who,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::Revoked,
+            },
+        )
+        .unwrap();
+    assert_eq!(terminal.status, Some(DeliveryStatus::Revoked));
+    for status in [DeliveryStatus::OutOfOrder, DeliveryStatus::Retired] {
+        // An already-terminal outcome is returned unchanged. No status
+        // mutation is allowed by reusing the original publisher token.
+        assert_eq!(
+            core.publish(&token, who, PublishOutcome::Failure { status }),
+            Ok(terminal)
+        );
+    }
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+}
+
+#[test]
+fn zero_publisher_fails_identity_validation_without_consuming_a_delivery() {
+    let core = ControlCore::new(boot(430_100), space(430_100));
+    let target = root(430_100, CPU_PERIOD_NS);
+    let who = publisher(430_101);
+    let request = request(1, target.grant(who).unwrap(), 1, 20);
+    assert_eq!(
+        core.reserve(request.clone(), publisher(0)).err(),
+        Some(DeliveryError::InvalidIdentity)
+    );
+    assert_eq!(core.next_sequence(), 1);
+    assert_eq!(core.window_len(), 0);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    let token = core.reserve(request, who).unwrap();
+    assert_eq!(core.commit(&token, who, 1).unwrap().status, Some(DeliveryStatus::Ok));
+    assert_eq!(target.revision(), 2);
+}

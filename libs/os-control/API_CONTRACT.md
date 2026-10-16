@@ -382,3 +382,16 @@ sequence + exhausted eight-slot window, its eventual contiguous retirement,
 a 10,000-delivery bounded sequence, and an observer concurrently auditing
 512 producer CAS commits/retirements. This is **O(window)** host diagnostic
 work, not an IRQ-safe or production scheduler operation and not loom proof.
+
+## Pre-reservation status and invalid publisher classification
+
+The HOS2 `OutOfOrder` and `Retired` status values are decisions by the
+CapSpace namespace **before** a new sequence is reserved; a writer must not
+store either as a fabricated terminal publication after reservation.
+`PublishOutcome::Failure` now rejects those two values (and `Ok`), leaving
+the slot `Reserved` for a legitimate terminal result. When a real terminal
+is already committed, subsequent publisher calls only re-observe the exact
+immutable original result. Zero publisher IDs return `InvalidIdentity`
+without consuming a sequence, separate from invalid sequence parsing.
+`Busy` remains eligible as a saved semantic refusal for integrations
+where an already-reserved resource mutation has a terminal busy result.
