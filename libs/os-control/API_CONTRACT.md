@@ -167,3 +167,16 @@ ancestor revoke precedes admission, child mutation publishes terminal
 `Revoked`; if the child mutation wins, its already published result remains
 immutable after ancestor revoke. The real A05/A06 kernel must bind this to
 its actual grant epoch, capability lifetime and scheduler domain lock order.
+
+## Family-wide resource identity retention
+
+ResourceDomain family members now share a mutation-gate-protected set of
+stable domain IDs and stable object IDs. A child cannot register a duplicate
+ID **anywhere in its root family**, including a cousin in another subtree.
+IDs are retained for the life of the family instead of being reused after a
+handle drops. This is a bounded-by-object-creation **host-model** registry,
+not a duplicate Hepta ledger or a new global kernel object database. The
+actual kernel must use its preexisting stable object owner/registry to enforce
+uniqueness **across distinct root families** and to bound/retire the registry
+safely during namespace destruction. The family gate serializes simultaneous
+cousin registration and parent budget changes.

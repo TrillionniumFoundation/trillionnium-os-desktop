@@ -6,7 +6,7 @@
 //! it does not prove ioctl, credentials, scheduler, copyout, or persistence
 //! behaviour in a real kernel.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -216,9 +216,18 @@ pub struct ResourceDomain {
 
 struct ResourceDomainInner {
     gate: Arc<Mutex<()>>,
+    // Lifetime identity registry is shared by the whole resource family.
+    // Entries are deliberately not freed on handle drop: old stable IDs
+    // cannot become new children after a resource object is destroyed.
+    family: Arc<Mutex<FamilyIdentityRegistry>>,
     state: Mutex<DomainState>,
     parent: Option<ResourceDomain>,
     children: Mutex<BTreeMap<ResourceDomainId, u64>>,
+}
+
+struct FamilyIdentityRegistry {
+    domain_ids: BTreeSet<ResourceDomainId>,
+    object_ids: BTreeSet<StableObjectId>,
 }
 
 #[derive(Clone, Copy)]
@@ -256,6 +265,7 @@ pub struct RevokeReceipt {
 pub enum ResourceError {
     InvalidIdentity,
     DuplicateDomainId,
+    DuplicateObjectId,
     InvalidBudget,
     InvalidRevision,
     RevisionConflict { expected: u64, actual: u64 },
@@ -297,12 +307,20 @@ impl ResourceDomain {
                 }
                 ancestor = node.inner.parent.as_ref();
             }
+            let mut registry = lock_unpoisoned(&parent.inner.family);
+            if registry.domain_ids.contains(&id) {
+                return Err(ResourceError::DuplicateDomainId);
+            }
+            if registry.object_ids.contains(&stable_object_id) {
+                return Err(ResourceError::DuplicateObjectId);
+            }
             let mut children = lock_unpoisoned(&parent.inner.children);
             if children.contains_key(&id) {
                 return Err(ResourceError::DuplicateDomainId);
             }
             let inner = Arc::new(ResourceDomainInner {
                 gate: Arc::clone(&parent.inner.gate),
+                family: Arc::clone(&parent.inner.family),
                 state: Mutex::new(DomainState {
                     id,
                     stable_object_id,
@@ -323,11 +341,17 @@ impl ResourceDomain {
                 children: Mutex::new(BTreeMap::new()),
             });
             children.insert(id, initial_cap_ns);
+            registry.domain_ids.insert(id);
+            registry.object_ids.insert(stable_object_id);
             return Ok(Self { inner });
         }
         Ok(Self {
             inner: Arc::new(ResourceDomainInner {
                 gate: Arc::new(Mutex::new(())),
+                family: Arc::new(Mutex::new(FamilyIdentityRegistry {
+                    domain_ids: BTreeSet::from([id]),
+                    object_ids: BTreeSet::from([stable_object_id]),
+                })),
                 state: Mutex::new(DomainState {
                     id,
                     stable_object_id,
@@ -1511,9 +1535,9 @@ fn published_result_from_outcome(
 fn map_resource_error(error: ResourceError) -> DeliveryStatus {
     match error {
         ResourceError::Revoked | ResourceError::GrantEpochMismatch => DeliveryStatus::Revoked,
-        ResourceError::RevisionConflict { .. } | ResourceError::DuplicateDomainId => {
-            DeliveryStatus::Conflict
-        },
+        ResourceError::RevisionConflict { .. }
+        | ResourceError::DuplicateDomainId
+        | ResourceError::DuplicateObjectId => DeliveryStatus::Conflict,
         ResourceError::ParentConstraint => DeliveryStatus::ParentLimit,
         ResourceError::Exhausted => DeliveryStatus::ResourceExhausted,
         ResourceError::InvalidBudget

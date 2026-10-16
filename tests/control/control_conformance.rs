@@ -1054,3 +1054,59 @@ fn copyout_retry_racing_with_retirement_never_reopens_a_delivery() {
         assert_eq!(core.window_len(), 0);
     }
 }
+
+#[test]
+fn cross_branch_domain_and_object_id_reuse_are_rejected() {
+    let root = root(80_000, 90);
+    let left = with_parent(domain(80_001), object(80_001), &root, 80).unwrap();
+    let right = with_parent(domain(80_002), object(80_002), &root, 80).unwrap();
+    let grandchild = with_parent(domain(80_003), object(80_003), &left, 70).unwrap();
+
+    // The original per-parent children map misses cousins. A family-wide
+    // registry must reject both a duplicate ResourceDomainId and a distinct
+    // ResourceDomainId masquerading as the same stable resource object.
+    assert_eq!(
+        with_parent(domain(80_003), object(80_004), &right, 10).err(),
+        Some(ResourceError::DuplicateDomainId)
+    );
+    assert_eq!(
+        with_parent(domain(80_004), object(80_003), &right, 10).err(),
+        Some(ResourceError::DuplicateObjectId)
+    );
+    assert_eq!(grandchild.stable_object_id(), object(80_003));
+    let real = with_parent(domain(80_004), object(80_004), &right, 20).unwrap();
+    assert_eq!(real.budget().cap_ns, 20);
+    let who = publisher(80_005);
+    assert_eq!(
+        root.install_budget_for_host_model(
+            &root.grant(who).unwrap(), 1, CPU_PERIOD_NS, 79, 1
+        ),
+        Err(ResourceError::ParentConstraint)
+    );
+}
+
+#[test]
+fn concurrent_cousin_registration_same_identity_has_one_winner() {
+    for n in 0..64_u128 {
+        let root = root(90_000 + n, 90);
+        let left = with_parent(domain(100_000 + n), object(100_000 + n), &root, 70).unwrap();
+        let right = with_parent(domain(110_000 + n), object(110_000 + n), &root, 70).unwrap();
+        let start = Arc::new(Barrier::new(3));
+        let one_start = Arc::clone(&start);
+        let two_start = Arc::clone(&start);
+        let one = thread::spawn(move || {
+            one_start.wait();
+            with_parent(domain(120_000 + n), object(120_000 + n), &left, 50)
+        });
+        let two = thread::spawn(move || {
+            two_start.wait();
+            with_parent(domain(120_000 + n), object(120_000 + n), &right, 50)
+        });
+        start.wait();
+        let a = one.join().unwrap();
+        let b = two.join().unwrap();
+        assert_eq!(usize::from(a.is_ok()) + usize::from(b.is_ok()), 1);
+        let rejected = if a.is_err() { a.err() } else { b.err() };
+        assert_eq!(rejected, Some(ResourceError::DuplicateDomainId));
+    }
+}
