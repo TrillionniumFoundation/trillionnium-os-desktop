@@ -879,6 +879,71 @@ fn advanced_grandparent_clock_fences_stale_leaf_cas() {
 }
 
 #[test]
+fn parent_clock_sample_and_child_cas_linearize_under_family_gate() {
+    for n in 0..96_u128 {
+        let root_domain = root(412_000 + n, CPU_PERIOD_NS);
+        let child = with_parent(
+            domain(413_000 + n),
+            object(413_000 + n),
+            &root_domain,
+            80,
+        )
+        .unwrap();
+        let who = publisher(414_000 + n);
+        let grant = child.grant(who).unwrap();
+        let barrier = Arc::new(Barrier::new(3));
+
+        let cas_child = child.clone();
+        let cas_barrier = Arc::clone(&barrier);
+        let cas = thread::spawn(move || {
+            cas_barrier.wait();
+            cas_child.install_budget_for_host_model(
+                &grant,
+                1,
+                CPU_PERIOD_NS,
+                70,
+                CPU_PERIOD_NS + 50,
+            )
+        });
+
+        let sample_root = root_domain.clone();
+        let sample_barrier = Arc::clone(&barrier);
+        let sample = thread::spawn(move || {
+            sample_barrier.wait();
+            sample_root.try_usage(CPU_PERIOD_NS + 51)
+        });
+        barrier.wait();
+        let cas_result = cas.join().unwrap();
+        let root_snapshot = sample.join().unwrap().unwrap();
+        assert_eq!(root_snapshot.sample_boottime_ns, CPU_PERIOD_NS + 51);
+        match cas_result {
+            Ok(receipt) => {
+                assert_eq!(receipt.revision, 2);
+                assert_eq!(child.revision(), 2);
+            }
+            Err(ResourceError::ClockRollback) => {
+                assert_eq!(child.revision(), 1);
+                let fresh = child.grant(who).unwrap();
+                assert_eq!(
+                    child
+                        .install_budget_for_host_model(
+                            &fresh,
+                            1,
+                            CPU_PERIOD_NS,
+                            70,
+                            CPU_PERIOD_NS + 51,
+                        )
+                        .unwrap()
+                        .revision,
+                    2
+                );
+            }
+            other => panic!("unexpected clock/CAS race result: {other:?}"),
+        }
+    }
+}
+
+#[test]
 fn budget_update_at_period_boundary_reports_current_window_consumption() {
     let target = root(909, 90);
     target.charge_cpu(60, 10).unwrap();
