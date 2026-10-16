@@ -69,35 +69,15 @@ def _mark_in_progress_stages_failed(stages):
             stages[name] = "failed"
 
 
-def _alarm_handler(_signum, _frame):
-    raise TimeoutExpired("bounded CUDA test timeout expired")
-
-
 def timeout_available():
-    """Whether this process can enforce the requested wall-clock bound safely."""
-    return (hasattr(signal, "SIGALRM") and
-            threading.current_thread() is threading.main_thread())
+    """Only the independent Linux subprocess supervisor is an enforced deadline."""
+    from cuda_process_supervisor import available
+    return available()
 
 
 def run_bounded(fn, timeout_seconds):
-    """Run ``fn`` with a process-local alarm; no unbounded device wait is allowed."""
-    if timeout_seconds is None or timeout_seconds <= 0:
-        return fn()
-    if not timeout_available():
-        raise Blocked("bounded CUDA timeout unavailable on this platform/thread")
-    previous_handler = signal.getsignal(signal.SIGALRM)
-    previous_timer = signal.setitimer(signal.ITIMER_REAL, 0.0)
-    signal.signal(signal.SIGALRM, _alarm_handler)
-    # Install the handler before arming the timer. This avoids a race where a
-    # very small timeout could deliver SIGALRM to the previous handler.
-    signal.setitimer(signal.ITIMER_REAL, float(timeout_seconds))
-    try:
-        return fn()
-    finally:
-        signal.setitimer(signal.ITIMER_REAL, 0.0)
-        signal.signal(signal.SIGALRM, previous_handler)
-        if previous_timer[0] > 0:
-            signal.setitimer(signal.ITIMER_REAL, previous_timer[0], previous_timer[1])
+    """Legacy in-process native timeout is forbidden: Python SIGALRM is unsafe."""
+    raise Blocked("in-process SIGALRM cannot bound a native CUDA call; use supervised main")
 
 
 def inputs():
@@ -365,7 +345,7 @@ def _base_evidence(expected, a, b, timeout_seconds):
     }
 
 
-def main():
+def _worker_main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--require-name", default="RTX 4060")
     parser.add_argument("--require-bdf", default="", help="optional exact PCI BDF from read-only probe")
@@ -378,13 +358,12 @@ def main():
     a, b = inputs()
     expected = reference(a, b)
     evidence = _base_evidence(expected, a, b, args.timeout_seconds)
-    evidence["timeout_enforced"] = timeout_available()
+    evidence["timeout_enforced"] = False
     started = time.monotonic()
     try:
-        device, output = run_bounded(
-            lambda: gpu_gemm(args.require_name, args.require_bdf, evidence["stages"]),
-            args.timeout_seconds,
-        )
+        # This path executes ONLY in a separately supervised child process.
+        # A native CUDA call can block forever; the parent performs kill/reap.
+        device, output = gpu_gemm(args.require_name, args.require_bdf, evidence["stages"])
         evidence["device"] = device
         evidence["actual_output_sha256"] = digest(output)
         evidence["stages"]["compare_reference"] = "in_progress"
@@ -423,6 +402,105 @@ def main():
         from pathlib import Path
         Path(args.output).write_text(payload, encoding="utf-8")
     return rc
+
+
+def _strict_worker_pairs(pairs):
+    out = {}
+    for key, value in pairs:
+        if key in out:
+            raise ValueError("duplicate worker evidence key")
+        out[key] = value
+    return out
+
+
+def _supervised_main():
+    """Never enter CUDA/FFI in the command's parent process."""
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+    from cuda_process_supervisor import available, run_worker
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--require-name", default="RTX 4060")
+    parser.add_argument("--require-bdf", default="")
+    parser.add_argument("--timeout-seconds", type=float, default=30.0)
+    parser.add_argument("--output", default="-")
+    args = parser.parse_args()
+    if not math.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0:
+        parser.error("--timeout-seconds must be a finite positive number")
+
+    a, b = inputs()
+    result = _base_evidence(reference(a, b), a, b, args.timeout_seconds)
+    result["timeout_enforced"] = False
+    result["error"] = None
+    exit_code = 2
+    if not available():
+        result.update(status="blocked", error="independent Linux worker supervisor unavailable")
+    else:
+        with TemporaryDirectory(prefix="a09-cuda-supervised-") as private:
+            worker_report = Path(private) / "worker.json"
+            command = [sys.executable, "-I", os.path.realpath(__file__),
+                       "--_a09_worker", "--require-name", args.require_name,
+                       "--require-bdf", args.require_bdf,
+                       "--timeout-seconds", str(args.timeout_seconds),
+                       "--output", str(worker_report)]
+            try:
+                status, supervisor = run_worker(command, args.timeout_seconds)
+                result["worker_supervision"] = supervisor
+                result["timeout_enforced"] = bool(supervisor.get("worker_reaped"))
+                if supervisor["timed_out"]:
+                    result.update(status="timeout",
+                                  error="native worker exceeded wall-clock deadline; effect unknown",
+                                  reset_or_failure_recovery_verified=False)
+                    exit_code = 1
+                elif not supervisor["worker_reaped"]:
+                    result.update(status="failed", error="worker not reaped; effect unknown")
+                    exit_code = 1
+                else:
+                    # Parse only the bounded report written inside the private
+                    # host-owned directory. Never parse unbounded worker logs.
+                    size = worker_report.stat().st_size
+                    if not 0 < size <= 65536:
+                        raise ValueError("worker report size invalid")
+                    report = json.loads(
+                        worker_report.read_text(encoding="utf-8"),
+                        object_pairs_hook=_strict_worker_pairs,
+                        parse_constant=lambda _: (_ for _ in ()).throw(ValueError("non-finite worker value")),
+                    )
+                    if (not isinstance(report, dict)
+                        or report.get("schema") != "a09.cuda-gemm.v2"
+                        or report.get("status") not in (
+                            "blocked", "failed", "timeout", "passed_on_reported_cuda_environment"
+                        ) or not isinstance(report.get("stages"), dict)
+                        or set(report["stages"]) != set(STAGES)):
+                        raise ValueError("malformed worker evidence")
+                    mapped = {"blocked": 2, "failed": 1, "timeout": 1,
+                              "passed_on_reported_cuda_environment": 0}
+                    if status != mapped[report["status"]]:
+                        raise ValueError("worker exit disagrees with evidence")
+                    supervisor["effect_result_known"] = True
+                    report["worker_supervision"] = supervisor
+                    report["timeout_enforced"] = True
+                    result = report
+                    exit_code = status
+            except (OSError, ValueError, GpuError) as exc:
+                result.update(status="failed", error="untrusted or absent worker report: " + str(exc),
+                              reset_or_failure_recovery_verified=False)
+                exit_code = 1
+    payload = json.dumps(result, indent=2, sort_keys=True) + "\n"
+    if args.output == "-":
+        print(payload, end="")
+    else:
+        from pathlib import Path
+        Path(args.output).write_text(payload, encoding="utf-8")
+    return exit_code
+
+
+def main():
+    # Internal worker mode is not an independent hardware authorization API.
+    if "--_a09_worker" in sys.argv[1:]:
+        sys.argv.remove("--_a09_worker")
+        return _worker_main()
+    return _supervised_main()
 
 
 if __name__ == "__main__":

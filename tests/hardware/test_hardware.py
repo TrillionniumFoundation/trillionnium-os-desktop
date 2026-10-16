@@ -83,7 +83,7 @@ class GemmTests(unittest.TestCase):
             with patch.object(cuda_gemm, "library",
                               side_effect=cuda_gemm.Blocked("no driver")), \
                     patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
-                self.assertEqual(cuda_gemm.main(), 2)
+                self.assertEqual(cuda_gemm._worker_main(), 2)
             evidence = json.loads(output.read_text())
         self.assertEqual(evidence["schema"], "a09.cuda-gemm.v2")
         self.assertEqual(evidence["status"], "blocked")
@@ -91,7 +91,7 @@ class GemmTests(unittest.TestCase):
         self.assertEqual(provenance["execution_layer"], "linux_process_cuda_driver_api")
         self.assertFalse(provenance["asterinas_execution_verified"])
         self.assertTrue(provenance["process_id"] > 0)
-        self.assertTrue(evidence["timeout_enforced"])
+        self.assertFalse(evidence["timeout_enforced"])
         self.assertEqual(evidence["reported_execution_kernel"],
                          f"{cuda_gemm.platform.system()} {cuda_gemm.platform.release()}")
         self.assertTrue(all(value == "not_run" for value in evidence["stages"].values()))
@@ -106,7 +106,7 @@ class GemmTests(unittest.TestCase):
 
             with patch.object(cuda_gemm, "gpu_gemm", side_effect=fake_gpu), \
                     patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
-                self.assertEqual(cuda_gemm.main(), 1)
+                self.assertEqual(cuda_gemm._worker_main(), 1)
             evidence = json.loads(output.read_text())
         self.assertEqual(evidence["status"], "timeout")
         self.assertEqual(evidence["stages"]["synchronize"], "failed")
