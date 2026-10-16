@@ -50,6 +50,66 @@ consumed=35ms, lowered cap=20ms, so 35<=50ms elapsed and **35>20ms cap**.
 InstallBudget and terminal history both record effective=140ms and consumed=33ms,
 which is <=40ms elapsed. The original consumed values were not reduced.
 
+## Final independent acceptance
+
+The framing fix is pushed as
+`9c311354081c589d4f64498dd19333e4c594f77a`. An isolated copy of its predecessor
+`df7cf370382aa3efac0bea2ee197a885f80da3e4` was compiled with the new regression:
+**1 test failed as expected**, exit 101, specifically `UnknownOpcode` versus
+`Truncated`. The fixed source passes the same test in the complete suite.
+
+The existing Python retry oracle incorrectly used `(sequence,target)` as its
+reservation key. Its test-only key is now sequence within one CapSpace;
+cross-target/generation changes conflict and preserve the original reservation.
+Additional independent fixed-payload checks cover ABI capability declarations,
+usage accounting, terminal/error history metadata and retirement frontiers.
+No production delivery ledger is added.
+
+Final results on the unchanged production Rust source:
+
+| Executed check | Actual result |
+| --- | --- |
+| Required `cargo test --manifest-path libs/os-abi/Cargo.toml` | **39/39**, 0 failures/ignored; 0 doctests defined |
+| Rustfmt, strict Clippy, bare-target no_std check above | All exit 0 |
+| `python3 tests/golden/generate_hos2.py --check` | **12/12** fixed HOS2/HOSR frames |
+| `python3 tests/golden/generate_transport32.py --check` | **1/1** independent descriptor |
+| `python3 -m unittest discover -s tests/abi -p 'test_*.py' -v` | **28/28**, 0 failures/errors/skips |
+| Same Python suite under `python3 -O` | **28/28**, 0 failures/errors/skips |
+| `python3 -m unittest discover -s tests/abi -p 'test_mutations.py' -v` | **9/9**, 0 failures/errors/skips |
+| Real Rust source mutation runner below | Baseline **7/7**; **2/2 compiled mutants killed** |
+| `git diff --check`; root README size | Exit 0; **0 bytes** |
+
+```sh
+python3 tests/abi/run_rust_mutations.py --cargo cargo \
+  --output /tmp/hos2-rust-source-mutations.json
+```
+
+This runner copies the actual production type and the unchanged Rust
+`mutation_kill` suite to temporary crates. It substitutes a field-omitting
+`PartialEq` implementation for `InstallBudgetRequest`, leaving the decoder and
+test inputs intact. Both mutants **compile successfully**, then each executes
+all seven tests with **5 passed / 2 expected assertion failures**, exit 101:
+
+- `ignore_cap_ns` fails `same_sequence_and_target_different_cap_is_conflict`
+  and `cap_ignoring_mutant_is_killed_by_same_delivery_oracle`.
+- `ignore_expected_revision` fails
+  `same_sequence_and_target_different_revision_is_conflict` and
+  `revision_ignoring_mutant_is_killed_by_same_delivery_oracle`.
+
+Compilation failure, timeout, skipped tests or missing expected assertion
+failures do not count as mutation kills. Production has **zero failing tests**;
+the four mutant assertion failures and the one pre-fix regression failure are
+intentional negative controls, not omitted failures.
+
+Full commands, outputs, input SHA256 and exit codes are retained in
+[`results/host-acceptance-2026-10-16.json`](results/host-acceptance-2026-10-16.json)
+and [`results/rust-source-mutations-2026-10-16.json`](results/rust-source-mutations-2026-10-16.json).
+The Rust report's source hash identifies the exact codec tested, even after
+the evidence-only commit. The initial CLI push lacked credentials; the
+connected GitHub interface pushed the identical verified Git tree without
+forcing or overwriting remote history. GitHub Actions status is separate from
+these actually executed local checks and is not assumed to be successful.
+
 ## A03/A05 interface and untested boundaries
 
 The single dependency-free `#![no_std]` crate remains `hos2_os_abi`:

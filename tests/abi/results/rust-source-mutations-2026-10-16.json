@@ -1,0 +1,191 @@
+{
+  "schema": "hos2-rust-source-mutations-v1",
+  "scope": "host Rust codec/canonical-request comparison; no kernel validation",
+  "expected_tests_per_suite": 7,
+  "success": true,
+  "baseline": {
+    "source_sha256": "05e2a8d84b6bfc56570b7e862daac6d8e723a1352899ae98fdab830b74fcfbc9",
+    "compilation": {
+      "command": [
+        "/tmp/a02-cargo/bin/cargo",
+        "test",
+        "--offline",
+        "--color",
+        "never",
+        "--test",
+        "mutation_kill",
+        "--no-run"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "   Compiling hos2-os-abi v0.1.0 (/tmp/hos2-rust-mutations-ri546d18/baseline)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.35s\n  Executable tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n",
+      "timed_out": false
+    },
+    "compiled": true,
+    "test": {
+      "command": [
+        "/tmp/a02-cargo/bin/cargo",
+        "test",
+        "--offline",
+        "--color",
+        "never",
+        "--test",
+        "mutation_kill",
+        "--",
+        "--test-threads=1"
+      ],
+      "returncode": 0,
+      "stdout": "\nrunning 7 tests\ntest cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest fixed_golden_is_a_real_valid_rust_request ... ok\ntest full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok\ntest revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest same_sequence_across_targets_is_also_conflict ... ok\ntest same_sequence_and_target_different_cap_is_conflict ... ok\ntest same_sequence_and_target_different_revision_is_conflict ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s\n     Running tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n",
+      "timed_out": false
+    },
+    "tests": {
+      "cases": {
+        "cap_ignoring_mutant_is_killed_by_same_delivery_oracle": "ok",
+        "fixed_golden_is_a_real_valid_rust_request": "ok",
+        "full_low_eight_byte_sequence_is_little_endian_and_high_half_zero": "ok",
+        "revision_ignoring_mutant_is_killed_by_same_delivery_oracle": "ok",
+        "same_sequence_across_targets_is_also_conflict": "ok",
+        "same_sequence_and_target_different_cap_is_conflict": "ok",
+        "same_sequence_and_target_different_revision_is_conflict": "ok"
+      },
+      "complete": true,
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "status": "ok"
+    },
+    "passed": true
+  },
+  "mutants": [
+    {
+      "source_sha256": "9f91878ba8f88ccfc53d89af2fe4bbf1a7dc00f5674a42e1355cdcd6dd0f3301",
+      "compilation": {
+        "command": [
+          "/tmp/a02-cargo/bin/cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "mutation_kill",
+          "--no-run"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "   Compiling hos2-os-abi v0.1.0 (/tmp/hos2-rust-mutations-ri546d18/ignore_cap_ns)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s\n  Executable tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n",
+        "timed_out": false
+      },
+      "compiled": true,
+      "test": {
+        "command": [
+          "/tmp/a02-cargo/bin/cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "mutation_kill",
+          "--",
+          "--test-threads=1"
+        ],
+        "returncode": 101,
+        "stdout": "\nrunning 7 tests\ntest cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... FAILED\ntest fixed_golden_is_a_real_valid_rust_request ... ok\ntest full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok\ntest revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest same_sequence_across_targets_is_also_conflict ... ok\ntest same_sequence_and_target_different_cap_is_conflict ... FAILED\ntest same_sequence_and_target_different_revision_is_conflict ... ok\n\nfailures:\n\n---- cap_ignoring_mutant_is_killed_by_same_delivery_oracle stdout ----\n\nthread 'cap_ignoring_mutant_is_killed_by_same_delivery_oracle' (235) panicked at tests/mutation_kill.rs:154:5:\nassertion failed: must_conflict(&prior, &next, canonical_retry).is_ok()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n---- same_sequence_and_target_different_cap_is_conflict stdout ----\n\nthread 'same_sequence_and_target_different_cap_is_conflict' (240) panicked at tests/mutation_kill.rs:131:5:\nassertion `left != right` failed\n  left: Request { opcode: InstallBudget, request_id: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], target_slot: 7, target_generation: 9, payload: InstallBudget(InstallBudgetRequest { expected_revision: 10, period_ns: 100000000, cap_ns: 40000000, reserved: 0 }) }\n right: Request { opcode: InstallBudget, request_id: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], target_slot: 7, target_generation: 9, payload: InstallBudget(InstallBudgetRequest { expected_revision: 10, period_ns: 100000000, cap_ns: 39000000, reserved: 0 }) }\n\n\nfailures:\n    cap_ignoring_mutant_is_killed_by_same_delivery_oracle\n    same_sequence_and_target_different_cap_is_conflict\n\ntest result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+        "stderr": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s\n     Running tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\nerror: test failed, to rerun pass `--test mutation_kill`\n",
+        "timed_out": false
+      },
+      "tests": {
+        "cases": {
+          "cap_ignoring_mutant_is_killed_by_same_delivery_oracle": "FAILED",
+          "fixed_golden_is_a_real_valid_rust_request": "ok",
+          "full_low_eight_byte_sequence_is_little_endian_and_high_half_zero": "ok",
+          "revision_ignoring_mutant_is_killed_by_same_delivery_oracle": "ok",
+          "same_sequence_across_targets_is_also_conflict": "ok",
+          "same_sequence_and_target_different_cap_is_conflict": "FAILED",
+          "same_sequence_and_target_different_revision_is_conflict": "ok"
+        },
+        "complete": true,
+        "passed": 5,
+        "failed": 2,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "status": "FAILED"
+      },
+      "name": "ignore_cap_ns",
+      "omitted_field": "cap_ns",
+      "expected_failure": "same_sequence_and_target_different_cap_is_conflict",
+      "expected_test_failed": true,
+      "killed": true
+    },
+    {
+      "source_sha256": "47caa5d755fe550afb62568fb955ecd995c17574e8b5751a38a7f4037c329016",
+      "compilation": {
+        "command": [
+          "/tmp/a02-cargo/bin/cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "mutation_kill",
+          "--no-run"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "   Compiling hos2-os-abi v0.1.0 (/tmp/hos2-rust-mutations-ri546d18/ignore_expected_revision)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s\n  Executable tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n",
+        "timed_out": false
+      },
+      "compiled": true,
+      "test": {
+        "command": [
+          "/tmp/a02-cargo/bin/cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "mutation_kill",
+          "--",
+          "--test-threads=1"
+        ],
+        "returncode": 101,
+        "stdout": "\nrunning 7 tests\ntest cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest fixed_golden_is_a_real_valid_rust_request ... ok\ntest full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok\ntest revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... FAILED\ntest same_sequence_across_targets_is_also_conflict ... ok\ntest same_sequence_and_target_different_cap_is_conflict ... ok\ntest same_sequence_and_target_different_revision_is_conflict ... FAILED\n\nfailures:\n\n---- revision_ignoring_mutant_is_killed_by_same_delivery_oracle stdout ----\n\nthread 'revision_ignoring_mutant_is_killed_by_same_delivery_oracle' (356) panicked at tests/mutation_kill.rs:163:5:\nassertion failed: must_conflict(&prior, &next, canonical_retry).is_ok()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n---- same_sequence_and_target_different_revision_is_conflict stdout ----\n\nthread 'same_sequence_and_target_different_revision_is_conflict' (359) panicked at tests/mutation_kill.rs:143:5:\nassertion `left != right` failed\n  left: Request { opcode: InstallBudget, request_id: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], target_slot: 7, target_generation: 9, payload: InstallBudget(InstallBudgetRequest { expected_revision: 10, period_ns: 100000000, cap_ns: 40000000, reserved: 0 }) }\n right: Request { opcode: InstallBudget, request_id: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], target_slot: 7, target_generation: 9, payload: InstallBudget(InstallBudgetRequest { expected_revision: 9, period_ns: 100000000, cap_ns: 40000000, reserved: 0 }) }\n\n\nfailures:\n    revision_ignoring_mutant_is_killed_by_same_delivery_oracle\n    same_sequence_and_target_different_revision_is_conflict\n\ntest result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+        "stderr": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s\n     Running tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\nerror: test failed, to rerun pass `--test mutation_kill`\n",
+        "timed_out": false
+      },
+      "tests": {
+        "cases": {
+          "cap_ignoring_mutant_is_killed_by_same_delivery_oracle": "ok",
+          "fixed_golden_is_a_real_valid_rust_request": "ok",
+          "full_low_eight_byte_sequence_is_little_endian_and_high_half_zero": "ok",
+          "revision_ignoring_mutant_is_killed_by_same_delivery_oracle": "FAILED",
+          "same_sequence_across_targets_is_also_conflict": "ok",
+          "same_sequence_and_target_different_cap_is_conflict": "ok",
+          "same_sequence_and_target_different_revision_is_conflict": "FAILED"
+        },
+        "complete": true,
+        "passed": 5,
+        "failed": 2,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "status": "FAILED"
+      },
+      "name": "ignore_expected_revision",
+      "omitted_field": "expected_revision",
+      "expected_failure": "same_sequence_and_target_different_revision_is_conflict",
+      "expected_test_failed": true,
+      "killed": true
+    }
+  ],
+  "errors": [],
+  "input_sha256": {
+    "Cargo.toml": "8941aa060c09b8243125fceba8000bac896ac12a72f215a1295174cdf1f92b3a",
+    "src/lib.rs": "05e2a8d84b6bfc56570b7e862daac6d8e723a1352899ae98fdab830b74fcfbc9",
+    "tests/mutation_kill.rs": "10e4a0a2521291602fc548664d9d2baaa0feb4eea15271afe772b9fc27135ece"
+  },
+  "mutants_killed": 2
+}
