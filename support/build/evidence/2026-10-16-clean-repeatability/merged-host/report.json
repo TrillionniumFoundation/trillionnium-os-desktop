@@ -1,0 +1,66 @@
+{
+  "phase": "next8 merged-host",
+  "scope": "Actual host tests only: ABI codec, independent control model, evidence archive",
+  "passed": true,
+  "local_tested_commit": "81d3080908292a0dc206f047de36b9e27bf68a73",
+  "published_equivalent_commit": "81bd3f21804221dcc5de73f3e59b2f953282506a",
+  "tree": "48d1c43cb77706870cd431a7cc4cecb0f73f3254",
+  "actual_test_executions": 105,
+  "golden_vectors_verified": 12,
+  "checks": [
+    {
+      "name": "ABI Python",
+      "passed": 19,
+      "failed": 0,
+      "command_receipt": "abi-python.command.json"
+    },
+    {
+      "name": "golden vectors",
+      "verified": 12,
+      "exit_code": 0,
+      "command_receipt": "golden-check.command.json"
+    },
+    {
+      "name": "ABI Rust",
+      "passed": 25,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "command_receipt": "abi-rust.command.json"
+    },
+    {
+      "name": "os-control Rust",
+      "passed": 21,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "command_receipt": "control-rust.command.json"
+    },
+    {
+      "name": "archive Python -I",
+      "passed": 20,
+      "failed": 0,
+      "receipt": "archive-validation.json"
+    },
+    {
+      "name": "archive Python -I -O",
+      "passed": 20,
+      "failed": 0,
+      "receipt": "archive-validation.json"
+    }
+  ],
+  "raw_bundle": "raw.tar.gz",
+  "raw_member_index": "members.json",
+  "raw_members": 35,
+  "readable_files": "readable-index.json",
+  "source_binding": "source-binding.json",
+  "environment": "readable/environment.json",
+  "locks": "readable/lock-packages.json",
+  "no_kernel_or_vm_test_claim": true,
+  "no_source_git_cargo_vm_actions_during_packaging": true,
+  "exclusions": [
+    "Disposable extracted working source (exact original snapshot retained once inside host/source.tar.gz)",
+    "Cargo target directories and compiler/tool binaries",
+    "Other agents\u2019 WIP, production manifests, kernel output, and other evidence directories"
+  ]
+}

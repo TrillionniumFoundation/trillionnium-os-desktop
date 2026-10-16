@@ -6,16 +6,21 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
-The latest kernel-test lifecycle phase reran both actual crate suites:
-OSTD 221 and aster-core 141 reported passes, with 3 explicit VMX/EPT soft
-skips and an exercised lower bound of 359. It also verified the public boot
-with raw QEMU33 after atomic manifest cleanup, and separately cancelled a
-real native QEMU paused with `-S` (not a boot/test pass). Host interruption
-and replacement-file regressions, complete commands, source/ELF bindings and
-remaining generated-manifest writer observations are in
+The latest phase completed **two independent empty kernel-target builds** at
+`5bcec614c1a075782b6ffaa5a5212fdee29be37d`. Both actual QEMU boots passed with
+raw exit 33, and their 8,288,088-byte ELF files are byte-identical (SHA256
+`6c0c382ec88d2e59b58d50abb0ef3671635f30ce08c3b442d2bdc2204821d040`).
+This proves the same-host, same-absolute-source/target-path case, with shared
+registry/toolchain caches and an explicit fixed build timestamp. Crosspath
+and cross-host reproduction remain open. The new OSTD/core runs report
+221/141 passes, 3 VMX/EPT soft skips, and a 359 exercised lower bound; all four
+real guests returned raw 33. The busy-lock output-path fix passed 33 host
+tests in each Python mode. Main ABI/control/archive integration contributed
+105 host tests plus 12 separate golden vectors. Complete builds, serial logs,
+ELFs, cache-custody receipts and limits are retained in
+[`evidence/2026-10-16-clean-repeatability/REPORT.md`](evidence/2026-10-16-clean-repeatability/REPORT.md).
+The previous native cancellation and manifest lifecycle evidence remains in
 [`evidence/2026-10-16-ktest-lifecycle/REPORT.md`](evidence/2026-10-16-ktest-lifecycle/REPORT.md).
-Target cache reuse is explicit; the public boot is not a new empty-target
-compilation or a bit reproducibility result.
 
 ## Build and boot
 

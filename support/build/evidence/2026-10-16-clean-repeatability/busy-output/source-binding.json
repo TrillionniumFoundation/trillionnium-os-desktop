@@ -1,0 +1,74 @@
+{
+  "baseline_published_commit": "0a533b92d4a4df8e8e4643c1b7de00e83ba0fd9d",
+  "tested_source_base": "0a533b92d4a4df8e8e4643c1b7de00e83ba0fd9d",
+  "patched_published_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+  "patched_published_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+  "patched_published_parent": "81bd3f21804221dcc5de73f3e59b2f953282506a",
+  "equivalent_local_commit": "1403053dd04e7c65680763f605e2f58cdb23f5ef",
+  "publisher_verification": "publication-receipt.json entry publications[1]: remote Git API tree/parent/message checked by publisher; this archive independently compares receipt with local immutable Git object.",
+  "exact_3_final_files": {
+    "support/build/kernel.sh": {
+      "bytes": 6696,
+      "sha256": "77081012007e4de3f57630dfd6c4811e3dc228dd6aff4c6ce4dd13488a5e9dbb",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/kernel.sh",
+      "unchanged_from_old": false
+    },
+    "support/build/tests/test_kernel_runner.py": {
+      "bytes": 23497,
+      "sha256": "b9838c9a8d08dbe90ddc0e62684298f719ff1a329088fdc47c70f402c76a9c8a",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/tests/test_kernel_runner.py",
+      "unchanged_from_old": false
+    },
+    "support/build/README.md": {
+      "bytes": 16640,
+      "sha256": "adeef4e3845ca353c891b2c9daef4643afdf225fee4c6d4b9125a74b39e674fb",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/README.md",
+      "unchanged_from_old": false
+    }
+  },
+  "reproduction_fixture_source_closure": {
+    "support/build/kernel.sh": {
+      "bytes": 6696,
+      "sha256": "77081012007e4de3f57630dfd6c4811e3dc228dd6aff4c6ce4dd13488a5e9dbb",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/kernel.sh",
+      "unchanged_from_old": false
+    },
+    "support/build/tests/test_kernel_runner.py": {
+      "bytes": 23497,
+      "sha256": "b9838c9a8d08dbe90ddc0e62684298f719ff1a329088fdc47c70f402c76a9c8a",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/tests/test_kernel_runner.py",
+      "unchanged_from_old": false
+    },
+    "support/build/README.md": {
+      "bytes": 16640,
+      "sha256": "adeef4e3845ca353c891b2c9daef4643afdf225fee4c6d4b9125a74b39e674fb",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/README.md",
+      "unchanged_from_old": false
+    },
+    "support/build/tests/test_kernel_supervisor.py": {
+      "bytes": 15814,
+      "sha256": "f73c930f99a57167c6ffa3111c341ca371b36e28bc13a31f01c06e7f7c7c15ff",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/tests/test_kernel_supervisor.py",
+      "unchanged_from_old": true
+    },
+    "support/build/kernel-supervisor.py": {
+      "bytes": 5739,
+      "sha256": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/kernel-supervisor.py",
+      "unchanged_from_old": true
+    },
+    "support/build/cleanup-manifest.py": {
+      "bytes": 6584,
+      "sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/cleanup-manifest.py",
+      "unchanged_from_old": true
+    },
+    "support/build/check-boot.py": {
+      "bytes": 3869,
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "origin": "5bcec614c1a075782b6ffaa5a5212fdee29be37d:support/build/check-boot.py",
+      "unchanged_from_old": true
+    }
+  },
+  "closure_note": "The four additional test/supervisor/helper files are unchanged from the old commit, matching the original host-suite dependencies. This is a small host-test closure, not a full repository or kernel source archive."
+}
