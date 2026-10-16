@@ -1,0 +1,51 @@
+{
+  "schema": "hos2-saved-status-before-control-v1",
+  "source_commit": "e7725547c905952140fc9b3b6b93d63b3c169b1b",
+  "mutation": "same zero_saved_status source transform as run_rust_mutations.py",
+  "mutated_source_sha256": "5cef86822a11188c2f0cb14ac8d0c2da1ef446ad7d3a92fe937afd3548b59fff",
+  "command": [
+    "cargo",
+    "test",
+    "--manifest-path",
+    "libs/os-abi/Cargo.toml",
+    "--offline"
+  ],
+  "returncode": 0,
+  "stdout": "\nrunning 3 tests\ntest tests::malformed_usage_is_rejected ... ok\ntest tests::request_header_and_payload_round_trip ... ok\ntest tests::transport_explicit_little_endian ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 8 tests\ntest all_known_error_status_codes_accept_empty_error_responses ... ok\ntest all_golden_responses_decode_from_larger_copyout_capacity ... ok\ntest each_golden_cut_is_rejected_not_just_selected_truncations ... ok\ntest every_golden_header_refuses_version_reserved_or_zero_id_mutation ... ok\ntest every_golden_encoder_checks_capacity_before_writing ... ok\ntest encoders_match_independent_golden_bytes_for_all_operations ... ok\ntest fixed_golden_vectors_are_consumed_by_rust_codec ... ok\ntest golden_mutation_sweep_never_panics_or_reencodes_accepted_bytes_differently ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s\n\n\nrunning 7 tests\ntest full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok\ntest revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest same_sequence_and_target_different_cap_is_conflict ... ok\ntest same_sequence_and_target_different_revision_is_conflict ... ok\ntest same_sequence_across_targets_is_also_conflict ... ok\ntest fixed_golden_is_a_real_valid_rust_request ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 17 tests\ntest budget_cpu_time_cannot_exceed_elapsed_window_time ... ok\ntest correlation_and_capacity_helpers_are_stable ... ok\ntest encoders_report_insufficient_output_capacity ... ok\ntest fixed_golden_budget_mutations_preserve_delivery_id_but_change_canonical_request ... ok\ntest install_response_echo_rejects_unordered_ids_in_success_and_failure ... ok\ntest install_previous_revision_must_be_a_valid_existing_revision ... ok\ntest install_revision_mismatch_is_not_an_integer_overflow ... ok\ntest ordered_sequence_helpers_provide_canonical_little_endian_ids ... ok\ntest malformed_frame_lengths_are_rejected_before_unknown_opcode_or_status ... ok\ntest install_budget_request_rejects_revision_period_cap_and_reserved_mutations ... ok\ntest response_structure_mutations_are_rejected ... ok\ntest request_structure_mutations_are_rejected ... ok\ntest query_delivery_terminal_metadata_and_historical_request_are_checked ... ok\ntest read_usage_and_retire_through_reject_impossible_semantic_values ... ok\ntest unknown_minor_and_exact_wire_lengths_are_rejected ... ok\ntest query_abi_capability_table_rejects_unsupported_feature_combinations ... ok\ntest transport_rejects_wrapping_pointer_ranges_without_access_checks ... ok\n\ntest result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 9 tests\ntest all_nonterminal_states_keep_only_the_history_sequence ... ok\ntest all_independent_semantic_edge_frames_decode ... ok\ntest all_saved_terminal_rejections_preserve_status_without_success_metadata ... ok\ntest history_and_read_ids_remain_opaque_including_nonzero_high_bytes ... ok\ntest last_write_sequence_and_revision_increment_to_max_are_valid ... ok\ntest one_step_beyond_accepted_write_and_retire_boundaries_is_rejected ... ok\ntest retired_frontier_can_reach_last_write_and_leave_next_sequence_max ... ok\ntest nonterminal_states_reject_saved_status_and_each_success_metadata_field ... ok\ntest every_terminal_error_rejects_each_nonzero_success_metadata_field ... ok\n\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 6 tests\ntest descriptor_lengths_must_match_even_otherwise_valid_snapshots ... ok\ntest malformed_snapshot_is_rejected_before_short_output_capacity ... ok\ntest overlapping_ranges_are_accepted_and_request_owns_the_snapshot_values ... ok\ntest all_five_fixed_requests_pass_the_combined_preflight ... ok\ntest every_opcode_requires_success_capacity_before_admission ... ok\ntest public_descriptor_fields_cannot_bypass_validation ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 4 tests\ntest decode_independent_transport32_bytes_and_reencode_exactly ... ok\ntest transport_reserves_success_capacity_before_processing_semantic_errors ... ok\ntest every_short_transport_descriptor_is_rejected ... ok\ntest transport_rejects_reserved_overflow_and_invalid_request_byte_count ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest src/lib.rs - Transport::decode_request_snapshot (line 226) ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s\n\n",
+  "stderr": "   Compiling hos2-os-abi v0.1.0 (/tmp/hos2-saved-status-before-gggxnixc/libs/os-abi)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.58s\n     Running unittests src/lib.rs (target/debug/deps/hos2_os_abi-5dcb5b5160c04c48)\n     Running tests/golden_vectors.rs (target/debug/deps/golden_vectors-e06fa4d064b33de0)\n     Running tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n     Running tests/negative_vectors.rs (target/debug/deps/negative_vectors-e975f0805a7f314d)\n     Running tests/semantic_edges.rs (target/debug/deps/semantic_edges-13b789dad6c6536b)\n     Running tests/transport_preflight.rs (target/debug/deps/transport_preflight-d0281d4d599b27c1)\n     Running tests/transport_vectors.rs (target/debug/deps/transport_vectors-e0cae180d79cbfc5)\n   Doc-tests hos2_os_abi\n",
+  "same_mutated_source_as_after": true,
+  "survived_old_suite": true,
+  "evidence_parser_controls": [
+    {
+      "name": "valid_complete",
+      "expected_complete": true,
+      "actual_complete": true
+    },
+    {
+      "name": "ignored_case",
+      "expected_complete": false,
+      "actual_complete": false
+    },
+    {
+      "name": "missing_case",
+      "expected_complete": false,
+      "actual_complete": false
+    },
+    {
+      "name": "duplicate_case",
+      "expected_complete": false,
+      "actual_complete": false
+    },
+    {
+      "name": "filtered_case",
+      "expected_complete": false,
+      "actual_complete": false
+    },
+    {
+      "name": "missing_summary",
+      "expected_complete": false,
+      "actual_complete": false
+    }
+  ],
+  "controls_passed": true
+}

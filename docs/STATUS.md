@@ -1,5 +1,41 @@
 # 当前状态
 
+## 2026-10-16：HOS2 ABI 独立复核与主干合并
+
+- **已完成：**[PR #72](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/72) 的 `no_std` HOS2 transport snapshot/preflight/typed codec 修复已独立测试并合入 `main`，merge `02a0e4f6e11ed04039179165726ae43a0caab78a`。独立对精确 PR HEAD `eef96afd4c3fcdc5bcdc2b8ba00260e1fb116b91` 在 Linux host 执行 `cargo test --offline`、`cargo clippy --offline --all-targets -- -D warnings`、`cargo fmt -- --check`、`cargo check --offline --no-default-features` 和 `python3 -m unittest discover -s tests/abi -p test_*.py -v`，全部返回 0；Python ABI 30/30 通过。这是**真实源码宿主测试**，不是内核 HOS2 功能验收。
+- **A06 最新开发：**A06 Draft [PR #18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18) 已有多轮真实 QEMU 1vCPU/2vCPU 探针和修复进展，当前仍为 Draft、未进主干。其精确提交对应的 SMP 证据包括已修复的已退出 Process 生命周期问题，但不能从两线程、2vCPU 样本推广到完整 SMP、CPU 热插拔或所有内核锁序。未验证严格逐窗 CPU 上限。
+- **真实下一步：**A05 必须将已合入的 ABI/控制核心接进内核设备/进程授权与 `QueryAbi`，随后最小 `InstallBudget/ReadUsage` 调用进入唯一实际调度/配额状态；A07 沿现有 Hepta owner 完成真实效果确认、历史查询与有界退役。A06 先独立整树回归和 owner 审核，再申请合并；不能因 host ABI 测试绿灯自动放行 G1/G2。
+
+---
+
+## 2026-10-16：A00 Hepta K/HOS2 严格合并与 CUDA 原生超时真实反例
+
+- **A03 真实 Rust 源码交接（尚未合 main）：**[Draft #48](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/48) 最新 A00 head `040eb1b352308debc763c7c9cb86106ffb1e11dc`：在 A03 owner 的 ResourceDomain/投递/原 owner 权限模型上，统一固定 Hepta 真正的 K=`StableId+Digest32` 和 `DeliveryObservation::hos2_saved_status_code()->Result<u16,DeliveryError>`。拒绝终局结果缺失、伪造元数据、`previous_revision=0`、以及 `consumed > effective % 100ms`，对齐主干 A02 Rust decoder。**44项 Rust 集成测试已编写但本环境没有 cargo/rustc，不能宣称 44/44 通过**；独立 Python 时间/修订数学 oracle 5/5 通过，仅属算术模型。A03 owner 正持续更新，禁止强推或覆盖 owner，合入前需精确头部 Cargo/Clippy/fmt 与现有 Hepta 持久 owner 接合。
+- **A09 精确原生超时负例：**[Draft #62](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/62) commit `4d0f19f62e349a78c7126bcb838ec732a9407646` 新增可执行 `test_cuda_native_timeout.py`，经本地 Git blob `2e7060ba59bca45af20ec90fffb04cdcc104b587` 与远端逐字节匹配。独立 Linux Python3.13/GCC14.2 实测：当前 `SIGALRM` Python handler 所谓30ms硬截止，在0.8秒不返回的 C FFI 上约 **800ms 后**才触发，相关测试预期失败；OS `subprocess.run(timeout=0.03)` 子进程回收对照通过。因此 A09 [#57](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/57) 的 `timeout_enforced=true` 不可作为可靠 CUDA/NVRTC 硬限期证据，必须改为独立子进程强制 kill/reap/未知效果后复跑，不涉及真实 GPU 或生产硬件。
+- **A02 实际主干增量：**[PR #53](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/53) 经其他 Agent 合并，新增 no_std transport 地址算术溢出拒绝、InstallBudget 顺序 ID/前驱 revision 校验及密集 golden 截断负测。本轮 A00 对最新 `main` 仓库真实 12 份 golden 执行独立 JS 字节 oracle **1,232/1,232**（12正例、1,160前缀、12尾字节、48头变异），不是 Rust codec 执行；另外已有独立真实 Cargo/Clippy/fmt 测试结果记录在本页此前主干状态中。相关最新 GitHub Actions 仍为 queued，不能当作绿灯。
+- **A06 新 G1 生命周期风险：**[issue #63](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/63) 来自实际源码：`charge_task_cpu` 在 `Weak<Process>` 无法升级时直接返回，可能遗失最后未结算的 `[from,until)` CPU 时间，尽管已修复 SMP panic。此项是**源码层面潜在欠账，尚无 QEMU exploit 证明**；要求 owner 绑定原始资源域至最后一次扣账，执行短生命周期线程/退出与配额对照，不引入第二套 ResourceDomain。A06 已有153/153 kernel 与2vCPU QEMU历史验收仍有效，但不证明每个 task 的最终借记或严格100ms硬配额。
+- **范围与安全边界：**本轮新 G1/G2 内核 CapSpace/ioctl/原 Hepta 持久实际效果仍未验收；主干 README 0字节，Asterinas `c4b7ed575b7b32773475b194d2ad41fb6d03765b`、`nightly-2026-07-21`、Hepta `f8c9419df6ddeb36ff8b522a50219981fb8d9345` 固定不变，不接触现役服务、系统盘或 GPU。
+
+---
+
+
+## 2026-10-16：A06 当前整树编译故障修复与双CPU独立回归
+
+- **最新实际阻塞及代码修复：**A06 owner 提交 `31e49a3c29d5e19d30976cdfb55accba1d786aea` 的独立完整内核构建在 `cpu.rs:700` 因 `quota_debt_regressions` 结尾被截断而失败，报 `unclosed delimiter`。使用先前经过真实QEMU验证的准确测试尾部，只追加缺失代码，不修改运行时路径。修复 [PR #61](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/61) 已合并到 A06 owner，merge `becd1fe3a106afd02d755cefebb4dc139704e390`，**尚未进入 main**。
+- **重新从源码构建及 SMP 回归：**修复后精确提交 `db3a8a36951041f6016a7d7ed870d1d9d014fdc5` 以固定 `nightly-2026-07-21` 完整编译成功，内核 ELF SHA256 `1bc49d2bd5995ad9d73457b310be1f0a9dcad8e3c36589b5f2741088db071572`。相同新内核运行 q35/TCG、2vCPU/双pthread共享cgroup **6/6 QEMU客体完成、无panic**：1% x2 =0.871/0.879%；10% x2=10.573/10.413%；SCHED_FIFO10%=10.104%；父域10%=10.221%。另外真实 `aster-core` 内核测试 **153/153通过**、无失败/软跳过、rawQEMU33。验收数据已提交到 A06 的 [机器结果](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/bbb5b87b81ef1a310b098c6b66aa4058018f678b/results/organ-backend/2026-10-16/a06-repaired-head-acceptance.json)，原始日志保留于隔离执行主机 `/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/a06-repaired-*`。
+- **范围边界：**已验证的是指定 x86_64 双vCPU/双线程、父域及RT测试，**不是**SMP普遍正确性、任意多核热插拔/迁移、逐100ms硬限额、长周期回归或 HOS2/Hepta原生执行。A06 [PR #18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18) 仍应保持Draft直到多机、权限和端到端门槛达到，不应仅因153内核测试通过就批准生产系统切换。
+
+---
+
+## 2026-10-16：SMP 双线程配额、退出进程防 panic、ABI 主干加固
+
+- **A06 双CPU实际新故障与修复**：[PR #59](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/59) 已合入 A06 owner 开发分支，merge `31e49a3c29d5e19d30976cdfb55accba1d786aea`；**未合入 main**，其主PR #18 仍为 Draft。修改后 Asterinas ELF SHA256 `5c73b7fb84b6d8f160b5b037be8b5bca7d8e5507a2cf7b779405d054918819bf`。原修改后内核在 2vCPU/双 pthread/共享1%配额下发生 `PosixThread::process().unwrap(None)` panic（已退出的 Task 暂时仍在调度器中，原Process的 Weak 不再能升级）；未修改 Asterinas 对照同负载未panic，但 `cpu.max` 不执行，实际约100%。
+- **真实QEMU修复验收**：对已销毁进程进行有界的 Weak upgrade 检查，仅允许已退出线程继续清理；原始读数和运行路径在有进程owner时不变。真实双vCPU双线程同cgroup **7/7** 次 guest raw33、无panic：1% x3 `0.792/0.896/0.950%`；10% x2 `10.392/9.914%`；FIFO 10% `10.279%`；父域10%/子域不限额 `10.262%`。每次配额前不限额总CPU约197–200%，因此确有两CPU同时运行，而不是单CPU假SMP。单vCPU原1%探针 **2/2** `0.999/1.000%`；固定 `nightly-2026-07-21` 编译及实际 `aster-core` QEMU **153/153通过、0失败/过滤/软跳过**。可复跑 [SMP测试源](../tests/organ_backend/smp2/run_parallel_candidate.py) 和[机器结果](../results/organ-backend/2026-10-16/a06-smp-posix-exit-guard.json)均位于 A06 PR #59/owner 分支，**不是 main**。
+- **ABI主干实际交付**：[PR #53](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/53) 已合并，merge `a1c61d50fe281361ca04ad4bc3c6b3aba2c2260f`，强化 HOS2 `no_std` transport 越界、错误响应的有序 request_id 与 InstallBudget 版本校验。本轮修复测试源码的三处Rustfmt末尾换行后形成 `ee13b2d05f18c17b01ff10c1e487b9c3cba54290`；从该合并后的精确主干源独立执行 Cargo test、严格Clippy、fmt、12/12 golden及19项Python ABI测试全部通过。**这仍不是已实现的 HOS2 内核 ioctl、权限和真实效果。**
+- **仍需攻克**：退出后最后一段CPU运行时间若失去持久所属资源，仍需正确结算；未测CPU热插拔/跨CPU迁移/长期并发锁序、严格每100ms窗口上限。A05真实 HOS2 CapSpace/ioctl、A07沿既有Hepta owner完成可信K↔D持久确认/退役均未闭环；不因双CPU测试就升格 G1/G2 或production。
+
+---
+
 ## 2026-10-16：A00 归档 CI 防假阳性、A06 实际内核修复及 A03 接口收敛
 
 - **main 已合并实际 CI 代码**：[PR #49](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/49) merge `7b1e183951121c5e16618ef046612053b146e6bc`，仅修改已有 `.github/workflows/a01-boot-evidence.yml`，用 PR base/push before 的实际 Git commit 检查归档源码与回归测试是否被同时删除。A00 独立 Linux Bash/Git fixture **9/9 通过**，包括 source+test 同删、符号链接、非法 base SHA、缺项和真正失败测试。合法首次 bootstrap 只说 source 缺失，**不**计归档测试 pass；GitHub Actions 队列未当作成功。

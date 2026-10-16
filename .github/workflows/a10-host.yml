@@ -1,0 +1,136 @@
+name: A10 Rust Wayland host integration
+
+on:
+  pull_request:
+    paths:
+      - 'ui/**'
+      - 'tests/ui/**'
+      - 'support/ui/**'
+      - '.github/workflows/a10-host.yml'
+      - 'README.md'
+  push:
+    branches: [main]
+    paths:
+      - 'ui/**'
+      - 'tests/ui/**'
+      - 'support/ui/**'
+      - '.github/workflows/a10-host.yml'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-source-guard:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      has_ui: ${{ steps.scope.outputs.has_ui }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify A00 bootstrap versus A10 source diff and empty README
+        id: scope
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test -f README.md && test ! -s README.md
+          if [[ -f ui/Cargo.toml ]]; then
+            echo 'has_ui=true' >> "$GITHUB_OUTPUT"
+            echo 'A10 Rust source exists; host build and Wayland tests are required.'
+          else
+            if [[ "$EVENT_NAME" == pull_request || "$EVENT_NAME" == push ]]; then
+              if [[ -z "$BASE_SHA" || -z "$HEAD_SHA" || "$BASE_SHA" =~ ^0+$ ]] ||
+                 ! git cat-file -e "$BASE_SHA^{commit}" ||
+                 ! git cat-file -e "$HEAD_SHA^{commit}"; then
+                echo 'Cannot verify source removal against the exact event before/after commits.' >&2
+                exit 1
+              fi
+              # Do not use 'git diff | grep -q' with pipefail: early grep
+              # termination can SIGPIPE the producer and hide a deletion.
+              changed_ui=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- \
+                ui/ tests/ui/ support/ui/) || {
+                echo 'Unable to verify UI source changes.' >&2
+                exit 1
+              }
+              if [[ -n "$changed_ui" ]]; then
+                echo 'A10 paths changed but ui/Cargo.toml is absent: fail closed.' >&2
+                exit 1
+              fi
+            fi
+            if [[ -d ui || -d tests/ui || -d support/ui ]]; then
+              echo 'Partial A10 source tree without manifest: fail closed.' >&2
+              exit 1
+            fi
+            echo 'has_ui=false' >> "$GITHUB_OUTPUT"
+            echo 'BOOTSTRAP ONLY: UI source is absent on main. This does NOT attest Rust compilation or Weston.'
+          fi
+
+  native-rust-and-wayland:
+    needs: ui-source-guard
+    if: ${{ needs.ui-source-guard.outputs.has_ui == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      RUSTUP_TOOLCHAIN: '1.88.0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install separately pinned host Rust and Linux software-rendering dependencies
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.88.0 --profile minimal --component rustfmt
+          rustup default 1.88.0
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            pkg-config libwayland-dev libxkbcommon-dev \
+            libgl1-mesa-dev libegl1-mesa-dev \
+            libx11-dev libxi-dev libxrandr-dev libxcursor-dev libxinerama-dev \
+            weston wayland-utils libgbm-dev libgl1-mesa-dri
+      - name: Record real host versions, not the pinned Asterinas kernel toolchain
+        run: |
+          set -euo pipefail
+          rustc -Vv
+          cargo -Vv
+          weston --version
+          cat /etc/os-release
+          test ! -s README.md
+      - name: Compile and test Rust binaries and validate rustfmt
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/a10"
+          bash tests/ui/check-host.sh 2>&1 | tee "$RUNNER_TEMP/a10/host-check.log"
+      - name: Run true Linux-host first-frame and lifecycle tests under headless Weston
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/a10"
+          export A10_HEADLESS_LOG_DIR="$RUNNER_TEMP/a10/wayland"
+          bash tests/ui/headless-weston.sh 2>&1 | tee "$RUNNER_TEMP/a10/headless.log"
+      - name: Enforce committed UI dependency lock after attempting real tests
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ ! -s ui/Cargo.lock ]] || ! git ls-files --error-unmatch ui/Cargo.lock >/dev/null 2>&1; then
+            echo 'A10 Cargo.lock is absent/untracked: host success is not reproducible.' >&2
+            exit 1
+          fi
+          git diff --exit-code HEAD -- ui/Cargo.lock
+          sha256sum ui/Cargo.lock
+          cargo metadata --manifest-path ui/Cargo.toml --locked --offline --format-version 1 >/dev/null
+      - name: Preserve raw A10 host/compiler/Weston evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a10-host-evidence
+          if-no-files-found: warn
+          path: |
+            ui/Cargo.lock
+            ${{ runner.temp }}/a10/
