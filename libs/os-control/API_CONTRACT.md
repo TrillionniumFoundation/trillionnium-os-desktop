@@ -248,3 +248,17 @@ silently reassigned. **This is only a host-model lifetime bound**; an actual
 kernel requires bounded residual-domain reclamation and a globally scoped
 object-ID registry across roots. A03 does not implement a new persistent
 ledger or substitute its in-memory registry for A05/A06's lifecycle owner.
+
+## Ancestor authorization epoch / reactivation ABA fencing
+
+A grant captures the immutable epoch chain from its ResourceDomain through
+its ancestors at issuance. A revoke followed by trusted reactivation of any
+ancestor changes that chain, so an *old child grant remains invalid* even if
+the ancestor is now alive again and its numeric CPU cap is unchanged.
+`install_budget_for_host_model` compares each saved ancestor epoch under
+the shared mutation gate and publishes a terminal `Revoked` result on stale
+D submission. The reservation slot additionally binds the saved epoch chain:
+a fresh grant cannot claim the *same* previously reserved D even when all
+public HOS2 request bytes are equal; it returns `Conflict`. A genuinely new
+post-recovery action must use a new D and fresh Hepta K authorization as
+appropriate. No new wire field or independent K ledger is introduced.

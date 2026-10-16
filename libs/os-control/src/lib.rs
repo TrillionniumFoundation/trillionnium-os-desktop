@@ -257,6 +257,10 @@ pub struct Grant {
     domain: ResourceDomain,
     pub principal: PublisherId,
     epoch: u64,
+    // Parent-first ancestry is not necessary: this captures the immutable
+    // immediate-parent -> root epoch chain at grant issuance. Every ancestor
+    // revoke/reactivation permanently invalidates the old authorization.
+    ancestor_epochs: Vec<u64>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -435,10 +439,13 @@ impl ResourceDomain {
             return Err(ResourceError::Revoked);
         }
         let mut ancestor = self.inner.parent.as_ref();
+        let mut ancestor_epochs = Vec::new();
         while let Some(parent) = ancestor {
-            if !parent.snapshot_state().alive {
+            let ancestor_state = parent.snapshot_state();
+            if !ancestor_state.alive {
                 return Err(ResourceError::Revoked);
             }
+            ancestor_epochs.push(ancestor_state.grant_epoch);
             ancestor = parent.inner.parent.as_ref();
         }
         if !principal.is_nonzero() {
@@ -448,6 +455,7 @@ impl ResourceDomain {
             domain: self.clone(),
             principal,
             epoch: state.grant_epoch,
+            ancestor_epochs,
         })
     }
 
@@ -731,15 +739,25 @@ impl ResourceDomain {
         // numeric parent cap has not changed. Every ancestor shares
         // this family's mutation gate with commit and revoke.
         let mut ancestor = self.inner.parent.as_ref();
+        let mut depth = 0;
         while let Some(parent) = ancestor {
             let parent_state = parent.snapshot_state();
             if !parent_state.alive {
                 return Err(ResourceError::Revoked);
             }
+            // Checking just the current alive flag permits an old child
+            // grant to resurrect after an ancestor revoke + reactivation.
+            if grant.ancestor_epochs.get(depth) != Some(&parent_state.grant_epoch) {
+                return Err(ResourceError::GrantEpochMismatch);
+            }
             if cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
             }
+            depth += 1;
             ancestor = parent.inner.parent.as_ref();
+        }
+        if grant.ancestor_epochs.len() != depth {
+            return Err(ResourceError::GrantEpochMismatch);
         }
         if lock_unpoisoned(&self.inner.children)
             .values()
@@ -1038,6 +1056,9 @@ struct Slot {
     // Public stable-ID bytes cannot authenticate an in-memory target.
     // Retain the original resource instance until contiguous retirement.
     target_instance: Arc<ResourceDomainInner>,
+    // Authoritative grant context, not extra HOS2 wire bytes. An old D
+    // cannot be reissued with a fresh post-revocation ancestor grant.
+    ancestor_epochs: Vec<u64>,
     state: Mutex<SlotState>,
 }
 
@@ -1346,6 +1367,7 @@ impl ControlCore {
                 if slot.publisher == publisher
                     && slot.binding == request.binding()
                     && Arc::ptr_eq(&slot.target_instance, &request.grant.domain.inner)
+                    && slot.ancestor_epochs.as_slice() == request.grant.ancestor_epochs.as_slice()
                 {
                     let observation =
                         observation_from_slot(self.identity(), request.sequence, slot);
@@ -1376,6 +1398,7 @@ impl ControlCore {
             binding: request.binding(),
             publisher,
             target_instance: Arc::clone(&request.grant.domain.inner),
+            ancestor_epochs: request.grant.ancestor_epochs.clone(),
             state: Mutex::new(SlotState::Reserved),
         });
         ns.slots.insert(request.sequence, Arc::clone(&slot));

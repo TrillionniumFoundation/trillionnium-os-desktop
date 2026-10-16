@@ -483,6 +483,78 @@ fn revoked_ancestor_fences_child_grants_and_pending_commit() {
 }
 
 #[test]
+fn old_child_grant_never_revives_after_ancestor_revoke_and_reactivate() {
+    let grandparent = root(201_000, CPU_PERIOD_NS);
+    let parent = with_parent(domain(201_001), object(201_001), &grandparent, 80).unwrap();
+    let child = with_parent(domain(201_002), object(201_002), &parent, 70).unwrap();
+    let who = publisher(201_003);
+    let stale = child.grant(who).unwrap();
+
+    grandparent.revoke();
+    assert!(matches!(child.grant(who), Err(ResourceError::Revoked)));
+    grandparent.reactivate_for_host_model().unwrap();
+    assert_eq!(
+        child.install_budget_for_host_model(&stale, 1, CPU_PERIOD_NS, 60, 1),
+        Err(ResourceError::GrantEpochMismatch)
+    );
+    assert_eq!(child.revision(), 1);
+    // A genuinely new grant is permitted only after trusted reactivation.
+    let fresh = child.grant(who).unwrap();
+    let receipt = child
+        .install_budget_for_host_model(&fresh, 1, CPU_PERIOD_NS, 60, 2)
+        .unwrap();
+    assert_eq!(receipt.revision, 2);
+    assert_eq!(
+        child.install_budget_for_host_model(&stale, 2, CPU_PERIOD_NS, 50, 3),
+        Err(ResourceError::GrantEpochMismatch)
+    );
+
+    parent.revoke();
+    parent.reactivate_for_host_model().unwrap();
+    assert_eq!(
+        child.install_budget_for_host_model(&fresh, 2, CPU_PERIOD_NS, 50, 4),
+        Err(ResourceError::GrantEpochMismatch)
+    );
+}
+
+#[test]
+fn same_d_with_new_ancestor_grant_conflicts_and_old_d_rejects_terminally() {
+    let root_domain = root(202_000, CPU_PERIOD_NS);
+    let child = with_parent(domain(202_001), object(202_001), &root_domain, 80).unwrap();
+    let who = publisher(202_002);
+    let stale_grant = child.grant(who).unwrap();
+    let core = ControlCore::new(boot(202_000), space(202_000));
+    let original = core
+        .reserve(request(1, stale_grant.clone(), 1, 60), who)
+        .unwrap();
+
+    root_domain.revoke();
+    root_domain.reactivate_for_host_model().unwrap();
+    let fresh_grant = child.grant(who).unwrap();
+    assert_eq!(
+        core.reserve(request(1, fresh_grant.clone(), 1, 60), who).err(),
+        Some(DeliveryError::Conflict)
+    );
+    assert!(matches!(
+        core.reserve_or_get(request(1, fresh_grant.clone(), 1, 60), who),
+        Err(DeliveryError::Conflict)
+    ));
+    let denied = core.commit(&original, who, 1).unwrap();
+    assert_eq!(denied.status, Some(DeliveryStatus::Revoked));
+    assert_eq!(child.revision(), 1);
+    match core.reserve_or_get(request(1, stale_grant, 1, 60), who) {
+        Ok(ReserveAttempt::Existing(observed)) => assert_eq!(observed, denied),
+        _ => panic!("old D must remain terminally rejected"),
+    }
+    let new_token = core.reserve(request(2, fresh_grant, 1, 60), who).unwrap();
+    assert_eq!(
+        core.commit(&new_token, who, 2).unwrap().status,
+        Some(DeliveryStatus::Ok)
+    );
+    assert_eq!(child.revision(), 2);
+}
+
+#[test]
 fn child_commit_admitted_before_ancestor_revoke_is_immutable() {
     let grandparent = root(76_000, 80);
     let parent = with_parent(domain(76_001), object(76_001), &grandparent, 70).unwrap();
