@@ -18,8 +18,8 @@ pub struct ResourceDomainId(pub u64);
 /// Intentionally not Clone or Copy; the real kernel still needs one authoritative registry.
 #[derive(Debug, PartialEq, Eq)]
 pub struct DeviceHandle {
-    pub pci_bdf: u32,
-    pub iommu_group: u32,
+    pci_bdf: u32,
+    iommu_group: u32,
     generation: u64,
     state: DeviceState,
 }
@@ -49,6 +49,8 @@ impl DeviceHandle {
         Self { pci_bdf, iommu_group, generation: 1, state: DeviceState::Unassigned }
     }
 
+    pub const fn pci_bdf(&self) -> u32 { self.pci_bdf }
+    pub const fn iommu_group(&self) -> u32 { self.iommu_group }
     pub const fn generation(&self) -> u64 { self.generation }
     pub const fn state(&self) -> DeviceState { self.state }
 
@@ -65,7 +67,11 @@ impl DeviceHandle {
     pub fn fence(&mut self, expected_generation: u64) -> Result<(), Error> {
         if self.generation != expected_generation { return Err(Error::StaleGeneration); }
         if !matches!(self.state, DeviceState::Assigned(_)) { return Err(Error::InvalidState); }
-        let next = self.generation.checked_add(1).ok_or(Error::ArithmeticOverflow)?;
+        // A generation overflow must never leave the device assigned.
+        let Some(next) = self.generation.checked_add(1) else {
+            self.state = DeviceState::Quarantined;
+            return Err(Error::ArithmeticOverflow);
+        };
         self.generation = next;
         self.state = DeviceState::Fenced;
         Ok(())
@@ -73,8 +79,8 @@ impl DeviceHandle {
 
     /// A failed or unknown-effect device must not be reassigned by this model.
     pub fn quarantine(&mut self) -> Result<(), Error> {
-        let next = self.generation.checked_add(1).ok_or(Error::ArithmeticOverflow)?;
-        self.generation = next;
+        // Quarantine is terminal, including when the counter is exhausted.
+        self.generation = self.generation.saturating_add(1);
         self.state = DeviceState::Quarantined;
         Ok(())
     }
@@ -90,9 +96,20 @@ impl DeviceHandle {
 /// This does not pin pages or reserve ResourceDomainId memory.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct MemoryObject {
-    pub id: u64,
-    pub owner: ResourceDomainId,
-    pub len: usize,
+    id: u64,
+    owner: ResourceDomainId,
+    len: usize,
+}
+
+impl MemoryObject {
+    /// Metadata only; canonical A01/A06 frame allocation, pinning and charging are external.
+    pub const fn new(id: u64, owner: ResourceDomainId, len: usize) -> Self {
+        Self { id, owner, len }
+    }
+    pub const fn id(&self) -> u64 { self.id }
+    pub const fn owner(&self) -> ResourceDomainId { self.owner }
+    pub const fn len(&self) -> usize { self.len }
+    pub const fn is_empty(&self) -> bool { self.len == 0 }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -114,11 +131,11 @@ pub enum BufferPhase {
 // Deliberately not Clone/Copy: a second local ownership state could incorrectly
 // release memory while the first copy still has an in-flight DMA.
 pub struct Buffer {
-    pub memory_id: u64,
-    pub owner: ResourceDomainId,
-    pub offset: usize,
-    pub len: usize,
-    pub direction: DmaDirection,
+    memory_id: u64,
+    owner: ResourceDomainId,
+    offset: usize,
+    len: usize,
+    direction: DmaDirection,
     phase: BufferPhase,
 }
 
@@ -131,6 +148,11 @@ impl Buffer {
         Ok(Self { memory_id: memory.id, owner: memory.owner, offset, len,
                   direction, phase: BufferPhase::CpuOwned })
     }
+    pub const fn memory_id(&self) -> u64 { self.memory_id }
+    pub const fn owner(&self) -> ResourceDomainId { self.owner }
+    pub const fn offset(&self) -> usize { self.offset }
+    pub const fn len(&self) -> usize { self.len }
+    pub const fn direction(&self) -> DmaDirection { self.direction }
     pub const fn phase(&self) -> BufferPhase { self.phase }
 
     /// The caller is responsible for real frame pinning, IOVA restrictions,
@@ -164,7 +186,7 @@ impl Buffer {
 /// Intentionally not Clone or Copy: duplicating in-flight accounting is unsafe.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Queue {
-    pub id: u64,
+    id: u64,
     owner: ResourceDomainId,
     device_generation: u64,
     queue_generation: u64,
@@ -177,11 +199,20 @@ pub struct Queue {
 /// Submission handle, not proof of a hardware IRQ, fence or DMA quiescence.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Completion {
-    pub memory_id: u64,
-    pub queue_id: u64,
-    pub device_generation: u64,
-    pub queue_generation: u64,
-    pub sequence: u64,
+    memory_id: u64,
+    queue_id: u64,
+    device_generation: u64,
+    queue_generation: u64,
+    sequence: u64,
+}
+
+impl Completion {
+    /// Read-only metadata; a token is not an attested hardware completion.
+    pub const fn memory_id(&self) -> u64 { self.memory_id }
+    pub const fn queue_id(&self) -> u64 { self.queue_id }
+    pub const fn device_generation(&self) -> u64 { self.device_generation }
+    pub const fn queue_generation(&self) -> u64 { self.queue_generation }
+    pub const fn sequence(&self) -> u64 { self.sequence }
 }
 
 impl Queue {
@@ -193,6 +224,7 @@ impl Queue {
                   capacity, outstanding: 0, next_sequence: 1, fenced: false })
     }
 
+    pub const fn id(&self) -> u64 { self.id }
     pub const fn outstanding(&self) -> u32 { self.outstanding }
     pub const fn generation(&self) -> u64 { self.queue_generation }
     pub const fn is_fenced(&self) -> bool { self.fenced }
@@ -251,8 +283,8 @@ impl Queue {
                    queue_id == self.id && queue_generation == self.queue_generation => {}
             _ => return Err(Error::InvalidState),
         }
-        let next = self.queue_generation.checked_add(1).ok_or(Error::ArithmeticOverflow)?;
-        self.queue_generation = next;
+        // Even when generation overflows, never leave unknown work executable.
+        self.queue_generation = self.queue_generation.saturating_add(1);
         self.fenced = true;
         buffer.phase = BufferPhase::UnknownEffect;
         // outstanding is intentionally still charged, NOT decremented.
@@ -443,25 +475,60 @@ mod tests {
     }
 
     #[test]
-    fn fence_and_cancel_generation_overflow_have_no_side_effects() {
-        let (mut dev, mut queue, mut buffer) = setup();
+    fn fence_generation_overflow_quarantines_instead_of_fail_open() {
+        let (mut dev, _, _) = setup();
         dev.generation = u64::MAX;
         assert_eq!(dev.fence(dev.generation()), Err(Error::ArithmeticOverflow));
-        assert_eq!(dev.state(), DeviceState::Assigned(D));
-        dev.generation = 1;
+        assert_eq!(dev.state(), DeviceState::Quarantined);
+        assert_eq!(dev.generation(), u64::MAX);
+        assert_eq!(dev.assign_after_kernel_checks(D), Err(Error::InvalidState));
+        assert_eq!(dev.ensure_owner(D, u64::MAX), Err(Error::UnauthorizedDomain));
+    }
+
+    #[test]
+    fn quarantine_generation_max_remains_terminal() {
+        let (mut dev, _, _) = setup();
+        dev.generation = u64::MAX;
+        assert_eq!(dev.quarantine(), Ok(()));
+        assert_eq!(dev.state(), DeviceState::Quarantined);
+        assert_eq!(dev.assign_after_kernel_checks(D), Err(Error::InvalidState));
+    }
+
+    #[test]
+    fn cancel_generation_overflow_fences_and_retains_dma_charge() {
+        let (dev, mut queue, mut buffer) = setup();
         buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
         queue.submit_after_driver_admission(&dev, &mut buffer).unwrap();
         queue.queue_generation = u64::MAX;
         buffer.phase = BufferPhase::InFlight {
-            device_generation: dev.generation(), queue_id: queue.id,
-            queue_generation: u64::MAX, sequence: 1,
+            device_generation: dev.generation(), queue_generation: u64::MAX,
+            sequence: 1,
         };
-        assert_eq!(queue.cancel_unknown_effect(&mut buffer), Err(Error::ArithmeticOverflow));
+        assert_eq!(queue.cancel_unknown_effect(&mut buffer), Ok(()));
         assert_eq!(queue.outstanding(), 1);
-        assert!(!queue.is_fenced());
-        assert!(matches!(buffer.phase(), BufferPhase::InFlight { .. }));
+        assert!(queue.is_fenced());
+        assert_eq!(queue.generation(), u64::MAX);
+        assert_eq!(buffer.phase(), BufferPhase::UnknownEffect);
+        assert_eq!(buffer.release_after_unmap(), Err(Error::InvalidState));
     }
 
+    #[test]
+    fn immutable_metadata_getters_report_expected_values() {
+        let (dev, queue, buffer) = setup();
+        assert_eq!(dev.pci_bdf(), 0x00000300);
+        assert_eq!(dev.iommu_group(), 27);
+        assert_eq!(queue.id(), 7);
+        assert_eq!(buffer.memory_id(), 3);
+        assert_eq!(buffer.owner(), D);
+        assert_eq!(buffer.offset(), 512);
+        assert_eq!(buffer.len(), 1024);
+        assert_eq!(buffer.direction(), DmaDirection::Bidirectional);
+        let memory = MemoryObject::new(11, D, 4096);
+        assert_eq!(memory.id(), 11);
+        assert_eq!(memory.owner(), D);
+        assert_eq!(memory.len(), 4096);
+        assert!(!memory.is_empty());
+    }
     #[test]
     fn sequence_overflow_preserves_queue_and_buffer_state() {
         let (dev, mut queue, mut buffer) = setup();
@@ -473,3 +540,32 @@ mod tests {
         assert_eq!(buffer.phase(), BufferPhase::Prepared { device_generation: 1 });
     }
 }
+
+
+/// The public API does not expose mutable PCI identity.
+///
+/// ```compile_fail
+/// use a09_device_lifecycle::DeviceHandle;
+/// let mut device = DeviceHandle::new(0x300, 27);
+/// device.pci_bdf = 0x400;
+/// ```
+///
+/// A caller cannot mutate buffer DMA direction in flight.
+///
+/// ```compile_fail
+/// use a09_device_lifecycle::{MemoryObject, ResourceDomainId, Buffer, DmaDirection};
+/// let memory = MemoryObject::new(7, ResourceDomainId(1), 4096);
+/// let mut buffer = Buffer::new(&memory, 0, 64, DmaDirection::ToDevice).unwrap();
+/// buffer.direction = DmaDirection::Bidirectional;
+/// ```
+///
+/// Completion fields are private: external code cannot forge one by struct literal.
+///
+/// ```compile_fail
+/// use a09_device_lifecycle::Completion;
+/// let fabricated = Completion {
+///     memory_id: 1, queue_id: 2, device_generation: 3,
+///     queue_generation: 4, sequence: 5,
+/// };
+/// ```
+pub struct CompileFailApiBoundary;
