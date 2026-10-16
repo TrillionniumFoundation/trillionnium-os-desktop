@@ -10,6 +10,40 @@ python3 -I support/build/osdk-integration/run.py \
   --output "$PWD/support/build/out/osdk-integration-new"
 ```
 
+The default profile is `osdk-native-unix-v1`. Its original UNIX GDB and monitor
+transports remain separate from the explicit local TCP profile:
+
+```sh
+python3 -I support/build/osdk-integration/run.py --local-tcp \
+  --output "$PWD/support/build/out/osdk-integration-local-tcp-new"
+```
+
+`--local-tcp` selects `osdk-native-local-tcp-v1`; it is never selected
+automatically after an error. The isolated basic-debug test uses a dynamic
+`127.0.0.1` GDB address. The recorder owns that listener through QEMU spawn and
+hands its descriptor to QEMU, then creates the current case's readiness marker.
+Both basic GDB and VS Code clients wait for that marker before attaching.
+An occupied port fails without an alternate endpoint. The explicit monitor
+transport uses the production `--qemu-monitor-transport=tcp` interface: OSDK
+retains its own loopback listener and QEMU connects as a client. No wildcard or
+public control address is accepted. The exact transport/readiness test patch is
+retained alongside the other harness adaptations; debugger and guest assertions
+remain unchanged.
+
+Each output records its profile on the environment, cases and guest records.
+Results from the two profiles must be reported separately. The previous default
+20/22 result and its UNIX failures remain historical evidence. Both profiles use
+the same persistent workspace lock to serialize shared Cargo caches, while each
+run keeps its own normalized dependency locks and scratch roots.
+
+The initial TCP profile deliberately retains ISA debug-exit. A working monitor
+connection alone does not establish coverage: ISA debug-exit can destroy guest
+memory before the monitor dumps it. Such an exit remains a real failed coverage
+case. No alternate shutdown lifecycle or OSTD change is hidden in this profile.
+TCP coverage requires OSDK exit 0 and raw QEMU exit 0 after a real monitor dump/quit, a new raw
+profile whose size exactly matches this guest's coverage announcement, matching
+serial and kernel hashes, and valid nonzero pinned LLVM coverage counts.
+
 The output directory must be new. The runner uses an independent Cargo target
 directory and a persistent integration runner lock, so it can run alongside a
 complete-kernel build. It starts the live GDB and VS Code cases first, then runs

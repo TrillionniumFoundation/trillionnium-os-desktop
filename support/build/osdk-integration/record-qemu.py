@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 import shlex
 import shutil
+import re
+import socket
 import subprocess
 import sys
 import threading
@@ -16,6 +18,7 @@ FIRMWARE = Path("/usr/share/seabios/bios-256k.bin")
 PROFILE = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
            "vcpus": 1, "memory_mib": 512, "network": False, "data_disks": False,
            "firmware": str(FIRMWARE)}
+LOCAL_TCP_PROFILE = "osdk-native-local-tcp-v1"
 
 
 def file_record(path):
@@ -145,6 +148,65 @@ def reserve_guest(directory):
             index += 1
 
 
+def local_tcp_controls(arguments):
+    """Validate explicit local TCP controls without rewriting their arguments."""
+    controls = []
+    for index, argument in enumerate(arguments):
+        key = "-" + argument.lstrip("-") if argument.startswith("-") else argument
+        if key not in ("-gdb", "-monitor", "-chardev"):
+            continue
+        if index + 1 == len(arguments):
+            raise ValueError(f"QEMU option {argument} has no value")
+        value = arguments[index + 1]
+        fields = qemu_options(value)
+        if key == "-chardev":
+            if fields[0] != "socket":
+                continue
+            options = dict(field.split("=", 1) for field in fields[1:] if "=" in field)
+            if options.get("host") != "127.0.0.1" or not options.get("port", "").isdigit():
+                raise ValueError("local TCP profile forbids non-loopback socket chardev")
+            port = int(options["port"])
+            if not 0 < port <= 65535:
+                raise ValueError("local TCP control port must be between 1 and 65535")
+            # GDB in this profile uses the direct -gdb tcp: endpoint below;
+            # other socket chardevs are recorded but never silently rewritten.
+            controls.append({"kind": "chardev", "host": "127.0.0.1", "port": port,
+                             "requested_value": value})
+            continue
+        if key == "-monitor" and (fields[0] in ("none", "stdio") or fields[0].startswith("chardev:")):
+            continue  # Preserve the normal stdio mux monitor alongside TCP.
+        matched = re.fullmatch(r"tcp:127\.0\.0\.1:([0-9]{1,5})", fields[0])
+        if not matched or not 0 < int(matched[1]) <= 65535:
+            raise ValueError(f"local TCP profile requires explicit 127.0.0.1 endpoint: {value}")
+        if key == "-monitor" and any(field == "server" or field.startswith("server=")
+                                     and field != "server=off" for field in fields[1:]):
+            raise ValueError("local TCP monitor must connect to the OSDK-owned listener")
+        controls.append({"kind": key[1:], "role": "server" if key == "-gdb" else "client",
+                         "host": "127.0.0.1", "port": int(matched[1]), "requested_value": value})
+    if sum(item["kind"] == "gdb" for item in controls) > 1:
+        raise ValueError("local TCP profile requires a unique GDB endpoint")
+    return controls
+
+
+def reserve_gdb_listener(arguments, endpoint):
+    """Keep the loopback listener owned until QEMU inherits its descriptor."""
+    identifier = "a01-gdb0"
+    if any(identifier in item for item in arguments):
+        raise ValueError("reserved GDB chardev id is already used")
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        listener.bind((endpoint["host"], endpoint["port"]))
+        listener.listen(1)
+        index = next(i for i, item in enumerate(arguments) if item in ("-gdb", "--gdb"))
+        adapted = [*arguments[:index], "-chardev",
+                   f"socket,id={identifier},fd={listener.fileno()},server=on,wait=off",
+                   "-gdb", "chardev:" + identifier, *arguments[index + 2:]]
+        return adapted, listener
+    except BaseException:
+        listener.close()
+        raise
+
+
 def tee_stream(source, destination, sink, errors):
     """Drain one pipe in bounded chunks, retaining bytes if forwarding fails."""
     recording, forwarding = True, True
@@ -179,8 +241,32 @@ def main():
               "profile": PROFILE, "raw_exit_code": None, "timed_out": False}
     started = time.monotonic()
     status = 125
+    gdb_listener = None
     try:
         arguments, logs, removed = transform_args(requested, guest, cwd)
+        local_tcp = os.environ.get("A01_OSDK_LOCAL_TCP") == "1"
+        profile_id = os.environ.get("A01_OSDK_PROFILE", "osdk-native-unix-v1")
+        if local_tcp != (profile_id == LOCAL_TCP_PROFILE):
+            raise ValueError(f"local TCP profile requires A01_OSDK_PROFILE={LOCAL_TCP_PROFILE}")
+        record.update({"profile_id": profile_id,
+                       "control_transport": "loopback-tcp" if local_tcp else "upstream-original"})
+        controls = local_tcp_controls(arguments) if local_tcp else []
+        record["control_endpoints"] = controls
+        gdb_endpoint = next((item for item in controls if item["kind"] == "gdb"), None)
+        ready_path = None
+        if gdb_endpoint:
+            if os.environ.get("A01_OSDK_GDB_READY"):
+                ready_path = Path(os.environ["A01_OSDK_GDB_READY"]).resolve()
+                if not ready_path.is_relative_to(case) or ready_path.exists():
+                    raise ValueError("GDB readiness marker must be a new path inside this case output")
+            record["gdb_readiness"] = {"ready": False, "marker_requested": ready_path is not None,
+                                       "startup_survival_seconds": 0.05}
+            arguments, gdb_listener = reserve_gdb_listener(arguments, gdb_endpoint)
+            record["gdb_listener"] = {"host": gdb_endpoint["host"], "port": gdb_endpoint["port"],
+                                       "fd": gdb_listener.fileno(), "bind_succeeded": True,
+                                       "held_until_qemu_spawn": True, "bind_close_rebind_gap": False,
+                                       "handoff": "prebound-listener-inherited-fd",
+                                       "parent_copy_closed_after_spawn": False}
         binary = shutil.which("qemu-system-x86_64")
         if not binary:
             raise FileNotFoundError("qemu-system-x86_64 is not installed")
@@ -206,7 +292,12 @@ def main():
         stream_errors = []
         with stream_paths["stdout"].open("wb") as stdout_log, \
                 stream_paths["stderr"].open("wb") as stderr_log, \
-                subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                 pass_fds=(gdb_listener.fileno(),) if gdb_listener is not None else ()) as process:
+            if gdb_listener is not None:
+                gdb_listener.close()
+                gdb_listener = None
+                record["gdb_listener"]["parent_copy_closed_after_spawn"] = True
             readers = [threading.Thread(target=tee_stream, args=(source, destination, sink, stream_errors))
                        for source, destination, sink in (
                            (process.stdout, stdout_log, sys.stdout.buffer),
@@ -214,18 +305,37 @@ def main():
             for reader in readers:
                 reader.start()
             try:
+                if gdb_endpoint:
+                    try:
+                        early_status = process.wait(timeout=0.05)
+                    except subprocess.TimeoutExpired:
+                        if ready_path is not None:
+                            marker = {"schema": 1, "qemu_pid": process.pid,
+                                      "endpoint": gdb_endpoint, "profile_id": profile_id,
+                                      "startup_survival_seconds": 0.05,
+                                      "listener_handoff": "prebound-listener-inherited-fd",
+                                      "bind_close_rebind_gap": False}
+                            with ready_path.open("x") as output:
+                                output.write(json.dumps(marker, indent=2) + "\n")
+                            record["gdb_readiness"].update({"ready": True, "marker": file_record(ready_path)})
+                    else:
+                        record["gdb_readiness"]["early_exit_code"] = early_status
                 status = process.wait(timeout=timeout)
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait()
                 status = 124
                 record["timed_out"] = True
+            except BaseException:
+                process.kill()
+                process.wait()
+                raise
             finally:
                 # Both pipes are drained concurrently while QEMU runs. Joining
                 # only after wait/kill avoids either full pipe blocking QEMU.
                 for reader in readers:
                     reader.join()
-            record["raw_exit_code"] = process.returncode
+                record["raw_exit_code"] = process.returncode
         record["stream_logs"] = {name: file_record(path) for name, path in stream_paths.items()}
         if stream_errors:
             record["stream_errors"] = stream_errors
@@ -242,6 +352,9 @@ def main():
         status = 125
         record["error"] = f"{type(error).__name__}: {error}"
         print(record["error"], file=sys.stderr)
+    finally:
+        if gdb_listener is not None:
+            gdb_listener.close()
     record["wrapper_exit_code"] = status if status >= 0 else 128 - status
     record["duration_seconds"] = round(time.monotonic() - started, 3)
     destination.write_text(json.dumps(record, indent=2) + "\n")

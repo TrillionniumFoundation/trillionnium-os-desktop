@@ -88,7 +88,7 @@ class ProfileTests(unittest.TestCase):
             self.assertEqual(second.name, "guest-002")
             self.assertEqual(marker.read_text(), "old")
 
-    def mock_main(self, timeout=False, raw_exit=0):
+    def mock_main(self, timeout=False, raw_exit=0, local_tcp=False, occupied=False, immediate=False):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "case"
             incoming_log = Path(temporary) / "qemu.log"
@@ -101,23 +101,45 @@ class ProfileTests(unittest.TestCase):
             stdout_sink, stderr_sink = io.BytesIO(), io.BytesIO()
             process.returncode = -9 if timeout else raw_exit
             process.wait.side_effect = [subprocess.TimeoutExpired(["qemu"], 2), -9] if timeout else None
+            process.pid = 12345
+            if local_tcp and not immediate:
+                process.wait.side_effect = [subprocess.TimeoutExpired(["qemu"], 0.05), raw_exit]
             process.wait.return_value = raw_exit
+            listener = MagicMock()
+            listener.fileno.return_value = 71
+            if occupied:
+                listener.bind.side_effect = OSError(98, "Address already in use")
             context = MagicMock()
             context.__enter__.return_value = process
             argv = ["record-qemu.py", "-kernel", "/kernel", "-chardev",
                     "stdio,id=mux,logfile=" + str(incoming_log), "--no-shutdown"]
+            if local_tcp:
+                argv += ["-gdb", "tcp:127.0.0.1:23456", "-S"]
+            ready = output / "gdb-ready.json"
+            popen = MagicMock(return_value=context)
             with patch.dict(os.environ, {"A01_OSDK_CASE_OUTPUT": str(output),
-                                         "A01_OSDK_GUEST_TIMEOUT": "2"}), \
+                                         "A01_OSDK_GUEST_TIMEOUT": "2",
+                                         "A01_OSDK_GDB_READY": str(ready),
+                                         "A01_OSDK_LOCAL_TCP": "1" if local_tcp else "0",
+                                         "A01_OSDK_PROFILE": shim.LOCAL_TCP_PROFILE if local_tcp
+                                         else "osdk-native-unix-v1"}), \
                     patch.object(shim.sys, "argv", argv), \
+                    patch.object(shim.socket, "socket", return_value=listener), \
                     patch.object(shim.shutil, "which", return_value="/qemu"), \
                     patch.object(shim, "file_record", side_effect=lambda p: {"path": str(p)}), \
                     patch.object(shim.subprocess, "check_output", return_value="QEMU mock"), \
                     patch.object(shim.sys, "stdout", MagicMock(buffer=stdout_sink)), \
                     patch.object(shim.sys, "stderr", MagicMock(buffer=stderr_sink)), \
-                    patch.object(shim.subprocess, "Popen", return_value=context):
+                    patch.object(shim.subprocess, "Popen", popen):
                 status = shim.main()
             guest = output / "guests/guest-001"
             record = json.loads((guest / "qemu.json").read_text())
+            if occupied:
+                popen.assert_not_called()
+                self.assertFalse(ready.exists())
+                listener.close.assert_called_once()
+                self.assertIn("Address already in use", record["error"])
+                return status, record, process
             self.assertEqual((guest / "serial.log").read_text(), incoming_log.read_text())
             self.assertEqual(record["serial_sources"], [str(incoming_log)])
             self.assertIn("--no-shutdown", record["argv"])
@@ -126,6 +148,27 @@ class ProfileTests(unittest.TestCase):
             self.assertEqual(stdout_sink.getvalue(), stdout)
             self.assertEqual(stderr_sink.getvalue(), stderr)
             self.assertEqual(set(record["stream_logs"]), {"stdout", "stderr"})
+            if local_tcp:
+                listener.bind.assert_called_once_with(("127.0.0.1", 23456))
+                listener.listen.assert_called_once_with(1)
+                listener.close.assert_called_once()
+                self.assertEqual(popen.call_args.kwargs["pass_fds"], (71,))
+                self.assertIn("socket,id=a01-gdb0,fd=71,server=on,wait=off", record["argv"])
+                self.assertTrue(record["gdb_listener"]["parent_copy_closed_after_spawn"])
+                self.assertFalse(record["gdb_listener"]["bind_close_rebind_gap"])
+                if immediate:
+                    self.assertFalse(ready.exists())
+                    self.assertFalse(record["gdb_readiness"]["ready"])
+                else:
+                    self.assertTrue(ready.is_file())
+                    marker = json.loads(ready.read_text())
+                    self.assertEqual(marker["qemu_pid"], 12345)
+                    self.assertEqual(marker["profile_id"], shim.LOCAL_TCP_PROFILE)
+            else:
+                self.assertFalse(ready.exists())
+                listener.bind.assert_not_called()
+                self.assertEqual(record["profile_id"], "osdk-native-unix-v1")
+                self.assertEqual(record["control_transport"], "upstream-original")
             return status, record, process
 
     def test_coverage_monitor_quit_zero_is_not_remapped(self):
@@ -147,6 +190,41 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(status, 1)
         self.assertEqual(record["raw_exit_code"], 1)
         process.kill.assert_not_called()
+
+    def test_tcp_profile_rejects_nonloopback_controls(self):
+        for option in ("-gdb", "-monitor"):
+            for endpoint in ("tcp:0.0.0.0:5000", "tcp::5000", "tcp:localhost:5000",
+                             "tcp:192.0.2.1:5000", "tcp:127.0.0.1:0", "tcp:127.0.0.1:65536",
+                             "unix:/tmp/socket"):
+                with self.subTest(option=option, endpoint=endpoint), self.assertRaises(ValueError):
+                    shim.local_tcp_controls([option, endpoint])
+
+    def test_tcp_monitor_remains_client_and_arguments_stay_exact(self):
+        requested = ["-gdb", "tcp:127.0.0.1:5000", "-monitor", "chardev:mux",
+                     "-monitor", "tcp:127.0.0.1:5001,server=off,wait=off"]
+        original = list(requested)
+        controls = shim.local_tcp_controls(requested)
+        self.assertEqual(requested, original)
+        self.assertEqual([control["role"] for control in controls], ["server", "client"])
+        for suffix in (",server", ",server=on"):
+            with self.subTest(suffix=suffix), self.assertRaises(ValueError):
+                shim.local_tcp_controls(["-monitor", "tcp:127.0.0.1:5001" + suffix])
+
+    def test_tcp_gdb_readiness_follows_inherited_listener_and_survival(self):
+        status, record, _process = self.mock_main(raw_exit=33, local_tcp=True)
+        self.assertEqual(status, 33)
+        self.assertTrue(record["gdb_readiness"]["ready"])
+        self.assertEqual(record["control_transport"], "loopback-tcp")
+
+    def test_occupied_tcp_gdb_does_not_start_qemu_or_signal_ready(self):
+        status, record, _process = self.mock_main(local_tcp=True, occupied=True)
+        self.assertEqual(status, 125)
+        self.assertIsNone(record["raw_exit_code"])
+
+    def test_immediate_qemu_failure_does_not_signal_gdb_ready(self):
+        status, record, _process = self.mock_main(raw_exit=1, local_tcp=True, immediate=True)
+        self.assertEqual(status, 1)
+        self.assertEqual(record["gdb_readiness"]["early_exit_code"], 1)
 
     def test_tee_drains_bounded_chunks_and_preserves_nontext_bytes(self):
         payload = bytes(range(256)) * 1024

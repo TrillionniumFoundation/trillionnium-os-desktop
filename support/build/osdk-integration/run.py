@@ -17,6 +17,8 @@ import time
 import tomllib
 
 TOOLCHAIN = "nightly-2026-07-21"
+UNIX_PROFILE = "osdk-native-unix-v1"
+TCP_PROFILE = "osdk-native-local-tcp-v1"
 FIXED_PATHS = {
     "commands::new::create_kernel_in_workspace": ["/tmp/kernel_workspace"],
     "commands::new::create_lib_in_workspace": ["/tmp/lib_workspace"],
@@ -53,7 +55,42 @@ def external(data):
             for p in tomllib.loads(data.decode())["package"] if p.get("source")}
 
 
-def prepare_harness(upstream, output, cargo, env):
+def adapt_basic_debug_to_local_tcp(contents):
+    """Change isolated debug transport/readiness while retaining assertions."""
+    start = contents.index("    fn basic_debug() {")
+    end = contents.index("    fn wait_for<T>(", start)
+    original = contents[start:end]
+    unix_address = '''        let unix_socket = {
+            let path = Path::new(&workspace.os_dir()).join("qemu-gdb-sock");
+            path.to_string_lossy().to_string()
+        };'''
+    tcp_address = '''        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let gdb_address = listener.local_addr().unwrap().to_string();
+        drop(listener);'''
+    unix_ready = 'Ok(Path::new(&sock).exists().then_some(()))'
+    tcp_ready = '''let ready = std::env::var("A01_OSDK_GDB_READY")
+                    .map_err(|error| error.to_string())?;
+                Ok(Path::new(&ready).is_file().then_some(()))'''
+    if original.count(unix_address) != 1 or original.count(unix_ready) != 1:
+        raise SystemExit("basic-debug transport setup changed; refusing a broad test rewrite")
+    adapted = original.replace(unix_address, tcp_address).replace("unix_socket", "gdb_address")
+    adapted = adapted.replace(unix_ready, tcp_ready)
+    contents = contents[:start] + adapted + contents[end:]
+    vsc_ready = '''                let symbols = wait_for(&debugger_cancelled, || launch_symbol_file(&dir))?;
+                gdb_continue_via(&addr, Some(&symbols))'''
+    if contents.count(vsc_ready) != 1:
+        raise SystemExit("VSCode debug readiness changed; refusing a broad test rewrite")
+    vsc_owned_ready = '''                let symbols = wait_for(&debugger_cancelled, || launch_symbol_file(&dir))?;
+                wait_for(&debugger_cancelled, || {
+                    let ready = std::env::var("A01_OSDK_GDB_READY")
+                        .map_err(|error| error.to_string())?;
+                    Ok(Path::new(&ready).is_file().then_some(()))
+                })?;
+                gdb_continue_via(&addr, Some(&symbols))'''
+    return contents.replace(vsc_ready, vsc_owned_ready)
+
+
+def prepare_harness(upstream, output, cargo, env, local_tcp=False):
     """Adapt only scratch paths and the local-OSTD anchor, retaining assertions."""
     root = output / "harness"
     root.mkdir()
@@ -76,6 +113,8 @@ def prepare_harness(upstream, output, cargo, env):
             if original.count('env!("CARGO_MANIFEST_DIR")') != 1:
                 raise SystemExit("OSDK integration helper manifest anchor changed")
             adapted = adapted.replace('env!("CARGO_MANIFEST_DIR")', json.dumps(str(upstream / "osdk")))
+        if local_tcp and path == tests / "commands/run.rs":
+            adapted = adapt_basic_debug_to_local_tcp(adapted)
         if path == tests / "examples_in_book/write_a_kernel_in_100_lines.rs":
             original_dependency = 'toml::Value::String("0.1.0".to_string())'
             if adapted.count(original_dependency) != 1:
@@ -150,6 +189,8 @@ def main():
     parser.add_argument("--output", type=Path, required=True, help="must not already exist")
     parser.add_argument("--case", action="append", help="exact upstream test name; default all 22")
     parser.add_argument("--case-timeout", type=int, default=900)
+    parser.add_argument("--local-tcp", action="store_true",
+                        help="explicit loopback TCP control profile; original UNIX default stays separate")
     parser.add_argument("--target-dir", type=Path,
                         help="reuse this runner's previous independent Cargo target cache")
     args = parser.parse_args()
@@ -168,6 +209,9 @@ def main():
     env = os.environ.copy()
     env["RUSTUP_TOOLCHAIN"] = TOOLCHAIN
     env["RUSTUP_AUTO_INSTALL"] = "0"
+    profile_id = TCP_PROFILE if args.local_tcp else UNIX_PROFILE
+    env["A01_OSDK_LOCAL_TCP"] = "1" if args.local_tcp else "0"
+    env["A01_OSDK_PROFILE"] = profile_id
     cargo_home = Path(env.get("CARGO_HOME", str(Path.home() / ".cargo")))
     rustup_home = Path(env.get("RUSTUP_HOME", str(Path.home() / ".rustup")))
     tool_bin = rustup_home / "toolchains" / (TOOLCHAIN + "-x86_64-unknown-linux-gnu") / "bin"
@@ -189,7 +233,7 @@ def main():
     env.pop("OSDK_CARGO_LOCK", None)
     commands = []
     with lock:
-        harness_root, fixed_root = prepare_harness(upstream, output, real_cargo, env)
+        harness_root, fixed_root = prepare_harness(upstream, output, real_cargo, env, args.local_tcp)
         production = [str(real_cargo), "build", "--locked", "--bin", "cargo-osdk"]
         commands.append(command(production, upstream / "osdk", env, output / "osdk-build.log", 600))
         if commands[-1]["raw_exit_code"]:
@@ -241,6 +285,8 @@ def main():
                        "cargo_path": str(real_cargo), "cargo_sha256": digest(real_cargo),
                        "rustc_path": str(tool_bin / "rustc"), "rustc_sha256": digest(tool_bin / "rustc"),
                        "rustup_auto_install": "0", "isolated_fixed_root": str(fixed_root),
+                       "profile_id": profile_id,
+                       "control_transport": "loopback-tcp" if args.local_tcp else "upstream-unix",
                        "harness_path": str(harness), "harness_sha256": digest(harness),
                        "osdk_path": str(osdk), "osdk_sha256": digest(osdk),
                        "seed_lock_sha256": digest(upstream / "Cargo.lock"),
@@ -264,7 +310,7 @@ def main():
             fixed = [Path(str(fixed_root) + value.removeprefix("/tmp"))
                      for value in FIXED_PATHS.get(case, [])]
             occupied = [str(path) for path in fixed if os.path.lexists(path)]
-            report = {"name": case, "fixed_paths": [str(p) for p in fixed],
+            report = {"name": case, "profile_id": profile_id, "fixed_paths": [str(p) for p in fixed],
                       "preexisting_paths": occupied, "status": "blocked" if occupied else "running"}
             (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
             if occupied:
@@ -278,6 +324,7 @@ def main():
             case_env = env.copy()
             case_env["TMPDIR"] = str(temp)
             case_env["A01_OSDK_CASE_OUTPUT"] = str(directory)
+            case_env["A01_OSDK_GDB_READY"] = str(directory / "gdb-ready.json")
             case_env["A01_OSDK_ALLOWED_ROOTS"] = json.dumps([str(output), str(target_dir), str(fixed_root),
                                                            *[str(p) for p in fixed]])
             print(f"RUN {case}", flush=True)
@@ -307,11 +354,15 @@ def main():
                                       "raw_exit_code": guest["raw_exit_code"],
                                       "timed_out": guest["timed_out"],
                                       "wrapper_exit_code": guest.get("wrapper_exit_code"),
-                                      "error": guest.get("error"), "serial_valid": serial_valid})
+                                      "error": guest.get("error"), "serial_valid": serial_valid,
+                                      "profile_id": guest.get("profile_id")})
             report["guests"] = guest_reports
             allowed_exit = (0, 33) if case == "commands::run::coverage_feature::basic_coverage" else (33,)
+            if args.local_tcp and case == "commands::run::coverage_feature::basic_coverage":
+                allowed_exit = (0,)
             if len(guest_reports) != VM_CASES.get(case, 0) or any(
                     guest["timed_out"] or guest["error"] or not guest["serial_valid"]
+                    or guest["profile_id"] != profile_id
                     or guest["raw_exit_code"] not in allowed_exit
                     or guest["wrapper_exit_code"] != guest["raw_exit_code"] for guest in guest_reports):
                 report["status"] = "failed"
@@ -341,7 +392,9 @@ def main():
             results.append(report)
             print(f"{report['status'].upper()} {case} ({invoked['duration_seconds']}s)", flush=True)
             (output / "result.json").write_text(json.dumps({"schema": 1, "cases": results}, indent=2) + "\n")
-        summary = {"schema": 1, "profile": environment["profile"], "scope": environment["scope"],
+        summary = {"schema": 1, "profile_id": profile_id,
+                   "control_transport": environment["control_transport"],
+                   "profile": environment["profile"], "scope": environment["scope"],
                    "available_cases": len(available), "selected_cases": len(selected),
                    "passed": sum(r["status"] == "passed" for r in results),
                    "failed": sum(r["status"] == "failed" for r in results),
