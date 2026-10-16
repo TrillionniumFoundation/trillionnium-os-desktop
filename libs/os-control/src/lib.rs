@@ -277,9 +277,28 @@ impl ResourceDomain {
         }
         let budget = Budget::new(initial_cap_ns)?;
         if let Some(parent) = parent {
+            // Serialize registration with ancestor budget changes and revoke.
+            let _gate = lock_unpoisoned(&parent.inner.gate);
             let parent_state = parent.snapshot_state();
             if initial_cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
+            }
+            // An ancestor or sibling identity must not be reused. Replacing
+            // a registered child cap can let a parent undercut the real child.
+            let mut ancestor = Some(parent);
+            while let Some(current) = ancestor {
+                let state = current.snapshot_state();
+                if !state.alive {
+                    return Err(ResourceError::Revoked);
+                }
+                if state.id == id {
+                    return Err(ResourceError::InvalidIdentity);
+                }
+                ancestor = current.inner.parent.as_ref();
+            }
+            let mut children = lock_unpoisoned(&parent.inner.children);
+            if children.contains_key(&id) {
+                return Err(ResourceError::InvalidIdentity);
             }
             let inner = Arc::new(ResourceDomainInner {
                 gate: Arc::clone(&parent.inner.gate),
@@ -301,7 +320,7 @@ impl ResourceDomain {
                 parent: Some(parent.clone()),
                 children: Mutex::new(BTreeMap::new()),
             });
-            lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
+            children.insert(id, initial_cap_ns);
             return Ok(Self { inner });
         }
         Ok(Self {
@@ -526,6 +545,14 @@ impl ResourceDomain {
         {
             return Err(ResourceError::ParentConstraint);
         }
+        // Settle at the effective time, not the last unrelated usage read.
+        // A cap change in the same period must never recharge consumed CPU.
+        let window_start_ns = (now_ns / state.budget.period_ns) * state.budget.period_ns;
+        if window_start_ns != state.window_start_ns {
+            state.window_start_ns = window_start_ns;
+            state.window_consumed_ns = 0;
+        }
+        let consumed_at_apply_ns = state.window_consumed_ns;
         let previous_revision = state.revision;
         state.revision = state
             .revision
@@ -535,7 +562,6 @@ impl ResourceDomain {
         if let Some(parent) = &grant.domain.parent_domain_for_model() {
             lock_unpoisoned(&parent.inner.children).insert(state.id, cap_ns);
         }
-        let consumed_at_apply_ns = state.window_consumed_ns;
         Ok(BudgetReceipt {
             previous_revision,
             revision: state.revision,
@@ -561,38 +587,8 @@ pub fn with_parent(
     parent: &ResourceDomain,
     initial_cap_ns: u64,
 ) -> Result<ResourceDomain, ResourceError> {
-    let budget = Budget::new(initial_cap_ns)?;
-    let parent_state = parent.snapshot_state();
-    if initial_cap_ns > parent_state.budget.cap_ns {
-        return Err(ResourceError::ParentConstraint);
-    }
-    if !id.is_nonzero() || !stable_object_id.is_nonzero() {
-        return Err(ResourceError::InvalidIdentity);
-    }
-    let child = ResourceDomain {
-        inner: Arc::new(ResourceDomainInner {
-            gate: Arc::clone(&parent.inner.gate),
-            state: Mutex::new(DomainState {
-                id,
-                stable_object_id,
-                parent: Some(parent_state.id),
-                revision: 1,
-                budget,
-                consumed_ns: 0,
-                window_consumed_ns: 0,
-                window_start_ns: 0,
-                event_sequence: 0,
-                dropped_events: 0,
-                alive: true,
-                grant_epoch: 1,
-                user_paused: false,
-            }),
-            parent: Some(parent.clone()),
-            children: Mutex::new(BTreeMap::new()),
-        }),
-    };
-    lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
-    Ok(child)
+    // Keep direct and helper creation paths under the same ancestor gate.
+    ResourceDomain::new(id, stable_object_id, Some(parent), initial_cap_ns)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
