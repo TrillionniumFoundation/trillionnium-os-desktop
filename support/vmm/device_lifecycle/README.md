@@ -102,3 +102,20 @@ monotonically non-repeating device attachment identities per boot,
 including hotplug/reset/driver rebind. A01 still owns real IOMMU,
 DMA quiescence and IRQ isolation. Separate Rust tests cover BDF reuse
 and zero-ID refusal. Rust tests are unverified until actual CI runs.
+
+## Queue-ID reuse and late-completion ABA
+
+Queue::new now requires a nonzero queue_instance value from A05's canonical
+queue registry, independent of its numeric queue ID and device generation.
+The instance must not repeat across close/reopen, VM teardown, or queue reset.
+BufferPhase::InFlight, Completion and Queue metadata bind to the same
+queue_instance; a late completion or cancellation from a former queue lifetime
+cannot affect a newer queue that reused its numeric ID and generation.
+Tests cover identical queue ID, ResourceDomain, device, and generation
+with distinct queue incarnations, plus zero-ID rejection.
+
+This value is NOT a GPU permission or queue-authority token. The standalone
+crate cannot mint, authenticate, or globally enforce unique queue instances;
+A05 must allocate and enforce them inside its existing kernel registry.
+A06 still owns queue/RAM accounting and A01 owns real driver interrupt/fence
+evidence. None of these Rust tests establishes physical DMA quiescence.

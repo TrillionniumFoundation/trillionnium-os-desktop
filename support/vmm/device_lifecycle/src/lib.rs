@@ -54,6 +54,7 @@ pub enum Error {
     InvalidRange,
     InvalidCompletion,
     InvalidDeviceIdentity,
+    InvalidQueueIdentity,
 }
 
 impl DeviceHandle {
@@ -144,7 +145,7 @@ pub enum DmaDirection { ToDevice, FromDevice, Bidirectional }
 pub enum BufferPhase {
     CpuOwned,
     Prepared { device_generation: u64 },
-    InFlight { device_generation: u64, queue_id: u64, queue_generation: u64, sequence: u64 },
+    InFlight { device_generation: u64, queue_id: u64, queue_instance: u64, queue_generation: u64, sequence: u64 },
     NeedsCpuSync,
     UnknownEffect,
     Released,
@@ -227,6 +228,7 @@ impl Buffer {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Queue {
     id: u64,
+    queue_instance: u64,
     owner: ResourceDomainId,
     device_identity: DeviceIdentity,
     device_generation: u64,
@@ -242,6 +244,7 @@ pub struct Queue {
 pub struct Completion {
     memory_id: u64,
     queue_id: u64,
+    queue_instance: u64,
     device_generation: u64,
     queue_generation: u64,
     sequence: u64,
@@ -251,22 +254,27 @@ impl Completion {
     /// Read-only metadata; a token is not an attested hardware completion.
     pub const fn memory_id(&self) -> u64 { self.memory_id }
     pub const fn queue_id(&self) -> u64 { self.queue_id }
+    pub const fn queue_instance(&self) -> u64 { self.queue_instance }
     pub const fn device_generation(&self) -> u64 { self.device_generation }
     pub const fn queue_generation(&self) -> u64 { self.queue_generation }
     pub const fn sequence(&self) -> u64 { self.sequence }
 }
 
 impl Queue {
-    pub fn new(id: u64, device: &DeviceHandle, owner: ResourceDomainId,
-               capacity: u32) -> Result<Self, Error> {
+    /// queue_instance is minted by A05's canonical queue registry for each
+    /// open/recreate lifetime; it is NOT a capability or a permission grant.
+    pub fn new(id: u64, queue_instance: u64, device: &DeviceHandle,
+               owner: ResourceDomainId, capacity: u32) -> Result<Self, Error> {
+        if queue_instance == 0 { return Err(Error::InvalidQueueIdentity); }
         if capacity == 0 { return Err(Error::QueueFull); }
         device.ensure_owner(owner, device.generation)?;
-        Ok(Self { id, owner, device_identity: device.identity(),
+        Ok(Self { id, queue_instance, owner, device_identity: device.identity(),
                   device_generation: device.generation, queue_generation: 1,
                   capacity, outstanding: 0, next_sequence: 1, fenced: false })
     }
 
     pub const fn id(&self) -> u64 { self.id }
+    pub const fn queue_instance(&self) -> u64 { self.queue_instance }
     pub const fn outstanding(&self) -> u32 { self.outstanding }
     pub const fn generation(&self) -> u64 { self.queue_generation }
     pub const fn is_fenced(&self) -> bool { self.fenced }
@@ -292,9 +300,10 @@ impl Queue {
         self.next_sequence = next;
         self.outstanding = outstanding;
         buffer.phase = BufferPhase::InFlight { device_generation: self.device_generation,
-            queue_id: self.id, queue_generation: self.queue_generation, sequence: seq };
+            queue_id: self.id, queue_instance: self.queue_instance,
+            queue_generation: self.queue_generation, sequence: seq };
         Ok(Completion { memory_id: buffer.memory_id, queue_id: self.id,
-            device_generation: self.device_generation, queue_generation: self.queue_generation,
+            queue_instance: self.queue_instance, device_generation: self.device_generation, queue_generation: self.queue_generation,
             sequence: seq })
     }
 
@@ -308,7 +317,8 @@ impl Queue {
            buffer.device_identity != Some(self.device_identity) {
             return Err(Error::InvalidCompletion);
         }
-        if self.fenced || tag.queue_id != self.id || tag.memory_id != buffer.memory_id ||
+        if self.fenced || tag.queue_id != self.id || tag.queue_instance != self.queue_instance ||
+           tag.memory_id != buffer.memory_id ||
            tag.queue_generation != self.queue_generation ||
            tag.device_generation != self.device_generation ||
            buffer.owner != self.owner {
@@ -316,7 +326,8 @@ impl Queue {
         }
         if buffer.phase != (BufferPhase::InFlight {
             device_generation: self.device_generation,
-            queue_id: self.id, queue_generation: self.queue_generation, sequence: tag.sequence,
+            queue_id: self.id, queue_instance: self.queue_instance,
+            queue_generation: self.queue_generation, sequence: tag.sequence,
         }) { return Err(Error::InvalidCompletion); }
         let next = self.outstanding.checked_sub(1).ok_or(Error::InvalidState)?;
         self.outstanding = next;
@@ -331,9 +342,10 @@ impl Queue {
             return Err(Error::InvalidState);
         }
         match buffer.phase {
-            BufferPhase::InFlight { device_generation, queue_id, queue_generation, .. }
+            BufferPhase::InFlight { device_generation, queue_id, queue_instance, queue_generation, .. }
                 if buffer.owner == self.owner && device_generation == self.device_generation &&
-                   queue_id == self.id && queue_generation == self.queue_generation => {}
+                   queue_id == self.id && queue_instance == self.queue_instance &&
+                   queue_generation == self.queue_generation => {}
             _ => return Err(Error::InvalidState),
         }
         // Even when generation overflows, never leave unknown work executable.
@@ -354,7 +366,7 @@ mod tests {
     fn setup() -> (DeviceHandle, Queue, Buffer) {
         let mut dev = DeviceHandle::new(0x00000300, 27, 1).unwrap();
         dev.assign_after_kernel_checks(D).unwrap();
-        let queue = Queue::new(7, &dev, D, 2).unwrap();
+        let queue = Queue::new(7, 1001, &dev, D, 2).unwrap();
         let mem = MemoryObject { id: 3, owner: D, len: 4096 };
         let buffer = Buffer::new(&mem, 512, 1024, DmaDirection::Bidirectional).unwrap();
         (dev, queue, buffer)
@@ -399,7 +411,7 @@ mod tests {
     fn claim_is_exclusive_and_same_owner() {
         let (mut dev, _, _) = setup();
         assert_eq!(dev.assign_after_kernel_checks(OTHER), Err(Error::InvalidState));
-        assert_eq!(Queue::new(6, &dev, OTHER, 1), Err(Error::UnauthorizedDomain));
+        assert_eq!(Queue::new(6, 1001, &dev, OTHER, 1), Err(Error::UnauthorizedDomain));
     }
 
     #[test]
@@ -455,7 +467,7 @@ mod tests {
     #[test]
     fn foreign_queue_cannot_cancel_or_complete_another_queues_buffer() {
         let (dev, mut original, mut buffer) = setup();
-        let mut foreign = Queue::new(8, &dev, D, 2).unwrap();
+        let mut foreign = Queue::new(8, 1001, &dev, D, 2).unwrap();
         buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
         let original_tag = original.submit_after_driver_admission(&dev, &mut buffer).unwrap();
         // Both queues share owner and generation, and each begins at sequence 1.
@@ -484,7 +496,7 @@ mod tests {
     #[test]
     fn cancellation_fences_only_the_original_queue_after_binding() {
         let (dev, mut original, mut buffer) = setup();
-        let mut foreign = Queue::new(8, &dev, D, 2).unwrap();
+        let mut foreign = Queue::new(8, 1001, &dev, D, 2).unwrap();
         buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
         original.submit_after_driver_admission(&dev, &mut buffer).unwrap();
         assert_eq!(foreign.cancel_unknown_effect(&mut buffer), Err(Error::InvalidState));
@@ -502,7 +514,7 @@ mod tests {
         let mut other = DeviceHandle::new(0x00000400, 28, 1).unwrap();
         other.assign_after_kernel_checks(D).unwrap();
         // Same queue ID, ResourceDomain and generation on different physical devices.
-        let mut foreign = Queue::new(original.id(), &other, D, 2).unwrap();
+        let mut foreign = Queue::new(original.id(), 1001, &other, D, 2).unwrap();
         assert_eq!(dev.generation(), other.generation());
         buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
         assert_eq!(foreign.submit_after_driver_admission(&other, &mut buffer),
@@ -515,6 +527,7 @@ mod tests {
         assert_eq!(original.outstanding(), 1);
         assert_eq!(buffer.phase(), BufferPhase::InFlight {
             device_generation: dev.generation(), queue_id: original.id(),
+            queue_instance: original.queue_instance(),
             queue_generation: original.generation(), sequence: tag.sequence(),
         });
         original.complete_after_hardware_fence(&dev, &mut buffer, tag).unwrap();
@@ -537,13 +550,39 @@ mod tests {
     }
 
     #[test]
+    fn reused_queue_id_requires_new_unique_queue_incarnation() {
+        let (dev, mut old_queue, mut buffer) = setup();
+        let mut new_queue = Queue::new(old_queue.id(), 1002, &dev, D, 2).unwrap();
+        assert_eq!(old_queue.id(), new_queue.id());
+        assert_eq!(old_queue.generation(), new_queue.generation());
+        assert_ne!(old_queue.queue_instance(), new_queue.queue_instance());
+        buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
+        let old_tag = old_queue.submit_after_driver_admission(&dev, &mut buffer).unwrap();
+        assert_eq!(new_queue.cancel_unknown_effect(&mut buffer), Err(Error::InvalidState));
+        assert_eq!(new_queue.complete_after_hardware_fence(&dev, &mut buffer, old_tag),
+                   Err(Error::InvalidCompletion));
+        let forged = Completion { queue_instance: new_queue.queue_instance(), ..old_tag };
+        assert_eq!(new_queue.complete_after_hardware_fence(&dev, &mut buffer, forged),
+                   Err(Error::InvalidCompletion));
+        assert_eq!(new_queue.outstanding(), 0);
+        assert_eq!(old_queue.outstanding(), 1);
+        old_queue.complete_after_hardware_fence(&dev, &mut buffer, old_tag).unwrap();
+    }
+
+    #[test]
+    fn zero_queue_incarnation_is_refused() {
+        let (dev, _, _) = setup();
+        assert_eq!(Queue::new(7, 0, &dev, D, 1), Err(Error::InvalidQueueIdentity));
+    }
+
+    #[test]
     fn same_bdf_and_group_different_instance_cannot_accept_old_dma() {
         let (original, mut old_queue, mut buffer) = setup();
         let mut replacement = DeviceHandle::new(
             original.pci_bdf(), original.iommu_group(), original.instance_id() + 1,
         ).unwrap();
         replacement.assign_after_kernel_checks(D).unwrap();
-        let mut new_queue = Queue::new(old_queue.id(), &replacement, D, 2).unwrap();
+        let mut new_queue = Queue::new(old_queue.id(), 1001, &replacement, D, 2).unwrap();
         assert_eq!(original.pci_bdf(), replacement.pci_bdf());
         assert_eq!(original.iommu_group(), replacement.iommu_group());
         assert_eq!(original.generation(), replacement.generation());
@@ -623,7 +662,7 @@ mod tests {
     #[test]
     fn rejects_zero_capacity_queue_and_prepared_double_submit() {
         let (dev, mut queue, mut buffer) = setup();
-        assert_eq!(Queue::new(4, &dev, D, 0), Err(Error::QueueFull));
+        assert_eq!(Queue::new(4, 1001, &dev, D, 0), Err(Error::QueueFull));
         buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
         queue.submit_after_driver_admission(&dev, &mut buffer).unwrap();
         assert_eq!(queue.submit_after_driver_admission(&dev, &mut buffer), Err(Error::InvalidState));
@@ -658,6 +697,7 @@ mod tests {
         queue.queue_generation = u64::MAX;
         buffer.phase = BufferPhase::InFlight {
             device_generation: dev.generation(), queue_id: queue.id,
+            queue_instance: queue.queue_instance(),
             queue_generation: u64::MAX, sequence: 1,
         };
         assert_eq!(queue.cancel_unknown_effect(&mut buffer), Ok(()));
@@ -720,8 +760,8 @@ mod tests {
 /// ```compile_fail
 /// use a09_device_lifecycle::Completion;
 /// let fabricated = Completion {
-///     memory_id: 1, queue_id: 2, device_generation: 3,
-///     queue_generation: 4, sequence: 5,
+///     memory_id: 1, queue_id: 2, queue_instance: 3, device_generation: 4,
+///     queue_generation: 5, sequence: 6,
 /// };
 /// ```
 pub struct CompileFailApiBoundary;
