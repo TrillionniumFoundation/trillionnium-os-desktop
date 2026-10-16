@@ -14,6 +14,14 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ResourceDomainId(pub u64);
 
+// Device binding is only an identity check, not a device capability.
+// The canonical A05 PCI registry must still reject independent duplicate handles.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct DeviceIdentity {
+    pci_bdf: u32,
+    iommu_group: u32,
+}
+
 /// State-only handle to an exclusive physical device's entire IOMMU group.
 /// Intentionally not Clone or Copy; the real kernel still needs one authoritative registry.
 #[derive(Debug, PartialEq, Eq)]
@@ -53,6 +61,9 @@ impl DeviceHandle {
     pub const fn iommu_group(&self) -> u32 { self.iommu_group }
     pub const fn generation(&self) -> u64 { self.generation }
     pub const fn state(&self) -> DeviceState { self.state }
+    const fn identity(&self) -> DeviceIdentity {
+        DeviceIdentity { pci_bdf: self.pci_bdf, iommu_group: self.iommu_group }
+    }
 
     /// Model transition. Caller MUST have independently proven A05 admission,
     /// isolated IOMMU group, and exclusive device ownership before calling.
@@ -136,6 +147,7 @@ pub struct Buffer {
     offset: usize,
     len: usize,
     direction: DmaDirection,
+    device_identity: Option<DeviceIdentity>,
     phase: BufferPhase,
     // Fresh CPU-owned memory is not proof that a completed DMA lifecycle was
     // synchronized/unmapped; only a post-completion sync permits release.
@@ -149,7 +161,8 @@ impl Buffer {
             return Err(Error::InvalidRange);
         }
         Ok(Self { memory_id: memory.id, owner: memory.owner, offset, len,
-                  direction, phase: BufferPhase::CpuOwned, ready_for_release: false })
+                  direction, device_identity: None,
+                  phase: BufferPhase::CpuOwned, ready_for_release: false })
     }
     pub const fn memory_id(&self) -> u64 { self.memory_id }
     pub const fn owner(&self) -> ResourceDomainId { self.owner }
@@ -164,6 +177,13 @@ impl Buffer {
         -> Result<(), Error> {
         device.ensure_owner(self.owner, device.generation)?;
         if self.phase != BufferPhase::CpuOwned { return Err(Error::InvalidState); }
+        // A buffer already associated with one physical device must not be
+        // retargeted to another merely because generation/owner values match.
+        let identity = device.identity();
+        if self.device_identity.is_some() && self.device_identity != Some(identity) {
+            return Err(Error::InvalidState);
+        }
+        self.device_identity = Some(identity);
         self.ready_for_release = false;
         self.phase = BufferPhase::Prepared { device_generation: device.generation };
         Ok(())
@@ -196,6 +216,7 @@ impl Buffer {
 pub struct Queue {
     id: u64,
     owner: ResourceDomainId,
+    device_identity: DeviceIdentity,
     device_generation: u64,
     queue_generation: u64,
     capacity: u32,
@@ -228,7 +249,8 @@ impl Queue {
                capacity: u32) -> Result<Self, Error> {
         if capacity == 0 { return Err(Error::QueueFull); }
         device.ensure_owner(owner, device.generation)?;
-        Ok(Self { id, owner, device_generation: device.generation, queue_generation: 1,
+        Ok(Self { id, owner, device_identity: device.identity(),
+                  device_generation: device.generation, queue_generation: 1,
                   capacity, outstanding: 0, next_sequence: 1, fenced: false })
     }
 
@@ -242,6 +264,10 @@ impl Queue {
     pub fn submit_after_driver_admission(&mut self, device: &DeviceHandle,
                                          buffer: &mut Buffer) -> Result<Completion, Error> {
         device.ensure_owner(self.owner, self.device_generation)?;
+        if device.identity() != self.device_identity ||
+           buffer.device_identity != Some(self.device_identity) {
+            return Err(Error::InvalidState);
+        }
         if self.fenced { return Err(Error::InvalidState); }
         if buffer.owner != self.owner { return Err(Error::UnauthorizedDomain); }
         if buffer.phase != (BufferPhase::Prepared { device_generation: self.device_generation }) {
@@ -266,6 +292,10 @@ impl Queue {
                                         buffer: &mut Buffer, tag: Completion) -> Result<(), Error> {
         // Fenced device generation is rejected, leaving buffers quarantinable.
         device.ensure_owner(self.owner, self.device_generation)?;
+        if device.identity() != self.device_identity ||
+           buffer.device_identity != Some(self.device_identity) {
+            return Err(Error::InvalidCompletion);
+        }
         if self.fenced || tag.queue_id != self.id || tag.memory_id != buffer.memory_id ||
            tag.queue_generation != self.queue_generation ||
            tag.device_generation != self.device_generation ||
@@ -285,6 +315,9 @@ impl Queue {
     /// Cancellation is *not* completion. Keep in-flight pages pinned and make
     /// both the queue and buffer unusable until out-of-band DMA quiescence.
     pub fn cancel_unknown_effect(&mut self, buffer: &mut Buffer) -> Result<(), Error> {
+        if buffer.device_identity != Some(self.device_identity) {
+            return Err(Error::InvalidState);
+        }
         match buffer.phase {
             BufferPhase::InFlight { device_generation, queue_id, queue_generation, .. }
                 if buffer.owner == self.owner && device_generation == self.device_generation &&
@@ -449,6 +482,62 @@ mod tests {
         assert_eq!(buffer.phase(), BufferPhase::UnknownEffect);
         assert!(!foreign.is_fenced());
         assert_eq!(foreign.outstanding(), 0);
+    }
+
+    #[test]
+    fn different_devices_same_owner_and_generation_cannot_cross_submit() {
+        let (dev, mut original, mut buffer) = setup();
+        let mut other = DeviceHandle::new(0x00000400, 28);
+        other.assign_after_kernel_checks(D).unwrap();
+        // Same queue ID, ResourceDomain and generation on different physical devices.
+        let mut foreign = Queue::new(original.id(), &other, D, 2).unwrap();
+        assert_eq!(dev.generation(), other.generation());
+        buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
+        assert_eq!(foreign.submit_after_driver_admission(&other, &mut buffer),
+                   Err(Error::InvalidState));
+        assert_eq!(foreign.outstanding(), 0);
+        let tag = original.submit_after_driver_admission(&dev, &mut buffer).unwrap();
+        assert_eq!(foreign.cancel_unknown_effect(&mut buffer), Err(Error::InvalidState));
+        assert_eq!(foreign.complete_after_hardware_fence(&other, &mut buffer, tag),
+                   Err(Error::InvalidCompletion));
+        assert_eq!(original.outstanding(), 1);
+        assert_eq!(buffer.phase(), BufferPhase::InFlight {
+            device_generation: dev.generation(), queue_id: original.id(),
+            queue_generation: original.generation(), sequence: tag.sequence(),
+        });
+        original.complete_after_hardware_fence(&dev, &mut buffer, tag).unwrap();
+    }
+
+    #[test]
+    fn queue_cannot_accept_handle_for_a_different_physical_device() {
+        let (dev, mut queue, mut buffer) = setup();
+        let mut other = DeviceHandle::new(0x00000500, 29);
+        other.assign_after_kernel_checks(D).unwrap();
+        buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
+        assert_eq!(queue.submit_after_driver_admission(&other, &mut buffer),
+                   Err(Error::InvalidState));
+        assert_eq!(queue.outstanding(), 0);
+        let tag = queue.submit_after_driver_admission(&dev, &mut buffer).unwrap();
+        assert_eq!(queue.complete_after_hardware_fence(&other, &mut buffer, tag),
+                   Err(Error::InvalidCompletion));
+        assert_eq!(queue.outstanding(), 1);
+        queue.complete_after_hardware_fence(&dev, &mut buffer, tag).unwrap();
+    }
+
+    #[test]
+    fn buffer_cannot_rebind_to_another_device_after_cpu_sync() {
+        let (dev, mut queue, mut buffer) = setup();
+        let mut other = DeviceHandle::new(0x00000600, 30);
+        other.assign_after_kernel_checks(D).unwrap();
+        buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
+        let tag = queue.submit_after_driver_admission(&dev, &mut buffer).unwrap();
+        queue.complete_after_hardware_fence(&dev, &mut buffer, tag).unwrap();
+        buffer.sync_for_cpu_after_platform_checks().unwrap();
+        assert_eq!(buffer.prepare_after_dma_map_and_sync(&other),
+                   Err(Error::InvalidState));
+        assert_eq!(buffer.phase(), BufferPhase::CpuOwned);
+        // Previously verified release path remains available after failed rebind.
+        buffer.release_after_unmap().unwrap();
     }
 
     #[test]

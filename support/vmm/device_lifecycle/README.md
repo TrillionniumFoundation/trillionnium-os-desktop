@@ -69,3 +69,21 @@ not `Clone` or `Copy`, so a simple safe Rust value duplication cannot split
 their live state accounting. This still does not establish physical
 IOMMU-group uniqueness or prevent separately created overlapping buffers;
 A01/A05 must enforce one authoritative device registry and A06 memory aliases.
+
+## Cross-physical-device DMA identity binding
+
+The pure model now binds Buffer and Queue metadata to **both PCI BDF and complete
+IOMMU-group identity** when the buffer is prepared / queue is created. Matching
+ResourceDomainId and device generation alone never authorize cross-device
+submission, cancellation, or completion. Changing the device after a completed
+CPU-sync is likewise rejected until the original Buffer is safely released.
+Three tests cover same-domain/same-generation, wrong-device completion,
+and post-sync retargeting. All hardware register and DMA work is still
+unimplemented.
+
+These are *metadata checks*, not full rights or global uniqueness. DeviceHandle::new
+can create independently forged handles and Queue::new can duplicate numeric
+queue IDs; the real A05 kernel registry must enforce unique device ownership
+and namespace queue identities, while A06 charges pinned physical frames.
+A01 must validate the actual IOMMU group, MMIO/interrupt isolation and DMA
+quiescence. This model is not safe to wire directly to hardware as-is.
