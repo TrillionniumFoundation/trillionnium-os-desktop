@@ -113,6 +113,32 @@ class VFIOTests(unittest.TestCase):
             result = self.inspect(root, members=(GPU, AUDIO))
         self.assertIn("iommu_peer_bound_to_non_vfio_driver", result["hard_blockers"])
 
+    def test_unreadable_existing_unsafe_mode_setting_blocks_even_when_masked(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.fixture(root)
+            setting = root / "sys/module/vfio/parameters/enable_unsafe_noiommu_mode"
+            setting.parent.mkdir(parents=True)
+            outside = root / "dummy-unsafe-setting"
+            outside.write_text("Y\\n")
+            setting.symlink_to(outside)
+            report = self.inspect(root)
+            self.assertEqual(report["status"], "blocked")
+            self.assertIn("unsafe_noiommu_mode_unobservable", report["hard_blockers"])
+
+    def test_oversized_interrupt_setting_fails_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.fixture(root)
+            setting = root / "sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts"
+            setting.parent.mkdir(parents=True)
+            setting.write_bytes(b"N" * (vfio.MAX_SYSFS_TEXT_BYTES + 1))
+            report = self.inspect(root)
+            self.assertEqual(report["status"], "blocked")
+            self.assertIn(
+                "unsafe_interrupt_remapping_setting_unobservable", report["hard_blockers"]
+            )
+
     def test_noiommu_mode_blocks(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
