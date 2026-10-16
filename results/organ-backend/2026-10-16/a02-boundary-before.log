@@ -1,0 +1,29 @@
+
+running 2 tests
+test tests::last_legal_revision_history_is_queryable ... FAILED
+test tests::last_legal_revision_request_and_response_agree ... FAILED
+
+failures:
+
+---- tests::last_legal_revision_history_is_queryable stdout ----
+
+thread 'tests::last_legal_revision_history_is_queryable' (2061824) panicked at src/lib.rs:374:9:
+last legal result must remain observable
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- tests::last_legal_revision_request_and_response_agree stdout ----
+
+thread 'tests::last_legal_revision_request_and_response_agree' (2061825) panicked at src/lib.rs:364:9:
+last legal CAS result must decode
+
+
+failures:
+    tests::last_legal_revision_history_is_queryable
+    tests::last_legal_revision_request_and_response_agree
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+   Compiling trillionnium-os-abi v0.1.0 (/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a02/libs/os-abi)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.40s
+     Running unittests src/lib.rs (.local/state/trillionnium-os-organ-next-20261016/target-a02/debug/deps/trillionnium_os_abi-414e1721745a3de8)
+error: test failed, to rerun pass `--lib`

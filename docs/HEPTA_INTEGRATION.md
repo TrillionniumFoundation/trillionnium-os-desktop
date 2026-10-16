@@ -72,3 +72,7 @@ semantic_digest与final_use_binding沿用原实现。D、request_id、CapSpace�
 ### 提交时再验证观测
 
 开始推理时样本有效不意味着提交时仍有效。提交前重新检查内核初始时钟域的样本年龄、当前授权/资源revision及目标身份；过时提案丢弃或重新观察，不在队列中累积。CAS仅检测版本竞争，不证明负载当前性。ReadUsage尚不表达祖先节流/I/O/锁等待，缺乏可信原因时不自动把低进度解释为CPU不足；需要对应观测实现后才启用相关调优。对齐周期quota也不是滑动窗口或交互延迟保证。
+
+## 只读 organ 不是设备效果适配器
+
+固定Hepta的TrustedReadOnlyOrganV1禁止I/O和能力持有，不能在handle中调用HOS控制ioctl。观测由既有owner采集后投影为有界快照；效果通过原有authority/operations执行边界。图路由、driver摘要和Ready状态不授予效果权。详见[后端边界与实测](ASTERINAS_ORGAN_BACKEND.md)。

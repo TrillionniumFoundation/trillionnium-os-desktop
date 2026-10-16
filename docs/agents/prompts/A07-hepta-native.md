@@ -23,3 +23,7 @@
 
 工作结尾必须给出：已推送分支/PR URL、每次验证的真实命令和结果、修改文件清单、版本边界、仍失败的场景。不能因为任务繁重就只写一份待办清单。
 ~~~
+
+## 后端审计补充（真实 organ 宿主边界）
+
+先读 ../../ASTERINAS_ORGAN_BACKEND.md。TrustedReadOnlyOrganV1禁止I/O、持有能力、启动工作或跨效果边界。系统快照在原owner采集；HOS写操作沿现有authority/operations与受限适配器执行，不能写进只读handle。无需另建organ宿主或业务账本。

@@ -1,0 +1,92 @@
+{
+  "a01_commit": "b14e46105cd892f5e1186a46f1dcfc1ae270420a",
+  "a02_commit": "eb864e8cabe803c8d5d86bfd27b6e51e2b28f907",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "runs": [
+    {
+      "label": "a02-test",
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--manifest-path",
+        "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a02/libs/os-abi/Cargo.toml"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "a02-build",
+      "argv": [
+        "cargo",
+        "build",
+        "--offline",
+        "--release",
+        "--manifest-path",
+        "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a02/libs/os-abi/Cargo.toml"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "a02-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--all-targets",
+        "--manifest-path",
+        "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a02/libs/os-abi/Cargo.toml",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 101
+    }
+  ],
+  "replay": {
+    "argv": [
+      "/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/kernel.elf",
+      "-initrd",
+      "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a01/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+      "-append",
+      "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/usr/share/seabios/bios-256k.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04"
+    ],
+    "exit_code": 33,
+    "seconds": 1.6103228050051257,
+    "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+    "initrd_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+    "boot_marker": true,
+    "cpu_one_marker": true,
+    "panic": false
+  },
+  "source_kernel_build_executed_here": false,
+  "hos_enforcement_verified": false
+}

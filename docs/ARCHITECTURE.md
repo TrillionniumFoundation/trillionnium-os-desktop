@@ -60,3 +60,7 @@ cap接在ClassScheduler共同资格/计费路径，不仅修改fair.rs。固定�
 ## 8. 本轮源码边界
 
 `libs/os-abi/` 为计划中的无依赖no_std编解码库，是否已实现仅见STATUS。文档检查和规格模型不冒充内核、驱动或独立native应用runtime。未来导入上游保留其实际目录，不为目录图搬动或复制源码。
+
+## Organ 后端的执行边界补充
+
+Asterinas派生内核是现有Hepta器官角色共用的受限执行后端，不是TrustedReadOnlyOrganV1中的I/O handler。只读图消费快照；实际授权、I/O和结果核对属于现有owner。现有cgroup接受CPU配置不代表真实节流；所有入口要共用实际资源执行机制。固定来源、QEMU反例与接合要求见[后端实测](ASTERINAS_ORGAN_BACKEND.md)。
