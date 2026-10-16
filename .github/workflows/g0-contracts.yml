@@ -45,9 +45,31 @@ jobs:
       - name: Host A05 QueryAbi wire and ENOTTY smoke (no kernel driver)
         if: hashFiles('tests/kernel/control/hos2_queryabi_probe.c') != ''
         run: sh tests/kernel/control/run-host-smoke.sh
+      - name: Report real host Rust toolchain and install lint components
+        if: ${{ hashFiles('libs/os-abi/Cargo.toml', 'libs/os-control/Cargo.toml') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustc -Vv
+          cargo -Vv
+          rustup component add rustfmt clippy
       - name: Host Rust no_std ABI crate (when implemented)
         if: hashFiles('libs/os-abi/Cargo.toml') != ''
         run: cargo test --manifest-path libs/os-abi/Cargo.toml --verbose
+      - name: Host Rust ABI strict rustfmt and Clippy (when implemented)
+        if: hashFiles('libs/os-abi/Cargo.toml') != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --manifest-path libs/os-abi/Cargo.toml -- --check
+          cargo clippy --manifest-path libs/os-abi/Cargo.toml --all-targets -- -D warnings
       - name: Host Rust control model (when implemented)
         if: hashFiles('libs/os-control/Cargo.toml') != ''
         run: cargo test --manifest-path libs/os-control/Cargo.toml --verbose
+      - name: Host Rust control strict rustfmt and Clippy (when implemented)
+        if: hashFiles('libs/os-control/Cargo.toml') != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --manifest-path libs/os-control/Cargo.toml -- --check
+          cargo clippy --manifest-path libs/os-control/Cargo.toml --all-targets -- -D warnings
