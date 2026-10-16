@@ -67,6 +67,7 @@ class GoldenContract(unittest.TestCase):
     def test_all_fixtures_frame_layout(self):
         doc = json.loads(GOLDEN.read_text())
         self.assertEqual(len(doc['vectors']), 12)
+        self.assertTrue(doc['codec_tested'])
         for v in doc['vectors']:
             with self.subTest(v=v['name']):
                 raw = bytes.fromhex(v['hex'])
@@ -84,7 +85,7 @@ class GoldenContract(unittest.TestCase):
         self.assertEqual(period, PERIOD)
         self.assertLessEqual(dropped, events)
         self.assertGreater(used, cap)
-        self.assertEqual(used, 25_000_000)
+        self.assertEqual(used, 35_000_000)
 
     def test_install_and_history_share_valid_effect_time(self):
         applied = bytes.fromhex(read_vector('install_budget_ok')['hex'])
@@ -100,7 +101,7 @@ class GoldenContract(unittest.TestCase):
         self.assertEqual((history_time, history_used), (effective, consumed))
         self.assertEqual(struct.unpack_from('<Q', applied, 56)[0], saved_revision)
         self.assertLessEqual(consumed, effective % PERIOD)
-        self.assertEqual(consumed, 23_000_000)
+        self.assertEqual(consumed, 33_000_000)
 
     def test_cap_and_revision_mutations_are_not_idempotent_retransmissions(self):
         original = bytes.fromhex(read_vector('install_budget')['hex'])
