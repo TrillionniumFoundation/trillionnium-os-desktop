@@ -598,6 +598,7 @@ pub fn with_parent(
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RequestBinding {
     pub sequence: u64,
+    pub publisher: PublisherId,
     pub target: ResourceDomainId,
     pub stable_object_id: StableObjectId,
     pub expected_revision: u64,
@@ -637,6 +638,7 @@ impl DeliveryRequest {
     pub fn binding(&self) -> RequestBinding {
         RequestBinding {
             sequence: self.sequence,
+            publisher: self.grant.principal,
             target: self.grant.domain.id(),
             stable_object_id: self.grant.domain.stable_object_id(),
             expected_revision: self.expected_revision,
@@ -844,6 +846,9 @@ struct Slot {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum SlotState {
     Reserved,
+    // Namespace destruction fences slots even if a token passed an earlier
+    // liveness check.  A fenced reservation can never mutate the resource.
+    Fenced,
     Terminal(PublishedResult),
 }
 
@@ -1080,7 +1085,10 @@ impl ControlCore {
         }
         if request.sequence < ns.next_sequence {
             if let Some(slot) = ns.slots.get(&request.sequence) {
-                if slot.binding == request.binding() {
+                // A globally unique D binds the publisher as well as its
+                // canonical payload and stable target. Neither another
+                // publisher nor another target may claim the saved result.
+                if slot.publisher == publisher && slot.binding == request.binding() {
                     let observation =
                         observation_from_slot(self.identity(), request.sequence, slot);
                     return match observation.state {
@@ -1193,10 +1201,8 @@ impl ControlCore {
         if view.identity != self.identity()
             || ack.namespace != self.identity()
             || !Arc::ptr_eq(&view.namespace, &self.namespace)
-            || view
-                .owner
-                .map(|owner| owner != ack.receipt.owner)
-                .unwrap_or(false)
+            // An observation-only DeliveryView never grants history.ack.
+            || view.owner != Some(ack.receipt.owner)
         {
             return Err(DeliveryError::PermissionDenied);
         }
@@ -1241,6 +1247,17 @@ impl ControlCore {
     /// unknown and can never be replayed through this object.
     pub fn lose_history(&self) {
         let mut ns = lock_unpoisoned(&self.namespace.state);
+        // The namespace lock prevents new reservations, while each slot lock
+        // serializes this fence against in-flight commit/publish. A commit
+        // that already owns its slot finishes before loss takes effect; a
+        // commit that has only passed token_is_live observes Fenced instead
+        // of applying an effect after loss. No resource lock is taken here.
+        for slot in ns.slots.values() {
+            let mut state = lock_unpoisoned(&slot.state);
+            if matches!(*state, SlotState::Reserved) {
+                *state = SlotState::Fenced;
+            }
+        }
         ns.history_lost = true;
         ns.slots.clear();
         ns.generation = ns.generation.saturating_add(1);
@@ -1306,6 +1323,7 @@ impl ControlCore {
         }
         let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
         match *slot_state {
+            SlotState::Fenced => return Err(DeliveryError::HistoryLost),
             SlotState::Terminal(_) => {
                 return Ok(observation_from_published(
                     self.identity(),
@@ -1347,12 +1365,16 @@ impl ControlCore {
             return Err(DeliveryError::HistoryLost);
         }
         let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
-        if let SlotState::Terminal(result) = *slot_state {
-            return Ok(observation_from_published(
-                self.identity(),
-                token.id().sequence,
-                result,
-            ));
+        match *slot_state {
+            SlotState::Fenced => return Err(DeliveryError::HistoryLost),
+            SlotState::Terminal(result) => {
+                return Ok(observation_from_published(
+                    self.identity(),
+                    token.id().sequence,
+                    result,
+                ));
+            }
+            SlotState::Reserved => {}
         }
         let binding = token.binding();
         let applied = token.reservation.request.grant.domain.apply_budget(
@@ -1455,6 +1477,10 @@ fn observation_from_slot(
             namespace,
             sequence,
         }),
+        SlotState::Fenced => DeliveryObservation::history_lost(DeliveryId {
+            namespace,
+            sequence,
+        }),
         SlotState::Terminal(result) => observation_from_published(namespace, sequence, result),
     }
 }
@@ -1522,7 +1548,7 @@ mod tests {
         assert_eq!(observed.state, DeliveryState::Terminal);
         assert_eq!(observed.status, Some(DeliveryStatus::Ok));
         assert_eq!(observed.saved_revision, Some(2));
-        let view = core.delivery_view();
+        let view = core.delivery_view_for(owner).unwrap();
         assert_eq!(core.query_delivery(&view, 1).unwrap(), observed);
         let ack =
             HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
