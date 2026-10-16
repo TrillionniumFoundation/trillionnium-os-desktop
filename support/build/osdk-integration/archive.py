@@ -46,8 +46,10 @@ def read_regular(directory_fd, name):
 
 def source_files(source, root_fd):
     """Yield relative names/data from a no-symlink recursive walk and two fixed extras."""
-    for root, dirs, files, fd in os.fwalk(source, topdown=True, follow_symlinks=False):
-        relative_root = Path(root).relative_to(source)
+    for root, dirs, files, fd in os.fwalk(".", topdown=True, follow_symlinks=False, dir_fd=root_fd):
+        # Always traverse the originally validated directory inode, even if
+        # another local actor renames/replaces the source pathname mid-run.
+        relative_root = Path(root).relative_to(".")
         retained = []
         for name in sorted(dirs):
             if name in EXCLUDED_DIRS:
