@@ -267,6 +267,20 @@ fn build_kernel_elf(
 
     command.env("RUSTFLAGS", rustflags.join(" "));
     command.arg("build");
+    // A generated base crate is a separate Cargo workspace. Allow downstream
+    // builds to lock it explicitly instead of resolving fresh dependencies.
+    if let Some(lock_path) = std::env::var_os("OSDK_CARGO_LOCK") {
+        let lock_path = PathBuf::from(lock_path);
+        if !lock_path.is_absolute() {
+            error_msg!("OSDK_CARGO_LOCK must be an absolute path");
+            process::exit(Errno::BuildCrate as _);
+        }
+        if let Err(error) = std::fs::copy(&lock_path, "Cargo.lock") {
+            error_msg!("Failed to install OSDK_CARGO_LOCK: {}", error);
+            process::exit(Errno::BuildCrate as _);
+        }
+        command.arg("--locked");
+    }
     command.arg("--features").arg(features.join(" "));
     if no_default_features {
         command.arg("--no-default-features");
