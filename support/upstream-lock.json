@@ -54,12 +54,12 @@
       "osdk_binary_sha256": "1689a417b07b8fd8ec45a8dd2d2d103759bab25f63faec1ab486e606e1c24011"
     },
     "host_regression": {
-      "evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
+      "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/REPORT.md",
       "suite": "derived_osdk_unit",
-      "code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+      "code_commit": "54356654b0c88c1b0bec85cfdb4d7911839c6a3e",
       "full_unit_suite_passed": true,
-      "total": 28,
-      "passed": 28,
+      "total": 35,
+      "passed": 35,
       "failed": 0,
       "ignored": 0,
       "filtered": 0,
@@ -81,6 +81,37 @@
         "full_matrix_passed": false,
         "profile": "adapted_native_direct_tcg_fixed_locks",
         "aggregation": "full07 plus retained exact retries"
+      },
+      "previous_full_unit_suite": {
+        "evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
+        "code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+        "total": 28,
+        "passed": 28,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 0
+      },
+      "explicit_tcp_gdb_capture": {
+        "profile": "osdk-native-local-tcp-gdb-capture-v2",
+        "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/v2-full-22/result.json",
+        "code_commit": "fa9b6cd6be310155b10fa36aafcb8896444e0f6e",
+        "selected": 22,
+        "passed": 22,
+        "failed": 0,
+        "blocked": 0,
+        "vmx_soft_skipped": 1,
+        "qemu_guests": 11,
+        "raw_guest_exit": 33,
+        "coverage_functions": 5696,
+        "coverage_profraw_size": 2094456,
+        "later_panic_guard": {
+          "code_commit": "1cc76b90dfd162e18a946a01e0bcaa31b8e03b4f",
+          "focused_host_tests_passed": 16,
+          "exact_coverage_guest_passed": 1,
+          "full_22_rerun": false,
+          "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/v2-guard-exact-01/result.json"
+        },
+        "default_unix_and_tcp_v1_failures_preserved": true
       }
     },
     "daemon_lifecycle_fix": {
@@ -90,6 +121,24 @@
       "patched_lifecycle_cases_passed": 5,
       "identity_anchor": "waitable leader via waitid WNOWAIT; group signals before reap; ECHILD disarms",
       "scope": "OSDK sole reaper; no SIGCHLD auto-reap; descendants stay in original process group"
+    },
+    "full_kernel_debug": {
+      "profile": "x86_64-q35-tcg-1cpu-512MiB-rust-entry-gdb",
+      "code_commit": "40f6c7ae47626df9eb66eb3c4a4c9036bc5c8ccc",
+      "derived_tree": "632ecf581fb1b8f08cebd2ade62cf7b42d0ae48f",
+      "evidence": "support/build/evidence/2026-10-16-debug-coverage/kernel-debug/REPORT.md",
+      "entry": "__ostd_main",
+      "verified_live_entry_bytes": 32,
+      "qemu_raw_exit": 33,
+      "live_boot_checker_passed": true,
+      "boot_artifact_sha256": "fcec53875dec2ca19b20e285df94590e9c21036cdabec54799fbda6bddb84026",
+      "boot_artifact_size": 5996200,
+      "dwarf_symbol_artifact_sha256": "a1c7a44cb844553d00c2942760df0f2389919f1e530bfaa45081c7463d31e21a",
+      "dwarf_symbol_artifact_size": 111867352,
+      "dwarf_symbol_artifact_retained_in_git": false,
+      "dwarf_rebuild_command": "python3 -I support/build/debug/run.py --output NEW_KERNEL_DEBUG_DIR",
+      "cargo_binutils": "0.4.0",
+      "root_or_core_changes": false
     }
   },
   "hepta": {
