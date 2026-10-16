@@ -18,10 +18,12 @@ For A05 conversion, `DeliveryStatus::hos2_code` and
 dependency on the wire crate. `ParentLimit` maps to wire `Conflict` because
 HOS2 0.3 has no separate parent-constraint status. The fallible
 `DeliveryObservation::hos2_saved_status_code()` returns `Some(0)` only
-for a consistent nonterminal observation with no saved outcome,
-`Some(status)` for terminal with a saved outcome, and `None` for an
-invalid terminal/no-status or nonterminal/status pair. A05 must refuse to
-serialize `None` rather than default it to Ok; A02 validates full metadata.
+for a consistent nonterminal observation with no saved outcome or resource
+metadata, `Some(status)` for a terminal whose status and CAS metadata agree,
+and `None` for any malformed pair, missing/forged success receipt,
+erroneous metadata, or invalid D sequence. A05 must refuse to serialize
+`None` rather than default it to Ok. A02 independently validates the
+actual HOS2 byte layout and payload.
 
 ## A05: kernel ioctl and CapSpace
 

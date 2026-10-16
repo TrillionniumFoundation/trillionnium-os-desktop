@@ -917,17 +917,51 @@ pub struct DeliveryObservation {
 }
 
 impl DeliveryObservation {
-    /// Convert only a consistent (state, saved_status) pair to HOS2.
+    /// Validate the entire public QueryDelivery observation before wire use.
     ///
-    /// Observations have public fields and may be modified by an adapter.
-    /// Terminal-without-status and nonterminal-with-status must fail closed;
-    /// A05 must not interpret None as HOS2 Ok. A02 validates full metadata.
+    /// Public fields can be modified by a bridge. A result advertised as
+    /// Terminal/Ok without the saved successful CAS receipt must NEVER
+    /// become HOS2 saved_status=0. Likewise rejected and nonterminal states
+    /// cannot carry successful resource metadata. A05 must reject None.
     pub const fn hos2_saved_status_code(self) -> Option<u16> {
+        if self.id.sequence == 0
+            || self.id.sequence == u64::MAX
+            || !self.id.namespace.boot_id.is_nonzero()
+            || !self.id.namespace.cap_space_id.is_nonzero()
+        {
+            return None;
+        }
+        let no_metadata = self.stable_object_id.is_none()
+            && self.saved_revision.is_none()
+            && self.previous_revision.is_none()
+            && self.effective_ns.is_none()
+            && self.consumed_ns.is_none();
         match (self.state, self.status) {
-            (DeliveryState::Terminal, Some(status)) => Some(status.hos2_code()),
-            (DeliveryState::Terminal, None) => None,
-            (_, None) => Some(0),
-            (_, Some(_)) => None,
+            (DeliveryState::Terminal, Some(DeliveryStatus::Ok)) => {
+                match (
+                    self.stable_object_id,
+                    self.previous_revision,
+                    self.saved_revision,
+                    self.effective_ns,
+                    self.consumed_ns,
+                ) {
+                    (
+                        Some(object),
+                        Some(previous),
+                        Some(saved),
+                        Some(_effective_ns),
+                        Some(_consumed_ns),
+                    ) if object.is_nonzero()
+                        && previous > 0
+                        && previous < u64::MAX - 1
+                        && saved == previous + 1 => Some(0),
+                    _ => None,
+                }
+            }
+            (DeliveryState::Terminal, Some(status)) if no_metadata => Some(status.hos2_code()),
+            (DeliveryState::Terminal, _) => None,
+            (_, None) if no_metadata => Some(0),
+            _ => None,
         }
     }
 

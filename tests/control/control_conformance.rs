@@ -174,6 +174,29 @@ fn malformed_public_delivery_observations_fail_closed_for_wire_status() {
     terminal.state = DeliveryState::Terminal;
     terminal.status = None;
     assert_eq!(terminal.hos2_saved_status_code(), None);
+    let target = root(195_000, CPU_PERIOD_NS);
+    let who = publisher(195_001);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 40), who)
+        .unwrap();
+    let successful = core.commit(&token, who, 42).unwrap();
+    assert_eq!(successful.hos2_saved_status_code(), Some(0));
+    let mut malformed = successful;
+    malformed.saved_revision = None;
+    assert_eq!(malformed.hos2_saved_status_code(), None);
+    malformed = successful;
+    malformed.saved_revision = Some(900);
+    assert_eq!(malformed.hos2_saved_status_code(), None);
+    malformed = terminal;
+    malformed.status = Some(DeliveryStatus::Revoked);
+    malformed.consumed_ns = Some(0);
+    assert_eq!(malformed.hos2_saved_status_code(), None);
+    malformed = original;
+    malformed.saved_revision = Some(2);
+    assert_eq!(malformed.hos2_saved_status_code(), None);
+    malformed = original;
+    malformed.id.sequence = 0;
+    assert_eq!(malformed.hos2_saved_status_code(), None);
     for (status, code) in [
         (DeliveryStatus::Ok, 0),
         (DeliveryStatus::InvalidInput, 1),
@@ -189,8 +212,13 @@ fn malformed_public_delivery_observations_fail_closed_for_wire_status() {
         (DeliveryStatus::OutOfOrder, 10),
         (DeliveryStatus::Retired, 11),
     ] {
-        terminal.status = Some(status);
-        assert_eq!(terminal.hos2_saved_status_code(), Some(code));
+        let mut observation = if status == DeliveryStatus::Ok {
+            successful
+        } else {
+            terminal
+        };
+        observation.status = Some(status);
+        assert_eq!(observation.hos2_saved_status_code(), Some(code));
     }
 }
 
