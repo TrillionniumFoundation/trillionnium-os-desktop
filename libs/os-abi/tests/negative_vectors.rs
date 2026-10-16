@@ -321,7 +321,10 @@ fn install_previous_revision_must_be_a_valid_existing_revision() {
         panic!("fixed InstallBudget fixture decoded to wrong payload");
     }
     let mut output = [0u8; 128];
-    assert_eq!(encode_response(&parsed, &mut output), Err(Error::InvalidField));
+    assert_eq!(
+        encode_response(&parsed, &mut output),
+        Err(Error::InvalidField)
+    );
 }
 
 #[test]

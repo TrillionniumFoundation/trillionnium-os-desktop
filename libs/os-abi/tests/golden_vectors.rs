@@ -301,7 +301,11 @@ fn each_golden_cut_is_rejected_not_just_selected_truncations() {
                     "response" => decode_response(&frame[..cut]).is_ok(),
                     other => panic!("unknown golden kind: {other}"),
                 };
-                assert!(!accepted, "{kind} accepted truncated length {cut} of {}", frame.len());
+                assert!(
+                    !accepted,
+                    "{kind} accepted truncated length {cut} of {}",
+                    frame.len()
+                );
             }
             let mut trailing = frame;
             trailing.push(0xa5);
@@ -334,7 +338,10 @@ fn every_golden_encoder_checks_capacity_before_writing() {
                 other => panic!("unknown golden kind: {other}"),
             };
             assert_eq!(encoded, Err(hos2_os_abi::Error::InsufficientCapacity));
-            assert!(output.iter().all(|v| *v == 0xa5), "short encode wrote partial output");
+            assert!(
+                output.iter().all(|v| *v == 0xa5),
+                "short encode wrote partial output"
+            );
             count += 1;
         }
     }
@@ -359,7 +366,10 @@ fn every_golden_header_refuses_version_reserved_or_zero_id_mutation() {
                     "response" => decode_response(&invalid).is_ok(),
                     other => panic!("unknown golden kind: {other}"),
                 };
-                assert!(!accepted, "{kind} accepted corrupted header offset {offset}");
+                assert!(
+                    !accepted,
+                    "{kind} accepted corrupted header offset {offset}"
+                );
             }
             let mut invalid_id = frame;
             invalid_id[24..40].fill(0);

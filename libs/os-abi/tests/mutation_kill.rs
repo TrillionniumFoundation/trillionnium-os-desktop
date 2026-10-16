@@ -16,11 +16,15 @@ enum Replay {
 
 fn hex(bytes: &str) -> Vec<u8> {
     assert_eq!(bytes.len() % 2, 0);
-    bytes.as_bytes().chunks_exact(2).map(|pair| {
-        let hi = (pair[0] as char).to_digit(16).unwrap() as u8;
-        let lo = (pair[1] as char).to_digit(16).unwrap() as u8;
-        (hi << 4) | lo
-    }).collect()
+    bytes
+        .as_bytes()
+        .chunks_exact(2)
+        .map(|pair| {
+            let hi = (pair[0] as char).to_digit(16).unwrap() as u8;
+            let lo = (pair[1] as char).to_digit(16).unwrap() as u8;
+            (hi << 4) | lo
+        })
+        .collect()
 }
 
 fn fixed_install() -> Vec<u8> {
@@ -44,7 +48,11 @@ fn canonical_retry(prior: &Request, next: &Request) -> Replay {
     }
 }
 
-fn must_conflict(prior: &Request, next: &Request, predicate: fn(&Request, &Request) -> Replay) -> Result<(), &'static str> {
+fn must_conflict(
+    prior: &Request,
+    next: &Request,
+    predicate: fn(&Request, &Request) -> Replay,
+) -> Result<(), &'static str> {
     match predicate(prior, next) {
         Replay::Conflict => Ok(()),
         Replay::Identical => Err("mutant treated distinct canonical writes as a retry"),
@@ -176,5 +184,8 @@ fn full_low_eight_byte_sequence_is_little_endian_and_high_half_zero() {
     assert_eq!(&encoded[24..40], &req.request_id);
     let decoded = decode_request(&encoded).unwrap();
     assert_eq!(decoded, req);
-    assert_eq!(canonical_retry(&decoded, &decode_request(&fixed_install()).unwrap()), Replay::NewId);
+    assert_eq!(
+        canonical_retry(&decoded, &decode_request(&fixed_install()).unwrap()),
+        Replay::NewId
+    );
 }
