@@ -53,6 +53,18 @@ def read_frame(raw, kind):
             raise ValueError('success response')
     if not any(raw[24:40]):
         raise ValueError('request id')
+    if kind == 'response' and opcode == 3:
+        # Independent response-side oracle: even an error response must echo
+        # the ordered InstallBudget sequence, never an opaque 128-bit ID.
+        sequence = struct.unpack_from('<Q', raw, 24)[0]
+        if raw[32:40] != bytes(8) or not 0 < sequence < 2**64 - 1:
+            raise ValueError('ordered InstallBudget response ID')
+        if flags == 0:
+            previous, effective, consumed = struct.unpack_from('<3Q', raw, 64)
+            if not 0 < previous < 2**64 - 1 or revision != previous + 1:
+                raise ValueError('invalid previous revision')
+            if consumed > effective % PERIOD:
+                raise ValueError('impossible consumed_at_apply')
     return opcode, raw[24:40], raw[40:56], raw[64:]
 
 
@@ -125,6 +137,37 @@ class GoldenContract(unittest.TestCase):
             with self.subTest(raw=raw[:12].hex(), length=len(raw)):
                 with self.assertRaises(ValueError):
                     read_frame(raw, 'request')
+
+    def test_install_response_ordered_id_is_checked_for_success_and_error(self):
+        for name in ('install_budget_ok', 'install_cas_rejection'):
+            original = bytes.fromhex(read_vector(name)['hex'])
+            with self.subTest(vector=name):
+                self.assertEqual(read_frame(original, 'response')[0], 3)
+                for offset, replacement in ((32, 1), (24, 0xff)):
+                    invalid = bytearray(original)
+                    if offset == 24:
+                        invalid[24:32] = bytes([replacement]) * 8
+                    else:
+                        invalid[offset] = replacement
+                    with self.assertRaises(ValueError):
+                        read_frame(bytes(invalid), 'response')
+                invalid = bytearray(original)
+                invalid[24:32] = bytes(8)
+                with self.assertRaises(ValueError):
+                    read_frame(bytes(invalid), 'response')
+
+    def test_install_response_requires_existing_revision_and_elapsed_time(self):
+        frame = bytes.fromhex(read_vector('install_budget_ok')['hex'])
+        zero_revision = bytearray(frame)
+        struct.pack_into('<Q', zero_revision, 64, 0)
+        struct.pack_into('<Q', zero_revision, 56, 1)
+        with self.assertRaises(ValueError):
+            read_frame(bytes(zero_revision), 'response')
+
+        impossible_time = bytearray(frame)
+        struct.pack_into('<Q', impossible_time, 80, 41_000_000)
+        with self.assertRaises(ValueError):
+            read_frame(bytes(impossible_time), 'response')
 
     def test_unknown_status_and_nonempty_error_rejected(self):
         failure = bytes.fromhex(read_vector('install_cas_rejection')['hex'])
