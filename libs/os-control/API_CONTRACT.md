@@ -100,3 +100,24 @@ result.
 The Rust tests under `tests/control` are host-model evidence only. They do not
 claim native kernel capability, real copyout fault handling, power-loss
 durability, scheduler correctness, or A05/A06 integration.
+
+## A03 hardening: namespace loss and view rights
+
+The namespace owns the canonical request **including its publisher**. A
+duplicate D from another authorized principal conflicts even when target,
+period, revision, cap and digest happen to match.
+
+An observation-only `delivery_view()` may query but cannot retire. The
+`delivery_view_for(owner)` host-model view must be minted *only after* A05
+verifies an actual history.ack capability, and A07 must validate that the
+owner's receipt represents a durable contiguous confirmation. The
+`OwnerReceipt` digest is opaque model evidence, **not a cryptographic
+signature or a capability**, and a host-model caller can manufacture one.
+
+`lose_history` fences reserved result slots under the same per-slot lock
+that serializes `commit` and `publish`. An already linearized commit
+completes before loss obtains that lock; a token not yet admitted returns
+`HistoryLost` with no new mutation. Any effect handed off to an *external*
+kernel executor before `publish` still requires A05's own fencing and
+effect-journal discipline: the host model cannot cancel arbitrary external
+effects or prove power-loss persistence.

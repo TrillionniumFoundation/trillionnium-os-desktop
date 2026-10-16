@@ -41,7 +41,7 @@ fn ack(core: &ControlCore, through: u64) -> HistoryAck {
     HistoryAck::from_owner_receipt(
         core.identity(),
         through,
-        OwnerReceipt::new(owner(9000 + through as u128), [0xA5; 32]),
+        OwnerReceipt::new(owner(9000), [0xA5; 32]),
     )
     .unwrap()
 }
@@ -344,7 +344,7 @@ fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_availab
     let core = ControlCore::with_capacity(boot(7), space(7), 4);
     let target = root(8, CPU_PERIOD_NS);
     let who = publisher(70);
-    let view = core.delivery_view();
+    let view = core.delivery_view_for(owner(9000)).unwrap();
     let mut first = None;
     for sequence in 1..=4 {
         let grant = target.grant(who).unwrap();
@@ -409,7 +409,7 @@ fn ten_thousand_writes_are_bounded_and_old_sequences_do_not_reappear() {
     let core = ControlCore::with_capacity(boot(8), space(8), 32);
     let target = root(9, CPU_PERIOD_NS);
     let who = publisher(80);
-    let view = core.delivery_view();
+    let view = core.delivery_view_for(owner(9000)).unwrap();
     for sequence in 1..=10_000_u64 {
         let grant = target.grant(who).unwrap();
         let token = core
@@ -546,7 +546,7 @@ fn concurrent_query_publish_and_retire_observe_whole_states() {
     let token = core
         .reserve(request(1, target.grant(who).unwrap(), 1, 30), who)
         .unwrap();
-    let view = core.delivery_view();
+    let view = core.delivery_view_for(owner(9000)).unwrap();
     let barrier = Arc::new(Barrier::new(2));
     let query_core = Arc::clone(&core);
     let query_view = view.clone();
@@ -595,7 +595,7 @@ fn query_and_retire_race_has_only_terminal_or_retired_observations() {
         .reserve(request(1, target.grant(who).unwrap(), 1, 30), who)
         .unwrap();
     core.commit(&token, who, 1).unwrap();
-    let view = core.delivery_view();
+    let view = core.delivery_view_for(owner(9000)).unwrap();
     let barrier = Arc::new(Barrier::new(2));
     let query_core = Arc::clone(&core);
     let query_view = view.clone();
@@ -650,4 +650,98 @@ fn same_identity_different_core_instances_cannot_use_each_others_tokens() {
         ),
         Err(DeliveryError::PermissionDenied)
     );
+}
+
+#[test]
+fn same_d_different_authorized_publisher_is_a_conflict() {
+    let core = ControlCore::new(boot(750), space(750));
+    let target = root(750, CPU_PERIOD_NS);
+    let first = publisher(751);
+    let second = publisher(752);
+    let token = core
+        .reserve(request(1, target.grant(first).unwrap(), 1, 50), first)
+        .unwrap();
+    assert_eq!(
+        core.reserve(request(1, target.grant(second).unwrap(), 1, 50), second)
+            .err(),
+        Some(DeliveryError::Conflict)
+    );
+    assert_eq!(
+        core.reserve_or_get(request(1, target.grant(second).unwrap(), 1, 50), second)
+            .err(),
+        Some(DeliveryError::Conflict)
+    );
+    assert_eq!(
+        core.commit(&token, first, 1).unwrap().status,
+        Some(DeliveryStatus::Ok)
+    );
+    assert_eq!(target.revision(), 2);
+}
+
+#[test]
+fn read_only_history_view_cannot_advance_the_ack_frontier() {
+    let core = ControlCore::new(boot(760), space(760));
+    let target = root(760, CPU_PERIOD_NS);
+    let who = publisher(761);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+        .unwrap();
+    core.commit(&token, who, 1).unwrap();
+    let observer = core.delivery_view();
+    assert_eq!(
+        core.query_delivery(&observer, 1).unwrap().state,
+        DeliveryState::Terminal
+    );
+    assert_eq!(
+        core.retire_through(&observer, ack(&core, 1)),
+        Err(DeliveryError::PermissionDenied)
+    );
+    assert_eq!(core.retired_through(), 0);
+    let owner_view = core.delivery_view_for(owner(9000)).unwrap();
+    assert_eq!(
+        core.retire_through(&owner_view, ack(&core, 1))
+            .unwrap()
+            .retired_through,
+        1
+    );
+}
+
+#[test]
+fn namespace_loss_and_commit_race_never_reports_lost_after_mutation() {
+    for n in 0..128_u128 {
+        let core = Arc::new(ControlCore::new(boot(800 + n), space(800 + n)));
+        let target = root(800 + n, CPU_PERIOD_NS);
+        let who = publisher(2000 + n);
+        let token = core
+            .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+            .unwrap();
+        let start = Arc::new(Barrier::new(3));
+        let commit_core = Arc::clone(&core);
+        let commit_barrier = Arc::clone(&start);
+        let commit = thread::spawn(move || {
+            commit_barrier.wait();
+            commit_core.commit(&token, who, 1)
+        });
+        let loss_core = Arc::clone(&core);
+        let loss_barrier = Arc::clone(&start);
+        let loss = thread::spawn(move || {
+            loss_barrier.wait();
+            loss_core.lose_history();
+        });
+        start.wait();
+        let outcome = commit.join().unwrap();
+        loss.join().unwrap();
+        match outcome {
+            Ok(observed) => {
+                assert_eq!(observed.status, Some(DeliveryStatus::Ok));
+                assert_eq!(target.revision(), 2);
+            }
+            Err(DeliveryError::HistoryLost) => assert_eq!(target.revision(), 1),
+            _ => panic!("unexpected post-loss result"),
+        }
+        assert_eq!(
+            core.query_delivery(&core.delivery_view(), 1).unwrap().state,
+            DeliveryState::HistoryLost
+        );
+    }
 }
