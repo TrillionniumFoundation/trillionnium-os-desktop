@@ -1,0 +1,169 @@
+{
+  "schema": "trillionnium.os.n0-timer-frequency-comparison.v1",
+  "date": "2026-10-16",
+  "scope": "single QEMU q35 TCG 1vCPU 512MiB only; actual guest CPU accounting, uncapped iterations noisy and not a production performance benchmark",
+  "baseline": {
+    "baseline_kernel_sha256": "8ff3629163438f86abe755aa5a61f3e8d53d2ab44994f41d006d04e3415d80a5",
+    "base_commit": "dd20b1b3f6c62f3e198c25f7b41bb5208ae17fb4",
+    "freq_hz": 1000,
+    "results": [
+      {
+        "label": "base1k-leaf-1pct-repeat3",
+        "mode": "leaf",
+        "quota_us": 1000,
+        "runs": 3,
+        "all_completed": true,
+        "cpu_percent": [
+          1.998,
+          1.798,
+          1.999
+        ],
+        "unlimited_iterations": [
+          196000000,
+          190100000,
+          196500000
+        ],
+        "seconds": 15.49
+      },
+      {
+        "label": "base1k-leaf-10pct-repeat3",
+        "mode": "leaf",
+        "quota_us": 10000,
+        "runs": 3,
+        "all_completed": true,
+        "cpu_percent": [
+          11.204,
+          10.564,
+          11.205
+        ],
+        "unlimited_iterations": [
+          179600000,
+          192700000,
+          188100000
+        ],
+        "seconds": 12.56
+      }
+    ],
+    "scope": "QEMU TCG CPU ratios and noisy uncapped iteration comparator only"
+  },
+  "candidate": {
+    "base_a06_commit": "6b7a4580f74add2b640b6ea948797bd87733faac",
+    "experiment": "OSTD_TIMER_FREQ=5000",
+    "pin": "nightly-2026-07-21 q35/TCG 1vCPU 512MiB",
+    "sha256": "63a6fa86680e09a11af7c3c879555af62cf4064ab8c13c6d6c93a8ae008c104b",
+    "cases": [
+      {
+        "label": "leaf-1pct-repeat3",
+        "quota": 1000,
+        "mode": "leaf",
+        "repeat": 3,
+        "values": [
+          1.1,
+          1.217,
+          1.163
+        ],
+        "exit": 0,
+        "bounded_diagnostic_pass": true,
+        "wall_seconds": 22.6,
+        "unlimited_iterations": [
+          161800000,
+          160900000,
+          167900000
+        ]
+      },
+      {
+        "label": "leaf-10pct-repeat3",
+        "quota": 10000,
+        "mode": "leaf",
+        "repeat": 3,
+        "values": [
+          10.355,
+          10.152,
+          10.252
+        ],
+        "exit": 0,
+        "bounded_diagnostic_pass": true,
+        "wall_seconds": 13.43,
+        "unlimited_iterations": [
+          164000000,
+          175500000,
+          160400000
+        ]
+      },
+      {
+        "label": "rt-10pct",
+        "quota": 10000,
+        "mode": "rt",
+        "repeat": 1,
+        "values": [
+          10.278
+        ],
+        "exit": 0,
+        "bounded_diagnostic_pass": true,
+        "wall_seconds": 5.26,
+        "unlimited_iterations": [
+          167500000
+        ]
+      },
+      {
+        "label": "parent-10pct",
+        "quota": 10000,
+        "mode": "parent",
+        "repeat": 1,
+        "values": [
+          10.405
+        ],
+        "exit": 0,
+        "bounded_diagnostic_pass": true,
+        "wall_seconds": 5.01,
+        "unlimited_iterations": [
+          159000000
+        ]
+      },
+      {
+        "label": "leaf-50pct",
+        "quota": 50000,
+        "mode": "leaf",
+        "repeat": 1,
+        "values": [
+          51.247
+        ],
+        "exit": 0,
+        "bounded_diagnostic_pass": true,
+        "wall_seconds": 4.96,
+        "unlimited_iterations": [
+          162500000
+        ]
+      }
+    ],
+    "all_bounded": true,
+    "exact_quota_validated": false,
+    "no_host_cgroup_or_disk_changed": true,
+    "production_ready": false
+  },
+  "analysis": {
+    "one_percent_configured": {
+      "base_mean_cpu_percent": 1.9316666666666666,
+      "high_mean_cpu_percent": 1.1600000000000001,
+      "improvement_absolute_percentage_points": 0.7716666666666665
+    },
+    "ten_percent_configured": {
+      "base_mean_cpu_percent": 10.991,
+      "high_mean_cpu_percent": 10.253
+    },
+    "uncapped_iterations": {
+      "baseline_mean": 194200000,
+      "high_frequency_mean": 163533333.33333334,
+      "relative_change_percent": -15.791280466872637,
+      "warning": "Not an isolated performance causality estimate; host QEMU TCG conditions were not randomized or simultaneous."
+    }
+  },
+  "not_qualified": [
+    "not strict one-percent CPU quota",
+    "not SMP",
+    "not other architectures",
+    "not realtime or GPU latency SLO",
+    "not production default",
+    "not HOS2 or Hepta end-to-end"
+  ]
+}
