@@ -118,7 +118,7 @@ class VFIOTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
             self.fixture(root, members=(alpha,))
-            (root / "sys/bus/pci/devices" / alpha / "class").write_text("0x030200\\n")
+            (root / "sys/bus/pci/devices" / alpha / "class").write_text("0x030200\n")
             result = vfio.inspect(root, "0000:0A:0B.0", ["0000:0A:0B.0"])
         self.assertEqual(result["status"], "manual_review_required")
         self.assertEqual(result["requested_bdf"], alpha)
@@ -142,7 +142,7 @@ class VFIOTests(unittest.TestCase):
             self.fixture(root)
             unsafe = root / "sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts"
             unsafe.parent.mkdir(parents=True)
-            unsafe.write_text("Y\\n")
+            unsafe.write_text("Y\n")
             result = self.inspect(root)
         self.assertIn("unsafe_interrupt_remapping_override_enabled", result["hard_blockers"])
         self.assertEqual(result["status"], "blocked")
