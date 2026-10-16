@@ -1,4 +1,5 @@
 """Fixture tests of read-only VFIO planning; no device opened or changed."""
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -31,6 +32,39 @@ class VFIOTests(unittest.TestCase):
 
     def inspect(self, root, members=(GPU,), vendor="0x10de", device_id=None):
         return vfio.inspect(root, GPU, members, vendor, device_id)
+
+    def test_text_reader_preserves_regular_sysfs_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "vendor"
+            path.write_bytes(b"0x10de\n")
+            self.assertEqual(vfio.text_file(path), "0x10de")
+
+    def test_text_reader_cannot_follow_external_symlink_vendor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.fixture(root)
+            vendor = root / "sys/bus/pci/devices" / GPU / "vendor"
+            outside = root / "outside-fixture.txt"
+            outside.write_bytes(b"0x10de\n")
+            vendor.unlink()
+            vendor.symlink_to(outside)
+            self.assertIsNone(vfio.text_file(vendor))
+            report = self.inspect(root)
+            self.assertIn("pci_vendor_mismatch", report["hard_blockers"])
+            self.assertEqual(report["status"], "blocked")
+            self.assertFalse(report["safe_to_assign"])
+
+    def test_oversized_fake_sysfs_attribute_rejected_not_truncated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "oversized"
+            path.write_bytes(b"A" * (vfio.MAX_SYSFS_TEXT_BYTES + 1))
+            self.assertIsNone(vfio.text_file(path))
+
+    def test_fifo_attribute_is_nonblocking_and_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "special_fifo"
+            os.mkfifo(path)
+            self.assertIsNone(vfio.text_file(path))
 
     def test_missing_device_blocks(self):
         with tempfile.TemporaryDirectory() as d:
