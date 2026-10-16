@@ -1,122 +1,130 @@
-# 原生控制 ABI 与资源契约
+# 原生控制 ABI 与恢复契约
 
-文档版本 0.2；实验协议 HOS1 major=1/minor=0。协议未发布为稳定 ABI。实际实现范围见 [STATUS](STATUS.md)。本文件是字段、身份、生命周期和预算语义的唯一规格入口；内核、设备和权限机制不能由编解码单测替代。
+文档版本0.3。实验协议 **HOS2 major=2/minor=0**，未发布为稳定ABI。HOS1的随机写request_id、三操作恢复限制不再作为当前运行契约；新编号尚未分配，不能在同一已发布ioctl下默默重新解释旧请求。实际实现状态见[STATUS](STATUS.md)。本文件定义接口，不代表存在内核实现。
 
-## 1. 首期范围与自举
+## 1. 首期与可信启动交接
 
-第一阶段继续使用 Linux ELF/调用约定。原生指 Hepta 可以使用新内核资源能力，不意味着已建立独立可执行格式或另一套 libc。首期 wire 操作仅有 QueryAbi、ReadUsage、InstallBudget；通用设备提交、跨进程转授、迁移、动态资源域创建不是这版公开 wire 功能。以前列出的这些名称是后续设计需求，不分配假接口或宣告支持。
+仍使用Linux ELF。N0为单CPU控制实验；动态资源迁移、通用设备提交和公开Transfer不在本版。公开操作限定QueryAbi、ReadUsage、InstallBudget、QueryDelivery、RetireThrough；后两项仅补写接口的恢复与有限存储闭环。
 
-init 使用可信启动配置创建测试资源域、任务及委托，把能力槽位装入实际进程的 CapSpace；应用不能通过自报 PID 或 workspace 获取第一个能力。CapSpace 附着已有内核进程对象，不复制第二套 Task/VFS。普通应用可无控制权限运行。
+可信init按以下顺序执行内部启动事务（不是普通应用API）：CreateStoppedTask先建立Task、稳定资源对象ID及ResourceDomain归属；LoadAndCommitExec完成最终ELF/loader映射、exec_epoch和新CapSpace；ActivateGrant核对可信启动记录、最终映像/依赖身份、进程仍暂停且exec_epoch未变，装入衰减的管理和观察能力；PublishBootHandles将句柄交给受限只读启动页；最后Resume。启动页是句柄发现方式，不是授权来源。用户代码首次运行前已受资源限额约束。
 
-open(`/dev/hepta-control`, O_CLOEXEC) 创建一个绑定当前 process-start identity、exec_epoch、boot_id、CapSpace 的控制会话；open 本身不授予资源操作权。每次 ioctl 检查实际调用者与打开绑定，不能只检查 fd 存在。QueryAbi 使用固定 V1 transport/头部完成自举，不要求预先协商；不认识 V1 ioctl 的系统返回 ENOTTY。新的不兼容 ABI 使用新 ioctl 命令，不重新解释已发布命令。
+失败时销毁未激活任务及其引用，不恢复旧exec权限。普通后续exec撤销原管理权，不自动重新执行ActivateGrant。桥重启先fence旧管理者及未执行预约，再由init对新映像独立激活；不能仅依据相同PID或可执行文件名恢复权限。
 
-## 2. 一个底层对象、所有入口共同检查
+open(`/dev/hepta-control`,O_CLOEXEC)创建绑定process-start/exec_epoch/boot/CapSpace的会话，不签发新权限。QueryAbi自举使用固定transport及HOS2头。资源域和观察命名空间由可信启动记录建立，不允许请求体自报workspace获得权限。
 
-原生、Linux、Android 的访问入口必须落到同一对象的权限与资源执行者。域内 Linux UID 0 不是机器所有者；DAC、MAC、原生能力及资源上限取交集，而非任一通过即可放行。device node 别名、raw block、ptrace、process_vm、/proc fd、cgroup 管理和 Binder 转交不能绕过宿主域边界。
+## 2. 单一对象与生命周期
 
-| 入口/生命周期 | 规则 |
+所有native/Linux/Android入口落到同一个底层对象策略；DAC、MAC、能力和资源上限取交集。普通POSIX文件打开沿用该对象既有访问权，不要求未使用HOS控制的Linux程序额外提交新wire句柄。兼容域UID0不等于机器所有者。设备别名、调试、process_vm、/proc fd、Binder/cgroup入口均不能绕过边界。
+
+| 行为 | 规则 |
 | --- | --- |
-| 线程 / dup(control_fd) | 同进程共享 CapSpace 与绑定；每次仍查当前授权 |
-| fork | 普通 fd 按 Linux 语义继承；子进程使用新 CapSpace，继承来的 control fd 因打开者绑定不匹配而不可调用 |
-| exec | 递增 exec_epoch、失效旧管理委托；普通 fd 依其 CLOEXEC 规则处理，遗留 control fd 也不能保留权力 |
-| SCM_RIGHTS(control_fd) | 可传递 fd 本身，但接收进程不能使用发送者的会话；设备专属拒绝不改变普通 fd 传递语义 |
-| 调试/读取 fd 别名 | 检查实际调用身份、域与 MAC，不能读取或盗用受限桥的权限 |
-| 普通 device fd | 打开及需要持续授权的提交点执行相同域/对象规则；不是只有控制 ioctl 受限 |
-| 进程退出 / close | 释放进程引用，不等于设备已静止或语义效果被撤回 |
+| 同进程线程/dup | 共享CapSpace，仍查实际调用者与当前授权 |
+| fork | 普通fd保持Linux继承；子进程新CapSpace，继承control fd不能调用父会话 |
+| exec | 增加exec_epoch，撤销旧管理委托；只有可信启动事务可向最终新身份授新权限 |
+| SCM_RIGHTS(control fd) | fd可以传递，但不能转移打开者身份或管理权限 |
+| 关闭/slot重用 | generation变化，溢出则退役；强引用只保内存寿命，不延长操作权限 |
+| 进程退出 | 关闭新准入；未决/已完成投递的寿命不由进程对象单独决定 |
 
-slot 与 generation 只能在匹配的 CapSpace 内解析；generation 溢出退役槽位。域内 root 不能创建宿主根能力。M0 的控制会话不支持跨进程转授，因此不会发生同编号误认接收者另一个合法对象。未来 Transfer 必须创建接收端新条目并绑定目标身份/授权上界；不能简单复制两个整数。
+管理句柄指向ResourceDomain。**历史观察句柄DeliveryView指向特定boot/CapSpace投递命名空间**，不使用原管理slot替代。可信init把DeliveryView授予同工作区的原持久owner或其被认证的接替者；观察权不含执行权，retire另需history.ack。进程退出可释放CapSpace进程引用，但DeliveryView仍可保留只读历史。没有有效观察能力时不通过payload中的boot/space泄露历史。
 
-## 3. ioctl 传输层
+旧命名空间完全释放后查询只能报告history_lost；其旧会话永久失效，不因新进程创建而复活。是否能继续证明历史由原Hepta owner决定，不能以lost解释为零效果。活动命名空间/保留历史都有限额；新准入可拒绝，但停止与基础恢复不依赖新建命名空间。
 
-V1 transport 描述符为固定 32 字节，原生端序的四个固定宽度字段加显式保留位：offset 0 `request_addr:u64`，8 `response_addr:u64`，16 `request_bytes:u32`，20 `response_capacity:u32`，24 `reserved:u64=0`。它是用户地址的唯一传输层表示；内部 wire 不包含地址。首期 target 为 x86_64 little-endian；ARM64/32 位 compat 单独验收，不能因布局固定就声明已支持。
+## 3. transport与解析顺序
 
-ioctl 编号在实际驱动导入时按上游分配规则选定；本轮 codec 不伪造可用设备号或 ioctl。只将 32 字节 transport 类型编码入 _IOWR，不能把 64 KiB payload 编码到 ioctl 大小字段。用户地址上限、compat 零扩展、整数溢出、页访问与 copyout 必须由驱动检查。[接口参考](SOURCES.md#ioctl)
+固定32字节原生端序transport：0 request_addr:u64，8 response_addr:u64，16 request_bytes:u32，20 response_capacity:u32，24 reserved:u64=0。首期仅x86_64小端；32位compat/其他架构独立验证。只把32字节描述符编码进_IOWR，payload不进ioctl大小位。用户地址检查不由codec代替。[ioctl来源](SOURCES.md#ioctl)
 
-输入头+payload 一次复制到有界内核快照，再解析；用户之后改写缓冲区不会改变待执行内容。指针检查和 copy 不能在 IRQ/spinlock 内发生。不论之前探测了输出地址，copyout 仍可能失败。
+顺序：检查transport和有界地址算术 -> 一次复制完整输入 -> 验证magic/version/长度/保留位 -> 解析已知opcode与payload -> 确认输出容量 >= 该opcode成功响应所需尺寸 -> 会话与授权/投递处理 -> copyout。复制/缺页/分配不能在IRQ/spinlock内执行。输入与输出可重叠，因为先完整快照输入；之后修改原用户缓冲区不改变执行内容。
 
-transport 系统调用失败分类：未知 ioctl 为 ENOTTY；无效长度/保留位为 EINVAL；不支持的协议为 EPROTONOSUPPORT；拷贝失败 EFAULT。语义拒绝在一个有效 HOSR 响应内返回 status。输出容量小于已知结果尺寸时在效果准入前拒绝 EMSGSIZE。**效果已发生后的 EFAULT 不保证零效果**；按原 request_id 重取结果，不新建操作身份。
+未知ioctl=ENOTTY；未知协议=EPROTONOSUPPORT；未知opcode=EOPNOTSUPP；头/长度/保留位错误=EINVAL；输入或输出访问错误=EFAULT；输出不足=EMSGSIZE。已知且格式正确的操作的权限、CAS和容量结果放入HOSR status。结构性失败不产生投递记录；已预约的语义拒绝必须固定为终局，不能之后同D变成执行成功。
 
-## 4. 请求头：64 字节逐字段 little-endian
+成功ioctl返回0。调用者只解析返回header声明的64+payload_len字节，剩余response_capacity不属于结果；驱动仅copy实际结果长度。EFAULT后整个输出都不可当有效响应，即使效果可能已提交；使用原D重取或QueryDelivery，不生成新逻辑操作。返回错误码不普遍证明无效果。
 
-| offset | 字段 | 长度/约束 |
+## 4. 请求和响应头
+
+两者均64字节、逐字段little-endian、禁止Rust struct内存布局直传。最大payload=65536、最大frame=65600，实际frame必须恰等于64+payload_len。
+
+| offset | 请求 | 响应 |
 | --- | --- | --- |
-| 0 | magic | 4，ASCII HOS1 |
-| 4 / 6 | major / minor | u16 / u16，1 / 0 |
-| 8 / 10 | opcode / flags | u16 / u16，flags=0 |
-| 12 / 16 | header_len / payload_len | u32 / u32，64 / 实际长度 |
-| 20 | reserved0 | u32=0 |
-| 24 | request_id | 16 字节，不全零，仅关联与投递去重，不是权限 |
-| 40 / 48 | target_slot / target_generation | u64 / u64；QueryAbi 两者为零；其他两者均非零 |
-| 56 | reserved1 | u64=0 |
+| 0 | magic[4]=HOS2 | magic[4]=HOSR |
+| 4/6 | major:u16=2/minor:u16=0 | 同左 |
+| 8/10 | opcode:u16/flags:u16=0 | opcode:u16/status:u16 |
+| 12/16/20 | header_len:u32=64/payload_len:u32/reserved:u32=0 | 同左 |
+| 24 | request_id[16]，非零 | 原request_id回显 |
+| 40/48 | target_slot:u64/target_generation:u64 | boot_id[16]，非零 |
+| 56 | reserved:u64=0 | revision:u64 |
 
-总 frame 恰好等于 64+payload_len；不接受尾随数据、非零 reserved、未知 opcode/flags/minor。最大 payload 65536 字节，最大 frame 65600；当前三种消息远小于此值。所有算术受检，禁止以 Rust struct padding 或 enum 内存布局代替 wire。ID 字节按原样保留，不作整数端序转换。
+QueryAbi目标两项为0；其他均非零。QueryDelivery/RetireThrough的目标为**当前**DeliveryView，而不是被查询请求的旧管理句柄。初次QueryAbi返回内核boot/space，客户端从受信任设备建立会话绑定；ID本身不证明来源。
 
-## 5. 响应头：64 字节逐字段 little-endian
+status：0 ok，1 invalid_input，2 permission_denied，3 stale_handle，4 revoked，5 conflict，6 resource_exhausted，7 unsupported，8 indeterminate，9 busy，10 out_of_order，11 retired。非零status payload为空且revision=0。unknown status拒绝，不当ok。只有成功ReadUsage/InstallBudget头revision非零；其他成功头revision=0。
 
-| offset | 字段 | 长度/约束 |
-| --- | --- | --- |
-| 0 | magic | 4，ASCII HOSR |
-| 4 / 6 | major / minor | u16 / u16，1 / 0 |
-| 8 / 10 | opcode / status | u16 / u16 |
-| 12 / 16 / 20 | header_len / payload_len / reserved | u32 / u32 / u32，64 / 实际长度 / 0 |
-| 24 | request_id | 16，回显原请求且非零 |
-| 40 | boot_id | 16，非零，来自内核而非调用者 |
-| 56 | revision | u64；QueryAbi 为 0；成功 ReadUsage/InstallBudget 为实际非零资源 revision |
+InstallBudget的request_id规定为sequence:u64的小端8字节加8个零字节，sequence∈[1,u64::MAX-1]。序列作用域由内核CapSpace提供。读请求/RetireThrough只要求非零关联ID，不参与写序列；未来新写opcode必须显式纳入同一序列或独立定义，不能自行复用序列。该变化是HOS2与HOS1不兼容的原因。
 
-status 数值：0 ok；1 invalid_input；2 permission_denied；3 stale_handle；4 revoked；5 conflict；6 resource_exhausted；7 unsupported；8 indeterminate；9 busy。非零 status 的 payload 为空、revision=0，避免泄露域外状态；需读取当前 revision 的授权调用者另发 ReadUsage。unknown enum 值拒绝，不将未认识状态当成 ok。
+## 5. 五个操作
 
-客户端还要核对 opcode、request_id、已知 boot_id 与会话；编解码器只检查格式，不能验证来源可信。所有输出字节初始化，包括保留位。
-
-## 6. 三个操作的完整布局
-
-| opcode | 输入 | 成功输出 payload | 能力与效果 |
+| opcode | 请求payload | 成功响应payload | 权限 |
 | --- | --- | --- | --- |
-| 1 QueryAbi | 空，target=0 | 48 字节，见下 | 合法绑定会话；无副作用 |
-| 2 ReadUsage | 空，target=资源域 | 64 字节，见下 | resource.observe；读取一个一致快照，无管理权 |
-| 3 InstallBudget | 32 字节，见下 | 24 字节，见下 | resource.manage；CAS 安装，纳入投递去重 |
+| 1 QueryAbi | 空 | 48字节 | 合法打开绑定；不授能力 |
+| 2 ReadUsage | 空 | 64字节 | resource.observe |
+| 3 InstallBudget | 32字节 | 24字节 | resource.manage |
+| 4 QueryDelivery | 40字节 | 64字节 | history.observe，精确命名空间 |
+| 5 RetireThrough | 40字节 | 16字节 | history.ack，由持久owner使用 |
 
-QueryAbi 输出 offset 0 CapSpace ID[16]（非零，内核生成），16 page_size:u32（非零二次幂），20 max_payload:u32，24 max_response_payload:u32（均不超过65536），28 reserved:u32=0，32 supported_ops:u64（bit1/2/3 对应当前三项），40 features:u64=0。它是报告能力，不授予能力；内核仅宣告已真实实现的子集。未知 feature 必须协商，不偷偷忽略。初期最小响应尺寸限制是当前支持集所需尺寸。
+QueryAbi：0 space_id[16]非零；16 page_size:u32非零二次幂；20 max_request_payload:u32；24 max_response_payload:u32；28 reserved:u32=0；32 supported_ops:u64（bit1..5）；40 features:u64=0。支持bit1必需，未知bit拒绝。宣告InstallBudget必须同时宣告ReadUsage、QueryDelivery和RetireThrough；retire要求query历史。payload上限不超过65536且至少容纳宣告操作的最大请求/响应（完整集40/64）。只宣告格式支持不是运行能力，内核必须按已实现范围报告。
 
-ReadUsage 输出八个 u64：sample_boottime_ns、cumulative_cpu_ns、window_start_ns、window_consumed_ns、active_cap_ns、active_period_ns、event_sequence、dropped_events。响应头 revision 与这八项来自同一版本/序列快照；不能混拼不同预算版本。active_period_ns=100000000、active_cap_ns≤active_period_ns；sample_boottime_ns≥window_start_ns，cumulative_cpu_ns≥window_consumed_ns。必须返回当前cap/period，才能在丢响应后查询实际策略；仅用量相同不足以确认策略。丢事件后做快照恢复，不推断没有效果。
+ReadUsage：八个u64依次sample_boottime_ns、cumulative_cpu_ns、window_start_ns、window_consumed_ns、active_cap_ns、active_period_ns、event_sequence、dropped_events。原点为内核初始时钟域boot起点0，period=100000000ns，window_start=向下取整(sample/period)*period。cumulative>=window_consumed、dropped<=event_sequence；降cap后consumed>cap合法，调度超支不得篡改统计隐藏。快照必须先结算当前运行量，再同版本读取所有字段。该接口只给局部CPU观测，不声称已经解释父域/I/O/锁等待原因。
 
-InstallBudget 输入四个 u64：expected_revision、period_ns、cap_ns、reserved=0。expected_revision 必须非零且不能溢出递增；首期 period_ns 固定100000000（100ms），单CPU cap_ns∈[0,period_ns]，cap=0 表示本域暂停可运行时间，但恢复服务不在该域。没有 priority、affinity、weight 或 deadline 隐含字段。
+InstallBudget请求：expected_revision、period_ns、cap_ns、reserved=0，四个u64。expected_revision∈[1,u64::MAX-1]、period固定100ms、cap∈[0,period]。响应三个u64：previous_revision、effective_boottime_ns、consumed_at_apply_ns；响应头revision=previous_revision+1。成功原D重取返回原值，不再增加revision。
 
-InstallBudget 输出三个 u64：previous_revision、effective_boottime_ns、consumed_at_apply_ns；响应头 revision=previous_revision+1。相同投递重取原结果，不递增第二次。返回的是已安装 cap，而非最低资源保证；降低 cap 无法撤回已消耗时间。
+QueryDelivery/RetireThrough请求相同40字节：0 history_boot[16]、16 history_space[16]、32 sequence:u64。三项非零且必须与DeliveryView授权范围匹配；不是凭引用取得查询权限。跨boot旧记录不能假装仍存在于新内核。
 
-## 7. 准入、撤销与 copyout
+QueryDelivery响应64字节：0 state:u16；2 saved_status:u16；4 reserved:u32=0；8 sequence:u64；16 stable_object_id[16]；32 saved_revision:u64；40 previous_revision:u64；48 effective_ns:u64；56 consumed_ns:u64。state=0 reserved、1 terminal、2 retired、3 not_seen、4 history_lost。terminal+saved_status0是原成功：object_id非零且saved_revision=previous_revision+1。terminal+错误status保留原拒绝，其余元数据为0。其他state的saved_status及object/revision/time字段为0，仅保留sequence；retired/not_seen/lost均不授予重放权。outer request_id是本次查询ID，不能与被查询写序列混同。
 
-内核解析已复制快照，解析对象并取得强引用后释放 CapSpace 表锁；然后进入资源域的短 mutation 锁。**在同一临界区**检查当前调用身份、能力 generation、撤销/期限、目标范围、expected_revision、去重记录与结果容量，登记准入，并提交预算 revision/结果。该提交是 InstallBudget 的线性化点。先确保结果槽和计数递增可成功，失败不得产生半次效果。
+RetireThrough响应16字节：retired_through:u64、next_sequence:u64。重复确认旧前沿返回当前前沿，要求retired_through>=请求sequence且next_sequence>retired_through。失败无半次推进。它只回收已经持久确认的连续终局，不允许跳过未决项。
 
-revoke 在同一对象 mutation 锁递增 grant epoch 并关闭以后准入。L_revoke 先于 L_admit 则拒绝；L_admit 先于 L_revoke 则效果已准入，后续撤销处理在途状态，不抹除历史。撤销 ACK 只证明以后准入关闭，**不证明所有硬件已排空**。设备路线另有 admitted、issued、quiesced；已准入未 issued 可以尝试停止，但不能声称所有撤销后物理提交均不存在。
+## 6. CapSpace级预约、资源提交与锁
 
-语义授权由 Hepta owner 对不可变操作内容产生，桥将相同 canonical bytes 及目标绑定提交。桥为受信任效果适配器、拥有受限 envelope，不是无权限的字符串转发器；受损桥仍可能在 envelope 内违规，这是明确 TCB 风险。内核不凭调用者自报 digest 授权；需要逐 payload 强隔离时由可信 issuer 预置一次性 payload-bound ticket，后续专门接口验收，不能宣称当前三操作已提供该功能。
+每个CapSpace只有一个写投递窗口，覆盖所有目标。N0采用严格有序写序列：new sequence必须等于next_sequence。next_sequence初始1；大于它为out_of_order；小于等于retired_through为retired，绝不重新执行。
 
-## 8. 两级操作身份与去重
+先在**CapSpace投递表锁**原子预约D和完整canonical请求，预分配固定结果槽并增加next_sequence；不同目标不能各自预约同一D。已有D同内容且reserved返回busy/indeterminate；已有D不同内容为conflict；terminal只重取原结果。表满返回resource_exhausted且不消费序列、不产生效果。预解析失败也不消费序列。获得预约后的权限/CAS/目标拒绝必须记录为terminal错误，相同D以后不变为成功。
 
-持久逻辑键 K=(authenticated_principal,workspace_id,operation_id)。原 Hepta 操作 owner 存 {intent_digest,opcode,稳定目标身份,效果状态,投递尝试[]}；**摘要不在查找键中**。先按 K 查找，再比较 canonical 内容/摘要：相同返回既有状态；不同冲突。跨 boot、桥重启、PID 重用仍是同一 K；不能换 boot_id 或 request_id 绕过未决操作。
+预约锁不跨资源效果持有。取得预约与grant强引用后释放表锁，进入资源mutation锁；在同一临界区检查grant当前状态/epoch、期限、目标稳定身份、revision和计费，执行预算变化并发布已预留的终局结果。该处是效果线性化点。结果单元只有预约所有者能从reserved变为terminal，读者以对应release/acquire或锁读取一致内容。不能持资源锁反向取得投递表锁；retire只处理已发布终局，不访问资源锁。
 
-内核投递键 D=(boot_id,CapSpace_id,request_id)，记录完整已复制请求字节和结果。相同 D 不同字节为 conflict；相同 D 已有结果只重取、不新执行；原准入仍未决则 indeterminate。D 查找先于 revision CAS，否则丢响应后的合法重试会被误判成 CAS 冲突。历史重取要求 observe 授权，不要求重新取得已撤销的 execute 权限，也不得产生新效果。
+grant关闭/撤销通过与准入相同的资源mutation锁设置alive/epoch，CapSpace槽移除仅撤掉发现路径。强引用不能让已撤销grant继续通过。进程退出只在fence实际执行者并确认不会继续提交后，把未执行预约收敛为明确的无效果错误；无法确认的保留reserved/indeterminate，而非盲删。
 
-每个 CapSpace 首期最多保留1024条写投递记录，满时拒绝新写并保留旧结果；不静默 LRU 淘汰、到期清空或把 missing 当零效果。CapSpace 退出后瞬时表可释放，原 Hepta 持久 owner 必须保留未决 K，换进程后只查询/核对。查不到内核记录不授予重放权。持久未决记录保留小型 tombstone/身份，停止新准入可释放 GPU/CPU 会话但不能抹去效果不确定性。身份保留到能证明不会重放的 owner 规则，禁止为腾空间任意删除后重用 ID。
+revoke早于准入则拒绝；准入早于revoke按在途状态处理。撤销ACK只证明新准入关闭，不等于硬件排空。runqueue/domain锁的真实顺序仍须对固定上游源码验证；这个设计不冒充已排除内核死锁。
 
-## 9. CPU 与内存记账
+## 7. 有界结果、历史读取与退役
 
-CPU 是累计运行时间上限，不是保底、权重或 deadline。首期固定 P=100ms、周期起点=本次启动的固定调度时间原点；使用 CLOCK_BOOTTIME 等价单调时钟定义窗口。U 为该域所有线程在当前窗口已运行时间之和。InstallBudget 立即改变 cap，但保留 U、原点和所有祖先计费；剩余额度 max(0,cap-U)。降低到 U 以下仅阻止后续运行，历史使用不回写。每个真实周期边界才重置窗口计数；同值更新也不充值。
+投递窗口首期最多1024条**未退役**写记录，不是进程终身1024次限制。原Hepta owner在其既有持久账本确认连续结果后调用RetireThrough。内核仅验证调用者history.ack能力、前沿连续且全为terminal；磁盘持久确认是可信owner义务，不能由请求体自报布尔值证明。
 
-每次运行同时扣本域及所有祖先额度，祖先耗尽即暂停后代；兄弟 cap 之和可超过父 cap，只要父总量真实执行。首期单 CPU，不提供迁移、period/CPU集变更或最小预留；这些请求明确 unsupported，不能静默绕过。未来多 CPU 必须先预留全路径额度再运行，以受界量子核对实际用量；超支上界与计费误差必须测量并报告，不宣称零误差。动态迁移需要保留原域历史计费、新域后续计费和稳定工作区祖先约束，不能通过循环迁移领取新 quota；未完成此机制不启用迁移。
+retire推进单调retired_through，释放对应大结果；迟到sequence<=前沿一律retired，不管请求字节是否一致。不得LRU淘汰后把missing当新操作。next_sequence严格连续使前沿可有界证明；序列将溢出时停止新写，排空并重新可信创建命名空间，不回绕。
 
-内存目标规则：每个物理页/内核分配有稳定 charge_owner，祖先聚合；匿名页初次分配与 COW 新页向分配方计费；共享页、文件缓存页按第一次实际分配者计一次，其他映射另计页表/映射元数据。共享不擦除 owner，owner 退出但共享仍存活时账留存到最终释放。sockets/内核队列按创建方计费；固定 DMA 页仍计内存并另外占 pinned 子限额，两者不是总量重复收费。未授权跨域共享先拒绝，不因共享带来隐式赠予。
+history查询独立于旧管理句柄；管理权撤销/slot重用后，合法DeliveryView仍可读取。观察权限完全撤销时拒绝查询而非恢复执行权。进程退出后的保留有独立引用与上限；所有view丢失后的history_lost必须由持久owner保留未知K，不能自动重放。确认/历史读取不占新的写记录容量，满表仍能回收终局和停止新效果。
 
-首期 ReadUsage 只报告上述CPU策略/用量与事件；内存观测和内存限额写接口均不属于本版wire。未来降硬限额低于实际使用必须 rejected 或进入显式 reclaiming；未回收不得报已满足；不可强行回收设备仍用页。reparent/迁移及 charge transfer 要在旧/新祖先共同受限临界区验证，首期不支持。
+## 8. K、D与恢复目标
 
-## 10. 对象关闭、取消和后续设备路线
+持久逻辑操作使用原Hepta scope_id/operation_id，其principal/workspace由原owner解析；摘要在记录中，不在查找键里。D=(boot,CapSpace,sequence)仅表示一次内核投递。稳定资源object_id来自可信启动/资源owner，与slot/generation不同。授权对象必须解析到该稳定身份。
 
-M0 资源域由 init 创建并在任务启动前归属；控制会话靠 close/进程退出释放，资源域靠 supervisor 在任务和子引用退出后销毁。动态 Create/Destroy/Transfer 不提供 wire 编号。对象强引用保证并发关闭不会造成 use-after-free，但强引用不延长已撤销的操作权限。
+旧K效果未知时，当前cap/revision相同不构成历史证明。先fence旧管理者、读取当前对象并取得新授权，可建立**新目标收敛操作**，在语义记录中关联旧K但不把旧K改成Applied/NotApplied。新操作的前驱与资源revision重新固定，由原owner处理未决前驱；不伪造原操作终态来绕过该约束。无法在现有owner契约表达时，报告上游接合缺口，不创建第二账本。
 
-设备路线未来分别记录 execution={not_issued,in_flight,quiesced,completed}、cancel={none,requested,acknowledged}、effect={none,partial,complete,unknown}、observation={authoritative,missing}。硬件停止只证明未来不继续；8192字节写入在4096后停止应是 quiesced+partial，不是 none。通用“cancelled=零效果”被废止。不是所有设备都以字节衡量效果，设备契约给出适用计数/观察者。
+该收敛规则仅适用于已审核的绝对预算状态设置。磁盘写入、外发消息和设备不可逆动作不可照搬。旧结果不确定与当前目标已达成是两个事实。
 
-页可回收条件是有独立的 quiescence/隔离证明且无活跃CPU引用；effect=unknown 并不必然永久保留页，反之请求超时也不允许释放 DMA 页。未能确认静止时保持隔离/有界 quarantine，拒绝后续危险共享而非无限分配。
+## 9. 预算与调度接合
+
+cap是固定对齐周期累计CPU运行时间上限，不是保底/deadline/滑动窗口保证。InstallBudget结算至生效时刻，保留窗口原点、已用U及祖先用量；余额max(0,cap-U)，相同值更新不充值。每段真实运行按所跨窗口分摊，只有真实周期切换重置窗口计数。
+
+首期运行时必须核验单CPU。共同资格/记账层覆盖全部受控任务；未覆盖FIFO/RR等策略时明确拒绝受控任务切换，不允许经Linux sched接口绕过fair限制。保留内核必要stop/idle和独立恢复域，不向普通任务授此豁免。任务无syscall时也须由独立timer触发节流和下周期唤醒。
+
+优先复用已校准上游时间设施；raw TSC是tick，不直接当ns。转换采用受检宽算术并保留舍入余数，覆盖tick、切换、阻塞、退出、更新、快照各结算点。单CPU也测量量子/不可抢占导致的超支与恢复延迟，不把误差只留给SMP。所有计数/序列禁止静默回绕；到上限停止相关新管理操作并保持恢复入口。
+
+N0不支持CPU集/period变化、迁移、SMP资源控制。后续全路径祖先额度预留与锁序另验。内存wire不在本版：charge_owner残留对象、共享页压力与最终释放属于未来内存控制前置规则，不成为CPU格式原型的虚假前提。
+
+## 10. 回退和后续设备边界
+
+独立OS恢复职责由基础init/监督进程承载，而非仅依赖Hepta runtime.supervisor。用户明确暂停、管理租约失效、模型不可用和压力紧急状态有不同规则；cap=0不自动表示用户暂停。暂停原因来自可信控制记录，不由本版cap字段猜测。恢复资源及其祖先不在普通管理envelope内。
+
+设备execution/cancel/effect/observation仍独立。quiesced+partial不等于none；可释放页必须有静止/隔离证明且无CPU引用。device-owned标志不自动撤销mmap别名，实际映射权限和DMA同步由驱动路径负责。通用设备opcode未实现，不宣称本版CPU协议解决设备恢复。
 
 ## 11. 验证边界
 
-codec 只验证格式；宿主规格模型验证选定反例；真实并发、调度、credential、copyout 和 DMA 需在内核接合后测。测试入口与 F02–F07 映射见 [VALIDATION](VALIDATION.md)。
+黄金向量只测格式；生命周期模型只验证指定交错；真实credential、锁、copyout、runqueue、timer及DMA均需内核实测。至少覆盖：exec后激活、同D跨目标预约、撤销后仅观察、连续写超过1024次并退役、旧序列迟到、拒绝结果不变、同观测不同历史、用户暂停与失效回退区分。

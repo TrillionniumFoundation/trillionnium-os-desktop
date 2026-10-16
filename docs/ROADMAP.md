@@ -1,6 +1,6 @@
 # 按实际依赖推进的开发路线
 
-版本0.2。调查、上游复现、新增实现和真实验收分别记录；状态以STATUS为准。不以文档通过代替代码或设备结果。
+版本0.3。调查、上游复现、新增实现和真实验收分别记录；状态以STATUS为准。不以文档通过代替代码或设备结果。
 
 ## 1. 主路径
 
@@ -10,7 +10,7 @@ M0b ABI/对象规格 ──────────> M1b 编解码库/普通客�
 M0c Hepta真实Linux依赖盘点 ─> M1c 必需兼容子集/存储资格
 M1a + M1b ────────────────> M2a 新内核资源实现+非AI控制客户端
 M2a + M1c ────────────────> M2b 真实Hepta宿主profile接合
-M2b ─────────────────────> M2c cap/revoke/kill/reboot闭环
+M2b ─────────────────────> M2c cap/历史查询/退役/revoke/kill/reboot闭环
 M2c ──> M3 扩展Linux工作负载 / M4 Android平台 / M5裸机本地AI
 M3 + M4 + M5需要的子集 ────> M6 Rust桌面与指定应用产品化
 ```
@@ -23,7 +23,7 @@ M1a是上游复现，不是宣称新增内核代码。M1c只需Hepta实际用到
 | --- | --- | --- |
 | M0a | 使用support/upstream-lock.json锁定源码；验证完整上游tree、Cargo.lock及许可来源 | 源码checkout与依赖输入可重现，不只写版本号 |
 | M1a | 固定构建容器digest、QEMU/firmware、rootfs manifest与内核配置，按上游入口构建启动 | 实际kernel产物hash、完整serial日志、退出结果 |
-| M1b | 实现NATIVE_ABI三个操作的no_std编解码与客户端格式测试 | 固定头/请求/响应、截断/溢出/unknown/保留位/容量全部覆盖 |
+| M1b | 实现NATIVE_ABI五个操作的no_std编解码与客户端格式测试 | 固定头/请求/响应、截断/溢出/unknown/保留位/容量全部覆盖 |
 | M1c | 原Linux构建真实Hepta profile与trace；建立W1必要接口清单 | 明确到ELF、依赖、实际owner装配，不把上游缺口误归OS |
 | M2a | 在上游FileLike/ioctl/进程/调度对象接入CapSpace、单CPU预算与投递表 | 非AI客户端真实安装/观察；fd绑定、CAS、同值更新不充值、copyout重取 |
 | M2b | 接现有Agentd invocation provider/主工具链，保持K/D身份与状态owner | 实际Hepta请求到新内核，非mock结果 |
@@ -56,3 +56,7 @@ R-Hardware：实际只读枚举首台候选机/恢复介质，不刷BIOS、不�
 ABI问题使用普通客户端缩小；兼容问题使用原ELF差分；Hepta装配问题在原Linux复现。AI策略未优于普通反馈时保留可靠对照，不能为了产品标签强制使用AI。发现核心上游冲突时提交具体复现与改动成本，才调整派生边界。
 
 下一份提交应以真实M1b编解码或M1a构建结果为中心，不再次单纯扩张原则文件。
+
+## 6. 本轮之后的真实缺口
+
+Rust库源码写入仍被执行通道拒绝；规格模型与黄金数据不是替代实现。官方ISO本次仅下载到部分字节，未校验完整、未启动，不推进M1a。下一次优先在可用且获准的执行路径完成真正Rust codec及其黄金向量测试，或完成固定上游构建输入并取得实际启动日志；不重复以14个模型结果提升内核状态。

@@ -1,6 +1,6 @@
 # Android平台接合与APK兼容
 
-版本0.2。保留完整AOSP用户态，适配内核/Binder/HAL；设备合规、应用行为、外部服务认可分开验证。实际状态见STATUS。
+版本0.3。保留完整AOSP用户态，适配内核/Binder/HAL；设备合规、应用行为、外部服务认可分开验证。实际状态见STATUS。
 
 ## 1. 必须锁定的产品输入
 
@@ -41,3 +41,7 @@ Android17 CDD 9.8.18对AppFunctions执行者权限/预装身份以及明确用�
 固定AOSP输入/原Android对照 -> Bionic/native测试 -> init/Binder -> Zygote/system_server -> graphics/输入/PackageManager -> 原APK完整场景 -> native库/后台/重启/权限 -> 适用CTS/VTS/设备功能。VM对照独立标记客体kernel/镜像，不计原生android_runtime通过。
 
 每个APK记录package/version/split哈希、来源/ISA、权限/服务依赖、AOSP manifest、运行模式、硬件和分场景结果。安装、首页、登录、消息、媒体、文件、通知和恢复分别验收；未测不通过。
+
+## 8. 用户解锁与存储边界
+
+固定product后独立设计Direct Boot、DE/CE数据、用户解锁、Keystore及密钥备份恢复路径。S1基础文件系统耐久测试不提供Android加密存储或硬件密钥证明；原型仍可用可丢弃合成数据启动，不把完整设备合规当首次APK验证的共同前提。AppFunctions要求仅用于实际对应调用，不扩大为所有OS预算动作必须手动确认。

@@ -1,6 +1,6 @@
 # 产品范围、工作负载与原生能力
 
-版本0.2。目标是独立Rust内核+Hepta原生控制+现有Linux/Android应用兼容，不是旧Linux桌面包装。状态只由 [STATUS](STATUS.md) 记录。
+版本0.3。目标是独立Rust内核+Hepta原生控制+现有Linux/Android应用兼容，不是旧Linux桌面包装。状态只由 [STATUS](STATUS.md) 记录。
 
 ## 1. 保留的硬目标
 
@@ -10,7 +10,7 @@
 
 ## 2. 首期profile
 
-N0：完整Asterinas派生，x86_64/QEMU，单CPU资源控制实验，现有Linux ELF与宿主工具链；仅QueryAbi/ReadUsage/InstallBudget控制。物理硬件、SMP、迁移、GPU、Android均有后续工作但不伪装为N0实现。
+N0：完整Asterinas派生，x86_64/QEMU，单CPU资源控制实验，现有Linux ELF与宿主工具链；HOS2的QueryAbi/ReadUsage/InstallBudget及只读历史查询/连续结果退役。物理硬件、SMP、迁移、GPU、Android均有后续工作但不伪装为N0实现。
 
 A0：Android平台研究/后续原型，初期x86_64、4KiB页、保留AOSP用户态；精确product和manifest尚需实际源码构建锁定。ARM64与16KiB为独立profile，禁止将4096固化成永久wire常量。
 

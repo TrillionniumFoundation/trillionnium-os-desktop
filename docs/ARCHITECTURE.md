@@ -1,6 +1,6 @@
 # 系统架构与上游接合
 
-版本0.2。共享原则与真实进展见 [INDEX](INDEX.md) / [STATUS](STATUS.md)。
+版本0.3。共享原则与真实进展见 [INDEX](INDEX.md) / [STATUS](STATUS.md)。
 
 ## 1. 默认路线已经收敛
 
@@ -31,21 +31,25 @@ Hepta作为用户态原生系统服务，现有Codex主链调用窄的控制ABI�
 
 ## 4. 对象所有权
 
-Task/Thread/AddressSpace/VFS沿用上游；ResourceDomain拥有本域/祖先预算与统计；进程元数据拥有CapSpace；文件对象只承载transport生命周期；每个设备/队列拥有generation、引用和静止状态。K及持久效果事实属于原Hepta owner；D及结果槽属于本boot内核。cap、namespace、Linux credentials、Android MAC都是同一对象检查的输入，不另存一份权限真相。
+Task/Thread/AddressSpace/VFS沿用上游；ResourceDomain拥有本域/祖先预算与统计；进程元数据拥有CapSpace；文件对象只承载transport生命周期；每个设备/队列拥有generation、引用和静止状态。K及持久效果事实属于原Hepta owner；D及结果槽属于本boot内核的投递命名空间；可通过独立DeliveryView保留到管理进程退出之后。cap、namespace、Linux credentials、Android MAC都是同一对象检查的输入，不另存一份权限真相。
 
 ## 5. 同步与执行上下文
 
-先复制用户缓冲和分配有界结果槽；取得CapSpace/文件对象强引用后释放查表锁；然后获取目标mutation锁。不得持有查表借用跨驱动回调。短mutation锁保护grant epoch、准入、revision和同对象结果；持锁不睡眠、不做文件I/O、不调用模型。
+HOS2先在CapSpace级投递窗口原子预约sequence与内容，跨目标的相同D也只能成功预约一次。释放表锁后取得目标mutation锁执行授权、CAS、计费与终局发布；不持有全局表锁执行设备/用户copy。terminal结果通过固定结果单元发布，读者按匹配锁或release/acquire读取。retire只处理连续已发布终局，不反向获取资源锁。具体顺序以NATIVE_ABI为准。
 
-层级资源锁按root到leaf顺序；未来跨树迁移需最小共同祖先与稳定对象ID顺序，首期直接不支持迁移。runqueue和domain的具体同步接合在源码导入后按上游锁约束确定：不能发明一个抽象锁序就称已排除所有死锁。先单CPU验证，再扩多CPU；多CPU准入需要额度预留，不能多个CPU各自读取同一余额后同时花费。
+能力引用保内存寿命，不保权限有效。grant关闭/撤销状态在与准入相同的对象锁下更新，槽移除不等于悄悄延长旧引用权限。层级资源按root到leaf；runqueue实际IRQ锁序需要结合上游复核，尚未实施并发证明。
 
-IRQ仅登记有界完成/唤醒，复杂清理交给worker。unmap后需等相关CPU TLB shootdown及引用回收才可复用物理页。shared queue使用明确acquire/release与设备屏障；IOMMU访问隔离不替代DMA缓存同步。设备所有权详见HARDWARE_AND_DRIVERS。
+cap接在ClassScheduler共同资格/计费路径，不仅修改fair.rs。固定上游sched_class/mod.rs有stop、real_time、fair、idle；N0未覆盖的FIFO/RR切换显式拒绝受控用户任务。运行时核验NCPU=1。raw TSC使用tsc_freq和受检换算或已有校准时钟转ns；在tick/切换/阻塞/退出/策略变化/快照前结算，跨周期分摊。即使单CPU，也测量节流超支和不可抢占延迟。
 
-## 6. 启动序列
+下周期唤醒由独立timer触发，不能等待被节流任务再次syscall。IRQ只做有界登记/唤醒；unmap要完成CPU引用退出与TLB同步；IOMMU不替代DMA缓存同步或消除用户映射别名。
 
-bootloader交接与范围验证 -> 异常/页表/内存/时钟/IRQ -> 最小线程与文件/设备 -> entropy readiness、boot identity -> 独立init/恢复 -> 可信CapSpace/资源配置 -> 满足资格的存储/原Hepta owners -> 受限桥/真实Agentd profile -> 应用。
+## 6. 启动和权限交接
 
-未有熵或可信存储时允许受限诊断，不伪造安全会话；不用模型才能启动系统。租约、休眠与更新遵循SECURITY_AND_RECOVERY。恢复服务与最低系统I/O有独立预算，不能被普通cap饿死。
+基础boot/页表/IRQ/时钟/熵 -> 独立init与恢复资源 -> CreateStoppedTask并归属资源域 -> 最终ELF装载和exec_epoch提交 -> 可信ActivateGrant绑定最终身份 -> 只读启动页交付句柄 -> Resume -> 满足存储要求的Hepta owners和桥。
+
+能力不能在exec前安装然后指望exec撤权后仍然存在；普通exec不自动重授。失败清理未激活任务，桥重启先fence旧管理者，再为新身份激活。该内部启动接合仍需实际源码实现，公开Transfer不是其前提。
+
+独立OS恢复由基础init/监督进程承担，不以Hepta runtime.supervisor健康为唯一依赖。其CPU/内存/I/O和祖先资源不可被被管理域削减。用户暂停、租约过期与模型不可用按可信原因选择不同回退；具体规则见SECURITY_AND_RECOVERY。
 
 ## 7. AI控制闭环
 

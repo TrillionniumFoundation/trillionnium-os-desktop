@@ -1,6 +1,6 @@
 # 开发文档入口
 
-版本0.2，2026-10-16。根README.md保持0字节；开发内容只在docs与明确源码/支持目录中。真实实现/测试状态统一见 [STATUS](STATUS.md)。
+文档集修订0.3，2026-10-16。根README.md保持0字节；开发内容只在docs与明确源码/支持目录中。真实实现/测试状态统一见 [STATUS](STATUS.md)。
 
 ## 共同原则
 
@@ -14,7 +14,7 @@
 | --- | --- |
 | [PROJECT](PROJECT.md) | 原生定义、profile、W0–W5应用与交付 |
 | [ARCHITECTURE](ARCHITECTURE.md) | 完整Asterinas派生、真实源码接合、同对象与并发 |
-| [NATIVE_ABI](NATIVE_ABI.md) | wire、会话/能力、K/D、撤销、取消、预算的唯一规格 |
+| [NATIVE_ABI](NATIVE_ABI.md) | HOS2五操作、启动交接、全局预约、历史观察与退役的唯一规格 |
 | [HEPTA_INTEGRATION](HEPTA_INTEGRATION.md) | 真实源码符号/profile、状态owner、控制器 |
 | [SECURITY_AND_RECOVERY](SECURITY_AND_RECOVERY.md) | TCB、熵/时钟、S0/S1存储、更新与故障 |
 | [LINUX_COMPATIBILITY](LINUX_COMPATIBILITY.md) | 必需接口、rootfs和应用交付、差分 |
@@ -29,3 +29,5 @@
 | [upstream-lock](../support/upstream-lock.json) | 已核查源码与参考资产、显式缺失构建输入 |
 
 每次后续改动直接修改对应契约和状态，不重复复制ABI字段或完成度。旧仓库重建历史保留在Git初始提交；不混入永久产品要求。
+
+本轮新增[恢复规格场景](../tests/spec/test_recovery_contract.py)、[固定字节样本](../tests/golden/hos2.json)与[执行结果](../results/spec-recovery-v03.json)。它们不是Rust codec或内核实现。未修改文件保留其原小版本，避免仅为版本号全量重写。

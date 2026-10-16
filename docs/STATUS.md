@@ -1,41 +1,37 @@
 # 当前状态
 
-2026-10-16，文档版本0.2。审计与修订基线 `c4cc51054876c9fd5e5daabf4a2e60033ee819c4`。本次阶段为 **documentation_revised_no_kernel_implementation**。
+2026-10-16；修订基线 `46a0e9f9ffa0e8289d0a1324d5dd8c9e6d6b7544`。本轮交付为 **recovery_contracts_and_spec_tests**，不是Rust内核实现。
 
-## 本轮实际交付
+## 已实际完成
 
-全部15份既有文档修订；NATIVE_ABI集中定义同对象权限、control会话、64字节请求/响应、有限三个操作、K/D身份、admit/revoke、部分效果与预算记账。VALIDATION提供F01–F22逐项规格落点，并保留对应真实验证缺口。
+围绕V201–V217修订关键文档，HOS2明确启动授权交接、CapSpace全局投递预约、独立DeliveryView、只读历史查询、有序写序列与连续结果退役。预算目标收敛不伪造旧操作终态；恢复责任不依赖Hepta自身健康；真实调度类、计时和计费点列为下一实现接合。
 
-新增support/upstream-lock.json：完整Asterinas派生commit/tree、上游nightly、Hepta快照及官方ISO资产元数据已核查；未下载ISO、未导入内核源码、未运行kernel build/QEMU。rootfs/container/firmware输入仍为空，reproducible_kernel_build_ready=false。
+新增Python顺序规格场景，工作容器与执行主机分别运行同一源码SHA256 `8162883270a153ebf81f2cd4e0e05392c957fb439cfbb481239b35d75cab68de`，均为14测试、0失败、0错误、0跳过。10,000写/退役发生在模型内，不是内核benchmark；模型不提供并发或实际权限证明。[结果](../results/spec-recovery-v03.json)
 
-## 实际测试与限制
+新增12份独立Python struct生成的HOS2十六进制黄金样本，覆盖五操作请求/响应、历史退役和CAS拒绝；只核算布局，没有Rust codec消费这些样本。[样本](../tests/golden/hos2.json)
 
-在当前会话工作容器重跑上一轮原始design_counterexamples.py（SHA256 `0996510f53b6f347148bc9cba2307ec85a732a3c35ab04abbb062f10a0f6e093`），5个规格反例/算术模型均满足断言。它们验证头部长度、摘要入键歧义、预算刷新反例、停止与partial效果、句柄命名空间，不是新内核代码测试。
+## 未完成与本轮实际阻塞
 
-另核算7种0.2布局：request64、response64、transport32、budget32、QueryAbi输出48、ReadUsage输出64、InstallBudget输出24字节。这里仅验证字段长度算术，不声称实际Rust codec实现。
+Rust库源码写入再次被执行通道安全检查拦截，工具仅报告无法确定请求安全状态。没有重放同一源码写入，也没有改权限或绕过检查。已确认无`.rs`文件；此前成功创建但没有实现对应的临时Cargo.toml已移除，不把空工程算交付。规格测试是独立的文档模型，不是被拒Rust编解码库的替代实现。
 
-尝试新增Rust编解码库的写入被执行通道安全检查拦截，未落盘，未通过其他通道重放；没有Cargo文件、Rust库或相关编译测试成果。工具返回仅说明无法确定请求安全状态，本轮不臆测根因。
-
-本轮提交前检查通过：17个文件范围、15份文档版本、README零字节、42条本地链接/锚点、22项审计映射、Markdown代码围栏与3组核心布局算术。远端发布身份与树哈希由提交后的独立读取核对；当前这句不预先宣称远端完成。规格修改和模型断言不算产品能力。
+官方v0.19.0安装ISO下载在180秒上限内只获得74,026,432/1,442,840,576字节，curl退出28。完整文件未校验，未启动QEMU；部分文件的大小/摘要已记录后清理。执行主机检测到QEMU 8.2.2及可访问KVM，但这些不构成客体启动。[失败记录](../results/reference-iso-probe.json)
 
 ## 能力状态
 
-| 范围 | 状态 |
+| 范围 | 实际状态 |
 | --- | --- |
-| 文档F01–F22 | specified/revised；真实实现验收尚未关闭 |
-| 上游源码与工具链选择 | 固定；本项目尚未导入/编译 |
-| Rust控制ABI库 | write_blocked/not_implemented |
-| 内核对象/权限/预算/驱动 | not_implemented |
-| QEMU/裸机 | not_tested |
-| Hepta新OS端到端 | not_tested |
-| Linux/Android兼容 | not_tested |
-| GPU/本地模型/UI | not_tested |
-| CI执行/生产替代 | not_claimed |
+| 文档恢复契约 | revised，待代码实现 |
+| 顺序规格模型 | 14 passed；非内核/非并发 |
+| 固定字节样本 | 12份；codec未测试 |
+| Rust ABI库/普通客户端 | not_implemented；source_write_blocked |
+| Asterinas源码导入/源码构建 | not_executed |
+| 官方ISO完整下载/校验 | failed_timeout/not_verified |
+| QEMU/裸机内核启动 | not_executed |
+| Hepta端到端/Linux/Android/GPU/UI | not_tested |
+| CI与生产资格 | not_claimed |
 
-## 仓库边界
+根README保持0字节；不再次删除仓库，不改hepta-private-ci、现役服务或硬件。source pin仍不等于完整build lock；upstream-lock中缺项和false保留。
 
-仓库ID1421656803，公开main；根README保持0字节。本轮只修本仓库文档/来源锁定，不删除或再次重建仓库，不改hepta-private-ci、不改现役服务/硬件。最初删除重建记录保留在Git历史，不作为永久产品架构。
+## 下一项真实交付
 
-## 下一项真实工作
-
-按ROADMAP先补完M1b编解码和M1a可复现构建输入，或在授权可用的执行通道完成所需源码写入；不以继续堆叠文档代替真实代码与启动。M2的目标仍是普通客户端 -> 真实Hepta -> cap生效 -> revoke/kill/reboot。
+优先完成获得执行允许的Rust源码写入及黄金向量测试，或补齐固定上游源码构建与真实串口启动结果；不能因这些规格场景通过就推进M1a/M1b实现状态。并行/设备/前驱恢复仍需对应真实环境，未决项不标为关闭。

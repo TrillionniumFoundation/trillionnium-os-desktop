@@ -1,4 +1,4 @@
-# 架构决策 0.2
+# 架构决策 0.3
 
 本页只记录选择和改变选择的条件；真实进展见STATUS，共同原则见INDEX。
 
@@ -12,7 +12,7 @@
 
 ## D03：有限协议优先于大量空操作
 
-HOS1首期只有QueryAbi、ReadUsage、InstallBudget，完整定义输入/输出/错误/身份/结果重取。资源域由可信init配置；动态迁移/Transfer/SubmitIo暂不提供wire，不分配未实现能力的编号。后续按真实需求增加并独立验收。
+HOS2首期包含QueryAbi、ReadUsage、InstallBudget、QueryDelivery和RetireThrough，完整定义输入/输出/错误/身份/结果重取。资源域由可信init配置；动态迁移/Transfer/SubmitIo暂不提供wire，不分配未实现能力的编号。后续按真实需求增加并独立验收。
 
 ## D04：CPU上限而非保底
 
@@ -41,3 +41,7 @@ GPU/VMM/Android product/首台实机可行性与M0并行；完整设备实现不
 ## 尚未完成的选择/输入
 
 容器digest、rootfs构建清单、固件、实际AOSP tag/product、首台裸机和GPU后端尚需验证。记录缺项而非发明值；源commit固定只是可复现构建的一部分。运行状态不得因为选型写入而提升。
+
+## D10：显式HOS2恢复协议
+
+新有序写ID和恢复操作不重新解释HOS1。结果窗口以连续退役前沿防重放，DeliveryView独立于管理句柄；只有已持久确认的终局可退役。启动授权在最终exec后可信激活；旧效果不明与新授权目标收敛分别记录。

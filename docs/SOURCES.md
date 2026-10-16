@@ -1,6 +1,6 @@
 # 一手来源与精确基线
 
-版本0.2，复核日期2026-10-16。研究来源支持相关外部事实；本项目方案与试验参数是设计选择。源码输入见 [upstream-lock](../support/upstream-lock.json)，其中缺失构建输入保持null。来源hash不是下载完成或运行证明。
+版本0.3，复核日期2026-10-16。研究来源支持相关外部事实；本项目方案与试验参数是设计选择。源码输入见 [upstream-lock](../support/upstream-lock.json)，其中缺失构建输入保持null。来源hash不是下载完成或运行证明。
 
 <a id="hepta-architecture"></a>
 ## Hepta架构
@@ -19,7 +19,7 @@
 
 [v0.19.0标签](https://github.com/asterinas/asterinas/releases/tag/v0.19.0)解析至 `c4b7ed575b7b32773475b194d2ad41fb6d03765b`，tree `96605cf64aeae2d34f29b97e85eff9315fe10a8e`。[精确工具链](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/rust-toolchain.toml)为nightly-2026-07-21；[sys_ioctl](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/kernel/core/src/syscall/ioctl.rs)提供真实FileLike分派点；[源码树](https://github.com/asterinas/asterinas/tree/c4b7ed575b7b32773475b194d2ad41fb6d03765b)。
 
-官方release metadata给出x86_64 ISO 1442840576字节，SHA256 `7df9fafed4fe886e44bda501834937d893e12a05af911fabeb068c34379fb86e`。本轮没有下载该ISO。发布API时间为2026-10-12T21:37:46Z，[公告](https://asterinas.github.io/2026/10/13/announcing-asterinas-0.19.0.html)日期为2026-10-13，两者分别记录。软件图形与初步ARM进展不证明本项目GPU或实机支持。
+官方release metadata给出x86_64 ISO 1442840576字节，SHA256 `7df9fafed4fe886e44bda501834937d893e12a05af911fabeb068c34379fb86e`。来源锁定阶段没有下载该ISO；0.3轮尝试下载但未完成，失败记录见results/reference-iso-probe.json。发布API时间为2026-10-12T21:37:46Z，[公告](https://asterinas.github.io/2026/10/13/announcing-asterinas-0.19.0.html)日期为2026-10-13，两者分别记录。软件图形与初步ARM进展不证明本项目GPU或实机支持。
 
 <a id="ostd-vmm"></a>
 ## 虚拟化
@@ -105,3 +105,11 @@
 ## 调度策略参照
 
 [sched_ext](https://docs.kernel.org/scheduler/sched-ext.html)：可替换策略与故障回退参考，不是新Rust内核或AI收益证明。
+
+## 0.3补充接合来源
+
+[Asterinas固定调度类源码](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/kernel/core/src/sched/sched_class/mod.rs)和[固定x86计时入口](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/ostd/src/arch/x86/mod.rs)：共同调度路径与TSC频率/单位需要实际接合，不能只改fair或把tick当ns。
+
+[Hepta持久结构](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-operations/src/durable_model.rs)：与参考结构分开使用，owner_generation不是逻辑身份。HOS2是本项目设计，不是上游已实现接口。
+
+[Asterinas NixOS安装说明](https://asterinas.github.io/book/distro/)将发布ISO作为安装介质；下载或启动安装器都不能自动计为本项目Rust内核运行。此次下载未完整，结果保留失败。

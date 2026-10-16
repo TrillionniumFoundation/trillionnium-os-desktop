@@ -1,6 +1,6 @@
 # Hepta 的实际宿主接合
 
-版本0.2。固定上游 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`；运行状态统一见 [STATUS](STATUS.md)。OS 层不复制第二套 Agent、Codex 主链或持久操作账本。
+版本0.3。固定上游 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`；运行状态统一见 [STATUS](STATUS.md)。OS 层不复制第二套 Agent、Codex 主链或持久操作账本。
 
 ## 1. 已核查源码到产品入口
 
@@ -34,23 +34,32 @@
 
 Hepta topology/body generation 冻结执行主链与资源 envelope；authority epoch 管理授权/撤销；OS resource revision 表示 envelope 内的一次实际预算安装。在既有 envelope 内调整 cap 不触发整套 topology 重建或 Agentd 重启；扩大权限或资源上界才走现有相应 owner 规则。
 
-## 5. 身份和状态唯一所有者
+## 5. 映射到实际持久操作结构
 
-| 身份/事实 | 来源 | 用途 |
-| --- | --- | --- |
-| run_id / objective / topology generation | 原 Hepta owner | 用户任务与策略上下文 |
-| K=(principal,workspace,operation_id) 与 intent_digest | 原持久操作 owner | 跨进程/跨boot识别同一逻辑操作，先查K后比较摘要 |
-| boot_id / process-start / exec_epoch / CapSpace | 内核 | 真实调用者与会话，不能用PID代替 |
-| D=(boot,CapSpace,request_id) | 内核投递表 | 同次启动的写去重与copyout失败重取 |
-| object generation / budget revision / queue generation | 实际内核或驱动 owner | 生效版本及完成关联 |
+固定Hepta操作库同时导出参考OperationIntentV1和DurableOperationIntentV1。实际持久路径为codex-rs/hepta-operations/src/durable_model.rs；不要把同名参考模型当作持久宿主。
 
-请求方可以提供关联ID，但不能自报授权主体、真实资源容量、完成结果或内核身份。摘要在记录中，不在查找键中。内核瞬时投递表不是第二份持久业务数据库。
+| 实际字段 | OS接合规则 |
+| --- | --- |
+| scope_id | 原owner从已认证主体和既有工作区scope解析，不由OS另建scope数据库 |
+| operation_id | 原逻辑操作ID；进程/boot变化不自动换ID重放 |
+| expected_predecessor | 原owner固定的操作前驱；未决前驱不能伪造Applied来绕过 |
+| destination | 可信资源记录中的稳定object_id所对应的目的身份；不是PID或slot |
+| payload_digest | 不可变语义操作摘要，覆盖目标、动作、cap、资源前提和授权范围 |
+| owner_generation | writer fence，不属于逻辑操作查找键 |
 
-## 6. 重试、恢复、取消
+semantic_digest与final_use_binding沿用原实现。D、request_id、CapSpace和句柄是另行核验的投递绑定，不因重启而偷偷改变同一逻辑意图。改变cap、目标或语义前提需要新意图及授权。OS资源revision、Hepta body generation、authority epoch和writer generation分别校验。
 
-原 owner 在发出写请求前持久记录 K、意图和 D。同D同内容重取；同D不同内容冲突；进程或boot变化后保留K，未知效果禁止换ID重发。预算属于可观察的绝对状态设置，恢复时读取目标稳定身份、revision/状态，并区分“确认原安装发生”与“状态恰巧相同”；后者不能证明原操作完成。
+源码依据：[持久模型](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-operations/src/durable_model.rs)及[导出区分](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-operations/src/lib.rs)。本表是待接合映射，不是已合并接口；SQL目的端共提交不等于设备效果与SQLite在同一事务内。
 
-revoke 关闭新准入但不取消已发生效果。停止桥/模型后 OS 恢复控制权回到本地 supervisor；独立应用不随桥生命周期退出。仅观察历史结果不恢复执行权限。详细双层状态、保留与容量规则以 NATIVE_ABI 为准。
+## 6. 历史核对、持续运行和目标收敛
+
+原owner在投递前持久记录逻辑身份、意图与D。HOS2用CapSpace内有序sequence防止已退役的旧请求再次执行；同D变内容冲突，已记录拒绝也不可变成后来的执行。结果持久确认后原owner用RetireThrough确认连续终局，释放内核结果但保留拒绝迟到请求的前沿。1024限制是未退役窗口，不是终身写配额。
+
+只读QueryDelivery的DeliveryView与原管理句柄分开，由可信init授予同scope观察者。原manager退出后仍可保留历史；boot重启或历史确实丢失则保持未知，不凭ReadUsage当前cap相同证明原执行。历史查询不恢复manage权。
+
+旧效果不可确定时，先fence旧执行者、观察稳定资源对象、取得新授权，再建立明确的新目标收敛操作；旧K继续indeterminate。新目标达成与旧操作终态分别记录。若原owner的前驱规则不能表达该分离，必须修改和验证原owner接缝后才使用，不能另建账本或伪造前驱终态。绝对CPU预算可以评估此策略，不可逆设备动作不可照搬。
+
+进程退出、cap=0和管理租约到期由独立OS恢复职责处理；不是在受限桥内再启动一套模型。用户明确暂停从可信意图记录识别，不从cap数值推断。迟到旧管理者请求在新授权之前先被fence。
 
 ## 7. 观测与控制器
 
@@ -59,3 +68,7 @@ revoke 关闭新准入但不取消已发生效果。停止桥/模型后 OS 恢�
 第一控制器试验配置：每1秒最多提案一次，观测年龄超过2秒或丢事件未恢复则不增加cap；每次变更不超过授权最大cap的10%，连续两次同向压力才改变，失败使用固定上次可用预算。此为待测保守实验参数，不是效果定理或最终默认。推理/观测本身单独计费；有界非AI反应式控制器是同等对照。
 
 首个真实路径顺序：非AI客户端验证ABI -> 必需Linux依赖 -> 原Hepta实际profile -> 预算生效 -> revoke/kill/reboot。远程provider可用于早期主链实验但不得记为本地推理；后续另测本地CPU/GPU。
+
+### 提交时再验证观测
+
+开始推理时样本有效不意味着提交时仍有效。提交前重新检查内核初始时钟域的样本年龄、当前授权/资源revision及目标身份；过时提案丢弃或重新观察，不在队列中累积。CAS仅检测版本竞争，不证明负载当前性。ReadUsage尚不表达祖先节流/I/O/锁等待，缺乏可信原因时不自动把低进度解释为CPU不足；需要对应观测实现后才启用相关调优。对齐周期quota也不是滑动窗口或交互延迟保证。
