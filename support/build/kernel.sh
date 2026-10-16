@@ -25,6 +25,12 @@ export CARGO_NET_GIT_FETCH_WITH_CLI=true
 export RUST_LOG=info
 export OSDK_CARGO_LOCK="$build_dir/minimal/Cargo.lock"
 export VDSO_LIBRARY_DIR=${VDSO_LIBRARY_DIR:-$build_dir/out/linux-vdso}
+# Refuse a busy workspace before consuming a new evidence path. The same
+# invocation can then be retried after the current owner releases its lock.
+exec 9>"$build_dir/out-kernel.lock"
+flock -n 9 || { echo "another A01 build is using the kernel workspace" >&2; exit 1; }
+# Keep the lock inode stable: unlinking a locked file permits a second caller
+# to create and lock a different inode before this process releases its fd.
 if [[ -n ${A01_RUN_DIR:-} ]]; then
     run_dir=$A01_RUN_DIR
     mkdir -p "$(dirname "$run_dir")"
@@ -34,10 +40,6 @@ else
     run_dir=$(mktemp -d "$build_dir/out/$(date -u +%Y%m%dT%H%M%SZ)-$target-XXXXXX")
 fi
 run_dir=$(cd "$run_dir" && pwd)
-exec 9>"$build_dir/out-kernel.lock"
-flock -n 9 || { echo "another A01 build is using the kernel workspace" >&2; exit 1; }
-# Keep the lock inode stable: unlinking a locked file permits a second caller
-# to create and lock a different inode before this process releases its fd.
 manifest_file="$kernel_dir/kernel/OSDK.toml"
 manifest_temporary=
 manifest_anchor_open=
@@ -89,6 +91,9 @@ python3 "$build_dir/verify-source.py" > "$run_dir/source-inputs.json"
     git -C "$project_dir" rev-parse HEAD
     git -C "$project_dir" status --short
     printf 'CARGO_BUILD_JOBS=%s\nVDSO_LIBRARY_DIR=%s\n' "$CARGO_BUILD_JOBS" "$VDSO_LIBRARY_DIR"
+    printf 'RUSTFLAGS=%s\nCARGO_ENCODED_RUSTFLAGS=%s\nCARGO_TARGET_DIR=%s\nASTER_BUILD_TIMESTAMP=%s\n' \
+        "${RUSTFLAGS-<unset>}" "${CARGO_ENCODED_RUSTFLAGS-<unset>}" \
+        "${CARGO_TARGET_DIR-<unset>}" "${ASTER_BUILD_TIMESTAMP-<unset>}"
     sha256sum "$VDSO_LIBRARY_DIR/vdso_x86_64.so"
     sha256sum "$OSDK_CARGO_LOCK"
     sha256sum "$build_dir/cleanup-manifest.py"

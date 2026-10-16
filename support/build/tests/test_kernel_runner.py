@@ -7,6 +7,7 @@ installation/cleanup, pipeline status, and boot acceptance remain under test.
 """
 
 import errno
+import fcntl
 import importlib.util
 import json
 import os
@@ -186,6 +187,43 @@ class KernelRunnerTests(unittest.TestCase):
                 except subprocess.TimeoutExpired:
                     first.kill()
                     first.communicate(timeout=3)
+
+    def test_busy_lock_preserves_explicit_output_path_for_same_command_retry(self):
+        requested = self.root / "new-parent/evidence"
+        lock_path = self.build / "out-kernel.lock"
+        with lock_path.open("a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            identity = (lock_path.stat().st_dev, lock_path.stat().st_ino)
+            result = self.run_runner(name="new-parent/evidence")
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIn("another A01 build", result.stdout)
+            self.assertFalse(requested.parent.exists(), "busy lock consumed the new output parent")
+            self.assertFalse((self.root / "make-call.json").exists())
+        retry = self.run_runner(name="new-parent/evidence")
+        self.assertEqual(retry.returncode, 0, retry.stdout)
+        self.assertTrue((requested / "run-exit-code.txt").is_file())
+        self.assertEqual((lock_path.stat().st_dev, lock_path.stat().st_ino), identity)
+
+    def test_busy_lock_preserves_default_output_for_same_command_retry(self):
+        command = ["bash", str(self.build / "kernel.sh"), "kernel"]
+        output_parent = self.build / "out"
+        lock_path = self.build / "out-kernel.lock"
+        with lock_path.open("a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            identity = (lock_path.stat().st_dev, lock_path.stat().st_ino)
+            result = subprocess.run(command, env=self.environment, text=True,
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=15)
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIn("another A01 build", result.stdout)
+            self.assertFalse(output_parent.exists(), "busy lock allocated a default evidence directory")
+            self.assertFalse((self.root / "make-call.json").exists())
+        retry = subprocess.run(command, env=self.environment, text=True,
+                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=15)
+        self.assertEqual(retry.returncode, 0, retry.stdout)
+        runs = list(output_parent.iterdir())
+        self.assertEqual(len(runs), 1)
+        self.assertEqual((runs[0] / "run-exit-code.txt").read_text(), "0\n")
+        self.assertEqual((lock_path.stat().st_dev, lock_path.stat().st_ino), identity)
 
     def test_owned_manifest_removed_after_success(self):
         result = self.run_runner()

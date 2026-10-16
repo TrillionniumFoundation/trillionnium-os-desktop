@@ -63,8 +63,10 @@ their live paths. For offline archive checks, use `check-boot.py DIR` without
 `--live-artifacts`; historical records without a serial digest require the
 checker from their recorded acceptance commit, not a retroactively added hash.
 The wrapper rejects incomplete log capture, forces its initramfs prerequisite
-on, and shares a persistent workspace lock with the kernel-test runner. Its
-temporary manifest is installed without replacing an existing file, and
+on, and shares a persistent workspace lock with the kernel-test runner.
+A busy lock is rejected before creating explicit or default evidence directories,
+so the same command can be retried after the current owner exits. Its temporary
+manifest is installed without replacing an existing file, and
 FD 8 pins its owned regular-file inode before publication, including when a
 signal arrives immediately after the atomic link operation. Cleanup atomically
 moves the public entry into a fresh private directory before inspecting it.
