@@ -459,3 +459,149 @@ fn install_revision_mismatch_is_not_an_integer_overflow() {
     );
     assert_eq!(out, [0x5a; 88]);
 }
+
+#[test]
+fn query_abi_capability_table_rejects_unsupported_feature_combinations() {
+    let golden = query_abi_success();
+
+    for (offset, value, expected) in [
+        (80usize, 0u32, Error::InvalidField),
+        (80, 3, Error::InvalidField),
+        (84, 65_537, Error::PayloadTooLarge),
+        (88, 65_537, Error::PayloadTooLarge),
+        (88, 47, Error::InvalidField),
+    ] {
+        let mut frame = golden.clone();
+        frame[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+        assert_err(decode_response(&frame), expected);
+    }
+
+    let mut invalid = golden.clone();
+    invalid[92] = 1;
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[96..104].copy_from_slice(&0u64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[96..104].copy_from_slice(&0x0au64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[104..112].copy_from_slice(&1u64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    // HOS2 also permits a QueryAbi-only implementation. The operations
+    // mask is a format advertisement, not a grant of resource authority.
+    let mut limited = golden;
+    limited[96..104].copy_from_slice(&2u64.to_le_bytes());
+    limited[84..88].copy_from_slice(&0u32.to_le_bytes());
+    limited[88..92].copy_from_slice(&48u32.to_le_bytes());
+    let decoded = decode_response(&limited).unwrap();
+    let mut out = [0u8; 112];
+    assert_eq!(encode_response(&decoded, &mut out), Ok(112));
+    assert_eq!(out.as_slice(), limited.as_slice());
+}
+
+#[test]
+fn install_budget_request_rejects_revision_period_cap_and_reserved_mutations() {
+    let golden = install_request();
+    for (offset, value) in [
+        (64usize, 0u64),
+        (64, u64::MAX),
+        (72, CPU_PERIOD_NS - 1),
+        (72, CPU_PERIOD_NS + 1),
+        (80, CPU_PERIOD_NS + 1),
+        (88, 1),
+    ] {
+        let mut invalid = golden.clone();
+        invalid[offset..offset + 8].copy_from_slice(&value.to_le_bytes());
+        assert_err(decode_request(&invalid), Error::InvalidField);
+    }
+    let mut request = decode_request(&golden).unwrap();
+    if let RequestPayload::InstallBudget(ref mut budget) = request.payload {
+        budget.cap_ns = CPU_PERIOD_NS + 1;
+    }
+    let mut out = [0xa5; 96];
+    assert_eq!(
+        hos2_os_abi::encode_request(&request, &mut out),
+        Err(Error::InvalidField)
+    );
+    assert_eq!(out, [0xa5; 96]);
+}
+
+#[test]
+fn query_delivery_terminal_metadata_and_historical_request_are_checked() {
+    let golden = query_delivery_terminal();
+
+    let mut invalid = golden.clone();
+    invalid[68] = 1; // nested QueryDelivery reserved:u32
+    assert_err(decode_response(&invalid), Error::ReservedNonZero);
+
+    let mut invalid = golden.clone();
+    invalid[64..66].copy_from_slice(&5u16.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[66..68].copy_from_slice(&Status::Conflict.as_u16().to_le_bytes());
+    assert_err(decode_response(&invalid), Error::MalformedErrorResponse);
+
+    let mut invalid = golden.clone();
+    invalid[80..96].fill(0);
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[96..104].copy_from_slice(&12u64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let query = hex("484f533202000000040000004000000028000000000000001111111111111111111111111111111150000000000000000300000000000000000000000000000033333333333333333333333333333333222222222222222222222222222222220100000000000000");
+    let request = decode_request(&query).unwrap();
+    assert!(decode_response_for(&golden, &request).is_ok());
+
+    let mut wrong_sequence = golden.clone();
+    wrong_sequence[72..80].copy_from_slice(&2u64.to_le_bytes());
+    assert!(decode_response(&wrong_sequence).is_ok());
+    assert_err(
+        decode_response_for(&wrong_sequence, &request),
+        Error::InvalidField,
+    );
+
+    let mut zero_history_boot = query.clone();
+    zero_history_boot[64..80].fill(0);
+    assert_err(decode_request(&zero_history_boot), Error::InvalidField);
+    let mut zero_history_space = query.clone();
+    zero_history_space[80..96].fill(0);
+    assert_err(decode_request(&zero_history_space), Error::InvalidField);
+    let mut zero_history_sequence = query;
+    zero_history_sequence[96..104].fill(0);
+    assert_err(decode_request(&zero_history_sequence), Error::InvalidField);
+}
+
+#[test]
+fn read_usage_and_retire_through_reject_impossible_semantic_values() {
+    let usage = hex("484f5352020000000200000040000000400000000000000011111111111111111111111111111111333333333333333333333333333333330b0000000000000080d1f00800000000804a5d050000000000e1f50500000000c00e160200000000002d31010000000000e1f505000000004d000000000000000200000000000000");
+    assert!(decode_response(&usage).is_ok());
+
+    for (offset, value) in [
+        (72usize, 34_999_999u64), // cumulative less than window consumed
+        (80, 101_000_000), // wrong 100ms window start
+        (88, 50_000_001), // impossible single-CPU consumption
+        (96, CPU_PERIOD_NS + 1), // cap exceeds period
+        (104, CPU_PERIOD_NS - 1), // unsupported period
+        (120, 78), // dropped_events > event_sequence
+    ] {
+        let mut invalid = usage.clone();
+        invalid[offset..offset + 8].copy_from_slice(&value.to_le_bytes());
+        assert_err(decode_response(&invalid), Error::InvalidField);
+    }
+
+    let retirement = hex("484f535202000000050000004000000010000000000000001111111111111111111111111111111133333333333333333333333333333333000000000000000001000000000000000200000000000000");
+    assert!(decode_response(&retirement).is_ok());
+    let mut invalid = retirement.clone();
+    invalid[72..80].copy_from_slice(&1u64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+    let mut invalid = retirement;
+    invalid[72..80].fill(0);
+    assert_err(decode_response(&invalid), Error::InvalidField);
+}
