@@ -1,0 +1,42 @@
+name: G0 scoped host contracts
+
+on:
+  pull_request:
+    paths:
+      - "tests/abi/**"
+      - "tests/golden/**"
+      - "tests/spec/**"
+      - "libs/os-abi/**"
+      - "libs/os-control/**"
+      - ".github/workflows/g0-contracts.yml"
+  push:
+    branches: [main]
+    paths:
+      - "tests/abi/**"
+      - "tests/golden/**"
+      - "tests/spec/**"
+      - "libs/os-abi/**"
+      - "libs/os-control/**"
+      - ".github/workflows/g0-contracts.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  host-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify independent HOS2 golden fixtures
+        run: python3 tests/golden/generate_hos2.py --check
+      - name: Python wire mutations and recovery specification
+        run: |
+          python3 -m unittest discover -s tests/abi -p 'test_*.py' -v
+          python3 -m unittest discover -s tests/spec -p 'test_*.py' -v
+      - name: Host Rust no_std ABI crate (when implemented)
+        if: hashFiles('libs/os-abi/Cargo.toml') != ''
+        run: cargo test --manifest-path libs/os-abi/Cargo.toml --verbose
+      - name: Host Rust control model (when implemented)
+        if: hashFiles('libs/os-control/Cargo.toml') != ''
+        run: cargo test --manifest-path libs/os-control/Cargo.toml --verbose
