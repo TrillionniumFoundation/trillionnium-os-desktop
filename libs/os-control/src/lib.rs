@@ -263,6 +263,8 @@ pub enum ResourceError {
     Exhausted,
     Overflow,
     MissingParent,
+    /// A caller supplied a timestamp from an already-settled earlier period.
+    ClockRegression,
 }
 
 impl ResourceDomain {
@@ -399,7 +401,10 @@ impl ResourceDomain {
         let mut state = lock_unpoisoned(&self.inner.state);
         let window_start_ns =
             (sample_boottime_ns / state.budget.period_ns) * state.budget.period_ns;
-        if window_start_ns != state.window_start_ns {
+        // Reads must never move an already-settled window backwards and mint
+        // a fresh budget. Preserve the caller's sample timestamp so a caller
+        // can detect that it predates the returned window_start_ns.
+        if window_start_ns > state.window_start_ns {
             state.window_start_ns = window_start_ns;
             state.window_consumed_ns = 0;
         }
@@ -430,7 +435,11 @@ impl ResourceDomain {
         {
             let mut state = lock_unpoisoned(&self.inner.state);
             let new_window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
-            if new_window_start != state.window_start_ns {
+            // A delayed/replayed timestamp may not rewind a charged window.
+            if new_window_start < state.window_start_ns {
+                return Err(ResourceError::ClockRegression);
+            }
+            if new_window_start > state.window_start_ns {
                 state.window_start_ns = new_window_start;
                 state.window_consumed_ns = 0;
             }
@@ -525,6 +534,17 @@ impl ResourceDomain {
             .unwrap_or(false)
         {
             return Err(ResourceError::ParentConstraint);
+        }
+        // InstallBudget must settle the effective period even if nobody
+        // called ReadUsage after its boundary. Otherwise a saved receipt
+        // reports consumption from a period which has already ended.
+        let effective_window = (now_ns / period_ns) * period_ns;
+        if effective_window < state.window_start_ns {
+            return Err(ResourceError::ClockRegression);
+        }
+        if effective_window > state.window_start_ns {
+            state.window_start_ns = effective_window;
+            state.window_consumed_ns = 0;
         }
         let previous_revision = state.revision;
         state.revision = state
@@ -1360,7 +1380,8 @@ fn map_resource_error(error: ResourceError) -> DeliveryStatus {
         ResourceError::Exhausted => DeliveryStatus::ResourceExhausted,
         ResourceError::InvalidBudget
         | ResourceError::InvalidRevision
-        | ResourceError::InvalidIdentity => DeliveryStatus::InvalidInput,
+        | ResourceError::InvalidIdentity
+        | ResourceError::ClockRegression => DeliveryStatus::InvalidInput,
         ResourceError::Overflow | ResourceError::MissingParent => DeliveryStatus::Indeterminate,
     }
 }
