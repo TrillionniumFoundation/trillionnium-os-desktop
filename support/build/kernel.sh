@@ -12,6 +12,12 @@ if [[ "$target" == gdb_server ]]; then
     }
     (( A01_GDB_PORT > 0 && A01_GDB_PORT <= 65535 && A01_GDB_FD >= 64 )) || exit 2
 fi
+# Public calls own one supervised worker group. The debug runner supplies this
+# private lifecycle route because it already owns the complete inherited group.
+# This flag selects cleanup ownership; it is not a security boundary.
+if [[ ${A01_KERNEL_WORKER:-} != 1 ]]; then
+    exec python3 -I "$build_dir/kernel-supervisor.py" "$target"
+fi
 export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 export RUSTUP_TOOLCHAIN=nightly-2026-07-21
 export CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS:-2}

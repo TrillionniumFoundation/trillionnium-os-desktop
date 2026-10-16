@@ -58,6 +58,29 @@ cleanup removes only the inode installed by that invocation.
 The temporary inode is registered before publishing its manifest, including
 when a signal arrives immediately after the atomic link operation.
 
+Standalone calls supervise one worker process group through interruption and
+completion. SIGINT/SIGTERM stop that group before reaping its waitable leader;
+the first cancellation returns 130/143. The Rust-entry debug helper owns its
+worker group directly, so it explicitly selects the internal worker route
+instead of starting a second supervisor session. This route selects cleanup
+ownership and does not provide authorization.
+
+For concurrent development or a workspace that restores generated files, use
+a disposable Git worktree at the exact source commit and a target directory
+inside that worktree. This isolates generated Cargo/OSDK state while retaining
+the same single vendored kernel source and upstream pin:
+
+```sh
+git worktree add --detach /absolute/new/build-worktree "$(git rev-parse HEAD)"
+cd /absolute/new/build-worktree
+export CARGO_TARGET_DIR="$PWD/kernel/asterinas/target"
+support/build/kernel.sh run_kernel
+```
+
+Each worktree retains the existing refusal to overwrite a pre-existing
+`kernel/OSDK.toml`. Preserve and inspect such a file before another attempt;
+the wrapper does not guess that an existing manifest is safe to remove.
+
 ## Kernel-mode regression tests
 
 ```sh

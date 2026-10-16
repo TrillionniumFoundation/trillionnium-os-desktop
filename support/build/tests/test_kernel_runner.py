@@ -80,7 +80,7 @@ class KernelRunnerTests(unittest.TestCase):
         self.vdso = self.root / "vdso"
         for directory in (self.build / "minimal", self.kernel, self.mock, self.vdso):
             directory.mkdir(parents=True)
-        for name in ("kernel.sh", "check-boot.py"):
+        for name in ("kernel.sh", "kernel-supervisor.py", "check-boot.py"):
             shutil.copyfile(BUILD / name, self.build / name)
         (self.build / "verify-source.py").write_text("print('{}')\n")
         (self.build / "minimal/prepare-initramfs.py").write_text(PREPARE_INITRAMFS)

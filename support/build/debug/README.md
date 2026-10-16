@@ -56,6 +56,13 @@ their intermediate record. Cleanup only signals each helper-owned session
 while its direct leader is still unreaped, then reaps it; no already-reaped
 numeric process group is signalled.
 
+SIGINT and SIGTERM record cancellation cooperatively, including during child
+publication and cleanup. The first signal determines exit130/143, interrupted
+attempts remain failed, and repeated signals cannot skip owned-session cleanup.
+The kernel worker inherits the debug helper's owned group; it does not create
+an additional supervisor session. The internal worker-route variable is a
+lifecycle setting, not an authorization mechanism.
+
 Host-only checks create their own socket and temporary process group. They
 do not build a kernel or launch QEMU:
 
