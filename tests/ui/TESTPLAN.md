@@ -110,8 +110,12 @@ IME test was run or claimed.
 
 A10 host preflight evidence is recorded in
 [2026-10-16-host-preflight.json](evidence/2026-10-16-host-preflight.json).
-The three checked Bash scripts were byte-for-byte confirmed using Git blob
-hashes; Cargo/Wayland tests remain blocked and were NOT reported as passed.
+That file is the historical pre-Cargo preflight record. The exact-head Rust
+validation is recorded separately in
+[2026-10-16-rust-validation.json](evidence/2026-10-16-rust-validation.json).
+The checked Bash scripts remain byte-for-byte confirmed using Git blob hashes;
+live Wayland/IME/GPU tests remain environment-gated and are not reported as
+passed.
 
 - private socket directory created atomically with 0700, never 0755 then chmod;
   symlink redirection remains rejected (Linux-host-only invariant)
@@ -190,4 +194,6 @@ validates *only* PID/runtime-scoped cleanup; no Cargo/Wayland pass is claimed.
   permissions are not exactly 0600 and propagates metadata errors other than
   NotFound; private atomic rename now synchronizes the containing directory.
   This is a Linux host filesystem durability hardening step, not crash-proof
-  data recovery or a trusted A05 portal. Rust tests remain unexecuted until CI.
+  data recovery or a trusted A05 portal. Rust unit/contract tests are executed
+  locally; the AF_UNIX reconnect integration remains blocked by this sandbox's
+  socket restriction and is not counted as passed.
