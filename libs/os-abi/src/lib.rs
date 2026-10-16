@@ -375,8 +375,8 @@ pub fn decode_request(bytes: &[u8]) -> Result<Request, Error> {
         return Err(Error::InvalidFlags);
     }
     check_common_header(bytes, true)?;
-    let opcode = Opcode::from_u16(get_u16(bytes, 8))?;
     let payload_len = checked_payload_len(bytes)?;
+    let opcode = Opcode::from_u16(get_u16(bytes, 8))?;
     let request_id = copy16(bytes, 24);
     if is_zero(&request_id) {
         return Err(Error::InvalidRequestId);
@@ -473,9 +473,9 @@ pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
     check_magic(bytes, HOSR_MAGIC)?;
     check_version(bytes)?;
     check_common_header(bytes, false)?;
+    let payload_len = checked_payload_len(bytes)?;
     let opcode = Opcode::from_u16(get_u16(bytes, 8))?;
     let status = Status::from_u16(get_u16(bytes, 10))?;
-    let payload_len = checked_payload_len(bytes)?;
     let request_id = copy16(bytes, 24);
     let boot_id = copy16(bytes, 40);
     if is_zero(&request_id) {
@@ -526,14 +526,7 @@ pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
                 return Err(Error::InvalidField);
             }
             let p = parse_install_response(payload)?;
-            if p.previous_revision == 0 {
-                return Err(Error::InvalidField);
-            }
-            if p.previous_revision == u64::MAX
-                || p.previous_revision.checked_add(1) != Some(revision)
-            {
-                return Err(Error::IntegerOverflow);
-            }
+            validate_install_response_revision(p.previous_revision, revision)?;
             validate_apply_times(p.effective_boottime_ns, p.consumed_at_apply_ns)?;
             ResponsePayload::InstallBudget(p)
         }
@@ -766,6 +759,28 @@ fn check_target(slot: u64, generation: u64) -> Result<(), Error> {
         return Err(Error::InvalidGeneration);
     }
     Ok(())
+}
+
+/// Construct the canonical InstallBudget request_id from a CapSpace sequence.
+///
+/// This is a wire-format helper only. Sequence allocation, reservation and
+/// replay detection remain the responsibility of the A03/A05 control layer.
+pub fn install_budget_request_id(sequence: u64) -> Result<[u8; 16], Error> {
+    if sequence == 0 || sequence == u64::MAX {
+        return Err(Error::InvalidSequence);
+    }
+    let mut id = [0u8; 16];
+    id[..8].copy_from_slice(&sequence.to_le_bytes());
+    Ok(id)
+}
+
+/// Decode an InstallBudget request_id without accepting nonzero high bytes.
+pub fn install_budget_sequence(id: &[u8; 16]) -> Result<u64, Error> {
+    if is_zero(id) {
+        return Err(Error::InvalidRequestId);
+    }
+    validate_install_sequence_id(id)?;
+    Ok(get_u64(id, 0))
 }
 
 /// The low half is a little-endian sequence; the high half is zero.
@@ -1095,13 +1110,7 @@ fn validate_response(response: &Response) -> Result<(), Error> {
             validate_read_usage(v)
         }
         (Opcode::InstallBudget, ResponsePayload::InstallBudget(v)) => {
-            if response.revision == 0
-                || v.previous_revision == 0
-                || v.previous_revision == u64::MAX
-                || v.previous_revision.checked_add(1) != Some(response.revision)
-            {
-                return Err(Error::InvalidField);
-            }
+            validate_install_response_revision(v.previous_revision, response.revision)?;
             validate_apply_times(v.effective_boottime_ns, v.consumed_at_apply_ns)
         }
         (Opcode::QueryDelivery, ResponsePayload::QueryDelivery(v)) => {
@@ -1255,6 +1264,18 @@ fn max_u32(a: u32, b: u32) -> u32 {
     } else {
         b
     }
+}
+
+/// A prior revision must exist, must be incrementable, and must match HOSR.
+fn validate_install_response_revision(previous: u64, reported: u64) -> Result<(), Error> {
+    if previous == 0 || reported == 0 {
+        return Err(Error::InvalidField);
+    }
+    let expected = previous.checked_add(1).ok_or(Error::IntegerOverflow)?;
+    if reported != expected {
+        return Err(Error::InvalidField);
+    }
+    Ok(())
 }
 
 fn validate_apply_times(effective_ns: u64, consumed_ns: u64) -> Result<(), Error> {

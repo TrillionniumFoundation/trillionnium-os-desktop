@@ -90,6 +90,94 @@ class DenseGoldenBoundaries(unittest.TestCase):
         self.assertEqual((revision, prior), (previous + 1, previous))
         self.assertEqual((history_time, history_used), (effective, consumed))
 
+    def test_usage_payload_rejects_impossible_accounting_without_lowering_consumption(self):
+        usage = next(v for v in self.vectors if v['name'] == 'read_usage_lowered_cap')
+        original = bytes.fromhex(usage['hex'])
+        invalid = (
+            (64, 125_000_000),  # 35ms CPU cannot fit into the elapsed 25ms.
+            (72, 34_999_999),  # Cumulative cannot be below this window's CPU.
+            (80, 200_000_000),  # Future window start, also catches subtraction underflow.
+            (88, 50_000_001),
+            (96, 100_000_001),
+            (104, 99_999_999),
+            (120, 78),  # Cannot drop more events than the total event sequence.
+        )
+        for offset, value in invalid:
+            changed = bytearray(original)
+            struct.pack_into('<Q', changed, offset, value)
+            with self.subTest(offset=offset, value=value):
+                with self.assertRaises(ValueError):
+                    read_frame(bytes(changed), 'response')
+        # Equality at the elapsed-time bound is valid and still over the cap.
+        boundary = bytearray(original)
+        struct.pack_into('<Q', boundary, 64, 135_000_000)
+        self.assertEqual(read_frame(bytes(boundary), 'response')[0], 2)
+        self.assertEqual(struct.unpack_from('<Q', boundary, 88)[0], 35_000_000)
+
+    def test_delivery_payload_rejects_invalid_terminal_metadata(self):
+        original = bytes.fromhex(next(v['hex'] for v in self.vectors
+                                      if v['name'] == 'query_delivery_terminal'))
+        invalid = (
+            (64, '<H', 5), (66, '<H', 12), (68, '<I', 1),
+            (72, '<Q', 0), (96, '<Q', 10), (104, '<Q', 0),
+            (104, '<Q', 2**64 - 1), (112, '<Q', 125_000_000),
+            (120, '<Q', 40_000_001),
+        )
+        for offset, fmt, value in invalid:
+            changed = bytearray(original)
+            struct.pack_into(fmt, changed, offset, value)
+            with self.subTest(offset=offset, value=value):
+                with self.assertRaises(ValueError):
+                    read_frame(bytes(changed), 'response')
+        missing_object = bytearray(original)
+        missing_object[80:96] = bytes(16)
+        with self.assertRaises(ValueError):
+            read_frame(bytes(missing_object), 'response')
+
+        # Every non-success state must zero the saved resource metadata.
+        for state in range(5):
+            changed = bytearray(original)
+            changed[80:128] = bytes(48)
+            struct.pack_into('<HH', changed, 64, state, 5 if state == 1 else 0)
+            self.assertEqual(read_frame(bytes(changed), 'response')[0], 4)
+            for offset in (80, 96, 104, 112, 120):
+                leaked = bytearray(changed)
+                leaked[offset] = 1
+                with self.subTest(state=state, leaked_offset=offset):
+                    with self.assertRaises(ValueError):
+                        read_frame(bytes(leaked), 'response')
+
+    def test_abi_advertisement_rejects_invalid_capabilities_and_bounds(self):
+        original = bytes.fromhex(next(v['hex'] for v in self.vectors
+                                      if v['name'] == 'query_abi_ok'))
+        invalid = (
+            (80, '<I', 0), (80, '<I', 3),
+            (84, '<I', 39), (84, '<I', 65537),
+            (88, '<I', 63), (88, '<I', 65537),
+            (92, '<I', 1), (96, '<Q', 63), (96, '<Q', 60),
+            (96, '<Q', 10), (96, '<Q', 34), (104, '<Q', 1),
+        )
+        for offset, fmt, value in invalid:
+            changed = bytearray(original)
+            struct.pack_into(fmt, changed, offset, value)
+            with self.subTest(offset=offset, value=value):
+                with self.assertRaises(ValueError):
+                    read_frame(bytes(changed), 'response')
+        zero_space = bytearray(original)
+        zero_space[64:80] = bytes(16)
+        with self.assertRaises(ValueError):
+            read_frame(bytes(zero_space), 'response')
+
+    def test_retirement_frontier_requires_a_strictly_later_next_sequence(self):
+        original = bytes.fromhex(next(v['hex'] for v in self.vectors
+                                      if v['name'] == 'retire_through_ok'))
+        for retired, following in ((1, 0), (1, 1), (2**64 - 1, 1)):
+            changed = bytearray(original)
+            struct.pack_into('<QQ', changed, 64, retired, following)
+            with self.subTest(retired=retired, following=following):
+                with self.assertRaises(ValueError):
+                    read_frame(bytes(changed), 'response')
+
 
 if __name__ == "__main__":
     unittest.main()
