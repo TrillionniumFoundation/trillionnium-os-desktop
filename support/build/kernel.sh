@@ -66,20 +66,7 @@ if [[ "$target" == run_kernel && -f "$kernel_dir/kernel/qemu.log" ]]; then
     cp "$kernel_dir/kernel/qemu.log" "$run_dir/serial.log"
 fi
 if [[ "$target" == run_kernel && "$result" == 0 ]]; then
-    python3 - "$run_dir" <<'PY'
-import json
-from pathlib import Path
-import sys
-p = Path(sys.argv[1])
-qemu = json.loads((p / 'qemu.json').read_text())
-serial = (p / 'serial.log').read_text(errors='replace')
-assert qemu['raw_exit_code'] == 33 and not qemu['timed_out'], 'QEMU did not exit successfully'
-for marker in ('TRILLIONNIUM_A01_INIT_BEGIN', 'TRILLIONNIUM_A01_CPU_COUNT=1',
-               'Successfully booted.', 'TRILLIONNIUM_A01_BOOT_OK'):
-    assert marker in serial, f'missing guest marker: {marker}'
-assert 'panicked at' not in serial, 'guest kernel panic'
-print('PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)')
-PY
+    python3 -I "$build_dir/check-boot.py" "$run_dir"
 fi
 echo "evidence: $run_dir"
 exit "$result"

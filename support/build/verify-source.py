@@ -26,10 +26,12 @@ def main():
     parser.add_argument("--pristine", action="store_true")
     args = parser.parse_args()
     lock = json.loads((ROOT / "support/upstream-lock.json").read_text())["kernel"]
-    assert (lock["commit"], lock["tree"], lock["toolchain"]) == (
+    if (lock["commit"], lock["tree"], lock["toolchain"]) != (
         PINNED_COMMIT, PINNED_TREE, PINNED_TOOLCHAIN
-    ), "fixed upstream inputs changed; coordinate with A00"
-    assert (ROOT / "README.md").stat().st_size == 0, "root README must be empty"
+    ):
+        raise SystemExit("fixed upstream inputs changed; coordinate with A00")
+    if (ROOT / "README.md").stat().st_size != 0:
+        raise SystemExit("root README must be empty")
     entries = subprocess.check_output(
         ["git", "ls-tree", "-rz", PINNED_TREE], cwd=ROOT
     ).split(b"\0")
@@ -44,19 +46,23 @@ def main():
         try:
             info = path.lstat()
             if mode == "120000":
-                assert stat.S_ISLNK(info.st_mode), "expected symlink"
+                if not stat.S_ISLNK(info.st_mode):
+                    raise ValueError("expected symlink")
                 content = os.fsencode(os.readlink(path))
             else:
-                assert kind == "blob" and stat.S_ISREG(info.st_mode), "expected regular file"
+                if kind != "blob" or not stat.S_ISREG(info.st_mode):
+                    raise ValueError("expected regular file")
                 actual_mode = "100755" if info.st_mode & 0o111 else "100644"
-                assert actual_mode == mode, f"mode {actual_mode} != {mode}"
+                if actual_mode != mode:
+                    raise ValueError(f"mode {actual_mode} != {mode}")
                 content = path.read_bytes()
             actual = hashlib.sha1(f"blob {len(content)}\0".encode() + content).hexdigest()
-            assert actual == expected, f"blob {actual} != {expected}"
+            if actual != expected:
+                raise ValueError(f"blob {actual} != {expected}")
             checked += 1
             if name in BUILD_INPUTS:
                 inputs[name] = hashlib.sha256(content).hexdigest()
-        except (OSError, AssertionError) as error:
+        except (OSError, ValueError) as error:
             errors.append(f"{name}: {error}")
     report = {"commit": PINNED_COMMIT, "tree": PINNED_TREE,
               "toolchain": PINNED_TOOLCHAIN, "pristine": args.pristine,
