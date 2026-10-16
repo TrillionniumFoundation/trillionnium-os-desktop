@@ -308,7 +308,9 @@ fn copyout_failure_retry_reuses_terminal_result_without_second_effect() {
 
 #[test]
 fn malformed_install_budget_is_rejected_before_consuming_global_sequence() {
-    let core = ControlCore::with_capacity(boot(145_000), space(145_000), 1);
+    let (core, authority) =
+        ControlCore::with_capacity_for_owner(boot(145_000), space(145_000), 1, owner(9000))
+            .unwrap();
     let target = root(145_000, CPU_PERIOD_NS);
     let who = publisher(145_001);
     let grant = target.grant(who).unwrap();
@@ -334,10 +336,28 @@ fn malformed_install_budget_is_rejected_before_consuming_global_sequence() {
     assert_eq!(core.window_len(), 1);
     let first = core.commit(&token, who, 1).unwrap();
     assert_eq!(first.status, Some(DeliveryStatus::Ok));
-    // Once reserved, stale revision is a semantic *terminal* rejection.
-    let token2_error = core.reserve(request(2, grant, 1, 20), who);
-    assert_eq!(token2_error.err(), Some(DeliveryError::ResourceExhausted));
+    // A full unretired window denies new D without consuming its sequence.
+    assert_eq!(
+        core.reserve(request(2, grant.clone(), 1, 20), who).err(),
+        Some(DeliveryError::ResourceExhausted)
+    );
     assert_eq!(core.next_sequence(), 2);
+    let view = core.delivery_view_for(owner(9000)).unwrap();
+    core.retire_through(&view, ack(&core, 1), &authority).unwrap();
+    // Once a syntactically valid D is reserved, a stale CAS revision is an
+    // immutable semantic rejection, not another structural parse error.
+    let stale = core.reserve(request(2, grant.clone(), 1, 20), who).unwrap();
+    let rejected = core.commit(&stale, who, 2).unwrap();
+    assert_eq!(rejected.status, Some(DeliveryStatus::Conflict));
+    assert_eq!(target.revision(), 2);
+    match core.reserve_or_get(request(2, grant.clone(), 1, 20), who) {
+        Ok(ReserveAttempt::Existing(observed)) => assert_eq!(observed, rejected),
+        _ => panic!("semantic refusal must be immutable"),
+    }
+    assert_eq!(
+        core.reserve(request(2, grant, 2, 20), who).err(),
+        Some(DeliveryError::Conflict)
+    );
 }
 
 #[test]
