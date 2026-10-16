@@ -5,7 +5,13 @@ build_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 project_dir=$(cd "$build_dir/../.." && pwd)
 kernel_dir="$project_dir/kernel/asterinas"
 target=${1:-kernel}
-case "$target" in kernel|run_kernel) ;; *) echo "usage: $0 [kernel|run_kernel]" >&2; exit 2 ;; esac
+case "$target" in kernel|run_kernel|gdb_server) ;; *) echo "usage: $0 [kernel|run_kernel|gdb_server]" >&2; exit 2 ;; esac
+if [[ "$target" == gdb_server ]]; then
+    [[ ${A01_GDB_PORT:-} =~ ^[0-9]+$ && ${A01_GDB_FD:-} =~ ^[0-9]+$ ]] || {
+        echo 'gdb_server requires the owned listener from support/build/debug/run.py' >&2; exit 2;
+    }
+    (( A01_GDB_PORT > 0 && A01_GDB_PORT <= 65535 && A01_GDB_FD >= 64 )) || exit 2
+fi
 export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 export RUSTUP_TOOLCHAIN=nightly-2026-07-21
 export CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS:-2}
@@ -74,12 +80,13 @@ ln -T "$manifest_temporary" "$manifest_file"
 rm "$manifest_temporary"
 manifest_temporary=
 export A01_QEMU_EVIDENCE="$run_dir/qemu.json"
-if [[ "$target" == run_kernel ]]; then rm -f "$kernel_dir/kernel/qemu.log"; fi
+if [[ "$target" != kernel ]]; then rm -f "$kernel_dir/kernel/qemu.log"; fi
 command=(make -C "$kernel_dir" -f Makefile -f "$build_dir/minimal.mk" "$target"
     "CARGO_OSDK=${CARGO_HOME:-$HOME/.cargo}/bin/cargo-osdk"
     "A01_INITRAMFS=$run_dir/initramfs.cpio.gz"
     "A01_QEMU_WRAPPER=$build_dir/record-qemu.py" TARGET_ARCH=x86_64 SMP=1 MEM=512M
     ENABLE_KVM=0 BOOT_PROTOCOL=multiboot INITRAMFS=on AUTO_TEST=none)
+if [[ "$target" == gdb_server ]]; then command+=("A01_GDB_PORT=$A01_GDB_PORT"); fi
 printf '%q ' "${command[@]}" > "$run_dir/command.sh"
 printf '\n' >> "$run_dir/command.sh"
 set +e
@@ -93,10 +100,10 @@ if [[ ${pipeline_status[1]} != 0 ]]; then
     echo "failed to retain the complete command log" >&2
     result=1
 fi
-if [[ "$target" == run_kernel && -f "$kernel_dir/kernel/qemu.log" ]]; then
+if [[ "$target" != kernel && -f "$kernel_dir/kernel/qemu.log" ]]; then
     cp "$kernel_dir/kernel/qemu.log" "$run_dir/serial.log"
 fi
-if [[ "$target" == run_kernel && "$result" == 0 ]]; then
+if [[ "$target" != kernel && "$result" == 0 ]]; then
     set +e
     python3 -I "$build_dir/check-boot.py" "$run_dir" --live-artifacts
     result=$?

@@ -18,7 +18,9 @@ support/build/kernel.sh run_kernel
 ```
 
 Without `--apt`, preparation installs the exact Rust toolchain and fetches the
-fixed vDSO dependency, assuming host packages already exist. If Rust is already
+fixed vDSO dependency and cargo-binutils 0.4.0 with its published lock, assuming
+host packages already exist. `rust-strip` is needed for the separate stripped
+debug boot ELF. If Rust is already
 installed in a nonstandard location, export `CARGO_HOME`, `RUSTUP_HOME`, and its
 `bin` directory in `PATH`. `VDSO_LIBRARY_DIR` and `A01_BUSYBOX` may point to
 existing verified inputs; the defaults are `support/build/out/linux-vdso` and
@@ -88,6 +90,37 @@ exact retries are retained in `evidence/2026-10-16-native-integration/`; they
 are distinct from complete Asterinas kernel acceptance. That phase also
 reran OSTD/aster-core with the fixed OSDK and retained 221/141 reported passes
 and the same 3 soft skips (359 exercised lower bound).
+
+For the explicit loopback TCP profile with GDB-assisted coverage capture:
+
+```sh
+python3 -I support/build/osdk-integration/run.py --local-tcp --coverage-gdb --output NEW_TCP_CAPTURE_DIR
+```
+
+The `osdk-native-local-tcp-gdb-capture-v2` full matrix passed **22/22**, with
+one explicit VMX soft skip and eleven actual QEMU guests returning raw 33.
+Coverage capture stops before the architecture poweroff path, exports the
+announced initialized data, detaches and requires the original guest exit.
+The fixed LLVM tools parsed 5,696 functions with nonzero execution counts.
+A later fatal-panic rejection guard passed its focused checks and a fresh
+coverage guest. These are separate results from the retained default UNIX
+failures and the initial TCP-only coverage failures. Their exact source
+snapshots and logs are in `evidence/2026-10-16-debug-coverage/osdk/`.
+
+## Full kernel Rust-entry debugging
+
+```sh
+python3 -I support/build/debug/run.py --output NEW_KERNEL_DEBUG_DIR
+```
+
+This source-builds the full kernel through the upstream developer target,
+retains its DWARF symbol ELF, passes an owned loopback listener into QEMU,
+breaks at `__ostd_main`, checks the actual PC, and detaches. The complete
+initramfs boot must then pass the ordinary live checker with raw QEMU 33.
+The real run displayed a Rust source line and boot call stack before passing
+that boot check. See `debug/README.md` for dependencies and deadlines, and
+`evidence/2026-10-16-debug-coverage/kernel-debug/` for the complete successful
+run and both preceding failures.
 
 The recorded next-phase runs report OSTD **221 passed**, aster-core **141
 passed**, and zero failures. Three OSTD tests returned success after explicitly
