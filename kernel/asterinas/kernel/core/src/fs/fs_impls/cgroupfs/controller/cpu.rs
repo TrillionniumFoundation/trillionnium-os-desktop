@@ -742,6 +742,56 @@ mod quota_debt_regressions {
     }
 
     #[ktest]
+    fn charging_500_intervals_matches_simple_period_by_period_reference() {
+        // Adversarial reference oracle runs only in ktest; the real scheduler
+        // hot path remains O(1) even if multiple windows elapsed between ticks.
+        fn next(seed: &mut u64) -> u64 {
+            *seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            *seed
+        }
+
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let start = period.saturating_mul(2);
+        let mut seed = 0xA03A06_A11CEu64;
+        for _ in 0..500 {
+            let quota_us = 1_000 + next(&mut seed) % 99_001;
+            let quota = CpuMax::us_to_clocks(quota_us);
+            let mut budget = sample(quota_us, 100_000, start);
+            let old_used = next(&mut seed) % period;
+            let old_debt = next(&mut seed) % period;
+            budget.used_clocks = old_used;
+            budget.carry_debt_clocks = old_debt;
+
+            let from = start
+                + (next(&mut seed) % 10) * period
+                + next(&mut seed) % period;
+            let until = from + next(&mut seed) % (period * 11);
+            let new_start = until / period * period;
+            let mut slow_debt = old_debt;
+            let mut window = start;
+            while window < new_start {
+                let work = (window + period)
+                    .min(until)
+                    .saturating_sub(from.max(window));
+                let spent = work + if window == start { old_used } else { 0 };
+                slow_debt = slow_debt.saturating_add(spent).saturating_sub(quota);
+                window += period;
+            }
+            let slow_used = if new_start == start {
+                old_used.saturating_add(until.saturating_sub(from.max(start)))
+            } else {
+                until.saturating_sub(from.max(new_start))
+            };
+            budget.charge(from, until);
+            assert_eq!(budget.window_start, new_start);
+            assert_eq!(budget.used_clocks, slow_used);
+            assert_eq!(budget.carry_debt_clocks, slow_debt);
+        }
+    }
+
+    #[ktest]
     fn skipped_periods_pay_down_debt_but_never_mint_credit() {
         let period = CpuMax::us_to_clocks(100_000).max(1);
         let quota = CpuMax::us_to_clocks(1_000);
