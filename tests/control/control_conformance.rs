@@ -6,7 +6,7 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, LogicalOperationId, OperationBinding, OwnerId, OwnerReceipt,
+    DeliveryStatus, HistoryAck, LogicalOperationId, NamespaceIdentity, OperationBinding, OwnerId, OwnerReceipt,
     PublishOutcome, PublisherId, ReserveAttempt, ResourceDomain, ResourceDomainId, ResourceError,
     StableObjectId, CPU_PERIOD_NS,
 };
@@ -122,6 +122,30 @@ fn request_digest_and_publisher_identity_are_bound() {
         core.reserve(request(2, target.grant(good).unwrap(), 1, 10), bad),
         Err(DeliveryError::PermissionDenied)
     ));
+}
+
+#[test]
+fn namespace_and_delivery_id_require_validated_constructor_values() {
+    assert_eq!(
+        NamespaceIdentity::new(boot(0), space(1)),
+        Err(os_control::IdentityError::ZeroIdentity),
+    );
+    assert_eq!(
+        NamespaceIdentity::new(boot(1), space(0)),
+        Err(os_control::IdentityError::ZeroIdentity),
+    );
+    let namespace = NamespaceIdentity::new(boot(1), space(2)).unwrap();
+    assert_eq!(namespace.boot_id(), boot(1));
+    assert_eq!(namespace.cap_space_id(), space(2));
+    for sequence in [0, u64::MAX] {
+        assert_eq!(
+            os_control::DeliveryId::new(namespace, sequence),
+            Err(DeliveryError::InvalidSequence),
+        );
+    }
+    let id = os_control::DeliveryId::new(namespace, 3).unwrap();
+    assert_eq!(id.namespace(), namespace);
+    assert_eq!(id.sequence(), 3);
 }
 
 #[test]
