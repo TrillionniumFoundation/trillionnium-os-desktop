@@ -1,62 +1,43 @@
-# 硬件、驱动与虚拟化计划
+# 硬件、DMA与关键风险
 
-版本：0.1。状态：目标矩阵，所有本项目硬件能力尚未验证。
+版本0.2。支持状态见STATUS；候选设备调查不等于设备已支持。
 
-## 1. 先固定可控设备集合
+## 1. 平台顺序与早期风险调查
 
-首期目标为 x86_64 QEMU/virtio，用于降低未知设备组合；随后选择一台物理机建立裸机能力证据。ARM64 先以 QEMU virt 为独立移植目标，再选择明确的实机。Apple Silicon、AMD APU、手机和传统 PC 不能互相替代验收。
+N0先x86_64/QEMU/virtio单CPU控制闭环，SMP后续；固定实机枚举再确认裸机资格。ARM64先QEMU virt，再独立设备。现有PC/AMD APU/手机/Apple Silicon名称不是支持清单。
 
-开发/测试主机可使用现有系统与网络，但这不意味着这些主机已支持新 OS。本文不授权实际换核、重分区、刷机、刷 BIOS 或更改现役硬件控制服务。
+GPU、Android构建产品、VMM和首台实机的可行性调查与M0并行：每条路径记录驱动/固件来源、所需协议、内存映射、队列、复位、许可、最小验证及阻塞。实施可后置，不能等CPU原型完成后才问“GPU有没有路”。只选一条有证据的优先路径，不同时做三套长期后端。
 
-## 2. 分阶段矩阵
+## 2. 设备owner和访问入口
 
-| 范围 | 首选目标 | 必须实现或验证 | 当前状态 |
-| --- | --- | --- | --- |
-| 启动与 CPU | x86_64/QEMU | 启动交接、页表、异常、中断、定时器、SMP | not_tested |
-| 存储 | virtio-blk，后续 NVMe | DMA、flush、并发、超时、重启一致性 | not_tested |
-| 网络 | virtio-net，后续固定 NIC | 队列、收发、背压、MTU、链路恢复 | not_tested |
-| 显示与输入 | 受控显示设备和输入 | 基础画面、可信输入、焦点、模式切换 | not_tested |
-| 真机总线 | 选定 PCIe/USB 平台 | 枚举、热插拔、IRQ、IOMMU、设备复位 | not_tested |
-| 本地 AI | 单一固定 GPU 或 CPU | 缓冲区、队列、数值结果、故障与回收 | not_tested |
-| ARM64 | QEMU virt，后续固定板卡 | 启动、MMU、GIC、定时器与外设 | not_tested |
-| 手机能力 | 单一明确设备 | 触控、旋转、音频、无线、通信、休眠 | not_tested |
+同一物理设备只能有一个执行owner。native/Linux设备fd、VM与Android HAL不能各自绕过它写MMIO。设备直通需实际IOMMU组、复位及中断隔离条件；共享桥需显式buffer和queue协议。没有隔离的设备不向不可信多域共享。[VFIO参考](SOURCES.md#vfio)
 
-不要在初始清单中填入“全硬件兼容”或沿用旧项目的支持声明。
+驱动放内核态时属于TCB，Rust不使设备逻辑故障自动进程隔离。用户态服务域可研究但不伪称已实现。
 
-## 3. 驱动边界
+## 3. DMA所有权状态
 
-内核负责中断、映射、设备对象、资源所有权和必要 DMA 隔离。驱动负责具体设备协议、提交、完成、错误及复位。驱动不可对未登记的物理页建立 DMA，也不可通过缓存的旧授权继续提交。
+buffer状态：CPU-owned -> prepared/synced-for-device -> device-owned/in-flight -> completion/quiesced -> synced-for-CPU -> CPU-owned/released。禁止CPU或另一个设备在未授权方向写device-owned缓冲。每次提交绑定稳定对象、offset/len、direction和queue generation，不接受任意物理地址。
 
-优先复用已选 Rust 上游中的驱动，记录来源和修改；无现成实现的设备单独开发或暂不支持。Linux 用户态 ABI 兼容不等于 Linux 内部驱动 ABI 兼容，现成 `.ko` 不能默认直接加载。[来源](SOURCES.md#linux-abi)
+IOMMU负责可达范围，缓存一致性/顺序另处理。streaming DMA按设备/API做同步，coherent buffer仍需描述符内容与doorbell之间的适当内存屏障。共享ring producer发布用release、consumer消费用acquire；MMIO/DMA屏障与语言原子不是随意互换。[DMA](SOURCES.md#dma)
 
-IOMMU group、设备复位能力与共享总线影响安全隔离；设备直通必须核对实际拓扑而非仅看硬件型号。没有隔离证明时，不把相关设备共享给不可信应用。[来源](SOURCES.md#vfio)
+IRQ仅记录有界完成并唤醒worker；unregister/close等待引用与静止，不在spinlock里阻塞。热移除或reset先禁止新准入，等待/隔离in-flight；提升queue generation，旧completion不得完成新操作。复位确认静止只允许资源回收，不证明未产生部分磁盘写入。
 
-## 4. GPU / NPU 真实路径
+## 4. CPU和内存机制
 
-分别验收：显示输出、硬件图形渲染、计算 API、推理执行、数值正确性、长时间稳定性以及故障恢复。某一项成功不推出后续项目成功。
+上游页表/异常/SMP/中断机制先保留。新资源域cap接在真实运行记账点，不能用用户态sleep模拟内核限额。多CPU启用前实现全路径额度预留、timer/调度延迟误差界和runqueue同步；迁移未实现则明确不支持。TLB shootdown完成且CPU引用消失后才复用物理页。
 
-GPU 计划至少覆盖设备内存对象、共享内存/DMA、命令队列、同步 fence、提交权限、固件交互、编译后端和进程退出。API 名称相同不代表现有用户态库可直接工作；必须锁定驱动/运行时组合并运行原工作负载。
+## 5. GPU/NPU路径决策
 
-在本项目真正支持前，不能将 Vulkan、CUDA、ROCm 或 NPU 写为已支持。首个 Hepta 资源闭环可用 CPU；完整本地 AI 阶段必须报告实际计算发生在哪个内核、进程和设备上。
+图形显示、硬件渲染、计算API、本地推理、数值一致、长期恢复分别验收。选定设备要说明内核内存管理、命令提交、同步fence、用户态运行时/编译器、固件与reset。能打开桌面或Mesa软件OpenGL不证明GPU计算。
 
-Asterinas v0.19.0 的官方图形演示主要以 Mesa 软件 OpenGL 为基础，不能当成目标 GPU 计算驱动成果。[来源](SOURCES.md#asterinas)
+三种候选：原生Rust驱动；受限协议服务域；Linux驱动VM。后两种须记录数据复制/共享内存开销、真实计算所在内核、设备owner和失效隔离，不能改个名称算原生支持。首个本地推理可CPU完成，不因此取消GPU后续目标。
 
-## 5. 驱动服务域与 VM
+## 6. VMM不是免费备选
 
-可研究由新内核托管 Linux 驱动 VM 或受限设备服务域。必须确定唯一硬件 owner、IOMMU/中断映射、共享缓冲区、数据复制、复位和服务失效后行为；不能让宿主和客体同时随意操作同一设备。
+OSTD虚拟化基础与完整VMM/虚拟中断/设备模型/KVM兼容接口分开；Intel VMX、AMD SVM、ARM EL2分别核对源码和硬件前提。当前固定上游不等于本项目已支持任意后端。[OSTD RFC](SOURCES.md#ostd-vmm)
 
-OSTD 的虚拟化机制与完整 VMM、KVM 兼容接口和设备仿真是不同工作。Intel VMX、AMD SVM 和 ARM EL2 为不同后端，不能将一项的代码或测试当作另一项通过。尤其不能假设 Intel 后端现成即可在 AMD 设备运行。[来源](SOURCES.md#ostd-vmm)
+只把VM列为允许路径，未完成具体后端/设备验证前不承诺“全Linux/Android可用”。调试用Linux/KVM宿主与最终由新内核托管VM是不同实验。
 
-初期仅把 VM 列为允许的补缺路线，不将“VM 一定更容易”写成技术承诺。其构建、管理、设备及安全成本也必须计入。
+## 7. 首台实机和电源
 
-## 6. 功耗、温度、休眠与设备移除
-
-AI 可在已授权的预算内调整负载，不可关闭硬件热保护或绕过电源限制。传感器失效采用保守策略，不让模型猜温度。休眠/恢复测试必须核对时钟、句柄、DMA、队列、授权期限和未完成 I/O。
-
-热移除或设备丢失后阻止新提交，报告 device_lost，确认硬件已隔离后再回收页。复位后创建新代际，旧 completion 不能完成新请求。
-
-## 7. 首台实机的必需资料
-
-在 M5 实测前记录：厂商/型号、CPU、主板与固件版本、启动模式、内存、PCI/USB 拓扑、设备 IDs、IOMMU 分组、磁盘与备份/恢复入口、屏幕/输入和网络。资料来自实际枚举；不得凭旧聊天中的设备名称生成支持报告。
-
-首次启动使用明确隔离的测试介质和可回退路径，不覆盖正在使用的系统盘。硬件部署须作为后续明确执行任务，本次仅交付文档。
+实测记录CPU/主板/固件/启动模式、PCI/USB IDs、IOMMU组、磁盘布局、恢复介质、网络/显示/输入。首次用隔离测试盘，不覆盖工作盘。热保护保留，传感器不可用采用保守限额。休眠恢复后核对lease时间、DMA、queue generation、未完成I/O与电源状态，不把用户态awake当全部设备恢复。

@@ -1,30 +1,31 @@
 # 开发文档入口
 
-版本：0.1。日期：2026-10-16。阶段：新仓库设计基线；尚无本项目内核实现或运行证明。
+版本0.2，2026-10-16。根README.md保持0字节；开发内容只在docs与明确源码/支持目录中。真实实现/测试状态统一见 [STATUS](STATUS.md)。
 
-本仓库开发一个以 Rust 为核心实现语言、以 hepta-private-ci 为原生智能控制平面、面向 Linux 与 Android 应用兼容的新操作系统。仓库名称保持 `trillionnium-os-desktop`，技术目标不再是旧桌面项目。根目录 `README.md` 按仓库所有者要求保持 **0 字节**；文档入口只设在本文件，不添加会在首页展示的 README 替代页。
+## 共同原则
 
-## 阅读顺序
+新Rust内核管理硬件，Hepta沿现有单一智能/工具主链成为用户态原生系统服务。Linux/Android是兼容生态，VM明确标记补缺。模型不持根权限，内核快速路径与本地恢复不等待模型/远程控制。
 
-| 文档 | 用途 |
+本文中的契约和算法是实现规格，不是运行证据。source pin、格式检查、规格模型、codec、内核/硬件与产品验收分层报告。已有授权范围内自动执行，不增加重复审批、证据服务或空壳workflow；权限、资源、结果和恢复检查属于实际运行机制。
+
+## 阅读与实施顺序
+
+| 文档 | 主要内容 |
 | --- | --- |
-| [项目范围与需求](PROJECT.md) | 产品目标、兼容口径、首个闭环、非目标 |
-| [系统架构](ARCHITECTURE.md) | 内核边界、启动、资源模型、兼容环境、建议代码布局 |
-| [Hepta 集成](HEPTA_INTEGRATION.md) | 与现有模块的映射、原生执行链、状态所有权 |
-| [原生 ABI 与对象](NATIVE_ABI.md) | 能力句柄、请求布局、资源控制、设备提交、错误与取消 |
-| [Linux 兼容](LINUX_COMPATIBILITY.md) | ELF、系统调用、用户态环境、行为差分、覆盖矩阵 |
-| [Android 兼容](ANDROID_COMPATIBILITY.md) | AOSP、Binder、HAL、图形、指令翻译、测试与认证边界 |
-| [硬件与驱动](HARDWARE_AND_DRIVERS.md) | x86_64/ARM64、virtio、GPU、IOMMU、实机与虚拟化 |
-| [安全与恢复](SECURITY_AND_RECOVERY.md) | 信任边界、故障隔离、资源回收、升级及回滚 |
-| [桌面与交互](DESKTOP_UX.md) | Rust 原生界面、应用窗口、可信输入、恢复入口 |
-| [开发路线](ROADMAP.md) | M0–M6 实际交付、任务依赖与首轮开工清单 |
-| [验证与性能](VALIDATION.md) | 测试分层、真实闭环、故障注入、基线与证据格式 |
-| [架构决策](DECISIONS.md) | 已确定方向、暂定选型、重新评估的触发条件 |
-| [当前状态](STATUS.md) | 本次实际交付与尚未实现内容 |
-| [研究来源](SOURCES.md) | Hepta 固定快照及上游一手资料 |
+| [PROJECT](PROJECT.md) | 原生定义、profile、W0–W5应用与交付 |
+| [ARCHITECTURE](ARCHITECTURE.md) | 完整Asterinas派生、真实源码接合、同对象与并发 |
+| [NATIVE_ABI](NATIVE_ABI.md) | wire、会话/能力、K/D、撤销、取消、预算的唯一规格 |
+| [HEPTA_INTEGRATION](HEPTA_INTEGRATION.md) | 真实源码符号/profile、状态owner、控制器 |
+| [SECURITY_AND_RECOVERY](SECURITY_AND_RECOVERY.md) | TCB、熵/时钟、S0/S1存储、更新与故障 |
+| [LINUX_COMPATIBILITY](LINUX_COMPATIBILITY.md) | 必需接口、rootfs和应用交付、差分 |
+| [ANDROID_COMPATIBILITY](ANDROID_COMPATIBILITY.md) | 产品/VINTF/MAC/Binder/页大小与代理边界 |
+| [HARDWARE_AND_DRIVERS](HARDWARE_AND_DRIVERS.md) | DMA/队列/复位与提前风险调查 |
+| [DESKTOP_UX](DESKTOP_UX.md) | Rust/Wayland/分域Xwayland/Android桥 |
+| [ROADMAP](ROADMAP.md) | 明确M0/M1/M2依赖及下一次真实实现 |
+| [VALIDATION](VALIDATION.md) | 判定器、注入层级、22项审计映射 |
+| [DECISIONS](DECISIONS.md) | 默认路线与重议条件 |
+| [STATUS](STATUS.md) | 本轮实际执行、未完成项 |
+| [SOURCES](SOURCES.md) | 一手来源与固定快照 |
+| [upstream-lock](../support/upstream-lock.json) | 已核查源码与参考资产、显式缺失构建输入 |
 
-## 文档与实现的关系
-
-本文档中的“必须”“应当”描述待实现系统的技术要求，不是已通过的测试结果。接口草案、目录规划、测试用例和资源上限均不得被写成已经存在的产品能力。每项实现进展直接记录在 `STATUS.md` 或对应任务的真实测试结果中，不建立平行的审批数据库。
-
-普通开发只做与改动相关的构建、测试和必要代码审阅。不要新增与正确性无关的签名链、多级人工审批、虚假完成度、空壳工作流或重复的“资格框架”。权限隔离、真实结果核对、错误恢复和回滚属于运行机制，不是人为拖延开发的手续。
+每次后续改动直接修改对应契约和状态，不重复复制ABI字段或完成度。旧仓库重建历史保留在Git初始提交；不混入永久产品要求。

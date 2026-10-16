@@ -1,101 +1,58 @@
-# 系统架构
+# 系统架构与上游接合
 
-版本：0.1。状态：目标架构；本文描述的 OS 组件尚未实现。
+版本0.2。共享原则与真实进展见 [INDEX](INDEX.md) / [STATUS](STATUS.md)。
 
-## 1. 分层
+## 1. 默认路线已经收敛
 
-```text
-用户目标 / 原生桌面 / 应用启动与工作区
-                    |
-Hepta 用户态系统服务：现有 Codex、Agentd、Supervisor、控制与权限模块
-                    |
-       原生资源/设备 ABI + 受限的执行桥
-                    |
-   原生应用       Linux ELF              Android APK
-      |             |                ART/Framework/HAL
-  Native ABI    Linux ABI 兼容              |
-      +-------------+----------------------+
-                    |
-Rust 内核：任务/线程/地址空间/IPC/调度/能力/存储/网络/设备
-                    |
-     小型底层受信任实现：页表、中断、DMA、架构状态
-                    |
-                 硬件
+选择完整 Asterinas v0.19.0 内核派生，而非只取 OSTD 后重建所有上层。源码 commit `c4b7ed575b7b32773475b194d2ad41fb6d03765b`，tree `96605cf64aeae2d34f29b97e85eff9315fe10a8e`，上游工具链 `nightly-2026-07-21`，首期 target `x86_64-unknown-none`。固定输入见 [upstream-lock.json](../support/upstream-lock.json)。这项选型不是已经导入或启动内核。
 
-可选：由新内核托管的 VM；作为明确标记的兼容补缺域。
-测试阶段的 Linux/KVM 宿主只是试验装置，不是最终系统内核。
-```
+第一实现以最小可审阅差异扩展上游进程、文件对象与调度器；不新增平行 Task/VFS/权限数据库。只在具体接口冲突与最小复现证明全内核派生成本不合适时重新评估 OSTD-only，不并行维持两套产品。
 
-## 2. 内核基础决策
+## 2. 分层与“原生”定义
 
-优先评估 Asterinas/OSTD 作为工程基础，复用底层机制和已有 Linux 兼容实现，重点开发 Hepta 原生资源与能力接口。M0 固定上游 commit、构建工具和依赖，完成基线启动后再确定具体派生边界。当前并未导入或 Fork 上游源码。
+Hepta作为用户态原生系统服务，现有Codex主链调用窄的控制ABI。Linux ELF及其用户态环境依旧是初期可执行形态；独立原生程序ABI（装载、TLS、信号、运行时、工具链）是明确未实施的后续目标，不因控制ioctl存在就宣告完成。
 
-参考版本为 Asterinas v0.19.0。该版本的图形进展不能推导为本项目已具备 GPU 推理；其 OSTD 虚拟化基础也不是完整、跨架构的 VMM。引用上游结果时必须与本项目实测分开。[来源](SOURCES.md#asterinas) [来源](SOURCES.md#ostd-vmm)
+从上至下为：Rust桌面/应用 -> Hepta或普通客户端 -> Linux兼容/原生控制入口 -> 同一个内核对象与权限/资源执行者 -> OSTD及驱动 -> 硬件。Android保留AOSP用户态并接到同一底层；VM只作独立标记补缺，不成为默认唯一应用运行方式。
 
-先采用务实的 framekernel/分层内核路线：将内存安全敏感机制集中封装，上层尽量使用 safe Rust，Hepta 和复杂服务放在用户态。不是一开始就把所有 Linux 状态机改为跨进程 RPC。是否进一步拆分驱动服务由实测故障范围、性能与兼容成本决定。
+在QEMU内运行的新内核并不依赖Linux syscall实现，但QEMU测试仍非裸机支持证据。最终至少一台固定实机独立启动；本轮不修改现役机器。
 
-safe Rust 不自动证明并发逻辑正确、DMA 安全、硬件协议正确或进程间故障隔离。每个 unsafe/FFI/汇编入口需要写清输入、所有权、同步、不变量以及调用者责任。
+## 3. 实际上游路径与新增点
 
-## 3. 启动与服务顺序
+| 已核对上游路径 | 本项目预期改动 | 对应验证 |
+| --- | --- | --- |
+| `kernel/core/src/syscall/ioctl.rs` / `sys_ioctl` | 注册受限control file的处理；沿用真实调用Context与get_file流程 | fd别名、copyin/out、并发关闭 |
+| `kernel/core/src/fs/file/file_table.rs` | 复用文件对象引用；CapSpace附着进程，fd不等于授权 | dup/fork/SCM_RIGHTS/exec |
+| `kernel/core/src/process/process/mod.rs` | 绑定start identity、exec_epoch、资源域 | PID重用、启动前资源归属 |
+| `kernel/core/src/sched/mod.rs` 与 `sched_class/fair.rs` | 增加有界资源域cap执行与记账 | 同值更新不充值、父域约束 |
+| `kernel/core/src/fs/fs_impls/ext2/impl_for_vfs/inode.rs` | 固定S1持久化候选接口并验证flush/锁/目录语义 | SQLite/短写/崩溃回归 |
+| `ostd/src/task/scheduler/mod.rs` | 仅在上层机制确实不足时改底层，不平行重写调度器 | 原有调度与IRQ回归 |
 
-1. 启动加载器交接内存图、CPU、固件信息与初始镜像；内核校验范围、版本和重叠区域。
-2. 架构层建立异常、中断、页表、物理内存、定时器及基础控制台。
-3. 建立最小调度、地址空间、能力表、IPC、VFS 与首批块/网络设备。
-4. 启动受限 init、恢复服务与挂载流程；即使 Hepta 不启动也可诊断和回退。
-5. 启动 Hepta 所需持久存储与运行环境，再启动受限执行桥、Supervisor 和 Agentd。
-6. 在明确配置和授权范围内启动原生应用、Linux 兼容域、Android 环境或 VM。
+路径来自固定git tree；其中仅 sys_ioctl 调用流程本轮逐段核对，其他行是位置绑定，不宣称已完成逐函数代码审计或修改。sys_ioctl会在调用FileLike::ioctl前释放file-table借用，应延续此结构；其CLOEXEC注释包含竞态待办，故管理权限不能只依靠CLOEXEC位，必须有exec_epoch核验。[来源](SOURCES.md#asterinas)
 
-早期启动不得等待大模型、外部 DNS、云端身份服务或 Fleet 共识。启动配置与根权限来源由本机所有者建立，不由模型生成。
+## 4. 对象所有权
 
-## 4. 核心对象与所有权
+Task/Thread/AddressSpace/VFS沿用上游；ResourceDomain拥有本域/祖先预算与统计；进程元数据拥有CapSpace；文件对象只承载transport生命周期；每个设备/队列拥有generation、引用和静止状态。K及持久效果事实属于原Hepta owner；D及结果槽属于本boot内核。cap、namespace、Linux credentials、Android MAC都是同一对象检查的输入，不另存一份权限真相。
 
-| 对象 | 所有者与职责 |
-| --- | --- |
-| Task/Process/Thread | 内核拥有生命周期、可运行状态、退出与资源归属 |
-| AddressSpace/MemoryObject | 内核拥有映射权限、页生命周期、共享范围与回收 |
-| ResourceDomain | 内核执行 CPU/内存/队列预算；Hepta 只提出或安装授权范围内的策略 |
-| CapabilityTable | 内核拥有进程局部句柄、代际、权限衰减和撤销状态 |
-| Device/Queue/Buffer | 驱动与内核共同保证所有权、DMA 范围、完成与复位 |
-| OperationIntent | Hepta 现有领域拥有重要操作的语义意图，不成为每个内核 I/O 的数据库 |
-| CompatibilityDomain | 兼容层拥有其 ABI 状态机，不能越过内核资源和权限上限 |
-| Workspace | 用户态定义任务上下文，内核落实对应资源/能力隔离 |
+## 5. 同步与执行上下文
 
-持久文件系统状态不自动等于 Hepta 的业务操作状态。两个领域在明确效果边界对接，不建立跨全系统的单一事务。
+先复制用户缓冲和分配有界结果槽；取得CapSpace/文件对象强引用后释放查表锁；然后获取目标mutation锁。不得持有查表借用跨驱动回调。短mutation锁保护grant epoch、准入、revision和同对象结果；持锁不睡眠、不做文件I/O、不调用模型。
 
-## 5. 快慢环路
+层级资源锁按root到leaf顺序；未来跨树迁移需最小共同祖先与稳定对象ID顺序，首期直接不支持迁移。runqueue和domain的具体同步接合在源码导入后按上游锁约束确定：不能发明一个抽象锁序就称已排除所有死锁。先单CPU验证，再扩多CPU；多CPU准入需要额度预留，不能多个CPU各自读取同一余额后同时花费。
 
-快速环路：线程切换、中断处理、缺页、锁、设备完成、本地限额检查。禁止模型调用、远程 RPC、复杂数据库查询和不可界定耗时的策略代码。
+IRQ仅登记有界完成/唤醒，复杂清理交给worker。unmap后需等相关CPU TLB shootdown及引用回收才可复用物理页。shared queue使用明确acquire/release与设备屏障；IOMMU访问隔离不替代DMA缓存同步。设备所有权详见HARDWARE_AND_DRIVERS。
 
-策略环路：Hepta 根据观测选择有界资源策略，内核校验并按版本安装。策略不得改变地址空间隔离、权限来源、硬件热保护、撤销规则和恢复机制。
+## 6. 启动序列
 
-目标、队列和缓冲区使用通用 OS 对象；模型特有的 KV cache、DiT 分块或推理批次语义留在推理模块。模型更新不应要求新增内核专用对象。
+bootloader交接与范围验证 -> 异常/页表/内存/时钟/IRQ -> 最小线程与文件/设备 -> entropy readiness、boot identity -> 独立init/恢复 -> 可信CapSpace/资源配置 -> 满足资格的存储/原Hepta owners -> 受限桥/真实Agentd profile -> 应用。
 
-## 6. 兼容环境与隔离
+未有熵或可信存储时允许受限诊断，不伪造安全会话；不用模型才能启动系统。租约、休眠与更新遵循SECURITY_AND_RECOVERY。恢复服务与最低系统I/O有独立预算，不能被普通cap饿死。
 
-Linux ABI 与原生 ABI 可以共享同一内核对象，但使用独立的协议解析与语义适配。不能通过把 Linux syscall 编号重解释为原生 opcode 来混用两个命名空间。
+## 7. AI控制闭环
 
-Android 首先保留 AOSP 用户态，以 Binder 和内核依赖适配连接新系统。VM 内的设备服务可作为过渡方案；共享设备需要明确唯一 owner、映射、复位和故障传播边界。
+快速路径固定执行机制；策略循环仅能调整envelope内的CPU cap，不变更页表、权限、热保护或内核代码。Hepta body/topology generation与OS budget revision不同，避免每个cap变化触发全局重启。通用任务依赖、取消传播、资源归属和可信结果比模型专用KV内核对象更重要。
 
-初期兼容层或驱动若处于内核地址空间，其逻辑错误仍可能影响整个系统。文档不能将 Rust 语言安全等同于独立进程隔离。故障域、信任域和内存安全边界分别标注。
+先做普通客户端再接真实Hepta，以分离ABI、兼容层和宿主装配故障。固定策略、非AI反馈、Hepta三种控制器加Linux等价控制对照，所有推理/采样成本计入；接口演示不宣称收益。
 
-## 7. 建议源码布局（尚不存在）
+## 8. 本轮源码边界
 
-```text
-kernel/              内核策略与系统调用实现
-platform/            架构与上游底层封装
-compat/linux/        Linux 行为适配、ABI 类型和回归
-compat/android/      AOSP 接合、Binder/HAL 集成
-services/init/       启动及本地恢复
-services/hepta-os/   原生执行桥，不另建 Agent 主链
-libs/os-abi/         no_std 兼容的编解码与常量
-libs/os-client/      用户态原生客户端
-ui/                  Rust 桌面与可信交互
-support/             镜像、虚拟机、实机配置和构建入口
-tests/               内核、兼容和端到端回归
-```
-
-最终目录随选定上游布局调整；不要为遵守目录图复制同一实现。文档阶段不添加无法构建的占位 Cargo workspace。
-
-## 8. 主要未决问题
-
-M0 解决上游来源与工具链固定、Linux ELF 基线及最低设备集合。M1/M2 解决 Hepta 的实际 syscall 依赖与原生资源接口。GPU 驱动、完整 Android、AMD SVM/ARM 虚拟化与真实桌面合成器是后续独立工作，不以此延后最小资源闭环。
+`libs/os-abi/` 为计划中的无依赖no_std编解码库，是否已实现仅见STATUS。文档检查和规格模型不冒充内核、驱动或独立native应用runtime。未来导入上游保留其实际目录，不为目录图搬动或复制源码。

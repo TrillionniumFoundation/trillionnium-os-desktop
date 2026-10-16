@@ -1,96 +1,107 @@
-# 研究来源与基线
+# 一手来源与精确基线
 
-访问与复核日期：2026-10-16。仅列一手资料。来源描述不等于本项目已经实现相关功能。
-
-本项目的架构、接口、资源参数、任务次序和验收规则是设计建议。以下资料用于支撑关键外部事实；动态网页不是构建锁文件，首次导入源码时仍须记录精确 commit、依赖与许可。
+版本0.2，复核日期2026-10-16。研究来源支持相关外部事实；本项目方案与试验参数是设计选择。源码输入见 [upstream-lock](../support/upstream-lock.json)，其中缺失构建输入保持null。来源hash不是下载完成或运行证明。
 
 <a id="hepta-architecture"></a>
-## Hepta 架构快照
+## Hepta架构
 
-固定 commit：`f8c9419df6ddeb36ff8b522a50219981fb8d9345`。本轮再次读取 main 后确认该快照。
-
-[ARCHITECTURE.json](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/docs/architecture/ARCHITECTURE.json)
-
-支持的事实：现有单一 Codex 模型/工具执行主链、Agentd 组合职责、权限与效果边界、学习不能改变硬约束、本地恢复不应依赖中央智能可用。这里没有声称其模块已经实现裸机内核。
+固定 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`：[架构注册表](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/docs/architecture/ARCHITECTURE.json)。支持单一Codex主链、权限/学习分离及本地恢复边界，不代表裸机内核实现。
 
 <a id="hepta-modules"></a>
-## Hepta 模块和实际依赖
+## Hepta实际接合
 
-- [kernel.authority 技术文档](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/docs/modules/kernel.authority/TECHNICAL.md)
-- [kernel.operations 技术文档](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/docs/modules/kernel.operations/TECHNICAL.md)
-- [runtime.agentd 技术文档](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/docs/modules/runtime.agentd/TECHNICAL.md)
-- [hepta-agentd/Cargo.toml](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/Cargo.toml)
+[Agentd技术文档](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/docs/modules/runtime.agentd/TECHNICAL.md)；[invocation provider源码](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/intelligence_ingress.rs)；[配置接口](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/config.rs)；[真实宿主及剩余工作](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/docs/readiness/LANE_B_NATIVE_HOST.md)；[authority](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/docs/modules/kernel.authority/TECHNICAL.md)；[operations](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/docs/modules/kernel.operations/TECHNICAL.md)。
 
-支持的事实：权限模块不是硬件驱动；操作持久实现与 CognitiveStore 有接合；Agentd 依赖现有宿主运行能力。目标契约注册和文档完成不能等同于产品运行完成。
+规范智能能力需真实runner与宿主provider/owner装配，普通启动不自动提供；源码位置不代表本项目运行通过。
 
 <a id="asterinas"></a>
-## Asterinas 候选基础
+## Asterinas锁定来源
 
-- [官方 v0.19.0 发布页](https://github.com/asterinas/asterinas/releases/tag/v0.19.0)
-- [官方公告，2026-10-13](https://asterinas.github.io/2026/10/13/announcing-asterinas-0.19.0.html)
-- [上游 RELEASES.md](https://github.com/asterinas/asterinas/blob/main/RELEASES.md)
+[v0.19.0标签](https://github.com/asterinas/asterinas/releases/tag/v0.19.0)解析至 `c4b7ed575b7b32773475b194d2ad41fb6d03765b`，tree `96605cf64aeae2d34f29b97e85eff9315fe10a8e`。[精确工具链](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/rust-toolchain.toml)为nightly-2026-07-21；[sys_ioctl](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/kernel/core/src/syscall/ioctl.rs)提供真实FileLike分派点；[源码树](https://github.com/asterinas/asterinas/tree/c4b7ed575b7b32773475b194d2ad41fb6d03765b)。
 
-截至复核，GitHub latest 返回 v0.19.0。发布 API 的 published_at 为 2026-10-12T21:37:46Z，而公告日期为 2026-10-13；两种日期分别记录，不混称。同版材料说明 DRM/KMS、软件 OpenGL、初步 AArch64、文件系统和 OSTD 虚拟化等进展。软件图形成果不能推出目标 GPU 计算能力，x86 与 ARM、guest 与 bare metal 也必须区分。
+官方release metadata给出x86_64 ISO 1442840576字节，SHA256 `7df9fafed4fe886e44bda501834937d893e12a05af911fabeb068c34379fb86e`。本轮没有下载该ISO。发布API时间为2026-10-12T21:37:46Z，[公告](https://asterinas.github.io/2026/10/13/announcing-asterinas-0.19.0.html)日期为2026-10-13，两者分别记录。软件图形与初步ARM进展不证明本项目GPU或实机支持。
 
 <a id="ostd-vmm"></a>
-## OSTD 虚拟化边界
+## 虚拟化
 
-[RFC-0003: Hypervisor Support](https://asterinas.github.io/book/rfcs/0003-hypervisor-support.html)
+[OSTD RFC-0003](https://asterinas.github.io/book/rfcs/0003-hypervisor-support.html)：底层虚拟化与VMM管理/设备模型不同，不将Intel机制外推为AMD/ARM实现。
 
-支持的事实：底层虚拟化机制与上层 VM 控制、KVM 兼容接口和设备仿真分层。RFC 的批准和接口设计不等于本项目拥有完整 VMM，也不证明所有 CPU 虚拟化后端已实现。
+<a id="ioctl"></a>
+## Linux ioctl
 
-<a id="starnix"></a>
-## Starnix
-
-[官方概念文档](https://fuchsia.dev/fuchsia-src/concepts/starnix)
-
-支持的事实：Fuchsia 可以通过用户态 Starnix 提供 Linux ABI 运行未修改 Linux 程序。借鉴其架构不意味着将其直接移植到任意新内核即可获得全部兼容范围。
+[ioctl设计](https://docs.kernel.org/driver-api/ioctl.html)：固定宽度字段、显式padding、compat、有限大小字段、未知命令errno及版本演化。HOS的32字节transport和内部wire是本项目选择，尚无实际ioctl分配。
 
 <a id="linux-abi"></a>
-## Linux 用户态 ABI 与驱动接口
+## Linux ABI和资源
 
-[The Linux Kernel Driver Interface](https://docs.kernel.org/process/stable-api-nonsense.html)
+[驱动接口稳定性](https://docs.kernel.org/process/stable-api-nonsense.html)区分用户态与内部驱动；[cgroup v2](https://docs.kernel.org/admin-guide/cgroup-v2.html)的cpu.max与层级限制供语义对照。HOS cap不是保底；本项目不能因采用相似概念就声称兼容所有cgroup行为。
 
-支持的事实：用户态接口与内核内部驱动接口有不同稳定性边界。Linux ELF 可运行不能推出现有内核模块、特定驱动或所有设备 ioctl 可直接复用。
+<a id="dma"></a>
+## DMA
 
-<a id="aosp"></a>
-## AOSP 架构
-
-[Architecture overview](https://source.android.com/docs/core/architecture)
-
-支持的事实：Android 平台由应用 API、Framework、系统服务、ART、HAL、native library 和内核等层构成；AOSP 本身不提供所有外部后端服务。兼容研究必须覆盖整个平台接合，而非只有 syscall。
-
-<a id="android-cdd"></a>
-## Android 17 CDD
-
-[Android 17 Compatibility Definition](https://source.android.com/docs/compatibility/17/android-17-cdd)
-
-用作本轮需求研究参照。其导言强调包括测试之外的行为兼容，设备类型部分也讨论替代 OS/内核的安全环境。具体适用要求要绑定所选设备类型与 AOSP 构建，不能只凭本文档声明 Android 兼容或认证通过。
-
-<a id="android-native-bridge"></a>
-## Android Native Bridge
-
-[AOSP ART Native Bridge 文档](https://android.googlesource.com/platform/art/+/refs/heads/main/libnativebridge/README.md)
-
-支持的事实：Native Bridge 提供不同 ISA/ABI 的接入机制，AOSP 不附带实际二进制翻译器。因此 ARM native 库在 x86 上执行属于独立实现和许可工作。
-
-<a id="play-integrity"></a>
-## Play Integrity
-
-[Integrity verdicts](https://developer.android.com/google/play/integrity/verdicts)
-
-支持的事实：设备完整性结果涉及认证、启动状态及某些版本上的硬件证明，应用服务端可以据此处理请求。本地 ABI 兼容与第三方服务是否接受设备必须分开记录。
+[DMA guide](https://docs.kernel.org/core-api/dma-api-howto.html)：地址隔离、缓存同步、coherent内存与屏障分别处理。
 
 <a id="vfio"></a>
-## DMA 与设备隔离参考
+## 设备隔离
 
-[VFIO - Virtual Function I/O](https://docs.kernel.org/driver-api/vfio.html)
+[VFIO](https://docs.kernel.org/driver-api/vfio.html)：IOMMU分组、设备所有权及隔离条件；不是本项目现成驱动后端。
 
-支持的事实：设备访问、IOMMU、设备分组和所有权共同影响直通与隔离设计。这里参考机制边界，不把 Linux VFIO 当作已可在新 Rust 内核使用的现成驱动服务。
+<a id="sqlite"></a>
+## 持久化
+
+[SQLite原子提交](https://www.sqlite.org/atomiccommit.html)：锁、同步与故障假设。应检查其rollback journal/WAL各自路径；本项目S1资格尚未测试。
+
+<a id="aosp"></a>
+## Android平台
+
+[AOSP架构](https://source.android.com/docs/core/architecture)：保留Framework/ART/HAL用户态，不把APK兼容等同于syscall。
+
+<a id="vintf"></a>
+## VINTF
+
+[VINTF](https://source.android.com/docs/core/architecture/vintf)：device manifest与framework compatibility matrix需对应实际产品。
+
+<a id="aidl"></a>
+## AIDL HAL
+
+[AIDL HAL](https://source.android.com/docs/core/architecture/aidl/aidl-hals)：稳定版本/实例是产品接合输入。
+
+<a id="android-cdd"></a>
+## Android17 CDD
+
+[9.7 Security Features](https://source.android.com/docs/compatibility/17/android-17-cdd#9_7_security_features)：C-2-1等效MAC；C-0-6多线程可配置系统调用过滤。[9.8.18 Agentic Functions Privacy](https://source.android.com/docs/compatibility/17/android-17-cdd#9_8_18_agentic_functions_privacy)：AppFunctions执行权限/预装、明确用户行动和告知；敏感环境数据用于主动提示另有要求。这些具体条款不能被一般长期OS授权自动替代。
+
+<a id="lmkd"></a>
+## Android压力控制
+
+[lmkd](https://source.android.com/docs/core/perf/lmkd)：PSI、内存域等实际依赖需在选定AOSP版本核对。
+
+<a id="pages"></a>
+## 页大小
+
+[16KiB页](https://source.android.com/docs/core/architecture/16kb-page-size/16kb)：页大小/ELF/native库列入profile，不永久硬编码4096。
+
+<a id="android-native-bridge"></a>
+## 指令翻译
+
+[Native Bridge](https://android.googlesource.com/platform/art/+/refs/heads/main/libnativebridge/README.md)：接入机制不附送完整翻译器；主线链接不是构建锁定值。
+
+<a id="play-integrity"></a>
+## 外部完整性
+
+[Play Integrity verdicts](https://developer.android.com/google/play/integrity/verdicts)：设备/服务判定与本地ABI兼容分开，不伪造证明。
+
+<a id="x11"></a>
+## 桌面信任
+
+[X.Org安全模型](https://www.x.org/Development/Documentation/Security/)；[Wayland架构](https://wayland.freedesktop.org/docs/book/Introduction.html)。X11共享信任域不能自动当逐应用隔离。
+
+<a id="starnix"></a>
+## 兼容架构参照
+
+[Starnix](https://fuchsia.dev/fuchsia-src/concepts/starnix)证明非Linux宿主可实现Linux用户态接口；不宣称可直接原样移植。
 
 <a id="sched-ext"></a>
-## 可替换策略与回退参考
+## 调度策略参照
 
-[Extensible Scheduler Class](https://docs.kernel.org/scheduler/sched-ext.html)
-
-支持的事实：Linux sched_ext 为可替换调度策略提供错误时的回退行为。本项目借鉴策略/机制分离与可靠恢复；它既不是 AI 调度的效果证明，也不是最终 Rust 内核实现。
+[sched_ext](https://docs.kernel.org/scheduler/sched-ext.html)：可替换策略与故障回退参考，不是新Rust内核或AI收益证明。

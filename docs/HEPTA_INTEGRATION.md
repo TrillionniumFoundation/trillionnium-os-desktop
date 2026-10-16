@@ -1,76 +1,61 @@
-# Hepta 集成设计
+# Hepta 的实际宿主接合
 
-版本：0.1。状态：接口与集成计划，尚未实现 OS 执行桥。
+版本0.2。固定上游 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`；运行状态统一见 [STATUS](STATUS.md)。OS 层不复制第二套 Agent、Codex 主链或持久操作账本。
 
-## 1. 已核查的上游基线
+## 1. 已核查源码到产品入口
 
-仓库：`TrillionniumFoundation/hepta-private-ci`。
-固定快照：`f8c9419df6ddeb36ff8b522a50219981fb8d9345`。
-
-该快照架构规定 Codex App Server 为唯一会话、模型调用和工具执行主链；Agentd 是生命周期与组合宿主。`kernel.authority` 是权限契约层，不是页表或设备驱动实现；`kernel.operations` 的持久实现复用 CognitiveStore。Agentd 使用 Tokio、文件、信号等宿主环境能力，不能直接当作裸机 no_std 内核代码。[架构](SOURCES.md#hepta-architecture) [模块与依赖](SOURCES.md#hepta-modules)
-
-以上是源码与设计事实，不代表整个 Hepta 已在新 OS 上编译或运行。上游主干更新不自动更新本项目集成基线。
-
-## 2. 模块映射
-
-| 现有模块 | 保留的职责 | OS 新增接合点 |
+| 位置 / 符号 | 已有职责 | 本项目接合 / 待补 |
 | --- | --- | --- |
-| objective.compiler / utility.ndu | 目标、预算、偏好与停止条件 | 将已界定的资源目标映射到 ResourceDomain 策略 |
-| control.runtime / intelligence.control | 已选策略和请求组合 | 冻结策略版本，不直接写硬件寄存器 |
-| runtime.codex | 唯一模型与工具执行主链 | 调用受限原生系统操作客户端 |
-| runtime.agentd | 生命周期与组合 | 承载 OS 适配器，不变成新全局数据库 |
-| runtime.supervisor | 健康、恢复、代际与隔离 | 启停受限执行桥；模型故障时保留 OS 恢复 |
-| kernel.authority | 语义授权、期限、撤销 | 原生桥将已验证权限衰减为内核能力句柄 |
-| kernel.operations | 重要操作意图、未知结果核对 | 对接受限操作 ID、提交状态和实际完成结果 |
-| inference.* / neuron.runtime | 模型与决策计算 | 声明资源需求，而非直接拥有全部设备权限 |
-| runtime.fleet | 跨机任务协调 | 每台机器仍拥有本地资源执行与停止权 |
+| `codex-rs/hepta-agentd/src/intelligence_ingress.rs` / `AgentdIntelligenceInvocationProviderV1::build` | 宿主从真实身份与 RunStartRecordV1 构建七 owner 输入；validate 校验 run、objective digest、authority epoch、generation | OS 资源观测由可信适配器送入原 owner；禁止 wire 自报当前 owner 输入 |
+| `codex-rs/hepta-agentd/src/config.rs` / `with_intelligence_invocation_provider` | 安装宿主 provider；单有 runner 不表示完整产品 profile | 配置真实 provider、runner 和原状态 owners；普通 CLI 启动不算完成 |
+| `codex-rs/hepta-agentd/src/objective_runtime.rs` / authenticated ObjectiveStart 路径 | 接入现有运行生命周期 | 保持 canonical 与 compatibility RunStart 分开，不用后者冒充规范链 |
+| `codex-rs/hepta-agentd/src/lane_b_runtime.rs` / `state_control.rs` / `client.rs` | 生命周期、现有认证控制入口和客户端 | OS 适配器通过现有 composition 接合 |
+| `codex-rs/hepta-contracts/src/final_use.rs` | 最终效果授权契约 | 授权不可变 OS 操作内容，不直接驱动寄存器 |
+| `codex-rs/hepta-agentd/src/production_writer_host.rs` | 显式 durable writer 宿主接缝 | 正常启动不自动安装；只在实际所需产品 profile 装配 |
+| `hepta-infer-worker --profile native-app-server` | 使用 owner 的 App Server provider；不是新模型主链 | 可作为真实模型路径观测，不能代替工具执行/OS资源接口 |
 
-这一映射是增量适配，不另建 hepta-os-agent、第二套目标系统、第二个权限签发服务或平行操作账本。
+以上是来源映射，不是本项目已编译/调用的证明。核对来源：[宿主入口与限制](SOURCES.md#hepta-modules)。新增适配器文件尚不存在，不伪造调用点已合并。每一运行要报告二进制、构建 features、启动参数、装配 owner 与实际宣告能力。
 
-## 3. 真实调用链
+## 2. 依赖必须先于 Hepta 闭环
 
-```text
-用户目标
- -> 现有 Hepta 目标与请求组合
- -> 现有 Codex 工具执行主链
- -> 最终操作内容绑定的授权核验
- -> hepta-os 客户端 / 受限执行桥
- -> 内核能力与资源检查
- -> 调度器或驱动的实际状态变更
- -> 内核完成信息 / 实际观测
- -> 原 Hepta 操作所有者记录或核对
-```
+先在原 Linux 固定真实 `codex-hepta-agentd`/App Server 和必要 owner 的 ELF、rootfs、锁/SQLite、futex、epoll、AF_UNIX、证书/NSS及 provider 配置。由实际 trace 得到最小系统依赖集，再移植到新内核。错误分类为 OS 行为缺失、Hepta 宿主装配缺失、外部 provider/设备前提，不通过放宽权限修复错误类别。
 
-执行桥不能根据模型文本自行签发权限，不能同时扮演能力根、操作请求者和不受限制的设备拥有者。内核根据当前调用进程和对象权限检查请求，而不是信任请求体内的 `authorized=true`。
+不要求一次启用所有可选 organ。声明的 profile 只覆盖实际装配路径；--help、mock HTTP、仅启动 daemon 都不算端到端。上游 native-host 文档保留的真实 provider 重启核对、设备容量等缺口继续如实记录。
 
-## 4. 权限建立与生命期
+## 3. 原生控制链与信任边界
 
-启动时由本机所有者配置创建最小根权限及执行桥身份。Hepta 的语义授权由现有 authority 模块拥有；OS 内核能力由内核对象系统落实。两者之间用窄接口连接，而非把全部 authority/SQLite 实现编进内核。
+用户目标 -> 现有目标/策略 owner -> 现有 Codex 工具主链 -> 最终内容授权 -> 受限 hepta-os 执行适配器 -> 新内核控制会话 -> 实际资源变更 -> 结果观测 -> 原操作 owner。
 
-长期用户授权可以覆盖一类资源策略；在该范围内自动安装具体预算，无需反复向用户确认。每次安装仍必须满足任务归属、资源上限、对象代际和当前撤销状态。
+桥是受信任适配器，只有本工作区/任务资源封套内的能力，没有全部设备权限。内核对所有访问入口执行 [ABI 的统一对象规则](NATIVE_ABI.md)。高层授权不自动变成宿主 root；模型本身不持根句柄。桥受损时其已授权 envelope 仍可能被滥用，应将这一 TCB 风险纳入故障/攻击测试，而非宣称“内核校验权限”证明了意图正确。
 
-模型输出不接触根句柄。已有句柄只能衰减、限制范围或撤销，不能因为学习产生更高权限。跨进程转交必须经过显式 handle-transfer 检查，fork/exec 的继承规则与普通文件描述符分开设计。
+构造 final-use canonical bytes 后保持不变；进程不再从可变模型字符串重建命令。内核先复制再核验，撤销与准入在资源对象短临界区线性化。无需将授权数据库、签名链或模型放进调度快速路径。
 
-## 5. 快速路径与持久状态
+## 4. 三种版本不能混用
 
-预算安装、设备会话建立和重要不可逆操作可进入原 Hepta 语义操作链；每次上下文切换、每个网络包、每次 DMA 完成不访问 Hepta 数据库。内核只执行已安装的有界本地规则。
+Hepta topology/body generation 冻结执行主链与资源 envelope；authority epoch 管理授权/撤销；OS resource revision 表示 envelope 内的一次实际预算安装。在既有 envelope 内调整 cap 不触发整套 topology 重建或 Agentd 重启；扩大权限或资源上界才走现有相应 owner 规则。
 
-需区分四类结果：请求接收、资源策略生效、设备提交、外部效果完成。提交成功不等于效果成功。超时或断连后不能因缺少结果而盲目重发具有非幂等效果的操作。
+## 5. 身份和状态唯一所有者
 
-内核状态重启后失效；持久操作由原 Hepta 所有者按新 boot identity 和对象身份核对。PID、句柄槽位、设备队列编号可能重用，不能作为跨启动的唯一效果身份。
+| 身份/事实 | 来源 | 用途 |
+| --- | --- | --- |
+| run_id / objective / topology generation | 原 Hepta owner | 用户任务与策略上下文 |
+| K=(principal,workspace,operation_id) 与 intent_digest | 原持久操作 owner | 跨进程/跨boot识别同一逻辑操作，先查K后比较摘要 |
+| boot_id / process-start / exec_epoch / CapSpace | 内核 | 真实调用者与会话，不能用PID代替 |
+| D=(boot,CapSpace,request_id) | 内核投递表 | 同次启动的写去重与copyout失败重取 |
+| object generation / budget revision / queue generation | 实际内核或驱动 owner | 生效版本及完成关联 |
 
-## 6. 移植顺序
+请求方可以提供关联ID，但不能自报授权主体、真实资源容量、完成结果或内核身份。摘要在记录中，不在查找键中。内核瞬时投递表不是第二份持久业务数据库。
 
-第一步先测未修改 Linux 版 Hepta 二进制及实际依赖闭包，记录缺失的系统行为；不要先把整个代码库改成 no_std。第二步实现窄的 OS ABI 库与执行桥，挂接现有适配器边界。第三步让同一 Hepta 任务调用真实 OS 资源操作，并保留原有生命周期和错误语义。
+## 6. 重试、恢复、取消
 
-每次验证明确运行了哪个二进制、哪些功能。只运行 Agentd 启动不能声称模型主链、持久认知写入和全部工具都通过；HTTP 测试桩不能代替真实本地推理。
+原 owner 在发出写请求前持久记录 K、意图和 D。同D同内容重取；同D不同内容冲突；进程或boot变化后保留K，未知效果禁止换ID重发。预算属于可观察的绝对状态设置，恢复时读取目标稳定身份、revision/状态，并区分“确认原安装发生”与“状态恰巧相同”；后者不能证明原操作完成。
 
-## 7. 首批原生操作
+revoke 关闭新准入但不取消已发生效果。停止桥/模型后 OS 恢复控制权回到本地 supervisor；独立应用不随桥生命周期退出。仅观察历史结果不恢复执行权限。详细双层状态、保留与容量规则以 NATIVE_ABI 为准。
 
-首批只做：列举当前授权任务资源、读取有界资源统计、安装 CPU 预算、撤销本任务资源委托、提交受控 I/O 与查询结果。读观测与写策略使用不同权限。
+## 7. 观测与控制器
 
-文件删除、摄像头、麦克风、网络外发、固件和电源等能力后续分别接入。不能因为资源预算接口通过就自动获得其他硬件控制权。
+关联 run/K -> D -> 内核对象/资源域 -> queue/completion，但仅按 read/observe 能力公开。统计包含采样时间、事件序号、丢失计数、revision、排队与执行时间。独立进程读相同计数只能减少自报错误，还须用工作负载完成量/实际数据核对计数正确性。
 
-## 8. 必须验证
+第一控制器试验配置：每1秒最多提案一次，观测年龄超过2秒或丢事件未恢复则不增加cap；每次变更不超过授权最大cap的10%，连续两次同向压力才改变，失败使用固定上次可用预算。此为待测保守实验参数，不是效果定理或最终默认。推理/观测本身单独计费；有界非AI反应式控制器是同等对照。
 
-真实 Hepta 调用、授权外对象拒绝、请求内容变化后拒绝、过期与撤销、桥崩溃、重复提交、进程身份重用、Hepta 杀死后内核继续运行、原操作未知状态恢复以及上游版本回退。验证要求见 [VALIDATION.md](VALIDATION.md)。
+首个真实路径顺序：非AI客户端验证ABI -> 必需Linux依赖 -> 原Hepta实际profile -> 预算生效 -> revoke/kill/reboot。远程provider可用于早期主链实验但不得记为本地推理；后续另测本地CPU/GPU。
