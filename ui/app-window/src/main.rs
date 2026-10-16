@@ -194,6 +194,15 @@ impl ClientWindow {
     }
 }
 
+fn parse_kind(value: &str) -> Result<AppKind, String> {
+    match value {
+        "notes" => Ok(AppKind::Notes),
+        "calculator" => Ok(AppKind::Calculator),
+        "terminal" => Ok(AppKind::Terminal),
+        _ => Err(format!("unsupported app kind: {value}")),
+    }
+}
+
 fn parse_arguments() -> Result<(AppKind, Workspace, u64), String> {
     let mut kind = None;
     let mut workspace = None;
@@ -202,14 +211,7 @@ fn parse_arguments() -> Result<(AppKind, Workspace, u64), String> {
     while let Some(flag) = args.next() {
         let value = args.next().ok_or_else(|| format!("{flag} missing value"))?;
         match flag.as_str() {
-            "--kind" => {
-                kind = Some(match value.as_str() {
-                    "notes" => AppKind::Notes,
-                    "calculator" => AppKind::Calculator,
-                    "terminal" => AppKind::Terminal,
-                    _ => return Err(format!("unsupported app kind: {value}")),
-                })
-            }
+            "--kind" => kind = Some(parse_kind(&value)?),
             "--workspace" => {
                 workspace = Some(match value.as_str() {
                     "personal" => Workspace::Personal,
@@ -345,9 +347,8 @@ mod tests {
 
     #[test]
     fn parse_arguments_accepts_terminal_kind() {
-        // The parser is exercised through a helper that mirrors its accepted
-        // wire values; no process is spawned by parsing.
-        assert_eq!(AppKind::Terminal.code(), "terminal");
-        assert_eq!(AppKind::Terminal.name(), "Restricted Terminal / 受限终端");
+        // Parsing only validates the fixed app registry; no process is spawned.
+        assert_eq!(parse_kind("terminal").unwrap(), AppKind::Terminal);
+        assert!(parse_kind("sh -c id").is_err());
     }
 }
