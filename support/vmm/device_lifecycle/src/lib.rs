@@ -284,12 +284,15 @@ impl Queue {
     pub fn submit_after_driver_admission(&mut self, device: &DeviceHandle,
                                          buffer: &mut Buffer) -> Result<Completion, Error> {
         device.ensure_owner(self.owner, self.device_generation)?;
+        // Preserve authorization error precedence: an out-of-domain Buffer
+        // must never be mistaken for a mere unprepared/stale buffer, and no
+        // failure path may consume sequence, queue capacity or DMA ownership.
+        if buffer.owner != self.owner { return Err(Error::UnauthorizedDomain); }
         if device.identity() != self.device_identity ||
            buffer.device_identity != Some(self.device_identity) {
             return Err(Error::InvalidState);
         }
         if self.fenced { return Err(Error::InvalidState); }
-        if buffer.owner != self.owner { return Err(Error::UnauthorizedDomain); }
         if buffer.phase != (BufferPhase::Prepared { device_generation: self.device_generation }) {
             return Err(Error::InvalidState);
         }
@@ -420,9 +423,19 @@ mod tests {
         let other_mem = MemoryObject { id: 5, owner: OTHER, len: 4096 };
         let mut wrong = Buffer::new(&other_mem, 0, 16, DmaDirection::ToDevice).unwrap();
         assert_eq!(wrong.prepare_after_dma_map_and_sync(&dev), Err(Error::UnauthorizedDomain));
+        let initial_phase = wrong.phase();
+        let initial_generation = queue.generation();
         assert_eq!(queue.submit_after_driver_admission(&dev, &mut wrong),
                    Err(Error::UnauthorizedDomain));
         assert_eq!(queue.outstanding(), 0);
+        assert_eq!(queue.generation(), initial_generation);
+        assert_eq!(wrong.phase(), initial_phase);
+        // Verify that an unauthorized attempt does not burn a sequence number.
+        let valid = MemoryObject::new(6, D, 4096);
+        let mut allowed = Buffer::new(&valid, 0, 64, DmaDirection::ToDevice).unwrap();
+        allowed.prepare_after_dma_map_and_sync(&dev).unwrap();
+        let tag = queue.submit_after_driver_admission(&dev, &mut allowed).unwrap();
+        assert_eq!(tag.sequence(), 1);
     }
 
     #[test]
