@@ -51,7 +51,14 @@ jobs:
                 echo 'Cannot verify source removal against the exact event before/after commits.' >&2
                 exit 1
               fi
-              if git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- | grep -Eq '^(ui/|tests/ui/|support/ui/)'; then
+              # Do not use 'git diff | grep -q' with pipefail: early grep
+              # termination can SIGPIPE the producer and hide a deletion.
+              changed_ui=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- \
+                ui/ tests/ui/ support/ui/) || {
+                echo 'Unable to verify UI source changes.' >&2
+                exit 1
+              }
+              if [[ -n "$changed_ui" ]]; then
                 echo 'A10 paths changed but ui/Cargo.toml is absent: fail closed.' >&2
                 exit 1
               fi
