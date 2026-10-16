@@ -29,5 +29,6 @@ jobs:
       - name: Rust no_std device lifecycle unit and release tests
         if: hashFiles('support/vmm/device_lifecycle/Cargo.toml') != ''
         run: |
-          cargo test --offline --manifest-path support/vmm/device_lifecycle/Cargo.toml
-          cargo test --offline --release --manifest-path support/vmm/device_lifecycle/Cargo.toml
+          cargo test --locked --offline --all-targets --manifest-path support/vmm/device_lifecycle/Cargo.toml
+          cargo test --locked --offline --doc --manifest-path support/vmm/device_lifecycle/Cargo.toml
+          cargo test --locked --offline --release --manifest-path support/vmm/device_lifecycle/Cargo.toml
