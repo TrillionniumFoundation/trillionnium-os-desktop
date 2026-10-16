@@ -381,22 +381,18 @@ fn malformed_install_budget_is_rejected_before_consuming_global_sequence() {
 }
 
 #[test]
-fn invalid_history_sequence_is_rejected_before_and_after_history_loss() {
+fn zero_history_sequence_is_rejected_before_and_after_history_loss() {
     let core = ControlCore::new(boot(90_000), space(90_000));
     let view = core.delivery_view();
-    for invalid in [0, u64::MAX] {
-        assert_eq!(
-            core.query_delivery(&view, invalid),
-            Err(DeliveryError::InvalidSequence)
-        );
-    }
+    assert_eq!(
+        core.query_delivery(&view, 0),
+        Err(DeliveryError::InvalidSequence)
+    );
     core.lose_history();
-    for invalid in [0, u64::MAX] {
-        assert_eq!(
-            core.query_delivery(&view, invalid),
-            Err(DeliveryError::InvalidSequence)
-        );
-    }
+    assert_eq!(
+        core.query_delivery(&view, 0),
+        Err(DeliveryError::InvalidSequence)
+    );
     assert_eq!(
         core.query_delivery(&view, 1).unwrap().state,
         DeliveryState::HistoryLost
@@ -2026,6 +2022,63 @@ fn a02_codec_accepts_every_real_a03_delivery_state() {
 }
 
 #[test]
+fn a02_history_max_query_is_read_only_and_never_an_executable_delivery() {
+    use hos2_os_abi::DeliveryState as WireState;
+
+    let (core, authority) =
+        ControlCore::with_original_owner(boot(330_000), space(330_000), owner(9000)).unwrap();
+    let domain = root(330_000, CPU_PERIOD_NS);
+    let who = publisher(330_001);
+    let view = core.delivery_view_for(owner(9000)).unwrap();
+
+    assert_eq!(
+        core.reserve(request(u64::MAX, domain.grant(who).unwrap(), 1, 20), who)
+            .err(),
+        Some(DeliveryError::InvalidSequence)
+    );
+    assert_eq!(core.next_sequence(), 1);
+    let unknown = core.query_delivery(&view, u64::MAX).unwrap();
+    assert_eq!(unknown.state, DeliveryState::NotSeen);
+    assert_eq!(unknown.id.sequence(), u64::MAX);
+    assert_eq!(unknown.hos2_saved_status_code(), Some(0));
+    let encoded = a02_roundtrip_delivery(unknown).unwrap();
+    assert_eq!(encoded.state, WireState::NotSeen);
+    assert_eq!(encoded.sequence, u64::MAX);
+
+    // Public observations cannot rebrand this sentinel as an executed D.
+    let mut forged = unknown;
+    forged.state = DeliveryState::Reserved;
+    assert_eq!(forged.hos2_saved_status_code(), None);
+    forged.state = DeliveryState::Terminal;
+    forged.status = Some(DeliveryStatus::Revoked);
+    assert_eq!(forged.hos2_saved_status_code(), None);
+    forged.state = DeliveryState::Retired;
+    forged.status = None;
+    assert_eq!(forged.hos2_saved_status_code(), None);
+
+    let invalid_retirement = HistoryAck::from_owner_receipt(
+        core.identity(),
+        u64::MAX,
+        OwnerReceipt::new(owner(9000), [1; 32]),
+    )
+    .unwrap();
+    assert_eq!(
+        core.retire_through(&view, invalid_retirement, &authority),
+        Err(DeliveryError::NotSeen)
+    );
+    assert_eq!(core.retired_through(), 0);
+
+    core.lose_history();
+    let lost = core.query_delivery(&view, u64::MAX).unwrap();
+    assert_eq!(lost.state, DeliveryState::HistoryLost);
+    assert_eq!(lost.hos2_saved_status_code(), Some(0));
+    assert_eq!(
+        a02_roundtrip_delivery(lost).unwrap().state,
+        WireState::HistoryLost
+    );
+}
+
+#[test]
 fn a02_rejects_elapsed_cpu_forgery_even_without_a03_conversion_guard() {
     use hos2_os_abi::{
         encode_response, DeliveryState as WireState, Error, Opcode, QueryDeliveryResponse,
@@ -2080,6 +2133,146 @@ fn a02_rejects_elapsed_cpu_forgery_even_without_a03_conversion_guard() {
         encode_response(&bad, &mut [0u8; 128]),
         Err(Error::InvalidField)
     );
+}
+
+#[test]
+fn invariant_audit_keeps_hanging_prefix_and_capacity_exhaustion_nonterminal() {
+    let (core, authority) = ControlCore::with_capacity_for_owner(
+        boot(410_000),
+        space(410_000),
+        8,
+        owner(9000),
+    )
+    .unwrap();
+    let target = root(410_000, CPU_PERIOD_NS);
+    let who = publisher(410_001);
+    let view = core.delivery_view_for(owner(9000)).unwrap();
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+    let first = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+        .unwrap();
+    for sequence in 2..=8_u64 {
+        let token = core
+            .reserve(request(sequence, target.grant(who).unwrap(), 1, 20), who)
+            .unwrap();
+        core.publish(
+            &token,
+            who,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::InvalidInput,
+            },
+        )
+        .unwrap();
+    }
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    assert_eq!(core.window_len(), 8);
+    assert_eq!(
+        core.reserve(request(9, target.grant(who).unwrap(), 1, 20), who)
+            .err(),
+        Some(DeliveryError::ResourceExhausted)
+    );
+    assert_eq!(core.next_sequence(), 9);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    assert_eq!(
+        core.query_delivery(&view, 1).unwrap().state,
+        DeliveryState::Reserved
+    );
+    assert_eq!(
+        core.retire_through(&view, ack(&core, 8), &authority),
+        Err(DeliveryError::PendingPrefix)
+    );
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+    core.publish(
+        &first,
+        who,
+        PublishOutcome::Failure {
+            status: DeliveryStatus::Revoked,
+        },
+    )
+    .unwrap();
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    core.retire_through(&view, ack(&core, 8), &authority)
+        .unwrap();
+    assert_eq!(core.retired_through(), 8);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+    for sequence in 9..=10_000_u64 {
+        let token = core
+            .reserve(request(sequence, target.grant(who).unwrap(), 1, 20), who)
+            .unwrap();
+        core.publish(
+            &token,
+            who,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::InvalidInput,
+            },
+        )
+        .unwrap();
+        if sequence % 127 == 0 {
+            assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+        }
+        core.retire_through(&view, ack(&core, sequence), &authority)
+            .unwrap();
+    }
+    assert_eq!(core.retired_through(), 10_000);
+    assert_eq!(core.window_len(), 0);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    core.lose_history();
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    assert_eq!(
+        core.query_delivery(&view, 1).unwrap().state,
+        DeliveryState::HistoryLost
+    );
+}
+
+#[test]
+fn concurrent_window_invariant_audits_never_see_half_committed_results() {
+    let (core, authority) = ControlCore::with_capacity_for_owner(
+        boot(420_000),
+        space(420_000),
+        16,
+        owner(9000),
+    )
+    .unwrap();
+    let core = Arc::new(core);
+    let target = root(420_000, CPU_PERIOD_NS);
+    let who = publisher(420_001);
+    let start = Arc::new(Barrier::new(3));
+
+    let producer_core = Arc::clone(&core);
+    let producer_start = Arc::clone(&start);
+    let producer = thread::spawn(move || {
+        producer_start.wait();
+        let view = producer_core.delivery_view_for(owner(9000)).unwrap();
+        for sequence in 1..=512_u64 {
+            let token = producer_core
+                .reserve(request(sequence, target.grant(who).unwrap(), target.revision(), 20), who)
+                .unwrap();
+            let outcome = producer_core.commit(&token, who, sequence).unwrap();
+            assert_eq!(outcome.status, Some(DeliveryStatus::Ok));
+            producer_core
+                .retire_through(&view, ack(&producer_core, sequence), &authority)
+                .unwrap();
+        }
+    });
+
+    let audit_core = Arc::clone(&core);
+    let audit_start = Arc::clone(&start);
+    let auditor = thread::spawn(move || {
+        audit_start.wait();
+        for _ in 0..2048 {
+            assert_eq!(audit_core.validate_invariants_for_host_model(), Ok(()));
+            thread::yield_now();
+        }
+    });
+
+    start.wait();
+    producer.join().unwrap();
+    auditor.join().unwrap();
+    assert_eq!(core.retired_through(), 512);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
 }
 
 #[test]
