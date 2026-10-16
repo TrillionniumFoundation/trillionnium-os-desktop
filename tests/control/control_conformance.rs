@@ -1847,3 +1847,37 @@ fn checked_namespace_constructor_is_not_an_identity_authority() {
     // A05 trusted init supplies the actual nonzero boot/space IDs. A
     // checked value constructor by itself cannot attest their provenance.
 }
+
+#[test]
+fn revoked_ancestor_is_not_confused_with_exhausted_cpu_quota() {
+    let ancestor = root(220_000, CPU_PERIOD_NS);
+    let child = with_parent(domain(220_001), object(220_001), &ancestor, 20).unwrap();
+    let leaf = with_parent(domain(220_002), object(220_002), &child, 20).unwrap();
+    leaf.charge_cpu(5, 10).unwrap();
+    let before = leaf.usage(10);
+    ancestor.revoke();
+    assert_eq!(leaf.charge_cpu(1, 11), Err(ResourceError::Revoked));
+    assert_eq!(
+        leaf.charge_interval_for_host_model(10, 11),
+        Err(ResourceError::Revoked)
+    );
+    assert_eq!(leaf.usage(11).cumulative_cpu_ns, before.cumulative_cpu_ns);
+    assert_eq!(leaf.usage(11).event_sequence, before.event_sequence);
+    assert_eq!(ancestor.usage(11).cumulative_cpu_ns, 5);
+}
+
+#[test]
+fn grant_publisher_field_cannot_be_reassigned_by_external_code() {
+    let target = root(221_000, CPU_PERIOD_NS);
+    let who = publisher(221_001);
+    let grant = target.grant(who).unwrap();
+    assert_eq!(grant.principal(), who);
+    assert_eq!(grant.clone().principal(), who);
+    let core = ControlCore::new(boot(221_000), space(221_000));
+    assert_eq!(
+        core.reserve(request(1, grant, 1, 20), publisher(221_002)).err(),
+        Some(DeliveryError::PermissionDenied)
+    );
+    assert_eq!(core.window_len(), 0);
+    assert_eq!(core.next_sequence(), 1);
+}
