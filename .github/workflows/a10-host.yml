@@ -29,13 +29,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Verify A00 bootstrap versus A10 source diff and empty README
         id: scope
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           test -f README.md && test ! -s README.md
@@ -43,7 +44,13 @@ jobs:
             echo 'has_ui=true' >> "$GITHUB_OUTPUT"
             echo 'A10 Rust source exists; host build and Wayland tests are required.'
           else
-            if [[ "$EVENT_NAME" == pull_request ]]; then
+            if [[ "$EVENT_NAME" == pull_request || "$EVENT_NAME" == push ]]; then
+              if [[ -z "$BASE_SHA" || -z "$HEAD_SHA" || "$BASE_SHA" =~ ^0+$ ]] ||
+                 ! git cat-file -e "$BASE_SHA^{commit}" ||
+                 ! git cat-file -e "$HEAD_SHA^{commit}"; then
+                echo 'Cannot verify source removal against the exact event before/after commits.' >&2
+                exit 1
+              fi
               if git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- | grep -Eq '^(ui/|tests/ui/|support/ui/)'; then
                 echo 'A10 paths changed but ui/Cargo.toml is absent: fail closed.' >&2
                 exit 1
@@ -62,8 +69,12 @@ jobs:
     if: ${{ needs.ui-source-guard.outputs.has_ui == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    env:
+      RUSTUP_TOOLCHAIN: '1.88.0'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install separately pinned host Rust and Linux software-rendering dependencies
         run: |
           set -euo pipefail
@@ -102,6 +113,7 @@ jobs:
             echo 'A10 Cargo.lock is absent/untracked: host success is not reproducible.' >&2
             exit 1
           fi
+          git diff --exit-code HEAD -- ui/Cargo.lock
           sha256sum ui/Cargo.lock
           cargo metadata --manifest-path ui/Cargo.toml --locked --offline --format-version 1 >/dev/null
       - name: Preserve raw A10 host/compiler/Weston evidence even on failure
