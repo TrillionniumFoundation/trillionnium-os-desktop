@@ -148,3 +148,11 @@ Actually re-run in the execution-tool Linux 6.18.44 container:
 
 Immutable scope summary: `tests/hardware/evidence/2026-10-16-phase3-summary.json`.
 No production/H3/training devices were modified. No Ollama used.
+
+## Post-A01 merge status
+
+Latest verified main `e44c92ac885eb003665ff2e1e5c6fab1f104b2d6` includes
+A01's pinned complete Asterinas kernel and QEMU boot baseline (merged PR #5).
+This means source checkout/boot is available **in the repository**, not in
+the limited A09 execution container, which still has no Rust compiler, QEMU,
+GPU or KVM. No Rust VMM or GPU computing has been run by A09 on that kernel.

@@ -68,8 +68,9 @@ permission signer or a simulated ``passed`` production backend.
 ## Phase 3: actual A01 dependency and typed state/provenance gate
 
 A01 [PR #5](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5)
-has a pinned Asterinas kernel/QEMU boot baseline on a separate branch, **not
-yet a VMM boot or GPU handoff**. Do not use its VMX/EPT soft-skipped test as
+has now merged its pinned Asterinas kernel/QEMU boot baseline into main
+at e44c92ac885eb003665ff2e1e5c6fab1f104b2d6. This is a real source/boot
+milestone, **not yet a Linux guest VMM boot or GPU handoff**. Do not use its VMX/EPT soft-skipped test as
 physical Intel virtualization success. The A09 device transition model in
 `device_lifecycle/` is a standalone `no_std` metadata-only prototype, not a
 replacement of A05 CapSpace or A06 ResourceDomain.
@@ -93,5 +94,12 @@ A00 acceptance checklist, each independently logged from the real kernel:
    required**, NEVER an automatic GPU claim. Test exact CUDA GEMM and compare
    numerical output on disposable idle RTX 4060.
 
-This PR cannot deliver physical GPU passthrough while A01 source is not
-integrated and this tool container lacks `/dev/kvm`, GPU nodes and toolchain.
+This PR cannot deliver physical GPU passthrough despite A01 source now being
+integrated: no host GPU/VMM adapter or full driver exists, and this tool container lacks `/dev/kvm`, GPU nodes and toolchain.
+
+Confirmed actual merged main source interfaces: `kernel/asterinas/ostd/src/arch/x86/vm/mod.rs`
+(Intel VMX/VMCS), `kernel/asterinas/ostd/src/vm/mod.rs` (GuestMode/GuestPhysMemSpace),
+`kernel/asterinas/ostd/src/arch/x86/iommu/mod.rs` (crate-private map/unmap and IRQ remap).
+**None is an A09-owned public device-passthrough API.** A00/A01 must coordinate
+export/integration and actual VMX or AMD SVM execution; A09 does not patch
+A05/A06 kernel core sources unilaterally.

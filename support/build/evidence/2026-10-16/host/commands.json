@@ -1,0 +1,359 @@
+{
+  "schema": 1,
+  "original_working_directory": "/workspace/scratch/ae1a8cf05419",
+  "commands": [
+    {
+      "phase": "official nightly availability",
+      "argv": [
+        "curl",
+        "-fsSIL",
+        "--max-time",
+        "30",
+        "https://static.rust-lang.org/dist/2026-07-21/channel-rust-nightly.toml"
+      ],
+      "exit": 0,
+      "log": "nightly-manifest-headers.log"
+    },
+    {
+      "phase": "official rustup availability",
+      "argv": [
+        "curl",
+        "-fsSIL",
+        "--max-time",
+        "30",
+        "https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init"
+      ],
+      "exit": 0,
+      "log": "rustup-init-headers.log"
+    },
+    {
+      "phase": "initial apt index update",
+      "argv": [
+        "apt-get",
+        "update"
+      ],
+      "exit": 100,
+      "log": "apt-update.log",
+      "failure": "Container does not permit setgroups/setegid/seteuid to apt sandbox IDs."
+    },
+    {
+      "phase": "apt index update using actual root namespace",
+      "argv": [
+        "apt-get",
+        "-o",
+        "APT::Sandbox::User=root",
+        "update"
+      ],
+      "exit": 0,
+      "log": "apt-update-root.log"
+    },
+    {
+      "phase": "download official rustup",
+      "argv": [
+        "curl",
+        "-fSL",
+        "--retry",
+        "2",
+        "--max-time",
+        "120",
+        "https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init",
+        "-o",
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup-init"
+      ],
+      "exit": 0,
+      "log": "rustup-download.log",
+      "sha256_file": "rustup-init.sha256"
+    },
+    {
+      "phase": "make downloaded installer executable",
+      "argv": [
+        "chmod",
+        "+x",
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup-init"
+      ],
+      "exit": 0,
+      "note": "Executable bit on newly downloaded scratch installer only; no package/cache/account permission changes."
+    },
+    {
+      "phase": "install rustup without default toolchain",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup-init",
+        "-y",
+        "--no-modify-path",
+        "--default-toolchain",
+        "none"
+      ],
+      "exit": 0,
+      "log": "rustup-install.log"
+    },
+    {
+      "phase": "install exact required kernel toolchain",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+        "toolchain",
+        "install",
+        "nightly-2026-07-21",
+        "--profile",
+        "minimal",
+        "--component",
+        "rust-src",
+        "--component",
+        "rustc-dev",
+        "--component",
+        "llvm-tools-preview",
+        "--target",
+        "x86_64-unknown-none"
+      ],
+      "exit": 0,
+      "log": "rust-toolchain-install.log"
+    },
+    {
+      "phase": "install other targets declared by fixed upstream manifest",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+        "target",
+        "add",
+        "--toolchain",
+        "nightly-2026-07-21",
+        "riscv64imac-unknown-none-elf",
+        "loongarch64-unknown-none-softfloat",
+        "aarch64-unknown-none-softfloat"
+      ],
+      "exit": 0,
+      "log": "rust-extra-targets-install.log"
+    },
+    {
+      "phase": "exact Rust compiler verification",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustc",
+        "+nightly-2026-07-21",
+        "-Vv"
+      ],
+      "exit": 0,
+      "log": "rustc-version.log"
+    },
+    {
+      "phase": "installed component verification",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+        "component",
+        "list",
+        "--toolchain",
+        "nightly-2026-07-21",
+        "--installed"
+      ],
+      "exit": 0,
+      "log": "rustc-version.log"
+    },
+    {
+      "phase": "Cargo version verification",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+        "+nightly-2026-07-21",
+        "--version"
+      ],
+      "exit": 0,
+      "log": "rustc-version.log"
+    },
+    {
+      "phase": "first package installation attempt",
+      "env": {
+        "DEBIAN_FRONTEND": "noninteractive"
+      },
+      "argv": [
+        "apt-get",
+        "-o",
+        "APT::Sandbox::User=root",
+        "install",
+        "-y",
+        "--no-install-recommends",
+        "qemu-system-x86",
+        "qemu-utils",
+        "ovmf",
+        "busybox-static",
+        "cpio",
+        "clang",
+        "lld",
+        "pkg-config",
+        "libssl-dev",
+        "grub-pc-bin",
+        "grub-efi-amd64-bin",
+        "grub-common",
+        "xorriso",
+        "exfatprogs",
+        "e2fsprogs"
+      ],
+      "exit": 130,
+      "log": "apt-install.log",
+      "failure": "Default partial cache directory belongs to unmapped nobody and is not writable. Command interrupted; package installation had not begun."
+    },
+    {
+      "phase": "create writable cache in scratch",
+      "argv": [
+        "mkdir",
+        "-p",
+        "/workspace/scratch/ae1a8cf05419/apt-cache/archives/partial"
+      ],
+      "exit": 0
+    },
+    {
+      "phase": "package installation using scratch cache",
+      "env": {
+        "DEBIAN_FRONTEND": "noninteractive"
+      },
+      "argv": [
+        "apt-get",
+        "-o",
+        "APT::Sandbox::User=root",
+        "-o",
+        "Dir::Cache::Archives=/workspace/scratch/ae1a8cf05419/apt-cache/archives",
+        "install",
+        "-y",
+        "--no-install-recommends",
+        "qemu-system-x86",
+        "qemu-utils",
+        "ovmf",
+        "busybox-static",
+        "cpio",
+        "clang",
+        "lld",
+        "pkg-config",
+        "libssl-dev",
+        "grub-pc-bin",
+        "grub-efi-amd64-bin",
+        "grub-common",
+        "xorriso",
+        "exfatprogs",
+        "e2fsprogs"
+      ],
+      "exit": 100,
+      "log": "apt-install-local-cache.log",
+      "failure": "libibverbs1 groupadd postinst cannot access audit interface; qemu-system-x86 and librdmacm1t64 remain unconfigured dependents. Executables and all runtime shared libraries are present."
+    },
+    {
+      "phase": "save official manifest",
+      "argv": [
+        "curl",
+        "-fSL",
+        "--retry",
+        "2",
+        "--max-time",
+        "60",
+        "https://static.rust-lang.org/dist/2026-07-21/channel-rust-nightly.toml",
+        "-o",
+        "/workspace/scratch/ae1a8cf05419/env-evidence/channel-rust-nightly.toml"
+      ],
+      "exit": 0,
+      "log": "rust-manifest-download.log"
+    },
+    {
+      "phase": "save official manifest checksum",
+      "argv": [
+        "curl",
+        "-fSL",
+        "--retry",
+        "2",
+        "--max-time",
+        "60",
+        "https://static.rust-lang.org/dist/2026-07-21/channel-rust-nightly.toml.sha256",
+        "-o",
+        "/workspace/scratch/ae1a8cf05419/env-evidence/channel-rust-nightly.toml.sha256"
+      ],
+      "exit": 0,
+      "log": "rust-manifest-checksum-download.log"
+    },
+    {
+      "phase": "verify official manifest checksum",
+      "cwd": "/workspace/scratch/ae1a8cf05419/env-evidence",
+      "argv": [
+        "sha256sum",
+        "-c",
+        "channel-rust-nightly.toml.sha256"
+      ],
+      "exit": 0,
+      "log": "rust-manifest-verification.log"
+    },
+    {
+      "phase": "QEMU executable version",
+      "argv": [
+        "qemu-system-x86_64",
+        "--version"
+      ],
+      "exit": 0,
+      "log": "qemu-version.log"
+    },
+    {
+      "phase": "QEMU dynamic-library verification",
+      "argv": [
+        "ldd",
+        "/usr/bin/qemu-system-x86_64"
+      ],
+      "exit": 0,
+      "log": "qemu-dynamic-libraries.log"
+    },
+    {
+      "phase": "QEMU paused-machine environment check",
+      "argv": [
+        "timeout",
+        "3",
+        "qemu-system-x86_64",
+        "-accel",
+        "tcg",
+        "-machine",
+        "q35",
+        "-cpu",
+        "max",
+        "-m",
+        "256M",
+        "-smp",
+        "1",
+        "-S",
+        "-display",
+        "none",
+        "-monitor",
+        "none",
+        "-serial",
+        "none",
+        "-nic",
+        "none"
+      ],
+      "exit": 124,
+      "log": "qemu-paused-smoke.log",
+      "meaning": "Expected timeout after successful paused TCG VM creation; no guest kernel boot was attempted here."
+    },
+    {
+      "phase": "package configuration audit",
+      "argv": [
+        "dpkg",
+        "--audit"
+      ],
+      "exit": 0,
+      "log": "dpkg-audit.log",
+      "meaning": "Output identifies package configuration failures; command exit 0 is not an assertion of healthy package state."
+    }
+  ]
+}

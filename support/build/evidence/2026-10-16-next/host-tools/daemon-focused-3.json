@@ -1,0 +1,96 @@
+{
+  "run": 3,
+  "command": [
+    "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/cargo_osdk-87e58130b1b091d4",
+    "daemon::supervisor::tests::stop_all_terminates_daemon_descendants",
+    "--exact",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "observed_processes": {
+    "50914": {
+      "initial_status": {
+        "Name": "sh",
+        "State": "S (sleeping)",
+        "Pid": "50914",
+        "PPid": "50911",
+        "NSpid": "50914\t9",
+        "NSpgid": "50914\t9"
+      },
+      "first_seen_s": 0.0122,
+      "last_status": {
+        "Name": "sh",
+        "State": "Z (zombie)",
+        "Pid": "50914",
+        "PPid": "50911",
+        "NSpid": "50914\t9",
+        "NSpgid": "50914\t9"
+      },
+      "last_seen_s": 1.0532,
+      "after_harness_exit_status": {
+        "read_errno": 2
+      }
+    },
+    "50915": {
+      "initial_status": {
+        "Name": "sleep",
+        "State": "S (sleeping)",
+        "Pid": "50915",
+        "PPid": "50914",
+        "NSpid": "50915\t10",
+        "NSpgid": "50914\t9"
+      },
+      "first_seen_s": 0.0122,
+      "last_status": {
+        "Name": "sleep",
+        "State": "S (sleeping)",
+        "Pid": "50915",
+        "PPid": "50914",
+        "NSpid": "50915\t10",
+        "NSpgid": "50914\t9"
+      },
+      "last_seen_s": 0.9982,
+      "after_harness_exit_status": {
+        "read_errno": 2
+      }
+    }
+  },
+  "child_pid_file_observations": [
+    {
+      "path": "/tmp/.tmpkIJZj3/child.pid",
+      "namespace_child_pid": 10,
+      "numeric_proc_status": {
+        "read_errno": 2
+      },
+      "numeric_proc_status_after_harness_exit": {
+        "read_errno": 2
+      }
+    }
+  ],
+  "proc_children_read_errors": [
+    {
+      "path": "/proc/50911/task/50911/children",
+      "errno": 2
+    },
+    {
+      "path": "/proc/50911/task/50912/children",
+      "errno": 2
+    },
+    {
+      "path": "/proc/50911/task/50913/children",
+      "errno": 2
+    }
+  ],
+  "popen_namespace_pid": 6,
+  "harness_host_pid": 50911,
+  "harness_initial_status": {
+    "Name": "cargo_osdk-87e5",
+    "State": "R (running)",
+    "Pid": "50911",
+    "PPid": "50910",
+    "NSpid": "50911\t6",
+    "NSpgid": "50906\t1"
+  },
+  "exit": 0,
+  "duration_s": 1.0638
+}

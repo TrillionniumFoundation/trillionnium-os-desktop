@@ -1,0 +1,59 @@
+{
+  "recorded_utc": "2026-10-16T07:17:08.957410+00:00",
+  "host": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "machine": "x86_64",
+  "kvm_device_present": false,
+  "rust_toolchain": "nightly-2026-07-21",
+  "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+  "rustc_release": "1.99.0-nightly",
+  "rust_llvm": "22.1.8",
+  "cargo_release": "1.99.0-nightly (3efb1f477 2026-07-17)",
+  "cargo_home": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+  "rustup_home": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+  "official_manifest_sha256": "c0b09f4e128768b2d6eab27050625a1ce974f8b39c07871370368cd82fbf8617",
+  "official_manifest_checksum_verified": true,
+  "initial_apt_update_exit": 100,
+  "apt_root_update_exit": 0,
+  "initial_apt_install_exit": 130,
+  "initial_apt_install_stop_reason": "Default /var/cache/apt/archives/partial is owned by unmapped nobody and not writable; command interrupted before package installation. No permissions changed.",
+  "apt_cache_workaround": "-o Dir::Cache::Archives=/workspace/scratch/ae1a8cf05419/apt-cache/archives",
+  "project_repository_files_modified": false,
+  "apt_install_local_cache_exit": 100,
+  "apt_postinst_blocker": {
+    "package": "libibverbs1:amd64",
+    "command": "/sbin/groupadd -g 103 rdma",
+    "message": "Cannot open audit interface - aborting.",
+    "package_configure_exit": 82,
+    "unconfigured_dependents": [
+      "qemu-system-x86",
+      "librdmacm1t64:amd64"
+    ]
+  },
+  "qemu_binary_actual_version": "8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+  "qemu_dynamic_libraries_missing": [],
+  "qemu_paused_machine_smoke": {
+    "command": "timeout 3 qemu-system-x86_64 -accel tcg -machine q35 -cpu max -m 256M -smp 1 -S -display none -monitor none -serial none -nic none",
+    "exit": 124,
+    "meaning": "Expected timeout after successful creation of a paused TCG machine. This is an environment smoke only; no kernel boot claim."
+  },
+  "firmware_hashes_file": "firmware.sha256",
+  "project_repository_files_modified_scope": "Historical state at investigation completion; later evidence packaging writes only support/build/evidence/2026-10-16/host/.",
+  "manifest_storage": {
+    "file": "channel-rust-nightly.toml.gz",
+    "format": "gzip",
+    "mtime": 0,
+    "embedded_filename": null,
+    "uncompressed_bytes": 929653,
+    "uncompressed_sha256": "c0b09f4e128768b2d6eab27050625a1ce974f8b39c07871370368cd82fbf8617",
+    "official_checksum_file": "channel-rust-nightly.toml.sha256"
+  },
+  "native_environment_deviation": {
+    "host": "Ubuntu 24.04 native package tools",
+    "qemu": "8.2.2; upstream Nix development package declares 10.2.1",
+    "grub": "Ubuntu 2.12; upstream development environment uses Asterinas fork 0633bc8c08fd61b64cc19bb7ebafc871e8c4172b",
+    "docker_used": false,
+    "nix_used": false,
+    "nixos_installation_iso_used": false,
+    "userspace": "small initramfs with static BusyBox"
+  }
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "case": "accepted",
+    "python_optimization": true,
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)"
+  },
+  {
+    "case": "panic",
+    "python_optimization": true,
+    "exit": 1,
+    "output": "guest kernel panic"
+  },
+  {
+    "case": "wrong_exit",
+    "python_optimization": true,
+    "exit": 1,
+    "output": "QEMU did not exit successfully"
+  },
+  {
+    "case": "missing_markers",
+    "python_optimization": true,
+    "exit": 1,
+    "output": "missing guest marker: OSTD initialized. Preparing components."
+  },
+  {
+    "case": "optimized_pristine_rejects_derivative",
+    "exit": 1
+  }
+]

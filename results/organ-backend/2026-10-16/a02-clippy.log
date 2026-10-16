@@ -1,0 +1,21 @@
+    Checking trillionnium-os-abi v0.1.0 (/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/review-a02/libs/os-abi)
+error: this `if` can be collapsed into the outer `match`
+   --> src/lib.rs:125:13
+    |
+125 | /             if !nonzero(&payload[..16]) || !nonzero(&payload[16..32]) ||
+126 | |                 le64(payload, 32) == 0 { return Err(Error::Identifier); }
+    | |_________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#collapsible_match
+    = note: `-D clippy::collapsible-match` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_match)]`
+help: collapse nested if block
+    |
+124 ~         Opcode::QueryDelivery | Opcode::RetireThrough
+125 ~             if (!nonzero(&payload[..16]) || !nonzero(&payload[16..32]) ||
+126 ~                 le64(payload, 32) == 0) => { return Err(Error::Identifier); }
+    |
+
+error: could not compile `trillionnium-os-abi` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `trillionnium-os-abi` (lib test) due to 1 previous error

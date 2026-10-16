@@ -1,0 +1,337 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "phase": "download gdb first attempt",
+      "cwd": "/workspace/scratch/ae1a8cf05419/gdb-download",
+      "argv": [
+        "apt-get",
+        "-o",
+        "APT::Sandbox::User=root",
+        "download",
+        "gdb"
+      ],
+      "exit": 0,
+      "log": "apt-download-gdb.log",
+      "postcheck": "The later observed file was truncated; it was rejected. See initial-truncated-package.json."
+    },
+    {
+      "phase": "download complete gdb dependencies",
+      "cwd": "/workspace/scratch/ae1a8cf05419/gdb-download",
+      "argv": [
+        "apt-get",
+        "-o",
+        "APT::Sandbox::User=root",
+        "download",
+        "gdb",
+        "libbabeltrace1",
+        "libdebuginfod1t64",
+        "libipt2",
+        "libpython3.12t64",
+        "libsource-highlight4t64",
+        "libboost-regex1.83.0",
+        "libdw1t64"
+      ],
+      "exit": 0,
+      "log": "apt-download-gdb-dependencies.log"
+    },
+    {
+      "phase": "first incomplete destination gdb availability",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/dependency-root/usr/bin/gdb",
+        "--version"
+      ],
+      "env": {
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/dependency-root/usr/lib/x86_64-linux-gnu"
+      },
+      "exit": 139,
+      "log": "gdb-version.log",
+      "meaning": "SIGSEGV; incomplete executable rejected and never used for tests."
+    },
+    {
+      "phase": "fresh verified extraction",
+      "commands": [
+        [
+          "dpkg-deb",
+          "-x",
+          "/workspace/scratch/ae1a8cf05419/gdb-download/gdb_15.1-1ubuntu1~24.04.1_amd64.deb",
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root"
+        ],
+        [
+          "dpkg-deb",
+          "-x",
+          "/workspace/scratch/ae1a8cf05419/gdb-download/libbabeltrace1_1.5.11-3build3_amd64.deb",
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root"
+        ],
+        [
+          "dpkg-deb",
+          "-x",
+          "/workspace/scratch/ae1a8cf05419/gdb-download/libboost-regex1.83.0_1.83.0-2.1ubuntu3.2_amd64.deb",
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root"
+        ],
+        [
+          "dpkg-deb",
+          "-x",
+          "/workspace/scratch/ae1a8cf05419/gdb-download/libdebuginfod1t64_0.190-1.1ubuntu0.1_amd64.deb",
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root"
+        ],
+        [
+          "dpkg-deb",
+          "-x",
+          "/workspace/scratch/ae1a8cf05419/gdb-download/libdw1t64_0.190-1.1ubuntu0.1_amd64.deb",
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root"
+        ],
+        [
+          "dpkg-deb",
+          "-x",
+          "/workspace/scratch/ae1a8cf05419/gdb-download/libipt2_2.0.6-1build1_amd64.deb",
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root"
+        ],
+        [
+          "dpkg-deb",
+          "-x",
+          "/workspace/scratch/ae1a8cf05419/gdb-download/libpython3.12t64_3.12.3-1ubuntu0.16_amd64.deb",
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root"
+        ],
+        [
+          "dpkg-deb",
+          "-x",
+          "/workspace/scratch/ae1a8cf05419/gdb-download/libsource-highlight4t64_3.1.9-4.3build1_amd64.deb",
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root"
+        ]
+      ],
+      "exits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "log": "gdb-fresh-extract-all.log",
+      "checks": "Each package SHA256/size matches apt metadata. Every extracted regular file matches archive content SHA256, size and mode."
+    },
+    {
+      "phase": "working gdb availability",
+      "env": {
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+        "--version"
+      ],
+      "exit": 0,
+      "log": "gdb-fresh-version.log",
+      "limit": "Availability only; ptrace/remote debugging not tested."
+    },
+    {
+      "phase": "locked compile of original unit and integration binaries",
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/osdk-regression-target",
+        "CARGO_BUILD_JOBS": "2",
+        "OSDK_LOCAL_DEV": "1",
+        "PATH_prefix": [
+          "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin"
+        ],
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "argv": [
+        "cargo",
+        "+nightly-2026-07-21",
+        "test",
+        "--locked",
+        "--no-run",
+        "--bin",
+        "cargo-osdk",
+        "--test",
+        "integration"
+      ],
+      "exit": 0,
+      "log": "osdk-tests-compile.log"
+    },
+    {
+      "phase": "complete original 14-unit suite without skips",
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/osdk-regression-target",
+        "CARGO_BUILD_JOBS": "2",
+        "OSDK_LOCAL_DEV": "1",
+        "PATH_prefix": [
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin",
+          "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin"
+        ],
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "argv": [
+        "cargo",
+        "+nightly-2026-07-21",
+        "test",
+        "--locked",
+        "--bin",
+        "cargo-osdk",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit": 101,
+      "log": "osdk-unit-all14.log",
+      "result": {
+        "passed": 13,
+        "failed": 1,
+        "ignored": 0,
+        "filtered": 0
+      }
+    },
+    {
+      "phase": "non-VM integration cli",
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/osdk-regression-target",
+        "CARGO_BUILD_JOBS": "2",
+        "OSDK_LOCAL_DEV": "1",
+        "PATH_prefix": [
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin",
+          "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin"
+        ],
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/integration-ceab0ece0f1d6b12",
+        "cli::",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "log": "osdk-integration-cli.log"
+    },
+    {
+      "phase": "non-VM integration workspace-create",
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/osdk-regression-target",
+        "CARGO_BUILD_JOBS": "2",
+        "OSDK_LOCAL_DEV": "1",
+        "PATH_prefix": [
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin",
+          "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin"
+        ],
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/integration-ceab0ece0f1d6b12",
+        "commands::new::",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "log": "osdk-integration-workspace-create.log"
+    },
+    {
+      "phase": "non-VM integration book-create",
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/osdk-regression-target",
+        "CARGO_BUILD_JOBS": "2",
+        "OSDK_LOCAL_DEV": "1",
+        "PATH_prefix": [
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin",
+          "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin"
+        ],
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/integration-ceab0ece0f1d6b12",
+        "examples_in_book::create_os_projects::",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "log": "osdk-integration-book-create.log"
+    },
+    {
+      "phase": "focused diagnostic 1",
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/cargo_osdk-87e58130b1b091d4",
+        "daemon::supervisor::tests::stop_all_terminates_daemon_descendants",
+        "--exact",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit": 0,
+      "log": "daemon-focused-1.log",
+      "observations": "daemon-focused-1.json",
+      "note": "Does not replace original full-suite failure; numerical /proc predicate is namespace-invalid."
+    },
+    {
+      "phase": "focused diagnostic 2",
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/cargo_osdk-87e58130b1b091d4",
+        "daemon::supervisor::tests::stop_all_terminates_daemon_descendants",
+        "--exact",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit": 0,
+      "log": "daemon-focused-2.log",
+      "observations": "daemon-focused-2.json",
+      "note": "Does not replace original full-suite failure; numerical /proc predicate is namespace-invalid."
+    },
+    {
+      "phase": "focused diagnostic 3",
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/cargo_osdk-87e58130b1b091d4",
+        "daemon::supervisor::tests::stop_all_terminates_daemon_descendants",
+        "--exact",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit": 0,
+      "log": "daemon-focused-3.log",
+      "observations": "daemon-focused-3.json",
+      "note": "Does not replace original full-suite failure; numerical /proc predicate is namespace-invalid."
+    },
+    {
+      "phase": "single isolated proc-alignment attempt",
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+      "env": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/osdk-regression-target",
+        "CARGO_BUILD_JOBS": "2",
+        "OSDK_LOCAL_DEV": "1",
+        "PATH_prefix": [
+          "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin",
+          "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin"
+        ],
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "argv": [
+        "unshare",
+        "--user",
+        "--map-root-user",
+        "--pid",
+        "--fork",
+        "--mount-proc",
+        "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/cargo_osdk-87e58130b1b091d4",
+        "--test-threads=1"
+      ],
+      "exit": 1,
+      "log": "osdk-unit-aligned-proc-attempt.log",
+      "failure": "write failed /proc/self/uid_map: Operation not permitted",
+      "unit_harness_started": false,
+      "retried_or_bypassed": false
+    }
+  ]
+}
