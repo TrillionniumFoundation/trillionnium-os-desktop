@@ -1,0 +1,365 @@
+#!/usr/bin/env python3
+"""Run the real upstream OSDK integration harness with a native TCG profile."""
+import argparse
+from datetime import datetime, timezone
+import difflib
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+import tomllib
+
+TOOLCHAIN = "nightly-2026-07-21"
+FIXED_PATHS = {
+    "commands::new::create_kernel_in_workspace": ["/tmp/kernel_workspace"],
+    "commands::new::create_lib_in_workspace": ["/tmp/lib_workspace"],
+    "commands::new::create_two_crates_in_workspace": ["/tmp/my_workspace"],
+    "commands::run::coverage_feature::basic_coverage": ["/tmp/kernel_test_workspace/run_command"],
+    "commands::run::qemu_gdb_feature::basic_debug": ["/tmp/kernel_test_workspace/run_command"],
+    "commands::run::qemu_gdb_feature::vsc::vsc_launch_file": ["/tmp/kernel_test_workspace/run_command"],
+    "examples_in_book::create_os_projects::create_a_kernel_project": ["/tmp/my_foo_os"],
+    "examples_in_book::create_os_projects::create_a_library_project": ["/tmp/my_foo_module"],
+    "examples_in_book::test_and_run_projects::create_and_run_kernel": ["/tmp/myos"],
+    "examples_in_book::test_and_run_projects::create_and_test_library": ["/tmp/mylib"],
+    "examples_in_book::work_in_workspace::work_in_workspace": ["/tmp/myworkspace"],
+    "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines": ["/tmp/kernel_in_100_lines"],
+}
+VM_CASES = {
+    "commands::run::basic::new_kernel_and_run": 1,
+    "commands::run::coverage_feature::basic_coverage": 1,
+    "commands::run::qemu_gdb_feature::basic_debug": 1,
+    "commands::run::qemu_gdb_feature::vsc::vsc_launch_file": 1,
+    "examples_in_book::test_and_run_projects::create_and_run_kernel": 1,
+    "examples_in_book::test_and_run_projects::create_and_test_library": 1,
+    "examples_in_book::work_in_workspace::work_in_workspace": 3,
+    "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines": 1,
+    "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines": 1,
+}
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def external(data):
+    return {(p["name"], p["version"], p["source"], p.get("checksum", ""))
+            for p in tomllib.loads(data.decode())["package"] if p.get("source")}
+
+
+def prepare_harness(upstream, output, cargo, env):
+    """Adapt only scratch paths and the local-OSTD anchor, retaining assertions."""
+    root = output / "harness"
+    root.mkdir()
+    tests = root / "tests"
+    shutil.copytree(upstream / "osdk/tests", tests)
+    # Preserve the helper's original relative include_str! without rewriting it.
+    shutil.copyfile(upstream / "rust-toolchain.toml", output / "rust-toolchain.toml")
+    # Upstream GDB/monitor UNIX sockets must fit Linux's 108-byte sun_path.
+    # This root is atomically created and owned by this run; existing /tmp
+    # examples are never touched.
+    fixed = Path(tempfile.mkdtemp(prefix="a01oi-", dir="/tmp"))
+    identity = fixed.stat()
+    (output / "fixed-root.json").write_text(json.dumps({"path": str(fixed),
+        "device": identity.st_dev, "inode": identity.st_ino}, indent=2) + "\n")
+    changes = []
+    for path in sorted(tests.rglob("*.rs")):
+        original = path.read_text()
+        adapted = original.replace('"/tmp', '"' + str(fixed))
+        if path == tests / "util/mod.rs":
+            if original.count('env!("CARGO_MANIFEST_DIR")') != 1:
+                raise SystemExit("OSDK integration helper manifest anchor changed")
+            adapted = adapted.replace('env!("CARGO_MANIFEST_DIR")', json.dumps(str(upstream / "osdk")))
+        if path == tests / "examples_in_book/write_a_kernel_in_100_lines.rs":
+            original_dependency = 'toml::Value::String("0.1.0".to_string())'
+            if adapted.count(original_dependency) != 1:
+                raise SystemExit("kernel100 align_ext dependency expression changed")
+            local = upstream / "ostd/libs/align_ext"
+            if tomllib.loads((local / "Cargo.toml").read_text())["package"]["version"] != "0.1.0":
+                raise SystemExit("fixed local align_ext version changed")
+            local_dependency = ('toml::Value::Table(toml::Table::from_iter(['
+                '("path".to_string(), toml::Value::String(' + json.dumps(str(local)) + '.to_string())),'
+                '("version".to_string(), toml::Value::String("0.1.0".to_string()))]))')
+            adapted = adapted.replace(original_dependency, local_dependency)
+        if adapted != original:
+            path.write_text(adapted)
+            relative = str(path.relative_to(root))
+            changes.extend(difflib.unified_diff(original.splitlines(True), adapted.splitlines(True),
+                                              fromfile="original/" + relative, tofile="adapted/" + relative))
+    (output / "harness-adaptation.patch").write_text("".join(changes))
+    manifest = ('[workspace]\n\n[package]\nname = "a01-osdk-integration"\nversion = "0.0.0"\n'
+                'edition = "2024"\n\n[dev-dependencies]\nassert_cmd = "2.0.13"\n'
+                'tempfile = "3.14.0"\ntoml = { version = "0.8.8", features = ["preserve_order"] }\n'
+                'serde_json = "1.0.111"\nshlex = "1.3.0"\n')
+    (root / "Cargo.toml").write_text(manifest)
+    seed = (upstream / "osdk/Cargo.lock").read_bytes()
+    if hashlib.sha256(seed).hexdigest() != "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3":
+        raise SystemExit("fixed upstream OSDK harness seed lock differs")
+    (root / "Cargo.lock").write_bytes(seed)
+    normalize = [str(cargo), "metadata", "--offline", "--format-version=1",
+                 "--filter-platform=x86_64-unknown-linux-gnu"]
+    record = command(normalize, root, env, output / "harness-lock-normalize.log", 120)
+    if record["raw_exit_code"]:
+        raise SystemExit("isolated harness offline lock normalization failed")
+    normalized = (root / "Cargo.lock").read_bytes()
+    drift = sorted(external(normalized) - external(seed))
+    (output / "harness-lock.json").write_text(json.dumps({
+        "seed_sha256": hashlib.sha256(seed).hexdigest(),
+        "normalized_sha256": hashlib.sha256(normalized).hexdigest(),
+        "external_drift": drift, "command": record}, indent=2) + "\n")
+    if drift:
+        raise SystemExit(f"isolated harness lock drift: {drift}")
+    return root, fixed
+
+
+def command(command, cwd, env, output, timeout):
+    record = {"argv": command, "cwd": str(cwd), "raw_exit_code": None, "timed_out": False}
+    output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
+    started = time.monotonic()
+    with output.open("wb") as log:
+        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT,
+                                   start_new_session=True)
+        try:
+            status = process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            record["timed_out"] = True
+            # Keep the session leader unreaped until both signals have been
+            # sent. Its PID cannot be recycled into an unrelated process group.
+            for requested_signal in (signal.SIGTERM, signal.SIGKILL):
+                try:
+                    os.killpg(process.pid, requested_signal)
+                except ProcessLookupError:
+                    pass
+            record["timeout_cleanup"] = "SIGTERM and SIGKILL own process group before leader reap"
+            process.wait()
+            status = 124
+    record["raw_exit_code"] = status
+    record["duration_seconds"] = round(time.monotonic() - started, 3)
+    output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
+    return record
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path, required=True, help="must not already exist")
+    parser.add_argument("--case", action="append", help="exact upstream test name; default all 22")
+    parser.add_argument("--case-timeout", type=int, default=900)
+    parser.add_argument("--target-dir", type=Path,
+                        help="reuse this runner's previous independent Cargo target cache")
+    args = parser.parse_args()
+    if args.case_timeout < 1:
+        raise SystemExit("--case-timeout must be positive")
+    here = Path(__file__).resolve().parent
+    project = here.parents[2]
+    upstream = project / "kernel/asterinas"
+    output = args.output.resolve()
+    output.mkdir(parents=True, exist_ok=False)
+    lock = (project / "support/build/out-osdk-integration.lock").open("a")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        raise SystemExit("another integration runner is active")
+    env = os.environ.copy()
+    env["RUSTUP_TOOLCHAIN"] = TOOLCHAIN
+    env["RUSTUP_AUTO_INSTALL"] = "0"
+    cargo_home = Path(env.get("CARGO_HOME", str(Path.home() / ".cargo")))
+    rustup_home = Path(env.get("RUSTUP_HOME", str(Path.home() / ".rustup")))
+    tool_bin = rustup_home / "toolchains" / (TOOLCHAIN + "-x86_64-unknown-linux-gnu") / "bin"
+    real_cargo = tool_bin / "cargo"
+    env["RUSTC"], env["RUSTDOC"] = str(tool_bin / "rustc"), str(tool_bin / "rustdoc")
+    compiler = subprocess.check_output([env["RUSTC"], "-Vv"], env=env, text=True)
+    if "commit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48" not in compiler:
+        raise SystemExit("actual compiler does not match the fixed nightly-2026-07-21")
+    env["PATH"] = str(cargo_home / "bin") + os.pathsep + env.get("PATH", "")
+    env["CARGO_BUILD_JOBS"] = env.get("CARGO_BUILD_JOBS", "2")
+    target_dir = args.target_dir.resolve() if args.target_dir else output / "target"
+    if args.target_dir and (not target_dir.is_relative_to(project / "support/build/out")
+                            or not (target_dir.parent / "harness-adaptation.patch").is_file()
+                            or not (target_dir.parent / "harness-lock.json").is_file()):
+        raise SystemExit("--target-dir must be a prior isolated integration runner cache")
+    env["CARGO_TARGET_DIR"] = str(target_dir)
+    env["OSDK_LOCAL_DEV"] = "1"
+    env.pop("INTEL_TDX", None)
+    env.pop("OSDK_CARGO_LOCK", None)
+    commands = []
+    with lock:
+        harness_root, fixed_root = prepare_harness(upstream, output, real_cargo, env)
+        production = [str(real_cargo), "build", "--locked", "--bin", "cargo-osdk"]
+        commands.append(command(production, upstream / "osdk", env, output / "osdk-build.log", 600))
+        if commands[-1]["raw_exit_code"]:
+            raise SystemExit(f"original OSDK source build failed; see {output}")
+        build = [str(real_cargo), "test", "--locked", "--test", "integration", "--no-run",
+                 "--message-format=json"]
+        commands.append(command(build, harness_root, env, output / "harness-build.log", 600))
+        if commands[-1]["raw_exit_code"]:
+            raise SystemExit(f"integration harness build failed; see {output}")
+        artifacts = []
+        for line in (output / "harness-build.log").read_text().splitlines():
+            try:
+                value = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if value.get("reason") == "compiler-artifact" and value.get("executable") \
+                    and value.get("target", {}).get("name") == "integration":
+                artifacts.append(Path(value["executable"]))
+        if len(artifacts) != 1:
+            raise SystemExit("could not identify a unique real integration harness")
+        harness = artifacts[0]
+        osdk = target_dir / "debug/cargo-osdk"
+        if not harness.is_file() or not osdk.is_file():
+            raise SystemExit("integration harness or real source-built cargo-osdk is missing")
+        listed = subprocess.check_output([str(harness), "--list"], text=True, env=env)
+        (output / "upstream-test-list.txt").write_text(listed)
+        available = [line.removesuffix(": test") for line in listed.splitlines() if line.endswith(": test")]
+        if len(available) != 22:
+            raise SystemExit(f"upstream integration case count changed: {len(available)}")
+        first = ["commands::run::qemu_gdb_feature::basic_debug",
+                 "commands::run::qemu_gdb_feature::vsc::vsc_launch_file"]
+        selected = args.case or first + [case for case in available if case not in first]
+        if len(set(selected)) != len(selected) or set(selected) - set(available):
+            raise SystemExit("--case must select distinct exact upstream test names")
+        shim_bin = output / "bin"
+        shim_bin.mkdir()
+        (shim_bin / "cargo").symlink_to(here / "cargo.py")
+        env["PATH"] = str(shim_bin) + os.pathsep + env["PATH"]
+        env["A01_REAL_CARGO"] = str(real_cargo)
+        env["A01_REAL_OSDK"] = str(osdk)
+        env["CARGO_BIN_EXE_cargo-osdk"] = str(here / "osdk.py")
+        env["OSDK_CARGO_LOCK"] = str(upstream / "Cargo.lock")
+        env["A01_OSDK_GUEST_TIMEOUT"] = str(min(args.case_timeout, 300))
+        environment = {"schema": 1, "started_utc": datetime.now(timezone.utc).isoformat(),
+                       "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=project, text=True).strip(),
+                       "git_status": subprocess.check_output(["git", "status", "--short"], cwd=project, text=True),
+                       "rustc": subprocess.check_output([str(tool_bin / "rustc"), "-Vv"], env=env, text=True),
+                       "cargo": subprocess.check_output([str(real_cargo), "-Vv"], env=env, text=True),
+                       "cargo_path": str(real_cargo), "cargo_sha256": digest(real_cargo),
+                       "rustc_path": str(tool_bin / "rustc"), "rustc_sha256": digest(tool_bin / "rustc"),
+                       "rustup_auto_install": "0", "isolated_fixed_root": str(fixed_root),
+                       "harness_path": str(harness), "harness_sha256": digest(harness),
+                       "osdk_path": str(osdk), "osdk_sha256": digest(osdk),
+                       "seed_lock_sha256": digest(upstream / "Cargo.lock"),
+                       "runner_inputs_sha256": {str(p.relative_to(project)): digest(p)
+                           for p in sorted(here.rglob("*")) if p.is_file() and "__pycache__" not in p.parts},
+                       "test_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
+                           for p in sorted((upstream / "osdk/tests").rglob("*")) if p.is_file()},
+                       "adapted_test_inputs_sha256": {str(p.relative_to(harness_root)): digest(p)
+                           for p in sorted((harness_root / "tests").rglob("*")) if p.is_file()},
+                       "source_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
+                           for p in sorted((upstream / "osdk/src").rglob("*")) if p.is_file()},
+                       "local_align_ext_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
+                           for p in sorted((upstream / "ostd/libs/align_ext").rglob("*")) if p.is_file()},
+                       "profile": "isolated upstream harness paths, native direct multiboot, q35 TCG max 1 vCPU 512 MiB",
+                       "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance"}
+        (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
+        results = []
+        for index, case in enumerate(selected, 1):
+            directory = output / f"case-{index:02d}"
+            directory.mkdir()
+            fixed = [Path(str(fixed_root) + value.removeprefix("/tmp"))
+                     for value in FIXED_PATHS.get(case, [])]
+            occupied = [str(path) for path in fixed if os.path.lexists(path)]
+            report = {"name": case, "fixed_paths": [str(p) for p in fixed],
+                      "preexisting_paths": occupied, "status": "blocked" if occupied else "running"}
+            (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+            if occupied:
+                results.append(report)
+                print(f"BLOCKED {case}: preexisting {occupied}", flush=True)
+                continue
+            work = directory / "work"
+            work.mkdir()
+            temp = fixed_root / f"case-{index:02d}-tmp"
+            temp.mkdir()
+            case_env = env.copy()
+            case_env["TMPDIR"] = str(temp)
+            case_env["A01_OSDK_CASE_OUTPUT"] = str(directory)
+            case_env["A01_OSDK_ALLOWED_ROOTS"] = json.dumps([str(output), str(target_dir), str(fixed_root),
+                                                           *[str(p) for p in fixed]])
+            print(f"RUN {case}", flush=True)
+            invoked = command([str(harness), "--exact", case, "--nocapture", "--test-threads=1"],
+                              work, case_env, directory / "harness.log", args.case_timeout)
+            report.update(invoked)
+            text = (directory / "harness.log").read_text(errors="replace")
+            report["status"] = "passed" if invoked["raw_exit_code"] == 0 \
+                and "1 passed; 0 failed;" in text else "failed"
+            report["soft_skips"] = []
+            report["host_blockers"] = []
+            guest_reports = []
+            for path in sorted((directory / "guests").glob("guest-*/qemu.json")):
+                guest = json.loads(path.read_text())
+                serial = path.with_name("serial.log")
+                content = serial.read_text(errors="replace") if serial.exists() else ""
+                stderr = path.with_name("qemu-stderr.log")
+                error_text = stderr.read_text(errors="replace") if stderr.is_file() else ""
+                if "Operation not permitted" in error_text and "socket" in error_text:
+                    report["host_blockers"].append("host denies Unix socket creation (EPERM)")
+                serial_valid = serial.is_file() and serial.stat().st_size > 0 \
+                    and len(guest.get("serial_logs", [])) == 1 \
+                    and guest["serial_logs"][0]["sha256"] == digest(serial)
+                if "Error: VMX is not supported by the VM" in content:
+                    report["soft_skips"].append("VMX unavailable; hypervisor example accepted upstream fallback")
+                guest_reports.append({"record": str(path.relative_to(output)),
+                                      "raw_exit_code": guest["raw_exit_code"],
+                                      "timed_out": guest["timed_out"],
+                                      "wrapper_exit_code": guest.get("wrapper_exit_code"),
+                                      "error": guest.get("error"), "serial_valid": serial_valid})
+            report["guests"] = guest_reports
+            allowed_exit = (0, 33) if case == "commands::run::coverage_feature::basic_coverage" else (33,)
+            if len(guest_reports) != VM_CASES.get(case, 0) or any(
+                    guest["timed_out"] or guest["error"] or not guest["serial_valid"]
+                    or guest["raw_exit_code"] not in allowed_exit
+                    or guest["wrapper_exit_code"] != guest["raw_exit_code"] for guest in guest_reports):
+                report["status"] = "failed"
+            coverage = directory / "coverage/result.json"
+            if coverage.exists():
+                report["coverage"] = json.loads(coverage.read_text())
+                if not report["coverage"]["passed"]:
+                    report["status"] = "failed"
+            elif case == "commands::run::coverage_feature::basic_coverage":
+                report["status"] = "failed"
+                report["coverage"] = {"passed": False, "error": "no validated coverage artifact"}
+            report["cleanup"] = []
+            # Only paths absent before this exact case are eligible; never touch preexisting paths.
+            for path in fixed:
+                if not os.path.lexists(path):
+                    continue
+                stat = path.lstat()
+                if path.is_symlink() or not path.is_dir():
+                    report["cleanup"].append({"path": str(path), "removed": False,
+                                              "reason": "unexpected type; preserved"})
+                    report["status"] = "failed"
+                    continue
+                shutil.rmtree(path)
+                report["cleanup"].append({"path": str(path), "removed": True,
+                                          "device": stat.st_dev, "inode": stat.st_ino})
+            (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+            results.append(report)
+            print(f"{report['status'].upper()} {case} ({invoked['duration_seconds']}s)", flush=True)
+            (output / "result.json").write_text(json.dumps({"schema": 1, "cases": results}, indent=2) + "\n")
+        summary = {"schema": 1, "profile": environment["profile"], "scope": environment["scope"],
+                   "available_cases": len(available), "selected_cases": len(selected),
+                   "passed": sum(r["status"] == "passed" for r in results),
+                   "failed": sum(r["status"] == "failed" for r in results),
+                   "blocked": sum(r["status"] == "blocked" for r in results),
+                   "soft_skip_count": sum(len(r.get("soft_skips", [])) for r in results),
+                   "host_blocked_cases": sum(bool(r.get("host_blockers")) for r in results),
+                   "cases": results, "build_commands": commands}
+        (output / "result.json").write_text(json.dumps(summary, indent=2) + "\n")
+        ownership = json.loads((output / "fixed-root.json").read_text())
+        if fixed_root.is_dir() and not fixed_root.is_symlink():
+            identity = fixed_root.stat()
+            if (identity.st_dev, identity.st_ino) == (ownership["device"], ownership["inode"]):
+                shutil.rmtree(fixed_root)
+                ownership["removed_after_run"] = True
+                (output / "fixed-root.json").write_text(json.dumps(ownership, indent=2) + "\n")
+        print(json.dumps({key: summary[key] for key in ("passed", "failed", "blocked", "soft_skip_count")}))
+        return int(summary["failed"] != 0 or summary["blocked"] != 0)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
