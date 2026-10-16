@@ -175,7 +175,7 @@ fn encoders_report_insufficient_output_capacity() {
     let error_response = Response {
         opcode: Opcode::InstallBudget,
         status: Status::Conflict,
-        request_id: [1; 16],
+        request_id: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         boot_id: [2; 16],
         revision: 0,
         payload: ResponsePayload::Empty,
@@ -255,4 +255,115 @@ fn correlation_and_capacity_helpers_are_stable() {
         history_space: [4; 16],
         sequence: u64::MAX,
     };
+}
+
+#[test]
+fn transport_rejects_wrapping_pointer_ranges_without_access_checks() {
+    // A valid user address is a kernel/OS property. The ABI layer only
+    // rejects arithmetic overflow before a copy attempt.
+    let mut raw = [0u8; 32];
+    raw[0..8].copy_from_slice(&(u64::MAX - 63).to_le_bytes());
+    raw[16..20].copy_from_slice(&64u32.to_le_bytes());
+    raw[20..24].copy_from_slice(&88u32.to_le_bytes());
+    assert_err(Transport::decode(&raw), Error::IntegerOverflow);
+
+    raw[0..8].copy_from_slice(&(u64::MAX - 64).to_le_bytes());
+    raw[8..16].copy_from_slice(&(u64::MAX - 87).to_le_bytes());
+    assert_err(Transport::decode(&raw), Error::IntegerOverflow);
+
+    raw[8..16].copy_from_slice(&(u64::MAX - 88).to_le_bytes());
+    assert_eq!(Transport::decode(&raw).unwrap().response_capacity, 88);
+
+    let bad = Transport::new(u64::MAX, 0, 64, 88);
+    let mut output = [0x5a; 32];
+    assert_eq!(bad.encode(&mut output), Err(Error::IntegerOverflow));
+    assert_eq!(output, [0x5a; 32]);
+    assert!(Transport::new(0, 0, 64, 88).encode(&mut output).is_ok());
+}
+
+#[test]
+fn install_response_echo_rejects_unordered_ids_in_success_and_failure() {
+    for original in [install_success(), cas_error()] {
+        let mut high = original.clone();
+        high[32] = 1;
+        assert_err(decode_response(&high), Error::SequenceHighBytesNonZero);
+
+        let mut exhausted = original.clone();
+        exhausted[24..32].fill(0xff);
+        assert_err(decode_response(&exhausted), Error::InvalidSequence);
+
+        let mut zero = original.clone();
+        zero[24..32].fill(0);
+        assert_err(decode_response(&zero), Error::InvalidRequestId);
+
+        let mut parsed = decode_response(&original).unwrap();
+        parsed.request_id[8] = 1;
+        let mut output = [0u8; 128];
+        assert_eq!(
+            encode_response(&parsed, &mut output),
+            Err(Error::SequenceHighBytesNonZero)
+        );
+    }
+}
+
+#[test]
+fn install_previous_revision_must_be_a_valid_existing_revision() {
+    let mut frame = install_success();
+    frame[64..72].fill(0);
+    frame[56..64].copy_from_slice(&1u64.to_le_bytes());
+    assert_err(decode_response(&frame), Error::InvalidField);
+
+    let mut parsed = decode_response(&install_success()).unwrap();
+    parsed.revision = 1;
+    if let ResponsePayload::InstallBudget(ref mut payload) = parsed.payload {
+        payload.previous_revision = 0;
+    } else {
+        panic!("fixed InstallBudget fixture decoded to wrong payload");
+    }
+    let mut output = [0u8; 128];
+    assert_eq!(encode_response(&parsed, &mut output), Err(Error::InvalidField));
+}
+
+#[test]
+fn fixed_golden_budget_mutations_preserve_delivery_id_but_change_canonical_request() {
+    let original_bytes = install_request();
+    let original = decode_request(&original_bytes).unwrap();
+    for (offset, value) in [(64usize, 11u64), (80usize, 39_000_000u64)] {
+        let mut changed = original_bytes.clone();
+        changed[offset..offset + 8].copy_from_slice(&value.to_le_bytes());
+        let mutation = decode_request(&changed).unwrap();
+        assert_eq!(original.request_id, mutation.request_id);
+        assert_eq!(original.target_slot, mutation.target_slot);
+        assert_eq!(original.target_generation, mutation.target_generation);
+        assert_ne!(original.payload, mutation.payload);
+        assert_ne!(original, mutation, "mutation must conflict, not be a retry");
+    }
+}
+
+#[test]
+fn budget_cpu_time_cannot_exceed_elapsed_window_time() {
+    // A lower cap does not erase previously consumed CPU:
+    // the fixture remains > 20ms after lowering.
+    let usage = hex("484f5352020000000200000040000000400000000000000011111111111111111111111111111111333333333333333333333333333333330b0000000000000080d1f00800000000804a5d050000000000e1f50500000000c00e160200000000002d31010000000000e1f505000000004d000000000000000200000000000000");
+    let valid = decode_response(&usage).unwrap();
+    if let ResponsePayload::ReadUsage(snapshot) = valid.payload {
+        assert!(snapshot.window_consumed_ns > snapshot.active_cap_ns);
+        assert_eq!(
+            snapshot.sample_boottime_ns - snapshot.window_start_ns,
+            50_000_000
+        );
+    } else {
+        panic!("golden ReadUsage should decode");
+    }
+    let mut impossible = usage;
+    impossible[88..96].copy_from_slice(&51_000_000u64.to_le_bytes());
+    assert_err(decode_response(&impossible), Error::InvalidField);
+
+    let mut impossible = install_success();
+    impossible[80..88].copy_from_slice(&41_000_000u64.to_le_bytes());
+    assert_err(decode_response(&impossible), Error::InvalidField);
+
+    let mut impossible = query_delivery_terminal();
+    impossible[120..128].copy_from_slice(&41_000_000u64.to_le_bytes());
+    assert_err(decode_response(&impossible), Error::InvalidField);
 }

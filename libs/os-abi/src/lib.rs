@@ -226,6 +226,14 @@ impl Transport {
         {
             return Err(Error::InvalidTransport);
         }
+        // Guard arithmetic only. Canonical user pointers, access rights and
+        // copy faults remain the kernel ioctl handler's responsibility.
+        self.request_addr
+            .checked_add(u64::from(self.request_bytes))
+            .ok_or(Error::IntegerOverflow)?;
+        self.response_addr
+            .checked_add(u64::from(self.response_capacity))
+            .ok_or(Error::IntegerOverflow)?;
         Ok(())
     }
 }
@@ -398,13 +406,7 @@ pub fn decode_request(bytes: &[u8]) -> Result<Request, Error> {
             if payload_len != 32 {
                 return Err(Error::PayloadLengthMismatch);
             }
-            let sequence = get_u64(&request_id, 0);
-            if !all_zero(&request_id[8..]) {
-                return Err(Error::SequenceHighBytesNonZero);
-            }
-            if sequence == 0 || sequence == u64::MAX {
-                return Err(Error::InvalidSequence);
-            }
+            validate_install_sequence_id(&request_id)?;
             let req = InstallBudgetRequest {
                 expected_revision: get_u64(payload, 0),
                 period_ns: get_u64(payload, 8),
@@ -482,6 +484,11 @@ pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
     if is_zero(&boot_id) {
         return Err(Error::InvalidField);
     }
+    // Even a failed InstallBudget echoes its ordered sequence identity.
+    // Validate standalone responses as well as correlated ones.
+    if opcode == Opcode::InstallBudget {
+        validate_install_sequence_id(&request_id)?;
+    }
     let revision = get_u64(bytes, 56);
     if status != Status::Ok {
         if payload_len != 0 || revision != 0 {
@@ -519,7 +526,8 @@ pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
                 return Err(Error::InvalidField);
             }
             let p = parse_install_response(payload)?;
-            if p.previous_revision == u64::MAX
+            if p.previous_revision == 0
+                || p.previous_revision == u64::MAX
                 || p.previous_revision.checked_add(1) != Some(revision)
             {
                 return Err(Error::IntegerOverflow);
@@ -758,6 +766,18 @@ fn check_target(slot: u64, generation: u64) -> Result<(), Error> {
     Ok(())
 }
 
+/// The low half is a little-endian sequence; the high half is zero.
+fn validate_install_sequence_id(id: &[u8; 16]) -> Result<(), Error> {
+    if !all_zero(&id[8..]) {
+        return Err(Error::SequenceHighBytesNonZero);
+    }
+    let sequence = get_u64(id, 0);
+    if sequence == 0 || sequence == u64::MAX {
+        return Err(Error::InvalidSequence);
+    }
+    Ok(())
+}
+
 fn validate_request(request: &Request) -> Result<(), Error> {
     if is_zero(&request.request_id) {
         return Err(Error::InvalidRequestId);
@@ -779,13 +799,7 @@ fn validate_request(request: &Request) -> Result<(), Error> {
         }
         Opcode::InstallBudget => {
             check_target(request.target_slot, request.target_generation)?;
-            let seq = get_u64(&request.request_id, 0);
-            if !all_zero(&request.request_id[8..]) {
-                return Err(Error::SequenceHighBytesNonZero);
-            }
-            if seq == 0 || seq == u64::MAX {
-                return Err(Error::InvalidSequence);
-            }
+            validate_install_sequence_id(&request.request_id)?;
             match request.payload {
                 RequestPayload::InstallBudget(v) => validate_install_request(&v)?,
                 _ => return Err(Error::InvalidField),
@@ -1056,6 +1070,9 @@ fn validate_response(response: &Response) -> Result<(), Error> {
     if is_zero(&response.boot_id) {
         return Err(Error::InvalidField);
     }
+    if response.opcode == Opcode::InstallBudget {
+        validate_install_sequence_id(&response.request_id)?;
+    }
     if response.status != Status::Ok {
         if response.revision != 0 || !matches!(response.payload, ResponsePayload::Empty) {
             return Err(Error::MalformedErrorResponse);
@@ -1077,6 +1094,7 @@ fn validate_response(response: &Response) -> Result<(), Error> {
         }
         (Opcode::InstallBudget, ResponsePayload::InstallBudget(v)) => {
             if response.revision == 0
+                || v.previous_revision == 0
                 || v.previous_revision == u64::MAX
                 || v.previous_revision.checked_add(1) != Some(response.revision)
             {
