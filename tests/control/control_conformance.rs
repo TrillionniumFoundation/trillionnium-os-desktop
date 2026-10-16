@@ -258,6 +258,25 @@ fn same_cap_update_preserves_consumption_and_cap_zero_is_not_pause() {
 }
 
 #[test]
+fn cpu_usage_rolls_to_a_new_fixed_period_without_resetting_cumulative_usage() {
+    let target = root(501, 40);
+    target.charge_cpu(30, 10).unwrap();
+    let first = target.usage(50);
+    assert_eq!(first.window_start_ns, 0);
+    assert_eq!(first.window_consumed_ns, 30);
+    assert_eq!(first.cumulative_cpu_ns, 30);
+
+    let next = target.usage(CPU_PERIOD_NS);
+    assert_eq!(next.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(next.window_consumed_ns, 0);
+    assert_eq!(next.cumulative_cpu_ns, 30);
+    target.charge_cpu(5, CPU_PERIOD_NS + 1).unwrap();
+    let after = target.usage(CPU_PERIOD_NS + 2);
+    assert_eq!(after.window_consumed_ns, 5);
+    assert_eq!(after.cumulative_cpu_ns, 35);
+}
+
+#[test]
 fn parent_domain_caps_child_budget() {
     let parent = root(6, 40);
     let child = with_parent(domain(7), object(7), &parent, 20).unwrap();
@@ -271,6 +290,23 @@ fn parent_domain_caps_child_budget() {
     assert!(child
         .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 40, 2)
         .is_ok());
+}
+
+#[test]
+fn child_cpu_charge_is_counted_once_in_each_ancestor_and_parent_exhaustion_is_atomic() {
+    let parent = root(601, 10);
+    let child = with_parent(domain(602), object(602), &parent, 10).unwrap();
+    child.charge_cpu(7, 1).unwrap();
+    assert_eq!(child.usage(1).window_consumed_ns, 7);
+    assert_eq!(parent.usage(1).window_consumed_ns, 7);
+    assert_eq!(child.usage(1).cumulative_cpu_ns, 7);
+    assert_eq!(parent.usage(1).cumulative_cpu_ns, 7);
+
+    // The parent has only 3ns left in this fixed window.  A rejected child
+    // charge must not increment either domain or leave a half-applied charge.
+    assert_eq!(child.charge_cpu(4, 2), Err(ResourceError::Exhausted));
+    assert_eq!(child.usage(2).window_consumed_ns, 7);
+    assert_eq!(parent.usage(2).window_consumed_ns, 7);
 }
 
 #[test]
