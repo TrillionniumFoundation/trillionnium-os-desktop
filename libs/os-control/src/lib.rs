@@ -882,6 +882,22 @@ impl HistoryAck {
     }
 }
 
+/// Retirement requires this non-forgeable, namespace-bound bootstrap handle.
+/// Only the existing trusted Hepta operation owner receives it from the
+/// privileged initial constructor. This is an in-memory permission object,
+/// NOT a second durable operation ledger or evidence of fsync by itself.
+pub struct OriginalOwnerAuthority {
+    namespace: Arc<NamespaceState>,
+    owner: OwnerId,
+    generation: u64,
+}
+
+impl OriginalOwnerAuthority {
+    pub const fn owner(&self) -> OwnerId {
+        self.owner
+    }
+}
+
 #[derive(Clone)]
 pub struct DeliveryView {
     identity: NamespaceIdentity,
@@ -918,6 +934,40 @@ pub struct RetireReceipt {
 impl ControlCore {
     pub fn new(boot_id: BootId, cap_space_id: CapSpaceId) -> Self {
         Self::with_capacity(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY)
+    }
+
+    /// Construct an owner-capable namespace during privileged boot handoff.
+    /// A later observer of ControlCore/DeliveryView cannot mint this handle
+    /// for the *existing* namespace. The caller must give the handle only to
+    /// the original Hepta operation owner AFTER authenticating that owner.
+    ///
+    /// A receipt digest is a reference to owner-persisted facts; this model
+    /// cannot prove durable storage. A07 must verify it at the existing owner.
+    pub fn with_original_owner(
+        boot_id: BootId,
+        cap_space_id: CapSpaceId,
+        owner: OwnerId,
+    ) -> Result<(Self, OriginalOwnerAuthority), DeliveryError> {
+        Self::with_capacity_for_owner(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY, owner)
+    }
+
+    pub fn with_capacity_for_owner(
+        boot_id: BootId,
+        cap_space_id: CapSpaceId,
+        capacity: usize,
+        owner: OwnerId,
+    ) -> Result<(Self, OriginalOwnerAuthority), DeliveryError> {
+        if !owner.is_nonzero() {
+            return Err(DeliveryError::InvalidIdentity);
+        }
+        let core = Self::with_capacity(boot_id, cap_space_id, capacity);
+        let generation = lock_unpoisoned(&core.namespace.state).generation;
+        let capability = OriginalOwnerAuthority {
+            namespace: Arc::clone(&core.namespace),
+            owner,
+            generation,
+        };
+        Ok((core, capability))
     }
 
     pub fn with_capacity(boot_id: BootId, cap_space_id: CapSpaceId, capacity: usize) -> Self {
@@ -1105,14 +1155,21 @@ impl ControlCore {
         }
     }
 
+    /// Retire a contiguous terminal prefix only with the original owner's
+    /// bootstrap authority. An observer's delivery view and caller-invented
+    /// receipt digest cannot authorize retirement. Only the trusted owner
+    /// adapter may invoke this after verifying its existing durable K record.
     pub fn retire_through(
         &self,
         view: &DeliveryView,
         ack: HistoryAck,
+        owner_authority: &OriginalOwnerAuthority,
     ) -> Result<RetireReceipt, DeliveryError> {
         if view.identity != self.identity()
             || ack.namespace != self.identity()
             || !Arc::ptr_eq(&view.namespace, &self.namespace)
+            || !Arc::ptr_eq(&owner_authority.namespace, &self.namespace)
+            || owner_authority.owner != ack.receipt.owner
             || view
                 .owner
                 .map(|owner| owner != ack.receipt.owner)
@@ -1121,7 +1178,10 @@ impl ControlCore {
             return Err(DeliveryError::PermissionDenied);
         }
         let mut ns = lock_unpoisoned(&self.namespace.state);
-        if ns.history_lost || view.generation != ns.generation {
+        if ns.history_lost
+            || view.generation != ns.generation
+            || owner_authority.generation != ns.generation
+        {
             return Err(DeliveryError::HistoryLost);
         }
         if ack.receipt.receipt_digest == [0; 32]
@@ -1432,7 +1492,8 @@ mod tests {
     #[test]
     fn basic_commit_and_observation() {
         let (boot, space, domain_id, object, publisher, owner) = ids(1);
-        let core = ControlCore::new(boot, space);
+        let (core, owner_authority) =
+            ControlCore::with_original_owner(boot, space, owner).unwrap();
         let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
         let grant = domain.grant(publisher).unwrap();
         let token = core
@@ -1447,7 +1508,7 @@ mod tests {
         let ack =
             HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
                 .unwrap();
-        core.retire_through(&view, ack).unwrap();
+        core.retire_through(&view, ack, &owner_authority).unwrap();
         assert_eq!(
             core.query_delivery(&view, 1).unwrap().state,
             DeliveryState::Retired
