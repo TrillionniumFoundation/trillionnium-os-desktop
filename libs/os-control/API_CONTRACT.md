@@ -193,3 +193,13 @@ claiming false progress. The 3-level rejection and 64-thread sibling quota
 races are in Rust tests. Unlike a real scheduler, this compatibility host
 method places the entire delta in the window of `now_ns`, so A06 still needs
 exact CPU interval slicing at true boundary-crossing runtime settlement.
+
+## Instance-bound D target and ancestor creation fence
+
+Global D replay compares both canonical resource identity fields and the
+original in-memory ResourceDomain instance. An independently created root
+with colliding public identity bytes conflicts rather than retrieving the
+other object's terminal result. The bounded slot holds the instance until
+retirement. Descendant creation checks every ancestor's liveness; a revoked
+grandparent cannot be bypassed through a still-live parent. A05 must still
+guarantee global stable IDs for real kernel resources across distinct roots.

@@ -299,10 +299,15 @@ impl ResourceDomain {
             if initial_cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
             }
-            // A05/A06 must supply globally unique IDs outside this tree.
+            // A revoked ancestor closes descendant creation even when the
+            // immediate parent's alive bit remains true.
             let mut ancestor = Some(parent);
             while let Some(node) = ancestor {
-                if node.id() == id {
+                let ancestor_state = node.snapshot_state();
+                if !ancestor_state.alive {
+                    return Err(ResourceError::Revoked);
+                }
+                if ancestor_state.id == id {
                     return Err(ResourceError::DuplicateDomainId);
                 }
                 ancestor = node.inner.parent.as_ref();
@@ -871,10 +876,12 @@ pub enum PublishOutcome {
     },
 }
 
-#[derive(Debug)]
 struct Slot {
     binding: RequestBinding,
     publisher: PublisherId,
+    // Public stable-ID bytes cannot authenticate an in-memory target.
+    // Retain the original resource instance until contiguous retirement.
+    target_instance: Arc<ResourceDomainInner>,
     state: Mutex<SlotState>,
 }
 
@@ -1168,7 +1175,10 @@ impl ControlCore {
                 // A globally unique D binds the publisher as well as its
                 // canonical payload and stable target. Neither another
                 // publisher nor another target may claim the saved result.
-                if slot.publisher == publisher && slot.binding == request.binding() {
+                if slot.publisher == publisher
+                    && slot.binding == request.binding()
+                    && Arc::ptr_eq(&slot.target_instance, &request.grant.domain.inner)
+                {
                     let observation =
                         observation_from_slot(self.identity(), request.sequence, slot);
                     return match observation.state {
@@ -1197,6 +1207,7 @@ impl ControlCore {
         let slot = Arc::new(Slot {
             binding: request.binding(),
             publisher,
+            target_instance: Arc::clone(&request.grant.domain.inner),
             state: Mutex::new(SlotState::Reserved),
         });
         ns.slots.insert(request.sequence, Arc::clone(&slot));

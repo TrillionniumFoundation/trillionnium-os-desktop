@@ -375,6 +375,50 @@ fn child_commit_admitted_before_ancestor_revoke_is_immutable() {
 }
 
 #[test]
+fn identical_stable_ids_in_different_root_instances_cannot_replay_a_delivery() {
+    let core = ControlCore::new(boot(140_000), space(140_000));
+    let real = root(140_000, 90);
+    // Same public identity bytes, different resource instance.
+    let alias = root(140_000, 90);
+    let who = publisher(140_001);
+    let first = core
+        .reserve(request(1, real.grant(who).unwrap(), 1, 40), who)
+        .unwrap();
+    assert_eq!(
+        core.reserve(request(1, alias.grant(who).unwrap(), 1, 40), who)
+            .err(),
+        Some(DeliveryError::Conflict)
+    );
+    assert!(matches!(
+        core.reserve_or_get(request(1, alias.grant(who).unwrap(), 1, 40), who),
+        Err(DeliveryError::Conflict)
+    ));
+    let terminal = core.commit(&first, who, 1).unwrap();
+    assert_eq!(terminal.status, Some(DeliveryStatus::Ok));
+    assert_eq!(real.revision(), 2);
+    assert_eq!(alias.revision(), 1);
+    match core.reserve_or_get(request(1, real.grant(who).unwrap(), 1, 40), who) {
+        Ok(ReserveAttempt::Existing(observed)) => assert_eq!(observed, terminal),
+        _ => panic!("real instance must retain its immutable result"),
+    }
+}
+
+#[test]
+fn new_grandchild_cannot_enter_a_revoked_root_family() {
+    let grandparent = root(141_000, 90);
+    let parent = with_parent(domain(141_001), object(141_001), &grandparent, 70).unwrap();
+    grandparent.revoke();
+    assert_eq!(
+        with_parent(domain(141_002), object(141_002), &parent, 20).err(),
+        Some(ResourceError::Revoked)
+    );
+    // A failed registration cannot consume the identity forever.
+    grandparent.reactivate_for_host_model().unwrap();
+    let child = with_parent(domain(141_002), object(141_002), &parent, 20).unwrap();
+    assert_eq!(child.budget().cap_ns, 20);
+}
+
+#[test]
 fn parent_domain_caps_child_budget() {
     let parent = root(6, 40);
     let child = with_parent(domain(7), object(7), &parent, 20).unwrap();
