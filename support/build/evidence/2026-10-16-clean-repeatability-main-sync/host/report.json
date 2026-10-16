@@ -1,0 +1,95 @@
+{
+  "source_commit": "063d7a92de77761c2358eb6faf0abb470aba49de",
+  "tree": "9ec717f096f099a3aa730db8c5f91c82c52419a7",
+  "ordered_parents": [
+    "7122c9cde0b299ea1e01eb028effaf0e2ad92aa3",
+    "fb135f845dcbf9026010ebbe060c004fda7f8688"
+  ],
+  "passed": true,
+  "format_check_exit": 0,
+  "actual_rust_abi_passed": 25,
+  "actual_rust_abi_failed": 0,
+  "actual_rust_abi_ignored": 0,
+  "actual_rust_abi_filtered": 0,
+  "test_exit": 0,
+  "target_absent_before_test": true,
+  "source_input_mutations": [],
+  "seed_lock_unchanged": true,
+  "seed_lock_sha256": "95c2616d9e61cbbb848888797f71d434d59744612fbaad5fa558754488cbffbd",
+  "newline_only_changes": [
+    {
+      "path": "libs/os-abi/tests/golden_vectors.rs",
+      "before_sha256": "b8cd72aaf1bd2f398c7d05b67150207636261cf6794c6ad4ddf3f06ed20c9f90",
+      "after_sha256": "5654cb20620c2e3c0c17706e4523305d27a832bcfe605b9a033cb85b858beeea",
+      "change": "exactly one terminal LF added"
+    },
+    {
+      "path": "libs/os-abi/tests/mutation_kill.rs",
+      "before_sha256": "052f01c090a40032d470ecfb205cbc0427b0ce6da6b7f81f872ec0d3a5a9ce21",
+      "after_sha256": "10e4a0a2521291602fc548664d9d2baaa0feb4eea15271afe772b9fc27135ece",
+      "change": "exactly one terminal LF added"
+    },
+    {
+      "path": "libs/os-abi/tests/negative_vectors.rs",
+      "before_sha256": "4ba037508591ab490240fbd1ec0f7cde5c1d0f8d68dc03cc569b614ecbea7b24",
+      "after_sha256": "cf5fb4b3d729a3fb40b6034d432b20d33e885ff2e37f9e4b23ef79644fe515e1",
+      "change": "exactly one terminal LF added"
+    }
+  ],
+  "source_inputs": "source-inputs.json",
+  "environment": "environment.json",
+  "commands": [
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/main-delta.command.json"
+    },
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/abi-diff.command.json"
+    },
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/version-cargo.command.json"
+    },
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/which-cargo.command.json"
+    },
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/version-rustc.command.json"
+    },
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/which-rustc.command.json"
+    },
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/version-rustfmt.command.json"
+    },
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/which-rustfmt.command.json"
+    },
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/cargo-fmt.command.json"
+    },
+    {
+      "archive": "raw.tar.gz",
+      "member": "run/cargo-test.command.json"
+    }
+  ],
+  "scope": "Final-main-sync Rust ABI host format/test only; no kernel/VM/UI execution; no live target/manifests or working-tree WIP read. Git operations were read-only archive/object/diff checks.",
+  "posthoc_report_reference_fix": {
+    "archive": "raw.tar.gz",
+    "member": "run/report-reference-fix.json",
+    "note": "Only relative receipt filename references corrected; original report and all execution receipts retained; no retest."
+  },
+  "original_execution_report": {
+    "archive": "raw.tar.gz",
+    "member": "run/report.json"
+  },
+  "published_equivalent_commit": "e89b5e666326b0b9f8bd8355b052bbc988171bbf",
+  "publication_note": "Post-test parent-reported exact-tree publication; root phase source-publication-receipt.json supplies its Git API proof."
+}

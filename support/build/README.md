@@ -19,6 +19,9 @@ tests in each Python mode. Main ABI/control/archive integration contributed
 105 host tests plus 12 separate golden vectors. Complete builds, serial logs,
 ELFs, cache-custody receipts and limits are retained in
 [`evidence/2026-10-16-clean-repeatability/REPORT.md`](evidence/2026-10-16-clean-repeatability/REPORT.md).
+The final main synchronization also passed ABI 25/25 and rustfmt, with no
+runtime source changes; see
+[`final main-sync evidence`](evidence/2026-10-16-clean-repeatability-main-sync/REPORT.md).
 The previous native cancellation and manifest lifecycle evidence remains in
 [`evidence/2026-10-16-ktest-lifecycle/REPORT.md`](evidence/2026-10-16-ktest-lifecycle/REPORT.md).
 
