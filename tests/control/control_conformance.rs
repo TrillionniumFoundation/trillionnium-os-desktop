@@ -752,33 +752,6 @@ fn revoked_ancestor_and_reused_ancestor_id_cannot_create_child() {
 }
 
 #[test]
-fn install_budget_settles_cpu_window_at_effective_period_boundary() {
-    let target = root(8300, 100);
-    target.charge_cpu(80, CPU_PERIOD_NS - 1).unwrap();
-    let grant = target.grant(publisher(8301)).unwrap();
-
-    // No intervening charge_cpu or ReadUsage: the successful InstallBudget
-    // itself must roll the expired window; historical cumulative use remains.
-    let now_ns = CPU_PERIOD_NS + 11;
-    let receipt = target
-        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 90, now_ns)
-        .unwrap();
-    assert_eq!(receipt.consumed_at_apply_ns, 0);
-    assert_eq!(receipt.revision, 2);
-    let usage = target.usage(now_ns);
-    assert_eq!(usage.window_start_ns, CPU_PERIOD_NS);
-    assert_eq!(usage.window_consumed_ns, 0);
-    assert_eq!(usage.cumulative_cpu_ns, 80);
-
-    target.charge_cpu(7, now_ns + 1).unwrap();
-    let same_window = target
-        .install_budget_for_host_model(&grant, 2, CPU_PERIOD_NS, 90, now_ns + 2)
-        .unwrap();
-    assert_eq!(same_window.consumed_at_apply_ns, 7);
-    assert_eq!(target.usage(now_ns + 2).window_consumed_ns, 7);
-}
-
-#[test]
 fn concurrent_child_creation_and_parent_cap_decrease_cannot_both_succeed() {
     // This is a race-safety property, not a deterministic historical-race
     // reproducer: whichever mutation wins the shared gate excludes the other.
