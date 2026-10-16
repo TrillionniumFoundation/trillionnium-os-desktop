@@ -9,7 +9,7 @@
     "toolchain": "nightly-2026-07-21",
     "target": "x86_64-unknown-none",
     "source_imported": true,
-    "build_verified": false,
+    "build_verified": true,
     "source_directory": "kernel/asterinas",
     "source_import_method": "vendored_git_tree",
     "source_files": 2938,
@@ -17,7 +17,16 @@
     "license_file": "kernel/asterinas/LICENSE-MPL",
     "cargo_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
     "osdk_cargo_lock_sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
-    "toolchain_file_sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7"
+    "toolchain_file_sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7",
+    "qemu_boot_verified": true,
+    "build_code_commit": "02febdc7316cf945f7002823ad62f617f6d6eedd",
+    "derived_tree": "68a613e8cb6aa2765400eacb59a45b139cb49687",
+    "generated_cargo_lock": "support/build/minimal/Cargo.lock",
+    "generated_cargo_lock_sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+    "artifact_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+    "boot_profile": "support/build/minimal/OSDK.toml",
+    "verification_evidence": "support/build/evidence/2026-10-16/report.json",
+    "acceptance_guard_commit": "c1f3423d6603c09c1b4fd6d7ceef7bfd25739c3a"
   },
   "hepta": {
     "repository": "TrillionniumFoundation/hepta-private-ci",
@@ -33,8 +42,11 @@
     }
   ],
   "reference_asset_downloaded": false,
-  "rootfs_manifest": null,
+  "rootfs_manifest": "support/build/evidence/2026-10-16/acceptance/boot/initramfs-manifest.json",
   "build_container_digest": null,
-  "boot_firmware_digest": null,
-  "reproducible_kernel_build_ready": false
+  "boot_firmware_digest": "sha256:1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "reproducible_kernel_build_ready": false,
+  "native_build_profile_ready": true,
+  "native_build_environment": "support/build/evidence/2026-10-16/host/environment-investigation.json",
+  "reproducible_kernel_build_note": "Native locked build and QEMU boot passed; cross-host bit reproducibility and a complete configured host/container lock are not established."
 }

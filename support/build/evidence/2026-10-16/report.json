@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "date": "2026-10-16",
+  "agent": "A01",
+  "result": "passed_source_build_and_qemu_boot",
+  "project_base_main": "4b88b637e520f5a8f10d0e280fb9ee450abee8e4",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5",
+  "source_import_commit": "7081fb9b34030af47b7a65d4e62a00fcf147de05",
+  "tested_build_code_commit": "02febdc7316cf945f7002823ad62f617f6d6eedd",
+  "tested_kernel_subtree": "68a613e8cb6aa2765400eacb59a45b139cb49687",
+  "upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "source_directory": "kernel/asterinas",
+  "upstream_modified_paths": [
+    "osdk/src/commands/build/mod.rs"
+  ],
+  "kernel_core_process_ioctl_scheduler_modified": false,
+  "toolchain": "nightly-2026-07-21",
+  "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+  "build_command": "support/build/kernel.sh kernel",
+  "boot_command": "support/build/kernel.sh run_kernel",
+  "upstream_make_targets": [
+    "kernel",
+    "run_kernel"
+  ],
+  "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+  "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "firmware_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "qemu": {
+    "version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+    "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+    "accelerator": "tcg",
+    "machine": "q35",
+    "cpu": "max",
+    "vcpus": 1,
+    "memory_mib": 512,
+    "raw_exit_code": 33,
+    "duration_seconds": 0.969,
+    "timed_out": false,
+    "make_exit_code": 0,
+    "exact_invocation": "acceptance/boot/qemu.json"
+  },
+  "upstream_boot_hello": "passed",
+  "guest_architecture": "x86_64",
+  "guest_cpu_count": 1,
+  "locked_boots": {
+    "passed": 2,
+    "failed": 0
+  },
+  "initial_diagnostic_unlocked_boot": {
+    "failed": 1,
+    "raw_qemu_exit": 65,
+    "evidence": "failure/boot-02/"
+  },
+  "source_import_integrity": {
+    "passed": true,
+    "files": 2938,
+    "git_tree_exact_match": true
+  },
+  "source_build_input_integrity": {
+    "passed": true,
+    "checked_files": 118
+  },
+  "generated_kernel_lock": {
+    "sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+    "packages": 203,
+    "external_drift": 0,
+    "enforced_with": "OSDK_CARGO_LOCK + cargo build --locked"
+  },
+  "osdk_install_locked": true,
+  "osdk_unit_tests": {
+    "passed": 13,
+    "failed": 0,
+    "filtered": 1,
+    "filtered_name": "commands::debug::have_gdb_installed",
+    "reason": "gdb absent"
+  },
+  "osdk_full_tests": {
+    "passed": false,
+    "initial_exit": 12,
+    "missing_dependency": "gdb",
+    "integration_matrix": "interrupted; not accepted as passed"
+  },
+  "lock_negative_tests": {
+    "relative_path_rejected": true,
+    "missing_file_rejected": true
+  },
+  "format_check": "passed",
+  "shell_syntax": "passed",
+  "deterministic_initramfs_and_independent_cpio_reader": "passed",
+  "root_readme_bytes": 0,
+  "limitations": [
+    "Native Ubuntu package setup returned 100 due libibverbs1 rdma group postinst audit restriction; QEMU binary and runtime worked.",
+    "Native QEMU 8.2.2 differs from upstream full development QEMU 10.2.1.",
+    "Script /proc/self/exe compatibility issue is worked around in init, not fixed in core source.",
+    "gdb-dependent test, full OSDK integration/kernel regression/conformance/ktest matrices, KVM, SMP control and physical hardware are not passed.",
+    "HOS2, CapSpace, exec_epoch, ResourceDomain, Hepta, Android and GPU are not implemented or validated by this task.",
+    "Cross-host bit reproducibility is not established."
+  ],
+  "handoff": "../../README.md",
+  "serial_log": "acceptance/boot/serial.log",
+  "retained_kernel_artifact": "artifacts/kernel.elf.gz",
+  "retained_initramfs": "artifacts/initramfs.cpio.gz",
+  "retained_artifact_replay": {
+    "passed": true,
+    "raw_qemu_exit": 33,
+    "evidence": "artifacts/replay-serial.log"
+  },
+  "acceptance_guard_code_commit": "c1f3423d6603c09c1b4fd6d7ceef7bfd25739c3a",
+  "acceptance_guard_optimized_checks": {
+    "passed": 5,
+    "failed": 0
+  }
+}
