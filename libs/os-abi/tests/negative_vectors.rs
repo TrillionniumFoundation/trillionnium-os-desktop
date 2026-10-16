@@ -6,9 +6,9 @@
 
 use hos2_os_abi::{
     declared_response_len, decode_request, decode_response, decode_response_for,
-    decode_response_prefix, decode_response_prefix_for, encode_response, DeliveryRequest, Error,
-    InstallBudgetRequest, Opcode, QueryAbiResponse, Request, RequestPayload, Response,
-    ResponsePayload, Status, Transport, CPU_PERIOD_NS,
+    decode_response_prefix, decode_response_prefix_for, encode_request, encode_response,
+    DeliveryRequest, Error, InstallBudgetRequest, Opcode, QueryAbiResponse, Request,
+    RequestPayload, Response, ResponsePayload, Status, Transport, CPU_PERIOD_NS,
 };
 
 fn hex(input: &str) -> Vec<u8> {
@@ -52,6 +52,138 @@ fn query_delivery_terminal() -> Vec<u8> {
 
 fn assert_err<T: core::fmt::Debug>(result: Result<T, Error>, expected: Error) {
     assert_eq!(result.unwrap_err(), expected);
+}
+
+fn golden_frame(name: &str) -> Vec<u8> {
+    let mut current = "";
+    for line in include_str!("../../../tests/golden/hos2.json").lines() {
+        if let Some((_, value)) = line.split_once("\"name\": \"") {
+            current = value.split_once('"').unwrap().0;
+        }
+        if current == name {
+            if let Some((_, value)) = line.split_once("\"hex\": \"") {
+                return hex(value.split_once('"').unwrap().0);
+            }
+        }
+    }
+    panic!("missing independent golden frame: {name}")
+}
+
+#[test]
+fn self_consistent_install_response_must_match_the_requested_revision() {
+    let bytes = install_success();
+    let response = decode_response(&bytes).unwrap();
+    let mut request = decode_request(&install_request()).unwrap();
+    response.validate_for(&request).unwrap();
+
+    let RequestPayload::InstallBudget(ref mut budget) = request.payload else {
+        panic!("expected installation request")
+    };
+    budget.expected_revision = 9; // Legal request, but the result applied revision 10.
+    let mut encoded = [0; 96];
+    assert_eq!(encode_request(&request, &mut encoded), Ok(96));
+    assert!(response.matches_request(&request));
+    assert_eq!(response.validate_for(&request), Err(Error::InvalidField));
+    assert_eq!(
+        decode_response_for(&bytes, &request),
+        Err(Error::InvalidField)
+    );
+    let mut capacity = bytes;
+    capacity.extend_from_slice(&[0xa5; 32]);
+    assert_eq!(
+        decode_response_prefix_for(&capacity, &request),
+        Err(Error::InvalidField)
+    );
+}
+
+#[test]
+fn self_consistent_retirement_must_cover_the_requested_frontier() {
+    let bytes = golden_frame("retire_through_ok");
+    let response = decode_response(&bytes).unwrap();
+    let mut request = decode_request(&golden_frame("retire_through")).unwrap();
+    response.validate_for(&request).unwrap();
+
+    let RequestPayload::RetireThrough(ref mut history) = request.payload else {
+        panic!("expected retirement request")
+    };
+    history.sequence = 2; // Result retired through 1; next_sequence=2 is valid alone.
+    let mut encoded = [0; 104];
+    assert_eq!(encode_request(&request, &mut encoded), Ok(104));
+    assert!(response.matches_request(&request));
+    assert_eq!(response.validate_for(&request), Err(Error::InvalidField));
+    assert_eq!(
+        decode_response_for(&bytes, &request),
+        Err(Error::InvalidField)
+    );
+    let mut capacity = bytes;
+    capacity.extend_from_slice(&[0xa5; 32]);
+    assert_eq!(
+        decode_response_prefix_for(&capacity, &request),
+        Err(Error::InvalidField)
+    );
+}
+
+#[test]
+fn public_request_payload_mismatches_never_write_output() {
+    let requests = [
+        "query_abi",
+        "read_usage",
+        "install_budget",
+        "query_delivery_with_new_view",
+        "retire_through",
+    ]
+    .map(|name| decode_request(&golden_frame(name)).unwrap());
+    for (index, original) in requests.iter().enumerate() {
+        for (other_index, other) in requests.iter().enumerate() {
+            if index == other_index {
+                continue;
+            }
+            let mut invalid = *original;
+            // A canonical sequence ID is also a valid opaque correlation ID.
+            invalid.request_id = hos2_os_abi::install_budget_request_id(1).unwrap();
+            invalid.payload = other.payload;
+            let mut output = [0xa5; 160];
+            assert_eq!(
+                encode_request(&invalid, &mut output),
+                Err(Error::InvalidField),
+                "{:?} with {:?}",
+                invalid.opcode,
+                invalid.payload
+            );
+            assert_eq!(output, [0xa5; 160]);
+        }
+    }
+}
+
+#[test]
+fn public_response_payload_mismatches_never_write_output() {
+    let responses = [
+        "query_abi_ok",
+        "read_usage_lowered_cap",
+        "install_budget_ok",
+        "query_delivery_terminal",
+        "retire_through_ok",
+    ]
+    .map(|name| decode_response(&golden_frame(name)).unwrap());
+    for (index, original) in responses.iter().enumerate() {
+        for (other_index, other) in responses.iter().enumerate() {
+            if index == other_index {
+                continue;
+            }
+            let mut invalid = *original;
+            invalid.request_id = hos2_os_abi::install_budget_request_id(1).unwrap();
+            invalid.payload = other.payload;
+            let mut output = [0xa5; 160];
+            assert_eq!(
+                encode_response(&invalid, &mut output),
+                Err(Error::InvalidField),
+                "{:?} with {:?}",
+                invalid.opcode,
+                invalid.payload
+            );
+            assert_eq!(output, [0xa5; 160]);
+        }
+    }
 }
 
 #[test]
