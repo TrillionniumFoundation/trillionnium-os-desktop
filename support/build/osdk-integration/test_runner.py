@@ -6,6 +6,7 @@ from pathlib import Path
 import signal
 import sys
 import tempfile
+import time
 import unittest
 
 spec = importlib.util.spec_from_file_location("a01_integration_runner", Path(__file__).with_name("run.py"))
@@ -31,7 +32,17 @@ class TimeoutTests(unittest.TestCase):
             self.assertTrue(ready.exists(), "descendant never acquired the probe lock")
             try:
                 with (root / "held.lock").open("a") as held:
-                    fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    # SIGKILL delivery is asynchronous; leader reap alone does
+                    # not imply its descendant has already released its files.
+                    deadline = time.monotonic() + 2
+                    while True:
+                        try:
+                            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                            break
+                        except BlockingIOError:
+                            if time.monotonic() >= deadline:
+                                raise
+                            time.sleep(.01)
                 self.assertTrue(result["timed_out"])
                 self.assertEqual(result["raw_exit_code"], 124)
             except BaseException:

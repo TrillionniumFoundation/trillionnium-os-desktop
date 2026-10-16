@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the real upstream OSDK integration harness with a native TCG profile."""
 import argparse
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import difflib
 import fcntl
@@ -158,31 +159,179 @@ def prepare_harness(upstream, output, cargo, env, local_tcp=False):
     return root, fixed
 
 
+class RunnerInterrupted(BaseException):
+    def __init__(self, signum):
+        self.signum = signum
+        super().__init__(signal.Signals(signum).name)
+
+
+@contextmanager
+def interruption_handlers():
+    """Unwind owned commands and the runner lock on Ctrl-C or termination."""
+    def interrupted(signum, _frame):
+        raise RunnerInterrupted(signum)
+    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+    try:
+        for number in previous:
+            signal.signal(number, interrupted)
+        yield
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
+
+
+@contextmanager
+def publish_owner():
+    """Publish the Popen owner before a pending shutdown can unwind it."""
+    # Deferring Python handlers preserves the child's signal mask across exec;
+    # blocking with pthread_sigmask around Popen would also block it in the child.
+    pending = []
+    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+    def remember(signum, _frame):
+        pending.append(signum)
+    try:
+        for number in previous:
+            signal.signal(number, remember)
+        yield
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
+        if pending:
+            raise RunnerInterrupted(pending[0])
+
+
+@contextmanager
+def finish_cleanup():
+    """A second shutdown request must not interrupt group cleanup and its record."""
+    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+    try:
+        for number in previous:
+            signal.signal(number, signal.SIG_IGN)
+        yield
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
+
+
+class OwnedSession:
+    """Keep the direct child unreaped until its remaining process group is stopped.
+
+    This runner is the sole reaper and descendants must stay in this session's
+    original process group. ECHILD disarms numeric group signals rather than
+    risking a recycled process-group ID.
+    """
+
+    def __init__(self, command, *, cwd, env, output):
+        self.process = subprocess.Popen(command, cwd=cwd, env=env, stdout=output,
+                                        stderr=subprocess.STDOUT, start_new_session=True)
+        self.reaped = False
+        self.external_reap = False
+        self.status = None
+
+    def exited(self):
+        if self.reaped:
+            return True
+        try:
+            return os.waitid(os.P_PID, self.process.pid,
+                             os.WEXITED | os.WNOHANG | os.WNOWAIT) is not None
+        except ChildProcessError as error:
+            self.external_reap = True
+            raise RuntimeError("owned session was externally reaped; group signals disarmed") from error
+
+    def stop(self, grace=0.05):
+        """Signal the anchored group and reap its direct leader only.
+
+        Descendant exit after SIGKILL is asynchronous; this runner does not adopt
+        or claim to reap grandchildren. No numeric group signal follows reap.
+        """
+        with finish_cleanup():
+            return self._stop(grace)
+
+    def _stop(self, grace):
+        if self.reaped or self.external_reap:
+            return self.status
+        self.exited()
+        try:
+            os.killpg(self.process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        deadline = time.monotonic() + grace
+        while time.monotonic() < deadline:
+            time.sleep(min(.01, max(0, deadline - time.monotonic())))
+        self.exited()
+        try:
+            os.killpg(self.process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        self.status = self.process.wait()
+        self.reaped = True
+        return self.status
+
+    def wait(self, timeout):
+        deadline = time.monotonic() + timeout
+        while not self.exited():
+            if time.monotonic() >= deadline:
+                raise subprocess.TimeoutExpired(self.process.args, timeout)
+            time.sleep(.01)
+        return self.stop()
+
+
+@contextmanager
+def locked_output(lock_path, output):
+    """A busy runner must not consume the caller's new evidence directory."""
+    with lock_path.open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise SystemExit("another integration runner is active")
+        output.mkdir(parents=True, exist_ok=False)
+        yield
+
+
 def command(command, cwd, env, output, timeout):
     record = {"argv": command, "cwd": str(cwd), "raw_exit_code": None, "timed_out": False}
     output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
     started = time.monotonic()
-    with output.open("wb") as log:
-        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT,
-                                   start_new_session=True)
-        try:
-            status = process.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            record["timed_out"] = True
-            # Keep the session leader unreaped until both signals have been
-            # sent. Its PID cannot be recycled into an unrelated process group.
-            for requested_signal in (signal.SIGTERM, signal.SIGKILL):
-                try:
-                    os.killpg(process.pid, requested_signal)
-                except ProcessLookupError:
-                    pass
-            record["timeout_cleanup"] = "SIGTERM and SIGKILL own process group before leader reap"
-            process.wait()
-            status = 124
-    record["raw_exit_code"] = status
-    record["duration_seconds"] = round(time.monotonic() - started, 3)
-    output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
+    owned = None
+    try:
+        with output.open("wb") as log:
+            with publish_owner():
+                owned = OwnedSession(command, cwd=cwd, env=env, output=log)
+            record["raw_exit_code"] = owned.wait(timeout)
+    except subprocess.TimeoutExpired:
+        record["timed_out"] = True
+        record["raw_exit_code"] = 124
+        record["timeout_cleanup"] = "SIGTERM and SIGKILL own process group before leader reap"
+    except (RunnerInterrupted, KeyboardInterrupt) as error:
+        number = error.signum if isinstance(error, RunnerInterrupted) else signal.SIGINT
+        record["interrupted_by"] = signal.Signals(number).name
+        record["raw_exit_code"] = 128 + number
+        raise
+    except BaseException as error:
+        record["error"] = f"{type(error).__name__}: {error}"
+        raise
+    finally:
+        with finish_cleanup():
+            try:
+                if owned is not None:
+                    owned.stop()
+            finally:
+                if owned is not None:
+                    record["group_cleanup"] = {"leader_pid": owned.process.pid,
+                        "leader_exit_code": owned.status, "leader_reaped": owned.reaped,
+                        "external_reap_disarmed": owned.external_reap,
+                        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"}
+                record["duration_seconds"] = round(time.monotonic() - started, 3)
+                output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
     return record
+
+
+def checked_output(argv, cwd, env, output, timeout=30):
+    record = command(argv, cwd, env, output, timeout)
+    text = output.read_text()
+    if record["raw_exit_code"]:
+        raise subprocess.CalledProcessError(record["raw_exit_code"], argv, output=text)
+    return text
 
 
 def main():
@@ -205,12 +354,11 @@ def main():
     project = here.parents[2]
     upstream = project / "kernel/asterinas"
     output = args.output.resolve()
-    output.mkdir(parents=True, exist_ok=False)
-    lock = (project / "support/build/out-osdk-integration.lock").open("a")
-    try:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
-        raise SystemExit("another integration runner is active")
+    with locked_output(project / "support/build/out-osdk-integration.lock", output):
+        return run_locked(args, here, project, upstream, output)
+
+
+def run_locked(args, here, project, upstream, output):
     env = os.environ.copy()
     env["RUSTUP_TOOLCHAIN"] = TOOLCHAIN
     env["RUSTUP_AUTO_INSTALL"] = "0"
@@ -223,7 +371,7 @@ def main():
     tool_bin = rustup_home / "toolchains" / (TOOLCHAIN + "-x86_64-unknown-linux-gnu") / "bin"
     real_cargo = tool_bin / "cargo"
     env["RUSTC"], env["RUSTDOC"] = str(tool_bin / "rustc"), str(tool_bin / "rustdoc")
-    compiler = subprocess.check_output([env["RUSTC"], "-Vv"], env=env, text=True)
+    compiler = checked_output([env["RUSTC"], "-Vv"], upstream, env, output / "rustc-version.log")
     if "commit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48" not in compiler:
         raise SystemExit("actual compiler does not match the fixed nightly-2026-07-21")
     env["PATH"] = str(cargo_home / "bin") + os.pathsep + env.get("PATH", "")
@@ -238,187 +386,195 @@ def main():
     env.pop("INTEL_TDX", None)
     env.pop("OSDK_CARGO_LOCK", None)
     commands = []
-    with lock:
-        harness_root, fixed_root = prepare_harness(upstream, output, real_cargo, env, args.local_tcp)
-        production = [str(real_cargo), "build", "--locked", "--bin", "cargo-osdk"]
-        commands.append(command(production, upstream / "osdk", env, output / "osdk-build.log", 600))
-        if commands[-1]["raw_exit_code"]:
-            raise SystemExit(f"original OSDK source build failed; see {output}")
-        build = [str(real_cargo), "test", "--locked", "--test", "integration", "--no-run",
-                 "--message-format=json"]
-        commands.append(command(build, harness_root, env, output / "harness-build.log", 600))
-        if commands[-1]["raw_exit_code"]:
-            raise SystemExit(f"integration harness build failed; see {output}")
-        artifacts = []
-        for line in (output / "harness-build.log").read_text().splitlines():
-            try:
-                value = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if value.get("reason") == "compiler-artifact" and value.get("executable") \
-                    and value.get("target", {}).get("name") == "integration":
-                artifacts.append(Path(value["executable"]))
-        if len(artifacts) != 1:
-            raise SystemExit("could not identify a unique real integration harness")
-        harness = artifacts[0]
-        osdk = target_dir / "debug/cargo-osdk"
-        if not harness.is_file() or not osdk.is_file():
-            raise SystemExit("integration harness or real source-built cargo-osdk is missing")
-        listed = subprocess.check_output([str(harness), "--list"], text=True, env=env)
-        (output / "upstream-test-list.txt").write_text(listed)
-        available = [line.removesuffix(": test") for line in listed.splitlines() if line.endswith(": test")]
-        if len(available) != 22:
-            raise SystemExit(f"upstream integration case count changed: {len(available)}")
-        first = ["commands::run::qemu_gdb_feature::basic_debug",
-                 "commands::run::qemu_gdb_feature::vsc::vsc_launch_file"]
-        selected = args.case or first + [case for case in available if case not in first]
-        if len(set(selected)) != len(selected) or set(selected) - set(available):
-            raise SystemExit("--case must select distinct exact upstream test names")
-        shim_bin = output / "bin"
-        shim_bin.mkdir()
-        (shim_bin / "cargo").symlink_to(here / "cargo.py")
-        env["PATH"] = str(shim_bin) + os.pathsep + env["PATH"]
-        env["A01_REAL_CARGO"] = str(real_cargo)
-        env["A01_REAL_OSDK"] = str(osdk)
-        env["CARGO_BIN_EXE_cargo-osdk"] = str(here / "osdk.py")
-        env["OSDK_CARGO_LOCK"] = str(upstream / "Cargo.lock")
-        env["A01_OSDK_GUEST_TIMEOUT"] = str(min(args.case_timeout, 300))
-        environment = {"schema": 1, "started_utc": datetime.now(timezone.utc).isoformat(),
-                       "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=project, text=True).strip(),
-                       "git_status": subprocess.check_output(["git", "status", "--short"], cwd=project, text=True),
-                       "rustc": subprocess.check_output([str(tool_bin / "rustc"), "-Vv"], env=env, text=True),
-                       "cargo": subprocess.check_output([str(real_cargo), "-Vv"], env=env, text=True),
-                       "cargo_path": str(real_cargo), "cargo_sha256": digest(real_cargo),
-                       "rustc_path": str(tool_bin / "rustc"), "rustc_sha256": digest(tool_bin / "rustc"),
-                       "rustup_auto_install": "0", "isolated_fixed_root": str(fixed_root),
-                       "profile_id": profile_id,
-                       "control_transport": "loopback-tcp" if args.local_tcp else "upstream-unix",
-                       "harness_path": str(harness), "harness_sha256": digest(harness),
-                       "osdk_path": str(osdk), "osdk_sha256": digest(osdk),
-                       "seed_lock_sha256": digest(upstream / "Cargo.lock"),
-                       "runner_inputs_sha256": {str(p.relative_to(project)): digest(p)
-                           for p in sorted(here.rglob("*")) if p.is_file() and "__pycache__" not in p.parts},
-                       "test_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
-                           for p in sorted((upstream / "osdk/tests").rglob("*")) if p.is_file()},
-                       "adapted_test_inputs_sha256": {str(p.relative_to(harness_root)): digest(p)
-                           for p in sorted((harness_root / "tests").rglob("*")) if p.is_file()},
-                       "source_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
-                           for p in sorted((upstream / "osdk/src").rglob("*")) if p.is_file()},
-                       "local_align_ext_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
-                           for p in sorted((upstream / "ostd/libs/align_ext").rglob("*")) if p.is_file()},
-                       "profile": "isolated upstream harness paths, native direct multiboot, q35 TCG max 1 vCPU 512 MiB",
-                       "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance"}
-        (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
-        results = []
-        for index, case in enumerate(selected, 1):
-            directory = output / f"case-{index:02d}"
-            directory.mkdir()
-            fixed = [Path(str(fixed_root) + value.removeprefix("/tmp"))
-                     for value in FIXED_PATHS.get(case, [])]
-            occupied = [str(path) for path in fixed if os.path.lexists(path)]
-            report = {"name": case, "profile_id": profile_id, "fixed_paths": [str(p) for p in fixed],
-                      "preexisting_paths": occupied, "status": "blocked" if occupied else "running"}
-            (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
-            if occupied:
-                results.append(report)
-                print(f"BLOCKED {case}: preexisting {occupied}", flush=True)
-                continue
-            work = directory / "work"
-            work.mkdir()
-            temp = fixed_root / f"case-{index:02d}-tmp"
-            temp.mkdir()
-            case_env = env.copy()
-            case_env["TMPDIR"] = str(temp)
-            case_env["A01_OSDK_CASE_OUTPUT"] = str(directory)
-            case_env["A01_OSDK_GDB_READY"] = str(directory / "gdb-ready.json")
-            case_env["A01_OSDK_ALLOWED_ROOTS"] = json.dumps([str(output), str(target_dir), str(fixed_root),
-                                                           *[str(p) for p in fixed]])
-            print(f"RUN {case}", flush=True)
-            invoked = command([str(harness), "--exact", case, "--nocapture", "--test-threads=1"],
-                              work, case_env, directory / "harness.log", args.case_timeout)
-            report.update(invoked)
-            text = (directory / "harness.log").read_text(errors="replace")
-            report["status"] = "passed" if invoked["raw_exit_code"] == 0 \
-                and "1 passed; 0 failed;" in text else "failed"
-            report["soft_skips"] = []
-            report["host_blockers"] = []
-            guest_reports = []
-            for path in sorted((directory / "guests").glob("guest-*/qemu.json")):
-                guest = json.loads(path.read_text())
-                serial = path.with_name("serial.log")
-                content = serial.read_text(errors="replace") if serial.exists() else ""
-                stderr = path.with_name("qemu-stderr.log")
-                error_text = stderr.read_text(errors="replace") if stderr.is_file() else ""
-                if "Operation not permitted" in error_text and "socket" in error_text:
-                    report["host_blockers"].append("host denies Unix socket creation (EPERM)")
-                serial_valid = serial.is_file() and serial.stat().st_size > 0 \
-                    and len(guest.get("serial_logs", [])) == 1 \
-                    and guest["serial_logs"][0]["sha256"] == digest(serial)
-                if "Error: VMX is not supported by the VM" in content:
-                    report["soft_skips"].append("VMX unavailable; hypervisor example accepted upstream fallback")
-                guest_reports.append({"record": str(path.relative_to(output)),
-                                      "raw_exit_code": guest["raw_exit_code"],
-                                      "timed_out": guest["timed_out"],
-                                      "wrapper_exit_code": guest.get("wrapper_exit_code"),
-                                      "error": guest.get("error"), "serial_valid": serial_valid,
-                                      "profile_id": guest.get("profile_id")})
-            report["guests"] = guest_reports
-            allowed_exit = (0, 33) if case == "commands::run::coverage_feature::basic_coverage" else (33,)
-            if args.local_tcp and case == "commands::run::coverage_feature::basic_coverage":
-                allowed_exit = (33,) if args.coverage_gdb else (0,)
-            if len(guest_reports) != VM_CASES.get(case, 0) or any(
-                    guest["timed_out"] or guest["error"] or not guest["serial_valid"]
-                    or guest["profile_id"] != profile_id
-                    or guest["raw_exit_code"] not in allowed_exit
-                    or guest["wrapper_exit_code"] != guest["raw_exit_code"] for guest in guest_reports):
-                report["status"] = "failed"
-            coverage = directory / "coverage/result.json"
-            if coverage.exists():
-                report["coverage"] = json.loads(coverage.read_text())
-                if not report["coverage"]["passed"]:
-                    report["status"] = "failed"
-            elif case == "commands::run::coverage_feature::basic_coverage":
-                report["status"] = "failed"
-                report["coverage"] = {"passed": False, "error": "no validated coverage artifact"}
-            report["cleanup"] = []
-            # Only paths absent before this exact case are eligible; never touch preexisting paths.
-            for path in fixed:
-                if not os.path.lexists(path):
-                    continue
-                stat = path.lstat()
-                if path.is_symlink() or not path.is_dir():
-                    report["cleanup"].append({"path": str(path), "removed": False,
-                                              "reason": "unexpected type; preserved"})
-                    report["status"] = "failed"
-                    continue
-                shutil.rmtree(path)
-                report["cleanup"].append({"path": str(path), "removed": True,
-                                          "device": stat.st_dev, "inode": stat.st_ino})
-            (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+    harness_root, fixed_root = prepare_harness(upstream, output, real_cargo, env, args.local_tcp)
+    production = [str(real_cargo), "build", "--locked", "--bin", "cargo-osdk"]
+    commands.append(command(production, upstream / "osdk", env, output / "osdk-build.log", 600))
+    if commands[-1]["raw_exit_code"]:
+        raise SystemExit(f"original OSDK source build failed; see {output}")
+    build = [str(real_cargo), "test", "--locked", "--test", "integration", "--no-run",
+             "--message-format=json"]
+    commands.append(command(build, harness_root, env, output / "harness-build.log", 600))
+    if commands[-1]["raw_exit_code"]:
+        raise SystemExit(f"integration harness build failed; see {output}")
+    artifacts = []
+    for line in (output / "harness-build.log").read_text().splitlines():
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if value.get("reason") == "compiler-artifact" and value.get("executable") \
+                and value.get("target", {}).get("name") == "integration":
+            artifacts.append(Path(value["executable"]))
+    if len(artifacts) != 1:
+        raise SystemExit("could not identify a unique real integration harness")
+    harness = artifacts[0]
+    osdk = target_dir / "debug/cargo-osdk"
+    if not harness.is_file() or not osdk.is_file():
+        raise SystemExit("integration harness or real source-built cargo-osdk is missing")
+    listed = checked_output([str(harness), "--list"], harness_root, env,
+                            output / "upstream-test-list.txt")
+    available = [line.removesuffix(": test") for line in listed.splitlines() if line.endswith(": test")]
+    if len(available) != 22:
+        raise SystemExit(f"upstream integration case count changed: {len(available)}")
+    first = ["commands::run::qemu_gdb_feature::basic_debug",
+             "commands::run::qemu_gdb_feature::vsc::vsc_launch_file"]
+    selected = args.case or first + [case for case in available if case not in first]
+    if len(set(selected)) != len(selected) or set(selected) - set(available):
+        raise SystemExit("--case must select distinct exact upstream test names")
+    shim_bin = output / "bin"
+    shim_bin.mkdir()
+    (shim_bin / "cargo").symlink_to(here / "cargo.py")
+    env["PATH"] = str(shim_bin) + os.pathsep + env["PATH"]
+    env["A01_REAL_CARGO"] = str(real_cargo)
+    env["A01_REAL_OSDK"] = str(osdk)
+    env["CARGO_BIN_EXE_cargo-osdk"] = str(here / "osdk.py")
+    env["OSDK_CARGO_LOCK"] = str(upstream / "Cargo.lock")
+    env["A01_OSDK_GUEST_TIMEOUT"] = str(min(args.case_timeout, 300))
+    environment = {"schema": 1, "started_utc": datetime.now(timezone.utc).isoformat(),
+                   "git_head": checked_output(["git", "rev-parse", "HEAD"], project, env,
+                                               output / "git-head.log").strip(),
+                   "git_status": checked_output(["git", "status", "--short"], project, env,
+                                                 output / "git-status.log"),
+                   "rustc": compiler,
+                   "cargo": checked_output([str(real_cargo), "-Vv"], upstream, env,
+                                            output / "cargo-version.log"),
+                   "cargo_path": str(real_cargo), "cargo_sha256": digest(real_cargo),
+                   "rustc_path": str(tool_bin / "rustc"), "rustc_sha256": digest(tool_bin / "rustc"),
+                   "rustup_auto_install": "0", "isolated_fixed_root": str(fixed_root),
+                   "profile_id": profile_id,
+                   "control_transport": "loopback-tcp" if args.local_tcp else "upstream-unix",
+                   "harness_path": str(harness), "harness_sha256": digest(harness),
+                   "osdk_path": str(osdk), "osdk_sha256": digest(osdk),
+                   "seed_lock_sha256": digest(upstream / "Cargo.lock"),
+                   "runner_inputs_sha256": {str(p.relative_to(project)): digest(p)
+                       for p in sorted(here.rglob("*")) if p.is_file() and "__pycache__" not in p.parts},
+                   "test_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
+                       for p in sorted((upstream / "osdk/tests").rglob("*")) if p.is_file()},
+                   "adapted_test_inputs_sha256": {str(p.relative_to(harness_root)): digest(p)
+                       for p in sorted((harness_root / "tests").rglob("*")) if p.is_file()},
+                   "source_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
+                       for p in sorted((upstream / "osdk/src").rglob("*")) if p.is_file()},
+                   "local_align_ext_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
+                       for p in sorted((upstream / "ostd/libs/align_ext").rglob("*")) if p.is_file()},
+                   "profile": "isolated upstream harness paths, native direct multiboot, q35 TCG max 1 vCPU 512 MiB",
+                   "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance"}
+    (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
+    results = []
+    for index, case in enumerate(selected, 1):
+        directory = output / f"case-{index:02d}"
+        directory.mkdir()
+        fixed = [Path(str(fixed_root) + value.removeprefix("/tmp"))
+                 for value in FIXED_PATHS.get(case, [])]
+        occupied = [str(path) for path in fixed if os.path.lexists(path)]
+        report = {"name": case, "profile_id": profile_id, "fixed_paths": [str(p) for p in fixed],
+                  "preexisting_paths": occupied, "status": "blocked" if occupied else "running"}
+        (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+        if occupied:
             results.append(report)
-            print(f"{report['status'].upper()} {case} ({invoked['duration_seconds']}s)", flush=True)
-            (output / "result.json").write_text(json.dumps({"schema": 1, "cases": results}, indent=2) + "\n")
-        summary = {"schema": 1, "profile_id": profile_id,
-                   "control_transport": environment["control_transport"],
-                   "profile": environment["profile"], "scope": environment["scope"],
-                   "available_cases": len(available), "selected_cases": len(selected),
-                   "passed": sum(r["status"] == "passed" for r in results),
-                   "failed": sum(r["status"] == "failed" for r in results),
-                   "blocked": sum(r["status"] == "blocked" for r in results),
-                   "soft_skip_count": sum(len(r.get("soft_skips", [])) for r in results),
-                   "host_blocked_cases": sum(bool(r.get("host_blockers")) for r in results),
-                   "cases": results, "build_commands": commands}
-        (output / "result.json").write_text(json.dumps(summary, indent=2) + "\n")
-        ownership = json.loads((output / "fixed-root.json").read_text())
-        if fixed_root.is_dir() and not fixed_root.is_symlink():
-            identity = fixed_root.stat()
-            if (identity.st_dev, identity.st_ino) == (ownership["device"], ownership["inode"]):
-                shutil.rmtree(fixed_root)
-                ownership["removed_after_run"] = True
-                (output / "fixed-root.json").write_text(json.dumps(ownership, indent=2) + "\n")
-        print(json.dumps({key: summary[key] for key in ("passed", "failed", "blocked", "soft_skip_count")}))
-        return int(summary["failed"] != 0 or summary["blocked"] != 0)
+            print(f"BLOCKED {case}: preexisting {occupied}", flush=True)
+            continue
+        work = directory / "work"
+        work.mkdir()
+        temp = fixed_root / f"case-{index:02d}-tmp"
+        temp.mkdir()
+        case_env = env.copy()
+        case_env["TMPDIR"] = str(temp)
+        case_env["A01_OSDK_CASE_OUTPUT"] = str(directory)
+        case_env["A01_OSDK_GDB_READY"] = str(directory / "gdb-ready.json")
+        case_env["A01_OSDK_ALLOWED_ROOTS"] = json.dumps([str(output), str(target_dir), str(fixed_root),
+                                                       *[str(p) for p in fixed]])
+        print(f"RUN {case}", flush=True)
+        invoked = command([str(harness), "--exact", case, "--nocapture", "--test-threads=1"],
+                          work, case_env, directory / "harness.log", args.case_timeout)
+        report.update(invoked)
+        text = (directory / "harness.log").read_text(errors="replace")
+        report["status"] = "passed" if invoked["raw_exit_code"] == 0 \
+            and "1 passed; 0 failed;" in text else "failed"
+        report["soft_skips"] = []
+        report["host_blockers"] = []
+        guest_reports = []
+        for path in sorted((directory / "guests").glob("guest-*/qemu.json")):
+            guest = json.loads(path.read_text())
+            serial = path.with_name("serial.log")
+            content = serial.read_text(errors="replace") if serial.exists() else ""
+            stderr = path.with_name("qemu-stderr.log")
+            error_text = stderr.read_text(errors="replace") if stderr.is_file() else ""
+            if "Operation not permitted" in error_text and "socket" in error_text:
+                report["host_blockers"].append("host denies Unix socket creation (EPERM)")
+            serial_valid = serial.is_file() and serial.stat().st_size > 0 \
+                and len(guest.get("serial_logs", [])) == 1 \
+                and guest["serial_logs"][0]["sha256"] == digest(serial)
+            if "Error: VMX is not supported by the VM" in content:
+                report["soft_skips"].append("VMX unavailable; hypervisor example accepted upstream fallback")
+            guest_reports.append({"record": str(path.relative_to(output)),
+                                  "raw_exit_code": guest["raw_exit_code"],
+                                  "timed_out": guest["timed_out"],
+                                  "wrapper_exit_code": guest.get("wrapper_exit_code"),
+                                  "error": guest.get("error"), "serial_valid": serial_valid,
+                                  "profile_id": guest.get("profile_id")})
+        report["guests"] = guest_reports
+        allowed_exit = (0, 33) if case == "commands::run::coverage_feature::basic_coverage" else (33,)
+        if args.local_tcp and case == "commands::run::coverage_feature::basic_coverage":
+            allowed_exit = (33,) if args.coverage_gdb else (0,)
+        if len(guest_reports) != VM_CASES.get(case, 0) or any(
+                guest["timed_out"] or guest["error"] or not guest["serial_valid"]
+                or guest["profile_id"] != profile_id
+                or guest["raw_exit_code"] not in allowed_exit
+                or guest["wrapper_exit_code"] != guest["raw_exit_code"] for guest in guest_reports):
+            report["status"] = "failed"
+        coverage = directory / "coverage/result.json"
+        if coverage.exists():
+            report["coverage"] = json.loads(coverage.read_text())
+            if not report["coverage"]["passed"]:
+                report["status"] = "failed"
+        elif case == "commands::run::coverage_feature::basic_coverage":
+            report["status"] = "failed"
+            report["coverage"] = {"passed": False, "error": "no validated coverage artifact"}
+        report["cleanup"] = []
+        # Only paths absent before this exact case are eligible; never touch preexisting paths.
+        for path in fixed:
+            if not os.path.lexists(path):
+                continue
+            stat = path.lstat()
+            if path.is_symlink() or not path.is_dir():
+                report["cleanup"].append({"path": str(path), "removed": False,
+                                          "reason": "unexpected type; preserved"})
+                report["status"] = "failed"
+                continue
+            shutil.rmtree(path)
+            report["cleanup"].append({"path": str(path), "removed": True,
+                                      "device": stat.st_dev, "inode": stat.st_ino})
+        (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+        results.append(report)
+        print(f"{report['status'].upper()} {case} ({invoked['duration_seconds']}s)", flush=True)
+        (output / "result.json").write_text(json.dumps({"schema": 1, "cases": results}, indent=2) + "\n")
+    summary = {"schema": 1, "profile_id": profile_id,
+               "control_transport": environment["control_transport"],
+               "profile": environment["profile"], "scope": environment["scope"],
+               "available_cases": len(available), "selected_cases": len(selected),
+               "passed": sum(r["status"] == "passed" for r in results),
+               "failed": sum(r["status"] == "failed" for r in results),
+               "blocked": sum(r["status"] == "blocked" for r in results),
+               "soft_skip_count": sum(len(r.get("soft_skips", [])) for r in results),
+               "host_blocked_cases": sum(bool(r.get("host_blockers")) for r in results),
+               "cases": results, "build_commands": commands}
+    (output / "result.json").write_text(json.dumps(summary, indent=2) + "\n")
+    ownership = json.loads((output / "fixed-root.json").read_text())
+    if fixed_root.is_dir() and not fixed_root.is_symlink():
+        identity = fixed_root.stat()
+        if (identity.st_dev, identity.st_ino) == (ownership["device"], ownership["inode"]):
+            shutil.rmtree(fixed_root)
+            ownership["removed_after_run"] = True
+            (output / "fixed-root.json").write_text(json.dumps(ownership, indent=2) + "\n")
+    print(json.dumps({key: summary[key] for key in ("passed", "failed", "blocked", "soft_skip_count")}))
+    return int(summary["failed"] != 0 or summary["blocked"] != 0)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        with interruption_handlers():
+            raise SystemExit(main())
+    except RunnerInterrupted as error:
+        print(f"integration runner interrupted by {signal.Signals(error.signum).name}; owned commands stopped",
+              file=sys.stderr)
+        raise SystemExit(128 + error.signum)
