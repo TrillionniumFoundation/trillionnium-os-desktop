@@ -254,6 +254,7 @@ pub struct RevokeReceipt {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ResourceError {
     InvalidIdentity,
+    DuplicateDomainId,
     InvalidBudget,
     InvalidRevision,
     RevisionConflict { expected: u64, actual: u64 },
@@ -277,9 +278,26 @@ impl ResourceDomain {
         }
         let budget = Budget::new(initial_cap_ns)?;
         if let Some(parent) = parent {
+            // The entire family uses one mutation gate. Registration must
+            // linearize with concurrent parent cap changes and child creation.
+            let _gate = lock_unpoisoned(&parent.inner.gate);
             let parent_state = parent.snapshot_state();
+            if !parent_state.alive {
+                return Err(ResourceError::Revoked);
+            }
             if initial_cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
+            }
+            let mut ancestor = Some(parent);
+            while let Some(domain) = ancestor {
+                if domain.id() == id {
+                    return Err(ResourceError::DuplicateDomainId);
+                }
+                ancestor = domain.inner.parent.as_ref();
+            }
+            let mut children = lock_unpoisoned(&parent.inner.children);
+            if children.contains_key(&id) {
+                return Err(ResourceError::DuplicateDomainId);
             }
             let inner = Arc::new(ResourceDomainInner {
                 gate: Arc::clone(&parent.inner.gate),
@@ -301,7 +319,7 @@ impl ResourceDomain {
                 parent: Some(parent.clone()),
                 children: Mutex::new(BTreeMap::new()),
             });
-            lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
+            children.insert(id, initial_cap_ns);
             return Ok(Self { inner });
         }
         Ok(Self {
@@ -517,14 +535,18 @@ impl ResourceDomain {
                 return Err(ResourceError::ParentConstraint);
             }
         }
-        if self
-            .inner
-            .children
-            .lock()
-            .map(|children| children.values().any(|child_cap| *child_cap > cap_ns))
-            .unwrap_or(false)
+        if lock_unpoisoned(&self.inner.children)
+            .values()
+            .any(|child_cap| *child_cap > cap_ns)
         {
             return Err(ResourceError::ParentConstraint);
+        }
+        // A new period starts at boottime, independently of whether a usage
+        // read happened. A same-period update never resets consumed runtime.
+        let new_window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
+        if new_window_start != state.window_start_ns {
+            state.window_start_ns = new_window_start;
+            state.window_consumed_ns = 0;
         }
         let previous_revision = state.revision;
         state.revision = state
@@ -561,38 +583,7 @@ pub fn with_parent(
     parent: &ResourceDomain,
     initial_cap_ns: u64,
 ) -> Result<ResourceDomain, ResourceError> {
-    let budget = Budget::new(initial_cap_ns)?;
-    let parent_state = parent.snapshot_state();
-    if initial_cap_ns > parent_state.budget.cap_ns {
-        return Err(ResourceError::ParentConstraint);
-    }
-    if !id.is_nonzero() || !stable_object_id.is_nonzero() {
-        return Err(ResourceError::InvalidIdentity);
-    }
-    let child = ResourceDomain {
-        inner: Arc::new(ResourceDomainInner {
-            gate: Arc::clone(&parent.inner.gate),
-            state: Mutex::new(DomainState {
-                id,
-                stable_object_id,
-                parent: Some(parent_state.id),
-                revision: 1,
-                budget,
-                consumed_ns: 0,
-                window_consumed_ns: 0,
-                window_start_ns: 0,
-                event_sequence: 0,
-                dropped_events: 0,
-                alive: true,
-                grant_epoch: 1,
-                user_paused: false,
-            }),
-            parent: Some(parent.clone()),
-            children: Mutex::new(BTreeMap::new()),
-        }),
-    };
-    lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
-    Ok(child)
+    ResourceDomain::new(id, stable_object_id, Some(parent), initial_cap_ns)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1421,7 +1412,9 @@ fn published_result_from_outcome(
 fn map_resource_error(error: ResourceError) -> DeliveryStatus {
     match error {
         ResourceError::Revoked | ResourceError::GrantEpochMismatch => DeliveryStatus::Revoked,
-        ResourceError::RevisionConflict { .. } => DeliveryStatus::Conflict,
+        ResourceError::RevisionConflict { .. } | ResourceError::DuplicateDomainId => {
+            DeliveryStatus::Conflict
+        },
         ResourceError::ParentConstraint => DeliveryStatus::ParentLimit,
         ResourceError::Exhausted => DeliveryStatus::ResourceExhausted,
         ResourceError::InvalidBudget

@@ -121,3 +121,9 @@ completes before loss obtains that lock; a token not yet admitted returns
 kernel executor before `publish` still requires A05's own fencing and
 effect-journal discipline: the host model cannot cancel arbitrary external
 effects or prove power-loss persistence.
+
+Child creation shares the root family's mutation gate with parent cap changes.
+Duplicate sibling ResourceDomain IDs or an ID equal to an ancestor are rejected
+rather than overwriting the parent's child-cap registry. Installing a budget
+in a later 100ms period advances window accounting at apply time; same-window
+updates retain already consumed runtime even when the cap value is unchanged.

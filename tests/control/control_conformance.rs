@@ -323,6 +323,83 @@ fn parent_domain_caps_child_budget() {
 }
 
 #[test]
+fn duplicate_sibling_id_cannot_hide_a_larger_child_budget() {
+    let parent = root(910, 90);
+    let first = with_parent(domain(911), object(911), &parent, 80).unwrap();
+    assert_eq!(
+        with_parent(domain(911), object(912), &parent, 10).err(),
+        Some(ResourceError::DuplicateDomainId)
+    );
+    assert_eq!(
+        with_parent(domain(910), object(913), &parent, 10).err(),
+        Some(ResourceError::DuplicateDomainId)
+    );
+    let grant = parent.grant(publisher(910)).unwrap();
+    assert_eq!(
+        parent.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 10, 1),
+        Err(ResourceError::ParentConstraint)
+    );
+    assert_eq!(first.budget().cap_ns, 80);
+    assert_eq!(parent.budget().cap_ns, 90);
+}
+
+#[test]
+fn child_registration_and_parent_cap_update_cannot_cross() {
+    for i in 0..128_u128 {
+        let parent = root(920 + i, 90);
+        let child_parent = parent.clone();
+        let reduce_parent = parent.clone();
+        let who = publisher(920 + i);
+        let barrier = Arc::new(Barrier::new(3));
+        let create_barrier = Arc::clone(&barrier);
+        let shrink_barrier = Arc::clone(&barrier);
+        let create = thread::spawn(move || {
+            create_barrier.wait();
+            with_parent(domain(1100 + i), object(1100 + i), &child_parent, 80)
+        });
+        let shrink = thread::spawn(move || {
+            let grant = reduce_parent.grant(who).unwrap();
+            shrink_barrier.wait();
+            reduce_parent.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 10, 1)
+        });
+        barrier.wait();
+        let child = create.join().unwrap();
+        let reduced = shrink.join().unwrap();
+        match (child, reduced) {
+            (Ok(child), Err(ResourceError::ParentConstraint)) => {
+                assert_eq!(child.budget().cap_ns, 80);
+                assert_eq!(parent.budget().cap_ns, 90);
+            }
+            (Err(ResourceError::ParentConstraint), Ok(receipt)) => {
+                assert_eq!(receipt.revision, 2);
+                assert_eq!(parent.budget().cap_ns, 10);
+            }
+            _ => panic!("parent cap and child registration must linearize"),
+        }
+    }
+}
+
+#[test]
+fn budget_update_at_period_boundary_reports_current_window_consumption() {
+    let target = root(909, 90);
+    target.charge_cpu(60, 10).unwrap();
+    let who = publisher(909);
+    let grant = target.grant(who).unwrap();
+    let applied = target
+        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 90, CPU_PERIOD_NS + 7)
+        .unwrap();
+    assert_eq!(applied.consumed_at_apply_ns, 0);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 8).window_consumed_ns, 0);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 8).cumulative_cpu_ns, 60);
+    target.charge_cpu(25, CPU_PERIOD_NS + 9).unwrap();
+    let same_cap = target
+        .install_budget_for_host_model(&target.grant(who).unwrap(), 2, CPU_PERIOD_NS, 90, CPU_PERIOD_NS + 10)
+        .unwrap();
+    assert_eq!(same_cap.consumed_at_apply_ns, 25);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 11).window_consumed_ns, 25);
+}
+
+#[test]
 fn child_cpu_charge_is_counted_once_in_each_ancestor_and_parent_exhaustion_is_atomic() {
     let parent = root(601, 10);
     let child = with_parent(domain(602), object(602), &parent, 10).unwrap();
