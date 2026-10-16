@@ -886,6 +886,73 @@ fn grandchild_creation_inherits_newest_ancestor_clock_not_only_parent() {
 }
 
 #[test]
+fn grandchild_creation_races_root_clock_sampling_without_backdating() {
+    for n in 0..64_u128 {
+        let root_domain = root(416_000 + n, CPU_PERIOD_NS);
+        let parent = with_parent(
+            domain(417_000 + n),
+            object(417_000 + n),
+            &root_domain,
+            80,
+        )
+        .unwrap();
+        let sampled_time = 2 * CPU_PERIOD_NS + 11;
+        let start = Arc::new(Barrier::new(3));
+
+        let create_parent = parent.clone();
+        let create_start = Arc::clone(&start);
+        let create = thread::spawn(move || {
+            create_start.wait();
+            with_parent(
+                domain(418_000 + n),
+                object(418_000 + n),
+                &create_parent,
+                70,
+            )
+            .unwrap()
+        });
+
+        let sample_root = root_domain.clone();
+        let sample_start = Arc::clone(&start);
+        let sample = thread::spawn(move || {
+            sample_start.wait();
+            sample_root.try_usage(sampled_time).unwrap()
+        });
+
+        start.wait();
+        let child = create.join().unwrap();
+        let root_sample = sample.join().unwrap();
+        assert_eq!(root_sample.sample_boottime_ns, sampled_time);
+
+        // Either creation won with the old 0 floor, or the root sample
+        // won and registration captured its time. A subsequent stale CAS
+        // must fail in both schedules under the common family gate.
+        let original_floor = child.usage(0).sample_boottime_ns;
+        assert!(original_floor == 0 || original_floor == sampled_time);
+        let who = publisher(419_000 + n);
+        let grant = child.grant(who).unwrap();
+        assert_eq!(
+            child.install_budget_for_host_model(
+                &grant,
+                1,
+                CPU_PERIOD_NS,
+                60,
+                sampled_time - 1,
+            ),
+            Err(ResourceError::ClockRollback)
+        );
+        assert_eq!(
+            child
+                .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 60, sampled_time)
+                .unwrap()
+                .revision,
+            2
+        );
+        assert_eq!(child.usage(sampled_time).cumulative_cpu_ns, 0);
+    }
+}
+
+#[test]
 fn advanced_grandparent_clock_fences_stale_leaf_cas() {
     let root_domain = root(411_000, CPU_PERIOD_NS);
     let parent = with_parent(domain(411_001), object(411_001), &root_domain, 80).unwrap();

@@ -458,3 +458,14 @@ A three-level Rust negative test covers root sampled in period 3, parent
 sampled only in period 1, new child creation, stale rollback rejection,
 future CAS, and retained zero usage. This is still host-model semantics;
 A06 owns the actual in-kernel clock and scheduler admission.
+
+### Concurrent registration versus ancestor sample
+
+A 64-run host test deliberately races a grandchild registration with a
+newer root BOOTTIME sample. The family mutation gate permits either
+serial order: a child created first starts at the old floor, while a
+child created second inherits the new root time. Once both complete,
+**neither** schedule can commit a descendant CAS dated before the
+root's newer sample. CPU cumulative usage remains zero in both cases.
+This is an interleaving stress regression, not loom state-space coverage
+or a real Asterinas runqueue/IRQ memory-order proof.

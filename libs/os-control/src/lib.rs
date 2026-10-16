@@ -399,6 +399,8 @@ impl ResourceDomain {
             if children.contains_key(&id) {
                 return Err(ResourceError::DuplicateDomainId);
             }
+            let initial_window_start =
+                (newest_ancestor_boottime / budget.period_ns) * budget.period_ns;
             let inner = Arc::new(ResourceDomainInner {
                 gate: Arc::clone(&parent.inner.gate),
                 family: Arc::clone(&parent.inner.family),
@@ -410,8 +412,7 @@ impl ResourceDomain {
                     budget,
                     consumed_ns: 0,
                     window_consumed_ns: 0,
-                    window_start_ns:
-                        (newest_ancestor_boottime / budget.period_ns) * budget.period_ns,
+                    window_start_ns: initial_window_start,
                     last_boottime_ns: newest_ancestor_boottime,
                     event_sequence: 0,
                     dropped_events: 0,
