@@ -6,7 +6,23 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
-The latest phase fixed inherited GNU make controls that could return success
+The latest cloud phase completed two further build-support fixes. All four
+public entries now reject encoded Rust flags before consuming output. The QEMU
+recorder saves and actually loads private kernel/initramfs/BIOS snapshots,
+retaining source metadata and verifying the copies before and after execution.
+At published code `31170ffb2ab6d18a85051d426e5d85a83f1b2abf`, complete-kernel
+Rust-entry debugging passed with matching PC/32 live bytes, full initramfs boot,
+raw QEMU33 and a new live-artifact recheck. Its boot ELF SHA256 is
+`fbe81c0e2deae705d61d77ccaaf604e2bf1ca30e4541de71d263af6ecc62ec1b`.
+The full TCP/GDB OSDK matrix passed22/22 at `071dd8ed...`, with eleven raw33
+guests and one explicit VMX soft skip. Two failed debug attempts and the initial
+cancelled matrix remain retained. A fixed-nightly A02 candidate passes61 tests,
+fmt, no_std compile and strict Clippy in isolation, pending A00/A02 adoption.
+See [cloud blocker closure](evidence/2026-10-16-blocker-closure/REPORT.md)
+for exact commands, counts, actual artifacts, and the hardware/owner blockers
+that remain open. Kernel core, upstream pin and root README are unchanged.
+
+The preceding phase fixed inherited GNU make controls that could return success
 without executing a kernel recipe, and rejects encoded Rust flags that would
 override OSDK's required kernel flags. At published source
 `ff040c6d5afbc4e26a249022093b8090181f6176`, an empty-target full kernel build
@@ -67,8 +83,8 @@ must not turn a skipped or failed kernel recipe into a successful build.
 GNU make establishes normal recursion state for its own children. This is
 the fixed profile's environment contract, not a sandbox for untrusted tools.
 
-Unset `CARGO_ENCODED_RUSTFLAGS` before invoking the normal kernel or ktest
-entry, including when its current value is empty. Cargo gives its presence
+Unset `CARGO_ENCODED_RUSTFLAGS` before invoking the normal kernel, ktest,
+debug or integration entry, including when its current value is empty. Cargo gives its presence
 priority over the `RUSTFLAGS` that OSDK supplies for kernel linking and CPU
 configuration. These entries reject it before creating output or taking a
 workspace lock, so the same command and output path can be retried after
@@ -83,6 +99,12 @@ exit status, and complete serial output. The smoke passes only with all guest
 markers, no panic, and **raw QEMU exit 33**. QEMU exit 65 is guest failure;
 OSDK normalizes successful 33 to make exit 0.
 The QEMU recorder binds the complete raw serial bytes by SHA256 and size.
+It exclusively creates three read-only input snapshots in a fresh private
+`artifacts-*` directory and passes those actual paths to QEMU. `qemu.json`
+retains the original arguments and each input's source path/stat/hash alongside
+the loaded snapshot path/stat/hash. Stable-FD source checks and pre/post-run
+snapshot verification fail on detected changes; they do not attribute an
+external writer or provide a sandbox against the same user.
 Fresh runs also verify the recorded kernel, initramfs and BIOS bytes against
 their live paths. For offline archive checks, use `check-boot.py DIR` without
 `--live-artifacts`; historical records without a serial digest require the

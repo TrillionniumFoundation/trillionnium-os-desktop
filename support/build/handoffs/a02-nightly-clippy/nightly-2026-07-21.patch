@@ -1,0 +1,37 @@
+--- a/libs/os-abi/tests/mutation_kill.rs
++++ b/libs/os-abi/tests/mutation_kill.rs
+@@ -18,7 +18,9 @@
+     assert_eq!(bytes.len() % 2, 0);
+     bytes
+         .as_bytes()
+-        .chunks_exact(2)
++        .as_chunks::<2>()
++        .0
++        .iter()
+         .map(|pair| {
+             let hi = (pair[0] as char).to_digit(16).unwrap() as u8;
+             let lo = (pair[1] as char).to_digit(16).unwrap() as u8;
+--- a/libs/os-abi/tests/transport_preflight.rs
++++ b/libs/os-abi/tests/transport_preflight.rs
+@@ -25,7 +25,9 @@
+                 let hex = value.trim_end_matches([',', '"']);
+                 return hex
+                     .as_bytes()
+-                    .chunks_exact(2)
++                    .as_chunks::<2>()
++                    .0
++                    .iter()
+                     .map(|pair| {
+                         u8::from_str_radix(core::str::from_utf8(pair).unwrap(), 16).unwrap()
+                     })
+--- a/libs/os-abi/tests/transport_vectors.rs
++++ b/libs/os-abi/tests/transport_vectors.rs
+@@ -11,7 +11,7 @@
+     let ascii = GOLDEN.trim().as_bytes();
+     assert_eq!(ascii.len(), TRANSPORT_LEN * 2);
+     let mut output = [0u8; TRANSPORT_LEN];
+-    for (index, pair) in ascii.chunks_exact(2).enumerate() {
++    for (index, pair) in ascii.as_chunks::<2>().0.iter().enumerate() {
+         let high = (pair[0] as char).to_digit(16).expect("fixed hex") as u8;
+         let low = (pair[1] as char).to_digit(16).expect("fixed hex") as u8;
+         output[index] = (high << 4) | low;

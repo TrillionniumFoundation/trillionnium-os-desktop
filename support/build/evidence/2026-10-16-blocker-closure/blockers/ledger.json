@@ -1,0 +1,499 @@
+{
+  "schema": "a01-blocker-ledger/1",
+  "created_utc": "2026-10-16T16:15:56.442934+00:00",
+  "source_commit": "350d98d70a3d7b7c720cabd7720063849afb5a29",
+  "source_tree": "073bcd257facb6213bddbd20093bf5a699a1b074",
+  "branch": "agents/A01-asterinas-boot",
+  "scope": "Read-only diagnosis and packaging only. No compiler, Cargo, QEMU, container, chroot, namespace or mount execution; no core/source/lock/README edits or Git commit by this subtask. Other agents may separately modify the shared worktree.",
+  "all_blockers_closed": false,
+  "snapshot_not_current_owner_acceptance": true,
+  "new_native_build_or_boot_claimed": false,
+  "new_ci_query_performed": false,
+  "inputs": [
+    {
+      "path": "docs/agents/PLAN.md",
+      "git_blob": "8aa213fb343edbe9b09eba2def11d58ff8bf3431",
+      "bytes": 6082,
+      "sha256": "871b5204deffee0acaf05b61fee3e4db7b22324e7ccf1d5675f36e4ad56b79d4"
+    },
+    {
+      "path": "docs/PROJECT.md",
+      "git_blob": "83a8d272eabe0638e5073312565f3d883ef7f5a1",
+      "bytes": 3459,
+      "sha256": "f7061998bbc30192153c2e0c8e77dcbd9ffb6a6ae9208e44299203e55609ffa4"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "git_blob": "3d9935bbd125588567b9c9b94c71abb4c330fc7e",
+      "bytes": 7321,
+      "sha256": "d7718b87906339ead0d3ce1f971ce54f07265c4ea82f39d9678f4e0357e84dbe"
+    },
+    {
+      "path": "docs/NATIVE_ABI.md",
+      "git_blob": "ebafd6972154acf98c50c455b8ce417ac7030c51",
+      "bytes": 16310,
+      "sha256": "8b77dcc30d30834fac6053222c8f69e47d42c27c401ae1d6c5c143360756f059"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "git_blob": "ddd8e1296802a61291496c944300267a2e975bc5",
+      "bytes": 5136,
+      "sha256": "48579d7ff24f31b4d1aace8409f07318550c8291e08e825eac28946384ee7401"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "git_blob": "4e17cccdfb9d80324005ad8e1634dc7640b21026",
+      "bytes": 38363,
+      "sha256": "7f388f7d9c9011e30260f319b07785e655ee59ba4e619124ad0beb7fdf48e9ca"
+    },
+    {
+      "path": "support/upstream-lock.json",
+      "git_blob": "127e8e6ad997507cd512d277d7b9ca0bed7e9f19",
+      "bytes": 35589,
+      "sha256": "60a9a1b1c401c4ba34814de59d0c4961f814cd98ae6cbf3ecdad1354b8926933"
+    },
+    {
+      "path": ".github/workflows/g0-contracts.yml",
+      "git_blob": "118f6dc5e5dca014fae84484c3e260deddd74168",
+      "bytes": 1885,
+      "sha256": "c8605039b8ace9872fea2ceae6a7f555c588a24cddc909c0dd41721c023ddadb"
+    },
+    {
+      "path": ".github/workflows/a01-boot-evidence.yml",
+      "git_blob": "6a3a84be98896a54649e30493ef16dbaabdf9734",
+      "bytes": 3974,
+      "sha256": "c28d8ec47ebcde0cf23338c62862ad5ce58d38b01abd8ce2d657fe74092d2d53"
+    },
+    {
+      "path": ".github/workflows/a09-hardware.yml",
+      "git_blob": "48fc77880f10c7f8be193bd7af95490bba702d36",
+      "bytes": 1143,
+      "sha256": "6b6ef1f309aad1081f38efe0249ed27f05f8f1d0a05cdadf871c92abcfa47ca3"
+    },
+    {
+      "path": ".github/workflows/a10-host.yml",
+      "git_blob": "794e42b4e944cf0240f134a757296ff908424803",
+      "bytes": 5270,
+      "sha256": "1e6b2064eef1208907eb0e5df5a345d5a42086ea90cc09de3859e3ddabc8f59b"
+    },
+    {
+      "path": "support/build/kernel.sh",
+      "git_blob": "a1911971821c9fad4d444f04426fda8e83a93898",
+      "bytes": 7767,
+      "sha256": "1aab60856d182b5fdf26c9de7360c3e34fbc91a73dd0468902f09e2f61065216"
+    },
+    {
+      "path": "support/build/cleanup-manifest.py",
+      "git_blob": "d0c45bf2791d00e9091d11b09ac85e17c10566a9",
+      "bytes": 6584,
+      "sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8"
+    },
+    {
+      "path": "support/build/linux-guest/isolate.py",
+      "git_blob": "643c3684e67d4e559fc423dde9d5cacd94ca18d6",
+      "bytes": 12764,
+      "sha256": "918a6addfe87df5a63963376058b7481e4df0d3478a0fd00c15fef14a8d0de5e"
+    },
+    {
+      "path": "support/build/linux-guest/README.md",
+      "git_blob": "5b93a657e50056e3a208ea2cec177af69ace6936",
+      "bytes": 4587,
+      "sha256": "31137802e384f879e1119495dafe735e885d305b375d81bef27ca51f2aa2029b"
+    },
+    {
+      "path": "support/build/osdk-integration/README.md",
+      "git_blob": "1b6659dd00ece2889a3deffb91374b73acf259fa",
+      "bytes": 10882,
+      "sha256": "1741f28759a2d09ffe617e58521ebd98c3e9a29d718ad917913de6de5bc5be7a"
+    },
+    {
+      "path": "support/build/evidence/2026-10-16-build-environment/REPORT.md",
+      "git_blob": "42121a0f7bb3d6459f83ae7757500d2780683166",
+      "bytes": 11743,
+      "sha256": "a1060e0a03d737f5c1e87f797f781f5dffa0f1324d7c08b962203df5f5abc157"
+    },
+    {
+      "path": "support/build/evidence/2026-10-16-ktest-lifecycle/REPORT.md",
+      "git_blob": "76ff9163694445a7fab976186098280371ccf079",
+      "bytes": 9062,
+      "sha256": "2ee78a0b4a86d7b549b54b149d4f1e0d021202abdfdd15beadf1f98688a6e029"
+    },
+    {
+      "path": "kernel/asterinas/.devcontainer/devcontainer.json",
+      "git_blob": "7241225f07f7b25791da1900860d39bc101a30cb",
+      "bytes": 548,
+      "sha256": "0007ec5589a1915ef5c8a70c6233fdda71335a1d7fa9243a5f2969d8bf3e69e6"
+    },
+    {
+      "path": "kernel/asterinas/osdk/src/config/manifest.rs",
+      "git_blob": "a20281fc9d586482cfb436968893ea75a47a99b0",
+      "bytes": 9576,
+      "sha256": "1b72abf33abcbc4d7296f4855f4136645a03001421455b81fc1b0de039a5cda1"
+    }
+  ],
+  "provided_inputs": [
+    {
+      "source": "blocker-closure/environment-capabilities.json",
+      "archive": "environment-capabilities.json",
+      "bytes": 573,
+      "sha256": "1525a280e88e290454607391506bd33f321d77d0d345eaecf6ed0999bff699c2"
+    },
+    {
+      "source": "closure-repro-analysis",
+      "archive": "repro-analysis/",
+      "original_checksums_verified": true
+    }
+  ],
+  "current_host": "29609d47ba8e",
+  "ledger": [
+    {
+      "id": "B01",
+      "title": "Strict ABI Clippy diagnostics",
+      "owner": [
+        "A02",
+        "A00"
+      ],
+      "status_at_baseline": "open-source-diagnostics",
+      "current_environment_can_handle": "yes, after owner integration; not an A01-owned source edit",
+      "observed": [
+        "Pinned nightly Clippy 0.1.99 returned 101 for chunks_exact_to_as_chunks at libs/os-abi/tests/mutation_kill.rs:21 and tests/transport_vectors.rs:14.",
+        "This snapshot does not re-run Cargo or claim an owner fix has landed."
+      ],
+      "next_steps": [
+        "Coordinate a small A02 test-helper patch using as_chunks::<2>() while retaining explicit odd-length/remainder rejection; do not suppress the lint or change wire bytes.",
+        "At the exact owner-approved commit: cargo +nightly-2026-07-21 test --locked --manifest-path libs/os-abi/Cargo.toml; cargo +nightly-2026-07-21 clippy --locked --manifest-path libs/os-abi/Cargo.toml --all-targets -- -D warnings; cargo +nightly-2026-07-21 fmt --manifest-path libs/os-abi/Cargo.toml -- --check."
+      ],
+      "evidence": [
+        "support/build/evidence/2026-10-16-build-environment/merged-host/original-package/clippy-after-install.json",
+        "support/build/evidence/2026-10-16-build-environment/merged-host/original-package/raw.tar.gz"
+      ],
+      "closure_requires": [
+        "Exact committed owner source and successful actual Cargo/Clippy/fmt receipts, with previous failures preserved."
+      ]
+    },
+    {
+      "id": "B02",
+      "title": "Two default OSDK UNIX cases",
+      "owner": [
+        "A01",
+        "execution-platform owner"
+      ],
+      "status_at_baseline": "blocked-by-current-host-AF_UNIX-socket-policy",
+      "current_environment_can_handle": "no for default profile; supported TCP/GDB profile is already an alternative passed scope",
+      "observed": [
+        "New supplied host probe: AF_UNIX socket creation fails errno 1 EPERM; AF_UNIX socketpair succeeds. The latter is a different API and does not establish socket() availability.",
+        "Historical default profile has UNIX GDB and coverage failures. Explicit local TCP/GDB capture profile previously passed 22/22; this does not relabel default cases passed."
+      ],
+      "next_steps": [
+        "Use an independently identified permitted host that supports actual AF_UNIX socket() without changing this host security policy.",
+        "There run: python3 -I support/build/osdk-integration/run.py --output <fresh-owned-output>; preserve all 22 case results and guest exits.",
+        "For the supported existing transport scope only: python3 -I support/build/osdk-integration/run.py --local-tcp --coverage-gdb --output <fresh-owned-output>."
+      ],
+      "evidence": [
+        "environment-capabilities.json",
+        "support/build/osdk-integration/README.md"
+      ],
+      "closure_requires": [
+        "Actual default-profile complete run on an AF_UNIX-capable permitted host; no fixture, socketpair substitution or reduced denominator."
+      ]
+    },
+    {
+      "id": "B03",
+      "title": "Three VMX/EPT kernel soft skips",
+      "owner": [
+        "A01",
+        "A09",
+        "isolated-hardware owner"
+      ],
+      "status_at_baseline": "hardware-path-not-exercised",
+      "current_environment_can_handle": "no with the observed current host capabilities",
+      "observed": [
+        "Prior kernel summary reports OSTD 221 plus aster-core 141, zero failed/filtered, but three VMX/EPT soft skips: exercised passed lower bound is 359.",
+        "Supplied current host inventory has /dev/kvm absent and virtualization_flags=[npt], without forwarded vmx/svm. npt alone does not prove Intel VMX/EPT availability. CapEff=0, Seccomp=2, one seccomp filter."
+      ],
+      "next_steps": [
+        "Select an already permitted isolated VMX/EPT-capable execution platform. A00/A09 must choose and record its architecture and forwarded virtualization capabilities.",
+        "Before attempting hardware tests, perform a read-only platform preflight and select an explicit hardware-enabled QEMU profile; the current ktest runner intentionally pins TCG, so do not claim that its unchanged invocation enables VMX.",
+        "Run the unchanged upstream tests with a coordinated hardware profile, retain all names and explicit no-skip outcomes, and run normal TCG regressions separately."
+      ],
+      "evidence": [
+        "environment-capabilities.json",
+        "support/upstream-lock.json:kernel.kernel_mode_regression",
+        "support/build/ktest/README.md",
+        "support/vmm/GATES.md"
+      ],
+      "closure_requires": [
+        "Actual VMX/EPT instructions and relevant guest paths execute with zero associated soft skips; no reliance on host flags alone."
+      ]
+    },
+    {
+      "id": "B04",
+      "title": "Different compiler-visible source paths",
+      "owner": [
+        "A01",
+        "A00",
+        "comp-sys owner"
+      ],
+      "status_at_baseline": "unproven-needs-coordinated-identity-change",
+      "current_environment_can_handle": "analysis/support normalization yes; actual arbitrary-path closure requires coordinated source work",
+      "observed": [
+        "The prior same-host/same-real-path two-empty-target ELF equality is valid only for its historical source and path.",
+        "comp-sys metadata macro emits absolute package paths as ordinary literals; registration emits file!(); runtime exact-matches these keys. Remapping compiler-generated locations alone can split identities. No new runtime panic was tested.",
+        "Canonical fixed-root staging is a support-only route but still exposes the same real source root to the compiler. It does not prove different compiler-visible paths."
+      ],
+      "next_steps": [
+        "Coordinate only kernel/asterinas/kernel/libs/comp-sys/component-macro/src/{lib.rs,priority.rs} and component/src/lib.rs for a shared validated stable component identity; preserve priority graph and stage semantics.",
+        "Add duplicate-identity, graph-order and registration tests. Then execute empty-target full builds and actual boots at two different real roots with identical other inputs, inspect PT_LOAD/.rodata paths and compare raw ELF bytes."
+      ],
+      "evidence": [
+        "repro-analysis/REPORT.md",
+        "repro-analysis/report.json",
+        "support/upstream-lock.json:kernel.same_path_clean_repeatability"
+      ],
+      "closure_requires": [
+        "Both different real compiler-visible roots build and boot correctly with all component initialization and equal outputs under the explicitly declared environment."
+      ]
+    },
+    {
+      "id": "B05",
+      "title": "Independent hosts and immutable environment",
+      "owner": [
+        "A01",
+        "A00",
+        "execution-platform owner",
+        "OSDK build owner"
+      ],
+      "status_at_baseline": "unproved-second-host-and-environment-lock",
+      "current_environment_can_handle": "partial inventory/design only; one identified host is available here",
+      "observed": [
+        "Supplied capability evidence identifies host 29609d47ba8e. This task has not identified or provisioned a second execution surface.",
+        "OSDK overwrites child OSDK_BUILD_USERNAME and OSDK_BUILD_HOSTNAME with whoami-derived values; setting parent USER/HOSTNAME or OSDK_BUILD_* does not fix those embedded values.",
+        "Baseline lock has build_container_digest=null and reproducible_kernel_build_ready=false; native_build_profile_ready=true. Native real builds already work; missing Docker/Nix is not a new minimal-boot prerequisite.",
+        "Repro analysis found bwrap/chroot/unshare present but did not execute namespace/mount/chroot permission probes. Tool presence is not permission or an immutable image."
+      ],
+      "next_steps": [
+        "A01 can retain exact source, selected Rust/Cargo/dependency/tool/VDSO/firmware bytes and canonical paths without changing global host configuration.",
+        "For a defined normalized-environment cross-host claim, use an already permitted digest-pinned image or dedicated VM with identical real mount paths and selected embedded builder identity, preserve actual external host identity, and run two independent clean jobs.",
+        "If source support is needed, coordinate a small OSDK change in kernel/asterinas/osdk/src/commands/build/mod.rs to honor explicit reproducible embedded username/hostname while preserving whoami default. A wrapper remains an untested candidate with argv and Cargo fingerprint obligations."
+      ],
+      "evidence": [
+        "environment-capabilities.json",
+        "repro-analysis/report.json",
+        "support/upstream-lock.json"
+      ],
+      "closure_requires": [
+        "Complete immutable environment identity plus actual independently identified host/job pair and bytewise outputs, not two runs on one host or unpinned container tags."
+      ]
+    },
+    {
+      "id": "B06",
+      "title": "GitHub Actions queued / unverified current state",
+      "owner": [
+        "A00",
+        "repository runner administrator"
+      ],
+      "status_at_baseline": "latest-historical-read-was-four-queued-current-not-queried-by-this-task",
+      "current_environment_can_handle": "GitHub readback possible through existing connector; no runner admin action performed",
+      "observed": [
+        "Previous publication report retained four queued CI results; this subtask has not made a new GitHub API call. A queued result is not success.",
+        "Tracked top-level workflows at baseline use ubuntu-24.04. No project-owned self-hosted labels or project cloud SSH/IaC endpoint was found in the inspected public configuration. Upstream .devcontainer is a local development container, not a cloud endpoint."
+      ],
+      "next_steps": [
+        "Read exact published head with GET /repos/TrillionniumFoundation/trillionnium-os-desktop/commits/<published-head>/check-runs and GET /repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs?head_sha=<published-head>.",
+        "If still queued, inspect GET /repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runners through authorized repository administration. Do not retrieve registration tokens for this diagnostic, change protection rules, or synthesize success statuses."
+      ],
+      "evidence": [
+        "support/build/evidence/2026-10-16-build-environment/REPORT.md",
+        ".github/workflows/a01-boot-evidence.yml",
+        ".github/workflows/g0-contracts.yml"
+      ],
+      "closure_requires": [
+        "Actual expected exact-head jobs complete successfully with full logs or a separately explicit documented platform blocker; local tests do not become GitHub results."
+      ]
+    },
+    {
+      "id": "B07",
+      "title": "A04 same-ELF four compatibility failures",
+      "owner": [
+        "A04",
+        "A00",
+        "kernel syscall/file/socket owner"
+      ],
+      "status_at_baseline": "two-completed-failures-two-timeouts",
+      "current_environment_can_handle": "can replay historical proof with prepared rootfs; source corrections require owners",
+      "observed": [
+        "Historical same-ELF 28-case diagnostic: 24 exact matches, static/dynamic fd_limit both completed failure exit20, static/dynamic scm_rights both timed out.",
+        "Pinned kernel SHA e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63; A04 source 16d672881909a5a9197d82126032b7d962db7d76. These are historical artifacts, not the current source built anew.",
+        "SQLite RAMfs crash/reopen matches do not establish S1 block persistence or Hepta W1. Four unported Python/Tokio workloads are outside the 28 denominator."
+      ],
+      "next_steps": [
+        "Prepare and verify the frozen A04 rootfs exactly as support/build/linux-guest/README.md.",
+        "Run python3 -I support/build/linux-guest/isolate.py --a04-source-root <verified-a04-pr8> --rootfs <verified-rootfs> --a01-kernel-gz support/build/evidence/2026-10-16/artifacts/kernel.elf.gz --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz --firmware /usr/share/seabios/bios-256k.bin --qemu /usr/bin/qemu-system-x86_64 --out-dir <fresh-owned-output> --jobs 1 --timeout 30 --case static.fd_limit --case dynamic.fd_limit --case static.scm_rights --case dynamic.scm_rights.",
+        "Owners should repair actual RLIMIT_NOFILE enforcement and SCM_RIGHTS behavior after tracing exact guest failures, then run the unchanged full original suite and fixed same-ELF controls."
+      ],
+      "evidence": [
+        "support/build/evidence/2026-10-16-review/linux-guest/REPORT.md",
+        "support/build/linux-guest/README.md",
+        "support/upstream-lock.json:kernel.linux_guest_diagnostic"
+      ],
+      "closure_requires": [
+        "All original cases exact-match under declared new fixed artifacts; the two timeouts cannot be converted into raw33 or removed from the denominator."
+      ]
+    },
+    {
+      "id": "B08",
+      "title": "Historical external generated-manifest writer",
+      "owner": [
+        "A01",
+        "execution-platform owner"
+      ],
+      "status_at_baseline": "writer-unidentified",
+      "current_environment_can_handle": "safe isolation and further bounded observation yes; retrospective attribution unavailable",
+      "observed": [
+        "After historical successful cleanup of owned inode1581799, later inode1581801 contained identical minimal-manifest SHA 1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f. The original foreign entry is preserved.",
+        "Inspected kernel.sh, cleanup-manifest.py, OSDK TomlManifest::load, next7 read-only followup and next8 pair controller do not identify a continuous/post-exit restorer. OSDK load only reads; cargo osdk new writes templates on explicit new-project creation.",
+        "Cleanup custody protects captured entries, not permanent public-path occupancy. Subsequent clean disposable worktree outcomes do not prove historical cause."
+      ],
+      "next_steps": [
+        "Keep existing unknown entries untouched and continue real builds in newly owned exact-source worktrees using the stable workspace lock and owned-inode cleanup.",
+        "If the event recurs, record a bounded before/after identity and content snapshot under that worktree lock and correlate only known owned process/call receipts. Do not install system-wide audit rules or kill unknown processes to infer attribution.",
+        "A genuine writer closure needs an observed causal write linked to the responsible script/process or an execution-platform incident explanation, followed by a controlled rerun."
+      ],
+      "evidence": [
+        "support/build/evidence/2026-10-16-ktest-lifecycle/REPORT.md",
+        "support/build/kernel.sh",
+        "support/build/cleanup-manifest.py",
+        "kernel/asterinas/osdk/src/config/manifest.rs"
+      ],
+      "closure_requires": [
+        "Actual causal attribution and corrective evidence. Keeping foreign entries safe and isolating current work closes operational ownership risk only, not the forensic question."
+      ]
+    },
+    {
+      "id": "B09",
+      "title": "G1 native HOS2 CapSpace/ioctl five operations",
+      "owner": [
+        "A05",
+        "A02",
+        "A03",
+        "A00"
+      ],
+      "status_at_baseline": "project-implementation-and-acceptance-open",
+      "current_environment_can_handle": "build infrastructure available; A01 must not overwrite core owners",
+      "observed": [
+        "Host no_std codec, host control model and Linux ENOTTY probes are distinct from actual Asterinas control-file implementation.",
+        "The baseline remains without verified native five-operation/identity/capability lifecycle acceptance."
+      ],
+      "next_steps": [
+        "A05 source range: kernel/asterinas/kernel/core/src/process/**, syscall/ioctl.rs and agreed control-file module; reuse Process, FileLike::ioctl and the real caller context. Integrate only owner-approved A02/A03 APIs.",
+        "Implement/validate stopped-task trusted grant handoff, boot/process-start/exec_epoch/CapSpace binding, QueryAbi/ReadUsage/InstallBudget/QueryDelivery/RetireThrough, copyout retry, fork/exec/fd transfer, revoke and stable observations.",
+        "After owner integration, use actual support/build/kernel.sh kernel, run_kernel and python3 -I support/build/ktest/run.py plus real ordinary W0 clients. No ready-to-run positive ioctl command exists before the driver and client are implemented."
+      ],
+      "evidence": [
+        "docs/agents/PLAN.md",
+        "docs/NATIVE_ABI.md",
+        "docs/ARCHITECTURE.md",
+        "docs/STATUS.md"
+      ],
+      "closure_requires": [
+        "Real normal-client operations, negative lifecycle/authorization cases and unchanged upstream regression under the same derived kernel."
+      ]
+    },
+    {
+      "id": "B10",
+      "title": "G1 actual CPU budget final charge and scheduler coverage",
+      "owner": [
+        "A06",
+        "A05",
+        "A00"
+      ],
+      "status_at_baseline": "owner-branch-work-not-equivalent-to-main-acceptance",
+      "current_environment_can_handle": "can build/test coordinated owner head; not an A01 runtime source edit",
+      "observed": [
+        "STATUS records historical A06 owner-branch 153 core tests and real single/two-vCPU quota guests, not main native HOS2 acceptance.",
+        "STATUS issue63 identifies potential loss of final uncharged CPU interval when Weak<Process> upgrade fails; no QEMU exploit was proved by this ledger. Strict every-100ms bound, migration/long-run coverage remain separate unverified properties."
+      ],
+      "next_steps": [
+        "A06 should bind stable ResourceDomain ownership through final task settlement in the existing accounting path, without a second resource database. Coordinate any OSTD/public identity interface through A00/A05.",
+        "At exact owner-approved full source: fixed nightly full kernel build, newly added charge/exit kernel regressions and original full cpu.stat 1%/10%/FIFO/parent probes, including short-lived thread/exit and quota comparison; retain actual source/ELF/raw serial.",
+        "Do not replay another branch by replacing individual source files in the accepted baseline. No owner-branch commit or actual result was newly fetched here."
+      ],
+      "evidence": [
+        "docs/STATUS.md",
+        "docs/ARCHITECTURE.md",
+        "docs/agents/PLAN.md"
+      ],
+      "closure_requires": [
+        "Owner source integrated through A00 with exact-head actual final-debit and quota evidence, plus G1 common-object authorization/ordinary-client acceptance."
+      ]
+    },
+    {
+      "id": "B11",
+      "title": "G2 original Hepta durable owner integration",
+      "owner": [
+        "A07",
+        "A03",
+        "A05",
+        "A06",
+        "A00"
+      ],
+      "status_at_baseline": "project-implementation-and-acceptance-open",
+      "current_environment_can_handle": "support builds and host experiments possible; complete implementation is owner work",
+      "observed": [
+        "G2 requires the existing Hepta stable operation owner, persistent K↔D confirmation/history/retirement and revoke/kill/reboot, not a second business database or mock provider.",
+        "No full current Hepta W1, S1 block persistence or trusted activation end-to-end acceptance is established by this read-only archive."
+      ],
+      "next_steps": [
+        "Owner ranges: services/hepta-os/** and tests/integration/hepta/**, consuming the existing Hepta durable owner, A03 stable K and A05 native operations after G1.",
+        "Implement exact predecessor/unknown/effect reconciliation, durable original-owner ACK and retirement, manager fencing, revoke/kill/bridge failure and reboot recovery.",
+        "Only then run the selected actual Hepta/Agentd tool-chain W1 profile against the same accepted kernel and storage; preserve independent ordinary-application/I/O recovery evidence. A positive end-to-end command cannot be supplied honestly before that executable profile exists."
+      ],
+      "evidence": [
+        "docs/agents/PLAN.md",
+        "docs/NATIVE_ABI.md",
+        "docs/PROJECT.md",
+        "docs/ROADMAP.md",
+        "docs/STATUS.md"
+      ],
+      "closure_requires": [
+        "Real existing owner and persistent effects survive declared fault/reboot scenarios without new-ID replay, authority amplification or parallel owner database."
+      ]
+    },
+    {
+      "id": "B12",
+      "title": "Bare-metal/GPU/Android/UI expansion",
+      "owner": [
+        "A08",
+        "A09",
+        "A10",
+        "A00"
+      ],
+      "status_at_baseline": "separate-G3-future-acceptance",
+      "current_environment_can_handle": "not provable from current TCG build environment",
+      "observed": [
+        "PROJECT defines physical hardware/SMP/GPU/Android beyond the initial N0 profile. They are not hidden prerequisites for the already real minimal kernel boot, and they are not automatically closed by it.",
+        "No production services, system disks, BIOS or GPU drivers were modified by this task."
+      ],
+      "next_steps": [
+        "A00 and relevant owners must select fixed disposable hardware, Android product/manifest, GPU route and UI execution target. Use existing owner plans and read-only enumerations before coordinated implementation.",
+        "Do not install a complete NixOS ISO merely to satisfy minimal A01 boot; existing small initramfs route is already established."
+      ],
+      "evidence": [
+        "docs/PROJECT.md",
+        "docs/ROADMAP.md",
+        "docs/HARDWARE_AND_DRIVERS.md",
+        "support/vmm/GATES.md"
+      ],
+      "closure_requires": [
+        "Separate declared platform/workload/hardware acceptance with exact artifacts and recovery evidence, without extrapolation from Linux-host or QEMU smoke."
+      ]
+    }
+  ],
+  "closure_summary": {
+    "ledger_entries": 12,
+    "closed_by_this_readonly_task": 0,
+    "actual_environment_probes_executed_by_parent": true,
+    "environment_probe_time_utc": "2026-10-16T16:06:46.424050+00:00",
+    "forbidden_inference": "Do not turn a support alternative, host model, soft skip, queued CI, one-host proof or safe worktree isolation into universal blocker closure."
+  }
+}
