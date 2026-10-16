@@ -299,6 +299,14 @@ class AcceptanceTests(unittest.TestCase):
         self.guest["device"]["device_id"] = "0xbeef"
         self.assertIn("physical_guest_pci_id_mismatch", self.reasons())
 
+    def test_malformed_raw_log_types_are_rejected_without_exception(self):
+        self.hostlog = "not raw bytes"
+        self.guestlog = None
+        reasons = self.reasons()
+        self.assertIn("host_raw_log_missing", reasons)
+        self.assertIn("guest_raw_log_missing", reasons)
+        self.assertIn("boot_nonce_missing_from_raw_logs", reasons)
+
     def test_json_nonce_without_host_serial_binding_is_not_reviewable(self):
         original = b"A09_VM_NONCE=" + b"ab" * 16
         self.hostlog = self.hostlog.replace(original, b"")

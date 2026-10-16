@@ -136,7 +136,8 @@ def validate(host, guest, host_log, guest_log):
         if isinstance(nonce, str) and NONCE.fullmatch(nonce) is not None
         else None
     )
-    check(nonce_marker is not None and nonce_marker in host_log and
+    check(nonce_marker is not None and isinstance(host_log, bytes) and
+          isinstance(guest_log, bytes) and nonce_marker in host_log and
           nonce_marker in guest_log, "boot_nonce_missing_from_raw_logs")
 
     physical = host.get("device") if isinstance(host.get("device"), dict) else {}
