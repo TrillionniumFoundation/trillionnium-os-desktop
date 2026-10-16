@@ -555,6 +555,66 @@ fn same_d_with_new_ancestor_grant_conflicts_and_old_d_rejects_terminally() {
 }
 
 #[test]
+fn concurrent_ancestor_revoke_and_child_commit_preserve_epoch_fence() {
+    // The family gate must admit exactly one of the two orderings; after
+    // ancestor recovery the pre-revocation grant must still be invalid.
+    for n in 0..128_u128 {
+        let root_domain = root(203_000 + n, CPU_PERIOD_NS);
+        let child = with_parent(
+            domain(204_000 + n), object(204_000 + n), &root_domain, 80,
+        )
+        .unwrap();
+        let who = publisher(205_000 + n);
+        let old_grant = child.grant(who).unwrap();
+        let core = Arc::new(ControlCore::new(boot(203_000 + n), space(203_000 + n)));
+        let token = core
+            .reserve(request(1, old_grant.clone(), 1, 60), who)
+            .unwrap();
+        let barrier = Arc::new(Barrier::new(3));
+        let commit_core = Arc::clone(&core);
+        let commit_barrier = Arc::clone(&barrier);
+        let commit = thread::spawn(move || {
+            commit_barrier.wait();
+            commit_core.commit(&token, who, 1).unwrap()
+        });
+        let revoke_root = root_domain.clone();
+        let revoke_barrier = Arc::clone(&barrier);
+        let revoke = thread::spawn(move || {
+            revoke_barrier.wait();
+            revoke_root.revoke();
+        });
+        barrier.wait();
+        let terminal = commit.join().unwrap();
+        revoke.join().unwrap();
+        match terminal.status {
+            Some(DeliveryStatus::Ok) => assert_eq!(child.revision(), 2),
+            Some(DeliveryStatus::Revoked) => assert_eq!(child.revision(), 1),
+            unexpected => panic!("unlinearized revoke/commit result: {unexpected:?}"),
+        }
+        assert_eq!(
+            core.query_delivery(&core.delivery_view(), 1).unwrap(),
+            terminal
+        );
+
+        root_domain.reactivate_for_host_model().unwrap();
+        assert_eq!(
+            child.install_budget_for_host_model(
+                &old_grant, child.revision(), CPU_PERIOD_NS, 50, 2,
+            ),
+            Err(ResourceError::GrantEpochMismatch)
+        );
+        let fresh_grant = child.grant(who).unwrap();
+        let token2 = core
+            .reserve(request(2, fresh_grant, child.revision(), 50), who)
+            .unwrap();
+        assert_eq!(
+            core.commit(&token2, who, 3).unwrap().status,
+            Some(DeliveryStatus::Ok)
+        );
+    }
+}
+
+#[test]
 fn child_commit_admitted_before_ancestor_revoke_is_immutable() {
     let grandparent = root(76_000, 80);
     let parent = with_parent(domain(76_001), object(76_001), &grandparent, 70).unwrap();
