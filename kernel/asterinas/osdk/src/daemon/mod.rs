@@ -8,13 +8,13 @@ mod supervisor;
 use std::{
     os::unix::process::CommandExt,
     path::Path,
-    process::{Child, Command, ExitStatus},
+    process::{Child, Command},
     time::Duration,
 };
 
-use rustix::process::{self, Pid, Signal};
+use rustix::process::{self, Pid, Signal, WaitId, WaitIdOptions, WaitIdStatus};
 
-use crate::{config::scheme::DaemonScheme, error::Errno, error_msg};
+use crate::{config::scheme::DaemonScheme, error::Errno, error_msg, warn_msg};
 
 pub(crate) use signal::SignalGuard;
 pub(crate) use supervisor::DaemonSupervisor;
@@ -26,13 +26,15 @@ const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// A host daemon that has been started and is supervised until QEMU exits.
 ///
-/// The owning supervisor polls the child until it exits and reaps it. When the
-/// QEMU run ends or is interrupted, the supervisor terminates the daemon and
-/// reaps its child process.
+/// The supervisor observes exit without reaping the leader. The waitable child
+/// reserves its PID until the original group has been killed, so a final group
+/// signal cannot target a recycled PGID. OSDK must be the sole reaper of these
+/// children, with SIGCHLD left waitable (no auto-reap). Descendants that leave
+/// the original process group are not covered.
 struct RunningDaemon<'a> {
     daemon: &'a DaemonScheme,
     child: Child,
-    reaped: bool,
+    owns_child: bool,
 }
 
 impl<'a> RunningDaemon<'a> {
@@ -53,7 +55,7 @@ impl<'a> RunningDaemon<'a> {
         Ok(Self {
             daemon,
             child,
-            reaped: false,
+            owns_child: true,
         })
     }
 
@@ -61,28 +63,62 @@ impl<'a> RunningDaemon<'a> {
         &self.daemon.path
     }
 
-    fn try_wait(&mut self) -> std::io::Result<Option<ExitStatus>> {
-        let status = self.child.try_wait()?;
-        self.reaped |= status.is_some();
-        Ok(status)
+    fn poll_exit(&mut self) -> std::io::Result<Option<WaitIdStatus>> {
+        if !self.owns_child {
+            return Err(rustix::io::Errno::CHILD.into());
+        }
+        loop {
+            match process::waitid(
+                WaitId::Pid(Pid::from_child(&self.child)),
+                WaitIdOptions::EXITED | WaitIdOptions::NOHANG | WaitIdOptions::NOWAIT,
+            ) {
+                Err(rustix::io::Errno::INTR) => continue,
+                Err(error) => {
+                    if error == rustix::io::Errno::CHILD {
+                        // Another reaper or SIGCHLD auto-reap lost our identity
+                        // anchor. Never signal this numeric group again.
+                        self.owns_child = false;
+                    }
+                    return Err(error.into());
+                }
+                Ok(status) => return Ok(status),
+            }
+        }
     }
 
     fn kill_and_wait(&mut self) {
+        if !self.owns_child {
+            return;
+        }
         self.kill();
-        let _ = self.child.wait();
+        // Disarm before wait can release the PID. No later cleanup may signal
+        // the group, even if wait itself reports an error.
+        self.owns_child = false;
+        if let Err(error) = self.child.wait() {
+            warn_msg!(
+                "failed to reap managed daemon `{}`: {error}",
+                self.executable().display()
+            );
+        }
     }
 
     fn kill(&mut self) {
-        if self.reaped {
+        if !self.owns_child {
             return;
         }
         let _ = process::kill_process_group(Pid::from_child(&self.child), Signal::KILL);
     }
 
     fn terminate(&self) {
-        if self.reaped {
+        if !self.owns_child {
             return;
         }
         let _ = process::kill_process_group(Pid::from_child(&self.child), Signal::TERM);
+    }
+}
+
+impl Drop for RunningDaemon<'_> {
+    fn drop(&mut self) {
+        self.kill_and_wait();
     }
 }

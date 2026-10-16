@@ -84,8 +84,11 @@ and locks, license, root Makefile/OSDK manifest, and the empty project README.
 it passes at import commit `7081fb9b34030af47b7a65d4e62a00fcf147de05`.
 Later intentional derivative edits are expected to fail that strict comparison.
 
-Only one upstream file changes for the build: `osdk/src/commands/build/mod.rs`
-accepts `OSDK_CARGO_LOCK` and passes `--locked` to its generated-crate build.
+Derivative changes are confined to OSDK's host build tooling. Its
+`osdk/src/commands/build/mod.rs` accepts `OSDK_CARGO_LOCK` and passes `--locked`
+to the generated-crate build. The daemon supervisor also cleans its original
+process group before reaping the leader; its regression fixtures use a TCP
+lease rather than interpreting namespace-local PIDs through `/proc`.
 Lock installation uses a temporary file and atomic replacement, including
 when the supplied lock is the destination itself or a hard link to it.
 The generated OSDK base crate is a separate Cargo workspace; upstream's root
@@ -141,10 +144,25 @@ The next-phase evidence is in `evidence/2026-10-16-next/`. It includes the two
 kernel crate runs and the original OSDK host unit result: 13 passed, one
 daemon-descendant test failed. GDB availability and 13 selected non-VM
 integration tests passed. The host has mismatched PID and `/proc` namespaces;
-focused diagnostic passes do not supersede the original failure. The daemon
-lifecycle risk remains open and does not affect this profile's lack of host
-daemons. A05/A06 can use the saved kernel crate results as an upstream baseline.
+focused diagnostic passes do not supersede the original failure. Follow-up
+daemon fixes and their actual results are recorded separately in
+`evidence/2026-10-16-daemon/`. A05/A06 can use the saved kernel crate results
+as an upstream baseline.
+
+The host supervisor uses `waitid(WNOWAIT)` to observe a leader without
+releasing its PID, kills remaining members of that original group, then reaps
+and permanently disarms the entry. `ECHILD` also disarms group signalling.
+This assumes OSDK is the sole reaper of its managed children, with SIGCHLD
+left waitable rather than auto-reaped. Descendants that actively leave the
+group are outside this boundary. The new host unit
+fixtures require Bash with `/dev/tcp` and local loopback TCP sockets. Run the
+complete derived OSDK unit suite with the fixed toolchain and GDB available:
+
+```sh
+cargo +nightly-2026-07-21 test --manifest-path kernel/asterinas/osdk/Cargo.toml \
+    --locked --bin cargo-osdk -- --test-threads=1
+```
 
 The full upstream matrix, HOS2, SMP control, physical hardware, Android, GPU,
-and Hepta end-to-end behavior remain untested. Cross-host reproducibility and
-a clean full OSDK host suite remain open.
+and Hepta end-to-end behavior remain untested. Cross-host reproducibility
+remains open.
