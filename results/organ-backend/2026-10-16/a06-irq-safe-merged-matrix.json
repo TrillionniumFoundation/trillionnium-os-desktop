@@ -1,0 +1,64 @@
+{
+  "commit": "dd20b1b3f6c62f3e198c25f7b41bb5208ae17fb4",
+  "kernel_sha256": "8ff3629163438f86abe755aa5a61f3e8d53d2ab44994f41d006d04e3415d80a5",
+  "cases": [
+    {
+      "label": "1pct",
+      "mode": "leaf",
+      "quota_us": 1000,
+      "repeat": 3,
+      "observed_cpu_percent": [
+        2.001,
+        2,
+        1.911
+      ],
+      "returncode": 0,
+      "guest_ok": true,
+      "elapsed_s": 22.9
+    },
+    {
+      "label": "10pct",
+      "mode": "leaf",
+      "quota_us": 10000,
+      "repeat": 1,
+      "observed_cpu_percent": [
+        11.1
+      ],
+      "returncode": 0,
+      "guest_ok": true,
+      "elapsed_s": 5.4
+    },
+    {
+      "label": "rt10",
+      "mode": "rt",
+      "quota_us": 10000,
+      "repeat": 1,
+      "observed_cpu_percent": [
+        10.989
+      ],
+      "returncode": 0,
+      "guest_ok": true,
+      "elapsed_s": 5.6
+    },
+    {
+      "label": "parent10",
+      "mode": "parent",
+      "quota_us": 10000,
+      "repeat": 1,
+      "observed_cpu_percent": [
+        10.296
+      ],
+      "returncode": 0,
+      "guest_ok": true,
+      "elapsed_s": 5.7
+    }
+  ],
+  "all_bounded": true,
+  "single_vcpu": true,
+  "precise_1pct_guaranteed": false,
+  "production_validated": false,
+  "smp_validated": false,
+  "hos2_implemented": false,
+  "test_environment": "QEMU q35/TCG, x86_64, 1 vCPU, 512 MiB; original A01 initramfs plus statically linked guest CPU probe; no host cgroup, data disk or network changes",
+  "scope": "bounded N0 cpu.stat non-hang checks; does not qualify exact CPU quota, SMP, HOS2, or production"
+}
