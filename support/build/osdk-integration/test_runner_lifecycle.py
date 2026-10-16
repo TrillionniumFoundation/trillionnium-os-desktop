@@ -53,6 +53,35 @@ spec.loader.exec_module(runner)
 root = Path(sys.argv[2])
 command = json.loads(sys.argv[3])
 timeout = float(sys.argv[4])
+seam = sys.argv[5] if len(sys.argv) > 5 else ''
+fired = False
+real_stop, real_killpg, real_signal = runner.OwnedSession.stop, runner.os.killpg, runner.signal.signal
+
+def inject():
+    global fired
+    fired = True
+    (root / 'signal-seam.json').write_text(json.dumps({'seam': seam, 'signal': 'SIGTERM'}))
+    os.kill(os.getpid(), signal.SIGTERM)
+
+def stop_at_entry(self, *args, **kwargs):
+    if seam in ('cleanup-entry', 'normal-cleanup-entry') and not fired:
+        inject()
+    return real_stop(self, *args, **kwargs)
+
+def between_group_signals(pid, number):
+    result = real_killpg(pid, number)
+    if seam == 'between-group-signals' and not fired and number == signal.SIGTERM:
+        inject()
+    return result
+
+def record_handler_changes(number, handler):
+    if handler == signal.SIG_IGN:
+        (root / 'ignored-shutdown-signal').write_text(str(number))
+    return real_signal(number, handler)
+
+runner.OwnedSession.stop = stop_at_entry
+runner.os.killpg = between_group_signals
+runner.signal.signal = record_handler_changes
 # The fallback permits the retained original runner to reproduce the old leak.
 handlers = runner.interruption_handlers() if hasattr(runner, 'interruption_handlers') else contextlib.nullcontext()
 with (root / 'worker.lock').open('a') as lock:
@@ -79,7 +108,7 @@ class RunnerLifecycleTests(unittest.TestCase):
             self.assertLess(time.monotonic(), deadline, "owned fixture readiness deadline expired")
             time.sleep(.01)
 
-    def exercise_exit(self, mode, leader_status=0):
+    def exercise_exit(self, mode, leader_status=0, seam=""):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             ready, proceed = root / "ready.json", root / "proceed"
@@ -89,7 +118,7 @@ class RunnerLifecycleTests(unittest.TestCase):
             with (root / "worker.log").open("wb") as output:
                 worker = subprocess.Popen([sys.executable, "-I", "-c", WORKER,
                                            str(self.runner_path), str(root), json.dumps(argv),
-                                           str(timeout)], stdout=output, stderr=subprocess.STDOUT,
+                                           str(timeout), seam], stdout=output, stderr=subprocess.STDOUT,
                                           start_new_session=True)
                 descriptor = None
                 leader_descriptor = None
@@ -111,7 +140,9 @@ class RunnerLifecycleTests(unittest.TestCase):
                     elif mode in ("SIGINT", "SIGTERM"):
                         os.kill(worker.pid, getattr(signal, mode))
                     status = worker.wait(timeout=8)
-                    expected_worker = 130 if mode == "SIGINT" else 143 if mode == "SIGTERM" else 0
+                    expected_signal = "SIGTERM" if seam == "normal-cleanup-entry" else \
+                        mode if mode in ("SIGINT", "SIGTERM") else None
+                    expected_worker = 128 + getattr(signal, expected_signal) if expected_signal else 0
                     self.assertEqual(status, expected_worker, (root / "worker.log").read_text())
                     self.assertTrue(poller.poll(2000), "TERM-ignoring descendant survived runner return")
                     with socket.socket() as competitor:
@@ -120,12 +151,18 @@ class RunnerLifecycleTests(unittest.TestCase):
                         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                     record = json.loads((root / "command.command.json").read_text())
                     expected_command = 124 if mode == "timeout" else expected_worker \
-                        if mode in ("SIGINT", "SIGTERM") else leader_status
+                        if expected_signal else leader_status
                     self.assertEqual(record["raw_exit_code"], expected_command)
                     self.assertEqual(record["timed_out"], mode == "timeout")
                     self.assertTrue(record["group_cleanup"]["leader_reaped"])
-                    if mode in ("SIGINT", "SIGTERM"):
-                        self.assertEqual(record["interrupted_by"], mode)
+                    if expected_signal:
+                        self.assertEqual(record["interrupted_by"], expected_signal)
+                    if seam:
+                        self.assertTrue((root / "signal-seam.json").is_file())
+                        self.assertEqual(record["received_signals"], ["SIGTERM"] if
+                                         seam == "normal-cleanup-entry" else ["SIGINT", "SIGTERM"])
+                    self.assertFalse((root / "ignored-shutdown-signal").exists(),
+                                     "cooperative cleanup must not sequentially ignore shutdown signals")
                     self.assertIn("owned leader and descendant ready", (root / "command.log").read_text())
                 finally:
                     if worker.poll() is None:
@@ -154,6 +191,17 @@ class RunnerLifecycleTests(unittest.TestCase):
 
     def test_sigterm_cleans_group_and_preserves_interrupted_command_record(self):
         self.exercise_exit("SIGTERM")
+
+    def test_second_signal_at_cleanup_entry_cannot_skip_stop_or_record(self):
+        # This entry replaces the former first SIG_IGN setup seam. The old
+        # sequential handler masking is gone; an actual second TERM is latched.
+        self.exercise_exit("SIGINT", seam="cleanup-entry")
+
+    def test_second_signal_between_group_signals_cannot_skip_kill_or_reap(self):
+        self.exercise_exit("SIGINT", seam="between-group-signals")
+
+    def test_first_signal_during_normal_cleanup_is_not_silently_ignored(self):
+        self.exercise_exit("normal", seam="normal-cleanup-entry")
 
     def test_busy_lock_does_not_create_output_or_parent_directories(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -250,6 +298,40 @@ class RunnerLifecycleTests(unittest.TestCase):
             record = json.loads((root / "failed.command.json").read_text())
             self.assertEqual(record["raw_exit_code"], 9)
             self.assertTrue(record["group_cleanup"]["leader_reaped"])
+
+    def test_repeated_shutdown_during_spawn_keeps_first_signal_and_reaps_owner(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            real_popen = subprocess.Popen
+            descriptors = []
+
+            def repeated_shutdown(*args, **kwargs):
+                process = real_popen(*args, **kwargs)
+                descriptors.append(os.pidfd_open(process.pid))
+                os.kill(os.getpid(), signal.SIGTERM)
+                os.kill(os.getpid(), signal.SIGINT)
+                return process
+
+            try:
+                with mock.patch.object(RUNNER.subprocess, "Popen", side_effect=repeated_shutdown):
+                    with self.assertRaises(RUNNER.RunnerInterrupted) as interrupted:
+                        RUNNER.command([sys.executable, "-I", "-c", "import time; time.sleep(60)"],
+                                       root, os.environ.copy(), root / "spawn.log", 5)
+                self.assertEqual(interrupted.exception.signum, signal.SIGTERM)
+                poller = select.poll()
+                poller.register(descriptors[0], select.POLLIN)
+                self.assertTrue(poller.poll(2000))
+                record = json.loads((root / "spawn.command.json").read_text())
+                self.assertEqual(record["received_signals"], ["SIGTERM", "SIGINT"])
+                self.assertEqual(record["raw_exit_code"], 143)
+                self.assertTrue(record["group_cleanup"]["leader_reaped"])
+            finally:
+                for descriptor in descriptors:
+                    try:
+                        signal.pidfd_send_signal(descriptor, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    os.close(descriptor)
 
 
 if __name__ == "__main__":

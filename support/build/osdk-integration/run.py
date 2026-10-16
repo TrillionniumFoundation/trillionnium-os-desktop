@@ -165,52 +165,44 @@ class RunnerInterrupted(BaseException):
         super().__init__(signal.Signals(signum).name)
 
 
+class Shutdown:
+    """Record asynchronous signals; raise only at owned-command checkpoints."""
+
+    def __init__(self):
+        self.signum = None
+        self.received = []
+
+    def remember(self, signum, _frame):
+        if self.signum is None:
+            self.signum = signum
+        self.received.append(signal.Signals(signum).name)
+
+    def check(self):
+        if self.signum is not None:
+            raise RunnerInterrupted(self.signum)
+
+
+_active_shutdown = None
+
+
 @contextmanager
 def interruption_handlers():
-    """Unwind owned commands and the runner lock on Ctrl-C or termination."""
-    def interrupted(signum, _frame):
-        raise RunnerInterrupted(signum)
+    """Share a cooperative signal latch across the CLI and public command()."""
+    global _active_shutdown
+    if _active_shutdown is not None:
+        yield _active_shutdown
+        return
+    shutdown = Shutdown()
     previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+    _active_shutdown = shutdown
     try:
         for number in previous:
-            signal.signal(number, interrupted)
-        yield
+            signal.signal(number, shutdown.remember)
+        yield shutdown
     finally:
         for number, handler in previous.items():
             signal.signal(number, handler)
-
-
-@contextmanager
-def publish_owner():
-    """Publish the Popen owner before a pending shutdown can unwind it."""
-    # Deferring Python handlers preserves the child's signal mask across exec;
-    # blocking with pthread_sigmask around Popen would also block it in the child.
-    pending = []
-    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
-    def remember(signum, _frame):
-        pending.append(signum)
-    try:
-        for number in previous:
-            signal.signal(number, remember)
-        yield
-    finally:
-        for number, handler in previous.items():
-            signal.signal(number, handler)
-        if pending:
-            raise RunnerInterrupted(pending[0])
-
-
-@contextmanager
-def finish_cleanup():
-    """A second shutdown request must not interrupt group cleanup and its record."""
-    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
-    try:
-        for number in previous:
-            signal.signal(number, signal.SIG_IGN)
-        yield
-    finally:
-        for number, handler in previous.items():
-            signal.signal(number, handler)
+        _active_shutdown = None
 
 
 class OwnedSession:
@@ -244,10 +236,6 @@ class OwnedSession:
         Descendant exit after SIGKILL is asynchronous; this runner does not adopt
         or claim to reap grandchildren. No numeric group signal follows reap.
         """
-        with finish_cleanup():
-            return self._stop(grace)
-
-    def _stop(self, grace):
         if self.reaped or self.external_reap:
             return self.status
         self.exited()
@@ -267,13 +255,16 @@ class OwnedSession:
         self.reaped = True
         return self.status
 
-    def wait(self, timeout):
+    def wait(self, timeout, shutdown=None):
         deadline = time.monotonic() + timeout
-        while not self.exited():
+        while True:
+            if shutdown is not None:
+                shutdown.check()
+            if self.exited():
+                return self.stop()
             if time.monotonic() >= deadline:
                 raise subprocess.TimeoutExpired(self.process.args, timeout)
             time.sleep(.01)
-        return self.stop()
 
 
 @contextmanager
@@ -289,15 +280,26 @@ def locked_output(lock_path, output):
 
 
 def command(command, cwd, env, output, timeout):
+    # Keep the existing public call signature, including for host-only callers.
+    # A standalone call installs its latch before any child can be created.
+    with interruption_handlers() as shutdown:
+        return _command(command, cwd, env, output, timeout, shutdown)
+
+
+def _command(command, cwd, env, output, timeout, shutdown):
     record = {"argv": command, "cwd": str(cwd), "raw_exit_code": None, "timed_out": False}
     output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
     started = time.monotonic()
     owned = None
     try:
         with output.open("wb") as log:
-            with publish_owner():
-                owned = OwnedSession(command, cwd=cwd, env=env, output=log)
-            record["raw_exit_code"] = owned.wait(timeout)
+            shutdown.check()
+            owned = OwnedSession(command, cwd=cwd, env=env, output=log)
+            # Handlers only remember requests, so Popen -> owner publication
+            # cannot unwind before this finally block can find the child.
+            shutdown.check()
+            record["raw_exit_code"] = owned.wait(timeout, shutdown)
+            shutdown.check()
     except subprocess.TimeoutExpired:
         record["timed_out"] = True
         record["raw_exit_code"] = 124
@@ -311,18 +313,30 @@ def command(command, cwd, env, output, timeout):
         record["error"] = f"{type(error).__name__}: {error}"
         raise
     finally:
-        with finish_cleanup():
-            try:
-                if owned is not None:
-                    owned.stop()
-            finally:
-                if owned is not None:
-                    record["group_cleanup"] = {"leader_pid": owned.process.pid,
-                        "leader_exit_code": owned.status, "leader_reaped": owned.reaped,
-                        "external_reap_disarmed": owned.external_reap,
-                        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"}
-                record["duration_seconds"] = round(time.monotonic() - started, 3)
-                output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
+        cleanup_failed = False
+        try:
+            if owned is not None:
+                owned.stop()
+        except BaseException as error:
+            cleanup_failed = True
+            record["cleanup_error"] = f"{type(error).__name__}: {error}"
+            raise
+        finally:
+            if owned is not None:
+                record["group_cleanup"] = {"leader_pid": owned.process.pid,
+                    "leader_exit_code": owned.status, "leader_reaped": owned.reaped,
+                    "external_reap_disarmed": owned.external_reap,
+                    "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"}
+            if shutdown.signum is not None:
+                record["interrupted_by"] = signal.Signals(shutdown.signum).name
+                record["received_signals"] = shutdown.received
+                record["raw_exit_code"] = 128 + shutdown.signum
+            record["duration_seconds"] = round(time.monotonic() - started, 3)
+            output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
+            # Also honor cancellation first received during normal cleanup;
+            # repeated signals cannot skip stop() or its completion record.
+            if not cleanup_failed:
+                shutdown.check()
     return record
 
 
@@ -572,8 +586,10 @@ def run_locked(args, here, project, upstream, output):
 
 if __name__ == "__main__":
     try:
-        with interruption_handlers():
-            raise SystemExit(main())
+        with interruption_handlers() as shutdown:
+            status = main()
+            shutdown.check()
+            raise SystemExit(status)
     except RunnerInterrupted as error:
         print(f"integration runner interrupted by {signal.Signals(error.signum).name}; owned commands stopped",
               file=sys.stderr)
