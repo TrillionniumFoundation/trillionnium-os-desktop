@@ -147,3 +147,14 @@ Duplicate sibling ResourceDomain IDs or an ID equal to an ancestor are rejected
 rather than overwriting the parent's child-cap registry. Installing a budget
 in a later 100ms period advances window accounting at apply time; same-window
 updates retain already consumed runtime even when the cap value is unchanged.
+
+## Original-owner history retirement authority
+
+For namespaces with retirement, A05 trusted bootstrap creates the pair from
+`ControlCore::with_original_owner` or `with_capacity_for_owner`.
+The non-Clone `OriginalOwnerAuthority` binds the original owner to the
+specific in-memory namespace instance and its generation. The
+`retire_through(&view, ack, &authority)` API rejects arbitrary observer
+views, invented owner receipts, foreign same-byte namespaces and stale
+generations. A07 must *separately* validate its existing durable K ledger
+and fsync before invoking retirement; no new persistent database is created.
