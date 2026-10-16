@@ -1,0 +1,163 @@
+{
+  "access": "read_only_no_device_open_no_driver_change",
+  "candidate": {
+    "identified_pci_id": [],
+    "matching_visible_devices": [],
+    "target_vendor": "nvidia"
+  },
+  "cpu": {
+    "model": "AMD EPYC 9V74 80-Core Processor",
+    "svm_flag": false,
+    "visible_processor_entries": 3,
+    "vmx_flag": false
+  },
+  "device_nodes_present": {
+    "/dev/dri/renderD128": false,
+    "/dev/kfd": false,
+    "/dev/kvm": false,
+    "/dev/nvidia0": false,
+    "/dev/nvidiactl": false,
+    "/dev/vfio/vfio": false
+  },
+  "driver_module_versions": {
+    "amdgpu": null,
+    "kvm": null,
+    "kvm_amd": null,
+    "kvm_intel": null,
+    "nvidia": null
+  },
+  "execution_environment": {
+    "container_marker": false,
+    "kernel": "Linux",
+    "kernel_release": "6.18.44",
+    "machine": "x86_64"
+  },
+  "firmware_version": null,
+  "gpu_command_queues_sync_reset": null,
+  "gpu_compute_verified": false,
+  "gpu_memory_model": null,
+  "iommu": {
+    "dmar_table_present": false,
+    "group_count_visible": 0,
+    "ivrs_table_present": false,
+    "usable_for_passthrough": null
+  },
+  "nvidia_kernel_driver_version_text": null,
+  "pci_devices": [
+    {
+      "bdf": "0000:00:00.0",
+      "class": "0x060000",
+      "device_id": "0x0d57",
+      "dma_mask_bits": "32",
+      "driver": null,
+      "iommu_group": null,
+      "is_accelerator_class": false,
+      "legacy_irq": "0",
+      "msi_irq_count": null,
+      "numa_node": "0",
+      "reset_file_present": false,
+      "subsystem_device_id": "0x0000",
+      "subsystem_vendor_id": "0x0000",
+      "vendor_id": "0x8086"
+    },
+    {
+      "bdf": "0000:00:01.0",
+      "class": "0x018000",
+      "device_id": "0x1042",
+      "dma_mask_bits": "64",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "is_accelerator_class": false,
+      "legacy_irq": "0",
+      "msi_irq_count": 2,
+      "numa_node": "0",
+      "reset_file_present": false,
+      "subsystem_device_id": "0x1042",
+      "subsystem_vendor_id": "0x1af4",
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:02.0",
+      "class": "0x020000",
+      "device_id": "0x1041",
+      "dma_mask_bits": "64",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "is_accelerator_class": false,
+      "legacy_irq": "0",
+      "msi_irq_count": 3,
+      "numa_node": "0",
+      "reset_file_present": false,
+      "subsystem_device_id": "0x1041",
+      "subsystem_vendor_id": "0x1af4",
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:03.0",
+      "class": "0xffff00",
+      "device_id": "0x1044",
+      "dma_mask_bits": "64",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "is_accelerator_class": false,
+      "legacy_irq": "0",
+      "msi_irq_count": 2,
+      "numa_node": "0",
+      "reset_file_present": false,
+      "subsystem_device_id": "0x1044",
+      "subsystem_vendor_id": "0x1af4",
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:04.0",
+      "class": "0xffff00",
+      "device_id": "0x105b",
+      "dma_mask_bits": "64",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "is_accelerator_class": false,
+      "legacy_irq": "0",
+      "msi_irq_count": 2,
+      "numa_node": "0",
+      "reset_file_present": false,
+      "subsystem_device_id": "0x105b",
+      "subsystem_vendor_id": "0x1af4",
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:05.0",
+      "class": "0xffff00",
+      "device_id": "0x1053",
+      "dma_mask_bits": "64",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "is_accelerator_class": false,
+      "legacy_irq": "0",
+      "msi_irq_count": 4,
+      "numa_node": "0",
+      "reset_file_present": false,
+      "subsystem_device_id": "0x1053",
+      "subsystem_vendor_id": "0x1af4",
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:06.0",
+      "class": "0xffff00",
+      "device_id": "0x1045",
+      "dma_mask_bits": "64",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "is_accelerator_class": false,
+      "legacy_irq": "0",
+      "msi_irq_count": 4,
+      "numa_node": "0",
+      "reset_file_present": false,
+      "subsystem_device_id": "0x1045",
+      "subsystem_vendor_id": "0x1af4",
+      "vendor_id": "0x1af4"
+    }
+  ],
+  "schema": "a09.readonly-hardware-probe.v1",
+  "timestamp_utc": "2026-10-16T07:16:44.200478+00:00",
+  "user_compute_runtime_version": null
+}
