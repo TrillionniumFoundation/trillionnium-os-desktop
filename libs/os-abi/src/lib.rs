@@ -181,10 +181,7 @@ impl Transport {
             response_capacity: get_u32(bytes, 20),
             reserved: get_u64(bytes, 24),
         };
-        if out.reserved != 0 {
-            return Err(Error::ReservedNonZero);
-        }
-        out.validate_lengths()?;
+        out.validate()?;
         Ok(out)
     }
 
@@ -192,16 +189,62 @@ impl Transport {
         if out.len() < TRANSPORT_LEN {
             return Err(Error::InsufficientCapacity);
         }
-        if self.reserved != 0 {
-            return Err(Error::ReservedNonZero);
-        }
-        self.validate_lengths()?;
+        self.validate()?;
         put_u64(out, 0, self.request_addr);
         put_u64(out, 8, self.response_addr);
         put_u32(out, 16, self.request_bytes);
         put_u32(out, 20, self.response_capacity);
         put_u64(out, 24, self.reserved);
         Ok(TRANSPORT_LEN)
+    }
+
+    /// Validate a descriptor, including one constructed through public fields.
+    ///
+    /// Only the documented length bounds, reserved field and address arithmetic
+    /// are checked. This does not validate user mappings or access permissions.
+    pub fn validate(&self) -> Result<(), Error> {
+        if self.reserved != 0 {
+            return Err(Error::ReservedNonZero);
+        }
+        self.validate_lengths()
+    }
+
+    /// Preflight an already copied, complete request before semantic admission.
+    ///
+    /// Revalidates the descriptor, requires the snapshot's length to equal
+    /// `request_bytes`, decodes the request, then checks capacity for its
+    /// successful response. A snapshot/descriptor length mismatch returns
+    /// [`Error::InvalidTransport`]. No authority or delivery sequence is issued.
+    ///
+    /// The caller must validate the descriptor before copying the complete input
+    /// once; this method then revalidates it and never dereferences either
+    /// address. Overlapping user input and output ranges are allowed. The
+    /// returned request owns all decoded values,
+    /// so later changes to the original buffers cannot alter it. User access
+    /// checks, copy faults, authorization and copyout remain kernel duties.
+    ///
+    /// ```
+    /// use hos2_os_abi::{Opcode, Request, RequestPayload, Transport};
+    /// let request = Request {
+    ///     opcode: Opcode::QueryAbi,
+    ///     request_id: [1; 16],
+    ///     target_slot: 0,
+    ///     target_generation: 0,
+    ///     payload: RequestPayload::QueryAbi,
+    /// };
+    /// let mut snapshot = [0; 64];
+    /// request.encode(&mut snapshot).unwrap();
+    /// let transport = Transport::new(0x1000, 0x1000, 64, 112);
+    /// assert_eq!(transport.decode_request_snapshot(&snapshot), Ok(request));
+    /// ```
+    pub fn decode_request_snapshot(&self, snapshot: &[u8]) -> Result<Request, Error> {
+        self.validate()?;
+        if snapshot.len() != self.request_bytes as usize {
+            return Err(Error::InvalidTransport);
+        }
+        let request = decode_request(snapshot)?;
+        self.ensure_success_response_capacity(request.opcode)?;
+        Ok(request)
     }
 
     /// Check capacity before authorization or semantic processing.

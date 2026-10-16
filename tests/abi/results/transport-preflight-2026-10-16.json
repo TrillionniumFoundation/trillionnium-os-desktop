@@ -1,0 +1,180 @@
+{
+  "schema": "hos2-transport-preflight-acceptance-v1",
+  "date": "2026-10-16",
+  "scope": "host ABI codec, no kernel syscall/authorization validation",
+  "base_commit": "3b2d15bc987e7ca78e64fa54edffb2177b8abde0",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "python": "3.12.14",
+  "rust": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+  "source_sha256": {
+    "libs/os-abi/Cargo.toml": "8941aa060c09b8243125fceba8000bac896ac12a72f215a1295174cdf1f92b3a",
+    "libs/os-abi/src/lib.rs": "b7cc442a3bd0b5fcf5dddbd8f3557e036daf6912d0ca54e38acaee9b2f235725",
+    "libs/os-abi/tests/golden_vectors.rs": "4e67370ffdb00aec71655c8e37d18b864162a13ed984bbab82dfcc9c20ffe1de",
+    "libs/os-abi/tests/mutation_kill.rs": "10e4a0a2521291602fc548664d9d2baaa0feb4eea15271afe772b9fc27135ece",
+    "libs/os-abi/tests/negative_vectors.rs": "eb6e47cc9b890ee2f791bb24c719b45198a2b9a60b0de1698d16dfd282703d45",
+    "libs/os-abi/tests/semantic_edges.rs": "f4f526b6a671b9aa3d78603cb95261290cbc5b203dcd299e33762a2dee30c021",
+    "libs/os-abi/tests/transport_preflight.rs": "8987706f87172d7072a68b9288434e21af3453438e5d0593493707d599ce6c7c",
+    "libs/os-abi/tests/transport_vectors.rs": "1153fbf02e592169fa1b8a6a2e820796fc55244c5d78660fda85b6ab5018e182",
+    "tests/abi/run_rust_mutations.py": "bf7122f763d51435869cf63388ae433a4281354eebf4b430ac42455b5facd84b",
+    "tests/abi/test_dense_boundaries.py": "b1b89edf78c7ca48a53b535175e4e2571952fa8ce3ea44ca4742816584debbd6",
+    "tests/abi/test_golden_contract.py": "b03e9372d0d2b161154f2175ba5dafdcc1b917d041aefc0f80c737ce41cc087e",
+    "tests/abi/test_mutations.py": "d282e5991d4996e3ce3ba5790493b5171e9bc968be9da008d420caf295e0a068",
+    "tests/abi/test_semantic_edges_contract.py": "3b635d2ff64e991d824702236ddb3e41b4e5f7c8af7fe90b181f06feabc62c99",
+    "tests/abi/test_transport32_contract.py": "94f6cd378357ac9eb0eeab65bd34a627bd1a0c2f90332c8402c56d9e3225b8bc",
+    "tests/golden/generate_hos2.py": "87121df8850842e8f39ce9e7668a1e7b0aed5158d5a8f01fb0343d3345f9638a",
+    "tests/golden/generate_hos2_edges.py": "6beca933a8eee565342310604689bbed21b2efe3958ee4e1ab6f796139b3108e",
+    "tests/golden/generate_transport32.py": "8afcc15d130335c378d9235f6a52be9cc804ed2522d85e11e5771e9e609e44a7",
+    "tests/golden/hos2.json": "792e8535ab3d0144ff182e3024c57b1a6815b65ffd7ac3ff07a67594851a05ed",
+    "tests/golden/hos2_edges.json": "d176461f0a1b42751e3e41c24102e56d25c8e4942cec0deb0ae3f16c271e13d4",
+    "tests/golden/transport32.hex": "7c72f4018d2aa14a298064a40d7fc8ff819ff0f87567f857fc5f600bfd3fd28a"
+  },
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml"
+      ],
+      "exit": 0,
+      "stdout": "\nrunning 3 tests\ntest tests::malformed_usage_is_rejected ... ok\ntest tests::request_header_and_payload_round_trip ... ok\ntest tests::transport_explicit_little_endian ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 8 tests\ntest all_known_error_status_codes_accept_empty_error_responses ... ok\ntest all_golden_responses_decode_from_larger_copyout_capacity ... ok\ntest every_golden_header_refuses_version_reserved_or_zero_id_mutation ... ok\ntest every_golden_encoder_checks_capacity_before_writing ... ok\ntest each_golden_cut_is_rejected_not_just_selected_truncations ... ok\ntest fixed_golden_vectors_are_consumed_by_rust_codec ... ok\ntest encoders_match_independent_golden_bytes_for_all_operations ... ok\ntest golden_mutation_sweep_never_panics_or_reencodes_accepted_bytes_differently ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s\n\n\nrunning 7 tests\ntest cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest fixed_golden_is_a_real_valid_rust_request ... ok\ntest same_sequence_across_targets_is_also_conflict ... ok\ntest revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok\ntest same_sequence_and_target_different_cap_is_conflict ... ok\ntest same_sequence_and_target_different_revision_is_conflict ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 17 tests\ntest budget_cpu_time_cannot_exceed_elapsed_window_time ... ok\ntest fixed_golden_budget_mutations_preserve_delivery_id_but_change_canonical_request ... ok\ntest encoders_report_insufficient_output_capacity ... ok\ntest correlation_and_capacity_helpers_are_stable ... ok\ntest install_budget_request_rejects_revision_period_cap_and_reserved_mutations ... ok\ntest install_previous_revision_must_be_a_valid_existing_revision ... ok\ntest install_response_echo_rejects_unordered_ids_in_success_and_failure ... ok\ntest install_revision_mismatch_is_not_an_integer_overflow ... ok\ntest malformed_frame_lengths_are_rejected_before_unknown_opcode_or_status ... ok\ntest ordered_sequence_helpers_provide_canonical_little_endian_ids ... ok\ntest query_abi_capability_table_rejects_unsupported_feature_combinations ... ok\ntest query_delivery_terminal_metadata_and_historical_request_are_checked ... ok\ntest read_usage_and_retire_through_reject_impossible_semantic_values ... ok\ntest request_structure_mutations_are_rejected ... ok\ntest response_structure_mutations_are_rejected ... ok\ntest unknown_minor_and_exact_wire_lengths_are_rejected ... ok\ntest transport_rejects_wrapping_pointer_ranges_without_access_checks ... ok\n\ntest result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 9 tests\ntest all_nonterminal_states_keep_only_the_history_sequence ... ok\ntest all_independent_semantic_edge_frames_decode ... ok\ntest all_saved_terminal_rejections_preserve_status_without_success_metadata ... ok\ntest history_and_read_ids_remain_opaque_including_nonzero_high_bytes ... ok\ntest one_step_beyond_accepted_write_and_retire_boundaries_is_rejected ... ok\ntest retired_frontier_can_reach_last_write_and_leave_next_sequence_max ... ok\ntest last_write_sequence_and_revision_increment_to_max_are_valid ... ok\ntest nonterminal_states_reject_saved_status_and_each_success_metadata_field ... ok\ntest every_terminal_error_rejects_each_nonzero_success_metadata_field ... ok\n\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 6 tests\ntest descriptor_lengths_must_match_even_otherwise_valid_snapshots ... ok\ntest all_five_fixed_requests_pass_the_combined_preflight ... ok\ntest malformed_snapshot_is_rejected_before_short_output_capacity ... ok\ntest overlapping_ranges_are_accepted_and_request_owns_the_snapshot_values ... ok\ntest public_descriptor_fields_cannot_bypass_validation ... ok\ntest every_opcode_requires_success_capacity_before_admission ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 4 tests\ntest decode_independent_transport32_bytes_and_reencode_exactly ... ok\ntest every_short_transport_descriptor_is_rejected ... ok\ntest transport_rejects_reserved_overflow_and_invalid_request_byte_count ... ok\ntest transport_reserves_success_capacity_before_processing_semantic_errors ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest src/lib.rs - Transport::decode_request_snapshot (line 226) ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s\n\n",
+      "stderr": "   Compiling hos2-os-abi v0.1.0 (/workspace/scratch/375c06340f9a/trillionnium-os-desktop/libs/os-abi)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.33s\n     Running unittests src/lib.rs (/tmp/a02-build/debug/deps/hos2_os_abi-5dcb5b5160c04c48)\n     Running tests/golden_vectors.rs (/tmp/a02-build/debug/deps/golden_vectors-e06fa4d064b33de0)\n     Running tests/mutation_kill.rs (/tmp/a02-build/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n     Running tests/negative_vectors.rs (/tmp/a02-build/debug/deps/negative_vectors-e975f0805a7f314d)\n     Running tests/semantic_edges.rs (/tmp/a02-build/debug/deps/semantic_edges-13b789dad6c6536b)\n     Running tests/transport_preflight.rs (/tmp/a02-build/debug/deps/transport_preflight-d0281d4d599b27c1)\n     Running tests/transport_vectors.rs (/tmp/a02-build/debug/deps/transport_vectors-e0cae180d79cbfc5)\n   Doc-tests hos2_os_abi\n"
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--offline",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "    Checking hos2-os-abi v0.1.0 (/workspace/scratch/375c06340f9a/trillionnium-os-desktop/libs/os-abi)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.33s\n"
+    },
+    {
+      "argv": [
+        "cargo",
+        "check",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--offline",
+        "--no-default-features",
+        "--target",
+        "x86_64-unknown-none"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "    Checking hos2-os-abi v0.1.0 (/workspace/scratch/375c06340f9a/trillionnium-os-desktop/libs/os-abi)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.07s\n"
+    },
+    {
+      "argv": [
+        "python3",
+        "tests/golden/generate_hos2.py",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "12 golden HOS2 vectors verified\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "python3",
+        "tests/golden/generate_transport32.py",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "1 independent 32-byte HOS2 transport golden verified\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "python3",
+        "tests/golden/generate_hos2_edges.py",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "24 golden HOS2 semantic edge vectors verified\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/abi",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_abi_advertisement_rejects_invalid_capabilities_and_bounds (test_dense_boundaries.DenseGoldenBoundaries.test_abi_advertisement_rejects_invalid_capabilities_and_bounds) ... ok\ntest_all_golden_prefixes_are_truncated_not_valid_frames (test_dense_boundaries.DenseGoldenBoundaries.test_all_golden_prefixes_are_truncated_not_valid_frames) ... ok\ntest_common_version_reserved_and_id_mutations_are_rejected (test_dense_boundaries.DenseGoldenBoundaries.test_common_version_reserved_and_id_mutations_are_rejected) ... ok\ntest_delivery_payload_rejects_invalid_terminal_metadata (test_dense_boundaries.DenseGoldenBoundaries.test_delivery_payload_rejects_invalid_terminal_metadata) ... ok\ntest_golden_frames_reject_trailing_bytes (test_dense_boundaries.DenseGoldenBoundaries.test_golden_frames_reject_trailing_bytes) ... ok\ntest_retirement_frontier_requires_a_strictly_later_next_sequence (test_dense_boundaries.DenseGoldenBoundaries.test_retirement_frontier_requires_a_strictly_later_next_sequence) ... ok\ntest_sequence_high_half_is_zero_even_in_error_response (test_dense_boundaries.DenseGoldenBoundaries.test_sequence_high_half_is_zero_even_in_error_response) ... ok\ntest_success_apply_and_terminal_history_share_elapsed_cpu_bounds (test_dense_boundaries.DenseGoldenBoundaries.test_success_apply_and_terminal_history_share_elapsed_cpu_bounds) ... ok\ntest_usage_payload_rejects_impossible_accounting_without_lowering_consumption (test_dense_boundaries.DenseGoldenBoundaries.test_usage_payload_rejects_impossible_accounting_without_lowering_consumption) ... ok\ntest_all_fixtures_frame_layout (test_golden_contract.GoldenContract.test_all_fixtures_frame_layout) ... ok\ntest_cap_and_revision_mutations_are_not_idempotent_retransmissions (test_golden_contract.GoldenContract.test_cap_and_revision_mutations_are_not_idempotent_retransmissions) ... ok\ntest_install_and_history_share_valid_effect_time (test_golden_contract.GoldenContract.test_install_and_history_share_valid_effect_time) ... ok\ntest_install_response_ordered_id_is_checked_for_success_and_error (test_golden_contract.GoldenContract.test_install_response_ordered_id_is_checked_for_success_and_error) ... ok\ntest_install_response_requires_existing_revision_and_elapsed_time (test_golden_contract.GoldenContract.test_install_response_requires_existing_revision_and_elapsed_time) ... ok\ntest_malformed_requests_rejected_before_effect (test_golden_contract.GoldenContract.test_malformed_requests_rejected_before_effect) ... ok\ntest_sample_single_cpu_elapsed_time (test_golden_contract.GoldenContract.test_sample_single_cpu_elapsed_time) ... ok\ntest_unknown_status_and_nonempty_error_rejected (test_golden_contract.GoldenContract.test_unknown_status_and_nonempty_error_rejected) ... ok\ntest_cap_mutation_same_sequence_and_target_conflicts (test_mutations.InstallBudgetMutationTests.test_cap_mutation_same_sequence_and_target_conflicts) ... ok\ntest_expected_revision_is_live_cas (test_mutations.InstallBudgetMutationTests.test_expected_revision_is_live_cas) ... ok\ntest_expected_revision_mutation_same_sequence_and_target_conflicts (test_mutations.InstallBudgetMutationTests.test_expected_revision_mutation_same_sequence_and_target_conflicts) ... ok\ntest_identical_retry_preserves_original_reservation (test_mutations.InstallBudgetMutationTests.test_identical_retry_preserves_original_reservation) ... ok\ntest_mutant_ignoring_cap_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_cap_is_caught) ... ok\ntest_mutant_ignoring_revision_cas_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_revision_cas_is_caught) ... ok\ntest_mutant_ignoring_revision_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_revision_is_caught) ... ok\ntest_mutant_with_per_target_sequence_namespace_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_with_per_target_sequence_namespace_is_caught) ... ok\ntest_same_sequence_different_target_conflicts_in_one_capspace (test_mutations.InstallBudgetMutationTests.test_same_sequence_different_target_conflicts_in_one_capspace) ... ok\ntest_independent_generator_matches_committed_edge_bytes (test_semantic_edges_contract.SemanticEdgeContract.test_independent_generator_matches_committed_edge_bytes) ... ok\ntest_independent_payload_oracle_accepts_all_edge_vectors (test_semantic_edges_contract.SemanticEdgeContract.test_independent_payload_oracle_accepts_all_edge_vectors) ... ok\ntest_descriptor_fields_are_not_memory_native_layout (test_transport32_contract.TransportGoldenContract.test_descriptor_fields_are_not_memory_native_layout) ... ok\ntest_fixed_descriptor_is_32_bytes_and_little_endian (test_transport32_contract.TransportGoldenContract.test_fixed_descriptor_is_32_bytes_and_little_endian) ... ok\n\n----------------------------------------------------------------------\nRan 30 tests in 0.037s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "python3",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/abi",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_abi_advertisement_rejects_invalid_capabilities_and_bounds (test_dense_boundaries.DenseGoldenBoundaries.test_abi_advertisement_rejects_invalid_capabilities_and_bounds) ... ok\ntest_all_golden_prefixes_are_truncated_not_valid_frames (test_dense_boundaries.DenseGoldenBoundaries.test_all_golden_prefixes_are_truncated_not_valid_frames) ... ok\ntest_common_version_reserved_and_id_mutations_are_rejected (test_dense_boundaries.DenseGoldenBoundaries.test_common_version_reserved_and_id_mutations_are_rejected) ... ok\ntest_delivery_payload_rejects_invalid_terminal_metadata (test_dense_boundaries.DenseGoldenBoundaries.test_delivery_payload_rejects_invalid_terminal_metadata) ... ok\ntest_golden_frames_reject_trailing_bytes (test_dense_boundaries.DenseGoldenBoundaries.test_golden_frames_reject_trailing_bytes) ... ok\ntest_retirement_frontier_requires_a_strictly_later_next_sequence (test_dense_boundaries.DenseGoldenBoundaries.test_retirement_frontier_requires_a_strictly_later_next_sequence) ... ok\ntest_sequence_high_half_is_zero_even_in_error_response (test_dense_boundaries.DenseGoldenBoundaries.test_sequence_high_half_is_zero_even_in_error_response) ... ok\ntest_success_apply_and_terminal_history_share_elapsed_cpu_bounds (test_dense_boundaries.DenseGoldenBoundaries.test_success_apply_and_terminal_history_share_elapsed_cpu_bounds) ... ok\ntest_usage_payload_rejects_impossible_accounting_without_lowering_consumption (test_dense_boundaries.DenseGoldenBoundaries.test_usage_payload_rejects_impossible_accounting_without_lowering_consumption) ... ok\ntest_all_fixtures_frame_layout (test_golden_contract.GoldenContract.test_all_fixtures_frame_layout) ... ok\ntest_cap_and_revision_mutations_are_not_idempotent_retransmissions (test_golden_contract.GoldenContract.test_cap_and_revision_mutations_are_not_idempotent_retransmissions) ... ok\ntest_install_and_history_share_valid_effect_time (test_golden_contract.GoldenContract.test_install_and_history_share_valid_effect_time) ... ok\ntest_install_response_ordered_id_is_checked_for_success_and_error (test_golden_contract.GoldenContract.test_install_response_ordered_id_is_checked_for_success_and_error) ... ok\ntest_install_response_requires_existing_revision_and_elapsed_time (test_golden_contract.GoldenContract.test_install_response_requires_existing_revision_and_elapsed_time) ... ok\ntest_malformed_requests_rejected_before_effect (test_golden_contract.GoldenContract.test_malformed_requests_rejected_before_effect) ... ok\ntest_sample_single_cpu_elapsed_time (test_golden_contract.GoldenContract.test_sample_single_cpu_elapsed_time) ... ok\ntest_unknown_status_and_nonempty_error_rejected (test_golden_contract.GoldenContract.test_unknown_status_and_nonempty_error_rejected) ... ok\ntest_cap_mutation_same_sequence_and_target_conflicts (test_mutations.InstallBudgetMutationTests.test_cap_mutation_same_sequence_and_target_conflicts) ... ok\ntest_expected_revision_is_live_cas (test_mutations.InstallBudgetMutationTests.test_expected_revision_is_live_cas) ... ok\ntest_expected_revision_mutation_same_sequence_and_target_conflicts (test_mutations.InstallBudgetMutationTests.test_expected_revision_mutation_same_sequence_and_target_conflicts) ... ok\ntest_identical_retry_preserves_original_reservation (test_mutations.InstallBudgetMutationTests.test_identical_retry_preserves_original_reservation) ... ok\ntest_mutant_ignoring_cap_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_cap_is_caught) ... ok\ntest_mutant_ignoring_revision_cas_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_revision_cas_is_caught) ... ok\ntest_mutant_ignoring_revision_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_revision_is_caught) ... ok\ntest_mutant_with_per_target_sequence_namespace_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_with_per_target_sequence_namespace_is_caught) ... ok\ntest_same_sequence_different_target_conflicts_in_one_capspace (test_mutations.InstallBudgetMutationTests.test_same_sequence_different_target_conflicts_in_one_capspace) ... ok\ntest_independent_generator_matches_committed_edge_bytes (test_semantic_edges_contract.SemanticEdgeContract.test_independent_generator_matches_committed_edge_bytes) ... ok\ntest_independent_payload_oracle_accepts_all_edge_vectors (test_semantic_edges_contract.SemanticEdgeContract.test_independent_payload_oracle_accepts_all_edge_vectors) ... ok\ntest_descriptor_fields_are_not_memory_native_layout (test_transport32_contract.TransportGoldenContract.test_descriptor_fields_are_not_memory_native_layout) ... ok\ntest_fixed_descriptor_is_32_bytes_and_little_endian (test_transport32_contract.TransportGoldenContract.test_fixed_descriptor_is_32_bytes_and_little_endian) ... ok\n\n----------------------------------------------------------------------\nRan 30 tests in 0.036s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/abi",
+        "-p",
+        "test_mutations.py",
+        "-v"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_cap_mutation_same_sequence_and_target_conflicts (test_mutations.InstallBudgetMutationTests.test_cap_mutation_same_sequence_and_target_conflicts) ... ok\ntest_expected_revision_is_live_cas (test_mutations.InstallBudgetMutationTests.test_expected_revision_is_live_cas) ... ok\ntest_expected_revision_mutation_same_sequence_and_target_conflicts (test_mutations.InstallBudgetMutationTests.test_expected_revision_mutation_same_sequence_and_target_conflicts) ... ok\ntest_identical_retry_preserves_original_reservation (test_mutations.InstallBudgetMutationTests.test_identical_retry_preserves_original_reservation) ... ok\ntest_mutant_ignoring_cap_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_cap_is_caught) ... ok\ntest_mutant_ignoring_revision_cas_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_revision_cas_is_caught) ... ok\ntest_mutant_ignoring_revision_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_revision_is_caught) ... ok\ntest_mutant_with_per_target_sequence_namespace_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_with_per_target_sequence_namespace_is_caught) ... ok\ntest_same_sequence_different_target_conflicts_in_one_capspace (test_mutations.InstallBudgetMutationTests.test_same_sequence_different_target_conflicts_in_one_capspace) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.001s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "readme_bytes": 0,
+  "success": true
+}
