@@ -698,3 +698,192 @@ mod quota_debt_regressions {
         budget.carry_debt_clocks = quota / 2;
         assert_eq!(budget.observed_nr_periods(start - period / 2), 9);
         assert_eq!(budget.observed_nr_periods(start + 3 * period + 1), 12);
+        assert_eq!(budget.window_start, start);
+        assert_eq!(budget.used_clocks, quota);
+        assert_eq!(budget.carry_debt_clocks, quota / 2);
+        // Unlike a statistics read, the real scheduler advances and settles.
+        budget.advance(start + 3 * period + 1);
+        assert_eq!(budget.nr_periods, 12);
+        assert_eq!(budget.carry_debt_clocks, 0);
+    }
+
+    #[ktest]
+    fn overrun_must_carry_then_repay_without_refill() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota.saturating_mul(2);
+        budget.advance(start + period);
+        assert_eq!(budget.used_clocks, 0);
+        assert_eq!(budget.carry_debt_clocks, quota);
+        assert!(!budget.eligible(start + period));
+        budget.advance(start + period * 2);
+        assert_eq!(budget.carry_debt_clocks, 0);
+        assert!(budget.eligible(start + period * 2));
+    }
+
+    #[ktest]
+    fn unused_budget_must_not_accumulate_as_credit() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota / 2;
+        budget.advance(start + period);
+        assert_eq!(budget.carry_debt_clocks, 0);
+        budget.used_clocks = quota;
+        assert!(!budget.eligible(start + period));
+    }
+
+    #[ktest]
+    fn reconfiguration_in_same_window_must_not_refill() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota;
+        budget.carry_debt_clocks = quota / 2;
+        let now = start + period / 2;
+        budget.reconfigure(1_000, 100_000, now);
+        assert_eq!(budget.used_clocks, quota);
+        assert_eq!(budget.carry_debt_clocks, quota / 2);
+        assert!(!budget.eligible(now));
+    }
+
+    #[ktest]
+    fn scheduler_runtime_crossing_tick_window_keeps_previous_cpu_charge() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        // A non-preemptible interval extends two quotas before the 100ms
+        // boundary, and another quarter quota into the next period.
+        budget.charge(start + period - quota * 2, start + period + quota / 4);
+        assert_eq!(budget.window_start, start + period);
+        assert_eq!(budget.carry_debt_clocks, quota);
+        assert_eq!(budget.used_clocks, quota / 4);
+        assert!(!budget.eligible(start + period + quota / 4));
+    }
+
+    #[ktest]
+    fn crossing_splits_already_charged_and_new_cpu_without_double_count() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota / 2;
+        budget.charge(start + period - quota * 3, start + period + quota / 2);
+        assert_eq!(budget.carry_debt_clocks, quota * 2 + quota / 2);
+        assert_eq!(budget.used_clocks, quota / 2);
+    }
+
+    #[ktest]
+    fn idle_skipped_periods_never_subsidize_late_burst() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        let last_completed = start + 6 * period;
+        budget.charge(last_completed + period / 2,
+                      last_completed + period + quota / 2);
+        assert_eq!(budget.window_start, last_completed + period);
+        assert_eq!(budget.carry_debt_clocks, period / 2 - quota);
+        assert_eq!(budget.used_clocks, quota / 2);
+        assert!(!budget.eligible(last_completed + period + quota / 2));
+    }
+
+    #[ktest]
+    fn long_continuous_interval_has_constant_time_bounded_debt_accounting() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.charge(start + period / 2, start + 5 * period + quota / 2);
+        // First completed period: P/2 work - Q budget. The following four
+        // completed periods were fully busy; no per-period heap work or loop.
+        let expected = period / 2 - quota + 4 * (period - quota);
+        assert_eq!(budget.carry_debt_clocks, expected);
+        assert_eq!(budget.used_clocks, quota / 2);
+    }
+
+    #[ktest]
+    fn earlier_clock_value_cannot_reopen_or_refill_previous_period() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(4);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota;
+        budget.carry_debt_clocks = quota / 2;
+        budget.advance(start - period / 2);
+        budget.charge(start - period / 2, start - 1);
+        assert_eq!(budget.window_start, start);
+        assert_eq!(budget.used_clocks, quota);
+        assert_eq!(budget.carry_debt_clocks, quota / 2);
+        assert!(!budget.eligible(start));
+    }
+
+    #[ktest]
+    fn charging_500_intervals_matches_simple_period_by_period_reference() {
+        // Adversarial reference oracle runs only in ktest; the real scheduler
+        // hot path remains O(1) even if multiple windows elapsed between ticks.
+        fn next(seed: &mut u64) -> u64 {
+            *seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            *seed
+        }
+
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let start = period.saturating_mul(2);
+        let mut seed = 0xA03A06_A11CEu64;
+        for _ in 0..500 {
+            let quota_us = 1_000 + next(&mut seed) % 99_001;
+            let quota = CpuMax::us_to_clocks(quota_us);
+            let mut budget = sample(quota_us, 100_000, start);
+            let old_used = next(&mut seed) % period;
+            let old_debt = next(&mut seed) % period;
+            budget.used_clocks = old_used;
+            budget.carry_debt_clocks = old_debt;
+
+            let from = start
+                + (next(&mut seed) % 10) * period
+                + next(&mut seed) % period;
+            let until = from + next(&mut seed) % (period * 11);
+            let new_start = until / period * period;
+            let mut slow_debt = old_debt;
+            let mut window = start;
+            while window < new_start {
+                let work = (window + period)
+                    .min(until)
+                    .saturating_sub(from.max(window));
+                let spent = work + if window == start { old_used } else { 0 };
+                slow_debt = slow_debt.saturating_add(spent).saturating_sub(quota);
+                window += period;
+            }
+            let slow_used = if new_start == start {
+                old_used.saturating_add(until.saturating_sub(from.max(start)))
+            } else {
+                until.saturating_sub(from.max(new_start))
+            };
+            budget.charge(from, until);
+            assert_eq!(budget.window_start, new_start);
+            assert_eq!(budget.used_clocks, slow_used);
+            assert_eq!(budget.carry_debt_clocks, slow_debt);
+        }
+    }
+
+    #[ktest]
+    fn skipped_periods_pay_down_debt_but_never_mint_credit() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota.saturating_mul(3);
+        budget.advance(start + period * 4);
+        assert_eq!(budget.carry_debt_clocks, 0);
+        assert_eq!(budget.used_clocks, 0);
+        budget.used_clocks = quota;
+        assert!(!budget.eligible(start + period * 4));
+    }
+}
