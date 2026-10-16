@@ -364,3 +364,21 @@ after namespace loss, *not* a terminal/retired result. A03's fallible
 wire observation converter permits these two states at MAX but refuses
 to serialize forged Reserved/Terminal/Retired MAX observations. A02's
 independent no_std codec is the test oracle for the MAX history response.
+
+## Executable bounded-window invariant audit (host only)
+
+`ControlCore::validate_invariants_for_host_model()` inspects the live
+namespace and each result slot with the same namespace->slot lock order as
+query/retire. It checks monotonic `next_sequence` and `retired_through`,
+the **complete contiguous** unretired window (no missing sequence hidden by
+result reclamation), bounded slot count, publisher/request binding, terminal
+HOS2 result metadata shape, and absence of fenced slots in a still-live
+namespace. After explicit history loss, no slots may remain. Errors use
+`DeliveryInvariantError`; the check never creates new authority, touches a
+Hepta K ledger, or performs a resource effect.
+
+New Rust tests exercise the diagnostic across a permanently pending first
+sequence + exhausted eight-slot window, its eventual contiguous retirement,
+a 10,000-delivery bounded sequence, and an observer concurrently auditing
+512 producer CAS commits/retirements. This is **O(window)** host diagnostic
+work, not an IRQ-safe or production scheduler operation and not loom proof.

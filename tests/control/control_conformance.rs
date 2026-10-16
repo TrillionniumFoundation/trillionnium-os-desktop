@@ -2134,3 +2134,143 @@ fn a02_rejects_elapsed_cpu_forgery_even_without_a03_conversion_guard() {
         Err(Error::InvalidField)
     );
 }
+
+#[test]
+fn invariant_audit_keeps_hanging_prefix_and_capacity_exhaustion_nonterminal() {
+    let (core, authority) = ControlCore::with_capacity_for_owner(
+        boot(410_000),
+        space(410_000),
+        8,
+        owner(9000),
+    )
+    .unwrap();
+    let target = root(410_000, CPU_PERIOD_NS);
+    let who = publisher(410_001);
+    let view = core.delivery_view_for(owner(9000)).unwrap();
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+    let first = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+        .unwrap();
+    for sequence in 2..=8_u64 {
+        let token = core
+            .reserve(request(sequence, target.grant(who).unwrap(), 1, 20), who)
+            .unwrap();
+        core.publish(
+            &token,
+            who,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::InvalidInput,
+            },
+        )
+        .unwrap();
+    }
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    assert_eq!(core.window_len(), 8);
+    assert_eq!(
+        core.reserve(request(9, target.grant(who).unwrap(), 1, 20), who)
+            .err(),
+        Some(DeliveryError::ResourceExhausted)
+    );
+    assert_eq!(core.next_sequence(), 9);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    assert_eq!(
+        core.query_delivery(&view, 1).unwrap().state,
+        DeliveryState::Reserved
+    );
+    assert_eq!(
+        core.retire_through(&view, ack(&core, 8), &authority),
+        Err(DeliveryError::PendingPrefix)
+    );
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+    core.publish(
+        &first,
+        who,
+        PublishOutcome::Failure {
+            status: DeliveryStatus::Revoked,
+        },
+    )
+    .unwrap();
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    core.retire_through(&view, ack(&core, 8), &authority)
+        .unwrap();
+    assert_eq!(core.retired_through(), 8);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+    for sequence in 9..=10_000_u64 {
+        let token = core
+            .reserve(request(sequence, target.grant(who).unwrap(), 1, 20), who)
+            .unwrap();
+        core.publish(
+            &token,
+            who,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::InvalidInput,
+            },
+        )
+        .unwrap();
+        if sequence % 127 == 0 {
+            assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+        }
+        core.retire_through(&view, ack(&core, sequence), &authority)
+            .unwrap();
+    }
+    assert_eq!(core.retired_through(), 10_000);
+    assert_eq!(core.window_len(), 0);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    core.lose_history();
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+    assert_eq!(
+        core.query_delivery(&view, 1).unwrap().state,
+        DeliveryState::HistoryLost
+    );
+}
+
+#[test]
+fn concurrent_window_invariant_audits_never_see_half_committed_results() {
+    let (core, authority) = ControlCore::with_capacity_for_owner(
+        boot(420_000),
+        space(420_000),
+        16,
+        owner(9000),
+    )
+    .unwrap();
+    let core = Arc::new(core);
+    let target = root(420_000, CPU_PERIOD_NS);
+    let who = publisher(420_001);
+    let start = Arc::new(Barrier::new(3));
+
+    let producer_core = Arc::clone(&core);
+    let producer_start = Arc::clone(&start);
+    let producer = thread::spawn(move || {
+        producer_start.wait();
+        let view = producer_core.delivery_view_for(owner(9000)).unwrap();
+        for sequence in 1..=512_u64 {
+            let token = producer_core
+                .reserve(request(sequence, target.grant(who).unwrap(), target.revision(), 20), who)
+                .unwrap();
+            let outcome = producer_core.commit(&token, who, sequence).unwrap();
+            assert_eq!(outcome.status, Some(DeliveryStatus::Ok));
+            producer_core
+                .retire_through(&view, ack(&producer_core, sequence), &authority)
+                .unwrap();
+        }
+    });
+
+    let audit_core = Arc::clone(&core);
+    let audit_start = Arc::clone(&start);
+    let auditor = thread::spawn(move || {
+        audit_start.wait();
+        for _ in 0..2048 {
+            assert_eq!(audit_core.validate_invariants_for_host_model(), Ok(()));
+            thread::yield_now();
+        }
+    });
+
+    start.wait();
+    producer.join().unwrap();
+    auditor.join().unwrap();
+    assert_eq!(core.retired_through(), 512);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+}

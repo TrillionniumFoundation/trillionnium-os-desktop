@@ -1316,6 +1316,19 @@ pub struct RetireReceipt {
     pub next_sequence: u64,
 }
 
+/// Read-only host-model invariant failure. This is diagnostic state
+/// validation, not a production kernel authority or a persistence proof.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DeliveryInvariantError {
+    InvalidFrontier,
+    CapacityExceeded,
+    NoncontiguousWindow,
+    InvalidSlotBinding,
+    InvalidTerminalResult,
+    FencedLiveSlot,
+    LostHistoryRetainsSlots,
+}
+
 impl ControlCore {
     pub fn new(boot_id: BootId, cap_space_id: CapSpaceId) -> Self {
         Self::with_capacity(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY)
@@ -1663,6 +1676,75 @@ impl ControlCore {
 
     pub fn capacity(&self) -> usize {
         lock_unpoisoned(&self.namespace.state).capacity
+    }
+
+    /// Inspect the entire bounded non-retired D window under the namespace
+    /// lock, including immutable terminal metadata. Never acquires a resource
+    /// mutation gate or performs an effect. The lock order matches
+    /// QueryDelivery/RetireThrough: namespace first, then result slot.
+    ///
+    /// This is an O(window) host-model diagnostic for A05/A07 integration
+    /// tests. It must not be called from an IRQ or a real scheduler hot path.
+    pub fn validate_invariants_for_host_model(&self) -> Result<(), DeliveryInvariantError> {
+        let ns = lock_unpoisoned(&self.namespace.state);
+        let outstanding = ns
+            .next_sequence
+            .checked_sub(ns.retired_through)
+            .and_then(|difference| difference.checked_sub(1))
+            .ok_or(DeliveryInvariantError::InvalidFrontier)?;
+        if ns.next_sequence == 0 {
+            return Err(DeliveryInvariantError::InvalidFrontier);
+        }
+        if ns.slots.len() > ns.capacity {
+            return Err(DeliveryInvariantError::CapacityExceeded);
+        }
+        if ns.history_lost {
+            if ns.slots.is_empty() {
+                return Ok(());
+            }
+            return Err(DeliveryInvariantError::LostHistoryRetainsSlots);
+        }
+
+        let expected_len = usize::try_from(outstanding)
+            .map_err(|_| DeliveryInvariantError::CapacityExceeded)?;
+        if expected_len != ns.slots.len() {
+            return Err(DeliveryInvariantError::NoncontiguousWindow);
+        }
+
+        let mut sequence = ns
+            .retired_through
+            .checked_add(1)
+            .ok_or(DeliveryInvariantError::InvalidFrontier)?;
+        for (&key, slot) in &ns.slots {
+            if key != sequence {
+                return Err(DeliveryInvariantError::NoncontiguousWindow);
+            }
+            if slot.binding.sequence != key
+                || slot.binding.publisher != slot.publisher
+                || !slot.publisher.is_nonzero()
+            {
+                return Err(DeliveryInvariantError::InvalidSlotBinding);
+            }
+            match *lock_unpoisoned(&slot.state) {
+                SlotState::Reserved => {}
+                SlotState::Fenced => return Err(DeliveryInvariantError::FencedLiveSlot),
+                SlotState::Terminal(result) => {
+                    if observation_from_published(self.identity(), key, result)
+                        .hos2_saved_status_code()
+                        .is_none()
+                    {
+                        return Err(DeliveryInvariantError::InvalidTerminalResult);
+                    }
+                }
+            }
+            sequence = sequence
+                .checked_add(1)
+                .ok_or(DeliveryInvariantError::InvalidFrontier)?;
+        }
+        if sequence != ns.next_sequence {
+            return Err(DeliveryInvariantError::NoncontiguousWindow);
+        }
+        Ok(())
     }
 
     fn token_is_live(&self, token: &ReserveToken) -> bool {
