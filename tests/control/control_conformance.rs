@@ -6,8 +6,9 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, OwnerId, OwnerReceipt, PublishOutcome, PublisherId, ReserveAttempt,
-    ResourceDomain, ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS,
+    DeliveryStatus, HistoryAck, Id16, LogicalOperationId, OperationBinding, OwnerId, OwnerReceipt,
+    PublishOutcome, PublisherId, ReserveAttempt, ResourceDomain, ResourceDomainId, ResourceError,
+    StableObjectId, CPU_PERIOD_NS,
 };
 use std::sync::{Arc, Barrier};
 use std::thread;
@@ -121,6 +122,21 @@ fn request_digest_and_publisher_identity_are_bound() {
         core.reserve(request(2, target.grant(good).unwrap(), 1, 10), bad),
         Err(DeliveryError::PermissionDenied)
     ));
+}
+
+#[test]
+fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
+    let core = ControlCore::new(boot(16), space(16));
+    let k = LogicalOperationId::new(Id16::from_u128(1), Id16::from_u128(2)).unwrap();
+    let d = os_control::DeliveryId::new(core.identity(), 1).unwrap();
+    let binding = OperationBinding::new(k, d);
+    assert_eq!(binding.logical, k);
+    assert_eq!(binding.delivery, d);
+
+    let other_boot = ControlCore::new(boot(17), space(16));
+    let other_d = os_control::DeliveryId::new(other_boot.identity(), 1).unwrap();
+    assert_ne!(binding.delivery, other_d);
+    assert_eq!(core.next_sequence(), 1);
 }
 
 #[test]
