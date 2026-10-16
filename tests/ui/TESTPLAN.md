@@ -80,8 +80,24 @@ and its missing-Weston preflight returned exit status 2; mirrored YAML and
 Cargo manifest parse checks passed. This does NOT imply Rust or UI pass.
 The A00 handoff workflow can retain host log/lockfile evidence even on failure.
 
-Current evidence on commit: NOT RUN; no local cargo/rustc or resolved crates
-in authoring environment. No target Rust kernel boot or physical GPU test.
+Current host validation (A10 source checkout, 2026-10-16) is available locally:
+
+- `cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked --offline`
+  passed.
+- `cargo check --manifest-path ui/Cargo.toml --workspace --all-targets
+  --locked --offline` passed.
+- `cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets
+  --locked --offline -- -D warnings` passed.
+- UI unit/binary tests passed (43 tests), `support/ui` contract tests passed
+  (17 tests), and `tests/ui` contract tests passed (8 tests).
+- Rustfmt checks, `git diff --check`, and Bash syntax checks passed.
+
+The full UI all-targets test command is not green in this sandbox because
+`ui/session/tests/ipc_reconnect.rs` cannot create an AF_UNIX socket here
+(`EPERM`); an independent Python probe confirms the same kernel restriction.
+This is an environment limitation, not evidence of a UI lifecycle failure.
+No target Rust kernel boot, physical GPU, compositor restart, or live Chinese
+IME test was run or claimed.
 
 A10 host preflight evidence is recorded in
 [2026-10-16-host-preflight.json](evidence/2026-10-16-host-preflight.json).

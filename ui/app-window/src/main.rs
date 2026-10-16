@@ -346,6 +346,75 @@ mod tests {
     }
 
     #[test]
+    fn restricted_terminal_bounds_input_and_clear_is_local_only() {
+        let mut state = ClientWindow {
+            kind: AppKind::Terminal,
+            workspace: Workspace::Build,
+            task_id: 10,
+            notes: String::new(),
+            left: String::new(),
+            right: String::new(),
+            result: String::new(),
+            focused_input: String::new(),
+            // 100 CJK characters are over the 256-byte echo cap but stay
+            // below the 512-byte command-input budget.
+            terminal_input: "echo ".to_owned() + &"界".repeat(100),
+            terminal_output: Vec::new(),
+            terminal_close_requested: false,
+            first_frame_emitted: false,
+        };
+        let before = state.terminal_input.clone();
+        state.run_restricted_command();
+        assert!(
+            state
+                .terminal_output
+                .last()
+                .is_some_and(|line| line.contains("exceeds 256 bytes")),
+            "oversized echo must be refused before any host effect"
+        );
+        assert_ne!(
+            state.terminal_input, before,
+            "accepted commands are consumed"
+        );
+        assert!(!state.terminal_close_requested);
+
+        state.terminal_input = "status".into();
+        state.run_restricted_command();
+        assert!(state
+            .terminal_output
+            .last()
+            .is_some_and(|line| line.contains("running restricted terminal task #10")));
+        state.terminal_input = "clear".into();
+        state.run_restricted_command();
+        assert!(state.terminal_output.is_empty());
+        assert!(!state.terminal_close_requested);
+    }
+
+    #[test]
+    fn restricted_terminal_refuses_commands_over_wire_budget() {
+        let mut state = ClientWindow {
+            kind: AppKind::Terminal,
+            workspace: Workspace::Personal,
+            task_id: 11,
+            notes: String::new(),
+            left: String::new(),
+            right: String::new(),
+            result: String::new(),
+            focused_input: String::new(),
+            terminal_input: "x".repeat(513),
+            terminal_output: Vec::new(),
+            terminal_close_requested: false,
+            first_frame_emitted: false,
+        };
+        state.run_restricted_command();
+        assert!(state
+            .terminal_output
+            .last()
+            .is_some_and(|line| line.contains("exceeds 512 bytes")));
+        assert!(!state.terminal_close_requested);
+    }
+
+    #[test]
     fn parse_arguments_accepts_terminal_kind() {
         // Parsing only validates the fixed app registry; no process is spawned.
         assert_eq!(parse_kind("terminal").unwrap(), AppKind::Terminal);
