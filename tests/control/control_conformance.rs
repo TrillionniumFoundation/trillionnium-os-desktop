@@ -791,3 +791,101 @@ fn concurrent_child_creation_and_parent_cap_decrease_cannot_both_succeed() {
         assert!(!(created.is_ok() && decreased.is_ok()));
     }
 }
+
+#[test]
+fn ancestor_revoke_fences_existing_descendant_grant_after_reactivation() {
+    let parent = root(9100, CPU_PERIOD_NS);
+    let child = with_parent(domain(9101), object(9101), &parent, CPU_PERIOD_NS / 2).unwrap();
+    let who = publisher(9102);
+    let old_grant = child.grant(who).unwrap();
+
+    parent.revoke();
+    assert!(matches!(child.grant(who), Err(ResourceError::Revoked)));
+    assert_eq!(
+        child.install_budget_for_host_model(&old_grant, 1, CPU_PERIOD_NS, 10, 1),
+        Err(ResourceError::Revoked)
+    );
+    // Even direct model accounting must not bypass a revoked ancestor.
+    assert_eq!(child.charge_cpu(1, 1), Err(ResourceError::Revoked));
+    assert_eq!(child.revision(), 1);
+
+    parent.reactivate_for_host_model().unwrap();
+    // Reissuing the same child grant is not equivalent to resurrecting the
+    // pre-revocation grant; the ancestor's generation was changed.
+    assert_eq!(
+        child.install_budget_for_host_model(&old_grant, 1, CPU_PERIOD_NS, 10, 2),
+        Err(ResourceError::GrantEpochMismatch)
+    );
+    let new_grant = child.grant(who).unwrap();
+    let updated = child
+        .install_budget_for_host_model(&new_grant, 1, CPU_PERIOD_NS, 10, 2)
+        .unwrap();
+    assert_eq!(updated.revision, 2);
+}
+
+#[test]
+fn middle_ancestor_revoke_fences_leaf_without_harming_sibling() {
+    let parent = root(9200, CPU_PERIOD_NS);
+    let middle = with_parent(domain(9201), object(9201), &parent, 60).unwrap();
+    let leaf = with_parent(domain(9202), object(9202), &middle, 30).unwrap();
+    let sibling = with_parent(domain(9203), object(9203), &parent, 20).unwrap();
+    let who = publisher(9204);
+    let leaf_grant = leaf.grant(who).unwrap();
+    let sibling_grant = sibling.grant(who).unwrap();
+
+    middle.revoke();
+    assert!(matches!(leaf.grant(who), Err(ResourceError::Revoked)));
+    assert_eq!(
+        leaf.install_budget_for_host_model(&leaf_grant, 1, CPU_PERIOD_NS, 10, 1),
+        Err(ResourceError::Revoked)
+    );
+    assert_eq!(leaf.charge_cpu(1, 1), Err(ResourceError::Revoked));
+
+    // Revoking one sibling's subtree does not revoke an unrelated child.
+    sibling
+        .install_budget_for_host_model(&sibling_grant, 1, CPU_PERIOD_NS, 10, 1)
+        .unwrap();
+    assert_eq!(sibling.revision(), 2);
+    middle.reactivate_for_host_model().unwrap();
+    assert_eq!(
+        leaf.install_budget_for_host_model(&leaf_grant, 1, CPU_PERIOD_NS, 10, 2),
+        Err(ResourceError::GrantEpochMismatch)
+    );
+}
+
+#[test]
+fn concurrent_parent_revoke_and_descendant_mutation_have_one_gate_order() {
+    for index in 0..48_u128 {
+        let parent = root(9300 + index, CPU_PERIOD_NS);
+        let child = with_parent(domain(9400 + index), object(9400 + index), &parent, 40).unwrap();
+        let grant = child.grant(publisher(9500 + index)).unwrap();
+        let barrier = Arc::new(Barrier::new(3));
+        let mutation_child = child.clone();
+        let mutation_grant = grant.clone();
+        let mutation_barrier = Arc::clone(&barrier);
+        let mutate = thread::spawn(move || {
+            mutation_barrier.wait();
+            mutation_child.install_budget_for_host_model(
+                &mutation_grant, 1, CPU_PERIOD_NS, 20, 1,
+            )
+        });
+        let revoke_parent = parent.clone();
+        let revoke_barrier = Arc::clone(&barrier);
+        let revoke = thread::spawn(move || {
+            revoke_barrier.wait();
+            revoke_parent.revoke()
+        });
+        barrier.wait();
+        let outcome = mutate.join().unwrap();
+        let _receipt = revoke.join().unwrap();
+        assert!(matches!(outcome, Ok(_) | Err(ResourceError::Revoked)));
+        assert!(matches!(child.grant(publisher(9500 + index)), Err(ResourceError::Revoked)));
+        parent.reactivate_for_host_model().unwrap();
+        let revision = child.revision();
+        assert!(revision == 1 || revision == 2);
+        assert_eq!(
+            child.install_budget_for_host_model(&grant, revision, CPU_PERIOD_NS, 20, 2),
+            Err(ResourceError::GrantEpochMismatch)
+        );
+    }
+}
