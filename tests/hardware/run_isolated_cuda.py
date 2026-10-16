@@ -14,6 +14,11 @@ import sys
 import time
 
 try:
+    from bounded_process import run_bounded, OutputLimitExceeded
+except ImportError:
+    from tests.hardware.bounded_process import run_bounded, OutputLimitExceeded
+
+try:
     from cuda_gemm import BDF_RE, GOLDEN_OUTPUT
 except ImportError:  # importlib package use
     from tests.hardware.cuda_gemm import BDF_RE, GOLDEN_OUTPUT
@@ -40,7 +45,7 @@ def initial_evidence(bdf, name, timeout_seconds):
            "no_driver_rebind_no_device_reset": True}
 
 
-def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=subprocess.run):
+def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=None):
     if not isolated_lab:
         raise Blocked("--isolated-lab is mandatory; NEVER test H3/training/production GPU")
     if not BDF_RE.fullmatch(bdf) or not name.strip():
@@ -48,6 +53,8 @@ def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=subprocess.run):
     if not 1 <= timeout_seconds <= 120:
         raise Blocked("bounded timeout must be between 1 and 120 seconds")
 
+    if runner is None:
+        runner = run_bounded
     script = Path(__file__).with_name("cuda_gemm.py").resolve()
     argv = [sys.executable, str(script), "--isolated-lab", "--require-name", name,
             "--require-bdf", bdf]
@@ -61,6 +68,10 @@ def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=subprocess.run):
                       error="GPU child timeout; process termination is NOT proof of DMA quiescence")
         result["elapsed_seconds"] = round(time.monotonic() - start, 4)
         return 4, result
+    except OutputLimitExceeded as exc:
+        result.update(status="failed_output_limit_device_effect_unknown", error=str(exc))
+        result["elapsed_seconds"] = round(time.monotonic() - start, 4)
+        return 1, result
     except (OSError, ValueError) as exc:
         result.update(status="failed_runner", error=f"failed to start child: {exc}")
         result["elapsed_seconds"] = round(time.monotonic() - start, 4)

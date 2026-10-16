@@ -106,6 +106,25 @@ class LabRunnerTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertEqual(result["status"], "failed_device_effect_unknown")
 
+    def test_overlong_child_output_never_claims_device_recovery(self):
+        runner = Mock(side_effect=lab.OutputLimitExceeded("synthetic log flood"))
+        code, result = lab.run_lab(BDF, "RTX 4060", True, runner=runner)
+        self.assertEqual(code, 1)
+        self.assertEqual(result["status"], "failed_output_limit_device_effect_unknown")
+        self.assertEqual(result["device_effect_if_failure"], "unknown")
+        self.assertFalse(result["DMA_quiescence_attested"])
+        self.assertFalse(result["recovery_verified"])
+
+    def test_default_runner_is_bounded_not_unlimited_pipe_capture(self):
+        with patch.object(lab, "run_bounded",
+                          return_value=self.result({"error": "libcuda unavailable"}, 2)) as run:
+            code, record = lab.run_lab(BDF, "RTX 4060", True)
+        self.assertEqual(code, 2)
+        self.assertEqual(record["status"], "blocked")
+        run.assert_called_once()
+        self.assertEqual(run.call_args.kwargs["timeout"], 30)
+        self.assertEqual(run.call_args.kwargs["check"], False)
+
     def test_rejected_invocation_retains_complete_fail_closed_evidence_schema(self):
         with tempfile.TemporaryDirectory() as d:
             output = Path(d) / "rejected.json"

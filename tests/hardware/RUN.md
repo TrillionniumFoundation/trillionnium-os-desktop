@@ -183,3 +183,28 @@ unknown-effect submission; the canonical A01/A05 device owner must mark the
 device instance and outstanding queue generation unsafe until physical
 quiescence is confirmed, and A06 must retain pinned-DMA charges. No automatic
 GPU reset, host driver unbind, firmware or production service alteration.
+
+
+## Linux subprocess output/timeout limits for disposable GPU lab
+
+`tests/hardware/bounded_process.py` is now the default process runner used by
+`run_isolated_cuda.py`. It does **not** run privileged device setup. It
+redirects stdout/stderr to anonymous temporary files and applies Linux
+`RLIMIT_FSIZE=65536` per file to the *child only*, avoiding unbounded pipe
+capture or disk growth. It uses a fresh child process group and on timeout
+kills only that group, then returns a `TimeoutExpired`; neither process
+termination nor the child-file-size limit is evidence that GPU DMA stopped.
+
+Returned output of 64 KiB or more is rejected with
+`failed_output_limit_device_effect_unknown`. Queue/device effects remain
+`unknown`, not recovered, and no new GPU work should be admitted until the
+A01/A05 hardware owner verifies quiescence. Safe <64 KiB JSON is returned
+unchanged; nonzero child exits are not swallowed. The output limiter has no
+role in device MMIO/IOMMU or GPU firmware.
+
+Seven subprocess-only Python tests (normal JSON, bounded stdout/stderr,
+timeout/group kill, nonzero child code, invalid capture settings, cap size)
+ran 7/7 in the execution container, with no GPU or KVM access. Two additional
+CPU-only integration assertions in `test_runner.py` cover overflow classification
+and default bounded-runner selection, pending the full CI run. Rust, Asterinas
+guest GPU computation and physical reset/recovery remain unverified.
