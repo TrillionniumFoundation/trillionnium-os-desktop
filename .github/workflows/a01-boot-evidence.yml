@@ -57,3 +57,18 @@ jobs:
           bash -n support/build/kernel.sh
           python3 -I support/build/tests/test_kernel_runner.py
           python3 -I -O support/build/tests/test_kernel_runner.py
+      - name: A01 OSDK evidence archive adversarial host tests (not QEMU/kernel)
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=support/build/osdk-integration
+          if [[ -e "$dir/archive.py" || -L "$dir/archive.py" || -e "$dir/test_archive.py" || -L "$dir/test_archive.py" ]]; then
+            if [[ ! -f "$dir/archive.py" || -L "$dir/archive.py" || ! -f "$dir/test_archive.py" || -L "$dir/test_archive.py" ]]; then
+              echo 'A01 archive source/test pair incomplete or symlinked' >&2
+              exit 1
+            fi
+            (cd "$dir" && python3 -I -m unittest discover -s . -p 'test_archive.py' -v)
+            (cd "$dir" && python3 -I -O -m unittest discover -s . -p 'test_archive.py' -v)
+          else
+            echo 'BOOTSTRAP ONLY: A01 OSDK archive sources absent; no archive tests performed'
+          fi
