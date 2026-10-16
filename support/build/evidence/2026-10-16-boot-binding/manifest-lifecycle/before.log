@@ -1,0 +1,14 @@
+test_signal_immediately_after_manifest_publication_cleans_owned_inode (__main__.KernelRunnerTests.test_signal_immediately_after_manifest_publication_cleans_owned_inode) ... FAIL
+
+======================================================================
+FAIL: test_signal_immediately_after_manifest_publication_cleans_owned_inode (__main__.KernelRunnerTests.test_signal_immediately_after_manifest_publication_cleans_owned_inode)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/next3-manifest/before/support/build/tests/test_kernel_runner.py", line 208, in test_signal_immediately_after_manifest_publication_cleans_owned_inode
+    self.assertFalse(
+AssertionError: True is not false : interrupted publication left the runner's owned OSDK manifest behind
+
+----------------------------------------------------------------------
+Ran 1 test in 0.100s
+
+FAILED (failures=1)

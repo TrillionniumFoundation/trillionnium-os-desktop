@@ -1,0 +1,28 @@
+   Compiling cargo-osdk v0.19.0 (/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.04s
+     Running unittests src/main.rs (osdk/target/debug/deps/cargo_osdk-87e58130b1b091d4)
+
+running 2 tests
+
+thread 'commands::build::bin::tests::qemu_conversion_preserves_original_cargo_elf' (290) panicked at src/commands/build/bin.rs:67:9:
+assertion `left == right` failed: QEMU boot conversion changed Cargo symbols
+  left: [127, 69, 76, 70, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 3, 0, 1, 0, 0, 0, 96, 196, 35, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 56, 206, 140, 4, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 56, 0, 12, 0, 64, 0, 43, 0, 41, 0]
+ right: [127, 69, 76, 70, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 62, 0, 1, 0, 0, 0, 96, 196, 35, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 56, 206, 140, 4, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 56, 0, 12, 0, 64, 0, 43, 0, 41, 0]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test commands::build::bin::tests::qemu_conversion_preserves_original_cargo_elf ... FAILED
+
+thread 'commands::build::bin::tests::qemu_conversion_replaces_a_preexisting_hard_link' (291) panicked at src/commands/build/bin.rs:67:9:
+assertion `left == right` failed: QEMU boot conversion changed Cargo symbols
+  left: [127, 69, 76, 70, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 3, 0, 1, 0, 0, 0, 96, 196, 35, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 56, 206, 140, 4, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 56, 0, 12, 0, 64, 0, 43, 0, 41, 0]
+ right: [127, 69, 76, 70, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 62, 0, 1, 0, 0, 0, 96, 196, 35, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 56, 206, 140, 4, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 56, 0, 12, 0, 64, 0, 43, 0, 41, 0]
+test commands::build::bin::tests::qemu_conversion_replaces_a_preexisting_hard_link ... FAILED
+
+failures:
+
+failures:
+    commands::build::bin::tests::qemu_conversion_preserves_original_cargo_elf
+    commands::build::bin::tests::qemu_conversion_replaces_a_preexisting_hard_link
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 26 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--bin cargo-osdk`

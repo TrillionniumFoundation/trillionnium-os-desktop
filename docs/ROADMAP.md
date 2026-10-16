@@ -37,7 +37,7 @@ M1a是上游复现，不是宣称新增内核代码。M1c只需Hepta实际用到
 
 导入时固定工具链target/Cargo.lock/依赖来源/内核配置/QEMU/固件/rootfs。host辅助codec的Rust可以独立于上游内核nightly，但都必须记录实际版本，不偷偷用host stable替代kernel nightly。
 
-最小自动化：空README与本地链接、相关库单测、单一kernel build/QEMU smoke、变更涉及的兼容回归。源码尚未落地不添加假的绿灯workflow。GitHub原有权限与分支规则按实际状态使用，不为避测试修改仓库安全设置。
+最小自动化：空README与本地链接、相关库单测、单一kernel build/QEMU smoke、变更涉及的兼容回归。定向 CI 只在真正源码存在且运行完成时计入实测，不将 queued/仅 CodeQL 视为 Rust 编译通过。GitHub原有权限与分支规则按实际状态使用，不为避测试修改仓库安全设置。
 
 ## 4. 与主线并行的风险消除
 
@@ -59,4 +59,4 @@ ABI问题使用普通客户端缩小；兼容问题使用原ELF差分；Hepta装
 
 ## 6. 本轮之后的真实缺口
 
-Rust库源码写入仍被执行通道拒绝；规格模型与黄金数据不是替代实现。官方ISO本次仅下载到部分字节，未校验完整、未启动，不推进M1a。下一次优先在可用且获准的执行路径完成真正Rust codec及其黄金向量测试，或完成固定上游构建输入并取得实际启动日志；不重复以14个模型结果提升内核状态。
+完整 Asterinas 派生源码、固定 QEMU 启动证据及 A02 no_std ABI 已合并到 main；A03 仍是 Rust 宿主状态模型。官方 ISO 没有完整下载不妨碍已经核验的独立 initramfs QEMU boot，但不得据此声称裸机。下一实际阻塞为 A05 内核 CapSpace/ioctl、A06 调度器真实 CPU quota（已提交客体中 `cpu.max` 为 NOT_ENFORCED）、A07 沿唯一 Hepta 持久 owner 的真实 K↔D 闭环；A09 GPU 模型未运行实机。仅把真实 Cargo/客体测试记为各自层级结果。

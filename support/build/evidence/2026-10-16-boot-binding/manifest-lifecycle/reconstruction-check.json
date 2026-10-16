@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "assembler_argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-boot-binding/manifest-lifecycle/reconstruct.py",
+    "--repository",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "--output",
+    "/tmp/a01-manifest-reconstruction-f_rwr5vj/reconstructed"
+  ],
+  "assembler_exit": 0,
+  "assembler_sha256": "623bfced5a743f422ddffd3b483d3ed9bb02fb089f303f5be92bf9bd198f8d60",
+  "source_hashes_verified": true,
+  "runs": [
+    {
+      "variant": "before",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/tmp/a01-manifest-reconstruction-f_rwr5vj/reconstructed/before/support/build/tests/test_kernel_runner.py",
+        "KernelRunnerTests.test_signal_immediately_after_manifest_publication_cleans_owned_inode"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "matched_expected": true
+    },
+    {
+      "variant": "after",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/tmp/a01-manifest-reconstruction-f_rwr5vj/reconstructed/after/support/build/tests/test_kernel_runner.py"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "matched_expected": true
+    }
+  ],
+  "passed": true,
+  "no_guest_or_kernel_compilation": true
+}

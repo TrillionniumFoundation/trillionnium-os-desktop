@@ -1,0 +1,378 @@
+{
+  "scope": "Only copied real QEMU output was checked; no guest was run by this mutation matrix. New records are left unchanged except the explicitly appended serial fixture.",
+  "cases": [
+    {
+      "case": "matching-new-record",
+      "checker": "old",
+      "mode": [],
+      "command": [
+        "python3",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-old-normal.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "old",
+      "mode": [
+        "-O"
+      ],
+      "command": [
+        "python3",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-old-O.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "old",
+      "mode": [
+        "-I"
+      ],
+      "command": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-old-I.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "old",
+      "mode": [
+        "-I",
+        "-O"
+      ],
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-old-IO.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "new",
+      "mode": [],
+      "command": [
+        "python3",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-new-normal.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "new",
+      "mode": [
+        "-O"
+      ],
+      "command": [
+        "python3",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-new-O.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "new",
+      "mode": [
+        "-I"
+      ],
+      "command": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-new-I.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "new",
+      "mode": [
+        "-I",
+        "-O"
+      ],
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-new-IO.log"
+    },
+    {
+      "case": "appended-new-record",
+      "checker": "old",
+      "mode": [],
+      "command": [
+        "python3",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/appended-new-record"
+      ],
+      "exit": 0,
+      "log": "appended-new-record-old-normal.log"
+    },
+    {
+      "case": "appended-new-record",
+      "checker": "old",
+      "mode": [
+        "-O"
+      ],
+      "command": [
+        "python3",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/appended-new-record"
+      ],
+      "exit": 0,
+      "log": "appended-new-record-old-O.log"
+    },
+    {
+      "case": "appended-new-record",
+      "checker": "old",
+      "mode": [
+        "-I"
+      ],
+      "command": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/appended-new-record"
+      ],
+      "exit": 0,
+      "log": "appended-new-record-old-I.log"
+    },
+    {
+      "case": "appended-new-record",
+      "checker": "old",
+      "mode": [
+        "-I",
+        "-O"
+      ],
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/appended-new-record"
+      ],
+      "exit": 0,
+      "log": "appended-new-record-old-IO.log"
+    },
+    {
+      "case": "appended-new-record",
+      "checker": "new",
+      "mode": [],
+      "command": [
+        "python3",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/appended-new-record"
+      ],
+      "exit": 1,
+      "log": "appended-new-record-new-normal.log"
+    },
+    {
+      "case": "appended-new-record",
+      "checker": "new",
+      "mode": [
+        "-O"
+      ],
+      "command": [
+        "python3",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/appended-new-record"
+      ],
+      "exit": 1,
+      "log": "appended-new-record-new-O.log"
+    },
+    {
+      "case": "appended-new-record",
+      "checker": "new",
+      "mode": [
+        "-I"
+      ],
+      "command": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/appended-new-record"
+      ],
+      "exit": 1,
+      "log": "appended-new-record-new-I.log"
+    },
+    {
+      "case": "appended-new-record",
+      "checker": "new",
+      "mode": [
+        "-I",
+        "-O"
+      ],
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/appended-new-record"
+      ],
+      "exit": 1,
+      "log": "appended-new-record-new-IO.log"
+    },
+    {
+      "case": "known-failed-new-record",
+      "checker": "new",
+      "mode": [],
+      "live_artifacts": false,
+      "command": [
+        "python3",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/known-failed-new-record"
+      ],
+      "exit": 1,
+      "log": "known-failed-new-record-new-normal.log"
+    },
+    {
+      "case": "known-failed-new-record",
+      "checker": "new",
+      "mode": [
+        "-O"
+      ],
+      "live_artifacts": false,
+      "command": [
+        "python3",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/known-failed-new-record"
+      ],
+      "exit": 1,
+      "log": "known-failed-new-record-new-O.log"
+    },
+    {
+      "case": "known-failed-new-record",
+      "checker": "new",
+      "mode": [
+        "-I"
+      ],
+      "live_artifacts": false,
+      "command": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/known-failed-new-record"
+      ],
+      "exit": 1,
+      "log": "known-failed-new-record-new-I.log"
+    },
+    {
+      "case": "known-failed-new-record",
+      "checker": "new",
+      "mode": [
+        "-I",
+        "-O"
+      ],
+      "live_artifacts": false,
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/known-failed-new-record"
+      ],
+      "exit": 1,
+      "log": "known-failed-new-record-new-IO.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "new",
+      "mode": [],
+      "live_artifacts": true,
+      "command": [
+        "python3",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record",
+        "--live-artifacts"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-new-normal-live.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "new",
+      "mode": [
+        "-O"
+      ],
+      "live_artifacts": true,
+      "command": [
+        "python3",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record",
+        "--live-artifacts"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-new-O-live.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "new",
+      "mode": [
+        "-I"
+      ],
+      "live_artifacts": true,
+      "command": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record",
+        "--live-artifacts"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-new-I-live.log"
+    },
+    {
+      "case": "matching-new-record",
+      "checker": "new",
+      "mode": [
+        "-I",
+        "-O"
+      ],
+      "live_artifacts": true,
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/fresh-record-fixtures/matching-new-record",
+        "--live-artifacts"
+      ],
+      "exit": 0,
+      "log": "matching-new-record-new-IO-live.log"
+    }
+  ],
+  "observations": {
+    "old_accepts_matching_and_appended": 8,
+    "new_accepts_matching_offline": 4,
+    "new_rejects_appended": 4,
+    "new_rejects_known_raw65_failure": 4,
+    "new_accepts_matching_live": 4
+  }
+}

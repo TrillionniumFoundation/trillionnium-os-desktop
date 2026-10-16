@@ -94,8 +94,7 @@ fn adapt_for_gdb_server(config: &mut Config, gdb_server_str: &str) -> Option<Vsc
 
     gdb_server_args.vsc_launch_file.then(|| {
         vsc::check_gdb_config(&gdb_server_args);
-        let profile = super::util::profile_name_adapter(&config.run.build.profile);
-        vsc::VscLaunchConfig::new(profile, &gdb_server_args.host_addr)
+        vsc::VscLaunchConfig::new(config, &gdb_server_args.host_addr)
     })
 }
 
@@ -174,13 +173,15 @@ mod gdb {
 
 mod vsc {
     use crate::{
-        commands::util::bin_file_name,
-        util::{get_cargo_metadata, get_kernel_crate},
+        arch::Arch,
+        commands::util::{bin_file_name, profile_name_adapter},
+        config::Config,
+        util::{get_cargo_metadata, get_target_directory},
     };
     use serde_json::{Value, from_str};
     use std::{
         fs::{read_to_string, write as write_file},
-        path::Path,
+        path::{Path, PathBuf},
     };
 
     use super::{GdbServerArgs, gdb};
@@ -206,7 +207,7 @@ mod vsc {
         backup_launch_path: Option<String>,
     }
     impl VscLaunchConfig {
-        pub fn new(profile: &str, addr: &str) -> Self {
+        pub fn new(config: &Config, addr: &str) -> Self {
             let workspace = workspace_root();
             let workspace = Path::new(&workspace);
             let launch_file_path = workspace.join(VSC_DIR).join("launch.json");
@@ -224,7 +225,19 @@ mod vsc {
             if !existence.vsc_dir {
                 std::fs::create_dir(workspace.join(VSC_DIR)).unwrap();
             }
-            generate_vsc_launch_file(workspace, profile, addr).unwrap();
+            let symbol_file = kernel_symbol_file(
+                &get_target_directory(),
+                config.target_arch,
+                &config.run.build.profile,
+                &bin_file_name(),
+            );
+            generate_vsc_launch_file(
+                workspace,
+                profile_name_adapter(&config.run.build.profile),
+                addr,
+                &symbol_file,
+            )
+            .unwrap();
 
             VscLaunchConfig {
                 existence,
@@ -286,15 +299,9 @@ mod vsc {
         workspace: impl AsRef<Path>,
         profile: &str,
         addr: &str,
+        symbol_file: &Path,
     ) -> Result<(), std::io::Error> {
-        let contents = include_str!("launch.json.template")
-            .replace("#PROFILE#", profile)
-            .replace("#CRATE_NAME#", &get_kernel_crate().name)
-            .replace("#BIN_NAME#", &bin_file_name())
-            .replace(
-                "#ADDR_PORT#",
-                gdb::tcp_addr_util::format_tcp_addr(addr).trim_start_matches(':'),
-            );
+        let contents = render_launch_config(profile, addr, symbol_file)?;
 
         let original_items: Option<Value> = {
             let launch_file_path = workspace.as_ref().join(VSC_DIR).join("launch.json");
@@ -333,5 +340,111 @@ mod vsc {
 
         let launch_file_path = workspace.as_ref().join(VSC_DIR).join("launch.json");
         write_file(launch_file_path, contents)
+    }
+
+    fn kernel_symbol_file(
+        target_directory: &Path,
+        arch: Arch,
+        profile: &str,
+        binary_name: &str,
+    ) -> PathBuf {
+        // Use Cargo's original ELF rather than the boot bundle: direct boot may
+        // rename and reformat the latter for the VMM's multiboot loader.
+        target_directory
+            .join(arch.triple())
+            .join(profile_name_adapter(profile))
+            .join(binary_name)
+    }
+
+    fn render_launch_config(
+        profile: &str,
+        addr: &str,
+        symbol_file: &Path,
+    ) -> Result<String, serde_json::Error> {
+        let symbol_file = symbol_file.to_string_lossy();
+        let target_command = format!(
+            "target create {}",
+            shlex::Quoter::new().quote(&symbol_file).unwrap()
+        );
+        Ok(include_str!("launch.json.template")
+            .replace("#PROFILE#", profile)
+            .replace(
+                "#TARGET_CREATE_COMMAND#",
+                &serde_json::to_string(&target_command)?,
+            )
+            .replace(
+                "#ADDR_PORT#",
+                gdb::tcp_addr_util::format_tcp_addr(addr).trim_start_matches(':'),
+            ))
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use crate::config::scheme::BootMethod;
+
+        #[test]
+        fn symbol_file_uses_cargo_elf_for_direct_and_grub_boot() {
+            let workspace = tempfile::tempdir().unwrap();
+            let target = workspace.path().join("target");
+            let symbols = target.join("x86_64-unknown-none/debug/myos-osdk-bin");
+            std::fs::create_dir_all(symbols.parent().unwrap()).unwrap();
+            std::fs::write(&symbols, b"original debug ELF fixture").unwrap();
+
+            for method in [
+                BootMethod::VmmDirect,
+                BootMethod::GrubRescueIso,
+                BootMethod::GrubQcow2,
+            ] {
+                let bundle = target.join("osdk/myos");
+                std::fs::create_dir_all(&bundle).unwrap();
+                let boot_file = bundle.join(if method == BootMethod::VmmDirect {
+                    "myos-osdk-bin.elf"
+                } else {
+                    "myos-osdk-bin"
+                });
+                std::fs::write(&boot_file, b"boot artifact fixture").unwrap();
+
+                let selected = kernel_symbol_file(&target, Arch::X86_64, "dev", "myos-osdk-bin");
+                assert_eq!(selected, symbols);
+                assert!(selected.is_file());
+                assert_ne!(selected, boot_file);
+                let launch: Value =
+                    from_str(&render_launch_config("debug", ":1234", &selected).unwrap()).unwrap();
+                let command = launch["configurations"][0]["targetCreateCommands"][0]
+                    .as_str()
+                    .unwrap();
+                assert_eq!(shlex::split(command).unwrap()[2], symbols.to_str().unwrap());
+                std::fs::remove_file(boot_file).unwrap();
+            }
+        }
+
+        #[test]
+        fn symbol_file_respects_custom_target_arch_and_profile() {
+            assert_eq!(
+                kernel_symbol_file(
+                    Path::new("/custom/shared-target"),
+                    Arch::Aarch64,
+                    "release-lto",
+                    "myos-osdk-bin",
+                ),
+                Path::new(
+                    "/custom/shared-target/aarch64-unknown-none-softfloat/release-lto/myos-osdk-bin"
+                )
+            );
+        }
+
+        #[test]
+        fn launch_command_preserves_symbol_path_with_spaces_and_quotes() {
+            let symbols = Path::new("/custom target/a \"quoted\" kernel/myos-osdk-bin");
+            let launch: Value =
+                from_str(&render_launch_config("debug", ":1234", symbols).unwrap()).unwrap();
+            let configuration = &launch["configurations"][0];
+            assert_eq!(
+                shlex::split(configuration["targetCreateCommands"][0].as_str().unwrap()).unwrap(),
+                ["target", "create", symbols.to_str().unwrap()]
+            );
+            assert_eq!(configuration["processCreateCommands"][0], "gdb-remote 1234");
+        }
     }
 }

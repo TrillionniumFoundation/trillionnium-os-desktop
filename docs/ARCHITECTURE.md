@@ -4,7 +4,7 @@
 
 ## 1. 默认路线已经收敛
 
-选择完整 Asterinas v0.19.0 内核派生，而非只取 OSTD 后重建所有上层。源码 commit `c4b7ed575b7b32773475b194d2ad41fb6d03765b`，tree `96605cf64aeae2d34f29b97e85eff9315fe10a8e`，上游工具链 `nightly-2026-07-21`，首期 target `x86_64-unknown-none`。固定输入见 [upstream-lock.json](../support/upstream-lock.json)。这项选型不是已经导入或启动内核。
+选择完整 Asterinas v0.19.0 内核派生，而非只取 OSTD 后重建所有上层。源码 commit `c4b7ed575b7b32773475b194d2ad41fb6d03765b`，tree `96605cf64aeae2d34f29b97e85eff9315fe10a8e`，上游工具链 `nightly-2026-07-21`，首期 target `x86_64-unknown-none`。固定输入见 [upstream-lock.json](../support/upstream-lock.json)。源码已通过 [A01 PR #5](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5) 导入 main，并在固定单 CPU QEMU profile 完成真实启动与内核回归；这是派生基线，不是 HOS2 ioctl、CPU quota 执行或裸机验收。
 
 第一实现以最小可审阅差异扩展上游进程、文件对象与调度器；不新增平行 Task/VFS/权限数据库。只在具体接口冲突与最小复现证明全内核派生成本不合适时重新评估 OSTD-only，不并行维持两套产品。
 
@@ -59,7 +59,7 @@ cap接在ClassScheduler共同资格/计费路径，不仅修改fair.rs。固定�
 
 ## 8. 本轮源码边界
 
-`libs/os-abi/` 为计划中的无依赖no_std编解码库，是否已实现仅见STATUS。文档检查和规格模型不冒充内核、驱动或独立native应用runtime。未来导入上游保留其实际目录，不为目录图搬动或复制源码。
+`libs/os-abi/` 已由 A02 实现并在宿主 CI 验证编解码；这不代表已接入内核 ioctl，详情见 STATUS。文档检查和规格模型不冒充内核、驱动或独立native应用runtime。未来导入上游保留其实际目录，不为目录图搬动或复制源码。
 
 ## Organ 后端的执行边界补充
 

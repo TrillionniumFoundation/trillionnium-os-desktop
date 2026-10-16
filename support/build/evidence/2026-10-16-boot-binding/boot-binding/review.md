@@ -1,0 +1,1 @@
+Independent read-only review passed: serial chardev ID selection, no stale-log fallback when the selected path is absent, complete byte hashing before ANSI decoding, original five markers, fatal-panic checks, archive portability and optional live size/hash checks all match the fixed profile. No VM or tests were run by the reviewer.

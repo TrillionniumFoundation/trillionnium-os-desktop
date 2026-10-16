@@ -1,0 +1,177 @@
+[
+  {
+    "case": "matching-new-record",
+    "checker": "old",
+    "mode": [],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "matching-new-record",
+    "checker": "old",
+    "mode": [
+      "-O"
+    ],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "matching-new-record",
+    "checker": "old",
+    "mode": [
+      "-I"
+    ],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "matching-new-record",
+    "checker": "old",
+    "mode": [
+      "-I",
+      "-O"
+    ],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "matching-new-record",
+    "checker": "new",
+    "mode": [],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "matching-new-record",
+    "checker": "new",
+    "mode": [
+      "-O"
+    ],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "matching-new-record",
+    "checker": "new",
+    "mode": [
+      "-I"
+    ],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "matching-new-record",
+    "checker": "new",
+    "mode": [
+      "-I",
+      "-O"
+    ],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "appended-new-record",
+    "checker": "old",
+    "mode": [],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "appended-new-record",
+    "checker": "old",
+    "mode": [
+      "-O"
+    ],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "appended-new-record",
+    "checker": "old",
+    "mode": [
+      "-I"
+    ],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "appended-new-record",
+    "checker": "old",
+    "mode": [
+      "-I",
+      "-O"
+    ],
+    "exit": 0,
+    "output": "PASS: fixed Rust kernel reached single-CPU initramfs and powered off (QEMU exit 33)\n"
+  },
+  {
+    "case": "appended-new-record",
+    "checker": "new",
+    "mode": [],
+    "exit": 1,
+    "output": "boot evidence rejected: raw serial log does not match the recorded SHA256\n"
+  },
+  {
+    "case": "appended-new-record",
+    "checker": "new",
+    "mode": [
+      "-O"
+    ],
+    "exit": 1,
+    "output": "boot evidence rejected: raw serial log does not match the recorded SHA256\n"
+  },
+  {
+    "case": "appended-new-record",
+    "checker": "new",
+    "mode": [
+      "-I"
+    ],
+    "exit": 1,
+    "output": "boot evidence rejected: raw serial log does not match the recorded SHA256\n"
+  },
+  {
+    "case": "appended-new-record",
+    "checker": "new",
+    "mode": [
+      "-I",
+      "-O"
+    ],
+    "exit": 1,
+    "output": "boot evidence rejected: raw serial log does not match the recorded SHA256\n"
+  },
+  {
+    "case": "known-failed-new-record",
+    "checker": "new",
+    "mode": [],
+    "exit": 1,
+    "output": "boot evidence rejected: QEMU did not exit with raw successful status 33\n"
+  },
+  {
+    "case": "known-failed-new-record",
+    "checker": "new",
+    "mode": [
+      "-O"
+    ],
+    "exit": 1,
+    "output": "boot evidence rejected: QEMU did not exit with raw successful status 33\n"
+  },
+  {
+    "case": "known-failed-new-record",
+    "checker": "new",
+    "mode": [
+      "-I"
+    ],
+    "exit": 1,
+    "output": "boot evidence rejected: QEMU did not exit with raw successful status 33\n"
+  },
+  {
+    "case": "known-failed-new-record",
+    "checker": "new",
+    "mode": [
+      "-I",
+      "-O"
+    ],
+    "exit": 1,
+    "output": "boot evidence rejected: QEMU did not exit with raw successful status 33\n"
+  }
+]
