@@ -64,9 +64,12 @@ for Running acknowledges only host process creation, not a rendered window
 or final AI-task completion. `cancel` may return zero when SIGKILL has
 been requested but not yet observed; inspect the later session snapshot.
 
-Not yet provided: verified Linux compile log, Cargo.lock, CI, automated
+Not yet provided: verified Linux compile log, CI, automated
 display-driver/IME tests, HOS2 bridge, secure permission service, compositor,
-Xwayland trust-domain instances, Android buffers/fences, or target OS boot.
+Xwayland trust-domain instances, Android SurfaceFlinger/buffer import/fence
+runtime, or target OS boot. `support/ui/src/android.rs` contains only the
+pure consumer state model and contract tests; it is not Android runtime
+evidence.
 Do not extrapolate host process exit code 0 to successful Hepta operations.
 
 Optional **user-triggered** draft backup: click “Export drafts to local file”

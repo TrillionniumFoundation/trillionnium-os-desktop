@@ -54,6 +54,15 @@ windows. Proposed consumer fields (names conceptual, not on-wire ABI):
 - SurfaceFlinger display root and lifecycle transitions, suspension/resume,
   generation change, destroyed surface and explicit failure/unknown states
 
+The consumer-side Rust model for these fields is `support/ui/src/android.rs`
+(`AndroidDisplaySurface`). It is deliberately a pure state model with no
+Binder object, file descriptor, SurfaceFlinger call, dma-buf import or new
+wire format. Its tests cover stale-generation buffer retirement, producer /
+compositor ownership, acquire/release fence readiness and failure, coordinate
+mapping, IME composition, Back/Home routing, suspend/resume and provider
+failure. These tests are contract checks only; they do not count as Android,
+GPU or target-kernel evidence.
+
 The compositor, not the chat shell, must own buffer import and input routing.
 Initial full-surface acceptance does not imply APK-level native windows or
 independent per-activity integration. A08 negotiates Android semantics,
