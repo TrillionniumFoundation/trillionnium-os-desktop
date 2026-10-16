@@ -33,6 +33,7 @@ class ArchiveTests(unittest.TestCase):
                          b"RAW\x00serial\xff")
         self.assertFalse((self.dest / "work").exists())
         self.assertTrue((self.dest / "evidence.sha256").is_file())
+        self.assertFalse((self.dest / ".archive-incomplete").exists())
         # Evidence hashes must bind exactly the output files, including the
         # deterministic compressed bytes and the manifest itself.
         lines = (self.dest / "evidence.sha256").read_text().splitlines()
@@ -128,7 +129,10 @@ class ArchiveTests(unittest.TestCase):
         (self.source / "harness" / "Cargo.lock").write_text("real")
         with self.assertRaises(ValueError):
             archive(self.source, self.dest)
-        self.assertFalse(self.dest.exists())
+        # Failure never claims an accepted archive. Avoid pathname-based
+        # cleanup races that could erase unrelated data.
+        self.assertTrue((self.dest / ".archive-incomplete").is_file())
+        self.assertFalse((self.dest / "evidence.sha256").exists())
 
     def test_empty_archive_fails_closed(self):
         (self.source / "code.rs").write_text("no evidence")
@@ -158,6 +162,33 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(archive(self.source, self.dest), 1)
         self.assertEqual((self.source / "normal.txt").read_text(), "normal")
 
+
+    def test_failed_cleanup_cannot_erase_a_swapped_foreign_directory(self):
+        # A same-UID actor swaps an unrelated REAL directory into the output
+        # path immediately before an old-style recursive failure cleanup.
+        (self.source / "a-first.json").write_text("partial evidence")
+        stand_in = self.root / "stand-in.json"
+        stand_in.write_text("dummy")
+        (self.source / "z-link.json").symlink_to(stand_in)
+        foreign = self.root / "valuable"
+        foreign.mkdir()
+        (foreign / "keep.txt").write_text("keep me")
+        from shutil import rmtree as actual_rmtree
+
+        def substitute_and_delete(path, *args, **kwargs):
+            if Path(path) == self.dest:
+                self.dest.rename(self.root / "parked-partial")
+                foreign.rename(self.dest)
+            return actual_rmtree(path, *args, **kwargs)
+
+        with patch("shutil.rmtree", side_effect=substitute_and_delete):
+            with self.assertRaises(ValueError):
+                archive(self.source, self.dest)
+
+        self.assertTrue(
+            (foreign / "keep.txt").exists() or (self.dest / "keep.txt").exists(),
+            "failed cleanup deleted unrelated pre-existing files",
+        )
 
     def test_destination_subdirectory_swap_cannot_write_outside(self):
         # A same-UID actor replaces an output subdirectory after mkdir. A
