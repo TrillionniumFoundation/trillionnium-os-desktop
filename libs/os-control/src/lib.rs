@@ -1793,10 +1793,24 @@ impl ControlCore {
             if slot.binding.sequence != key
                 || slot.binding.publisher != slot.publisher
                 || !slot.publisher.is_nonzero()
+                || (slot.binding.wire_target_slot == 0)
+                    != (slot.binding.wire_target_generation == 0)
             {
                 return Err(DeliveryInvariantError::InvalidSlotBinding);
             }
-            match *lock_unpoisoned(&slot.state) {
+            // Audit lock order is namespace -> result slot -> resource
+            // state. Commit takes result slot -> resource mutation gate ->
+            // resource state, so never acquire resource state before slot.
+            let slot_state = lock_unpoisoned(&slot.state);
+            {
+                let target = lock_unpoisoned(&slot.target_instance.state);
+                if target.id != slot.binding.target
+                    || target.stable_object_id != slot.binding.stable_object_id
+                {
+                    return Err(DeliveryInvariantError::InvalidSlotBinding);
+                }
+            }
+            match *slot_state {
                 SlotState::Reserved => {}
                 SlotState::Fenced => return Err(DeliveryInvariantError::FencedLiveSlot),
                 SlotState::Terminal(result) => {
@@ -2201,6 +2215,100 @@ mod tests {
         );
         assert_eq!(core.next_sequence(), 2);
         assert_eq!(domain.revision(), u64::MAX);
+    }
+
+    #[test]
+    fn invariant_audit_detects_canonical_handle_corruption() {
+        let (boot, space, domain_id, object, publisher, _) = ids(5100);
+        let core = ControlCore::with_capacity(boot, space, 2);
+        let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        let grant = domain.grant(publisher).unwrap();
+        let request = DeliveryRequest::from_wire(1, grant, 1, 25, 9, 3).unwrap();
+        let token = core.reserve(request, publisher).unwrap();
+        assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+        let mut corrupted = token.binding();
+        corrupted.wire_target_generation = 0;
+        let bad = Arc::new(Slot {
+            binding: corrupted,
+            publisher,
+            target_instance: Arc::clone(&token.reservation.slot.target_instance),
+            ancestor_epochs: Vec::new(),
+            state: Mutex::new(SlotState::Reserved),
+        });
+        lock_unpoisoned(&core.namespace.state).slots.insert(1, bad);
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::InvalidSlotBinding)
+        );
+
+        corrupted.wire_target_generation = 3;
+        corrupted.stable_object_id = StableObjectId::from_u128(9_999);
+        let bad = Arc::new(Slot {
+            binding: corrupted,
+            publisher,
+            target_instance: Arc::clone(&token.reservation.slot.target_instance),
+            ancestor_epochs: Vec::new(),
+            state: Mutex::new(SlotState::Reserved),
+        });
+        lock_unpoisoned(&core.namespace.state).slots.insert(1, bad);
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::InvalidSlotBinding)
+        );
+    }
+
+    #[test]
+    fn invariant_audit_rejects_half_terminal_fenced_and_lost_state() {
+        let (boot, space, domain_id, object, publisher, _) = ids(5101);
+        let core = ControlCore::with_capacity(boot, space, 2);
+        let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        let grant = domain.grant(publisher).unwrap();
+        let token = core
+            .reserve(DeliveryRequest::new(1, grant, 1, 25), publisher)
+            .unwrap();
+
+        {
+            let mut state = lock_unpoisoned(&token.reservation.slot.state);
+            *state = SlotState::Terminal(PublishedResult {
+                status: DeliveryStatus::Ok,
+                stable_object_id: None,
+                saved_revision: None,
+                previous_revision: None,
+                effective_ns: None,
+                consumed_ns: None,
+            });
+        }
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::InvalidTerminalResult)
+        );
+
+        {
+            let mut state = lock_unpoisoned(&token.reservation.slot.state);
+            *state = SlotState::Fenced;
+        }
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::FencedLiveSlot)
+        );
+
+        lock_unpoisoned(&core.namespace.state).history_lost = true;
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::LostHistoryRetainsSlots)
+        );
+
+        let other = ControlCore::with_capacity(boot, space, 2);
+        let grant = domain.grant(publisher).unwrap();
+        other
+            .reserve(DeliveryRequest::new(1, grant, 1, 25), publisher)
+            .unwrap();
+        lock_unpoisoned(&other.namespace.state).slots.remove(&1);
+        assert_eq!(
+            other.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::NoncontiguousWindow)
+        );
     }
 
     #[test]

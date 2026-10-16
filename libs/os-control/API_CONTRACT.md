@@ -469,3 +469,21 @@ child created second inherits the new root time. Once both complete,
 root's newer sample. CPU cumulative usage remains zero in both cases.
 This is an interleaving stress regression, not loom state-space coverage
 or a real Asterinas runqueue/IRQ memory-order proof.
+
+## Executable invariant auditor corruption-detection regressions
+
+The host-only `validate_invariants_for_host_model()` now also checks
+the exact HOS2 wire handle pair (both zero only in explicit host fixtures,
+otherwise both nonzero) and that the canonical bound ResourceDomainId and
+stable-object ID match the actual retained target instance. It obtains
+locks in namespace -> result slot -> resource state order, never entering
+the ResourceDomain mutation gate from the audit path.
+
+Two internal Rust unit tests deliberately corrupt otherwise private
+namespace fixtures to prove that the auditor **rejects**, rather than
+silently blessing, a partial wire handle pair, forged stable target,
+impossible terminal success, fenced live slot, retained slots after
+history loss, and a missing unretired sequence. The corruption hooks
+exist only under `#[cfg(test)]`; normal callers still cannot mutate
+the private reservation table or result slot. This is not an IRQ-safe
+kernel invariant checker or comprehensive state-space proof.
