@@ -115,17 +115,29 @@ impl NamespaceIdentity {
 /// Neither an arbitrary 128-bit ID nor a digest of the key is a lossless K.
 /// This is a value carrier only; the existing Hepta owner holds the durable K
 /// ledger and checks OperationIntentV1::semantic_digest before issuing a D.
+///
+/// Keep the validated fields private: public struct literals or mutation would
+/// bypass `new` and let adapters manufacture invalid (K, digest) pairs.
+///
+/// ```compile_fail
+/// use os_control::LogicalOperationId;
+/// let _forged = LogicalOperationId {
+///     stable_id: String::new(),
+///     payload_digest: [0; 32],
+/// };
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct LogicalOperationId {
-    pub stable_id: String,
-    pub payload_digest: [u8; 32],
+    stable_id: String,
+    payload_digest: [u8; 32],
 }
 
 impl LogicalOperationId {
-    pub fn new(stable_id: impl Into<String>, payload_digest: [u8; 32])
+    /// Validate the original StableId before allocating the owned K value.
+    pub fn new(stable_id: impl AsRef<str>, payload_digest: [u8; 32])
         -> Result<Self, IdentityError>
     {
-        let stable_id = stable_id.into();
+        let stable_id = stable_id.as_ref();
         if stable_id.is_empty()
             || stable_id.len() > 128
             || !stable_id
@@ -136,9 +148,17 @@ impl LogicalOperationId {
             return Err(IdentityError::InvalidOperationKey);
         }
         Ok(Self {
-            stable_id,
+            stable_id: stable_id.to_owned(),
             payload_digest,
         })
+    }
+
+    pub fn stable_id(&self) -> &str {
+        &self.stable_id
+    }
+
+    pub fn payload_digest(&self) -> [u8; 32] {
+        self.payload_digest
     }
 }
 
