@@ -402,3 +402,60 @@ fn unknown_minor_and_exact_wire_lengths_are_rejected() {
     descriptor[24] = 1;
     assert_err(Transport::decode(&descriptor), Error::ReservedNonZero);
 }
+#[test]
+fn ordered_sequence_helpers_provide_canonical_little_endian_ids() {
+    use hos2_os_abi::{install_budget_request_id, install_budget_sequence};
+    assert_eq!(install_budget_request_id(0), Err(Error::InvalidSequence));
+    assert_eq!(install_budget_request_id(u64::MAX), Err(Error::InvalidSequence));
+    assert_eq!(
+        install_budget_sequence(&[0; 16]),
+        Err(Error::InvalidRequestId)
+    );
+
+    for sequence in [1, 255, 256, 0x0102_0304_0506_0708, u64::MAX - 1] {
+        let id = install_budget_request_id(sequence).unwrap();
+        assert_eq!(&id[..8], &sequence.to_le_bytes());
+        assert_eq!(&id[8..], &[0; 8]);
+        assert_eq!(install_budget_sequence(&id), Ok(sequence));
+    }
+
+    let mut bad = install_budget_request_id(1).unwrap();
+    bad[15] = 1;
+    assert_eq!(
+        install_budget_sequence(&bad),
+        Err(Error::SequenceHighBytesNonZero)
+    );
+}
+
+#[test]
+fn install_revision_mismatch_is_not_an_integer_overflow() {
+    let valid = install_success();
+    let mut mismatched = valid.clone();
+    mismatched[56..64].copy_from_slice(&12u64.to_le_bytes());
+    assert_err(decode_response(&mismatched), Error::InvalidField);
+
+    let mut encoding_mismatch = decode_response(&valid).unwrap();
+    encoding_mismatch.revision = 12;
+    let mut out = [0x5a; 88];
+    assert_eq!(
+        encode_response(&encoding_mismatch, &mut out),
+        Err(Error::InvalidField)
+    );
+    assert_eq!(out, [0x5a; 88]);
+
+    let mut overflow = valid.clone();
+    overflow[64..72].copy_from_slice(&u64::MAX.to_le_bytes());
+    assert_err(decode_response(&overflow), Error::IntegerOverflow);
+
+    let mut encoding_overflow = decode_response(&valid).unwrap();
+    if let ResponsePayload::InstallBudget(ref mut installed) = encoding_overflow.payload {
+        installed.previous_revision = u64::MAX;
+    } else {
+        panic!("expected golden InstallBudget result");
+    }
+    assert_eq!(
+        encode_response(&encoding_overflow, &mut out),
+        Err(Error::IntegerOverflow)
+    );
+    assert_eq!(out, [0x5a; 88]);
+}
