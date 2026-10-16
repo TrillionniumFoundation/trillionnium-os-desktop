@@ -1,0 +1,15 @@
+[package]
+name = "trill-ui-boundary"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Pure Rust host model for the shell/compositor boundary"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+hos2-os-abi = { path = "../../libs/os-abi" }
+
+[lints.rust]
+unsafe_code = "forbid"

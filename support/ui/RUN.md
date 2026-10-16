@@ -1,0 +1,106 @@
+# A10 Linux host build/run notes
+
+This is an executable Rust GUI prototype under the Linux host compositor.
+It is NOT booted under Asterinas, NOT native HOS2, and NOT a full compositor.
+
+Host prerequisites: Rust stable >=1.83 with Cargo, network/cached crates,
+Linux Wayland (or X11), OpenGL/Mesa including llvmpipe for software rendering,
+libxkbcommon, a system Chinese font, and a Chinese IME such as Fcitx5.
+
+From the repository root:
+
+~~~sh
+cargo build --manifest-path ui/Cargo.toml --workspace --bins
+cargo test --manifest-path ui/Cargo.toml --workspace
+cargo fmt --manifest-path ui/Cargo.toml --all -- --check
+~~~
+
+Within an existing Linux desktop Wayland session, in terminal #1:
+
+~~~sh
+test -n "$XDG_RUNTIME_DIR" && test -n "$WAYLAND_DISPLAY"
+./ui/target/debug/trill-session
+~~~
+
+In terminal #2:
+
+~~~sh
+./ui/target/debug/trill-shell
+~~~
+
+For a live Wayland-host lifecycle smoke after building run:
+bash tests/ui/smoke-wayland.sh
+
+For CI/a Linux host without a physical desktop but WITH Weston, Mesa
+software GL and the Rust toolchain:
+bash tests/ui/headless-weston.sh
+It creates a private runtime directory and targets the existing compositor
+socket by absolute path. It terminates only processes started by the script.
+No completion is claimed until it finishes with exit code 0. It checks
+two separate child PIDs AND both process-local first egui frame events before
+the Shell is restarted, but not compositor surface mapping or GPU buffer
+presentation. Compositor recovery, real Chinese IME candidates and kernel
+boot remain separate tests.
+
+The session MUST be independently supervised or kept running in terminal #1.
+Stopping/restarting the shell should not kill its owned app processes.
+Use the conversation's explicit local action cards or the Apps view to
+launch Notes/Calculator. Chat drafts remain disconnected from Hepta; no
+language-model result can mark a task successful. Click the windows to test
+compositor focus and manually test Chinese text composition. Cancellation
+sends SIGKILL and reports requested vs confirmed states separately.
+For command-line cancellation, first read the session_instance from
+trill-ctl snapshot; use trill-ctl cancel <task-id> <session-instance>.
+A command from a previous session generation must be rejected; do not
+re-resolve an old task ID into the new session.
+Run an alternative X11 test only as an independent host compatibility probe.
+
+Fail closed: missing or world-readable XDG_RUNTIME_DIR rejects startup.
+Missing app executable is reported FAILED, not a successful launch.
+A missing session is rendered OFFLINE and existing status is stale.
+`trill-ctl launch` now exits nonzero if the session reports a failed spawn,
+partial or unknown state, even when JSON transport succeeded. A zero exit
+for Running acknowledges only host process creation, not a rendered window
+or final AI-task completion. `cancel` may return zero when SIGKILL has
+been requested but not yet observed; inspect the later session snapshot.
+
+Not yet provided: verified Linux compile log, Cargo.lock, CI, automated
+display-driver/IME tests, HOS2 bridge, secure permission service, compositor,
+Xwayland trust-domain instances, Android buffers/fences, or target OS boot.
+Do not extrapolate host process exit code 0 to successful Hepta operations.
+
+Optional **user-triggered** draft backup: click “Export drafts to local file”
+to write unencrypted JSON at `$XDG_STATE_HOME/trillionnium-ui/local-drafts-v1.json`
+(or `$HOME/.local/state/trillionnium-ui/` if XDG_STATE_HOME is unset).
+The application-specific directory is 0700 and the regular file is 0600.
+Nothing is autosaved or uploaded to Hepta. Restore is accepted only with an
+empty local chat/composer, never overwriting active unsent input. These are
+host-user files, NOT an A05 portal or cross-workspace secure storage service.
+
+Export is deliberately rejected while the conversation composer contains
+unsaved text. Use “Save local draft” first; there is no implicit text loss
+or automatic conversion to a Hepta execution request.
+
+The separate “Console / Logs” tab shows read-only, last-observed host process
+status and volatile local shell notices. It does NOT execute arbitrary shell
+commands or claim authenticated Hepta audit logs. All displayed status is
+host-only and may be stale when the Session is offline.
+
+Local draft import validates the *opened* 0600 regular file using Linux
+O_NOFOLLOW, and refuses symlinks rather than trusting a prior path-only check.
+This is a host safety guard, not an authenticated A05 portal or same-UID
+adversarial isolation guarantee.
+
+A single XDG_RUNTIME_DIR can run only one `trill-session` supervisor. A
+second starter fails fast on the held `session.lock` flock rather than
+touching the active service Socket. After abnormal Session termination,
+the kernel automatically releases flock and the next startup may recover
+the stale Socket. The lock file remains 0600 and never stores secrets.
+
+For a second export, an existing backup must still be a regular file with
+0600 permissions; an insecure/missing-permissions check fails instead of
+silently overwriting it. Successful atomic rename is followed by an fsync of
+the containing directory. If that fsync fails after rename, export reports
+that **durability is unconfirmed**; inspect the local file rather than
+assuming the older backup survived. Plaintext data has no encryption or
+same-UID protection.

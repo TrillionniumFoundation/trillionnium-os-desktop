@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "date_utc": "2026-10-16",
+  "scope": "Linux host syscall and pre-Cargo shell evidence; NOT compiled Rust or a real Wayland/compositor test",
+  "branch": "agents/A10-rust-desktop",
+  "tested_blobs": {
+    "tests/ui/test-session-lock.py": "64a781e0ce9d11bea406345c9526cd6455fd3581",
+    "tests/ui/check-host.sh": "77645c165edaf46435b0c9c0f10e1d818e7c54df",
+    "support/ui/smoke-cleanup.sh": "2cd8ac8204c5bdf718a5c2a13f687cb8422a7efe",
+    "tests/ui/test-smoke-cleanup.sh": "eaa5afe4cb483d07e73a3676b6f79d2e70d437c1",
+    "tests/ui/test-zombie-liveness.sh": "54f1c45389722fc0173c04607dfc63290ea67514"
+  },
+  "verified_results": [
+    {
+      "command": "python3 tests/ui/test-session-lock.py",
+      "completed_runs": 5,
+      "passed_runs": 5,
+      "assertions": [
+        "second live process is refused exclusive flock",
+        "acquire succeeds after owner closes",
+        "SIGKILL of owner releases flock",
+        "O_NOFOLLOW refuses link; target bytes unchanged"
+      ],
+      "note": "Host Python subprocess calls Linux flock, not Rust Session binary"
+    },
+    {
+      "command": "bash -n tests/ui/check-host.sh tests/ui/test-smoke-cleanup.sh tests/ui/test-zombie-liveness.sh",
+      "exit_code": 0
+    },
+    {
+      "command": "bash tests/ui/check-host.sh",
+      "exit_code": 127,
+      "subtests_finished": [
+        "test-session-lock.py",
+        "test-smoke-cleanup.sh",
+        "test-zombie-liveness.sh"
+      ],
+      "last_output": "tests/ui/check-host.sh: line 45: cargo: command not found",
+      "note": "Exact remote check-host.sh Git blob mirrored and checked using git hash-object"
+    },
+    {
+      "command": "python3 tests/ui/test-session-lock.py (additional 10-run batch)",
+      "result": "outer container command timed out before batch completion; NOT counted as ten passes",
+      "status": "incomplete"
+    }
+  ],
+  "not_executed": [
+    "cargo build",
+    "cargo test",
+    "cargo fmt",
+    "Rust IPC dual-service integration test",
+    "Weston double-window smoke",
+    "Chinese IME",
+    "Asterinas target kernel boot"
+  ],
+  "interpretation": "Only Linux syscall / shell behavior is confirmed. No Rust binaries were compiled and no graphical result is asserted."
+}

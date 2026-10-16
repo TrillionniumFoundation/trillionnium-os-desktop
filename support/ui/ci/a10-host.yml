@@ -1,0 +1,96 @@
+# A00 handoff only. Not active until A00 places this file at
+# .github/workflows/a10-host.yml under its exclusive ownership.
+name: A10 Rust desktop host verification
+
+on:
+  pull_request:
+    paths:
+      - "ui/**"
+      - "tests/ui/**"
+      - "support/ui/**"
+      - ".github/workflows/a10-host.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ui/**"
+      - "tests/ui/**"
+      - "support/ui/**"
+      - ".github/workflows/a10-host.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print runner provenance
+        run: |
+          uname -a
+          cat /etc/os-release
+          if command -v rustup; then rustup --version; fi
+      - name: Install host Rust toolchain and build dependencies
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt
+          rustup default stable
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            pkg-config libwayland-dev libxkbcommon-dev \
+            libgl1-mesa-dev libegl1-mesa-dev \
+            libx11-dev libxi-dev libxrandr-dev \
+            libxcursor-dev libxinerama-dev \
+            weston wayland-utils libgbm-dev libgl1-mesa-dri
+      - name: Record pinned host build inputs
+        run: |
+          rustc -Vv
+          cargo -V
+          cat ui/Cargo.toml
+          bash -n tests/ui/check-host.sh tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh
+          printf 'Native GUI host profile; not x86_64-unknown-none\n'
+      - name: Build, unit tests, format and zero-byte README
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/a10"
+          bash tests/ui/check-host.sh 2>&1 | tee "$RUNNER_TEMP/a10/host-check.log"
+      - name: Run independent native clients in headless Weston
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/a10"
+          export A10_HEADLESS_LOG_DIR="$RUNNER_TEMP/a10/wayland"
+          bash tests/ui/headless-weston.sh 2>&1 | tee "$RUNNER_TEMP/a10/headless.log"
+      - name: Check generated UI Cargo lockfile
+        if: always()
+        run: |
+          if [ -f ui/Cargo.lock ]; then
+            sha256sum ui/Cargo.lock
+            echo "Cargo.lock generated; A10 must review/commit pinned result"
+          else
+            echo "No Cargo.lock: dependency resolution did not complete"
+          fi
+      - name: Save formatter patch for A10 review
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/a10"
+          if command -v cargo >/dev/null 2>&1; then
+            # Only touches the ephemeral runner checkout; the earlier
+            # strict fmt --check remains a failure if source is unformatted.
+            cargo fmt --manifest-path ui/Cargo.toml --all
+            git diff -- ui > "$RUNNER_TEMP/a10/rustfmt.patch"
+            if [ -s "$RUNNER_TEMP/a10/rustfmt.patch" ]; then
+              echo "Review and commit rustfmt.patch in A10 source; do not mark format gate green"
+            fi
+          else
+            echo "No cargo/rustfmt available to produce formatter patch" > "$RUNNER_TEMP/a10/rustfmt-unavailable.txt"
+          fi
+      - name: Preserve A10 compiler, lock and compositor evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a10-host-evidence
+          if-no-files-found: warn
+          path: |
+            ui/Cargo.lock
+            ${{ runner.temp }}/a10/

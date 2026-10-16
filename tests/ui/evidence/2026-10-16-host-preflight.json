@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "agent": "A10-rust-desktop",
+  "environment": "isolated ChatGPT Linux container, x86_64",
+  "checked_at_utc": "2026-10-16T11:00:41Z",
+  "source": "GitHub branch agents/A10-rust-desktop",
+  "source_blobs": {
+    "tests/ui/check-host.sh": "50236377c3485cf8ef2c34b379fe731fa5045063",
+    "tests/ui/headless-weston.sh": "dc344defab33598d893df35a1eed56a4840a652d",
+    "tests/ui/smoke-wayland.sh": "32e143def8c2be1fc716b22d7abbb717d74a3a01",
+    "support/ui/ci/a10-host.yml": "d1b7069bd7b74e6bff85c947fb81c1f50131c28a"
+  },
+  "observations": [
+    {
+      "command": "git hash-object copied script/workflow snapshots",
+      "result": "all four observed hashes equal source blobs",
+      "status": "passed"
+    },
+    {
+      "command": "bash -n tests/ui/check-host.sh tests/ui/headless-weston.sh tests/ui/smoke-wayland.sh",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "command": "python3: YAML BaseLoader parse of support/ui/ci/a10-host.yml",
+      "result": "workflow parsed with pull_request, push, workflow_dispatch; wayland-utils dependency present",
+      "status": "passed"
+    },
+    {
+      "command": "bash tests/ui/headless-weston.sh",
+      "exit_code": 2,
+      "stderr": "weston executable not installed",
+      "status": "blocked"
+    },
+    {
+      "command": "bash tests/ui/check-host.sh",
+      "exit_code": 127,
+      "stderr": "cargo: command not found",
+      "status": "blocked"
+    },
+    {
+      "command": "bash tests/ui/smoke-wayland.sh",
+      "exit_code": 1,
+      "stderr": "WAYLAND_DISPLAY: A Wayland compositor socket is required",
+      "status": "blocked"
+    },
+    {
+      "command": "POSIX stand-in child fixture: /bin/sh exec /bin/sleep 30 then SIGKILL and wait",
+      "result": "child was alive; wait returned -9 (SIGKILL)",
+      "status": "passed_host_fixture_only"
+    }
+  ],
+  "not_executed": [
+    "cargo build",
+    "cargo test",
+    "cargo fmt",
+    "Rust Session unit or integration tests",
+    "Weston Wayland smoke",
+    "real Chinese IME/focus",
+    "GPU/compositor recovery",
+    "Asterinas/new kernel desktop boot",
+    "Hepta integration"
+  ],
+  "interpretation": "Only host static/preflight and independent POSIX child fixture behavior were checked. No Rust compilation, rendered UI or target OS acceptance evidence."
+}
