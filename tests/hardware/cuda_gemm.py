@@ -451,11 +451,24 @@ def _supervised_main():
             try:
                 status, supervisor = run_worker(command, args.timeout_seconds)
                 result["worker_supervision"] = supervisor
-                result["timeout_enforced"] = bool(supervisor.get("worker_reaped"))
+                result["timeout_enforced"] = bool(
+                    supervisor.get("worker_reaped")
+                    and not supervisor.get("worker_group_incomplete")
+                )
                 if supervisor["timed_out"]:
                     result.update(status="timeout",
                                   error="native worker exceeded wall-clock deadline; effect unknown",
                                   reset_or_failure_recovery_verified=False)
+                    exit_code = 1
+                elif supervisor.get("worker_group_incomplete"):
+                    # A reaped *leader* does not prove its worker session is
+                    # drained. Do not read a forged success report or claim
+                    # bounded CUDA effects with surviving group members.
+                    result.update(
+                        status="failed",
+                        error="worker exited but process group remains; effect unknown",
+                        reset_or_failure_recovery_verified=False,
+                    )
                     exit_code = 1
                 elif not supervisor["worker_reaped"]:
                     result.update(status="failed", error="worker not reaped; effect unknown")
