@@ -282,10 +282,20 @@ def preflight(root: Path = Path("/"), bdf: str | None = None,
         result["reset"]["group_files_present"].values()
     )
     unsafe_mode = result["unsafe_noiommu_module_parameter"]
+    unsafe_mode_path = root / "sys/module/vfio/parameters/enable_unsafe_noiommu_mode"
+    if (unsafe_mode_path.exists() or unsafe_mode_path.is_symlink()) and unsafe_mode is None:
+        # An unreadable, symlinked or oversized existing safety setting is
+        # not evidence that unsafe IOMMU mode is disabled.
+        _block(result, "unsafe_noiommu_mode_unobservable")
     normalized_unsafe_mode = (unsafe_mode or "").lower().replace("\\n", "").strip()
     if normalized_unsafe_mode in ("1", "y", "yes"):
         _block(result, "unsafe_noiommu_mode_enabled")
     unsafe_interrupts = result["unsafe_interrupts_module_parameter"]
+    unsafe_interrupts_path = (
+        root / "sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts"
+    )
+    if (unsafe_interrupts_path.exists() or unsafe_interrupts_path.is_symlink()) and unsafe_interrupts is None:
+        _block(result, "unsafe_interrupt_remapping_setting_unobservable")
     normalized_unsafe_interrupts = (unsafe_interrupts or "").lower().replace("\\n", "").strip()
     if normalized_unsafe_interrupts in ("1", "y", "yes"):
         _block(result, "unsafe_interrupt_remapping_override_enabled")
