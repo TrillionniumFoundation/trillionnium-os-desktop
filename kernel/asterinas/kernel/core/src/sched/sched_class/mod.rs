@@ -342,15 +342,22 @@ impl ClassScheduler {
 
 impl PerCpuClassRqSet {
     fn replenish_throttled(&mut self, now: u64) {
-        // A task can be moved to another cgroup while parked.
-        let old = core::mem::take(&mut self.throttled);
-        for task in old {
-            if task_cpu_eligible(&task, now) {
-                let thread = task.as_thread().unwrap().clone();
-                self.enqueue_entity((task, thread), None);
-            } else {
-                self.throttled.push(task);
+        // Inspect the existing allocation in place. The former mem::take()
+        // discarded its capacity every tick and pushed blocked tasks into a
+        // fresh Vec while the IRQ-disabled runqueue spinlock was held.
+        // swap_remove leaves capacity intact and never reallocates this Vec.
+        let mut index = 0;
+        while index < self.throttled.len() {
+            if !task_cpu_eligible(&self.throttled[index], now) {
+                index += 1;
+                continue;
             }
+            let task = self.throttled.swap_remove(index);
+            if let Some(thread) = task.as_thread().cloned() {
+                self.enqueue_entity((task, thread), None);
+            }
+            // Examine the element swapped into this position next; if this
+            // was the last element, the loop exits naturally.
         }
     }
 
