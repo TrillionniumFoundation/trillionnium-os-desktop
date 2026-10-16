@@ -1,3 +1,4 @@
+107cfbba18862eceb203051cd34d50c21b1c47c1
 //! Boundary state for the host UI prototype.
 //!
 //! This crate is deliberately a small, pure Rust model.  It does not start a
@@ -16,6 +17,15 @@
 //! operation and defines no second wire or permission protocol.
 
 use std::collections::BTreeMap;
+
+/// Pure state model for the initial full-display Android host contract.
+///
+/// This module is intentionally a consumer-side contract model.  It does not
+/// open a SurfaceFlinger handle, import a dma-buf, create a native fence, or
+/// define an Android wire protocol.  A08 owns those semantics; this model is
+/// only used to make generation, buffer lifetime, synchronization, input and
+/// lifecycle decisions explicit before a real implementation is connected.
+pub mod android;
 
 pub use hos2_os_abi::{
     DeliveryRequest, DeliveryState, Error as Hos2CodecError, Opcode, QueryAbiResponse,
