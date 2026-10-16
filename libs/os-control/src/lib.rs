@@ -110,23 +110,34 @@ impl NamespaceIdentity {
     }
 }
 
-/// The original Hepta logical operation identity (K). This is an opaque
-/// value carried by an integration owner; the control core never persists,
-/// indexes, or derives execution authority from it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+/// The EXACT value of Hepta's pinned hepta-operations OperationKey (K):
+/// StableId (ASCII grammar, 1..=128 bytes) plus the final payload Digest32.
+/// Neither an arbitrary 128-bit ID nor a digest of the key is a lossless K.
+/// This is a value carrier only; the existing Hepta owner holds the durable K
+/// ledger and checks OperationIntentV1::semantic_digest before issuing a D.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct LogicalOperationId {
-    pub scope_id: Id16,
-    pub operation_id: Id16,
+    pub stable_id: String,
+    pub payload_digest: [u8; 32],
 }
 
 impl LogicalOperationId {
-    pub fn new(scope_id: Id16, operation_id: Id16) -> Result<Self, IdentityError> {
-        if !scope_id.is_nonzero() || !operation_id.is_nonzero() {
-            return Err(IdentityError::ZeroIdentity);
+    pub fn new(stable_id: impl Into<String>, payload_digest: [u8; 32])
+        -> Result<Self, IdentityError>
+    {
+        let stable_id = stable_id.into();
+        if stable_id.is_empty()
+            || stable_id.len() > 128
+            || !stable_id
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_' | b'-' | b':'))
+            || payload_digest == [0; 32]
+        {
+            return Err(IdentityError::InvalidOperationKey);
         }
         Ok(Self {
-            scope_id,
-            operation_id,
+            stable_id,
+            payload_digest,
         })
     }
 }
@@ -151,14 +162,14 @@ impl DeliveryId {
 
 /// A value-only association for A07. It is not a persistence record and does
 /// not make K a lookup key for a D result.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct OperationBinding {
     pub logical: LogicalOperationId,
     pub delivery: DeliveryId,
 }
 
 impl OperationBinding {
-    pub const fn new(logical: LogicalOperationId, delivery: DeliveryId) -> Self {
+    pub fn new(logical: LogicalOperationId, delivery: DeliveryId) -> Self {
         Self { logical, delivery }
     }
 }
@@ -166,6 +177,7 @@ impl OperationBinding {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IdentityError {
     ZeroIdentity,
+    InvalidOperationKey,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

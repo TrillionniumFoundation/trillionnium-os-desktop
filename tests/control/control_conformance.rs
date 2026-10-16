@@ -6,7 +6,7 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, Id16, LogicalOperationId, OperationBinding, OwnerId, OwnerReceipt,
+    DeliveryStatus, HistoryAck, LogicalOperationId, OperationBinding, OwnerId, OwnerReceipt,
     PublishOutcome, PublisherId, ReserveAttempt, ResourceDomain, ResourceDomainId, ResourceError,
     StableObjectId, CPU_PERIOD_NS,
 };
@@ -127,16 +127,50 @@ fn request_digest_and_publisher_identity_are_bound() {
 #[test]
 fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
     let core = ControlCore::new(boot(16), space(16));
-    let k = LogicalOperationId::new(Id16::from_u128(1), Id16::from_u128(2)).unwrap();
+    // Hepta's actual persistent K is StableId + final payload_digest; it is
+    // not two arbitrary Id16s. Preserve the complete stable string losslessly.
+    let k = LogicalOperationId::new("scope:some-operation.with-longer-id", [0xA7; 32]).unwrap();
     let d = os_control::DeliveryId::new(core.identity(), 1).unwrap();
-    let binding = OperationBinding::new(k, d);
+    let binding = OperationBinding::new(k.clone(), d);
     assert_eq!(binding.logical, k);
+    assert_eq!(binding.delivery, d);
+    assert_eq!(binding.logical.stable_id, "scope:some-operation.with-longer-id");
+    assert_eq!(binding.logical.payload_digest, [0xA7; 32]);
+
+    // Independent K value changes never conflate with the same boot-local D.
+    let different_payload =
+        LogicalOperationId::new("scope:some-operation.with-longer-id", [0xB7; 32]).unwrap();
+    let different_suffix =
+        LogicalOperationId::new("scope:some-operation.with-longer-id-2", [0xA7; 32]).unwrap();
+    assert_ne!(k, different_payload);
+    assert_ne!(k, different_suffix);
     assert_eq!(binding.delivery, d);
 
     let other_boot = ControlCore::new(boot(17), space(16));
     let other_d = os_control::DeliveryId::new(other_boot.identity(), 1).unwrap();
     assert_ne!(binding.delivery, other_d);
     assert_eq!(core.next_sequence(), 1);
+}
+
+#[test]
+fn pinned_hepta_k_stable_id_bounds_and_nonzero_digest_are_enforced() {
+    let maximum = "k".repeat(128);
+    let k = LogicalOperationId::new(maximum.clone(), [0x55; 32]).unwrap();
+    assert_eq!(k.stable_id, maximum);
+    for invalid in ["", "space is invalid", "unicode-测试", "/etc/passwd"] {
+        assert_eq!(
+            LogicalOperationId::new(invalid, [1; 32]),
+            Err(os_control::IdentityError::InvalidOperationKey)
+        );
+    }
+    assert_eq!(
+        LogicalOperationId::new("x".repeat(129), [1; 32]),
+        Err(os_control::IdentityError::InvalidOperationKey)
+    );
+    assert_eq!(
+        LogicalOperationId::new("scope:operation", [0; 32]),
+        Err(os_control::IdentityError::InvalidOperationKey)
+    );
 }
 
 #[test]
