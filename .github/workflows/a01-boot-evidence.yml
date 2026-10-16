@@ -1,0 +1,57 @@
+name: A01 boot-evidence host regressions
+
+on:
+  pull_request:
+    paths:
+      - 'support/build/**'
+      - 'support/upstream-lock.json'
+      - 'kernel/asterinas/osdk/src/commands/**'
+      - 'kernel/asterinas/osdk/tests/commands/**'
+      - '.github/workflows/a01-boot-evidence.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'support/build/**'
+      - 'support/upstream-lock.json'
+      - 'kernel/asterinas/osdk/src/commands/**'
+      - 'kernel/asterinas/osdk/tests/commands/**'
+      - '.github/workflows/a01-boot-evidence.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  host-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check immutable source pins and empty root README
+        run: |
+          test -f README.md && test ! -s README.md
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          lock = json.loads(Path('support/upstream-lock.json').read_text())
+          expected = {
+              'kernel.tag': 'v0.19.0',
+              'kernel.commit': 'c4b7ed575b7b32773475b194d2ad41fb6d03765b',
+              'kernel.toolchain': 'nightly-2026-07-21',
+              'kernel.reuse': 'full_kernel_derived',
+              'hepta.commit': 'f8c9419df6ddeb36ff8b522a50219981fb8d9345',
+          }
+          for key, wanted in expected.items():
+              section, field = key.split('.')
+              actual = lock.get(section, {}).get(field)
+              if actual != wanted:
+                  raise SystemExit(f'pinned {key} changed: {actual!r}')
+          PY
+      - name: A01 raw-serial and boot-input adversarial fixtures (not QEMU)
+        run: |
+          python3 -I support/build/tests/test_boot_evidence.py
+          python3 -I -O support/build/tests/test_boot_evidence.py
+      - name: A01 manifest ownership, signal and runner fixtures (not kernel build)
+        run: |
+          bash -n support/build/kernel.sh
+          python3 -I support/build/tests/test_kernel_runner.py
+          python3 -I -O support/build/tests/test_kernel_runner.py
