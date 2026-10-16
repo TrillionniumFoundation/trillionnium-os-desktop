@@ -9,7 +9,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import shutil
 import stat
 
 EXCLUDED_DIRS = frozenset({"target", "harness", "work", "tmp", "bin", "fixed-tmp", "__pycache__"})
@@ -18,6 +17,7 @@ MAX_FILE_BYTES = 128 * 1024 * 1024
 MAX_TOTAL_BYTES = 1024 * 1024 * 1024
 OPEN_FLAGS = os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK | os.O_NOFOLLOW
 DIRECTORY_FLAGS = OPEN_FLAGS | os.O_DIRECTORY
+WRITE_FLAGS = os.O_WRONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_CREAT | os.O_EXCL
 
 
 def read_regular(directory_fd, name):
@@ -89,6 +89,28 @@ def source_files(root_fd):
         yield Path(archived), payload, candidate
 
 
+def write_archive_file(root_fd, relative, payload):
+    """Write a selected output using only pinned directory file descriptors."""
+    if (relative.is_absolute() or not relative.parts
+            or any(part in ("", ".", "..") for part in relative.parts)):
+        raise ValueError(f"invalid output archive path: {relative}")
+    fd = os.dup(root_fd)
+    try:
+        for part in relative.parts[:-1]:
+            try:
+                os.mkdir(part, mode=0o700, dir_fd=fd)
+            except FileExistsError:
+                pass
+            opened = os.open(part, DIRECTORY_FLAGS, dir_fd=fd)
+            os.close(fd)
+            fd = opened
+        child = os.open(relative.name, WRITE_FLAGS, 0o600, dir_fd=fd)
+        with os.fdopen(child, "wb") as output:
+            output.write(payload)
+    finally:
+        os.close(fd)
+
+
 def archive(source, destination):
     source = Path(source).absolute()
     destination = Path(destination).absolute()
@@ -110,6 +132,8 @@ def archive(source, destination):
     total = 0
     archived_names = set()
     created = None
+    destination_fd = None
+    digests = []
     try:
         opened_root = os.fstat(root_fd)
         if (opened_root.st_dev, opened_root.st_ino) != (source_identity.st_dev,
@@ -121,7 +145,7 @@ def archive(source, destination):
             else:
                 archived, data = item
                 original = str(archived)
-            if archived.parts[0] in {"archive.json", "evidence.sha256"}:
+            if archived.parts[0] in {"archive.json", "evidence.sha256", ".archive-incomplete"}:
                 raise ValueError(f"evidence collides with archive index: {archived}")
             if archived in archived_names:
                 raise ValueError(f"duplicate archive destination: {archived}")
@@ -132,32 +156,43 @@ def archive(source, destination):
             if created is None:
                 # Delayed allocation: empty/invalid sources never create a fake bundle.
                 destination.mkdir(mode=0o700, parents=True, exist_ok=False)
-                created = destination.stat()
-            target = destination / archived
-            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                destination_fd = os.open(destination, DIRECTORY_FLAGS)
+                created = os.fstat(destination_fd)
+                # Never publish a partial bundle as successful evidence.
+                write_archive_file(destination_fd, Path(".archive-incomplete"),
+                                   b"A01 evidence archive incomplete; do not consume\n")
+            output_name = archived
+            payload = data
             if str(archived).endswith(".log") or str(archived).endswith(".metadata.json"):
-                target = target.with_name(target.name + ".gz")
-                target.write_bytes(gzip.compress(data, mtime=0))
-            else:
-                target.write_bytes(data)
-            records.append({"source": original, "archived": str(target.relative_to(destination)),
+                output_name = archived.with_name(archived.name + ".gz")
+                payload = gzip.compress(data, mtime=0)
+            write_archive_file(destination_fd, output_name, payload)
+            digests.append((str(output_name), hashlib.sha256(payload).hexdigest()))
+            records.append({"source": original, "archived": str(output_name),
                             "source_size": len(data), "source_sha256": hashlib.sha256(data).hexdigest()})
         if not records:
             raise ValueError("no permitted evidence files found (archive cannot be empty)")
-        (destination / "archive.json").write_text(json.dumps({"schema": 1, "source": str(source),
-            "excluded": sorted(EXCLUDED_DIRS), "files": records}, indent=2) + "\n")
-        rows = [hashlib.sha256(path.read_bytes()).hexdigest() + "  " + str(path.relative_to(destination))
-                for path in sorted(destination.rglob("*")) if path.is_file()]
-        (destination / "evidence.sha256").write_text("\n".join(rows) + "\n")
+        manifest = (json.dumps({"schema": 1, "source": str(source),
+            "excluded": sorted(EXCLUDED_DIRS), "files": records}, indent=2) + "\n").encode()
+        write_archive_file(destination_fd, Path("archive.json"), manifest)
+        digests.append(("archive.json", hashlib.sha256(manifest).hexdigest()))
+        rows = [digest + "  " + name for name, digest in sorted(digests)]
+        write_archive_file(destination_fd, Path("evidence.sha256"), ("\n".join(rows) + "\n").encode())
+        # Recheck the original pathname only to refuse success on replacement.
+        # All actual writes use the FD, never the possibly replaced name.
+        current = destination.lstat()
+        if (not stat.S_ISDIR(current.st_mode)
+                or (current.st_dev, current.st_ino) != (created.st_dev, created.st_ino)):
+            raise ValueError("archive output directory replaced during write")
+        os.unlink(".archive-incomplete", dir_fd=destination_fd)
     except BaseException:
-        # Only clean the exact directory inode created by this invocation.
-        # Never delete a pre-existing or concurrently replaced destination.
-        if created is not None and not destination.is_symlink():
-            current = destination.stat() if destination.exists() else None
-            if current and (current.st_dev, current.st_ino) == (created.st_dev, created.st_ino):
-                shutil.rmtree(destination)
+        # No pathname-based recursive cleanup. An atomic directory swap after
+        # stat-before-rmtree could otherwise delete an unrelated directory.
+        # The private partial output remains quarantined with its marker.
         raise
     finally:
+        if destination_fd is not None:
+            os.close(destination_fd)
         os.close(root_fd)
     return len(records)
 
