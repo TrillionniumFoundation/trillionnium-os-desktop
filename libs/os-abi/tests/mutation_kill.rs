@@ -176,6 +176,23 @@ fn same_sequence_across_targets_is_also_conflict() {
 }
 
 #[test]
+fn same_sequence_and_slot_different_generation_is_conflict() {
+    let prior = decode_request(&fixed_install()).unwrap();
+    // Slot reuse changes the capability identity, even when its index and all
+    // budget fields stay the same. Mutate only the fixed wire generation.
+    let next = changed_u64(48, prior.target_generation + 1);
+    assert_eq!(prior.request_id, next.request_id);
+    assert_eq!(prior.target_slot, next.target_slot);
+    assert_eq!(prior.payload, next.payload);
+    assert_ne!(prior.target_generation, next.target_generation);
+    assert_ne!(prior, next);
+    assert_eq!(canonical_retry(&prior, &next), Replay::Conflict);
+    assert_eq!(must_conflict(&prior, &next, canonical_retry), Ok(()));
+    assert_eq!(ignoring_target(&prior, &next), Replay::Identical);
+    assert!(must_conflict(&prior, &next, ignoring_target).is_err());
+}
+
+#[test]
 fn full_low_eight_byte_sequence_is_little_endian_and_high_half_zero() {
     let mut req = decode_request(&fixed_install()).unwrap();
     req.request_id = [1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 0, 0, 0, 0, 0, 0];

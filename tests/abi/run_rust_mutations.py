@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Compile real Rust equality/encoder mutants and run unchanged Rust suites.
+"""Compile real Rust equality/encoder/validation mutants against host suites.
 
 Only temporary copies of the crate are changed. A mutant is killed only when it
 compiles successfully, its complete suite runs without skips, and the designated
-regression fails. Both production baselines must pass first. Compiler errors,
+regression fails. All three production baselines must pass first. Compiler errors,
 timeouts and filtered tests never count as mutation kills. This checks host
 codec/canonical-request coverage, not a kernel delivery ledger.
 """
@@ -22,8 +22,11 @@ import tempfile
 from typing import Any
 
 
-EXPECTED_TEST_COUNT = 7
+EXPECTED_TEST_COUNT = 8
 EXPECTED_SEMANTIC_TEST_COUNT = 12
+EXPECTED_PROFILE_TEST_COUNT = 7
+EXPECTED_MUTANT_COUNT = 12
+GENERATION_TEST = "same_sequence_and_slot_different_generation_is_conflict"
 MUTANTS = (
     (
         "ignore_cap_ns",
@@ -41,13 +44,107 @@ INPUTS = (
     "src/lib.rs",
     "tests/mutation_kill.rs",
     "tests/semantic_edges.rs",
+    "tests/profile_boundaries.rs",
 )
-FIXTURES = ("tests/golden/hos2_edges.json",)
+FIXTURES = ("tests/golden/hos2.json", "tests/golden/hos2_edges.json")
 SAVED_STATUS_TEST = "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes"
+PROFILE_TESTS = (
+    "query_abi_supported_operation_masks_match_documented_table",
+    "query_abi_advertised_payload_minima_match_each_supported_profile",
+    "query_abi_advertised_payload_limits_include_exact_maximum",
+    "query_abi_page_sizes_accept_every_nonzero_power_of_two",
+    "read_usage_accepts_zero_full_caps_and_exact_elapsed_consumption",
+    "read_usage_accepts_aligned_windows_through_u64_max",
+    "read_usage_rejects_impossible_or_misaligned_cpu_snapshots",
+)
+# These are independent changes to the same production source snapshot.
+# The paired ReadUsage edits deliberately change both decoder and encoder
+# validators so a shared regression cannot be caught only by round-tripping.
+PROFILE_MUTANTS = (
+    (
+        "install_missing_history_dependencies",
+        PROFILE_TESTS[0],
+        ((
+            "out.supported_ops & 0x08 != 0 && out.supported_ops & 0x34 != 0x34",
+            "out.supported_ops & 0x08 != 0 && out.supported_ops & 0x04 != 0x04",
+        ),),
+    ),
+    (
+        "retire_accepts_read_instead_of_history",
+        PROFILE_TESTS[0],
+        ((
+            "out.supported_ops & 0x20 != 0 && out.supported_ops & 0x10 == 0",
+            "out.supported_ops & 0x20 != 0 && out.supported_ops & 0x14 == 0",
+        ),),
+    ),
+    (
+        "ignore_advertised_request_minimum",
+        PROFILE_TESTS[1],
+        ((
+            "out.max_request_payload < min_request || out.max_response_payload < min_response",
+            "out.max_response_payload < min_response",
+        ),),
+    ),
+    (
+        "read_usage_advertises_short_response",
+        PROFILE_TESTS[1],
+        ((
+            "if out.supported_ops & 0x04 != 0 {\n"
+            "        min_response = max_u32(min_response, 64);",
+            "if out.supported_ops & 0x04 != 0 {\n"
+            "        min_response = max_u32(min_response, 48);",
+        ),),
+    ),
+    (
+        "reject_zero_cpu_cap",
+        PROFILE_TESTS[4],
+        tuple(
+            (
+                f"|| {value}.active_cap_ns > {value}.active_period_ns",
+                f"|| {value}.active_cap_ns > {value}.active_period_ns"
+                f" || {value}.active_cap_ns == 0",
+            )
+            for value in ("out", "v")
+        ),
+    ),
+    (
+        "reject_full_period_cpu_cap",
+        PROFILE_TESTS[4],
+        tuple(
+            (
+                f"|| {value}.active_cap_ns > {value}.active_period_ns",
+                f"|| {value}.active_cap_ns >= {value}.active_period_ns",
+            )
+            for value in ("out", "v")
+        ),
+    ),
+    (
+        "reject_exact_elapsed_cpu_consumption",
+        PROFILE_TESTS[4],
+        tuple(
+            (
+                f"|| {value}.window_consumed_ns > elapsed",
+                f"|| {value}.window_consumed_ns >= elapsed",
+            )
+            for value in ("out", "v")
+        ),
+    ),
+    (
+        "accept_misaligned_cpu_window",
+        PROFILE_TESTS[6],
+        tuple(
+            (
+                f"|| {value}.window_start_ns != expected_start",
+                f"|| {value}.window_start_ns > expected_start",
+            )
+            for value in ("out", "v")
+        ),
+    ),
+)
 SUITES = {
     "mutation_kill": (
         EXPECTED_TEST_COUNT,
-        tuple(expected for _, _, expected in MUTANTS),
+        tuple(expected for _, _, expected in MUTANTS) + (GENERATION_TEST,),
     ),
     "semantic_edges": (
         EXPECTED_SEMANTIC_TEST_COUNT,
@@ -57,6 +154,7 @@ SUITES = {
             "every_semantic_edge_encoder_rejects_each_short_capacity_without_writing",
         ),
     ),
+    "profile_boundaries": (EXPECTED_PROFILE_TEST_COUNT, PROFILE_TESTS),
 }
 
 
@@ -114,6 +212,54 @@ def mutated_saved_status_source(source: str) -> str:
         "put_u16(out, 2, v.saved_status.as_u16());", "put_u16(out, 2, 0);"
     )
     return source.replace(original, replacement, 1)
+
+
+def mutated_generation_source(source: str) -> str:
+    """Omit only Request.target_generation from canonical equality."""
+    pattern = re.compile(
+        r"#\[derive\((?P<traits>[^)]+)\)\]\s*"
+        r"pub struct Request\s*\{(?P<fields>[^}]+)\}"
+    )
+    matches = list(pattern.finditer(source))
+    if len(matches) != 1:
+        raise ValueError("expected exactly one derived Request")
+    match = matches[0]
+    expected_fields = (
+        "pub opcode: Opcode,",
+        "pub request_id: [u8; 16],",
+        "pub target_slot: u64,",
+        "pub target_generation: u64,",
+        "pub payload: RequestPayload,",
+    )
+    if tuple(line.strip() for line in match["fields"].splitlines() if line.strip()) != expected_fields:
+        raise ValueError("Request fields changed; review the generation mutation")
+    traits = [trait.strip() for trait in match["traits"].split(",")]
+    if traits.count("PartialEq") != 1:
+        raise ValueError("expected one derived Request PartialEq")
+    traits.remove("PartialEq")
+    replacement = (
+        f"#[derive({', '.join(traits)})]\n"
+        f"pub struct Request {{{match['fields']}}}\n\n"
+        "impl PartialEq for Request {\n"
+        "    fn eq(&self, other: &Self) -> bool {\n"
+        "        self.opcode == other.opcode\n"
+        "            && self.request_id == other.request_id\n"
+        "            && self.target_slot == other.target_slot\n"
+        "            && self.payload == other.payload\n"
+        "    }\n"
+        "}"
+    )
+    return source[: match.start()] + replacement + source[match.end() :]
+
+
+def mutated_profile_source(source: str, changes: tuple[tuple[str, str], ...]) -> str:
+    """Apply exact single-occurrence checks to one production snapshot."""
+    changed = source
+    for original, replacement in changes:
+        if original == replacement or source.count(original) != 1 or changed.count(original) != 1:
+            raise ValueError(f"expected exactly one unchanged profile check: {original!r}")
+        changed = changed.replace(original, replacement, 1)
+    return changed
 
 
 def run_command(command: list[str], cwd: Path, timeout: float) -> dict[str, Any]:
@@ -256,15 +402,22 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--timeout must be positive")
 
     report: dict[str, Any] = {
-        "schema": "hos2-rust-source-mutations-v1",
-        "scope": "host Rust codec/canonical-request comparison; no kernel validation",
-        "expected_tests_per_suite": EXPECTED_TEST_COUNT,
+        "schema": "hos2-rust-source-mutations-v2",
+        "scope": (
+            "host Rust canonical equality, fixed-byte response encoding and "
+            "documented QueryAbi/ReadUsage validation boundaries; "
+            "each mutant runs its designated complete suite, not the entire crate; "
+            "no kernel validation"
+        ),
+        "source_policy": "every mutant is derived independently from one captured production source",
+        "expected_mutants": EXPECTED_MUTANT_COUNT,
         "expected_tests_by_suite": {
             suite: expected for suite, (expected, _) in SUITES.items()
         },
         "success": False,
         "baseline": None,
         "baseline_semantic_edges": None,
+        "baseline_profile_boundaries": None,
         "mutants": [],
         "errors": [],
     }
@@ -288,6 +441,7 @@ def main(argv: list[str] | None = None) -> int:
             for suite, baseline_key in (
                 ("mutation_kill", "baseline"),
                 ("semantic_edges", "baseline_semantic_edges"),
+                ("profile_boundaries", "baseline_profile_boundaries"),
             ):
                 baseline = run_suite(
                     temporary_root / baseline_key,
@@ -306,19 +460,46 @@ def main(argv: list[str] | None = None) -> int:
                     )
             if not report["errors"]:
                 mutations = [
-                    (name, "mutation_kill", field, expected_test, mutated_source(source, field))
+                    (
+                        name,
+                        "mutation_kill",
+                        {"omitted_field": field},
+                        expected_test,
+                        mutated_source(source, field),
+                    )
                     for name, field, expected_test in MUTANTS
                 ]
                 mutations.append(
                     (
+                        "ignore_target_generation",
+                        "mutation_kill",
+                        {"omitted_field": "Request.target_generation"},
+                        GENERATION_TEST,
+                        mutated_generation_source(source),
+                    )
+                )
+                mutations.append(
+                    (
                         "zero_saved_status",
                         "semantic_edges",
-                        "saved_status",
+                        {"zeroed_field": "saved_status"},
                         SAVED_STATUS_TEST,
                         mutated_saved_status_source(source),
                     )
                 )
-                for name, suite, field, expected_test, changed_source in mutations:
+                mutations.extend(
+                    (
+                        name,
+                        "profile_boundaries",
+                        {"changed_checks": changes},
+                        expected_test,
+                        mutated_profile_source(source, changes),
+                    )
+                    for name, expected_test, changes in PROFILE_MUTANTS
+                )
+                if len(mutations) != EXPECTED_MUTANT_COUNT:
+                    raise ValueError("mutation count changed without updating the expected total")
+                for name, suite, mutation, expected_test, changed_source in mutations:
                     mutant = run_suite(
                         temporary_root / name,
                         inputs,
@@ -328,11 +509,7 @@ def main(argv: list[str] | None = None) -> int:
                         args.timeout,
                         suite,
                     )
-                    mutant.update(name=name, expected_failure=expected_test)
-                    if suite == "mutation_kill":
-                        mutant["omitted_field"] = field
-                    else:
-                        mutant["zeroed_field"] = field
+                    mutant.update(name=name, expected_failure=expected_test, **mutation)
                     mutant["expected_test_failed"] = bool(
                         mutant["tests"]
                         and mutant["tests"]["cases"].get(expected_test) == "FAILED"
@@ -345,7 +522,10 @@ def main(argv: list[str] | None = None) -> int:
                         and mutant["expected_test_failed"]
                     )
                     report["mutants"].append(mutant)
-                report["success"] = all(mutant["killed"] for mutant in report["mutants"])
+                report["success"] = (
+                    len(report["mutants"]) == EXPECTED_MUTANT_COUNT
+                    and all(mutant["killed"] for mutant in report["mutants"])
+                )
                 if not report["success"]:
                     report["errors"].append("a source mutant survived or lacked valid test evidence")
     except (OSError, UnicodeError, ValueError) as error:
