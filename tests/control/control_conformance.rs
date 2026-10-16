@@ -6,7 +6,7 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, Id16, LogicalOperationId, OperationBinding, OwnerId, OwnerReceipt,
+    DeliveryStatus, HistoryAck, LogicalOperationId, NamespaceIdentity, OperationBinding, OwnerId, OwnerReceipt,
     PublishOutcome, PublisherId, ReserveAttempt, ResourceDomain, ResourceDomainId, ResourceError,
     StableObjectId, CPU_PERIOD_NS,
 };
@@ -127,11 +127,20 @@ fn request_digest_and_publisher_identity_are_bound() {
 #[test]
 fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
     let core = ControlCore::new(boot(16), space(16));
-    let k = LogicalOperationId::new(Id16::from_u128(1), Id16::from_u128(2)).unwrap();
+    let k = LogicalOperationId::new(
+        "scope:workspace.owner",
+        "operation:long-running-resume-across-boot",
+    )
+    .unwrap();
     let d = os_control::DeliveryId::new(core.identity(), 1).unwrap();
-    let binding = OperationBinding::new(k, d);
+    let binding = OperationBinding::new(k.clone(), d);
     assert_eq!(binding.logical, k);
     assert_eq!(binding.delivery, d);
+    assert_eq!(binding.logical.scope_id(), "scope:workspace.owner");
+    assert_eq!(
+        binding.logical.operation_id(),
+        "operation:long-running-resume-across-boot"
+    );
 
     let other_boot = ControlCore::new(boot(17), space(16));
     let other_d = os_control::DeliveryId::new(other_boot.identity(), 1).unwrap();
@@ -200,8 +209,16 @@ fn malformed_public_delivery_observations_fail_closed_for_wire_status() {
     malformed.saved_revision = Some(2);
     assert_eq!(malformed.hos2_saved_status_code(), None);
     malformed = original;
-    malformed.id.sequence = 0;
-    assert_eq!(malformed.hos2_saved_status_code(), None);
+    // Invalid public D fields can no longer be forged with struct syntax.
+    // The checked constructor rejects zero and the reserved MAX sequence.
+    assert_eq!(
+        os_control::DeliveryId::new(core.identity(), 0),
+        Err(DeliveryError::InvalidSequence)
+    );
+    assert_eq!(
+        os_control::DeliveryId::new(core.identity(), u64::MAX),
+        Err(DeliveryError::InvalidSequence)
+    );
     for (status, code) in [
         (DeliveryStatus::Ok, 0),
         (DeliveryStatus::InvalidInput, 1),
@@ -1706,4 +1723,73 @@ fn incoherent_cpu_charge_cannot_commit_a_wire_invalid_success() {
     assert_eq!(applied.consumed_ns, Some(60));
     assert_eq!(applied.hos2_saved_status_code(), Some(0));
     assert_eq!(target.revision(), 2);
+}
+
+#[test]
+fn durable_hepta_k_is_full_scope_and_operation_stable_id_pair() {
+    // Pinned durable_store.rs SELECT/WHERE and tombstone key use two
+    // independently bounded StableIds, not Id16, PID, boot, or payload hash.
+    let scope = "s".repeat(os_control::MAX_HEPTA_STABLE_ID_BYTES);
+    let operation = "o".repeat(os_control::MAX_HEPTA_STABLE_ID_BYTES);
+    let k = LogicalOperationId::new(&scope, &operation).unwrap();
+    assert_eq!(k.scope_id(), scope);
+    assert_eq!(k.operation_id(), operation);
+    assert_ne!(
+        LogicalOperationId::new("workspace:a", "operation:1").unwrap(),
+        LogicalOperationId::new("workspace:b", "operation:1").unwrap()
+    );
+    assert_ne!(
+        LogicalOperationId::new("workspace:a", "operation:1").unwrap(),
+        LogicalOperationId::new("workspace:a", "operation:2").unwrap()
+    );
+    assert_eq!(
+        LogicalOperationId::new("workspace:a", "operation:1").unwrap(),
+        LogicalOperationId::new("workspace:a", "operation:1").unwrap()
+    );
+}
+
+#[test]
+fn durable_hepta_k_validation_does_not_truncate_or_normalize() {
+    let invalid = ["", "unsafe/path", "with space", "Unicode:测试", "nul\0id"];
+    for value in invalid {
+        assert_eq!(
+            LogicalOperationId::new(value, "operation:valid"),
+            Err(os_control::IdentityError::InvalidOperationKey)
+        );
+        assert_eq!(
+            LogicalOperationId::new("scope:valid", value),
+            Err(os_control::IdentityError::InvalidOperationKey)
+        );
+    }
+    let too_large = "q".repeat(os_control::MAX_HEPTA_STABLE_ID_BYTES + 1);
+    assert_eq!(
+        LogicalOperationId::new("scope:valid", &too_large),
+        Err(os_control::IdentityError::InvalidOperationKey)
+    );
+    let mut caller = String::from("operation:original");
+    let k = LogicalOperationId::new("scope:immutable", &caller).unwrap();
+    caller.clear();
+    caller.push_str("operation:changed");
+    assert_eq!(k.operation_id(), "operation:original");
+    assert_ne!(k.operation_id(), caller);
+}
+
+#[test]
+fn checked_namespace_constructor_is_not_an_identity_authority() {
+    assert_eq!(
+        NamespaceIdentity::new(boot(0), space(1)),
+        Err(os_control::IdentityError::ZeroIdentity)
+    );
+    assert_eq!(
+        NamespaceIdentity::new(boot(1), space(0)),
+        Err(os_control::IdentityError::ZeroIdentity)
+    );
+    let first = NamespaceIdentity::new(boot(123), space(234)).unwrap();
+    assert_eq!(first.boot_id(), boot(123));
+    assert_eq!(first.cap_space_id(), space(234));
+    let d = os_control::DeliveryId::new(first, 1).unwrap();
+    assert_eq!(d.namespace(), first);
+    assert_eq!(d.sequence(), 1);
+    // A05 trusted init supplies the actual nonzero boot/space IDs. A
+    // checked value constructor by itself cannot attest their provenance.
 }

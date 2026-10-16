@@ -281,3 +281,24 @@ success. It does not refund prior consumption, advance CAS or turn the
 original D into a later success. A subsequent **new** D may be evaluated at
 a later consistent sample. A06 must supply settled real runtime in the
 actual kernel and A07 must preserve original K history.
+
+## Pinned durable Hepta K identity (A07 handoff)
+
+The pinned real `hepta-private-ci@f8c9419df6ddeb36ff8b522a50219981fb8d9345`
+`codex-rs/hepta-operations/src/durable_model.rs::OperationIntentV1`
+has `scope_id: StableId` and `operation_id: StableId` as the persistent
+operation identity. The production `durable_store.rs` loads and tombstones
+rows with `WHERE scope_id = ? AND operation_id = ?`; `payload_digest`,
+`expected_predecessor`, and `owner_generation` are **not part of K's
+lookup key** (the owner still checks semantic digests and fences generations).
+This is distinct from the non-durable *reference* `OperationKey` type.
+
+A03 `LogicalOperationId::new(scope_id, operation_id)` therefore stores the
+entire independent StableId strings losslessly (each 1..=128 ASCII bytes,
+letters/digits/`.`/`_`/`-`/`:`) rather than truncating them into two
+16-byte integers or hashing away collisions. It is a value-only carrier,
+not an owner ledger and not authority to dispatch. `OperationBinding(K,D)`
+continues to tie it to one boot-local kernel delivery without ever
+replacing the original owner. Public namespace and D fields are
+constructor-validated and accessed read-only; neither value proves
+kernel boot entropy, credentials, or the rights of its caller.

@@ -97,8 +97,8 @@ id_type!(OwnerId);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct NamespaceIdentity {
-    pub boot_id: BootId,
-    pub cap_space_id: CapSpaceId,
+    boot_id: BootId,
+    cap_space_id: CapSpaceId,
 }
 
 impl NamespaceIdentity {
@@ -111,33 +111,68 @@ impl NamespaceIdentity {
             cap_space_id,
         })
     }
+
+    pub const fn boot_id(self) -> BootId {
+        self.boot_id
+    }
+
+    pub const fn cap_space_id(self) -> CapSpaceId {
+        self.cap_space_id
+    }
 }
 
-/// The original Hepta logical operation identity (K). This is an opaque
-/// value carried by an integration owner; the control core never persists,
-/// indexes, or derives execution authority from it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+/// Hepta's *durable* logical operation identity K, not its reference
+/// OperationKey. The pinned DurableOperationStore indexes operation rows
+/// by (scope_id, operation_id), each a StableId of at most 128 ASCII bytes.
+///
+/// The semantic/payload digest belongs to the existing owner ledger and is
+/// compared on replay. It is not part of K's lookup key. This type stores
+/// only a checked value: A03 never indexes, authorizes or persists K.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct LogicalOperationId {
-    pub scope_id: Id16,
-    pub operation_id: Id16,
+    scope_id: String,
+    operation_id: String,
+}
+
+pub const MAX_HEPTA_STABLE_ID_BYTES: usize = 128;
+
+fn valid_hepta_stable_id(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= MAX_HEPTA_STABLE_ID_BYTES
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_' | b'-' | b':'))
 }
 
 impl LogicalOperationId {
-    pub fn new(scope_id: Id16, operation_id: Id16) -> Result<Self, IdentityError> {
-        if !scope_id.is_nonzero() || !operation_id.is_nonzero() {
-            return Err(IdentityError::ZeroIdentity);
+    pub fn new(
+        scope_id: impl AsRef<str>,
+        operation_id: impl AsRef<str>,
+    ) -> Result<Self, IdentityError> {
+        let scope_id = scope_id.as_ref();
+        let operation_id = operation_id.as_ref();
+        if !valid_hepta_stable_id(scope_id) || !valid_hepta_stable_id(operation_id) {
+            return Err(IdentityError::InvalidOperationKey);
         }
         Ok(Self {
-            scope_id,
-            operation_id,
+            scope_id: scope_id.to_owned(),
+            operation_id: operation_id.to_owned(),
         })
+    }
+
+    pub fn scope_id(&self) -> &str {
+        &self.scope_id
+    }
+
+    pub fn operation_id(&self) -> &str {
+        &self.operation_id
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct DeliveryId {
-    pub namespace: NamespaceIdentity,
-    pub sequence: u64,
+    namespace: NamespaceIdentity,
+    sequence: u64,
 }
 
 impl DeliveryId {
@@ -150,18 +185,26 @@ impl DeliveryId {
             sequence,
         })
     }
+
+    pub const fn namespace(self) -> NamespaceIdentity {
+        self.namespace
+    }
+
+    pub const fn sequence(self) -> u64 {
+        self.sequence
+    }
 }
 
 /// A value-only association for A07. It is not a persistence record and does
 /// not make K a lookup key for a D result.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct OperationBinding {
     pub logical: LogicalOperationId,
     pub delivery: DeliveryId,
 }
 
 impl OperationBinding {
-    pub const fn new(logical: LogicalOperationId, delivery: DeliveryId) -> Self {
+    pub fn new(logical: LogicalOperationId, delivery: DeliveryId) -> Self {
         Self { logical, delivery }
     }
 }
@@ -169,6 +212,7 @@ impl OperationBinding {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IdentityError {
     ZeroIdentity,
+    InvalidOperationKey,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
