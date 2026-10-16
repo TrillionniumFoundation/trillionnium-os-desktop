@@ -6,7 +6,7 @@
 //! it does not prove ioctl, credentials, scheduler, copyout, or persistence
 //! behaviour in a real kernel.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -282,9 +282,18 @@ pub struct ResourceDomain {
 
 struct ResourceDomainInner {
     gate: Arc<Mutex<()>>,
+    // Lifetime identity registry is shared by the whole resource family.
+    // Entries are deliberately not freed on handle drop: old stable IDs
+    // cannot become new children after a resource object is destroyed.
+    family: Arc<Mutex<FamilyIdentityRegistry>>,
     state: Mutex<DomainState>,
     parent: Option<ResourceDomain>,
     children: Mutex<BTreeMap<ResourceDomainId, u64>>,
+}
+
+struct FamilyIdentityRegistry {
+    domain_ids: BTreeSet<ResourceDomainId>,
+    object_ids: BTreeSet<StableObjectId>,
 }
 
 #[derive(Clone, Copy)]
@@ -322,6 +331,7 @@ pub struct RevokeReceipt {
 pub enum ResourceError {
     InvalidIdentity,
     DuplicateDomainId,
+    DuplicateObjectId,
     InvalidBudget,
     InvalidRevision,
     RevisionConflict { expected: u64, actual: u64 },
@@ -363,12 +373,20 @@ impl ResourceDomain {
                 }
                 ancestor = node.inner.parent.as_ref();
             }
+            let mut registry = lock_unpoisoned(&parent.inner.family);
+            if registry.domain_ids.contains(&id) {
+                return Err(ResourceError::DuplicateDomainId);
+            }
+            if registry.object_ids.contains(&stable_object_id) {
+                return Err(ResourceError::DuplicateObjectId);
+            }
             let mut children = lock_unpoisoned(&parent.inner.children);
             if children.contains_key(&id) {
                 return Err(ResourceError::DuplicateDomainId);
             }
             let inner = Arc::new(ResourceDomainInner {
                 gate: Arc::clone(&parent.inner.gate),
+                family: Arc::clone(&parent.inner.family),
                 state: Mutex::new(DomainState {
                     id,
                     stable_object_id,
@@ -389,11 +407,17 @@ impl ResourceDomain {
                 children: Mutex::new(BTreeMap::new()),
             });
             children.insert(id, initial_cap_ns);
+            registry.domain_ids.insert(id);
+            registry.object_ids.insert(stable_object_id);
             return Ok(Self { inner });
         }
         Ok(Self {
             inner: Arc::new(ResourceDomainInner {
                 gate: Arc::new(Mutex::new(())),
+                family: Arc::new(Mutex::new(FamilyIdentityRegistry {
+                    domain_ids: BTreeSet::from([id]),
+                    object_ids: BTreeSet::from([stable_object_id]),
+                })),
                 state: Mutex::new(DomainState {
                     id,
                     stable_object_id,
@@ -437,9 +461,20 @@ impl ResourceDomain {
     }
 
     pub fn grant(&self, principal: PublisherId) -> Result<Grant, ResourceError> {
+        // The family mutation gate prevents a parent revoke from racing
+        // issuance of a descendant grant. Possession still does not
+        // guarantee admission: commit rechecks the same ancestor chain.
+        let _gate = lock_unpoisoned(&self.inner.gate);
         let state = self.snapshot_state();
         if !state.alive {
             return Err(ResourceError::Revoked);
+        }
+        let mut ancestor = self.inner.parent.as_ref();
+        while let Some(parent) = ancestor {
+            if !parent.snapshot_state().alive {
+                return Err(ResourceError::Revoked);
+            }
+            ancestor = parent.inner.parent.as_ref();
         }
         if !principal.is_nonzero() {
             return Err(ResourceError::InvalidIdentity);
@@ -622,11 +657,19 @@ impl ResourceDomain {
                 actual: state.revision,
             });
         }
-        if let Some(parent) = &grant.domain.parent_domain_for_model() {
+        // A revoked ancestor fences child management, even if the
+        // numeric parent cap has not changed. Every ancestor shares
+        // this family's mutation gate with commit and revoke.
+        let mut ancestor = self.inner.parent.as_ref();
+        while let Some(parent) = ancestor {
             let parent_state = parent.snapshot_state();
+            if !parent_state.alive {
+                return Err(ResourceError::Revoked);
+            }
             if cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
             }
+            ancestor = parent.inner.parent.as_ref();
         }
         if lock_unpoisoned(&self.inner.children)
             .values()
@@ -647,7 +690,7 @@ impl ResourceDomain {
             .checked_add(1)
             .ok_or(ResourceError::Overflow)?;
         state.budget = Budget { period_ns, cap_ns };
-        if let Some(parent) = &grant.domain.parent_domain_for_model() {
+        if let Some(parent) = self.inner.parent.as_ref() {
             lock_unpoisoned(&parent.inner.children).insert(state.id, cap_ns);
         }
         let consumed_at_apply_ns = state.window_consumed_ns;
@@ -657,10 +700,6 @@ impl ResourceDomain {
             effective_boottime_ns: now_ns,
             consumed_at_apply_ns,
         })
-    }
-
-    fn parent_domain_for_model(&self) -> Option<ResourceDomain> {
-        self.inner.parent.clone()
     }
 
     fn snapshot_state(&self) -> DomainState {
@@ -808,18 +847,48 @@ pub struct DeliveryObservation {
 }
 
 impl DeliveryObservation {
-    /// Translate only a consistent (state, saved_status) pair to HOS2.
+    /// Convert a complete QueryDelivery observation into the HOS2 saved
+    /// status only when state, status, and terminal metadata agree.
     ///
-    /// A public host-model observation can be modified by a caller, so
-    /// terminal without a saved outcome or non-terminal with a saved outcome
-    /// must fail closed rather than become a fabricated successful terminal.
-    /// The A02 wire codec separately validates response metadata and lengths.
-    pub const fn hos2_saved_status_code(self) -> Option<u16> {
+    /// `Terminal` without a saved result must never be serialized as `Ok`.
+    /// Likewise, a non-terminal state cannot carry a terminal status or its
+    /// resource mutation metadata. A05 must reject these impossible model
+    /// states rather than manufacture an apparent successful effect.
+    pub const fn hos2_saved_status_code(self) -> Result<u16, DeliveryError> {
+        let has_metadata = self.stable_object_id.is_some()
+            || self.saved_revision.is_some()
+            || self.previous_revision.is_some()
+            || self.effective_ns.is_some()
+            || self.consumed_ns.is_some();
+
         match (self.state, self.status) {
-            (DeliveryState::Terminal, Some(status)) => Some(status.hos2_code()),
-            (DeliveryState::Terminal, None) => None,
-            (_, None) => Some(0),
-            (_, Some(_)) => None,
+            (DeliveryState::Terminal, Some(DeliveryStatus::Ok)) => {
+                match (
+                    self.stable_object_id,
+                    self.saved_revision,
+                    self.previous_revision,
+                    self.effective_ns,
+                    self.consumed_ns,
+                ) {
+                    (Some(object), Some(saved), Some(previous), Some(_), Some(_))
+                        if object.is_nonzero()
+                            && previous.checked_add(1) == Some(saved) =>
+                    {
+                        Ok(DeliveryStatus::Ok.hos2_code())
+                    }
+                    _ => Err(DeliveryError::InvalidPublish),
+                }
+            }
+            (DeliveryState::Terminal, Some(status)) => {
+                if has_metadata {
+                    Err(DeliveryError::InvalidPublish)
+                } else {
+                    Ok(status.hos2_code())
+                }
+            }
+            (DeliveryState::Terminal, None) => Err(DeliveryError::InvalidPublish),
+            (_, None) if !has_metadata => Ok(DeliveryStatus::Ok.hos2_code()),
+            _ => Err(DeliveryError::InvalidPublish),
         }
     }
 
@@ -1278,6 +1347,11 @@ impl ControlCore {
         if view.identity != self.identity() || !Arc::ptr_eq(&view.namespace, &self.namespace) {
             return Err(DeliveryError::PermissionDenied);
         }
+        // A structurally invalid query sequence is not a recoverable D,
+        // even if this namespace has lost its history.
+        if sequence == 0 || sequence == u64::MAX {
+            return Err(DeliveryError::InvalidSequence);
+        }
         let ns = lock_unpoisoned(&self.namespace.state);
         let id = DeliveryId {
             namespace: self.identity(),
@@ -1285,9 +1359,6 @@ impl ControlCore {
         };
         if ns.history_lost || view.generation != ns.generation {
             return Ok(DeliveryObservation::history_lost(id));
-        }
-        if sequence == 0 || sequence == u64::MAX {
-            return Err(DeliveryError::InvalidSequence);
         }
         if sequence <= ns.retired_through {
             return Ok(DeliveryObservation::retired(id));
@@ -1435,14 +1506,11 @@ impl ControlCore {
         let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
         match *slot_state {
             SlotState::Fenced => return Err(DeliveryError::HistoryLost),
-            SlotState::Terminal(_) => {
+            SlotState::Terminal(result) => {
                 return Ok(observation_from_published(
                     self.identity(),
                     token.id().sequence,
-                    match *slot_state {
-                        SlotState::Terminal(result) => result,
-                        SlotState::Reserved => unreachable!(),
-                    },
+                    result,
                 ))
             }
             SlotState::Reserved => {}
@@ -1568,9 +1636,9 @@ fn published_result_from_outcome(
 fn map_resource_error(error: ResourceError) -> DeliveryStatus {
     match error {
         ResourceError::Revoked | ResourceError::GrantEpochMismatch => DeliveryStatus::Revoked,
-        ResourceError::RevisionConflict { .. } | ResourceError::DuplicateDomainId => {
-            DeliveryStatus::Conflict
-        },
+        ResourceError::RevisionConflict { .. }
+        | ResourceError::DuplicateDomainId
+        | ResourceError::DuplicateObjectId => DeliveryStatus::Conflict,
         ResourceError::ParentConstraint => DeliveryStatus::ParentLimit,
         ResourceError::Exhausted => DeliveryStatus::ResourceExhausted,
         ResourceError::InvalidBudget

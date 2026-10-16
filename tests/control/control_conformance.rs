@@ -226,38 +226,131 @@ fn control_states_map_to_hos2_codes_without_importing_the_wire_crate() {
 
     let core = ControlCore::new(boot(18), space(18));
     let pending = core.query_delivery(&core.delivery_view(), 1).unwrap();
-    assert_eq!(pending.hos2_saved_status_code(), Some(0));
+    assert_eq!(pending.hos2_saved_status_code(), Ok(0));
 }
 
 #[test]
-fn malformed_public_delivery_observation_never_becomes_false_wire_success() {
-    let core = ControlCore::new(boot(191), space(191));
-    let original = core.query_delivery(&core.delivery_view(), 1).unwrap();
+fn invalid_query_delivery_state_status_combinations_fail_closed() {
+    let core = ControlCore::new(boot(2018), space(2018));
+    let view = core.delivery_view();
+    let fresh = core.query_delivery(&view, 1).unwrap();
+    assert_eq!(fresh.state, DeliveryState::NotSeen);
+    assert_eq!(fresh.hos2_saved_status_code(), Ok(0));
 
-    // All nonterminal QueryDelivery states require saved_status=Ok/0.
+    // No non-terminal observation may carry a saved result or effect fields.
     for state in [
         DeliveryState::Reserved,
         DeliveryState::Retired,
         DeliveryState::NotSeen,
         DeliveryState::HistoryLost,
     ] {
-        let mut observation = original;
-        observation.state = state;
-        observation.status = None;
-        assert_eq!(observation.hos2_saved_status_code(), Some(0));
-        observation.status = Some(DeliveryStatus::Revoked);
-        assert_eq!(observation.hos2_saved_status_code(), None);
+        let clean = os_control::DeliveryObservation { state, ..fresh };
+        assert_eq!(clean.hos2_saved_status_code(), Ok(0));
+
+        let forged_status = os_control::DeliveryObservation {
+            status: Some(DeliveryStatus::Ok),
+            ..clean
+        };
+        assert_eq!(
+            forged_status.hos2_saved_status_code(),
+            Err(DeliveryError::InvalidPublish)
+        );
+
+        let forged_metadata = os_control::DeliveryObservation {
+            consumed_ns: Some(5),
+            ..clean
+        };
+        assert_eq!(
+            forged_metadata.hos2_saved_status_code(),
+            Err(DeliveryError::InvalidPublish)
+        );
     }
 
-    // A terminal without a stored outcome is unknown, NEVER an Ok result.
-    let mut terminal = original;
-    terminal.state = DeliveryState::Terminal;
-    terminal.status = None;
-    assert_eq!(terminal.hos2_saved_status_code(), None);
+    // A missing or forged terminal status is NOT a successful effect.
+    let missing_terminal_status = os_control::DeliveryObservation {
+        state: DeliveryState::Terminal,
+        ..fresh
+    };
+    assert_eq!(
+        missing_terminal_status.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+    let invented_ok = os_control::DeliveryObservation {
+        status: Some(DeliveryStatus::Ok),
+        ..missing_terminal_status
+    };
+    assert_eq!(
+        invented_ok.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+}
 
-    // Every valid terminal status maps exactly to the pre-existing HOS2 code.
-    for (status, code) in [
-        (DeliveryStatus::Ok, 0),
+#[test]
+fn real_terminal_query_delivery_values_are_wire_checked() {
+    let core = ControlCore::new(boot(2019), space(2019));
+    let target = root(2019, CPU_PERIOD_NS);
+    let who = publisher(2019);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 10), who)
+        .unwrap();
+    let success = core.commit(&token, who, 1).unwrap();
+    assert_eq!(success.state, DeliveryState::Terminal);
+    assert_eq!(success.hos2_saved_status_code(), Ok(0));
+
+    let bad_revision = os_control::DeliveryObservation {
+        saved_revision: Some(123),
+        ..success
+    };
+    assert_eq!(
+        bad_revision.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+    let zero_object = os_control::DeliveryObservation {
+        stable_object_id: Some(object(0)),
+        ..success
+    };
+    assert_eq!(
+        zero_object.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+
+    let rejection_core = ControlCore::new(boot(2020), space(2020));
+    let rejection_target = root(2020, CPU_PERIOD_NS);
+    let rejector = publisher(2020);
+    let refusal = rejection_core
+        .reserve(
+            request(1, rejection_target.grant(rejector).unwrap(), 1, 10),
+            rejector,
+        )
+        .unwrap();
+    let denied = rejection_core
+        .publish(
+            &refusal,
+            rejector,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::PermissionDenied,
+            },
+        )
+        .unwrap();
+    assert_eq!(denied.hos2_saved_status_code(), Ok(2));
+    let false_resource_data = os_control::DeliveryObservation {
+        effective_ns: Some(1),
+        ..denied
+    };
+    assert_eq!(
+        false_resource_data.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+}
+
+#[test]
+fn all_hos2_terminal_status_codes_are_exhaustively_mapped() {
+    let core = ControlCore::new(boot(2021), space(2021));
+    let mut terminal = core.query_delivery(&core.delivery_view(), 1).unwrap();
+    terminal.state = DeliveryState::Terminal;
+
+    for (status, wire_code) in [
+        (DeliveryStatus::Ok, 0_u16),
         (DeliveryStatus::InvalidInput, 1),
         (DeliveryStatus::PermissionDenied, 2),
         (DeliveryStatus::StaleHandle, 3),
@@ -271,8 +364,18 @@ fn malformed_public_delivery_observation_never_becomes_false_wire_success() {
         (DeliveryStatus::OutOfOrder, 10),
         (DeliveryStatus::Retired, 11),
     ] {
+        assert_eq!(status.hos2_code(), wire_code);
         terminal.status = Some(status);
-        assert_eq!(terminal.hos2_saved_status_code(), Some(code));
+        if status == DeliveryStatus::Ok {
+            // Cannot report an invented terminal success without revision
+            // and resource-effect fields, even if its code would be zero.
+            assert_eq!(
+                terminal.hos2_saved_status_code(),
+                Err(DeliveryError::InvalidPublish)
+            );
+        } else {
+            assert_eq!(terminal.hos2_saved_status_code(), Ok(wire_code));
+        }
     }
 }
 
@@ -356,6 +459,29 @@ fn copyout_failure_retry_reuses_terminal_result_without_second_effect() {
 }
 
 #[test]
+fn invalid_history_sequence_is_rejected_before_and_after_history_loss() {
+    let core = ControlCore::new(boot(90_000), space(90_000));
+    let view = core.delivery_view();
+    for invalid in [0, u64::MAX] {
+        assert_eq!(
+            core.query_delivery(&view, invalid),
+            Err(DeliveryError::InvalidSequence)
+        );
+    }
+    core.lose_history();
+    for invalid in [0, u64::MAX] {
+        assert_eq!(
+            core.query_delivery(&view, invalid),
+            Err(DeliveryError::InvalidSequence)
+        );
+    }
+    assert_eq!(
+        core.query_delivery(&view, 1).unwrap().state,
+        DeliveryState::HistoryLost
+    );
+}
+
+#[test]
 fn history_loss_fences_old_reserved_token() {
     let core = ControlCore::new(boot(15), space(15));
     let target = root(15, CPU_PERIOD_NS);
@@ -428,6 +554,50 @@ fn cpu_usage_rolls_to_a_new_fixed_period_without_resetting_cumulative_usage() {
     let after = target.usage(CPU_PERIOD_NS + 2);
     assert_eq!(after.window_consumed_ns, 5);
     assert_eq!(after.cumulative_cpu_ns, 35);
+}
+
+#[test]
+fn revoked_ancestor_fences_child_grants_and_pending_commit() {
+    let parent = root(75_000, 80);
+    let child = with_parent(domain(75_001), object(75_001), &parent, 60).unwrap();
+    let who = publisher(75_002);
+    let old_grant = child.grant(who).unwrap();
+    let core = ControlCore::new(boot(75_000), space(75_000));
+    let token = core.reserve(request(1, old_grant.clone(), 1, 55), who).unwrap();
+    parent.revoke();
+    assert!(matches!(child.grant(who), Err(ResourceError::Revoked)));
+    let denied = core.commit(&token, who, 10).unwrap();
+    assert_eq!(denied.status, Some(DeliveryStatus::Revoked));
+    assert_eq!(child.revision(), 1);
+    assert_eq!(parent.revision(), 1);
+    assert_eq!(
+        child.install_budget_for_host_model(&old_grant, 1, CPU_PERIOD_NS, 50, 11),
+        Err(ResourceError::Revoked)
+    );
+    match core.reserve_or_get(request(1, old_grant, 1, 55), who) {
+        Ok(ReserveAttempt::Existing(observed)) => assert_eq!(observed, denied),
+        _ => panic!("same D terminal rejection must be retrievable"),
+    }
+}
+
+#[test]
+fn child_commit_admitted_before_ancestor_revoke_is_immutable() {
+    let grandparent = root(76_000, 80);
+    let parent = with_parent(domain(76_001), object(76_001), &grandparent, 70).unwrap();
+    let child = with_parent(domain(76_002), object(76_002), &parent, 60).unwrap();
+    let who = publisher(76_003);
+    let grant = child.grant(who).unwrap();
+    let core = ControlCore::new(boot(76_000), space(76_000));
+    let token = core.reserve(request(1, grant.clone(), 1, 50), who).unwrap();
+    let admitted = core.commit(&token, who, 1).unwrap();
+    assert_eq!(admitted.status, Some(DeliveryStatus::Ok));
+    grandparent.revoke();
+    assert!(matches!(child.grant(who), Err(ResourceError::Revoked)));
+    assert_eq!(
+        core.query_delivery(&core.delivery_view(), 1).unwrap(),
+        admitted
+    );
+    assert_eq!(child.revision(), 2);
 }
 
 #[test]
@@ -1131,5 +1301,61 @@ fn copyout_retry_racing_with_retirement_never_reopens_a_delivery() {
         assert_eq!(retire.join().unwrap().unwrap().retired_through, 1);
         assert_eq!(target.revision(), 2);
         assert_eq!(core.window_len(), 0);
+    }
+}
+
+#[test]
+fn cross_branch_domain_and_object_id_reuse_are_rejected() {
+    let root = root(80_000, 90);
+    let left = with_parent(domain(80_001), object(80_001), &root, 80).unwrap();
+    let right = with_parent(domain(80_002), object(80_002), &root, 80).unwrap();
+    let grandchild = with_parent(domain(80_003), object(80_003), &left, 70).unwrap();
+
+    // The original per-parent children map misses cousins. A family-wide
+    // registry must reject both a duplicate ResourceDomainId and a distinct
+    // ResourceDomainId masquerading as the same stable resource object.
+    assert_eq!(
+        with_parent(domain(80_003), object(80_004), &right, 10).err(),
+        Some(ResourceError::DuplicateDomainId)
+    );
+    assert_eq!(
+        with_parent(domain(80_004), object(80_003), &right, 10).err(),
+        Some(ResourceError::DuplicateObjectId)
+    );
+    assert_eq!(grandchild.stable_object_id(), object(80_003));
+    let real = with_parent(domain(80_004), object(80_004), &right, 20).unwrap();
+    assert_eq!(real.budget().cap_ns, 20);
+    let who = publisher(80_005);
+    assert_eq!(
+        root.install_budget_for_host_model(
+            &root.grant(who).unwrap(), 1, CPU_PERIOD_NS, 79, 1
+        ),
+        Err(ResourceError::ParentConstraint)
+    );
+}
+
+#[test]
+fn concurrent_cousin_registration_same_identity_has_one_winner() {
+    for n in 0..64_u128 {
+        let root = root(90_000 + n, 90);
+        let left = with_parent(domain(100_000 + n), object(100_000 + n), &root, 70).unwrap();
+        let right = with_parent(domain(110_000 + n), object(110_000 + n), &root, 70).unwrap();
+        let start = Arc::new(Barrier::new(3));
+        let one_start = Arc::clone(&start);
+        let two_start = Arc::clone(&start);
+        let one = thread::spawn(move || {
+            one_start.wait();
+            with_parent(domain(120_000 + n), object(120_000 + n), &left, 50)
+        });
+        let two = thread::spawn(move || {
+            two_start.wait();
+            with_parent(domain(120_000 + n), object(120_000 + n), &right, 50)
+        });
+        start.wait();
+        let a = one.join().unwrap();
+        let b = two.join().unwrap();
+        assert_eq!(usize::from(a.is_ok()) + usize::from(b.is_ok()), 1);
+        let rejected = if a.is_err() { a.err() } else { b.err() };
+        assert_eq!(rejected, Some(ResourceError::DuplicateDomainId));
     }
 }

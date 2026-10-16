@@ -16,13 +16,17 @@ memory-layout cast here.
 For A05 conversion, `DeliveryStatus::hos2_code` and
 `DeliveryState::hos2_code` expose the fixed numeric HOS2 0.3 values without a
 dependency on the wire crate. `ParentLimit` maps to wire `Conflict` because
-HOS2 0.3 has no separate parent-constraint status. The fallible
-`DeliveryObservation::hos2_saved_status_code` returns `Some(0)` only for a
-consistent non-terminal observation without a stored terminal outcome, and
-`Some(code)` for a terminal with a saved outcome. It returns `None` for
-terminal-without-status or nonterminal-with-status rather than forging an
-`Ok` result. A05 must not emit a response on `None`; A02 separately checks
-the complete wire payload's metadata invariants.
+HOS2 0.3 has no separate parent-constraint status.
+
+`DeliveryObservation::hos2_saved_status_code()` is **fallible**:
+`Result<u16, DeliveryError>`. A legitimate non-terminal observation maps
+`saved_status` to `Ok` **only when it has no terminal status or effect
+metadata**; a terminal observation must carry an actual saved result. A
+terminal success requires an object ID and complete, coherent revision/time
+metadata. A terminal refusal must carry no success metadata. A05 must abort
+serialization on `InvalidPublish`, not silently turn it into a wire-level
+`Ok`. The host model does not authenticate a kernel caller or prove Hepta
+persistence.
 
 ## A05: kernel ioctl and CapSpace
 
@@ -162,3 +166,25 @@ specific in-memory namespace instance and its generation. The
 views, invented owner receipts, foreign same-byte namespaces and stale
 generations. A07 must *separately* validate its existing durable K ledger
 and fsync before invoking retirement; no new persistent database is created.
+
+## Ancestor revocation
+
+Child grant issuance and child budget CAS both check the liveness of every
+ResourceDomain ancestor under the shared family mutation gate. If any
+ancestor revoke precedes admission, child mutation publishes terminal
+`Revoked`; if the child mutation wins, its already published result remains
+immutable after ancestor revoke. The real A05/A06 kernel must bind this to
+its actual grant epoch, capability lifetime and scheduler domain lock order.
+
+## Family-wide resource identity retention
+
+ResourceDomain family members now share a mutation-gate-protected set of
+stable domain IDs and stable object IDs. A child cannot register a duplicate
+ID **anywhere in its root family**, including a cousin in another subtree.
+IDs are retained for the life of the family instead of being reused after a
+handle drops. This is a bounded-by-object-creation **host-model** registry,
+not a duplicate Hepta ledger or a new global kernel object database. The
+actual kernel must use its preexisting stable object owner/registry to enforce
+uniqueness **across distinct root families** and to bound/retire the registry
+safely during namespace destruction. The family gate serializes simultaneous
+cousin registration and parent budget changes.
