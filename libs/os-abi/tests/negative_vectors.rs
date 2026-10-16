@@ -55,6 +55,43 @@ fn assert_err<T: core::fmt::Debug>(result: Result<T, Error>, expected: Error) {
 }
 
 #[test]
+fn malformed_frame_lengths_are_rejected_before_unknown_opcode_or_status() {
+    // NATIVE_ABI §3: check the full snapshot's framing before dispatching an
+    // opcode. Otherwise a malformed unknown operation gets EOPNOTSUPP instead
+    // of a structural EINVAL from the driver's error mapping.
+    for response in [false, true] {
+        let mut frame = if response {
+            cas_error()
+        } else {
+            query_request()
+        };
+        frame[8..10].copy_from_slice(&u16::MAX.to_le_bytes());
+        let parse = |bytes: &[u8]| {
+            if response {
+                decode_response(bytes).map(|_| ())
+            } else {
+                decode_request(bytes).map(|_| ())
+            }
+        };
+        assert_eq!(parse(&frame), Err(Error::UnknownOpcode));
+
+        frame[16..20].copy_from_slice(&1u32.to_le_bytes());
+        assert_eq!(parse(&frame), Err(Error::Truncated));
+        frame[16..20].fill(0);
+        frame.push(0);
+        assert_eq!(parse(&frame), Err(Error::TrailingBytes));
+        frame[16..20].copy_from_slice(&u32::MAX.to_le_bytes());
+        assert_eq!(parse(&frame), Err(Error::PayloadTooLarge));
+    }
+
+    let mut unknown_status = cas_error();
+    unknown_status[10..12].copy_from_slice(&u16::MAX.to_le_bytes());
+    assert_err(decode_response(&unknown_status), Error::InvalidStatus);
+    unknown_status[16..20].copy_from_slice(&1u32.to_le_bytes());
+    assert_err(decode_response(&unknown_status), Error::Truncated);
+}
+
+#[test]
 fn request_structure_mutations_are_rejected() {
     let valid = query_request();
     assert_err(decode_request(&valid[..63]), Error::Truncated);
@@ -406,7 +443,10 @@ fn unknown_minor_and_exact_wire_lengths_are_rejected() {
 fn ordered_sequence_helpers_provide_canonical_little_endian_ids() {
     use hos2_os_abi::{install_budget_request_id, install_budget_sequence};
     assert_eq!(install_budget_request_id(0), Err(Error::InvalidSequence));
-    assert_eq!(install_budget_request_id(u64::MAX), Err(Error::InvalidSequence));
+    assert_eq!(
+        install_budget_request_id(u64::MAX),
+        Err(Error::InvalidSequence)
+    );
     assert_eq!(
         install_budget_sequence(&[0; 16]),
         Err(Error::InvalidRequestId)
@@ -585,11 +625,11 @@ fn read_usage_and_retire_through_reject_impossible_semantic_values() {
 
     for (offset, value) in [
         (72usize, 34_999_999u64), // cumulative less than window consumed
-        (80, 101_000_000), // wrong 100ms window start
-        (88, 50_000_001), // impossible single-CPU consumption
-        (96, CPU_PERIOD_NS + 1), // cap exceeds period
+        (80, 101_000_000),        // wrong 100ms window start
+        (88, 50_000_001),         // impossible single-CPU consumption
+        (96, CPU_PERIOD_NS + 1),  // cap exceeds period
         (104, CPU_PERIOD_NS - 1), // unsupported period
-        (120, 78), // dropped_events > event_sequence
+        (120, 78),                // dropped_events > event_sequence
     ] {
         let mut invalid = usage.clone();
         invalid[offset..offset + 8].copy_from_slice(&value.to_le_bytes());

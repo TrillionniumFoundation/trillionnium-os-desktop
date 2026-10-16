@@ -375,8 +375,8 @@ pub fn decode_request(bytes: &[u8]) -> Result<Request, Error> {
         return Err(Error::InvalidFlags);
     }
     check_common_header(bytes, true)?;
-    let opcode = Opcode::from_u16(get_u16(bytes, 8))?;
     let payload_len = checked_payload_len(bytes)?;
+    let opcode = Opcode::from_u16(get_u16(bytes, 8))?;
     let request_id = copy16(bytes, 24);
     if is_zero(&request_id) {
         return Err(Error::InvalidRequestId);
@@ -473,9 +473,9 @@ pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
     check_magic(bytes, HOSR_MAGIC)?;
     check_version(bytes)?;
     check_common_header(bytes, false)?;
+    let payload_len = checked_payload_len(bytes)?;
     let opcode = Opcode::from_u16(get_u16(bytes, 8))?;
     let status = Status::from_u16(get_u16(bytes, 10))?;
-    let payload_len = checked_payload_len(bytes)?;
     let request_id = copy16(bytes, 24);
     let boot_id = copy16(bytes, 40);
     if is_zero(&request_id) {

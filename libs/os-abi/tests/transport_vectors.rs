@@ -45,7 +45,10 @@ fn every_short_transport_descriptor_is_rejected() {
 
     let mut output = [0xa5; TRANSPORT_LEN - 1];
     let original = Transport::decode(&raw).unwrap();
-    assert_eq!(original.encode(&mut output), Err(Error::InsufficientCapacity));
+    assert_eq!(
+        original.encode(&mut output),
+        Err(Error::InsufficientCapacity)
+    );
     assert_eq!(output, [0xa5; TRANSPORT_LEN - 1]);
 }
 
@@ -66,15 +69,24 @@ fn transport_rejects_reserved_overflow_and_invalid_request_byte_count() {
 
     let mut wrapping_request = raw;
     wrapping_request[0..8].copy_from_slice(&u64::MAX.to_le_bytes());
-    assert_eq!(Transport::decode(&wrapping_request), Err(Error::IntegerOverflow));
+    assert_eq!(
+        Transport::decode(&wrapping_request),
+        Err(Error::IntegerOverflow)
+    );
 
     let mut wrapping_response = raw;
     wrapping_response[8..16].copy_from_slice(&u64::MAX.to_le_bytes());
-    assert_eq!(Transport::decode(&wrapping_response), Err(Error::IntegerOverflow));
+    assert_eq!(
+        Transport::decode(&wrapping_response),
+        Err(Error::IntegerOverflow)
+    );
 
     let mut max_request = raw;
     max_request[16..20].copy_from_slice(&(MAX_FRAME as u32).to_le_bytes());
-    assert_eq!(Transport::decode(&max_request).unwrap().request_bytes, MAX_FRAME as u32);
+    assert_eq!(
+        Transport::decode(&max_request).unwrap().request_bytes,
+        MAX_FRAME as u32
+    );
 }
 
 #[test]
