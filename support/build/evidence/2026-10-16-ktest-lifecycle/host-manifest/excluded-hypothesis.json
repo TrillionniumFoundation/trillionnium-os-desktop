@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "requested_source_commit": "8fcf645861629191721c64f850b6ffbfc3f0d07c",
+  "loader_source_sha256": "1b72abf33abcbc4d7296f4855f4136645a03001421455b81fc1b0de039a5cda1",
+  "current_loader_matches_requested_commit": true,
+  "actual_metadata": [
+    {
+      "crate": "ostd",
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/ostd",
+      "command": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--no-deps",
+        "--offline",
+        "--locked",
+        "--format-version",
+        "1"
+      ],
+      "raw_exit_code": 0,
+      "workspace_root": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas",
+      "cwd_OSDK_exists": false,
+      "fallback_OSDK_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/OSDK.toml",
+      "generated_intermediate_kernel_OSDK_selected": false,
+      "selection_basis": "Manifest::load implementation checks only current-dir then workspace_root; actual Cargo metadata establishes workspace_root."
+    },
+    {
+      "crate": "aster-core",
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/core",
+      "command": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--no-deps",
+        "--offline",
+        "--locked",
+        "--format-version",
+        "1"
+      ],
+      "raw_exit_code": 0,
+      "workspace_root": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas",
+      "cwd_OSDK_exists": false,
+      "fallback_OSDK_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/OSDK.toml",
+      "generated_intermediate_kernel_OSDK_selected": false,
+      "selection_basis": "Manifest::load implementation checks only current-dir then workspace_root; actual Cargo metadata establishes workspace_root."
+    }
+  ],
+  "scope": "Actual read-only Cargo metadata (--no-deps --offline --locked) and source inspection. No Rust build, VM or manifest changes.",
+  "trace_probe_limitation": {
+    "attempted": true,
+    "recorded_stderr": "/workspace/scratch/ae1a8cf05419/next7-ktest-manifest-selection-probe/ostd-osdk.stderr.log",
+    "failure": "strace PTRACE_TRACEME Operation not permitted; actual OSDK did not execute through this failed trace. No runtime open trace claimed."
+  },
+  "conclusion": "For both ktest cwd values, generated kernel/OSDK.toml is neither cwd manifest nor workspace-root manifest. It is not inherited. No generated-kernel-manifest guard is justified for this configuration-selection hypothesis; retain coordination/cleanup ownership separately."
+}

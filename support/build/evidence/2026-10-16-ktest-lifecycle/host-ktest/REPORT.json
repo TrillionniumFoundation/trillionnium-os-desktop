@@ -1,0 +1,141 @@
+{
+  "kind": "host-only ktest process ownership and cancellation evidence",
+  "kernel_or_qemu_pass_claimed": false,
+  "source_binding": "source-binding.json",
+  "baseline": {
+    "observation": "baseline-observation.json",
+    "runner_sha256": "c70096ee2bd5b4e369da4bb45533fb8d8fea2892371678064d9bd55663187c29",
+    "cli_exit": -15,
+    "lock_available_after_cli": true,
+    "leader_and_descendant_pidfds_live": [
+      true,
+      true
+    ],
+    "tcp_lease_free": false,
+    "emergency_cleanup": "Both retained fixture pidfds signaled with KILL only after failed ownership observation; both exits observed.",
+    "raw_controller": "raw-evidence.tar.gz::baseline.py",
+    "raw_console": "raw-evidence.tar.gz::baseline-console.log",
+    "stdout_capture_note": "Original baseline controller printed its observation to the tool response; the same JSON was written to baseline-observation.json. No separate baseline controller-stdout file was saved."
+  },
+  "final_patched_control": {
+    "observation": "patched2-observation.json",
+    "runner_sha256": "e18d02adb932ba213f9f78cdad9457a439465779edb46542eec8ecf590514b1e",
+    "cli_exit": 143,
+    "raw_child_exit_code": -9,
+    "effective_exit_code": 143,
+    "leader_and_descendant_pidfds_live": [
+      false,
+      false
+    ],
+    "tcp_lease_free": true,
+    "lock_available_after_cli": true,
+    "passed": false,
+    "direct_leader_reaped": true,
+    "raw_controller": "raw-evidence.tar.gz::patched2.py",
+    "raw_controller_stdout": "raw-evidence.tar.gz::patched2-console-controller.log"
+  },
+  "final_regression": {
+    "test_count_each_mode": 15,
+    "term_pipeline_subtests": [
+      "verify",
+      "install",
+      "rustc-version",
+      "cargo-version",
+      "git-head",
+      "git-status",
+      "cargo-test",
+      "checker"
+    ],
+    "modes": [
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "support/build/ktest/test_runner_lifecycle.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "log": "test-I-final.log"
+      },
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "-O",
+          "support/build/ktest/test_runner_lifecycle.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "log": "test-IO-final.log",
+        "actual_runner_cli_children_optimized": true
+      }
+    ],
+    "coverage": [
+      "successful and failed leader exit with remaining TERM-ignoring descendant",
+      "first INT and TERM cancellation",
+      "all 8 subprocess stages, including metadata",
+      "repeat signal during Popen owner publication",
+      "repeat signal at cleanup entry and between group signals",
+      "first signal during normal cleanup",
+      "workspace flock held at both group signals",
+      "busy explicit/default output path remains unconsumed",
+      "existing failure log preserved",
+      "external reaping disarms numeric group signals",
+      "cancel during successful result publication rewrites passed false",
+      "raw child status separate from effective cancellation status"
+    ]
+  },
+  "raw_effective_correction": {
+    "history_report": "REPORT.before-raw-status-fix.json",
+    "intermediate_observation": "patched-observation.json",
+    "intermediate_raw_member_source": "run-after-before-raw-status-fix.py",
+    "reason": "Initial repaired runner used raw_exit_code143 for cancellation; parent review required raw child wait status kept separately.",
+    "final_definition": "raw_exit_code is owned.status (-9 here); exit_code is normalized/effective status (143 for first TERM).",
+    "final_15_tests_each_mode_rerun_after_correction": true
+  },
+  "raw_archive": {
+    "path": "raw-evidence.tar.gz",
+    "sha256": "0ff129a3f3eb7de2584a988e9ddfe8b6ad88456e134ff72d40f15a20c13cf5d8",
+    "bytes": 36456,
+    "regular_members": 50,
+    "member_index": "raw-member-index.json",
+    "all_members_byte_compared_to_original_inputs": true
+  },
+  "preservation": {
+    "scratch_report_member": "REPORT.json",
+    "scratch_sha256sums_member": "SHA256SUMS",
+    "intermediate_logs": [
+      "test-I-attempt01.log",
+      "test-I-attempt02.log",
+      "test-IO-attempt02.log",
+      "test-I-attempt03.log",
+      "test-IO-attempt03.log",
+      "test-I-attempt04.log",
+      "test-IO-attempt04.log"
+    ],
+    "intermediate_suite_attempts": "All retained intermediate suite logs passed; the actual failure is the baseline public-CLI ownership leak, not an invented failed test run.",
+    "excluded": "edit.py is a scratch text-edit generator; complete before/after sources, actual probe controllers, final tests and reconstructable patch are retained instead. No target/registry/dependency trees.",
+    "scratch_sums_scope_note": "The raw original scratch SHA256SUMS also describes excluded edit.py. Use RAW_MEMBER_SHA256SUMS for archive members and outer SHA256SUMS for the frozen package."
+  },
+  "reproducible_paths": "All archive/report references are relative. Absolute paths inside original raw logs/receipts are historical evidence only. See README.md for fresh scratch reproduction.",
+  "limitations": [
+    "Fixtures fork/exec in one PID namespace and retain owned PID/pidfd receipts; no /proc inspection.",
+    "Only the direct leader is reaped. Grandchild death is asynchronous and observed with pidfd plus fresh TCP bind within bounded waits.",
+    "No process escaping its original group is claimed covered.",
+    "No Rust build or QEMU launch performed by this audit."
+  ],
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+    "toolchain_declared_by_runner": "nightly-2026-07-21",
+    "installed_toolchain_verified_in_this_host_probe": false
+  },
+  "commands_and_environment_original_report": "raw-evidence.tar.gz::REPORT.json",
+  "published_equal_tree_binding": {
+    "commit": "efb02440ad6fff3b7a1a5d5019f660743d74ab32",
+    "tree": "bfae38050e0b6473df7a46a6e02669166cf3055f",
+    "publisher_receipt": "publication-receipt.json",
+    "local_tested_commit_unchanged": "94fca562365267d8f7415f8c9580ce2dcb891c98"
+  },
+  "source_patch_reconstruction": "source-reconstruction.json"
+}

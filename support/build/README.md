@@ -6,6 +6,17 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
+The latest kernel-test lifecycle phase reran both actual crate suites:
+OSTD 221 and aster-core 141 reported passes, with 3 explicit VMX/EPT soft
+skips and an exercised lower bound of 359. It also verified the public boot
+with raw QEMU33 after atomic manifest cleanup, and separately cancelled a
+real native QEMU paused with `-S` (not a boot/test pass). Host interruption
+and replacement-file regressions, complete commands, source/ELF bindings and
+remaining generated-manifest writer observations are in
+[`evidence/2026-10-16-ktest-lifecycle/REPORT.md`](evidence/2026-10-16-ktest-lifecycle/REPORT.md).
+Target cache reuse is explicit; the public boot is not a new empty-target
+compilation or a bit reproducibility result.
+
 ## Build and boot
 
 On a disposable native **Ubuntu 24.04 x86_64** development host:

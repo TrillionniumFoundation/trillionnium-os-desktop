@@ -1,0 +1,28 @@
+{
+  "archive": "raw-evidence.tar.gz",
+  "all_regular_members_read_back": true,
+  "all_member_bytes_equal_inputs": true,
+  "regular_members": 50,
+  "raw_archive_sha256": "0ff129a3f3eb7de2584a988e9ddfe8b6ad88456e134ff72d40f15a20c13cf5d8",
+  "final_3_source_files_match_expected_sha_and_git_commit": true,
+  "verified_source_files": {
+    "support/build/ktest/run.py": {
+      "sha256": "e18d02adb932ba213f9f78cdad9457a439465779edb46542eec8ecf590514b1e",
+      "bytes": 14780,
+      "matches_local_commit": true
+    },
+    "support/build/ktest/test_runner_lifecycle.py": {
+      "sha256": "588fc506700c47c0d15b5d91926a176772938ca5df2af4f059d357b27c1ceaf0",
+      "bytes": 18712,
+      "matches_local_commit": true
+    },
+    "support/build/ktest/README.md": {
+      "sha256": "0376a464794f85f3012816a0e6723f3d26d260d0d6571b1eab1eb27727d2e453",
+      "bytes": 5201,
+      "matches_local_commit": true
+    }
+  },
+  "scope": "Within the shared repository, only this new host-ktest directory was written by packaging. No source/other evidence mutation, VM, Cargo, or Git write.",
+  "final_source_patch_reconstructed_all_3_exact_files": true,
+  "publisher_receipt_matches_local_commit_tree_parent": true
+}
