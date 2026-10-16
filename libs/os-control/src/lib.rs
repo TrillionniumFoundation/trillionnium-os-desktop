@@ -903,6 +903,9 @@ pub struct RequestBinding {
     pub publisher: PublisherId,
     pub target: ResourceDomainId,
     pub stable_object_id: StableObjectId,
+    /// Exact HOS2 header handle identity: not just the resolved stable target.
+    pub wire_target_slot: u64,
+    pub wire_target_generation: u64,
     pub expected_revision: u64,
     pub period_ns: u64,
     pub cap_ns: u64,
@@ -918,6 +921,10 @@ pub struct DeliveryRequest {
     pub period_ns: u64,
     pub cap_ns: u64,
     pub payload_digest: [u8; 32],
+    // Zero/zero is permitted only for legacy host-state fixtures. A05 must
+    // construct real HOS2 deliveries with from_wire/with_wire_target.
+    wire_target_slot: u64,
+    wire_target_generation: u64,
 }
 
 impl DeliveryRequest {
@@ -929,7 +936,40 @@ impl DeliveryRequest {
             period_ns: CPU_PERIOD_NS,
             cap_ns,
             payload_digest: [0; 32],
+            wire_target_slot: 0,
+            wire_target_generation: 0,
         }
+    }
+
+    /// A05 HOS2 InstallBudget binding. Both fields are taken from the
+    /// validated 64-byte request header *after* real handle resolution.
+    /// A handle alias/reuse is still distinguishable from the stable object.
+    pub fn from_wire(
+        sequence: u64,
+        grant: Grant,
+        expected_revision: u64,
+        cap_ns: u64,
+        target_slot: u64,
+        target_generation: u64,
+    ) -> Result<Self, DeliveryError> {
+        Self::new(sequence, grant, expected_revision, cap_ns)
+            .with_wire_target(target_slot, target_generation)
+    }
+
+    /// Bind the HOS2 target slot and generation into the immutable D
+    /// reservation. A mismatched or recycled handle is not the same request
+    /// even when A05 resolves it to the same ResourceDomain instance.
+    pub fn with_wire_target(
+        mut self,
+        target_slot: u64,
+        target_generation: u64,
+    ) -> Result<Self, DeliveryError> {
+        if target_slot == 0 || target_generation == 0 {
+            return Err(DeliveryError::InvalidRequest);
+        }
+        self.wire_target_slot = target_slot;
+        self.wire_target_generation = target_generation;
+        Ok(self)
     }
 
     pub fn with_payload_digest(mut self, payload_digest: [u8; 32]) -> Self {
@@ -943,6 +983,8 @@ impl DeliveryRequest {
             publisher: self.grant.principal,
             target: self.grant.domain.id(),
             stable_object_id: self.grant.domain.stable_object_id(),
+            wire_target_slot: self.wire_target_slot,
+            wire_target_generation: self.wire_target_generation,
             expected_revision: self.expected_revision,
             period_ns: self.period_ns,
             cap_ns: self.cap_ns,
@@ -1477,6 +1519,7 @@ impl ControlCore {
             || request.expected_revision == u64::MAX
             || request.period_ns != CPU_PERIOD_NS
             || request.cap_ns > CPU_PERIOD_NS
+            || (request.wire_target_slot == 0) != (request.wire_target_generation == 0)
         {
             return Err(DeliveryError::InvalidRequest);
         }

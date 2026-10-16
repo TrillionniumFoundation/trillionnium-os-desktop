@@ -422,3 +422,26 @@ on failure, not an apparently valid HOS2 response. The legacy infallible
 wire ReadUsage**. Negative Rust tests reject the impossible host sample,
 preserve a recoverable later sample and verify A02's *independent*
 encoder rejects it. No A02 wire or Hepta durable store is changed.
+
+## Exact HOS2 target handle bytes belong in canonical D
+
+The published HOS2 request header carries both `target_slot:u64` and
+`target_generation:u64`. These bytes were previously absent from the A03
+`RequestBinding`: two requests using different handle aliases (or a slot
+reused with a new generation) but resolving to the same stable ResourceDomain
+could incorrectly dedupe under one D. A03 now binds **both** fields into
+the global reservation fingerprint.
+
+A05 **must** construct genuine InstallBudget requests using
+`DeliveryRequest::from_wire(sequence, grant, expected_revision, cap_ns,
+target_slot, target_generation)`, with nonzero slot and generation obtained
+from a validated original HOS2 request header after stable object/capability
+resolution. `with_wire_target(slot, generation)` performs the same structural
+validation on an existing request. The legacy four-argument `new` leaves
+both fields zero **only for host-only model fixtures**; no real kernel
+adapter may treat that sentinel as a valid HOS2 management handle.
+
+Tests check same-D exact-handle idempotency versus different slot,
+recycled generation, and structural-zero denial without consuming D. This
+does not itself implement A05's FD/session validation, generation security
+or kernel handle lifetime rules.

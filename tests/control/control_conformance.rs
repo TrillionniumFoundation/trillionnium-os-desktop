@@ -2557,3 +2557,72 @@ fn zero_publisher_fails_identity_validation_without_consuming_a_delivery() {
     assert_eq!(core.commit(&token, who, 1).unwrap().status, Some(DeliveryStatus::Ok));
     assert_eq!(target.revision(), 2);
 }
+
+#[test]
+fn same_d_bound_to_hos2_handle_slot_and_generation() {
+    let core = ControlCore::new(boot(610_000), space(610_000));
+    let target = root(610_000, CPU_PERIOD_NS);
+    let who = publisher(610_001);
+    let grant = target.grant(who).unwrap();
+    let make = |slot, generation| {
+        DeliveryRequest::from_wire(1, grant.clone(), 1, 20, slot, generation).unwrap()
+    };
+
+    let original = make(31, 7);
+    let token = core.reserve(original.clone(), who).unwrap();
+    assert_eq!(token.binding().wire_target_slot, 31);
+    assert_eq!(token.binding().wire_target_generation, 7);
+    assert_eq!(core.reserve(original.clone(), who).err(), Some(DeliveryError::Busy));
+
+    // Same ResourceDomain Arc and stable object, but different HOS2 canonical
+    // header bytes. Neither a new slot alias nor a recycled generation can
+    // claim the reserved D or its saved result.
+    assert_eq!(
+        core.reserve(make(32, 7), who).err(),
+        Some(DeliveryError::Conflict)
+    );
+    assert_eq!(
+        core.reserve(make(31, 8), who).err(),
+        Some(DeliveryError::Conflict)
+    );
+    let first = core.commit(&token, who, 1).unwrap();
+    assert_eq!(first.status, Some(DeliveryStatus::Ok));
+    assert_eq!(target.revision(), 2);
+    match core.reserve_or_get(original, who) {
+        Ok(ReserveAttempt::Existing(observed)) => assert_eq!(observed, first),
+        _ => panic!("the exact same HOS2 header identity must be idempotent"),
+    }
+    assert_eq!(
+        core.reserve_or_get(make(31, 8), who).err(),
+        Some(DeliveryError::Conflict)
+    );
+    assert_eq!(target.revision(), 2);
+}
+
+#[test]
+fn malformed_hos2_target_identity_cannot_consume_a_sequence() {
+    let core = ControlCore::new(boot(611_000), space(611_000));
+    let target = root(611_000, CPU_PERIOD_NS);
+    let who = publisher(611_001);
+    let grant = target.grant(who).unwrap();
+
+    for (slot, generation) in [(0, 0), (0, 1), (1, 0)] {
+        assert!(matches!(
+            DeliveryRequest::from_wire(1, grant.clone(), 1, 20, slot, generation),
+            Err(DeliveryError::InvalidRequest)
+        ));
+        assert_eq!(core.next_sequence(), 1);
+        assert_eq!(core.window_len(), 0);
+    }
+
+    // Host-only old tests may deliberately omit any wire handle (0,0);
+    // real A05 must use from_wire so it cannot silently do the same.
+    let host = request(1, grant.clone(), 1, 20);
+    assert_eq!(host.binding().wire_target_slot, 0);
+    assert_eq!(host.binding().wire_target_generation, 0);
+    let wire = DeliveryRequest::from_wire(1, grant, 1, 20, 55, 4).unwrap();
+    let token = core.reserve(wire, who).unwrap();
+    assert_eq!(token.binding().wire_target_slot, 55);
+    assert_eq!(core.next_sequence(), 2);
+    assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+}
