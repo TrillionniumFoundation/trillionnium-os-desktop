@@ -881,36 +881,25 @@ fn advanced_grandparent_clock_fences_stale_leaf_cas() {
 #[test]
 fn parent_clock_sample_and_child_cas_linearize_under_family_gate() {
     for n in 0..96_u128 {
-        let root_domain = root(412_000 + n, CPU_PERIOD_NS);
-        let child = with_parent(
-            domain(413_000 + n),
-            object(413_000 + n),
-            &root_domain,
-            80,
-        )
-        .unwrap();
-        let who = publisher(414_000 + n);
+        let root_domain = root(n + 1, CPU_PERIOD_NS);
+        let child = with_parent(domain(n + 200), object(n + 200), &root_domain, 80).unwrap();
+        let who = publisher(n + 500);
         let grant = child.grant(who).unwrap();
         let barrier = Arc::new(Barrier::new(3));
 
-        let cas_child = child.clone();
-        let cas_barrier = Arc::clone(&barrier);
+        let d = child.clone();
+        let ready = Arc::clone(&barrier);
         let cas = thread::spawn(move || {
-            cas_barrier.wait();
-            cas_child.install_budget_for_host_model(
-                &grant,
-                1,
-                CPU_PERIOD_NS,
-                70,
-                CPU_PERIOD_NS + 50,
-            )
+            ready.wait();
+            let earlier = CPU_PERIOD_NS + 50;
+            d.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 70, earlier)
         });
 
-        let sample_root = root_domain.clone();
-        let sample_barrier = Arc::clone(&barrier);
+        let parent = root_domain.clone();
+        let ready = Arc::clone(&barrier);
         let sample = thread::spawn(move || {
-            sample_barrier.wait();
-            sample_root.try_usage(CPU_PERIOD_NS + 51)
+            ready.wait();
+            parent.try_usage(CPU_PERIOD_NS + 51)
         });
         barrier.wait();
         let cas_result = cas.join().unwrap();
@@ -924,19 +913,15 @@ fn parent_clock_sample_and_child_cas_linearize_under_family_gate() {
             Err(ResourceError::ClockRollback) => {
                 assert_eq!(child.revision(), 1);
                 let fresh = child.grant(who).unwrap();
-                assert_eq!(
-                    child
-                        .install_budget_for_host_model(
-                            &fresh,
-                            1,
-                            CPU_PERIOD_NS,
-                            70,
-                            CPU_PERIOD_NS + 51,
-                        )
-                        .unwrap()
-                        .revision,
-                    2
+                let later = CPU_PERIOD_NS + 51;
+                let revised = child.install_budget_for_host_model(
+                    &fresh,
+                    1,
+                    CPU_PERIOD_NS,
+                    70,
+                    later,
                 );
+                assert_eq!(revised.unwrap().revision, 2);
             }
             other => panic!("unexpected clock/CAS race result: {other:?}"),
         }
