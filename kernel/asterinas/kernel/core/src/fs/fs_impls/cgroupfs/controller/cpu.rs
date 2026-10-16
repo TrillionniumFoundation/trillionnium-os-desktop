@@ -80,6 +80,20 @@ impl CpuMax {
         Self::us_to_clocks(self.period_usec).max(1)
     }
 
+    /// Compute the periods visible to a cpu.stat observer WITHOUT closing a
+    /// quota window. The running task's interval may not have been charged
+    /// yet, so an observational read must not call advance() and erase it.
+    fn observed_nr_periods(&self, now: u64) -> u64 {
+        let period = self.period_clocks();
+        let start = now / period * period;
+        if self.window_start == 0 || start <= self.window_start {
+            self.nr_periods
+        } else {
+            self.nr_periods
+                .saturating_add((start - self.window_start) / period)
+        }
+    }
+
     fn advance(&mut self, now: u64) {
         let period = self.period_clocks();
         let start = now / period * period;
@@ -307,10 +321,16 @@ impl CpuController {
             // User-memory writes can fault and reschedule: never hold the
             // scheduler's bandwidth lock while writing through VmPrinter.
             let (nr_periods, nr_throttled, throttled_usec) = {
-                let mut max = self.control.as_ref().unwrap().max.lock();
+                let max = self.control.as_ref().unwrap().max.lock();
                 let now = read_tsc();
-                max.advance(now);
-                (max.nr_periods, max.nr_throttled, max.throttled_usec(now))
+                // A read must not roll a shared cgroup ahead of the running
+                // task's pending scheduler CPU charge. In particular, never
+                // grant a fresh quota merely by reading cpu.stat.
+                (
+                    max.observed_nr_periods(now),
+                    max.nr_throttled,
+                    max.throttled_usec(now),
+                )
             };
             writeln!(printer, "nr_periods {}", nr_periods)?;
             writeln!(printer, "nr_throttled {}", nr_throttled)?;
@@ -623,6 +643,58 @@ mod quota_debt_regressions {
             throttled_since: None,
             throttled_clocks: 0,
         }
+    }
+
+    #[ktest]
+    fn cpu_stat_projection_must_not_close_unsettled_quota_window() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.nr_periods = 7;
+        budget.used_clocks = quota.saturating_mul(2);
+        budget.throttled_since = Some(start + period / 2);
+        let from = start + period - quota / 2;
+        let until = start + period + quota / 2;
+
+        // cpu.stat can run while a scheduling interval is not yet charged.
+        // Its projected number of periods may change, but it must not
+        // mutate used clocks, positive debt, throttling or window origin.
+        let before = budget;
+        assert_eq!(budget.observed_nr_periods(until), 8);
+        assert_eq!(budget.window_start, before.window_start);
+        assert_eq!(budget.nr_periods, before.nr_periods);
+        assert_eq!(budget.used_clocks, before.used_clocks);
+        assert_eq!(budget.carry_debt_clocks, before.carry_debt_clocks);
+        assert_eq!(budget.throttled_since, before.throttled_since);
+
+        // The later scheduler debit can still account the old-period tail.
+        budget.charge(from, until);
+        assert_eq!(budget.window_start, start + period);
+        assert_eq!(budget.used_clocks, quota / 2);
+        assert_eq!(budget.carry_debt_clocks, quota + quota / 2);
+        assert_eq!(budget.nr_periods, 8);
+        assert!(!budget.eligible(until));
+    }
+
+    #[ktest]
+    fn cpu_stat_projection_cannot_rewind_accounting_or_mint_credit() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(4);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.nr_periods = 9;
+        budget.used_clocks = quota;
+        budget.carry_debt_clocks = quota / 2;
+        assert_eq!(budget.observed_nr_periods(start - period / 2), 9);
+        assert_eq!(budget.observed_nr_periods(start + 3 * period + 1), 12);
+        assert_eq!(budget.window_start, start);
+        assert_eq!(budget.used_clocks, quota);
+        assert_eq!(budget.carry_debt_clocks, quota / 2);
+        // Unlike a statistics read, the real scheduler advances and settles.
+        budget.advance(start + 3 * period + 1);
+        assert_eq!(budget.nr_periods, 12);
+        assert_eq!(budget.carry_debt_clocks, 0);
     }
 
     #[ktest]
