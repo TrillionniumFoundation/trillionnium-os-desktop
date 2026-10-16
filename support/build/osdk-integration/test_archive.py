@@ -1,5 +1,6 @@
 """Disposable archive safety regressions: no real credentials, QEMU or devices."""
 import gzip
+import hashlib
 import json
 from pathlib import Path
 import os
@@ -32,6 +33,14 @@ class ArchiveTests(unittest.TestCase):
                          b"RAW\x00serial\xff")
         self.assertFalse((self.dest / "work").exists())
         self.assertTrue((self.dest / "evidence.sha256").is_file())
+        # Evidence hashes must bind exactly the output files, including the
+        # deterministic compressed bytes and the manifest itself.
+        lines = (self.dest / "evidence.sha256").read_text().splitlines()
+        self.assertEqual(len(lines), 3)
+        for line in lines:
+            digest, sep, name = line.partition("  ")
+            self.assertEqual(sep, "  ")
+            self.assertEqual(hashlib.sha256((self.dest / name).read_bytes()).hexdigest(), digest)
 
     def test_missing_or_regular_file_source_rejected_without_creating_bundle(self):
         (self.root / "ordinary.txt").write_text("a")
@@ -148,6 +157,33 @@ class ArchiveTests(unittest.TestCase):
         (self.source / "normal.txt").write_text("normal")
         self.assertEqual(archive(self.source, self.dest), 1)
         self.assertEqual((self.source / "normal.txt").read_text(), "normal")
+
+
+    def test_destination_subdirectory_swap_cannot_write_outside(self):
+        # A same-UID actor replaces an output subdirectory after mkdir. A
+        # pathname-based write follows the replacement symlink and archives
+        # bytes OUTSIDE the output root; directory-FD writes must reject it.
+        (self.source / "case").mkdir()
+        (self.source / "case" / "evidence.json").write_bytes(b"INTERNAL_EVIDENCE")
+        outside = self.root / "outside"
+        outside.mkdir()
+        original_mkdir = os.mkdir
+        swapped = False
+
+        def swap_after_mkdir(path, mode=0o777, *, dir_fd=None):
+            nonlocal swapped
+            result = original_mkdir(path, mode, dir_fd=dir_fd)
+            if Path(path).name == "case" and not swapped:
+                swapped = True
+                (self.dest / "case").rename(self.dest / "parked-case")
+                (self.dest / "case").symlink_to(outside, target_is_directory=True)
+            return result
+
+        with patch("archive.os.mkdir", side_effect=swap_after_mkdir):
+            with self.assertRaises((OSError, ValueError)):
+                archive(self.source, self.dest)
+        self.assertTrue(swapped)
+        self.assertFalse((outside / "evidence.json").exists())
 
 
 if __name__ == "__main__":
