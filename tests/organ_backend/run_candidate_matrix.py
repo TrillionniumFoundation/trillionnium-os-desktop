@@ -84,10 +84,14 @@ def main():
     ap.add_argument("--quota-us", type=int, default=10000)
     ap.add_argument("--mode", choices=("leaf", "parent", "rt"), default="leaf")
     ap.add_argument("--repeat", type=int, default=1)
+    ap.add_argument("--max-cpu-percent", type=float, default=None,
+                    help="optional explicit guest CPU percentage bound; report-only when absent")
     ap.add_argument("--bios", type=Path, default=Path("/usr/share/seabios/bios-256k.bin"))
     args = ap.parse_args()
     if not 1000 <= args.quota_us <= 100000 or not 1 <= args.repeat <= 10:
         ap.error("quota must be 1000..100000us, repeat 1..10")
+    if args.max_cpu_percent is not None and not 0 < args.max_cpu_percent <= 100:
+        ap.error("max CPU percentage must be within (0,100]")
     if not re.fullmatch(r"[0-9a-f]{64}", args.expected_sha256):
         ap.error("expected SHA-256 must be exactly 64 lowercase hex digits")
     raw_kernel = args.kernel.read_bytes()
@@ -170,15 +174,23 @@ def main():
             break
     report = {
         "mode": args.mode, "quota_us": args.quota_us, "period_us": 100000,
+        "max_cpu_percent": args.max_cpu_percent,
         "candidate_sha256": args.expected_sha256, "initramfs_sha256": digest(archive.read_bytes()),
         "source_pin": REF_INITRD, "host_cgroup_modified": False, "guest_only": True,
         "smp_qualified": False, "hepta_hos2_qualified": False, "runs": runs,
     }
     (out / "result.json").write_text(json.dumps(report, indent=2) + "\n")
-    # An observed timeout/panic does not disappear merely because another profile succeeded.
-    return 0 if len(runs) == args.repeat and all(
+    # Guest completion is not resource qualification. Callers must explicitly
+    # supply a bound when they intend to use exit 0 as a bandwidth guard.
+    guest_ok = len(runs) == args.repeat and all(
         x["qemu_exit"] == 33 and x["guest_complete"] and not x["panic"] for x in runs
-    ) else 2
+    )
+    if args.max_cpu_percent is not None:
+        guest_ok = guest_ok and all(
+            x["cpu_percent"] is not None and x["cpu_percent"] <= args.max_cpu_percent
+            for x in runs
+        )
+    return 0 if guest_ok else 2
 
 
 if __name__ == "__main__":
