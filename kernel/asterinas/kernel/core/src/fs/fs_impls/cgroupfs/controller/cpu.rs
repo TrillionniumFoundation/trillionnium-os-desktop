@@ -209,12 +209,17 @@ impl CpuController {
         writeln!(printer, "system_usec {}", system_usec)?;
 
         if self.control.is_some() {
-            let mut max = self.control.as_ref().unwrap().max.lock();
-            let now = read_tsc();
-            max.advance(now);
-            writeln!(printer, "nr_periods {}", max.nr_periods)?;
-            writeln!(printer, "nr_throttled {}", max.nr_throttled)?;
-            writeln!(printer, "throttled_usec {}", max.throttled_usec(now))?;
+            // User-memory writes can fault and reschedule: never hold the
+            // scheduler's bandwidth lock while writing through VmPrinter.
+            let (nr_periods, nr_throttled, throttled_usec) = {
+                let mut max = self.control.as_ref().unwrap().max.lock();
+                let now = read_tsc();
+                max.advance(now);
+                (max.nr_periods, max.nr_throttled, max.throttled_usec(now))
+            };
+            writeln!(printer, "nr_periods {}", nr_periods)?;
+            writeln!(printer, "nr_throttled {}", nr_throttled)?;
+            writeln!(printer, "throttled_usec {}", throttled_usec)?;
             writeln!(printer, "nr_bursts 0")?;
             writeln!(printer, "burst_usec 0")?;
         }
