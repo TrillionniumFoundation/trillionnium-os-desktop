@@ -286,6 +286,9 @@ pub enum ResourceError {
     Overflow,
     MissingParent,
     ClockRollback,
+    /// Host-only time/accounting inconsistency: never publish a wire-invalid
+    /// successful CAS after already accounted CPU exceeds elapsed BOOTTIME.
+    InconsistentAccounting,
 }
 
 impl ResourceDomain {
@@ -765,23 +768,35 @@ impl ResourceDomain {
         {
             return Err(ResourceError::ParentConstraint);
         }
-        // Reconcile at a genuine boundary without recharging same-cap writes.
+        // Preflight the whole wire-visible receipt before publishing any
+        // state: A02 requires consumed_at_apply <= elapsed in this period.
+        // A rejected/ambiguous accounting sample must not advance revision,
+        // clock or the window. Host charge_cpu can otherwise construct a
+        // physically impossible sample by attributing delta to one instant.
         let window_start = (now_ns / period_ns) * period_ns;
+        let consumed_at_apply_ns = if window_start > state.window_start_ns {
+            0
+        } else {
+            state.window_consumed_ns
+        };
+        if consumed_at_apply_ns > now_ns - window_start {
+            return Err(ResourceError::InconsistentAccounting);
+        }
+        let next_revision = state
+            .revision
+            .checked_add(1)
+            .ok_or(ResourceError::Overflow)?;
+        let previous_revision = state.revision;
         if window_start > state.window_start_ns {
             state.window_start_ns = window_start;
             state.window_consumed_ns = 0;
         }
         state.last_boottime_ns = now_ns;
-        let previous_revision = state.revision;
-        state.revision = state
-            .revision
-            .checked_add(1)
-            .ok_or(ResourceError::Overflow)?;
+        state.revision = next_revision;
         state.budget = Budget { period_ns, cap_ns };
         if let Some(parent) = self.inner.parent.as_ref() {
             lock_unpoisoned(&parent.inner.children).insert(state.id, cap_ns);
         }
-        let consumed_at_apply_ns = state.window_consumed_ns;
         Ok(BudgetReceipt {
             previous_revision,
             revision: state.revision,
@@ -967,12 +982,13 @@ impl DeliveryObservation {
                         Some(object),
                         Some(previous),
                         Some(saved),
-                        Some(_effective_ns),
-                        Some(_consumed_ns),
+                        Some(effective_ns),
+                        Some(consumed_ns),
                     ) if object.is_nonzero()
                         && previous > 0
                         && previous < u64::MAX
-                        && saved == previous + 1 => Some(0),
+                        && saved == previous + 1
+                        && consumed_ns <= effective_ns % CPU_PERIOD_NS => Some(0),
                     _ => None,
                 }
             }
@@ -1730,8 +1746,11 @@ fn published_result_from_outcome(
             consumed_ns,
         } => {
             if stable_object_id != binding.stable_object_id
+                || !stable_object_id.is_nonzero()
+                || previous_revision == 0
                 || previous_revision != binding.expected_revision
                 || previous_revision.checked_add(1) != Some(saved_revision)
+                || consumed_ns > effective_ns % CPU_PERIOD_NS
             {
                 return Err(DeliveryError::InvalidPublish);
             }
@@ -1760,9 +1779,10 @@ fn map_resource_error(error: ResourceError) -> DeliveryStatus {
         | ResourceError::InvalidInterval
         | ResourceError::InvalidRevision
         | ResourceError::InvalidIdentity => DeliveryStatus::InvalidInput,
-        ResourceError::Overflow | ResourceError::MissingParent | ResourceError::ClockRollback => {
-            DeliveryStatus::Indeterminate
-        },
+        ResourceError::Overflow
+        | ResourceError::MissingParent
+        | ResourceError::ClockRollback
+        | ResourceError::InconsistentAccounting => DeliveryStatus::Indeterminate,
     }
 }
 

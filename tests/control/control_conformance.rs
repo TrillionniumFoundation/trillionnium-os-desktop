@@ -703,12 +703,19 @@ fn budget_update_at_period_boundary_reports_current_window_consumption() {
     assert_eq!(applied.consumed_at_apply_ns, 0);
     assert_eq!(target.usage(CPU_PERIOD_NS + 8).window_consumed_ns, 0);
     assert_eq!(target.usage(CPU_PERIOD_NS + 8).cumulative_cpu_ns, 60);
-    target.charge_cpu(25, CPU_PERIOD_NS + 9).unwrap();
+    // The charge must be no larger than elapsed CPU time in the period.
+    target.charge_cpu(25, CPU_PERIOD_NS + 35).unwrap();
     let same_cap = target
-        .install_budget_for_host_model(&target.grant(who).unwrap(), 2, CPU_PERIOD_NS, 90, CPU_PERIOD_NS + 10)
+        .install_budget_for_host_model(
+            &target.grant(who).unwrap(),
+            2,
+            CPU_PERIOD_NS,
+            90,
+            CPU_PERIOD_NS + 40,
+        )
         .unwrap();
     assert_eq!(same_cap.consumed_at_apply_ns, 25);
-    assert_eq!(target.usage(CPU_PERIOD_NS + 11).window_consumed_ns, 25);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 41).window_consumed_ns, 25);
 }
 
 #[test]
@@ -1567,4 +1574,76 @@ fn resource_identity_registry_has_bounded_capacity_and_no_id_reanimation() {
     assert_eq!(root.revision(), 1);
     assert_eq!(root.budget().cap_ns, 50);
     assert_eq!(root.usage(0).event_sequence, 0);
+}
+
+#[test]
+fn hos2_saved_success_rejects_consumed_time_beyond_period_elapsed() {
+    let core = ControlCore::new(boot(210_000), space(210_000));
+    let target = root(210_000, CPU_PERIOD_NS);
+    let who = publisher(210_001);
+    let token = core.reserve(request(1, target.grant(who).unwrap(), 1, 20), who).unwrap();
+    let saved = core.commit(&token, who, CPU_PERIOD_NS + 5).unwrap();
+    assert_eq!(saved.hos2_saved_status_code(), Some(0));
+
+    let mut fake = saved;
+    fake.consumed_ns = Some(6);
+    assert_eq!(fake.hos2_saved_status_code(), None);
+    fake.consumed_ns = Some(5);
+    assert_eq!(fake.hos2_saved_status_code(), Some(0));
+    fake.effective_ns = Some(2 * CPU_PERIOD_NS);
+    assert_eq!(fake.hos2_saved_status_code(), None);
+    fake.consumed_ns = Some(0);
+    assert_eq!(fake.hos2_saved_status_code(), Some(0));
+}
+
+#[test]
+fn external_success_publication_cannot_save_impossible_cpu_accounting() {
+    let core = ControlCore::new(boot(210_010), space(210_010));
+    let target = root(210_010, CPU_PERIOD_NS);
+    let who = publisher(210_011);
+    let token = core.reserve(request(1, target.grant(who).unwrap(), 1, 20), who).unwrap();
+    let invalid = PublishOutcome::Success {
+        stable_object_id: target.stable_object_id(),
+        previous_revision: 1,
+        saved_revision: 2,
+        effective_ns: CPU_PERIOD_NS + 5,
+        consumed_ns: 6,
+    };
+    assert_eq!(core.publish(&token, who, invalid), Err(DeliveryError::InvalidPublish));
+    assert_eq!(core.query_delivery(&core.delivery_view(), 1).unwrap().state, DeliveryState::Reserved);
+    let valid = PublishOutcome::Success {
+        stable_object_id: target.stable_object_id(),
+        previous_revision: 1,
+        saved_revision: 2,
+        effective_ns: CPU_PERIOD_NS + 5,
+        consumed_ns: 5,
+    };
+    let terminal = core.publish(&token, who, valid).unwrap();
+    assert_eq!(terminal.hos2_saved_status_code(), Some(0));
+    assert_eq!(core.publish(&token, who, invalid).unwrap(), terminal);
+}
+
+#[test]
+fn incoherent_cpu_charge_cannot_commit_a_wire_invalid_success() {
+    let core = ControlCore::new(boot(210_020), space(210_020));
+    let target = root(210_020, 100);
+    let who = publisher(210_021);
+    // The simplified host charge can represent an impossible runtime sample;
+    // budget mutation must fail closed instead of exporting a fake success.
+    target.charge_cpu(60, 10).unwrap();
+    let grant = target.grant(who).unwrap();
+    let first = core.reserve(request(1, grant.clone(), 1, 90), who).unwrap();
+    let rejected = core.commit(&first, who, 20).unwrap();
+    assert_eq!(rejected.status, Some(DeliveryStatus::Indeterminate));
+    assert_eq!(target.revision(), 1);
+    assert_eq!(target.usage(20).window_consumed_ns, 60);
+    assert_eq!(core.commit(&first, who, 60).unwrap(), rejected);
+    // The original D is final; a new D can try a later coherent snapshot
+    // without creating credit or rewriting the rejection.
+    let second = core.reserve(request(2, grant, 1, 90), who).unwrap();
+    let applied = core.commit(&second, who, 60).unwrap();
+    assert_eq!(applied.status, Some(DeliveryStatus::Ok));
+    assert_eq!(applied.consumed_ns, Some(60));
+    assert_eq!(applied.hos2_saved_status_code(), Some(0));
+    assert_eq!(target.revision(), 2);
 }

@@ -262,3 +262,22 @@ a fresh grant cannot claim the *same* previously reserved D even when all
 public HOS2 request bytes are equal; it returns `Conflict`. A genuinely new
 post-recovery action must use a new D and fresh Hepta K authorization as
 appropriate. No new wire field or independent K ledger is introduced.
+
+## A02 wire-success equivalence (cross-crate hardening)
+
+The independent A02 HOS2 decoder rejects an allegedly successful
+`QueryDelivery` result when `consumed_ns > effective_ns % CPU_PERIOD_NS`,
+even when object identity and revision CAS metadata match. A03 now applies
+the same fail-closed predicate in both
+`DeliveryObservation::hos2_saved_status_code() -> Option<u16>` and external
+`publish(..., PublishOutcome::Success)`. A05 must reject `None`, never
+substitute a success code.
+
+`ResourceDomain::apply_budget` also preflights the current period elapsed
+time before any revision/window mutation. If the simplified legacy host
+`charge_cpu` has produced impossible running-time accounting, the reserved
+D publishes an immutable `Indeterminate` refusal rather than a wire-invalid
+success. It does not refund prior consumption, advance CAS or turn the
+original D into a later success. A subsequent **new** D may be evaluated at
+a later consistent sample. A06 must supply settled real runtime in the
+actual kernel and A07 must preserve original K history.
