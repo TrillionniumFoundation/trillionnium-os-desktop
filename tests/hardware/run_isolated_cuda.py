@@ -29,6 +29,21 @@ class Blocked(RuntimeError):
     pass
 
 
+
+def _unique_json_object(pairs):
+    """Reject ambiguous JSON keys at *every* nesting level."""
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate JSON key in device evidence: " + key)
+        value[key] = item
+    return value
+
+
+def _reject_nonfinite_constant(value):
+    raise ValueError("non-finite JSON value in device evidence: " + value)
+
+
 def initial_evidence(bdf, name, timeout_seconds):
     """Common fail-closed schema even when validation prevents device access."""
     return {"schema": "a09.cuda-bounded-run.v1",
@@ -116,7 +131,9 @@ def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=None):
     result["elapsed_seconds"] = round(time.monotonic() - start, 4)
     result["child_exit_code"] = completed.returncode
     try:
-        child = json.loads(completed.stdout)
+        child = json.loads(completed.stdout,
+                           object_pairs_hook=_unique_json_object,
+                           parse_constant=_reject_nonfinite_constant)
         if not isinstance(child, dict):
             raise ValueError("child JSON was not an object")
     except (ValueError, TypeError) as exc:

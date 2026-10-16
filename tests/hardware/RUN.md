@@ -261,3 +261,13 @@ or proof of device ownership. A fabricated CUDA runtime could report these
 values. Only real Asterinas-host and Linux guest logs with verified physical
 PCI identity, IOMMU isolation and actual GPU numeric computation permit
 independent hardware review.
+
+## Strict JSON evidence semantics
+
+Host/guest JSON manifests and the CUDA subprocess's self-reported JSON now
+reject **duplicate keys at any nesting depth** and non-finite `NaN` /
+`Infinity` constants. Different JSON consumers must not interpret an
+ambiguous record as different GPU device identities or status values.
+Rejected records remain blocked/failed, not recovered. This is deterministic
+parsing hardening only; unsigned evidence still cannot attest Asterinas
+execution or physical CUDA computation.

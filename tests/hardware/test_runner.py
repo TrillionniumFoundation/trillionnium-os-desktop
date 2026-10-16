@@ -147,6 +147,23 @@ class LabRunnerTests(unittest.TestCase):
                                    runner=Mock(return_value=self.result(payload)))
         self.assertEqual(code, 1)
 
+    def test_duplicate_child_json_key_rejected_before_acceptance(self):
+        malformed = '{"schema":"a09.cuda-gemm.v1","schema":"a09.cuda-gemm.v1"}'
+        runner = Mock(return_value=subprocess.CompletedProcess([], 0, malformed, ""))
+        code, result = lab.run_lab(BDF, "RTX 4060", True, runner=runner)
+        self.assertEqual(code, 1)
+        self.assertEqual(result["status"], "failed_unparseable_child")
+        self.assertIn("duplicate JSON key", result["error"])
+
+    def test_nonfinite_child_json_is_unparseable_not_computation_success(self):
+        runner = Mock(return_value=subprocess.CompletedProcess(
+            [], 0, '{"schema":"a09.cuda-gemm.v1","value":NaN}', ""
+        ))
+        code, result = lab.run_lab(BDF, "RTX 4060", True, runner=runner)
+        self.assertEqual(code, 1)
+        self.assertEqual(result["status"], "failed_unparseable_child")
+        self.assertIn("non-finite JSON", result["error"])
+
     def test_unparseable_success_fails(self):
         runner = Mock(return_value=subprocess.CompletedProcess([], 0, "hello", ""))
         code, result = lab.run_lab(BDF, "RTX 4060", True, runner=runner)

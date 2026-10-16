@@ -177,6 +177,27 @@ class AcceptanceTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 acceptance.load_json(pipe)
 
+    def test_duplicate_keys_are_not_valid_host_guest_manifests(self):
+        for document in (
+            '{"schema":"a","schema":"a"}',
+            '{"guest":{"device_bdf":"0000:01:00.0","device_bdf":"0000:02:00.0"}}',
+        ):
+            with self.subTest(document=document):
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "guest.json"
+                    path.write_text(document, encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
+                        acceptance.load_json(path)
+
+    def test_nonfinite_json_is_not_valid_device_evidence(self):
+        for nonfinite in ("NaN", "Infinity", "-Infinity"):
+            with self.subTest(token=nonfinite):
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "guest.json"
+                    path.write_text('{"temperature": ' + nonfinite + '}', encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "non-finite JSON"):
+                        acceptance.load_json(path)
+
     def test_regular_small_manifest_loads(self):
         with tempfile.TemporaryDirectory() as directory:
             p = Path(directory) / "host.json"

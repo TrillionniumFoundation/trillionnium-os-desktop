@@ -69,9 +69,26 @@ def bounded_log(path):
     return read_untrusted_regular_file(path, MAX_RAW_LOG_BYTES)
 
 
+
+def _unique_json_object(pairs):
+    """Reject ambiguous JSON keys at *every* nesting level."""
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate JSON key in device evidence: " + key)
+        value[key] = item
+    return value
+
+
+def _reject_nonfinite_constant(value):
+    raise ValueError("non-finite JSON value in device evidence: " + value)
+
+
 def load_json(path):
     raw = read_untrusted_regular_file(path, MAX_MANIFEST_BYTES)
-    value = json.loads(raw.decode("utf-8"))
+    value = json.loads(raw.decode("utf-8"),
+                       object_pairs_hook=_unique_json_object,
+                       parse_constant=_reject_nonfinite_constant)
     if not isinstance(value, dict):
         raise ValueError(f"{path}: must be a JSON object")
     return value
