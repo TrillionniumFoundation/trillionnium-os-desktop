@@ -31,3 +31,7 @@
 每次后续改动直接修改对应契约和状态，不重复复制ABI字段或完成度。旧仓库重建历史保留在Git初始提交；不混入永久产品要求。
 
 本轮新增[恢复规格场景](../tests/spec/test_recovery_contract.py)、[固定字节样本](../tests/golden/hos2.json)与[执行结果](../results/spec-recovery-v03.json)。它们不是Rust codec或内核实现。未修改文件保留其原小版本，避免仅为版本号全量重写。
+
+## 多 Agent 并行开发
+
+[并行开发执行方案](agents/PLAN.md) · [独立可复制的各 Agent Prompts](agents/PROMPTS.md)。职责与验收以这些文档为准，不改变现有内核实现状态。
