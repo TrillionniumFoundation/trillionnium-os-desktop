@@ -31,8 +31,12 @@ def checked_replace(src, old, new):
     return src.replace(old, new)
 
 
-def variant(source, mode, quota):
+def variant(source, mode, quota, duration_seconds=1):
     source = checked_replace(source, REF_MARKER, "__KERNEL_SHA__")
+    source = checked_replace(source,
+        "while (end - start < UINT64_C(1000000000))",
+        "while (end - start < UINT64_C(" + str(duration_seconds * 1_000_000_000) + "))"
+    )
     source = checked_replace(
         source, 'put(path,"1000 100000\\n");',
         'put(path,"' + str(quota) + ' 100000\\n");'
@@ -84,6 +88,8 @@ def main():
     ap.add_argument("--quota-us", type=int, default=10000)
     ap.add_argument("--mode", choices=("leaf", "parent", "rt"), default="leaf")
     ap.add_argument("--repeat", type=int, default=1)
+    ap.add_argument("--duration-seconds", type=int, default=1,
+                    help="bounded CPU sample duration in the guest (1..10 seconds)")
     ap.add_argument("--max-cpu-percent", type=float, default=None,
                     help="optional explicit guest CPU percentage bound; report-only when absent")
     ap.add_argument("--bios", type=Path, default=Path("/usr/share/seabios/bios-256k.bin"))
@@ -92,6 +98,8 @@ def main():
         ap.error("quota must be 1000..100000us, repeat 1..10")
     if args.max_cpu_percent is not None and not 0 < args.max_cpu_percent <= 100:
         ap.error("max CPU percentage must be within (0,100]")
+    if not 1 <= args.duration_seconds <= 10:
+        ap.error("duration seconds must be 1..10")
     if not re.fullmatch(r"[0-9a-f]{64}", args.expected_sha256):
         ap.error("expected SHA-256 must be exactly 64 lowercase hex digits")
     raw_kernel = args.kernel.read_bytes()
@@ -103,7 +111,8 @@ def main():
     initial = initrd_ref.read_bytes()
     if digest(initial) != REF_INITRD:
         raise ValueError("reference initramfs SHA mismatch")
-    source = variant(Path(__file__).with_name("cpu_cap_probe.c").read_text(), args.mode, args.quota_us)
+    source = variant(Path(__file__).with_name("cpu_cap_probe.c").read_text(), args.mode,
+                     args.quota_us, args.duration_seconds)
     source = checked_replace(source, "__KERNEL_SHA__", args.expected_sha256)
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -174,6 +183,7 @@ def main():
             break
     report = {
         "mode": args.mode, "quota_us": args.quota_us, "period_us": 100000,
+        "duration_seconds": args.duration_seconds,
         "max_cpu_percent": args.max_cpu_percent,
         "candidate_sha256": args.expected_sha256, "initramfs_sha256": digest(archive.read_bytes()),
         "source_pin": REF_INITRD, "host_cgroup_modified": False, "guest_only": True,
