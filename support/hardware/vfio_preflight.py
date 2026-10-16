@@ -15,8 +15,10 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
+import stat
 from typing import Any, Iterable
 
 
@@ -27,9 +29,29 @@ DEFAULT_VENDOR = "0x10de"
 DEFAULT_DRIVER = "vfio-pci"
 
 
+MAX_SYSFS_TEXT_BYTES = 4096
+
+
 def text_file(path: Path) -> str | None:
+    """Read one bounded regular sysfs value without following the final link.
+
+    Reading a pathname and slicing afterwards may follow an unexpected symlink,
+    block forever on a FIFO, or allocate unbounded bytes from a malformed
+    fixture. Real PCI attributes are regular sysfs files; device/group links
+    are observed separately through link_name().
+    """
     try:
-        return path.read_text(encoding="ascii", errors="replace").strip()[:4096]
+        fd = os.open(
+            path,
+            os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK | os.O_NOFOLLOW,
+        )
+        with os.fdopen(fd, "rb") as stream:
+            if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                return None
+            data = stream.read(MAX_SYSFS_TEXT_BYTES + 1)
+            if len(data) > MAX_SYSFS_TEXT_BYTES:
+                return None
+        return data.decode("ascii", errors="replace").strip()
     except (OSError, ValueError):
         return None
 
