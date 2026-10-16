@@ -60,6 +60,8 @@ struct CpuMax {
     period_usec: u64,
     window_start: u64,
     used_clocks: u64,
+    /// Positive overrun from earlier quota windows. Never grants unused credit.
+    carry_debt_clocks: u64,
     nr_periods: u64,
     nr_throttled: u64,
     throttled_since: Option<u64>,
@@ -92,6 +94,19 @@ impl CpuMax {
                     .nr_periods
                     .saturating_add((start - self.window_start) / period);
             }
+            // When a 1000Hz tick preempts after a small quota is spent,
+            // discarding the overrun on every period would systematically
+            // grant another full quota. Repay *positive* debt from elapsed
+            // budgets; do not bank unused runtime as transferable credit.
+            let elapsed = start.saturating_sub(self.window_start) / period;
+            let allowance = if self.quota_usec == u64::MAX {
+                u64::MAX
+            } else {
+                Self::us_to_clocks(self.quota_usec).saturating_mul(elapsed)
+            };
+            self.carry_debt_clocks = self.carry_debt_clocks
+                .saturating_add(self.used_clocks)
+                .saturating_sub(allowance);
             self.window_start = start;
             self.used_clocks = 0;
         }
@@ -109,7 +124,10 @@ impl CpuMax {
 
     fn eligible(&mut self, now: u64) -> bool {
         self.advance(now);
-        if self.quota_usec == u64::MAX || self.used_clocks < Self::us_to_clocks(self.quota_usec) {
+        if self.quota_usec == u64::MAX
+            || self.used_clocks.saturating_add(self.carry_debt_clocks)
+                < Self::us_to_clocks(self.quota_usec)
+        {
             if let Some(since) = self.throttled_since.take() {
                 self.throttled_clocks = self
                     .throttled_clocks
@@ -261,6 +279,7 @@ impl CpuControl {
                 period_usec: DEFAULT_PERIOD_USEC,
                 window_start: 0,
                 used_clocks: 0,
+                carry_debt_clocks: 0,
                 nr_periods: 0,
                 nr_throttled: 0,
                 throttled_since: None,
@@ -515,5 +534,83 @@ pub(crate) fn charge_cpu_time(process: &Process, stat_kind: CpuStatKind) {
         CgroupSystem::singleton()
             .controller()
             .charge_cpu_time(&cgroup_guard, stat_kind);
+    }
+}
+
+#[cfg(ktest)]
+mod quota_debt_regressions {
+    use super::CpuMax;
+    use ostd::prelude::ktest;
+
+    fn sample(quota_usec: u64, period_usec: u64, start: u64) -> CpuMax {
+        CpuMax {
+            quota_usec,
+            period_usec,
+            window_start: start,
+            used_clocks: 0,
+            carry_debt_clocks: 0,
+            nr_periods: 0,
+            nr_throttled: 0,
+            throttled_since: None,
+            throttled_clocks: 0,
+        }
+    }
+
+    #[ktest]
+    fn overrun_must_carry_then_repay_without_refill() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota.saturating_mul(2);
+        budget.advance(start + period);
+        assert_eq!(budget.used_clocks, 0);
+        assert_eq!(budget.carry_debt_clocks, quota);
+        assert!(!budget.eligible(start + period));
+        budget.advance(start + period * 2);
+        assert_eq!(budget.carry_debt_clocks, 0);
+        assert!(budget.eligible(start + period * 2));
+    }
+
+    #[ktest]
+    fn unused_budget_must_not_accumulate_as_credit() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota / 2;
+        budget.advance(start + period);
+        assert_eq!(budget.carry_debt_clocks, 0);
+        budget.used_clocks = quota;
+        assert!(!budget.eligible(start + period));
+    }
+
+    #[ktest]
+    fn reconfiguration_in_same_window_must_not_refill() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota;
+        budget.carry_debt_clocks = quota / 2;
+        let now = start + period / 2;
+        budget.reconfigure(1_000, 100_000, now);
+        assert_eq!(budget.used_clocks, quota);
+        assert_eq!(budget.carry_debt_clocks, quota / 2);
+        assert!(!budget.eligible(now));
+    }
+
+    #[ktest]
+    fn skipped_periods_pay_down_debt_but_never_mint_credit() {
+        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let quota = CpuMax::us_to_clocks(1_000);
+        let start = period.saturating_mul(2);
+        let mut budget = sample(1_000, 100_000, start);
+        budget.used_clocks = quota.saturating_mul(3);
+        budget.advance(start + period * 4);
+        assert_eq!(budget.carry_debt_clocks, 0);
+        assert_eq!(budget.used_clocks, 0);
+        budget.used_clocks = quota;
+        assert!(!budget.eligible(start + period * 4));
     }
 }

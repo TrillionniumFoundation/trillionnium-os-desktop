@@ -1,0 +1,259 @@
+{
+  "schema": "trillionnium.os.a06.quota-debt.n0.v1",
+  "verified_date": "2026-10-16",
+  "base_a06_commit": "6b7a4580f74add2b640b6ea948797bd87733faac",
+  "runtime_change_commit": "887089a3acb33dc03210822966b45becb69bff03",
+  "focused_ktests_commit": "a3290b940001760e83e53b67e8008c83ff17293a",
+  "duration_runner_commit": "3d933a73e66fe81e6a8e21fe985664546adc6fa0",
+  "final_release_kernel_sha256": "9e3c106b88198a5dc1aef81c25392ab89aa3777831d17a852f869ab9747a0b59",
+  "configuration": {
+    "ostd_TIMER_FREQ": 1000,
+    "arch": "x86_64",
+    "qemu": "q35 TCG",
+    "vcpus": 1,
+    "memory": "512MiB",
+    "rootfs": "pinned A01 test initramfs + statically compiled CPU probe",
+    "host_cgroup_modified": false,
+    "host_network_and_data_disks": false
+  },
+  "n0_algorithm": "Retain prior-period positive CPU overshoot debt and repay it at each elapsed quota period; never bank unused quota as extra credit; current-window actual used CPU is recorded separately from carried debt.",
+  "guest_matrix": {
+    "schema": "trillionnium.os.a06-debt-final-guests.v1",
+    "source_commit": "a3290b940001760e83e53b67e8008c83ff17293a",
+    "kernel_sha256": "9e3c106b88198a5dc1aef81c25392ab89aa3777831d17a852f869ab9747a0b59",
+    "test_profile": "q35 TCG one vCPU 512MiB original full cpu.stat probe no host cgroup changes",
+    "hz": 1000,
+    "cases": [
+      {
+        "label": "1pct",
+        "mode": "leaf",
+        "quota_us": 1000,
+        "repeat": 3,
+        "observed_cpu_percent": [
+          1.1,
+          1.2,
+          1.2
+        ],
+        "qemu_exit": [
+          33,
+          33,
+          33
+        ],
+        "all_completed": true,
+        "duration_sec": 17.71
+      },
+      {
+        "label": "10pct",
+        "mode": "leaf",
+        "quota_us": 10000,
+        "repeat": 3,
+        "observed_cpu_percent": [
+          9.995,
+          10.204,
+          10.502
+        ],
+        "qemu_exit": [
+          33,
+          33,
+          33
+        ],
+        "all_completed": true,
+        "duration_sec": 12.02
+      },
+      {
+        "label": "rt10",
+        "mode": "rt",
+        "quota_us": 10000,
+        "repeat": 1,
+        "observed_cpu_percent": [
+          9.645
+        ],
+        "qemu_exit": [
+          33
+        ],
+        "all_completed": true,
+        "duration_sec": 4.69
+      },
+      {
+        "label": "parent10",
+        "mode": "parent",
+        "quota_us": 10000,
+        "repeat": 1,
+        "observed_cpu_percent": [
+          10.749
+        ],
+        "qemu_exit": [
+          33
+        ],
+        "all_completed": true,
+        "duration_sec": 4.59
+      },
+      {
+        "label": "50pct",
+        "mode": "leaf",
+        "quota_us": 50000,
+        "repeat": 1,
+        "observed_cpu_percent": [
+          53.477
+        ],
+        "qemu_exit": [
+          33
+        ],
+        "all_completed": true,
+        "duration_sec": 4.47
+      }
+    ],
+    "all_completed": true,
+    "strict_per_window_cap_validated": false,
+    "production_validated": false
+  },
+  "ten_second_A_B": {
+    "kernel_candidate_branch": "a3290b940001760e83e53b67e8008c83ff17293a",
+    "probe_sha256": "9da7fe7e7ae5d0e43531641f8962f362fd5dda3fb5d303a05b3a73d83a2cf60b",
+    "observations": [
+      {
+        "name": "before-1k-1pct",
+        "quota_us": 1000,
+        "candidate_sha": "8ff3629163438f86abe755aa5a61f3e8d53d2ab44994f41d006d04e3415d80a5",
+        "probe_seconds_per_sample": 10,
+        "completed": true,
+        "exit": 0,
+        "observed_cpu_pct": 2,
+        "baseline_iterations": 1995000000,
+        "duration_s": 23.5
+      },
+      {
+        "name": "debt-1k-1pct",
+        "quota_us": 1000,
+        "candidate_sha": "9e3c106b88198a5dc1aef81c25392ab89aa3777831d17a852f869ab9747a0b59",
+        "probe_seconds_per_sample": 10,
+        "completed": true,
+        "exit": 0,
+        "observed_cpu_pct": 1.109,
+        "baseline_iterations": 1961300000,
+        "duration_s": 24.9
+      },
+      {
+        "name": "before-1k-50pct",
+        "quota_us": 50000,
+        "candidate_sha": "8ff3629163438f86abe755aa5a61f3e8d53d2ab44994f41d006d04e3415d80a5",
+        "probe_seconds_per_sample": 10,
+        "completed": true,
+        "exit": 0,
+        "observed_cpu_pct": 51.146,
+        "baseline_iterations": 1950600000,
+        "duration_s": 22.4
+      },
+      {
+        "name": "debt-1k-50pct",
+        "quota_us": 50000,
+        "candidate_sha": "9e3c106b88198a5dc1aef81c25392ab89aa3777831d17a852f869ab9747a0b59",
+        "probe_seconds_per_sample": 10,
+        "completed": true,
+        "exit": 0,
+        "observed_cpu_pct": 50.238,
+        "baseline_iterations": 2091700000,
+        "duration_s": 22.4
+      }
+    ],
+    "all_four_complete": true,
+    "exact_fixed_period_cap_not_proven": true
+  },
+  "official_duration_flag_10s": {
+    "mode": "leaf",
+    "quota_us": 1000,
+    "period_us": 100000,
+    "duration_seconds": 10,
+    "max_cpu_percent": 1.5,
+    "candidate_sha256": "9e3c106b88198a5dc1aef81c25392ab89aa3777831d17a852f869ab9747a0b59",
+    "initramfs_sha256": "6bb0b462b29204efc13ca276bd9c694c070f0de093c3d0a4ac2bda21304c4fd9",
+    "source_pin": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "host_cgroup_modified": false,
+    "guest_only": true,
+    "smp_qualified": false,
+    "hepta_hos2_qualified": false,
+    "runs": [
+      {
+        "index": 1,
+        "qemu_exit": 33,
+        "guest_complete": true,
+        "panic": false,
+        "policy_rt": false,
+        "cpu_percent": 1.1,
+        "samples": [
+          {
+            "label": "unlimited",
+            "wall_ns": 10000936588,
+            "cpu_ns": 10057000000,
+            "iterations": 1963400000
+          },
+          {
+            "label": "one-percent-configured",
+            "wall_ns": 10000478817,
+            "cpu_ns": 110000000,
+            "iterations": 8300000
+          }
+        ]
+      }
+    ]
+  },
+  "native_kernel_ktest": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 145,
+            "passed": 145,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 145,
+            "observed_test_starts": 145,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "comparison": {
+    "reference_1000hz": [
+      {
+        "quota_us": 1000,
+        "cpu_percent": [
+          1.998,
+          1.798,
+          1.999
+        ]
+      },
+      {
+        "quota_us": 10000,
+        "cpu_percent": [
+          11.204,
+          10.564,
+          11.205
+        ]
+      }
+    ],
+    "unselected_5000hz_spike": {
+      "kernel_sha256": "63a6fa86680e09a11af7c3c879555af62cf4064ab8c13c6d6c93a8ae008c104b",
+      "reason": "Global timer frequency increases unrelated timer/IRQ overhead and needs platform-wide qualification",
+      "cpu_percent_1pct": [
+        1.1,
+        1.217,
+        1.163
+      ]
+    }
+  },
+  "known_limits": [
+    "Per-window hard CPU cap remains inexact under periodic-tick overshoot; 1s 50% probe observed 53.477% but 10s result 50.238%",
+    "This is a single-vCPU quota enforcement experiment, not SMP/global scheduling or realtime deadline certification",
+    "No HOS2 CapSpace/ioctl, Hepta durable K-D effect bridge, Android or GPU path validation",
+    "Host wall clock and QEMU TCG variability limit performance-causality claims",
+    "CPU accounting for runtime intervals that cross whole periods requires separate analysis"
+  ]
+}
