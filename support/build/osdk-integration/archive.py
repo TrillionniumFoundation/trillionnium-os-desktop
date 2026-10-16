@@ -18,6 +18,7 @@ MAX_FILE_BYTES = 128 * 1024 * 1024
 MAX_TOTAL_BYTES = 1024 * 1024 * 1024
 OPEN_FLAGS = os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK | os.O_NOFOLLOW
 DIRECTORY_FLAGS = OPEN_FLAGS | os.O_DIRECTORY
+WRITE_FLAGS = os.O_WRONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_CREAT | os.O_EXCL
 
 
 def read_regular(directory_fd, name):
@@ -86,6 +87,29 @@ def source_files(source, root_fd):
         yield Path(archived), payload, candidate
 
 
+def write_archive_file(root_fd, relative, payload):
+    """Create an archive entry through directory FDs, never via a re-resolved path."""
+    if relative.is_absolute() or any(part in ("", ".", "..") for part in relative.parts):
+        raise ValueError(f"invalid archive entry: {relative}")
+    directory_fd = os.dup(root_fd)
+    try:
+        for name in relative.parts[:-1]:
+            try:
+                os.mkdir(name, mode=0o700, dir_fd=directory_fd)
+            except FileExistsError:
+                pass
+            # Reject attacker-swapped symlinks, not just dangling ones. On a
+            # successful open, subsequent renames cannot redirect this FD.
+            next_fd = os.open(name, DIRECTORY_FLAGS, dir_fd=directory_fd)
+            os.close(directory_fd)
+            directory_fd = next_fd
+        fd = os.open(relative.name, WRITE_FLAGS, 0o600, dir_fd=directory_fd)
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(payload)
+    finally:
+        os.close(directory_fd)
+
+
 def archive(source, destination):
     source = Path(source).absolute()
     destination = Path(destination).absolute()
@@ -103,6 +127,8 @@ def archive(source, destination):
     total = 0
     archived_names = set()
     created = None
+    destination_fd = None
+    digests = []
     try:
         for item in source_files(source, root_fd):
             if len(item) == 3:
@@ -119,23 +145,29 @@ def archive(source, destination):
             if created is None:
                 # Delayed allocation: empty/invalid sources never create a fake bundle.
                 destination.mkdir(mode=0o700, parents=True, exist_ok=False)
-                created = destination.stat()
-            target = destination / archived
-            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                destination_fd = os.open(destination, DIRECTORY_FLAGS)
+                created = os.fstat(destination_fd)
+            output = archived
+            payload = data
             if str(archived).endswith(".log") or str(archived).endswith(".metadata.json"):
-                target = target.with_name(target.name + ".gz")
-                target.write_bytes(gzip.compress(data, mtime=0))
-            else:
-                target.write_bytes(data)
-            records.append({"source": original, "archived": str(target.relative_to(destination)),
+                output = archived.with_name(archived.name + ".gz")
+                payload = gzip.compress(data, mtime=0)
+            write_archive_file(destination_fd, output, payload)
+            digests.append((str(output), hashlib.sha256(payload).hexdigest()))
+            records.append({"source": original, "archived": str(output),
                             "source_size": len(data), "source_sha256": hashlib.sha256(data).hexdigest()})
         if not records:
             raise ValueError("no permitted evidence files found (archive cannot be empty)")
-        (destination / "archive.json").write_text(json.dumps({"schema": 1, "source": str(source),
-            "excluded": sorted(EXCLUDED_DIRS), "files": records}, indent=2) + "\n")
-        rows = [hashlib.sha256(path.read_bytes()).hexdigest() + "  " + str(path.relative_to(destination))
-                for path in sorted(destination.rglob("*")) if path.is_file()]
-        (destination / "evidence.sha256").write_text("\n".join(rows) + "\n")
+        manifest = (json.dumps({"schema": 1, "source": str(source),
+            "excluded": sorted(EXCLUDED_DIRS), "files": records}, indent=2) + "\n").encode()
+        write_archive_file(destination_fd, Path("archive.json"), manifest)
+        digests.append(("archive.json", hashlib.sha256(manifest).hexdigest()))
+        rows = [digest + "  " + name for name, digest in sorted(digests)]
+        write_archive_file(destination_fd, Path("evidence.sha256"), ("\n".join(rows) + "\n").encode())
+        # Detect a renamed/replaced root before reporting a completed archive.
+        actual = destination.stat() if not destination.is_symlink() else None
+        if actual is None or (actual.st_dev, actual.st_ino) != (created.st_dev, created.st_ino):
+            raise ValueError("archive destination root changed during write")
     except BaseException:
         # Only clean the exact directory inode created by this invocation.
         # Never delete a pre-existing or concurrently replaced destination.
@@ -145,6 +177,8 @@ def archive(source, destination):
                 shutil.rmtree(destination)
         raise
     finally:
+        if destination_fd is not None:
+            os.close(destination_fd)
         os.close(root_fd)
     return len(records)
 
