@@ -4,8 +4,9 @@
 //! capability authorization, or persistence of delivery history.
 
 use hos2_os_abi::{
-    decode_request, decode_response, install_budget_sequence, DeliveryState, Error, Opcode,
-    QueryDeliveryResponse, RequestPayload, ResponsePayload, Status, CPU_PERIOD_NS,
+    decode_request, decode_response, encode_request, encode_response, install_budget_sequence,
+    DeliveryState, Error, Opcode, QueryDeliveryResponse, RequestPayload, Response, ResponsePayload,
+    Status, CPU_PERIOD_NS,
 };
 
 const GOLDEN: &str = include_str!("../../../tests/golden/hos2_edges.json");
@@ -17,6 +18,19 @@ const NONTERMINAL: [(&str, DeliveryState); 4] = [
     ("delivery_retired", DeliveryState::Retired),
     ("delivery_not_seen", DeliveryState::NotSeen),
     ("delivery_history_lost", DeliveryState::HistoryLost),
+];
+const TERMINAL_ERROR_STATUSES: [Status; 11] = [
+    Status::InvalidInput,
+    Status::PermissionDenied,
+    Status::StaleHandle,
+    Status::Revoked,
+    Status::Conflict,
+    Status::ResourceExhausted,
+    Status::Unsupported,
+    Status::Indeterminate,
+    Status::Busy,
+    Status::OutOfOrder,
+    Status::Retired,
 ];
 
 fn quoted<'a>(line: &'a str, marker: &str) -> Option<&'a str> {
@@ -100,6 +114,110 @@ fn all_independent_semantic_edge_frames_decode() {
 }
 
 #[test]
+fn every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity() {
+    let mut kind = "";
+    let mut name = "";
+    let mut count = 0;
+    for line in GOLDEN.lines() {
+        if let Some(value) = quoted(line, "\"name\": \"") {
+            name = value;
+        }
+        if let Some(value) = quoted(line, "\"kind\": \"") {
+            kind = value;
+        }
+        if let Some(value) = quoted(line, "\"hex\": \"") {
+            let bytes = hex(value);
+            for unused_capacity in [0, 17] {
+                let mut output = vec![0xa5; bytes.len() + unused_capacity];
+                let encoded = match kind {
+                    "request" => encode_request(&decode_request(&bytes).unwrap(), &mut output),
+                    "response" => encode_response(&decode_response(&bytes).unwrap(), &mut output),
+                    other => panic!("invalid fixture kind: {other}"),
+                };
+                assert_eq!(encoded, Ok(bytes.len()), "{name}");
+                assert_eq!(&output[..bytes.len()], bytes.as_slice(), "{name}");
+                assert!(
+                    output[bytes.len()..].iter().all(|byte| *byte == 0xa5),
+                    "{name}: encoder wrote beyond the frame"
+                );
+            }
+            count += 1;
+        }
+    }
+    assert_eq!(count, 24);
+}
+
+#[test]
+fn every_semantic_edge_encoder_rejects_each_short_capacity_without_writing() {
+    let mut kind = "";
+    let mut name = "";
+    let mut count = 0;
+    let mut capacities = 0;
+    for line in GOLDEN.lines() {
+        if let Some(value) = quoted(line, "\"name\": \"") {
+            name = value;
+        }
+        if let Some(value) = quoted(line, "\"kind\": \"") {
+            kind = value;
+        }
+        if let Some(value) = quoted(line, "\"hex\": \"") {
+            let bytes = hex(value);
+            for capacity in 0..bytes.len() {
+                let mut output = vec![0xa5; capacity];
+                let encoded = match kind {
+                    "request" => encode_request(&decode_request(&bytes).unwrap(), &mut output),
+                    "response" => encode_response(&decode_response(&bytes).unwrap(), &mut output),
+                    other => panic!("invalid fixture kind: {other}"),
+                };
+                assert_eq!(
+                    encoded,
+                    Err(Error::InsufficientCapacity),
+                    "{name}: capacity {capacity}"
+                );
+                assert!(
+                    output.iter().all(|byte| *byte == 0xa5),
+                    "{name}: short capacity {capacity} received a partial frame"
+                );
+                capacities += 1;
+            }
+            count += 1;
+        }
+    }
+    assert_eq!(count, 24);
+    assert_eq!(capacities, 2_816);
+}
+
+#[test]
+fn typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes() {
+    // Construct the encoder inputs independently of the decoder so a shared
+    // status-mapping error cannot hide behind a decode/encode round trip.
+    for (index, saved_status) in TERMINAL_ERROR_STATUSES.into_iter().enumerate() {
+        let name = format!("delivery_terminal_error_{}", index + 1);
+        let expected = fixed(&name);
+        let response = Response {
+            opcode: Opcode::QueryDelivery,
+            status: Status::Ok,
+            request_id: OPAQUE_ID,
+            boot_id: [0x33; 16],
+            revision: 0,
+            payload: ResponsePayload::QueryDelivery(QueryDeliveryResponse {
+                state: DeliveryState::Terminal,
+                saved_status,
+                sequence: 1,
+                stable_object_id: [0; 16],
+                saved_revision: 0,
+                previous_revision: 0,
+                effective_ns: 0,
+                consumed_ns: 0,
+            }),
+        };
+        let mut output = vec![0xa5; expected.len()];
+        assert_eq!(encode_response(&response, &mut output), Ok(expected.len()));
+        assert_eq!(output, expected, "{name}");
+    }
+}
+
+#[test]
 fn all_nonterminal_states_keep_only_the_history_sequence() {
     for (name, state) in NONTERMINAL {
         let value = delivery(name);
@@ -112,20 +230,7 @@ fn all_nonterminal_states_keep_only_the_history_sequence() {
 
 #[test]
 fn all_saved_terminal_rejections_preserve_status_without_success_metadata() {
-    let statuses = [
-        Status::InvalidInput,
-        Status::PermissionDenied,
-        Status::StaleHandle,
-        Status::Revoked,
-        Status::Conflict,
-        Status::ResourceExhausted,
-        Status::Unsupported,
-        Status::Indeterminate,
-        Status::Busy,
-        Status::OutOfOrder,
-        Status::Retired,
-    ];
-    for (index, status) in statuses.into_iter().enumerate() {
+    for (index, status) in TERMINAL_ERROR_STATUSES.into_iter().enumerate() {
         let name = format!("delivery_terminal_error_{}", index + 1);
         let value = delivery(&name);
         assert_eq!(value.state, DeliveryState::Terminal);
