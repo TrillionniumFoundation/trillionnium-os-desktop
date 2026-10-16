@@ -892,12 +892,17 @@ pub struct DeliveryObservation {
 }
 
 impl DeliveryObservation {
-    /// QueryDelivery uses saved_status=Ok for non-terminal states, including
-    /// a pending reservation and all history-only states.
-    pub const fn hos2_saved_status_code(self) -> u16 {
-        match self.status {
-            Some(status) if matches!(self.state, DeliveryState::Terminal) => status.hos2_code(),
-            _ => 0,
+    /// Convert only a consistent (state, saved_status) pair to HOS2.
+    ///
+    /// Observations have public fields and may be modified by an adapter.
+    /// Terminal-without-status and nonterminal-with-status must fail closed;
+    /// A05 must not interpret None as HOS2 Ok. A02 validates full metadata.
+    pub const fn hos2_saved_status_code(self) -> Option<u16> {
+        match (self.state, self.status) {
+            (DeliveryState::Terminal, Some(status)) => Some(status.hos2_code()),
+            (DeliveryState::Terminal, None) => None,
+            (_, None) => Some(0),
+            (_, Some(_)) => None,
         }
     }
 

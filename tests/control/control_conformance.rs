@@ -150,7 +150,48 @@ fn control_states_map_to_hos2_codes_without_importing_the_wire_crate() {
 
     let core = ControlCore::new(boot(18), space(18));
     let pending = core.query_delivery(&core.delivery_view(), 1).unwrap();
-    assert_eq!(pending.hos2_saved_status_code(), 0);
+    assert_eq!(pending.hos2_saved_status_code(), Some(0));
+}
+
+#[test]
+fn malformed_public_delivery_observations_fail_closed_for_wire_status() {
+    let core = ControlCore::new(boot(195_000), space(195_000));
+    let original = core.query_delivery(&core.delivery_view(), 1).unwrap();
+    for state in [
+        DeliveryState::Reserved,
+        DeliveryState::Retired,
+        DeliveryState::NotSeen,
+        DeliveryState::HistoryLost,
+    ] {
+        let mut observation = original;
+        observation.state = state;
+        observation.status = None;
+        assert_eq!(observation.hos2_saved_status_code(), Some(0));
+        observation.status = Some(DeliveryStatus::Revoked);
+        assert_eq!(observation.hos2_saved_status_code(), None);
+    }
+    let mut terminal = original;
+    terminal.state = DeliveryState::Terminal;
+    terminal.status = None;
+    assert_eq!(terminal.hos2_saved_status_code(), None);
+    for (status, code) in [
+        (DeliveryStatus::Ok, 0),
+        (DeliveryStatus::InvalidInput, 1),
+        (DeliveryStatus::PermissionDenied, 2),
+        (DeliveryStatus::StaleHandle, 3),
+        (DeliveryStatus::Revoked, 4),
+        (DeliveryStatus::Conflict, 5),
+        (DeliveryStatus::ParentLimit, 5),
+        (DeliveryStatus::ResourceExhausted, 6),
+        (DeliveryStatus::Unsupported, 7),
+        (DeliveryStatus::Indeterminate, 8),
+        (DeliveryStatus::Busy, 9),
+        (DeliveryStatus::OutOfOrder, 10),
+        (DeliveryStatus::Retired, 11),
+    ] {
+        terminal.status = Some(status);
+        assert_eq!(terminal.hos2_saved_status_code(), Some(code));
+    }
 }
 
 #[test]
