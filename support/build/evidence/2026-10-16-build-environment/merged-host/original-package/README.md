@@ -1,0 +1,15 @@
+# Exact merged-main ABI host verification
+
+Source is local two-parent merge `b1a15d9afc456346410af658d2164ee5fa085656`, tree `73b34b91910852917d4c6bea020c8b4dc1e62e10`. All 20 source files were read from `git archive` and cross-checked against their Git blobs. No live working-tree source was consumed or edited. Source and target are disposable scratch paths; target was absent before Cargo compilation. Shared fixed Rust toolchain/cache was reused.
+
+Actual host results: **39 Rust tests passed**, **28 Python tests passed**, fmt check passed, **12 HOS2 frame + 1 independent transport descriptor** golden checks passed. No Rust/Python test was ignored, filtered or skipped. Cargo test uses `--locked`, offline mode, `CARGO_BUILD_JOBS=2`, and fixed `nightly-2026-07-21` (rustc 1.99.0-nightly, compiler commit 87e5904f5).
+
+**Clippy failed and remains unresolved.** Initial invocation returned 1 because the fixed nightly lacked Clippy. Installing only that nightly's component via `rustup component add clippy --toolchain nightly-2026-07-21` completed with actual exit 0. The identical all-target `-D warnings` retry reached source and returned **101**: nightly Clippy's `chunks_exact_to_as_chunks` lint is emitted at `libs/os-abi/tests/mutation_kill.rs:21` and `libs/os-abi/tests/transport_vectors.rs:14`. Both actual failures and dependency preparation are retained. A01 did not modify A02 source or suppress the lint. The aggregate result is partial pass, not a green complete suite.
+
+The 155-byte Cargo.lock is a retained prior generated no-dependency ABI lock, SHA256 `95c2616d9e61cbbb848888797f71d434d59744612fbaad5fa558754488cbffbd`. The exact manifest's SHA matches its prior provenance before reuse, and Cargo left lock and all archived source inputs byte-for-byte unchanged. The source mutation matrix was not run this phase.
+
+`source.tar.gz` is the exact Git source snapshot (20 regular files); `source-inputs.json` records every mode/blob/size/SHA256. `raw.tar.gz` retains the actual controllers, initial commands/results, both Clippy logs, installation and version receipts, Cargo/Python/generator/fmt logs and before/after verification. `members.json` records all raw member hashes. `report.json` describes final outcome; the initial controller's original report remains inside raw without rewriting its failure.
+
+Reproduce by extracting the source archive to a fresh directory, copying `Cargo.lock` into `libs/os-abi/Cargo.lock`, selecting the fixed nightly with its Clippy/rustfmt components, offline Cargo mode and a new `CARGO_TARGET_DIR`, then running the argv in `raw.tar.gz:commands.json`; after dependency preparation rerun the unchanged Clippy argv from `clippy-after-install.json`. Shared cache availability is required for offline mode. Recorded absolute paths are run provenance, not required portable destinations.
+
+These results establish host codec/test behavior only. They do not establish a HOS2 kernel device, ioctl memory safety, authorization, real delivery state or CPU throttling.

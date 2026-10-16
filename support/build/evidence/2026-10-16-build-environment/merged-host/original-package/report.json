@@ -1,0 +1,255 @@
+{
+  "scope": "Actual host Rust/Python ABI verification only; no guest kernel ioctl or authorization validation",
+  "source_commit": "b1a15d9afc456346410af658d2164ee5fa085656",
+  "commands": [
+    {
+      "name": "cargo-test",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next9-main-host/source",
+      "returncode": 0,
+      "elapsed_seconds": 1.1694488525390625,
+      "log": "cargo-test.log",
+      "log_sha256": "cb0af56a9771973afa0899955541e669020894cf1b2758e3e4bc2554db0f3e78",
+      "log_bytes": 4239,
+      "rust_summaries": [
+        [
+          "ok",
+          "3",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "8",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "7",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "17",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "4",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ],
+      "python_summaries": []
+    },
+    {
+      "name": "cargo-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next9-main-host/source",
+      "returncode": 1,
+      "elapsed_seconds": 0.11440682411193848,
+      "log": "cargo-clippy.log",
+      "log_sha256": "1c8fe323ccfced7fcbcabded8bab5758b0ca4cf97cc63d73ae686c81d3ca58d4",
+      "log_bytes": 158,
+      "rust_summaries": [],
+      "python_summaries": []
+    },
+    {
+      "name": "cargo-fmt",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next9-main-host/source",
+      "returncode": 0,
+      "elapsed_seconds": 0.06442499160766602,
+      "log": "cargo-fmt.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "rust_summaries": [],
+      "python_summaries": []
+    },
+    {
+      "name": "python-abi",
+      "argv": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/abi",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next9-main-host/source",
+      "returncode": 0,
+      "elapsed_seconds": 0.06428837776184082,
+      "log": "python-abi.log",
+      "log_sha256": "94ae892435c725da6993f3bc9b32dfdf0765020ae939f1bb2bb07326a68eb382",
+      "log_bytes": 4507,
+      "rust_summaries": [],
+      "python_summaries": [
+        [
+          "28",
+          "OK"
+        ]
+      ]
+    },
+    {
+      "name": "golden-hos2",
+      "argv": [
+        "python3",
+        "-I",
+        "tests/golden/generate_hos2.py",
+        "--check"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next9-main-host/source",
+      "returncode": 0,
+      "elapsed_seconds": 0.03212785720825195,
+      "log": "golden-hos2.log",
+      "log_sha256": "6cf7dd416aecd1d872d3fad5f2bfce2a82f9d8b7709b7dc73a5037fdd1989366",
+      "log_bytes": 32,
+      "rust_summaries": [],
+      "python_summaries": []
+    },
+    {
+      "name": "golden-transport32",
+      "argv": [
+        "python3",
+        "-I",
+        "tests/golden/generate_transport32.py",
+        "--check"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next9-main-host/source",
+      "returncode": 0,
+      "elapsed_seconds": 0.03219723701477051,
+      "log": "golden-transport32.log",
+      "log_sha256": "4ddb6f4e0e63c08ee9e6c4d0c3b14f9933ea4648145d9995555195b394f91ef4",
+      "log_bytes": 53,
+      "rust_summaries": [],
+      "python_summaries": []
+    }
+  ],
+  "success": false,
+  "source_inputs_unchanged": true,
+  "seed_lock_unchanged": true,
+  "schema": "a01-exact-main-host-v1",
+  "source_tree": "73b34b91910852917d4c6bea020c8b4dc1e62e10",
+  "actual_outer_completion": {
+    "controller_tool_session_id": 89856,
+    "controller_exit": 1,
+    "reason": "initial nightly Clippy component absent",
+    "dependency_install_tool_session_id": 92731,
+    "dependency_install_exit": 0,
+    "retry_exec_exit": 101
+  },
+  "final_status": "partial_pass_clippy_test_lints_failed",
+  "rust_tests": {
+    "passed": 39,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "suites": {
+      "lib": 3,
+      "golden_vectors": 8,
+      "mutation_kill": 7,
+      "negative_vectors": 17,
+      "transport_vectors": 4
+    },
+    "doc_tests": 0
+  },
+  "python_tests": {
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0
+  },
+  "golden_vectors": {
+    "hos2_verified": 12,
+    "transport32_verified": 1
+  },
+  "fmt_passed": true,
+  "clippy_final": {
+    "argv": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--manifest-path",
+      "libs/os-abi/Cargo.toml",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/next9-main-host/source",
+    "returncode": 101,
+    "elapsed_seconds": 0.3182075023651123,
+    "log": "cargo-clippy-after-install.log",
+    "log_sha256": "b7dfa48fd21314b6f195e87a283152ed68dd3d4ead3a4392a7e3473fcee7fa78"
+  },
+  "clippy_failure_scope": {
+    "lint": "clippy::chunks_exact_to_as_chunks",
+    "files": [
+      "libs/os-abi/tests/mutation_kill.rs:21",
+      "libs/os-abi/tests/transport_vectors.rs:14"
+    ],
+    "owner": "A02",
+    "source_edits": false,
+    "lint_suppression": false
+  },
+  "rust_source_mutation_matrix": "not run this phase by coordinator scope",
+  "not_claimed": [
+    "guest kernel HOS2 ioctl",
+    "copyin/copyout safety",
+    "permission enforcement",
+    "CapSpace delivery semantics",
+    "scheduler CPU limits"
+  ],
+  "source_input_count": 20,
+  "all_source_and_seed_lock_bytes_unchanged": true,
+  "compiler": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)",
+  "toolchain": "nightly-2026-07-21",
+  "no_toolchain_upgrade_or_replacement": true
+}

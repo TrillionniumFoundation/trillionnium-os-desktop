@@ -1,0 +1,111 @@
+{
+  "prior_published_baseline_commit": "79d7f0530f08237ab2581d70d44fe59130eced8b",
+  "merged_source_base_commit": "b1a15d9afc456346410af658d2164ee5fa085656",
+  "merged_source_base_tree": "73b34b91910852917d4c6bea020c8b4dc1e62e10",
+  "test_subject_kind": "frozen file bytes atop merged source base; no published code commit asserted",
+  "test_subject": {
+    "support/build/kernel.sh": {
+      "size": 7767,
+      "sha256": "1aab60856d182b5fdf26c9de7360c3e34fbc91a73dd0468902f09e2f61065216",
+      "changed_from_baseline": true
+    },
+    "support/build/kernel-supervisor.py": {
+      "size": 5739,
+      "sha256": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61",
+      "changed_from_baseline": false
+    },
+    "support/build/check-boot.py": {
+      "size": 3869,
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "changed_from_baseline": false
+    },
+    "support/build/cleanup-manifest.py": {
+      "size": 6584,
+      "sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "changed_from_baseline": false
+    },
+    "support/build/tests/test_kernel_runner.py": {
+      "size": 29894,
+      "sha256": "33d3dad7060aba0f422930c3669102108d765164e38c7d8485d423671e8d5060",
+      "changed_from_baseline": true
+    },
+    "support/build/tests/test_kernel_supervisor.py": {
+      "size": 15814,
+      "sha256": "f73c930f99a57167c6ffa3111c341ca371b36e28bc13a31f01c06e7f7c7c15ff",
+      "changed_from_baseline": false
+    },
+    "support/build/minimal.mk": {
+      "size": 1133,
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958",
+      "changed_from_baseline": false
+    },
+    "kernel/asterinas/Makefile": {
+      "size": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6",
+      "changed_from_baseline": false
+    }
+  },
+  "baseline_sources": {
+    "support/build/kernel.sh": {
+      "git_blob": "de1b19978fbcd5b1119c58d42f81225efd46a443",
+      "size": 6696,
+      "sha256": "77081012007e4de3f57630dfd6c4811e3dc228dd6aff4c6ce4dd13488a5e9dbb"
+    },
+    "support/build/kernel-supervisor.py": {
+      "git_blob": "58961a4b659732d9f4da122fb17573b052e6ea26",
+      "size": 5739,
+      "sha256": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61"
+    },
+    "support/build/check-boot.py": {
+      "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
+      "size": 3869,
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80"
+    },
+    "support/build/cleanup-manifest.py": {
+      "git_blob": "d0c45bf2791d00e9091d11b09ac85e17c10566a9",
+      "size": 6584,
+      "sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8"
+    },
+    "support/build/tests/test_kernel_runner.py": {
+      "git_blob": "c43f494d369e1533dddfad88f40da3d7a27993e0",
+      "size": 23497,
+      "sha256": "b9838c9a8d08dbe90ddc0e62684298f719ff1a329088fdc47c70f402c76a9c8a"
+    },
+    "support/build/tests/test_kernel_supervisor.py": {
+      "git_blob": "6aaf986cb38cfc489f4dbd4301833c8d6e3bae4d",
+      "size": 15814,
+      "sha256": "f73c930f99a57167c6ffa3111c341ca371b36e28bc13a31f01c06e7f7c7c15ff"
+    },
+    "support/build/minimal.mk": {
+      "git_blob": "c32eb7b2080cc43a05763836b09e9a5af0f8fdfc",
+      "size": 1133,
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    "kernel/asterinas/Makefile": {
+      "git_blob": "2a906a643d6c463287ea5d633890250b5a046428",
+      "size": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+    }
+  },
+  "dependencies_unchanged_between_baseline_and_merged_base": true,
+  "source_pin": {
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "toolchain": "nightly-2026-07-21"
+  },
+  "host_runs": {
+    "runner_methods_per_mode": 30,
+    "supervisor_methods_per_mode": 9,
+    "modes": [
+      "-I",
+      "-I -O"
+    ],
+    "method_executions": 78
+  },
+  "baseline_red": {
+    "methods": 6,
+    "failing_assertions_including_subtests": 9,
+    "harness_errors": 0
+  },
+  "not_kernel_or_qemu_tests": true
+}

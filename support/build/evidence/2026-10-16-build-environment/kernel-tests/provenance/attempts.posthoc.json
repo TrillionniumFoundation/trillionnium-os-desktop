@@ -1,0 +1,72 @@
+{
+  "classification": "Posthoc preservation of archive-tool failures and successful retry; this is not a kernel/test failure or a rerun",
+  "failed_attempts": [
+    {
+      "tool_chunk": "0edc96",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/ae1a8cf05419/next9-package-ktest.py",
+        "--parent-confirmed-outer-exit-zero",
+        "--actual-session",
+        "74160",
+        "--publication-receipt",
+        "/workspace/scratch/ae1a8cf05419/next9-publication-receipt.json"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419",
+      "actual_exit_code": 1,
+      "controller_member": "packager-initial.py",
+      "controller_sha256": "9a600e87a56c576097a1d52924546a822ecd14e559d7b11af8afc0f4ef33ef4a",
+      "observed_error": "RuntimeError: serial test count/completion mismatch: ostd",
+      "evidence_destination_created": false
+    },
+    {
+      "tool_chunk": "76b199",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/ae1a8cf05419/next9-package-ktest.py",
+        "--parent-confirmed-outer-exit-zero",
+        "--actual-session",
+        "74160",
+        "--publication-receipt",
+        "/workspace/scratch/ae1a8cf05419/next9-publication-receipt.json"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419",
+      "actual_exit_code": 1,
+      "controller_member": "packager-second.py",
+      "controller_sha256": "782ed95a0bbc02602e3b9fa14dd3d9127e5f1128019fc625eaf8c1cddfcfe8c3",
+      "observed_error": "RuntimeError: serial test count/completion mismatch: ostd",
+      "evidence_destination_created": false
+    }
+  ],
+  "successful_retry": {
+    "tool_chunk": "256bf8",
+    "actual_session": 66432,
+    "completion_tool_chunk": "18fc36",
+    "actual_exit_code": 0,
+    "argv": [
+      "python3",
+      "-I",
+      "-B",
+      "/workspace/scratch/ae1a8cf05419/next9-package-ktest.py",
+      "--parent-confirmed-outer-exit-zero",
+      "--actual-session",
+      "74160",
+      "--publication-receipt",
+      "/workspace/scratch/ae1a8cf05419/next9-publication-receipt.json"
+    ],
+    "controller_member": "packager-final.py",
+    "controller_sha256": "17ee9bf1e6bedb270f8254ea26b0af91333d4f11409f61a5744fd66bf012aa2f"
+  },
+  "confirmed_cause": "Package regex required a literal space after test ellipsis. Eight tests immediately log DEBUG/INFO/ERROR after the ellipsis without that space. Test tokens still all begin at line start. Earlier non-line-start hypothesis was disproved; removing the anchor alone did not fix counts.",
+  "strict_unique_test_counts": {
+    "ostd": 221,
+    "aster-core": 141
+  },
+  "actual_kernel_test_invocation_repeated": false,
+  "runtime_records_or_production_sources_changed": false,
+  "packager_failures_not_counted_as_kernel_failures": true
+}

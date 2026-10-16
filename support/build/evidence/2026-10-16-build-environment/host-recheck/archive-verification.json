@@ -1,0 +1,126 @@
+{
+  "passed": true,
+  "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+  "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+  "source_inputs_verified_against_git": [
+    {
+      "path": "support/build/kernel.sh",
+      "git_blob": "a1911971821c9fad4d444f04426fda8e83a93898",
+      "bytes": 7767,
+      "sha256": "1aab60856d182b5fdf26c9de7360c3e34fbc91a73dd0468902f09e2f61065216"
+    },
+    {
+      "path": "support/build/tests/test_kernel_runner.py",
+      "git_blob": "d1219b470b3c5fdc49ea57e59ba9e0cccce798b5",
+      "bytes": 29894,
+      "sha256": "33d3dad7060aba0f422930c3669102108d765164e38c7d8485d423671e8d5060"
+    },
+    {
+      "path": "support/build/kernel-supervisor.py",
+      "git_blob": "58961a4b659732d9f4da122fb17573b052e6ea26",
+      "bytes": 5739,
+      "sha256": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61"
+    },
+    {
+      "path": "support/build/tests/test_kernel_supervisor.py",
+      "git_blob": "6aaf986cb38cfc489f4dbd4301833c8d6e3bae4d",
+      "bytes": 15814,
+      "sha256": "f73c930f99a57167c6ffa3111c341ca371b36e28bc13a31f01c06e7f7c7c15ff"
+    },
+    {
+      "path": "support/build/ktest/run.py",
+      "git_blob": "e3438cac9f232340ee6fffe3fbe6de20f39c13cd",
+      "bytes": 15010,
+      "sha256": "6bcd7710d60ef5d0f228a821f80a452fbca9cb1b6110e7dd12f67b2eede66d27"
+    },
+    {
+      "path": "support/build/ktest/test_runner_lifecycle.py",
+      "git_blob": "93042acdef20119310f7011035d4ce50631092c9",
+      "bytes": 20784,
+      "sha256": "0bbbbbde72aa8aff6fc85d6fc1ea3e0a1a0cb70a5b3262e42e602f7104c4704c"
+    }
+  ],
+  "all_6_actual_invocations_and_log_hashes_checked": [
+    {
+      "log": "test_kernel_runner-I.log",
+      "actual_tests": 30,
+      "actual_exit": 0,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "support/build/tests/test_kernel_runner.py"
+      ],
+      "sha256": "8a2e82ed5c418d5d08e20e4fba502bf9051c55da93b7fbe5808b6a364aab2b5f"
+    },
+    {
+      "log": "test_kernel_supervisor-I.log",
+      "actual_tests": 9,
+      "actual_exit": 0,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "support/build/tests/test_kernel_supervisor.py"
+      ],
+      "sha256": "3e306dbc67d83709ff9122762c5e01e2bad66d0bd75f3e359d8ed85252c78f7f"
+    },
+    {
+      "log": "test_runner_lifecycle-I.log",
+      "actual_tests": 17,
+      "actual_exit": 0,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "support/build/ktest/test_runner_lifecycle.py"
+      ],
+      "sha256": "474193757c54074bbb7b4dd77754fd50f3be4fd0340db90f46c26eb620466f94"
+    },
+    {
+      "log": "test_kernel_runner-IO.log",
+      "actual_tests": 30,
+      "actual_exit": 0,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "support/build/tests/test_kernel_runner.py"
+      ],
+      "sha256": "87b7d49ebf49cbb39d21e546aa3b54a2bd94fa023263f8ae8aac90c585d0ee38"
+    },
+    {
+      "log": "test_kernel_supervisor-IO.log",
+      "actual_tests": 9,
+      "actual_exit": 0,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "support/build/tests/test_kernel_supervisor.py"
+      ],
+      "sha256": "c6b53e1debcf6cb1916944943a139bfc9993e68dd51ebc9d2e565dcbb4988a5e"
+    },
+    {
+      "log": "test_runner_lifecycle-IO.log",
+      "actual_tests": 17,
+      "actual_exit": 0,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "support/build/ktest/test_runner_lifecycle.py"
+      ],
+      "sha256": "6d8410c7cf60886430db50b9a20315bb5ad817449819dde4c5b9a7c40b0c3766"
+    }
+  ],
+  "host_executions": 112,
+  "distinct_tests": 56,
+  "modes": [
+    "-I",
+    "-I -O"
+  ],
+  "actual_tool_session_id": 56957,
+  "actual_outer_exit": 0,
+  "actual_outer_exit_provenance": "root assignment reports completed tool session56957 exit0",
+  "prior_agent_runs_overlap": true,
+  "total_distinct_is_not_224": true,
+  "live_target_or_manifest_read": false
+}

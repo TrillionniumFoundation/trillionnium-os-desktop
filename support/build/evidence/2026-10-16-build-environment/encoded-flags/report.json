@@ -1,0 +1,60 @@
+{
+  "scope": "Host ktest encoded Rust flag rejection and actual tiny fixed-Cargo precedence experiment",
+  "source_publication": "source-publication.json",
+  "original_frozen_input": {
+    "path": "raw-originals.tar.gz",
+    "regular_members": 29,
+    "raw_bytes": 118438,
+    "gzip_bytes": 29924,
+    "gzip_sha256": "d086d1375981eede84890d609a4d843821496edf28ab5dbf9f52ca5fd114a890",
+    "member_index": "members.json",
+    "each_member_byte_compared_to_frozen_original": true
+  },
+  "input_SHA256SUMS_sha256": "ad4aa9914441d634fd5d3c2c9715f83b13471c164e5aaf9a4460563c987b209b",
+  "baseline_red": {
+    "methods": 2,
+    "failures": 2,
+    "exit_code": 1,
+    "original_json": "baseline-lifecycle.json",
+    "original_log": "baseline-lifecycle.log"
+  },
+  "final_host_suites": {
+    "methods_each_mode": 17,
+    "distinct_methods": 17,
+    "executions": 34,
+    "modes": [
+      "-I",
+      "-I -O"
+    ],
+    "original_actual_receipts": "validation.json",
+    "actual_tool_sessions": [
+      57051,
+      68174
+    ],
+    "actual_exits": [
+      0,
+      0
+    ]
+  },
+  "actual_fixed_Cargo_experiment": {
+    "calls": 3,
+    "toolchain": "nightly-2026-07-21",
+    "each_exit_code": 0,
+    "dependency_count": 0,
+    "locked_offline": true,
+    "independent_target_paths_recorded": true,
+    "actual_outputs": [
+      "RUSTFLAGS=true;ENCODED=false\n",
+      "RUSTFLAGS=false;ENCODED=false\n",
+      "RUSTFLAGS=false;ENCODED=true\n"
+    ],
+    "records": "cargo-precedence.json",
+    "tiny_source_lock_and_case_logs": "raw-originals.tar.gz::original/{tiny-flags,cargo-absent,cargo-empty,cargo-nonempty}/",
+    "no_tiny_target_binary_retained": true
+  },
+  "guards_limit": "Normal shell guard is included in the shared committed six-file change, but this original ktest package does not add debug-top-level or OSDK-integration early guards.",
+  "phase_counts_note": "Original related make/supervisor78 + this ktest34 =112 method executions; three tiny Cargo experiments are separate observations, not added unique test cases. Later root revalidation is separate.",
+  "all_phase_green_claimed": false,
+  "parent_reported_Clippy_exit": 101,
+  "new_tests_Cargo_rustc_or_VM_run_by_packaging": false
+}

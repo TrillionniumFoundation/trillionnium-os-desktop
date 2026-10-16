@@ -6,24 +6,27 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
-The latest phase completed **two independent empty kernel-target builds** at
-`5bcec614c1a075782b6ffaa5a5212fdee29be37d`. Both actual QEMU boots passed with
-raw exit 33, and their 8,288,088-byte ELF files are byte-identical (SHA256
-`6c0c382ec88d2e59b58d50abb0ef3671635f30ce08c3b442d2bdc2204821d040`).
-This proves the same-host, same-absolute-source/target-path case, with shared
-registry/toolchain caches and an explicit fixed build timestamp. Crosspath
-and cross-host reproduction remain open. The new OSTD/core runs report
-221/141 passes, 3 VMX/EPT soft skips, and a 359 exercised lower bound; all four
-real guests returned raw 33. The busy-lock output-path fix passed 33 host
-tests in each Python mode. Main ABI/control/archive integration contributed
-105 host tests plus 12 separate golden vectors. Complete builds, serial logs,
-ELFs, cache-custody receipts and limits are retained in
-[`evidence/2026-10-16-clean-repeatability/REPORT.md`](evidence/2026-10-16-clean-repeatability/REPORT.md).
-The final main synchronization also passed ABI 25/25 and rustfmt, with no
-runtime source changes; see
-[`final main-sync evidence`](evidence/2026-10-16-clean-repeatability-main-sync/REPORT.md).
-The previous native cancellation and manifest lifecycle evidence remains in
-[`evidence/2026-10-16-ktest-lifecycle/REPORT.md`](evidence/2026-10-16-ktest-lifecycle/REPORT.md).
+The latest phase fixed inherited GNU make controls that could return success
+without executing a kernel recipe, and rejects encoded Rust flags that would
+override OSDK's required kernel flags. At published source
+`ff040c6d5afbc4e26a249022093b8090181f6176`, an empty-target full kernel build
+completed despite deliberately inherited dry-run/touch/extra-makefile settings,
+then booted with raw QEMU 33. The ELF SHA256 is
+`d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306`.
+OSTD/core reported 221/141 passes, with three VMX/EPT soft skips and a 359
+exercised lower bound; all three real guests returned raw33. The 56 distinct
+entrance regressions passed in both Python modes, with explicit repeated
+verification receipts. Main's ABI tests passed, while strict fixed-nightly
+Clippy retains two A02 test-helper diagnostics (overall host result partial).
+See [`current build/environment evidence`](evidence/2026-10-16-build-environment/REPORT.md)
+for actual commands, full serial logs, artifacts and retained failures.
+
+The previous two independent clean builds and byte-equality result remain
+scoped to their earlier same-host/same-absolute-path source and are recorded in
+[`clean-repeatability evidence`](evidence/2026-10-16-clean-repeatability/REPORT.md).
+Crosspath and cross-host reproduction remain open. Earlier native cancellation
+and manifest lifecycle results remain in
+[`kernel-test lifecycle evidence`](evidence/2026-10-16-ktest-lifecycle/REPORT.md).
 
 ## Build and boot
 

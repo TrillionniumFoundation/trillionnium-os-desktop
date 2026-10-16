@@ -28,7 +28,7 @@
     "verification_evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
     "acceptance_guard_commit": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
     "kernel_mode_regression": {
-      "evidence": "support/build/evidence/2026-10-16-clean-repeatability/kernel-tests/readable/run/result.json",
+      "evidence": "support/build/evidence/2026-10-16-build-environment/kernel-tests/report.json",
       "crates": [
         "ostd",
         "aster-core"
@@ -49,12 +49,12 @@
           "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
         }
       },
-      "osdk_code_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
-      "latest_phase": "2026-10-16-clean-repeatability",
-      "osdk_binary_sha256": "43e6fb9b6acd3ebbb3e855bc4076ee33ca5bbf9faafab2f7255269ba485be4a1",
-      "code_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
-      "source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
-      "actual_tool_session": 88957,
+      "osdk_code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "latest_phase": "2026-10-16-build-environment",
+      "osdk_binary_sha256": "00795405023f25033622ec194db7b2f17cc657e884002f18cd214aa9db35bfbb",
+      "code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+      "actual_tool_session": 74160,
       "actual_tool_exit": 0,
       "guests": 2,
       "raw_qemu_exits": [
@@ -63,7 +63,7 @@
       ],
       "direct_command_leaders_reaped": 10,
       "target_cache_reused": true,
-      "target_cache_source": "completed clean-pair run B",
+      "target_cache_source": "current normal clean kernel build and public boot",
       "empty_target_rebuild": false
     },
     "host_regression": {
@@ -309,33 +309,43 @@
     },
     "artifact_sha256_role": "Original accepted minimal-boot baseline; current source-built products are recorded separately under latest_native_boot and full_kernel_debug.",
     "latest_native_boot": {
-      "code_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
-      "source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
-      "actual_tool_session": 86915,
+      "code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+      "actual_tool_session": 47989,
       "actual_tool_exit": 0,
       "source_build_invoked": true,
-      "release_compilation_observed": true,
-      "target_cache_reused": false,
-      "empty_target_rebuild": true,
-      "registry_and_toolchain_caches_reused": true,
-      "osdk_host_binary_reused_from_run_a": true,
+      "release_compilation_observed": false,
+      "target_cache_reused": true,
+      "empty_target_rebuild": false,
+      "target_cache_source": "immediately preceding empty-target kernel stage in same controller",
+      "preceding_clean_kernel_build": {
+        "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+        "target_absent_before_launch": true,
+        "compilation_lines": 279,
+        "public_exit": 0,
+        "worker_exit": 0,
+        "kernel_sha256": "d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306",
+        "kernel_bytes": 8266576
+      },
       "passed": true,
       "qemu_raw_exit": 33,
       "supervisor_exit": 0,
       "worker_reaped": true,
-      "boot_sha256": "6c0c382ec88d2e59b58d50abb0ef3671635f30ce08c3b442d2bdc2204821d040",
-      "boot_size": 8288088,
+      "boot_sha256": "d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306",
+      "boot_size": 8266576,
       "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
-      "serial_sha256": "82952b5c59bd2b56a7112115468c630c13185894bb3e644d4e8e81ef82823c91",
-      "evidence": "support/build/evidence/2026-10-16-clean-repeatability/clean-pair/README.md",
-      "selected_run": "b",
+      "serial_sha256": "18f820dba25feb4186b881cd68fb3d44c53b4d129653152bcfccefbce330c357",
+      "evidence": "support/build/evidence/2026-10-16-build-environment/kernel-public/README.md",
       "profile": "x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
       "source_directory": "kernel/asterinas",
       "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
       "manifest_cleanup_outcome": "owned_removed",
       "manifest_cleanup_exit": 0,
       "manifest_cleanup_helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
-      "same_host_same_absolute_path_comparison_only": true,
+      "inherited_make_controls_recorded_and_cleared": true,
+      "generated_normal_lock_snapshot_retained": true,
+      "registry_and_toolchain_caches_reused": true,
+      "cross_path_or_cross_host_reproducibility_claimed": false,
       "foreign_manifest_writer_identified": false
     },
     "full_kernel_debug_history": [
@@ -494,6 +504,45 @@
         "direct_command_leaders_reaped": 10,
         "target_cache_reused": true,
         "empty_target_rebuild": false
+      },
+      {
+        "evidence": "support/build/evidence/2026-10-16-clean-repeatability/kernel-tests/readable/run/result.json",
+        "crates": [
+          "ostd",
+          "aster-core"
+        ],
+        "reported_passed": 362,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "exercised_passed_lower_bound": 359,
+        "profile": "x86_64-q35-tcg-1cpu-512MiB",
+        "test_base_locks": {
+          "ostd": {
+            "path": "support/build/ktest/locks/ostd.Cargo.lock",
+            "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+          },
+          "aster-core": {
+            "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+            "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+          }
+        },
+        "osdk_code_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+        "latest_phase": "2026-10-16-clean-repeatability",
+        "osdk_binary_sha256": "43e6fb9b6acd3ebbb3e855bc4076ee33ca5bbf9faafab2f7255269ba485be4a1",
+        "code_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+        "source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+        "actual_tool_session": 88957,
+        "actual_tool_exit": 0,
+        "guests": 2,
+        "raw_qemu_exits": [
+          33,
+          33
+        ],
+        "direct_command_leaders_reaped": 10,
+        "target_cache_reused": true,
+        "target_cache_source": "completed clean-pair run B",
+        "empty_target_rebuild": false
       }
     ],
     "native_boot_history": [
@@ -540,6 +589,36 @@
         "manifest_cleanup_outcome": "owned_removed",
         "manifest_cleanup_helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
         "later_foreign_manifest_observed": true,
+        "foreign_manifest_writer_identified": false
+      },
+      {
+        "code_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+        "source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+        "actual_tool_session": 86915,
+        "actual_tool_exit": 0,
+        "source_build_invoked": true,
+        "release_compilation_observed": true,
+        "target_cache_reused": false,
+        "empty_target_rebuild": true,
+        "registry_and_toolchain_caches_reused": true,
+        "osdk_host_binary_reused_from_run_a": true,
+        "passed": true,
+        "qemu_raw_exit": 33,
+        "supervisor_exit": 0,
+        "worker_reaped": true,
+        "boot_sha256": "6c0c382ec88d2e59b58d50abb0ef3671635f30ce08c3b442d2bdc2204821d040",
+        "boot_size": 8288088,
+        "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "serial_sha256": "82952b5c59bd2b56a7112115468c630c13185894bb3e644d4e8e81ef82823c91",
+        "evidence": "support/build/evidence/2026-10-16-clean-repeatability/clean-pair/README.md",
+        "selected_run": "b",
+        "profile": "x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
+        "source_directory": "kernel/asterinas",
+        "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+        "manifest_cleanup_outcome": "owned_removed",
+        "manifest_cleanup_exit": 0,
+        "manifest_cleanup_helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+        "same_host_same_absolute_path_comparison_only": true,
         "foreign_manifest_writer_identified": false
       }
     ],
@@ -639,6 +718,66 @@
         "new_kernel_build_or_guest_run": false,
         "no_merge_conflicts": true
       }
+    },
+    "build_environment_regression": {
+      "evidence": "support/build/evidence/2026-10-16-build-environment/report.json",
+      "main_at_phase_start": "3b2d15bc987e7ca78e64fa54edffb2177b8abde0",
+      "main_merge_commit": "74ee9b3d62dc85f272681c5caed3a9c328e38539",
+      "code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+      "make_control_variables": [
+        "MAKEFLAGS",
+        "MFLAGS",
+        "GNUMAKEFLAGS",
+        "MAKEFILES",
+        "MAKEOVERRIDES",
+        "MAKELEVEL"
+      ],
+      "encoded_flags_presence_rejected_before_work": true,
+      "encoded_empty_and_nonempty_actual_shell_checks": 2,
+      "distinct_A01_entrance_tests": 56,
+      "python_modes": [
+        "-I",
+        "-I -O"
+      ],
+      "original_agent_host_executions": 112,
+      "additional_integrated_recheck_executions": 112,
+      "merged_main_Rust_tests_passed": 39,
+      "merged_main_Python_tests_passed": 28,
+      "golden_checks_separate": 13,
+      "tiny_Cargo_experiments_separate": 3,
+      "host_overall_validation": "partial",
+      "strict_clippy": {
+        "toolchain": "nightly-2026-07-21",
+        "initial_missing_component_exit": 1,
+        "component_install_exit": 0,
+        "retry_exit": 101,
+        "lint": "chunks_exact_to_as_chunks",
+        "owner": "A02",
+        "paths": [
+          "libs/os-abi/tests/mutation_kill.rs:21",
+          "libs/os-abi/tests/transport_vectors.rs:14"
+        ],
+        "source_or_lint_suppression_applied": false
+      },
+      "clean_kernel_builds": 1,
+      "public_boots": 1,
+      "kernel_mode_guests": 2,
+      "actual_qemu_guests": 3,
+      "raw_qemu_exits": [
+        33,
+        33,
+        33
+      ],
+      "reported_kernel_passes": 362,
+      "kernel_soft_skips": 3,
+      "exercised_kernel_passed_lower_bound": 359,
+      "fixed_input_checks": 118,
+      "all_tracked_kernel_directory_files_unchanged_this_phase": true,
+      "root_readme_bytes": 0,
+      "native_resource_control_accepted": false,
+      "cross_path_or_host_reproducibility_claimed": false,
+      "passing_host_test_executions": 291
     }
   },
   "hepta": {
