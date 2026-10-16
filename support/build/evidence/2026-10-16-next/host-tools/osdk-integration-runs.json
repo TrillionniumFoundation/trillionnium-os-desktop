@@ -1,0 +1,38 @@
+[
+  {
+    "name": "cli",
+    "filter": "cli::",
+    "command": [
+      "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/integration-ceab0ece0f1d6b12",
+      "cli::",
+      "--test-threads=1"
+    ],
+    "working_directory": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+    "exit": 0,
+    "log": "osdk-integration-cli.log"
+  },
+  {
+    "name": "workspace-create",
+    "filter": "commands::new::",
+    "command": [
+      "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/integration-ceab0ece0f1d6b12",
+      "commands::new::",
+      "--test-threads=1"
+    ],
+    "working_directory": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+    "exit": 0,
+    "log": "osdk-integration-workspace-create.log"
+  },
+  {
+    "name": "book-create",
+    "filter": "examples_in_book::create_os_projects::",
+    "command": [
+      "/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/integration-ceab0ece0f1d6b12",
+      "examples_in_book::create_os_projects::",
+      "--test-threads=1"
+    ],
+    "working_directory": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/work",
+    "exit": 0,
+    "log": "osdk-integration-book-create.log"
+  }
+]

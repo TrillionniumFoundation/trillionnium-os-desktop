@@ -1,0 +1,34 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running unittests src/main.rs (/workspace/scratch/ae1a8cf05419/osdk-regression-target/debug/deps/cargo_osdk-87e58130b1b091d4)
+
+running 14 tests
+test base_crate::tests::changed_linker_script_prevents_base_crate_reuse ... ok
+test commands::debug::have_gdb_installed ... ok
+test commands::profile::test_profile_parse_raw ... ok
+test config::test::conditional_manifest ... ok
+test config::test::deserialize_toml_manifest ... ok
+test config::test::parse_quoted_daemon_arguments ... ok
+test config::unix_args::test::test_apply_kv_array ... ok
+test config::unix_args::test::test_get_key ... ok
+test config::unix_args::test::test_split_kv_array ... ok
+test daemon::supervisor::tests::nonzero_daemon_exit_aborts_startup ... ok
+test daemon::supervisor::tests::stop_all_escalates_when_daemon_ignores_sigterm ... ok
+test daemon::supervisor::tests::stop_all_terminates_daemon_descendants ... FAILED
+test daemon::supervisor::tests::stop_all_terminates_running_daemon ... ok
+test daemon::supervisor::tests::successful_daemon_exit_is_reaped ... ok
+
+failures:
+
+---- daemon::supervisor::tests::stop_all_terminates_daemon_descendants stdout ----
+
+thread 'daemon::supervisor::tests::stop_all_terminates_daemon_descendants' (205) panicked at src/daemon/supervisor.rs:318:9:
+assertion failed: !process_exists(child_pid)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    daemon::supervisor::tests::stop_all_terminates_daemon_descendants
+
+test result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.41s
+
+error: test failed, to rerun pass `--bin cargo-osdk`

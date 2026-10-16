@@ -1,0 +1,138 @@
+[
+  {
+    "argv": [
+      "python3",
+      "-I",
+      "support/build/ktest/run.py",
+      "--skip-osdk-install",
+      "--output",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next-committed-ktest"
+    ],
+    "exit": 0,
+    "note": "Reuses the patched source-built OSDK whose SHA256 is in environment.json; original source installation and compilation log retained under initial-kernel-tests/ostd-initial."
+  },
+  {
+    "argv": [
+      "support/build/kernel.sh",
+      "run_kernel"
+    ],
+    "env": {
+      "INITRAMFS": "off",
+      "A01_RUN_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next-committed-boot"
+    },
+    "exit": 0
+  },
+  {
+    "argv": [
+      "python3",
+      "-I",
+      "support/build/tests/test_kernel_runner.py"
+    ],
+    "exit": 0,
+    "passed": 9
+  },
+  {
+    "argv": [
+      "python3",
+      "-I",
+      "support/build/tests/test_ktest_checker.py"
+    ],
+    "exit": 0,
+    "passed": 12
+  },
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "test",
+      "--manifest-path",
+      "kernel/asterinas/osdk/Cargo.toml",
+      "--locked",
+      "--bin",
+      "cargo-osdk",
+      "commands::build::lock_tests",
+      "--",
+      "--test-threads=1"
+    ],
+    "exit": 0,
+    "passed": 3,
+    "filtered": 14
+  },
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "fmt",
+      "--manifest-path",
+      "kernel/asterinas/osdk/Cargo.toml",
+      "--check"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/abi",
+      "-v"
+    ],
+    "env": {
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "exit": 0,
+    "passed": 6
+  },
+  {
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/spec",
+      "-v"
+    ],
+    "env": {
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "exit": 0,
+    "passed": 14
+  },
+  {
+    "argv": [
+      "python3",
+      "tests/golden/generate_hos2.py",
+      "--check"
+    ],
+    "exit": 0,
+    "vectors": 12
+  },
+  {
+    "argv": [
+      "python3",
+      "-I",
+      "support/build/verify-source.py"
+    ],
+    "exit": 0,
+    "checked_inputs": 118
+  },
+  {
+    "argv": [
+      "bash",
+      "-n",
+      "support/build/kernel.sh"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0
+  }
+]

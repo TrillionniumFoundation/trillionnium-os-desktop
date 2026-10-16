@@ -1,0 +1,10 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running unittests src/main.rs (target/debug/deps/cargo_osdk-87e58130b1b091d4)
+
+running 14 tests
+test base_crate::tests::changed_linker_script_prevents_base_crate_reuse ... ok
+test commands::debug::have_gdb_installed ... error: test failed, to rerun pass `--bin cargo-osdk`
+
+Caused by:
+  process didn't exit successfully: `/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk/target/debug/deps/cargo_osdk-87e58130b1b091d4 --test-threads=1` (exit status: 12)
+note: test exited abnormally; to see the full output pass --no-capture to the harness.
