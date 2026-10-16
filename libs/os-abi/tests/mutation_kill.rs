@@ -16,9 +16,10 @@ enum Replay {
 
 fn hex(bytes: &str) -> Vec<u8> {
     assert_eq!(bytes.len() % 2, 0);
-    bytes
-        .as_bytes()
-        .chunks_exact(2)
+    let (pairs, remainder) = bytes.as_bytes().as_chunks::<2>();
+    assert!(remainder.is_empty());
+    pairs
+        .iter()
         .map(|pair| {
             let hi = (pair[0] as char).to_digit(16).unwrap() as u8;
             let lo = (pair[1] as char).to_digit(16).unwrap() as u8;
