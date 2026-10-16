@@ -1937,6 +1937,87 @@ mod tests {
     }
 
     #[test]
+    fn final_sequence_can_retire_but_max_never_rolls_over() {
+        let (boot, space, domain_id, object, publisher, owner) = ids(301);
+        let (core, authority) = ControlCore::with_original_owner(boot, space, owner).unwrap();
+        // Synthetic late-life fixture: this test does not iterate through
+        // 2^64 writes. Every older D is represented by the retired frontier.
+        {
+            let mut state = lock_unpoisoned(&core.namespace.state);
+            state.retired_through = u64::MAX - 2;
+            state.next_sequence = u64::MAX - 1;
+        }
+        let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        let grant = domain.grant(publisher).unwrap();
+        let token = core
+            .reserve(DeliveryRequest::new(u64::MAX - 1, grant.clone(), 1, 25), publisher)
+            .unwrap();
+        assert_eq!(core.next_sequence(), u64::MAX);
+        let terminal = core.commit(&token, publisher, 1).unwrap();
+        assert_eq!(terminal.status, Some(DeliveryStatus::Ok));
+        assert_eq!(
+            core.reserve(DeliveryRequest::new(u64::MAX, grant.clone(), 1, 25), publisher)
+                .err(),
+            Some(DeliveryError::InvalidSequence)
+        );
+        let view = core.delivery_view_for(owner).unwrap();
+        let ack = HistoryAck::from_owner_receipt(
+            core.identity(),
+            u64::MAX - 1,
+            OwnerReceipt::new(owner, [1; 32]),
+        )
+        .unwrap();
+        let receipt = core.retire_through(&view, ack, &authority).unwrap();
+        assert_eq!(receipt.retired_through, u64::MAX - 1);
+        assert_eq!(receipt.next_sequence, u64::MAX);
+        assert_eq!(core.window_len(), 0);
+        assert_eq!(
+            core.query_delivery(&view, u64::MAX - 1).unwrap().state,
+            DeliveryState::Retired
+        );
+        assert_eq!(
+            core.reserve(DeliveryRequest::new(u64::MAX - 1, grant, 1, 25), publisher)
+                .err(),
+            Some(DeliveryError::Retired)
+        );
+        assert_eq!(domain.revision(), 2);
+    }
+
+    #[test]
+    fn last_representable_revision_is_an_immutable_success() {
+        let (boot, space, domain_id, object, publisher, _) = ids(302);
+        let core = ControlCore::new(boot, space);
+        let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        {
+            let mut state = lock_unpoisoned(&domain.inner.state);
+            state.revision = u64::MAX - 1;
+        }
+        let grant = domain.grant(publisher).unwrap();
+        let request = DeliveryRequest::new(1, grant.clone(), u64::MAX - 1, 25);
+        let token = core.reserve(request, publisher).unwrap();
+        let saved = core.commit(&token, publisher, 2).unwrap();
+        assert_eq!(saved.status, Some(DeliveryStatus::Ok));
+        assert_eq!(saved.previous_revision, Some(u64::MAX - 1));
+        assert_eq!(saved.saved_revision, Some(u64::MAX));
+        assert_eq!(saved.hos2_saved_status_code(), Some(0));
+        assert_eq!(domain.revision(), u64::MAX);
+        match core.reserve_or_get(
+            DeliveryRequest::new(1, grant.clone(), u64::MAX - 1, 25),
+            publisher,
+        ) {
+            Ok(ReserveAttempt::Existing(observed)) => assert_eq!(observed, saved),
+            _ => panic!("final CAS must be read-only on retry"),
+        }
+        assert_eq!(
+            core.reserve(DeliveryRequest::new(2, grant, u64::MAX, 25), publisher)
+                .err(),
+            Some(DeliveryError::InvalidRequest)
+        );
+        assert_eq!(core.next_sequence(), 2);
+        assert_eq!(domain.revision(), u64::MAX);
+    }
+
+    #[test]
     fn basic_commit_and_observation() {
         let (boot, space, domain_id, object, publisher, owner) = ids(1);
         let (core, owner_authority) = ControlCore::with_original_owner(boot, space, owner).unwrap();

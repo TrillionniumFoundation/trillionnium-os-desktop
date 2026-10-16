@@ -324,3 +324,15 @@ validation instead of panicking. Legacy `with_capacity` remains a trusted
 compatibility constructor; configurable A05 callers must use the fallible
 entry point. The reservation path still returns `ResourceExhausted`
 without consuming the next D when the valid bounded window fills.
+
+## End-of-range rollover (host model)
+
+The final allowed write D is `sequence=u64::MAX-1`, after which
+`next_sequence=u64::MAX` is a non-writeable exhausted sentinel and must
+never wrap to 1. Retiring the last terminal result preserves that frontier.
+The last legal revision CAS is `previous=u64::MAX-1` to
+`saved_revision=u64::MAX`, whose terminal outcome remains immutable on
+retry; attempts to propose `expected_revision=u64::MAX` are structurally
+invalid and do not consume another D. Unit tests construct synthetic
+late-life private frontiers to verify the arithmetic without simulating
+2^64 operations or pretending to prove real kernel persistence.
