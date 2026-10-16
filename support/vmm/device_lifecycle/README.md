@@ -63,3 +63,9 @@ cases in `tests/hardware` do not count as Rust tests. A00 must add a relevant
 Rust CI job via `.github/workflows/**` ownership before merge. It must run on
 A01's fixed-source environment as needed, but this host crate must not
 silently replace the pinned `nightly-2026-07-21` **kernel** toolchain.
+
+**Aliasing guard:** `DeviceHandle`, `Queue` and `Buffer` are intentionally
+not `Clone` or `Copy`, so a simple safe Rust value duplication cannot split
+their live state accounting. This still does not establish physical
+IOMMU-group uniqueness or prevent separately created overlapping buffers;
+A01/A05 must enforce one authoritative device registry and A06 memory aliases.

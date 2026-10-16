@@ -108,3 +108,43 @@ reserve. Obtain an actually authorized, idle, isolated RTX 4060 and record PCI
 IDs, entire IOMMU group, driver and loaded firmware, CPU VMX/SVM support,
 actual PCI reset qualification, and separate Asterinas-host/Linux-guest logs.
 Do not issue any production reset, driver detach or firmware change.
+
+
+## Phase 3 (2026-10-16): cross-kernel provenance and Rust lifecycle contract
+
+The independent cross-layer consistency gate is at `support/vmm/acceptance.py`,
+described by `support/vmm/PROVENANCE.md`. It requires separate raw host/guest
+logs, matched VM boot nonce/PCI identity, verified IOMMU and interrupt isolation,
+successful bounded CUDA evidence and proof of DMA quiescence at teardown. This
+is NOT an attestation authority: unsigned JSON/logs remain forgeable, so it
+only returns `blocked` (2) or `independent_hardware_review_required` (3);
+it never claims a hardware pass.
+
+Host/guest evidence gate, missing real host and guest files:
+```sh
+python3 support/vmm/acceptance.py \
+  --host host-vmm.json --host-log host-boot.serial \
+  --guest guest-gpu.json --guest-log guest-boot.serial --output -
+# blocked (exit 2) until independent real host + guest captures exist
+```
+
+The dependency-free Rust `#![no_std]` device transition model is under
+`support/vmm/device_lifecycle/`. It encodes exclusive domain, buffer, queue
+and completion generation/sequence checks, but does NOT perform DMA, hardware
+quiescence, authorization or ResourceDomain charging. Rust tests are **not
+executed** in the accessible tool container (no `rustc`/`cargo`), and need
+an A00-scoped CI change before review/merge:
+```sh
+cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --offline
+```
+
+Actually re-run in the execution-tool Linux 6.18.44 container:
+- Python hardware tests: **50/50 pass**, 0 failures; Python syntax check pass.
+- PCI read-only inventory: exit 0 (no NVIDIA GPU). No `/dev/kvm` or GPU nodes.
+- VFIO preflight: **exit 2**, missing target, NOT safe for assignment.
+- CUDA runner: **exit 2**, `libcuda.so.1` missing; NO physical GPU command.
+- Cross-kernel acceptance: **exit 2**, host/guest evidence files absent.
+- QEMU, Rust compile, physical GPU passthrough, failure recovery: **NOT RUN**.
+
+Immutable scope summary: `tests/hardware/evidence/2026-10-16-phase3-summary.json`.
+No production/H3/training devices were modified. No Ollama used.

@@ -63,3 +63,35 @@ Only the above can eventually qualify "local GPU in a Linux guest under a Rust h
 
 These are typed object/transition requirements for kernel owners, not a second
 permission signer or a simulated ``passed`` production backend.
+
+
+## Phase 3: actual A01 dependency and typed state/provenance gate
+
+A01 [PR #5](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5)
+has a pinned Asterinas kernel/QEMU boot baseline on a separate branch, **not
+yet a VMM boot or GPU handoff**. Do not use its VMX/EPT soft-skipped test as
+physical Intel virtualization success. The A09 device transition model in
+`device_lifecycle/` is a standalone `no_std` metadata-only prototype, not a
+replacement of A05 CapSpace or A06 ResourceDomain.
+
+A00 acceptance checklist, each independently logged from the real kernel:
+1. A01: fixed kernel source/ELF hash + serialized host boot; VMX on Intel,
+   or independently implemented/tested SVM on AMD; real vCPU/guest memory,
+   virtual IRQ/device model, Linux guest boot.
+2. A05: exclusive group/device lease bound to canonical CapSpace identity;
+   enforce grant/revoke before assignments; reject stale generation/duplicate
+   queue completions; track actual hardware IRQ, not guest self-report.
+3. A06: charge pinned frames and outstanding queue work to existing
+   ResourceDomain hierarchy, including recovery executor reserve; admit only
+   within ancestor budgets and existing memory object lifetimes.
+4. A01/A05: physical IOMMU and interrupt remapping isolation; host/guest
+   device IDs and VM boot nonce; DMA cache sync and CPU writable aliases;
+   explicit teardown IOTLB/TLB invalidation and independently observed
+   quiescence. If unavailable: quarantine rather than recycle or reset.
+5. A00 independent review: match host/guest serial traces and binary digests
+   using `acceptance.py`; a consistent unsigned bundle is still **review
+   required**, NEVER an automatic GPU claim. Test exact CUDA GEMM and compare
+   numerical output on disposable idle RTX 4060.
+
+This PR cannot deliver physical GPU passthrough while A01 source is not
+integrated and this tool container lacks `/dev/kvm`, GPU nodes and toolchain.

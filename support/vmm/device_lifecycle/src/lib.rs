@@ -15,7 +15,8 @@
 pub struct ResourceDomainId(pub u64);
 
 /// State-only handle to an exclusive physical device's entire IOMMU group.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// Intentionally not Clone or Copy; the real kernel still needs one authoritative registry.
+#[derive(Debug, PartialEq, Eq)]
 pub struct DeviceHandle {
     pub pci_bdf: u32,
     pub iommu_group: u32,
@@ -109,7 +110,9 @@ pub enum BufferPhase {
     Released,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
+// Deliberately not Clone/Copy: a second local ownership state could incorrectly
+// release memory while the first copy still has an in-flight DMA.
 pub struct Buffer {
     pub memory_id: u64,
     pub owner: ResourceDomainId,
@@ -158,7 +161,8 @@ impl Buffer {
 }
 
 /// A queue bound to ONE owner/physical-device generation.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// Intentionally not Clone or Copy: duplicating in-flight accounting is unsafe.
+#[derive(Debug, PartialEq, Eq)]
 pub struct Queue {
     pub id: u64,
     owner: ResourceDomainId,
