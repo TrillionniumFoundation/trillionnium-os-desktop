@@ -1,0 +1,8 @@
+[package]
+name = "a01-daemon-lifecycle-probe"
+version = "0.0.0"
+edition = "2024"
+
+[dependencies]
+rustix = { version = "=1.0.7", default-features = false, features = ["std", "process"] }
+signal-hook = "=0.3.18"
