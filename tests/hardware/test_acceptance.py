@@ -13,8 +13,10 @@ import acceptance
 
 class AcceptanceTests(unittest.TestCase):
     def setUp(self):
-        self.hostlog = b"ASTERINAS-BOOT-A09-MARKER guest spawned\n"
-        self.guestlog = b"LINUX-GUEST-A09-MARKER CUDA program started\n"
+        # Both serial transcripts must independently bind the same VM boot.
+        nonce_tag = b"A09_VM_NONCE=" + b"ab" * 16
+        self.hostlog = b"ASTERINAS-BOOT-A09-MARKER guest spawned " + nonce_tag + b"\n"
+        self.guestlog = b"LINUX-GUEST-A09-MARKER CUDA program started " + nonce_tag + b"\n"
         self.host = {
             "schema": "a09.asterinas-host-vmm-evidence.v1",
             "host_kernel": "asterinas-derived",
@@ -296,6 +298,44 @@ class AcceptanceTests(unittest.TestCase):
     def test_host_and_guest_pci_id_mismatch(self):
         self.guest["device"]["device_id"] = "0xbeef"
         self.assertIn("physical_guest_pci_id_mismatch", self.reasons())
+
+    def test_json_nonce_without_host_serial_binding_is_not_reviewable(self):
+        original = b"A09_VM_NONCE=" + b"ab" * 16
+        self.hostlog = self.hostlog.replace(original, b"")
+        self.host["host_boot_log_sha256"] = hashlib.sha256(self.hostlog).hexdigest()
+        reasons = self.reasons()
+        self.assertIn("boot_nonce_missing_from_raw_logs", reasons)
+        self.assertNotIn("host_raw_log_digest_mismatch", reasons)
+
+    def test_json_nonce_without_guest_serial_binding_is_not_reviewable(self):
+        original = b"A09_VM_NONCE=" + b"ab" * 16
+        self.guestlog = self.guestlog.replace(original, b"")
+        self.guest["guest_boot_log_sha256"] = hashlib.sha256(self.guestlog).hexdigest()
+        reasons = self.reasons()
+        self.assertIn("boot_nonce_missing_from_raw_logs", reasons)
+        self.assertNotIn("guest_raw_log_digest_mismatch", reasons)
+
+    def test_wrong_serial_nonce_rejected_even_when_hashes_match(self):
+        original = b"A09_VM_NONCE=" + b"ab" * 16
+        self.guestlog = self.guestlog.replace(original, b"A09_VM_NONCE=" + b"cd" * 16)
+        self.guest["guest_boot_log_sha256"] = hashlib.sha256(self.guestlog).hexdigest()
+        self.assertIn("boot_nonce_missing_from_raw_logs", self.reasons())
+
+    def test_equal_non_nvidia_vendor_id_is_not_rtx4060_evidence(self):
+        self.host["device"]["vendor_id"] = "0x1234"
+        self.guest["device"]["vendor_id"] = "0x1234"
+        reasons = self.reasons()
+        self.assertIn("nvidia_pci_vendor_not_confirmed", reasons)
+        self.assertNotIn("physical_guest_pci_id_mismatch", reasons)
+
+    def test_wrong_gpu_model_variant_rejected_at_cross_layer_gate(self):
+        device = self.guest["gemm"]["child_evidence"]["device"]
+        for invalid in ("RTX 4060 Ti", "NVIDIA GeForce RTX 4070", 4060, None):
+            with self.subTest(invalid=invalid):
+                original = device["device_name"]
+                device["device_name"] = invalid
+                self.assertIn("guest_cuda_gpu_model_not_rtx4060", self.reasons())
+                device["device_name"] = original
 
     def test_cross_vm_replay_rejected(self):
         self.guest["vm"]["boot_nonce"] = "cd" * 16

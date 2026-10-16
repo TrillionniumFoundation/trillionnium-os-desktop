@@ -94,3 +94,31 @@ ambiguous record as different GPU device identities or status values.
 Rejected records remain blocked/failed, not recovered. This is deterministic
 parsing hardening only; unsigned evidence still cannot attest Asterinas
 execution or physical CUDA computation.
+
+
+## Phase 11: bind VM boot nonce into both serial captures
+
+The host `a09.asterinas-host-vmm-evidence.v1` and guest
+`a09.linux-guest-gpu-evidence.v1` JSON previously could contain matching
+`vm.boot_nonce` values even if their raw serial logs came from unrelated VM
+boots. The consistency gate now requires the literal ASCII record
+`A09_VM_NONCE=<lowercase 32..64 hex boot nonce>` in **both** hash-matched raw
+host and Linux-guest serial logs. A log with a different nonce, missing
+nonce, or a nonce only in the JSON is rejected as
+`boot_nonce_missing_from_raw_logs`; this cannot be cured by merely updating
+a JSON log hash. A01/A05 need to implement a real boot-unique VM nonce
+propagated through their authoritative host VM creation/guest init path
+before attempting hardware review. A06 owns resource admission, not nonce
+issuance. The evidence remains unsigned and never becomes auto-pass.
+
+A09 Route C also requires the physical and guest PCI vendor to be `0x10de`
+(NVIDIA), even if both would otherwise agree on some arbitrary vendor ID.
+The child CUDA-reported GPU model must canonically equal `RTX 4060` (optional
+`NVIDIA` / `GeForce` prefix); `RTX 4060 Ti` and `RTX 4070` are not substitutes
+for the selected physical lab target. This is still a consistency gate, not
+independently authenticated hardware identity.
+
+Synthetic negative tests cover host-only/guest-only nonce omission,
+different nonce in a hash-matched raw log, matched non-NVIDIA vendor IDs and
+wrong model variants. **No new-kernel VMM, physical GPU or hardware
+attestation was executed.**

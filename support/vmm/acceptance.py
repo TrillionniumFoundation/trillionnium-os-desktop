@@ -128,6 +128,16 @@ def validate(host, guest, host_log, guest_log):
     nonce = vm.get("boot_nonce")
     check(isinstance(nonce, str) and NONCE.fullmatch(nonce) is not None and
           nonce == guest_vm.get("boot_nonce"), "boot_nonce_mismatch")
+    # A nonce repeated only in two JSON records is not proof that the raw
+    # host and guest captures belong to the same boot. The VM owner must
+    # print the exact boot nonce in BOTH independent serial transcripts.
+    nonce_marker = (
+        b"A09_VM_NONCE=" + nonce.encode("ascii")
+        if isinstance(nonce, str) and NONCE.fullmatch(nonce) is not None
+        else None
+    )
+    check(nonce_marker is not None and nonce_marker in host_log and
+          nonce_marker in guest_log, "boot_nonce_missing_from_raw_logs")
 
     physical = host.get("device") if isinstance(host.get("device"), dict) else {}
     guest_dev = guest.get("device") if isinstance(guest.get("device"), dict) else {}
@@ -144,6 +154,11 @@ def validate(host, guest, host_log, guest_log):
     valid_pci_id = lambda x: isinstance(x, str) and re.fullmatch(r"0x[0-9a-fA-F]{4}", x) is not None
     check(all(valid_pci_id(x) for x in (hv, hd, gv, gd)) and
           (hv.lower(), hd.lower()) == (gv.lower(), gd.lower()), "physical_guest_pci_id_mismatch")
+    # Route C's selected target is an NVIDIA PCI compute GPU. Two matching
+    # arbitrary vendor IDs must not be accepted as an RTX 4060 candidate.
+    check(isinstance(hv, str) and isinstance(gv, str) and
+          hv.lower() == "0x10de" and gv.lower() == "0x10de",
+          "nvidia_pci_vendor_not_confirmed")
     check(valid_bdf(physical.get("host_bdf")), "host_pci_bdf_missing")
     check(valid_bdf(guest_dev.get("guest_bdf")), "guest_pci_bdf_missing")
     check(isinstance(guest_dev.get("nvidia_driver_version"), str) and
@@ -186,6 +201,14 @@ def validate(host, guest, host_log, guest_log):
           isinstance(nvrtc_version, str) and
           re.fullmatch(r"[1-9][0-9]*\.[0-9]+", nvrtc_version) is not None,
           "cuda_runtime_identity_missing_or_inconsistent")
+    model = cuda_dev.get("device_name")
+    if isinstance(model, str):
+        model = " ".join(model.casefold().split())
+        for prefix in ("nvidia geforce ", "nvidia ", "geforce "):
+            if model.startswith(prefix):
+                model = model[len(prefix):]
+                break
+    check(model == "rtx 4060", "guest_cuda_gpu_model_not_rtx4060")
     check(bdf_lower(cuda_dev.get("device_bdf")) is not None and
           bdf_lower(cuda_dev.get("device_bdf")) == bdf_lower(guest_dev.get("guest_bdf")),
           "guest_cuda_pci_identity_mismatch")
