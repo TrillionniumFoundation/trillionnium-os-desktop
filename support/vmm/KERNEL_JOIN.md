@@ -34,6 +34,11 @@ provides **lexical evidence**, not a Rust compiler/semantic proof. Even when
 source is updated to accept a device domain, the result stays BLOCKED until
 real isolated hardware IOMMU/IRQ, VM boot and DMA recovery evidence passes.
 Missing source, false completion markers or unsigned evidence never pass.
+The fixture suite includes a **checked-out source** test: on GitHub Actions it
+reads the actual A01 kernel/A03 host library paths, requires valid source
+fingerprints and still rejects any automatic passthrough success. A fixture-only
+success must not be confused with this checked-out-source test, and neither is
+a PCI/IOMMU hardware test.
 
 ## One priority route C: Linux NVIDIA guest, Asterinas Rust host
 

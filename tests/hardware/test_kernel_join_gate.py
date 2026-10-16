@@ -32,6 +32,18 @@ let dev = PciDeviceLocation::zero();
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(source, encoding="utf-8")
 
+    def test_checked_out_kernel_sources_are_present_but_not_approved(self):
+        # CI uses actual checked-out A01 kernel + A03 host control library.
+        # Existence and a source hash are necessary, NEVER a GPU pass.
+        checkout_root = pathlib.Path(__file__).resolve().parents[2]
+        result = gate.audit(checkout_root)
+        self.assertEqual(result["status"], "blocked")
+        self.assertFalse(result["passthrough_approved"])
+        for name in gate.SOURCE_PATHS:
+            self.assertEqual(len(result["source_sha256"][name]), 64, name)
+        if result["observations"]["shared_iommu_page_table_source_pattern"]:
+            self.assertIn("iommu_shared_device_page_table_detected", result["hard_blockers"])
+
     def test_pinned_global_page_table_denies_guest_passthrough(self):
         result = gate.audit(self.root)
         self.assertIn("iommu_shared_device_page_table_detected", result["hard_blockers"])
