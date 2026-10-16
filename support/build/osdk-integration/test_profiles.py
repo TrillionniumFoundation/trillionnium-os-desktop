@@ -33,6 +33,14 @@ class ProfileTests(unittest.TestCase):
     def test_tcp_plain_run_does_not_add_a_coverage_monitor(self):
         self.assertNotIn("--qemu-monitor-transport=tcp", self.command(["osdk", "run"], local=True))
 
+    def test_explicit_v2_only_adds_capture_gdb_to_coverage(self):
+        env = {"A01_REAL_OSDK": "/actual/cargo-osdk", "A01_OSDK_LOCAL_TCP": "1",
+               "A01_OSDK_PROFILE": runner.CAPTURE_PROFILE}
+        capture = adapter.adapt_command(["osdk", "run", "--coverage"], env, HERE)
+        self.assertIn("--gdb-server=wait-client,addr=127.0.0.1:0", capture)
+        plain = adapter.adapt_command(["osdk", "run"], env, HERE)
+        self.assertFalse(any(argument.startswith("--gdb-server") for argument in plain))
+
     def test_help_remains_unadapted(self):
         self.assertEqual(self.command(["osdk", "run", "--help"], local=True),
                          ["/actual/cargo-osdk", "osdk", "run", "--help"])

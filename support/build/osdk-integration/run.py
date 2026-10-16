@@ -19,6 +19,7 @@ import tomllib
 TOOLCHAIN = "nightly-2026-07-21"
 UNIX_PROFILE = "osdk-native-unix-v1"
 TCP_PROFILE = "osdk-native-local-tcp-v1"
+CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
 FIXED_PATHS = {
     "commands::new::create_kernel_in_workspace": ["/tmp/kernel_workspace"],
     "commands::new::create_lib_in_workspace": ["/tmp/lib_workspace"],
@@ -191,11 +192,15 @@ def main():
     parser.add_argument("--case-timeout", type=int, default=900)
     parser.add_argument("--local-tcp", action="store_true",
                         help="explicit loopback TCP control profile; original UNIX default stays separate")
+    parser.add_argument("--coverage-gdb", action="store_true",
+                        help="explicit v2 coverage capture at the original poweroff breakpoint; requires --local-tcp")
     parser.add_argument("--target-dir", type=Path,
                         help="reuse this runner's previous independent Cargo target cache")
     args = parser.parse_args()
     if args.case_timeout < 1:
         raise SystemExit("--case-timeout must be positive")
+    if args.coverage_gdb and not args.local_tcp:
+        raise SystemExit("--coverage-gdb requires explicit --local-tcp")
     here = Path(__file__).resolve().parent
     project = here.parents[2]
     upstream = project / "kernel/asterinas"
@@ -209,9 +214,10 @@ def main():
     env = os.environ.copy()
     env["RUSTUP_TOOLCHAIN"] = TOOLCHAIN
     env["RUSTUP_AUTO_INSTALL"] = "0"
-    profile_id = TCP_PROFILE if args.local_tcp else UNIX_PROFILE
+    profile_id = CAPTURE_PROFILE if args.coverage_gdb else TCP_PROFILE if args.local_tcp else UNIX_PROFILE
     env["A01_OSDK_LOCAL_TCP"] = "1" if args.local_tcp else "0"
     env["A01_OSDK_PROFILE"] = profile_id
+    env["A01_OSDK_COVERAGE_GDB"] = "0"
     cargo_home = Path(env.get("CARGO_HOME", str(Path.home() / ".cargo")))
     rustup_home = Path(env.get("RUSTUP_HOME", str(Path.home() / ".rustup")))
     tool_bin = rustup_home / "toolchains" / (TOOLCHAIN + "-x86_64-unknown-linux-gnu") / "bin"
@@ -359,7 +365,7 @@ def main():
             report["guests"] = guest_reports
             allowed_exit = (0, 33) if case == "commands::run::coverage_feature::basic_coverage" else (33,)
             if args.local_tcp and case == "commands::run::coverage_feature::basic_coverage":
-                allowed_exit = (0,)
+                allowed_exit = (33,) if args.coverage_gdb else (0,)
             if len(guest_reports) != VM_CASES.get(case, 0) or any(
                     guest["timed_out"] or guest["error"] or not guest["serial_valid"]
                     or guest["profile_id"] != profile_id

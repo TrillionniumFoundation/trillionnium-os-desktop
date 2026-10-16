@@ -40,9 +40,37 @@ The initial TCP profile deliberately retains ISA debug-exit. A working monitor
 connection alone does not establish coverage: ISA debug-exit can destroy guest
 memory before the monitor dumps it. Such an exit remains a real failed coverage
 case. No alternate shutdown lifecycle or OSTD change is hidden in this profile.
-TCP coverage requires OSDK exit 0 and raw QEMU exit 0 after a real monitor dump/quit, a new raw
+v1 TCP coverage requires OSDK exit 0 and raw QEMU exit 0 after a real monitor dump/quit, a new raw
 profile whose size exactly matches this guest's coverage announcement, matching
 serial and kernel hashes, and valid nonzero pinned LLVM coverage counts.
+
+The independently selected GDB capture profile preserves the original ISA
+poweroff lifecycle:
+
+```sh
+python3 -I support/build/osdk-integration/run.py --local-tcp --coverage-gdb \
+  --output "$PWD/support/build/out/osdk-gdb-capture-new"
+```
+
+This selects `osdk-native-local-tcp-gdb-capture-v2`. Only the coverage case gains
+a paused GDB server. The recorder allocates and owns its loopback listener and
+passes the descriptor to QEMU. `capture.py` inspects the original ELF64 x86_64
+symbol artifact with real `nm`, sets a GDB hardware breakpoint at the exact
+`ostd::arch::power::try_poweroff` address, continues, and checks the actual PC.
+At this point the unmodified OSTD has completed its coverage announcement. GDB
+reads that same live serial stream and uses `monitor memsave` to a fresh absolute
+path; the dump must exactly match the announced size. It then removes the
+breakpoint and detaches so the original guest can execute ISA debug-exit.
+
+v2 accepts coverage only with actual QEMU exit 33, actual OSDK and capture/GDB
+exit 0, a successful finalized capture sidecar, the exact breakpoint PC, fresh
+raw bytes, and the pinned LLVM nonzero-count checks. The sidecar binds the
+original symbol ELF, wrapped boot ELF, paused serial prefix, final serial log,
+raw profile and announcement. Missing, altered, failed or timed-out capture
+evidence is rejected. No OSTD source, poweroff handler or production OSDK
+lifecycle is changed; the default Unix and pure-TCP v1 results remain separate.
+This is explicitly coverage collected under a debugger, not a claim that the
+unassisted upstream coverage transport/lifecycle passes.
 
 The output directory must be new. The runner uses an independent Cargo target
 directory and a persistent integration runner lock, so it can run alongside a

@@ -7,6 +7,7 @@ from pathlib import Path
 import shlex
 import shutil
 import re
+import signal
 import socket
 import subprocess
 import sys
@@ -19,6 +20,7 @@ PROFILE = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
            "vcpus": 1, "memory_mib": 512, "network": False, "data_disks": False,
            "firmware": str(FIRMWARE)}
 LOCAL_TCP_PROFILE = "osdk-native-local-tcp-v1"
+CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
 
 
 def file_record(path):
@@ -148,7 +150,7 @@ def reserve_guest(directory):
             index += 1
 
 
-def local_tcp_controls(arguments):
+def local_tcp_controls(arguments, allow_gdb_zero=False):
     """Validate explicit local TCP controls without rewriting their arguments."""
     controls = []
     for index, argument in enumerate(arguments):
@@ -176,7 +178,8 @@ def local_tcp_controls(arguments):
         if key == "-monitor" and (fields[0] in ("none", "stdio") or fields[0].startswith("chardev:")):
             continue  # Preserve the normal stdio mux monitor alongside TCP.
         matched = re.fullmatch(r"tcp:127\.0\.0\.1:([0-9]{1,5})", fields[0])
-        if not matched or not 0 < int(matched[1]) <= 65535:
+        if not matched or not (0 < int(matched[1]) <= 65535
+                               or key == "-gdb" and allow_gdb_zero and int(matched[1]) == 0):
             raise ValueError(f"local TCP profile requires explicit 127.0.0.1 endpoint: {value}")
         if key == "-monitor" and any(field == "server" or field.startswith("server=")
                                      and field != "server=off" for field in fields[1:]):
@@ -205,6 +208,138 @@ def reserve_gdb_listener(arguments, endpoint):
     except BaseException:
         listener.close()
         raise
+
+
+def coverage_symbol(cwd):
+    configured = os.environ.get("A01_OSDK_COVERAGE_SYMBOL_ELF")
+    if configured:
+        symbol = Path(configured)
+        if not symbol.is_absolute():
+            raise ValueError("coverage symbol ELF must have an absolute path")
+    else:
+        target = Path(os.environ.get("CARGO_TARGET_DIR", "target"))
+        symbol = target / "x86_64-unknown-none/debug/basic_coverage-osdk-bin"
+        if not symbol.is_absolute():
+            symbol = cwd / symbol
+    symbol = symbol.resolve()
+    with symbol.open("rb") as source:
+        header = source.read(20)
+    if len(header) != 20 or header[:6] != b"\x7fELF\x02\x01" or header[18:20] != b"\x3e\x00":
+        raise ValueError("coverage symbols must be the original ELF64 little-endian EM62 binary")
+    return file_record(symbol)
+
+
+def stop_capture_group(process):
+    """Stop only the private session created for this capture and its GDB child."""
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    try:
+        process.wait(timeout=1)
+    except subprocess.TimeoutExpired:
+        pass
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    process.wait(timeout=2)
+
+
+def supervise_capture(qemu, capture, guest_timeout, capture_timeout=180):
+    """Observe both children; never synthesize a successful QEMU exit."""
+    deadline = time.monotonic() + guest_timeout
+    capture_deadline = time.monotonic() + min(guest_timeout, capture_timeout)
+    while True:
+        qemu_status, capture_status = qemu.poll(), capture.poll()
+        if qemu_status is not None and qemu_status != 33:
+            if capture_status is None:
+                stop_capture_group(capture)
+            return qemu_status, False
+        if capture_status is not None and capture_status != 0:
+            stop_capture_group(capture)
+            if qemu_status is None:
+                qemu.kill()
+                qemu.wait()
+            return 125, False
+        if qemu_status is not None and capture_status is not None:
+            return qemu_status, False
+        now = time.monotonic()
+        if now >= deadline or capture_status is None and now >= capture_deadline:
+            stop_capture_group(capture)
+            if qemu_status is None:
+                qemu.kill()
+                qemu.wait()
+            return 124, True
+        time.sleep(0.05)
+
+
+def run_capture(qemu, arguments, guest, metadata, timeout):
+    stream_paths = {"stdout": guest / "coverage-capture-stdout.log",
+                    "stderr": guest / "coverage-capture-stderr.log"}
+    started, child = time.monotonic(), None
+    try:
+        with stream_paths["stdout"].open("wb") as stdout, stream_paths["stderr"].open("wb") as stderr:
+            child = subprocess.Popen(arguments, stdout=stdout, stderr=stderr, start_new_session=True)
+            metadata["pid"] = child.pid
+            try:
+                status, timed_out = supervise_capture(qemu, child, timeout)
+                metadata["timed_out"] = timed_out
+                return status, timed_out
+            except BaseException:
+                stop_capture_group(child)
+                raise
+            finally:
+                metadata["raw_exit_code"] = child.returncode
+    finally:
+        metadata["duration_seconds"] = round(time.monotonic() - started, 3)
+        metadata["logs"] = {name: file_record(path) for name, path in stream_paths.items() if path.is_file()}
+
+
+def finalize_capture(metadata, record, sidecar, serial, raw_path, symbol, guest_record):
+    """Bind the paused dump to this guest, original symbols and final serial."""
+    captured = json.loads(sidecar.read_text())
+    if not isinstance(captured, dict):
+        raise ValueError("coverage sidecar must be an object")
+    if record["raw_exit_code"] != 33 or metadata.get("raw_exit_code") != 0 or metadata.get("timed_out"):
+        raise ValueError("coverage requires real QEMU exit 33 and capture exit 0")
+    if captured.get("passed") is not True or captured.get("profile_id") != CAPTURE_PROFILE \
+            or captured.get("gdb_exit_code") != 0:
+        raise ValueError("coverage capture sidecar did not report a valid GDB capture")
+    if captured.get("guest_record") != guest_record \
+            or captured.get("kernel_sha256") != record["artifacts"]["-kernel"]["sha256"]:
+        raise ValueError("coverage capture does not bind this QEMU guest and kernel")
+    if captured.get("symbol_elf") != symbol:
+        raise ValueError("coverage capture symbol ELF differs from the original EM62 input")
+    breakpoint = captured.get("breakpoint", {})
+    if not isinstance(breakpoint, dict):
+        raise ValueError("coverage breakpoint observation must be an object")
+    if breakpoint.get("symbol") != "ostd::arch::power::try_poweroff" \
+            or int(breakpoint.get("resolved_address", "0"), 16) <= 0 \
+            or int(breakpoint.get("actual_pc", "0"), 16) != int(breakpoint.get("resolved_address", "0"), 16):
+        raise ValueError("coverage capture did not stop at the expected poweroff breakpoint")
+    raw = file_record(raw_path)
+    announcement = captured.get("announcement", {})
+    if not isinstance(announcement, dict):
+        raise ValueError("coverage announcement must be an object")
+    if raw != captured.get("raw") or raw["size"] <= 0 or raw["size"] != announcement.get("size"):
+        raise ValueError("coverage raw bytes differ from the dump and announcement")
+    serial_bytes = serial.read_bytes()
+    prefix = captured.get("serial_prefix", {})
+    if not isinstance(prefix, dict):
+        raise ValueError("coverage serial prefix must be an object")
+    prefix_size = prefix.get("size")
+    if not isinstance(prefix_size, int) or not 0 < prefix_size <= len(serial_bytes) \
+            or hashlib.sha256(serial_bytes[:prefix_size]).hexdigest() != prefix.get("sha256"):
+        raise ValueError("coverage serial prefix differs from this final guest log")
+    announcements = re.findall(rb"#### Coverage: (0x[0-9a-fA-F]+) ([0-9]+)", serial_bytes[:prefix_size])
+    if len(announcements) != 1 or int(announcements[0][0], 16) != int(announcement.get("address", "0"), 16) \
+            or int(announcements[0][1]) != announcement.get("size"):
+        raise ValueError("coverage announcement differs from this paused guest log")
+    captured.update({"serial_sha256": hashlib.sha256(serial_bytes).hexdigest(), "finalized": True})
+    sidecar.write_text(json.dumps(captured, indent=2) + "\n")
+    metadata.update({"sidecar": file_record(sidecar), "raw": raw, "finalized": True,
+                     "serial_sha256": captured["serial_sha256"]})
 
 
 def tee_stream(source, destination, sink, errors):
@@ -246,13 +381,18 @@ def main():
         arguments, logs, removed = transform_args(requested, guest, cwd)
         local_tcp = os.environ.get("A01_OSDK_LOCAL_TCP") == "1"
         profile_id = os.environ.get("A01_OSDK_PROFILE", "osdk-native-unix-v1")
-        if local_tcp != (profile_id == LOCAL_TCP_PROFILE):
-            raise ValueError(f"local TCP profile requires A01_OSDK_PROFILE={LOCAL_TCP_PROFILE}")
+        capture_enabled = os.environ.get("A01_OSDK_COVERAGE_GDB") == "1"
+        if local_tcp != (profile_id in (LOCAL_TCP_PROFILE, CAPTURE_PROFILE)):
+            raise ValueError("local TCP flag and profile id disagree")
+        if capture_enabled and (not local_tcp or profile_id != CAPTURE_PROFILE):
+            raise ValueError("GDB coverage capture requires the explicit v2 local TCP profile")
         record.update({"profile_id": profile_id,
                        "control_transport": "loopback-tcp" if local_tcp else "upstream-original"})
-        controls = local_tcp_controls(arguments) if local_tcp else []
+        controls = local_tcp_controls(arguments, allow_gdb_zero=capture_enabled) if local_tcp else []
         record["control_endpoints"] = controls
         gdb_endpoint = next((item for item in controls if item["kind"] == "gdb"), None)
+        if capture_enabled and (gdb_endpoint is None or gdb_endpoint["port"] != 0 or "-S" not in arguments):
+            raise ValueError("coverage capture requires its own paused GDB listener requested on port 0")
         ready_path = None
         if gdb_endpoint:
             if os.environ.get("A01_OSDK_GDB_READY"):
@@ -262,7 +402,13 @@ def main():
             record["gdb_readiness"] = {"ready": False, "marker_requested": ready_path is not None,
                                        "startup_survival_seconds": 0.05}
             arguments, gdb_listener = reserve_gdb_listener(arguments, gdb_endpoint)
-            record["gdb_listener"] = {"host": gdb_endpoint["host"], "port": gdb_endpoint["port"],
+            actual_endpoint = dict(gdb_endpoint)
+            if gdb_endpoint["port"] == 0:
+                actual_endpoint["port"] = gdb_listener.getsockname()[1]
+                if not isinstance(actual_endpoint["port"], int) or not 0 < actual_endpoint["port"] <= 65535:
+                    raise ValueError("prebound GDB listener did not resolve a valid ephemeral port")
+            record["gdb_listener"] = {"host": gdb_endpoint["host"], "port": actual_endpoint["port"],
+                                       "requested_port": gdb_endpoint["port"],
                                        "fd": gdb_listener.fileno(), "bind_succeeded": True,
                                        "held_until_qemu_spawn": True, "bind_close_rebind_gap": False,
                                        "handoff": "prebound-listener-inherited-fd",
@@ -287,6 +433,25 @@ def main():
                        "qemu_version": subprocess.check_output([binary, "--version"], text=True,
                                                                timeout=10).strip(),
                        "timeout_seconds": timeout})
+        if capture_enabled:
+            if len(logs) != 1:
+                raise ValueError("coverage capture requires exactly one serial logfile")
+            raw_path = cwd / "coverage.profraw"
+            if os.path.lexists(raw_path):
+                raise ValueError("coverage capture refuses a preexisting coverage.profraw")
+            symbol = coverage_symbol(cwd)
+            sidecar = guest / "coverage-capture.json"
+            guest_record = str(destination.relative_to(case))
+            capture_command = [sys.executable, "-I", str(Path(__file__).with_name("capture.py")),
+                               "--endpoint", f"127.0.0.1:{actual_endpoint['port']}",
+                               "--symbol-elf", symbol["path"], "--serial-log", str(logs[0]),
+                               "--raw-output", str(raw_path), "--sidecar", str(sidecar),
+                               "--kernel-sha256", artifacts["-kernel"]["sha256"],
+                               "--guest-record", guest_record, "--timeout", "180"]
+            record["capture"] = {"mode": "gdb-before-poweroff", "argv": capture_command,
+                                 "symbol_elf": symbol, "serial_source": str(logs[0]),
+                                 "raw_output": str(raw_path), "sidecar_path": str(sidecar),
+                                 "raw_exit_code": None, "timed_out": False, "finalized": False}
         destination.write_text(json.dumps(record, indent=2) + "\n")
         stream_paths = {"stdout": guest / "qemu-stdout.log", "stderr": guest / "qemu-stderr.log"}
         stream_errors = []
@@ -311,7 +476,7 @@ def main():
                     except subprocess.TimeoutExpired:
                         if ready_path is not None:
                             marker = {"schema": 1, "qemu_pid": process.pid,
-                                      "endpoint": gdb_endpoint, "profile_id": profile_id,
+                                      "endpoint": actual_endpoint, "profile_id": profile_id,
                                       "startup_survival_seconds": 0.05,
                                       "listener_handoff": "prebound-listener-inherited-fd",
                                       "bind_close_rebind_gap": False}
@@ -320,7 +485,15 @@ def main():
                             record["gdb_readiness"].update({"ready": True, "marker": file_record(ready_path)})
                     else:
                         record["gdb_readiness"]["early_exit_code"] = early_status
-                status = process.wait(timeout=timeout)
+                if capture_enabled:
+                    if "early_exit_code" in record["gdb_readiness"]:
+                        status = record["gdb_readiness"]["early_exit_code"]
+                        record["capture"]["error"] = "QEMU exited before capture could attach"
+                    else:
+                        status, record["timed_out"] = run_capture(process, capture_command, guest,
+                                                                  record["capture"], timeout)
+                else:
+                    status = process.wait(timeout=timeout)
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait()
@@ -348,8 +521,17 @@ def main():
                     shutil.copyfile(source, target)
                 snapshots.append(file_record(target))
         record["serial_logs"] = snapshots
-    except (OSError, ValueError, subprocess.SubprocessError) as error:
-        status = 125
+        if capture_enabled:
+            try:
+                finalize_capture(record["capture"], record, sidecar, guest / "serial.log", raw_path,
+                                 symbol, guest_record)
+            except (OSError, ValueError, KeyError, TypeError) as error:
+                record["capture"]["finalization_error"] = str(error)
+                if sidecar.is_file():
+                    record["capture"]["sidecar"] = file_record(sidecar)
+                raise
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
+        status = 124 if record["timed_out"] else 125
         record["error"] = f"{type(error).__name__}: {error}"
         print(record["error"], file=sys.stderr)
     finally:

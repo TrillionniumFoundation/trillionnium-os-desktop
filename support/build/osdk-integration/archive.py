@@ -24,7 +24,7 @@ def main():
         relative = path.relative_to(source)
         if not path.is_file() or excluded.intersection(relative.parts):
             continue
-        if path.suffix not in (".log", ".json", ".patch", ".txt", ".lock", ".profraw", ".profdata"):
+        if path.suffix not in (".log", ".json", ".patch", ".txt", ".lock", ".profraw", ".profdata", ".gdb"):
             continue
         target = destination / relative
         target.parent.mkdir(parents=True, exist_ok=True)

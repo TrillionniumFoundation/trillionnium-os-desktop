@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Pure argument checks for the integration shim; these do not boot guests."""
 import importlib.util
+import hashlib
 import io
 import json
 import os
@@ -120,6 +121,7 @@ class ProfileTests(unittest.TestCase):
             with patch.dict(os.environ, {"A01_OSDK_CASE_OUTPUT": str(output),
                                          "A01_OSDK_GUEST_TIMEOUT": "2",
                                          "A01_OSDK_GDB_READY": str(ready),
+                                         "A01_OSDK_COVERAGE_GDB": "0",
                                          "A01_OSDK_LOCAL_TCP": "1" if local_tcp else "0",
                                          "A01_OSDK_PROFILE": shim.LOCAL_TCP_PROFILE if local_tcp
                                          else "osdk-native-unix-v1"}), \
@@ -249,6 +251,170 @@ class ProfileTests(unittest.TestCase):
             destination.seek(0)
             self.assertEqual(destination.read(), payload)
         self.assertEqual(len(errors), 1)
+
+
+class CaptureTests(unittest.TestCase):
+    def fixture(self, root):
+        raw = root / "coverage.profraw"
+        raw.write_bytes(b"data")
+        prefix = b"boot\n#### Coverage: 0x1000 4\n"
+        serial = root / "serial.log"
+        serial.write_bytes(prefix + b"guest finished\n")
+        sidecar = root / "coverage-capture.json"
+        symbol = {"path": "/original/symbol.elf", "size": 100, "sha256": "b" * 64}
+        data = {"passed": True, "profile_id": shim.CAPTURE_PROFILE, "gdb_exit_code": 0,
+                "kernel_sha256": "a" * 64, "guest_record": "guests/guest-001/qemu.json",
+                "symbol_elf": symbol,
+                "breakpoint": {"symbol": "ostd::arch::power::try_poweroff",
+                               "resolved_address": "0x2000", "actual_pc": "0x2000"},
+                "announcement": {"address": "0x1000", "size": 4}, "raw": shim.file_record(raw),
+                "serial_prefix": {"size": len(prefix), "sha256": hashlib.sha256(prefix).hexdigest()}}
+        sidecar.write_text(json.dumps(data))
+        metadata = {"raw_exit_code": 0, "timed_out": False}
+        record = {"raw_exit_code": 33, "artifacts": {"-kernel": {"sha256": "a" * 64}}}
+        return metadata, record, sidecar, serial, raw, symbol, data["guest_record"]
+
+    def test_ephemeral_port_is_explicitly_scoped_to_gdb_capture(self):
+        endpoint = ["-gdb", "tcp:127.0.0.1:0"]
+        with self.assertRaises(ValueError):
+            shim.local_tcp_controls(endpoint)
+        self.assertEqual(shim.local_tcp_controls(endpoint, allow_gdb_zero=True)[0]["port"], 0)
+        with self.assertRaises(ValueError):
+            shim.local_tcp_controls(["-monitor", "tcp:127.0.0.1:0"], allow_gdb_zero=True)
+
+    def test_original_symbol_elf_must_be_64_bit_em62(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "original.elf"
+            header = b"\x7fELF\x02\x01" + bytes(12) + b"\x3e\x00"
+            path.write_bytes(header)
+            with patch.dict(os.environ, {"A01_OSDK_COVERAGE_SYMBOL_ELF": str(path)}):
+                self.assertEqual(shim.coverage_symbol(Path(temporary)), shim.file_record(path))
+                path.write_bytes(header[:18] + b"\x03\x00")
+                with self.assertRaises(ValueError):
+                    shim.coverage_symbol(Path(temporary))
+
+    def test_finalize_binds_guest_raw_symbols_and_final_serial(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            arguments = self.fixture(Path(temporary))
+            shim.finalize_capture(*arguments)
+            metadata, _, sidecar, serial, *_ = arguments
+            finalized = json.loads(sidecar.read_text())
+            self.assertTrue(finalized["finalized"])
+            self.assertEqual(finalized["serial_sha256"], shim.file_record(serial)["sha256"])
+            self.assertEqual(metadata["sidecar"], shim.file_record(sidecar))
+
+    def test_finalize_rejects_tampered_capture_bindings(self):
+        mutations = [("kernel_sha256", None, "c" * 64), ("guest_record", None, "another/qemu.json"),
+                     ("symbol_elf", "sha256", "c" * 64), ("breakpoint", "actual_pc", "0x2001"),
+                     ("raw", "sha256", "c" * 64), ("announcement", "size", 5),
+                     ("serial_prefix", "sha256", "c" * 64), ("profile_id", None, shim.LOCAL_TCP_PROFILE),
+                     ("gdb_exit_code", None, 1), ("passed", None, False)]
+        for outer, inner, value in mutations:
+            with self.subTest(field=(outer, inner)), tempfile.TemporaryDirectory() as temporary:
+                arguments = self.fixture(Path(temporary))
+                sidecar = arguments[2]
+                data = json.loads(sidecar.read_text())
+                if inner:
+                    data[outer][inner] = value
+                else:
+                    data[outer] = value
+                sidecar.write_text(json.dumps(data))
+                with self.assertRaises(ValueError):
+                    shim.finalize_capture(*arguments)
+
+    def test_capture_success_preserves_genuine_qemu_33(self):
+        qemu, capture = MagicMock(), MagicMock()
+        qemu.poll.side_effect = [None, 33]
+        capture.poll.side_effect = [None, 0]
+        with patch.object(shim.time, "sleep"):
+            self.assertEqual(shim.supervise_capture(qemu, capture, 10), (33, False))
+        qemu.kill.assert_not_called()
+
+    def test_capture_failure_cancels_qemu_promptly(self):
+        qemu, capture = MagicMock(), MagicMock()
+        qemu.poll.return_value, capture.poll.return_value = None, 7
+        with patch.object(shim, "stop_capture_group") as stop:
+            self.assertEqual(shim.supervise_capture(qemu, capture, 10), (125, False))
+        stop.assert_called_once_with(capture)
+        qemu.kill.assert_called_once()
+
+    def test_qemu_failure_cancels_capture_promptly(self):
+        qemu, capture = MagicMock(), MagicMock()
+        qemu.poll.return_value, capture.poll.return_value = 1, None
+        with patch.object(shim, "stop_capture_group") as stop:
+            self.assertEqual(shim.supervise_capture(qemu, capture, 10), (1, False))
+        stop.assert_called_once_with(capture)
+
+    def test_capture_timeout_cancels_both_owned_children(self):
+        qemu, capture = MagicMock(), MagicMock()
+        qemu.poll.return_value = capture.poll.return_value = None
+        with patch.object(shim.time, "monotonic", side_effect=[0, 0, 5]), \
+                patch.object(shim, "stop_capture_group") as stop:
+            self.assertEqual(shim.supervise_capture(qemu, capture, 1), (124, True))
+        stop.assert_called_once_with(capture)
+        qemu.kill.assert_called_once()
+
+    def test_v2_recorder_resolves_port_captures_and_finalizes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cwd, output = root / "work", root / "case"
+            cwd.mkdir()
+            symbol = root / "original.elf"
+            symbol.write_bytes(b"\x7fELF\x02\x01" + bytes(12) + b"\x3e\x00")
+            kernel, firmware, binary = root / "kernel", root / "bios", root / "qemu"
+            for path in (kernel, firmware, binary):
+                path.write_bytes(path.name.encode())
+            serial = cwd / "qemu.log"
+            serial.write_bytes(b"boot\n#### Coverage: 0x1000 4\n")
+            process = MagicMock(returncode=33, pid=12345)
+            process.stdout, process.stderr = io.BytesIO(b"guest\n"), io.BytesIO()
+            process.wait.side_effect = subprocess.TimeoutExpired(["qemu"], 0.05)
+            context = MagicMock()
+            context.__enter__.return_value = process
+            listener = MagicMock()
+            listener.fileno.return_value = 71
+            listener.getsockname.return_value = ("127.0.0.1", 34567)
+            arguments = ["record-qemu.py", "-kernel", str(kernel), "-gdb", "tcp:127.0.0.1:0",
+                         "-S", "-chardev", "stdio,id=mux,logfile=" + str(serial)]
+
+            def capture(qemu, command, guest, metadata, _timeout):
+                self.assertEqual(command[command.index("--endpoint") + 1], "127.0.0.1:34567")
+                raw = cwd / "coverage.profraw"
+                raw.write_bytes(b"data")
+                sidecar = guest / "coverage-capture.json"
+                data = {"passed": True, "profile_id": shim.CAPTURE_PROFILE, "gdb_exit_code": 0,
+                        "kernel_sha256": shim.file_record(kernel)["sha256"],
+                        "guest_record": "guests/guest-001/qemu.json", "symbol_elf": shim.file_record(symbol),
+                        "breakpoint": {"symbol": "ostd::arch::power::try_poweroff",
+                                       "resolved_address": "0x2000", "actual_pc": "0x2000"},
+                        "announcement": {"address": "0x1000", "size": 4}, "raw": shim.file_record(raw),
+                        "serial_prefix": {"size": serial.stat().st_size,
+                                          "sha256": shim.file_record(serial)["sha256"]}}
+                sidecar.write_text(json.dumps(data))
+                metadata.update({"raw_exit_code": 0, "timed_out": False})
+                return 33, False
+
+            environment = {"A01_OSDK_CASE_OUTPUT": str(output), "A01_OSDK_LOCAL_TCP": "1",
+                           "A01_OSDK_PROFILE": shim.CAPTURE_PROFILE, "A01_OSDK_COVERAGE_GDB": "1",
+                           "A01_OSDK_COVERAGE_SYMBOL_ELF": str(symbol), "A01_OSDK_GUEST_TIMEOUT": "2",
+                           "A01_OSDK_GDB_READY": str(output / "gdb-ready.json")}
+            with patch.dict(os.environ, environment), patch.object(shim.sys, "argv", arguments), \
+                    patch.object(shim.Path, "cwd", return_value=cwd), patch.object(shim, "FIRMWARE", firmware), \
+                    patch.object(shim.socket, "socket", return_value=listener), \
+                    patch.object(shim.shutil, "which", return_value=str(binary)), \
+                    patch.object(shim.subprocess, "check_output", return_value="QEMU mock"), \
+                    patch.object(shim.sys, "stdout", MagicMock(buffer=io.BytesIO())), \
+                    patch.object(shim.sys, "stderr", MagicMock(buffer=io.BytesIO())), \
+                    patch.object(shim.subprocess, "Popen", return_value=context), \
+                    patch.object(shim, "run_capture", side_effect=capture):
+                self.assertEqual(shim.main(), 33)
+            record = json.loads((output / "guests/guest-001/qemu.json").read_text())
+            self.assertEqual(record["gdb_listener"]["requested_port"], 0)
+            self.assertEqual(record["gdb_listener"]["port"], 34567)
+            self.assertTrue(record["capture"]["finalized"])
+            self.assertTrue(any(item.startswith("isa-debug-exit") for item in record["argv"]))
+            marker = json.loads((output / "gdb-ready.json").read_text())
+            self.assertEqual(marker["endpoint"]["port"], 34567)
 
 
 if __name__ == "__main__":

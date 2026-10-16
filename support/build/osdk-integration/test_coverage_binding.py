@@ -15,6 +15,7 @@ SPEC = importlib.util.spec_from_file_location("a01_osdk_coverage_adapter", HERE 
 OSDK = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(OSDK)
 PROFILE = "osdk-native-local-tcp-v1"
+CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
 
 
 def digest(data):
@@ -56,6 +57,47 @@ def bind(item):
 def update_serial(item, data):
     item.serial.write_bytes(data)
     item.record["serial_logs"][0].update(size=len(data), sha256=digest(data))
+
+
+@contextmanager
+def capture_fixture():
+    with fixture() as item:
+        item.record["profile_id"] = CAPTURE_PROFILE
+        item.sidecar = item.guest / "coverage-capture.json"
+        symbol_elf = item.case / "symbols.elf"
+        header = bytearray(64)
+        header[:7] = b"\x7fELF\x02\x01\x01"
+        header[16:20] = b"\x02\x00\x3e\x00"
+        symbol_elf.write_bytes(header)
+        item.capture = {
+            "profile_id": CAPTURE_PROFILE, "passed": True, "finalized": True,
+            "gdb_exit_code": 0,
+            "guest_record": "guests/guest-001/qemu.json",
+            "kernel_sha256": item.record["artifacts"]["-kernel"]["sha256"],
+            "serial_sha256": digest(item.serial.read_bytes()),
+            "symbol_elf": {"path": str(symbol_elf), "size": len(header), "sha256": digest(header)},
+            "breakpoint": {"symbol": "ostd::arch::power::try_poweroff",
+                           "resolved_address": "0x8000", "actual_pc": "0x8000"},
+            "announcement": {"address": "0x4000", "size": item.raw.stat().st_size},
+            "raw": {"path": str(item.raw), "size": item.raw.stat().st_size,
+                    "sha256": digest(item.raw.read_bytes())},
+            "serial_prefix": {"size": item.serial.stat().st_size,
+                              "sha256": digest(item.serial.read_bytes())},
+        }
+        yield item
+
+
+def write_capture(item):
+    item.sidecar.write_text(json.dumps(item.capture))
+    item.record["capture"] = {"raw_exit_code": 0, "timed_out": False,
+                              "sidecar": {"path": str(item.sidecar),
+                                          "size": item.sidecar.stat().st_size,
+                                          "sha256": digest(item.sidecar.read_bytes())}}
+
+
+def bind_capture(item, source_path=None):
+    item.record_path.write_text(json.dumps(item.record))
+    return OSDK.coverage_binding(item.case, item.raw, CAPTURE_PROFILE, source_path=source_path)
 
 
 class CoverageBindingTests(unittest.TestCase):
@@ -187,6 +229,71 @@ class CoverageBindingTests(unittest.TestCase):
             self.assertEqual((result["total_functions"], result["maximum_function_count"]), (7, 3))
             self.assertIs(result["passed"], False)
             self.assertEqual(result["source_osdk_exit_code"], 9)
+
+    def test_gdb_capture_binds_sidecar_and_explicit_original_raw_source(self):
+        with capture_fixture() as item:
+            source = item.case / "generated/coverage.profraw"
+            source.parent.mkdir()
+            source.write_bytes(item.raw.read_bytes())
+            item.capture["raw"]["path"] = str(source)
+            write_capture(item)
+            result = bind_capture(item, source_path=source)
+            self.assertIs(result["passed"], True, result)
+            self.assertEqual(result["kernel_sha256"], item.capture["kernel_sha256"])
+            self.assertEqual(result["serial_sha256"], item.capture["serial_sha256"])
+            self.assertEqual(result["raw_sha256"], item.capture["raw"]["sha256"])
+
+    def test_gdb_capture_requires_successful_finalized_sidecar_and_recorder(self):
+        for mutation in ("missing-sidecar", "missing-record", "error", "passed", "finalized",
+                         "gdb_exit_code", "recorder-exit", "recorder-timeout"):
+            with self.subTest(mutation=mutation), capture_fixture() as item:
+                if mutation == "error":
+                    item.capture["error"] = "GDB capture failed"
+                elif mutation in ("passed", "finalized"):
+                    item.capture[mutation] = False
+                elif mutation == "gdb_exit_code":
+                    item.capture[mutation] = 9
+                write_capture(item)
+                if mutation == "missing-sidecar":
+                    item.sidecar.unlink()
+                elif mutation == "missing-record":
+                    del item.record["capture"]
+                elif mutation == "recorder-exit":
+                    item.record["capture"]["raw_exit_code"] = 9
+                elif mutation == "recorder-timeout":
+                    item.record["capture"]["timed_out"] = True
+                self.rejected(bind_capture(item))
+
+    def test_gdb_capture_rejects_wrong_breakpoint_and_guest_announcement(self):
+        for field, value in (("symbol", "other::try_poweroff"), ("actual_pc", "0x8001"),
+                             ("actual_pc", "0x0"), ("resolved_address", "0x0"),
+                             ("address", "0x4001"), ("size", 1)):
+            with self.subTest(field=field, value=value), capture_fixture() as item:
+                section = "announcement" if field in ("address", "size") else "breakpoint"
+                item.capture[section][field] = value
+                write_capture(item)
+                self.rejected(bind_capture(item))
+
+    def test_gdb_capture_rejects_unrelated_artifacts_and_dump_path(self):
+        for section, field, value in (
+                (None, "profile_id", PROFILE), (None, "kernel_sha256", "0" * 64),
+                (None, "serial_sha256", "0" * 64), (None, "guest_record", "other/qemu.json"),
+                ("raw", "sha256", "0" * 64), ("raw", "size", 1),
+                ("raw", "path", "/different/coverage.profraw"),
+                ("serial_prefix", "sha256", "0" * 64), ("serial_prefix", "size", 1),
+                ("symbol_elf", "sha256", "not-a-digest")):
+            with self.subTest(section=section, field=field), capture_fixture() as item:
+                target = item.capture if section is None else item.capture[section]
+                target[field] = value
+                write_capture(item)
+                self.rejected(bind_capture(item))
+
+    def test_gdb_capture_sidecar_must_match_recorded_size_digest_and_path(self):
+        for field, value in (("sha256", "0" * 64), ("size", 1), ("path", "/other/capture.json")):
+            with self.subTest(field=field), capture_fixture() as item:
+                write_capture(item)
+                item.record["capture"]["sidecar"][field] = value
+                self.rejected(bind_capture(item))
 
 
 if __name__ == "__main__":
