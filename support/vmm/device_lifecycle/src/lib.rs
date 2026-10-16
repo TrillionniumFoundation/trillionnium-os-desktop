@@ -104,7 +104,7 @@ pub enum DmaDirection { ToDevice, FromDevice, Bidirectional }
 pub enum BufferPhase {
     CpuOwned,
     Prepared { device_generation: u64 },
-    InFlight { device_generation: u64, queue_generation: u64, sequence: u64 },
+    InFlight { device_generation: u64, queue_id: u64, queue_generation: u64, sequence: u64 },
     NeedsCpuSync,
     UnknownEffect,
     Released,
@@ -214,7 +214,7 @@ impl Queue {
         self.next_sequence = next;
         self.outstanding = outstanding;
         buffer.phase = BufferPhase::InFlight { device_generation: self.device_generation,
-            queue_generation: self.queue_generation, sequence: seq };
+            queue_id: self.id, queue_generation: self.queue_generation, sequence: seq };
         Ok(Completion { memory_id: buffer.memory_id, queue_id: self.id,
             device_generation: self.device_generation, queue_generation: self.queue_generation,
             sequence: seq })
@@ -234,7 +234,7 @@ impl Queue {
         }
         if buffer.phase != (BufferPhase::InFlight {
             device_generation: self.device_generation,
-            queue_generation: self.queue_generation, sequence: tag.sequence,
+            queue_id: self.id, queue_generation: self.queue_generation, sequence: tag.sequence,
         }) { return Err(Error::InvalidCompletion); }
         let next = self.outstanding.checked_sub(1).ok_or(Error::InvalidState)?;
         self.outstanding = next;
@@ -246,9 +246,9 @@ impl Queue {
     /// both the queue and buffer unusable until out-of-band DMA quiescence.
     pub fn cancel_unknown_effect(&mut self, buffer: &mut Buffer) -> Result<(), Error> {
         match buffer.phase {
-            BufferPhase::InFlight { device_generation, queue_generation, .. }
+            BufferPhase::InFlight { device_generation, queue_id, queue_generation, .. }
                 if buffer.owner == self.owner && device_generation == self.device_generation &&
-                   queue_generation == self.queue_generation => {}
+                   queue_id == self.id && queue_generation == self.queue_generation => {}
             _ => return Err(Error::InvalidState),
         }
         let next = self.queue_generation.checked_add(1).ok_or(Error::ArithmeticOverflow)?;
@@ -348,6 +348,50 @@ mod tests {
     }
 
     #[test]
+    fn foreign_queue_cannot_cancel_or_complete_another_queues_buffer() {
+        let (dev, mut original, mut buffer) = setup();
+        let mut foreign = Queue::new(8, &dev, D, 2).unwrap();
+        buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
+        let original_tag = original.submit_after_driver_admission(&dev, &mut buffer).unwrap();
+        // Both queues share owner and generation, and each begins at sequence 1.
+        // Queue identity must therefore be bound to the buffer, not only to
+        // the caller-supplied completion tag.
+        assert_eq!(original_tag.sequence, 1);
+        assert_eq!(original.generation(), foreign.generation());
+        let before = buffer.phase();
+        let foreign_generation = foreign.generation();
+        assert_eq!(foreign.cancel_unknown_effect(&mut buffer), Err(Error::InvalidState));
+        assert_eq!(foreign.generation(), foreign_generation);
+        assert_eq!(foreign.outstanding(), 0);
+        assert!(!foreign.is_fenced());
+        assert_eq!(original.outstanding(), 1);
+        assert_eq!(buffer.phase(), before);
+        let forged_tag = Completion { queue_id: foreign.id, ..original_tag };
+        assert_eq!(foreign.complete_after_hardware_fence(&dev, &mut buffer, forged_tag),
+                   Err(Error::InvalidCompletion));
+        assert_eq!(foreign.outstanding(), 0);
+        assert_eq!(buffer.phase(), before);
+        original.complete_after_hardware_fence(&dev, &mut buffer, original_tag).unwrap();
+        assert_eq!(original.outstanding(), 0);
+        assert_eq!(buffer.phase(), BufferPhase::NeedsCpuSync);
+    }
+
+    #[test]
+    fn cancellation_fences_only_the_original_queue_after_binding() {
+        let (dev, mut original, mut buffer) = setup();
+        let mut foreign = Queue::new(8, &dev, D, 2).unwrap();
+        buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
+        original.submit_after_driver_admission(&dev, &mut buffer).unwrap();
+        assert_eq!(foreign.cancel_unknown_effect(&mut buffer), Err(Error::InvalidState));
+        original.cancel_unknown_effect(&mut buffer).unwrap();
+        assert!(original.is_fenced());
+        assert_eq!(original.outstanding(), 1);
+        assert_eq!(buffer.phase(), BufferPhase::UnknownEffect);
+        assert!(!foreign.is_fenced());
+        assert_eq!(foreign.outstanding(), 0);
+    }
+
+    #[test]
     fn fence_invalidates_generation_not_completes_work() {
         let (mut dev, mut queue, mut buffer) = setup();
         buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
@@ -409,8 +453,8 @@ mod tests {
         queue.submit_after_driver_admission(&dev, &mut buffer).unwrap();
         queue.queue_generation = u64::MAX;
         buffer.phase = BufferPhase::InFlight {
-            device_generation: dev.generation(), queue_generation: u64::MAX,
-            sequence: 1,
+            device_generation: dev.generation(), queue_id: queue.id,
+            queue_generation: u64::MAX, sequence: 1,
         };
         assert_eq!(queue.cancel_unknown_effect(&mut buffer), Err(Error::ArithmeticOverflow));
         assert_eq!(queue.outstanding(), 1);
