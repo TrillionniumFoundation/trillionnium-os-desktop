@@ -974,12 +974,80 @@ fn advanced_grandparent_clock_fences_stale_leaf_cas() {
         Err(ResourceError::ClockRollback)
     );
     assert_eq!(child.revision(), 1);
-    assert_eq!(child.try_usage(0).unwrap().event_sequence, 0);
+    assert_eq!(child.try_usage(0), Err(ResourceError::ClockRollback));
+    assert_eq!(child.usage(0).event_sequence, 0);
     let accepted = child
         .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 60, CPU_PERIOD_NS + 80)
         .unwrap();
     assert_eq!(accepted.revision, 2);
     assert_eq!(accepted.consumed_at_apply_ns, 0);
+}
+
+#[test]
+fn existing_descendants_refuse_read_usage_older_than_ancestor_boottime() {
+    let root_domain = root(420_000, CPU_PERIOD_NS);
+    let parent = with_parent(domain(420_001), object(420_001), &root_domain, 80).unwrap();
+    let child = with_parent(domain(420_002), object(420_002), &parent, 70).unwrap();
+    let current = 2 * CPU_PERIOD_NS + 33;
+    root_domain.try_usage(current).unwrap();
+
+    assert_eq!(
+        child.try_usage(current - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(
+        parent.try_usage(current - 1),
+        Err(ResourceError::ClockRollback)
+    );
+    // The legacy usage method remains a host diagnostic, never an A05
+    // ReadUsage response. Its old local sample cannot bypass try_usage.
+    assert_eq!(child.usage(0).sample_boottime_ns, 0);
+    let valid = child.try_usage(current).unwrap();
+    assert_eq!(valid.sample_boottime_ns, current);
+    assert_eq!(valid.window_start_ns, 2 * CPU_PERIOD_NS);
+    assert_eq!(valid.window_consumed_ns, 0);
+    assert_eq!(valid.cumulative_cpu_ns, 0);
+    assert_eq!(child.revision(), 1);
+}
+
+#[test]
+fn concurrent_root_sample_and_child_read_usage_have_linearizable_clock_order() {
+    for n in 0..64_u128 {
+        let root_domain = root(421_000 + n, CPU_PERIOD_NS);
+        let child = with_parent(
+            domain(422_000 + n),
+            object(422_000 + n),
+            &root_domain,
+            80,
+        )
+        .unwrap();
+        let earlier = CPU_PERIOD_NS + 10;
+        let later = earlier + 1;
+        let start = Arc::new(Barrier::new(3));
+        let read_child = child.clone();
+        let read_start = Arc::clone(&start);
+        let read = thread::spawn(move || {
+            read_start.wait();
+            read_child.try_usage(earlier)
+        });
+        let sample_root = root_domain.clone();
+        let sample_start = Arc::clone(&start);
+        let sample = thread::spawn(move || {
+            sample_start.wait();
+            sample_root.try_usage(later)
+        });
+        start.wait();
+        let outcome = read.join().unwrap();
+        assert_eq!(sample.join().unwrap().unwrap().sample_boottime_ns, later);
+        match outcome {
+            Ok(observed) => assert_eq!(observed.sample_boottime_ns, earlier),
+            Err(ResourceError::ClockRollback) => {}
+            unexpected => panic!("unexpected ancestor ReadUsage race: {unexpected:?}"),
+        }
+        // After both operations a stale result may never be claimed again.
+        assert_eq!(child.try_usage(earlier), Err(ResourceError::ClockRollback));
+        assert_eq!(child.try_usage(later).unwrap().sample_boottime_ns, later);
+    }
 }
 
 #[test]
@@ -1869,7 +1937,8 @@ fn failed_ancestor_charge_never_advances_descendant_clock_or_counters() {
     let idle = with_parent(domain(130_002), object(130_002), &parent, 10).unwrap();
     busy.charge_cpu(8, 100).unwrap();
     assert_eq!(idle.charge_cpu(5, 200), Err(ResourceError::Exhausted));
-    let unchanged = idle.try_usage(0).unwrap();
+    assert_eq!(idle.try_usage(0), Err(ResourceError::ClockRollback));
+    let unchanged = idle.usage(0);
     assert_eq!(unchanged.sample_boottime_ns, 0);
     assert_eq!(unchanged.cumulative_cpu_ns, 0);
     assert_eq!(unchanged.window_consumed_ns, 0);
@@ -1889,8 +1958,10 @@ fn exhausted_grandparent_does_not_modify_either_descendant() {
 
     competitor.charge_cpu(9, 100).unwrap();
     assert_eq!(leaf.charge_cpu(2, 200), Err(ResourceError::Exhausted));
-    assert_eq!(leaf.try_usage(0).unwrap().event_sequence, 0);
-    assert_eq!(parent.try_usage(0).unwrap().event_sequence, 0);
+    assert_eq!(leaf.try_usage(0), Err(ResourceError::ClockRollback));
+    assert_eq!(parent.try_usage(0), Err(ResourceError::ClockRollback));
+    assert_eq!(leaf.usage(0).event_sequence, 0);
+    assert_eq!(parent.usage(0).event_sequence, 0);
     leaf.charge_cpu(1, 150).unwrap();
     assert_eq!(grandparent.usage(200).window_consumed_ns, 10);
     assert_eq!(parent.usage(200).window_consumed_ns, 1);
@@ -1998,8 +2069,10 @@ fn interval_parent_failure_is_atomic_across_period_boundary() {
         leaf.charge_interval_for_host_model(p - 6, p + 6),
         Err(ResourceError::Exhausted)
     );
-    assert_eq!(leaf.try_usage(0).unwrap().event_sequence, 0);
-    assert_eq!(parent.try_usage(0).unwrap().event_sequence, 0);
+    assert_eq!(leaf.try_usage(0), Err(ResourceError::ClockRollback));
+    assert_eq!(parent.try_usage(0), Err(ResourceError::ClockRollback));
+    assert_eq!(leaf.usage(0).event_sequence, 0);
+    assert_eq!(parent.usage(0).event_sequence, 0);
     assert_eq!(ancestor.try_usage(p - 6).unwrap().window_consumed_ns, 5);
     leaf.charge_interval_for_host_model(p - 6, p - 2).unwrap();
     assert_eq!(ancestor.usage(p - 2).window_consumed_ns, 9);

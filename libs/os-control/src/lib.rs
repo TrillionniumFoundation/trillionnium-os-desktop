@@ -574,6 +574,16 @@ impl ResourceDomain {
     /// must not advance the sampled time or reset a window.
     pub fn try_usage(&self, sample_boottime_ns: u64) -> Result<UsageSnapshot, ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
+        // A ReadUsage is a *current* BOOTTIME observation. Reject a caller's
+        // stale time if any ancestor has already sampled further ahead.
+        // This is the same family gate used by admission and clock updates.
+        let mut ancestor = self.inner.parent.as_ref();
+        while let Some(parent) = ancestor {
+            if sample_boottime_ns < parent.snapshot_state().last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
+            }
+            ancestor = parent.inner.parent.as_ref();
+        }
         let mut state = lock_unpoisoned(&self.inner.state);
         if sample_boottime_ns < state.last_boottime_ns {
             return Err(ResourceError::ClockRollback);

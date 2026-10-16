@@ -487,3 +487,15 @@ history loss, and a missing unretired sequence. The corruption hooks
 exist only under `#[cfg(test)]`; normal callers still cannot mutate
 the private reservation table or result slot. This is not an IRQ-safe
 kernel invariant checker or comprehensive state-space proof.
+
+## A05 ReadUsage ancestor time preflight
+
+The fallible A05-facing `ResourceDomain::try_usage(sample_boottime_ns)`
+rejects `ClockRollback` when **any ancestor** has observed a later
+kernel BOOTTIME; it no longer checks only the sampled leaf's local clock.
+This is serialized with all family mutations using the existing gate,
+so a concurrent root sample versus descendant ReadUsage has one clear
+linearization order. The infallible `usage` remains explicitly a host
+*diagnostic* and is not a wire-serving entry point. Rust tests cover
+three-level stale observations and 64 two-thread race schedules without
+claiming loom or real SMP/IRQ verification.
