@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "result": "full_raw_serial_binding_and_live_input_verification_passed",
+  "old_mutation": "old-mutation-result.json",
+  "fresh_qemu_mutation": "real-new-mutation-result.json",
+  "unit_tests": {
+    "isolated": {
+      "passed": 15,
+      "failed": 0,
+      "command": [
+        "python3",
+        "-I",
+        "support/build/tests/test_boot_evidence.py"
+      ],
+      "log": "new-boot-evidence-tests.log"
+    },
+    "isolated_optimized": {
+      "passed": 15,
+      "failed": 0,
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/tests/test_boot_evidence.py"
+      ],
+      "log": "new-boot-evidence-tests-optimized.log"
+    },
+    "checker_modes_for_each_positive_and_negative_fixture": [
+      [],
+      [
+        "-O"
+      ],
+      [
+        "-I"
+      ],
+      [
+        "-I",
+        "-O"
+      ]
+    ]
+  },
+  "runner_compatibility": {
+    "passed": 10,
+    "failed": 0,
+    "command": [
+      "python3",
+      "-I",
+      "support/build/tests/test_kernel_runner.py"
+    ],
+    "log": "kernel-runner-compatibility.log",
+    "runner_tests_modified": false
+  },
+  "actual_new_qemu_observations": {
+    "good_raw_exit": 33,
+    "known_failure_raw_exit": 65,
+    "new_record_matching_passed_all_four_modes": true,
+    "appended_serial_rejected_all_four_modes": true,
+    "same_appended_serial_wrongly_accepted_by_old_checker_all_four_modes": true,
+    "known_failed_boot_rejected_all_four_modes": true,
+    "fresh_live_three_input_hashes_passed_all_four_modes": true
+  },
+  "production_source_copies_archived": false,
+  "old_archive_hash_backfilled": false,
+  "assert_statements_in_checker_or_recorder": 0,
+  "scope": "Mutation/unit tools do not run a real VM. Real runs were independently performed by the parent and their exact new qemu.json/serial.log copies were checked here.",
+  "portable_git_reconstruction": {
+    "source_commit": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
+    "tree": "477484d2ba446d54024fcd0ea739dfb89035a12d",
+    "old_checker_commit": "a3636414209c5b712fe4376af29fab2471a25374",
+    "all_three_new_source_file_hashes_verified": true,
+    "comparisons": 20,
+    "expected_outcomes_reproduced": 20,
+    "exit": 0,
+    "evidence": "git-source-replay-command.json"
+  }
+}

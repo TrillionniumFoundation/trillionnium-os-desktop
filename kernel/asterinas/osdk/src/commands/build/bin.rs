@@ -16,8 +16,75 @@ use crate::{
         bin::{AsterBin, AsterBinType, AsterBzImageMeta},
         file::BundleFile,
     },
-    util::{get_current_crates, hard_link_or_copy, new_command_checked_exists},
+    util::{get_current_crates, new_command_checked_exists},
 };
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::bundle::bin::AsterElfMeta;
+    use std::os::unix::fs::MetadataExt;
+
+    fn x86_64_elf(path: &Path) -> AsterBin {
+        // Copy a real native ELF header so this exercises the actual QEMU
+        // conversion, without relying on an external compiler or ELF utility.
+        let mut header = [0u8; 64];
+        File::open(std::env::current_exe().unwrap())
+            .unwrap()
+            .read_exact(&mut header)
+            .unwrap();
+        assert_eq!(&header[..4], b"\x7fELF");
+        header[18..20].copy_from_slice(&62u16.to_le_bytes());
+        std::fs::write(path, header).unwrap();
+        AsterBin::new(
+            path,
+            Arch::X86_64,
+            AsterBinType::Elf(AsterElfMeta {
+                has_linux_header: false,
+                has_pvh_header: false,
+                has_multiboot_header: true,
+                has_multiboot2_header: true,
+            }),
+            "0.1.0".to_owned(),
+            false,
+        )
+    }
+
+    fn check_qemu_copy_preserves_symbols(existing_hard_link: bool) {
+        let directory = tempfile::tempdir().unwrap();
+        let source = directory.path().join("myos-osdk-bin");
+        let elf = x86_64_elf(&source);
+        let original = std::fs::read(&source).unwrap();
+        let boot_path = source.with_extension("elf");
+        if existing_hard_link {
+            std::fs::hard_link(&source, &boot_path).unwrap();
+        }
+
+        let boot = make_stripped_boot_elf(directory.path(), &elf, false);
+        let boot = make_elf_for_qemu(boot);
+        let converted = std::fs::read(boot.path()).unwrap();
+        assert_eq!(&converted[18..20], &3u16.to_le_bytes());
+        assert_eq!(
+            std::fs::read(&source).unwrap(),
+            original,
+            "QEMU boot conversion changed Cargo symbols"
+        );
+        assert_ne!(
+            source.metadata().unwrap().ino(),
+            boot.path().metadata().unwrap().ino()
+        );
+    }
+
+    #[test]
+    fn qemu_conversion_preserves_original_cargo_elf() {
+        check_qemu_copy_preserves_symbols(false);
+    }
+
+    #[test]
+    fn qemu_conversion_replaces_a_preexisting_hard_link() {
+        check_qemu_copy_preserves_symbols(true);
+    }
+}
 
 pub fn make_install_bzimage(
     install_dir: impl AsRef<Path>,
@@ -96,12 +163,17 @@ pub fn make_stripped_boot_elf(
         install_dir.as_ref().join(elf_name + ".elf")
     };
 
+    // The boot ELF can be modified in place by make_elf_for_qemu. Keep it
+    // separate from Cargo's original ELF, including when replacing an old
+    // destination that was hard-linked to the original.
+    let temporary = tempfile::NamedTempFile::new_in(install_dir.as_ref()).unwrap();
+
     if strip {
         // We use rust-strip to reduce the kernel image size.
         let status = new_command_checked_exists("rust-strip")
             .arg(elf.path())
             .arg("-o")
-            .arg(result_elf_path.as_os_str())
+            .arg(temporary.path())
             .status();
 
         match status {
@@ -119,9 +191,9 @@ pub fn make_stripped_boot_elf(
             },
         }
     } else {
-        // Copy the ELF file.
-        hard_link_or_copy(elf.path(), &result_elf_path).unwrap();
+        std::fs::copy(elf.path(), temporary.path()).unwrap();
     }
+    temporary.persist(&result_elf_path).unwrap();
 
     AsterBin::new(
         &result_elf_path,

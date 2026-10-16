@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/20",
+  "base_main": "7ba970724ddb7528c3f0908a048cbc647586c6f7",
+  "code_commits": {
+    "boot_binding": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
+    "symbol_elf": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+    "main_merge": "d95ad1b3a55ba9a5da3dbf542ecfbd305f8c8aaa"
+  },
+  "kernel_derived_tree": "6a9463ebaaa2060e1fe3968bd940b60d9b1bf8a0",
+  "kernel_upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "toolchain": "nightly-2026-07-21",
+  "full_kernel": {
+    "make_kernel": 0,
+    "make_run_kernel": 0,
+    "qemu_raw": 33,
+    "wrapper": 0,
+    "live_checker": 0,
+    "evidence": "regression/next3-boot-debug",
+    "artifacts": {
+      "-kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "size": 8297624,
+        "sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63"
+      },
+      "-initrd": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next3-boot-debug/initramfs.cpio.gz",
+        "size": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      "-bios": {
+        "path": "/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      }
+    },
+    "serial_sha256": "ed3b017987fc1d6f06cb7be1c8de54786c2124d45aa342fdb1e26e6ddf7ac682",
+    "serial_size": 72331
+  },
+  "tests": {
+    "osdk_host_unit": {
+      "passed": 28,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "evidence": "vsc-elf/vsc-host-after.log"
+    },
+    "boot_evidence_unit": {
+      "passed": 15,
+      "evidence": "boot-binding/"
+    },
+    "kernel_runner_unit": {
+      "passed": 10,
+      "evidence": "manifest-lifecycle/"
+    },
+    "git_reconstructed_archive_comparisons": {
+      "passed": 20,
+      "evidence": "boot-binding/"
+    },
+    "new_recorder_known_failure": {
+      "qemu_raw": 65,
+      "checker": 1,
+      "accepted": false
+    },
+    "new_recorder_good_replay": {
+      "qemu_raw": 33,
+      "checker": 0,
+      "accepted": true
+    },
+    "latest_main_abi_rust": {
+      "passed": 9,
+      "failed": 0
+    },
+    "latest_main_abi_python": {
+      "passed": 12,
+      "failed": 0
+    },
+    "latest_main_golden_vectors": 12
+  },
+  "historical_kernel_tests": {
+    "newly_executed_this_phase": false,
+    "evidence": "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/result.json",
+    "reported_passed": 362,
+    "soft_skipped": 3,
+    "exercised_lower_bound": 359
+  },
+  "native_osdk_integration": "ongoing separate phase; not claimed passed here",
+  "known_limitations": [
+    "One actual manifest replacement has no established cause; bytes/stat preserved, later traced cleanup worked",
+    "First full host suite missing-GDB failure raw log overwritten; partial error context only, successful rerun retained",
+    "Actual VSCode LLDB client not executed",
+    "No KVM/VMX/EPT, controlled SMP, full device/userspace matrix or HOS2 enforcement claim"
+  ],
+  "readme_bytes": 0
+}

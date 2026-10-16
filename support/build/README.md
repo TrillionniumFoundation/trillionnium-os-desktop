@@ -44,10 +44,17 @@ manifest, full build output, exact QEMU argv, artifact SHA256 values, raw QEMU
 exit status, and complete serial output. The smoke passes only with all guest
 markers, no panic, and **raw QEMU exit 33**. QEMU exit 65 is guest failure;
 OSDK normalizes successful 33 to make exit 0.
+The QEMU recorder binds the complete raw serial bytes by SHA256 and size.
+Fresh runs also verify the recorded kernel, initramfs and BIOS bytes against
+their live paths. For offline archive checks, use `check-boot.py DIR` without
+`--live-artifacts`; historical records without a serial digest require the
+checker from their recorded acceptance commit, not a retroactively added hash.
 The wrapper rejects incomplete log capture, forces its initramfs prerequisite
 on, and shares a persistent workspace lock with the kernel-test runner. Its
 temporary manifest is installed without replacing an existing file, and
 cleanup removes only the inode installed by that invocation.
+The temporary inode is registered before publishing its manifest, including
+when a signal arrives immediately after the atomic link operation.
 
 ## Kernel-mode regression tests
 
@@ -89,6 +96,10 @@ Derivative changes are confined to OSDK's host build tooling. Its
 to the generated-crate build. The daemon supervisor also cleans its original
 process group before reaping the leader; its regression fixtures use a TCP
 lease rather than interpreting namespace-local PIDs through `/proc`.
+The boot ELF is published through an independent temporary file, so QEMU's
+x86 ELF-header conversion cannot modify the original Cargo symbol ELF through
+a hard link. VSC launch configuration points to that actual symbol ELF and
+quotes target paths. Debugger integration waits are bounded.
 Lock installation uses a temporary file and atomic replacement, including
 when the supplied lock is the destination itself or a hard link to it.
 The generated OSDK base crate is a separate Cargo workspace; upstream's root
@@ -148,6 +159,12 @@ focused diagnostic passes do not supersede the original failure. Follow-up
 daemon fixes and their actual results are recorded separately in
 `evidence/2026-10-16-daemon/`. A05/A06 can use the saved kernel crate results
 as an upstream baseline.
+The subsequent `evidence/2026-10-16-boot-binding/REPORT.md` records the serial
+binding and symbol-ELF fixes, complete 28/28 OSDK host units, and a fresh full
+Asterinas `make kernel` / `make run_kernel` boot with raw QEMU exit 33. It also
+retains the manifest signal reproducer, an unexplained replacement inode from
+one real build, and the explicit missing-log limitation from an initial
+missing-GDB test attempt.
 
 The host supervisor uses `waitid(WNOWAIT)` to observe a leader without
 releasing its PID, kills remaining members of that original group, then reaps

@@ -9,7 +9,9 @@ installation/cleanup, pipeline status, and boot acceptance remain under test.
 import json
 import os
 from pathlib import Path
+import shlex
 import shutil
+import signal
 import subprocess
 import tempfile
 import time
@@ -187,6 +189,26 @@ class KernelRunnerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertFalse((self.kernel / "OSDK.toml").exists())
         self.assertEqual(list(self.kernel.glob(".a01-osdk-*")), [])
+
+    def test_signal_immediately_after_manifest_publication_cleans_owned_inode(self):
+        real_ln = shutil.which("ln")
+        self.assertIsNotNone(real_ln, "the native runner requires the host ln tool")
+        # Publish a real hard link, then interrupt the waiting runner before it
+        # executes its next shell statement. This exercises its EXIT trap in
+        # the otherwise tiny ownership-registration window.
+        self.write_tool("ln", (
+            "#!/bin/sh\n"
+            f"{shlex.quote(real_ln)} \"$@\" || exit $?\n"
+            "kill -TERM \"$PPID\"\n"
+        ))
+        result = self.run_runner()
+        self.assertIn(result.returncode, (-signal.SIGTERM, 128 + signal.SIGTERM), result.stdout)
+        self.assertFalse((self.root / "make-call.json").exists())
+        self.assertEqual(list(self.kernel.glob(".a01-osdk-*")), [])
+        self.assertFalse(
+            (self.kernel / "OSDK.toml").exists(),
+            "interrupted publication left the runner's owned OSDK manifest behind",
+        )
 
     def test_existing_manifest_is_preserved(self):
         manifest = self.kernel / "OSDK.toml"

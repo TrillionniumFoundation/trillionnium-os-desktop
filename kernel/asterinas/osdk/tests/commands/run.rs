@@ -119,7 +119,18 @@ mod qemu_gdb_feature {
     use super::*;
     use crate::util::cargo_osdk;
     use assert_cmd::Command;
-    use std::{path::Path, thread::sleep};
+    use std::{
+        path::{Path, PathBuf},
+        sync::{
+            Arc,
+            atomic::{AtomicBool, Ordering},
+        },
+        thread::sleep,
+        time::{Duration, Instant},
+    };
+
+    const RUN_TIMEOUT: Duration = Duration::from_secs(300);
+    const READY_TIMEOUT: Duration = Duration::from_secs(240);
 
     #[test]
     fn basic_debug() {
@@ -139,34 +150,77 @@ mod qemu_gdb_feature {
             format!("addr={},wait-client", unix_socket.as_str()).as_str(),
         ]);
         instance.current_dir(workspace.os_dir());
+        instance.timeout(RUN_TIMEOUT);
 
         let sock = unix_socket.clone();
-        let _gdb = std::thread::spawn(move || {
-            gdb_continue_via_unix_sock(&sock);
+        let cancelled = Arc::new(AtomicBool::new(false));
+        let debugger_cancelled = cancelled.clone();
+        let gdb = std::thread::spawn(move || {
+            wait_for(&debugger_cancelled, || {
+                Ok(Path::new(&sock).exists().then_some(()))
+            })?;
+            gdb_continue_via(&sock, None)
         });
 
-        let output = instance
-            .output()
-            .expect("Failed to wait for QEMU GDB instance");
+        let output = instance.output();
+        cancelled.store(true, Ordering::Relaxed);
+        gdb.join()
+            .expect("GDB worker panicked")
+            .expect("GDB session failed");
+        let output = output.expect("Failed to wait for QEMU GDB instance");
+        assert!(output.status.success(), "OSDK failed: {output:?}");
         let stdout = String::from_utf8_lossy(&output.stdout).to_string();
         assert!(stdout.contains("Hello world from guest kernel!"));
     }
 
-    fn gdb_continue_via_unix_sock(socket: &str) {
-        let sock_file = Path::new(&socket);
-        while !sock_file.exists() {
-            sleep(std::time::Duration::from_secs(1));
+    fn wait_for<T>(
+        cancelled: &AtomicBool,
+        mut ready: impl FnMut() -> Result<Option<T>, String>,
+    ) -> Result<T, String> {
+        let deadline = Instant::now() + READY_TIMEOUT;
+        loop {
+            if let Some(value) = ready()? {
+                return Ok(value);
+            }
+            if cancelled.load(Ordering::Relaxed) {
+                return Err("OSDK exited before the debugger was ready".to_owned());
+            }
+            if Instant::now() >= deadline {
+                return Err("timed out waiting for the debugger input".to_owned());
+            }
+            sleep(Duration::from_millis(20));
         }
-        gdb_continue_via(socket);
     }
 
-    fn gdb_continue_via(addr: &str) {
+    fn gdb_continue_via(addr: &str, symbols: Option<&Path>) -> Result<(), String> {
         let mut gdb = Command::new("gdb");
-        gdb.args(["-ex", format!("target remote {}", addr).as_str()]);
-        gdb.write_stdin("\n")
-            .write_stdin("quit\n")
-            .write_stdin("y\n");
-        gdb.assert().success();
+        gdb.timeout(Duration::from_secs(30));
+        gdb.args(["--batch", "-nx"]);
+        if let Some(symbols) = symbols {
+            gdb.arg("--se").arg(symbols);
+        }
+        gdb.args([
+            "-ex",
+            "set tcp auto-retry on",
+            "-ex",
+            "set tcp connect-timeout 20",
+            "-ex",
+            &format!("target remote {addr}"),
+            "-ex",
+            "info registers rip",
+            "-ex",
+            "detach",
+        ]);
+        let output = gdb.output().map_err(|error| error.to_string())?;
+        if !output.status.success() {
+            return Err(format!("GDB failed: {output:?}"));
+        }
+        if !String::from_utf8_lossy(&output.stdout).contains("rip") {
+            return Err(format!(
+                "GDB did not report the guest instruction pointer: {output:?}"
+            ));
+        }
+        Ok(())
     }
     mod vsc {
         use super::*;
@@ -179,7 +233,10 @@ mod qemu_gdb_feature {
             }
             let kernel_name = "vsc_launch_file";
             let workspace = workspace::WorkSpace::new(WORKSPACE, kernel_name);
-            let addr = ":50001";
+            // Reserve an available TCP port instead of assuming a global fixed port.
+            let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+            let addr = listener.local_addr().unwrap().to_string();
+            drop(listener);
 
             let mut instance = cargo_osdk([
                 "run",
@@ -187,33 +244,51 @@ mod qemu_gdb_feature {
                 format!("wait-client,vscode,addr={}", addr).as_str(),
             ]);
             instance.current_dir(workspace.os_dir());
+            instance.timeout(RUN_TIMEOUT);
 
             let dir = workspace.os_dir();
-            let bin_file_path = Path::new(&workspace.os_dir())
-                .join("target")
-                .join("osdk")
-                .join(kernel_name)
-                .join(format!("{}-osdk-bin", kernel_name));
-            let _gdb = std::thread::spawn(move || {
-                while !bin_file_path.exists() {
-                    sleep(std::time::Duration::from_secs(1));
-                }
-                assert!(
-                    check_launch_file_existence(&dir),
-                    "VSCode launch config file is not found during debugging session"
-                );
-                gdb_continue_via(addr);
+            let cancelled = Arc::new(AtomicBool::new(false));
+            let debugger_cancelled = cancelled.clone();
+            let gdb = std::thread::spawn(move || {
+                let symbols = wait_for(&debugger_cancelled, || launch_symbol_file(&dir))?;
+                gdb_continue_via(&addr, Some(&symbols))
             });
 
-            let output = instance
-                .output()
-                .expect("Failed to wait for QEMU GDB instance");
+            let output = instance.output();
+            cancelled.store(true, Ordering::Relaxed);
+            gdb.join()
+                .expect("GDB worker panicked")
+                .expect("GDB session failed");
+            let output = output.expect("Failed to wait for QEMU GDB instance");
+            assert!(output.status.success(), "OSDK failed: {output:?}");
             let stdout = String::from_utf8_lossy(&output.stdout).to_string();
             assert!(stdout.contains("Hello world from guest kernel!"));
             assert!(
-                !check_launch_file_existence(&workspace.workspace),
+                !check_launch_file_existence(&workspace.os_dir()),
                 "VSCode launch config file should be removed after debugging session"
             );
+        }
+
+        fn launch_symbol_file(workspace: &str) -> Result<Option<PathBuf>, String> {
+            let launch_file = Path::new(workspace).join(".vscode/launch.json");
+            let Ok(contents) = std::fs::read_to_string(launch_file) else {
+                return Ok(None);
+            };
+            // The producer writes this concurrently; retry an incomplete JSON write.
+            let Ok(launch) = serde_json::from_str::<serde_json::Value>(&contents) else {
+                return Ok(None);
+            };
+            let command = launch["configurations"][0]["targetCreateCommands"][0]
+                .as_str()
+                .ok_or("missing VSCode target-create command")?;
+            let words = shlex::split(command).ok_or("invalid VSCode target-create command")?;
+            if words.len() != 3 || words[0] != "target" || words[1] != "create" {
+                return Err(format!(
+                    "unexpected VSCode target-create command: {command}"
+                ));
+            }
+            let path = PathBuf::from(&words[2]);
+            Ok(path.is_file().then_some(path))
         }
 
         fn check_launch_file_existence(workspace: &str) -> bool {

@@ -1,0 +1,64 @@
+{
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "-initrd",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/failure/boot-02/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "shell_command": "/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf -initrd /workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/failure/boot-02/initramfs.cpio.gz -append 'earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --' -machine q35 -accel tcg -cpu max -bios /usr/share/seabios/bios-256k.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04",
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/bound-replay-known-failure",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "artifacts": {
+    "-kernel": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+      "size": 8297624,
+      "sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63"
+    },
+    "-initrd": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/failure/boot-02/initramfs.cpio.gz",
+      "size": 1107846,
+      "sha256": "dab288c9b7ce9850aeb815c9b5646d5428f50a335906c1512fd52b41282edaba"
+    },
+    "-bios": {
+      "path": "/usr/share/seabios/bios-256k.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    }
+  },
+  "raw_exit_code": 65,
+  "timed_out": false,
+  "serial_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/bound-replay-known-failure/qemu.log",
+  "serial_sha256": "692342b223a390ab80bc662e297da05404e97439bc2137b0e7cb764a411fc90a",
+  "serial_size": 4618605,
+  "duration_seconds": 14.925
+}

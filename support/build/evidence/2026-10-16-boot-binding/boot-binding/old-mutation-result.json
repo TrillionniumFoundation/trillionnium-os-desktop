@@ -1,0 +1,32 @@
+{
+  "source_archive": "support/build/evidence/2026-10-16-daemon/acceptance/boot",
+  "source_serial_sha256": "1674ba0ee52450c750aba07b0a3beb1dc24bf5f8cbbcc5b2b840c82ccb7e7bde",
+  "old_checker_sha256": "eceab88787bd80a169f6036f35532f183937de81045f9ea97e943ec347720f21",
+  "results": [
+    {
+      "case": "unchanged-real-archive",
+      "command": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/unchanged-real-archive"
+      ],
+      "exit": 0,
+      "serial_sha256": "1674ba0ee52450c750aba07b0a3beb1dc24bf5f8cbbcc5b2b840c82ccb7e7bde",
+      "log": "unchanged-real-archive.old.log"
+    },
+    {
+      "case": "harmless-tail-appended",
+      "command": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/old-check-boot.py",
+        "/workspace/scratch/ae1a8cf05419/a01-boot-binding/harmless-tail-appended"
+      ],
+      "exit": 0,
+      "serial_sha256": "4465280c70c1d36e42d525342a1f0fb71c0e995db14bdb307ea71def212ead80",
+      "log": "harmless-tail-appended.old.log"
+    }
+  ],
+  "scope": "No VM run. Actual archived guest serial was copied, then only the second copy received harmless bytes. Legacy checker accepted both."
+}
