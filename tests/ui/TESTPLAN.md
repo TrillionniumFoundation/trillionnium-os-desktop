@@ -98,7 +98,7 @@ Current host validation (A10 source checkout, 2026-10-16) is available locally:
 - `cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets
   --locked --offline -- -D warnings` passed.
 - UI unit/binary tests passed (45 tests), `support/ui` contract tests passed
-  (24 tests), and `tests/ui` contract tests passed (8 tests).
+  (26 tests), and `tests/ui` contract tests passed (8 tests).
 - Rustfmt checks, `git diff --check`, and Bash syntax checks passed.
 
 The full UI all-targets test command is not green in this sandbox because
