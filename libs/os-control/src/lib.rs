@@ -397,6 +397,12 @@ impl ResourceDomain {
             {
                 return Err(ResourceError::Exhausted);
             }
+            if state.consumed_ns.checked_add(delta_ns).is_none()
+                || state.window_consumed_ns.checked_add(delta_ns).is_none()
+                || state.event_sequence.checked_add(1).is_none()
+            {
+                return Err(ResourceError::Overflow);
+            }
         }
         if let Some(parent) = parent {
             parent.charge_locked(delta_ns, now_ns)?;
