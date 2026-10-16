@@ -243,6 +243,9 @@ pub struct Grant {
     domain: ResourceDomain,
     pub principal: PublisherId,
     epoch: u64,
+    // Ancestors are the existing hierarchy authority, not a parallel registry.
+    // Their revocation generations fence this grant even after reactivation.
+    ancestor_epochs: Vec<(ResourceDomain, u64)>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -369,6 +372,10 @@ impl ResourceDomain {
     }
 
     pub fn grant(&self, principal: PublisherId) -> Result<Grant, ResourceError> {
+        // Serialize issuance with ancestor revoke/reactivation. A grant minted
+        // before an ancestor revokes must never revive when that ancestor is
+        // reactivated; holding a child Arc alone confers no authority.
+        let _gate = lock_unpoisoned(&self.inner.gate);
         let state = self.snapshot_state();
         if !state.alive {
             return Err(ResourceError::Revoked);
@@ -376,10 +383,21 @@ impl ResourceDomain {
         if !principal.is_nonzero() {
             return Err(ResourceError::InvalidIdentity);
         }
+        let mut ancestor_epochs = Vec::new();
+        let mut ancestor = self.inner.parent.as_ref();
+        while let Some(current) = ancestor {
+            let parent_state = current.snapshot_state();
+            if !parent_state.alive {
+                return Err(ResourceError::Revoked);
+            }
+            ancestor_epochs.push((current.clone(), parent_state.grant_epoch));
+            ancestor = current.inner.parent.as_ref();
+        }
         Ok(Grant {
             domain: self.clone(),
             principal,
             epoch: state.grant_epoch,
+            ancestor_epochs,
         })
     }
 
@@ -461,9 +479,10 @@ impl ResourceDomain {
                 state.window_start_ns = new_window_start;
                 state.window_consumed_ns = 0;
             }
-            if !state.alive
-                || delta_ns > state.budget.cap_ns.saturating_sub(state.window_consumed_ns)
-            {
+            if !state.alive {
+                return Err(ResourceError::Revoked);
+            }
+            if delta_ns > state.budget.cap_ns.saturating_sub(state.window_consumed_ns) {
                 return Err(ResourceError::Exhausted);
             }
             if state.consumed_ns.checked_add(delta_ns).is_none()
@@ -525,6 +544,18 @@ impl ResourceDomain {
         }
         if !Arc::ptr_eq(&grant.domain.inner, &self.inner) {
             return Err(ResourceError::GrantEpochMismatch);
+        }
+        // Check every recorded ancestor under the same hierarchy gate.
+        // A dead ancestor denies new mutations; a reactivated ancestor has a
+        // different epoch, so old child grants remain permanently fenced.
+        for (ancestor, issued_epoch) in &grant.ancestor_epochs {
+            let parent_state = ancestor.snapshot_state();
+            if !parent_state.alive {
+                return Err(ResourceError::Revoked);
+            }
+            if parent_state.grant_epoch != *issued_epoch {
+                return Err(ResourceError::GrantEpochMismatch);
+            }
         }
         if period_ns != CPU_PERIOD_NS || cap_ns > CPU_PERIOD_NS {
             return Err(ResourceError::InvalidBudget);
