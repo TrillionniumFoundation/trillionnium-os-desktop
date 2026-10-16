@@ -80,6 +80,8 @@ support/build/kernel.sh run_kernel
 Each worktree retains the existing refusal to overwrite a pre-existing
 `kernel/OSDK.toml`. Preserve and inspect such a file before another attempt;
 the wrapper does not guess that an existing manifest is safe to remove.
+An external writer can still replace files inside a worktree; isolation does
+not disable that writer or relax the manifest's inode ownership check.
 
 ## Kernel-mode regression tests
 
