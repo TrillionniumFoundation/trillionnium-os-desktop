@@ -1,10 +1,11 @@
 """Subprocess runner behavior under synthetic exit, corruption, and timeout."""
 import json
 from pathlib import Path
+import tempfile
 import subprocess
 import sys
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cuda_gemm
@@ -104,6 +105,21 @@ class LabRunnerTests(unittest.TestCase):
                                    runner=Mock(return_value=self.result(payload, 1)))
         self.assertEqual(code, 1)
         self.assertEqual(result["status"], "failed_device_effect_unknown")
+
+    def test_rejected_invocation_retains_complete_fail_closed_evidence_schema(self):
+        with tempfile.TemporaryDirectory() as d:
+            output = Path(d) / "rejected.json"
+            with patch.object(sys, "argv", ["run_isolated_cuda.py", "--require-bdf",
+                                            BDF, "--output", str(output)]):
+                self.assertEqual(lab.main(), 2)
+            record = json.loads(output.read_text())
+        self.assertEqual(record["status"], "blocked")
+        self.assertFalse(record["attempted_device_access"])
+        for field in ("guest_kernel_identity_attested", "DMA_quiescence_attested",
+                      "recovery_verified", "physical_gpu_passthrough_attested"):
+            self.assertIs(record[field], False)
+        self.assertEqual(record["device_effect_if_failure"], "unknown")
+        self.assertIsNone(record["child_evidence"])
 
 
 if __name__ == "__main__":

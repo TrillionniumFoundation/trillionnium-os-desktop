@@ -41,6 +41,12 @@ def inspect(root, bdf, expected_members, vendor="0x10de", device_id=None):
         raise ValueError("expected device ID must be a four-hex-digit 0x identifier")
     if not expected_members or any(not BDF_RE.fullmatch(member) for member in expected_members):
         raise ValueError("explicit nonempty expected IOMMU group BDF allowlist required")
+    # Linux sysfs PCI names use lowercase hex; allow uppercase inputs but
+    # canonicalize BEFORE duplicate detection, lookup and allowlist comparison.
+    bdf = bdf.lower()
+    expected_members = [member.lower() for member in expected_members]
+    vendor = vendor.lower()
+    device_id = device_id.lower() if device_id is not None else None
     if len(set(expected_members)) != len(expected_members) or bdf not in expected_members:
         raise ValueError("duplicate group members or target BDF omitted from allowlist")
 
@@ -62,11 +68,18 @@ def inspect(root, bdf, expected_members, vendor="0x10de", device_id=None):
                           ("class", "class"), ("dma_mask_bits", "dma_mask_bits"),
                           ("irq", "irq"), ("reset_method", "reset_method")):
             recorded[key] = text_file(device_path / leaf)
-        recorded["driver"] = link_name(device_path / "driver")
+        driver_link = device_path / "driver"
+        recorded["driver"] = link_name(driver_link)
+        if driver_link.is_symlink() and recorded["driver"] is None:
+            reasons.append("device_driver_link_unresolvable")
         recorded["iommu_group"] = link_name(device_path / "iommu_group")
         recorded["reset_file_present"] = (device_path / "reset").exists()
         msi = device_path / "msi_irqs"
-        recorded["msi_irq_count"] = len(list(msi.iterdir())) if msi.is_dir() else None
+        if msi.is_dir():
+            try:
+                recorded["msi_irq_count"] = sum(1 for _ in msi.iterdir())
+            except OSError:
+                reasons.append("msi_irq_enumeration_unobservable")
         if recorded["vendor_id"] != vendor:
             reasons.append("pci_vendor_mismatch")
         if device_id is not None and recorded["device_id"] != device_id:
@@ -86,7 +99,10 @@ def inspect(root, bdf, expected_members, vendor="0x10de", device_id=None):
                 if not members_dir.is_dir():
                     reasons.append("iommu_group_members_unobservable")
                 else:
-                    group_members = sorted(p.name for p in members_dir.iterdir())
+                    try:
+                        group_members = sorted(p.name for p in members_dir.iterdir())
+                    except OSError:
+                        reasons.append("iommu_group_members_unobservable")
                     if not group_members or bdf not in group_members:
                         reasons.append("iommu_group_members_inconsistent")
                     for member in group_members:
@@ -103,12 +119,21 @@ def inspect(root, bdf, expected_members, vendor="0x10de", device_id=None):
     group_drivers = {}
     for member in group_members:
         peer = root / "sys/bus/pci/devices" / member
-        group_drivers[member] = link_name(peer / "driver")
+        peer_driver_link = peer / "driver"
+        group_drivers[member] = link_name(peer_driver_link)
+        if peer_driver_link.is_symlink() and group_drivers[member] is None:
+            reasons.append("iommu_peer_driver_link_unresolvable")
         if group_drivers[member] not in (None, "vfio-pci"):
             reasons.append("iommu_peer_bound_to_non_vfio_driver")
     unsafe_mode = text_file(root / "sys/module/vfio/parameters/enable_unsafe_noiommu_mode")
     if unsafe_mode is not None and unsafe_mode.lower() in ("1", "y", "yes"):
         reasons.append("unsafe_noiommu_mode_enabled")
+
+    unsafe_interrupts = text_file(
+        root / "sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts"
+    )
+    if unsafe_interrupts is not None and unsafe_interrupts.lower() in ("1", "y", "yes"):
+        reasons.append("unsafe_interrupt_remapping_override_enabled")
 
     # Sysfs visibility cannot attest ACS, interrupt remapping, idleness, reset,
     # guest address-space isolation or host device ownership. Never return PASS.
@@ -124,6 +149,7 @@ def inspect(root, bdf, expected_members, vendor="0x10de", device_id=None):
         "observed_group_members": group_members,
         "observed_group_drivers": group_drivers,
         "unsafe_noiommu_module_parameter": unsafe_mode,
+        "unsafe_interrupts_module_parameter": unsafe_interrupts,
         "hard_blockers": sorted(set(reasons)),
         "unverified_required_gates": [
             "hardware_IOMMU_and_interrupt_remapping_enforced",

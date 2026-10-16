@@ -3,6 +3,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "support/hardware"))
 import vfio_preflight as vfio
@@ -111,6 +112,71 @@ class VFIOTests(unittest.TestCase):
             (root / "sys/bus/pci/devices" / AUDIO / "iommu_group").unlink()
             result = self.inspect(root, members=(GPU, AUDIO))
         self.assertIn("iommu_peer_link_inconsistent", result["hard_blockers"])
+
+    def test_uppercase_bdf_matches_canonical_linux_sysfs_and_allowlist(self):
+        alpha = "0000:0a:0b.0"
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root, members=(alpha,))
+            (root / "sys/bus/pci/devices" / alpha / "class").write_text("0x030200\\n")
+            result = vfio.inspect(root, "0000:0A:0B.0", ["0000:0A:0B.0"])
+        self.assertEqual(result["status"], "manual_review_required")
+        self.assertEqual(result["requested_bdf"], alpha)
+        self.assertEqual(result["expected_group_members"], [alpha])
+
+    def test_unresolved_driver_symlink_is_hard_blocker(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root)
+            (root / "sys/bus/pci/devices" / GPU / "driver").symlink_to(
+                root / "sys/bus/pci/drivers/nonexistent"
+            )
+            result = self.inspect(root)
+        self.assertIn("device_driver_link_unresolvable", result["hard_blockers"])
+        self.assertIn("iommu_peer_driver_link_unresolvable", result["hard_blockers"])
+        self.assertEqual(result["status"], "blocked")
+
+    def test_unsafe_vfio_interrupt_remapping_override_blocks(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root)
+            unsafe = root / "sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts"
+            unsafe.parent.mkdir(parents=True)
+            unsafe.write_text("Y\\n")
+            result = self.inspect(root)
+        self.assertIn("unsafe_interrupt_remapping_override_enabled", result["hard_blockers"])
+        self.assertEqual(result["status"], "blocked")
+
+    def test_disappearing_iommu_group_enumeration_stays_blocked(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root)
+            broken = root / "sys/kernel/iommu_groups/27/devices"
+            real_iterdir = Path.iterdir
+            def race(path):
+                if path == broken:
+                    raise OSError("IOMMU group removed during enumeration")
+                return real_iterdir(path)
+            with patch.object(Path, "iterdir", race):
+                result = self.inspect(root)
+        self.assertIn("iommu_group_members_unobservable", result["hard_blockers"])
+        self.assertEqual(result["status"], "blocked")
+
+    def test_disappearing_msi_enumeration_stays_blocked(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root)
+            broken = root / "sys/bus/pci/devices" / GPU / "msi_irqs"
+            broken.mkdir()
+            real_iterdir = Path.iterdir
+            def race(path):
+                if path == broken:
+                    raise OSError("MSI table removed during enumeration")
+                return real_iterdir(path)
+            with patch.object(Path, "iterdir", race):
+                result = self.inspect(root)
+        self.assertIn("msi_irq_enumeration_unobservable", result["hard_blockers"])
+        self.assertEqual(result["status"], "blocked")
 
 
 if __name__ == "__main__":

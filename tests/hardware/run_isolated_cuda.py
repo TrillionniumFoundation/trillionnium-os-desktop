@@ -23,6 +23,23 @@ class Blocked(RuntimeError):
     pass
 
 
+def initial_evidence(bdf, name, timeout_seconds):
+    """Common fail-closed schema even when validation prevents device access."""
+    return {"schema": "a09.cuda-bounded-run.v1",
+           "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+           "requested_guest_bdf": bdf, "requested_model": name,
+           "requested_timeout_seconds": timeout_seconds,
+           "status": "blocked", "child_exit_code": None,
+           "child_evidence": None, "error": None,
+           "host_asterinas_execution_attested": False,
+           "guest_kernel_identity_attested": False,
+           "physical_gpu_passthrough_attested": False,
+           "DMA_quiescence_attested": False,
+           "recovery_verified": False,
+           "device_effect_if_failure": "unknown",
+           "no_driver_rebind_no_device_reset": True}
+
+
 def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=subprocess.run):
     if not isolated_lab:
         raise Blocked("--isolated-lab is mandatory; NEVER test H3/training/production GPU")
@@ -35,19 +52,7 @@ def run_lab(bdf, name, isolated_lab, timeout_seconds=30, runner=subprocess.run):
     argv = [sys.executable, str(script), "--isolated-lab", "--require-name", name,
             "--require-bdf", bdf]
     start = time.monotonic()
-    result = {"schema": "a09.cuda-bounded-run.v1",
-              "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-              "requested_guest_bdf": bdf, "requested_model": name,
-              "requested_timeout_seconds": timeout_seconds,
-              "status": "blocked", "child_exit_code": None,
-              "child_evidence": None, "error": None,
-              "host_asterinas_execution_attested": False,
-              "guest_kernel_identity_attested": False,
-              "physical_gpu_passthrough_attested": False,
-              "DMA_quiescence_attested": False,
-              "recovery_verified": False,
-              "device_effect_if_failure": "unknown",
-              "no_driver_rebind_no_device_reset": True}
+    result = initial_evidence(bdf, name, timeout_seconds)
     try:
         completed = runner(argv, capture_output=True, text=True, timeout=timeout_seconds,
                            check=False)
@@ -116,10 +121,10 @@ def main():
         code, evidence = run_lab(args.require_bdf, args.require_name,
                                  args.isolated_lab, args.timeout_seconds)
     except Blocked as exc:
-        code, evidence = 2, {"schema": "a09.cuda-bounded-run.v1", "status": "blocked",
-                            "error": str(exc), "attempted_device_access": False,
-                            "host_asterinas_execution_attested": False,
-                            "physical_gpu_passthrough_attested": False}
+        evidence = initial_evidence(args.require_bdf, args.require_name,
+                                    args.timeout_seconds)
+        evidence.update(error=str(exc), attempted_device_access=False)
+        code = 2
     payload = json.dumps(evidence, sort_keys=True, indent=2) + "\n"
     if args.output == "-":
         print(payload, end="")
