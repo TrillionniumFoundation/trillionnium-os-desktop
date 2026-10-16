@@ -1,0 +1,61 @@
+{
+  "recorded_run_head": {
+    "commit": "7a27db93120dc2156b723512ef91628277455fb7",
+    "tree": "801e3e9143c165d6961a46bcda61215fdf1b1f8d",
+    "osdk_tree": "917106d5ecb2529a455f88a7e384fa87c9da5ca0",
+    "derived_kernel_tree": "6a9463ebaaa2060e1fe3968bd940b60d9b1bf8a0"
+  },
+  "published_equivalent": {
+    "commit": "69335fcf2ccf4741346aa31bea2d1e3dca397ac6",
+    "tree": "801e3e9143c165d6961a46bcda61215fdf1b1f8d",
+    "osdk_tree": "917106d5ecb2529a455f88a7e384fa87c9da5ca0",
+    "derived_kernel_tree": "6a9463ebaaa2060e1fe3968bd940b60d9b1bf8a0"
+  },
+  "osdk_source_commit": {
+    "commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+    "tree": "490e536e4f73df453cd13a82b4e0357d1dab7af0",
+    "osdk_tree": "917106d5ecb2529a455f88a7e384fa87c9da5ca0",
+    "derived_kernel_tree": "6a9463ebaaa2060e1fe3968bd940b60d9b1bf8a0"
+  },
+  "upstream": {
+    "tag": "v0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "toolchain": "nightly-2026-07-21"
+  },
+  "run_source_explanation": "The unchanged original environment.json records local HEAD 7a27db. Its complete Git tree equals published 69335. Both have the same complete derived kernel and OSDK trees as source commit 4ae. All 11 recorded build-input file hashes were separately compared against all three Git objects. The recorded dirty paths were build/.gitignore, an os-abi lock and unrelated integration/cache paths; they are retained verbatim rather than relabeling execution as a clean checkout.",
+  "osdk_installation": {
+    "skipped_in_this_run": true,
+    "recorded_and_current_installed_sha256": "1689a417b07b8fd8ec45a8dd2d2d103759bab25f63faec1ab486e606e1c24011",
+    "current_installed_path": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo-osdk",
+    "current_installed_sha256_observed_after_run": "1689a417b07b8fd8ec45a8dd2d2d103759bab25f63faec1ab486e606e1c24011",
+    "explanation": "This run reused the source-built OSDK installed by the earlier fresh make. Its installation log visibly records cargo-osdk 0.19.0 compilation and replacement. That build preceded source publication and had the four OSDK edits dirty; the prior source.json and vsc-review-report.json record their content hashes and equivalent published source 4ae. No second installation during this ktest run is claimed."
+  },
+  "prior_installation_evidence": [
+    {
+      "repository_path": "support/build/evidence/2026-10-16-boot-binding/regression/next3-kernel/kernel.log",
+      "sha256": "6fc9e7d7c92fbeff8083df4d4eaa00b54a13b53502249e7efcf5faba1b7de689",
+      "bytes": 5038
+    },
+    {
+      "repository_path": "support/build/evidence/2026-10-16-boot-binding/regression/next3-kernel/environment.log",
+      "sha256": "ca315bb387799969a03a48f190fbdfb5c2d3ff473b827958dc97814ab3c90bda",
+      "bytes": 2541
+    },
+    {
+      "repository_path": "support/build/evidence/2026-10-16-boot-binding/regression/next3-kernel/command.sh",
+      "sha256": "d5e76bd122365eeec93154f35538758f1340662f17efc7c72f8f310fb4c89d19",
+      "bytes": 580
+    },
+    {
+      "repository_path": "support/build/evidence/2026-10-16-boot-binding/regression/source.json",
+      "sha256": "774d8bfe1f7efdb514c4405d96b3ddc2c79d07cd04b8828485215c762e66f0c7",
+      "bytes": 667
+    },
+    {
+      "repository_path": "support/build/evidence/2026-10-16-boot-binding/vsc-elf/vsc-review-report.json",
+      "sha256": "15021a47bb1e8f4925fe78cf873e25bec3f82c1779e9fe4308223f93eac922a8",
+      "bytes": 14584
+    }
+  ]
+}

@@ -73,6 +73,22 @@ lock, retain complete serial logs, and reject empty or filtered full runs.
 See `ktest/README.md` for lock preparation, focused filters, output selection
 and reuse of the source-built OSDK.
 
+For the separate OSDK tooling and example-kernel integration profile:
+
+```sh
+python3 -I support/build/osdk-integration/run.py --output NEW_INTEGRATION_DIR
+```
+
+See `osdk-integration/README.md` for its isolated harness adaptations, pinned
+generated locks and raw guest checks. The latest per-case results are 20/22
+passed, with the original UNIX GDB and coverage cases failing because this
+execution environment rejects UNIX socket creation. One passing hypervisor
+case explicitly takes its VMX-unavailable fallback. The full-run failure and
+exact retries are retained in `evidence/2026-10-16-native-integration/`; they
+are distinct from complete Asterinas kernel acceptance. That phase also
+reran OSTD/aster-core with the fixed OSDK and retained 221/141 reported passes
+and the same 3 soft skips (359 exercised lower bound).
+
 The recorded next-phase runs report OSTD **221 passed**, aster-core **141
 passed**, and zero failures. Three OSTD tests returned success after explicitly
 soft-skipping VMX/EPT paths unavailable under TCG; the exercised pass lower

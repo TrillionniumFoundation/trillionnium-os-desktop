@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "profile": "isolated upstream harness paths, native direct multiboot, q35 TCG max 1 vCPU 512 MiB",
+  "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance",
+  "available_cases": 22,
+  "selected_cases": 1,
+  "passed": 0,
+  "failed": 1,
+  "blocked": 0,
+  "soft_skip_count": 0,
+  "host_blocked_cases": 1,
+  "cases": [
+    {
+      "name": "commands::run::coverage_feature::basic_coverage",
+      "fixed_paths": [
+        "/tmp/a01oi-7y1800vh/kernel_test_workspace/run_command"
+      ],
+      "preexisting_paths": [],
+      "status": "failed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "commands::run::coverage_feature::basic_coverage",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-10/case-01/work",
+      "raw_exit_code": 101,
+      "timed_out": false,
+      "duration_seconds": 3.527,
+      "soft_skips": [],
+      "host_blockers": [
+        "host denies Unix socket creation (EPERM)"
+      ],
+      "guests": [
+        {
+          "record": "case-01/guests/guest-001/qemu.json",
+          "raw_exit_code": 1,
+          "timed_out": false,
+          "wrapper_exit_code": 1,
+          "error": null,
+          "serial_valid": false
+        }
+      ],
+      "coverage": {
+        "passed": false,
+        "source": "/tmp/a01oi-7y1800vh/kernel_test_workspace/run_command/basic_coverage/coverage.profraw"
+      },
+      "cleanup": [
+        {
+          "path": "/tmp/a01oi-7y1800vh/kernel_test_workspace/run_command",
+          "removed": true,
+          "device": 27,
+          "inode": 525396
+        }
+      ]
+    }
+  ],
+  "build_commands": [
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "cargo-osdk"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.165
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--test",
+        "integration",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-10/harness",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.816
+    }
+  ]
+}

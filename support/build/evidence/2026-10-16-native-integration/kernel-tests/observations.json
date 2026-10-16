@@ -1,0 +1,75 @@
+{
+  "copied_run_files": [
+    "aster-core/generated.Cargo.lock",
+    "aster-core/guests/guest-001/qemu.json",
+    "aster-core/guests/guest-001/serial.log",
+    "aster-core/osdk-exit-code.txt",
+    "aster-core/osdk-test.log",
+    "aster-core/result.json",
+    "commands.json",
+    "environment.json",
+    "ostd/generated.Cargo.lock",
+    "ostd/guests/guest-001/qemu.json",
+    "ostd/guests/guest-001/serial.log",
+    "ostd/osdk-exit-code.txt",
+    "ostd/osdk-test.log",
+    "ostd/result.json",
+    "result.json",
+    "source-inputs.json"
+  ],
+  "copied_run_files_byte_identical": true,
+  "guests": {
+    "ostd": {
+      "raw_serial_sha256": "766ba16916cee957ef238959ca649fb403f31b2d02d9a308d66033f172c88a61",
+      "raw_serial_bytes": 23028,
+      "matches_recorded_serial_sha256": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "live_artifacts_after_run": {
+        "-kernel": {
+          "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+          "recorded_sha256": "0c0c31c04e20132be755db97d975c4a87fe95fb7c450818c9aed1b05c50af3ea",
+          "live_sha256": "0c0c31c04e20132be755db97d975c4a87fe95fb7c450818c9aed1b05c50af3ea",
+          "recorded_bytes": 2008888,
+          "live_bytes": 2008888
+        },
+        "-bios": {
+          "path": "/usr/share/seabios/bios-256k.bin",
+          "recorded_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "live_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "recorded_bytes": 262144,
+          "live_bytes": 262144
+        }
+      },
+      "lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "fixed_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "osdk_exit_code": 0
+    },
+    "aster-core": {
+      "raw_serial_sha256": "40b5431a766e7980cbde3e618aec95044ab13330bfe683a63f427af704a403f7",
+      "raw_serial_bytes": 15032,
+      "matches_recorded_serial_sha256": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "live_artifacts_after_run": {
+        "-kernel": {
+          "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+          "recorded_sha256": "439e21711aeddec2e412537cc40da55b9207108b940ef78423093bb2de5ef213",
+          "live_sha256": "439e21711aeddec2e412537cc40da55b9207108b940ef78423093bb2de5ef213",
+          "recorded_bytes": 6527488,
+          "live_bytes": 6527488
+        },
+        "-bios": {
+          "path": "/usr/share/seabios/bios-256k.bin",
+          "recorded_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "live_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "recorded_bytes": 262144,
+          "live_bytes": 262144
+        }
+      },
+      "lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+      "fixed_lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+      "osdk_exit_code": 0
+    }
+  }
+}

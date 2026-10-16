@@ -28,7 +28,7 @@
     "verification_evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
     "acceptance_guard_commit": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
     "kernel_mode_regression": {
-      "evidence": "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/result.json",
+      "evidence": "support/build/evidence/2026-10-16-native-integration/kernel-tests/result.json",
       "crates": [
         "ostd",
         "aster-core"
@@ -48,7 +48,10 @@
           "path": "support/build/ktest/locks/aster-core.Cargo.lock",
           "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
         }
-      }
+      },
+      "osdk_code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+      "latest_phase": "2026-10-16-native-integration",
+      "osdk_binary_sha256": "1689a417b07b8fd8ec45a8dd2d2d103759bab25f63faec1ab486e606e1c24011"
     },
     "host_regression": {
       "evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
@@ -65,9 +68,20 @@
         "selected_non_vm_passed": 13,
         "unselected_cases": 9
       },
-      "new_native_integration": "in_progress_not_claimed",
       "original_failed_suite_evidence": "support/build/evidence/2026-10-16-next/host-tools/results.json",
-      "original_failed_suite_preserved": true
+      "original_failed_suite_preserved": true,
+      "native_integration": {
+        "code_commit": "efff58b94b167dc9a9f66b3a742a31189aa7805e",
+        "evidence": "support/build/evidence/2026-10-16-native-integration/report.json",
+        "selected": 22,
+        "passed_latest_per_case": 20,
+        "failed_latest_per_case": 2,
+        "host_blocked_failures": 2,
+        "vmx_soft_skipped": 1,
+        "full_matrix_passed": false,
+        "profile": "adapted_native_direct_tcg_fixed_locks",
+        "aggregation": "full07 plus retained exact retries"
+      }
     },
     "daemon_lifecycle_fix": {
       "code_commit": "fb81fec167913827bcddfda15676dc6b26f35965",
