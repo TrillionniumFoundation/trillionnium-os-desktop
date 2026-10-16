@@ -302,3 +302,13 @@ continues to tie it to one boot-local kernel delivery without ever
 replacing the original owner. Public namespace and D fields are
 constructor-validated and accessed read-only; neither value proves
 kernel boot entropy, credentials, or the rights of its caller.
+
+## Publisher immutability and revoked-vs-exhausted status
+
+The host `Grant.principal` value is no longer externally mutable; callers
+can only inspect `Grant::principal()`. A05 must still authenticate the
+publisher and authorize the grant against the actual kernel session.
+Host `charge_cpu` and `charge_interval_for_host_model` now return
+`ResourceError::Revoked` for a revoked leaf or ancestor, reserving
+`Exhausted` for genuine CPU cap exhaustion. Both failures are atomic and
+leave all cumulative usage/event counters unchanged.

@@ -299,12 +299,20 @@ struct DomainState {
 #[derive(Clone)]
 pub struct Grant {
     domain: ResourceDomain,
-    pub principal: PublisherId,
+    principal: PublisherId,
     epoch: u64,
     // Parent-first ancestry is not necessary: this captures the immutable
     // immediate-parent -> root epoch chain at grant issuance. Every ancestor
     // revoke/reactivation permanently invalidates the old authorization.
     ancestor_epochs: Vec<u64>,
+}
+
+impl Grant {
+    /// Stable publisher value captured at grant issuance. Real authority
+    /// still comes from an A05 authenticated session, never a host model.
+    pub const fn principal(&self) -> PublisherId {
+        self.principal
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -602,9 +610,10 @@ impl ResourceDomain {
             } else {
                 old.window_consumed_ns
             };
-            if !old.alive
-                || delta_ns > old.budget.cap_ns.saturating_sub(previous_in_window)
-            {
+            if !old.alive {
+                return Err(ResourceError::Revoked);
+            }
+            if delta_ns > old.budget.cap_ns.saturating_sub(previous_in_window) {
                 return Err(ResourceError::Exhausted);
             }
             let cumulative = old
@@ -665,7 +674,7 @@ impl ResourceDomain {
                 return Err(ResourceError::ClockRollback);
             }
             if !previous.alive {
-                return Err(ResourceError::Exhausted);
+                return Err(ResourceError::Revoked);
             }
             let period = previous.budget.period_ns;
             let start_window = (start_ns / period) * period;
