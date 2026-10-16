@@ -38,6 +38,8 @@ Hepta topology/body generation 冻结执行主链与资源 envelope；authority 
 
 固定Hepta操作库同时导出参考OperationIntentV1和DurableOperationIntentV1。实际持久路径为codex-rs/hepta-operations/src/durable_model.rs；不要把同名参考模型当作持久宿主。
 
+**固定持久 K 与摘要分离（已按固定 Hepta SQL/源码实核）：** 原 `kernel.operations` 的持久记录由 `(scope_id: StableId, operation_id: StableId)` 联合主键索引，见 `codex-rs/hepta-operations/migrations/0001_durable_operations.sql` 的 `PRIMARY KEY (scope_id, operation_id)`；目的端去重额外纳入 `destination`，见 `destination_migrations/0001_operation_dedupe.sql`。原 `OperationIntentV1` 同时持有另一个独立 `payload_digest: Digest32` 字段，`semantic_digest()` 绑定 scope、operation、predecessor、destination 和该摘要。参考态 `model.rs::OperationKey { id: StableId, payload_digest: Digest32 }` 是**另一套参考模型的类型**，不是这个持久账本的联合主键。故 A03 的 K 值传递应无损携带 **两个 StableId**，而 A07 在既有唯一 owner 中另外验证最终 `payload_digest`、`semantic_digest`、最终使用授权及代际；禁止把参考模型类型直接替换持久 K，或将内核 D 当成持久主键。
+
 | 实际字段 | OS接合规则 |
 | --- | --- |
 | scope_id | 原owner从已认证主体和既有工作区scope解析，不由OS另建scope数据库 |
