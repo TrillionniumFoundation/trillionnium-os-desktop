@@ -1,0 +1,16 @@
+[
+  {
+    "script": "check_measurements.py",
+    "exit": 1,
+    "expected_exit": 1,
+    "stdout": "FAIL descendant remains after original supervisor returned: leader_dies_on_term\nFAIL descendant remains after original supervisor returned: leader_exits_normally\nPASS both owned processes exited: leader_and_descendant_ignore_term\n{\"passed\": 1, \"failed\": 2}\n",
+    "stderr": ""
+  },
+  {
+    "script": "check_patched_measurements.py",
+    "exit": 0,
+    "expected_exit": 0,
+    "stdout": "PASS owned leader/descendant exited without probe rescue: leader_dies_on_term\nPASS owned leader/descendant exited without probe rescue: leader_exits_normally\nPASS owned leader/descendant exited without probe rescue: leader_and_descendant_ignore_term\nPASS owned leader/descendant exited without probe rescue: drop_only\nPASS owned leader/descendant exited without probe rescue: leader_exits_nonzero\n{\"passed\": 5, \"failed\": 0}\n",
+    "stderr": ""
+  }
+]

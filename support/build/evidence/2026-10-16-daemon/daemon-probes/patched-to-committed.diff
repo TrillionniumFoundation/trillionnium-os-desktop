@@ -1,0 +1,12 @@
+--- tested-freeze/daemon/mod.rs
++++ fb81fec167913827bcddfda15676dc6b26f35965/daemon/mod.rs
+@@ -29,7 +29,8 @@
+ /// The supervisor observes exit without reaping the leader. The waitable child
+ /// reserves its PID until the original group has been killed, so a final group
+ /// signal cannot target a recycled PGID. OSDK must be the sole reaper of these
+-/// children; descendants that leave the original process group are not covered.
++/// children, with SIGCHLD left waitable (no auto-reap). Descendants that leave
++/// the original process group are not covered.
+ struct RunningDaemon<'a> {
+     daemon: &'a DaemonScheme,
+     child: Child,

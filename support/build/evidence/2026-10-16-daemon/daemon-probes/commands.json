@@ -1,0 +1,91 @@
+[
+  {
+    "phase": "harness fixed-toolchain build",
+    "env": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "PATH_prefix": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin",
+      "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-next2-probes/target"
+    },
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "build",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "/workspace/scratch/ae1a8cf05419/a01-next2-probes/harness/Cargo.toml"
+    ],
+    "exit": 0,
+    "log": "compile.log"
+  },
+  {
+    "phase": "patched-harness fixed-toolchain build",
+    "env": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "PATH_prefix": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin",
+      "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-next2-probes/patched-target"
+    },
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "build",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "/workspace/scratch/ae1a8cf05419/a01-next2-probes/patched-harness/Cargo.toml"
+    ],
+    "exit": 0,
+    "log": "compile-patched.log"
+  },
+  {
+    "argv": [
+      "python3",
+      "/workspace/scratch/ae1a8cf05419/a01-next2-probes/run_probe.py"
+    ],
+    "exit": 0,
+    "log": "probe.log",
+    "note": "Driver exit is observation completion; lifecycle checks are separate and authoritative."
+  },
+  {
+    "argv": [
+      "python3",
+      "/workspace/scratch/ae1a8cf05419/a01-next2-probes/check_measurements.py"
+    ],
+    "exit": 1,
+    "log": "lifecycle-invariant.log",
+    "note": "Driver exit is observation completion; lifecycle checks are separate and authoritative."
+  },
+  {
+    "argv": [
+      "python3",
+      "/workspace/scratch/ae1a8cf05419/a01-next2-probes/run_patched_probe.py"
+    ],
+    "exit": 0,
+    "log": "probe-patched.log",
+    "note": "Driver exit is observation completion; lifecycle checks are separate and authoritative."
+  },
+  {
+    "argv": [
+      "python3",
+      "/workspace/scratch/ae1a8cf05419/a01-next2-probes/check_patched_measurements.py"
+    ],
+    "exit": 0,
+    "log": "lifecycle-invariant-patched.log",
+    "note": "Driver exit is observation completion; lifecycle checks are separate and authoritative."
+  },
+  {
+    "argv": [
+      "python3",
+      "/workspace/scratch/ae1a8cf05419/a01-next2-probes/assemble_harnesses.py",
+      "--repository",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "--output",
+      "/workspace/scratch/ae1a8cf05419/a01-next2-probes/reconstructed-check"
+    ],
+    "exit": 0,
+    "log": "reconstruct-check.log",
+    "note": "Assembles Git source and reverses comment-only delta; verifies exact measured hashes without rerunning probes."
+  }
+]

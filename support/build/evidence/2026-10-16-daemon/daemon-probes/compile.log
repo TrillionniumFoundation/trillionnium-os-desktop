@@ -1,0 +1,72 @@
+   Compiling libc v0.2.172
+   Compiling rustix v1.0.7
+   Compiling signal-hook v0.3.18
+   Compiling linux-raw-sys v0.9.4
+   Compiling bitflags v2.9.0
+   Compiling errno v0.3.12
+   Compiling signal-hook-registry v1.4.8
+   Compiling a01-daemon-lifecycle-probe v0.0.0 (/workspace/scratch/ae1a8cf05419/a01-next2-probes/harness)
+warning: multiple variants are never constructed
+  --> src/error.rs:6:5
+   |
+ 5 | pub enum Errno {
+   |          ----- variants in this enum
+ 6 |     Cli = 1,
+   |     ^^^
+ 7 |     CreateCrate = 2,
+   |     ^^^^^^^^^^^
+ 8 |     GetMetadata = 3,
+   |     ^^^^^^^^^^^
+ 9 |     AddRustToolchain = 4,
+   |     ^^^^^^^^^^^^^^^^
+10 |     ParseMetadata = 5,
+   |     ^^^^^^^^^^^^^
+11 |     ExecuteCommand = 6,
+12 |     BuildCrate = 7,
+   |     ^^^^^^^^^^
+13 |     RunBundle = 8,
+   |     ^^^^^^^^^
+14 |     BadCrateName = 9,
+   |     ^^^^^^^^^^^^
+15 |     NoKernelCrate = 10,
+   |     ^^^^^^^^^^^^^
+16 |     TooManyCrates = 11,
+   |     ^^^^^^^^^^^^^
+17 |     ExecutableNotFound = 12,
+   |     ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Errno` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `signal` is never read
+  --> src/daemon/supervisor.rs:27:5
+   |
+23 | pub(crate) struct DaemonSupervisor<'a> {
+   |                   ---------------- field in this struct
+...
+27 |     signal: &'a SignalGuard,
+   |     ^^^^^^
+
+warning: methods `wait_for_qemu`, `stop_qemu_and_daemons`, and `abort` are never used
+   --> src/daemon/supervisor.rs:85:19
+    |
+ 32 | impl<'a> DaemonSupervisor<'a> {
+    | ----------------------------- methods in this implementation
+...
+ 85 |     pub(crate) fn wait_for_qemu(&mut self, qemu: &mut Child) -> Result<ExitStatus, Errno> {
+    |                   ^^^^^^^^^^^^^
+...
+211 |     pub(crate) fn stop_qemu_and_daemons(&mut self, qemu: &mut Child) {
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+...
+217 |     pub(crate) fn abort(&mut self, qemu: Option<&mut Child>, errno: Errno) -> ! {
+    |                   ^^^^^
+
+warning: function `stop_qemu` is never used
+   --> src/daemon/supervisor.rs:235:4
+    |
+235 | fn stop_qemu(qemu: &mut Child) {
+    |    ^^^^^^^^^
+
+warning: `a01-daemon-lifecycle-probe` (bin "a01-daemon-lifecycle-probe") generated 4 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.82s

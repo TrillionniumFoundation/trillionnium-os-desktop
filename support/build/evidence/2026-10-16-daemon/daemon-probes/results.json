@@ -1,0 +1,186 @@
+{
+  "schema": 1,
+  "result": "old_two_real_lifecycle_failures_then_five_patched_case_passes",
+  "toolchain": "nightly-2026-07-21",
+  "old_source_commit": "76eff6ea87242fedad781899146f96e397427f4e",
+  "patched_committed_code": "fb81fec167913827bcddfda15676dc6b26f35965",
+  "patched_tested_byte_hashes": "patched-source-provenance.json",
+  "patched_final_commit_byte_comparison": "patched-to-committed.json",
+  "patched_commit_difference": "Only a later SIGCHLD waitability/no-auto-reap documentation comment differs from tested freeze; executable logic is the same. Tested source files were not rewritten.",
+  "old_cases": {
+    "total": 3,
+    "cleanup_invariant_passed": 1,
+    "cleanup_invariant_failed": 2,
+    "checker_exit": 1,
+    "driver_exit": 0,
+    "observations": [
+      {
+        "mode": "leader_dies_on_term",
+        "harness_exit": 0,
+        "descendant_outlived_leader_and_supervisor": true,
+        "latest_heartbeat_delay_after_supervisor_exit": 6.205690753000454,
+        "cleanup": [
+          {
+            "role": "leader",
+            "namespace_pid": 8,
+            "already_exited": true
+          },
+          {
+            "role": "descendant",
+            "namespace_pid": 9,
+            "signal": "SIGKILL via own pidfd",
+            "exited_within_2_seconds": true
+          }
+        ]
+      },
+      {
+        "mode": "leader_exits_normally",
+        "harness_exit": 0,
+        "descendant_outlived_leader_and_supervisor": true,
+        "latest_heartbeat_delay_after_supervisor_exit": 6.2557014920002985,
+        "cleanup": [
+          {
+            "role": "leader",
+            "namespace_pid": 12,
+            "already_exited": true
+          },
+          {
+            "role": "descendant",
+            "namespace_pid": 13,
+            "signal": "SIGKILL via own pidfd",
+            "exited_within_2_seconds": true
+          }
+        ]
+      },
+      {
+        "mode": "leader_and_descendant_ignore_term",
+        "harness_exit": 0,
+        "descendant_outlived_leader_and_supervisor": false,
+        "latest_heartbeat_delay_after_supervisor_exit": null,
+        "cleanup": [
+          {
+            "role": "leader",
+            "namespace_pid": 16,
+            "already_exited": true
+          },
+          {
+            "role": "descendant",
+            "namespace_pid": 17,
+            "already_exited": true
+          }
+        ]
+      }
+    ]
+  },
+  "patched_cases": {
+    "total": 5,
+    "cleanup_invariant_passed": 5,
+    "cleanup_invariant_failed": 0,
+    "checker_exit": 0,
+    "driver_exit": 0,
+    "observations": [
+      {
+        "mode": "leader_dies_on_term",
+        "harness_exit": 0,
+        "descendant_outlived_leader_and_supervisor": false,
+        "latest_heartbeat_delay_after_supervisor_exit": null,
+        "cleanup": [
+          {
+            "role": "leader",
+            "namespace_pid": 8,
+            "already_exited": true
+          },
+          {
+            "role": "descendant",
+            "namespace_pid": 9,
+            "already_exited": true
+          }
+        ]
+      },
+      {
+        "mode": "leader_exits_normally",
+        "harness_exit": 0,
+        "descendant_outlived_leader_and_supervisor": false,
+        "latest_heartbeat_delay_after_supervisor_exit": null,
+        "cleanup": [
+          {
+            "role": "leader",
+            "namespace_pid": 12,
+            "already_exited": true
+          },
+          {
+            "role": "descendant",
+            "namespace_pid": 13,
+            "already_exited": true
+          }
+        ]
+      },
+      {
+        "mode": "leader_and_descendant_ignore_term",
+        "harness_exit": 0,
+        "descendant_outlived_leader_and_supervisor": false,
+        "latest_heartbeat_delay_after_supervisor_exit": null,
+        "cleanup": [
+          {
+            "role": "leader",
+            "namespace_pid": 16,
+            "already_exited": true
+          },
+          {
+            "role": "descendant",
+            "namespace_pid": 17,
+            "already_exited": true
+          }
+        ]
+      },
+      {
+        "mode": "drop_only",
+        "harness_exit": 0,
+        "descendant_outlived_leader_and_supervisor": false,
+        "latest_heartbeat_delay_after_supervisor_exit": null,
+        "cleanup": [
+          {
+            "role": "leader",
+            "namespace_pid": 20,
+            "already_exited": true
+          },
+          {
+            "role": "descendant",
+            "namespace_pid": 21,
+            "already_exited": true
+          }
+        ]
+      },
+      {
+        "mode": "leader_exits_nonzero",
+        "harness_exit": 0,
+        "descendant_outlived_leader_and_supervisor": false,
+        "latest_heartbeat_delay_after_supervisor_exit": null,
+        "cleanup": [
+          {
+            "role": "leader",
+            "namespace_pid": 24,
+            "already_exited": true
+          },
+          {
+            "role": "descendant",
+            "namespace_pid": 25,
+            "already_exited": true
+          }
+        ]
+      }
+    ]
+  },
+  "all_patched_cleanup_without_probe_rescue": true,
+  "new_qemu_vm_started": false,
+  "verdict_uses_numeric_proc_paths": false,
+  "atomic_nonce_to_pidfd_authentication_claimed": false,
+  "native_osdk_unit_suite_run_in_this_work": false,
+  "scope_limits": [
+    "Owned descendants remain in the original process group. Group escape is not covered.",
+    "Harness calls actual copied start/reap/stop/drop code; it does not execute every CLI, interrupt, QEMU-wait or external-reaper/ECHILD path.",
+    "SIGCHLD was left waitable; auto-reap disposition is not tested.",
+    "Pidfds are bound from private nonce events and own process creation relationships, not atomically authenticated via descriptor transfer.",
+    "This is a separate production lifecycle reproducer, not proof of the cause of the earlier /proc-based host unit failure."
+  ]
+}
