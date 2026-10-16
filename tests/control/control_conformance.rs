@@ -233,6 +233,29 @@ fn copyout_failure_retry_reuses_terminal_result_without_second_effect() {
 }
 
 #[test]
+fn invalid_history_sequence_is_rejected_before_and_after_history_loss() {
+    let core = ControlCore::new(boot(90_000), space(90_000));
+    let view = core.delivery_view();
+    for invalid in [0, u64::MAX] {
+        assert_eq!(
+            core.query_delivery(&view, invalid),
+            Err(DeliveryError::InvalidSequence)
+        );
+    }
+    core.lose_history();
+    for invalid in [0, u64::MAX] {
+        assert_eq!(
+            core.query_delivery(&view, invalid),
+            Err(DeliveryError::InvalidSequence)
+        );
+    }
+    assert_eq!(
+        core.query_delivery(&view, 1).unwrap().state,
+        DeliveryState::HistoryLost
+    );
+}
+
+#[test]
 fn history_loss_fences_old_reserved_token() {
     let core = ControlCore::new(boot(15), space(15));
     let target = root(15, CPU_PERIOD_NS);

@@ -1245,6 +1245,11 @@ impl ControlCore {
         if view.identity != self.identity() || !Arc::ptr_eq(&view.namespace, &self.namespace) {
             return Err(DeliveryError::PermissionDenied);
         }
+        // A structurally invalid query sequence is not a recoverable D,
+        // even if this namespace has lost its history.
+        if sequence == 0 || sequence == u64::MAX {
+            return Err(DeliveryError::InvalidSequence);
+        }
         let ns = lock_unpoisoned(&self.namespace.state);
         let id = DeliveryId {
             namespace: self.identity(),
@@ -1252,9 +1257,6 @@ impl ControlCore {
         };
         if ns.history_lost || view.generation != ns.generation {
             return Ok(DeliveryObservation::history_lost(id));
-        }
-        if sequence == 0 || sequence == u64::MAX {
-            return Err(DeliveryError::InvalidSequence);
         }
         if sequence <= ns.retired_through {
             return Ok(DeliveryObservation::retired(id));
@@ -1402,14 +1404,11 @@ impl ControlCore {
         let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
         match *slot_state {
             SlotState::Fenced => return Err(DeliveryError::HistoryLost),
-            SlotState::Terminal(_) => {
+            SlotState::Terminal(result) => {
                 return Ok(observation_from_published(
                     self.identity(),
                     token.id().sequence,
-                    match *slot_state {
-                        SlotState::Terminal(result) => result,
-                        SlotState::Reserved => unreachable!(),
-                    },
+                    result,
                 ))
             }
             SlotState::Reserved => {}
