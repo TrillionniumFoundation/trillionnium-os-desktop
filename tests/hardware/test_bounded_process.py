@@ -2,7 +2,9 @@
 import subprocess
 import sys
 import unittest
-from bounded_process import OutputLimitExceeded, MAX_OUTPUT_BYTES, run_bounded
+from unittest.mock import Mock, patch
+import bounded_process
+from bounded_process import OutputLimitExceeded, MAX_OUTPUT_BYTES, run_bounded, terminate_child_group
 
 
 class BoundedProcessTests(unittest.TestCase):
@@ -49,6 +51,22 @@ class BoundedProcessTests(unittest.TestCase):
             result = self.run_code(code)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual((Path(d) / "jit-cache.bin").stat().st_size, 1048576)
+
+    def test_killed_but_uninterruptible_child_has_bounded_reap(self):
+        fake = Mock(pid=424242)
+        fake.wait.side_effect = subprocess.TimeoutExpired(cmd="gpu-child", timeout=0.05)
+        with patch.object(bounded_process.os, "killpg") as kill:
+            self.assertFalse(terminate_child_group(fake, reap_timeout=0.05))
+        kill.assert_called_once_with(fake.pid, bounded_process.signal.SIGKILL)
+        fake.wait.assert_called_once_with(timeout=0.05)
+
+    def test_terminated_child_reports_only_process_reap(self):
+        fake = Mock(pid=414141)
+        fake.wait.return_value = -9
+        with patch.object(bounded_process.os, "killpg") as kill:
+            self.assertTrue(terminate_child_group(fake, reap_timeout=0.25))
+        kill.assert_called_once()
+        fake.wait.assert_called_once_with(timeout=0.25)
 
     def test_strict_size_limit_is_nonzero(self):
         self.assertEqual(MAX_OUTPUT_BYTES, 65536)

@@ -17,6 +17,26 @@ class OutputLimitExceeded(RuntimeError):
     pass
 
 
+REAP_TIMEOUT_SECONDS = 2
+
+
+def terminate_child_group(process, *, reap_timeout=REAP_TIMEOUT_SECONDS):
+    """Best-effort bounded local child cleanup, never a GPU DMA quiescence proof.
+
+    A GPU-stalled process may be uninterruptible even to SIGKILL. Never let
+    process.wait() without a timeout turn a bounded CUDA run into a hang.
+    """
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    try:
+        process.wait(timeout=reap_timeout)
+    except subprocess.TimeoutExpired:
+        return False
+    return True
+
+
 def run_bounded(argv, *, capture_output, text, timeout, check=False):
     if not capture_output or not text or check:
         raise ValueError("bounded CUDA runner requires text capture and check=False")
@@ -62,14 +82,10 @@ def run_bounded(argv, *, capture_output, text, timeout, check=False):
             raise subprocess.TimeoutExpired(argv, timeout)
         result_code = process.wait(timeout=remaining)
     except BaseException:
-        # Do this BEFORE wait/reap so the original leader PID cannot be reused
-        # as an unrelated process group identifier. The child is in its own
-        # session, created above. Stopping it still does not stop GPU DMA.
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        process.wait()
+        # Bounded reap: an uninterruptible GPU-stalled child must not hang
+        # the test supervisor forever. Unreaped child and GPU DMA remain
+        # unknown effects requiring independent A01/A05 quarantine.
+        terminate_child_group(process)
         raise
     finally:
         if process.stdout and not process.stdout.closed:

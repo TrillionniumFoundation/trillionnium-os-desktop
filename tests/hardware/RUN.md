@@ -227,3 +227,18 @@ A passing synthetic inventory returns only `manual_review_required` (exit
 CPU-only negative/synthetic tests passed in the A09 container; an absent
 inventory file was also checked to return `blocked` (exit 2). No real
 suitable lab machine has yet been identified or exercised.
+
+## Bounded SIGKILL reap (post-device-failure safety)
+
+The A09 Linux subprocess runner now limits the **post-SIGKILL process wait** to
+2 seconds. A GPU process stuck in uninterruptible kernel state might ignore
+SIGKILL indefinitely; the earlier unbounded `process.wait()` could hang the
+experiment orchestrator after its nominal timeout. Failure to reap remains an
+**unknown device effect** and cannot authorize DMA buffer reuse, driver reset,
+or admission of the next GPU workload. Only the trusted A01/A05 host can
+quarantine and independently confirm hardware DMA quiescence.
+
+Two CPU-only Mock subprocess tests check bounded unreapable-child handling and
+reaped-child handling; actual GPU uninterruptible-process recovery is **not**
+exercised. The 2-second limit is an operational safety bound, not a GPU reset
+or VMM recovery guarantee.
