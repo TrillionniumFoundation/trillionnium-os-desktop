@@ -150,7 +150,121 @@ fn control_states_map_to_hos2_codes_without_importing_the_wire_crate() {
 
     let core = ControlCore::new(boot(18), space(18));
     let pending = core.query_delivery(&core.delivery_view(), 1).unwrap();
-    assert_eq!(pending.hos2_saved_status_code(), 0);
+    assert_eq!(pending.hos2_saved_status_code(), Ok(0));
+}
+
+#[test]
+fn invalid_query_delivery_state_status_combinations_fail_closed() {
+    let core = ControlCore::new(boot(2018), space(2018));
+    let view = core.delivery_view();
+    let fresh = core.query_delivery(&view, 1).unwrap();
+    assert_eq!(fresh.state, DeliveryState::NotSeen);
+    assert_eq!(fresh.hos2_saved_status_code(), Ok(0));
+
+    // No non-terminal observation may carry a saved result or effect fields.
+    for state in [
+        DeliveryState::Reserved,
+        DeliveryState::Retired,
+        DeliveryState::NotSeen,
+        DeliveryState::HistoryLost,
+    ] {
+        let clean = os_control::DeliveryObservation { state, ..fresh };
+        assert_eq!(clean.hos2_saved_status_code(), Ok(0));
+
+        let forged_status = os_control::DeliveryObservation {
+            status: Some(DeliveryStatus::Ok),
+            ..clean
+        };
+        assert_eq!(
+            forged_status.hos2_saved_status_code(),
+            Err(DeliveryError::InvalidPublish)
+        );
+
+        let forged_metadata = os_control::DeliveryObservation {
+            consumed_ns: Some(5),
+            ..clean
+        };
+        assert_eq!(
+            forged_metadata.hos2_saved_status_code(),
+            Err(DeliveryError::InvalidPublish)
+        );
+    }
+
+    // A missing or forged terminal status is NOT a successful effect.
+    let missing_terminal_status = os_control::DeliveryObservation {
+        state: DeliveryState::Terminal,
+        ..fresh
+    };
+    assert_eq!(
+        missing_terminal_status.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+    let invented_ok = os_control::DeliveryObservation {
+        status: Some(DeliveryStatus::Ok),
+        ..missing_terminal_status
+    };
+    assert_eq!(
+        invented_ok.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+}
+
+#[test]
+fn real_terminal_query_delivery_values_are_wire_checked() {
+    let core = ControlCore::new(boot(2019), space(2019));
+    let target = root(2019, CPU_PERIOD_NS);
+    let who = publisher(2019);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 10), who)
+        .unwrap();
+    let success = core.commit(&token, who, 1).unwrap();
+    assert_eq!(success.state, DeliveryState::Terminal);
+    assert_eq!(success.hos2_saved_status_code(), Ok(0));
+
+    let bad_revision = os_control::DeliveryObservation {
+        saved_revision: Some(123),
+        ..success
+    };
+    assert_eq!(
+        bad_revision.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+    let zero_object = os_control::DeliveryObservation {
+        stable_object_id: Some(object(0)),
+        ..success
+    };
+    assert_eq!(
+        zero_object.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
+
+    let rejection_core = ControlCore::new(boot(2020), space(2020));
+    let rejection_target = root(2020, CPU_PERIOD_NS);
+    let rejector = publisher(2020);
+    let refusal = rejection_core
+        .reserve(
+            request(1, rejection_target.grant(rejector).unwrap(), 1, 10),
+            rejector,
+        )
+        .unwrap();
+    let denied = rejection_core
+        .publish(
+            &refusal,
+            rejector,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::PermissionDenied,
+            },
+        )
+        .unwrap();
+    assert_eq!(denied.hos2_saved_status_code(), Ok(2));
+    let false_resource_data = os_control::DeliveryObservation {
+        effective_ns: Some(1),
+        ..denied
+    };
+    assert_eq!(
+        false_resource_data.hos2_saved_status_code(),
+        Err(DeliveryError::InvalidPublish)
+    );
 }
 
 #[test]
