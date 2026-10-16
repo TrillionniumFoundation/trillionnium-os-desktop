@@ -137,6 +137,9 @@ pub struct Buffer {
     len: usize,
     direction: DmaDirection,
     phase: BufferPhase,
+    // Fresh CPU-owned memory is not proof that a completed DMA lifecycle was
+    // synchronized/unmapped; only a post-completion sync permits release.
+    ready_for_release: bool,
 }
 
 impl Buffer {
@@ -146,7 +149,7 @@ impl Buffer {
             return Err(Error::InvalidRange);
         }
         Ok(Self { memory_id: memory.id, owner: memory.owner, offset, len,
-                  direction, phase: BufferPhase::CpuOwned })
+                  direction, phase: BufferPhase::CpuOwned, ready_for_release: false })
     }
     pub const fn memory_id(&self) -> u64 { self.memory_id }
     pub const fn owner(&self) -> ResourceDomainId { self.owner }
@@ -161,6 +164,7 @@ impl Buffer {
         -> Result<(), Error> {
         device.ensure_owner(self.owner, device.generation)?;
         if self.phase != BufferPhase::CpuOwned { return Err(Error::InvalidState); }
+        self.ready_for_release = false;
         self.phase = BufferPhase::Prepared { device_generation: device.generation };
         Ok(())
     }
@@ -171,12 +175,16 @@ impl Buffer {
     pub fn sync_for_cpu_after_platform_checks(&mut self) -> Result<(), Error> {
         if self.phase != BufferPhase::NeedsCpuSync { return Err(Error::InvalidState); }
         self.phase = BufferPhase::CpuOwned;
+        self.ready_for_release = true;
         Ok(())
     }
 
     /// Pure metadata release; must not be used as a physical DMA unmap proof.
     pub fn release_after_unmap(&mut self) -> Result<(), Error> {
-        if self.phase != BufferPhase::CpuOwned { return Err(Error::InvalidState); }
+        if self.phase != BufferPhase::CpuOwned || !self.ready_for_release {
+            return Err(Error::InvalidState);
+        }
+        self.ready_for_release = false;
         self.phase = BufferPhase::Released;
         Ok(())
     }
@@ -317,6 +325,26 @@ mod tests {
         queue.complete_after_hardware_fence(&dev, &mut buffer, tag).unwrap();
         assert_eq!(queue.outstanding(), 0);
         assert_eq!(buffer.release_after_unmap(), Err(Error::InvalidState));
+        buffer.sync_for_cpu_after_platform_checks().unwrap();
+        buffer.release_after_unmap().unwrap();
+        assert_eq!(buffer.release_after_unmap(), Err(Error::InvalidState));
+    }
+
+    #[test]
+    fn fresh_or_resubmitted_buffer_cannot_release_without_completed_cpu_sync() {
+        let (dev, mut queue, mut buffer) = setup();
+        assert_eq!(buffer.release_after_unmap(), Err(Error::InvalidState));
+        buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
+        assert_eq!(buffer.release_after_unmap(), Err(Error::InvalidState));
+        let tag = queue.submit_after_driver_admission(&dev, &mut buffer).unwrap();
+        queue.complete_after_hardware_fence(&dev, &mut buffer, tag).unwrap();
+        assert_eq!(buffer.release_after_unmap(), Err(Error::InvalidState));
+        buffer.sync_for_cpu_after_platform_checks().unwrap();
+        // Repreparing a previously synced buffer revokes the old release proof.
+        buffer.prepare_after_dma_map_and_sync(&dev).unwrap();
+        assert_eq!(buffer.release_after_unmap(), Err(Error::InvalidState));
+        let next = queue.submit_after_driver_admission(&dev, &mut buffer).unwrap();
+        queue.complete_after_hardware_fence(&dev, &mut buffer, next).unwrap();
         buffer.sync_for_cpu_after_platform_checks().unwrap();
         buffer.release_after_unmap().unwrap();
         assert_eq!(buffer.release_after_unmap(), Err(Error::InvalidState));
@@ -501,8 +529,8 @@ mod tests {
         queue.submit_after_driver_admission(&dev, &mut buffer).unwrap();
         queue.queue_generation = u64::MAX;
         buffer.phase = BufferPhase::InFlight {
-            device_generation: dev.generation(), queue_generation: u64::MAX,
-            sequence: 1,
+            device_generation: dev.generation(), queue_id: queue.id,
+            queue_generation: u64::MAX, sequence: 1,
         };
         assert_eq!(queue.cancel_unknown_effect(&mut buffer), Ok(()));
         assert_eq!(queue.outstanding(), 1);
