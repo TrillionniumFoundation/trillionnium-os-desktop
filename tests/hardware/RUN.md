@@ -271,3 +271,18 @@ ambiguous record as different GPU device identities or status values.
 Rejected records remain blocked/failed, not recovered. This is deterministic
 parsing hardening only; unsigned evidence still cannot attest Asterinas
 execution or physical CUDA computation.
+
+## Bounded NVRTC compiler output
+
+`cuda_gemm.py` now rejects NVRTC compiler-returned allocations beyond
+64 KiB for diagnostic logs and 8 MiB for PTX (and rejects zero lengths).
+It also stops if the CUDA Driver API reports more than 64 visible GPU
+devices before trying unbounded enumeration. This is a conservative
+limit for the isolated single-RTX-4060 lab; it may need requalification
+for a legitimate larger GPU host, but must never be silently disabled.
+This path executes **before** device kernel submission and uses no GPU
+reset/firmware or host PCI reconfiguration.
+
+`test_cuda_alloc_limits.py` contains pure Python checks of boundary
+values, malformed types and a simulated CUDA device-count response.
+No physical CUDA or new-kernel hardware execution is claimed.

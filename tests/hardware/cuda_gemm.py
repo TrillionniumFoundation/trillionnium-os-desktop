@@ -16,6 +16,9 @@ import re
 import struct
 
 N = 16
+MAX_CUDA_ENUM_DEVICES = 64
+MAX_NVRTC_LOG_BYTES = 64 * 1024
+MAX_NVRTC_PTX_BYTES = 8 * 1024 * 1024
 BDF_RE = re.compile(r"^[0-9a-fA-F]{4,8}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-7]$")
 GOLDEN_INPUT_A = "0d9121c90b659969a44ca689809ebd3a6579f3f18b6aa5b9de5da1b98a9458ae"
 GOLDEN_INPUT_B = "37ca62264050ddd6b8674649a77ec6047f3aa1a2d87f97858f7f6be38189df74"
@@ -39,6 +42,13 @@ class Blocked(RuntimeError):
 
 class GpuError(RuntimeError):
     pass
+
+
+def checked_nvrtc_size(size, limit, purpose):
+    """Reject impossible compiler-reported sizes before allocating Python RAM."""
+    if type(size) is not int or size < 1 or size > limit:
+        raise GpuError(f"NVRTC {purpose} size outside 1..{limit} bytes: {size}")
+    return size
 
 
 def inputs():
@@ -133,6 +143,8 @@ def gpu_gemm(required_name, required_bdf, *, lab_isolated=False):
     cuda.call("cuDeviceGetCount", [C.POINTER(C.c_int)], C.byref(count))
     if count.value < 1:
         raise Blocked("CUDA driver reports zero usable devices")
+    if count.value > MAX_CUDA_ENUM_DEVICES:
+        raise Blocked("CUDA driver reports an unreasonable device count; refusing unbounded enumeration")
     selected = None
     seen = []
     for index in range(count.value):
@@ -182,12 +194,16 @@ def gpu_gemm(required_name, required_bdf, *, lab_isolated=False):
             log_len = C.c_size_t()
             nvrtc.call("nvrtcGetProgramLogSize", [C.c_void_p, C.POINTER(C.c_size_t)],
                        program, C.byref(log_len))
-            log = C.create_string_buffer(log_len.value)
+            log = C.create_string_buffer(
+                checked_nvrtc_size(log_len.value, MAX_NVRTC_LOG_BYTES, "diagnostic log")
+            )
             nvrtc.call("nvrtcGetProgramLog", [C.c_void_p, C.c_void_p], program, log)
             raise GpuError(f"NVRTC compile {rc}: {log.value.decode(errors='replace')[:2000]}")
         ptx_len = C.c_size_t()
         nvrtc.call("nvrtcGetPTXSize", [C.c_void_p, C.POINTER(C.c_size_t)], program, C.byref(ptx_len))
-        ptx = C.create_string_buffer(ptx_len.value)
+        ptx = C.create_string_buffer(
+            checked_nvrtc_size(ptx_len.value, MAX_NVRTC_PTX_BYTES, "PTX program")
+        )
         nvrtc.call("nvrtcGetPTX", [C.c_void_p, C.c_void_p], program, ptx)
     finally:
         nvrtc.call("nvrtcDestroyProgram", [C.POINTER(C.c_void_p)], C.byref(program))
