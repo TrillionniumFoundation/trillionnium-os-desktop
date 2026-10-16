@@ -52,6 +52,11 @@ class PlatformGateTests(unittest.TestCase):
         data["pci_devices"] = []
         self.assertIn("nvidia_accelerator_not_visible", assess(data)["blockers"])
 
+    def test_boolean_iommu_group_count_must_not_be_treated_as_one(self):
+        data = candidate()
+        data["iommu"]["group_count_visible"] = True
+        self.assertIn("iommu_group_not_visible", assess(data)["blockers"])
+
     def test_missing_fields_fail_closed(self):
         result = assess(None)
         self.assertEqual(result["status"], "blocked")

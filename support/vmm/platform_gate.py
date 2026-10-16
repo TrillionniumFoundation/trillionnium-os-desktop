@@ -29,7 +29,7 @@ def assess(inventory):
         blockers.append("intel_vmx_not_exposed")
     if iommu.get("dmar_table_present") is not True:
         blockers.append("intel_dmar_table_not_visible")
-    if not isinstance(iommu.get("group_count_visible"), int) or iommu["group_count_visible"] < 1:
+    if type(iommu.get("group_count_visible")) is not int or iommu["group_count_visible"] < 1:
         blockers.append("iommu_group_not_visible")
     devices = inventory.get("pci_devices")
     if not isinstance(devices, list):

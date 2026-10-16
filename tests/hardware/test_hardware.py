@@ -42,6 +42,22 @@ class ProbeTests(unittest.TestCase):
         self.assertIsNone(result["firmware_version"])
         self.assertIsNone(result["iommu"]["usable_for_passthrough"])
 
+    def test_cpu_vendor_and_vmx_flags_from_readonly_fixture(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            proc = root / "proc"
+            proc.mkdir()
+            (proc / "cpuinfo").write_text(
+                "processor\t: 0\nvendor_id\t: GenuineIntel\n"
+                "model name\t: Isolated Intel Fixture\nflags\t: fpu vmx sse2\n",
+                encoding="utf-8",
+            )
+            result = probe.snapshot(root)
+        self.assertEqual(result["cpu"]["vendor_id"], "GenuineIntel")
+        self.assertEqual(result["cpu"]["model"], "Isolated Intel Fixture")
+        self.assertTrue(result["cpu"]["vmx_flag"])
+        self.assertFalse(result["cpu"]["svm_flag"])
+
     def test_non_accelerator_nvidia_pci_is_not_gpu(self):
         with tempfile.TemporaryDirectory() as directory:
             dev = Path(directory) / "sys/bus/pci/devices/0000:00:01.0"
