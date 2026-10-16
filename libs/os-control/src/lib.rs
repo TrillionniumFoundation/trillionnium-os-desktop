@@ -231,6 +231,7 @@ struct DomainState {
     consumed_ns: u64,
     window_consumed_ns: u64,
     window_start_ns: u64,
+    last_boottime_ns: u64, // monotonic gate timestamp; no clock-rewind refresh
     event_sequence: u64,
     dropped_events: u64,
     alive: bool,
@@ -264,6 +265,7 @@ pub enum ResourceError {
     Exhausted,
     Overflow,
     MissingParent,
+    ClockRollback,
 }
 
 impl ResourceDomain {
@@ -278,8 +280,7 @@ impl ResourceDomain {
         }
         let budget = Budget::new(initial_cap_ns)?;
         if let Some(parent) = parent {
-            // The entire family uses one mutation gate. Registration must
-            // linearize with concurrent parent cap changes and child creation.
+            // Parent cap reduction and child creation share one mutation gate.
             let _gate = lock_unpoisoned(&parent.inner.gate);
             let parent_state = parent.snapshot_state();
             if !parent_state.alive {
@@ -288,12 +289,13 @@ impl ResourceDomain {
             if initial_cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
             }
+            // A05/A06 must supply globally unique IDs outside this tree.
             let mut ancestor = Some(parent);
-            while let Some(domain) = ancestor {
-                if domain.id() == id {
+            while let Some(node) = ancestor {
+                if node.id() == id {
                     return Err(ResourceError::DuplicateDomainId);
                 }
-                ancestor = domain.inner.parent.as_ref();
+                ancestor = node.inner.parent.as_ref();
             }
             let mut children = lock_unpoisoned(&parent.inner.children);
             if children.contains_key(&id) {
@@ -310,6 +312,7 @@ impl ResourceDomain {
                     consumed_ns: 0,
                     window_consumed_ns: 0,
                     window_start_ns: 0,
+                    last_boottime_ns: 0,
                     event_sequence: 0,
                     dropped_events: 0,
                     alive: true,
@@ -334,6 +337,7 @@ impl ResourceDomain {
                     consumed_ns: 0,
                     window_consumed_ns: 0,
                     window_start_ns: 0,
+                    last_boottime_ns: 0,
                     event_sequence: 0,
                     dropped_events: 0,
                     alive: true,
@@ -395,11 +399,10 @@ impl ResourceDomain {
     pub fn reactivate_for_host_model(&self) -> Result<(), ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
         let mut state = lock_unpoisoned(&self.inner.state);
+        // Failure to advance epoch must not re-enable authorization.
+        let next_epoch = state.grant_epoch.checked_add(1).ok_or(ResourceError::Overflow)?;
+        state.grant_epoch = next_epoch;
         state.alive = true;
-        state.grant_epoch = state
-            .grant_epoch
-            .checked_add(1)
-            .ok_or(ResourceError::Overflow)?;
         Ok(())
     }
 
@@ -412,19 +415,36 @@ impl ResourceDomain {
         self.snapshot_state().user_paused
     }
 
+    /// Legacy host sampler: never backdate or refresh the quota window.
+    /// The returned sample time reflects any monotonic clamp.
     pub fn usage(&self, sample_boottime_ns: u64) -> UsageSnapshot {
         let _gate = lock_unpoisoned(&self.inner.gate);
         let mut state = lock_unpoisoned(&self.inner.state);
-        let window_start_ns =
-            (sample_boottime_ns / state.budget.period_ns) * state.budget.period_ns;
-        if window_start_ns != state.window_start_ns {
-            state.window_start_ns = window_start_ns;
+        let effective_ns = sample_boottime_ns.max(state.last_boottime_ns);
+        Self::snapshot_usage_at(&mut state, effective_ns)
+    }
+
+    /// A06 integration should reject stale BOOTTIME samples explicitly.
+    pub fn try_usage(&self, sample_boottime_ns: u64) -> Result<UsageSnapshot, ResourceError> {
+        let _gate = lock_unpoisoned(&self.inner.gate);
+        let mut state = lock_unpoisoned(&self.inner.state);
+        if sample_boottime_ns < state.last_boottime_ns {
+            return Err(ResourceError::ClockRollback);
+        }
+        Ok(Self::snapshot_usage_at(&mut state, sample_boottime_ns))
+    }
+
+    fn snapshot_usage_at(state: &mut DomainState, now_ns: u64) -> UsageSnapshot {
+        let window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
+        if window_start > state.window_start_ns {
+            state.window_start_ns = window_start;
             state.window_consumed_ns = 0;
         }
+        state.last_boottime_ns = now_ns;
         UsageSnapshot {
             stable_object_id: state.stable_object_id,
             revision: state.revision,
-            sample_boottime_ns,
+            sample_boottime_ns: now_ns,
             cumulative_cpu_ns: state.consumed_ns,
             window_start_ns: state.window_start_ns,
             window_consumed_ns: state.window_consumed_ns,
@@ -447,8 +467,12 @@ impl ResourceDomain {
         let parent = self.inner.parent.clone();
         {
             let mut state = lock_unpoisoned(&self.inner.state);
+            if now_ns < state.last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
+            }
+            state.last_boottime_ns = now_ns;
             let new_window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
-            if new_window_start != state.window_start_ns {
+            if new_window_start > state.window_start_ns {
                 state.window_start_ns = new_window_start;
                 state.window_consumed_ns = 0;
             }
@@ -514,6 +538,9 @@ impl ResourceDomain {
         if grant.epoch != state.grant_epoch {
             return Err(ResourceError::GrantEpochMismatch);
         }
+        if now_ns < state.last_boottime_ns {
+            return Err(ResourceError::ClockRollback);
+        }
         if !Arc::ptr_eq(&grant.domain.inner, &self.inner) {
             return Err(ResourceError::GrantEpochMismatch);
         }
@@ -541,13 +568,13 @@ impl ResourceDomain {
         {
             return Err(ResourceError::ParentConstraint);
         }
-        // A new period starts at boottime, independently of whether a usage
-        // read happened. A same-period update never resets consumed runtime.
-        let new_window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
-        if new_window_start != state.window_start_ns {
-            state.window_start_ns = new_window_start;
+        // Reconcile at a genuine boundary without recharging same-cap writes.
+        let window_start = (now_ns / period_ns) * period_ns;
+        if window_start > state.window_start_ns {
+            state.window_start_ns = window_start;
             state.window_consumed_ns = 0;
         }
+        state.last_boottime_ns = now_ns;
         let previous_revision = state.revision;
         state.revision = state
             .revision
@@ -1420,7 +1447,9 @@ fn map_resource_error(error: ResourceError) -> DeliveryStatus {
         ResourceError::InvalidBudget
         | ResourceError::InvalidRevision
         | ResourceError::InvalidIdentity => DeliveryStatus::InvalidInput,
-        ResourceError::Overflow | ResourceError::MissingParent => DeliveryStatus::Indeterminate,
+        ResourceError::Overflow | ResourceError::MissingParent | ResourceError::ClockRollback => {
+            DeliveryStatus::Indeterminate
+        },
     }
 }
 
@@ -1490,6 +1519,19 @@ mod tests {
             PublisherId::from_u128(n + 4),
             OwnerId::from_u128(n + 5),
         )
+    }
+
+    #[test]
+    fn reactivation_epoch_overflow_must_remain_revoked() {
+        let (_, _, domain_id, object, publisher, _) = ids(100);
+        let target = ResourceDomain::new(domain_id, object, None, CPU_PERIOD_NS).unwrap();
+        {
+            let mut state = lock_unpoisoned(&target.inner.state);
+            state.grant_epoch = u64::MAX;
+            state.alive = false;
+        }
+        assert_eq!(target.reactivate_for_host_model(), Err(ResourceError::Overflow));
+        assert!(matches!(target.grant(publisher), Err(ResourceError::Revoked)));
     }
 
     #[test]

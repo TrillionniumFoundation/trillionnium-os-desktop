@@ -122,6 +122,26 @@ kernel executor before `publish` still requires A05's own fencing and
 effect-journal discipline: the host model cannot cancel arbitrary external
 effects or prove power-loss persistence.
 
+## A06 time and parent hierarchy hardening (host model)
+
+Child registration now takes the same shared resource mutation gate as a
+concurrent parent cap reduction. Direct sibling and ancestor ID collisions
+are rejected; the kernel integration must guarantee unique IDs across roots
+and unrelated branches.
+
+`try_usage(boottime_ns)`, `charge_cpu(delta, now)` and budget CAS reject
+BOOTTIME rollback. Compatibility `usage` clamps old timestamps to the last
+observed time and returns the effective sample, never a newly credited
+earlier window. The budget CAS advances a 100ms window only after a real
+period boundary. Reactivation fails closed on epoch overflow.
+
+A06 remains responsible for runtime settlement, exact boundary-crossing
+CPU slicing, all scheduler classes, parent gate integration, IRQ lock order
+and timer wakeups. `charge_cpu` is **host-only** single-window accounting,
+not native scheduler enforcement.
+
+## Hierarchy linearization and identity collisions
+
 Child creation shares the root family's mutation gate with parent cap changes.
 Duplicate sibling ResourceDomain IDs or an ID equal to an ancestor are rejected
 rather than overwriting the parent's child-cap registry. Installing a budget

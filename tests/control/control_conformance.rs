@@ -822,3 +822,45 @@ fn namespace_loss_and_commit_race_never_reports_lost_after_mutation() {
         );
     }
 }
+#[test]
+fn stale_boottime_samples_never_replenish_window_budget() {
+    let target = root(40_000, CPU_PERIOD_NS);
+    let who = publisher(40_001);
+    target.charge_cpu(30, CPU_PERIOD_NS + 30).unwrap();
+    assert_eq!(target.charge_cpu(20, 20), Err(ResourceError::ClockRollback));
+    let grant = target.grant(who).unwrap();
+    assert_eq!(
+        target.install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 20, 20),
+        Err(ResourceError::ClockRollback)
+    );
+    assert_eq!(target.try_usage(20), Err(ResourceError::ClockRollback));
+    let clamped = target.usage(10);
+    assert_eq!(clamped.sample_boottime_ns, CPU_PERIOD_NS + 30);
+    assert_eq!(clamped.window_start_ns, CPU_PERIOD_NS);
+    assert_eq!(clamped.window_consumed_ns, 30);
+    assert_eq!(target.revision(), 1);
+    assert_eq!(
+        target.charge_cpu(71, CPU_PERIOD_NS + 31).unwrap_err(),
+        ResourceError::Exhausted
+    );
+}
+
+#[test]
+fn budget_installation_advances_only_on_real_period_boundaries() {
+    let target = root(50_000, 90);
+    let who = publisher(50_001);
+    target.charge_cpu(40, 40).unwrap();
+    let grant = target.grant(who).unwrap();
+    let unchanged = target
+        .install_budget_for_host_model(&grant, 1, CPU_PERIOD_NS, 90, 50)
+        .unwrap();
+    assert_eq!(unchanged.consumed_at_apply_ns, 40);
+    let next = target
+        .install_budget_for_host_model(
+            &grant, 2, CPU_PERIOD_NS, 20, CPU_PERIOD_NS + 1
+        )
+        .unwrap();
+    assert_eq!(next.consumed_at_apply_ns, 0);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 2).window_consumed_ns, 0);
+    assert_eq!(target.usage(CPU_PERIOD_NS + 2).cumulative_cpu_ns, 40);
+}
