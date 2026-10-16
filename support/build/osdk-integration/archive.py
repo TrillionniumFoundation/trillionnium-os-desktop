@@ -1,11 +1,144 @@
 #!/usr/bin/env python3
-"""Archive integration evidence without generated example source or targets."""
+"""Archive A01 OSDK test evidence without following source links or device files.
+
+This archival helper is host-only. It never proves a kernel or QEMU test passed.
+"""
 import argparse
 import gzip
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
+import stat
+
+EXCLUDED_DIRS = frozenset({"target", "harness", "work", "tmp", "bin", "fixed-tmp", "__pycache__"})
+SUFFIXES = frozenset({".log", ".json", ".patch", ".txt", ".lock", ".profraw", ".profdata", ".gdb"})
+MAX_FILE_BYTES = 128 * 1024 * 1024
+MAX_TOTAL_BYTES = 1024 * 1024 * 1024
+OPEN_FLAGS = os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK | os.O_NOFOLLOW
+DIRECTORY_FLAGS = OPEN_FLAGS | os.O_DIRECTORY
+
+
+def read_regular(directory_fd, name):
+    """Bound a single openat() read to its lstat() identity; never follow links."""
+    before = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+    if not stat.S_ISREG(before.st_mode):
+        raise ValueError(f"evidence source is not a regular file: {name}")
+    if before.st_size > MAX_FILE_BYTES:
+        raise ValueError(f"evidence source is too large: {name}")
+    descriptor = os.open(name, OPEN_FLAGS, dir_fd=directory_fd)
+    with os.fdopen(descriptor, "rb") as stream:
+        opened = os.fstat(stream.fileno())
+        if (not stat.S_ISREG(opened.st_mode)
+                or (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino)):
+            raise ValueError(f"evidence source changed during open: {name}")
+        data = stream.read(MAX_FILE_BYTES + 1)
+        final = os.fstat(stream.fileno())
+    if (len(data) > MAX_FILE_BYTES or len(data) != opened.st_size
+            or opened.st_size != final.st_size or opened.st_mtime_ns != final.st_mtime_ns
+            or opened.st_ctime_ns != final.st_ctime_ns):
+        raise ValueError(f"evidence source grew, shrank or changed during read: {name}")
+    return data
+
+
+def source_files(source, root_fd):
+    """Yield relative names/data from a no-symlink recursive walk and two fixed extras."""
+    for root, dirs, files, fd in os.fwalk(source, topdown=True, follow_symlinks=False):
+        relative_root = Path(root).relative_to(source)
+        retained = []
+        for name in sorted(dirs):
+            if name in EXCLUDED_DIRS:
+                continue
+            mode = os.stat(name, dir_fd=fd, follow_symlinks=False).st_mode
+            if not stat.S_ISDIR(mode):
+                raise ValueError(f"directory symlink or special entry rejected: {relative_root / name}")
+            retained.append(name)
+        dirs[:] = retained
+        for name in sorted(files):
+            path = relative_root / name
+            if path.suffix in SUFFIXES:
+                yield path, read_regular(fd, name)
+    for candidate, archived in (("harness/Cargo.lock", "harness.Cargo.lock"),
+                                ("rust-toolchain.toml", "rust-toolchain.toml")):
+        parts = Path(candidate).parts
+        if len(parts) == 1:
+            try:
+                payload = read_regular(root_fd, parts[0])
+            except FileNotFoundError:
+                continue
+        else:
+            try:
+                child = os.open(parts[0], DIRECTORY_FLAGS, dir_fd=root_fd)
+            except FileNotFoundError:
+                continue
+            try:
+                try:
+                    payload = read_regular(child, parts[1])
+                except FileNotFoundError:
+                    continue
+            finally:
+                os.close(child)
+        yield Path(archived), payload, candidate
+
+
+def archive(source, destination):
+    source = Path(source).absolute()
+    destination = Path(destination).absolute()
+    if source.is_symlink() or not source.is_dir():
+        raise ValueError("archive source must be an existing, non-symlink directory")
+    source = source.resolve()
+    canonical_destination = destination.resolve(strict=False)
+    if canonical_destination == source or canonical_destination.is_relative_to(source):
+        raise ValueError("archive destination must be outside the source tree")
+    if destination.exists() or destination.is_symlink():
+        raise FileExistsError(f"archive destination exists: {destination}")
+
+    root_fd = os.open(source, DIRECTORY_FLAGS)
+    records = []
+    total = 0
+    created = None
+    try:
+        for item in source_files(source, root_fd):
+            if len(item) == 3:
+                archived, data, original = item
+            else:
+                archived, data = item
+                original = str(archived)
+            total += len(data)
+            if total > MAX_TOTAL_BYTES:
+                raise ValueError("evidence archive exceeds total size limit")
+            if created is None:
+                # Delayed allocation: empty/invalid sources never create a fake bundle.
+                destination.mkdir(parents=True, exist_ok=False)
+                created = destination.stat()
+            target = destination / archived
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if str(archived).endswith(".log") or str(archived).endswith(".metadata.json"):
+                target = target.with_name(target.name + ".gz")
+                target.write_bytes(gzip.compress(data, mtime=0))
+            else:
+                target.write_bytes(data)
+            records.append({"source": original, "archived": str(target.relative_to(destination)),
+                            "source_size": len(data), "source_sha256": hashlib.sha256(data).hexdigest()})
+        if not records:
+            raise ValueError("no permitted evidence files found (archive cannot be empty)")
+        (destination / "archive.json").write_text(json.dumps({"schema": 1, "source": str(source),
+            "excluded": sorted(EXCLUDED_DIRS), "files": records}, indent=2) + "\n")
+        rows = [hashlib.sha256(path.read_bytes()).hexdigest() + "  " + str(path.relative_to(destination))
+                for path in sorted(destination.rglob("*")) if path.is_file()]
+        (destination / "evidence.sha256").write_text("\n".join(rows) + "\n")
+    except BaseException:
+        # Only clean the exact directory inode created by this invocation.
+        # Never delete a pre-existing or concurrently replaced destination.
+        if created is not None and not destination.is_symlink():
+            current = destination.stat() if destination.exists() else None
+            if current and (current.st_dev, current.st_ino) == (created.st_dev, created.st_ino):
+                shutil.rmtree(destination)
+        raise
+    finally:
+        os.close(root_fd)
+    return len(records)
 
 
 def main():
@@ -13,42 +146,8 @@ def main():
     parser.add_argument("source", type=Path)
     parser.add_argument("destination", type=Path, help="must not already exist")
     args = parser.parse_args()
-    source = args.source.resolve()
-    destination = args.destination.resolve()
-    if destination.is_relative_to(source):
-        raise SystemExit("archive must be outside its source tree")
-    destination.mkdir(parents=True, exist_ok=False)
-    entries = []
-    excluded = {"target", "harness", "work", "tmp", "bin", "fixed-tmp", "__pycache__"}
-    for path in sorted(source.rglob("*")):
-        relative = path.relative_to(source)
-        if not path.is_file() or excluded.intersection(relative.parts):
-            continue
-        if path.suffix not in (".log", ".json", ".patch", ".txt", ".lock", ".profraw", ".profdata", ".gdb"):
-            continue
-        target = destination / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        data = path.read_bytes()
-        if path.suffix == ".log" or path.name.endswith(".metadata.json"):
-            target = target.with_name(target.name + ".gz")
-            target.write_bytes(gzip.compress(data, mtime=0))
-        else:
-            target.write_bytes(data)
-        entries.append({"source": str(relative), "archived": str(target.relative_to(destination)),
-                        "source_size": len(data), "source_sha256": hashlib.sha256(data).hexdigest()})
-    for name, renamed in (("harness/Cargo.lock", "harness.Cargo.lock"),
-                          ("rust-toolchain.toml", "rust-toolchain.toml")):
-        path = source / name
-        if path.is_file():
-            shutil.copyfile(path, destination / renamed)
-            entries.append({"source": name, "archived": renamed, "source_size": path.stat().st_size,
-                            "source_sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
-    (destination / "archive.json").write_text(json.dumps({"schema": 1, "source": str(source),
-        "excluded": sorted(excluded), "files": entries}, indent=2) + "\n")
-    rows = [hashlib.sha256(path.read_bytes()).hexdigest() + "  " + str(path.relative_to(destination))
-            for path in sorted(destination.rglob("*")) if path.is_file()]
-    (destination / "evidence.sha256").write_text("\n".join(rows) + "\n")
-    print(f"archived {len(entries)} evidence files to {destination}")
+    count = archive(args.source, args.destination)
+    print(f"archived {count} evidence files to {args.destination}")
 
 
 if __name__ == "__main__":
