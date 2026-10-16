@@ -1,0 +1,27 @@
+{
+  "source_commit": "62225ad9a59d0b03b9a3c09b985a0afcc7a6b442",
+  "kernel_sha256": "a8401ff3389a1c9ecab0a03a6cdef98ec98d084a69e655ad65e4631ee57f09f6",
+  "a05_source_blob": "1bc44a4df1c586bbca4cdf85b41e985136350cc9",
+  "a05_binary_sha256": "80b7f15a98711a97578550f2f9c5466fb447da3edd6fd00bc8997b2e4fb4b118",
+  "initramfs_sha256": "eb18b5f3a4dfe1972061b572a9adb514f0a35eaf2902ef6c322063583beb6eb0",
+  "guest_qemu_exit": 33,
+  "cpu_count_one": true,
+  "boot_ok": true,
+  "a05_actual_ioctl_refused": true,
+  "host_selftest_exit": 0,
+  "panic": false,
+  "elapsed_host_s": 1.508,
+  "real_hos2_kernel_ioctl_handler_implemented": false,
+  "host_cgroup_modified": false,
+  "environment": "QEMU q35/TCG x86_64 1 vCPU 512MiB; statically linked C ELF in one-off A01 initramfs; tested fixed A06 native kernel SHA",
+  "stdout_markers": [
+    "PASS HOS2 QueryAbi transport/header/response + 16 invalid frames (host only)",
+    "HOS2 QueryAbi ioctl failed: Inappropriate ioctl for device",
+    "TRILLIONNIUM_A05_IOCTL_REFUSAL_OK",
+    "TRILLIONNIUM_A01_BOOT_OK"
+  ],
+  "negative_ioctl_errno": "ENOTTY",
+  "symbolic_function": "unknown ioctl on /dev/null",
+  "hos2_ioctl_not_available": true,
+  "raw_serial_location": "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/a05-queryabi-pr41-guest/serial.log"
+}
