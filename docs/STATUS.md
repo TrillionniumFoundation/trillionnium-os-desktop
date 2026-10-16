@@ -1,5 +1,24 @@
 # 当前状态
 
+## 2026-10-16：A00 归档 CI 防假阳性、A06 实际内核修复及 A03 接口收敛
+
+- **main 已合并实际 CI 代码**：[PR #49](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/49) merge `7b1e183951121c5e16618ef046612053b146e6bc`，仅修改已有 `.github/workflows/a01-boot-evidence.yml`，用 PR base/push before 的实际 Git commit 检查归档源码与回归测试是否被同时删除。A00 独立 Linux Bash/Git fixture **9/9 通过**，包括 source+test 同删、符号链接、非法 base SHA、缺项和真正失败测试。合法首次 bootstrap 只说 source 缺失，**不**计归档测试 pass；GitHub Actions 队列未当作成功。
+- **A06 owner 开发分支代码已实际集成**：[PR #44](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/44) 合并进 `agents/A06-cpu-bandwidth-n0`，merge `94b48dd38098475f92c3849b974c9170e0b57307`（**不是 main**）。`cpu.stat` read-only period 观察改动 Git blob `dd1a8cfe65c60028500b88bf897e1ae7e47c8afb` 与独立固定 nightly 的被测内核源码相同；证据保留 [ktest](../results/organ-backend/2026-10-16/a06-cpustat-readonly-independent-ktest.json) **153/153 QEMU 内核测试**和 [guest](../results/organ-backend/2026-10-16/a06-cpustat-readonly-independent-qemu.json) **7/7**（1%/10%/FIFO/parent，raw guest exit33）。这是被测修复源码证据，A06 合并后整树未在本轮重跑，严格每窗上限、SMP、真实 HOS2/ioctl 仍未通过；A06 #18 保持 Draft。
+- **A03 owner 目标整合，仍未合 main**：[Draft #48](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/48) 已经安全双父非强制合并至 `2262e85b98463c93e9de9b2c8bb314bf1852aed3`，以 A03 当时最新 owner `9e5d8007be915c981e665bae3ed0397b0564b94a` 为整合基础，保留原 original-owner authority、ResourceDomain 层级与 clock regression，加入固定 Hepta 完整 `StableId + Digest32` K 和 fail-closed `Option<u16>` status 变换。仅 3 个 A03 所有权文件，编写的集成测试合计 36 项，但 **本轮 Rust Cargo/fmt/Clippy/QEMU 均未运行**，不可代替 owner 持久 ACK 或内核 G1/G2。旧不同分支不得互相覆盖。
+- **真实未解问题：**A05 仍只有 Linux 宿主 QueryAbi/ENOTTY 和 QEMU 拒绝证据，无五个原生内核控制操作；A07 仍须沿现有 Hepta durable operation owner 完成授权/撤销/unknown/reboot/retirement；裸机 CPU/GPU/Android/UI 也没有本轮验收。固定 Asterinas v0.19.0/`nightly-2026-07-21` 与 Hepta `f8c9419d` 未修改，根 README 始终严格0字节。
+
+---
+
+
+## 2026-10-16：A06 只读 cpu.stat 内核实测
+
+- **跨周期超额结转已存在真实源码与测试记录：**A06 1kHz Draft [#18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18) 已包含 positive-overshoot debt 的 N0 实验；其此前独立证据显示原始完整 cpu.stat probe 在10秒1%场景约1.01–1.1%，较不结转时约2%更精确。该能力仍为单vCPU实验，非严格窗口上限或生产资格。
+- **此次新增真实验收：**针对 [#44](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/44) 提出的 `CpuMax::observed_nr_periods(&self)`，将 `cpu.stat` 从会提前推进quota周期的 mutating `advance` 改成只读投影。使用精确源码 `ad55fecd95857f3e3c7cb5997118f7a44e5f5555`，固定 Rust nightly-2026-07-21 从源构建成功；完整内核ELF SHA256 `41cd6283facb4bf4ce1c7f60284c4433ba6d2777e73e54a58eaf5e1a4169fe43`。
+- **独立客体结果：**保留原完整 `cpu.stat` 探针，QEMU q35/TCG x86_64 1vCPU 512MiB，无宿主网络/数据盘，**7/7** QEMU返回raw33：1%普通任务三次1.1%、1.1%、1.0%；10%普通任务两次10.392%、9.902%；SCHED_FIFO 10%=10.379%；父域10%/子域不限额=10.141%。此外 **aster-core实际内核测试153/153 pass**、0失败/过滤/软跳过、raw33。[证据与精确SHA](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/52) 已通过 [#52](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/52) 合并至 #44 的开发分支，**不是合入main**。
+- **尚未闭合：**#44仍为Draft，需要A06把只读投影整合到自己的最新内核来源，处理cpu.max同时写入、周期迁移与锁序；SMP、多CPU复现、物理机及Hepta OS原生HOS2 ioctl、授权/持久K↔D/效果退役均未实测。不要把这里的N0 guest结果记为G1/G2放行。
+
+---
+
 ## 2026-10-16：A00 本轮源码安全修复与真实验证增量
 
 - **已合并测试源码（实际 main）**：[A05 PR #45](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/45) 合并 commit `54d5197bf66be23ea8b1f3ff5a3d2c40a82694b7`，修复 `tests/kernel/control/hos2_queryabi_probe.c` 将 EFAULT 等非 ENOTTY 错误误判为真实 `/dev/null` 拒绝的假阳性。A00 在独立 Linux x86_64 / GCC 14.2.0 宿主重建三份源码并逐文件比对精确 Git blob：`ae59693d54c375812dd522a1568c520a41c87e70`、`862a50fb8d9affd361510a2a2d9b29b6307f66ea`、`53aba3d3433b92a2d10b74136231db61f892ebb4`。`sh -n`、严格 C11 GCC、原生 `sh run-host-smoke.sh`、UBSan 和静态链接 selftest 均通过；旧处理在新负测下退出1，修复版通过。这仅是 **Linux 宿主** HOS2 负面探针，不是新内核 QueryAbi 实现。
