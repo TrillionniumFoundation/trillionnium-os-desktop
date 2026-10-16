@@ -11,7 +11,7 @@ use aster_util::{per_cpu_counter::PerCpuCounter, printer::VmPrinter};
 use ostd::{
     cpu::CpuId,
     mm::{VmReader, VmWriter},
-    sync::SpinLock,
+    sync::{LocalIrqDisabled, SpinLock},
     task::atomic_mode::AsAtomicModeGuard,
     timer::Jiffies,
     warn,
@@ -52,7 +52,7 @@ struct CpuControl {
     /// A value stores the configured relative CPU share for scheduler integration.
     weight: AtomicU32,
     /// A value stores the configured CPU bandwidth limit for scheduler integration.
-    max: SpinLock<CpuMax>,
+    max: SpinLock<CpuMax, LocalIrqDisabled>,
 }
 
 /// A CPU bandwidth limit.
