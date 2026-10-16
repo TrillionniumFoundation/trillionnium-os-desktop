@@ -22,7 +22,7 @@ use crate::{
 ///
 /// For system performance reasons, this rate cannot be set too high, otherwise most of the time is
 /// spent in executing timer code.
-pub const TIMER_FREQ: u64 = 1000;
+pub const TIMER_FREQ: u64 = 5000;
 
 type InterruptCallback = Box<dyn Fn() + Sync + Send>;
 
