@@ -6,7 +6,7 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, Id16, LogicalOperationId, OperationBinding, OwnerId, OwnerReceipt,
+    DeliveryStatus, HistoryAck, LogicalOperationId, NamespaceIdentity, OperationBinding, OwnerId, OwnerReceipt,
     PublishOutcome, PublisherId, ReserveAttempt, ResourceDomain, ResourceDomainId, ResourceError,
     StableObjectId, CPU_PERIOD_NS,
 };
@@ -41,7 +41,7 @@ fn ack(core: &ControlCore, through: u64) -> HistoryAck {
     HistoryAck::from_owner_receipt(
         core.identity(),
         through,
-        OwnerReceipt::new(owner(9000 + through as u128), [0xA5; 32]),
+        OwnerReceipt::new(owner(9000), [0xA5; 32]),
     )
     .unwrap()
 }
@@ -125,12 +125,49 @@ fn request_digest_and_publisher_identity_are_bound() {
 }
 
 #[test]
+fn namespace_and_delivery_id_require_validated_constructor_values() {
+    assert_eq!(
+        NamespaceIdentity::new(boot(0), space(1)),
+        Err(os_control::IdentityError::ZeroIdentity),
+    );
+    assert_eq!(
+        NamespaceIdentity::new(boot(1), space(0)),
+        Err(os_control::IdentityError::ZeroIdentity),
+    );
+    let namespace = NamespaceIdentity::new(boot(1), space(2)).unwrap();
+    assert_eq!(namespace.boot_id(), boot(1));
+    assert_eq!(namespace.cap_space_id(), space(2));
+    for sequence in [0, u64::MAX] {
+        assert_eq!(
+            os_control::DeliveryId::new(namespace, sequence),
+            Err(DeliveryError::InvalidSequence),
+        );
+    }
+    let id = os_control::DeliveryId::new(namespace, 3).unwrap();
+    assert_eq!(id.namespace(), namespace);
+    assert_eq!(id.sequence(), 3);
+}
+
+#[test]
 fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
     let core = ControlCore::new(boot(16), space(16));
-    let k = LogicalOperationId::new(Id16::from_u128(1), Id16::from_u128(2)).unwrap();
+    // Hepta's actual persistent K is StableId + final payload_digest; it is
+    // not two arbitrary Id16s. Preserve the complete stable string losslessly.
+    let k = LogicalOperationId::new("scope:some-operation.with-longer-id", [0xA7; 32]).unwrap();
     let d = os_control::DeliveryId::new(core.identity(), 1).unwrap();
-    let binding = OperationBinding::new(k, d);
+    let binding = OperationBinding::new(k.clone(), d);
     assert_eq!(binding.logical, k);
+    assert_eq!(binding.delivery, d);
+    assert_eq!(binding.logical.stable_id(), "scope:some-operation.with-longer-id");
+    assert_eq!(binding.logical.payload_digest(), [0xA7; 32]);
+
+    // Independent K value changes never conflate with the same boot-local D.
+    let different_payload =
+        LogicalOperationId::new("scope:some-operation.with-longer-id", [0xB7; 32]).unwrap();
+    let different_suffix =
+        LogicalOperationId::new("scope:some-operation.with-longer-id-2", [0xA7; 32]).unwrap();
+    assert_ne!(k, different_payload);
+    assert_ne!(k, different_suffix);
     assert_eq!(binding.delivery, d);
 
     let other_boot = ControlCore::new(boot(17), space(16));
@@ -140,8 +177,48 @@ fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
 }
 
 #[test]
+fn pinned_hepta_k_stable_id_bounds_and_nonzero_digest_are_enforced() {
+    let maximum = "k".repeat(128);
+    let k = LogicalOperationId::new(maximum.clone(), [0x55; 32]).unwrap();
+    assert_eq!(k.stable_id(), maximum);
+    for invalid in ["", "space is invalid", "unicode-测试", "/etc/passwd"] {
+        assert_eq!(
+            LogicalOperationId::new(invalid, [1; 32]),
+            Err(os_control::IdentityError::InvalidOperationKey)
+        );
+    }
+    assert_eq!(
+        LogicalOperationId::new("x".repeat(129), [1; 32]),
+        Err(os_control::IdentityError::InvalidOperationKey)
+    );
+    assert_eq!(
+        LogicalOperationId::new("scope:operation", [0; 32]),
+        Err(os_control::IdentityError::InvalidOperationKey)
+    );
+}
+
+#[test]
+fn hepta_k_copies_bounded_owned_bytes_not_caller_mutable_storage() {
+    let mut caller = String::from("existing.owner:operation-1");
+    let original = LogicalOperationId::new(caller.as_str(), [0x42; 32]).unwrap();
+    caller.clear();
+    caller.push_str("different:operation");
+    assert_eq!(original.stable_id(), "existing.owner:operation-1");
+
+    // A getter returns the digest by value, not a mutable reference to K.
+    let mut copied_digest = original.payload_digest();
+    copied_digest[0] = 0;
+    assert_eq!(original.payload_digest(), [0x42; 32]);
+    assert_eq!(
+        LogicalOperationId::new(original.stable_id(), original.payload_digest()).unwrap(),
+        original,
+    );
+}
+
+#[test]
 fn out_of_order_does_not_consume_sequence_and_wrong_history_owner_cannot_retire() {
-    let core = ControlCore::new(boot(13), space(13));
+    let (core, owner_authority) =
+        ControlCore::with_capacity_for_owner(boot(13), space(13), 32, owner(1300)).unwrap();
     let target = root(13, CPU_PERIOD_NS);
     let who = publisher(130);
     assert!(matches!(
@@ -161,7 +238,7 @@ fn out_of_order_does_not_consume_sequence_and_wrong_history_owner_cannot_retire(
         HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner(1301), [3; 32]))
             .unwrap();
     assert_eq!(
-        core.retire_through(&view, wrong_ack),
+        core.retire_through(&view, wrong_ack, &owner_authority),
         Err(DeliveryError::PermissionDenied)
     );
 }
@@ -327,7 +404,8 @@ fn child_cpu_charge_is_counted_once_in_each_ancestor_and_parent_exhaustion_is_at
 
 #[test]
 fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_available() {
-    let core = ControlCore::with_capacity(boot(7), space(7), 4);
+    let (core, owner_authority) =
+        ControlCore::with_capacity_for_owner(boot(7), space(7), 4, owner(9000)).unwrap();
     let target = root(8, CPU_PERIOD_NS);
     let who = publisher(70);
     let view = core.delivery_view();
@@ -363,7 +441,7 @@ fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_availab
         DeliveryState::Terminal
     );
     assert_eq!(
-        core.retire_through(&view, ack(&core, 4)),
+        core.retire_through(&view, ack(&core, 4), &owner_authority),
         Err(DeliveryError::PendingPrefix)
     );
     first.as_ref().map(|token| {
@@ -376,7 +454,7 @@ fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_availab
         )
         .unwrap()
     });
-    let retired = core.retire_through(&view, ack(&core, 4)).unwrap();
+    let retired = core.retire_through(&view, ack(&core, 4), &owner_authority).unwrap();
     assert_eq!(retired.retired_through, 4);
     let token5 = core
         .reserve(
@@ -392,7 +470,8 @@ fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_availab
 
 #[test]
 fn ten_thousand_writes_are_bounded_and_old_sequences_do_not_reappear() {
-    let core = ControlCore::with_capacity(boot(8), space(8), 32);
+    let (core, owner_authority) =
+        ControlCore::with_capacity_for_owner(boot(8), space(8), 32, owner(9000)).unwrap();
     let target = root(9, CPU_PERIOD_NS);
     let who = publisher(80);
     let view = core.delivery_view();
@@ -405,7 +484,8 @@ fn ten_thousand_writes_are_bounded_and_old_sequences_do_not_reappear() {
             core.commit(&token, who, sequence).unwrap().status,
             Some(DeliveryStatus::Ok)
         );
-        core.retire_through(&view, ack(&core, sequence)).unwrap();
+        core.retire_through(&view, ack(&core, sequence), &owner_authority)
+            .unwrap();
     }
     assert_eq!(core.retired_through(), 10_000);
     assert_eq!(core.window_len(), 0);
@@ -526,7 +606,9 @@ fn concurrent_revoke_and_commit_linearizes_to_one_terminal_result() {
 
 #[test]
 fn concurrent_query_publish_and_retire_observe_whole_states() {
-    let core = Arc::new(ControlCore::new(boot(500), space(500)));
+    let (control, owner_authority) =
+        ControlCore::with_original_owner(boot(500), space(500), owner(9000)).unwrap();
+    let core = Arc::new(control);
     let target = root(500, CPU_PERIOD_NS);
     let who = publisher(501);
     let token = core
@@ -564,7 +646,8 @@ fn concurrent_query_publish_and_retire_observe_whole_states() {
     let published = publish.join().unwrap();
     query.join().unwrap();
     assert_eq!(published.status, Some(DeliveryStatus::Ok));
-    let retired = core.retire_through(&view, ack(&core, 1)).unwrap();
+    let retired = core.retire_through(&view, ack(&core, 1), &owner_authority)
+        .unwrap();
     assert_eq!(retired.retired_through, 1);
     assert_eq!(
         core.query_delivery(&view, 1).unwrap().state,
@@ -574,7 +657,9 @@ fn concurrent_query_publish_and_retire_observe_whole_states() {
 
 #[test]
 fn query_and_retire_race_has_only_terminal_or_retired_observations() {
-    let core = Arc::new(ControlCore::new(boot(600), space(600)));
+    let (control, owner_authority) =
+        ControlCore::with_original_owner(boot(600), space(600), owner(9000)).unwrap();
+    let core = Arc::new(control);
     let target = root(600, CPU_PERIOD_NS);
     let who = publisher(601);
     let token = core
@@ -602,7 +687,7 @@ fn query_and_retire_race_has_only_terminal_or_retired_observations() {
     let retire = thread::spawn(move || {
         retire_barrier.wait();
         retire_core
-            .retire_through(&retire_view, ack(&retire_core, 1))
+            .retire_through(&retire_view, ack(&retire_core, 1), &owner_authority)
             .unwrap();
     });
     query.join().unwrap();
@@ -611,6 +696,53 @@ fn query_and_retire_race_has_only_terminal_or_retired_observations() {
         core.query_delivery(&view, 1).unwrap().state,
         DeliveryState::Retired
     );
+}
+
+#[test]
+fn fabricated_observer_receipt_cannot_retire_without_bootstrap_owner_authority() {
+    let (core, original_owner) =
+        ControlCore::with_original_owner(boot(901), space(901), owner(9000)).unwrap();
+    // Same public namespace bytes but a different Arc-backed namespace.
+    // A newly constructed ControlCore may not mint retirement authority for
+    // existing deliveries even if the asserted owner and digest match.
+    let (_alien_core, alien_owner) =
+        ControlCore::with_original_owner(boot(901), space(901), owner(9000)).unwrap();
+
+    let target = root(901, CPU_PERIOD_NS);
+    let who = publisher(901);
+    let token = core.reserve(
+        request(1, target.grant(who).unwrap(), 1, 20), who,
+    ).unwrap();
+    core.commit(&token, who, 20).unwrap();
+    let observer = core.delivery_view();
+    assert_eq!(
+        core.query_delivery(&observer, 1).unwrap().state,
+        DeliveryState::Terminal
+    );
+
+    // Neither a matching owner ID plus invented digest nor an owner handle
+    // issued for a separate ControlCore grants access to this namespace.
+    assert_eq!(
+        core.retire_through(&observer, ack(&core, 1), &alien_owner),
+        Err(DeliveryError::PermissionDenied)
+    );
+    let invented = HistoryAck::from_owner_receipt(
+        core.identity(), 1, OwnerReceipt::new(owner(9001), [9; 32]),
+    ).unwrap();
+    assert_eq!(
+        core.retire_through(&observer, invented, &original_owner),
+        Err(DeliveryError::PermissionDenied)
+    );
+    assert_eq!(core.window_len(), 1);
+    assert_eq!(
+        core.query_delivery(&observer, 1).unwrap().state,
+        DeliveryState::Terminal
+    );
+    // The trusted owner's explicit in-memory capability is necessary, but
+    // A07 must separately validate durability at the original Hepta owner.
+    let result = core.retire_through(&observer, ack(&core, 1), &original_owner)
+        .unwrap();
+    assert_eq!(result.retired_through, 1);
 }
 
 #[test]

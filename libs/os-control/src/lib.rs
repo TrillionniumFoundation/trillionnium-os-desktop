@@ -92,10 +92,20 @@ id_type!(StableObjectId);
 id_type!(PublisherId);
 id_type!(OwnerId);
 
+/// A checked HOS2 boot/CapSpace namespace. Untrusted callers cannot forge
+/// zero identifiers via public struct literals.
+///
+/// ```compile_fail
+/// use os_control::{BootId, CapSpaceId, NamespaceIdentity};
+/// let _invalid = NamespaceIdentity {
+///     boot_id: BootId::from_u128(0),
+///     cap_space_id: CapSpaceId::from_u128(0),
+/// };
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct NamespaceIdentity {
-    pub boot_id: BootId,
-    pub cap_space_id: CapSpaceId,
+    boot_id: BootId,
+    cap_space_id: CapSpaceId,
 }
 
 impl NamespaceIdentity {
@@ -108,33 +118,80 @@ impl NamespaceIdentity {
             cap_space_id,
         })
     }
-}
 
-/// The original Hepta logical operation identity (K). This is an opaque
-/// value carried by an integration owner; the control core never persists,
-/// indexes, or derives execution authority from it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct LogicalOperationId {
-    pub scope_id: Id16,
-    pub operation_id: Id16,
-}
+    pub const fn boot_id(self) -> BootId {
+        self.boot_id
+    }
 
-impl LogicalOperationId {
-    pub fn new(scope_id: Id16, operation_id: Id16) -> Result<Self, IdentityError> {
-        if !scope_id.is_nonzero() || !operation_id.is_nonzero() {
-            return Err(IdentityError::ZeroIdentity);
-        }
-        Ok(Self {
-            scope_id,
-            operation_id,
-        })
+    pub const fn cap_space_id(self) -> CapSpaceId {
+        self.cap_space_id
     }
 }
 
+/// The EXACT value of Hepta's pinned hepta-operations OperationKey (K):
+/// StableId (ASCII grammar, 1..=128 bytes) plus the final payload Digest32.
+/// Neither an arbitrary 128-bit ID nor a digest of the key is a lossless K.
+/// This is a value carrier only; the existing Hepta owner holds the durable K
+/// ledger and checks OperationIntentV1::semantic_digest before issuing a D.
+///
+/// Keep the validated fields private: public struct literals or mutation would
+/// bypass `new` and let adapters manufacture invalid (K, digest) pairs.
+///
+/// ```compile_fail
+/// use os_control::LogicalOperationId;
+/// let _forged = LogicalOperationId {
+///     stable_id: String::new(),
+///     payload_digest: [0; 32],
+/// };
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct LogicalOperationId {
+    stable_id: String,
+    payload_digest: [u8; 32],
+}
+
+impl LogicalOperationId {
+    /// Validate the original StableId before allocating the owned K value.
+    pub fn new(stable_id: impl AsRef<str>, payload_digest: [u8; 32])
+        -> Result<Self, IdentityError>
+    {
+        let stable_id = stable_id.as_ref();
+        if stable_id.is_empty()
+            || stable_id.len() > 128
+            || !stable_id
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_' | b'-' | b':'))
+            || payload_digest == [0; 32]
+        {
+            return Err(IdentityError::InvalidOperationKey);
+        }
+        Ok(Self {
+            stable_id: stable_id.to_owned(),
+            payload_digest,
+        })
+    }
+
+    pub fn stable_id(&self) -> &str {
+        &self.stable_id
+    }
+
+    pub fn payload_digest(&self) -> [u8; 32] {
+        self.payload_digest
+    }
+}
+
+/// The boot-local D can only be created with a checked nonzero namespace and
+/// a sequence other than 0 or the reserved terminal u64::MAX value.
+///
+/// ```compile_fail
+/// use os_control::{BootId, CapSpaceId, NamespaceIdentity, DeliveryId};
+/// let ns = NamespaceIdentity::new(BootId::from_u128(1), CapSpaceId::from_u128(1)).unwrap();
+/// let _invalid = DeliveryId { namespace: ns, sequence: 0 };
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct DeliveryId {
-    pub namespace: NamespaceIdentity,
-    pub sequence: u64,
+    namespace: NamespaceIdentity,
+    sequence: u64,
 }
 
 impl DeliveryId {
@@ -147,18 +204,26 @@ impl DeliveryId {
             sequence,
         })
     }
+
+    pub const fn namespace(self) -> NamespaceIdentity {
+        self.namespace
+    }
+
+    pub const fn sequence(self) -> u64 {
+        self.sequence
+    }
 }
 
 /// A value-only association for A07. It is not a persistence record and does
 /// not make K a lookup key for a D result.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct OperationBinding {
     pub logical: LogicalOperationId,
     pub delivery: DeliveryId,
 }
 
 impl OperationBinding {
-    pub const fn new(logical: LogicalOperationId, delivery: DeliveryId) -> Self {
+    pub fn new(logical: LogicalOperationId, delivery: DeliveryId) -> Self {
         Self { logical, delivery }
     }
 }
@@ -166,6 +231,7 @@ impl OperationBinding {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IdentityError {
     ZeroIdentity,
+    InvalidOperationKey,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -882,6 +948,22 @@ impl HistoryAck {
     }
 }
 
+/// Retirement requires this non-forgeable, namespace-bound bootstrap handle.
+/// Only the existing trusted Hepta operation owner receives it from the
+/// privileged initial constructor. This is an in-memory permission object,
+/// NOT a second durable operation ledger or evidence of fsync by itself.
+pub struct OriginalOwnerAuthority {
+    namespace: Arc<NamespaceState>,
+    owner: OwnerId,
+    generation: u64,
+}
+
+impl OriginalOwnerAuthority {
+    pub const fn owner(&self) -> OwnerId {
+        self.owner
+    }
+}
+
 #[derive(Clone)]
 pub struct DeliveryView {
     identity: NamespaceIdentity,
@@ -918,6 +1000,40 @@ pub struct RetireReceipt {
 impl ControlCore {
     pub fn new(boot_id: BootId, cap_space_id: CapSpaceId) -> Self {
         Self::with_capacity(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY)
+    }
+
+    /// Construct an owner-capable namespace during privileged boot handoff.
+    /// A later observer of ControlCore/DeliveryView cannot mint this handle
+    /// for the *existing* namespace. The caller must give the handle only to
+    /// the original Hepta operation owner AFTER authenticating that owner.
+    ///
+    /// A receipt digest is a reference to owner-persisted facts; this model
+    /// cannot prove durable storage. A07 must verify it at the existing owner.
+    pub fn with_original_owner(
+        boot_id: BootId,
+        cap_space_id: CapSpaceId,
+        owner: OwnerId,
+    ) -> Result<(Self, OriginalOwnerAuthority), DeliveryError> {
+        Self::with_capacity_for_owner(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY, owner)
+    }
+
+    pub fn with_capacity_for_owner(
+        boot_id: BootId,
+        cap_space_id: CapSpaceId,
+        capacity: usize,
+        owner: OwnerId,
+    ) -> Result<(Self, OriginalOwnerAuthority), DeliveryError> {
+        if !owner.is_nonzero() {
+            return Err(DeliveryError::InvalidIdentity);
+        }
+        let core = Self::with_capacity(boot_id, cap_space_id, capacity);
+        let generation = lock_unpoisoned(&core.namespace.state).generation;
+        let capability = OriginalOwnerAuthority {
+            namespace: Arc::clone(&core.namespace),
+            owner,
+            generation,
+        };
+        Ok((core, capability))
     }
 
     pub fn with_capacity(boot_id: BootId, cap_space_id: CapSpaceId, capacity: usize) -> Self {
@@ -1105,14 +1221,21 @@ impl ControlCore {
         }
     }
 
+    /// Retire a contiguous terminal prefix only with the original owner's
+    /// bootstrap authority. An observer's delivery view and caller-invented
+    /// receipt digest cannot authorize retirement. Only the trusted owner
+    /// adapter may invoke this after verifying its existing durable K record.
     pub fn retire_through(
         &self,
         view: &DeliveryView,
         ack: HistoryAck,
+        owner_authority: &OriginalOwnerAuthority,
     ) -> Result<RetireReceipt, DeliveryError> {
         if view.identity != self.identity()
             || ack.namespace != self.identity()
             || !Arc::ptr_eq(&view.namespace, &self.namespace)
+            || !Arc::ptr_eq(&owner_authority.namespace, &self.namespace)
+            || owner_authority.owner != ack.receipt.owner
             || view
                 .owner
                 .map(|owner| owner != ack.receipt.owner)
@@ -1121,7 +1244,10 @@ impl ControlCore {
             return Err(DeliveryError::PermissionDenied);
         }
         let mut ns = lock_unpoisoned(&self.namespace.state);
-        if ns.history_lost || view.generation != ns.generation {
+        if ns.history_lost
+            || view.generation != ns.generation
+            || owner_authority.generation != ns.generation
+        {
             return Err(DeliveryError::HistoryLost);
         }
         if ack.receipt.receipt_digest == [0; 32]
@@ -1432,7 +1558,8 @@ mod tests {
     #[test]
     fn basic_commit_and_observation() {
         let (boot, space, domain_id, object, publisher, owner) = ids(1);
-        let core = ControlCore::new(boot, space);
+        let (core, owner_authority) =
+            ControlCore::with_original_owner(boot, space, owner).unwrap();
         let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
         let grant = domain.grant(publisher).unwrap();
         let token = core
@@ -1447,7 +1574,7 @@ mod tests {
         let ack =
             HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
                 .unwrap();
-        core.retire_through(&view, ack).unwrap();
+        core.retire_through(&view, ack, &owner_authority).unwrap();
         assert_eq!(
             core.query_delivery(&view, 1).unwrap().state,
             DeliveryState::Retired
