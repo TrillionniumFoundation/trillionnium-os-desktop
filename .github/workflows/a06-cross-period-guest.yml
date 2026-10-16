@@ -1,0 +1,82 @@
+name: A06 experimental period-boundary guest regression
+
+on:
+  push:
+    branches:
+      - agents/A06-cross-period-charge
+    paths:
+      - kernel/**
+      - tests/organ_backend/**
+      - .github/workflows/a06-cross-period-guest.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kernel-guest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      CARGO_BUILD_JOBS: "3"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify repository and root README
+        run: |
+          set -euo pipefail
+          test "$(wc -c < README.md)" -eq 0
+          git rev-parse HEAD
+          git status --porcelain
+      - name: Install disposable runner build dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates curl git python3 pkg-config libssl-dev \
+            clang lld qemu-system-x86 busybox-static
+      - name: Install exact pinned Rust, components and verified vDSO
+        run: bash support/build/prepare-host.sh
+      - name: Build real Asterinas kernel from the proposed source
+        run: bash support/build/kernel.sh kernel
+      - name: Run real aster-core QEMU kernel regressions
+        run: |
+          set -euo pipefail
+          python3 -I support/build/ktest/prepare-locks.py
+          python3 -I support/build/ktest/run.py --crate aster-core --skip-osdk-install --output "$RUNNER_TEMP/a06-boundary-ktest"
+      - name: Verify quota-period boundary patch in full guest CPU workloads
+        run: |
+          set -euo pipefail
+          elf=kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf
+          test -s "$elf"
+          kernel_sha="$(sha256sum "$elf" | cut -d ' ' -f 1)"
+          printf 'A06_BOUNDARY_KERNEL_SHA256=%s\n' "$kernel_sha"
+          python3 tests/organ_backend/run_candidate_matrix.py \
+            --a01-tree . --kernel "$elf" --expected-sha256 "$kernel_sha" \
+            --out "$RUNNER_TEMP/a06-leaf-one" --mode leaf --quota-us 1000 \
+            --duration-seconds 10 --max-cpu-percent 1.6
+          python3 tests/organ_backend/run_candidate_matrix.py \
+            --a01-tree . --kernel "$elf" --expected-sha256 "$kernel_sha" \
+            --out "$RUNNER_TEMP/a06-leaf-ten" --mode leaf --quota-us 10000 \
+            --duration-seconds 1 --max-cpu-percent 12
+          python3 tests/organ_backend/run_candidate_matrix.py \
+            --a01-tree . --kernel "$elf" --expected-sha256 "$kernel_sha" \
+            --out "$RUNNER_TEMP/a06-rt-ten" --mode rt --quota-us 10000 \
+            --duration-seconds 1 --max-cpu-percent 12
+          python3 tests/organ_backend/run_candidate_matrix.py \
+            --a01-tree . --kernel "$elf" --expected-sha256 "$kernel_sha" \
+            --out "$RUNNER_TEMP/a06-parent-ten" --mode parent --quota-us 10000 \
+            --duration-seconds 1 --max-cpu-percent 12
+      - name: Preserve QEMU and build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a06-cross-period-guest-evidence
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            support/build/out/**
+            ${{ runner.temp }}/a06-boundary-ktest/**
+            ${{ runner.temp }}/a06-leaf-one/**
+            ${{ runner.temp }}/a06-leaf-ten/**
+            ${{ runner.temp }}/a06-rt-ten/**
+            ${{ runner.temp }}/a06-parent-ten/**
