@@ -953,7 +953,7 @@ impl DeliveryObservation {
                         Some(_consumed_ns),
                     ) if object.is_nonzero()
                         && previous > 0
-                        && previous < u64::MAX - 1
+                        && previous < u64::MAX
                         && saved == previous + 1 => Some(0),
                     _ => None,
                 }

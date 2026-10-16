@@ -187,6 +187,11 @@ fn malformed_public_delivery_observations_fail_closed_for_wire_status() {
     malformed = successful;
     malformed.saved_revision = Some(900);
     assert_eq!(malformed.hos2_saved_status_code(), None);
+    // The final representable CAS is previous=MAX-1, saved=MAX.
+    let mut last_revision = successful;
+    last_revision.previous_revision = Some(u64::MAX - 1);
+    last_revision.saved_revision = Some(u64::MAX);
+    assert_eq!(last_revision.hos2_saved_status_code(), Some(0));
     malformed = terminal;
     malformed.status = Some(DeliveryStatus::Revoked);
     malformed.consumed_ns = Some(0);
