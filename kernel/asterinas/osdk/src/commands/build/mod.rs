@@ -6,6 +6,7 @@ mod qcow2;
 
 use std::{
     ffi::OsString,
+    io::{self, Write},
     path::{Path, PathBuf},
     process,
     time::SystemTime,
@@ -275,7 +276,7 @@ fn build_kernel_elf(
             error_msg!("OSDK_CARGO_LOCK must be an absolute path");
             process::exit(Errno::BuildCrate as _);
         }
-        if let Err(error) = std::fs::copy(&lock_path, "Cargo.lock") {
+        if let Err(error) = install_cargo_lock(&lock_path, Path::new(".")) {
             error_msg!("Failed to install OSDK_CARGO_LOCK: {}", error);
             process::exit(Errno::BuildCrate as _);
         }
@@ -355,4 +356,53 @@ fn get_last_modified_time(path: impl AsRef<Path>) -> SystemTime {
         }
     }
     last_modified
+}
+
+// Read before replacing the destination so that an identical path or hard
+// link cannot make a copy operation truncate its own input. Persisting a
+// sibling temporary file also keeps the prior lock intact on write failure.
+fn install_cargo_lock(source: &Path, directory: &Path) -> io::Result<()> {
+    let bytes = std::fs::read(source)?;
+    let mut temporary = tempfile::NamedTempFile::new_in(directory)?;
+    temporary.write_all(&bytes)?;
+    temporary
+        .persist(directory.join("Cargo.lock"))
+        .map_err(|error| error.error)?;
+    Ok(())
+}
+
+#[cfg(test)]
+mod lock_tests {
+    use super::*;
+
+    #[test]
+    fn same_path_preserves_lock_contents() {
+        let directory = tempfile::tempdir().unwrap();
+        let lock = directory.path().join("Cargo.lock");
+        std::fs::write(&lock, b"version = 4\n").unwrap();
+        install_cargo_lock(&lock, directory.path()).unwrap();
+        assert_eq!(std::fs::read(lock).unwrap(), b"version = 4\n");
+    }
+
+    #[test]
+    fn hard_link_preserves_source_and_destination() {
+        let directory = tempfile::tempdir().unwrap();
+        let source = directory.path().join("pinned.lock");
+        let destination = directory.path().join("Cargo.lock");
+        std::fs::write(&source, b"version = 4\n").unwrap();
+        std::fs::hard_link(&source, &destination).unwrap();
+        install_cargo_lock(&source, directory.path()).unwrap();
+        assert_eq!(std::fs::read(source).unwrap(), b"version = 4\n");
+        assert_eq!(std::fs::read(destination).unwrap(), b"version = 4\n");
+    }
+
+    #[test]
+    fn missing_source_leaves_existing_lock_intact() {
+        let directory = tempfile::tempdir().unwrap();
+        let destination = directory.path().join("Cargo.lock");
+        std::fs::write(&destination, b"version = 4\n").unwrap();
+        let result = install_cargo_lock(&directory.path().join("missing.lock"), directory.path());
+        assert!(result.is_err());
+        assert_eq!(std::fs::read(destination).unwrap(), b"version = 4\n");
+    }
 }

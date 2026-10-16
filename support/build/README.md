@@ -36,13 +36,41 @@ explicit packaged SeaBIOS, a serial console, and `isa-debug-exit`. It packages
 static BusyBox, a small init script, and the unmodified upstream
 `test/initramfs/src/boot_hello.sh` into a deterministic newc/gzip initramfs.
 
-Evidence is written under `support/build/out/` by default. `A01_RUN_DIR` selects
-a destination; `A01_QEMU_TIMEOUT` sets the timeout in seconds (default 300).
+Evidence is written to a new directory under `support/build/out/` by default.
+`A01_RUN_DIR` selects a destination that must not already exist;
+`A01_QEMU_TIMEOUT` sets the timeout in seconds (default 300).
 Each run records environment, exact make command, make exit status, initramfs
 manifest, full build output, exact QEMU argv, artifact SHA256 values, raw QEMU
 exit status, and complete serial output. The smoke passes only with all guest
 markers, no panic, and **raw QEMU exit 33**. QEMU exit 65 is guest failure;
 OSDK normalizes successful 33 to make exit 0.
+The wrapper rejects incomplete log capture, forces its initramfs prerequisite
+on, and shares a persistent workspace lock with the kernel-test runner. Its
+temporary manifest is installed without replacing an existing file, and
+cleanup removes only the inode installed by that invocation.
+
+## Kernel-mode regression tests
+
+```sh
+# Runs both full crate test sets inside separate QEMU guests.
+python3 -I support/build/ktest/run.py
+
+# Or run a single crate.
+python3 -I support/build/ktest/run.py --crate ostd
+python3 -I support/build/ktest/run.py --crate aster-core
+```
+
+These use the same fixed CPU, memory and firmware profile. They build real
+upstream test kernels with separate locks derived from the original root
+lock, retain complete serial logs, and reject empty or filtered full runs.
+See `ktest/README.md` for lock preparation, focused filters, output selection
+and reuse of the source-built OSDK.
+
+The recorded next-phase runs report OSTD **221 passed**, aster-core **141
+passed**, and zero failures. Three OSTD tests returned success after explicitly
+soft-skipping VMX/EPT paths unavailable under TCG; the exercised pass lower
+bound is **359**, not 362. These results cover those two kernel crates on
+one vCPU; they do not establish the full upstream userspace/device matrix.
 
 ## Dependency and source integrity
 
@@ -58,6 +86,8 @@ Later intentional derivative edits are expected to fail that strict comparison.
 
 Only one upstream file changes for the build: `osdk/src/commands/build/mod.rs`
 accepts `OSDK_CARGO_LOCK` and passes `--locked` to its generated-crate build.
+Lock installation uses a temporary file and atomic replacement, including
+when the supplied lock is the destination itself or a hard link to it.
 The generated OSDK base crate is a separate Cargo workspace; upstream's root
 lock alone does not freeze it. `minimal/Cargo.lock` is normalized from that
 fixed root lock: 203 packages, with no external version/source/checksum drift.
@@ -107,6 +137,14 @@ tooling ownership and will not overwrite their core changes.
 Real smoke results, failures, and host package limitations are in
 `evidence/2026-10-16/`. The BusyBox applet workaround avoids an observed script
 `/proc/self/exe` compatibility issue; that core issue remains for A05 to assess.
-Only the recorded boot smoke and stated host tests have been exercised;
-full kernel-mode/regression/conformance suites, HOS2, SMP control, physical
-hardware, Android, GPU, and Hepta end-to-end behavior remain untested.
+The next-phase evidence is in `evidence/2026-10-16-next/`. It includes the two
+kernel crate runs and the original OSDK host unit result: 13 passed, one
+daemon-descendant test failed. GDB availability and 13 selected non-VM
+integration tests passed. The host has mismatched PID and `/proc` namespaces;
+focused diagnostic passes do not supersede the original failure. The daemon
+lifecycle risk remains open and does not affect this profile's lack of host
+daemons. A05/A06 can use the saved kernel crate results as an upstream baseline.
+
+The full upstream matrix, HOS2, SMP control, physical hardware, Android, GPU,
+and Hepta end-to-end behavior remain untested. Cross-host reproducibility and
+a clean full OSDK host suite remain open.
