@@ -73,7 +73,7 @@ class GemmTests(unittest.TestCase):
     def test_missing_driver_never_falls_back_to_cpu(self):
         with patch.object(cuda_gemm, "library", side_effect=cuda_gemm.Blocked("no driver")):
             with self.assertRaises(cuda_gemm.Blocked):
-                cuda_gemm.gpu_gemm("RTX 4060", "")
+                cuda_gemm.gpu_gemm("RTX 4060", "0000:01:00.0", lab_isolated=True)
 
 
 if __name__ == "__main__":

@@ -12,9 +12,15 @@ import hashlib
 import json
 import math
 import platform
+import re
 import struct
 
 N = 16
+BDF_RE = re.compile(r"^[0-9a-fA-F]{4,8}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-7]$")
+GOLDEN_INPUT_A = "0d9121c90b659969a44ca689809ebd3a6579f3f18b6aa5b9de5da1b98a9458ae"
+GOLDEN_INPUT_B = "37ca62264050ddd6b8674649a77ec6047f3aa1a2d87f97858f7f6be38189df74"
+GOLDEN_OUTPUT = "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847"
+
 CUDA_SOURCE = r'''
 extern "C" __global__ void gemm16(const float *a, const float *b, float *c) {
     int r = blockIdx.x;
@@ -90,7 +96,9 @@ class Api:
             raise GpuError(f"{self.prefix}.{symbol} returned {rc}")
 
 
-def gpu_gemm(required_name, required_bdf):
+def gpu_gemm(required_name, required_bdf, *, lab_isolated=False):
+    if not lab_isolated or not BDF_RE.fullmatch(required_bdf) or not required_name.strip():
+        raise Blocked("direct CUDA calls require isolated-lab opt-in, pinned BDF and device name")
     cuda = Api(library(["libcuda.so.1", find_library("cuda")]), "CUDA")
     # Driver API is mandatory; a software rendering backend cannot satisfy these calls.
     cuda.call("cuInit", [C.c_uint], 0)
@@ -217,7 +225,9 @@ def gpu_gemm(required_name, required_bdf):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--require-name", default="RTX 4060")
-    parser.add_argument("--require-bdf", default="", help="optional exact PCI BDF from read-only probe")
+    parser.add_argument("--require-bdf", default="", help="REQUIRED exact guest PCI BDF from read-only probe")
+    parser.add_argument("--isolated-lab", action="store_true",
+                        help="explicitly acknowledge that this is an idle disposable GPU lab, not H3/training/prod")
     parser.add_argument("--output", default="-", help="'-' prints JSON")
     args = parser.parse_args()
     a, b = inputs()
@@ -234,9 +244,23 @@ def main():
         "physical_device_assignment_verified": False,
         "reset_or_failure_recovery_verified": False,
         "no_cpu_fallback": True, "device": None,
+        "device_access_attempted": False, "isolated_lab_user_assertion": args.isolated_lab,
+        "host_kernel_attested": False, "guest_kernel_attested": False,
+        "actual_gpu_location_attested": False,
     }
     try:
-        device, output = gpu_gemm(args.require_name, args.require_bdf)
+        if not args.isolated_lab:
+            raise Blocked("explicit --isolated-lab required before loading CUDA driver; never run on H3/training/prod")
+        if not BDF_RE.fullmatch(args.require_bdf):
+            raise Blocked("exact --require-bdf domain:bus:device.function required from isolated guest enumeration")
+        if not args.require_name.strip():
+            raise Blocked("nonempty --require-name required")
+        if (evidence["input_a_sha256"], evidence["input_b_sha256"],
+                evidence["expected_output_sha256"]) != (
+                GOLDEN_INPUT_A, GOLDEN_INPUT_B, GOLDEN_OUTPUT):
+            raise GpuError("CPU golden inputs/reference mismatch; refusing GPU launch")
+        evidence["device_access_attempted"] = True
+        device, output = gpu_gemm(args.require_name, args.require_bdf, lab_isolated=True)
         evidence["device"] = device
         evidence["actual_output_sha256"] = digest(output)
         mismatch = compare(output, expected)
