@@ -2,8 +2,10 @@
 import gzip
 import json
 from pathlib import Path
+import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from archive import archive, MAX_FILE_BYTES
 
@@ -37,6 +39,31 @@ class ArchiveTests(unittest.TestCase):
             with self.subTest(candidate=candidate), self.assertRaises(ValueError):
                 archive(candidate, self.dest)
             self.assertFalse(self.dest.exists())
+
+    def test_source_directory_replaced_after_root_fd_open_never_reads_outside(self):
+        # A same-user process can rename the source root while the archiver
+        # already holds its original directory FD; the walk must remain
+        # anchored to that FD rather than reopen the swapped pathname.
+        (self.source / "inside.json").write_bytes(b"original-root")
+        outside = self.root / "outside"
+        outside.mkdir()
+        (outside / "outside.json").write_bytes(b"external-dummy")
+        old_fwalk = os.fwalk
+        swapped = False
+
+        def replace_before_walk(*args, **kwargs):
+            nonlocal swapped
+            if not swapped:
+                swapped = True
+                self.source.rename(self.root / "parked-original")
+                outside.rename(self.source)
+            return old_fwalk(*args, **kwargs)
+
+        with patch("archive.os.fwalk", side_effect=replace_before_walk):
+            self.assertEqual(archive(self.source, self.dest), 1)
+        self.assertTrue(swapped)
+        self.assertEqual((self.dest / "inside.json").read_bytes(), b"original-root")
+        self.assertFalse((self.dest / "outside.json").exists())
 
     def test_symlink_source_rejected(self):
         alias = self.root / "alias"
