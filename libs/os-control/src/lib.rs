@@ -360,13 +360,20 @@ impl ResourceDomain {
     }
 
     pub fn usage(&self, sample_boottime_ns: u64) -> UsageSnapshot {
-        let state = self.snapshot_state();
+        let _gate = lock_unpoisoned(&self.inner.gate);
+        let mut state = lock_unpoisoned(&self.inner.state);
+        let window_start_ns =
+            (sample_boottime_ns / state.budget.period_ns) * state.budget.period_ns;
+        if window_start_ns != state.window_start_ns {
+            state.window_start_ns = window_start_ns;
+            state.window_consumed_ns = 0;
+        }
         UsageSnapshot {
             stable_object_id: state.stable_object_id,
             revision: state.revision,
             sample_boottime_ns,
             cumulative_cpu_ns: state.consumed_ns,
-            window_start_ns: (sample_boottime_ns / state.budget.period_ns) * state.budget.period_ns,
+            window_start_ns: state.window_start_ns,
             window_consumed_ns: state.window_consumed_ns,
             active_cap_ns: state.budget.cap_ns,
             active_period_ns: state.budget.period_ns,
