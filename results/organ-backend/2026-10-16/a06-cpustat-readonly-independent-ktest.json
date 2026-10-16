@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "crates": [
+    {
+      "passed": true,
+      "guests": [
+        {
+          "crate": "aster-core",
+          "declared": 153,
+          "passed": 153,
+          "failed": 0,
+          "filtered": 0,
+          "soft_skipped": 0,
+          "soft_skip_reasons": [],
+          "exercised_passed_lower_bound": 153,
+          "observed_test_starts": 153,
+          "raw_qemu_exit": 33,
+          "guest": "guest-001"
+        }
+      ]
+    }
+  ],
+  "source_commit": "ad55fecd95857f3e3c7cb5997118f7a44e5f5555",
+  "test_elf_sha256": "869adb57b44930ca9a7a5943fda3fb831626f247a43821426456b82564a36eed",
+  "full_kernel_elf_sha256": "41cd6283facb4bf4ce1c7f60284c4433ba6d2777e73e54a58eaf5e1a4169fe43",
+  "test_environment": "native cargo osdk test --crate aster-core --skip-osdk-install, fixed nightly 2026-07-21, x86_64 q35/TCG 1vCPU 512 MiB no host networking/data disks",
+  "scope": "aster-core only; OSTD full suite, SMP, HOS2 effects, production remain untested"
+}
