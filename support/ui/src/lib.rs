@@ -26,6 +26,11 @@ use std::collections::BTreeMap;
 /// lifecycle decisions explicit before a real implementation is connected.
 pub mod android;
 
+/// Consumer-only view of permission observations supplied by the trusted
+/// session/portal owner.  This module contains no grant, revoke, prompt or
+/// transport implementation and defines no permission wire format.
+pub mod permission;
+
 pub use hos2_os_abi::{
     DeliveryRequest, DeliveryState, Error as Hos2CodecError, Opcode, QueryAbiResponse,
     QueryDeliveryResponse, ReadUsageResponse, Request, RequestPayload, Response, ResponsePayload,

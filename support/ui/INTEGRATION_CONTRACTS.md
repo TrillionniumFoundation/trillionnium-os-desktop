@@ -21,6 +21,19 @@ notifications must be portal mediated with revocation, not default Hepta
 recording. Trusted prompts must be rendered from a system-owned surface.
 The host prototype offers none of these grants.
 
+### Consumer-side permission state
+
+`support/ui/src/permission.rs` provides the shell's consumer-only
+`PermissionState`. It accepts a capability kind, an opaque owner-supplied
+revision and an observed decision; it does not request a grant, mint a token,
+identify a process, select a workspace/trust domain or define a portal wire
+format. An empty cache is `Unknown` and denies access. Only the latest
+authoritative `Granted` observation allows an action. Older observations and
+same-revision conflicts are rejected, so a stale grant cannot resurrect a
+revoked or expired capability. `request()` is an explicit handoff marker for
+the future A05 portal and has no local side effect. These are negative and
+ordering checks for UI behavior, not evidence that an A05 portal exists.
+
 ## A07: non-fabricated Hepta task stream
 
 Consume the existing Hepta owner/ledger instead of maintaining an extra

@@ -46,6 +46,11 @@ and wait/reap results. Hepta is unconnected, and its effects are UNKNOWN.
 Host /proc metrics are labeled Linux host readings, not A02/A07 HOS2 samples.
 OS permission prompts, screencasting, microphone, camera, file portal, D-Bus,
 Xwayland isolation, Android SurfaceFlinger and GPU reset are not implemented.
+`support/ui/src/permission.rs` contains only a consumer cache of externally
+observed permission decisions. Unknown/denied/revoked/expired decisions are
+fail-closed; the cache cannot issue a grant or infer scope from a workspace
+label, process PID or assistant message. It is not an A05 portal or
+authorization protocol.
 
 Future trusted session/compositor integration requires A05 process identity
 and grant lifetime, A07 authenticated task view (K/D history/ack and
