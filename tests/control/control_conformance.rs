@@ -6,9 +6,9 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, LogicalOperationId, NamespaceIdentity, OperationBinding, OwnerId, OwnerReceipt,
-    PublishOutcome, PublisherId, ReserveAttempt, ResourceDomain, ResourceDomainId, ResourceError,
-    StableObjectId, CPU_PERIOD_NS,
+    DeliveryStatus, HistoryAck, LogicalOperationId, NamespaceIdentity, OperationBinding, OwnerId,
+    OwnerReceipt, PublishOutcome, PublisherId, ReserveAttempt, ResourceDomain, ResourceDomainId,
+    ResourceError, StableObjectId, CPU_PERIOD_NS,
 };
 use std::sync::{Arc, Barrier};
 use std::thread;
@@ -208,7 +208,6 @@ fn malformed_public_delivery_observations_fail_closed_for_wire_status() {
     malformed = original;
     malformed.saved_revision = Some(2);
     assert_eq!(malformed.hos2_saved_status_code(), None);
-    malformed = original;
     // Invalid public D fields can no longer be forged with struct syntax.
     // The checked constructor rejects zero and the reserved MAX sequence.
     assert_eq!(
@@ -339,7 +338,10 @@ fn malformed_install_budget_is_rejected_before_consuming_global_sequence() {
     ];
     bad_requests[3].period_ns = CPU_PERIOD_NS + 1;
     for bad in bad_requests {
-        assert_eq!(core.reserve(bad, who).err(), Some(DeliveryError::InvalidRequest));
+        assert_eq!(
+            core.reserve(bad, who).err(),
+            Some(DeliveryError::InvalidRequest)
+        );
         assert_eq!(core.next_sequence(), 1);
         assert_eq!(core.window_len(), 0);
         assert_eq!(
@@ -360,7 +362,8 @@ fn malformed_install_budget_is_rejected_before_consuming_global_sequence() {
     );
     assert_eq!(core.next_sequence(), 2);
     let view = core.delivery_view_for(owner(9000)).unwrap();
-    core.retire_through(&view, ack(&core, 1), &authority).unwrap();
+    core.retire_through(&view, ack(&core, 1), &authority)
+        .unwrap();
     // Once a syntactically valid D is reserved, a stale CAS revision is an
     // immutable semantic rejection, not another structural parse error.
     let stale = core.reserve(request(2, grant.clone(), 1, 20), who).unwrap();
@@ -482,7 +485,9 @@ fn revoked_ancestor_fences_child_grants_and_pending_commit() {
     let who = publisher(75_002);
     let old_grant = child.grant(who).unwrap();
     let core = ControlCore::new(boot(75_000), space(75_000));
-    let token = core.reserve(request(1, old_grant.clone(), 1, 55), who).unwrap();
+    let token = core
+        .reserve(request(1, old_grant.clone(), 1, 55), who)
+        .unwrap();
     parent.revoke();
     assert!(matches!(child.grant(who), Err(ResourceError::Revoked)));
     let denied = core.commit(&token, who, 10).unwrap();
@@ -549,7 +554,8 @@ fn same_d_with_new_ancestor_grant_conflicts_and_old_d_rejects_terminally() {
     root_domain.reactivate_for_host_model().unwrap();
     let fresh_grant = child.grant(who).unwrap();
     assert_eq!(
-        core.reserve(request(1, fresh_grant.clone(), 1, 60), who).err(),
+        core.reserve(request(1, fresh_grant.clone(), 1, 60), who)
+            .err(),
         Some(DeliveryError::Conflict)
     );
     assert!(matches!(
@@ -577,10 +583,8 @@ fn concurrent_ancestor_revoke_and_child_commit_preserve_epoch_fence() {
     // ancestor recovery the pre-revocation grant must still be invalid.
     for n in 0..128_u128 {
         let root_domain = root(203_000 + n, CPU_PERIOD_NS);
-        let child = with_parent(
-            domain(204_000 + n), object(204_000 + n), &root_domain, 80,
-        )
-        .unwrap();
+        let child =
+            with_parent(domain(204_000 + n), object(204_000 + n), &root_domain, 80).unwrap();
         let who = publisher(205_000 + n);
         let old_grant = child.grant(who).unwrap();
         let core = Arc::new(ControlCore::new(boot(203_000 + n), space(203_000 + n)));
@@ -615,9 +619,8 @@ fn concurrent_ancestor_revoke_and_child_commit_preserve_epoch_fence() {
 
         root_domain.reactivate_for_host_model().unwrap();
         assert_eq!(
-            child.install_budget_for_host_model(
-                &old_grant, child.revision(), CPU_PERIOD_NS, 50, 2,
-            ),
+            child
+                .install_budget_for_host_model(&old_grant, child.revision(), CPU_PERIOD_NS, 50, 2,),
             Err(ResourceError::GrantEpochMismatch)
         );
         let fresh_grant = child.grant(who).unwrap();
@@ -637,13 +640,8 @@ fn concurrent_ancestor_revoke_and_child_grant_issuance_fails_closed() {
     // after revoke and reactivation. If revoke wins, issuance must fail.
     for n in 0..128_u128 {
         let root_domain = root(206_000 + n, CPU_PERIOD_NS);
-        let child = with_parent(
-            domain(207_000 + n),
-            object(207_000 + n),
-            &root_domain,
-            70,
-        )
-        .unwrap();
+        let child =
+            with_parent(domain(207_000 + n), object(207_000 + n), &root_domain, 70).unwrap();
         let who = publisher(208_000 + n);
         let start = Arc::new(Barrier::new(3));
 
@@ -662,10 +660,7 @@ fn concurrent_ancestor_revoke_and_child_grant_issuance_fails_closed() {
         start.wait();
         let issued = issue.join().unwrap();
         revoke.join().unwrap();
-        assert!(matches!(
-            &issued,
-            Ok(_) | Err(ResourceError::Revoked)
-        ));
+        assert!(matches!(&issued, Ok(_) | Err(ResourceError::Revoked)));
         root_domain.reactivate_for_host_model().unwrap();
         if let Ok(stale) = issued {
             assert_eq!(
@@ -882,16 +877,13 @@ fn namespace_bootstrap_rejects_zero_id_and_out_of_range_window_capacity() {
             Some(DeliveryError::InvalidCapacity)
         );
         assert_eq!(
-            ControlCore::with_capacity_for_owner(
-                boot(2), space(3), invalid, owner(9000),
-            ).err(),
+            ControlCore::with_capacity_for_owner(boot(2), space(3), invalid, owner(9000),).err(),
             Some(DeliveryError::InvalidCapacity)
         );
     }
-    let valid = ControlCore::try_with_capacity(
-        boot(2), space(3), os_control::DEFAULT_WINDOW_CAPACITY,
-    )
-    .unwrap();
+    let valid =
+        ControlCore::try_with_capacity(boot(2), space(3), os_control::DEFAULT_WINDOW_CAPACITY)
+            .unwrap();
     assert_eq!(valid.capacity(), os_control::DEFAULT_WINDOW_CAPACITY);
     assert_eq!(valid.next_sequence(), 1);
     assert_eq!(valid.window_len(), 0);
@@ -949,7 +941,9 @@ fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_availab
         )
         .unwrap()
     });
-    let retired = core.retire_through(&view, ack(&core, 4), &owner_authority).unwrap();
+    let retired = core
+        .retire_through(&view, ack(&core, 4), &owner_authority)
+        .unwrap();
     assert_eq!(retired.retired_through, 4);
     let token5 = core
         .reserve(
@@ -1141,7 +1135,9 @@ fn concurrent_query_publish_and_retire_observe_whole_states() {
     let published = publish.join().unwrap();
     query.join().unwrap();
     assert_eq!(published.status, Some(DeliveryStatus::Ok));
-    let retired = core.retire_through(&view, ack(&core, 1), &owner_authority).unwrap();
+    let retired = core
+        .retire_through(&view, ack(&core, 1), &owner_authority)
+        .unwrap();
     assert_eq!(retired.retired_through, 1);
     assert_eq!(
         core.query_delivery(&view, 1).unwrap().state,
@@ -1289,9 +1285,9 @@ fn forged_ack_or_foreign_owner_handle_cannot_retire_terminal_history() {
         core.retire_through(&view, ack(&core, 1), &alien_owner),
         Err(DeliveryError::PermissionDenied)
     );
-    let forged = HistoryAck::from_owner_receipt(
-        core.identity(), 1, OwnerReceipt::new(owner(9001), [1; 32]),
-    ).unwrap();
+    let forged =
+        HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner(9001), [1; 32]))
+            .unwrap();
     assert_eq!(
         core.retire_through(&view, forged, &original_owner),
         Err(DeliveryError::PermissionDenied)
@@ -1388,9 +1384,7 @@ fn budget_installation_advances_only_on_real_period_boundaries() {
         .unwrap();
     assert_eq!(unchanged.consumed_at_apply_ns, 40);
     let next = target
-        .install_budget_for_host_model(
-            &grant, 2, CPU_PERIOD_NS, 20, CPU_PERIOD_NS + 1
-        )
+        .install_budget_for_host_model(&grant, 2, CPU_PERIOD_NS, 20, CPU_PERIOD_NS + 1)
         .unwrap();
     assert_eq!(next.consumed_at_apply_ns, 0);
     assert_eq!(target.usage(CPU_PERIOD_NS + 2).window_consumed_ns, 0);
@@ -1402,7 +1396,9 @@ fn concurrent_publish_observe_never_yields_partial_terminal_metadata() {
     let core = Arc::new(ControlCore::new(boot(60_000), space(60_000)));
     let target = root(60_000, CPU_PERIOD_NS);
     let who = publisher(60_001);
-    let token = core.reserve(request(1, target.grant(who).unwrap(), 1, 30), who).unwrap();
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 30), who)
+        .unwrap();
     let view = core.delivery_view();
     let start = Arc::new(Barrier::new(3));
     let query_start = Arc::clone(&start);
@@ -1435,13 +1431,17 @@ fn concurrent_publish_observe_never_yields_partial_terminal_metadata() {
     let publish_core = Arc::clone(&core);
     let publish = thread::spawn(move || {
         publish_start.wait();
-        publish_core.publish(&token, who, PublishOutcome::Success {
-            stable_object_id: object(60_000),
-            previous_revision: 1,
-            saved_revision: 2,
-            effective_ns: 77,
-            consumed_ns: 9,
-        })
+        publish_core.publish(
+            &token,
+            who,
+            PublishOutcome::Success {
+                stable_object_id: object(60_000),
+                previous_revision: 1,
+                saved_revision: 2,
+                effective_ns: 77,
+                consumed_ns: 9,
+            },
+        )
     });
     start.wait();
     let terminal = publish.join().unwrap().unwrap();
@@ -1454,9 +1454,9 @@ fn concurrent_publish_observe_never_yields_partial_terminal_metadata() {
 #[test]
 fn copyout_retry_racing_with_retirement_never_reopens_a_delivery() {
     for n in 0..96_u128 {
-        let (control, authority) = ControlCore::with_original_owner(
-            boot(61_000 + n), space(61_000 + n), owner(9000),
-        ).unwrap();
+        let (control, authority) =
+            ControlCore::with_original_owner(boot(61_000 + n), space(61_000 + n), owner(9000))
+                .unwrap();
         let core = Arc::new(control);
         let target = root(61_000 + n, CPU_PERIOD_NS);
         let who = publisher(62_000 + n);
@@ -1514,9 +1514,7 @@ fn cross_branch_domain_and_object_id_reuse_are_rejected() {
     assert_eq!(real.budget().cap_ns, 20);
     let who = publisher(80_005);
     assert_eq!(
-        root.install_budget_for_host_model(
-            &root.grant(who).unwrap(), 1, CPU_PERIOD_NS, 79, 1
-        ),
+        root.install_budget_for_host_model(&root.grant(who).unwrap(), 1, CPU_PERIOD_NS, 79, 1),
         Err(ResourceError::ParentConstraint)
     );
 }
@@ -1568,8 +1566,7 @@ fn failed_ancestor_charge_never_advances_descendant_clock_or_counters() {
 #[test]
 fn exhausted_grandparent_does_not_modify_either_descendant() {
     let grandparent = root(140_000, 10);
-    let competitor =
-        with_parent(domain(140_001), object(140_001), &grandparent, 10).unwrap();
+    let competitor = with_parent(domain(140_001), object(140_001), &grandparent, 10).unwrap();
     let parent = with_parent(domain(140_002), object(140_002), &grandparent, 10).unwrap();
     let leaf = with_parent(domain(140_003), object(140_003), &parent, 10).unwrap();
 
@@ -1591,7 +1588,11 @@ fn concurrent_siblings_never_double_spend_shared_parent_quota() {
     let start = Arc::new(Barrier::new(65));
     let mut workers = Vec::new();
     for i in 0..64 {
-        let child = if i % 2 == 0 { left.clone() } else { right.clone() };
+        let child = if i % 2 == 0 {
+            left.clone()
+        } else {
+            right.clone()
+        };
         let ready = Arc::clone(&start);
         workers.push(thread::spawn(move || {
             ready.wait();
@@ -1599,16 +1600,25 @@ fn concurrent_siblings_never_double_spend_shared_parent_quota() {
         }));
     }
     start.wait();
-    let successes = workers.into_iter().map(|handle| handle.join().unwrap())
-        .filter(Result::is_ok).count();
+    let successes = workers
+        .into_iter()
+        .map(|handle| handle.join().unwrap())
+        .filter(Result::is_ok)
+        .count();
     assert_eq!(successes, 20);
     let p = parent.usage(11);
     let l = left.usage(11);
     let r = right.usage(11);
     assert_eq!(p.window_consumed_ns, 20);
     assert_eq!(p.event_sequence, 20);
-    assert_eq!(p.window_consumed_ns, l.window_consumed_ns + r.window_consumed_ns);
-    assert_eq!(p.cumulative_cpu_ns, l.cumulative_cpu_ns + r.cumulative_cpu_ns);
+    assert_eq!(
+        p.window_consumed_ns,
+        l.window_consumed_ns + r.window_consumed_ns
+    );
+    assert_eq!(
+        p.cumulative_cpu_ns,
+        l.cumulative_cpu_ns + r.cumulative_cpu_ns
+    );
 }
 
 #[test]
@@ -1622,15 +1632,15 @@ fn exact_boundary_crossing_preserves_each_period_cap() {
     assert_eq!(first.window_start_ns, CPU_PERIOD_NS);
     assert_eq!(first.window_consumed_ns, 7);
     assert_eq!(
-        target.charge_interval_for_host_model(
-            CPU_PERIOD_NS + 7,
-            CPU_PERIOD_NS + 11,
-        ),
+        target.charge_interval_for_host_model(CPU_PERIOD_NS + 7, CPU_PERIOD_NS + 11,),
         Err(ResourceError::Exhausted)
     );
     // A rejected charge is not a time sample or a partial effect.
     assert_eq!(
-        target.try_usage(CPU_PERIOD_NS + 7).unwrap().window_consumed_ns,
+        target
+            .try_usage(CPU_PERIOD_NS + 7)
+            .unwrap()
+            .window_consumed_ns,
         7
     );
     target
@@ -1704,15 +1714,13 @@ fn invalid_and_overflow_adjacent_intervals_fail_closed() {
 #[test]
 fn resource_identity_registry_has_bounded_capacity_and_no_id_reanimation() {
     assert!(matches!(
-        ResourceDomain::root_with_capacity_for_host_model(
-            domain(200_000), object(200_000), 50, 0
-        ),
+        ResourceDomain::root_with_capacity_for_host_model(domain(200_000), object(200_000), 50, 0),
         Err(ResourceError::InvalidCapacity)
     ));
 
-    let root = ResourceDomain::root_with_capacity_for_host_model(
-        domain(200_000), object(200_000), 50, 2
-    ).unwrap();
+    let root =
+        ResourceDomain::root_with_capacity_for_host_model(domain(200_000), object(200_000), 50, 2)
+            .unwrap();
     let child = with_parent(domain(200_001), object(200_001), &root, 40).unwrap();
     assert_eq!(
         with_parent(domain(200_002), object(200_002), &root, 10).err(),
@@ -1743,7 +1751,9 @@ fn hos2_saved_success_rejects_consumed_time_beyond_period_elapsed() {
     let core = ControlCore::new(boot(210_000), space(210_000));
     let target = root(210_000, CPU_PERIOD_NS);
     let who = publisher(210_001);
-    let token = core.reserve(request(1, target.grant(who).unwrap(), 1, 20), who).unwrap();
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+        .unwrap();
     let saved = core.commit(&token, who, CPU_PERIOD_NS + 5).unwrap();
     assert_eq!(saved.hos2_saved_status_code(), Some(0));
 
@@ -1763,7 +1773,9 @@ fn external_success_publication_cannot_save_impossible_cpu_accounting() {
     let core = ControlCore::new(boot(210_010), space(210_010));
     let target = root(210_010, CPU_PERIOD_NS);
     let who = publisher(210_011);
-    let token = core.reserve(request(1, target.grant(who).unwrap(), 1, 20), who).unwrap();
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 20), who)
+        .unwrap();
     let invalid = PublishOutcome::Success {
         stable_object_id: target.stable_object_id(),
         previous_revision: 1,
@@ -1771,8 +1783,14 @@ fn external_success_publication_cannot_save_impossible_cpu_accounting() {
         effective_ns: CPU_PERIOD_NS + 5,
         consumed_ns: 6,
     };
-    assert_eq!(core.publish(&token, who, invalid), Err(DeliveryError::InvalidPublish));
-    assert_eq!(core.query_delivery(&core.delivery_view(), 1).unwrap().state, DeliveryState::Reserved);
+    assert_eq!(
+        core.publish(&token, who, invalid),
+        Err(DeliveryError::InvalidPublish)
+    );
+    assert_eq!(
+        core.query_delivery(&core.delivery_view(), 1).unwrap().state,
+        DeliveryState::Reserved
+    );
     let valid = PublishOutcome::Success {
         stable_object_id: target.stable_object_id(),
         previous_revision: 1,
@@ -1906,7 +1924,8 @@ fn grant_publisher_field_cannot_be_reassigned_by_external_code() {
     assert_eq!(grant.clone().principal(), who);
     let core = ControlCore::new(boot(221_000), space(221_000));
     assert_eq!(
-        core.reserve(request(1, grant, 1, 20), publisher(221_002)).err(),
+        core.reserve(request(1, grant, 1, 20), publisher(221_002))
+            .err(),
         Some(DeliveryError::PermissionDenied)
     );
     assert_eq!(core.window_len(), 0);
@@ -1997,7 +2016,8 @@ fn a02_codec_accepts_every_real_a03_delivery_state() {
 
     let unseen = a02_roundtrip_delivery(core.query_delivery(&view, 3).unwrap()).unwrap();
     assert_eq!(unseen.state, WireState::NotSeen);
-    core.retire_through(&view, ack(&core, 2), &authority).unwrap();
+    core.retire_through(&view, ack(&core, 2), &authority)
+        .unwrap();
     let retired = a02_roundtrip_delivery(core.query_delivery(&view, 1).unwrap()).unwrap();
     assert_eq!(retired.state, WireState::Retired);
     core.lose_history();
@@ -2056,5 +2076,8 @@ fn a02_rejects_elapsed_cpu_forgery_even_without_a03_conversion_guard() {
             consumed_ns: 6,
         }),
     };
-    assert_eq!(encode_response(&bad, &mut [0u8; 128]), Err(Error::InvalidField));
+    assert_eq!(
+        encode_response(&bad, &mut [0u8; 128]),
+        Err(Error::InvalidField)
+    );
 }
