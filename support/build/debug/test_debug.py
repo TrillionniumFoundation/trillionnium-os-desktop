@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Small host-only checks for debug socket ownership and acceptance failures."""
 import hashlib
+import fcntl
 import importlib.util
 import json
 import os
 from pathlib import Path
 import select
+import signal
+import shutil
 import socket
 import struct
 import subprocess
@@ -21,6 +24,163 @@ SPEC.loader.exec_module(DEBUG)
 
 
 class DebugTests(unittest.TestCase):
+    def run_signal_fixture(self, name, signals, *, spawn_window=False, expect_leak=False):
+        """Run the actual CLI against owned lock/TCP fixtures, never a VM."""
+        with tempfile.TemporaryDirectory() as temporary:
+            setting = os.environ.get("A01_DEBUG_LIFECYCLE_OUT")
+            root = Path(setting) / name if setting else Path(temporary)
+            if setting:
+                root.mkdir(parents=True, exist_ok=False)
+            project = root / "fixture-project"
+            debug = project / "support/build/debug"
+            debug.mkdir(parents=True)
+            source = Path(os.environ.get("A01_DEBUG_SOURCE", str(Path(__file__).parent))) / "run.py"
+            shutil.copyfile(source, debug / "run.py")
+            # These placeholders serve only the CLI's source metadata phase.
+            for name in ["support/build/kernel.sh", "support/build/minimal.mk",
+                         "support/build/record-qemu.py", "support/build/check-boot.py",
+                         "support/build/minimal/OSDK.toml", "support/build/minimal/Cargo.lock",
+                         "support/upstream-lock.json", "kernel/asterinas/rust-toolchain.toml",
+                         "kernel/asterinas/Cargo.lock", "kernel/asterinas/osdk/Cargo.lock",
+                         "kernel/asterinas/ostd/src/boot/mod.rs"]:
+                path = project / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"host lifecycle fixture; not kernel source\n")
+            tools = root / "tools"
+            tools.mkdir()
+            for name in ["gdb", "nm", "git"]:
+                path = tools / name
+                path.write_text("#!/bin/sh\nprintf 'host-lifecycle-fixture\\n'\n")
+                path.chmod(0o755)
+            descendant = ("import json,os,signal,socket,time;from pathlib import Path;"
+                          "signal.signal(signal.SIGTERM,signal.SIG_IGN);"
+                          "lease=socket.socket();lease.bind(('127.0.0.1',0));lease.listen(1);"
+                          "Path(os.environ['A01_DEBUG_FIXTURE_ROOT'],'descendant.json').write_text("
+                          "json.dumps({'pid':os.getpid(),'group':os.getpgrp(),'address':lease.getsockname()}));"
+                          "time.sleep(60)")
+            driver = root / "driver.py"
+            driver.write_text(
+                "import fcntl,json,os,signal,socket,subprocess,sys,time\nfrom pathlib import Path\n"
+                "root=Path(os.environ['A01_DEBUG_FIXTURE_ROOT'])\n"
+                "held=(root/'held.lock').open('w');fcntl.flock(held,fcntl.LOCK_EX)\n"
+                "signal.signal(signal.SIGTERM,signal.SIG_IGN)\n"
+                "lease=socket.socket();lease.bind(('127.0.0.1',0));lease.listen(1)\n"
+                f"child=subprocess.Popen([sys.executable,'-I','-c',{descendant!r}],pass_fds=(held.fileno(),))\n"
+                "while not (root/'descendant.json').exists():time.sleep(.01)\n"
+                "(root/'ready.json').write_text(json.dumps({'pid':os.getpid(),'group':os.getpgrp(),"
+                "'address':lease.getsockname(),'worker_route':os.environ.get('A01_KERNEL_WORKER'),"
+                "'descendant':json.loads((root/'descendant.json').read_text())}))\n"
+                "time.sleep(60)\n")
+            (project / "support/build/kernel.sh").write_text(
+                f"#!/bin/sh\nexec {sys.executable} -I {str(driver)!r}\n")
+            output = root / "debug-output"
+            python = [sys.executable, "-I", *(["-O"] if sys.flags.optimize else [])]
+            arguments = [str(debug / "run.py"), "--output", str(output),
+                         "--gdb", str(tools / "gdb"), "--nm", str(tools / "nm"), "--ready-timeout", "30"]
+            command = [*python, *arguments]
+            if spawn_window:
+                wrapper = root / "spawn-window.py"
+                wrapper.write_text(
+                    "import importlib.util,os,signal,subprocess,sys,time\nfrom pathlib import Path\n"
+                    f"spec=importlib.util.spec_from_file_location('debug_fixture',{str(debug / 'run.py')!r})\n"
+                    "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)\n"
+                    "original=subprocess.Popen\n"
+                    "def spawn(*args,**kwargs):\n child=original(*args,**kwargs)\n"
+                    " if any(str(value).endswith('/kernel.sh') for value in args[0]):\n"
+                    f"  ready=Path({str(root / 'ready.json')!r})\n"
+                    "  deadline=time.monotonic()+5\n"
+                    "  while not ready.exists():\n"
+                    "   assert time.monotonic()<deadline\n   time.sleep(.01)\n"
+                    "  os.kill(os.getpid(),signal.SIGTERM)\n return child\n"
+                    "subprocess.Popen=spawn\n"
+                    f"sys.argv={arguments!r}\nraise SystemExit(module.main())\n")
+                command = [*python, str(wrapper)]
+            env = os.environ.copy()
+            env.update(PATH=str(tools) + os.pathsep + env.get("PATH", ""),
+                       A01_DEBUG_FIXTURE_ROOT=str(root))
+            observation = {"kind": "actual_debug_cli_host_lifecycle_fixture_no_build_no_vm",
+                           "source_sha256": DEBUG.sha256(source), "argv": command,
+                           "spawn_publication_window": spawn_window, "expected_original_leak": expect_leak}
+            process, descriptors = None, []
+            try:
+                with (root / "console.log").open("wb") as log:
+                    process = subprocess.Popen(command, cwd=project, env=env,
+                                               stdout=log, stderr=subprocess.STDOUT)
+                    deadline = time.monotonic() + 8
+                    while not (root / "ready.json").exists():
+                        self.assertLess(time.monotonic(), deadline)
+                        self.assertIsNone(process.poll(), (root / "console.log").read_text())
+                        time.sleep(.01)
+                    ready = json.loads((root / "ready.json").read_text())
+                    for role, info in [("driver", ready), ("descendant", ready["descendant"])]:
+                        descriptors.append((role, os.pidfd_open(info["pid"])))
+                    if not spawn_window:
+                        for number in signals:
+                            process.send_signal(number)
+                            time.sleep(.015)
+                    process.wait(timeout=6)
+                exited = {role: bool(select.select([fd], [], [], 0 if expect_leak else 2)[0])
+                          for role, fd in descriptors}
+                lock_released = True
+                with (root / "held.lock").open("a") as held:
+                    try:
+                        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    except BlockingIOError:
+                        lock_released = False
+                leases = []
+                for info in [ready, ready["descendant"]]:
+                    with socket.socket() as lease:
+                        try:
+                            lease.bind(tuple(info["address"]))
+                            leases.append(True)
+                        except OSError:
+                            leases.append(False)
+                result = json.loads((output / "result.json").read_text()) if (output / "result.json").exists() else None
+                observation.update(returncode=process.returncode, ready=ready, pidfd_exited=exited,
+                                   lock_released=lock_released, tcp_leases_released=leases, result=result)
+                if expect_leak:
+                    self.assertEqual(process.returncode, -signal.SIGTERM)
+                    self.assertFalse(any(exited.values()))
+                    self.assertFalse(lock_released)
+                    self.assertFalse(any(leases))
+                else:
+                    expected = signal.SIGTERM if spawn_window else signals[0]
+                    self.assertEqual(process.returncode, 128 + expected)
+                    self.assertTrue(all(exited.values()), exited)
+                    self.assertTrue(lock_released)
+                    self.assertTrue(all(leases))
+                    self.assertFalse(result["passed"])
+                    self.assertEqual(ready["worker_route"], "1")
+                    self.assertEqual(result["interrupted_by"], signal.Signals(expected).name)
+                    self.assertTrue(all(item["reaped"] for item in result["owned_session_cleanup"]))
+                    if len(signals) == 2:
+                        self.assertEqual(result["received_signals"], [signal.Signals(number).name for number in signals])
+                observation["passed"] = True
+            finally:
+                for _, descriptor in descriptors:
+                    try:
+                        signal.pidfd_send_signal(descriptor, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    select.select([descriptor], [], [], 3)
+                    os.close(descriptor)
+                if process is not None and process.poll() is None:
+                    process.kill()
+                    process.wait()
+                (root / "observation.json").write_text(json.dumps(observation, indent=2) + "\n")
+
+    def test_sigterm_cleans_actual_cli_owned_driver_and_descendant(self):
+        self.run_signal_fixture("sigterm", [signal.SIGTERM],
+                                expect_leak=os.environ.get("A01_DEBUG_EXPECT_ORIGINAL_LEAK") == "1")
+
+    @unittest.skipIf(os.environ.get("A01_DEBUG_EXPECT_ORIGINAL_LEAK") == "1", "original baseline is SIGTERM")
+    def test_sigint_then_sigterm_cannot_interrupt_cleanup(self):
+        self.run_signal_fixture("sigint-then-sigterm", [signal.SIGINT, signal.SIGTERM])
+
+    @unittest.skipIf(os.environ.get("A01_DEBUG_EXPECT_ORIGINAL_LEAK") == "1", "original baseline is SIGTERM")
+    def test_signal_between_popen_spawn_and_owner_publication_cleans_child(self):
+        self.run_signal_fixture("spawn-publication", [], spawn_window=True)
+
     def elf_fixture(self, path, code, *, machine=62, kind=2):
         entry, offset = 0xffffffff80001000, 4096
         raw = bytearray(offset + len(code))

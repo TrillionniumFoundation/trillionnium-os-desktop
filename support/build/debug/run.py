@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Break at the complete Asterinas Rust entry, detach, then verify its boot."""
 import argparse
+from contextlib import contextmanager
 import fcntl
 import hashlib
 import json
@@ -25,6 +26,42 @@ HIT = re.compile(r"^A01_GDB_RUST_ENTRY_HIT pc=0x([0-9a-fA-F]+) entry=0x([0-9a-fA
 ENTRY_BYTES = 32
 BYTE_HIT = re.compile(r"^A01_GDB_RUST_ENTRY_BYTES pc=0x([0-9a-fA-F]+) size=32 bytes=([0-9a-fA-F]{64})$",
                       re.MULTILINE)
+
+
+class ShutdownRequested(Exception):
+    def __init__(self, signum):
+        self.signum = signum
+        super().__init__(signal.Signals(signum).name)
+
+
+class Shutdown:
+    """Defer asynchronous shutdown until an owned child has been published."""
+
+    def __init__(self):
+        self.signum = None
+        self.received = []
+
+    def remember(self, signum, _frame):
+        if self.signum is None:
+            self.signum = signum
+        self.received.append(signal.Signals(signum).name)
+
+    def check(self):
+        if self.signum is not None:
+            raise ShutdownRequested(self.signum)
+
+
+@contextmanager
+def interruption_handlers():
+    shutdown = Shutdown()
+    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+    try:
+        for number in previous:
+            signal.signal(number, shutdown.remember)
+        yield shutdown
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
 
 
 def require(condition, message):
@@ -101,19 +138,24 @@ class OwnedSession:
         self.reaped = True
         return self.status
 
-    def wait(self, timeout):
+    def wait(self, timeout, shutdown=None):
         deadline = time.monotonic() + timeout
-        while not self.exited():
+        while True:
+            if shutdown is not None:
+                shutdown.check()
+            if self.exited():
+                return self.stop()
             if time.monotonic() >= deadline:
                 raise TimeoutError("owned session completion deadline expired")
             time.sleep(0.05)
-        return self.stop()
 
 
-def wait_for_qemu(path, session, listener, timeout):
+def wait_for_qemu(path, session, listener, timeout, shutdown=None):
     deadline = time.monotonic() + timeout
     expected_address = list(listener.getsockname())
     while time.monotonic() < deadline:
+        if shutdown is not None:
+            shutdown.check()
         require(not session.exited(), "kernel driver exited before GDB readiness")
         try:
             record = json.loads(path.read_text())
@@ -282,6 +324,11 @@ def accept_boot(status, directory):
 
 
 def main():
+    with interruption_handlers() as shutdown:
+        return debug_main(shutdown)
+
+
+def debug_main(shutdown):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path, help="new evidence directory")
     parser.add_argument("--gdb", default="gdb", help="GDB executable or PATH name")
@@ -308,6 +355,7 @@ def main():
     exit_code = 1
 
     def invoke(command, log_name, timeout=None, pass_fds=()):
+        shutdown.check()
         commands.append({"argv": command, "shell_command": shlex.join(command),
                          "cwd": str(project), "stdout_stderr": log_name,
                          "pass_fds": list(pass_fds), "timeout_seconds": timeout})
@@ -315,8 +363,15 @@ def main():
         handle = (output / log_name).open("w")
         handles.append(handle)
         owned = OwnedSession(command, cwd=project, env=env, output=handle, pass_fds=pass_fds)
+        # Signal handlers only record requests, so Popen -> owner publication
+        # cannot be interrupted. Check only after cleanup can find this child.
         sessions.append(owned)
-        return owned if timeout is None else owned.wait(timeout)
+        shutdown.check()
+        if timeout is None:
+            return owned
+        status = owned.wait(timeout, shutdown)
+        shutdown.check()
+        return status
 
     try:
         gdb, nm = shutil.which(args.gdb), shutil.which(args.nm)
@@ -330,6 +385,7 @@ def main():
         descriptor = listener.fileno()
         updates = {"A01_GDB_FD": str(descriptor), "A01_GDB_PORT": str(address[1]),
                    "A01_RUN_DIR": str(output / "boot"),
+                   "A01_KERNEL_WORKER": "1",
                    "CARGO_TARGET_DIR": str(project / "kernel/asterinas/target")}
         env.update(updates)
         sources = ["support/build/kernel.sh", "support/build/minimal.mk",
@@ -360,7 +416,7 @@ def main():
         result["stage"] = "build_and_qemu_ready"
         driver = invoke(["bash", str(project / "support/build/kernel.sh"), "gdb_server"],
                         "kernel-driver.log", pass_fds=(descriptor,))
-        ready = wait_for_qemu(output / "boot/qemu.json", driver, listener, args.ready_timeout)
+        ready = wait_for_qemu(output / "boot/qemu.json", driver, listener, args.ready_timeout, shutdown)
         write_json(output / "qemu-ready.json", ready)
         installed_osdk = Path(env.get("CARGO_HOME", str(Path.home() / ".cargo"))) / "bin/cargo-osdk"
         write_json(output / "installed-osdk.json", {"path": str(installed_osdk.resolve()),
@@ -386,11 +442,15 @@ def main():
         (output / "gdb-exit-code.txt").write_text(str(gdb_status) + "\n")
         result["gdb"] = accept_gdb(gdb_status, output / "gdb.log", address, expected_bytes)
         result["stage"] = "boot_after_detach"
-        driver_status = driver.wait(args.boot_timeout)
+        driver_status = driver.wait(args.boot_timeout, shutdown)
+        shutdown.check()
         (output / "driver-exit-code.txt").write_text(str(driver_status) + "\n")
         result["boot"] = accept_boot(driver_status, output / "boot")
         result.update(passed=True, stage="complete")
         exit_code = 0
+    except ShutdownRequested as error:
+        result["error"] = "interrupted by " + signal.Signals(error.signum).name
+        exit_code = 128 + error.signum
     except KeyboardInterrupt:
         result["error"] = "interrupted"
         exit_code = 130
@@ -411,6 +471,11 @@ def main():
         for handle in handles:
             handle.close()
         result["owned_session_cleanup"] = cleanup
+        if shutdown.signum is not None:
+            result.update(passed=False, interrupted_by=signal.Signals(shutdown.signum).name,
+                          received_signals=shutdown.received)
+            result["error"] = "interrupted by " + result["interrupted_by"]
+            exit_code = 128 + shutdown.signum
         write_json(output / "result.json", result)
         (output / "exit-code.txt").write_text(str(exit_code) + "\n")
     print(("PASS" if result["passed"] else "FAIL") + ": Rust-entry debug evidence: " + str(output))
