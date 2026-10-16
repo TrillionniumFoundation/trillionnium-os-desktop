@@ -875,7 +875,8 @@ fn namespace_loss_and_commit_race_never_reports_lost_after_mutation() {
 }
 #[test]
 fn stale_boottime_samples_never_replenish_window_budget() {
-    let target = root(40_000, CPU_PERIOD_NS);
+    // A 100ns cap with 30ns used leaves 70ns, so a 71ns charge must fail.
+    let target = root(40_000, 100);
     let who = publisher(40_001);
     target.charge_cpu(30, CPU_PERIOD_NS + 30).unwrap();
     assert_eq!(target.charge_cpu(20, 20), Err(ResourceError::ClockRollback));
