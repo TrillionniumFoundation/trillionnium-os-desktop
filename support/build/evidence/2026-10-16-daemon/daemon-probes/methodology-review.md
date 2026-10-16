@@ -1,0 +1,5 @@
+# Independent read-only methodology review
+
+The original records support two leaks and a valid control: post-supervisor nonce heartbeat counts are 62 and 63, with sends 6.2057 and 6.2557 seconds after the supervisor exited. Both final descendant pidfds remained unready. Control pidfds were already exited and no exit-after heartbeats occurred. The verdict does not use numeric proc paths; kill(pid, 0) is diagnostic only. Sending timestamps prevent buffered pre-exit events from being counted as post-exit execution.
+
+A numeric-PID-to-pidfd binding race exists before handles are opened; the method must not be described as atomic identity authentication. The scripts' driver status 0 alone is not a regression pass. The separate measurement checks inspect actual readiness, pidfd exit, heartbeat and rescue-cleanup data. All eight measured cases contain actual descendant_ready events. Owned processes stay in their original group; group escape and all interrupt/startup combinations are outside coverage.

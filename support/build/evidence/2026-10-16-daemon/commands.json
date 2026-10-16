@@ -1,0 +1,92 @@
+[
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "test",
+      "--manifest-path",
+      "kernel/asterinas/osdk/Cargo.toml",
+      "--locked",
+      "--bin",
+      "cargo-osdk",
+      "--",
+      "--test-threads=1"
+    ],
+    "exit": 0,
+    "passed": 23,
+    "env_reference": "regression/environment.json"
+  },
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "test",
+      "--manifest-path",
+      "kernel/asterinas/osdk/Cargo.toml",
+      "--locked",
+      "--no-run",
+      "--test",
+      "integration",
+      "--message-format=json"
+    ],
+    "exit": 0,
+    "then_run_harness": "regression/selected-integration/commands.json"
+  },
+  {
+    "argv": [
+      "python3",
+      "-I",
+      "support/build/ktest/run.py",
+      "--output",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/daemon-committed-ktest"
+    ],
+    "exit": 0,
+    "osdk_install_skipped": false,
+    "exact_generated_commands": "acceptance/kernel-tests/commands.json"
+  },
+  {
+    "argv": [
+      "support/build/kernel.sh",
+      "run_kernel"
+    ],
+    "env": {
+      "A01_RUN_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/daemon-committed-boot",
+      "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/linux-vdso"
+    },
+    "exit": 0,
+    "exact_make_command": "acceptance/boot/command.sh"
+  },
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "check",
+      "--manifest-path",
+      "kernel/asterinas/osdk/Cargo.toml",
+      "--locked"
+    ],
+    "initial_exit": 101,
+    "initial_reason": "missing warn_msg import, corrected before publishing",
+    "corrected_exit": 0
+  },
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "fmt",
+      "--manifest-path",
+      "kernel/asterinas/osdk/Cargo.toml",
+      "--check"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "python3",
+      "-I",
+      "support/build/verify-source.py"
+    ],
+    "exit": 0,
+    "checked_inputs": 118
+  }
+]

@@ -1,0 +1,204 @@
+{
+  "mode": "leader_exits_normally",
+  "command": [
+    "/workspace/scratch/ae1a8cf05419/a01-next2-probes/patched-target/debug/a01-daemon-lifecycle-probe",
+    "leader_exits_normally",
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/scratch/ae1a8cf05419/a01-next2-probes/roles_patched.py",
+    "4",
+    "b6a109edf2934a33b339843cd4171540",
+    "/workspace/scratch/ae1a8cf05419/a01-next2-probes/runs-patched/leader_exits_normally"
+  ],
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "binary_sha256": "5cb2090fb563fde5ca8cede1616a53fd24bf377e61632aed4d85d3a3d09fd4e5",
+  "nonce": "b6a109edf2934a33b339843cd4171540",
+  "events": [
+    {
+      "event": "leader_spawned",
+      "role": "leader",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 12,
+      "ppid": 10,
+      "pgid": 12,
+      "monotonic": 8734.590742268,
+      "child_pid": 13,
+      "ignores_term": false
+    },
+    {
+      "event": "descendant_ready",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 12,
+      "pgid": 12,
+      "monotonic": 8734.613672038,
+      "ignores_term": true
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 12,
+      "pgid": 12,
+      "monotonic": 8734.613717806
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 12,
+      "pgid": 12,
+      "monotonic": 8734.713854128
+    },
+    {
+      "event": "leader_exiting_normally",
+      "role": "leader",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 12,
+      "ppid": 10,
+      "pgid": 12,
+      "monotonic": 8734.813906471
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 12,
+      "pgid": 12,
+      "monotonic": 8734.814014906
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 1,
+      "pgid": 12,
+      "monotonic": 8734.91418675
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 1,
+      "pgid": 12,
+      "monotonic": 8735.014918746
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 1,
+      "pgid": 12,
+      "monotonic": 8735.11509011
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 1,
+      "pgid": 12,
+      "monotonic": 8735.21525927
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 1,
+      "pgid": 12,
+      "monotonic": 8735.315434899
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 1,
+      "pgid": 12,
+      "monotonic": 8735.415676707
+    },
+    {
+      "event": "heartbeat",
+      "role": "descendant",
+      "nonce": "b6a109edf2934a33b339843cd4171540",
+      "pid": 13,
+      "ppid": 1,
+      "pgid": 12,
+      "monotonic": 8735.515855802
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "immediately_after_supervisor_process_exit",
+      "monotonic": 8735.56975902,
+      "states": {
+        "leader": {
+          "namespace_pid": 12,
+          "pidfd_exited": true,
+          "kill_zero": {
+            "success": false,
+            "errno": 3
+          }
+        },
+        "descendant": {
+          "namespace_pid": 13,
+          "pidfd_exited": true,
+          "kill_zero": {
+            "success": false,
+            "errno": 3
+          }
+        }
+      }
+    },
+    {
+      "label": "after_observation_interval",
+      "monotonic": 8741.833940114,
+      "states": {
+        "leader": {
+          "namespace_pid": 12,
+          "pidfd_exited": true,
+          "kill_zero": {
+            "success": false,
+            "errno": 3
+          }
+        },
+        "descendant": {
+          "namespace_pid": 13,
+          "pidfd_exited": true,
+          "kill_zero": {
+            "success": false,
+            "errno": 3
+          }
+        }
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "role": "leader",
+      "namespace_pid": 12,
+      "already_exited": true
+    },
+    {
+      "role": "descendant",
+      "namespace_pid": 13,
+      "already_exited": true
+    }
+  ],
+  "identity_method": "nonce pipe; namespace getpid/getpgrp; pidfd handles; no numeric proc lookup",
+  "harness_namespace_pid": 10,
+  "harness_exit": 0,
+  "harness_exited_monotonic": 8735.569708266,
+  "post_supervisor_observation_seconds": 6.264234090998798,
+  "descendant_heartbeats_after_supervisor_exit": 0,
+  "latest_heartbeat_delay_after_supervisor_exit": null,
+  "descendant_outlived_leader_and_supervisor": false,
+  "duration_seconds": 7.268901236999227
+}

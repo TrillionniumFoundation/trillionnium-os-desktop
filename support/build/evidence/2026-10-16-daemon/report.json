@@ -1,0 +1,149 @@
+{
+  "schema": 1,
+  "date": "2026-10-16",
+  "agent": "A01",
+  "phase": "daemon_lifecycle_fix",
+  "result": "passed_derived_host_units_and_real_kernel_replay",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/15",
+  "tested_build_code_commit": "fb81fec167913827bcddfda15676dc6b26f35965",
+  "tested_code_tree": "08477b30c657a445f3eaef25d2d948d34605ffc0",
+  "tested_kernel_subtree": "85cf10d7c0daa074c747871dfb91d1d25b75ef97",
+  "upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "toolchain": "nightly-2026-07-21",
+  "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+  "source_directory": "kernel/asterinas",
+  "upstream_modified_paths": [
+    "kernel/asterinas/osdk/src/commands/build/mod.rs",
+    "kernel/asterinas/osdk/src/daemon/mod.rs",
+    "kernel/asterinas/osdk/src/daemon/supervisor.rs",
+    "kernel/asterinas/osdk/src/daemon/supervisor/tests.rs"
+  ],
+  "kernel_core_process_ioctl_scheduler_modified": false,
+  "cargo_manifests_and_locks_modified": false,
+  "root_readme_bytes": 0,
+  "daemon_production_regression": {
+    "evidence": "daemon-probes/",
+    "old_real_failures": 2,
+    "old_control_passed": 1,
+    "patched_cases_passed": 5,
+    "patched_cases_failed": 0,
+    "patched_rescue_sigkill_needed": false,
+    "observer": "controlled nonce events, pidfd exit and after-supervisor heartbeat; not /proc/<namespace_pid>",
+    "scope": "sole reaper, waitable SIGCHLD, descendants remaining in original group; no forced supervisor death"
+  },
+  "host_unit_suite": {
+    "suite": "derived_osdk",
+    "passed": 23,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "daemon_module_tests_included": 11,
+    "evidence": "regression/full-unit.log",
+    "environment": "regression/environment.json"
+  },
+  "host_selected_non_vm_integration": {
+    "passed": 13,
+    "failed": 0,
+    "suite_inventory_total": 22,
+    "unselected": 9,
+    "source_tree": "08477b30c657a445f3eaef25d2d948d34605ffc0",
+    "evidence": "regression/selected-integration/commands.json"
+  },
+  "historical_original_host_suite": {
+    "passed": 13,
+    "failed": 1,
+    "original_result_overwritten": false,
+    "evidence": "../2026-10-16-next/host-tools/results.json",
+    "namespace_dependency_removed_from_derivative_fixture": true,
+    "host_proc_mount_or_permissions_changed": false
+  },
+  "kernel_mode_tests": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "ostd",
+            "declared": 221,
+            "passed": 221,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 3,
+            "soft_skip_reasons": [
+              "VMX unavailable",
+              "VMX unavailable",
+              "VMX/EPT invalidation unavailable"
+            ],
+            "exercised_passed_lower_bound": 218,
+            "observed_test_starts": 221,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      },
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 141,
+            "passed": 141,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 141,
+            "observed_test_starts": 141,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "kernel_mode_totals": {
+    "reported_passed": 362,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 359,
+    "crate_sets": 2
+  },
+  "osdk_binary_sha256": "518d499926ea1c1a415651232a46a4c31141fa75e1a774e12a2c58f401626a5e",
+  "osdk_reinstalled_locked_from_pushed_source": true,
+  "boot": {
+    "raw_qemu_exit": 33,
+    "timed_out": false,
+    "make_exit": 0,
+    "log_exit": 0,
+    "run_exit": 0,
+    "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+    "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "profile": "x86_64-q35-tcg-cpu_max-1cpu-512MiB-SeaBIOS-serial",
+    "exact_qemu_record": "acceptance/boot/qemu.json"
+  },
+  "retained_artifacts": "retained-artifacts.json",
+  "fixed_source_input_checks": 118,
+  "initial_intermediate_check_failure_preserved": "regression/initial-check-failure.log",
+  "limits": [
+    "Full upstream userspace/device/integration matrix is not passed.",
+    "VMX/EPT paths soft-skip under TCG; KVM, controlled SMP and physical hardware are unverified.",
+    "Sole child reaper and waitable SIGCHLD are required. ECHILD disarms cleanup; escaped groups and forcibly terminated supervisor are outside this boundary.",
+    "Native QEMU8.2.2 differs from upstream full development environment. Cross-host bit reproducibility is not established.",
+    "Prior BusyBox script /proc/self/exe workaround and libibverbs1 package-configuration restriction remain.",
+    "No HOS2/CapSpace/exec_epoch/ResourceDomain/Hepta/Android/GPU implementation is supplied."
+  ],
+  "main_at_round_start": "47afb8229bd3a3ff05077c7b01aac6fa8ef6f956",
+  "source_pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5",
+  "source_integration": {
+    "pull_request": 5,
+    "merge_commit": "c757c709652f9a9701765ff8a9e7c3026fc1019e",
+    "merged_source_commit": "fb81fec167913827bcddfda15676dc6b26f35965",
+    "merged_at": "2026-10-16T08:54:43Z",
+    "evidence_followup_pull_request": 15,
+    "followup_base_at_creation": "e44c92ac885eb003665ff2e1e5c6fab1f104b2d6"
+  }
+}

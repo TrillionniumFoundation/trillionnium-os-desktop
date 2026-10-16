@@ -1,0 +1,58 @@
+[
+  {
+    "mode": "leader_dies_on_term",
+    "harness_exit": 0,
+    "descendant_outlived_leader_and_supervisor": true,
+    "latest_heartbeat_delay_after_supervisor_exit": 6.205690753000454,
+    "cleanup": [
+      {
+        "role": "leader",
+        "namespace_pid": 8,
+        "already_exited": true
+      },
+      {
+        "role": "descendant",
+        "namespace_pid": 9,
+        "signal": "SIGKILL via own pidfd",
+        "exited_within_2_seconds": true
+      }
+    ]
+  },
+  {
+    "mode": "leader_exits_normally",
+    "harness_exit": 0,
+    "descendant_outlived_leader_and_supervisor": true,
+    "latest_heartbeat_delay_after_supervisor_exit": 6.2557014920002985,
+    "cleanup": [
+      {
+        "role": "leader",
+        "namespace_pid": 12,
+        "already_exited": true
+      },
+      {
+        "role": "descendant",
+        "namespace_pid": 13,
+        "signal": "SIGKILL via own pidfd",
+        "exited_within_2_seconds": true
+      }
+    ]
+  },
+  {
+    "mode": "leader_and_descendant_ignore_term",
+    "harness_exit": 0,
+    "descendant_outlived_leader_and_supervisor": false,
+    "latest_heartbeat_delay_after_supervisor_exit": null,
+    "cleanup": [
+      {
+        "role": "leader",
+        "namespace_pid": 16,
+        "already_exited": true
+      },
+      {
+        "role": "descendant",
+        "namespace_pid": 17,
+        "already_exited": true
+      }
+    ]
+  }
+]

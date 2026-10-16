@@ -1,0 +1,35 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling cargo-osdk v0.19.0 (/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.49s
+     Running unittests src/main.rs (kernel/asterinas/osdk/target/debug/deps/cargo_osdk-87e58130b1b091d4)
+
+running 23 tests
+test base_crate::tests::changed_linker_script_prevents_base_crate_reuse ... ok
+test commands::build::lock_tests::hard_link_preserves_source_and_destination ... ok
+test commands::build::lock_tests::missing_source_leaves_existing_lock_intact ... ok
+test commands::build::lock_tests::same_path_preserves_lock_contents ... ok
+test commands::debug::have_gdb_installed ... ok
+test commands::profile::test_profile_parse_raw ... ok
+test config::test::conditional_manifest ... ok
+test config::test::deserialize_toml_manifest ... ok
+test config::test::parse_quoted_daemon_arguments ... ok
+test config::unix_args::test::test_apply_kv_array ... ok
+test config::unix_args::test::test_get_key ... ok
+test config::unix_args::test::test_split_kv_array ... ok
+test daemon::supervisor::tests::drop_cleans_term_ignoring_descendant ... ok
+test daemon::supervisor::tests::external_reap_disarms_later_group_signals ... ok
+test daemon::supervisor::tests::failed_startup_exit_cleans_term_ignoring_descendant ... ok
+test daemon::supervisor::tests::nonzero_daemon_exit_aborts_startup ... ok
+test daemon::supervisor::tests::poll_exit_observes_status_repeatedly_before_reaping ... ok
+test daemon::supervisor::tests::stop_all_escalates_when_daemon_ignores_sigterm ... ok
+test daemon::supervisor::tests::stop_all_kills_term_ignoring_descendant_after_leader_exits ... ok
+test daemon::supervisor::tests::stop_all_terminates_daemon_descendants ... ok
+test daemon::supervisor::tests::stop_all_terminates_running_daemon ... ok
+test daemon::supervisor::tests::successful_daemon_exit_is_reaped ... ok
+test daemon::supervisor::tests::successful_startup_exit_cleans_term_ignoring_descendant ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.54s
+

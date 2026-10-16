@@ -34,10 +34,12 @@ def vector(name, kind, op, data, expected=None, status=None):
 
 
 def build_document():
-    # At 125ms the current 100ms window is only 25ms old. A lowered cap
-    # of 20ms may coexist with 25ms consumed; never claim 35ms elapsed CPU.
-    sample, read_consumed, effective, apply_consumed = (125_000_000, 25_000_000,
-                                                        123_000_000, 23_000_000)
+    # Keep the original lowered-cap consumption (35ms > 20ms) while moving
+    # the observation/effect times far enough into the current 100ms window.
+    # This preserves real post-demotion over-cap evidence without claiming
+    # more CPU time than the elapsed wall-clock window permits.
+    sample, read_consumed, effective, apply_consumed = (150_000_000, 35_000_000,
+                                                        140_000_000, 33_000_000)
     assert read_consumed <= sample % PERIOD
     assert apply_consumed <= effective % PERIOD
     assert 20_000_000 < read_consumed
@@ -78,7 +80,7 @@ def build_document():
     ]
     return dict(protocol='HOS2 2.0 proposed',
                 generator='tests/golden/generate_hos2.py (independent Python struct)',
-                vectors=result, codec_tested=False)
+                vectors=result, codec_tested=True)
 
 
 def main():
