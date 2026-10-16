@@ -1912,3 +1912,149 @@ fn grant_publisher_field_cannot_be_reassigned_by_external_code() {
     assert_eq!(core.window_len(), 0);
     assert_eq!(core.next_sequence(), 1);
 }
+
+// Cross-crate oracle: use the separately owned no_std A02 parser/encoder
+// rather than hand-writing the wire struct layout in the A03 state core.
+fn a02_roundtrip_delivery(
+    observation: os_control::DeliveryObservation,
+) -> Result<hos2_os_abi::QueryDeliveryResponse, hos2_os_abi::Error> {
+    use hos2_os_abi::{
+        decode_response, encode_response, DeliveryState as WireState, Opcode,
+        QueryDeliveryResponse, Response, ResponsePayload, Status,
+    };
+
+    let saved_code = observation
+        .hos2_saved_status_code()
+        .ok_or(hos2_os_abi::Error::InvalidField)?;
+    let payload = QueryDeliveryResponse {
+        state: WireState::from_u16(observation.state.hos2_code())?,
+        saved_status: Status::from_u16(saved_code)?,
+        sequence: observation.id.sequence(),
+        stable_object_id: observation
+            .stable_object_id
+            .map_or([0; 16], |object| object.bytes()),
+        saved_revision: observation.saved_revision.unwrap_or(0),
+        previous_revision: observation.previous_revision.unwrap_or(0),
+        effective_ns: observation.effective_ns.unwrap_or(0),
+        consumed_ns: observation.consumed_ns.unwrap_or(0),
+    };
+    let response = Response {
+        opcode: Opcode::QueryDelivery,
+        status: Status::Ok,
+        request_id: [0xA3; 16],
+        boot_id: observation.id.namespace().boot_id().bytes(),
+        revision: 0,
+        payload: ResponsePayload::QueryDelivery(payload),
+    };
+    let mut frame = [0u8; 128];
+    let used = encode_response(&response, &mut frame)?;
+    let decoded = decode_response(&frame[..used])?;
+    match decoded.payload {
+        ResponsePayload::QueryDelivery(result) => Ok(result),
+        _ => Err(hos2_os_abi::Error::InvalidField),
+    }
+}
+
+#[test]
+fn a02_codec_accepts_every_real_a03_delivery_state() {
+    use hos2_os_abi::{DeliveryState as WireState, Status};
+    let (core, authority) =
+        ControlCore::with_original_owner(boot(310_000), space(310_000), owner(9000)).unwrap();
+    let target = root(310_000, CPU_PERIOD_NS);
+    let who = publisher(310_001);
+    let view = core.delivery_view_for(owner(9000)).unwrap();
+
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 40), who)
+        .unwrap();
+    let pending = a02_roundtrip_delivery(core.query_delivery(&view, 1).unwrap()).unwrap();
+    assert_eq!(pending.state, WireState::Reserved);
+    assert_eq!(pending.saved_status, Status::Ok);
+    let applied = core.commit(&token, who, CPU_PERIOD_NS + 7).unwrap();
+    let successful = a02_roundtrip_delivery(applied).unwrap();
+    assert_eq!(successful.state, WireState::Terminal);
+    assert_eq!(successful.saved_status, Status::Ok);
+    assert_eq!(successful.previous_revision, 1);
+    assert_eq!(successful.saved_revision, 2);
+    assert_eq!(successful.consumed_ns, 0);
+
+    let token2 = core
+        .reserve(request(2, target.grant(who).unwrap(), 2, 40), who)
+        .unwrap();
+    let refused = core
+        .publish(
+            &token2,
+            who,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::Revoked,
+            },
+        )
+        .unwrap();
+    let saved_error = a02_roundtrip_delivery(refused).unwrap();
+    assert_eq!(saved_error.state, WireState::Terminal);
+    assert_eq!(saved_error.saved_status, Status::Revoked);
+    assert_eq!(saved_error.saved_revision, 0);
+
+    let unseen = a02_roundtrip_delivery(core.query_delivery(&view, 3).unwrap()).unwrap();
+    assert_eq!(unseen.state, WireState::NotSeen);
+    core.retire_through(&view, ack(&core, 2), &authority).unwrap();
+    let retired = a02_roundtrip_delivery(core.query_delivery(&view, 1).unwrap()).unwrap();
+    assert_eq!(retired.state, WireState::Retired);
+    core.lose_history();
+    let lost = a02_roundtrip_delivery(core.query_delivery(&view, 1).unwrap()).unwrap();
+    assert_eq!(lost.state, WireState::HistoryLost);
+}
+
+#[test]
+fn a02_rejects_elapsed_cpu_forgery_even_without_a03_conversion_guard() {
+    use hos2_os_abi::{
+        encode_response, DeliveryState as WireState, Error, Opcode, QueryDeliveryResponse,
+        Response, ResponsePayload, Status,
+    };
+    let core = ControlCore::new(boot(320_000), space(320_000));
+    let target = root(320_000, CPU_PERIOD_NS);
+    let who = publisher(320_001);
+    let token = core
+        .reserve(request(1, target.grant(who).unwrap(), 1, 40), who)
+        .unwrap();
+    let valid = core.commit(&token, who, CPU_PERIOD_NS + 5).unwrap();
+    assert!(a02_roundtrip_delivery(valid).is_ok());
+
+    let mut wrong_elapsed = valid;
+    wrong_elapsed.consumed_ns = Some(6);
+    assert_eq!(wrong_elapsed.hos2_saved_status_code(), None);
+    assert_eq!(
+        a02_roundtrip_delivery(wrong_elapsed),
+        Err(Error::InvalidField)
+    );
+
+    let mut without_revision = valid;
+    without_revision.previous_revision = Some(0);
+    without_revision.saved_revision = Some(1);
+    assert_eq!(without_revision.hos2_saved_status_code(), None);
+    assert_eq!(
+        a02_roundtrip_delivery(without_revision),
+        Err(Error::InvalidField)
+    );
+
+    // Bypass A03's conversion helper and independently check A02's strict
+    // validator: the same byte-model payload must be rejected at encode.
+    let bad = Response {
+        opcode: Opcode::QueryDelivery,
+        status: Status::Ok,
+        request_id: [0xA4; 16],
+        boot_id: core.identity().boot_id().bytes(),
+        revision: 0,
+        payload: ResponsePayload::QueryDelivery(QueryDeliveryResponse {
+            state: WireState::Terminal,
+            saved_status: Status::Ok,
+            sequence: 1,
+            stable_object_id: target.stable_object_id().bytes(),
+            saved_revision: 2,
+            previous_revision: 1,
+            effective_ns: CPU_PERIOD_NS + 5,
+            consumed_ns: 6,
+        }),
+    };
+    assert_eq!(encode_response(&bad, &mut [0u8; 128]), Err(Error::InvalidField));
+}

@@ -336,3 +336,18 @@ retry; attempts to propose `expected_revision=u64::MAX` are structurally
 invalid and do not consume another D. Unit tests construct synthetic
 late-life private frontiers to verify the arithmetic without simulating
 2^64 operations or pretending to prove real kernel persistence.
+
+## A02 independent codec compatibility tests (A03 dev-only dependency)
+
+The A03 Cargo crate has a **dev-only path dependency** on A02's separately
+owned `hos2-os-abi` no_std codec. New Rust integration tests in
+`tests/control/control_conformance.rs` convert actual A03 Reserved,
+Terminal/Ok, Terminal/Revoked, NotSeen, Retired and HistoryLost observations
+to A02's typed `QueryDeliveryResponse` and require successful
+`encode_response` + `decode_response`. The negative test demonstrates
+that both A03's fallible status conversion and A02's *independent* encoder
+reject an impossible elapsed-CPU success; zero previous revision is also
+rejected. This adds no wire layout of A03's own, no generated golden edits,
+and no production dependency on the wire crate. Lockfile pins the path-only
+dev dependency. Exact-head Cargo execution is still required; test source
+presence is not a passed result.
