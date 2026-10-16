@@ -67,8 +67,10 @@ python3 "$build_dir/minimal/prepare-initramfs.py" \
     --output "$run_dir/initramfs.cpio.gz" --manifest "$run_dir/initramfs-manifest.json"
 manifest_temporary=$(mktemp "$kernel_dir/kernel/.a01-osdk-XXXXXX")
 cp "$build_dir/minimal/OSDK.toml" "$manifest_temporary"
-ln -T "$manifest_temporary" "$manifest_file"
+# Register ownership before publication so an interrupt immediately after ln
+# cannot leave our installed manifest behind with an uninitialized identity.
 manifest_identity=$(stat -c '%d:%i' "$manifest_temporary")
+ln -T "$manifest_temporary" "$manifest_file"
 rm "$manifest_temporary"
 manifest_temporary=
 export A01_QEMU_EVIDENCE="$run_dir/qemu.json"
@@ -96,7 +98,7 @@ if [[ "$target" == run_kernel && -f "$kernel_dir/kernel/qemu.log" ]]; then
 fi
 if [[ "$target" == run_kernel && "$result" == 0 ]]; then
     set +e
-    python3 -I "$build_dir/check-boot.py" "$run_dir"
+    python3 -I "$build_dir/check-boot.py" "$run_dir" --live-artifacts
     result=$?
     set -e
 fi

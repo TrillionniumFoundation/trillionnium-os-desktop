@@ -44,10 +44,17 @@ manifest, full build output, exact QEMU argv, artifact SHA256 values, raw QEMU
 exit status, and complete serial output. The smoke passes only with all guest
 markers, no panic, and **raw QEMU exit 33**. QEMU exit 65 is guest failure;
 OSDK normalizes successful 33 to make exit 0.
+The QEMU recorder binds the complete raw serial bytes by SHA256 and size.
+Fresh runs also verify the recorded kernel, initramfs and BIOS bytes against
+their live paths. For offline archive checks, use `check-boot.py DIR` without
+`--live-artifacts`; historical records without a serial digest require the
+checker from their recorded acceptance commit, not a retroactively added hash.
 The wrapper rejects incomplete log capture, forces its initramfs prerequisite
 on, and shares a persistent workspace lock with the kernel-test runner. Its
 temporary manifest is installed without replacing an existing file, and
 cleanup removes only the inode installed by that invocation.
+The temporary inode is registered before publishing its manifest, including
+when a signal arrives immediately after the atomic link operation.
 
 ## Kernel-mode regression tests
 
