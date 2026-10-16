@@ -976,9 +976,9 @@ fn existing_descendants_refuse_read_usage_older_than_ancestor_boottime() {
         parent.try_usage(current - 1),
         Err(ResourceError::ClockRollback)
     );
-    // The legacy usage method remains a host diagnostic, never an A05
-    // ReadUsage response. Its old local sample cannot bypass try_usage.
-    assert_eq!(child.usage(0).sample_boottime_ns, 0);
+    // Legacy diagnostics clamp to the same family BOOTTIME floor; stale
+    // caller timestamps cannot restore an earlier quota window.
+    assert_eq!(child.usage(0).sample_boottime_ns, current);
     let valid = child.try_usage(current).unwrap();
     assert_eq!(valid.sample_boottime_ns, current);
     assert_eq!(valid.window_start_ns, 2 * CPU_PERIOD_NS);
@@ -1912,7 +1912,9 @@ fn failed_ancestor_charge_never_advances_descendant_clock_or_counters() {
     assert_eq!(idle.charge_cpu(5, 200), Err(ResourceError::Exhausted));
     assert_eq!(idle.try_usage(0), Err(ResourceError::ClockRollback));
     let unchanged = idle.usage(0);
-    assert_eq!(unchanged.sample_boottime_ns, 0);
+    // The successful sibling charge established 100, but the rejected
+    // charge at 200 must not move the shared family clock to 200.
+    assert_eq!(unchanged.sample_boottime_ns, 100);
     assert_eq!(unchanged.cumulative_cpu_ns, 0);
     assert_eq!(unchanged.window_consumed_ns, 0);
     assert_eq!(unchanged.event_sequence, 0);

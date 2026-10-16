@@ -1,7 +1,11 @@
 # A03 host-model API contract
 
-`os-control` is the Rust control state core for HOS2 0.3. It is a Linux host
-model. It does not implement an ioctl, a kernel scheduler, credentials,
+`os-control` is the Rust control state core for HOS2 0.3. Runtime tests are
+host-model evidence. The default `std` backend and experimental
+`--no-default-features --features portable-spin` backend share the same
+state transitions; the latter uses `core`/`alloc` and compiles for
+`x86_64-unknown-none`. It requires an allocator and pointer-width atomics.
+Neither backend implements an ioctl, a kernel scheduler, credentials,
 copyin/copyout, crash durability, or a second Hepta database. The existing
 Hepta owner remains responsible for persistent logical operation identity `K`.
 This crate only models the boot-local delivery identity `D`:
@@ -9,6 +13,13 @@ This crate only models the boot-local delivery identity `D`:
 ```text
 D = (BootId, CapSpaceId, sequence)
 ```
+
+The portable spin mutex is **not a validated Asterinas lock adapter**.
+It does not mask IRQs or disable preemption. Same-CPU reentry can deadlock;
+the current bounded table operations can allocate while holding locks.
+A05/A06 must adapt `src/sync.rs` and the allocation paths to their actual
+kernel lock/allocator discipline before production use. This build option
+does not establish G1/G2, scheduler enforcement, or kernel integration.
 
 The HOS2 wire layout remains owned by A02 and is not represented by a Rust
 memory-layout cast here.
@@ -27,20 +38,26 @@ actual HOS2 byte layout and payload.
 
 ## A05: kernel ioctl and CapSpace
 
-1. Construct `ControlCore::new(boot_id, cap_space_id)` after trusted boot
-   identity and CapSpace binding. `with_capacity` is the bounded host-model
-   variant; the HOS2 default is 1024 non-retired writes.
+1. Construct `ControlCore::try_with_capacity` after trusted boot identity and
+   CapSpace binding, or `with_capacity_for_owner` to also mint the non-Clone
+   `OriginalOwnerAuthority` for the authenticated original Hepta owner.
+   The HOS2 maximum/default is 1024 non-retired writes.
 2. Resolve a kernel ResourceDomain and a publisher-bound `Grant`. Build a
-   `DeliveryRequest` with sequence, expected revision, fixed 100ms period,
-   cap, stable target identity, grant epoch, and optional payload digest.
+   `DeliveryRequest::from_wire` with sequence, expected revision, cap and
+   exact nonzero HOS2 target slot/generation. Stable target identity, grant
+   epoch/ancestry and optional payload digest are also bound. The unbound
+   `DeliveryRequest::new` constructor is only for legacy host fixtures.
 3. Call `reserve`. Sequence allocation is global across all targets. A second
    target, cap, expected revision, grant epoch, or payload digest for the same
    D is `Conflict`; a duplicate pending D is `Busy`; a duplicate terminal D
    cannot allocate a new effect. `reserve_or_get` is the copyout-retry helper.
-4. After the resource mutation, call `publish(token, publisher, outcome)`.
-   `commit(token, publisher, now_ns)` combines the ResourceDomain CAS mutation
-   and terminal result publication. The token and namespace instance are
-   checked, so a same-byte identity from another `ControlCore` cannot use it.
+4. Use `execute_reserved(token, publisher, callback)` for external A05/A06
+   mutation under the reserved result lock. The callback checks real grant,
+   lease/epoch, target, CAS and settled usage under its resource lock, then
+   returns a `PublishOutcome`. `commit` exercises this same seam with the
+   host ResourceDomain. `publish` is a reconciliation entry after an effect
+   has already been safely fenced/established by the trusted adapter.
+   Tokens are instance-bound, so colliding identity bytes do not grant rights.
 5. Create an exact `DeliveryView` for history observation. Query is read-only;
    it never grants execution. `DeliveryState::Reserved` is pending,
    `NotSeen` is unknown in a live namespace, and `HistoryLost` is an explicit
@@ -52,7 +69,7 @@ this API. Possession of a host-model token is not a kernel credential.
 ## A06: CPU scheduler and ResourceDomain
 
 `ResourceDomain` exposes stable `ResourceDomainId` and `StableObjectId`, a
-revision-CAS budget update, `usage`, `revoke`, explicit `user_paused` state,
+revision-CAS budget update, `try_usage`, `revoke`, explicit `user_paused` state,
 and the host-model `charge_cpu` primitive. `install_budget_for_host_model` is
 the seam to replace with the scheduler's mutation path.
 
@@ -61,6 +78,8 @@ Invariants:
 - period is exactly `CPU_PERIOD_NS` (100 ms); cap is within the period;
 - expected revision must match and successful updates increment revision;
 - cumulative and current-window CPU usage are retained across cap updates;
+- successful sampling, CAS and charging advance one shared family BOOTTIME
+  floor; rejected operations do not move it, and legacy `usage` clamps to it;
 - a same-value update does not reset usage or create budget;
 - child cap cannot exceed the parent cap, and parent cap cannot be lowered
   below any registered child cap;
@@ -77,11 +96,13 @@ work.
 
 A07 records `K` and its association with this crate's D in the existing Hepta
 owner ledger. A03 does not create, reconcile, or persist K. After the owner
-has durably confirmed a contiguous terminal prefix, it creates an opaque
-`OwnerReceipt`/`HistoryAck` and calls `retire_through`. A plain caller boolean
-is not accepted. The namespace validates exact boot/space, optional owner
-binding on `delivery_view_for`, contiguous terminal state, and monotonic
-frontier. Retiring a prefix releases result slots but keeps the frontier so a
+has durably confirmed a contiguous terminal prefix, it creates a value-only
+`OwnerReceipt`/`HistoryAck` and calls
+`retire_through(&owner_view, ack, &original_owner_authority)`.
+The receipt is not authentication: the authority minted by trusted bootstrap
+is mandatory. The namespace validates instance, generation, exact boot/space,
+owner binding, contiguous terminal state, and monotonic frontier.
+Retiring a prefix releases result slots but keeps the frontier so a
 late sequence can only return `Retired`.
 
 `LogicalOperationId` and `OperationBinding` are value-only handoff types for
@@ -348,8 +369,8 @@ to A02's typed `QueryDeliveryResponse` and require successful
 that both A03's fallible status conversion and A02's *independent* encoder
 reject an impossible elapsed-CPU success; zero previous revision is also
 rejected. This adds no wire layout of A03's own, no generated golden edits,
-and no production dependency on the wire crate. Lockfile pins the path-only
-dev dependency. Exact-head Cargo execution is still required; test source
+and no production dependency on the wire crate. The lockfile pins the dev
+dependency and optional spin backend. Exact-head Cargo execution is still required; test source
 presence is not a passed result.
 
 ## A02 history-sequence MAX compatibility
@@ -499,3 +520,59 @@ linearization order. The infallible `usage` remains explicitly a host
 *diagnostic* and is not a wire-serving entry point. Rust tests cover
 three-level stale observations and 64 two-thread race schedules without
 claiming loom or real SMP/IRQ verification.
+
+## One-shot external mutation handoff
+
+```text
+fn execute_reserved<F>(
+    &self,
+    token: &ReserveToken,
+    publisher: PublisherId,
+    execute: F,
+) -> Result<DeliveryObservation, DeliveryError>
+where F: FnOnce(RequestBinding) -> PublishOutcome;
+```
+
+A05/A06 can supply one callback which checks actual kernel authority and
+performs the resource CAS under the real resource mutation lock. This callback
+runs under the already reserved result-slot lock, without the namespace table
+lock. It must not reenter this namespace, copy user memory, allocate or acquire
+the namespace table lock. The callback's locks must follow slot -> resource;
+no resource path may reverse into the slot/table. The portable-spin backend
+still requires a validated interrupt/preemption adapter before kernel use.
+
+The core marks the slot internally Executing **before** the callback. A
+terminal retry returns its immutable saved result without invoking the
+callback again. If the callback unwinds on the host or returns malformed
+metadata, the slot remains pending (wire `Reserved`) and subsequent execution
+returns `Busy`. Retirement cannot cross it. This does not fabricate a terminal
+refusal for an effect whose result is unknown. Only the trusted adapter, after
+fencing the original executor and establishing the outcome, may reconcile
+with `publish`. Host mutex poison recovery cannot cause a second effect.
+
+Namespace loss uses the same slot lock: it fences before a callback starts or
+waits for that callback and its complete result. It cannot pass through the
+middle of a synchronous effect/publication. This is an in-memory guarantee,
+not atomicity with Hepta fsync or physical devices. Actual process death,
+crash/reboot and asynchronous external executor fencing remain A05/A07 work.
+
+## Shared family BOOTTIME floor
+
+Successful `try_usage`, diagnostic `usage`, budget CAS and CPU charges advance
+one monotonic floor shared by every descendant, ancestor and sibling in a root
+family. Old read/CAS/point-charge timestamps and interval starts are rejected
+before mutation. New children inherit the family floor even when the newest
+observation was in a cousin. Failed CAS, exhausted charge and inconsistent
+accounting do not advance it. `usage` clamps its diagnostic timestamp to the
+floor and preserves cumulative usage. Independent root families still require
+the actual kernel's trusted global clock.
+
+The N0 model requires runtime settlement before observation. A caller cannot
+sample ahead and later insert unsettled CPU intervals into the past. This
+shared clock rule is not an SMP metering algorithm; A06 must settle real CPU
+slices and observations under its scheduler's lock discipline.
+
+`tests/control/run-validation.sh OUTPUT_DIR` repeats both host backend test
+suites, formatting, strict Clippy and the x86_64-unknown-none library check.
+`kernel_handoff` tests use a synthetic external callback; they do not call
+an actual kernel driver or the persistent Hepta owner.

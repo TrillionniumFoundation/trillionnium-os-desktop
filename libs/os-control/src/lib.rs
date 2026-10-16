@@ -1,14 +1,30 @@
 //! A03 HOS2 control state core.
 //!
-//! This crate is a Linux host model for the control state machine.  It is
-//! intentionally independent of the HOS2 wire codec and of the kernel.  In
+//! This crate has a default std host backend and an experimental alloc-only
+//! portable-spin backend. Runtime validation is still host-model evidence.
+//! It is independent of the HOS2 wire codec and of the kernel. In
 //! particular, a passing test here proves only the model's state invariants;
 //! it does not prove ioctl, credentials, scheduler, copyout, or persistence
-//! behaviour in a real kernel.
+//! behaviour in a real kernel. `execute_reserved` fences an external adapter's
+//! one-shot callback; that adapter still owns actual credentials, resource
+//! mutation, IRQ/preemption locks, allocation safety and runtime settlement.
 
-use std::collections::{BTreeMap, BTreeSet};
-use std::fmt;
-use std::sync::{Arc, Mutex, MutexGuard};
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(not(any(feature = "std", feature = "portable-spin")))]
+compile_error!("select the default std backend or the experimental portable-spin backend");
+
+extern crate alloc;
+
+use alloc::borrow::ToOwned;
+use alloc::collections::{BTreeMap, BTreeSet};
+use alloc::format;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::fmt;
+
+mod sync;
+use sync::{lock_unpoisoned, Arc, Mutex};
 
 pub const CPU_PERIOD_NS: u64 = 100_000_000;
 pub const DEFAULT_WINDOW_CAPACITY: usize = 1024;
@@ -276,6 +292,10 @@ struct FamilyIdentityRegistry {
     domain_ids: BTreeSet<ResourceDomainId>,
     object_ids: BTreeSet<StableObjectId>,
     capacity: usize,
+    // N0 has one BOOTTIME clock for all nodes in this family. A completed
+    // descendant/sibling observation also fences earlier parent operations.
+    // Read/updated only while holding the family's mutation gate.
+    last_boottime_ns: u64,
 }
 
 #[derive(Clone, Copy)]
@@ -386,6 +406,7 @@ impl ResourceDomain {
                 ancestor = node.inner.parent.as_ref();
             }
             let mut registry = lock_unpoisoned(&parent.inner.family);
+            newest_ancestor_boottime = newest_ancestor_boottime.max(registry.last_boottime_ns);
             if registry.domain_ids.contains(&id) {
                 return Err(ResourceError::DuplicateDomainId);
             }
@@ -435,6 +456,7 @@ impl ResourceDomain {
                     domain_ids: BTreeSet::from([id]),
                     object_ids: BTreeSet::from([stable_object_id]),
                     capacity: DEFAULT_FAMILY_ID_CAPACITY,
+                    last_boottime_ns: 0,
                 })),
                 state: Mutex::new(DomainState {
                     id,
@@ -561,9 +583,14 @@ impl ResourceDomain {
     /// The returned sample time reflects any monotonic clamp.
     pub fn usage(&self, sample_boottime_ns: u64) -> UsageSnapshot {
         let _gate = lock_unpoisoned(&self.inner.gate);
+        let family_time = self.family_boottime();
         let mut state = lock_unpoisoned(&self.inner.state);
-        let effective_ns = sample_boottime_ns.max(state.last_boottime_ns);
-        Self::snapshot_usage_at(&mut state, effective_ns)
+        let effective_ns = sample_boottime_ns
+            .max(state.last_boottime_ns)
+            .max(family_time);
+        let snapshot = Self::snapshot_usage_at(&mut state, effective_ns);
+        self.advance_family_boottime(effective_ns);
+        snapshot
     }
 
     /// The fallible HOS2 ReadUsage boundary for a trusted A05 adapter.
@@ -574,6 +601,9 @@ impl ResourceDomain {
     /// must not advance the sampled time or reset a window.
     pub fn try_usage(&self, sample_boottime_ns: u64) -> Result<UsageSnapshot, ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
+        if sample_boottime_ns < self.family_boottime() {
+            return Err(ResourceError::ClockRollback);
+        }
         // A ReadUsage is a *current* BOOTTIME observation. Reject a caller's
         // stale time if any ancestor has already sampled further ahead.
         // This is the same family gate used by admission and clock updates.
@@ -597,7 +627,9 @@ impl ResourceDomain {
         if window_consumed > sample_boottime_ns - window_start {
             return Err(ResourceError::InconsistentAccounting);
         }
-        Ok(Self::snapshot_usage_at(&mut state, sample_boottime_ns))
+        let snapshot = Self::snapshot_usage_at(&mut state, sample_boottime_ns);
+        self.advance_family_boottime(sample_boottime_ns);
+        Ok(snapshot)
     }
 
     fn snapshot_usage_at(state: &mut DomainState, now_ns: u64) -> UsageSnapshot {
@@ -629,6 +661,9 @@ impl ResourceDomain {
     /// now_ns; it does not replace A06 scheduler interval slicing.
     pub fn charge_cpu(&self, delta_ns: u64, now_ns: u64) -> Result<(), ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
+        if now_ns < self.family_boottime() {
+            return Err(ResourceError::ClockRollback);
+        }
         let mut updates = Vec::new();
         let mut cursor = Some(self.clone());
 
@@ -684,6 +719,7 @@ impl ResourceDomain {
             state.event_sequence = event_sequence;
             state.last_boottime_ns = now_ns;
         }
+        self.advance_family_boottime(now_ns);
         Ok(())
     }
 
@@ -700,6 +736,9 @@ impl ResourceDomain {
             return Err(ResourceError::InvalidInterval);
         }
         let _gate = lock_unpoisoned(&self.inner.gate);
+        if start_ns < self.family_boottime() {
+            return Err(ResourceError::ClockRollback);
+        }
         let delta = end_ns - start_ns;
         let mut pending = Vec::new();
         let mut cursor = Some(self.clone());
@@ -775,6 +814,7 @@ impl ResourceDomain {
             state.event_sequence = event_sequence;
             state.last_boottime_ns = end_ns;
         }
+        self.advance_family_boottime(end_ns);
         Ok(())
     }
 
@@ -802,6 +842,9 @@ impl ResourceDomain {
         now_ns: u64,
     ) -> Result<BudgetReceipt, ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
+        if now_ns < self.family_boottime() {
+            return Err(ResourceError::ClockRollback);
+        }
         let mut state = lock_unpoisoned(&self.inner.state);
         if !state.alive {
             return Err(ResourceError::Revoked);
@@ -889,6 +932,7 @@ impl ResourceDomain {
         if let Some(parent) = self.inner.parent.as_ref() {
             lock_unpoisoned(&parent.inner.children).insert(state.id, cap_ns);
         }
+        self.advance_family_boottime(now_ns);
         Ok(BudgetReceipt {
             previous_revision,
             revision: state.revision,
@@ -899,6 +943,16 @@ impl ResourceDomain {
 
     fn snapshot_state(&self) -> DomainState {
         *lock_unpoisoned(&self.inner.state)
+    }
+
+    // Caller holds the shared family gate; no callback/allocation is needed.
+    fn family_boottime(&self) -> u64 {
+        lock_unpoisoned(&self.inner.family).last_boottime_ns
+    }
+
+    fn advance_family_boottime(&self, now_ns: u64) {
+        let mut family = lock_unpoisoned(&self.inner.family);
+        family.last_boottime_ns = family.last_boottime_ns.max(now_ns);
     }
 }
 
@@ -1225,6 +1279,10 @@ struct Slot {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum SlotState {
     Reserved,
+    // One-shot external execution has begun. If an executor unwinds or
+    // returns malformed metadata, leave the result pending and block any
+    // second effect. Only trusted fenced reconciliation may publish it.
+    Executing,
     // Namespace destruction fences slots even if a token passed an earlier
     // liveness check.  A fenced reservation can never mutate the resource.
     Fenced,
@@ -1744,7 +1802,7 @@ impl ControlCore {
         // of applying an effect after loss. No resource lock is taken here.
         for slot in ns.slots.values() {
             let mut state = lock_unpoisoned(&slot.state);
-            if matches!(*state, SlotState::Reserved) {
+            if matches!(*state, SlotState::Reserved | SlotState::Executing) {
                 *state = SlotState::Fenced;
             }
         }
@@ -1823,7 +1881,7 @@ impl ControlCore {
                 }
             }
             match *slot_state {
-                SlotState::Reserved => {}
+                SlotState::Reserved | SlotState::Executing => {}
                 SlotState::Fenced => return Err(DeliveryInvariantError::FencedLiveSlot),
                 SlotState::Terminal(result) => {
                     if observation_from_published(self.identity(), key, result)
@@ -1876,9 +1934,11 @@ impl ReserveToken {
 }
 
 impl ControlCore {
-    /// Publish an already applied kernel effect.  A05 can use this after its
-    /// resource mutation; it must provide the same immutable metadata that the
-    /// request bound.  This method never consults or creates a K ledger.
+    /// Reconcile an effect established by a trusted, externally fenced A05
+    /// adapter, including an interrupted execute_reserved callback. This
+    /// method does not execute or independently prove that external effect.
+    /// Use execute_reserved for a new synchronous effect so namespace loss
+    /// cannot pass between effect and publication. No K ledger is created.
     pub fn publish(
         &self,
         token: &ReserveToken,
@@ -1904,7 +1964,7 @@ impl ControlCore {
                     result,
                 ))
             }
-            SlotState::Reserved => {}
+            SlotState::Reserved | SlotState::Executing => {}
         }
         let result = published_result_from_outcome(token.binding(), outcome)?;
         *slot_state = SlotState::Terminal(result);
@@ -1915,16 +1975,29 @@ impl ControlCore {
         ))
     }
 
-    /// Atomically applies a budget mutation and publishes its terminal result.
-    /// The slot lock is held while the resource gate is taken, but no namespace
-    /// table lock is acquired by the resource path; this preserves the
-    /// delivery->resource lock direction required by the contract.
-    pub fn commit(
+    /// Execute an A05/A06 effect once while holding the reserved result slot.
+    ///
+    /// The adapter must check the real grant/epoch/lease, stable target,
+    /// revision and runtime under its resource mutation lock, and return the
+    /// matching outcome. It must not reenter this namespace, copy user memory,
+    /// allocate, or take a namespace table lock while this callback runs.
+    /// This seam supplies delivery fencing, not kernel credentials or CPU
+    /// enforcement. Never call it directly from IRQ with portable-spin.
+    ///
+    /// A terminal retry returns the saved result without calling `execute`.
+    /// Namespace loss either fences before entry or waits for publication.
+    /// Unwind or malformed outcome leaves an opaque pending slot: subsequent
+    /// execution is Busy, retirement is blocked, and only trusted externally
+    /// fenced reconciliation may finish it through `publish`.
+    pub fn execute_reserved<F>(
         &self,
         token: &ReserveToken,
         publisher: PublisherId,
-        now_ns: u64,
-    ) -> Result<DeliveryObservation, DeliveryError> {
+        execute: F,
+    ) -> Result<DeliveryObservation, DeliveryError>
+    where
+        F: FnOnce(RequestBinding) -> PublishOutcome,
+    {
         if !Arc::ptr_eq(&token.reservation.namespace, &self.namespace)
             || token.reservation.id.namespace != self.identity()
             || publisher != token.publisher()
@@ -1937,6 +2010,7 @@ impl ControlCore {
         let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
         match *slot_state {
             SlotState::Fenced => return Err(DeliveryError::HistoryLost),
+            SlotState::Executing => return Err(DeliveryError::Busy),
             SlotState::Terminal(result) => {
                 return Ok(observation_from_published(
                     self.identity(),
@@ -1947,37 +2021,47 @@ impl ControlCore {
             SlotState::Reserved => {}
         }
         let binding = token.binding();
-        let applied = token.reservation.request.grant.domain.apply_budget(
-            &token.reservation.request.grant,
-            binding.expected_revision,
-            binding.period_ns,
-            binding.cap_ns,
-            now_ns,
-        );
-        let result = match applied {
-            Ok(receipt) => PublishedResult {
-                status: DeliveryStatus::Ok,
-                stable_object_id: Some(binding.stable_object_id),
-                saved_revision: Some(receipt.revision),
-                previous_revision: Some(receipt.previous_revision),
-                effective_ns: Some(receipt.effective_boottime_ns),
-                consumed_ns: Some(receipt.consumed_at_apply_ns),
-            },
-            Err(error) => PublishedResult {
-                status: map_resource_error(error),
-                stable_object_id: None,
-                saved_revision: None,
-                previous_revision: None,
-                effective_ns: None,
-                consumed_ns: None,
-            },
-        };
+        // Set the sentinel before invoking external code: unwinding must not
+        // restore permission to perform an effect, even with poison recovery.
+        *slot_state = SlotState::Executing;
+        let outcome = execute(binding);
+        let result = published_result_from_outcome(binding, outcome)?;
         *slot_state = SlotState::Terminal(result);
         Ok(observation_from_published(
             self.identity(),
             token.id().sequence,
             result,
         ))
+    }
+
+    /// Host-model budget CAS using the same one-shot delivery seam as A05.
+    /// It does not implement actual kernel scheduler admission or metering.
+    pub fn commit(
+        &self,
+        token: &ReserveToken,
+        publisher: PublisherId,
+        now_ns: u64,
+    ) -> Result<DeliveryObservation, DeliveryError> {
+        self.execute_reserved(token, publisher, |binding| {
+            match token.reservation.request.grant.domain.apply_budget(
+                &token.reservation.request.grant,
+                binding.expected_revision,
+                binding.period_ns,
+                binding.cap_ns,
+                now_ns,
+            ) {
+                Ok(receipt) => PublishOutcome::Success {
+                    stable_object_id: binding.stable_object_id,
+                    saved_revision: receipt.revision,
+                    previous_revision: receipt.previous_revision,
+                    effective_ns: receipt.effective_boottime_ns,
+                    consumed_ns: receipt.consumed_at_apply_ns,
+                },
+                Err(error) => PublishOutcome::Failure {
+                    status: map_resource_error(error),
+                },
+            }
+        })
     }
 }
 
@@ -2061,7 +2145,7 @@ fn observation_from_slot(
     slot: &Arc<Slot>,
 ) -> DeliveryObservation {
     match *lock_unpoisoned(&slot.state) {
-        SlotState::Reserved => DeliveryObservation::reserved(DeliveryId {
+        SlotState::Reserved | SlotState::Executing => DeliveryObservation::reserved(DeliveryId {
             namespace,
             sequence,
         }),
@@ -2091,12 +2175,6 @@ fn observation_from_published(
         effective_ns: result.effective_ns,
         consumed_ns: result.consumed_ns,
     }
-}
-
-fn lock_unpoisoned<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
-    mutex
-        .lock()
-        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 #[cfg(test)]

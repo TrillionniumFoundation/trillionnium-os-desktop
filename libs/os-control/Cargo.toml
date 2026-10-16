@@ -4,12 +4,33 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+[features]
+default = ["std"]
+std = []
+# Experimental alloc-only backend, not a validated IRQ-safe kernel lock.
+portable-spin = ["dep:spin"]
+
+[dependencies]
+spin = { version = "=0.9.9", optional = true, default-features = false, features = ["mutex", "spin_mutex"] }
+
 [lib]
 path = "src/lib.rs"
 
 [[test]]
 name = "control_conformance"
 path = "../../tests/control/control_conformance.rs"
+
+[[test]]
+name = "delivery_adversarial"
+path = "../../tests/control/delivery_adversarial.rs"
+
+[[test]]
+name = "resource_adversarial"
+path = "../../tests/control/resource_adversarial.rs"
+
+[[test]]
+name = "kernel_handoff"
+path = "../../tests/control/kernel_handoff.rs"
 
 [lints.rust]
 unsafe_code = "forbid"
