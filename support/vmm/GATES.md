@@ -22,3 +22,44 @@ Execution-tool container: Linux 6.18.44, x86_64, no /dev/kvm, no forwarded vmx/s
 7. Record *both* Asterinas-derived host kernel boot identity and Linux guest kernel identity with selected physical PCI GPU BDF/driver/runtime, successful CUDA result, DMA cleanup, VM death and recovery in disposable lab.
 
 Only the above can eventually qualify "local GPU in a Linux guest under a Rust host". QEMU/KVM VM on Linux host or reference VMX snippet is categorically different. Performance and GPU reset behavior remain unmeasured.
+
+
+## A09 Phase-2 executable preflight boundary (2026-10-16)
+
+- `../hardware/vfio_preflight.py`: Linux read-only sysfs group inspection with
+  **exact expected-member allowlist**, including display/audio siblings. A
+  mismatched or occupied group, no-IOMMU mode, absent PCI device/identity or
+  incomplete backlink rejects the route. Even a clean observation returns
+  `manual_review_required`, never authorization. This is **not** a Rust-host
+  VFIO assignment implementation. It cannot validate ACS, interrupt remapping,
+  DMA quiescence, active workload ownership or reliable reset.
+- `../../tests/hardware/run_isolated_cuda.py`: bounded, explicit isolated-lab
+  CUDA subprocess with pinned guest PCI identity and fixed output SHA. A child
+  timeout or CUDA error leaves DMA effect **unknown**, not successfully canceled.
+  Its success label remains guest-process reported, not host Asterinas proof.
+- Real VM-to-GPU join still requires A01 source import, an actual VMX/EPT-capable
+  Intel test machine **or** an independently implemented AMD SVM backend,
+  and A05/A06's canonical CapSpace/ResourceDomain. No parallel GPU authority.
+
+### Proposed operation order for A01/A05/A06 (not shipped ABI)
+
+1. `AcquireDevice(DeviceHandle, ResourceDomain, CapSpace context)`: confirm
+   group exclusivity, final `exec_epoch`, active grant, parent budget and
+   current generation; deny if guest/raw fd bypasses common object checks.
+2. `PinMemory(MemoryObject, domain, size, direction)`: charge every ancestor
+   before pinning; track CPU aliases and IOVA range; no arbitrary GPA=HPA.
+3. `Submit(Queue, Buffer, fence)`: require device/queue generation match,
+   buffer prepared for correct DMA direction, CPU writable aliases restricted,
+   and kernel-owned descriptor copy; count in-flight before doorbell.
+4. `Complete(Completion, fence, generation)`: verify current queue generation,
+   hardware signal and DMA sync; only then transition buffers CPU-owned.
+5. `Revoke/Cancel`: block **new** submissions; drain/stop guest and DMA safely.
+   Outstanding effects remain unknown until separately confirmed; an API
+   timeout is not hardware quiescence.
+6. `Stop/Reset/Destroy`: require independently demonstrated quiescence,
+   interrupt/IOTLB/TLB cleanup and all owners retired before pin recycling.
+   On absent evidence, quarantine device+buffers with bounded accounting.
+   Physical GPU reset only on disposable isolated lab card after qualification.
+
+These are typed object/transition requirements for kernel owners, not a second
+permission signer or a simulated ``passed`` production backend.
