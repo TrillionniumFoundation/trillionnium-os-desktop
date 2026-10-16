@@ -134,8 +134,8 @@ fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
     let binding = OperationBinding::new(k.clone(), d);
     assert_eq!(binding.logical, k);
     assert_eq!(binding.delivery, d);
-    assert_eq!(binding.logical.stable_id, "scope:some-operation.with-longer-id");
-    assert_eq!(binding.logical.payload_digest, [0xA7; 32]);
+    assert_eq!(binding.logical.stable_id(), "scope:some-operation.with-longer-id");
+    assert_eq!(binding.logical.payload_digest(), [0xA7; 32]);
 
     // Independent K value changes never conflate with the same boot-local D.
     let different_payload =
@@ -156,7 +156,7 @@ fn logical_k_is_value_only_and_never_replaces_boot_local_d() {
 fn pinned_hepta_k_stable_id_bounds_and_nonzero_digest_are_enforced() {
     let maximum = "k".repeat(128);
     let k = LogicalOperationId::new(maximum.clone(), [0x55; 32]).unwrap();
-    assert_eq!(k.stable_id, maximum);
+    assert_eq!(k.stable_id(), maximum);
     for invalid in ["", "space is invalid", "unicode-测试", "/etc/passwd"] {
         assert_eq!(
             LogicalOperationId::new(invalid, [1; 32]),
@@ -170,6 +170,24 @@ fn pinned_hepta_k_stable_id_bounds_and_nonzero_digest_are_enforced() {
     assert_eq!(
         LogicalOperationId::new("scope:operation", [0; 32]),
         Err(os_control::IdentityError::InvalidOperationKey)
+    );
+}
+
+#[test]
+fn hepta_k_copies_bounded_owned_bytes_not_caller_mutable_storage() {
+    let mut caller = String::from("existing.owner:operation-1");
+    let original = LogicalOperationId::new(caller.as_str(), [0x42; 32]).unwrap();
+    caller.clear();
+    caller.push_str("different:operation");
+    assert_eq!(original.stable_id(), "existing.owner:operation-1");
+
+    // A getter returns the digest by value, not a mutable reference to K.
+    let mut copied_digest = original.payload_digest();
+    copied_digest[0] = 0;
+    assert_eq!(original.payload_digest(), [0x42; 32]);
+    assert_eq!(
+        LogicalOperationId::new(original.stable_id(), original.payload_digest()).unwrap(),
+        original,
     );
 }
 
