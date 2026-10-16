@@ -367,3 +367,35 @@ fn budget_cpu_time_cannot_exceed_elapsed_window_time() {
     impossible[120..128].copy_from_slice(&41_000_000u64.to_le_bytes());
     assert_err(decode_response(&impossible), Error::InvalidField);
 }
+
+#[test]
+fn unknown_minor_and_exact_wire_lengths_are_rejected() {
+    let mut request = query_request();
+    request[6] = 1;
+    assert_err(decode_request(&request), Error::UnknownVersion);
+
+    let mut response = install_success();
+    response[6] = 1;
+    assert_err(decode_response(&response), Error::UnknownVersion);
+
+    let mut request = install_request();
+    request.truncate(88);
+    request[16..20].copy_from_slice(&24u32.to_le_bytes());
+    assert_err(decode_request(&request), Error::PayloadLengthMismatch);
+
+    let mut response = install_success();
+    response.truncate(87);
+    response[16..20].copy_from_slice(&23u32.to_le_bytes());
+    assert_err(decode_response(&response), Error::PayloadLengthMismatch);
+
+    let mut descriptor = [0u8; 32];
+    Transport::new(0, 0, 64, 112)
+        .encode(&mut descriptor)
+        .unwrap();
+    assert_err(Transport::decode(&descriptor[..31]), Error::Truncated);
+    let mut trailing = descriptor.to_vec();
+    trailing.push(0);
+    assert_err(Transport::decode(&trailing), Error::TrailingBytes);
+    descriptor[24] = 1;
+    assert_err(Transport::decode(&descriptor), Error::ReservedNonZero);
+}

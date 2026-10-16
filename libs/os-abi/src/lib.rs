@@ -526,8 +526,10 @@ pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
                 return Err(Error::InvalidField);
             }
             let p = parse_install_response(payload)?;
-            if p.previous_revision == 0
-                || p.previous_revision == u64::MAX
+            if p.previous_revision == 0 {
+                return Err(Error::InvalidField);
+            }
+            if p.previous_revision == u64::MAX
                 || p.previous_revision.checked_add(1) != Some(revision)
             {
                 return Err(Error::IntegerOverflow);
