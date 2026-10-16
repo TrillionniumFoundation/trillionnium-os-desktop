@@ -28,6 +28,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The archive pair must be checked against the exact before/base tree.
+          fetch-depth: 0
       - name: Check immutable source pins and empty root README
         run: |
           test -f README.md && test ! -s README.md
@@ -59,6 +62,8 @@ jobs:
           python3 -I -O support/build/tests/test_kernel_runner.py
       - name: A01 OSDK evidence archive adversarial host tests (not QEMU/kernel)
         shell: bash
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           set -euo pipefail
           dir=support/build/osdk-integration
@@ -70,5 +75,18 @@ jobs:
             (cd "$dir" && python3 -I -m unittest discover -s . -p 'test_archive.py' -v)
             (cd "$dir" && python3 -I -O -m unittest discover -s . -p 'test_archive.py' -v)
           else
-            echo 'BOOTSTRAP ONLY: A01 OSDK archive sources absent; no archive tests performed'
+            # The first workflow-only bootstrap may lack this source pair.
+            # After the pair lands, deleting BOTH must fail instead of passing.
+            if [[ -z "${EVENT_BASE_SHA:-}" || "$EVENT_BASE_SHA" =~ ^0+$ ]] ||
+               ! git cat-file -e "$EVENT_BASE_SHA^{commit}" 2>/dev/null; then
+              echo 'Cannot verify archive-source absence against exact event base commit' >&2
+              exit 1
+            fi
+            for source_path in "$dir/archive.py" "$dir/test_archive.py"; do
+              if git cat-file -e "$EVENT_BASE_SHA:$source_path" 2>/dev/null; then
+                echo "A01 archive source/test was removed from its event base: $source_path" >&2
+                exit 1
+              fi
+            done
+            echo 'BOOTSTRAP ONLY: A01 OSDK archive sources absent in both base and head; no archive tests performed'
           fi
