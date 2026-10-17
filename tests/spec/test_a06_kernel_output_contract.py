@@ -38,6 +38,13 @@ class A06KernelOutputContract(unittest.TestCase):
             source,
         )
 
+    def test_thread_builder_initializes_cpu_cgroup_snapshot(self):
+        builder = (
+            ROOT
+            / "kernel/asterinas/kernel/core/src/process/posix_thread/builder.rs"
+        ).read_text()
+        self.assertIn("cpu_cgroup: RcuOption::new(None)", builder)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
