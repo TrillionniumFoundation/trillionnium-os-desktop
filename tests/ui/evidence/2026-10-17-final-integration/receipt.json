@@ -1,0 +1,69 @@
+{
+  "started_at_utc": "2026-10-17T11:47:54.381979+00:00",
+  "cwd": "/workspace/scratch/98f315e377b2/next-ui",
+  "source_commit": "5f14fded1a9dd3d9f0485520e5dc70bda3a1ff48",
+  "source_tree": "025da39cc0d45e846dbcf3fa38263c71426334fc",
+  "qualification": "combined_process_guard_and_workflow_static_only",
+  "original_agentd_run": false,
+  "rust_build_repeated": false,
+  "weston_run_repeated": false,
+  "steps": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/integration/hepta",
+        "-p",
+        "test_original_process_guard.py",
+        "-v"
+      ],
+      "started_at_utc": "2026-10-17T11:47:54.425340+00:00",
+      "ended_at_utc": "2026-10-17T11:47:54.705633+00:00",
+      "exit_code": 0,
+      "log": "process-guard.log",
+      "log_sha256": "c014e9140c1545e6eb24c878f318e61c84db44b460e867965bcd339e2c8f68c9"
+    }
+  ],
+  "unchanged_successful_ui_source": {
+    "local_commit": "9b13dfbcb006a7f8af7cccd338e03174df74bad5",
+    "remote_commit": "865ecf381dc8ddb70470ee173add9bd3b4a6a29a",
+    "tree": "00923201e6550280e68a5ca662a8a3c3a165a29c",
+    "directories": [
+      "ui",
+      "support/ui"
+    ],
+    "existing_hepta_fixture_and_contract_checks": [
+      "tests/integration/hepta/agentd_fixture.py",
+      "tests/integration/hepta/check_upstream_contract.py"
+    ],
+    "services_hepta_os_only_change": [
+      "services/hepta-os/RUN.md"
+    ],
+    "ui_test_changes_only_docs_and_evidence": true,
+    "qualification": "Prior 137-test host, Weston and Clippy results remain bound to that earlier full tree; this gate does not repeat or re-label them."
+  },
+  "preliminary_verifier_corrections": [
+    "The initial static verifier stopped before tests because it required all services/hepta-os files to be unchanged. The actual sole change there is RUN.md documentation. This corrected verifier permits that exact documentation path.",
+    "The second static check assumed tests/integration/hepta already contained Rust manifests. It actually contained two Python source/fixture checks, which this verifier now explicitly covers with a nonempty path set. No repository source was changed to satisfy either verifier correction."
+  ],
+  "source_sha256": {
+    "tests/integration/hepta/run_original_agentd.py": "9818cd6fa17c68e704b7fe311a8c0c043d05225d46cb4073901ff01621045133",
+    "tests/integration/hepta/test_original_process_guard.py": "5dd5a3c5d9600981c692283acff73cc388da90977d11c0f38cbe049a49ff8191",
+    "tests/integration/hepta/ORIGINAL_AGENTD.md": "789d8b218d55c1b55860d3cdad8ce316a2a57d68388ac47048d655886de1bcd8",
+    "tests/integration/hepta/EVIDENCE.md": "1406258cdb24adce5b4a9d4611333d5e33fc8421d92020c6e664d2401efa587b",
+    "tests/integration/hepta/README.md": "02299b2bb3dc2b773c56e12c48b10aac85f9dcef3dcca67514c1c8b1e1a43d50",
+    ".github/workflows/a10-host.yml": "30220be07620e06f3e29fc0e2d4dc6ab89d76ec1cafb689f87fd7e00c3ee168a"
+  },
+  "workflow_static": {
+    "yaml_parser": "6.0.3",
+    "bash_blocks_checked": 8,
+    "exit_code": 0,
+    "remote_ci_executed": false
+  },
+  "ended_at_utc": "2026-10-17T11:47:54.705675+00:00",
+  "exit_code": 0
+}

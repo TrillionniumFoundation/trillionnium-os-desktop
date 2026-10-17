@@ -12,6 +12,14 @@ affected cached ELF was retained and rebuilt, and its permission-mutation
 cause remains unknown. Fixture, no-op renderer, missing CJK font, unverified
 X11/mobile/effects and original-Agentd limits are explicit in that receipt.
 
+The [final harness/CI integration record](evidence/2026-10-17-final-integration/README.md)
+separately records six passing Linux child-process cleanup tests and syntax
+checks for all eight workflow Bash blocks on source `5f14fde` (same tree as
+published `7e7f4d3`). It verifies unchanged production UI/observer bytes; it
+does not re-label the earlier full Rust/Weston result as a new execution.
+The existing A10 workflow now enforces pinned all-target Clippy and those six
+process-guard tests. Original Agentd remains `not_run`.
+
 ## Earlier recorded source
 
 The [2026-10-17 Rust 1.88 and Weston evidence](evidence/2026-10-17-rust188-weston/README.md)
