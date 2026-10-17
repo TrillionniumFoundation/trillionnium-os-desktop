@@ -6,6 +6,8 @@ identity, replay, and state rules that a future implementation must satisfy.
 
 from __future__ import annotations
 
+import copy
+import math
 import unittest
 from dataclasses import dataclass
 from enum import Enum
@@ -57,38 +59,72 @@ class Delivery:
 
 
 def validate_intent(intent: Intent) -> None:
-    required = {
-        "scope_id": intent.scope_id,
-        "operation_id": intent.operation_id,
-        "payload_digest": intent.payload_digest,
-        "client_request_id": intent.client_request_id,
-    }
-    if any(not value for value in required.values()):
-        raise BrokerError("identity fields must be non-empty")
-    if intent.expected_resource_revision <= 0:
-        raise BrokerError("resource revision must be positive")
-    if intent.body_generation <= 0 or intent.authority_epoch <= 0:
-        raise BrokerError("generation and authority epoch must be positive")
+    # This is a specification fixture, not a running broker. All wire inputs
+    # must be scalar, bounded, and structurally JSON-safe before admission.
+    allowed_id = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-:")
+    for value in (intent.scope_id, intent.operation_id, intent.client_request_id):
+        if (not isinstance(value, str) or not 1 <= len(value) <= 128
+                or any(char not in allowed_id for char in value)):
+            raise BrokerError("invalid bounded stable ID/client nonce")
+    digest = intent.payload_digest
+    if (not isinstance(digest, str) or not digest.startswith("sha256:")
+            or len(digest) != 71
+            or any(char not in "0123456789abcdef" for char in digest[7:])):
+        raise BrokerError("a full immutable SHA256 digest is required")
+    for value in (intent.expected_resource_revision, intent.body_generation,
+                  intent.authority_epoch):
+        if type(value) is not int or not 0 < value < 2**64:
+            raise BrokerError("revision and generations must be positive u64")
+    if not isinstance(intent.payload, dict):
+        raise BrokerError("UI payload must be a bounded object")
+
     forbidden = {
-        "request_addr",
-        "response_addr",
-        "cap_space_id",
-        "boot_id",
-        "control_fd",
-        "final_use",
-        "signature",
+        "requestaddr", "responseaddr", "capspaceid", "bootid",
+        "controlfd", "devicefd", "finaluse", "signature", "agentduds",
+        "rawioctl",
     }
-    if forbidden.intersection(intent.payload):
-        raise BrokerError("UI payload must not contain local pointers or authority")
+    stack = [(intent.payload, 0)]
+    count = 0
+    while stack:
+        value, depth = stack.pop()
+        count += 1
+        if count > 256 or depth > 8:
+            raise BrokerError("UI payload exceeds bounded structure")
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if not isinstance(key, str) or len(key) > 128:
+                    raise BrokerError("UI keys must be bounded strings")
+                normalized = key.replace("_", "").replace("-", "").lower()
+                if normalized in forbidden:
+                    raise BrokerError("nested UI pointer or authority field")
+                stack.append((child, depth + 1))
+        elif isinstance(value, list):
+            stack.extend((child, depth + 1) for child in value)
+        elif value is None or type(value) in (bool, int, str, float):
+            if type(value) is float and not math.isfinite(value):
+                raise BrokerError("non-finite UI scalar")
+            if type(value) is int and not -(2**63) <= value < 2**63:
+                raise BrokerError("UI integer outside bounded wire range")
+            if isinstance(value, str) and len(value.encode("utf-8")) > 4096:
+                raise BrokerError("unbounded UI string")
+        else:
+            raise BrokerError("not a JSON scalar or container")
 
 
 def record_intent(table: dict, intent: Intent) -> str:
     validate_intent(intent)
     previous = table.get(intent.k)
     if previous is None:
-        table[intent.k] = intent
+        # Freeze the ingress payload: a mutable caller dict must not mutate a
+        # prior operation while the original Hepta owner records intent.
+        table[intent.k] = copy.deepcopy(intent)
         return "accepted"
-    if previous == intent:
+    # The client retry nonce is NOT part of durable K. Verify every semantic
+    # field, including revision and owner generations, before reusing receipt.
+    def semantic_fields(value: Intent) -> tuple:
+        return (value.payload_digest, value.expected_resource_revision,
+                value.body_generation, value.authority_epoch, value.payload)
+    if semantic_fields(previous) == semantic_fields(intent):
         return "idempotent_replay"
     raise BrokerError("same K with different semantics must be rejected")
 
@@ -102,7 +138,7 @@ class OrganControlBrokerContractTests(unittest.TestCase):
         fields = dict(
             scope_id="scope-1",
             operation_id="op-1",
-            payload_digest="sha256:abc",
+            payload_digest="sha256:" + "a" * 64,
             expected_resource_revision=3,
             body_generation=7,
             authority_epoch=11,
@@ -127,7 +163,7 @@ class OrganControlBrokerContractTests(unittest.TestCase):
         table = {}
         record_intent(table, self.make_intent())
         with self.assertRaises(BrokerError):
-            record_intent(table, self.make_intent(payload_digest="sha256:changed"))
+            record_intent(table, self.make_intent(payload_digest="sha256:" + "b" * 64))
 
     def test_ui_cannot_submit_pointer_or_authority_fields(self) -> None:
         with self.assertRaises(BrokerError):
@@ -162,6 +198,56 @@ class OrganControlBrokerContractTests(unittest.TestCase):
         second = self.make_intent(client_request_id="nonce-b")
         self.assertEqual(first.k, second.k)
         self.assertNotEqual(first.client_request_id, second.client_request_id)
+
+    def test_changed_retry_nonce_same_semantics_is_idempotent(self) -> None:
+        table = {}
+        first = self.make_intent(client_request_id="nonce-a")
+        retry = self.make_intent(client_request_id="nonce-b")
+        self.assertEqual(record_intent(table, first), "accepted")
+        self.assertEqual(record_intent(table, retry), "idempotent_replay")
+        self.assertEqual(table[first.k].client_request_id, "nonce-a")
+
+    def test_same_k_and_digest_changed_authority_or_payload_is_not_replay(self) -> None:
+        table = {}
+        record_intent(table, self.make_intent())
+        for change in (dict(authority_epoch=12),
+                       dict(expected_resource_revision=4),
+                       dict(payload={"kind": "stop"})):
+            with self.subTest(change=change), self.assertRaises(BrokerError):
+                record_intent(table, self.make_intent(**change))
+
+    def test_nested_or_variant_pointer_and_authority_fields_are_rejected(self) -> None:
+        for payload in ({"wrapper": {"request_addr": 1}},
+                        {"items": [{"capSpaceId": "forged"}]},
+                        {"inner": {"final-use": True}},
+                        {"device_fd": 4}):
+            with self.subTest(payload=payload), self.assertRaises(BrokerError):
+                validate_intent(self.make_intent(payload=payload))
+
+    def test_unbounded_or_non_json_payloads_and_integer_generations_fail(self) -> None:
+        for payload in ({"items": [[[[[[[[[0]]]]]]]]]},
+                        {"raw": object()}, {"value": float("nan")},
+                        {"items": [0] * 257}):
+            with self.subTest(payload_type=str(type(payload))), self.assertRaises(BrokerError):
+                validate_intent(self.make_intent(payload=payload))
+        for change in (dict(authority_epoch=True), dict(body_generation=-1),
+                       dict(expected_resource_revision=2**64),
+                       dict(payload_digest="sha256:abc")):
+            with self.subTest(change=change), self.assertRaises(BrokerError):
+                validate_intent(self.make_intent(**change))
+
+    def test_mutating_caller_payload_cannot_rewrite_original_operation(self) -> None:
+        payload = {"kind": "proposal", "nested": {"cap": 10}}
+        table = {}
+        intent = self.make_intent(payload=payload)
+        self.assertEqual(record_intent(table, intent), "accepted")
+        payload["nested"]["cap"] = 900
+        self.assertEqual(table[intent.k].payload["nested"]["cap"], 10)
+        self.assertEqual(
+            record_intent(table, self.make_intent(payload={"kind": "proposal", "nested": {"cap": 10}},
+                                                  client_request_id="retry")),
+            "idempotent_replay",
+        )
 
     @staticmethod
     def _new_table() -> dict:
