@@ -10,7 +10,7 @@ use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
 use std::time::{Duration, Instant};
-use trill_ui_core::hepta::{HeptaConnectionState, HeptaProjection};
+use trill_ui_core::hepta::HeptaProjection;
 use trill_ui_core::{
     request, AppKind, HostResources, HostWaylandObservation, HostWindowObservation, Request,
     Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace,
@@ -426,6 +426,20 @@ impl Desktop {
                 }
             }
         }
+    }
+
+    /// Consume queued host responses and refresh state before any page draws.
+    /// The clock is sampled after receive, so an arriving response does not
+    /// get a local timestamp later than the frame's freshness evaluation.
+    fn receive_and_refresh_hepta(&mut self, clock: impl FnOnce() -> (Instant, u64)) {
+        self.receive();
+        let (now, now_unix_ms) = clock();
+        hepta_panel::expire_unfresh_observation(
+            &mut self.hepta,
+            self.hepta_last_snapshot,
+            now,
+            now_unix_ms,
+        );
     }
 
     /// Explicit user-requested export. Never autosave chat or feed Hepta.
@@ -941,14 +955,7 @@ impl Desktop {
 
 impl eframe::App for Desktop {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.receive();
-        if self.hepta.connection == HeptaConnectionState::Observed
-            && self
-                .hepta_last_snapshot
-                .is_some_and(|time| time.elapsed() > Duration::from_secs(7))
-        {
-            self.hepta.mark_unavailable("session_snapshot_expired");
-        }
+        self.receive_and_refresh_hepta(|| (Instant::now(), trill_ui_core::unix_ms()));
         if self.last_poll.elapsed() >= Duration::from_millis(800) {
             self.last_poll = Instant::now();
             self.bridge.poll();
@@ -1077,6 +1084,248 @@ fn main() -> eframe::Result {
         options,
         Box::new(move |cc| Ok(Box::new(Desktop::new(&cc.egui_ctx, startup)))),
     )
+}
+
+#[cfg(test)]
+mod observation_freshness_tests {
+    use super::*;
+    use trill_ui_core::hepta::{
+        HeptaConnectionState, HeptaHealthObservation, HeptaRuntimeObservation,
+    };
+
+    type ResponseSender = SyncSender<(bool, Result<Response, String>)>;
+
+    fn observed(sampled_unix_ms: u64) -> HeptaProjection {
+        HeptaProjection {
+            connection: HeptaConnectionState::Observed,
+            last_attempt_unix_ms: Some(sampled_unix_ms),
+            error_code: None,
+            last_observation: Some(HeptaRuntimeObservation {
+                sampled_unix_ms,
+                agent_id: "11111111-1111-4111-8111-111111111111".into(),
+                spawn_generation: 7,
+                current_generation: 8,
+                health: HeptaHealthObservation {
+                    ready: true,
+                    promotion_ready: true,
+                    fenced: false,
+                    lifecycle: "running".into(),
+                    process_id: 42,
+                },
+                capabilities: Vec::new(),
+                capabilities_truncated: false,
+                events: Vec::new(),
+                events_omitted_from_view: 0,
+                next_cursor: 9,
+                latest_cursor: 9,
+                history_gap: true,
+                source_changed: false,
+            }),
+        }
+    }
+
+    // Only the in-process response queue is synthetic here. The test consumes
+    // it through Desktop's real receive and pre-draw state path; no Agentd,
+    // compositor, device effect or physical display is claimed.
+    fn queued_desktop() -> (Desktop, ResponseSender) {
+        let (actions, _incoming_actions) = mpsc::sync_channel(8);
+        let (polls, _incoming_polls) = mpsc::sync_channel(1);
+        let (outgoing, rx) = mpsc::sync_channel(16);
+        let desktop = Desktop {
+            page: Page::Hepta,
+            workspace: Workspace::Personal,
+            composer: String::new(),
+            chat: Vec::new(),
+            tasks: Vec::new(),
+            selected: None,
+            resources: None,
+            hepta: HeptaProjection::default(),
+            hepta_last_snapshot: None,
+            connected: false,
+            session_instance: None,
+            session_error: String::new(),
+            last_poll: Instant::now(),
+            bridge: Bridge { actions, polls, rx },
+            zoom: 1.0,
+            show_notifications: false,
+            notices: VecDeque::new(),
+            first_frame_emitted: false,
+            hepta_layout_probe: hepta_panel::LayoutProbe::new(false),
+        };
+        (desktop, outgoing)
+    }
+
+    fn enqueue(sender: &ResponseSender, hepta: HeptaProjection) {
+        sender
+            .send((
+                false,
+                Ok(Response::Snapshot {
+                    tasks: Vec::new(),
+                    resources: HostResources {
+                        sampled_unix_ms: 10_000,
+                        mem_total_kib: None,
+                        mem_available_kib: None,
+                        load_average_1m: None,
+                        source: "synthetic response queue only".into(),
+                        wayland: HostWaylandObservation::default(),
+                    },
+                    session_instance: "held-session-instance".into(),
+                    hepta,
+                }),
+            ))
+            .unwrap();
+    }
+
+    fn actual_status_text(projection: &HeptaProjection) -> String {
+        let ctx = egui::Context::default();
+        let output = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    egui::vec2(900.0, 600.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| hepta_panel::status(ui, projection));
+            },
+        );
+        output
+            .shapes
+            .iter()
+            .filter_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) => Some(text.galley.job.text.as_str()),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    #[test]
+    fn a_queued_old_observed_response_is_visibly_stale_before_drawing() {
+        let (mut desktop, outgoing) = queued_desktop();
+        let old = observed(10_000);
+        enqueue(&outgoing, old.clone());
+        // No sleep: the old response has just arrived locally, while its
+        // actual sample already exceeds the seven-second runtime deadline.
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 18_001));
+        let text = actual_status_text(&desktop.hepta);
+        assert!(
+            text.contains("STALE · CURRENT STATE UNKNOWN"),
+            "actual status text was {text:?}"
+        );
+        assert!(!text.contains("OBSERVED · READ ONLY"));
+        assert_eq!(desktop.hepta.last_observation, old.last_observation);
+        assert_eq!(desktop.hepta.last_attempt_unix_ms, old.last_attempt_unix_ms);
+        assert!(
+            desktop.connected,
+            "runtime staleness must not invent host IPC loss"
+        );
+        assert_eq!(
+            desktop.session_instance.as_deref(),
+            Some("held-session-instance")
+        );
+    }
+
+    #[test]
+    fn runtime_sample_and_local_receipt_both_have_exact_seven_second_limits() {
+        for (now_unix_ms, expected) in [
+            (17_000, HeptaConnectionState::Observed),
+            (17_001, HeptaConnectionState::Stale),
+        ] {
+            let (mut desktop, outgoing) = queued_desktop();
+            enqueue(&outgoing, observed(10_000));
+            desktop.receive_and_refresh_hepta(|| (Instant::now(), now_unix_ms));
+            assert_eq!(desktop.hepta.connection, expected, "sample age boundary");
+        }
+        for (age_ms, expected) in [
+            (7000, HeptaConnectionState::Observed),
+            (7001, HeptaConnectionState::Stale),
+        ] {
+            let (mut desktop, outgoing) = queued_desktop();
+            enqueue(&outgoing, observed(10_000));
+            desktop.receive();
+            let now = Instant::now();
+            desktop.hepta_last_snapshot = Some(now - Duration::from_millis(age_ms));
+            desktop.receive_and_refresh_hepta(|| (now, 10_000));
+            assert_eq!(
+                desktop.hepta.connection, expected,
+                "local receipt age boundary"
+            );
+        }
+    }
+
+    #[test]
+    fn future_or_missing_observation_cannot_appear_current() {
+        for view in [
+            observed(18_002),
+            HeptaProjection {
+                connection: HeptaConnectionState::Observed,
+                ..Default::default()
+            },
+        ] {
+            let (mut desktop, outgoing) = queued_desktop();
+            let historical = view.last_observation.clone();
+            enqueue(&outgoing, view);
+            desktop.receive_and_refresh_hepta(|| (Instant::now(), 18_001));
+            assert_eq!(
+                desktop.hepta.connection,
+                if historical.is_some() {
+                    HeptaConnectionState::Stale
+                } else {
+                    HeptaConnectionState::Unavailable
+                }
+            );
+            assert_eq!(desktop.hepta.last_observation, historical);
+        }
+    }
+
+    #[test]
+    fn missing_or_future_local_receipt_is_unknown_without_rewriting_history() {
+        for future in [false, true] {
+            let (mut desktop, outgoing) = queued_desktop();
+            let old = observed(10_000);
+            enqueue(&outgoing, old.clone());
+            desktop.receive();
+            let now = Instant::now();
+            desktop.hepta_last_snapshot = future.then_some(now + Duration::from_millis(1));
+            desktop.receive_and_refresh_hepta(|| (now, 10_000));
+            assert_eq!(desktop.hepta.connection, HeptaConnectionState::Stale);
+            assert_eq!(desktop.hepta.last_observation, old.last_observation);
+        }
+    }
+
+    #[test]
+    fn a_later_fresh_session_snapshot_can_restore_the_visible_observation() {
+        let (mut desktop, outgoing) = queued_desktop();
+        enqueue(&outgoing, observed(10_000));
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 18_001));
+        assert_eq!(desktop.hepta.connection, HeptaConnectionState::Stale);
+        let fresh = observed(18_001);
+        enqueue(&outgoing, fresh.clone());
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 18_001));
+        assert_eq!(desktop.hepta, fresh);
+        assert!(actual_status_text(&desktop.hepta).contains("OBSERVED · READ ONLY"));
+    }
+
+    #[test]
+    fn existing_unknown_states_keep_their_original_diagnostic_and_history() {
+        for connection in [
+            HeptaConnectionState::NotObserved,
+            HeptaConnectionState::NotConfigured,
+            HeptaConnectionState::Connecting,
+            HeptaConnectionState::Stale,
+            HeptaConnectionState::Unavailable,
+        ] {
+            let (mut desktop, outgoing) = queued_desktop();
+            let mut old = observed(10_000);
+            old.connection = connection;
+            old.error_code = Some("existing_owner_diagnostic".into());
+            enqueue(&outgoing, old.clone());
+            desktop.receive_and_refresh_hepta(|| (Instant::now(), 18_001));
+            assert_eq!(desktop.hepta, old);
+        }
+    }
 }
 
 #[cfg(test)]
