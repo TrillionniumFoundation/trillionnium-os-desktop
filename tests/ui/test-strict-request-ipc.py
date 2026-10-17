@@ -105,15 +105,34 @@ def check(binary_dir):
                         (b'{"type":"cancel","id":1,"expected_instance":"'
                          + generation.encode() + b'"}'),
                     )
-                    require(cancel["type"] == "task", "real child cancellation not acknowledged")
+                    require(cancel.get("session_instance") == generation, "Cancel crossed Session instances")
+                    child_already_exited = cancel.get("type") == "error"
+                    if child_already_exited:
+                        # With no display the real AppWindow can fail between
+                        # Launch and Cancel. Session refreshes/reaps before
+                        # handling Cancel, so it must NOT invent an ACK for a
+                        # child it no longer owns. Accept only this exact race
+                        # and require the same child's observed FAILED state.
+                        require(cancel.get("message") == "No owned live child; no cancellation claimed",
+                                f"Cancel failed for an unrelated reason: {cancel}")
+                    else:
+                        require(cancel.get("type") == "task", f"invalid Cancel response: {cancel}")
+                        require(cancel["task"]["id"] == 1 and cancel["task"]["pid"] == task["pid"],
+                                "Cancel acknowledged a different child")
                     for _ in range(100):
                         time.sleep(0.02)
                         snapshot = roundtrip(sock, b'{"type":"snapshot"}')
+                        require(snapshot["session_instance"] == generation, "cleanup crossed Session instances")
                         last = next(t for t in snapshot["tasks"] if t["id"] == 1)
+                        require(last["pid"] == task["pid"], "cleanup changed the owned child PID")
                         if last["state"] in ("cancelled", "failed", "completed"):
                             break
                     else:
                         raise AssertionError("real launched child was not reaped")
+                    if child_already_exited:
+                        require(last["state"] == "failed" and
+                                "Observed non-successful process exit" in last["detail"],
+                                "no-live-child rejection lacked the same child's observed headless failure")
                 else:
                     require(task["state"] == "failed", "GUI spawn failed with wrong host state")
                 valid_cancel = roundtrip(sock, (b'{"type":"cancel","id":999,"expected_instance":"'

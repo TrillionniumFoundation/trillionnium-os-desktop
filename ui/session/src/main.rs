@@ -13,9 +13,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
 
-use trill_ui_core::host_peer::{
-    self, linux_socket_peer_credentials, require_same_uid_peer, validate_same_uid,
-};
+use trill_ui_core::host_peer::require_same_uid_peer;
 use trill_ui_core::{
     parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
     HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
@@ -575,6 +573,8 @@ mod tests {
     use super::*;
     use std::os::unix::process::ExitStatusExt;
     use std::{thread, time::Duration};
+    #[cfg(target_os = "linux")]
+    use trill_ui_core::host_peer::{self, linux_socket_peer_credentials, validate_same_uid};
 
     #[cfg(target_os = "linux")]
     #[test]
