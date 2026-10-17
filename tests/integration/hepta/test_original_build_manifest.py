@@ -46,6 +46,11 @@ class OriginalBuildManifestTests(unittest.TestCase):
                 (self.source / "codex-rs/Cargo.lock").read_bytes(),
             )
             gate.verify_runner_lock(self.source, runner)
+            self.assertEqual(
+                (runner / "src/original_session_probe.rs").read_bytes(),
+                (gate.HERE / "original_session_probe.rs").read_bytes(),
+                "the linked original probe must compile the actual Session acceptance module",
+            )
 
     def check_rejected_resolver(self, replacement):
         # Only a private copy of the manifest is changed for negative cases.

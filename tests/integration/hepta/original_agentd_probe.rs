@@ -19,6 +19,9 @@ use std::process::Command;
 use std::thread;
 use std::time::{Duration, Instant};
 
+mod original_session_probe;
+use original_session_probe::{Options as SessionOptions, SessionProbe};
+
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 const AGENT: &str = "22222222-2222-4222-8222-222222222222";
 const READY_TIMEOUT: Duration = Duration::from_secs(60);
@@ -264,11 +267,12 @@ impl Drop for Probe {
 fn run() -> Result<()> {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     require(
-        args.len() == 4,
-        "usage: probe agentd-bin observer-bin private-root hold-seconds",
+        args.len() >= 4,
+        "usage: probe agentd-bin observer-bin private-root hold-seconds [--session-bin FILE --ctl-bin FILE [--session-phase-dir NEW-DIR --session-ack-seconds 1..120]]",
     )?;
     let hold: u64 = args[3].to_string_lossy().parse()?;
     require(hold <= 30, "hold is bounded to 30 seconds")?;
+    let session_options = SessionOptions::read(&args[4..])?;
     let mut probe = Probe::new(
         Path::new(&args[2]),
         PathBuf::from(&args[0]),
@@ -284,6 +288,12 @@ fn run() -> Result<()> {
         "socket_path":probe.socket, "agent_id":AGENT,"spawn_generation":spawn,"peer_uid":probe.uid})
     );
     let starting = probe.wait_starting(spawn)?;
+    let mut session = session_options
+        .map(|options| SessionProbe::start(options, Path::new(&args[2]), &probe, spawn))
+        .transpose()?;
+    if let Some(session) = &mut session {
+        session.observed(&probe, spawn, "starting", 0, "starting")?;
+    }
     let (running_spawn, running) = probe.wait_running(None)?;
     require(
         running_spawn == spawn,
@@ -293,6 +303,9 @@ fn run() -> Result<()> {
         starting["health"]["process_id"] == running["health"]["process_id"],
         "PID changed during promotion",
     )?;
+    if let Some(session) = &mut session {
+        session.observed(&probe, spawn, "running", 1, "running")?;
+    }
     require(
         probe
             .read(spawn, Some("observer-qualification:absent"))?
@@ -313,6 +326,9 @@ fn run() -> Result<()> {
         draining["health"]["process_id"] == running["health"]["process_id"],
         "PID changed during drain",
     )?;
+    if let Some(session) = &mut session {
+        session.observed(&probe, spawn, "draining", 2, "draining")?;
+    }
     probe.supervisor.restart(&probe.agent, Instant::now())?;
     let (new_spawn, restarted) = probe.wait_running(Some(spawn))?;
     require(
@@ -324,11 +340,20 @@ fn run() -> Result<()> {
         "old spawn was accepted by replacement process",
     )?;
     probe.checked_phase(new_spawn, "running", 1)?;
+    if let Some(session) = &mut session {
+        session.stale(&probe, "old_spawn_stale")?;
+        session.replace(&probe, new_spawn)?;
+        session.observed(&probe, new_spawn, "running", 1, "recovered_running")?;
+    }
     probe.stop_and_confirm()?;
     require(
         probe.read(new_spawn, None).is_err(),
         "stopped daemon still produced a successful observation",
     )?;
+    if let Some(session) = &mut session {
+        session.stale(&probe, "stopped_stale")?;
+        println!("{}", session.finish()?);
+    }
     println!(
         "{}",
         json!({"event":"acceptance_pass", "evidence_class":"original_agentd_process_readonly_observer",
