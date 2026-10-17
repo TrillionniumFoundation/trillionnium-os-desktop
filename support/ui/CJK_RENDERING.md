@@ -99,8 +99,15 @@ path. Fonts or synthetic `egui::ImeEvent::Commit` events do not fix that
 environment mismatch. The capture receipt records the observed registry;
 the result always keeps `real_ime_verified=false`.
 
-To qualify input, use a host compositor that actually advertises v3 and an
-input seat, with a configured Chinese input method. Verify preedit/candidate
+To qualify the Wayland input path, use a host compositor that actually
+advertises v3 and an input seat, with a configured Chinese input method.
+The separate [private X11/XIM input probe](X11_IME.md) exercises real IBus
+libpinyin composition through Xvfb and the locked winit X11 backend. Its
+receipts distinguish virtual XTEST keys, actual native editor contents,
+software framebuffer pixels and the unresolved candidate-position limit.
+An X11 result does not qualify the Wayland protocol path.
+
+For a complete input qualification, verify preedit/candidate
 placement, candidate commit, cancellation, focus changes across Shell and
 Notes, editing after commit, and keyboard shortcuts. Preserve actual host
 events and screenshots separately from synthetic egui tests. Existing
