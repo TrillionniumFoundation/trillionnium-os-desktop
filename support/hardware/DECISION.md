@@ -1,6 +1,6 @@
 # A09 GPU/NPU hardware decision — 2026-10-16
 
-**Status: research + executable host-side tests, NOT an Asterinas GPU driver, VMM or successful GPU compute.** Baseline latest main commit `bc294f75bfb8c03d9963f5a12ea23b9589779d96`. Upstream Asterinas v0.19.0 commit c4b7ed575b7b32773475b194d2ad41fb6d03765b. Root README remains untouched at 0 bytes. Only A09-owned directories are modified.
+**Status: research + executable host-side tests, NOT an Asterinas GPU driver, VMM or successful GPU compute.** Original A09 development base `bc294f75bfb8c03d9963f5a12ea23b9589779d96`; branch subsequently merged current main without overwriting files owned by other agents. Upstream Asterinas v0.19.0 commit c4b7ed575b7b32773475b194d2ad41fb6d03765b. Root README remains untouched at 0 bytes. Only A09-owned directories are modified.
 
 ## Actual authorized observation vs candidate
 
@@ -31,7 +31,7 @@ The guest driver dependencies to verify on the SAME isolated GPU are the NVIDIA 
 
 ## Minimum real compute: executable but currently blocked
 
-Tests under ../../tests/hardware/cuda_gemm.py compile CUDA kernel GEMM16 using NVRTC and the runtime-selected GPU compute capability (candidate expectation CC 8.9). Inputs: fixed 16x16 FP32 integer-valued matrices. Scalar CPU reference computes 256 deterministic exact values and output SHA256 5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847. A real pass REQUIRES actual CUDA device enumeration and PCI BDF, three cuMemAlloc_v2 device buffers, HtoD transfers, cuLaunchKernel, cuCtxSynchronize, DtoH, exact 256-value comparison and successful cuMemFree_v2/module/context cleanup. No software CPU GPU fallback. The latest tested container returned **exit code 2, blocked: libcuda.so.1 unavailable**; GPU allocation, submission, comparison and recovery were NOT RUN. The v2 harness runs inside an OS-supervised worker, bounds CUDA/NVRTC result sizes and records process/kernel provenance and per-stage status; the current hardware/evidence suite is 87/87. See ../../tests/hardware/RUN.md and timestamped JSON evidence, including exact tool environment. CUDA pass alone also does not prove inference, VM passthrough or device-reset recovery.
+Tests under ../../tests/hardware/cuda_gemm.py compile CUDA kernel GEMM16 using NVRTC and the runtime-selected GPU compute capability (candidate expectation CC 8.9). Inputs: fixed 16x16 FP32 integer-valued matrices. Scalar CPU reference computes 256 deterministic exact values and output SHA256 5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847. A real pass REQUIRES actual CUDA device enumeration and PCI BDF, three cuMemAlloc_v2 device buffers, HtoD transfers, cuLaunchKernel, cuCtxSynchronize, DtoH, exact 256-value comparison and successful cuMemFree_v2/module/context cleanup. No software CPU GPU fallback. The latest tested container returned **exit code 2, blocked: libcuda.so.1 unavailable**; GPU allocation, submission, comparison and recovery were NOT RUN. The v2 harness runs inside an OS-supervised worker, bounds CUDA/NVRTC result sizes and records process/kernel provenance and per-stage status; 87 hardware/evidence unit tests passed at an earlier A09 head; additional adversarial tests on the newer head await fresh CI and are not pre-counted. See ../../tests/hardware/RUN.md and timestamped JSON evidence, including exact tool environment. CUDA pass alone also does not prove inference, VM passthrough or device-reset recovery.
 
 ## A01/A05/A06 kernel join: integrate existing owners, no new signer
 
@@ -65,3 +65,43 @@ Proposed compute provenance after eventual success: **host kernel Asterinas-deri
 7. ONLY AFTER compute and safe reclamation: evaluate CUDA inference/model load, quantization correctness, concurrency, cancellation, fence sharing and allocator/resource quotas; Vulkan/ROCm/NPU are alternatives for later assessment, not parallel codepaths here.
 
 **References:** [fixed Asterinas VMX context](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/ostd/src/arch/x86/vm/mod.rs); [OSTD example](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/osdk/tests/examples_in_book/write_a_hypervisor_in_100_lines_templates/lib.rs); [VFIO/IOMMU groups](https://docs.kernel.org/driver-api/vfio.html); [Linux DMA](https://docs.kernel.org/core-api/dma-api-howto.html); [CUDA launch](https://docs.nvidia.com/cuda/cuda-driver-api/cuda_driver_api/group__CUDA__EXEC.html).
+
+## Follow-up: safety hardening, NOT GPU enablement
+
+The A09 branch merged a verified main baseline under a two-parent,
+fast-forward-only integration; only A09-owned files were overlaid. Subsequent
+commits addressed security failures in read-only inventory, VFIO review,
+OS CUDA-worker watchdog and cross-kernel evidence. These are **host-side**
+checks, not a physical GPU driver/VMM or successful compute.
+
+- PCI/sysfs attributes use bounded O_NOFOLLOW/O_NONBLOCK reads. CPU and VMX/SVM
+  fields become *unknown*, not falsely negative, if procfs is unreadable.
+- The VFIO observer requires the target GPU to be bound to `vfio-pci`; an
+  unbound compute/audio endpoint or a non-VFIO production driver is blocked.
+  An unbound PCI bridge is permitted only as a manual-review observation.
+  Present-but-unreadable unsafe IOMMU/interrupt module settings block review.
+- CUDA uses a supervised process with its process-group leader held unreaped
+  until group inspection and SIGKILL. The CLI rejects leftover descendants,
+  lost process identity, incomplete cleanup or a forged success JSON. The
+  reported device effect is unknown after worker termination, NOT GPU reset.
+- Child reports use bounded regular-file reads with O_NOFOLLOW and disallow
+  duplicate/nonfinite JSON, mismatched exit codes, missing fixed GEMM output
+  digest, missing kernel/cleanup stages or false resource-release claims.
+  A child cannot assert Asterinas host boot, physical assignment or reset.
+- Host and Linux guest serial logs each require exactly one full line
+  `A09_VM_NONCE=<nonce>`. Extra/conflicting nonce records block review.
+  Review output cannot overwrite a previous evidence file.
+
+**CI accuracy:** a prior exact A09 head passed its host Rust/Python model CI.
+The new head adds tests and is not considered passed until fresh jobs finish.
+No work in these commits touches production hardware, firmware, BIOS, drivers,
+storage, training/H3 services or power protections.
+
+**First real-world unblock:** A01 must implement group-scoped PCI/IOMMU,
+real VM vCPU/guest memory/interrupt lifecycle and correct VMX/SVM backend.
+A05 must make its one CapSpace/grant authority and kernel queue/device registry
+own the PCI lease and process identity. A06 must charge real pinned frames and
+scheduler usage against the canonical ResourceDomain ancestor chain. Only
+then can an authorized idle disposable RTX 4060 lab host run the Linux baseline
+and a SEPARATE GPU guest under an actual Asterinas-derived host. Throughput,
+DMA reset/recovery, cancellation and GPU inference remain not tested.

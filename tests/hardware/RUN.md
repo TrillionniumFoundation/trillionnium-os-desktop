@@ -82,3 +82,35 @@ exits 2. It has no success exit and cannot attest a physical GPU by itself.
 | 7. Recover after fault and reset | NOT RUN; destructive work not authorized on productive GPU |
 
 Hardware compute, real Linux guest on Asterinas, host/guest driver ownership, DMA isolation, inference, concurrent requests and recovery remain **BLOCKED/NOT TESTED**. A Linux host CUDA success in the future would be a separate baseline and never a passed new Rust-kernel test.
+
+## New host-only safety regressions (not physical hardware evidence)
+
+After the earlier 87-case suite, additional tests were authored for unbound
+VFIO group endpoints, unreadable unsafe-IOMMU controls, malicious sysfs
+attributes, worker-leader/PGID reuse, surviving child processes, forged
+CUDA success, hostile report JSON and duplicate raw boot nonces.
+
+Run from the **exact A09 PR HEAD**:
+
+    python3 -m unittest discover -s tests/hardware -p 'test_*.py' -v
+    python3 -O -m unittest discover -s tests/hardware -p 'test_*.py' -v
+    python3 -m py_compile support/hardware/*.py support/vmm/*.py tests/hardware/*.py
+    cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --all-targets
+    cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --doc
+    cargo test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked --offline --release
+
+**Do not report these exact-head tests as passed while GitHub Actions remain
+queued.** In this execution-tool container Python/C are present but no
+authorized GPU/VFIO/KVM or local Rust toolchain was exposed.
+
+Only in an authorized, idle, isolated and disposable Linux lab, using a real
+read-only enumerated PCI BDF (never a placeholder), run the host control:
+
+    python3 tests/hardware/cuda_gemm.py --require-name 'RTX 4060' \
+      --require-bdf '0000:XX:YY.Z' --timeout-seconds 30 \
+      --output gemm-lab-host.json
+
+This is a **Linux host baseline only**, not Asterinas GPU verification.
+A later Asterinas-derived host -> Linux GPU guest must repeat an identical
+GEMM with trusted boot/IOMMU/IRQ/DMA and teardown logs. Current physical
+compute, reset recovery and local inference remain BLOCKED/NOT RUN.

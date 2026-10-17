@@ -79,3 +79,15 @@ Local verification on the host Rust 1.99.1 toolchain:
 
 All three commands passed: 38 unit tests and 4 compile-fail doctests. This is
 metadata-state verification only, not a GPU, VMM or passthrough result.
+
+## Further owner-gated observation vs device effects
+
+VFIO preflight rejects unbound GPU/audio devices, unsafe drivers and unreadable
+present unsafe-IOMMU or unsafe-interrupt flags. An unbound PCI bridge may
+coexist but is never a bound GPU function or assignment authorization. The
+Linux CUDA process supervisor uses waitid/WNOWAIT to keep the group leader
+identity anchored through inspection and signaling. Its proof does not cover
+a child escaping to another session, uninterruptible GPU DMA or physical reset.
+A01/A05 must stop admissions, confirm real DMA quiescence and synchronize all
+IOTLB/cache and CPU mappings before A06 releases pages. No CPU-only unit
+test can substitute for these device-level proofs.

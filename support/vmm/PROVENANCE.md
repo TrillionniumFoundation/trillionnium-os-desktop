@@ -124,3 +124,14 @@ Synthetic negative tests cover host-only/guest-only nonce omission,
 different nonce in a hash-matched raw log, matched non-NVIDIA vendor IDs and
 wrong model variants. **No new-kernel VMM, physical GPU or hardware
 attestation was executed.**
+
+## Exact serial nonce and write-once review verdict
+
+Each host/guest raw serial capture must contain precisely one complete
+`A09_VM_NONCE=<32..64 lowercase hex>` line matching both manifest nonces.
+Substrings, duplicate/conflicting nonce lines, missing records and suffixes
+fail closed even if an unsigned JSON hash is recomputed. CLI `--output`
+requires an entirely new regular file, using O_CREAT|O_EXCL|O_NOFOLLOW;
+it cannot truncate an existing review record or write to a FIFO or symlink.
+Outcomes remain only `blocked` (exit 2) or
+`independent_hardware_review_required` (exit 3), never auto-certification.
