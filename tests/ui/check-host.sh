@@ -20,7 +20,7 @@ capture_fmt_on_exit() {
             mkdir -p "$evidence"
         fi
         local fmt_status=0 manifest
-        local manifests=(ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml)
+        local manifests=(ui/Cargo.toml services/hepta-os/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml)
         if [[ -n "$evidence" ]]; then
             : > "$evidence/rustfmt-check.log"
         fi
@@ -32,14 +32,14 @@ capture_fmt_on_exit() {
             fi
         done
         if [[ "$fmt_status" -ne 0 ]]; then
-            echo 'A10 Rustfmt check FAILED in one or more owned crates; preserving exact-source patch' >&2
+            echo 'UI/Hepta host Rustfmt check FAILED; preserving exact-source patch' >&2
             for manifest in "${manifests[@]}"; do
                 cargo fmt --manifest-path "$manifest" --all >/dev/null 2>&1 || true
             done
             if [[ -n "$evidence" ]]; then
-                git diff -- ui support/ui tests/ui > "$evidence/rustfmt.patch" || true
+                git diff -- ui services/hepta-os support/ui tests/ui > "$evidence/rustfmt.patch" || true
             else
-                git diff -- ui support/ui tests/ui >&2 || true
+                git diff -- ui services/hepta-os support/ui tests/ui >&2 || true
             fi
             if [[ "$status" -eq 0 ]]; then status=1; fi
         fi
@@ -48,7 +48,16 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
-bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh tests/ui/test-cross-uid-peer.sh
+for script in \
+    tests/ui/smoke-wayland.sh \
+    tests/ui/headless-weston.sh \
+    tests/ui/compositor-restart.sh \
+    support/ui/package-host-binaries.sh \
+    tests/ui/test-package-host-binaries.sh \
+    tests/ui/replay-packaged-host.sh \
+    tests/ui/test-cross-uid-peer.sh; do
+    bash -n "$script"
+done
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
@@ -64,6 +73,9 @@ cargo fetch --manifest-path ui/Cargo.toml --locked
 # Build and test first so a formatting failure cannot conceal compiler evidence.
 cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
 cargo test --manifest-path ui/Cargo.toml --workspace --locked
+# A path dependency is built, but its own unit/integration tests are not
+# included by the UI workspace command. Run A07's frozen suite explicitly.
+cargo test --manifest-path services/hepta-os/Cargo.toml --locked
 # Actual Session/facade/Unix IPC against an explicitly scripted fixed-v2
 # fixture. Its provenance says that upstream Agentd and effects were not run.
 observer_target="${CARGO_TARGET_DIR:-$PWD/ui/target}"
@@ -82,9 +94,9 @@ cargo test --manifest-path tests/ui/Cargo.toml --locked
 # must be refused with an actual peer-UID diagnostic. The same-UID client
 # must continue to work; old unguarded Rust binaries fail this check.
 bash tests/ui/test-cross-uid-peer.sh "$PWD/ui/target/debug"
-# The binaries are packaged only when all three suites and strict Rustfmt
+# The binaries are packaged only when all host suites and strict Rustfmt
 # have passed; the separate Weston smoke still owns its independent gate.
-for manifest in ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do
+for manifest in ui/Cargo.toml services/hepta-os/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do
     cargo fmt --manifest-path "$manifest" --all -- --check
 done
 if [[ -n "${RUNNER_TEMP:-}" ]]; then
