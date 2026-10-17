@@ -1,0 +1,64 @@
+{
+  "source_of_existing_elf": "865ecf381dc8ddb70470ee173add9bd3b4a6a29a",
+  "evidence_class": "private_software_compositor_pixel_preflight",
+  "not_proven": [
+    "CJK input method",
+    "physical monitor or GPU",
+    "original Agentd",
+    "device effect"
+  ],
+  "renderer_requested": "pixman",
+  "started_unix_ms": 1792239142568,
+  "binary_sha256": {
+    "trill-shell": "21e838f81d35c0372731f1344cb886e96f5b025f6628fa9b73879c2c54d03c29",
+    "trill-session": "3d52f8c3d61c81975a13f518810d4170e84c2c28a070684e91014567764d39c5"
+  },
+  "guard_source_sha256": "9818cd6fa17c68e704b7fe311a8c0c043d05225d46cb4073901ff01621045133",
+  "font": null,
+  "passed": true,
+  "text_input_v3_advertised": false,
+  "text_input_v1_advertised": true,
+  "baseline": {
+    "path": "baseline/wayland-screenshot-2026-10-17_14-12-23.png",
+    "sha256": "41cc8df86328ee6189e8d28dfdc9d200d41484bf2d00573b4ef7d633df4a3fd4",
+    "size": [
+      1440,
+      900
+    ],
+    "distinct_colors": 945,
+    "bytes": 77945
+  },
+  "shell": {
+    "path": "shell/wayland-screenshot-2026-10-17_14-12-23.png",
+    "sha256": "fa02d0b3ff7b83f98e23b5bf410dc2356987fb1eb78b2fb704880774a1912e35",
+    "size": [
+      1440,
+      900
+    ],
+    "distinct_colors": 2326,
+    "bytes": 175913
+  },
+  "owned_pids": {
+    "weston": 533966,
+    "session": 533971,
+    "shell": 533972
+  },
+  "cleanup": [
+    {
+      "label": "shell",
+      "reaped": true,
+      "exit_code": -15
+    },
+    {
+      "label": "session",
+      "reaped": true,
+      "exit_code": -15
+    },
+    {
+      "label": "weston",
+      "reaped": true,
+      "exit_code": 0
+    }
+  ],
+  "finished_unix_ms": 1792239152912
+}
