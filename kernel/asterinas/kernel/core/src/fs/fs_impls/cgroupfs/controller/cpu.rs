@@ -122,7 +122,8 @@ impl CpuMax {
             } else {
                 Self::us_to_clocks(self.quota_usec).saturating_mul(elapsed)
             };
-            self.carry_debt_clocks = self.carry_debt_clocks
+            self.carry_debt_clocks = self
+                .carry_debt_clocks
                 .saturating_add(self.used_clocks)
                 .saturating_sub(allowance);
             self.window_start = start;
@@ -153,8 +154,8 @@ impl CpuMax {
             return debt;
         }
         // Process completely idle periods before the first execution period.
-        let idle_count = (from.max(middle_start).saturating_sub(middle_start) / period)
-            .min(middle_count);
+        let idle_count =
+            (from.max(middle_start).saturating_sub(middle_start) / period).min(middle_count);
         debt = debt.saturating_sub(quota.saturating_mul(idle_count));
         let first_active = middle_start.saturating_add(period.saturating_mul(idle_count));
         if first_active == new_start {
@@ -167,8 +168,7 @@ impl CpuMax {
             .saturating_add(period)
             .saturating_sub(from.max(first_active));
         debt = debt.saturating_add(first_spent).saturating_sub(quota);
-        let full_count = new_start
-            .saturating_sub(first_active.saturating_add(period)) / period;
+        let full_count = new_start.saturating_sub(first_active.saturating_add(period)) / period;
         if period >= quota {
             debt.saturating_add(period.saturating_sub(quota).saturating_mul(full_count))
         } else {
@@ -190,9 +190,7 @@ impl CpuMax {
         // Save the true debt from completed periods before the normal advance
         // updates nr_periods/throttled_usec and resets used_clocks. This avoids
         // counting older idle periods as transferable positive CPU credit.
-        let corrected_debt = if new_start > self.window_start
-            && self.quota_usec != u64::MAX
-        {
+        let corrected_debt = if new_start > self.window_start && self.quota_usec != u64::MAX {
             Some(self.debt_after_crossing(from, new_start, period))
         } else {
             None
@@ -599,8 +597,18 @@ pub(crate) fn charge_task_cpu(task: &Task, from: u64, until: u64) {
         return;
     };
     let Some(process) = thread.weak_process().upgrade() else {
-        // A dead POSIX process cannot be upgraded during deferred task
-        // cleanup. Do not panic from a timer IRQ or runqueue update.
+        // The Process owner may be gone while the scheduler still settles the
+        // final interval.  The thread-owned lease is the only valid identity
+        // for that deferred debit; never guess a replacement cgroup or charge
+        // root when the lease is absent.
+        if let Some(cgroup) = thread.cpu_cgroup() {
+            cgroup
+                .controller()
+                .cpu
+                .read()
+                .get()
+                .charge_bandwidth_hierarchy(from, until);
+        }
         return;
     };
     let guard = process.cgroup();
@@ -611,11 +619,8 @@ pub(crate) fn charge_task_cpu(task: &Task, from: u64, until: u64) {
             .read_with(&guard)
             .charge_bandwidth_hierarchy(from, until);
     } else {
-        CgroupSystem::singleton()
-            .controller()
-            .cpu
-            .read_with(&guard)
-            .charge_bandwidth_hierarchy(from, until);
+        let root_cpu = CgroupSystem::singleton().controller().cpu.read();
+        root_cpu.get().charge_bandwidth_hierarchy(from, until);
     }
 }
 
@@ -638,8 +643,9 @@ pub(crate) fn charge_cpu_time(process: &Process, stat_kind: CpuStatKind) {
 
 #[cfg(ktest)]
 mod quota_debt_regressions {
-    use super::CpuMax;
     use ostd::prelude::ktest;
+
+    use super::CpuMax;
 
     fn sample(quota_usec: u64, period_usec: u64, start: u64) -> CpuMax {
         CpuMax {
@@ -785,8 +791,10 @@ mod quota_debt_regressions {
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
         let last_completed = start + 6 * period;
-        budget.charge(last_completed + period / 2,
-                      last_completed + period + quota / 2);
+        budget.charge(
+            last_completed + period / 2,
+            last_completed + period + quota / 2,
+        );
         assert_eq!(budget.window_start, last_completed + period);
         assert_eq!(budget.carry_debt_clocks, period / 2 - quota);
         assert_eq!(budget.used_clocks, quota / 2);
@@ -846,9 +854,7 @@ mod quota_debt_regressions {
             budget.used_clocks = old_used;
             budget.carry_debt_clocks = old_debt;
 
-            let from = start
-                + (next(&mut seed) % 10) * period
-                + next(&mut seed) % period;
+            let from = start + (next(&mut seed) % 10) * period + next(&mut seed) % period;
             let until = from + next(&mut seed) % (period * 11);
             let new_start = until / period * period;
             let mut slow_debt = old_debt;
