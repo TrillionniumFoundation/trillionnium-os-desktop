@@ -1,6 +1,6 @@
 # 开发文档入口
 
-文档集修订0.3，2026-10-16。根README.md保持0字节；开发内容只在docs与明确源码/支持目录中。真实实现/测试状态统一见 [STATUS](STATUS.md)。
+文档入口更新于 2026-10-17；ABI 契约文档修订仍为 0.3，HOS2 wire 仍为 2.0。根 README.md 保持 0 字节；开发内容只在 docs 与明确源码/支持目录中。当前实现与执行证据见 [STATUS](STATUS.md)，历史记录只适用于各自固定的源码。
 
 ## 共同原则
 
@@ -30,7 +30,27 @@
 
 每次后续改动直接修改对应契约和状态，不重复复制ABI字段或完成度。旧仓库重建历史保留在Git初始提交；不混入永久产品要求。
 
-本轮新增[恢复规格场景](../tests/spec/test_recovery_contract.py)、[固定字节样本](../tests/golden/hos2.json)与[执行结果](../results/spec-recovery-v03.json)。它们不是Rust codec或内核实现。未修改文件保留其原小版本，避免仅为版本号全量重写。
+最初的[恢复规格场景](../tests/spec/test_recovery_contract.py)、[固定字节样本](../tests/golden/hos2.json)与[规格模型结果](../results/spec-recovery-v03.json)是历史规格证据。当前主干另有真实 [Rust codec](../libs/os-abi/src/lib.rs)、[control core API](../libs/os-control/API_CONTRACT.md)、原生 QueryAbi 和 CPU 配额实现；对应宿主或 QEMU 证据分别见下表。规格版本不表示整个系统的完成比例。
+
+## 按模块开始开发
+
+核对主干基线为 `146dedf75c5729ef1930c845eeb60e31e8111c60`。下表将开发入口、技术契约和验收来源放在一起；标为候选的代码及文档尚未合入 main，不能从主干的相对路径假定它们已存在。
+
+| 模块 / owner | 开发与验证入口 | 技术契约 / 实际范围 |
+| --- | --- | --- |
+| A00 集成 | [PLAN](agents/PLAN.md)、[STATUS](STATUS.md) | [ARCHITECTURE](ARCHITECTURE.md)、[DECISIONS](DECISIONS.md)；统一接口与集成 |
+| A01 源码 / 启动 | [构建手册](../support/build/README.md)、[内核测试入口](../support/build/ktest/README.md) | [固定来源](../support/upstream-lock.json)；固定 Asterinas、OSDK、initramfs 与证据 |
+| A02 HOS2 codec | [验收收敛与实际命令](../tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md)、[证据完整性](../tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md) | [NATIVE_ABI](NATIVE_ABI.md)、[codec 源码](../libs/os-abi/src/lib.rs)；wire 实现不等于全部内核操作实现 |
+| A03 control core | [验证手册](../tests/control/VALIDATION.md)、[运行脚本](../tests/control/run-validation.sh) | [API_CONTRACT](../libs/os-control/API_CONTRACT.md)；真实 Rust 库 / 宿主模型，内核 IRQ/SMP 接合仍需验证 |
+| A04 Linux / Hepta ELF | [固定候选开发手册](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/tests/workloads/linux/README.md)、[rootfs 手册](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/support/rootfs/README.md) | [LINUX_COMPATIBILITY](LINUX_COMPATIBILITY.md)、[候选缺口](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/compat/linux/GAPS.md)；代码在 [Draft #8](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/8) |
+| A05 内核控制 | [实现、构建与调试手册](agents/handoffs/A05_KERNEL_CONTROL.md) | [NATIVE_ABI](NATIVE_ABI.md)；main 已有 QueryAbi 的 Process / exec 镜像身份隔离；能力授予和其余四操作未闭合 |
+| A06 CPU 预算 | [CPU 实现及客体验证](ASTERINAS_CPU_BANDWIDTH_N0.md)、[已集成收据](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json) | [资源 backend 接合](ASTERINAS_ORGAN_BACKEND.md)；N0 配额已执行，最终计费 / IRQ / SMP 不能继承有限样本资格 |
+| A07 Hepta 用户态接合 | [client 开发入口](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/services/hepta-os/README.md)、[技术契约](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/services/hepta-os/CONTRACT.md)、[运行与验证](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/services/hepta-os/RUN.md)，[候选 #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157) | [HEPTA_INTEGRATION](HEPTA_INTEGRATION.md)；新增只读 client 候选，原 durable owner 的效果接合仍未完成 |
+| A08 Android | [恢复后的开发手册](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/3ac85d8672e3afcfb70c0ee323108294ef883239/support/android/README.md)、[恢复与验证证据](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/3ac85d8672e3afcfb70c0ee323108294ef883239/tests/workloads/android/evidence/2026-10-17-source-integrity)，[候选 #156](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/156) | [ANDROID_COMPATIBILITY](ANDROID_COMPATIBILITY.md)；恢复源码与 host 回归，不表示 Android guest 已启动 |
+| A09 硬件 / VMM | [device lifecycle 开发手册](../support/vmm/device_lifecycle/README.md)、[GATES](../support/vmm/GATES.md) | [HARDWARE_AND_DRIVERS](HARDWARE_AND_DRIVERS.md)、[来源](../support/vmm/PROVENANCE.md)；宿主元数据模型不等于真实 DMA/GPU |
+| A10 Rust UI | [运行手册](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/support/ui/RUN.md)、[Session/Hepta 接合手册](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/support/ui/HEPTA_OBSERVER.md)、[验证结果](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/dfffb4a89b2094d08ea89210097fcc208e98ff68/tests/ui/evidence/2026-10-17-hepta-observer)，[候选 #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157) | [DESKTOP_UX](DESKTOP_UX.md)；Linux host 原型、Session 只读观测，不是已移植的 Asterinas 桌面或移动端 |
+
+模块有文档链接不等于模块已经完成。每个新可交接增量至少给出实际源码位置、依赖与固定版本、构建/运行命令、输入输出和错误语义、权限与状态 owner、真实测试及未通过项。只列 Agent prompt 或未来架构图不能代替这些内容。A05 本轮补上实现手册；A07/A10 候选补上实际连接配置、协议边界、断连语义和可复跑的 socket fixture；后续原生效果与设备适配仍需对应实现文档。
 
 ## 多 Agent 并行开发
 

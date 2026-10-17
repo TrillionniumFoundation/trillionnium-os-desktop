@@ -1,6 +1,6 @@
 # 多 Agent 并行开发执行方案（2026-10-16）
 
-项目：https://github.com/TrillionniumFoundation/trillionnium-os-desktop。截至规划时的已核查主干：e4b2086b0ea28a20b6e721928b925555c0dc3bc8。HOS2 0.3 是**未实现的实验契约**；本计划不表示 Agent 已经启动，也不表示内核、Android 或 GPU 通过测试。README.md 根文件必须始终为 0 字节。所有成果提交到本仓库，按真实测试记录进度。
+项目：https://github.com/TrillionniumFoundation/trillionnium-os-desktop。初始规划绑定主干 `e4b2086b0ea28a20b6e721928b925555c0dc3bc8`；该快照的“仅规格”状态已经过时。2026-10-17 核对的 `146dedf75c5729ef1930c845eeb60e31e8111c60` 已有 Rust codec/control core、原生只读 QueryAbi 的 Process / exec 镜像隔离和实验 CPU 配额；G1/G2 仍未闭合。本文保留职责与依赖，开工进度以 [STATUS](../STATUS.md) 的固定源码与真实证据为准。README.md 根文件必须始终为 0 字节。所有成果提交到本仓库，按真实测试记录进度。
 
 ## 并发策略与依赖
 
@@ -42,7 +42,7 @@ G0 的“通过”必须区分源码编译、主机模型和内核启动：A01 �
 | A09 | support/hardware/**、support/vmm/**、tests/hardware/** | 不接管现役设备或核心驱动 |
 | A10 | ui/**、tests/ui/**、support/ui/** | 宿主 Linux 原型不是目标内核运行 |
 
-上述源码位置是分工的**目标目录**，不代表目前已经存在。A01 确认实际内核导入方式后，A00 只调整一次公共路径；不能让 A05/A06 各自维护一份上游源码。
+上述源码位置定义所有权，不能用目录是否存在判断模块资格。当前主干已有完整 Asterinas 导入；A05/A06 共用该源码与同一个 cgroup 资源事实，不得各自维护一份上游。尚在 owner 分支的模块入口见 [INDEX](../INDEX.md)。
 
 ## 启动、提交与集成规则
 

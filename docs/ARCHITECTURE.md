@@ -4,7 +4,7 @@
 
 ## 1. 默认路线已经收敛
 
-选择完整 Asterinas v0.19.0 内核派生，而非只取 OSTD 后重建所有上层。源码 commit `c4b7ed575b7b32773475b194d2ad41fb6d03765b`，tree `96605cf64aeae2d34f29b97e85eff9315fe10a8e`，上游工具链 `nightly-2026-07-21`，首期 target `x86_64-unknown-none`。固定输入见 [upstream-lock.json](../support/upstream-lock.json)。源码已通过 [A01 PR #5](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5) 导入 main，并在固定单 CPU QEMU profile 完成真实启动与内核回归；这是派生基线，不是 HOS2 ioctl、CPU quota 执行或裸机验收。
+选择完整 Asterinas v0.19.0 内核派生，而非只取 OSTD 后重建所有上层。源码 commit `c4b7ed575b7b32773475b194d2ad41fb6d03765b`，tree `96605cf64aeae2d34f29b97e85eff9315fe10a8e`，上游工具链 `nightly-2026-07-21`，首期 target `x86_64-unknown-none`。固定输入见 [upstream-lock.json](../support/upstream-lock.json)。源码通过 [A01 PR #5](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5) 导入 main；随后 A05 只读 QueryAbi 和 A06 cgroup CPU 配额已集成，并有同一源码树的[真实 QEMU 收据](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json)。这分别证明派生内核启动、只读 ioctl 和已测配额场景。后续 [A05 组合收据](../results/kernel/control/a05-main-combined-acceptance-20261017.json) 对应已合入的 Process / exec_epoch / nonce 只读身份隔离；可信启动后的能力授予、四项其余 HOS2 操作、G1/G2 与裸机资格仍未完成。
 
 第一实现以最小可审阅差异扩展上游进程、文件对象与调度器；不新增平行 Task/VFS/权限数据库。只在具体接口冲突与最小复现证明全内核派生成本不合适时重新评估 OSTD-only，不并行维持两套产品。
 
@@ -59,8 +59,8 @@ cap接在ClassScheduler共同资格/计费路径，不仅修改fair.rs。固定�
 
 ## 8. 本轮源码边界
 
-`libs/os-abi/` 已由 A02 实现并在宿主 CI 验证编解码；这不代表已接入内核 ioctl，详情见 STATUS。文档检查和规格模型不冒充内核、驱动或独立native应用runtime。未来导入上游保留其实际目录，不为目录图搬动或复制源码。
+`libs/os-abi/` 已由 A02 实现并在宿主验证编解码；主干只读设备复用同一 codec 处理 QueryAbi。五项操作的 codec 覆盖不等于五项内核设备实现，当前 `ReadUsage`、`InstallBudget`、`QueryDelivery`、`RetireThrough` 仍返回 `EOPNOTSUPP`。实际路径和开发入口见 [A05 实现手册](agents/handoffs/A05_KERNEL_CONTROL.md)，当前验收层次见 [STATUS](STATUS.md)。文档检查和规格模型不冒充内核、驱动或独立native应用runtime；保留上游实际目录，不为目录图搬动或复制源码。
 
 ## Organ 后端的执行边界补充
 
-Asterinas派生内核是现有Hepta器官角色共用的受限执行后端，不是TrustedReadOnlyOrganV1中的I/O handler。只读图消费快照；实际授权、I/O和结果核对属于现有owner。现有cgroup接受CPU配置不代表真实节流；所有入口要共用实际资源执行机制。固定来源、QEMU反例与接合要求见[后端实测](ASTERINAS_ORGAN_BACKEND.md)。
+Asterinas派生内核是现有Hepta器官角色共用的受限执行后端，不是TrustedReadOnlyOrganV1中的I/O handler。只读图消费快照；实际授权、I/O和结果核对属于现有owner。判断 CPU 节流须核对实际计费与任务工作量；主干已有上述固定配额实验，但所有 native/Linux 入口仍须接到同一资源执行机制。固定来源、原未执行配额反例与后续接合要求见[后端实测](ASTERINAS_ORGAN_BACKEND.md)。
