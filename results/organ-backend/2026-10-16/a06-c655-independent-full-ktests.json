@@ -1,0 +1,63 @@
+{
+  "schema": "trillionnium.os.a06.independent.full-kernel-ktest.v1",
+  "date": "2026-10-16",
+  "tested_source_commit": "c65578b2f76538cb6706e1089565ef73adccc8f0",
+  "owner_base_commit": "c86991d7363c964758ad75c0ea4ae5043abb3a1a",
+  "source_equivalence": "GitHub compare c65578b2..c86991d7: Asterinas kernel source unchanged, only independent evidence records added",
+  "preexisting_boot_kernel_sha256": "4690299ebbe0f33fb04281e7a55fd30914e339e47a7043bbcbd6ecc5de4bba5d",
+  "toolchain": "nightly-2026-07-21",
+  "invocation": "python3 -I support/build/ktest/run.py --crate ostd --crate aster-core --skip-osdk-install --output FRESH_EVIDENCE_DIR",
+  "profile": "QEMU q35/TCG x86_64 1 vCPU, 512 MiB, no network or data disks, pinned SeaBIOS",
+  "host_exit": 0,
+  "kernel_test_suite_passed": true,
+  "reported_passed_total": 374,
+  "soft_skipped_total": 3,
+  "actual_executed_passed_lower_bound": 371,
+  "failed_total": 0,
+  "filtered_total": 0,
+  "test_crates": [
+    {
+      "crate": "ostd",
+      "declared": 221,
+      "reported_passed": 221,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "executed_passed_lower_bound": 218,
+      "observed_test_starts": 221,
+      "qemu_exit": 33,
+      "timed_out": false,
+      "test_kernel_elf_sha256": "fafc8b111dd5736d3b876ecc0bcb01c2e2e3e5741372fe4cf7a4dab5fed1877a",
+      "serial_sha256": "1bab3f9cbb602c5ce3d8fa77eafaabcd02667eb3fcabecb28c75c44a210a22e6",
+      "qemu_binary_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+    },
+    {
+      "crate": "aster-core",
+      "declared": 153,
+      "reported_passed": 153,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "executed_passed_lower_bound": 153,
+      "observed_test_starts": 153,
+      "qemu_exit": 33,
+      "timed_out": false,
+      "test_kernel_elf_sha256": "6d1f13906ed6d2a573ccc8547d3d4fff87ec979d648fa655a3119e721e7203e5",
+      "serial_sha256": "2d4a53d12c28f53d96f38a90f7e12115e928f776053ccf7053faa35f33181db1",
+      "qemu_binary_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+    }
+  ],
+  "limits": [
+    "Three OSTD VMX/EPT tests are soft-skipped, not virtualization execution",
+    "No exhaustive SMP, IRQ interleavings, CPU hotplug, affinity migration or strict per-period cap proof",
+    "No native HOS2 ioctl, CapSpace/Hepta durable effect, Android/GPU/bare-metal or production qualification"
+  ],
+  "raw_guest_logs": "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/a06-c655-full-kernel-suite/{ostd,aster-core}/guests/guest-001/serial.log",
+  "host_cgroup_modified": false
+}

@@ -1,5 +1,18 @@
 # 当前状态
 
+## 2026-10-17：A05 QueryAbi＋A06 CPU 带宽已合并 N0 实验内核
+
+**真实主干合并：**[PR #121](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/121) merge `3538ec23570733a8b48678f9f24fcd0949dabd84`；主干包含此前 A05 的只读 /dev/hepta-control QueryAbi 与 A06 的实际 cgroup CPU 限额／调度器。测试源码本地合并提交 `b913202b2e487126319e60813a54163666b9a2ad` 与远端集成提交 `eaf5242233b799356b7daa73898a14d240832abb` **Git tree 相同**（`b852e0037af8f84c22a8fc7347fa55d8183e07e6`）；后续 PR 仅添加结果 JSON，三条核心内核文件 Git blob 已在合并后再核对一致。唯一文件冲突 `support/build/kernel.sh` 采用已验证的 main A01 新版（保留 manifest 身份及 --live-artifacts），没有回滚 A01 修复。
+
+**实际执行证据（非报告拼接）：**固定 Asterinas v0.19.0 / nightly-2026-07-21 从同一源码树完整构建、在 q35/TCG／1 vCPU／512 MiB 运行 initramfs，raw QEMU=33、构建／启动脚本 exit=0。候选完整 ELF SHA256 `06cf42337d266a486d3ac98caa3f9b0021f0f7679c7130e48224cb35fedb90ab`。在这个内核上，**10/10** 原始 `cpu.stat` 探针客体成功（单 CPU 1% x3＝1.100%、1.000%、0.999%；单 CPU 10%=10.352%、RT10%=9.824%、parent10%=10.226%；双 CPU／双工作线程 1%=0.957%、10%=10.112%、parent10%=10.396%、RT10%=10.187%，全 raw33／无panic）。**3/3** 真实 A05 QueryAbi ioctl 客体通过，包含权限拒绝与格式拒绝测试，raw33。**真实 QEMU 内核回归：**OSTD 报告 221 passed/0 failed，其中3个VMX/EPT软跳过；aster-core 153 passed/0 failed/0软跳过；实际执行通过下界**371**，两套raw33。A05 host smoke、archive负测与bash语法亦通过。机器证据见 [a05-a06-integrated-acceptance.json](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json)。
+
+**严格边界：**这只是 **N0 实验性开发主干**，不能称为已生产可用OS。QEMU双核／双线程有限样本不是 SMP、CPU热插拔、迁移/IRQ锁序或逐100ms硬上限的充分证明；QueryAbi只读，per-open observation space ID不是可信CapSpace。**HOS2 InstallBudget/ReadUsage/QueryDelivery/RetireThrough、exec_epoch与启动能力授权、A07现有Hepta owner的持久K↔D、撤销／历史确认退役尚未集成**；G1/G2仍不合格。root README严格0字节，无现役机器内核部署与生产服务修改。A06原 owner Draft #18 保留独立开发记录；新后续补丁须从当前 main 对齐、避免重复集成或覆盖。
+
+**下一条产品实现：**优先将 A03 `ManagementGrantState`／ResourceDomain 与 A05 Asterinas 的真实进程/CapSpace 身份接合，把 `ReadUsage` 与 `InstallBudget` 接到已合入的**唯一 cgroup/调度资源事实**；完成普通进程无权、exec/fork泄权防护、cap=0独立恢复、同K/D效果幂等，再由 A07通过现有durable authority/operations owner完成效果对账和退役。策略继续在Hepta用户态，IRQ/调度快路径不调用模型。
+
+---
+
+
 ## 2026-10-17：原生 QueryAbi 进入主干，G0 验证收敛
 
 本段为已执行事实的最新摘要；历史条目中“ A05 尚未进入 main ”的表述只适用于其旧版本快照。状态文档更新前的主干 HEAD 为 162707a0e6ccccc768c0f1abd3263f3ff4c647a1。

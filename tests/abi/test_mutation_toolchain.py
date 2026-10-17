@@ -111,7 +111,7 @@ class MutationToolchainTests(unittest.TestCase):
         self.assertTrue(report["errors"])
         if failure != "invalid_reference":
             for key in ("baseline", "baseline_semantic_edges", "baseline_profile_boundaries",
-                        "baseline_response_snapshot"):
+                        "baseline_response_snapshot", "baseline_negative_vectors"):
                 baseline = report[key]
                 self.assertFalse(baseline["compiled"])
                 self.assertFalse(baseline["passed"])
@@ -281,7 +281,7 @@ class MutationToolchainTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertEqual(len(mutations.SNAPSHOT_MUTANTS), 4)
-        self.assertEqual(mutations.EXPECTED_MUTANT_COUNT, 16)
+        self.assertEqual(mutations.EXPECTED_MUTANT_COUNT, 19)
         self.assertEqual(mutations.SUITES["response_snapshot"],
                          (5, mutations.SNAPSHOT_TESTS))
         self.assertEqual(len(set(mutations.SNAPSHOT_TESTS)), 5)
@@ -297,6 +297,23 @@ class MutationToolchainTests(unittest.TestCase):
                 for old, new in changes:
                     self.assertEqual(source.count(old), 1)
                     self.assertEqual(mutated.count(new), 1)
+
+    def test_negative_wire_source_mutants_are_real_unique_changes(self):
+        source = (Path(__file__).resolve().parents[2] / "libs/os-abi/src/lib.rs").read_text(
+            encoding="utf-8"
+        )
+        self.assertEqual(len(mutations.NEGATIVE_MUTANTS), 3)
+        self.assertEqual(mutations.SUITES["negative_vectors"],
+                         (21, mutations.NEGATIVE_TESTS))
+        self.assertEqual(len(set(mutations.NEGATIVE_TESTS)), 2)
+        for name, designated, changes in mutations.NEGATIVE_MUTANTS:
+            with self.subTest(name=name):
+                self.assertIn(designated, mutations.NEGATIVE_TESTS)
+                self.assertEqual(len(changes), 1)
+                self.assertNotEqual(mutations.mutated_profile_source(source, changes), source)
+                for before, after in changes:
+                    self.assertEqual(source.count(before), 1)
+                    self.assertEqual(source.count(after), 0)
 
     def test_inherited_and_configured_wrappers_cannot_intercept_explicit_compiler(self):
         self.isolated_fake_cargo_suite(explicit_rustc=True)

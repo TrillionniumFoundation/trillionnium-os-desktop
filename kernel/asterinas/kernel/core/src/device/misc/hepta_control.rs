@@ -55,9 +55,9 @@ fn nonzero_random_id() -> [u8; 16] {
 // only the stable wire identity returned by QueryAbi.
 fn process_session_id(process: &Process) -> [u8; 16] {
     let mut id = [0u8; 16];
-    id[..4].copy_from_slice(&BOOT_ID.get().unwrap()[..4]);
-    id[4..8].copy_from_slice(&process.pid().to_le_bytes());
-    id[8..].copy_from_slice(&process.start_time().as_u64().to_le_bytes());
+    id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8]);
+    id[8..12].copy_from_slice(&process.pid().to_le_bytes());
+    id[12..].copy_from_slice(&(process.start_time().as_u64() as u32).to_le_bytes());
     id
 }
 
