@@ -49,16 +49,16 @@ fn nonzero_random_id() -> [u8; 16] {
     id
 }
 
-// Bind the HOS2 CapSpace identity to the real process lifetime tuple already
-// owned by Asterinas: boot identity, PID, and process start jiffies. The weak
-// process pointer below is the authoritative anti-reuse check; this value is
-// only the stable wire identity returned by QueryAbi.
-fn process_session_id(process: &Process) -> [u8; 16] {
+// CapSpace wire identities MUST NEVER alias after PID reuse or execve.
+// Assign a checked boot-local full u64 nonce on the authoritative Process
+// object and pair it atomically with that image's exec epoch. The full boot
+// identity is separately returned in HOSR and included in delivery D.
+fn process_session_id(process: &Process) -> Result<([u8; 16], u64)> {
+    let (exec_epoch, nonce) = process.hepta_capspace_session()?;
     let mut id = [0u8; 16];
     id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8]);
-    id[8..12].copy_from_slice(&process.pid().to_le_bytes());
-    id[12..].copy_from_slice(&(process.start_time().as_u64() as u32).to_le_bytes());
-    id
+    id[8..].copy_from_slice(&nonce.to_le_bytes());
+    Ok((id, exec_epoch))
 }
 
 #[derive(Debug)]
@@ -85,10 +85,11 @@ impl Device for HeptaControlDevice {
         let process = Process::current().ok_or_else(|| {
             Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
         })?;
+        let (space_id, exec_epoch) = process_session_id(&process)?;
         Ok(Box::new(HeptaControlFile {
-            space_id: process_session_id(&process),
+            space_id,
             process: Arc::downgrade(&process),
-            exec_epoch: process.hepta_exec_epoch(),
+            exec_epoch,
         }))
     }
 }
