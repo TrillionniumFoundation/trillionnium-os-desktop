@@ -12,6 +12,8 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 CPU_RS = ROOT / "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs"
 CGROUP_RS = ROOT / "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs"
+POSIX_RS = ROOT / "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs"
+INODE_RS = ROOT / "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs"
 
 
 class A06FinalAccountingSource(unittest.TestCase):
@@ -38,6 +40,18 @@ class A06FinalAccountingSource(unittest.TestCase):
         )
         self.assertIn("if !process.status().is_zombie()", source)
         self.assertIn("deferred scheduler", source)
+
+    def test_zombie_final_debit_lease_blocks_cgroup_deletion(self):
+        posix = POSIX_RS.read_text()
+        cgroup = CGROUP_RS.read_text()
+        inode = INODE_RS.read_text()
+        self.assertIn("struct CpuCgroupLease", posix)
+        self.assertIn("impl Drop for CpuCgroupLease", posix)
+        self.assertIn("retain_cpu_charge_lease", posix)
+        self.assertIn("release_cpu_charge_lease", posix)
+        self.assertIn("cpu_charge_leases", cgroup)
+        self.assertIn("deferred CPU accounting leases", cgroup)
+        self.assertIn("CgroupMembership::write_lock()", inode)
 
 
 if __name__ == "__main__":

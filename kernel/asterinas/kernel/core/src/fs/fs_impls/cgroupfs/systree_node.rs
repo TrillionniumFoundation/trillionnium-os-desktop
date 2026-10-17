@@ -298,6 +298,9 @@ pub(crate) struct CgroupNode {
     controller: Controller,
     /// The inner data. If it is `None`, then the cgroup node is dead.
     inner: RwMutex<Option<Inner>>,
+    /// Number of thread-owned final-charge leases retaining this node.
+    /// Deletion is refused until all deferred scheduler readers release it.
+    cpu_charge_leases: AtomicUsize,
     /// The depth of the node in the cgroupfs [`SysTree`], where the child of
     /// the root node has a depth of 1.
     ///
@@ -439,6 +442,7 @@ impl CgroupNode {
                 fields,
                 controller: Controller::new(Some(parent_controller)),
                 inner: RwMutex::new(Some(Inner::default())),
+                cpu_charge_leases: AtomicUsize::new(0),
                 depth,
                 populated_count: AtomicUsize::new(0),
             }
@@ -454,6 +458,15 @@ impl CgroupSysNode for CgroupNode {
 
 // For process management
 impl CgroupNode {
+    pub(crate) fn retain_cpu_charge_lease(&self) {
+        self.cpu_charge_leases.fetch_add(1, Ordering::AcqRel);
+    }
+
+    pub(crate) fn release_cpu_charge_lease(&self) {
+        let previous = self.cpu_charge_leases.fetch_sub(1, Ordering::AcqRel);
+        debug_assert!(previous > 0);
+    }
+
     fn propagate_add_populated(&self) {
         if self.depth <= 1 {
             return;
@@ -539,6 +552,13 @@ impl CgroupNode {
 
         if !inner_ref.processes.is_empty() {
             return_errno_with_message!(Errno::EBUSY, "the cgroup hierarchy still has processes");
+        }
+
+        if self.cpu_charge_leases.load(Ordering::Acquire) != 0 {
+            return_errno_with_message!(
+                Errno::EBUSY,
+                "the cgroup has deferred CPU accounting leases"
+            );
         }
 
         let children = self.fields.children_ref().read();

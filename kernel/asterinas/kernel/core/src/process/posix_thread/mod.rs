@@ -57,7 +57,7 @@ pub struct PosixThread {
     /// owner has gone away.  The process cgroup is still the authoritative
     /// live binding; this reference only keeps that binding available for the
     /// deferred final charge of an exited task.
-    cpu_cgroup: RcuOption<Arc<CgroupNode>>,
+    cpu_cgroup: RcuOption<Arc<CpuCgroupLease>>,
 
     // Mutable part
     tid: AtomicU32,
@@ -125,11 +125,14 @@ impl PosixThread {
     }
 
     pub(crate) fn cpu_cgroup(&self) -> Option<Arc<CgroupNode>> {
-        self.cpu_cgroup.read().get().cloned()
+        self.cpu_cgroup
+            .read()
+            .get()
+            .map(|lease| lease.cgroup.clone())
     }
 
     pub(crate) fn set_cpu_cgroup(&self, cgroup: Option<Arc<CgroupNode>>) {
-        self.cpu_cgroup.update(cgroup);
+        self.cpu_cgroup.update(cgroup.map(CpuCgroupLease::new));
     }
 
     /// Returns the thread id
@@ -356,6 +359,28 @@ impl PosixThread {
     /// Returns the exit code of this thread.
     pub(crate) fn exit_code(&self) -> ExitCode {
         self.exit_code.load(Ordering::Relaxed)
+    }
+}
+
+/// A lifecycle lease for the cgroup used by a deferred final CPU debit.
+///
+/// The lease is separate from CPU usage/accounting state. It only prevents
+/// cgroup deletion while an exited task can still publish its final scheduler
+/// interval. RCU delays `Drop` until readers have left the old snapshot.
+struct CpuCgroupLease {
+    cgroup: Arc<CgroupNode>,
+}
+
+impl CpuCgroupLease {
+    fn new(cgroup: Arc<CgroupNode>) -> Arc<Self> {
+        cgroup.retain_cpu_charge_lease();
+        Arc::new(Self { cgroup })
+    }
+}
+
+impl Drop for CpuCgroupLease {
+    fn drop(&mut self) {
+        self.cgroup.release_cpu_charge_lease();
     }
 }
 
