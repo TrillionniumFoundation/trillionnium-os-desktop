@@ -32,7 +32,10 @@ use crate::{
 // _IOWR('H', 2, sizeof(Transport32)).  This number is test-only until A00
 // assigns a public ioctl. It does not silently reuse the old HOS1 command.
 const EXPERIMENTAL_HOS2_IOCTL: u32 = 0xC020_4802;
-const QUERY_FRAME_BYTES: usize = wire::HEADER_LEN;
+// Fixed experimental HOS2 operations have at most 40 input payload bytes.
+// Accept a bounded snapshot for known but disabled opcodes, so that
+// unsupported operations produce EOPNOTSUPP rather than an invented ENOTTY.
+const MAX_KNOWN_REQUEST_BYTES: usize = wire::HEADER_LEN + 40;
 const QUERY_RESPONSE_BYTES: usize = wire::HEADER_LEN + 48;
 
 static MAJOR: Once<char::MajorIdOwner> = Once::new();
@@ -146,20 +149,40 @@ impl PerOpenFileOps for HeptaControlFile {
         current_userspace!().read_bytes(raw_ioctl.arg(), &mut transport_bytes)?;
         let transport = Transport::decode(&transport_bytes)
             .map_err(|_| Error::with_message(Errno::EINVAL, "malformed HOS2 transport"))?;
-        if transport.request_bytes as usize != QUERY_FRAME_BYTES {
-            return_errno_with_message!(Errno::ENOTTY, "only HOS2 QueryAbi is implemented")
+        let request_len = usize::try_from(transport.request_bytes)
+            .map_err(|_| Error::with_message(Errno::EINVAL, "invalid request length"))?;
+        if request_len > MAX_KNOWN_REQUEST_BYTES {
+            return_errno_with_message!(Errno::EINVAL, "HOS2 request exceeds known N0 operations")
         }
         let request_ptr = usize::try_from(transport.request_addr)
             .map_err(|_| Error::with_message(Errno::EINVAL, "invalid request address"))?;
         let response_ptr = usize::try_from(transport.response_addr)
             .map_err(|_| Error::with_message(Errno::EINVAL, "invalid response address"))?;
-        let mut input = [0u8; QUERY_FRAME_BYTES];
-        current_userspace!().read_bytes(request_ptr, &mut input)?;
+        // Copy the complete bounded request BEFORE interpreting bytes. The
+        // driver has no effectful opcodes, including when copyout later fails.
+        let mut input = [0u8; MAX_KNOWN_REQUEST_BYTES];
+        current_userspace!().read_bytes(request_ptr, &mut input[..request_len])?;
         let request = transport
-            .decode_request_snapshot(&input)
-            .map_err(|_| Error::with_message(Errno::EINVAL, "invalid HOS2 request"))?;
+            .decode_request_snapshot(&input[..request_len])
+            .map_err(|err| {
+                // The experimental HOS2 native ABI explicitly distinguishes
+                // protocol, operation and capacity errors. Do not report a
+                // known opcode as an unknown ioctl or collapse a short output
+                // into malformed input.
+                let code = match err {
+                    wire::Error::InvalidMagic | wire::Error::UnknownVersion => {
+                        Errno::EPROTONOSUPPORT
+                    }
+                    wire::Error::UnknownOpcode => Errno::EOPNOTSUPP,
+                    wire::Error::InsufficientCapacity => Errno::EMSGSIZE,
+                    _ => Errno::EINVAL,
+                };
+                Error::with_message(code, "invalid HOS2 request/capacity")
+            })?;
         if request.opcode != Opcode::QueryAbi || request.payload != RequestPayload::QueryAbi {
-            return_errno_with_message!(Errno::ENOTTY, "HOS2 resource operations not yet enabled")
+            return_errno_with_message!(
+                Errno::EOPNOTSUPP, "recognized HOS2 resource operation not implemented"
+            )
         }
 
         // The advertised mask has *only* QueryAbi (bit 1). This creates no

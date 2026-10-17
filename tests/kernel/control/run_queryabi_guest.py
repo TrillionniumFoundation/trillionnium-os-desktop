@@ -18,7 +18,7 @@ import time
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "organ_backend"))
 from run_guest_probe import pack, unpack  # already shipped A01 newc parser
 
-A05_PINNED_KERNEL_SHA = "54c8a7a798cbbd80f1a8ce5f0144328815e63b413e79b0133206bcaaba607e4a"
+A05_PINNED_KERNEL_SHA = "a0ef91869518ea644aff2e44f0a27d5fc712b574e7ba4bc499bf40f267bdd851"
 A01_INITRD_SHA = "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
 SEABIOS_SHA = "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
 EXPECTED_SUCCESS = "HEPTA_QUERYABI_OK ops=QueryAbi_only, independent_sessions=yes, denied_invalid=yes"
