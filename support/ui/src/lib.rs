@@ -16,6 +16,7 @@
 //! operation and defines no second wire or permission protocol.
 
 use std::collections::BTreeMap;
+use std::sync::OnceLock;
 
 /// Pure state model for the initial full-display Android host contract.
 ///
@@ -740,6 +741,7 @@ pub enum ReadOnlyError<E> {
     MutationNotAllowed,
     MalformedRequest,
     MalformedResponse,
+    BootChanged,
 }
 
 /// A typed adapter for a transport that accepts existing HOS2 requests and
@@ -747,11 +749,18 @@ pub enum ReadOnlyError<E> {
 /// QueryDelivery, rejecting all mutation opcodes before transport use.
 pub struct Hos2ReadOnlyAdapter<T> {
     transport: T,
+    // This pins only a *source-reported* boot identifier in an unprivileged
+    // observation session. It is NOT an authentication token or CapSpace.
+    // Reboot requires a fresh adapter from the trusted A05/A07 bridge.
+    observed_boot: OnceLock<[u8; 16]>,
 }
 
 impl<T> Hos2ReadOnlyAdapter<T> {
     pub const fn new(transport: T) -> Self {
-        Self { transport }
+        Self {
+            transport,
+            observed_boot: OnceLock::new(),
+        }
     }
 
     pub fn into_inner(self) -> T {
@@ -804,6 +813,24 @@ where
         response
             .validate_for(&request)
             .map_err(|_| ReadOnlyError::MalformedResponse)?;
+        // A02 validates an individual response; the A10 consumer additionally
+        // prevents a sequence of valid responses from two different boots
+        // being conflated into one perceived observation timeline.
+        // Never pin an unauthenticated error as the boot baseline.
+        if response.status == Status::Ok {
+            let pinned = self
+                .observed_boot
+                .get_or_init(|| response.boot_id);
+            if pinned != &response.boot_id {
+                return Err(ReadOnlyError::BootChanged);
+            }
+        } else if self
+            .observed_boot
+            .get()
+            .is_some_and(|boot| boot != &response.boot_id)
+        {
+            return Err(ReadOnlyError::BootChanged);
+        }
         Ok(response)
     }
 }
@@ -1378,6 +1405,110 @@ mod tests {
             ),
             Err(ReadOnlyError::MalformedResponse),
             "a different history sequence must not be attributed to the requested D"
+        );
+    }
+
+    #[test]
+    fn cross_boot_observations_require_fresh_bridge_adapter() {
+        use std::collections::VecDeque;
+        use std::sync::Mutex;
+
+        struct SequenceTransport {
+            results: Mutex<VecDeque<Response>>,
+        }
+
+        impl Hos2ReadTransport for SequenceTransport {
+            type Error = &'static str;
+
+            fn exchange(&self, _request: Request) -> Result<Response, Self::Error> {
+                self.results
+                    .lock()
+                    .unwrap()
+                    .pop_front()
+                    .ok_or("no more scripted host observations")
+            }
+        }
+
+        let payload = QueryAbiResponse {
+            space_id: [1; 16],
+            page_size: 4096,
+            max_request_payload: 64,
+            max_response_payload: 64,
+            supported_ops: 0x02,
+            features: 0,
+        };
+        let first = response(Opcode::QueryAbi, ResponsePayload::QueryAbi(payload));
+        let second = first;
+        let mut rebooted = first;
+        rebooted.boot_id = [3; 16];
+        let transport = SequenceTransport {
+            results: Mutex::new(VecDeque::from([first, second, rebooted])),
+        };
+        let source = Hos2ReadOnlyAdapter::new(transport);
+        assert_eq!(source.query_abi([9; 16]), Ok(payload));
+        assert_eq!(source.query_abi([9; 16]), Ok(payload));
+        assert_eq!(
+            source.query_abi([9; 16]),
+            Err(ReadOnlyError::BootChanged),
+            "two valid responses from different boots cannot be one UI session"
+        );
+
+        let new_source = Hos2ReadOnlyAdapter::new(SequenceTransport {
+            results: Mutex::new(VecDeque::from([rebooted])),
+        });
+        assert_eq!(
+            new_source.query_abi([9; 16]),
+            Ok(payload),
+            "only a newly established consumer may start a new observed boot"
+        );
+    }
+
+    #[test]
+    fn denied_before_first_valid_observation_does_not_pin_a_boot() {
+        use std::collections::VecDeque;
+        use std::sync::Mutex;
+
+        struct SequenceTransport {
+            results: Mutex<VecDeque<Response>>,
+        }
+
+        impl Hos2ReadTransport for SequenceTransport {
+            type Error = &'static str;
+
+            fn exchange(&self, _request: Request) -> Result<Response, Self::Error> {
+                self.results.lock().unwrap().pop_front().ok_or("empty")
+            }
+        }
+
+        let first = Response {
+            opcode: Opcode::QueryAbi,
+            status: Status::PermissionDenied,
+            request_id: [9; 16],
+            boot_id: [8; 16],
+            revision: 0,
+            payload: ResponsePayload::Empty,
+        };
+        let payload = QueryAbiResponse {
+            space_id: [1; 16],
+            page_size: 4096,
+            max_request_payload: 64,
+            max_response_payload: 64,
+            supported_ops: 0x02,
+            features: 0,
+        };
+        let mut second = response(Opcode::QueryAbi, ResponsePayload::QueryAbi(payload));
+        second.boot_id = [3; 16];
+        let source = Hos2ReadOnlyAdapter::new(SequenceTransport {
+            results: Mutex::new(VecDeque::from([first, second])),
+        });
+        assert_eq!(
+            source.query_abi([9; 16]),
+            Err(ReadOnlyError::Rejected(Status::PermissionDenied))
+        );
+        assert_eq!(
+            source.query_abi([9; 16]),
+            Ok(payload),
+            "a rejected request must not pin an unverified boot identity"
         );
     }
 

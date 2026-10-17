@@ -63,6 +63,9 @@ mismatches fail closed instead of being reported as an observation.
 The existing A02 request encoder rejects malformed read requests before any
 exchange, and A02 `Response::validate_for` checks the complete reply
 (including boot ID, revision, time and delivery sequence) before projection.
+The adapter also pins the first successful observed boot ID so later replies
+from another boot fail closed rather than appearing to be a continuous task
+timeline. A fresh authenticated bridge creates a new adapter after reboot.
 This does not authenticate an owner or substitute for A05/A07 broker credentials.
 Do not permanently grant Hepta global clipboard, key input or screen capture.
 Hepta outage must not stop independent host/client process use.

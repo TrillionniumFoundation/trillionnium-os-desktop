@@ -28,6 +28,8 @@ Unit coverage:
 - shared A02 `Request::encode` preflight before any transport exchange and
   `Response::validate_for` for boot ID, revision, timing, delivery sequence;
   negative fixtures must never be reported as owner observations
+- read-only adapter pins the first successful *observed* boot and rejects
+  subsequent cross-boot results; a rejected response never pins the boot
 - bounded (1024) permission observation cache, disconnected-owner invalidation,
   scope-local invalidation, revoke-at-capacity and SAME-revision conflicting
   grant poisoning to Unknown (including replay) fail-closed regressions
