@@ -1258,7 +1258,7 @@ mod tests {
             page_size: 4096,
             max_request_payload: 64,
             max_response_payload: 64,
-            supported_ops: 0,
+            supported_ops: 0x02, // QueryAbi-only is a valid A02 capability bitmap
             features: 0,
         };
         let mut invalid = response(Opcode::QueryAbi, ResponsePayload::QueryAbi(payload));
@@ -1278,6 +1278,44 @@ mod tests {
             Err(ReadOnlyError::MalformedResponse),
             "QueryAbi cannot carry an invented nonzero revision"
         );
+    }
+
+    #[test]
+    fn valid_a02_query_abi_and_usage_are_observations_not_effects() {
+        let payload = QueryAbiResponse {
+            space_id: [1; 16],
+            page_size: 4096,
+            max_request_payload: 64,
+            max_response_payload: 64,
+            supported_ops: 0x02,
+            features: 0,
+        };
+        let source = Hos2ReadOnlyAdapter::new(FakeTransport {
+            response: response(Opcode::QueryAbi, ResponsePayload::QueryAbi(payload)),
+        });
+        assert_eq!(source.query_abi([9; 16]), Ok(payload));
+
+        let usage = ReadUsageResponse {
+            sample_boottime_ns: 150_000_000,
+            cumulative_cpu_ns: 120_000_000,
+            window_start_ns: 100_000_000,
+            window_consumed_ns: 20_000_000,
+            active_cap_ns: 25_000_000,
+            active_period_ns: hos2_os_abi::CPU_PERIOD_NS,
+            event_sequence: 3,
+            dropped_events: 1,
+        };
+        let source = Hos2ReadOnlyAdapter::new(FakeTransport {
+            response: Response {
+                opcode: Opcode::ReadUsage,
+                status: Status::Ok,
+                request_id: [9; 16],
+                boot_id: [8; 16],
+                revision: 3,
+                payload: ResponsePayload::ReadUsage(usage),
+            },
+        });
+        assert_eq!(source.read_usage([9; 16], 1, 1), Ok(usage));
     }
 
     #[test]
