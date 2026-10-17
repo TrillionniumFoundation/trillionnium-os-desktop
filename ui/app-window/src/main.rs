@@ -28,13 +28,18 @@ impl eframe::App for ClientWindow {
             match self.kind {
                 AppKind::Notes => {
                     ui.label("Notes / 笔记 · try composing Chinese with your host IME");
-                    ui.add(
+                    let editor = ui.add(
                         egui::TextEdit::multiline(&mut self.notes)
                             .id(egui::Id::new("notes-editor"))
                             .desired_rows(17)
                             .desired_width(f32::INFINITY)
                             .hint_text("中文输入、候选词、焦点测试……"),
                     );
+                    ui.small(if editor.has_focus() {
+                        "Keyboard focus: NOTES editor (IME target)"
+                    } else {
+                        "Keyboard focus: inactive; click Notes editor to compose"
+                    });
                     ui.small("Local unsaved memory only. Closing this app discards notes.");
                 }
                 AppKind::Calculator => {
@@ -54,8 +59,13 @@ impl eframe::App for ClientWindow {
                     ui.label(RichText::new(&self.result).size(20.0));
                     ui.separator();
                     ui.label("Keyboard and IME focus probe / 输入法焦点");
-                    ui.add(egui::TextEdit::singleline(&mut self.focused_input)
+                    let ime_probe = ui.add(egui::TextEdit::singleline(&mut self.focused_input)
                         .id(egui::Id::new("calculator-ime-focus")));
+                    ui.small(if ime_probe.has_focus() {
+                        "Keyboard focus: calculator IME probe"
+                    } else {
+                        "Keyboard focus: calculator IME probe inactive"
+                    });
                     ui.small("Click between numeric and Chinese text controls to test focus.");
                 }
                 AppKind::Terminal => self.restricted_terminal(ui, ctx),
@@ -99,21 +109,23 @@ impl ClientWindow {
             });
         ui.separator();
         ui.horizontal(|ui| {
-            let response = ui.add(
+            ui.add(
                 egui::TextEdit::singleline(&mut self.terminal_input)
                     .id(egui::Id::new("restricted-terminal-input"))
                     .desired_width(f32::INFINITY)
                     .hint_text("help / status / echo <text> / clear / exit"),
             );
-            let submit =
-                response.lost_focus() && ui.input(|input| input.key_pressed(egui::Key::Enter));
-            if (submit || ui.button("Run").clicked()) && !self.terminal_close_requested {
+            // Enter is used by Chinese IME to confirm a candidate. Losing
+            // TextEdit focus on Enter must NEVER execute an uncommitted command.
+            // Explicit button activation is the only command commit path.
+            if ui.button("Run").clicked() && !self.terminal_close_requested {
                 self.run_restricted_command();
             }
             if ui.button("Clear output").clicked() {
                 self.terminal_output.clear();
             }
         });
+        ui.small("IME: Enter confirms a candidate, not a command. Click Run to execute.");
         if self.terminal_close_requested {
             ui.colored_label(
                 egui::Color32::LIGHT_GREEN,
@@ -134,13 +146,15 @@ impl ClientWindow {
         if command.is_empty() {
             return;
         }
-        self.terminal_line(format!("$ {command}"));
+        // Reject BEFORE echoing command bytes to the visible history: a
+        // megabyte-long paste must not become an unbounded rendered log line.
         if command.len() > MAX_COMMAND_BYTES {
             self.terminal_line(
                 "refused: command exceeds 512 bytes; no host operation was attempted",
             );
             return;
         }
+        self.terminal_line(format!("$ {command}"));
         match command {
             "help" => self
                 .terminal_line("allowlist: help | status | version | echo <text> | clear | exit"),
@@ -411,6 +425,18 @@ mod tests {
             .terminal_output
             .last()
             .is_some_and(|line| line.contains("exceeds 512 bytes")));
+        assert!(!state.terminal_close_requested);
+        assert_eq!(state.terminal_output.len(), 1);
+        assert!(state.terminal_output[0].len() < 160);
+        assert!(!state.terminal_output[0].contains(&"x".repeat(64)));
+
+        // A hostile or accidental large paste stays bounded in the UI log.
+        state.terminal_output.clear();
+        state.terminal_input = "中文".repeat(200_000);
+        state.run_restricted_command();
+        assert_eq!(state.terminal_output.len(), 1);
+        assert!(state.terminal_output[0].len() < 160);
+        assert!(state.terminal_output[0].contains("exceeds 512 bytes"));
         assert!(!state.terminal_close_requested);
     }
 

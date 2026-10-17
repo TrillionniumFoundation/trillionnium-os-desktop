@@ -64,10 +64,17 @@ for Running acknowledges only host process creation, not a rendered window
 or final AI-task completion. `cancel` may return zero when SIGKILL has
 been requested but not yet observed; inspect the later session snapshot.
 
-Not yet provided: verified Linux compile log, CI, automated
-display-driver/IME tests, HOS2 bridge, secure permission service, compositor,
-Xwayland trust-domain instances, Android SurfaceFlinger/buffer import/fence
-runtime, or target OS boot. `support/ui/src/android.rs` contains only the
+A previous GitHub Actions host run (38932065166) completed the Rust build,
+unit-test and Weston lifecycle steps; its overall result was FAILED because
+the final offline Cargo metadata gate lacked a target-only Android crate.
+The host script now prefetches all locked target packages; current-head CI
+must independently prove the fix. No live Chinese candidate/focus acceptance
+was performed: in Restricted Terminal Enter cannot run a command, so IME
+candidate confirmation requires an explicit Run click afterward.
+
+Still missing: current-head green CI, automated live IME, real display-driver
+attestation, native HOS2/Hepta bridge, trusted portal, owned compositor,
+per-domain Xwayland, Android buffer/fence runtime, and target kernel boot. `support/ui/src/android.rs` contains only the
 pure consumer state model and contract tests; it is not Android runtime
 evidence.
 Do not extrapolate host process exit code 0 to successful Hepta operations.

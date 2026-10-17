@@ -23,7 +23,8 @@ Unit coverage:
 - no Pending -> Completed shortcut
 - distinction among pending/running/partial/unknown/cancel_requested
 - Chinese UTF-8 roundtrip
-- synthetic egui IME preedit/commit and focus switching (not a live Wayland IME test)
+- a pure Rust IME preedit/commit and focus ownership model (not an egui backend or live Wayland IME test)
+- oversized restricted-terminal UTF-8 paste refused before it reaches the rendered command log; no auto-execution on Enter
 - chat workspace explicit app actions linked to observed process task cards
 - oversized/truncated IPC frames and unknown statuses
 - successful observed host child exit
@@ -72,7 +73,12 @@ Manual Linux Wayland test required after build:
    XDG_RUNTIME_DIR is private (0700), start trill-session separately.
 2. Start trill-shell; type Chinese via a system IME into chat and Notes,
    verify candidate window, selection, composition, focus changes and no
-   duplicate characters. UTF-8 unit roundtrip is NOT an IME acceptance test.
+   duplicate characters. Verify Notes and Calculator visibly report the active
+   keyboard-focus target. In Restricted Terminal, type "echo 你好" via Chinese
+   preedit, press Enter to select a candidate: command MUST NOT execute merely
+   because Enter moved focus; only clicking Run can execute the committed text.
+   Test a >512-byte pasted command: error should be short and no pasted content
+   may enter the scrollback. UTF-8 unit roundtrip is NOT IME acceptance.
 3. In each workspace launch Notes and Calculator; rearrange/focus/resize
    independent windows, switch tasks, try scaling at 100/150/200%.
 4. Close app window: session should observe exit and distinguish code 0
