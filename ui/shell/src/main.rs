@@ -283,11 +283,11 @@ impl Desktop {
                         self.selected = None;
                         self.notice("Host session restarted: previous child history cannot be reattached or trusted.");
                     }
-                    if self.session_instance.as_deref() == Some(&session_instance) {
+                    if self.session_instance.as_deref() == Some(session_instance.as_str()) {
                         if let Some(previous) = &self.resources {
-                            if previous.wayland.socket_observation_epoch !=
-                                resources.wayland.socket_observation_epoch
-                            {
+                            let old_epoch = previous.wayland.socket_observation_epoch;
+                            let observed_epoch = resources.wayland.socket_observation_epoch;
+                            if old_epoch != observed_epoch {
                                 self.notice("Wayland socket identity changed or disappeared: older application surfaces NOT verified; process states remain separate.");
                             }
                         }
