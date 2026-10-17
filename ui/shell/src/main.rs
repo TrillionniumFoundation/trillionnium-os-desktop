@@ -1230,7 +1230,10 @@ mod shell_lifecycle_tests {
         let mut emitted = false;
         let error = emit_shell_first_layout(&mut emitted, &mut BrokenPipe).unwrap_err();
         assert_eq!(error.kind(), io::ErrorKind::BrokenPipe);
-        assert!(emitted, "a closed logging pipe must not trigger a retry loop");
+        assert!(
+            emitted,
+            "a closed logging pipe must not trigger a retry loop"
+        );
         let mut output = Vec::new();
         emit_shell_first_layout(&mut emitted, &mut output).unwrap();
         assert!(output.is_empty(), "layout marker is one-shot");
