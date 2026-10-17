@@ -5,7 +5,7 @@ use core::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use aster_rights::{ReadDupOp, ReadOp, ReadWriteOp};
 use aster_util::fixed_str::FixedCStr;
 use ostd::{
-    sync::{RoArc, RwMutexReadGuard, Waker},
+    sync::{RcuOption, RoArc, RwMutexReadGuard, Waker},
     task::Task,
 };
 use spin::Once;
@@ -17,6 +17,7 @@ use super::{
 use crate::{
     events::IoEvents,
     fs::{file::file_table::FileTable, thread_info::ThreadFsInfo},
+    fs::cgroupfs::CgroupNode,
     prelude::*,
     process::{
         ExitCode, Pid,
@@ -51,6 +52,12 @@ pub struct PosixThread {
     // Immutable part
     process: Weak<Process>,
     task: Weak<Task>,
+
+    /// Cgroup snapshot used for the last scheduler debit after the process
+    /// owner has gone away.  The process cgroup is still the authoritative
+    /// live binding; this reference only keeps that binding available for the
+    /// deferred final charge of an exited task.
+    cpu_cgroup: RcuOption<Arc<CgroupNode>>,
 
     // Mutable part
     tid: AtomicU32,
@@ -115,6 +122,14 @@ impl PosixThread {
 
     pub(crate) fn weak_process(&self) -> &Weak<Process> {
         &self.process
+    }
+
+    pub(crate) fn cpu_cgroup(&self) -> Option<Arc<CgroupNode>> {
+        self.cpu_cgroup.read().get().cloned()
+    }
+
+    pub(crate) fn set_cpu_cgroup(&self, cgroup: Option<Arc<CgroupNode>>) {
+        self.cpu_cgroup.update(cgroup);
     }
 
     /// Returns the thread id
