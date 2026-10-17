@@ -52,7 +52,7 @@ actual HOS2 byte layout and payload.
    D is `Conflict`; a duplicate pending D is `Busy`; a duplicate terminal D
    cannot allocate a new effect. `reserve_or_get` is the copyout-retry helper.
 4. Use `execute_reserved(token, publisher, callback)` for external A05/A06
-   mutation under the reserved result lock. The callback checks real grant,
+   mutation under the reserved entry's independent execution gate. The callback checks real grant,
    lease/epoch, target, CAS and settled usage under its resource lock, then
    returns a `PublishOutcome`. `commit` exercises this same seam with the
    host ResourceDomain. `publish` is a reconciliation entry after an effect
@@ -116,12 +116,21 @@ use a new boot/CapSpace identity. This is not a persistence implementation.
 ## Lock and result invariants
 
 The namespace mutex reserves a slot and its canonical request before any
-resource mutation. Commit then holds only the result slot while entering the
-resource mutation gate; it never acquires the namespace table lock in the
-reverse direction. Query/retire never enter the resource gate. Result payload
-is written under the slot mutex before its state becomes `Terminal`, so a
-reader observes either a complete `Reserved` result or a complete terminal
-result.
+resource mutation. Each slot has a separate execution gate and short-lived
+state mutex. After taking the execution gate, commit/publish briefly validate
+namespace liveness, release the table mutex and use the state mutex to inspect
+or mark admission. The external callback holds only the execution gate while
+entering its resource mutation lock. No namespace-table operation waits for
+that execution gate. Query/retire read only the short state mutex, never the
+resource mutation gate; an Executing slot is observable as Reserved. Complete
+terminal payload and state are published together, and never regress.
+
+Namespace loss serializes on an independent loss gate: set closing under the
+table mutex, release it, wait/fence each slot execution gate, then mark history
+lost and clear the table. Closing rejects reserve/execute/publish/retire with
+HistoryLost, but existing views can still query pending or terminal results.
+An old pending entry may become HistoryLost as it is fenced; complete history
+loss is published only after admitted callbacks have finished.
 
 The Rust tests under `tests/control` are host-model evidence only. They do not
 claim native kernel capability, real copyout fault handling, power-loss
@@ -140,9 +149,10 @@ owner's receipt represents a durable contiguous confirmation. The
 `OwnerReceipt` digest is opaque model evidence, **not a cryptographic
 signature or a capability**, and a host-model caller can manufacture one.
 
-`lose_history` fences reserved result slots under the same per-slot lock
-that serializes `commit` and `publish`. An already linearized commit
-completes before loss obtains that lock; a token not yet admitted returns
+`lose_history` fences reserved result slots under the per-slot execution gate
+that serializes `commit` and `publish`, without holding the namespace table.
+An already admitted callback completes before loss obtains that gate;
+a token not yet admitted returns
 `HistoryLost` with no new mutation. Any effect handed off to an *external*
 kernel executor before `publish` still requires A05's own fencing and
 effect-journal discipline: the host model cannot cancel arbitrary external
@@ -535,10 +545,13 @@ where F: FnOnce(RequestBinding) -> PublishOutcome;
 
 A05/A06 can supply one callback which checks actual kernel authority and
 performs the resource CAS under the real resource mutation lock. This callback
-runs under the already reserved result-slot lock, without the namespace table
-lock. It must not reenter this namespace, copy user memory, allocate or acquire
-the namespace table lock. The callback's locks must follow slot -> resource;
-no resource path may reverse into the slot/table. The portable-spin backend
+runs under the reserved entry's execution gate, with neither the namespace
+table mutex nor result-state mutex held. It must not reenter this namespace,
+copy user memory, allocate or acquire the namespace table lock. The callback's
+locks must follow execution gate -> resource; no resource path may reverse
+into that execution gate or namespace table. Observation uses the independent
+short state mutex, so a delayed callback does not block unrelated delivery
+operations or its own Reserved observation. The portable-spin backend
 still requires a validated interrupt/preemption adapter before kernel use.
 
 The core marks the slot internally Executing **before** the callback. A
@@ -550,9 +563,10 @@ refusal for an effect whose result is unknown. Only the trusted adapter, after
 fencing the original executor and establishing the outcome, may reconcile
 with `publish`. Host mutex poison recovery cannot cause a second effect.
 
-Namespace loss uses the same slot lock: it fences before a callback starts or
-waits for that callback and its complete result. It cannot pass through the
-middle of a synchronous effect/publication. This is an in-memory guarantee,
+Namespace loss uses the same execution gate: it fences before a callback
+starts or waits for that callback and its complete result, without holding
+the namespace table during the wait. It cannot complete in the middle of a
+synchronous effect/publication. This is an in-memory guarantee,
 not atomicity with Hepta fsync or physical devices. Actual process death,
 crash/reboot and asynchronous external executor fencing remain A05/A07 work.
 
@@ -576,3 +590,23 @@ slices and observations under its scheduler's lock discipline.
 suites, formatting, strict Clippy and the x86_64-unknown-none library check.
 `kernel_handoff` tests use a synthetic external callback; they do not call
 an actual kernel driver or the persistent Hepta owner.
+
+
+## Resource lifetime and bounded hierarchy
+
+An active child cap constraint follows the **last strong reference** to its
+ResourceDomainInner. Dropping an ordinary cloned ResourceDomain does not
+remove it: grants, descendants, reservation tokens and retained result slots
+can still preserve the domain. Once the final reference disappears, Drop
+removes only the corresponding entry from the immediate parent's active-child
+cap map. It takes only that short map lock, not the family mutation gate.
+Identity tombstones, parent CPU usage and family clock are never refunded or
+removed. Thus a dead child cannot permanently prevent a lower parent cap,
+while a retained child still constrains the parent.
+
+MAX_RESOURCE_DEPTH is 64 including the root. Creation at the limit returns
+ResourceError::Exhausted before consuming IDs, changing child metadata or
+advancing clocks. This bounds ancestry walks and recursive parent-handle drop.
+A host 64KiB-stack regression exercises destruction at the permitted depth;
+it is not a native-kernel stack, IRQ or deferred-reclamation proof. A05/A06
+must verify their actual object ownership, residual charges and kernel stack.
