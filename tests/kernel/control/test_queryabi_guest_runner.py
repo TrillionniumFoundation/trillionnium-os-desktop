@@ -143,11 +143,15 @@ class QueryAbiReplayInputs(unittest.TestCase):
             original = self.original()
             seen_fds = ()
 
+            def simulate_compiler(command, guest_elf, compile_log, timeout=60):
+                self.assertEqual(command[0], "cc")
+                self.assertEqual(timeout, 60)
+                Path(guest_elf).write_bytes(b"ELF synthetic guest probe")
+                Path(compile_log).write_text("fixture compile ok\\n")
+                return b"ELF synthetic guest probe"
+
             def simulate_native_tools(command, **kwargs):
                 nonlocal seen_fds
-                if command[0] == "cc":
-                    Path(command[-1]).write_bytes(b"ELF synthetic guest probe")
-                    return subprocess.CompletedProcess(command, 0, "", "")
                 self.assertEqual(command[0], "synthetic-qemu")
                 self.assertIs(kwargs.get("preexec_fn"), replay.limit_serial_file)
                 seen_fds = tuple(kwargs.get("pass_fds", ()))
@@ -177,7 +181,8 @@ class QueryAbiReplayInputs(unittest.TestCase):
 
             with patch.object(
                 replay, "read_pinned_file", side_effect=(kernel, original, bios)
-            ), patch.object(replay.subprocess, "run", side_effect=simulate_native_tools):
+            ), patch.object(replay, "compile_guest_probe", side_effect=simulate_compiler), \
+                    patch.object(replay.subprocess, "run", side_effect=simulate_native_tools):
                 self.assertEqual(
                     replay.main([
                         "--kernel-elf", "/original-kernel-path",
