@@ -465,7 +465,8 @@ def run_locked(args, here, project, upstream, output):
                    "osdk_path": str(osdk), "osdk_sha256": digest(osdk),
                    "seed_lock_sha256": digest(upstream / "Cargo.lock"),
                    "runner_inputs_sha256": {str(p.relative_to(project)): digest(p)
-                       for p in sorted(here.rglob("*")) if p.is_file() and "__pycache__" not in p.parts},
+                       for p in [*sorted(here.rglob("*")), here.parent / "record-qemu.py"]
+                       if p.is_file() and "__pycache__" not in p.parts},
                    "test_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
                        for p in sorted((upstream / "osdk/tests").rglob("*")) if p.is_file()},
                    "adapted_test_inputs_sha256": {str(p.relative_to(harness_root)): digest(p)

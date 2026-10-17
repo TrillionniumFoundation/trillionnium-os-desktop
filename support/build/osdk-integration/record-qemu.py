@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Record genuine OSDK integration guests while fixing only host VM resources."""
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -21,6 +22,31 @@ PROFILE = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
 LOCAL_TCP_PROFILE = "osdk-native-local-tcp-v1"
 CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
 MONITOR_CHARDEV_ID = "osdk-managed-monitor"
+
+
+def select_private_inputs(arguments, record):
+    """Apply the normal recorder's opt-in selectors after the fixed profile."""
+    source = Path(__file__).resolve().parent.parent / "record-qemu.py"
+    raw = source.read_bytes()
+    spec = importlib.util.spec_from_file_location("a01_shared_qemu_selectors", source)
+    selectors = importlib.util.module_from_spec(spec)
+    # Bind the recorded hash to the exact source bytes being loaded rather than
+    # a possibly stale Python bytecode cache or a second pathname read.
+    exec(compile(raw, str(source), "exec"), selectors.__dict__)
+    record["shared_selector_source"] = {"path": str(source), "size": len(raw),
+                                         "sha256": hashlib.sha256(raw).hexdigest()}
+    positions = [index for index, value in enumerate(arguments) if value == "-bios"]
+    if len(positions) != 1 or positions[0] + 1 == len(arguments):
+        raise ValueError("fixed integration profile must supply exactly one BIOS path")
+    try:
+        actual = selectors.select_bios(arguments, {"-bios": positions[0] + 1}, record)
+    except (OSError, ValueError) as error:
+        raise ValueError(f"A01_QEMU_BIOS selection rejected: {error}") from error
+    try:
+        actual = selectors.select_data_directory(actual, record)
+    except (OSError, ValueError) as error:
+        raise ValueError(f"A01_QEMU_DATA_DIR selection rejected: {error}") from error
+    return actual
 
 
 def file_record(path):
@@ -433,6 +459,9 @@ def main():
     monitor_socket = None
     try:
         arguments, logs, removed = transform_args(requested, guest, cwd)
+        record["fixed_profile_args"] = list(arguments)
+        arguments = select_private_inputs(arguments, record)
+        record["profile"] = dict(PROFILE, firmware=arguments[arguments.index("-bios") + 1])
         local_tcp = os.environ.get("A01_OSDK_LOCAL_TCP") == "1"
         profile_id = os.environ.get("A01_OSDK_PROFILE", "osdk-native-unix-v1")
         capture_enabled = os.environ.get("A01_OSDK_COVERAGE_GDB") == "1"
@@ -474,7 +503,7 @@ def main():
         if not binary:
             raise FileNotFoundError("qemu-system-x86_64 is not installed")
         command = [binary, *arguments]
-        artifacts = {"-bios": file_record(FIRMWARE)}
+        artifacts = {"-bios": file_record(arguments[arguments.index("-bios") + 1])}
         for option in ("-kernel", "-initrd"):
             positions = [i for i, item in enumerate(arguments) if item == option]
             if len(positions) > 1:

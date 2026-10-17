@@ -58,6 +58,13 @@ def tcp_lease_released(address, timeout=3):
 
 def fixture(root, recorder, capture):
     """Drive production run_capture and capture.py; substitute only the GDB job."""
+    closure = root / "recorder-closure"
+    integration = closure / "osdk-integration"
+    integration.mkdir(parents=True)
+    shutil.copyfile(recorder, integration / "record-qemu.py")
+    shutil.copyfile(capture, integration / "capture.py")
+    shutil.copyfile(HERE.parent / "record-qemu.py", closure / "record-qemu.py")
+    recorder, capture = integration / "record-qemu.py", integration / "capture.py"
     tools = root / "tools"
     tools.mkdir()
     symbol = root / "symbols.elf"
@@ -132,6 +139,7 @@ class CaptureLifecycleTests(unittest.TestCase):
         observation = {"kind": "capture_lifecycle_fixture_not_kernel", "mode": mode, "baseline": baseline,
                        "source": {name: hashlib.sha256((source / name).read_bytes()).hexdigest()
                                   for name in ("record-qemu.py", "capture.py")},
+                       "shared_selector_sha256": hashlib.sha256((HERE.parent / "record-qemu.py").read_bytes()).hexdigest(),
                        "real_gdb": str(REAL_GDB)}
         try:
             with (root / "outer.log").open("wb") as output:

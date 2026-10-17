@@ -10,6 +10,30 @@ python3 -I support/build/osdk-integration/run.py \
   --output "$PWD/support/build/out/osdk-integration-new"
 ```
 
+Private host tools can select their firmware and QEMU data without installing
+them under `/usr`:
+
+```sh
+A01_QEMU_BIOS="/absolute/private tools/share/seabios/bios-256k.bin" \
+A01_QEMU_DATA_DIR="/absolute/private tools/share/qemu" \
+python3 -I support/build/osdk-integration/run.py \
+  --output "$PWD/support/build/out/osdk-integration-private-new"
+```
+
+The recorder first applies its existing fixed guest profile, then reuses the
+normal kernel recorder's `select_bios` and `select_data_directory` functions.
+An explicitly present empty/relative/missing value or wrong file type fails
+before QEMU's version probe or execution; no fallback to the default is used.
+An explicit data directory cannot be combined with any incoming `-L`, including
+duplicate occurrences. With both variables unset, the fixed SeaBIOS default
+`/usr/share/seabios/bios-256k.bin` and original data lookup remain unchanged.
+Paths containing spaces remain single argv values. Each guest retains its
+original OSDK arguments, fixed arguments before host selection, both selection
+records, the selected BIOS artifact hash, and the exact shared selector source
+hash. The runner's source-input table includes that shared dependency. These
+host-path selections do not choose TCP, enable coverage, relax device/control
+validation or change the original upstream test assertions.
+
 The default profile is `osdk-native-unix-v1`. Its original UNIX GDB and monitor
 transports remain separate from the explicit local TCP profile:
 
