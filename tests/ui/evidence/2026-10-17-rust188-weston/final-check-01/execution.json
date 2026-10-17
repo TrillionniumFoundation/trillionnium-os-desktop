@@ -1,0 +1,257 @@
+{
+  "head": "5d6fbb9d81330bb9e21f7f3d3e4b4d784e6ceaa9",
+  "tree": "c2950ff1bfb51ee09edb60d921b1879fc4ac8ba9",
+  "started_unix_ms": 1792235883592,
+  "steps": [
+    {
+      "name": "rustc",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "rustc",
+        "-Vv"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 0,
+      "raw_log_length": 196,
+      "raw_sha256": "2775ffb86baebfb4c9959501cdd336fe315dd8e1229ffaede4f428f33862f10d"
+    },
+    {
+      "name": "cargo",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "cargo",
+        "-Vv"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 196,
+      "raw_log_length": 336,
+      "raw_sha256": "afbf09b72118669bd34e0e664424acd0d876ead7c68ab708a77e72b012b06ae3"
+    },
+    {
+      "name": "weston",
+      "command": [
+        "weston",
+        "--version"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 532,
+      "raw_log_length": 14,
+      "raw_sha256": "ae784846363b80dae069abe80587f4e1bcc04cc19a9694b7be3e8364ae182e01"
+    },
+    {
+      "name": "os",
+      "command": [
+        "cat",
+        "/etc/os-release"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 546,
+      "raw_log_length": 400,
+      "raw_sha256": "3e5851448bae5b36f351becde037a8b13b77307279f484eda808f8177d9a4293"
+    },
+    {
+      "name": "readme-empty",
+      "command": [
+        "python3",
+        "-c",
+        "from pathlib import Path; assert Path(\"README.md\").is_file(); assert Path(\"README.md\").stat().st_size == 0; print(\"README.md is present and exactly zero bytes\")"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 946,
+      "raw_log_length": 44,
+      "raw_sha256": "73ac771603080ea651cbae2e5de212c4385b5dcf1cc53022a4ae023bc4ab5891"
+    },
+    {
+      "name": "committed-ui-lock",
+      "command": [
+        "git",
+        "ls-files",
+        "--error-unmatch",
+        "ui/Cargo.lock"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 990,
+      "raw_log_length": 14,
+      "raw_sha256": "ac44878008b35232667e463591f8232573d441d586a60052da081447b7bc90fb"
+    },
+    {
+      "name": "ui-lock-unchanged",
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "HEAD",
+        "--",
+        "ui/Cargo.lock"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 1004,
+      "raw_log_length": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "non-test-source-equivalence",
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "d57a1be747c1fe0877334d4676d2ddf93dbcac92",
+        "HEAD",
+        "--",
+        ".",
+        ":(exclude)ui/session/tests/ipc_reconnect.rs"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 1004,
+      "raw_log_length": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "equivalent-test-diff",
+      "command": [
+        "git",
+        "diff",
+        "d57a1be747c1fe0877334d4676d2ddf93dbcac92",
+        "HEAD",
+        "--",
+        "ui/session/tests/ipc_reconnect.rs"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 1004,
+      "raw_log_length": 822,
+      "raw_sha256": "b9395685360a749fb59ea786da069dc32fe9222cfdbec697f68dcf48aa451caa"
+    },
+    {
+      "name": "code-doc-whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "ff2418537d913827fefd2eb0232c80d006502fa0",
+        "HEAD",
+        "--",
+        ".",
+        ":(exclude)tests/ui/evidence/**"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 1826,
+      "raw_log_length": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "fmt-1",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 1826,
+      "raw_log_length": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "fmt-2",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 1826,
+      "raw_log_length": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "fmt-3",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "support/ui/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 1826,
+      "raw_log_length": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "fmt-4",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "tests/ui/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 1826,
+      "raw_log_length": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "working-tree-clean",
+      "command": [
+        "git",
+        "status",
+        "--porcelain=v1"
+      ],
+      "exit_code": 0,
+      "raw_log_offset": 1826,
+      "raw_log_length": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "locked-offline-metadata",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "cargo",
+        "metadata",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1"
+      ],
+      "exit_code": 0,
+      "stdout_file": "metadata.json",
+      "stderr_file": "metadata.stderr.log",
+      "stdout_sha256": "36077e2bd9db202c83bdb45f405c459eb7be9ca00e823d33808228d3aa57a40a",
+      "package_count": 332,
+      "workspace_member_count": 4
+    }
+  ],
+  "locks": {
+    "ui/Cargo.lock": "62b00185ec1b839abb55ff24b94809d9b8c704a1097030f5aa66e037a4ca17a5",
+    "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+    "support/ui/Cargo.lock": "e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614",
+    "tests/ui/Cargo.lock": "2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940"
+  },
+  "exit_code": 0,
+  "finished_unix_ms": 1792235884314
+}

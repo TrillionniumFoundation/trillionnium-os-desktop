@@ -1,5 +1,20 @@
 # A10 test matrix and provenance
 
+## Latest recorded Linux host result
+
+The [2026-10-17 Rust 1.88 and Weston evidence](evidence/2026-10-17-rust188-weston/README.md)
+records a full 136-test host gate, actual packaged ELF replay, headless Weston
+client/restart checks and a fresh Hepta-page layout on source `d57a1be`.
+Final source `5d6fbb9` changes only an equivalent format capture in one test;
+strict Clippy, that real reconnect test and the final lock/formatter checks
+passed there. The record binds both exact source trees and preserves initial
+failures. Its Hepta peer is an explicit scripted fixture, Weston uses a no-op
+renderer, and the host reported no CJK font; original Agentd, pixels, live IME,
+device effects, mobile and target-kernel UI remain unverified. Historical
+results later in this document retain their own dates and scope.
+
+## Automated commands
+
 Automated Rust commands (from repository root with `RUSTUP_TOOLCHAIN=1.88.0`;
 the blocking CI `tests/ui/check-host.sh` runs all three A10-owned Cargo suites
 and the separate A07 observer suite):
