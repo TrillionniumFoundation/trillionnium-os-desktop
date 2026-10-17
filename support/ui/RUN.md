@@ -55,6 +55,29 @@ In terminal #2:
 For a live Wayland-host lifecycle smoke after building run:
 bash tests/ui/smoke-wayland.sh
 
+An independent real Linux/X11 host test can be run when Xvfb, xauth,
+xdpyinfo, xwininfo, xprop and the software GL stack are installed:
+
+~~~sh
+bash tests/ui/smoke-x11.sh "$PWD/ui/target/debug"
+~~~
+
+It starts its own authenticated virtual X server in a disposable runtime,
+proves missing-Xauthority clients cannot connect, requires Shell and three
+app windows to be X11 IsViewable, checks true Rust
+egui first layouts and Shell restart with Session/app identity preservation,
+and confirms actual app cancellation. With optional scrot and Python Pillow
+it also captures the virtual framebuffer and checks it is not blank. A real
+run against the four binaries from passing CI #39015860337 was independently
+verified: 4 mapped windows, 3 live child processes, Shell restart, all 3
+observed cancellations and a 1280x800 Xvfb buffer with 1532 colors. Machine
+receipt: `tests/ui/evidence/2026-10-17-x11-real-host-elf.json`.
+The CI host runs this as an additional **fail-if-attempted** gate when those
+X11 tools are present; if absent the gate is explicitly NOT VERIFIED and
+A00 must provision the host profile for mandatory X11 acceptance. None of
+this proves per-trust-domain Xwayland, Wayland presentation, live IME,
+physical GPU, Android or the target Rust kernel.
+
 The A00-owned GitHub workflow uploads the A10-owned `$RUNNER_TEMP/a10/`
 directory as a CI artifact. After Rust build, all host test suites and strict
 Rustfmt pass, `support/ui/package-host-binaries.sh` adds
@@ -95,10 +118,11 @@ host-only observation epoch. Every successfully launched host process
 records its observed socket epoch; the Shell identifies when a process predates
 a compositor socket replacement but never claims a mapped or reattached surface.
 The original client is recorded without any claim of lossless window
-reattachment. For a running old app with a stale socket epoch, Inspector can
-offer **Launch NEW window (not reattach)** when the Session is online. This
-starts a fresh task, does not restore unsaved data and does not silently kill
-the old process. Real Chinese IME, physical
+reattachment. Inspector can offer **Launch NEW window (not reattach)** only
+when the old task remains RUNNING, has an observed PID and first egui layout,
+the socket epoch changed and Session is online. Unknown/partial/cancelling
+tasks are explicitly NOT eligible for this recovery shortcut. An opted-in
+new task cannot restore unsaved data and never silently kills the old process. Real Chinese IME, physical
 GPU reset and target kernel boot remain separate gates.
 
 A10 independently downloaded the successful exact-source Linux-host
@@ -144,16 +168,23 @@ independently run against older source fcc57bd2 and correctly FAILED
 on case 0 (the old process returned an unauthorized Snapshot rather than
 rejecting a request with extra data). Fix acceptance requires that exact
 new binary to reject all eight malformed raw requests without side effects.
-The Linux-only host Session checks SO_PEERCRED on every accepted connection
-and rejects peer credentials whose kernel-reported UID differs from the
-Session effective UID. This supplements private 0700 runtime / 0600 socket
+Both Linux host Session and Shell/CLI connect calls use the same shared
+`trill-ui-core::host_peer` SO_PEERCRED identity check. Session refuses
+unknown-UID clients before parsing requests; clients refuse cross-UID
+servers before sending a request or trusting a host task snapshot. These
+checks compare effective UID and cannot authenticate different programs
+sharing a UID. This supplements private 0700 runtime / 0600 socket
 permissions, but is **not** a cryptographic user identity, same-UID sandbox,
 Hepta authority, production portal or A05 trusted CapSpace. The blocking
 Linux-host CI now also starts an isolated nobody-owned Session with passwordless
 sudo and verifies a root client's cross-UID access is actually rejected by
 the server (not merely by filesystem permissions), while nobody's own CLI
-continues to work. The test leaves no production processes or files and
-uses disposable private /tmp paths.
+continues to work. This test's nobody-owned runtime is 0700, so an ordinary
+Runner cannot directly read the PID marker. Cleanup uses scoped sudo with
+kernel /proc cmdline, process name and effective UID verification to kill the
+exact disposable Session even on ptrace-restricted hosts. PASS is emitted
+only after teardown; an inaccessible/unverified Session is a test failure.
+No production processes or files are targeted; only private /tmp paths.
 Missing app executable is reported FAILED, not a successful launch.
 A missing session is rendered OFFLINE and existing status is stale.
 `trill-ctl launch` now exits nonzero if the session reports a failed spawn,
@@ -161,6 +192,11 @@ partial or unknown state, even when JSON transport succeeded. A zero exit
 for Running acknowledges only host process creation, not a rendered window
 or final AI-task completion. `cancel` may return zero when SIGKILL has
 been requested but not yet observed; inspect the later session snapshot.
+A headless GUI can exit between Launch returning RUNNING and a later Cancel
+IPC request. In 50/50 independent real Rust ELF attempts on source fcc57bd2,
+Session returned "No owned live child; no cancellation claimed". Strict host
+acceptance now requires a fresh FAILED Snapshot in that race, and never
+records a fake cancellation or inferred Hepta success.
 
 A previous GitHub Actions host run (38932065166) completed the Rust build,
 unit-test and Weston lifecycle steps; its overall result was FAILED because

@@ -119,14 +119,18 @@ def check(binary_dir):
                         require(cancel.get("type") == "task", f"invalid Cancel response: {cancel}")
                         require(cancel["task"]["id"] == 1 and cancel["task"]["pid"] == task["pid"],
                                 "Cancel acknowledged a different child")
+                        require(cancel["task"]["state"] in ("cancel_requested", "running"),
+                                "host cancellation response invented a terminal effect")
                     for _ in range(100):
-                        time.sleep(0.02)
                         snapshot = roundtrip(sock, b'{"type":"snapshot"}')
                         require(snapshot["session_instance"] == generation, "cleanup crossed Session instances")
                         last = next(t for t in snapshot["tasks"] if t["id"] == 1)
                         require(last["pid"] == task["pid"], "cleanup changed the owned child PID")
-                        if last["state"] in ("cancelled", "failed", "completed"):
+                        if last["state"] in ("cancelled", "failed"):
                             break
+                        require(last["state"] != "completed",
+                                "display-less GUI exit 0 is not a witnessed window")
+                        time.sleep(0.02)
                     else:
                         raise AssertionError("real launched child was not reaped")
                     if child_already_exited:
@@ -140,7 +144,7 @@ def check(binary_dir):
                 require(valid_cancel["type"] == "error" and "task 999 does not exist" in valid_cancel["message"],
                         "valid Cancel was confused with schema rejection")
                 require(proc.poll() is None, "Rust Session died after malformed IPC")
-                print("A10 STRICT REQUEST IPC PASS: 8 forged frames rejected, first legitimate Launch remains ID 1, observed child cleanup, typed Cancel")
+                print("A10 STRICT REQUEST IPC PASS: 8 forged frames rejected; legitimate Launch remains ID 1; raced headless exit or confirmed SIGKILL is observed (never inferred as cancellation)")
             finally:
                 if proc.poll() is None:
                     proc.terminate()

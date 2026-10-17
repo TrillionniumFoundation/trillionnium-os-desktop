@@ -89,6 +89,18 @@ Unit coverage:
   all SHA256 sums; starts Session and CLI in a fresh private runtime,
   tests 0600 IPC, singleton flock, stale fencing, FAILED headless GUI child,
   and fresh Session after restart (no graphical compositor assertion)
+- A10-owned `tests/ui/smoke-x11.sh` launches the actual Rust Shell, Session
+  and Notes/Calculator/Terminal on a private Xvfb display using a private
+  Xauthority cookie; unauthenticated X11 clients must be rejected. It
+  requires four distinct X11 `IsViewable` mapped
+  windows, three real first egui layouts, Shell restart without loss of
+  Session/app PIDs, and observed cancellation of all three client processes.
+  If scrot+Pillow are available it also checks an actual nonblank 1280x800
+  virtual framebuffer and records its SHA256; absent tools are explicitly
+  `NOT VERIFIED`. Hosted CI only attempts this extra X11 check when Xvfb,
+  xauth, xdpyinfo, xwininfo and xprop are already installed (never fake green).
+  This is NOT a compositor security/Xwayland isolation, live CJK IME, GPU
+  reset or Asterinas kernel boot test.
 - strict HOS2 read-only UI adapter: opcode/payload pairing, request-id
   correlation, response opcode matching, and hidden mutating payload refusal
 - shared A02 `Request::encode` preflight before any transport exchange and
@@ -123,10 +135,15 @@ Unit coverage:
   top-level keys for Snapshot, Launch, and Cancel before any task action,
   and retains valid typed requests (not a trusted A05 authorization gate).
   The exact real-ELF test at tests/ui/test-strict-request-ipc.py sends eight
-  malformed raw frames and checks an unchanged empty task state, followed by
-  a correctly parsed typed Cancel. It was first executed against the older
-  fcc57bd2 CI-built Rust Session, FAILING at malformed case 0 because the
-  older process wrongly returned a Snapshot rather than an IPC rejection
+  malformed raw frames, then requires the first valid Launch to receive task
+  ID 1 so no short-lived forged Launch can hide between Snapshots. It checks
+  independently observed child reaping and correctly parsed typed Cancel.
+  The older fcc57bd2 Session FAILED at malformed case 0, accepting an
+  unexpected Snapshot field. A second live fcc57bd2 test showed 50/50
+  display-less GUI exit-before-Cancel races; the test must accept the exact
+  no-owned-child error ONLY when a subsequent Snapshot observes FAILED, not
+  silently reinterpret it as a successful SIGKILL or Hepta task effect.
+  See tests/ui/evidence/2026-10-17-headless-cancel-race.json
 - oversized/truncated IPC frames and unknown statuses
 - successful observed host child exit
 - live host child cancellation without GUI: real /bin/sleep process receives
@@ -136,17 +153,27 @@ Unit coverage:
 - bounded private socket IPC and reconnection without terminating the session
 - a connected but idle same-UID Unix socket peer times out in <=500ms;
   real Snapshot request resumes promptly rather than blocking task reaping
-- Linux SO_PEERCRED checks actual kernel-reported peer PID/UID/GID BEFORE
-  Session request parsing, allows this UID's real socketpair and rejects a
-  different UID through the exact same production comparison; the 0600
-  socket and 0700 runtime remain mandatory. This does not authenticate
+- Linux SO_PEERCRED checks kernel-reported peer PID/UID/GID on BOTH Session
+  accept and UI/CLI connect BEFORE any request or response; same-UID
+  socketpair succeeds, cross-UID fake Session data is refused before request
+  delivery. The 0600 socket and 0700 runtime remain mandatory. This does not authenticate
   two programs under the same UID or supply any A05 CapSpace grant
+- privileged *isolated real process* `tests/ui/test-rogue-session-server.sh`:
+  a nobody-owned Unix listener offers a forged successful Snapshot to a root
+  caller's actual Rust CLI. Earlier `fcc57bd2` ELF printed the forged
+  `FORGED_CROSS_UID_SESSION` source and exited 0 (unsafe). New CLI must
+  refuse via kernel SO_PEERCRED without sending a request.
 - privileged *isolated real process* `tests/ui/test-cross-uid-peer.sh`:
   unprivileged nobody-owned Session and its same-UID CLI succeed, whereas
   root's cross-UID snapshot must be rejected with the exact SO_PEERCRED
   diagnostic; Session remains alive for the owner. A prior `fcc57bd2`
   Rust ELF without this guard was independently shown to FAIL this check.
-  Only disposable /tmp, no production service or CapSpace is accessed
+  Cleanup reads the PID marker through authorized sudo because its containing
+  nobody-owned runtime is 0700 and inaccessible to an ordinary Runner. It
+  verifies process cmdline/comm/effective UID without ptrace-protected
+  /proc/<pid>/exe or environ, kills only a matching disposable Session,
+  and reports PASS only AFTER verified teardown. Only disposable /tmp, no
+  production service or CapSpace is accessed
 - failed host spawn, partial/unknown task and rejected IPC return nonzero
   trill-ctl process exit status; a running child means only host launch ACK
 - invalid app/workspace enum, including ../path command-injection strings,
@@ -165,9 +192,10 @@ Unit coverage:
   retains its generation and child identity; a newly launched Wayland app must
   complete its egui layout and be explicitly reaped. A pre-crash client is NOT
   assumed to reattach, and this is not a physical GPU reset.
-- only a still-running app from a previous compositor socket epoch can offer
-  an explicitly clicked NEW process/window; offline, old-generation and
-  terminal cases never fake app reattachment or preserved unsaved data
+- only a RUNNING app with an observed PID and first egui layout from
+  an earlier compositor socket epoch can offer an explicitly clicked NEW
+  process/window. PENDING, UNKNOWN, PARTIAL, CANCEL REQUESTED, terminal,
+  offline and never-rendered states must not create a duplicate recovery path
 - shell first egui layout marker before and after Shell restart (exactly once
   per Shell process; not a compositor-presented frame)
 - isolated Wayland smoke: shell plus independent native app processes (Notes,

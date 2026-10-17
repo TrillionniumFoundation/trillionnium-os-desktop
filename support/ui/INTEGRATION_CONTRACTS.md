@@ -9,8 +9,10 @@ implementation. Only the designated owners can define shared ABI changes.
 Require an authenticated process-instance identity (not PID alone),
 workspace/trust-domain identity, grant provenance and revocation signal.
 Shell must be a consumer, not a forgeable same-UID authorization origin.
-The experimental Linux Session enforces 0700/0600 IPC plus SO_PEERCRED
-same-effective-UID checks before parsing a client request. This is only a
+The experimental Linux Session enforces 0700/0600 IPC plus shared SO_PEERCRED
+same-effective-UID checks before parsing a client request; the native
+Shell and CLI also check the server UID before sending any host request
+or consuming a task snapshot. This is only a
 host transport boundary: any other process under the same UID may still
 connect, and a randomly generated Session instance ID is not an
 authorization credential. A05 must not reuse these checks as CapSpace

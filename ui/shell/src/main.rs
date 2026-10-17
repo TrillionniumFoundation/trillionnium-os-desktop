@@ -178,15 +178,19 @@ fn collect_export_drafts(chat: &[ChatEntry], composer: &str) -> Result<Vec<Strin
     Ok(drafts)
 }
 
-/// Offer only an explicit new host process, never silent reattachment or
-/// preservation of the old application's unsaved state.
+/// Offer only an explicit *new* host process, never silent reattachment.
+/// UNKNOWN, PARTIAL, CANCEL REQUESTED and PENDING are nonterminal, but none
+/// proves a still-running previously rendered client. Refuse to duplicate an
+/// uncertain or cancelling process from this recovery shortcut.
 fn can_offer_fresh_window(
     task: &TaskRecord,
     display: Option<&HostWaylandObservation>,
     connected: bool,
 ) -> bool {
     connected
-        && !task.state.is_terminal()
+        && task.state == TaskState::Running
+        && task.pid.is_some_and(|pid| pid != 0)
+        && task.ui_first_frame_unix_ms.is_some()
         && display.is_some_and(|sample| {
             task.host_window_observation(sample) == HostWindowObservation::SocketChanged
         })
@@ -1406,15 +1410,20 @@ mod shell_lifecycle_tests {
     use super::*;
 
     #[test]
-    fn new_window_offer_requires_running_old_client_and_changed_live_socket() {
+    fn new_window_offer_requires_observed_running_client_and_changed_live_socket() {
         let mut task = TaskRecord::new(12, Workspace::Build, AppKind::Notes);
-        assert!(task.transition(TaskState::Running));
         task.wayland_socket_epoch_at_launch = Some(3);
         let mut display = HostWaylandObservation {
             status: WaylandSocketStatus::SocketObserved,
             socket_observation_epoch: 4,
             sampled_unix_ms: 1,
         };
+        assert!(!can_offer_fresh_window(&task, Some(&display), true));
+        assert!(task.transition(TaskState::Running));
+        assert!(!can_offer_fresh_window(&task, Some(&display), true));
+        task.pid = Some(1234);
+        assert!(!can_offer_fresh_window(&task, Some(&display), true));
+        task.ui_first_frame_unix_ms = Some(10);
         assert!(can_offer_fresh_window(&task, Some(&display), true));
         assert!(!can_offer_fresh_window(&task, Some(&display), false));
         assert!(!can_offer_fresh_window(&task, None, true));
@@ -1424,7 +1433,19 @@ mod shell_lifecycle_tests {
         display.socket_observation_epoch = 3;
         assert!(!can_offer_fresh_window(&task, Some(&display), true));
         display.socket_observation_epoch = 4;
-        assert!(task.transition(TaskState::Completed));
+        let mut unknown = task.clone();
+        assert!(unknown.transition(TaskState::Unknown));
+        assert!(!can_offer_fresh_window(&unknown, Some(&display), true));
+        let mut partial = task.clone();
+        assert!(partial.transition(TaskState::Partial));
+        assert!(!can_offer_fresh_window(&partial, Some(&display), true));
+        let mut cancelling = task.clone();
+        assert!(cancelling.transition(TaskState::CancelRequested));
+        assert!(!can_offer_fresh_window(&cancelling, Some(&display), true));
+        let mut completed = task.clone();
+        assert!(completed.transition(TaskState::Completed));
+        assert!(!can_offer_fresh_window(&completed, Some(&display), true));
+        task.pid = None;
         assert!(!can_offer_fresh_window(&task, Some(&display), true));
     }
 

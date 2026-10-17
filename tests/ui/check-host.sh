@@ -55,7 +55,9 @@ for script in \
     support/ui/package-host-binaries.sh \
     tests/ui/test-package-host-binaries.sh \
     tests/ui/replay-packaged-host.sh \
-    tests/ui/test-cross-uid-peer.sh; do
+    tests/ui/test-cross-uid-peer.sh \
+    tests/ui/test-rogue-session-server.sh \
+    tests/ui/smoke-x11.sh; do
     bash -n "$script"
 done
 python3 tests/ui/test-session-lock.py
@@ -95,6 +97,10 @@ cargo test --manifest-path tests/ui/Cargo.toml --locked
 # must be refused with an actual peer-UID diagnostic. The same-UID client
 # must continue to work; old unguarded Rust binaries fail this check.
 bash tests/ui/test-cross-uid-peer.sh "$ui_binaries"
+# The opposite direction matters too: an unprivileged rogue Unix server
+# MUST NOT trick the real root CLI into trusting a fabricated Snapshot.
+# CLI must check Linux SO_PEERCRED before it sends even the first request.
+bash tests/ui/test-rogue-session-server.sh "$ui_binaries"
 # Probe the ACTUAL native Session through raw Unix-socket JSON, not serde
 # unit models. Exact Snapshot/Launch/Cancel schemas must reject duplicate
 # keys or unknown metadata before any task effect can occur.
@@ -104,6 +110,22 @@ python3 tests/ui/test-strict-request-ipc.py "$ui_binaries"
 for manifest in ui/Cargo.toml services/hepta-os/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do
     cargo fmt --manifest-path "$manifest" --all -- --check
 done
+# Additional REAL X11 mapping check on an owned, authenticated Xvfb.
+# This is not a replacement for Weston, live Chinese candidates, Xwayland
+# trust-domain isolation, physical GPU or Asterinas graphics. If this runner
+# lacks the optional X11 tools, report NOT VERIFIED rather than fake PASS.
+if command -v Xvfb >/dev/null && command -v xauth >/dev/null &&
+   command -v xdpyinfo >/dev/null && command -v xwininfo >/dev/null &&
+   command -v xprop >/dev/null; then
+    if [[ -n "${RUNNER_TEMP:-}" ]]; then
+        A10_X11_EVIDENCE_DIR="$RUNNER_TEMP/a10/x11" \
+            bash tests/ui/smoke-x11.sh "$ui_binaries"
+    else
+        bash tests/ui/smoke-x11.sh "$ui_binaries"
+    fi
+else
+    echo 'A10 X11 mapping NOT VERIFIED: host Xvfb/x11-utils/xauth unavailable'
+fi
 if [[ -n "${RUNNER_TEMP:-}" ]]; then
     bash support/ui/package-host-binaries.sh "$RUNNER_TEMP/a10"
     # Run the exact built ELF files from the new CI archive independently
