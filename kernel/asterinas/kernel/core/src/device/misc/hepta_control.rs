@@ -49,13 +49,15 @@ fn nonzero_random_id() -> [u8; 16] {
     id
 }
 
-// Bind the HOS2 CapSpace identity to the kernel-issued process lifetime.
-// This is deliberately independent of PID recycling and is shared by all
-// fds opened by the same process.
-fn process_session_id(process_start_id: u64) -> [u8; 16] {
+// Bind the HOS2 CapSpace identity to the real process lifetime tuple already
+// owned by Asterinas: boot identity, PID, and process start jiffies. The weak
+// process pointer below is the authoritative anti-reuse check; this value is
+// only the stable wire identity returned by QueryAbi.
+fn process_session_id(process: &Process) -> [u8; 16] {
     let mut id = [0u8; 16];
-    id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8]);
-    id[8..].copy_from_slice(&process_start_id.to_le_bytes());
+    id[..4].copy_from_slice(&BOOT_ID.get().unwrap()[..4]);
+    id[4..8].copy_from_slice(&process.pid().to_le_bytes());
+    id[8..].copy_from_slice(&process.start_time().as_u64().to_le_bytes());
     id
 }
 
@@ -83,10 +85,9 @@ impl Device for HeptaControlDevice {
         let process = Process::current().ok_or_else(|| {
             Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
         })?;
-        let process_start_id = process.hepta_process_start_id();
         Ok(Box::new(HeptaControlFile {
-            space_id: process_session_id(process_start_id),
-            process_start_id,
+            space_id: process_session_id(&process),
+            process: Arc::downgrade(&process),
             exec_epoch: process.hepta_exec_epoch(),
         }))
     }
@@ -94,7 +95,7 @@ impl Device for HeptaControlDevice {
 
 struct HeptaControlFile {
     space_id: [u8; 16],
-    process_start_id: u64,
+    process: Weak<Process>,
     exec_epoch: u64,
 }
 
@@ -103,13 +104,16 @@ impl HeptaControlFile {
     /// file. Forked children have a different process-start identity; execve
     /// advances the image epoch. Neither can reuse the inherited fd.
     fn check_session(&self) -> Result<()> {
-        let process = Process::current().ok_or_else(|| {
+        let current = Process::current().ok_or_else(|| {
             Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
         })?;
-        if process.hepta_process_start_id() != self.process_start_id {
+        let Some(owner) = self.process.upgrade() else {
+            return_errno_with_message!(Errno::EPERM, "HOS2 control process lifetime ended")
+        };
+        if !Arc::ptr_eq(&owner, &current) {
             return_errno_with_message!(Errno::EPERM, "HOS2 control fd belongs to another process")
         }
-        if process.hepta_exec_epoch() != self.exec_epoch {
+        if current.hepta_exec_epoch() != self.exec_epoch {
             return_errno_with_message!(
                 Errno::ESTALE,
                 "HOS2 control fd belongs to an old exec image"
