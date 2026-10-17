@@ -26,6 +26,7 @@ import cuda_process_supervisor as process_supervisor
 # and the Asterinas/Linux cross-kernel acceptance checker.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "support/hardware"))
 from pci_identity import canonical_bdf, matches_target_model
+from cuda_worker_identity import validate_supervised_cuda_success
 
 N = 16
 MAX_CUDA_ENUM_DEVICES = 64
@@ -595,6 +596,12 @@ def _run_supervised(args):
                         or evidence.get("compiler") != "NVRTC"
                         or not isinstance(evidence.get("device"), dict)):
                     raise ValueError("CUDA success receipt failed fixed GEMM proof obligations")
+                # Recheck device BDF/model/CC and Linux PID against the
+                # supervisor-owned OS record, not against child assertions.
+                # This is evidence consistency, never physical GPU attestation.
+                validate_supervised_cuda_success(
+                    evidence, record, args.require_name, args.require_bdf
+                )
             # Linux worker output is NEVER authoritative about which host
             # kernel owns the physical PCI function or whether DMA is safe.
             for key in ("asterinas_execution_verified", "vmm_passthrough_verified",
