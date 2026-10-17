@@ -65,6 +65,17 @@ class QueryAbiReplayInputs(unittest.TestCase):
             replay.build_guest_initramfs(gzip.compress(replay.pack(entries)), b"ELF")
 
 
+    def test_replay_rejects_gzip_expansion_over_limit(self):
+        inflated = b"X" * 1025
+        compressed = gzip.compress(inflated, mtime=0)
+        self.assertLess(len(compressed), 1024)
+        with self.assertRaisesRegex(ValueError, "decompression limit"):
+            replay.decode_bounded_initramfs(compressed, max_unpacked=1024)
+        self.assertEqual(
+            replay.decode_bounded_initramfs(compressed, max_unpacked=1025),
+            inflated,
+        )
+
     def test_pinned_input_accepts_exact_regular_bytes(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "kernel"
