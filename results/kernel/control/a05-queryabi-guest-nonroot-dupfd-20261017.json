@@ -1,0 +1,30 @@
+{
+  "kernel_sha256": "a0ef91869518ea644aff2e44f0a27d5fc712b574e7ba4bc499bf40f267bdd851",
+  "strict_guest_git_blob": "ad9ce99f5214d441d6904028e5ef8b1de922a0f4",
+  "extended_guest_sha256": "c69cc922de15dda889f5d37f4e0e19c0232ce5e82b403d31babc000de54e0674",
+  "extended_guest_elf_sha256": "01ef42f81e0eb92a1108660a432326455ca0f247a13711d1a318ffa5c72182b3",
+  "qemu_exit": 33,
+  "timed_out": false,
+  "elapsed_seconds": 1.463,
+  "marks": {
+    "HEPTA_NONROOT_OPEN_DENIED": true,
+    "HEPTA_DUP_SESSION_STABLE": true,
+    "HEPTA_QUERYABI_OK": true,
+    "HEPTA_QUERYABI_FAIL": false,
+    "TRILLIONNIUM_A01_BOOT_OK": true,
+    "panicked at": false
+  },
+  "passed": true,
+  "scope": "guest-only additional dup fd + unprivileged open checks; no full CapSpace isolation",
+  "source_base_commit": "933113f1e77493dca696bf5a8c7de383a7c9f991",
+  "source_original_guest_blob": "ad9ce99f5214d441d6904028e5ef8b1de922a0f4",
+  "verified_guest_host_contracts": {
+    "normal_archive_tests": 6,
+    "optimized_archive_tests": 6,
+    "hosr_negative_rejections": 21,
+    "host_smoke_exit": 0,
+    "static_c_build_exit": 0
+  },
+  "test_scope": "Guest fork, child setuid(65534) and denied open, duplicated fd QueryAbi session stability; not full trusted CapSpace or arbitrary inherited fd authority",
+  "host_logs": "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/a05-hardened-nonroot-fd-probe/ and a05-extended-replay-pinned-real/"
+}
