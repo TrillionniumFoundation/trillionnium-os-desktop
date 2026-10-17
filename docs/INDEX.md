@@ -21,6 +21,7 @@
 | [ANDROID_COMPATIBILITY](ANDROID_COMPATIBILITY.md) | 产品/VINTF/MAC/Binder/页大小与代理边界 |
 | [HARDWARE_AND_DRIVERS](HARDWARE_AND_DRIVERS.md) | DMA/队列/复位与提前风险调查 |
 | [DESKTOP_UX](DESKTOP_UX.md) | Rust/Wayland/分域Xwayland/Android桥 |
+| [ORGAN_CONTROL_BROKER](ORGAN_CONTROL_BROKER.md) | UI、Agentd、本地控制桥与HOS2/设备 owner 的权限边界 |
 | [ROADMAP](ROADMAP.md) | 明确M0/M1/M2依赖及下一次真实实现 |
 | [VALIDATION](VALIDATION.md) | 判定器、注入层级、22项审计映射 |
 | [DECISIONS](DECISIONS.md) | 默认路线与重议条件 |
