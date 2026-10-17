@@ -1,0 +1,26 @@
+# Run through run-models.py: src/lib.rs and src/native.rs are exact temporary
+# copies of the production core, while src/sync.rs is the test-only Mutex shim.
+[package]
+name = "os-control-loom"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[features]
+default = ["std"]
+std = []
+portable-spin = []
+
+[dependencies]
+loom = "=0.7.2"
+
+[lib]
+name = "os_control"
+path = "src/lib.rs"
+
+[[test]]
+name = "models"
+path = "models.rs"
+
+[lints.rust]
+unsafe_code = "forbid"

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Reproduce A03 failures and fixes with the pinned compiler, on a host only.
 
-The token baseline is genuine source from the named main commit. The Drop
+The token and native-context baselines are genuine named commits. The Drop
 baseline is an explicitly synthetic mutation of CURRENT source, not a claimed
 historical commit. Expected Rust assertion failures retain their raw exit 101
-and logs; this script exits zero only when both negative controls and both
-complete fixed suites match their exact expectations. Temporary Rust sources
+and logs; this script exits zero only when every negative control and fixed
+suite matches its exact expectations. Temporary Rust sources
 and binaries stay outside the repository and are removed after execution.
 """
 
@@ -24,6 +24,7 @@ import tempfile
 
 
 BASELINE_COMMIT = "40ca002fac0726b366726d3353916637b29adeae"
+NATIVE_BASELINE_COMMIT = "86663ea5a934d085a80fcaeaacca535bfb283b77"
 PINNED_TOOLCHAIN = "nightly-2026-07-21"
 PINNED_VERSION = "rustc 1.99.0-nightly (87e5904f5 2026-07-20)"
 SOURCES = (
@@ -32,6 +33,9 @@ SOURCES = (
     "libs/os-control/src/sync.rs",
     "tests/control/token_retirement.rs",
     "tests/control/native_handoff.rs",
+    "tests/control/native_context_negative.rs",
+    "tests/control/native_bound_execution.rs",
+    "tests/control/native_lifetime.rs",
 )
 RETIRE_FIXED = """        let mut reclaimed = Vec::new();
         for sequence in (ns.retired_through + 1)..=ack.through {
@@ -80,6 +84,10 @@ TOKEN_FAILURES = {
 DROP_FAILURES = {
     "native_owner_drop_during_retirement_can_read_same_namespace_before_return",
     "native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return",
+}
+NATIVE_CONTEXT_FAILURES = {
+    "generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids",
+    "generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context",
 }
 
 
@@ -227,6 +235,7 @@ def main() -> int:
         "scope": "std host regression controls; no real kernel or durable Hepta execution",
         "success": False,
         "baseline_commit": BASELINE_COMMIT,
+        "native_baseline_commit": NATIVE_BASELINE_COMMIT,
         "synthetic_drop_control": "current source with two exact reclamation blocks reverted; not a historical commit",
         "rustup_toolchain": PINNED_TOOLCHAIN,
         "commands": recorder.commands,
@@ -255,6 +264,18 @@ def main() -> int:
             )
             baseline[source] = text.encode("utf-8")
         report["baseline_source_sha256"] = {path: sha256(data) for path, data in baseline.items()}
+        native_baseline = {}
+        for source in SOURCES[:3]:
+            text = recorder.run(
+                "native-baseline-" + Path(source).stem,
+                ["git", "--no-pager", "show", f"{NATIVE_BASELINE_COMMIT}:{source}"],
+                repo,
+                source_output=True,
+            )
+            native_baseline[source] = text.encode("utf-8")
+        report["native_baseline_source_sha256"] = {
+            path: sha256(data) for path, data in native_baseline.items()
+        }
         mutated = current[SOURCES[0]].decode("utf-8")
         for name, fixed, old in [
             ("retire-drop-under-table-lock", RETIRE_FIXED, RETIRE_MUTATED),
@@ -266,10 +287,12 @@ def main() -> int:
         report["synthetic_lib_sha256"] = sha256(mutated.encode("utf-8"))
         with tempfile.TemporaryDirectory(prefix="a03-regressions-") as temporary:
             temporary_root = Path(temporary)
-            roots = {name: temporary_root / name for name in ("historical-token", "synthetic-drop", "fixed")}
+            roots = {name: temporary_root / name for name in
+                     ("historical-token", "historical-native", "synthetic-drop", "fixed")}
             for name, root in roots.items():
                 root.mkdir()
-                inputs = baseline if name == "historical-token" else current
+                inputs = (baseline if name == "historical-token" else
+                          native_baseline if name == "historical-native" else current)
                 for source, data in inputs.items():
                     (root / Path(source).name).write_bytes(data)
                 for source in SOURCES[3:]:
@@ -279,13 +302,21 @@ def main() -> int:
             library = compile_library(recorder, rustc, "historical-token", root)
             executable = compile_tests(recorder, rustc, "historical-token", root, library, "token_retirement.rs")
             report["checks"].append(verify_tests(recorder, "historical-token-run", executable, 2, 3, 0, TOKEN_FAILURES))
+            root = roots["historical-native"]
+            library = compile_library(recorder, rustc, "historical-native", root)
+            executable = compile_tests(recorder, rustc, "historical-native", root, library,
+                                       "native_context_negative.rs")
+            report["checks"].append(verify_tests(recorder, "historical-native-run", executable,
+                                                 0, 2, 0, NATIVE_CONTEXT_FAILURES))
             root = roots["synthetic-drop"]
             library = compile_library(recorder, rustc, "synthetic-drop", root)
             executable = compile_tests(recorder, rustc, "synthetic-drop", root, library, "native_handoff.rs")
             report["checks"].append(verify_tests(recorder, "synthetic-drop-run", executable, 0, 2, 13, DROP_FAILURES, "native_owner_drop_"))
             root = roots["fixed"]
             library = compile_library(recorder, rustc, "fixed", root)
-            for suite, count in [("token_retirement", 5), ("native_handoff", 15)]:
+            for suite, count in [("token_retirement", 5), ("native_handoff", 15),
+                                 ("native_context_negative", 2), ("native_bound_execution", 11),
+                                 ("native_lifetime", 5)]:
                 executable = compile_tests(recorder, rustc, "fixed-" + suite, root, library, suite + ".rs")
                 report["checks"].append(verify_tests(recorder, "fixed-" + suite + "-run", executable, count, 0, 0, set()))
         after = {source: sha256((repo / source).read_bytes()) for source in SOURCES}

@@ -654,7 +654,8 @@ shared clock rule is not an SMP metering algorithm; A06 must settle real CPU
 slices and observations under its scheduler's lock discipline.
 
 `tests/control/run-validation.sh OUTPUT_DIR` repeats both host backend test
-suites, formatting, strict Clippy and the x86_64-unknown-none library check.
+suites, formatting, strict Clippy, the x86_64-unknown-none library check and
+the separate bounded Loom harness below.
 `kernel_handoff` tests use a synthetic external callback; they do not call
 an actual kernel driver or the persistent Hepta owner.
 
@@ -715,3 +716,24 @@ Arc cycles; existing strong back-links must be migrated by their owner. Owner
 Drop can upgrade a weak link during explicit retirement/loss after internal
 locks are released. During final namespace destruction it cannot resurrect
 that namespace. Tests cover both cases with bounded, joined helper threads.
+
+## Bounded transition models
+
+`python3 tests/control/loom/run-models.py OUTPUT_DIR` uses pinned Loom 0.7.2
+and its own Cargo.lock under tests/control. It copies actual lib.rs/native.rs
+bytes unchanged into a temporary crate, replaces only sync.rs with the tracked
+Loom Mutex adapter, and checks before/after hashes. No second state machine,
+production feature or production dependency is introduced.
+
+Six fixtures cover same-D reservation/effect, revoke/commit, retire/query,
+publish/observe, loss/callback and typed native owner/context execution.
+Each explores up to two workers plus main, with preemption_bound=3 and
+max_branches=10000. No time/permutation cutoff is set; exceeding a branch
+limit or any assertion/deadlock fails the command. The runner requires all
+six schedule counts, fmt and strict Clippy to pass.
+
+This verifies bounded lock-protected transitions with Loom threads/atomics;
+std/alloc Arc/Weak reference-count atomics and finalization are not instrumented.
+Allocation failure, actual IRQ/preemption/SMP locks, scheduler/usercopy,
+Hepta durability and executions beyond these fixtures/bounds remain unverified.
+Default std and portable-spin thread tests still run separately.
