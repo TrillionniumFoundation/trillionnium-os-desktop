@@ -10,6 +10,7 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -28,6 +29,8 @@ UPSTREAM_TOOLCHAIN = "1.95.0"
 OBSERVER_TOOLCHAIN = "1.88.0"
 MIN_FREE_BYTES = 8 * 1024**3  # Conservative preflight estimate, not measured size.
 RUNNER_NAME = "hepta-original-observer-probe"
+GROUP_GRACE_SECONDS = 3.0
+CHILD_REAP_SECONDS = 3.0
 EXPECTED_CHECKS = [
     "original_starting", "original_running", "bounded_capabilities_events",
     "missing_run_read", "same_process_draining", "original_restart",
@@ -153,47 +156,127 @@ def build_environment(target):
     return environment
 
 
+def child_anchor_available():
+    # Standalone, sole-reaper contract: no ignored/custom SIGCHLD disposition,
+    # native SA_NOCLDWAIT configuration, child watcher or competing waitpid.
+    return (
+        platform.system() == "Linux"
+        and all(hasattr(os, name) for name in ["waitid", "WNOWAIT", "WEXITED", "WNOHANG", "P_PID", "killpg"])
+        and signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL
+    )
+
+
+class ChildGroup:
+    """Pin this child/session leader until every group signal is finished.
+
+    WNOWAIT retains an exited leader as our waitable child, preventing its
+    numeric PID/PGID from being recycled. Do not use Popen.wait/poll/kill before
+    disarming group signals. ECHILD permanently revokes this object's anchor;
+    even a later valid-looking wait result must never re-arm it.
+    """
+
+    def __init__(self, process):
+        self.process = process
+        self.armed = True
+
+    def observe_exit(self):
+        if not self.armed:
+            raise GateError("child_identity_lost")
+        try:
+            status = os.waitid(
+                os.P_PID, self.process.pid, os.WEXITED | os.WNOWAIT | os.WNOHANG,
+            )
+        except ChildProcessError:
+            self.armed = False
+            raise GateError("child_identity_lost") from None
+        except OSError:
+            self.armed = False
+            raise GateError("child_anchor_unavailable") from None
+        if status is not None and status.si_pid != self.process.pid:
+            self.armed = False
+            raise GateError("child_identity_lost")
+        return status
+
+    def wait_exit(self, timeout_seconds):
+        deadline = time.monotonic() + timeout_seconds
+        while True:
+            status = self.observe_exit()
+            if status is not None:
+                return status
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise subprocess.TimeoutExpired(self.process.args, timeout_seconds)
+            time.sleep(min(0.01, remaining))
+
+    def signal_group(self, signum):
+        self.observe_exit()  # Re-check immediately before each group signal.
+        try:
+            os.killpg(self.process.pid, signum)
+        except ProcessLookupError:
+            return False
+        return True
+
+    def reap(self):
+        self.observe_exit()
+        # There will be no more PID/PGID signals, even if reaping later fails.
+        self.armed = False
+        deadline = time.monotonic() + CHILD_REAP_SECONDS
+        while True:
+            try:
+                pid, status = os.waitpid(self.process.pid, os.WNOHANG)
+            except ChildProcessError:
+                # Popen.wait() maps ECHILD to success in some cases. Use the
+                # actual kernel result so a competing reaper cannot green it.
+                raise GateError("child_identity_lost") from None
+            if pid == self.process.pid:
+                code = os.waitstatus_to_exitcode(status)
+                self.process.returncode = code
+                return code
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise GateError("child_cleanup_incomplete")
+            time.sleep(min(0.01, remaining))
+
+
 def bounded_command(command, cwd, environment, log_path, timeout_seconds):
+    if not child_anchor_available():
+        raise GateError("waitable_child_anchor_required_before_spawn")
+    if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+        raise GateError("positive_finite_command_deadline_required")
     with log_path.open("xb") as log:
         process = subprocess.Popen(
             command, cwd=cwd, env=environment, stdin=subprocess.DEVNULL,
             stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
         )
+        group = ChildGroup(process)
         try:
-            code = process.wait(timeout=timeout_seconds)
+            status = group.wait_exit(timeout_seconds)
         except subprocess.TimeoutExpired:
-            terminate_group(process)
+            terminate_group(group)
             raise GateError("command_deadline_exceeded") from None
         except KeyboardInterrupt:
-            terminate_group(process)
+            terminate_group(group)
             raise GateError("command_interrupted") from None
+        if status.si_code != os.CLD_EXITED or status.si_status != 0:
+            code = terminate_group(group)
+        else:
+            code = group.reap()
     if code != 0:
-        terminate_group(process)
         raise GateError(f"command_failed_exit_{code}")
 
 
-def terminate_group(process):
-    # Only the dedicated group created by this harness. Reap/terminate its
-    # children even if the group leader exited before its cleanup could run.
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        process.wait(timeout=3)
-        return
-    deadline = time.monotonic() + 3
+def terminate_group(group):
+    # Keep the leader alive or WNOWAIT-unreaped throughout TERM/grace/KILL.
+    # Losing child ownership is a failure, not permission for best-effort use
+    # of a stale numeric group ID. No signal is ever issued after reap starts.
+    if not group.signal_group(signal.SIGTERM):
+        return group.reap()
+    deadline = time.monotonic() + GROUP_GRACE_SECONDS
     while time.monotonic() < deadline:
-        process.poll()
-        try:
-            os.killpg(process.pid, 0)
-        except ProcessLookupError:
-            process.wait(timeout=3)
-            return
-        time.sleep(0.05)
-    try:
-        os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
-        pass
-    process.wait(timeout=3)
+        group.observe_exit()
+        time.sleep(min(0.05, max(0, deadline - time.monotonic())))
+    group.signal_group(signal.SIGKILL)
+    return group.reap()
 
 
 def execute(args, source, work, report):
@@ -314,6 +397,8 @@ def main():
         blockers = []
         if platform.system() != "Linux":
             blockers.append("linux_required")
+        if not child_anchor_available():
+            blockers.append("waitable_child_anchor_unavailable")
         if free < MIN_FREE_BYTES:
             blockers.append("insufficient_disk_for_original_build")
         if not shutil.which(args.rustup):

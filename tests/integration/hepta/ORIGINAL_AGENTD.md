@@ -141,9 +141,58 @@ The existing same-client lifecycle socket regression remains a separate test.
 
 The runtime subprocess has a 240-second outer deadline and its own dedicated
 process group. The original Supervisor performs normal cleanup; timeout,
-interruption or nonzero subprocess exit terminates that group. Cleanup applies
-only to processes and directories created by this invocation. A timeout or
-cleanup failure is a failure, never a skip or a successful observation.
+interruption or nonzero subprocess exit starts bounded group termination.
+Cleanup applies only to processes and directories created by this invocation.
+A timeout or cleanup failure is a failure, never a skip or a successful
+observation.
+
+## Process-group identity and cleanup
+
+Run the harness as a standalone Linux process with the default, waitable
+`SIGCHLD` disposition and sole ownership of reaping its direct children.
+Preflight and every bounded spawn reject unavailable `waitid(WNOWAIT)` support
+or an ignored/custom Python `SIGCHLD` handler. This is not an embedding API for
+an application with a competing `waitpid` loop, child watcher, or native
+`SA_NOCLDWAIT` setup. The Python disposition check alone cannot establish those
+embedding properties; the standalone sole-reaper contract is required.
+
+`ChildGroup` observes its own session leader with
+`waitid(P_PID, WEXITED | WNOHANG | WNOWAIT)`. The leader remains alive or an
+unreaped child throughout TERM, the three-second grace period, and KILL. That
+retained kernel identity prevents its numeric PID/PGID from being recycled
+before the final group signal. Each signal performs another non-reaping check.
+Only after all signals finish does the guard permanently disarm signaling and
+use `waitpid` for the final reap and actual exit status. A successful command
+is reaped without group signals.
+
+An `ECHILD` result permanently revokes the guard's identity anchor. The guard
+then fails with `child_identity_lost` and never signals that numeric group
+again, even if a later stub or kernel result appears valid. It does not treat
+`Popen.wait()`'s possible ECHILD-to-zero behavior as a successful exit. If a
+competing reaper violated the contract, safe cleanup of all descendants cannot
+be guaranteed; the harness reports failure instead of using the stale ID.
+Final reaping is bounded to three seconds after signaling is disabled. A child
+that remains unreapable fails with `child_cleanup_incomplete`; the timeout does
+not claim to interrupt an uninterruptible kernel wait or prove every process
+has stopped.
+
+The Linux regression command is independent of the original build:
+
+```sh
+python3 -B -m unittest discover -s tests/integration/hepta \
+  -p test_original_process_guard.py -v
+```
+
+All six tests passed on 2026-10-17. They use disposable Python children in new
+private sessions to verify an exited leader remains waitable before both
+signals, bounded timeout cleanup, actual ECHILD before cleanup and between
+TERM/KILL, permanent revocation, rejection before spawn of nonwaitable signal
+dispositions, and successful exit status without signaling. Deliberately stale
+signal paths are mocked; no real PID/PGID reuse is attempted. A safe probe of
+the initial `a92d8ed` harness observed actual ECHILD at its mocked first TERM
+call after `Popen.wait()` had already reaped the exit-1 child. The repaired
+regression requires that same child to remain waitable until both signal
+boundaries finish. These are process-guard tests, not an original Agentd run.
 
 ## Why no downloaded original binary was used
 

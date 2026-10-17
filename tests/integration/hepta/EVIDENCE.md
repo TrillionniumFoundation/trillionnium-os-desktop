@@ -109,6 +109,30 @@ fixture is described as a production owner.
 
 ## Remaining acceptance gates
 
+### Original-process harness cleanup correction
+
+Review found a separate flaw in the initial `a92d8ed` qualification harness:
+`Popen.wait()` or `poll()` could reap the dedicated session leader before later
+numeric PGID signals. The correction retains the leader with Linux
+`waitid(WNOWAIT)` through the final signal, then disarms before the actual
+`waitpid` reap. ECHILD permanently revokes signaling and fails the gate. This
+requires a standalone process with waitable SIGCHLD and no competing reaper;
+the precise preconditions and bounded-cleanup limits are in
+[ORIGINAL_AGENTD.md](ORIGINAL_AGENTD.md#process-group-identity-and-cleanup).
+
+On 2026-10-17, the independent command
+`python3 -B -m unittest discover -s tests/integration/hepta -p test_original_process_guard.py -v`
+passed **6 tests, 0 failed, 0 skipped**. It used real, test-owned Python children
+and actual WNOWAIT/ECHILD results; stale signal attempts were intercepted, and
+no PID/PGID reuse was created. At 11:35:47 UTC a safe probe of `a92d8ed` produced
+the expected regression RED: actual ECHILD at the mocked first TERM call after
+the exit-1 child had already been reaped. No signal was actually sent in that
+old-source probe. Neither this probe nor the guard tests built or launched
+original Agentd, modified shared Rust target binaries, or changed the earlier
+`live_agentd_acceptance: not_run` qualification.
+
+### Unexecuted original-process and production gates
+
 The next original-process gate is now concrete in
 [ORIGINAL_AGENTD.md](ORIGINAL_AGENTD.md). Its actual 2026-10-17 preflight exited
 2 before any build/launch because of disk, missing original Rust 1.95, and

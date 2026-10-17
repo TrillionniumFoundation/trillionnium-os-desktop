@@ -13,6 +13,10 @@ implement or claim A07's Hepta → HOS2 durable-effect gate.
   original-source build/process gate. Default mode performs only preflight;
   [ORIGINAL_AGENTD.md](ORIGINAL_AGENTD.md) records commands, actual resource
   blockers, artifact search, and the unexecuted original-process assertions.
+- `test_original_process_guard.py` exercises the original-process harness's
+  Linux child identity and cleanup guard using disposable Python children,
+  kernel WNOWAIT/ECHILD results and safe signal spies. It does not build or
+  launch original Agentd.
 
 The socket and parser regression tests live in
 `services/hepta-os/tests/socket_contract.rs`; the timed-out metadata admission
