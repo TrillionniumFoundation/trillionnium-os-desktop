@@ -1,0 +1,251 @@
+{
+  "schema": "trillionnium.os.a06-cpu-bandwidth-evidence.v1",
+  "date": "2026-10-16",
+  "os_profile": "Asterinas v0.19.0, QEMU q35/TCG, x86_64, 1 vCPU, 512MiB, no host networking/data disks",
+  "kernel_source_commit": "512e45d02b4ff544189b104cb36994f2edc588f4",
+  "test_runner_commit": "d2e11bd15a7cd8997d7ae4e48cc0ccc2eb991677",
+  "sha256": "a2f72e2bc75d0490b658898697ced0532fe36395067939e3959f88dab051676e",
+  "findings": {
+    "original_reference_cpu_quota": "NOT_ENFORCED: 1% config ≈99.8% observed; archived in merged #11",
+    "first_candidate_cpu_quota": "1%=~2.1%, 5%=~6.0%, 50%=~50.18%; 10% had a timeout at cpu.stat",
+    "cpu_stat_lock_reentrancy": "Holding CPU max spinlock while printing through VmPrinter was identified as a possible scheduling/fault deadlock. Lock shortened, rebuilt.",
+    "fixed_repeats": "Three 10% QEMU guest tests completed with no panics or timeouts; all CPU ratios between ~10.55% and 11.03%",
+    "class_and_hierarchy": "rt SCHED_FIFO 10% and parent=10%/leaf unlimited both complete and throttled",
+    "still_not_qualified": "1% cap has ~1% absolute overrun; SMP, migrations, HOS2 ioctl, capability grants, Hepta persistent effects, and full kernel regression matrix not qualified"
+  },
+  "all_results": {
+    "first_1pct": {
+      "head": "8c1e9aa31f02a58a32cbf1f6af29a6b54930c2a8",
+      "kernel_sha256": "fe772c9eca0503491e7a8d6356d6aa1fde715aec26edec21d438975651f7018d",
+      "initramfs_sha256": "79d6d0130238fdb6a7f450804ea055efd962bbe7a769610b7238c922843155f6",
+      "exit": 33,
+      "complete": true,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 1000148280,
+          "cpu_ns": 970000000,
+          "iterations": 168900000
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 1000297300,
+          "cpu_ns": 21000000,
+          "iterations": 2200000
+        }
+      ],
+      "observed_not_enforced": false,
+      "marker": true,
+      "panic": false,
+      "modified_host": false
+    },
+    "initial_5pct": {
+      "name": "five_percent",
+      "quota_us": 5000,
+      "period_us": 100000,
+      "qemu_exit": 33,
+      "guest_completed": true,
+      "panic": false,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 1000326974,
+          "cpu_ns": 993000000,
+          "iterations": 184900000
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 1000052812,
+          "cpu_ns": 60000000,
+          "iterations": 5700000
+        }
+      ],
+      "probe_sha256": "0da659a4360574339ef41c36ef116e66d88ea45d06dbb0b8bb0a0948b56d2a34",
+      "archive_sha256": "8e6d4d8a0676bedf4ca0816865355be508f6f27f5de4a022983d97bec47d96cd",
+      "observed_cpu_percent": 6
+    },
+    "initial_10pct_timeout": {
+      "name": "ten_percent",
+      "quota_us": 10000,
+      "period_us": 100000,
+      "qemu_exit": 124,
+      "guest_completed": false,
+      "panic": false,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 1000415327,
+          "cpu_ns": 982000000,
+          "iterations": 145400000
+        }
+      ],
+      "probe_sha256": "fd73f3572daa15cedb47939a8cb7e20aa333fe99ad1e8de8d9caaeb3da770315",
+      "archive_sha256": "15c5451d0e9bb41067002d2962af36a18db18cf48081652a8d25d2e25b744830"
+    },
+    "initial_50pct": {
+      "name": "fifty_percent",
+      "quota_us": 50000,
+      "period_us": 100000,
+      "qemu_exit": 33,
+      "guest_completed": true,
+      "panic": false,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 1000132425,
+          "cpu_ns": 993000000,
+          "iterations": 165300000
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 1000475064,
+          "cpu_ns": 502000000,
+          "iterations": 66400000
+        }
+      ],
+      "probe_sha256": "a05e5b2fb1e131d9e8a3b87994bc4dbccf19734ad60176945c50f84e0e3c2614",
+      "archive_sha256": "01e86ff4d472d365c785f1db471edd2e5baf2644884968de212862929681b772",
+      "observed_cpu_percent": 50.176
+    },
+    "repeat_10pct_after_lockfix": {
+      "branch_head": "512e45d02b4ff544189b104cb36994f2edc588f4",
+      "kernel_sha256": "a2f72e2bc75d0490b658898697ced0532fe36395067939e3959f88dab051676e",
+      "kernel_source_rebuilt": true,
+      "tests": [
+        {
+          "index": 1,
+          "qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "cpu_percent": 11.026783026164905,
+          "sample_count": 2
+        },
+        {
+          "index": 2,
+          "qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "cpu_percent": 10.551183350337075,
+          "sample_count": 2
+        },
+        {
+          "index": 3,
+          "qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "cpu_percent": 10.913655156332625,
+          "sample_count": 2
+        }
+      ],
+      "unchanged_host": true
+    },
+    "leaf_10pct_committed_runner": {
+      "mode": "leaf",
+      "quota_us": 10000,
+      "period_us": 100000,
+      "candidate_sha256": "a2f72e2bc75d0490b658898697ced0532fe36395067939e3959f88dab051676e",
+      "initramfs_sha256": "754b213001e6966adb8d414c755a8a201f2f23e89beb59da3635b53b41b44450",
+      "source_pin": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "host_cgroup_modified": false,
+      "guest_only": true,
+      "smp_qualified": false,
+      "hepta_hos2_qualified": false,
+      "runs": [
+        {
+          "index": 1,
+          "qemu_exit": 33,
+          "guest_complete": true,
+          "panic": false,
+          "policy_rt": false,
+          "cpu_percent": 10.997,
+          "samples": [
+            {
+              "label": "unlimited",
+              "wall_ns": 1000269944,
+              "cpu_ns": 994000000,
+              "iterations": 156300000
+            },
+            {
+              "label": "one-percent-configured",
+              "wall_ns": 1000248343,
+              "cpu_ns": 110000000,
+              "iterations": 9900000
+            }
+          ]
+        }
+      ]
+    },
+    "realtime_10pct_committed_runner": {
+      "mode": "rt",
+      "quota_us": 10000,
+      "period_us": 100000,
+      "candidate_sha256": "a2f72e2bc75d0490b658898697ced0532fe36395067939e3959f88dab051676e",
+      "initramfs_sha256": "212c4aff3fb2cc648b691023fe25e5bd4a54dd3691d3452a32b2963935ed2f67",
+      "source_pin": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "host_cgroup_modified": false,
+      "guest_only": true,
+      "smp_qualified": false,
+      "hepta_hos2_qualified": false,
+      "runs": [
+        {
+          "index": 1,
+          "qemu_exit": 33,
+          "guest_complete": true,
+          "panic": false,
+          "policy_rt": true,
+          "cpu_percent": 11.189,
+          "samples": [
+            {
+              "label": "unlimited",
+              "wall_ns": 1000457414,
+              "cpu_ns": 976000000,
+              "iterations": 161300000
+            },
+            {
+              "label": "one-percent-configured",
+              "wall_ns": 1000970345,
+              "cpu_ns": 112000000,
+              "iterations": 10500000
+            }
+          ]
+        }
+      ]
+    },
+    "parent_10pct_committed_runner": {
+      "mode": "parent",
+      "quota_us": 10000,
+      "period_us": 100000,
+      "candidate_sha256": "a2f72e2bc75d0490b658898697ced0532fe36395067939e3959f88dab051676e",
+      "initramfs_sha256": "a603492d4d162f2b240f6a949dc71d33d83d4681bdb6d33a9910fce6ebc9e4aa",
+      "source_pin": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "host_cgroup_modified": false,
+      "guest_only": true,
+      "smp_qualified": false,
+      "hepta_hos2_qualified": false,
+      "runs": [
+        {
+          "index": 1,
+          "qemu_exit": 33,
+          "guest_complete": true,
+          "panic": false,
+          "policy_rt": false,
+          "cpu_percent": 11.098,
+          "samples": [
+            {
+              "label": "unlimited",
+              "wall_ns": 1000660158,
+              "cpu_ns": 1005000000,
+              "iterations": 174800000
+            },
+            {
+              "label": "one-percent-configured",
+              "wall_ns": 1000149270,
+              "cpu_ns": 111000000,
+              "iterations": 11300000
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
