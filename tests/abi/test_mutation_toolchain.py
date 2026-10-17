@@ -281,7 +281,7 @@ class MutationToolchainTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertEqual(len(mutations.SNAPSHOT_MUTANTS), 4)
-        self.assertEqual(mutations.EXPECTED_MUTANT_COUNT, 19)
+        self.assertEqual(mutations.EXPECTED_MUTANT_COUNT, 20)
         self.assertEqual(mutations.SUITES["response_snapshot"],
                          (5, mutations.SNAPSHOT_TESTS))
         self.assertEqual(len(set(mutations.SNAPSHOT_TESTS)), 5)
