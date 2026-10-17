@@ -131,6 +131,7 @@ class RunnerLifecycleTests(unittest.TestCase):
         here = project / "support/build/ktest"
         here.mkdir(parents=True)
         shutil.copyfile(HERE / "run.py", here / "run.py")
+        shutil.copyfile(HERE.parent / "record-qemu.py", project / "support/build/record-qemu.py")
         for name in ("verify-source.py", "ktest/check.py"):
             (project / "support/build" / name).write_text(FIXTURE)
         for crate in RUNNER.CRATES:

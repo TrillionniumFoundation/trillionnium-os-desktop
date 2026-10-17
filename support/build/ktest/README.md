@@ -41,6 +41,22 @@ constructs the actual fixed q35/TCG/CPU max/1-vCPU/512-MiB/SeaBIOS/serial/debug-
 invocation. Network, data disks, GRUB, OVMF, an ISO and Nix are unnecessary.
 The kernel-test runner has its own entry point and needs no userspace initramfs.
 
+For a prepared private QEMU installation, `A01_QEMU_BIOS` selects a nonempty
+absolute regular firmware file and `A01_QEMU_DATA_DIR` selects a nonempty
+absolute existing resource directory (passed as one `-L`). The recorder imports
+the ordinary recorder's selectors by absolute source path; it does not maintain
+a second validation policy. An explicit data directory conflicts with any
+incoming OSDK `-L` and is rejected. Invalid selections fail before QEMU's version
+probe or launch. Without these variables, the ordinary fixed system BIOS path
+and fixed profile remain in effect.
+
+Each guest retains the original OSDK arguments, the fixed arguments before
+selection, selection provenance and actual argv. Firmware hashes bind the
+selected file using the shared stable-FD capture. The runner's environment
+input hashes include the ordinary selector source, and each guest identifies
+that dependency too. This does not add immutable snapshots to the ktest path;
+it preserves its existing source-artifact model and unchanged result checker.
+
 The runner shares the persistent `support/build/out-kernel.lock` inode with
 the ordinary boot wrapper. Output uses a fresh directory and every guest has
 its own serial log and QEMU JSON record. `--output DIR` refuses an existing

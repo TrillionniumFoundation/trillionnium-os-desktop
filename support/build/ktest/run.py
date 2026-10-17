@@ -288,6 +288,7 @@ def run_locked(args, here, project, upstream, env, cargo_home, output):
                        str(path.relative_to(project)): digest(path) for path in sorted([
                            upstream / "osdk/src/commands/build/mod.rs",
                            project / "support/build/verify-source.py",
+                           project / "support/build/record-qemu.py",
                            *[path for path in here.rglob("*") if path.is_file() and "__pycache__" not in path.parts],
                        ])
                    },
