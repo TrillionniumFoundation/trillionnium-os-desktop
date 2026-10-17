@@ -1,5 +1,8 @@
 """CPU-host-only tests for deterministic QEMU QueryAbi input/guest setup."""
 import gzip
+import hashlib
+import os
+import tempfile
 import sys
 import unittest
 from pathlib import Path
@@ -61,6 +64,54 @@ class QueryAbiReplayInputs(unittest.TestCase):
         with self.assertRaises(ValueError):
             replay.build_guest_initramfs(gzip.compress(replay.pack(entries)), b"ELF")
 
+
+    def test_pinned_input_accepts_exact_regular_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "kernel"
+            data = b"synthetic pinned kernel bytes"
+            path.write_bytes(data)
+            self.assertEqual(
+                replay.read_pinned_file(path, hashlib.sha256(data).hexdigest()),
+                data,
+            )
+
+    def test_pinned_input_rejects_symlink_without_reading_outside(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            external = root / "outside"
+            external.write_bytes(b"dummy outside data")
+            target = root / "kernel"
+            target.symlink_to(external)
+            with self.assertRaises(OSError):
+                replay.read_pinned_file(
+                    target, hashlib.sha256(external.read_bytes()).hexdigest()
+                )
+
+    def test_pinned_input_rejects_fifo_and_oversize(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pipe = root / "fifo"
+            os.mkfifo(pipe)
+            with self.assertRaises(ValueError):
+                replay.read_pinned_file(pipe, "0" * 64)
+            oversized = root / "oversized"
+            oversized.write_bytes(b"A" * 10)
+            with self.assertRaises(ValueError):
+                replay.read_pinned_file(
+                    oversized, hashlib.sha256(b"A" * 10).hexdigest(), limit=9
+                )
+
+    def test_pinned_input_rejects_external_hard_link(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            outside = root / "outside"
+            outside.write_bytes(b"stand-in only")
+            alias = root / "alias"
+            os.link(outside, alias)
+            with self.assertRaises(ValueError):
+                replay.read_pinned_file(
+                    alias, hashlib.sha256(b"stand-in only").hexdigest()
+                )
 
 if __name__ == "__main__":
     unittest.main()
